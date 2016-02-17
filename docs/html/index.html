@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>malcolm &mdash; malcolm 0.7 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="malcolm 0.7 documentation" href="#"/>
+        <link rel="next" title="Architecture" href="architecture.html"/>
+        <link rel="prev" title="Table of Contents" href="toc.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="toc.html" class="icon icon-home"> malcolm
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.7
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">malcolm</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#changelog">Changelog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Change Log</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="toc.html">malcolm</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="toc.html">Docs</a> &raquo;</li>
+      
+    <li>malcolm</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="malcolm">
+<h1>malcolm<a class="headerlink" href="#malcolm" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://travis-ci.org/dls-controls/malcolm"><img alt="Build Status" src="https://travis-ci.org/dls-controls/malcolm.svg?style=flat" /></a> <a class="reference external" href="https://coveralls.io/github/dls-controls/malcolm?branch=master"><img alt="Test coverage" src="https://coveralls.io/repos/dls-controls/malcolm/badge.svg?branch=master&amp;service=github" /></a> <a class="reference external" href="https://landscape.io/github/dls-controls/malcolm/master"><img alt="Code Health" src="https://landscape.io/github/dls-controls/malcolm/master/landscape.svg?style=flat" /></a> <a class="reference external" href="https://pypi.python.org/pypi/malcolm/"><img alt="Latest PyPI version" src="https://img.shields.io/pypi/v/malcolm.svg" /></a> <a class="reference external" href="https://readthedocs.org/projects/malcolm/?badge=latest"><img alt="Documentation Status" src="https://readthedocs.org/projects/malcolm/badge/?version=latest" /></a></p>
+<p>Malcolm is a middlelayer service that allows high level configure/run control
+of control system components generally involved in continous scans.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>To install the latest release, type:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install malcolm
+</pre></div>
+</div>
+<p>To install the latest code directly from source, type:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install git+git://github.com/dls-controls/malcolm.git
+</pre></div>
+</div>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>Full documentation is available at <a class="reference external" href="http://malcolm.readthedocs.org">http://malcolm.readthedocs.org</a></p>
+</div>
+<div class="section" id="changelog">
+<h2>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference external" href="https://github.com/dls-controls/malcolm/blob/master/CHANGELOG.rst">CHANGELOG</a></p>
+</div>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference external" href="https://github.com/dls-controls/malcolm/blob/master/CONTRIBUTING.rst">CONTRIBUTING</a></p>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>APACHE License. (see <a class="reference external" href="https://github.com/dls-controls/malcolm/blob/master/LICENSE">LICENSE</a>)</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>Some basic configuration options</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>There is a dummy detector distributed with malcolm, that allows you to change
+the exposure and number of frames, and simulates an acquisition using these
+parameters. You can run up a server which contains this by changing directory
+to the checked out version and running:</p>
+<div class="highlight-python"><div class="highlight"><pre>[tmc43@pc0013 malcolm]$ ./example/dummy_det_server.py
+INFO:malcolm.zmqComms.zmqMalcolmRouter:Binding client facing socket on tcp://127.0.0.1:5600
+INFO:malcolm.zmqComms.zmqDeviceWrapper:det: Sending ready message to ipc://frbe.ipc
+INFO:malcolm.zmqComms.zmqMalcolmRouter:Binding device facing socket on ipc://frbe.ipc
+INFO:malcolm.zmqComms.zmqMalcolmRouter:Device det connected
+</pre></div>
+</div>
+<p>It has now started a malcolm router and a device det, and is ready to receive commands.
+You can now start a client to this server in an interactive client and send messages
+to it:</p>
+<div class="highlight-python"><div class="highlight"><pre>[tmc43@pc0013 malcolm]$ dls-python -i ./example/dummy_det_client.py
+Try running det.configure(exposure=0.2, nframes=10)
+&gt;&gt;&gt;
+</pre></div>
+</div>
+<p>The client det object has now been populated with all the methods that the server det
+object supports:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nb">dir</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+<span class="go">[&#39;__class__&#39;, &#39;__delattr__&#39;, &#39;__dict__&#39;, &#39;__doc__&#39;, &#39;__format__&#39;, &#39;__getattribute__&#39;, &#39;__hash__&#39;, &#39;__init__&#39;, &#39;__module__&#39;, &#39;__new__&#39;, &#39;__reduce__&#39;, &#39;__reduce_ex__&#39;, &#39;__repr__&#39;, &#39;__setattr__&#39;, &#39;__sizeof__&#39;, &#39;__str__&#39;, &#39;__subclasshook__&#39;, &#39;__weakref__&#39;, &#39;_fc&#39;, &#39;abort&#39;, &#39;assert_valid&#39;, &#39;configure&#39;, &#39;configure_run&#39;, &#39;do_call&#39;, &#39;pause&#39;, &#39;reset&#39;, &#39;resume&#39;, &#39;retrace&#39;, &#39;run&#39;, &#39;state&#39;, &#39;status&#39;]</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>You can then run a method which will print the status updates as it runs:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">det</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">exposure</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">nframes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">Configuring: Configuring started</span>
+<span class="go">Ready: Configuring finished</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>If you Ctrl-C in the middle of a long running function then it will send an abort
+and return when it is aborted:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">det</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="go">Running: Starting run</span>
+<span class="go">Running: Running in progress 0% done</span>
+<span class="go">Running: Running in progress 10% done</span>
+<span class="go">Running: Running in progress 20% done</span>
+<span class="go">Running: Running in progress 30% done</span>
+<span class="go">^CAborting: Aborting</span>
+<span class="go">Aborting: Waiting for detector to stop</span>
+<span class="go">Aborted: Aborted</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>You can also open another client which will share the same state as the first:</p>
+<div class="highlight-python"><div class="highlight"><pre>[tmc43@pc0013 malcolm]$ dls-python -i ./example/dummy_det_client.py
+Try running det.configure(exposure=0.2, nframes=10)
+&gt;&gt;&gt; det.state
+&#39;Aborted&#39;
+&gt;&gt;&gt; det.reset()
+Resetting: Resetting
+Idle: Reset complete
+&gt;&gt;&gt; det.configure(exposure=0.2, nframes=10)
+Configuring: Configuring started
+Ready: Configuring finished
+&gt;&gt;&gt;
+</pre></div>
+</div>
+<p>If we use this second client to start a run, then pause, retrace and resume it from
+the first, we get this output on the second client:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">det</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="go">Running: Starting run</span>
+<span class="go">Running: Running in progress 0% done</span>
+<span class="go">Running: Running in progress 10% done</span>
+<span class="go">Running: Running in progress 20% done</span>
+<span class="go">Running: Running in progress 30% done</span>
+<span class="go">Running: Running in progress 40% done</span>
+<span class="go">Running: Running in progress 50% done</span>
+<span class="go">Pausing: Pausing started</span>
+<span class="go">Pausing: Waiting for detector to stop</span>
+<span class="go">Pausing: Reconfiguring detector for 5 frames</span>
+<span class="go">Paused: Pausing finished</span>
+<span class="go">Pausing: Retracing started</span>
+<span class="go">Pausing: Reconfiguring detector for 7 frames</span>
+<span class="go">Paused: Pausing finished</span>
+<span class="go">Running: Starting run</span>
+<span class="go">Running: Running in progress 30% done</span>
+<span class="go">Running: Running in progress 40% done</span>
+<span class="go">Running: Running in progress 50% done</span>
+<span class="go">Running: Running in progress 60% done</span>
+<span class="go">Running: Running in progress 70% done</span>
+<span class="go">Running: Running in progress 80% done</span>
+<span class="go">Running: Running in progress 90% done</span>
+<span class="go">Idle: Running in progress 100% done</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>And this on the first:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">det</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
+<span class="go">Pausing: Pausing started</span>
+<span class="go">Pausing: Waiting for detector to stop</span>
+<span class="go">Pausing: Reconfiguring detector for 5 frames</span>
+<span class="go">Paused: Pausing finished</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">det</span><span class="o">.</span><span class="n">retrace</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">Pausing: Retracing started</span>
+<span class="go">Pausing: Reconfiguring detector for 7 frames</span>
+<span class="go">Paused: Pausing finished</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">det</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+<span class="go">Running: Starting run</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<p>That&#8217;s it! To get a more in depth view of the architecture, please read on to the next chapter.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="architecture.html" class="btn btn-neutral float-right" title="Architecture" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="toc.html" class="btn btn-neutral" title="Table of Contents" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Diamond Light Source.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.7',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
