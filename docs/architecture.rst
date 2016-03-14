@@ -20,7 +20,7 @@ configure/run state machine that are used for mapping scans.
 General Purpose States
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Every state machine in Malcolm will include the following states. BlockSpecific
+Every state machine in Malcolm will include the following states. BlockStates
 is a placeholder for the states that will be different for each implementation
 of a Block.
 
@@ -29,15 +29,17 @@ of a Block.
 
     state canDisable {
         state canError {
-            state canAbort {
-                Resetting --> BlockSpecific
+            state BlockStates <<Rest>>
+            BlockStates : Contains one
+            BlockStates : or more Block
+            BlockStates : specific states
 
-                state BlockSpecific <<Rest>>
-            }
-            canAbort --> Aborting : Abort
+            Resetting -left-> BlockStates
 
-            state Aborting <<Abort>>
-            Aborting --> Aborted
+            Resetting -up-> Aborting : Abort
+            BlockStates -up-> Aborting : Abort
+            Aborting -right-> Aborted
+            state Aborted <<Abort>>
             Aborted --> Resetting : Reset
         }
         canError -right-> Fault : Error
@@ -50,6 +52,7 @@ of a Block.
     state Disabled <<Disabled>>
     Disabled --> Resetting : Reset
 
+
 Default State Machine
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -58,7 +61,7 @@ If no state machine is specified, the following will be used:
 .. uml::
     !include docs/stateMachineDefs.iuml
 
-    Resetting -down-> Ready
+    Resetting -left-> Ready
 
     state Ready <<Rest>>
 
@@ -77,7 +80,7 @@ data is being flushed to disk.
 .. uml::
     !include docs/stateMachineDefs.iuml
 
-    Resetting -down-> Idle
+    Resetting --> Idle
     state Idle <<Rest>>
     Idle -right-> Configuring : Configure
     Configuring -right-> Ready
@@ -87,6 +90,7 @@ data is being flushed to disk.
     Running -right-> PostRun
     PostRun --> Ready
     PostRun -left-> Idle
+    Ready --> Resetting : Reset
 
 Pausable Device State Machine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,7 +102,7 @@ by the user, and rewound once it has become paused.
 .. uml::
     !include docs/stateMachineDefs.iuml
 
-    Resetting -down-> Idle
+    Resetting --> Idle
     state Idle <<Rest>>
     Idle -right-> Configuring : Configure
     Configuring -right-> Ready
@@ -108,15 +112,15 @@ by the user, and rewound once it has become paused.
     Running -right-> PostRun
     PostRun --> Ready
     PostRun -left-> Idle
+    Ready --> Resetting : Reset
 
-    PreRun -down-> Pausing : Pause
     Running -down-> Pausing : Pause
-    PostRun -down-> Pausing : Pause
-    Pausing -left-> Rewinding
-    Paused -right-> Rewinding : Rewind
+    Pausing -left-> Paused
+    Paused -left-> Rewinding : Rewind
     Ready -down-> Rewinding : Rewind
-    Rewinding -left-> Paused
+    Rewinding -right> Paused
     Rewinding -up-> Ready
+    Paused --> Running : Resume
 
 
 
