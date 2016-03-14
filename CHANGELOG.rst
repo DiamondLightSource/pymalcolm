@@ -21,6 +21,6 @@ Added:
 
 - Initial structure with ZeroMQ comms
 
-.. _Unreleased: https://github.com/dls-controls/malcolm/compare/0-2...HEAD
-.. _0-2: https://github.com/dls-controls/malcolm/compare/0-1...0-2
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/0-2...HEAD
+.. _0-2: https://github.com/dls-controls/pymalcolm/compare/0-1...0-2
 
