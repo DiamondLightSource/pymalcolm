@@ -1,0 +1,10 @@
+skinparam state {
+  BackgroundColor #99CFCF
+  BackgroundColor<<Rest>> #AAE7AA
+  BackgroundColor<<Abort>> #FFBE89
+  BackgroundColor<<Fault>> #F03232
+  BackgroundColor<<Disabled>> #AAAAAA
+  BorderColor Gray
+  ArrowColor Black
+  FontSize 18
+}

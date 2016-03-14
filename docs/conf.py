@@ -182,6 +182,10 @@ html_show_copyright = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'malcolmdoc'
 
+# Logo
+html_logo = 'malcolm-logo.svg'
+html_favicon = 'malcolm-logo.ico'
+
 
 # -- Options for LaTeX output ---------------------------------------------
 
