@@ -4,7 +4,7 @@ malcolm
 |build-status| |coverage| |health| |pypi-version| |readthedocs|
 
 Malcolm is a middlelayer service that allows high level configure/run control
-of control system components generally involved in continous scans.
+of control system components generally involved in continuous scans.
 
 Installation
 ------------
