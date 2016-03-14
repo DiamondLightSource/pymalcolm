@@ -43,6 +43,16 @@ class Mock(MagicMock):
 MOCK_MODULES = ['numpy']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+# Suppress warnings about nonlocal image URIs (for badges)
+import sphinx.environment
+from docutils.utils import get_source_line
+
+def _warn_node(self, msg, node):
+    if not msg.startswith('nonlocal image URI found:'):
+        self._warnfunc(msg, '%s:%s' % get_source_line(node))
+
+sphinx.environment.BuildEnvironment.warn_node = _warn_node
+
 
 # -- General configuration ------------------------------------------------
 
