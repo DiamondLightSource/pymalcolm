@@ -95,7 +95,7 @@ data is being flushed to disk.
     Ready -right-> PreRun : Run
     PreRun -right-> Running
     Running -right-> PostRun
-    PostRun --> Ready
+    PostRun -left-> Ready
     PostRun -left-> Idle
     Ready --> Resetting : Reset
     Ready : Rest state
@@ -119,7 +119,7 @@ by the user, and rewound once it has become paused.
     Ready -right-> PreRun : Run
     PreRun -right-> Running
     Running -right-> PostRun
-    PostRun --> Ready
+    PostRun -left-> Ready
     PostRun -left-> Idle
     Ready --> Resetting : Reset
     Ready : Rest state
@@ -130,7 +130,7 @@ by the user, and rewound once it has become paused.
     Paused -left-> Pausing : Rewind
     Ready -down-> Rewinding : Rewind
     Rewinding -up-> Ready
-    Paused --> Running : Resume
+    Paused -up-> Running : Resume
 
 
 
