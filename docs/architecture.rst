@@ -29,28 +29,33 @@ of a Block.
 
     state canDisable {
         state canError {
-            state BlockStates <<Rest>>
-            BlockStates : Contains one
-            BlockStates : or more Block
-            BlockStates : specific states
+            state BlockStates {
+                state ___ <<Rest>>
+                ___ : Rest state
+                Resetting -left-> ___
+            }
 
-            Resetting -left-> BlockStates
+            BlockStates : Has one or more Rest states that Resetting can
+            BlockStates : transition to. May contain other block specific states
 
-            Resetting -up-> Aborting : Abort
-            BlockStates -up-> Aborting : Abort
+            BlockStates -down-> Aborting : Abort
             Aborting -right-> Aborted
             state Aborted <<Abort>>
-            Aborted --> Resetting : Reset
+            Aborted : Rest state
+            Aborted -up-> Resetting : Reset
         }
         canError -right-> Fault : Error
 
         state Fault <<Fault>>
+        Fault : Rest state
         Fault --> Resetting : Reset
     }
-    canDisable -right-> Disabled : Disable
+    canDisable --> Disabled : Disable
 
     state Disabled <<Disabled>>
+    Disabled : Rest state
     Disabled --> Resetting : Reset
+    [*] -right-> Disabled
 
 
 Default State Machine
@@ -64,6 +69,7 @@ If no state machine is specified, the following will be used:
     Resetting -left-> Ready
 
     state Ready <<Rest>>
+    Ready : Rest state
 
 Runnable Device State Machine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,6 +88,7 @@ data is being flushed to disk.
 
     Resetting --> Idle
     state Idle <<Rest>>
+    Idle : Rest state
     Idle -right-> Configuring : Configure
     Configuring -right-> Ready
     state Ready <<Rest>>
@@ -91,6 +98,7 @@ data is being flushed to disk.
     PostRun --> Ready
     PostRun -left-> Idle
     Ready --> Resetting : Reset
+    Ready : Rest state
 
 Pausable Device State Machine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,6 +112,7 @@ by the user, and rewound once it has become paused.
 
     Resetting --> Idle
     state Idle <<Rest>>
+    Idle : Rest state
     Idle -right-> Configuring : Configure
     Configuring -right-> Ready
     state Ready <<Rest>>
@@ -113,12 +122,13 @@ by the user, and rewound once it has become paused.
     PostRun --> Ready
     PostRun -left-> Idle
     Ready --> Resetting : Reset
+    Ready : Rest state
 
     Running -down-> Pausing : Pause
-    Pausing -left-> Paused
-    Paused -left-> Rewinding : Rewind
+    PreRun -down-> Pausing : Pause
+    Pausing -right-> Paused
+    Paused -left-> Pausing : Rewind
     Ready -down-> Rewinding : Rewind
-    Rewinding -right> Paused
     Rewinding -up-> Ready
     Paused --> Running : Resume
 
