@@ -28,6 +28,35 @@ use a number of terms to identify key components of Malcolm:
   In a client Block, the Call will be forwarded to the server Block, and the
   return value returned to the caller.
 
+For example, in the following diagram, Process1 is hosting two Blocks, and
+Process2 has a client of Block 2 as a local object.
+
+.. uml::
+
+    frame Process1 {
+        frame Block1 {
+            [Attribute 1]
+            [Attribute 2]
+            [Method 1]
+        }
+
+        frame Block2 {
+            [Attribute 1] as B2.A1
+            [Method 1] as B2.M1
+        }
+    }
+
+    frame Process2 {
+        frame Block2Client {
+            [Attribute 1] as B2C.A1
+            [Method 1] as B2C.M1
+        }
+    }
+
+    B2C.A1 --> B2.A1
+    B2C.M1 --> B2.M1
+
+
 Block Structure
 ---------------
 
