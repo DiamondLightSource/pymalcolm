@@ -1,5 +1,5 @@
-pymalcolm
-=========
+Malcolm
+=======
 
 |build-status| |coverage| |health| |pypi-version| |readthedocs|
 
