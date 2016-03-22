@@ -73,10 +73,9 @@ A Block looks like this::
     Block :=
         string      descriptor  // Description of Block
         string[]    tags        // e.g. "instance:FlowGraph"
-        string      typeid      // e.g. "Malcolm:Zebra2/Zebra2Block:1.0"
-        Attribute   state       // With typeid=Enum
-        Attribute   status      // With typeid=String
-        Attribute   busy        // With typeid=Bool
+        Attribute   state       // type=enum
+        Attribute   status      // type=string
+        Attribute   busy        // type=bool
         {Attribute  <attribute-name>}0+
         {Method     <method-name>}0+
 
@@ -88,76 +87,73 @@ state as defined below.
 
 An Attribute looks like this::
 
-    Meta :=
-        string      typeid          // e.g. "Malcolm:Core/Enum:1.0"
-        string[]    tags            // e.g. "widget:combo"
-        string      descriptor      // Description of attribute
-        bool        writeable       // True if you can Put
-        string[]    labels     :opt // List of possible values for enums
-        display_t   display    :opt // Display limits, units, etc
-        control_t   control    :opt // If writeable, then include this
+    Attribute := NTScalar | NTScalarArray | Table | Map
 
-    Bool :=
-        bool        value
-        Meta        meta            // no optional bits
-        alarm_t     alarm      :opt // Alarm status
-        time_t      timeStamp  :opt // When Attribute last changed
-    // Also BoolArray with bool[]
+    NTScalar :=
+        scalar_t    value
+        alarm_t     alarm
+        time_t      timeStamp
+        ScalarMeta  meta
 
-    Number :=
-        number      value           // byte..double
-        Meta        meta            // display, control if writeable
-        alarm_t     alarm      :opt // Alarm status
-        time_t      timeStamp  :opt // When Attribute last changed
-    // Also NumberArray with number[]
-
-    String :=
-        string      value
-        Meta        meta            // no optional bits
-        alarm_t     alarm      :opt // Alarm status
-        time_t      timeStamp  :opt // When Attribute last changed
-    // Also StringArray with string[]
-
-    Enum :=
-        string      value
-        Meta        meta            // labels
-        alarm_t     alarm      :opt // Alarm status
-        time_t      timeStamp  :opt // When Attribute last changed
-    // Also EnumArray with enum[]
-
-    Map :=
-        structure   value
-            {any    <itemname>}0+   // The values of the types shown below
-        structure   meta
-            {Meta   <itemname>}0+   // All allowed fields and types
-        string[]    required        // The required fields in the object
-        alarm_t     alarm      :opt // Alarm status
-        time_t      timeStamp  :opt // When Attribute last changed
+    NTScalarArray :=
+        scalar_t[]  value
+        alarm_t     alarm
+        time_t      timeStamp
+        ScalarMeta  meta
 
     Table :=
         structure   value
-            {scalar_t[] <colname>}0+    // The column data
-        structure   meta
-            {Meta       <colname>}0+    // The allowed fields and types
-                                        // Only Array types
-        alarm_t     alarm      :opt // Alarm status
-        time_t      timeStamp  :opt // When Attribute last changed
+            {scalar_t[] <colname>}0+
+        alarm_t     alarm
+        time_t      timeStamp
+        MapMeta     meta
+
+    Map :=
+        structure   value
+            {NTScalar | NTScalarArray | Table <keyname>}0+
+        MapMeta     meta
+
+The structures are very similar, and all hold the current value in whatever
+type is appropriate for the Attribute. Each structure contains a `meta` field
+that describes the values that are allowed to be passed to the value field of
+the structure::
+
+    ScalarMeta :=
+        string      descriptor      // Description of attribute
+        string      type            // one of scalar_t or scalar_t[] strings
+                                    // or "enum" or "enum[]"
+        bool        writeable  :opt // True if you can Put
+        string[]    tags       :opt // e.g. "widget:textinput"
+        display_t   display    :opt // Display limits, units, etc, for numbers
+        control_t   control    :opt // For writeable numbers
+        string[]    labels     :opt // Allowed values if type is "enum"
+
+    MapMeta :=
+        string      descriptor      // Description of attribute
+        string      type            // "map" or "table"
+        bool        writeable  :opt // True if you can Put
+        structure   elements
+            {ScalarMeta | MapMeta <argname>}0+
+        string[]    tags      :opt  // e.g. "widget:group"
+        string[]    required  :opt  // If specified, only these fields are
+                                    // required, otherwise all are
+        string[]    labels    :opt  // List of column labels if different to
+                                    // arguments members
+
+ScalarMeta has a number of fields that will be present or not depending on the
+contents of the type field. MapMeta contains a structure of elements that
+describe the subelements that are allowed in the Map (or Table).
 
 A Method looks like this::
 
     Method :=
-        string      name                // Name of method
         string      descriptor          // Docstring
-        structure   arguments
-            {Meta   <argname>}0+        // The input arguments
-        string[]    required            // The required arguments
+        MapMeta     takes               // Argument spec
         structure   defaults
             {any    <argname>}0+        // The defaults if not supplied
-        structure   returns
-            {Meta   <retname>}0+        // The types of the return value
+        MapMeta     returns             // Return value spec
 
-
-
+The takes structure describes the arguments that can be 
 
 
 
