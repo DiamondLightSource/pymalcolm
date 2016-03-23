@@ -71,13 +71,16 @@ Malcolm, it is not a required part of it.
 A Block looks like this::
 
     Block :=
-        string      descriptor  // Description of Block
-        string[]    tags        // e.g. "instance:FlowGraph"
         Attribute   state       // type=enum
         Attribute   status      // type=string
         Attribute   busy        // type=bool
         {Attribute  <attribute-name>}0+
         {Method     <method-name>}0+
+        BlockMeta   meta
+
+    BlockMeta :=
+        string      description  // Description of Block
+        string[]    tags        // e.g. "instance:FlowGraph"
 
 The `state` Attribute corresponds to the state described in the `State Machine`_
 section below. The `status` Attribute will hold any status message that is
@@ -87,7 +90,7 @@ state as defined below.
 
 An Attribute looks like this::
 
-    Attribute := NTScalar | NTScalarArray | Table | Map
+    Attribute := NTScalar | NTScalarArray | Table
 
     NTScalar :=
         scalar_t    value
@@ -106,12 +109,7 @@ An Attribute looks like this::
             {scalar_t[] <colname>}0+
         alarm_t     alarm
         time_t      timeStamp
-        MapMeta     meta
-
-    Map :=
-        structure   value
-            {NTScalar | NTScalarArray | Table <keyname>}0+
-        MapMeta     meta
+        TableMeta   meta
 
 The structures are very similar, and all hold the current value in whatever
 type is appropriate for the Attribute. Each structure contains a `meta` field
@@ -119,44 +117,53 @@ that describes the values that are allowed to be passed to the value field of
 the structure::
 
     ScalarMeta :=
-        string      descriptor      // Description of attribute
+        string      description     // Description of attribute
         string      type            // one of scalar_t or scalar_t[] strings
                                     // or "enum" or "enum[]"
         bool        writeable  :opt // True if you can Put
         string[]    tags       :opt // e.g. "widget:textinput"
         display_t   display    :opt // Display limits, units, etc, for numbers
         control_t   control    :opt // For writeable numbers
-        string[]    labels     :opt // Allowed values if type is "enum"
+        string[]    oneOf      :opt // Allowed values if type is "enum"
+        string      label           // Short label if different to name
 
-    MapMeta :=
-        string      descriptor      // Description of attribute
-        string      type            // "map" or "table"
+    TableMeta :=
+        string      description     // Description of attribute
+        structure   elements        // Metadata for each column, must have array
+            {ScalarMeta <elname>}0+ // type
         bool        writeable  :opt // True if you can Put
-        structure   elements
-            {ScalarMeta | MapMeta <argname>}0+
-        string[]    tags      :opt  // e.g. "widget:group"
-        string[]    required  :opt  // If specified, only these fields are
-                                    // required, otherwise all are
-        string[]    labels    :opt  // List of column labels if different to
-                                    // arguments members
+        string[]    tags       :opt // e.g. "widget:table"
+        string[]    labels     :opt // List of column labels if different to
+                                    // element names
 
 ScalarMeta has a number of fields that will be present or not depending on the
-contents of the type field. MapMeta contains a structure of elements that
-describe the subelements that are allowed in the Map (or Table).
+contents of the type field. TableMeta contains a structure of elements that
+describe the subelements that are allowed in the Table.
+
+Where do we put versions?
 
 A Method looks like this::
 
+    MapMeta :=
+        structure   elements        // Metadata for each element in map
+            {ScalarMeta | TableMeta <elname>}0+
+        string[]    tags       :opt // e.g. "widget:group"
+        string[]    required   :opt // These fields will always be present
+
     Method :=
-        string      descriptor          // Docstring
-        MapMeta     takes               // Argument spec
+        string      description     // Docstring
+        MapMeta     takes           // Argument spec
         structure   defaults
-            {any    <argname>}0+        // The defaults if not supplied
-        MapMeta     returns             // Return value spec
+            {any    <argname>}0+    // The defaults if not supplied
+        MapMeta     returns    :opt // Return value spec if any
 
-The takes structure describes the arguments that can be 
+The `takes` structure describes the arguments that should be passed to the
+Method. The `returns` structure describes what will be returned as a result.
+The `defaults` structure contains default values that will be used if the
+argument is not supplied.
 
-
-
+There will be typeids on each element with versions so that we can fix call
+signatures etc.
 
 State Machine
 -------------
@@ -207,7 +214,6 @@ of a Block.
     Disabled : Rest state
     Disabled --> Resetting : Reset
     [*] -right-> Disabled
-
 
 Default State Machine
 ^^^^^^^^^^^^^^^^^^^^^
@@ -283,11 +289,194 @@ by the user, and rewound once it has become paused.
     Rewinding -up-> Ready
     Paused -up-> Running : Resume
 
-Blocks and Parts
-----------------
+Runnable and Pausable Device Methods
+------------------------------------
+
+These are listed below, there is some overlap with the general purpose states
+
+configure(params)
+^^^^^^^^^^^^^^^^^
+
+run()
+^^^^^
+
+pause()
+^^^^^^^
+
+retrace(steps)
+^^^^^^^^^^^^^^
+
+resume()
+^^^^^^^^
+
+abort()
+^^^^^^^
+
+disable()
+^^^^^^^^^
+
+reset()
+^^^^^^^
 
 Messages and types
 ------------------
+
+There are a number of client side verbs:
+- Get
+- Put
+- Post
+- Subscribe
+- Unsubscribe
+
+And a number of server side verbs:
+- Error
+- Value
+- Changes
+- Return
+
+
+
+
+
+Blocks and Parts
+----------------
+
+Blocks, Methods, and Attributes are what is exposed by Malcolm at run-time.
+However, during the first iteration of Malcolm, it became apparent that
+Python classes that implemented Blocks were too large and unweildy to easily
+share code. Likewise, Attributes and Methods were too small, what is needed is
+a collection of a small number of Attributes and Methods that form a coherent
+reusable group. We will call these `Parts`. Blocks will be formed as a
+composition of Parts, and to avoid repeating ourselves, we will define a
+configuration language written in YAML.
+
+A Block would be created by parsing a YAML file for initialisation Attributes,
+taking values for those, and creating an object composed of the component parts.
+
+To define initialisation attributes::
+
+    init.String:
+        name: prefix
+        description: PV Prefix
+        required: true
+
+A group would look like this::
+
+    gui.Group:
+        name: configuration
+        label: Configuration Parameters
+        description: These will be used to configure the device
+        collapse: true
+
+For example, a repeated pattern is that of a PV Attribute, one that connects to
+a readback PV (and optionally a demand PV) to allow::
+
+    ca.Double:
+        name: exposure
+        description: Exposure time for each frame
+        pv: {prefix}:Exposure
+        rbv_suff: _RBV
+        widget: textinput
+        group: configuration
+
+And an XML string sent over CA::
+
+    ca.LongString:
+        name: xml
+        description: XML describing positions to tag NDArrays with
+        pv: {prefix}:Filename
+        widget: textarea
+        group: configuration
+        writeable: true
+
+And an enumeration::
+
+    ca.Enum:
+        name: acquire
+        description: Whether it is acquiring or not
+        pv: {prefix}:Acquire
+        labels:
+            - Idle
+            - Acquire
+        widget: toggle
+        writeable: true
+
+All of these will call ca.create_pv(), monitor the resulting PV, and keep a
+local attribute in sync with this value. If writeable, it will create a setter
+on the attribute that does a caput callback on the PV, doing a get on the RBV
+value to avoid the race condition on return.
+
+Adding a statemachine is done with a Part::
+
+    sm.RunnableDevice:
+
+After this statement, we can add configuration methods for fixed values::
+
+    methods.configure.imageMode:
+        source: fixed
+        value: Multiple
+        phase: 1
+
+And for values that should be passed straight through, with optional defaults::
+
+    methods.configure.exposure:
+        source: user
+        value: 0.1
+        phase: 2
+
+For calculated values, we can create a custom Part that specifies the logic,
+and instantiate it here::
+
+    custom.PosPlugin.configure_xml:
+        phase: 3
+
+A key part of Malcolm is the nesting of Blocks. This means that we create lots
+of composite Blocks that will control a number of child blocks and expose a
+narrower interface to the end user. This means that they will take a number of
+child objects at init::
+
+    init.DetectorDriver:
+        name: detectorDriver1
+        description: DetectorDriver instance
+        required: true
+
+Some attributes will be a mirror of a child block attribute::
+
+    attribute.Double:
+        name: exposure
+        source: detectorDriver1.exposure
+
+Child block attributes can also be slaved from the internal attributes::
+
+    slave.detectorDriver2.exposure:
+        source: exposure
+
+Child block attributes can also be fixed on reset of a block::
+
+    fixed.detectorDriver2.period:
+        value: 1.0
+
+There will be a table view on this for the Load/Save view on Zebra2, that will
+be used to generate the Parts above:
+
+=============== ======= ======= ====================
+Name            Value   Exposed Description
+=============== ======= ======= ====================
+DIV1.DIV        32
+PCAP.ARM                Arm     Start the experiment
+PCOMP1.START            Start   Start position
+PCOMP2.START            Start
+=============== ======= ======= ====================
+
+Tables can be represented as repeated key value pairs::
+
+    fixed.detectorDriver2.positions:
+        value:
+            - x: 32
+              y: 45
+            - x: 33
+              y: 46
+
 
 Threading Model
 ---------------
