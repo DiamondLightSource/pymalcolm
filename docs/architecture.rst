@@ -140,22 +140,21 @@ ScalarMeta has a number of fields that will be present or not depending on the
 contents of the type field. TableMeta contains a structure of elements that
 describe the subelements that are allowed in the Table.
 
-Where do we put versions?
-
 A Method looks like this::
 
     MapMeta :=
-        structure   elements        // Metadata for each element in map
+        structure   elements            // Metadata for each element in map
             {ScalarMeta | TableMeta <elname>}0+
-        string[]    tags       :opt // e.g. "widget:group"
-        string[]    required   :opt // These fields will always be present
+        string[]    tags           :opt // e.g. "widget:group"
+        string[]    required       :opt // These fields will always be present
 
     Method :=
-        string      description     // Docstring
-        MapMeta     takes           // Argument spec
+        string      description         // Docstring
+        MapMeta     takes               // Argument spec
         structure   defaults
-            {any    <argname>}0+    // The defaults if not supplied
-        MapMeta     returns    :opt // Return value spec if any
+            {any    <argname>}0+        // The defaults if not supplied
+        MapMeta     returns        :opt // Return value spec if any
+        string[]    valid_states   :opt // The only states method can be run in
 
 The `takes` structure describes the arguments that should be passed to the
 Method. The `returns` structure describes what will be returned as a result.
@@ -291,22 +290,18 @@ by the user, and rewound once it has become paused.
     Ready -down-> Rewinding : Rewind
 
     PreRun -right-> Running
-    PreRun -down-> Pausing : Pause
+    PreRun -down-> Rewinding : Pause
 
     Running -right-> PostRun
-    Running -down-> Pausing : Pause
+    Running -down-> Rewinding : Pause
 
     PostRun -left-> Ready
     PostRun -left-> Idle
 
-    Pausing -right-> Paused
+    Rewinding -right-> Paused
 
-    Paused -left-> Pausing : Rewind
-    Paused -right-> Resuming : Resume
-
-    Resuming -up-> Running
-
-    Rewinding -up-> Ready
+    Paused -left-> Rewinding : Rewind
+    Paused -up-> PreRun : Resume
 
 Runnable and Pausable Device Methods
 ------------------------------------
@@ -395,29 +390,28 @@ below shows the valid set of transitions:
     !include docs/stateMachineDefs.iuml
 
     state NormalStates {
+        state Idle <<Rest>>
+        Idle : End state
+
         state Ready <<Rest>>
         Ready : Start state
         Ready : End state
         Ready -right-> PreRun : Run
 
         PreRun -right-> Running
-        PreRun -down-> Pausing : Pause
+        PreRun -down-> Rewinding : Pause
 
         Running -right-> PostRun
-        Running -down-> Pausing : Pause
+        Running -down-> Rewinding : Pause
 
         PostRun -left-> Ready
-        PostRun -left-> Idle
+        PostRun -right-> Idle
 
-        Pausing -right-> Paused
+        Rewinding -right-> Paused
 
-        Paused -left-> Pausing : Rewind
-        Paused -right-> Resuming : Resume
+        Paused -left-> Rewinding : Rewind
+        Paused -up-> PreRun : Resume
 
-        Resuming -up-> Running
-
-        state Idle <<Rest>>
-        Idle : End state
     }
 
     !include docs/stateMachineNotNormal.iuml
@@ -437,13 +431,13 @@ shows the valid set of transitions:
     !include docs/stateMachineDefs.iuml
 
     state NormalStates {
-        PreRun -down-> Pausing : Pause
+        PreRun -down-> Rewinding : Pause
         PreRun : Start state
 
-        Running -down-> Pausing : Pause
+        Running -down-> Rewinding : Pause
         Running : Start state
 
-        Pausing -right-> Paused
+        Rewinding -right-> Paused
 
         Paused : End state
     }
@@ -466,17 +460,15 @@ below shows the valid set of transitions:
     !include docs/stateMachineDefs.iuml
 
     state NormalStates {
-        Paused -left-> Pausing : Rewind
+        Paused -left-> Rewinding : Rewind
         Paused : Start state
         Paused : End state
 
-        Pausing -right-> Paused
+        Rewinding -right-> Paused
 
+        state Ready <<Rest>>
         Ready -down-> Rewinding : Rewind
         Ready : Start state
-        Ready : End state
-
-        Rewinding -up-> Ready
     }
 
     !include docs/stateMachineNotNormal.iuml
@@ -486,23 +478,17 @@ resume()
 ^^^^^^^^
 
 This method will resume a paused scan. It is allowed from the Paused state and
-will block until the device is Running or in Fault state. Normally it will
-return in Running state. If something goes wrong it will return in Fault state.
-If the user disables then it will return in a Disabled state. The state diagram
-subset below shows the valid set of transitions:
+will transition the device to PreRun state and return immediately. The state
+diagram subset below shows the valid set of transitions:
 
 .. uml::
     !include docs/stateMachineDefs.iuml
 
-    state NormalStates {
-        Paused -right-> Resuming : Resume
-        Paused : Start state
+    state Paused
+    Paused -up-> PreRun : Resume
+    Paused : Start state
 
-        Resuming -up-> Running
-        Running : End state
-    }
-
-    !include docs/stateMachineNotNormal.iuml
+    PreRun : End state
 
 
 abort()
@@ -541,7 +527,7 @@ disable()
 ^^^^^^^^^
 
 This method will stop the block responding to external input until reset() is
-called. It is allowed from any state, and will make the device as Disabled and
+called. It is allowed from any state, and will mark the device as Disabled and
 return immediately. It will always return in Disabled state. The state diagram
 subset below shows the valid set of transitions:
 
@@ -620,9 +606,15 @@ And a number of server side verbs:
 - Return: Provide a return value to a Post, Get, Put, Unsubscribe, and indicate
   the cancellation of a Subscribe
 
+Changes
+^^^^^^^
+
+Return a `diff stanza` as used by json_delta_
 
 
-
+.. _json_delta:
+    http://json-delta.readthedocs.org/en/latest/
+    philosophy.html?highlight=stanzas
 
 Blocks and Parts
 ----------------

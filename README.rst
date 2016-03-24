@@ -8,6 +8,11 @@ of control system components generally involved in continuous scans. This
 module contains a python implementation allowing the creation of Malcolm
 servers and clients.
 
+Source Code
+-----------
+
+Available from https://github.com/dls-controls/malcolm
+
 Installation
 ------------
 To install the latest release, type::
@@ -57,6 +62,11 @@ Full documentation is available at http://pymalcolm.readthedocs.org
    :target: https://landscape.io/github/dls-controls/pymalcolm/master
    :alt: Code Health
 
-.. _CHANGELOG: https://github.com/dls-controls/pymalcolm/blob/master/CHANGELOG.rst
-.. _CONTRIBUTING: https://github.com/dls-controls/pymalcolm/blob/master/CONTRIBUTING.rst
-.. _LICENSE: https://github.com/dls-controls/pymalcolm/blob/master/LICENSE
+.. _CHANGELOG:
+    https://github.com/dls-controls/pymalcolm/blob/master/CHANGELOG.rst
+
+.. _CONTRIBUTING:
+    https://github.com/dls-controls/pymalcolm/blob/master/CONTRIBUTING.rst
+
+.. _LICENSE:
+    https://github.com/dls-controls/pymalcolm/blob/master/LICENSE
