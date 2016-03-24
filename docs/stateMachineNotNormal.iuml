@@ -1,0 +1,15 @@
+NormalStates --> Aborting : Abort
+NormalStates --> Fault : Error
+NormalStates --> Disabled : Disable
+
+Aborting -left-> Aborted
+Aborting -right-> Fault : Error
+
+state Aborted <<Abort>>
+Aborted : End state
+
+state Fault <<Fault>>
+Fault : End state
+
+state Disabled <<Disabled>>
+Disabled : End state

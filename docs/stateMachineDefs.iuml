@@ -8,3 +8,5 @@ skinparam state {
   ArrowColor Black
   FontSize 18
 }
+
+skinparam backgroundColor transparent

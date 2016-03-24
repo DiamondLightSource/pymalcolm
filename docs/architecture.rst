@@ -125,7 +125,7 @@ the structure::
         display_t   display    :opt // Display limits, units, etc, for numbers
         control_t   control    :opt // For writeable numbers
         string[]    oneOf      :opt // Allowed values if type is "enum"
-        string      label           // Short label if different to name
+        string      label      :opt // Short label if different to name
 
     TableMeta :=
         string      description     // Description of attribute
@@ -190,14 +190,15 @@ of a Block.
             state BlockStates {
                 state ___ <<Rest>>
                 ___ : Rest state
+
                 Resetting -left-> ___
             }
-
             BlockStates : Has one or more Rest states that Resetting can
             BlockStates : transition to. May contain block specific states
-
             BlockStates -down-> Aborting : Abort
+
             Aborting -right-> Aborted
+
             state Aborted <<Abort>>
             Aborted : Rest state
             Aborted -up-> Resetting : Reset
@@ -213,6 +214,7 @@ of a Block.
     state Disabled <<Disabled>>
     Disabled : Rest state
     Disabled --> Resetting : Reset
+
     [*] -right-> Disabled
 
 Default State Machine
@@ -244,18 +246,25 @@ data is being flushed to disk.
     !include docs/stateMachineDefs.iuml
 
     Resetting --> Idle
+
     state Idle <<Rest>>
     Idle : Rest state
     Idle -right-> Configuring : Configure
+
     Configuring -right-> Ready
+
     state Ready <<Rest>>
+    Ready : Rest state
     Ready -right-> PreRun : Run
+    Ready --> Resetting : Reset
+
     PreRun -right-> Running
+
     Running -right-> PostRun
+
     PostRun -left-> Ready
     PostRun -left-> Idle
-    Ready --> Resetting : Reset
-    Ready : Rest state
+
 
 Pausable Device State Machine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -268,71 +277,348 @@ by the user, and rewound once it has become paused.
     !include docs/stateMachineDefs.iuml
 
     Resetting --> Idle
+
     state Idle <<Rest>>
     Idle : Rest state
     Idle -right-> Configuring : Configure
+
     Configuring -right-> Ready
+
     state Ready <<Rest>>
+    Ready : Rest state
     Ready -right-> PreRun : Run
+    Ready --> Resetting : Reset
+    Ready -down-> Rewinding : Rewind
+
     PreRun -right-> Running
+    PreRun -down-> Pausing : Pause
+
     Running -right-> PostRun
+    Running -down-> Pausing : Pause
+
     PostRun -left-> Ready
     PostRun -left-> Idle
-    Ready --> Resetting : Reset
-    Ready : Rest state
 
-    Running -down-> Pausing : Pause
-    PreRun -down-> Pausing : Pause
     Pausing -right-> Paused
+
     Paused -left-> Pausing : Rewind
-    Ready -down-> Rewinding : Rewind
+    Paused -right-> Resuming : Resume
+
+    Resuming -up-> Running
+
     Rewinding -up-> Ready
-    Paused -up-> Running : Resume
 
 Runnable and Pausable Device Methods
 ------------------------------------
 
-These are listed below, there is some overlap with the general purpose states
+There are some standard methods that Runnable and Pausable Devices have:
+
+- validate(params) - Check for a consistent set of paraemeters, filling in any
+  defaults, and adding time and timeout estimates
+- configure(params) - Configure a device for a scan so it is ready to run
+- run() - Run the configured scan
+- pause() - Gracefully stop the scan at the next convenient place
+- retrace(steps) - Move back at least this number of scan steps
+- resume() - Resume a paused scan
+- abort() - Stop any activity
+- disable() - Deactivate device
+- reset() - Reset the device back into Idle state after error, abort or disable
+
+Apart from validate(), all other methods take the block through some state
+transitions. These are listed below for each method.
+
+validate(params)
+^^^^^^^^^^^^^^^^
+
+This method is meant to be called by GDA to check whether a given set of
+parameters is valid or not. Some parameters are required and some have defaults,
+and this information can be introspected as detailed later on. Each set of
+parameters is checked for validity in isolation, no device state is taken into
+account, so if a number of scans are queued by the user, GDA could check each
+for validity by running this function on each set of params in turn.
 
 configure(params)
 ^^^^^^^^^^^^^^^^^
 
+This method will call validate(params), then use these params to configure the
+device ready for a run. This action will try to prepare the device as much as
+possible so that run() is quick to start. This means that it may move motors to
+put the device in the correct starting condition. It is allowed from the Idle
+state, and will block until the device is in a rest state. Normally it will
+return in Ready state. If the user aborts then it will return in Aborted state.
+If something goes wrong it will return in Fault state. If the user disables
+then it will return in Disabled state. The state diagram subset below shows the
+valid set of transitions:
+
+.. uml::
+    !include docs/stateMachineDefs.iuml
+
+    state NormalStates {
+        state Idle <<Rest>>
+        Idle : Start state
+        Idle -right-> Configuring : Configure
+
+        Configuring -right-> Ready
+
+        state Ready <<Rest>>
+        Ready : End state
+    }
+    NormalStates --> Aborting : Abort
+    NormalStates --> Fault : Error
+    NormalStates --> Disabled : Disable
+
+    Aborting -left-> Aborted
+    Aborting -right-> Fault : Error
+
+    state Aborted <<Abort>>
+    Aborted : End state
+
+    state Fault <<Fault>>
+    Fault : End state
+
+    state Disabled <<Disabled>>
+    Disabled : End state
+
 run()
 ^^^^^
+
+This method will run a device that has been configured for a scan. It is allowed
+from the Ready or Paused states, and will block until the device is in a rest
+state. Normally it will return in Idle state. If the device allows many runs
+from a single configure, then it will return in Ready state. If the user aborts
+then it will return in Aborted state. If the user pauses then it will return in
+Paused state. If something goes wrong it will return in Fault state. If the
+user disables then it will return in Disabled state. The state diagram subset
+below shows the valid set of transitions:
+
+.. uml::
+    !include docs/stateMachineDefs.iuml
+
+    state NormalStates {
+        state Ready <<Rest>>
+        Ready : Start state
+        Ready : End state
+        Ready -right-> PreRun : Run
+
+        PreRun -right-> Running
+        PreRun -down-> Pausing : Pause
+
+        Running -right-> PostRun
+        Running -down-> Pausing : Pause
+
+        PostRun -left-> Ready
+        PostRun -left-> Idle
+
+        Pausing -right-> Paused
+
+        Paused -left-> Pausing : Rewind
+        Paused -right-> Resuming : Resume
+
+        Resuming -up-> Running
+
+        state Idle <<Rest>>
+        Idle : End state
+    }
+
+    !include docs/stateMachineNotNormal.iuml
 
 pause()
 ^^^^^^^
 
+If this method is available then the device is a PausableDevice. This method
+will pause a run so that it can be resumed later. It is allowed from the Running
+state and will block until the device is Aborted, Fault or Paused. Normally it
+will return in Paused state. If the user aborts then it will return in Aborted
+state. If something goes wrong it will return in Fault state. If the user
+disables then it will return in Disabled state. The state diagram subset below
+shows the valid set of transitions:
+
+.. uml::
+    !include docs/stateMachineDefs.iuml
+
+    state NormalStates {
+        PreRun -down-> Pausing : Pause
+        PreRun : Start state
+
+        Running -down-> Pausing : Pause
+        Running : Start state
+
+        Pausing -right-> Paused
+
+        Paused : End state
+    }
+
+    !include docs/stateMachineNotNormal.iuml
+
 retrace(steps)
 ^^^^^^^^^^^^^^
+
+This method will retrace a number of steps in the scan so that when it is
+resumed it will overwrite invalid data that may have been acquired before
+pause(). It will retrace by at least as many steps as demanded. It is allowed
+from the Paused state and will block until the device is Paused again. Normally
+it will return in Paused state. If the user aborts then it will return in
+Aborted state. If something goes wrong it will return in Fault state. If the
+user disables then it will return in a Disabled state. The state diagram subset
+below shows the valid set of transitions:
+
+.. uml::
+    !include docs/stateMachineDefs.iuml
+
+    state NormalStates {
+        Paused -left-> Pausing : Rewind
+        Paused : Start state
+        Paused : End state
+
+        Pausing -right-> Paused
+
+        Ready -down-> Rewinding : Rewind
+        Ready : Start state
+        Ready : End state
+
+        Rewinding -up-> Ready
+    }
+
+    !include docs/stateMachineNotNormal.iuml
+
 
 resume()
 ^^^^^^^^
 
+This method will resume a paused scan. It is allowed from the Paused state and
+will block until the device is Running or in Fault state. Normally it will
+return in Running state. If something goes wrong it will return in Fault state.
+If the user disables then it will return in a Disabled state. The state diagram
+subset below shows the valid set of transitions:
+
+.. uml::
+    !include docs/stateMachineDefs.iuml
+
+    state NormalStates {
+        Paused -right-> Resuming : Resume
+        Paused : Start state
+
+        Resuming -up-> Running
+        Running : End state
+    }
+
+    !include docs/stateMachineNotNormal.iuml
+
+
 abort()
 ^^^^^^^
+
+This method will abort a configure or abandon the scan whether it is running or
+paused. It is allowed from any normal block state, and will block until the
+device is in a rest state. Normally it will return in Aborted state. If
+something goes wrong it will return in Fault state.  If the used disables then
+it will return in a Disabled state. The state diagram subset below shows the
+valid set of transitions:
+
+.. uml::
+    !include docs/stateMachineDefs.iuml
+
+    NormalStates : Start state
+    NormalStates :
+    NormalStates : Abort is allowed from
+    NormalStates : any normal block state
+    NormalStates --> Aborting : Abort
+
+    Aborting -left-> Aborted
+    Aborting -right-> Disabled : Disable
+    Aborting -right-> Fault : Error
+
+    state Aborted <<Abort>>
+    Aborted : End state
+
+    state Fault <<Fault>>
+    Fault : End state
+
+    state Disabled <<Disabled>>
+    Disabled : End state
 
 disable()
 ^^^^^^^^^
 
+This method will stop the block responding to external input until reset() is
+called. It is allowed from any state, and will make the device as Disabled and
+return immediately. It will always return in Disabled state. The state diagram
+subset below shows the valid set of transitions:
+
+.. uml::
+    !include docs/stateMachineDefs.iuml
+
+    NormalStates : Start state
+    NormalStates :
+    NormalStates : Disable is allowed from
+    NormalStates : any normal block state
+    NormalStates --> Disabled : Disable
+
+    state Disabled <<Disabled>>
+    Disabled : End state
+
+
 reset()
 ^^^^^^^
+
+This method will reset the device into Idle state. It is allowed from Aborted,
+Disabled, Ready or Fault states, and will block until the device is in a rest
+state. Normally it will return in Idle state. If something goes wrong it will
+return in Fault state. The state diagram subset below shows the valid set of
+transitions:
+
+.. uml::
+    !include docs/stateMachineDefs.iuml
+
+    state Ready <<Rest>>
+    Ready -right-> Resetting : Reset
+    Ready : Start state
+
+    state Aborted <<Abort>>
+    Aborted : Start state
+    Aborted : End state
+    Aborted --> Resetting : Reset
+
+    state Fault <<Fault>>
+    Fault : Start state
+    Fault : End state
+    Fault --> Resetting : Reset
+
+    state Disabled <<Disabled>>
+    Disabled : Start state
+    Disabled : End state
+    Disabled --> Resetting : Reset
+
+    Resetting -down-> Idle
+    Resetting -up-> Aborting : Abort
+    Resetting -up-> Disabled : Disable
+    Resetting -up-> Fault : Fault
+
+    Aborting -left-> Aborted
+    Aborting -right-> Fault : Error
+
+    state Idle <<Rest>>
+    Idle : End state
+
 
 Messages and types
 ------------------
 
 There are a number of client side verbs:
-- Get
-- Put
-- Post
-- Subscribe
-- Unsubscribe
+
+- Get: Get the structure of a Block or part of one
+- Put: Put a value to an Attribute
+- Post: Call a method of a Block
+- Subscribe: Subscribe to changes in a Block or part of one
+- Unsubscribe: Cancel one Subscribe
 
 And a number of server side verbs:
-- Error
-- Value
-- Changes
-- Return
+
+- Error: Return an error to any one of the client side requests
+- Value: Return a complete value to a subscription
+- Changes: Return incremental changes to a subscription
+- Return: Provide a return value to a Post, Get, Put, Unsubscribe, and indicate
+  the cancellation of a Subscribe
 
 
 
