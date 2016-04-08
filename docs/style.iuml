@@ -12,11 +12,11 @@ skinparam component {
 }
 
 skinparam state {
-  BackgroundColor #99CFCF
-  BackgroundColor<<Rest>> #AAE7AA
+  BackgroundColor #BEE1E1
+  BackgroundColor<<Rest>> #BBE7BB
   BackgroundColor<<Abort>> #FFBE89
   BackgroundColor<<Fault>> #F03232
-  BackgroundColor<<Disabled>> #AAAAAA
+  BackgroundColor<<InactiVe>> #AAAAAA
   BorderColor Gray
   ArrowColor Black
   FontSize 14

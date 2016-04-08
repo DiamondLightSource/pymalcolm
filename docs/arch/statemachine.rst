@@ -20,15 +20,15 @@ of a Block.
 .. uml::
     !include docs/style.iuml
 
-    state canDisable {
-        state canError {
+    state CanDeactiVate {
+        state CanError {
             state BlockStates {
                 state ___ <<Rest>>
                 ___ : Rest state
 
-                Resetting -left-> ___
+                ActiVating -left-> ___
             }
-            BlockStates : Has one or more Rest states that Resetting can
+            BlockStates : Has one or more Rest states that ActiVating can
             BlockStates : transition to. May contain block specific states
             BlockStates -down-> Aborting : Abort
 
@@ -36,21 +36,21 @@ of a Block.
 
             state Aborted <<Abort>>
             Aborted : Rest state
-            Aborted -up-> Resetting : Reset
+            Aborted -up-> ActiVating : ActiVate
         }
-        canError -right-> Fault : Error
+        CanError -right-> Fault : Error
 
         state Fault <<Fault>>
         Fault : Rest state
-        Fault --> Resetting : Reset
+        Fault --> ActiVating : ActiVate
     }
-    canDisable --> Disabled : Disable
+    CanDeactiVate --> InactiVe : DeactiVate
 
-    state Disabled <<Disabled>>
-    Disabled : Rest state
-    Disabled --> Resetting : Reset
+    state InactiVe <<InactiVe>>
+    InactiVe : Rest state
+    InactiVe --> ActiVating : ActiVate
 
-    [*] -right-> Disabled
+    [*] -right-> InactiVe
 
 Default State Machine
 ---------------------
@@ -60,27 +60,30 @@ If no state machine is specified, the following will be used:
 .. uml::
     !include docs/style.iuml
 
-    Resetting -left-> Ready
+    ActiVating -left-> Ready
 
     state Ready <<Rest>>
     Ready : Rest state
+
+.. _runnable-device-state-machine:
 
 Runnable Device State Machine
 -----------------------------
 
-The simplest mapping devices have a configure() method that allows the batch
-setting of a number of parameters, and can safely be called on a number of
-devices concurrently. They then have a run() method that kicks off a scan. The
-PreRun and PostRun states are guaranteed to be transitioned through, and denote
-the times when the run has started (or finished), but the device is not
-currently active. For example, when a detector has been started but is waiting
-for a hardware signal, or when the detector has finished all its exposures and
-data is being flushed to disk.
+Mapping devices have a configure() method that allows the batch setting of a
+number of parameters, and can safely be called on a number of devices
+concurrently. They then have a run() method that kicks off a scan. The PreRun
+and PostRun states are guaranteed to be transitioned through, and denote the
+times when the run has started (or finished), but the device is not currently
+active. For example, when a detector has been started but is waiting for a
+hardware signal, or when the detector has finished all its exposures and data is
+being flushed to disk. They also have some pausing states. These allow a Run to
+be paused by the user, and rewound once it has become paused.
 
 .. uml::
     !include docs/style.iuml
 
-    Resetting --> Idle
+    ActiVating --> Idle
 
     state Idle <<Rest>>
     Idle : Rest state
@@ -91,38 +94,7 @@ data is being flushed to disk.
     state Ready <<Rest>>
     Ready : Rest state
     Ready -right-> PreRun : Run
-    Ready --> Resetting : Reset
-
-    PreRun -right-> Running
-
-    Running -right-> PostRun
-
-    PostRun -left-> Ready
-    PostRun -left-> Idle
-
-
-Pausable Device State Machine
------------------------------
-
-More sophisticated mapping devices have the same state machine as
-RunnableDevice, but include some pausing states. These allow a Run to be paused
-by the user, and rewound once it has become paused.
-
-.. uml::
-    !include docs/style.iuml
-
-    Resetting --> Idle
-
-    state Idle <<Rest>>
-    Idle : Rest state
-    Idle -right-> Configuring : Configure
-
-    Configuring -right-> Ready
-
-    state Ready <<Rest>>
-    Ready : Rest state
-    Ready -right-> PreRun : Run
-    Ready --> Resetting : Reset
+    Ready --> ActiVating : ActiVate
     Ready -down-> Rewinding : Rewind
 
     PreRun -right-> Running
@@ -139,10 +111,7 @@ by the user, and rewound once it has become paused.
     Paused -left-> Rewinding : Rewind
     Paused -up-> PreRun : Resume
 
-Runnable and Pausable Device Methods
-------------------------------------
-
-There are some standard methods that Runnable and Pausable Devices have:
+There are some standard methods that Runnable Devices have:
 
 - validate(params) - Check for a consistent set of paraemeters, filling in any
   defaults, and adding time and timeout estimates
@@ -152,8 +121,9 @@ There are some standard methods that Runnable and Pausable Devices have:
 - retrace(steps) - Move back at least this number of scan steps
 - resume() - Resume a paused scan
 - abort() - Stop any activity
-- disable() - Deactivate device
-- reset() - Reset the device back into Idle state after error, abort or disable
+- deactivate() - Deactivate device
+- activate() - Reactivate the device, moving it back into Idle state after
+  error, abort or deactivate
 
 Apart from validate(), all other methods take the block through some state
 transitions. These are listed below for each method.
@@ -177,8 +147,8 @@ possible so that run() is quick to start. This means that it may move motors to
 put the device in the correct starting condition. It is allowed from the Idle
 state, and will block until the device is in a rest state. Normally it will
 return in Ready state. If the user aborts then it will return in Aborted state.
-If something goes wrong it will return in Fault state. If the user disables
-then it will return in Disabled state. The state diagram subset below shows the
+If something goes wrong it will return in Fault state. If the user deactivates
+then it will return in Inactive state. The state diagram subset below shows the
 valid set of transitions:
 
 .. uml::
@@ -196,7 +166,7 @@ valid set of transitions:
     }
     NormalStates --> Aborting : Abort
     NormalStates --> Fault : Error
-    NormalStates --> Disabled : Disable
+    NormalStates --> InactiVe : DeactiVate
 
     Aborting -left-> Aborted
     Aborting -right-> Fault : Error
@@ -207,8 +177,8 @@ valid set of transitions:
     state Fault <<Fault>>
     Fault : End state
 
-    state Disabled <<Disabled>>
-    Disabled : End state
+    state InactiVe <<InactiVe>>
+    InactiVe : End state
 
 run()
 ^^^^^
@@ -219,7 +189,7 @@ state. Normally it will return in Idle state. If the device allows many runs
 from a single configure, then it will return in Ready state. If the user aborts
 then it will return in Aborted state. If the user pauses then it will return in
 Paused state. If something goes wrong it will return in Fault state. If the
-user disables then it will return in Disabled state. The state diagram subset
+user deactivates then it will return in Inactive state. The state diagram subset
 below shows the valid set of transitions:
 
 .. uml::
@@ -255,13 +225,12 @@ below shows the valid set of transitions:
 pause()
 ^^^^^^^
 
-If this method is available then the device is a PausableDevice. This method
-will pause a run so that it can be resumed later. It is allowed from the Running
-state and will block until the device is Aborted, Fault or Paused. Normally it
-will return in Paused state. If the user aborts then it will return in Aborted
-state. If something goes wrong it will return in Fault state. If the user
-disables then it will return in Disabled state. The state diagram subset below
-shows the valid set of transitions:
+This method will pause a run so that it can be resumed later. It is allowed from
+the Running state and will block until the device is Aborted, Fault or Paused.
+Normally it will return in Paused state. If the user aborts then it will return
+in Aborted state. If something goes wrong it will return in Fault state. If the
+user deactivates then it will return in Inactive state. The state diagram subset
+below shows the valid set of transitions:
 
 .. uml::
     !include docs/style.iuml
@@ -289,8 +258,8 @@ pause(). It will retrace by at least as many steps as demanded. It is allowed
 from the Paused state and will block until the device is Paused again. Normally
 it will return in Paused state. If the user aborts then it will return in
 Aborted state. If something goes wrong it will return in Fault state. If the
-user disables then it will return in a Disabled state. The state diagram subset
-below shows the valid set of transitions:
+user deactivates then it will return in a Inactive state. The state diagram
+subset below shows the valid set of transitions:
 
 .. uml::
     !include docs/style.iuml
@@ -333,9 +302,9 @@ abort()
 This method will abort a configure or abandon the scan whether it is running or
 paused. It is allowed from any normal block state, and will block until the
 device is in a rest state. Normally it will return in Aborted state. If
-something goes wrong it will return in Fault state.  If the used disables then
-it will return in a Disabled state. The state diagram subset below shows the
-valid set of transitions:
+something goes wrong it will return in Fault state.  If the used deactivates
+then it will return in a Inactive state. The state diagram subset below shows
+the valid set of transitions:
 
 .. uml::
     !include docs/style.iuml
@@ -347,7 +316,7 @@ valid set of transitions:
     NormalStates --> Aborting : Abort
 
     Aborting -left-> Aborted
-    Aborting -right-> Disabled : Disable
+    Aborting -right-> InactiVe : DeactiVate
     Aborting -right-> Fault : Error
 
     state Aborted <<Abort>>
@@ -356,15 +325,15 @@ valid set of transitions:
     state Fault <<Fault>>
     Fault : End state
 
-    state Disabled <<Disabled>>
-    Disabled : End state
+    state InactiVe <<InactiVe>>
+    InactiVe : End state
 
-disable()
-^^^^^^^^^
+deactivate()
+^^^^^^^^^^^^
 
-This method will stop the block responding to external input until reset() is
-called. It is allowed from any state, and will mark the device as Disabled and
-return immediately. It will always return in Disabled state. The state diagram
+This method will stop the block responding to external input until activate() is
+called. It is allowed from any state, and will mark the device as Inactive and
+return immediately. It will always return in Inactive state. The state diagram
 subset below shows the valid set of transitions:
 
 .. uml::
@@ -372,49 +341,49 @@ subset below shows the valid set of transitions:
 
     NormalStates : Start state
     NormalStates :
-    NormalStates : Disable is allowed from
+    NormalStates : DeactiVate is allowed from
     NormalStates : any normal block state
-    NormalStates --> Disabled : Disable
+    NormalStates --> InactiVe : DeactiVate
 
-    state Disabled <<Disabled>>
-    Disabled : End state
+    state InactiVe <<InactiVe>>
+    InactiVe : End state
 
 
-reset()
-^^^^^^^
+activate()
+^^^^^^^^^^
 
-This method will reset the device into Idle state. It is allowed from Aborted,
-Disabled, Ready or Fault states, and will block until the device is in a rest
-state. Normally it will return in Idle state. If something goes wrong it will
-return in Fault state. The state diagram subset below shows the valid set of
-transitions:
+This method will activate the device, putting it into Idle state. It is allowed
+from Aborted, Inactive, Ready or Fault states, and will block until the device
+is in a rest state. Normally it will return in Idle state. If something goes
+wrong it will return in Fault state. The state diagram subset below shows the
+valid set of transitions:
 
 .. uml::
     !include docs/style.iuml
 
     state Ready <<Rest>>
-    Ready -right-> Resetting : Reset
+    Ready -right-> ActiVating : ActiVate
     Ready : Start state
 
     state Aborted <<Abort>>
     Aborted : Start state
     Aborted : End state
-    Aborted --> Resetting : Reset
+    Aborted --> ActiVating : ActiVate
 
     state Fault <<Fault>>
     Fault : Start state
     Fault : End state
-    Fault --> Resetting : Reset
+    Fault --> ActiVating : ActiVate
 
-    state Disabled <<Disabled>>
-    Disabled : Start state
-    Disabled : End state
-    Disabled --> Resetting : Reset
+    state InactiVe <<InactiVe>>
+    InactiVe : Start state
+    InactiVe : End state
+    InactiVe --> ActiVating : ActiVate
 
-    Resetting -down-> Idle
-    Resetting -up-> Aborting : Abort
-    Resetting -up-> Disabled : Disable
-    Resetting -up-> Fault : Fault
+    ActiVating -down-> Idle
+    ActiVating -up-> Aborting : Abort
+    ActiVating -up-> InactiVe : DeactiVate
+    ActiVating -up-> Fault : Fault
 
     Aborting -left-> Aborted
     Aborting -right-> Fault : Error
