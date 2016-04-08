@@ -111,6 +111,12 @@ if not which("plantuml"):
     os.environ["JAVA_HOME"] = here_jre
     plantuml = '%s/bin/java -Dplantuml.include.path=%s/.. -jar %s' % (here_jre, here, here_plantuml)
     print "done prep plantuml"
+    # get the right font
+    fontdir = os.expanduser("~/.fonts")
+    url = "https://github.com/shreyankg/xkcd-desktop/raw/master/Humor-Sans.ttf"
+    urllib.urlretrieve(url, os.path.join(fontdir, "Humor-Sans.ttf"))
+    # install it
+    subprocess.call(["fc-cache", "-vf", fontdir])
 
 autodoc_member_order = 'bysource'
 
