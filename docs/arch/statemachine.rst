@@ -18,7 +18,7 @@ is a placeholder for the states that will be different for each implementation
 of a Block.
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     state canDisable {
         state canError {
@@ -58,7 +58,7 @@ Default State Machine
 If no state machine is specified, the following will be used:
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     Resetting -left-> Ready
 
@@ -78,7 +78,7 @@ for a hardware signal, or when the detector has finished all its exposures and
 data is being flushed to disk.
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     Resetting --> Idle
 
@@ -109,7 +109,7 @@ RunnableDevice, but include some pausing states. These allow a Run to be paused
 by the user, and rewound once it has become paused.
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     Resetting --> Idle
 
@@ -182,7 +182,7 @@ then it will return in Disabled state. The state diagram subset below shows the
 valid set of transitions:
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     state NormalStates {
         state Idle <<Rest>>
@@ -223,7 +223,7 @@ user disables then it will return in Disabled state. The state diagram subset
 below shows the valid set of transitions:
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     state NormalStates {
         state Idle <<Rest>>
@@ -264,7 +264,7 @@ disables then it will return in Disabled state. The state diagram subset below
 shows the valid set of transitions:
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     state NormalStates {
         PreRun -down-> Rewinding : Pause
@@ -293,7 +293,7 @@ user disables then it will return in a Disabled state. The state diagram subset
 below shows the valid set of transitions:
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     state NormalStates {
         Paused -left-> Rewinding : Rewind
@@ -318,7 +318,7 @@ will transition the device to PreRun state and return immediately. The state
 diagram subset below shows the valid set of transitions:
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     state Paused
     Paused -up-> PreRun : Resume
@@ -338,7 +338,7 @@ it will return in a Disabled state. The state diagram subset below shows the
 valid set of transitions:
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     NormalStates : Start state
     NormalStates :
@@ -368,7 +368,7 @@ return immediately. It will always return in Disabled state. The state diagram
 subset below shows the valid set of transitions:
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     NormalStates : Start state
     NormalStates :
@@ -390,7 +390,7 @@ return in Fault state. The state diagram subset below shows the valid set of
 transitions:
 
 .. uml::
-    !include docs/arch/stateMachineDefs.iuml
+    !include docs/style.iuml
 
     state Ready <<Rest>>
     Ready -right-> Resetting : Reset

@@ -2,6 +2,15 @@ skinparam handwritten true
 
 skinparam defaultFontName Humor Sans
 
+skinparam frame {
+  FontSize 14
+  FontStyle plain
+}
+
+skinparam component {
+  FontSize 12
+}
+
 skinparam state {
   BackgroundColor #99CFCF
   BackgroundColor<<Rest>> #AAE7AA
@@ -11,8 +20,6 @@ skinparam state {
   BorderColor Gray
   ArrowColor Black
   FontSize 14
-  FontStyle bold
-  FontName Humor Sans
   ArrowFontSize 12
   AttributeFontSize 12
 }

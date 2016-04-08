@@ -32,6 +32,7 @@ For example, in the following diagram, Process1 is hosting two Blocks, and
 Process2 has a client of Block 2 as a local object.
 
 .. uml::
+    !include docs/style.iuml
 
     frame Process1 {
         frame Block1 {

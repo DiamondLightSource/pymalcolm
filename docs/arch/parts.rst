@@ -7,6 +7,7 @@ Heirarchy of Blocks
 There are 3 levels:
 
 .. uml::
+    !include docs/style.iuml
 
     frame "Supervisory" {
         [GDA CPU scan]
