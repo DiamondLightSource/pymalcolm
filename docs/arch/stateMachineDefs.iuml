@@ -1,3 +1,5 @@
+skinparam handwritten true
+
 skinparam state {
   BackgroundColor #99CFCF
   BackgroundColor<<Rest>> #AAE7AA
@@ -6,7 +8,10 @@ skinparam state {
   BackgroundColor<<Disabled>> #AAAAAA
   BorderColor Gray
   ArrowColor Black
-  FontSize 18
+  FontSize 14
+  FontStyle bold
+  ArrowFontSize 12
+  AttributeFontSize 12
 }
 
 skinparam backgroundColor transparent
