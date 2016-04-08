@@ -113,6 +113,10 @@ if not which("plantuml"):
     print "done prep plantuml"
     # get the right font
     fontdir = os.path.expanduser("~/.fonts")
+    try:
+        os.mkdir(fontdir)
+    except OSError:
+        pass
     url = "https://github.com/shreyankg/xkcd-desktop/raw/master/Humor-Sans.ttf"
     urllib.urlretrieve(url, os.path.join(fontdir, "Humor-Sans.ttf"))
     # install it
