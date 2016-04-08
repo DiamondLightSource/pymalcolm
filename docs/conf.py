@@ -112,7 +112,7 @@ if not which("plantuml"):
     plantuml = '%s/bin/java -Dplantuml.include.path=%s/.. -jar %s' % (here_jre, here, here_plantuml)
     print "done prep plantuml"
     # get the right font
-    fontdir = os.expanduser("~/.fonts")
+    fontdir = os.path.expanduser("~/.fonts")
     url = "https://github.com/shreyankg/xkcd-desktop/raw/master/Humor-Sans.ttf"
     urllib.urlretrieve(url, os.path.join(fontdir, "Humor-Sans.ttf"))
     # install it
