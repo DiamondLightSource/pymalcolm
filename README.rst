@@ -8,6 +8,11 @@ of control system components generally involved in continuous scans. This
 module contains a python implementation allowing the creation of Malcolm
 servers and clients.
 
+Documentation
+-------------
+
+Full documentation is available at http://pymalcolm.readthedocs.org
+
 Source Code
 -----------
 
@@ -37,10 +42,6 @@ License
 -------
 APACHE License. (see `LICENSE`_)
 
-Documentation
--------------
-
-Full documentation is available at http://pymalcolm.readthedocs.org
 
 .. |build-status| image:: https://travis-ci.org/dls-controls/pymalcolm.svg?style=flat
     :target: https://travis-ci.org/dls-controls/pymalcolm
