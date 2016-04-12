@@ -23,7 +23,6 @@ The main documentation for the site is organised into a few sections:
     arch/statemachine
     arch/messages
     arch/parts
-    arch/threading
     arch/generators
 
 .. _user-docs:
