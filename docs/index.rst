@@ -21,9 +21,9 @@ The main documentation for the site is organised into a few sections:
     arch/intro
     arch/structure
     arch/statemachine
-    arch/messages
-    arch/parts
+    arch/hierarchy
     arch/generators
+    arch/messages
 
 .. _user-docs:
 

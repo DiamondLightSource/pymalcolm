@@ -16,7 +16,7 @@ Full documentation is available at http://pymalcolm.readthedocs.org
 Source Code
 -----------
 
-Available from https://github.com/dls-controls/malcolm
+Available from https://github.com/dls-controls/pymalcolm
 
 Installation
 ------------
