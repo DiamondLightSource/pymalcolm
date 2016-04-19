@@ -157,7 +157,9 @@ all its related Methods.
 
 ***Insert Manager->Editor->Palette->BlockTable diagram here***
 
-The Palette Block has a blocks Table Attribute:
+The Manager Block also contains an Editor Block which is responsible for the
+load/save interface, as well as the child block layout, which is stored as an
+Attribute:
 
     ======= =================== ======= ======= ========
     Blocks
@@ -173,7 +175,7 @@ This is used by the Zebra2 Web Gui to show a canvas with a number of Blocks
 wired together, and the positions they should be drawn at. Each child Block has
 a Part associated with it that will be loaded if the Block is marked as active.
 
-The Editor Block has a number of Table attributes that categorizes each
+The Editor Block also has a number of Table attributes that categorizes each
 writeable attribute of each child Block into one of 3 categories:
 
 - **Mirror**
