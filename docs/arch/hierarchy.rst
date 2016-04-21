@@ -68,10 +68,11 @@ Working from the bottom up:
 - The Co-ordination layer also contains `Manager`_ blocks, but these contain
   child `Manager`_ blocks from the Device layer and `Co-ordination`_ blocks that
   control a number of blocks from the Device layer to perform scans. There will
-  be relatively few `Manager`_ blocks in this layer, one per independant
-  experimental end-station. There will be many different settings for each, one
-  for each experiment type, and maybe even one per experiment. GDA will talk to
-  blocks in this layer.
+  be relatively few `Manager`_ blocks in this layer, one for each coherent set
+  of equipment to be scanned (i.e. one for each independant experimental
+  end-station). There will be many different settings for each, one for each
+  experiment type, and maybe even one per experiment. GDA will talk to blocks in
+  this layer.
 
 Most of the time, all of these blocks will be hosted in the same process on the
 same machine, but there is nothing to stop blocks being distributed among
@@ -110,7 +111,7 @@ This is a detector driver block::
         name: exposure
         description: Exposure time for each frame
         pv: {prefix}:Exposure
-        rbv_suff: _RBV
+        rbv_suffix: _RBV
         widget: textinput
         group: configuration
 
@@ -152,19 +153,49 @@ allows itself to be introspected) and others manage some externally created
 blocks (like the BeamlineManager). They expose an interface according to their
 Controller, but the user can modify their behaviour at runtime by loading and
 saving settings which will modify the loaded Parts, and hence the top level
-interface of the Block. The have the :ref:`runnable-device-state-machine` with
+interface of the Block. They have the :ref:`runnable-device-state-machine` with
 all its related Methods.
 
-***Insert Manager->Editor->Palette->BlockTable diagram here***
+.. uml::
+    class Manager {
+        enum design
+        Editor editor
+        Part[] parts
+        configure()
+        run()
+    }
+    class Editor {
+        string design
+        bool modified
+        PalletteTable pallette
+        ExportTable exports
+        FollowerTable followers
+        load(enum design)
+        save(String design)
+        set_visible(string block_name, bool visible)
+        set_position(string block_name, float xcoord, float ycoord)
+    }
+    class PalletteTable {
+        string[] name
+        Block[] block
+        int[] xcoord
+        int[] ycoord
+        bool[] enabled
+    }
+    Manager *- Editor
+    Editor *- PalletteTable
+    '* Needed otherwise vim thinks rest of doc is bold...
+    PalletteTable o- "0.." Block
+
 
 The Manager Block also contains an Editor Block which is responsible for the
-load/save interface, as well as the child block layout, which is stored as an
-Attribute:
+load/save interface, as well as the pallette of child blocks and their layout,
+which is stored as an Attribute:
 
     ======= =================== ======= ======= ========
-    Blocks
+    PalletteTable
     ----------------------------------------------------
-    Name    Fullname            XCoord  YCoord  Active
+    Name    Fullname            XCoord  YCoord  Visible
     ======= =================== ======= ======= ========
     PCOMP1  BL18I:Z1:PCOMP1     12      15      Yes
     PCOMP2  BL18I:Z1:PCOMP2     0       0       No
@@ -178,10 +209,10 @@ a Part associated with it that will be loaded if the Block is marked as active.
 The Editor Block also has a number of Table attributes that categorizes each
 writeable attribute of each child Block into one of 3 categories:
 
-- **Mirror**
+- **Export**
 
     ======= =============== ====================
-    Mirrors
+    ExportTable
     --------------------------------------------
     Name    Source          Description
     ======= =============== ====================
@@ -189,36 +220,36 @@ writeable attribute of each child Block into one of 3 categories:
     Start   PCOMP1.START
     ======= =============== ====================
 
-  Each line of the table will create a MirrorPart for the specified child
-  Attribute. If the child Attribute is changed, the mirror changes, and if the
+  Each line of the table will create an ExportPart for the specified child
+  Attribute. If the child Attribute is changed, the export changes, and if the
   child Attribute is writeable then writes to the Manager Attribute will
   propagate to the child Attribute. If the child Attribute is writeable it will
   also add it to the configure() Method arguments.
 
-- **Slave**
+- **Follower**
 
     =============== ======
-    Slaves
+    FollowerTable
     ----------------------
     Name            Source
     =============== ======
     PCOMP2.START    Start
     =============== ======
 
-  This slaves a child Attribute to an existing Manager Attribute. If the
-  Manager Attribute is changed then the child Attribute will be set to the
+  This makes a child Attribute a follower of an existing Manager Attribute. If
+  the Manager Attribute is changed then the child Attribute will be set to the
   same value. If the child Attribute changes then the Manager device goes into
   Fault state.
 
 - **Fixed**
 
   On save(), a FixedPart will be generated for every writeable attribute
-  that is not mentioned in the mirrors or slaves table. When the Manager is
-  activated, the value of the child Attribute is set to the fixed value. If the
+  that is not mentioned in the exports or followers table. When the Manager is
+  reset, the value of the child Attribute is set to the fixed value. If the
   child Attribute changes to another value, the Manager goes into Fault state.
 
 When any of these three tables are changed, the top level Manager Block is
-Deactivated and the Parts reloaded.
+Disabled and the Parts reloaded.
 
 The Editor Block also has a model Attribute that will set the metaOf property
 in the Block structure so that anyone using this Block will know what model it
@@ -245,6 +276,7 @@ logic for each of them when they are constructed::
         name: drv
         fullname: sim:drv
         part: DriverRunPart
+        readonly: False
 
 Save and load settings will also be written in YAML::
 
@@ -269,16 +301,16 @@ Save and load settings will also be written in YAML::
         ycoord: 230
         visible: Yes
 
-    parts.MirrorPart:
+    parts.ExportPart:
         name: Arm
         source: PCAP.START
         description: Start the experiment
 
-    parts.MirrorPart:
+    parts.ExportPart:
         name: Start
         source: PCOMP1.START
 
-    parts.SlavePart:
+    parts.FollowerPart:
         name: PCOMP2.START
         source: Start
 
@@ -300,7 +332,7 @@ Parts
 -----
 
 The Controller will provide all the configure/run/pause/retrace methods, and a
-number of hooks that Parts can hook into. For instance, the mirrored attributes
+number of hooks that Parts can hook into. For instance, the exported attributes
 use this hook to allow setting of that attribute during configure. As well as a
 hook for each state, the AreaDetectorController implementation of the
 RunnableDevice statemachine will define substate hooks for specific operations,
@@ -330,7 +362,12 @@ example, a position plugin might look like this::
 
 
     @Controls(PositionPlugin)
-    class PosPart(ChildControllerPart):
+    class PosPluginPart(ChildControllerPart)
+
+        def _generate_xml(self, start, num):
+            # Generate some XML to be sent down to the PositionPlugin that
+            # represents the next num positions after start
+            return "<xml_goes_here/>"
 
         @AreaDetectorRunnableDevice.Configure
         def configure(self, task, device):
@@ -348,11 +385,11 @@ example, a position plugin might look like this::
             task.put(pos.xml, xml)
             self._loaded = 100
 
-        def _load_pos(self, positions):
+        def _load_pos(self, device, positions):
             pos = self.child
-            if positions < 100 and self._loaded < self.device.totalSteps:
+            if positions < 100 and self._loaded < device.totalSteps:
                 # add up to 100 more positions
-                num = min(100, self.device.totalSteps - self._loaded)
+                num = min(100, device.totalSteps - self._loaded)
                 xml = self._generate_xml(self._loaded, num)
                 pos.xml.put(xml)
                 self._loaded += num
@@ -363,7 +400,7 @@ example, a position plugin might look like this::
             # Each time the number of positions left changes, call a function
             # to load positions if we're getting low
             # This will live for as long as the self.load_f future does
-            self.load_f = task.listen(pos.positions, self._load_pos)
+            self.load_f = task.listen(pos.positions, self._load_pos, device)
             # Start us off running
             running_f = task.when_matches(pos.running, True)
             self.done_f = task.put_async(pos.start, True)

@@ -16,7 +16,7 @@ skinparam state {
   BackgroundColor<<Rest>> #BBE7BB
   BackgroundColor<<Abort>> #FFBE89
   BackgroundColor<<Fault>> #F03232
-  BackgroundColor<<InactiVe>> #AAAAAA
+  BackgroundColor<<Disabled>> #AAAAAA
   BorderColor Gray
   ArrowColor Black
   FontSize 14

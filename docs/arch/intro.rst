@@ -17,12 +17,10 @@ Users of Malcolm need to know what the following terms mean:
   be designed to be as small and self contained as possible, and complex logic
   should be implemented by nesting Blocks. For example, a detector driver would
   be a Block, as would an HDF writer, but there would also be a higher level
-  detector Block to co-ordinate the low level Blocks. There would then be a top
-  level mapping scan Block the co-ordinated the detector Block and a motion
-  trajectory block to perform the scan. Any Block may be synchronized among a
-  number of Processes, the Block acting as the server will perform the logic,
-  and the client copies will expose the same API as the server Block to the end
-  user.
+  detector Block to co-ordinate the low level Blocks. Any Block may be
+  synchronized among a number of Processes, the Block acting as the server will
+  perform the logic, and the client copies will expose the same API as the
+  server Block to the end user.
 
 - Attributes: Hold the current value of a piece of data of a fixed simple type
   like Int, Float, String, Enum, IntArray, Table or a named Map. You can Get
@@ -127,4 +125,6 @@ AreaDetectorController and 3 Parts:
         [HDFWriterPart] -down-> [HDFWriterBlock] : Controls
     }
 
-
+The Controllers and child Blocks are generic, the Parts can be generic but are
+usually application specific. By forming the blocks by composition, shared
+behaviour can be isolated into Parts that can easily be reused.
