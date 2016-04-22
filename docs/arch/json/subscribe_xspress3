@@ -1,0 +1,8 @@
+.. code-block:: javascript
+
+    {
+        "type": "Subscribe",
+        "id": 0,
+        "endpoint": ["BL18I:XSPRESS3"],
+        "delta": true
+    }

@@ -1,3 +1,5 @@
+.. _structure:
+
 Block Structure
 ===============
 

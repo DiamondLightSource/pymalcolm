@@ -1,0 +1,10 @@
+.. code-block:: javascript
+
+    {
+        "type": "Delta",
+        "id": 0,
+        "delta":
+            [
+                [["state", "value"], "Running"]
+            ]
+    }

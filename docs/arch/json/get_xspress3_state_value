@@ -1,0 +1,7 @@
+.. code-block:: javascript
+
+    {
+        "type": "Get",
+        "id": 0,
+        "endpoint": ["BL18I:XSPRESS3", "state", "value"]
+    }

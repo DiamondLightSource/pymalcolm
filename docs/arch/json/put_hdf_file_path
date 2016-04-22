@@ -1,0 +1,8 @@
+.. code-block:: javascript
+
+    {
+        "type": "Put",
+        "id": 0,
+        "endpoint": ["BL18I:XSPRESS3:HDF", "filePath", "value"],
+        "value": "/path/to/file.h5"
+    }
