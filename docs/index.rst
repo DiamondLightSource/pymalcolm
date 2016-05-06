@@ -36,9 +36,11 @@ The main documentation for the site is organised into a few sections:
 .. _developer-docs:
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Developer Documentation
+    :maxdepth: 2
+    :caption: Developer Documentation
 
-   contributing
-   release_notes
+    dev/tags
+    dev/types
+    dev/contributing
+    dev/release_notes
 

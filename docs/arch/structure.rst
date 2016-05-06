@@ -42,7 +42,8 @@ The `state` Attribute corresponds to the state described in the
 :ref:`statemachine` section. The `status` Attribute will hold any status
 message that is reported by the Block, for instance reporting on the progress
 through a long running activity. The `busy` Attribute will be true if the state
-is not a Rest state as described in the :ref:`statemachine` section.
+is not a Rest state as described in the :ref:`statemachine` section. The tags
+field of the Meta object is defined in the :ref:`tags` section.
 
 An Attribute looks like this::
 
@@ -73,14 +74,14 @@ that describes the values that are allowed to be passed to the value field of
 the structure::
 
     ScalarMeta :=
-        string      description     // Description of attribute
-        string      metaOf          // E.g. malcolm:core/UIntArray:1.0
-        bool        writeable  :opt // True if you can Put
-        string[]    tags       :opt // e.g. "widget:textinput"
-        display_t   display    :opt // Display limits, units, etc, for numbers
-        control_t   control    :opt // For writeable numbers
-        string[]    oneOf      :opt // Allowed values if type is "enum"
-        string      label      :opt // Short label if different to name
+        string      description       // Description of attribute
+        string      metaOf            // E.g. malcolm:core/UIntArray:1.0
+        bool        writeable    :opt // True if you can Put at the moment
+        string[]    tags         :opt // e.g. "widget:textinput"
+        display_t   display      :opt // Display limits, units, etc, for numbers
+        control_t   control      :opt // For writeable numbers
+        string[]    oneOf        :opt // Allowed values if type is "enum"
+        string      label        :opt // Short label if different to name
 
     TableMeta :=
         string      description     // Description of attribute
@@ -93,7 +94,9 @@ the structure::
 
 ScalarMeta has a number of fields that will be present or not depending on the
 contents of the type field. TableMeta contains a structure of elements that
-describe the subelements that are allowed in the Table.
+describe the subelements that are allowed in the Table. The metaOf field
+contains information about the type of the structure, which is explained in
+more detail in the :ref:`types` section.
 
 A MethodMeta looks like this::
 
@@ -103,7 +106,9 @@ A MethodMeta looks like this::
         structure   defaults
             {any    <argname>}0+        // The defaults if not supplied
         MapMeta     returns        :opt // Return value spec if any
-        string[]    valid_states   :opt // The only states method can be run in
+        bool        writeable      :opt // True if you can Post at the moment
+        bool        modifier       :opt // True if this will modify the Block
+        string[]    tags           :opt // e.g. "widget:confirmbutton"
 
     MapMeta :=
         string      metaOf              // E.g. malcolm:xspress3/Config:1.0

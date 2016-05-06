@@ -1,7 +1,7 @@
 .. _messages:
 
-Messages and types
-==================
+Messages
+========
 
 The communication between Blocks in the same Process is by passing Python
 dictionaries representing messages to each other's input queues. When the
@@ -142,12 +142,13 @@ Subscribe
 
 This message will ask the server to respond with a message every time the
 ``block`` (or ``endpoint`` of the ``block``) changes. If ``delta`` then the
-server will respond with a `Delta`_ message listing what has changed,
-otherwise it will respond with a `Update`_ message with the entire structure each
-time. The first message received will give the current value, and subsequent
-messages will be sent whenever it changes. It will receive an `Error`_ message
-if the ``block`` or ``endpoint`` don't exist. When `Unsubscribe`_ is called with
-the same id, a `Return`_ message will be received on that id with no value.
+server will respond with a `Delta`_ message listing what has changed, otherwise
+it will respond with a `Update`_ message with the entire structure each time.
+The first message received will give the current value, and subsequent messages
+will be sent whenever it changes. It will receive an `Error`_ message if the
+``block`` or ``endpoint`` don't exist, or if the Block or substructure of the
+Block disappears while the subscription is active. When `Unsubscribe`_ is called
+with the same id, a `Return`_ message will be received on that id with no value.
 
 Dictionary with members:
 

@@ -64,13 +64,16 @@ Runnable Device State Machine
 
 Mapping devices have a configure() method that allows the batch setting of a
 number of parameters, and can safely be called on a number of devices
-concurrently. They then have a run() method that kicks off a scan. The PreRun
-and PostRun states are guaranteed to be transitioned through, and denote the
-times when the run has started (or finished), but the device is not currently
-taking data. For example, when a detector has been started but is waiting for a
-hardware signal, or when the detector has finished all its exposures and data is
-being flushed to disk. They also have some pausing states. These allow a Run to
-be paused by the user, and rewound once it has become paused.
+concurrently. Motion may occur during the Configuring state as devices are moved
+to their start positions. They then have a run() method that kicks off a scan.
+The PreRun and PostRun states are guaranteed to be transitioned through, and
+denote the times when the run has started (or finished), but the device is not
+currently taking data. For example, when a detector has been started but is
+waiting for a hardware signal, or when the detector has finished all its
+exposures and data is being flushed to disk. Motion flyback may occur in the
+PostRun state if it is specified for the scan. They also have some pausing
+states. These allow a Run to be paused by the user, and rewound once it has
+become paused.
 
 .. uml::
     !include docs/style.iuml
