@@ -23,12 +23,12 @@ Users of Malcolm need to know what the following terms mean:
   server Block to the end user.
 
 - Attributes: Hold the current value of a piece of data of a fixed simple type
-  like Int, Float, String, Enum, IntArray, Table or a named Map. You can Get
-  and Subscribe to changes in all Attributes, and Put to Attributes with a
-  defined setter. In a client Block, Attributes will mirror the value of the
-  Block acting as a server, with a Put operation being forwarded to the server
-  Block. For example, the State of a Block would be an Attribute, as would the
-  CurrentStep of a scan.
+  like Int, Float, String, Enum, IntArray or Table. You can Get and Subscribe to
+  changes in all Attributes, and Put to Attributes with a defined setter. In a
+  client Block, Attributes will mirror the value of the Block acting as a
+  server, with a Put operation being forwarded to the server Block. For example,
+  the State of a Block would be an Attribute, as would the CurrentStep of a
+  scan.
 
 - Methods: Expose a function call. You can Call a Method with a (possibly empty)
   Map of arguments, and it will return a (possibly empty) Map of return values.
@@ -99,7 +99,7 @@ that are used in creating Blocks:
 In the following diagram, the DetectorBlock is made up of an
 AreaDetectorController and 3 Parts:
 
-- MirrorPart: Exposes an Attribute of the underlying DetectorDriverBlock as an
+- ExportPart: Exposes an Attribute of the underlying DetectorDriverBlock as an
   Attribute on the DetectorBlock and argument to configure()
 
 - DriverRunPart: During the PreRunDriverStart hook of the
@@ -112,17 +112,21 @@ AreaDetectorController and 3 Parts:
 
 .. uml::
     !include docs/style.iuml
-    [DetectorDriverBlock]
-    [HDFWriterBlock]
+
+    frame DetectorDriverBlock {
+    }
+
+    frame HDFWriterBlock {
+    }
 
     frame DetectorBlock {
         [AreaDetectorController]
-        [MirrorPart] .up.> [AreaDetectorController] : Hooks into
+        [ExportPart] .up.> [AreaDetectorController] : Hooks into
         [DriverRunPart] .up.> [AreaDetectorController] : Hooks into
         [HDFWriterPart] .up.> [AreaDetectorController] : Hooks into
-        [MirrorPart] -down-> [DetectorDriverBlock] : Controls
-        [DriverRunPart] -down-> [DetectorDriverBlock] : Controls
-        [HDFWriterPart] -down-> [HDFWriterBlock] : Controls
+        [ExportPart] -down-> DetectorDriverBlock : Controls
+        [DriverRunPart] -down-> DetectorDriverBlock : Controls
+        [HDFWriterPart] -down-> HDFWriterBlock : Controls
     }
 
 The Controllers and child Blocks are generic, the Parts can be generic but are

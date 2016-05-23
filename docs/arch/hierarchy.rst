@@ -127,9 +127,6 @@ This is a detector driver block::
         name: acquire
         description: Whether it is acquiring or not
         pv: {prefix}:Acquire
-        labels:
-            - Idle
-            - Acquire
         widget: toggle
         writeable: true
 
@@ -216,7 +213,7 @@ writeable attribute of each child Block into one of 3 categories:
     --------------------------------------------
     Name    Source          Description
     ======= =============== ====================
-    Arm     PCAP.START      Start the experiment
+    Arm     PCAP.ARM        Start the experiment
     Start   PCOMP1.START
     ======= =============== ====================
 
@@ -362,7 +359,7 @@ example, a position plugin might look like this::
 
 
     @Controls(PositionPlugin)
-    class PosPluginPart(ChildControllerPart)
+    class PosPluginPart(ChildControllerPart):
 
         def _generate_xml(self, start, num):
             # Generate some XML to be sent down to the PositionPlugin that
