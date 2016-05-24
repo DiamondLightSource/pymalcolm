@@ -10,35 +10,45 @@ layers as shown by the following diagram:
     () "CA to EPICS IOCs" as CA
     () "TCP to Zebra2 hardware" as TCP
 
-    frame "Hardware layer" {
-        [Det\nDrv] .down.> CA : via
-        [Pos\nLabel] .down.> CA : via
-        [HDF\nWriter] .down.> CA : via
-        [Motor1] .down.> CA : via
-        [Traj] .down.> CA : via
+    cloud "Hardware layer" {
+        frame DetDrv {
+        }
+        frame PosLabel {
+        }
+        frame HDFWriter {
+        }
+        frame Motor1 {
+        }
+        frame Traj {
+        }
+        DetDrv .down.> CA : via
+        PosLabel .down.> CA : via
+        HDFWriter .down.> CA : via
+        Motor1 .down.> CA : via
+        Traj .down.> CA : via
     }
 
-    frame "Device layer" {
-        cloud ZebraManager {
+    cloud "Device layer" {
+        frame ZebraManager {
             [PCOMP] -right-> [PCAP] : Triggers
             [PCOMP] .down.> TCP : via
             [PCAP] .down.> TCP : via
         }
-        cloud DetectorManager {
-            [Det\nDrv\nClient] .down.> [Det\nDrv] : Client of
-            [Pos\nLabel\nClient] .down.> [Pos\nLabel] : Client of
-            [HDF\nWriter\nClient] .down.> [HDF\nWriter] : Client of
+        frame DetectorManager {
+            [Det\nDrv\nClient] .down.> DetDrv : Client of
+            [Pos\nLabel\nClient] .down.> PosLabel : Client of
+            [HDF\nWriter\nClient] .down.> HDFWriter : Client of
             [Det\nDrv\nClient] -right-> [Pos\nLabel\nClient] : Arrays
             [Pos\nLabel\nClient] -right-> [HDF\nWriter\nClient] : Arrays
         }
-        cloud MotorControllerManager {
-            [Motor1\nClient] .down.> [Motor1] : Client of
-            [Traj\nClient] .down.> [Traj] : Client of
+        frame MotorControllerManager {
+            [Motor1\nClient] .down.> Motor1 : Client of
+            [Traj\nClient] .down.> Traj : Client of
         }
     }
 
-    frame "Co-ordination layer" {
-        cloud BeamlineManager {
+    cloud "Co-ordination layer" {
+        frame BeamlineManager {
             [Zebra\nClient] .down.> ZebraManager : Client of
             [Detector\nClient] .down.> DetectorManager : Client of
             [MotorController\nClient] .down.> MotorControllerManager : Client of
@@ -48,8 +58,8 @@ layers as shown by the following diagram:
         }
     }
 
-    () GDA
-    GDA .down.> BeamlineManager : via ZeroMQ/Websockets/PVA
+    () "pvAccess or WebSockets from GDA/Web GUI" as GDA
+    GDA .down.> BeamlineManager : via
 
 Working from the bottom up:
 
