@@ -165,6 +165,7 @@ interface of the Block. They have the :ref:`runnable-device-state-machine` with
 all its related Methods.
 
 .. uml::
+
     class Manager {
         enum design
         Editor editor
