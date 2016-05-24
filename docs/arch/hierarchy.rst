@@ -5,6 +5,7 @@ There are a number of different types of Blocks in Malcolm, organised into 3
 layers as shown by the following diagram:
 
 .. uml::
+
     !include docs/style.iuml
 
     () "CA to EPICS IOCs" as CA

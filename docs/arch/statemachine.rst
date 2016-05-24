@@ -19,6 +19,7 @@ of a Block. Unlabelled transitions take place in response to internal actions,
 labelled transitions are triggered externally.
 
 .. uml::
+
     !include docs/style.iuml
 
     state BlockStates {
@@ -48,6 +49,7 @@ Default State Machine
 If no state machine is specified, the following will be used:
 
 .. uml::
+
     !include docs/style.iuml
 
     state BlockStates {
@@ -76,6 +78,7 @@ states. These allow a Run to be paused by the user, and rewound once it has
 become paused.
 
 .. uml::
+
     !include docs/style.iuml
 
     state BlockStates {
@@ -160,6 +163,7 @@ then it will return in Disabled state.
 The state diagram subset below shows the valid set of transitions:
 
 .. uml::
+
     !include docs/style.iuml
 
     state NormalStates {
@@ -202,6 +206,7 @@ user disable then it will return in Disabled state.
 The state diagram subset below shows the valid set of transitions:
 
 .. uml::
+
     !include docs/style.iuml
 
     state NormalStates {
@@ -243,6 +248,7 @@ user disable then it will return in Disabled state.
 The state diagram subset below shows the valid set of transitions:
 
 .. uml::
+
     !include docs/style.iuml
 
     state NormalStates {
@@ -273,6 +279,7 @@ user disable then it will return in a Disabled state.
 The state diagram subset below shows the valid set of transitions:
 
 .. uml::
+
     !include docs/style.iuml
 
     state NormalStates {
@@ -299,6 +306,7 @@ will transition the device to PreRun state and return immediately.
 The state diagram subset below shows the valid set of transitions:
 
 .. uml::
+
     !include docs/style.iuml
 
     state NormalStates {
@@ -321,6 +329,7 @@ then it will return in a Disabled state.
 The state diagram subset below shows the valid set of transitions:
 
 .. uml::
+
     !include docs/style.iuml
 
     NormalStates : Start state
@@ -352,6 +361,7 @@ return immediately. It will always return in Disabled state.
 The state diagram subset below shows the valid set of transitions:
 
 .. uml::
+
     !include docs/style.iuml
 
     NormalStates : Start state
@@ -375,6 +385,7 @@ wrong it will return in Fault state.
 The state diagram subset below shows the valid set of transitions:
 
 .. uml::
+
     !include docs/style.iuml
 
     state NormalStates {
