@@ -31,7 +31,7 @@ setup(
     version=get_version(),
     description='Scanning in the middlelayer',
     long_description=open("README.rst").read(),
-    url='https://github.com/dls_controls/malcolm',
+    url='https://github.com/dls-controls/pymalcolm',
     author='Tom Cobb',
     author_email='tom.cobb@diamond.ac.uk',
     keywords='',
@@ -44,13 +44,10 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
     license='APACHE',
-    install_requires=['cothread>=2.14b1', 'pyzmq', 'enum34'],
+    install_requires=[],
     extras_require={
         'zmq':  ['pyzmq']
     },
-    entry_points={'console_scripts':
-                  ["imalcolm = malcolm.imalcolm.client:main"]
-                  },
     include_package_data=True,
     test_suite='nose.collector',
     tests_require=[
