@@ -31,5 +31,9 @@ class TestController(unittest.TestCase):
         self.assertEqual(c.block, b)
         b.add_method.assert_has_calls([call(m1), call(m2)])
 
+    def test_baseclass_raises(self):
+        b = MagicMock()
+        self.assertRaises(NotImplementedError, Controller, b)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
