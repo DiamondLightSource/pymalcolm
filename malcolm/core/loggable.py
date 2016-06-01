@@ -1,10 +1,15 @@
 import logging
 
+
 class Loggable(object):
     """Utility class that provides a named logger for a class instance"""
 
     def __init__(self, logger_name):
         super(Loggable, self).__init__()
+        # The name that we will pass to the logger
+        self._logger_name = None
+        # The logger object itself
+        self._logger = None
         self.set_logger_name(logger_name)
 
     def set_logger_name(self, logger_name):

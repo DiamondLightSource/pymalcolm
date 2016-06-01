@@ -12,11 +12,12 @@ from mock import patch
 # module imports
 from malcolm.core.loggable import Loggable
 
+
 class TestLoggable(unittest.TestCase):
 
     @patch("malcolm.core.loggable.logging")
     def test_init(self, mock_logging):
-        l = Loggable("foo")
+        Loggable("foo")
         mock_logging.getLogger.assert_called_once_with("foo")
 
     @patch("malcolm.core.loggable.logging")
