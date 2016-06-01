@@ -9,11 +9,6 @@ cache:
     - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
     - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/bin
 
-addons:
-  apt:
-    packages:
-      - libzmq-dev
-
 install:
   - env
   - ls -al $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
