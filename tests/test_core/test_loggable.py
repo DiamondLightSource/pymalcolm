@@ -21,10 +21,12 @@ class TestLoggable(unittest.TestCase):
         mock_logging.getLogger.assert_called_once_with("foo")
 
     @patch("malcolm.core.loggable.logging")
-    def test_debug_calls_logger_function(self, mock_logging):
+    def test_calls_logger_function(self, mock_logging):
         l = Loggable("bar")
-        l.log_debug("hello")
-        l._logger.debug.assert_called_once_with("hello")
+        for n in "debug info warning error exception".split():
+            m = getattr(l, "log_%s" % n)
+            m("hello", n)
+            getattr(l._logger, n).assert_called_once_with("hello", n)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
