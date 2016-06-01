@@ -5,13 +5,13 @@ from malcolm.core.attributemeta import AttributeMeta
 
 
 class MapMeta(Loggable):
-    """An object containing a set of AttributeMeta objects"""
+    """A meta object to store a set of attribute metas"""
 
     def __init__(self, name):
         super(MapMeta, self).__init__(logger_name=name)
 
         self.name = name
-        self.elements = OrderedDict()
+        self.elements = OrderedDict({})
 
     def add_element(self, attribute_meta, required=False):
         """
