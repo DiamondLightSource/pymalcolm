@@ -1,4 +1,3 @@
-#!/bin/env dls-python
 import unittest
 import sys
 import os
