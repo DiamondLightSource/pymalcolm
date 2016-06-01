@@ -5,21 +5,23 @@ from malcolm.core.attributemeta import AttributeMeta
 
 
 class MapMeta(Loggable):
-    """A meta object to store a set of attribute metas"""
+    """An object containing a set of AttributeMeta objects"""
 
     def __init__(self, name):
         super(MapMeta, self).__init__(logger_name=name)
 
         self.name = name
-        self.elements = OrderedDict({})
+        self.elements = OrderedDict()
+        self.required = []
 
     def add_element(self, attribute_meta, required=False):
         """
-        Add an element, stating whether it is required.
+        Add an element and whether it is required.
 
         Args:
             attribute_meta(AttributeMeta): Attribute instance to store
             required(bool): Whether attribute is required or optional
         """
 
-        self.elements[attribute_meta.name] = (attribute_meta, required)
+        self.elements[attribute_meta.name] = attribute_meta
+        self.required.append(required)

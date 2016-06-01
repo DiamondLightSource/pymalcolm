@@ -34,14 +34,16 @@ class TestAddElement(unittest.TestCase):
     def test_given_valid_required_element_then_add(self):
         self.meta_map.add_element(self.attribute_mock, required=True)
 
-        self.assertEqual((self.attribute_mock, True),
+        self.assertEqual(self.attribute_mock,
                          self.meta_map.elements[self.attribute_mock.name])
+        self.assertEqual(True, self.meta_map.required[0])
 
     def test_given_valid_optional_element_then_add(self):
         self.meta_map.add_element(self.attribute_mock, required=False)
 
-        self.assertEqual((self.attribute_mock, False),
+        self.assertEqual(self.attribute_mock,
                          self.meta_map.elements[self.attribute_mock.name])
+        self.assertEqual(False, self.meta_map.required[0])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
