@@ -19,7 +19,7 @@ class Controller(Loggable):
         """Abstract method that should provide Method instances for Block
 
         Returns:
-            list: List of Method instances. Each one will be attached to the
-                Block by calling block.add_method(method)
+            list: List or iterator of Method instances. Each one will be
+                attached to the Block by calling block.add_method(method)
         """
         raise NotImplementedError("Controller subclass should implement this")
