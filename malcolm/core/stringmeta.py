@@ -2,9 +2,7 @@ from malcolm.core.attributemeta import AttributeMeta
 
 
 class StringMeta(AttributeMeta):
-    """
-    Meta object containing information for a string
-    """
+    """Meta object containing information for a string"""
 
     def __init__(self, name, value):
         super(StringMeta, self).__init__(name=name)
@@ -21,8 +19,8 @@ class StringMeta(AttributeMeta):
 
         Returns:
             str: Value as a string
-
         """
+
         if isinstance(value, str):
             return value
         elif isinstance(value, (int, float, long)):  # TODO add any other types

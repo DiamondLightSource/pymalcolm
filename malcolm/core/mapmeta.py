@@ -3,9 +3,7 @@ from malcolm.core.attributemeta import AttributeMeta
 
 
 class MapMeta(Loggable):
-    """
-    A meta object to store a set of attribute metas
-    """
+    """A meta object to store a set of attribute metas"""
 
     def __init__(self, name):
         super(MapMeta, self).__init__(logger_name=name)
@@ -20,7 +18,6 @@ class MapMeta(Loggable):
         Args:
             attribute_meta(AttributeMeta): Attribute instance to store
             required(bool): Whether attribute is required or optional
-
         """
 
         self.attributes.append((attribute_meta, required))

@@ -13,8 +13,8 @@ class AttributeMeta(Loggable):
         Abstract function to validate a given value
 
         Args:
-            value: Value to validate
-
+            value(abstract): Value to validate
         """
+
         raise NotImplementedError(
             "Abstract validate function must be implemented in child classes")
