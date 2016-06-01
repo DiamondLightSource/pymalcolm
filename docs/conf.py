@@ -38,7 +38,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinxcontrib.plantuml',
-    #    'sphinx.ext.intersphinx',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
 ]
 
@@ -110,6 +110,10 @@ if not which("plantuml"):
     # install it
     subprocess.call(["fc-cache", "-vf", fontdir])
 
+napoleon_use_ivar = True
+
+autoclass_content = "both"
+
 autodoc_member_order = 'bysource'
 
 # Add any paths that contain templates here, relative to this directory.
@@ -136,9 +140,9 @@ exclude_patterns = ['_build']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-# intersphinx_mapping = {
-#    'python': ('http://python.readthedocs.org/en/v2.7.2/', None),
-#}
+intersphinx_mapping = {
+    'python': ('http://docs.python.org/2.7/', None),
+}
 
 # -- Options for HTML output ----------------------------------------------
 
