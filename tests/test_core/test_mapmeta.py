@@ -45,5 +45,14 @@ class TestAddElement(unittest.TestCase):
                          self.meta_map.elements[self.attribute_mock.name])
         self.assertEqual(False, self.meta_map.required[0])
 
+    def test_given_existing_element_then_raise_error(self):
+        self.meta_map.add_element(self.attribute_mock, required=False)
+        expected_error_message = "Element already exists in dictionary"
+
+        with self.assertRaises(ValueError) as error:
+            self.meta_map.add_element(self.attribute_mock, required=False)
+
+        self.assertEqual(expected_error_message, error.exception.message)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

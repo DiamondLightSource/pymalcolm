@@ -26,8 +26,8 @@ class MapMeta(Loggable):
             ValueError:
         """
 
-        if attribute_meta.name in self.elements.keys:
-            raise ValueError("Element already exists in map")
+        if attribute_meta.name in self.elements.keys():
+            raise ValueError("Element already exists in dictionary")
         else:
             self.elements[attribute_meta.name] = attribute_meta
             self.required.append(required)
