@@ -21,9 +21,7 @@ class StringMeta(AttributeMeta):
             str: Value as a string
         """
 
-        if isinstance(value, str):
-            return value
-        elif isinstance(value, (int, float, long)):  # TODO add any other types
-            return str(value)
+        if value is None:
+            return None
         else:
-            raise TypeError("Value must be of type str or castable to str")
+            return str(value)
