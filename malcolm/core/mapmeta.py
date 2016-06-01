@@ -9,7 +9,7 @@ class MapMeta(Loggable):
         super(MapMeta, self).__init__(logger_name=name)
 
         self.name = name
-        self.elements = []
+        self.elements = {}
 
     def add_element(self, attribute_meta, required=False):
         """
@@ -20,4 +20,4 @@ class MapMeta(Loggable):
             required(bool): Whether attribute is required or optional
         """
 
-        self.elements.append((attribute_meta, required))
+        self.elements[attribute_meta.name] = (attribute_meta, required)
