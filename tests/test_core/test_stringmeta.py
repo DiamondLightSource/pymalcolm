@@ -21,17 +21,17 @@ class TestValidate(unittest.TestCase):
     def setUp(self):
         self.string_meta = StringMeta("TestMeta", "TestValue")
 
-    def test_given_value_str_then_set(self):
+    def test_given_value_str_then_return(self):
         response = self.string_meta.validate("TestValue")
 
         self.assertEqual("TestValue", response)
 
-    def test_given_value_int_then_cast_and_set(self):
+    def test_given_value_int_then_cast_and_return(self):
         response = self.string_meta.validate(15)
 
         self.assertEqual("15", response)
 
-    def test_given_value_float_then_cast_and_set(self):
+    def test_given_value_float_then_cast_and_return(self):
         response = self.string_meta.validate(12.8)
 
         self.assertEqual("12.8", response)
