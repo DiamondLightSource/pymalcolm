@@ -1,6 +1,7 @@
 #!/bin/env dls-python
 
 import unittest
+from collections import OrderedDict
 
 from malcolm.core.mapmeta import MapMeta
 
@@ -20,7 +21,8 @@ class TestInit(unittest.TestCase):
 
     def test_values_set(self):
         self.assertEqual(self.meta_map.name, "Test")
-        self.assertEqual(self.meta_map.elements, [])
+        self.assertIsInstance(self.meta_map.elements, OrderedDict)
+        self.assertEqual(self.meta_map.elements, {})
 
 
 class TestAddElement(unittest.TestCase):
