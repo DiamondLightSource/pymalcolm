@@ -11,14 +11,14 @@ class StringMeta(AttributeMeta):
 
     def validate(self, value):
         """
-        Check if given value is a string, or is castable to a string, and return the value.
-        If it is not, raise a TypeError
+        Check if the value is None and returns None, else casts value to a
+        string and returns it
 
         Args:
-            value(str/int/float/long): Value to validate
+            value(): Value to validate
 
         Returns:
-            str: Value as a string
+            str: Value as a string [If value is not None]
         """
 
         if value is None:
