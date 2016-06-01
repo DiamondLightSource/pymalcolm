@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from loggable import Loggable
 from malcolm.core.attributemeta import AttributeMeta
 
@@ -9,11 +11,11 @@ class MapMeta(Loggable):
         super(MapMeta, self).__init__(logger_name=name)
 
         self.name = name
-        self.elements = {}
+        self.elements = OrderedDict({})
 
     def add_element(self, attribute_meta, required=False):
         """
-        Add an attribute to the list, stating whether it is required.
+        Add an element, stating whether it is required.
 
         Args:
             attribute_meta(AttributeMeta): Attribute instance to store
