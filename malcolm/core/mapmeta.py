@@ -30,3 +30,15 @@ class MapMeta(Loggable):
         else:
             self.elements[attribute_meta.name] = attribute_meta
             self.required.append(required)
+
+    def to_dict(self):
+        """Convert object attributes into a dictionary"""
+
+        d = OrderedDict()
+        element_dict = OrderedDict()
+        for element_name, meta in self.elements.items():
+            element_dict[element_name] = meta.to_dict()
+        d['elements'] = element_dict
+        d['required'] = self.required
+
+        return d

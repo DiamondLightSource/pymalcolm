@@ -63,3 +63,6 @@ class Method(Loggable):
             for r_name, r_val in return_val.iteritems():
                 self.returns.elements[r_name].validate(r_val)
         return return_val
+
+    def to_dict(self):
+        pass

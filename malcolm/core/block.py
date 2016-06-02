@@ -25,3 +25,14 @@ class Block(Loggable):
             "Method %s already defined for Block %s" % (method.name, self.name)
         self._methods[method.name] = method
         setattr(self, method.name, method)
+
+    def to_dict(self):
+
+        d = OrderedDict()
+
+        method_dict = OrderedDict()
+        for method_name, method in self._methods.items():
+            method_dict[method_name] = method.to_dict()
+        d['methods'] = method_dict
+
+        return d

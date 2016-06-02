@@ -23,3 +23,10 @@ class StringMeta(AttributeMeta):
             return None
         else:
             return str(value)
+
+    def to_dict(self):
+        """Convert object attributes into a dictionary"""
+
+        d = super(StringMeta, self).to_dict()
+
+        return d

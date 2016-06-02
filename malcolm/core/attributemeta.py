@@ -1,4 +1,5 @@
 from malcolm.core.loggable import Loggable
+from collections import OrderedDict
 
 
 class AttributeMeta(Loggable):
@@ -18,3 +19,11 @@ class AttributeMeta(Loggable):
 
         raise NotImplementedError(
             "Abstract validate function must be implemented in child classes")
+
+    def to_dict(self):
+        """Convert object attributes into a dictionary"""
+
+        d = OrderedDict()
+        # Will add description here once it exists
+
+        return d
