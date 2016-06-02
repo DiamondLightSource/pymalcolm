@@ -30,7 +30,7 @@ class TestMethod(unittest.TestCase):
         func = Mock(return_value = {"first_out":"test"})
         m = Method("test_method")
         arg_meta = Mock()
-        arg_meta.elements = {"first":True, "second":True}
+        arg_meta.elements = {"first":Mock(), "second":Mock()}
         m.set_function_takes(arg_meta, {"second":"default"})
         m.set_function(func)
         self.assertEquals({"first_out":"test"}, m(first="test"))
@@ -75,7 +75,7 @@ class TestMethod(unittest.TestCase):
         m = Method("test_method")
         m.set_function(func)
         args_meta = Mock()
-        args_meta.elements = {"first":True, "second":True}
+        args_meta.elements = {"first":Mock(), "second":Mock()}
         return_meta = Mock()
         return_meta.elements = {"output1":Mock(), "output2":Mock()}
         validator = Mock(return_value=True)
@@ -91,7 +91,7 @@ class TestMethod(unittest.TestCase):
         m = Method("test_method")
         m.set_function(func)
         args_meta = Mock()
-        args_meta.elements = {"first":True, "second":True}
+        args_meta.elements = {"first":Mock(), "second":Mock()}
         return_meta = Mock()
         return_meta.elements = {"output1":Mock(), "output2":Mock()}
         validator1 = Mock(return_value=True)
