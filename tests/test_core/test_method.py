@@ -2,6 +2,7 @@
 import unittest
 import sys
 import os
+from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from pkg_resources import require
@@ -49,6 +50,22 @@ class TestMethod(unittest.TestCase):
 
         m.set_function_takes(args_meta, {"second":"default"})
         self.assertRaises(ValueError, m)
+
+    def test_positional_args(self):
+        func = Mock(return_value = {"output":2})
+        m = Method("test_method")
+        m.set_function(func)
+        args_meta = Mock()
+        validator = Mock(return_value=True)
+        args_meta.elements = OrderedDict()
+        args_meta.elements["first"] = Mock(validate=validator)
+        args_meta.elements["second"] = Mock(validate=validator)
+        args_meta.elements["third"] = Mock(validate=validator)
+        args_meta.elements["fourth"] = Mock(validate=validator)
+        args_meta.required = ["first", "third"]
+        m.set_function_takes(args_meta)
+        self.assertEquals({"output":2}, m(2, 3, third=1, fourth=4))
+        func.assert_called_with({"first":2, "second":3, "third":1, "fourth":4})
 
     def test_valid_return(self):
         func = Mock(return_value = {"output1":2, "output2":4})
