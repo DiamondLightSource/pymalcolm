@@ -27,7 +27,7 @@ class Block(Loggable):
         setattr(self, method.name, method)
 
     def handle_request(self, request):
-        method_name = request.id.method
+        method_name = request.endpoint[-1]
         response = self._methods[method_name].handle_request(request)
 
         return response

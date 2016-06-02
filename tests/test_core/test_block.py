@@ -77,7 +77,7 @@ class TestHandleRequest(unittest.TestCase):
 
     def test_given_request_then_pass_to_correct_method(self):
         request = MagicMock()
-        request.id.method = "get_things"
+        request.endpoint = ["device", "get_things"]
 
         response = self.block.handle_request(request)
 
