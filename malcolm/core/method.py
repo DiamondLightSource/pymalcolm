@@ -8,6 +8,7 @@ class Method(Loggable):
     """Exposes a function with metadata for arguments and return values"""
 
     def __init__(self, name):
+        super(Method, self).__init__(logger_name=name)
         self.name = name
         self.func = None
         self.takes = None
@@ -43,8 +44,8 @@ class Method(Loggable):
         Will validate the output against provided return parameters.
         """
 
-        #Assumes positional arguments represent arguments *before* any kw-args
-        #in the ordered dictionary.
+        # Assumes positional arguments represent arguments *before* any kw-args
+        # in the ordered dictionary.
         for arg, arg_val in zip(self.takes.elements.keys(), args):
             kwargs[arg] = arg_val
 
