@@ -43,6 +43,11 @@ class Method(Loggable):
         Will validate the output against provided return parameters.
         """
 
+        #Assumes positional arguments represent arguments *before* any kw-args
+        #in the ordered dictionary.
+        for arg, arg_val in zip(self.takes.elements.keys(), args):
+            kwargs[arg] = arg_val
+
         for arg in self.takes.elements:
             if arg not in kwargs.keys():
                 if arg in self.defaults.keys():
