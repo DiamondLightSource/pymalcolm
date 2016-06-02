@@ -36,29 +36,26 @@ class TestToDict(unittest.TestCase):
 
     @patch('malcolm.core.method.Method.to_dict')
     def test_returns_dict(self, method_to_dict_mock):
-        method_dict_1 = OrderedDict(takes=OrderedDict(one=OrderedDict()),
-                                    returns=OrderedDict(one=OrderedDict()),
-                                    defaults=OrderedDict())
-        method_dict_2 = OrderedDict(takes=OrderedDict(one=OrderedDict()),
-                                    returns=OrderedDict(one=OrderedDict()),
-                                    defaults=OrderedDict())
-        method_to_dict_mock.side_effect = [method_dict_1, method_dict_2]
+        method_dict = OrderedDict(takes=OrderedDict(one=OrderedDict()),
+                                  returns=OrderedDict(one=OrderedDict()),
+                                  defaults=OrderedDict())
+        method_to_dict_mock.return_value = method_dict
 
         m1 = MagicMock()
         m1.name = "method_one"
-        m1.to_dict.return_value = method_dict_1
+        m1.to_dict.return_value = method_dict
 
         m2 = MagicMock()
         m2.name = "method_two"
-        m2.to_dict.return_value = method_dict_2
+        m2.to_dict.return_value = method_dict
 
         self.meta_map = Block("Test")
         self.meta_map.add_method(m1)
         self.meta_map.add_method(m2)
 
         expected_methods_dict = OrderedDict()
-        expected_methods_dict['method_one'] = method_dict_1
-        expected_methods_dict['method_two'] = method_dict_2
+        expected_methods_dict['method_one'] = method_dict
+        expected_methods_dict['method_two'] = method_dict
 
         expected_dict = OrderedDict()
         expected_dict['methods'] = expected_methods_dict
