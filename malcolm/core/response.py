@@ -18,6 +18,9 @@ class Response(object):
             serialized[field] = value
         return serialized
 
+    def __getattr__(self, attr):
+        return self.fields[attr]
+
     @classmethod
     def Return(cls, id_, context, value=None):
         """Create a Return response object with the provided parameters.

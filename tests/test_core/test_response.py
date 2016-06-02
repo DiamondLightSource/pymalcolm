@@ -46,5 +46,10 @@ class TestResponse(unittest.TestCase):
         expected["value"] = None
         self.assertEquals(expected, r.to_dict())
 
+    def test_getattr(self):
+        r = Response.Return(22, None, "bar")
+        self.assertEquals(r.value, "bar")
+        self.assertRaises(KeyError, lambda: r.ffff)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
