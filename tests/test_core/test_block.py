@@ -64,5 +64,25 @@ class TestToDict(unittest.TestCase):
         m2.to_dict.assert_called_once_with()
         self.assertEqual(expected_dict, response)
 
+
+class TestHandleRequest(unittest.TestCase):
+
+    def setUp(self):
+        self.block = Block("TestBlock")
+        self.method = MagicMock()
+        self.method.name = "get_things"
+        self.response = MagicMock()
+        self.method.handle_request.return_value = self.response
+        self.block.add_method(self.method)
+
+    def test_given_request_then_pass_to_correct_method(self):
+        request = MagicMock()
+        request.id.method = "get_things"
+
+        response = self.block.handle_request(request)
+
+        self.assertEqual(self.response, response)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
