@@ -8,6 +8,7 @@ class Method(Loggable):
     """Exposes a function with metadata for arguments and return values"""
 
     def __init__(self, name):
+        super(Method, self).__init__(logger_name=name)
         self.name = name
         self.func = None
         self.takes = None
