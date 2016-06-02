@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 class TestInit(unittest.TestCase):
 
     def setUp(self):
-        self.string_meta = StringMeta("TestMeta", "TestValue")
+        self.string_meta = StringMeta("TestMeta")
 
     def test_given_name_then_set(self):
         self.assertEqual("TestMeta", self.string_meta.name)
@@ -19,7 +19,7 @@ class TestInit(unittest.TestCase):
 class TestValidate(unittest.TestCase):
 
     def setUp(self):
-        self.string_meta = StringMeta("TestMeta", "TestValue")
+        self.string_meta = StringMeta("TestMeta")
 
     def test_given_value_str_then_return(self):
         response = self.string_meta.validate("TestValue")
