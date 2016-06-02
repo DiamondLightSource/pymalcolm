@@ -1,7 +1,10 @@
 #!/bin/env dls-python
 
 import unittest
+from collections import OrderedDict
+
 from malcolm.core.stringmeta import StringMeta
+
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -40,6 +43,19 @@ class TestValidate(unittest.TestCase):
         response = self.string_meta.validate(None)
 
         self.assertEqual(None, response)
+
+
+class TestToDict(unittest.TestCase):
+
+    def setUp(self):
+        self.string_meta = StringMeta("Test")
+
+    def test_returns_dict(self):
+        expected_dict = OrderedDict()
+
+        response = self.string_meta.to_dict()
+
+        self.assertEqual(expected_dict, response)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

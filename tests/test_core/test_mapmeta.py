@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from pkg_resources import require
 require("mock")
-from mock import MagicMock
+from mock import MagicMock, patch
 
 
 class TestInit(unittest.TestCase):
@@ -53,6 +53,37 @@ class TestAddElement(unittest.TestCase):
             self.meta_map.add_element(self.attribute_mock, required=False)
 
         self.assertEqual(expected_error_message, error.exception.message)
+
+
+class TestToDict(unittest.TestCase):
+
+    @patch('malcolm.core.attributemeta.AttributeMeta.to_dict')
+    def test_returns_dict(self, _):
+        e1 = MagicMock()
+        e1.name = "one"
+        a1 = OrderedDict()
+        e1.to_dict.return_value = a1
+        e2 = MagicMock()
+        e2.name = "two"
+        a2 = OrderedDict()
+        e2.to_dict.return_value = a2
+
+        self.meta_map = MapMeta("Test")
+        self.meta_map.add_element(e1, required=True)
+        self.meta_map.add_element(e2, required=False)
+
+        expected_elements_dict = OrderedDict()
+        expected_elements_dict['one'] = a1
+        expected_elements_dict['two'] = a2
+
+        expected_dict = OrderedDict()
+        expected_dict['elements'] = expected_elements_dict
+        expected_dict['required'] = [True, False]
+
+        response = self.meta_map.to_dict()
+
+        self.assertEqual(expected_dict, response)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
