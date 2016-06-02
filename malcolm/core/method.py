@@ -64,5 +64,11 @@ class Method(Loggable):
                 self.returns.elements[r_name].validate(r_val)
         return return_val
 
+    def handle_request(self, request):
+        """Call exposed function using request parameters and respond with the
+        result"""
+        result = self(**request.parameters)
+        request.respond_with_return(result)
+
     def to_dict(self):
         pass
