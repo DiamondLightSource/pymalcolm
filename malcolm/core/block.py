@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from loggable import Loggable
+from malcolm.core.loggable import Loggable
 
 
 class Block(Loggable):

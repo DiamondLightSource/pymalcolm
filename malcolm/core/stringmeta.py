@@ -13,7 +13,7 @@ class StringMeta(AttributeMeta):
         string and returns it
 
         Args:
-            value(): Value to validate
+            value: Value to validate
 
         Returns:
             str: Value as a string [If value is not None]
