@@ -136,5 +136,22 @@ class TestMethod(unittest.TestCase):
         func.assert_called_with({"first":2})
         request.respond_with_return.assert_called_with({"output":1})
 
+    def test_to_dict_serialization(self):
+        func = Mock(return_value = {"out":"dummy"})
+        defaults = {"in_attr":"default"}
+        args_meta = Mock(elements = {"first":Mock()},
+               to_dict = Mock(return_value = OrderedDict({"dict":"args"})))
+        return_meta = Mock(elements = {"out":Mock()},
+               to_dict = Mock(return_value = OrderedDict({"dict":"return"})))
+        m = Method("test_method")
+        m.set_function(func)
+        m.set_function_takes(args_meta, defaults)
+        m.set_function_returns(return_meta)
+        expected = OrderedDict()
+        expected["takes"] = OrderedDict({"dict":"args"})
+        expected["defaults"] = OrderedDict({"in_attr":"default"})
+        expected["returns"] = OrderedDict({"dict":"return"})
+        self.assertEquals(expected, m.to_dict())
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

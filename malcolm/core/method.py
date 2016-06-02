@@ -72,4 +72,9 @@ class Method(Loggable):
         request.respond_with_return(result)
 
     def to_dict(self):
-        pass
+        """Return ordered dictionary representing Method object."""
+        serialized = OrderedDict()
+        serialized["takes"] = self.takes.to_dict()
+        serialized["defaults"] = self.defaults.copy()
+        serialized["returns"] = self.returns.to_dict()
+        return serialized
