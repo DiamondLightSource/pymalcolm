@@ -1,4 +1,4 @@
-from loggable import Loggable
+from malcolm.core.loggable import Loggable
 
 
 class Controller(Loggable):

@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
-from loggable import Loggable
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.loggable import Loggable
 
 
 class MapMeta(Loggable):

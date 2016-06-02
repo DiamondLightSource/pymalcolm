@@ -1,7 +1,8 @@
 #!/bin/env dls-python
 from collections import OrderedDict
 
-from loggable import Loggable
+from malcolm.core.loggable import Loggable
+
 
 class Method(Loggable):
     """Exposes a function with metadata for arguments and return values"""
@@ -20,7 +21,7 @@ class Method(Loggable):
         """
         self.func = func
 
-    def set_function_takes(self, arg_meta, defaults = None):
+    def set_function_takes(self, arg_meta, defaults=None):
         """Set the arguments and default values for the method
 
         Args:
@@ -28,7 +29,10 @@ class Method(Loggable):
             default (dict): Default values for arguments (default None)
         """
         self.takes = arg_meta
-        self.defaults = OrderedDict(defaults) if defaults is not None else OrderedDict()
+        if defaults is not None:
+            self.defaults = OrderedDict(defaults)
+        else:
+            self.defaults = OrderedDict()
 
     def set_function_returns(self, return_meta):
         """Set the return parameters for the method to validate against"""
@@ -44,11 +48,13 @@ class Method(Loggable):
                 if arg in self.defaults.keys():
                     kwargs[arg] = self.defaults[arg]
                 elif arg in self.takes.required:
-                    raise ValueError("Argument %s is required but was not provided" % arg)
+                    raise ValueError(
+                        "Argument %s is required but was not provided" % arg)
         return_val = self.func(kwargs)
         if self.returns is not None:
             if return_val.keys() != self.returns.elements.keys():
-                raise ValueError("Return result did not match specified return structure")
+                raise ValueError(
+                    "Return result did not match specified return structure")
             for r_name, r_val in return_val.iteritems():
                 self.returns.elements[r_name].validate(r_val)
         return return_val
