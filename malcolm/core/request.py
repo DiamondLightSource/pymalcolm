@@ -16,10 +16,10 @@ class Request(object):
             type_(str): Request type e.g. get, put, post, subscribe, unsubscribe
         """
 
-        self.id = id_
+        self.id_ = id_
         self.context = context
         self.response_queue = response_queue
-        self.type = type_
+        self.type_ = type_
         self.fields = OrderedDict()
 
     def __getattr__(self, attr):
@@ -33,7 +33,7 @@ class Request(object):
             value(): Value to set endpoint to
         """
 
-        response = Response.Return(self.id, self.context, value=value)
+        response = Response.Return(self.id_, self.context, value=value)
         self.response_queue.put(response)
 
     @classmethod
@@ -85,9 +85,9 @@ class Request(object):
 
         d = OrderedDict()
 
-        d['id'] = self.id
+        d['id'] = self.id_
         d['context'] = self.context.to_dict()
-        d['type'] = self.type
+        d['type'] = self.type_
         for field, value in self.fields.items():
             d[field] = value
 

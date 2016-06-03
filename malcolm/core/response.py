@@ -26,7 +26,7 @@ class Response(object):
         """Create a Return response object with the provided parameters.
 
         Args:
-            id (int): id from initial message
+            id_ (int): id from initial message
             context: context associated with id
             value: object return value (default None)
         """

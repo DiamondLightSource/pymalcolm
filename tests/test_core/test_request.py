@@ -22,10 +22,10 @@ class TestRequest(unittest.TestCase):
             1, self.context, self.response_queue, "Put")
 
     def test_init(self):
-        self.assertEqual(1, self.request.id)
+        self.assertEqual(1, self.request.id_)
         self.assertEqual(self.context, self.request.context)
         self.assertEqual(self.response_queue, self.request.response_queue)
-        self.assertEqual("Put", self.request.type)
+        self.assertEqual("Put", self.request.type_)
 
     def test_to_dict(self):
         context_dict = OrderedDict()
@@ -50,7 +50,7 @@ class TestRequest(unittest.TestCase):
 
         self.request.respond_with_return(value=5)
 
-        return_mock.assert_called_once_with(self.request.id, self.request.context, value=5)
+        return_mock.assert_called_once_with(self.request.id_, self.request.context, value=5)
         self.response_queue.put.assert_called_once_with(response)
 
     @patch("malcolm.core.request.Request")
