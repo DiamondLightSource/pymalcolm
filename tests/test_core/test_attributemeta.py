@@ -61,8 +61,15 @@ class TestFromDict(unittest.TestCase):
         d = dict(metaOf = "foo:1.0")
         am = AttributeMeta.from_dict("me", d)
 
-        m.assert_called_once_with("me")
-        self.assertEqual(m.return_value, am)
+        m.from_dict.assert_called_once_with("me", d)
+        self.assertEqual(m.from_dict.return_value, am)
+
+    def test_from_dict_not_defined_on_subclass_fails(self):
+        class Faulty(AttributeMeta):
+            pass
+        AttributeMeta.register_subclass(Faulty, "anything")
+        self.assertRaises(AssertionError, AttributeMeta.from_dict,
+                          "me", dict(metaOf="anything"))
 
 
 if __name__ == "__main__":

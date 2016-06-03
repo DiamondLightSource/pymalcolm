@@ -31,4 +31,16 @@ class StringMeta(AttributeMeta):
 
         return d
 
+    @classmethod
+    def from_dict(self, name, d):
+        """Create a AttributeMeta subclass instance from the serialized version
+        of itself
+
+        Args:
+            name (str): AttributeMeta instance name
+            d (dict): Something that self.to_dict() would create
+        """
+        string_meta = StringMeta(name)
+        return string_meta
+
 AttributeMeta.register_subclass(StringMeta, "malcolm:core/String:1.0")

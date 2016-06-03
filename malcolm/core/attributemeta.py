@@ -55,5 +55,7 @@ class AttributeMeta(Loggable):
         """
         metaOf = d["metaOf"]
         subcls = cls._subcls_lookup[metaOf]
-        attribute_meta = subcls(name)
+        assert subcls is not cls, \
+            "Subclass %s did not redefine from_dict" % subcls
+        attribute_meta = subcls.from_dict(name, d)
         return attribute_meta
