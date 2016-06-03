@@ -1,8 +1,8 @@
 import unittest
 import sys
 import os
-import logging
-logging.basicConfig()
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # mock
@@ -12,7 +12,7 @@ from mock import MagicMock
 
 # module imports
 from malcolm.core.process import Process
-from malcolm.core.scheduler import Scheduler
+from malcolm.core.syncfactory import SyncFactory
 
 
 class TestProcess(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(p.q, s.create_queue.return_value)
 
     def test_starting_process(self):
-        s = Scheduler("sched")
+        s = SyncFactory("sched")
         p = Process("proc", s)
         b = MagicMock()
         b.name = "myblock"
@@ -39,7 +39,7 @@ class TestProcess(unittest.TestCase):
         b.handle_request.assert_called_once_with(request)
 
     def test_error(self):
-        s = Scheduler("sched")
+        s = SyncFactory("sched")
         p = Process("proc", s)
         p.log_exception = MagicMock()
         p.start()
