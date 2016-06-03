@@ -51,5 +51,15 @@ class TestResponse(unittest.TestCase):
         self.assertEquals(r.value, "bar")
         self.assertRaises(KeyError, lambda: r.ffff)
 
+    def test_from_dict(self):
+        serialized = {"id":123, "type":"Return", "extra_1":"abc",
+                       "extra_2":{"field":"data"}}
+        response = Response.from_dict(serialized)
+        self.assertEquals(123, response.id_)
+        self.assertEquals("Return", response.type_)
+        self.assertEquals("abc", response.fields["extra_1"])
+        self.assertEquals({"field":"data"}, response.fields["extra_2"])
+        self.assertIsNone(response.context)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
