@@ -84,3 +84,10 @@ class Process(Loggable):
         """
 
         return self.sync_factory.create_queue()
+
+    def spawn(self, function, *args, **kwargs):
+        """Calls SyncFactory.spawn()"""
+        spawned = self.sync_factory.spawn(function, *args, **kwargs)
+        self._other_spawned.append(spawned)
+        return spawned
+
