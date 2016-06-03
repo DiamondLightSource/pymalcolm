@@ -16,7 +16,6 @@ class TestRequest(unittest.TestCase):
 
     def setUp(self):
         self.context = MagicMock()
-        self.context.to_dict()
         self.response_queue = MagicMock()
         self.request = Request(
             1, self.context, self.response_queue, "Put")
@@ -28,12 +27,8 @@ class TestRequest(unittest.TestCase):
         self.assertEqual("Put", self.request.type_)
 
     def test_to_dict(self):
-        context_dict = OrderedDict()
-        self.context.to_dict.return_value = context_dict
-
         expected_dict = OrderedDict()
         expected_dict['id'] = 1
-        expected_dict['context'] = context_dict
         expected_dict['type'] = "Put"
         parameters = OrderedDict(x=2, y=10)
         expected_dict['parameters'] = parameters

@@ -86,7 +86,6 @@ class Request(object):
         d = OrderedDict()
 
         d['id'] = self.id_
-        d['context'] = self.context.to_dict()
         d['type'] = self.type_
         for field, value in self.fields.items():
             d[field] = value
