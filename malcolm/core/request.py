@@ -5,6 +5,8 @@ from malcolm.core.response import Response
 class Request(object):
     """An object to interact with the attributes of a Block"""
 
+    POST = "Post"
+
     def __init__(self, id_, context, response_queue, type_):
         """
         Args:

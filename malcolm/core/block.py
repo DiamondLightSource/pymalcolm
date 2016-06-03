@@ -27,7 +27,7 @@ class Block(Loggable):
         setattr(self, method.name, method)
 
     def handle_request(self, request):
-        if request.type == "Post":
+        if request.type == request.POST:
             method_name = request.endpoint[-1]
             response = self._methods[method_name].handle_request(request)
         else:
