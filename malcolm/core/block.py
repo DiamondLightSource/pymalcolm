@@ -27,10 +27,9 @@ class Block(Loggable):
         setattr(self, method.name, method)
 
     def handle_request(self, request):
+        self.log_debug("Received request %s", request)
         method_name = request.endpoint[-1]
-        response = self._methods[method_name].handle_request(request)
-
-        return response
+        self._methods[method_name].handle_request(request)
 
     def to_dict(self):
 
