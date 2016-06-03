@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from pkg_resources import require
 require("mock")
-from mock import Mock
+from mock import Mock, patch, call
 
 from malcolm.core.method import Method
 
@@ -152,6 +152,24 @@ class TestMethod(unittest.TestCase):
         expected["defaults"] = OrderedDict({"in_attr":"default"})
         expected["returns"] = OrderedDict({"dict":"return"})
         self.assertEquals(expected, m.to_dict())
+
+    @patch("malcolm.core.method.MapMeta")
+    def test_from_dict_deserialize(self, mock_mapmeta):
+        name = "foo"
+        takes = dict(a=object(), b=object())
+        returns = dict(c=object())
+        defaults = dict(a=43)
+        d = dict(takes=takes, returns=returns, defaults=defaults)
+        m = Method.from_dict(name, d)
+        self.assertEqual(mock_mapmeta.from_dict.call_args_list, [
+            call("takes", takes), call("returns", returns)])
+        self.assertEqual(m.name, name)
+        self.assertEqual(m.takes, mock_mapmeta.from_dict.return_value)
+        self.assertEqual(m.returns, mock_mapmeta.from_dict.return_value)
+        self.assertEqual(m.defaults, defaults)
+
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

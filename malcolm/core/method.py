@@ -2,6 +2,7 @@
 from collections import OrderedDict
 
 from malcolm.core.loggable import Loggable
+from malcolm.core.mapmeta import MapMeta
 
 
 class Method(Loggable):
@@ -84,3 +85,18 @@ class Method(Loggable):
         serialized["defaults"] = self.defaults.copy()
         serialized["returns"] = self.returns.to_dict()
         return serialized
+
+    @classmethod
+    def from_dict(cls, name, d):
+        """Create a Method instance from the serialized version of itself
+
+        Args:
+            name (str): Method instance name
+            d (dict): Something that self.to_dict() would create
+        """
+        method = Method(name)
+        takes = MapMeta.from_dict("takes", d["takes"])
+        method.set_function_takes(takes, d["defaults"])
+        returns = MapMeta.from_dict("returns", d["returns"])
+        method.set_function_returns(returns)
+        return method
