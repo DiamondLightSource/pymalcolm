@@ -27,18 +27,29 @@ class Block(Loggable):
         setattr(self, method.name, method)
 
     def handle_request(self, request):
+        """
+        Process the request depending on the type
+
+        Args:
+            request(Request): Request object specifying action
+        """
+
         if request.type == request.POST:
             method_name = request.endpoint[-1]
             response = self._methods[method_name].handle_request(request)
+            request.respond_with_return(response.to_dict())
         else:
             layer = self
             for next_link in request.endpoint[1:]:
                 layer = getattr(layer, next_link)
-            response = layer
 
-        return response
+            if hasattr(layer, "to_dict"):
+                request.respond_with_return(layer.to_dict())
+            else:
+                request.respond_with_return(layer)
 
     def to_dict(self):
+        """Convert object attributes into a dictionary"""
 
         d = OrderedDict()
 

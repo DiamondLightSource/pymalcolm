@@ -81,9 +81,9 @@ class TestHandleRequest(unittest.TestCase):
         request.type = "Post"
         request.endpoint = ["TestBlock", "device", "get_things"]
 
-        response = self.block.handle_request(request)
+        self.block.handle_request(request)
 
-        self.assertEqual(self.response, response)
+        request.respond_with_return.assert_called_once_with(self.response)
 
     def test_given_get_then_return_attribute(self):
         self.block.state = MagicMock()
@@ -92,18 +92,19 @@ class TestHandleRequest(unittest.TestCase):
         request.type = "Get"
         request.endpoint = ["TestBlock", "state", "value"]
 
-        response = self.block.handle_request(request)
+        self.block.handle_request(request)
 
-        self.assertEqual("Running", response)
+        request.respond_with_return.assert_called_once_with("Running")
 
     def test_given_get_block_then_return_self(self):
         request = MagicMock()
         request.type = "Get"
         request.endpoint = ["TestBlock"]
+        expected_call = self.block.to_dict()
 
-        response = self.block.handle_request(request)
+        self.block.handle_request(request)
 
-        self.assertEqual(self.block, response)
+        request.respond_with_return.assert_called_once_with(expected_call)
 
 
 if __name__ == "__main__":
