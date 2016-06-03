@@ -33,3 +33,15 @@ class Response(object):
         response = cls(id_, context, "Return")
         response.fields["value"] = value
         return response
+
+    @classmethod
+    def from_dict(cls, d):
+        """Create a Response instance from a serialized version
+
+        Args:
+            d (dict): output of self.to_dict()
+        """
+        response = cls(id_=d["id"], context=None, type_=d["type"])
+        for field in [f for f in d.keys() if f not in ["id", "type"]]:
+            response.fields[field] = d[field]
+        return response
