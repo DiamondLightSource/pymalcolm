@@ -5,7 +5,7 @@ from multiprocessing.pool import ThreadPool
 from malcolm.core.loggable import Loggable
 
 
-class Scheduler(Loggable):
+class SyncFactory(Loggable):
     """Create thread primitives and schedule tasks"""
 
     def __init__(self, name):
@@ -13,7 +13,7 @@ class Scheduler(Loggable):
         Args:
             name(str): Scheduler name e.g. "Scheduler"
         """
-        super(Scheduler, self).__init__(logger_name=name)
+        super(SyncFactory, self).__init__(logger_name=name)
         self.pool = ThreadPool()
 
     def spawn(self, function, *args, **kwargs):

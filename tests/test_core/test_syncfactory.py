@@ -9,24 +9,24 @@ require("mock")
 from mock import patch
 
 # module imports
-from malcolm.core.scheduler import Scheduler
+from malcolm.core.syncfactory import SyncFactory
 
 
 class TestBlock(unittest.TestCase):
 
-    @patch("malcolm.core.scheduler.ThreadPool")
+    @patch("malcolm.core.syncfactory.ThreadPool")
     def setUp(self, mock_pool):
-        self.s = Scheduler("sched")
+        self.s = SyncFactory("sched")
         mock_pool.assert_called_once_with()
         self.assertEqual(self.s.pool, mock_pool.return_value)
 
-    @patch("malcolm.core.scheduler.Queue")
+    @patch("malcolm.core.syncfactory.Queue")
     def test_queue_creation(self, mock_queue):
         q = self.s.create_queue()
         mock_queue.assert_called_once_with()
         self.assertEqual(q, mock_queue.return_value)
 
-    @patch("malcolm.core.scheduler.Lock")
+    @patch("malcolm.core.syncfactory.Lock")
     def test_lock_creation(self, mock_lock):
         l = self.s.create_lock()
         mock_lock.assert_called_once_with()

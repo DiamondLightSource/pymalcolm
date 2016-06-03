@@ -34,12 +34,10 @@ class TestBlock(unittest.TestCase):
 
 class TestToDict(unittest.TestCase):
 
-    @patch('malcolm.core.method.Method.to_dict')
-    def test_returns_dict(self, method_to_dict_mock):
+    def test_returns_dict(self):
         method_dict = OrderedDict(takes=OrderedDict(one=OrderedDict()),
                                   returns=OrderedDict(one=OrderedDict()),
                                   defaults=OrderedDict())
-        method_to_dict_mock.return_value = method_dict
 
         m1 = MagicMock()
         m1.name = "method_one"
@@ -62,7 +60,29 @@ class TestToDict(unittest.TestCase):
 
         response = self.meta_map.to_dict()
 
+        m1.to_dict.assert_called_once_with()
+        m2.to_dict.assert_called_once_with()
         self.assertEqual(expected_dict, response)
+
+
+class TestHandleRequest(unittest.TestCase):
+
+    def setUp(self):
+        self.block = Block("TestBlock")
+        self.method = MagicMock()
+        self.method.name = "get_things"
+        self.response = MagicMock()
+        self.method.handle_request.return_value = self.response
+        self.block.add_method(self.method)
+
+    def test_given_request_then_pass_to_correct_method(self):
+        request = MagicMock()
+        request.endpoint = ["device", "get_things"]
+
+        response = self.block.handle_request(request)
+
+        self.assertEqual(self.response, response)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
