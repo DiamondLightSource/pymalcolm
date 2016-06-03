@@ -92,3 +92,16 @@ class Request(object):
             d[field] = value
 
         return d
+
+    @classmethod
+    def from_dict(cls, d):
+        """Create a Request instance from a serialized version
+
+        Args:
+            d (dict): output of self.to_dict()
+        """
+        request = cls(
+            id_=d["id"], context=None, response_queue=None, type_=d["type"])
+        for field in [f for f in d.keys() if f not in ["id", "type"]]:
+            request.fields[field] = d[field]
+        return request

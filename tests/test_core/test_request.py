@@ -43,6 +43,17 @@ class TestRequest(unittest.TestCase):
 
         self.assertEqual(expected_dict, response)
 
+    def test_from_dict(self):
+        serialized = {"id":1, "type":"Put", "extra_1":"abc",
+                      "extra_2":{"field":"data"}}
+        request = Request.from_dict(serialized)
+        self.assertEquals(1, request.id_)
+        self.assertEquals("Put", request.type_)
+        self.assertEquals("abc", request.fields["extra_1"])
+        self.assertEquals({"field":"data"}, request.fields["extra_2"])
+        self.assertIsNone(request.context)
+        self.assertIsNone(request.response_queue)
+
     @patch("malcolm.core.response.Response.Return")
     def test_respond_with_return(self, return_mock):
         response = MagicMock()
