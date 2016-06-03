@@ -26,7 +26,7 @@ class ServerComms(Loggable):
                 self.log_exception(
                     "Exception sending response %s", response.to_dict())
 
-    def send_to_client(response):
+    def send_to_client(self, response):
         """Abstract method to dispatch response to a client
 
         Args:

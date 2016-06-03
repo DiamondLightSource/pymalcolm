@@ -23,7 +23,7 @@ class TestServerComms(unittest.TestCase):
 
     def test_not_implemented_error(self):
         server = ServerComms("server", self.process)
-        self.assertRaises(NotImplementedError, server.send_to_client)
+        self.assertRaises(NotImplementedError, server.send_to_client, Mock())
         self.assertRaises(NotImplementedError, server.start_recv_loop)
         self.assertRaises(NotImplementedError, server.stop_recv_loop)
 
