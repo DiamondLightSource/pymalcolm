@@ -14,7 +14,7 @@ class Process(Loggable):
         super(Process, self).__init__(logger_name=name)
         self.name = name
         self.sync_factory = sync_factory
-        self.q = sync_factory.create_queue()
+        self.q = self.create_queue()
         # map block name -> block object
         self._blocks = OrderedDict()
         self._recv_spawned = None
