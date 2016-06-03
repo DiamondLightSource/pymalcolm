@@ -61,7 +61,7 @@ class Method(Loggable):
             if return_val.keys() != self.returns.elements.keys():
                 raise ValueError(
                     "Return result did not match specified return structure")
-            for r_name, r_val in return_val.iteritems():
+            for r_name, r_val in return_val.items():
                 self.returns.elements[r_name].validate(r_val)
         return return_val
 
