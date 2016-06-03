@@ -90,3 +90,6 @@ class TestRequest(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             post.null
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
