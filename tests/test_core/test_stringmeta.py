@@ -4,6 +4,7 @@ import unittest
 from collections import OrderedDict
 
 from malcolm.core.stringmeta import StringMeta
+from malcolm.core.attributemeta import AttributeMeta
 
 import sys
 import os
@@ -17,6 +18,9 @@ class TestInit(unittest.TestCase):
 
     def test_given_name_then_set(self):
         self.assertEqual("TestMeta", self.string_meta.name)
+
+    def test_metaOf(self):
+        self.assertEqual(StringMeta.metaOf, "malcolm:core/String:1.0")
 
 
 class TestValidate(unittest.TestCase):
@@ -56,6 +60,12 @@ class TestToDict(unittest.TestCase):
         response = self.string_meta.to_dict()
 
         self.assertEqual(expected_dict, response)
+
+    def test_from_dict_deserialize(self):
+        s = AttributeMeta.from_dict(
+            "me", dict(metaOf="malcolm:core/String:1.0"))
+        self.assertEqual(type(s), StringMeta)
+        self.assertEqual(s.name, "me")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

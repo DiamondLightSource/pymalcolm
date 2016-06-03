@@ -94,7 +94,7 @@ class Method(Loggable):
             name (str): Method instance name
             d (dict): Something that self.to_dict() would create
         """
-        method = Method(name)
+        method = cls(name)
         takes = MapMeta.from_dict("takes", d["takes"])
         method.set_function_takes(takes, d["defaults"])
         returns = MapMeta.from_dict("returns", d["returns"])

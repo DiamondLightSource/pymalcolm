@@ -5,6 +5,10 @@ from collections import OrderedDict
 
 from malcolm.core.attributemeta import AttributeMeta
 
+from pkg_resources import require
+require("mock")
+from mock import MagicMock
+
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -46,6 +50,26 @@ class TestToDict(unittest.TestCase):
         response = self.attribute_meta.to_dict()
 
         self.assertEqual(expected_dict, response)
+
+class TestFromDict(unittest.TestCase):
+
+    def test_from_dict_returns(self):
+        m = MagicMock()
+        AttributeMeta.register_subclass(m, "foo:1.0")
+        self.assertEqual(m.metaOf, "foo:1.0")
+
+        d = dict(metaOf = "foo:1.0")
+        am = AttributeMeta.from_dict("me", d)
+
+        m.from_dict.assert_called_once_with("me", d)
+        self.assertEqual(m.from_dict.return_value, am)
+
+    def test_from_dict_not_defined_on_subclass_fails(self):
+        class Faulty(AttributeMeta):
+            pass
+        AttributeMeta.register_subclass(Faulty, "anything")
+        self.assertRaises(AssertionError, AttributeMeta.from_dict,
+                          "me", dict(metaOf="anything"))
 
 
 if __name__ == "__main__":

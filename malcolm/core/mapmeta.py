@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from malcolm.core.loggable import Loggable
+from malcolm.core.attributemeta import AttributeMeta
 
 
 class MapMeta(Loggable):
@@ -29,7 +30,8 @@ class MapMeta(Loggable):
             raise ValueError("Element already exists in dictionary")
         else:
             self.elements[attribute_meta.name] = attribute_meta
-            self.required.append(required)
+            if required:
+                self.required.append(attribute_meta.name)
 
     def to_dict(self):
         """Convert object attributes into a dictionary"""
@@ -42,3 +44,18 @@ class MapMeta(Loggable):
         d['required'] = self.required
 
         return d
+
+    @classmethod
+    def from_dict(cls, name, d):
+        """Create a MapMeta instance from the serialized version of itself
+
+        Args:
+            name (str): MapMeta instance name
+            d (dict): Something that self.to_dict() would create
+        """
+        map_meta = cls(name)
+        for ename, element in d["elements"].items():
+            attribute_meta = AttributeMeta.from_dict(ename, element)
+            map_meta.add_element(attribute_meta, ename in d["required"])
+        return map_meta
+
