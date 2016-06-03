@@ -35,7 +35,10 @@ class TestRequest(unittest.TestCase):
         expected_dict['id'] = 1
         expected_dict['context'] = context_dict
         expected_dict['type'] = "Put"
+        parameters = OrderedDict(x=2, y=10)
+        expected_dict['parameters'] = parameters
 
+        self.request.fields['parameters'] = parameters
         response = self.request.to_dict()
 
         self.assertEqual(expected_dict, response)
