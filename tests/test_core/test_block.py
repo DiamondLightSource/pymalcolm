@@ -77,11 +77,32 @@ class TestHandleRequest(unittest.TestCase):
 
     def test_given_request_then_pass_to_correct_method(self):
         request = MagicMock()
-        request.endpoint = ["device", "get_things"]
+        request.type = "Post"
+        request.endpoint = ["TestBlock", "device", "get_things"]
 
         response = self.block.handle_request(request)
 
         self.assertEqual(self.response, response)
+
+    def test_given_get_then_return_attribute(self):
+        self.block.state = MagicMock()
+        self.block.state.value = "Running"
+        request = MagicMock()
+        request.type = "Get"
+        request.endpoint = ["TestBlock", "state", "value"]
+
+        response = self.block.handle_request(request)
+
+        self.assertEqual("Running", response)
+
+    def test_given_get_block_then_return_self(self):
+        request = MagicMock()
+        request.type = "Get"
+        request.endpoint = ["TestBlock"]
+
+        response = self.block.handle_request(request)
+
+        self.assertEqual(self.block, response)
 
 
 if __name__ == "__main__":

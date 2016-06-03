@@ -54,6 +54,13 @@ class TestRequest(unittest.TestCase):
         self.response_queue.put.assert_called_once_with(response)
 
     @patch("malcolm.core.request.Request")
+    def test_Get(self, request_mock):
+        endpoint = ["BL18I:XSPRESS3", "state", "value"]
+        get = Request.Get(2, self.context, self.response_queue, endpoint)
+
+        request_mock.assert_called_once_with(2, self.context, self.response_queue, type_="Get")
+
+    @patch("malcolm.core.request.Request")
     def test_Post(self, request_mock):
         endpoint = ["BL18I:XSPRESS3", "configure"]
         post = Request.Post(2, self.context, self.response_queue, endpoint)

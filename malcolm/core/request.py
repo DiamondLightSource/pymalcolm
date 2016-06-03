@@ -35,6 +35,26 @@ class Request(object):
         self.response_queue.put(response)
 
     @classmethod
+    def Get(cls, id_, context, response_queue, endpoint):
+        """
+        Create a Get Request object
+
+        Args:
+            id_(int): Unique specifier for Get
+            context(): Context of Get
+            response_queue(Queue): Queue to return to
+            endpoint(list[str]): Path to target Block substructure
+
+        Returns:
+            Request object
+        """
+
+        request = Request(id_, context, response_queue, type_="Get")
+        request.fields['endpoint'] = endpoint
+
+        return request
+
+    @classmethod
     def Post(cls, id_, context, response_queue, endpoint, parameters=None):
         """
         Create a Post Request object

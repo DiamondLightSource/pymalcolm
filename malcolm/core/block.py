@@ -27,8 +27,14 @@ class Block(Loggable):
         setattr(self, method.name, method)
 
     def handle_request(self, request):
-        method_name = request.endpoint[-1]
-        response = self._methods[method_name].handle_request(request)
+        if request.type == "Post":
+            method_name = request.endpoint[-1]
+            response = self._methods[method_name].handle_request(request)
+        else:
+            layer = self
+            for next_link in request.endpoint[1:]:
+                layer = getattr(layer, next_link)
+            response = layer
 
         return response
 
