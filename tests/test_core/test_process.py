@@ -51,5 +51,13 @@ class TestProcess(unittest.TestCase):
         p.log_exception.assert_called_once_with("Exception while handling %s",
                                                 "<to_dict>")
 
+    def test_spawned_adds_to_other_spawned(self):
+        s = MagicMock()
+        p = Process("proc", s)
+        spawned = p.spawn(callable, "fred", a=4)
+        self.assertEqual(spawned, s.spawn.return_value)
+        self.assertEqual(p._other_spawned, [spawned])
+        s.spawn.assert_called_once_with(callable, "fred", a=4)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
