@@ -72,16 +72,38 @@ class TestHandleRequest(unittest.TestCase):
         self.method = MagicMock()
         self.method.name = "get_things"
         self.response = MagicMock()
-        self.method.handle_request.return_value = self.response
         self.block.add_method(self.method)
 
     def test_given_request_then_pass_to_correct_method(self):
         request = MagicMock()
-        request.endpoint = ["device", "get_things"]
+        request.POST = "Post"
+        request.type = "Post"
+        request.endpoint = ["TestBlock", "device", "get_things"]
 
-        response = self.block.handle_request(request)
+        self.block.handle_request(request)
 
-        self.assertEqual(self.response, response)
+        self.method.handle_request.assert_called_once_with(request)
+
+    def test_given_get_then_return_attribute(self):
+        self.block.state = MagicMock()
+        self.block.state.value = "Running"
+        request = MagicMock()
+        request.type = "Get"
+        request.endpoint = ["TestBlock", "state", "value"]
+
+        self.block.handle_request(request)
+
+        request.respond_with_return.assert_called_once_with("Running")
+
+    def test_given_get_block_then_return_self(self):
+        request = MagicMock()
+        request.type = "Get"
+        request.endpoint = ["TestBlock"]
+        expected_call = self.block.to_dict()
+
+        self.block.handle_request(request)
+
+        request.respond_with_return.assert_called_once_with(expected_call)
 
 
 if __name__ == "__main__":
