@@ -18,6 +18,9 @@ class TestInit(unittest.TestCase):
     def test_given_name_then_set(self):
         self.assertEqual("TestMeta", self.string_meta.name)
 
+    def test_metaOf(self):
+        self.assertEqual(StringMeta.metaOf, "malcolm:core/String:1.0")
+
 
 class TestValidate(unittest.TestCase):
 

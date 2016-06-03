@@ -30,3 +30,5 @@ class StringMeta(AttributeMeta):
         d = super(StringMeta, self).to_dict()
 
         return d
+
+AttributeMeta.register_subclass(StringMeta, "malcolm:core/String:1.0")
