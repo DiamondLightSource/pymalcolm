@@ -72,7 +72,6 @@ class TestHandleRequest(unittest.TestCase):
         self.method = MagicMock()
         self.method.name = "get_things"
         self.response = MagicMock()
-        self.method.handle_request.return_value = self.response
         self.block.add_method(self.method)
 
     def test_given_request_then_pass_to_correct_method(self):
@@ -83,7 +82,7 @@ class TestHandleRequest(unittest.TestCase):
 
         self.block.handle_request(request)
 
-        request.respond_with_return.assert_called_once_with(self.response.to_dict())
+        self.method.handle_request.assert_called_once_with(request)
 
     def test_given_get_then_return_attribute(self):
         self.block.state = MagicMock()

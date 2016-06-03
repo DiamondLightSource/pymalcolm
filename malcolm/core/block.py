@@ -36,8 +36,7 @@ class Block(Loggable):
 
         if request.type == request.POST:
             method_name = request.endpoint[-1]
-            response = self._methods[method_name].handle_request(request)
-            request.respond_with_return(response.to_dict())
+            self._methods[method_name].handle_request(request)
         else:
             layer = self
             for next_link in request.endpoint[1:]:
