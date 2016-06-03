@@ -77,7 +77,7 @@ class TestHandleRequest(unittest.TestCase):
     def test_given_request_then_pass_to_correct_method(self):
         request = MagicMock()
         request.POST = "Post"
-        request.type = "Post"
+        request.type_ = "Post"
         request.endpoint = ["TestBlock", "device", "get_things"]
 
         self.block.handle_request(request)
@@ -88,7 +88,7 @@ class TestHandleRequest(unittest.TestCase):
         self.block.state = MagicMock()
         self.block.state.value = "Running"
         request = MagicMock()
-        request.type = "Get"
+        request.type_ = "Get"
         request.endpoint = ["TestBlock", "state", "value"]
 
         self.block.handle_request(request)
@@ -97,7 +97,7 @@ class TestHandleRequest(unittest.TestCase):
 
     def test_given_get_block_then_return_self(self):
         request = MagicMock()
-        request.type = "Get"
+        request.type_ = "Get"
         request.endpoint = ["TestBlock"]
         expected_call = self.block.to_dict()
 
