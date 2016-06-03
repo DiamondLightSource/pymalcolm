@@ -67,8 +67,14 @@ class Method(Loggable):
 
     def handle_request(self, request):
         """Call exposed function using request parameters and respond with the
-        result"""
+        result
+
+        Args:
+            request (Request): The request to handle
+        """
+        self.log_debug("Received request %s", request)
         result = self(**request.parameters)
+        self.log_debug("Returning result %s", result)
         request.respond_with_return(result)
 
     def to_dict(self):

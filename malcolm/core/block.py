@@ -33,7 +33,7 @@ class Block(Loggable):
         Args:
             request(Request): Request object specifying action
         """
-
+        self.log_debug("Received request %s", request)
         if request.type == request.POST:
             method_name = request.endpoint[-1]
             self._methods[method_name].handle_request(request)
