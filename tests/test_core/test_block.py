@@ -83,7 +83,7 @@ class TestHandleRequest(unittest.TestCase):
 
         self.block.handle_request(request)
 
-        request.respond_with_return.assert_called_once_with(self.response)
+        request.respond_with_return.assert_called_once_with(self.response.to_dict())
 
     def test_given_get_then_return_attribute(self):
         self.block.state = MagicMock()
