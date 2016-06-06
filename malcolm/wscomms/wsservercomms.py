@@ -49,7 +49,7 @@ class WSServerComms(ServerComms):
         Args:
             response(Response): The message to pass to the client
         """
-        response.context.write_message(response)
+        response.context.write_message(response.to_dict())
 
     def start_recv_loop(self):
         """Start a receive loop to dispatch requests to Process"""

@@ -17,11 +17,12 @@ class TestWSServerComms(unittest.TestCase):
 
     @patch('malcolm.wscomms.wsservercomms.Application')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')
-    def test_init(self, _, _1):
+    def test_init(self, _, app_mock):
         self.WS = WSServerComms("TestWebSocket", self.p, 1)
 
         self.assertEqual("TestWebSocket", self.WS.name)
         self.assertEqual(self.p, self.WS.process)
+        self.assertEqual(app_mock(), self.WS.WSApp)
 
     @patch('malcolm.wscomms.wsservercomms.Application.listen')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')
@@ -32,7 +33,7 @@ class TestWSServerComms(unittest.TestCase):
         self.WS = WSServerComms("TestWebSocket", self.p, 1)
 
         listen_mock.assert_called_once_with(1)
-        ioloop_mock.current.assert_called_once_with()
+        self.assertEqual(ioloop_mock.current(), self.WS.loop)
         self.assertEqual(self.WS.process,
                          self.WS.WSApp.handlers[0][1][0].handler_class.process)
 
@@ -82,11 +83,11 @@ class TestWSServerComms(unittest.TestCase):
 
     @patch('malcolm.wscomms.wsservercomms.Application.listen')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')
-    def test_startup(self, _, _2):
+    def test_send_to_client(self, _, _2):
         self.WS = WSServerComms("TestWebSocket", self.p, 1)
 
         response_mock = MagicMock()
         self.WS.send_to_client(response_mock)
 
-
-
+        response_mock.context.write_message.assert_called_once_with(
+            response_mock.to_dict())
