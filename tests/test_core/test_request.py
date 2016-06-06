@@ -17,11 +17,9 @@ class TestRequest(unittest.TestCase):
     def setUp(self):
         self.context = MagicMock()
         self.response_queue = MagicMock()
-        self.request = Request(
-            1, self.context, self.response_queue, "Put")
+        self.request = Request(self.context, self.response_queue, "Put")
 
     def test_init(self):
-        self.assertEqual(1, self.request.id_)
         self.assertEqual(self.context, self.request.context)
         self.assertEqual(self.response_queue, self.request.response_queue)
         self.assertEqual("Put", self.request.type_)
@@ -33,19 +31,20 @@ class TestRequest(unittest.TestCase):
         parameters = OrderedDict(x=2, y=10)
         expected_dict['parameters'] = parameters
 
+        self.request.id_ = 1
         self.request.fields['parameters'] = parameters
-        response = self.request.to_dict()
+        return_dict = self.request.to_dict()
 
-        self.assertEqual(expected_dict, response)
+        self.assertEqual(expected_dict, return_dict)
 
     def test_from_dict(self):
-        serialized = {"id":1, "type":"Put", "extra_1":"abc",
-                      "extra_2":{"field":"data"}}
+        serialized = {"id": 1, "type": "Put", "extra_1": "abc",
+                      "extra_2": {"field": "data"}}
         request = Request.from_dict(serialized)
         self.assertEquals(1, request.id_)
         self.assertEquals("Put", request.type_)
         self.assertEquals("abc", request.fields["extra_1"])
-        self.assertEquals({"field":"data"}, request.fields["extra_2"])
+        self.assertEquals({"field": "data"}, request.fields["extra_2"])
         self.assertIsNone(request.context)
         self.assertIsNone(request.response_queue)
 
@@ -62,26 +61,26 @@ class TestRequest(unittest.TestCase):
     @patch("malcolm.core.request.Request")
     def test_Get(self, request_mock):
         endpoint = ["BL18I:XSPRESS3", "state", "value"]
-        get = Request.Get(2, self.context, self.response_queue, endpoint)
+        get = Request.Get(self.context, self.response_queue, endpoint)
 
-        request_mock.assert_called_once_with(2, self.context, self.response_queue, type_="Get")
+        request_mock.assert_called_once_with(self.context, self.response_queue, type_="Get")
 
     @patch("malcolm.core.request.Request")
     def test_Post(self, request_mock):
         endpoint = ["BL18I:XSPRESS3", "configure"]
-        post = Request.Post(2, self.context, self.response_queue, endpoint)
+        post = Request.Post(self.context, self.response_queue, endpoint)
 
-        request_mock.assert_called_once_with(2, self.context, self.response_queue, type_="Post")
+        request_mock.assert_called_once_with(self.context, self.response_queue, type_="Post")
 
     def test_given_valid_attr_then_return(self):
         param_dict = dict(one=7, two=23)
-        post = Request.Post(3, self.context, self.response_queue, [""], parameters=param_dict)
+        post = Request.Post(self.context, self.response_queue, [""], parameters=param_dict)
 
         self.assertEqual(param_dict, post.parameters)
 
     def test_given_invalid_attr_then_raise_error(self):
         param_dict = dict(one=7, two=23)
-        post = Request.Post(3, self.context, self.response_queue, [""], parameters=param_dict)
+        post = Request.Post(self.context, self.response_queue, [""], parameters=param_dict)
 
         with self.assertRaises(KeyError):
             post.null

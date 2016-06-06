@@ -22,7 +22,7 @@ class ServerComms(Loggable):
                 break
             try:
                 self.send_to_client(response)
-            except:
+            except Exception:
                 self.log_exception(
                     "Exception sending response %s", response.to_dict())
 

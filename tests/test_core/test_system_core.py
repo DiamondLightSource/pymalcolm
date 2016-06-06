@@ -59,9 +59,10 @@ class TestSystemCore(unittest.TestCase):
         process.add_block(block)
         process.start()
         q = sync_factory.create_queue()
-        req = Request.Post(response_queue=q, context="ClientConnection", id_=44,
+        req = Request.Post(response_queue=q, context="ClientConnection",
                            endpoint=["hello", "say_hello"],
                            parameters=dict(name="thing"))
+        req.set_id(44)
         process.q.put(req)
         resp = q.get(timeout=1)
         self.assertEqual(resp.id_, 44)
