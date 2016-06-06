@@ -36,13 +36,24 @@ class Request(object):
 
     def respond_with_return(self, value=None):
         """
-        Create a Response object to handle the request
+        Create a Return object to handle the request
 
         Args:
             value(): Value to set endpoint to
         """
 
         response = Response.Return(self.id_, self.context, value=value)
+        self.response_queue.put(response)
+
+    def respond_with_error(self, error_message=None):
+        """
+        Create an Error object to handle the request
+
+        Args:
+            error_message(str): Message explaining error
+        """
+
+        response = Response.Error(self.id_, self.context, error_message=error_message)
         self.response_queue.put(response)
 
     @classmethod

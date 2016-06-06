@@ -36,6 +36,21 @@ class Response(object):
         return response
 
     @classmethod
+    def Error(cls, id_, context, error_message):
+        """
+        Create an Error response object with the provided parameters.
+
+        Args:
+            id_(int): ID from initial message
+            context(): Context associated with ID
+            error_message(str): Error message
+        """
+
+        response = cls(id_, context, "Error")
+        response.fields["error_message"] = error_message
+        return response
+
+    @classmethod
     def from_dict(cls, d):
         """Create a Response instance from a serialized version
 

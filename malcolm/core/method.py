@@ -74,9 +74,14 @@ class Method(Loggable):
             request (Request): The request to handle
         """
         self.log_debug("Received request %s", request)
-        result = self(**request.parameters)
-        self.log_debug("Returning result %s", result)
-        request.respond_with_return(result)
+        try:
+            result = self(**request.parameters)
+            self.log_debug("Returning result %s", result)
+        except Exception as error:
+            message = "Method %s raised an error: %s" % (self.name, error.message)
+            request.respond_with_error(message)
+        else:
+            request.respond_with_return(result)
 
     def to_dict(self):
         """Return ordered dictionary representing Method object."""
