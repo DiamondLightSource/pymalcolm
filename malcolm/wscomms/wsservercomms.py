@@ -11,7 +11,7 @@ from malcolm.core.request import Request
 
 class MalcolmWebSocketHandler(WebSocketHandler):
 
-    process = None
+    servercomms = None
 
     def on_message(self, message):
         """
@@ -21,11 +21,10 @@ class MalcolmWebSocketHandler(WebSocketHandler):
             message(str): Received message
         """
 
-        d = json.loads(message, object_pairs_hook=OrderedDict())
+        d = json.loads(message, object_pairs_hook=OrderedDict)
         request = Request.from_dict(d)
         request.context = self
-
-        self.process.handle_request(request)
+        self.servercomms.on_request(request)
 
 
 class WSServerComms(ServerComms):
@@ -36,10 +35,12 @@ class WSServerComms(ServerComms):
 
         self.name = name
         self.process = process
+        # The Result object for the IOLoop start() thread
+        self._loop_spawned = None
 
-        MalcolmWebSocketHandler.process = self.process
+        MalcolmWebSocketHandler.servercomms = self
 
-        self.WSApp = Application([(r"/", MalcolmWebSocketHandler)])
+        self.WSApp = Application([(r"/ws", MalcolmWebSocketHandler)])
         self.WSApp.listen(port)
         self.loop = IOLoop.current()
 
@@ -51,12 +52,27 @@ class WSServerComms(ServerComms):
         """
 
         message = json.dumps(response.to_dict())
+        self.log_debug("Sending to client %s", message)
         response.context.write_message(message)
+
+    def on_request(self, request):
+        """
+        Pass on received request to Process
+
+        Args:
+            request (Request): Received request with context but no q
+        """
+
+        request.response_queue = self.q
+        self.process.handle_request(request)
 
     def start_recv_loop(self):
         """Start a receive loop to dispatch requests to Process"""
-        self.loop.start()
+        self._loop_spawned = self.process.spawn(self.loop.start)
 
     def stop_recv_loop(self):
         """Stop the receive loop created by start_recv_loop"""
-        self.loop.stop()
+        # This is the only thing that is safe to do from outside the IOLoop
+        # thread
+        self.loop.add_callback(self.loop.stop)
+        self._loop_spawned.wait()
