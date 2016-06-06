@@ -52,9 +52,7 @@ class Block(Loggable):
 
         d = OrderedDict()
 
-        method_dict = OrderedDict()
         for method_name, method in self._methods.items():
-            method_dict[method_name] = method.to_dict()
-        d['methods'] = method_dict
+            d[method_name] = method.to_dict()
 
         return d

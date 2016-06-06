@@ -1,17 +1,31 @@
 from collections import OrderedDict
 import json
 
-from tornado.websocket import WebSocketHandler
 from tornado.ioloop import IOLoop
-from tornado.web import Application
+from tornado.websocket import websocket_connect
 
 from malcolm.core.clientcomms import ClientComms
 from malcolm.core.request import Response
 
 
-class MalcolmWebSocketHandler(WebSocketHandler):
+class WSClientComms(ClientComms):
+    """A class for a client to communicate with the server"""
 
-    process = None
+    def __init__(self, name, process, url):
+        """
+        Args:
+            name (str): Name for logging
+            process (Process): Process for primitive creation
+            url (str): Url for websocket connection. E.g. ws://localhost:8888/ws
+        """
+        super(WSClientComms, self).__init__(name, process)
+
+        self.name = name
+        self.process = process
+        self.url = url
+        # TODO: Are we starting one or more IOLoops here?
+        self.loop = IOLoop.current()
+        self.conn = websocket_connect(url, on_message_callback=self.on_message)
 
     def on_message(self, message):
         """
@@ -20,28 +34,12 @@ class MalcolmWebSocketHandler(WebSocketHandler):
         Args:
             message(str): Received message
         """
-
-        d = json.loads(message, object_pairs_hook=OrderedDict())
+        self.log_debug("Got message %s", message)
+        d = json.loads(message, object_pairs_hook=OrderedDict)
         response = Response.from_dict(d)
-        response.context = self
 
-        self.process.q.put(response)
-
-
-class WSClientComms(ClientComms):
-    """A class for a client to communicate with the server"""
-
-    def __init__(self, name, process, port):
-        super(WSClientComms, self).__init__(name, process)
-
-        self.name = name
-        self.process = process
-
-        MalcolmWebSocketHandler.process = self.process
-
-        self.WSApp = Application([(r"/", MalcolmWebSocketHandler)])
-        self.WSApp.listen(port)
-        self.loop = IOLoop.current()
+        req = self.requests[response.id_]
+        req.response_queue.put(response)
 
     def send_to_server(self, request):
         """Dispatch a request to the server
@@ -51,12 +49,15 @@ class WSClientComms(ClientComms):
         """
 
         message = json.dumps(request.to_dict())
-        request.context.write_message(message)
+        self.conn.result().write_message(message)
 
     def start_recv_loop(self):
         """Start a receive loop to dispatch responses to a Method"""
-        self.loop.start()
+        self._loop_spawned = self.process.spawn(self.loop.start)
 
     def stop_recv_loop(self):
         """Stop the receive loop created by start_recv_loop"""
-        self.loop.stop()
+        # This is the only thing that is safe to do from outside the IOLoop
+        # thread
+        self.loop.add_callback(self.loop.stop)
+        self._loop_spawned.wait()

@@ -4,6 +4,7 @@ import json
 from tornado.websocket import WebSocketHandler
 from tornado.ioloop import IOLoop
 from tornado.web import Application
+from tornado.httpserver import HTTPServer
 
 from malcolm.core.servercomms import ServerComms
 from malcolm.core.request import Request
@@ -40,8 +41,9 @@ class WSServerComms(ServerComms):
 
         MalcolmWebSocketHandler.servercomms = self
 
-        self.WSApp = Application([(r"/ws", MalcolmWebSocketHandler)])
-        self.WSApp.listen(port)
+        application = Application([(r"/ws", MalcolmWebSocketHandler)])
+        self.server = HTTPServer(application)
+        self.server.listen(port)
         self.loop = IOLoop.current()
 
     def send_to_client(self, response):
@@ -74,5 +76,6 @@ class WSServerComms(ServerComms):
         """Stop the receive loop created by start_recv_loop"""
         # This is the only thing that is safe to do from outside the IOLoop
         # thread
+        self.loop.add_callback(self.server.stop)
         self.loop.add_callback(self.loop.stop)
         self._loop_spawned.wait()

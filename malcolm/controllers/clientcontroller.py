@@ -42,6 +42,7 @@ class ClientController(Controller):
         method = Method.from_dict(method_name, method_map)
         method.set_function(
             functools.partial(self.call_server_method, method_name))
+        self.log_debug("Wrapping method %s", method_name)
         return method
 
     def call_server_method(self, method_name, args):
