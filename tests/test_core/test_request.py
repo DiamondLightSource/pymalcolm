@@ -58,6 +58,17 @@ class TestRequest(unittest.TestCase):
         return_mock.assert_called_once_with(self.request.id_, self.request.context, value=5)
         self.response_queue.put.assert_called_once_with(response)
 
+    @patch("malcolm.core.response.Response.Error")
+    def test_respond_with_error(self, return_mock):
+        response = MagicMock()
+        return_mock.return_value = response
+
+        self.request.respond_with_error(error_message="Test Error")
+
+        return_mock.assert_called_once_with(self.request.id_, self.request.context,
+                                            error_message="Test Error")
+        self.response_queue.put.assert_called_once_with(response)
+
     @patch("malcolm.core.request.Request")
     def test_Get(self, request_mock):
         endpoint = ["BL18I:XSPRESS3", "state", "value"]

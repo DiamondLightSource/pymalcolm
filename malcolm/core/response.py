@@ -24,7 +24,7 @@ class Response(object):
 
     @classmethod
     def Return(cls, id_, context, value=None):
-        """Create a Return response object with the provided parameters.
+        """Create a Return Response object with the provided parameters.
 
         Args:
             id_ (int): id from initial message
@@ -33,6 +33,21 @@ class Response(object):
         """
         response = cls(id_, context, "Return")
         response.fields["value"] = value
+        return response
+
+    @classmethod
+    def Error(cls, id_, context, error_message):
+        """
+        Create an Error Response object with the provided parameters.
+
+        Args:
+            id_(int): ID from initial message
+            context(): Context associated with ID
+            error_message(str): Error message
+        """
+
+        response = cls(id_, context, "Error")
+        response.fields["error_message"] = error_message
         return response
 
     @classmethod
