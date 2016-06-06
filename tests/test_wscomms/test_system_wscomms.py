@@ -9,6 +9,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 # logging.basicConfig(level=logging.DEBUG)
 
 # tornado
+from pkg_resources import require
+require("tornado")
 from tornado.websocket import websocket_connect
 from tornado import gen
 from tornado.ioloop import IOLoop

@@ -7,7 +7,6 @@ require('tornado')
 from mock import MagicMock, patch
 
 from malcolm.wscomms.wsclientcomms import WSClientComms
-from malcolm.wscomms.wsclientcomms import MalcolmWebSocketHandler
 
 
 class TestWSServerComms(unittest.TestCase):
