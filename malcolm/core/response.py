@@ -24,7 +24,7 @@ class Response(object):
 
     @classmethod
     def Return(cls, id_, context, value=None):
-        """Create a Return response object with the provided parameters.
+        """Create a Return Response object with the provided parameters.
 
         Args:
             id_ (int): id from initial message
@@ -38,7 +38,7 @@ class Response(object):
     @classmethod
     def Error(cls, id_, context, error_message):
         """
-        Create an Error response object with the provided parameters.
+        Create an Error Response object with the provided parameters.
 
         Args:
             id_(int): ID from initial message

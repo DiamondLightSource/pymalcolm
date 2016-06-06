@@ -36,7 +36,7 @@ class Request(object):
 
     def respond_with_return(self, value=None):
         """
-        Create a Return object to handle the request
+        Create a Return Response object to handle the request
 
         Args:
             value(): Value to set endpoint to
@@ -47,7 +47,7 @@ class Request(object):
 
     def respond_with_error(self, error_message=None):
         """
-        Create an Error object to handle the request
+        Create an Error Response object to handle the request
 
         Args:
             error_message(str): Message explaining error
