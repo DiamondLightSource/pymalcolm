@@ -81,13 +81,15 @@ class TestWSServerComms(unittest.TestCase):
         request_mock.from_dict.assert_called_once_with(message_dict)
         self.p.handle_request.assert_called_once_with(request)
 
+    @patch('malcolm.wscomms.wsservercomms.json')
     @patch('malcolm.wscomms.wsservercomms.Application.listen')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')
-    def test_send_to_client(self, _, _2):
+    def test_send_to_client(self, _, _2, json_mock):
         self.WS = WSServerComms("TestWebSocket", self.p, 1)
 
         response_mock = MagicMock()
         self.WS.send_to_client(response_mock)
 
+        json_mock.dumps.assert_called_once_with(response_mock.to_dict())
         response_mock.context.write_message.assert_called_once_with(
-            response_mock.to_dict())
+            json_mock.dumps())

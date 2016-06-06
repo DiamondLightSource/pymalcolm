@@ -49,7 +49,9 @@ class WSServerComms(ServerComms):
         Args:
             response(Response): The message to pass to the client
         """
-        response.context.write_message(response.to_dict())
+
+        message = json.dumps(response.to_dict())
+        response.context.write_message(message)
 
     def start_recv_loop(self):
         """Start a receive loop to dispatch requests to Process"""
