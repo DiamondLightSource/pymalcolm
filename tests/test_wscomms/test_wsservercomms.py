@@ -34,28 +34,32 @@ class TestWSServerComms(unittest.TestCase):
 
         listen_mock.assert_called_once_with(1)
         self.assertEqual(ioloop_mock.current(), self.WS.loop)
-        self.assertEqual(self.WS.process,
-                         self.WS.WSApp.handlers[0][1][0].handler_class.process)
+        self.assertEqual(self.WS,
+                         self.WS.WSApp.handlers[0][1][0].handler_class.servercomms)
 
     @patch('malcolm.wscomms.wsservercomms.Application.listen')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')
-    def test_start(self, ioloop_mock, _):
-        loop_mock = MagicMock()
-        ioloop_mock.current.return_value = loop_mock
+    def test_start(self, _, _2):
+        spawn_mock = MagicMock()
+        self.p.spawn.return_value = spawn_mock
+
         self.WS = WSServerComms("TestWebSocket", self.p, 1)
         self.WS.start_recv_loop()
 
-        loop_mock.start.assert_called_once_with()
+        self.assertEqual(spawn_mock, self.WS._loop_spawned)
 
     @patch('malcolm.wscomms.wsservercomms.Application.listen')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')
     def test_stop(self, ioloop_mock, _):
         loop_mock = MagicMock()
         ioloop_mock.current.return_value = loop_mock
+
         self.WS = WSServerComms("TestWebSocket", self.p, 1)
+        self.WS._loop_spawned = MagicMock()
         self.WS.stop_recv_loop()
 
-        loop_mock.stop.assert_called_once_with()
+        loop_mock.add_callback.assert_called_once_with(loop_mock.stop)
+        self.WS._loop_spawned.wait.assert_called_once_with()
 
     @patch('malcolm.wscomms.wsservercomms.Request')
     @patch('malcolm.wscomms.wsservercomms.json')
@@ -77,7 +81,7 @@ class TestWSServerComms(unittest.TestCase):
             MWSH, "TestMessage")
 
         json_mock.loads.assert_called_once_with("TestMessage",
-                                                object_pairs_hook=OrderedDict())
+                                                object_pairs_hook=OrderedDict)
         request_mock.from_dict.assert_called_once_with(message_dict)
         self.p.handle_request.assert_called_once_with(request)
 
