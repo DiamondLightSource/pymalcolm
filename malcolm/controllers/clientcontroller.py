@@ -3,7 +3,6 @@ import functools
 from malcolm.core.controller import Controller
 from malcolm.core.request import Request
 from malcolm.core.method import Method
-from malcolm.core.mapmeta import MapMeta
 
 
 class ClientController(Controller):
