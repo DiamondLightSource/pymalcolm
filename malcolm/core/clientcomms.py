@@ -31,7 +31,7 @@ class ClientComms(Loggable):
                 # TODO: Move request store into new method?
                 self.requests[request.id_] = request
                 self.send_to_server(request)
-            except:
+            except Exception:
                 self.log_exception(
                     "Exception sending request %s", request.to_dict())
 
