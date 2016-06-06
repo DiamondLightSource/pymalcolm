@@ -7,16 +7,15 @@ class Request(object):
 
     POST = "Post"
 
-    def __init__(self, id_, context, response_queue, type_):
+    def __init__(self, context, response_queue, type_):
         """
         Args:
-            id_(int): Unique specifier for Request
             context(): Context of request
             response_queue(Queue): Queue to return to
             type_(str): Request type e.g. get, put, post, subscribe, unsubscribe
         """
 
-        self.id_ = id_
+        self.id_ = None
         self.context = context
         self.response_queue = response_queue
         self.type_ = type_
@@ -24,6 +23,16 @@ class Request(object):
 
     def __getattr__(self, attr):
         return self.fields[attr]
+
+    def set_id(self, id_):
+        """
+        Set the identifier for the request
+
+        Args:
+            id_(int): Unique identifier for request
+        """
+
+        self.id_ = id_
 
     def respond_with_return(self, value=None):
         """
@@ -37,12 +46,11 @@ class Request(object):
         self.response_queue.put(response)
 
     @classmethod
-    def Get(cls, id_, context, response_queue, endpoint):
+    def Get(cls, context, response_queue, endpoint):
         """
         Create a Get Request object
 
         Args:
-            id_(int): Unique specifier for Get
             context(): Context of Get
             response_queue(Queue): Queue to return to
             endpoint(list[str]): Path to target Block substructure
@@ -51,18 +59,17 @@ class Request(object):
             Request object
         """
 
-        request = Request(id_, context, response_queue, type_="Get")
+        request = Request(context, response_queue, type_="Get")
         request.fields['endpoint'] = endpoint
 
         return request
 
     @classmethod
-    def Post(cls, id_, context, response_queue, endpoint, parameters=None):
+    def Post(cls, context, response_queue, endpoint, parameters=None):
         """
         Create a Post Request object
 
         Args:
-            id_(int): Unique specifier for Post
             context(): Context of Post
             response_queue(Queue): Queue to return to
             endpoint(list[str]): Path to target Block substructure
@@ -73,7 +80,7 @@ class Request(object):
             Request object
         """
 
-        request = Request(id_, context, response_queue, type_="Post")
+        request = Request(context, response_queue, type_="Post")
         request.fields['endpoint'] = endpoint
         if parameters is not None:
             request.fields['parameters'] = parameters
@@ -99,8 +106,8 @@ class Request(object):
         Args:
             d (dict): output of self.to_dict()
         """
-        request = cls(
-            id_=d["id"], context=None, response_queue=None, type_=d["type"])
+        request = cls(context=None, response_queue=None, type_=d["type"])
+        request.set_id(d['id'])
         for field in [f for f in d.keys() if f not in ["id", "type"]]:
             request.fields[field] = d[field]
         return request

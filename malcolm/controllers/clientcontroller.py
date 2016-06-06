@@ -23,7 +23,7 @@ class ClientController(Controller):
 
     def create_methods(self):
         """Get methods from remote block and mirror them internally"""
-        request = Request.Get(None, None, self.q, [self.block.name])
+        request = Request.Get(None, self.q, [self.block.name])
         self.client_comms.q.put(request)
         self.log_debug("Waiting for response to Get %s", self.block.name)
         response = self.q.get()
@@ -51,7 +51,7 @@ class ClientController(Controller):
             method_name (str): Name of the method
             args (dict): Map of arguments to be called with
         """
-        request = Request.Post(None, None, self.q,
+        request = Request.Post(None, self.q,
                                [self.block.name, method_name], args)
         self.client_comms.q.put(request)
         response = self.q.get()
