@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 class Response(object):
     """Represents a response to a message"""
+    RETURN = "Return"
 
     def __init__(self, id_, context, type_):
         self.id_ = id_
