@@ -76,11 +76,12 @@ class Method(Loggable):
         self.log_debug("Received request %s", request)
         try:
             result = self(**request.parameters)
-            self.log_debug("Returning result %s", result)
         except Exception as error:
+            self.log_debug("Error raised %s", error.message)
             message = "Method %s raised an error: %s" % (self.name, error.message)
             request.respond_with_error(message)
         else:
+            self.log_debug("Returning result %s", result)
             request.respond_with_return(result)
 
     def to_dict(self):
