@@ -1,5 +1,3 @@
-#!/bin/env dls-python
-
 import unittest
 from collections import OrderedDict
 
