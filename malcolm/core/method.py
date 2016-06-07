@@ -1,4 +1,3 @@
-#!/bin/env dls-python
 from collections import OrderedDict
 
 from malcolm.core.loggable import Loggable
@@ -8,10 +7,11 @@ from malcolm.core.mapmeta import MapMeta
 class Method(Loggable):
     """Exposes a function with metadata for arguments and return values"""
 
-    def __init__(self, name):
+    def __init__(self, name, description):
         super(Method, self).__init__(logger_name=name)
         self.name = name
         self.func = None
+        self.description = description
         self.takes = None
         self.returns = None
         self.defaults = None
@@ -87,6 +87,7 @@ class Method(Loggable):
     def to_dict(self):
         """Return ordered dictionary representing Method object."""
         serialized = OrderedDict()
+        serialized["description"] = self.description
         serialized["takes"] = self.takes.to_dict()
         serialized["defaults"] = self.defaults.copy()
         serialized["returns"] = self.returns.to_dict()
@@ -100,7 +101,7 @@ class Method(Loggable):
             name (str): Method instance name
             d (dict): Something that self.to_dict() would create
         """
-        method = cls(name)
+        method = cls(name, d["description"])
         takes = MapMeta.from_dict("takes", d["takes"])
         method.set_function_takes(takes, d["defaults"])
         returns = MapMeta.from_dict("returns", d["returns"])

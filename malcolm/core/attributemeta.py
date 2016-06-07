@@ -10,9 +10,10 @@ class AttributeMeta(Loggable):
     # dict mapping metaOf name -> cls
     _subcls_lookup = {}
 
-    def __init__(self, name):
+    def __init__(self, name, description):
         super(AttributeMeta, self).__init__(logger_name=name)
         self.name = name
+        self.description = description
 
     def validate(self, value):
         """
@@ -29,7 +30,7 @@ class AttributeMeta(Loggable):
         """Convert object attributes into a dictionary"""
 
         d = OrderedDict()
-        # Will add description here once it exists
+        d["description"] = self.description
         d["metaOf"] = self.metaOf
 
         return d
