@@ -14,12 +14,13 @@ from malcolm.core.method import Method
 
 class TestMethod(unittest.TestCase):
     def test_init(self):
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         self.assertEquals("test_method", m.name)
+        self.assertEquals("test_description", m.description)
 
     def test_simple_function(self):
         func = Mock(return_value={"first_out": "test"})
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         m.set_function(func)
         args_meta = Mock()
         args_meta.elements = {"first": Mock()}
@@ -30,7 +31,7 @@ class TestMethod(unittest.TestCase):
 
     def test_defaults(self):
         func = Mock(return_value={"first_out": "test"})
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         arg_meta = Mock()
         arg_meta.elements = {"first": Mock(), "second": Mock()}
         m.set_function_takes(arg_meta, {"second": "default"})
@@ -40,7 +41,7 @@ class TestMethod(unittest.TestCase):
 
     def test_required(self):
         func = Mock(return_value={"first_out": "test"})
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         m.set_function(func)
         args_meta = Mock()
         args_meta.elements = {"first": Mock(), "second": Mock()}
@@ -54,7 +55,7 @@ class TestMethod(unittest.TestCase):
 
     def test_positional_args(self):
         func = Mock(return_value={"output": 2})
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         m.set_function(func)
         args_meta = Mock()
         validator = Mock(return_value=True)
@@ -70,7 +71,7 @@ class TestMethod(unittest.TestCase):
 
     def test_valid_return(self):
         func = Mock(return_value={"output1": 2, "output2": 4})
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         m.set_function(func)
         args_meta = Mock()
         args_meta.elements = {"first": Mock(), "second": Mock()}
@@ -90,7 +91,7 @@ class TestMethod(unittest.TestCase):
 
     def test_incomplete_return(self):
         func = Mock(return_value={"output1": 2})
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         m.set_function(func)
         args_meta = Mock()
         args_meta.elements = {"first": Mock(), "second": Mock()}
@@ -106,7 +107,7 @@ class TestMethod(unittest.TestCase):
 
     def test_invalid_return(self):
         func = Mock(return_value={"output1": 2, "output2": 4})
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         m.set_function(func)
         args_meta = Mock()
         args_meta.elements = {"first": Mock(), "second": Mock()}
@@ -126,7 +127,7 @@ class TestMethod(unittest.TestCase):
         func = Mock(return_value={"output": 1})
         args_meta = Mock(elements={"first": Mock()})
         return_meta = Mock(elements={"output": Mock()})
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         m.set_function(func)
         m.set_function_takes(args_meta)
         m.set_function_returns(return_meta)
@@ -140,7 +141,7 @@ class TestMethod(unittest.TestCase):
     def test_handle_request_error(self):
         func = MagicMock()
         func.side_effect = ValueError("Test error")
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         m.set_function(func)
         m.takes = MagicMock()
         m.returns = MagicMock()
@@ -160,11 +161,12 @@ class TestMethod(unittest.TestCase):
         return_meta = Mock(elements={"out": Mock()},
                            to_dict=Mock(
                                return_value=OrderedDict({"dict": "return"})))
-        m = Method("test_method")
+        m = Method("test_method", "test_description")
         m.set_function(func)
         m.set_function_takes(args_meta, defaults)
         m.set_function_returns(return_meta)
         expected = OrderedDict()
+        expected["description"] = "test_description"
         expected["takes"] = OrderedDict({"dict": "args"})
         expected["defaults"] = OrderedDict({"in_attr": "default"})
         expected["returns"] = OrderedDict({"dict": "return"})
@@ -173,10 +175,12 @@ class TestMethod(unittest.TestCase):
     @patch("malcolm.core.method.MapMeta")
     def test_from_dict_deserialize(self, mock_mapmeta):
         name = "foo"
+        description = "dummy description"
         takes = dict(a=object(), b=object())
         returns = dict(c=object())
         defaults = dict(a=43)
-        d = dict(takes=takes, returns=returns, defaults=defaults)
+        d = dict(description=description, takes=takes,
+                 returns=returns, defaults=defaults)
         m = Method.from_dict(name, d)
         self.assertEqual(mock_mapmeta.from_dict.call_args_list, [
             call("takes", takes), call("returns", returns)])

@@ -4,8 +4,8 @@ from malcolm.core.attributemeta import AttributeMeta
 class StringMeta(AttributeMeta):
     """Meta object containing information for a string"""
 
-    def __init__(self, name):
-        super(StringMeta, self).__init__(name=name)
+    def __init__(self, name, description):
+        super(StringMeta, self).__init__(name=name, description=description)
 
     def validate(self, value):
         """
@@ -40,7 +40,7 @@ class StringMeta(AttributeMeta):
             name (str): AttributeMeta instance name
             d (dict): Something that self.to_dict() would create
         """
-        string_meta = StringMeta(name)
+        string_meta = StringMeta(name, d["description"])
         return string_meta
 
 AttributeMeta.register_subclass(StringMeta, "malcolm:core/String:1.0")

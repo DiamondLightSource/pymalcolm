@@ -18,12 +18,12 @@ class HelloController(Controller):
 
     def create_methods(self):
         """Create a Method wrapper for say_hello and return it"""
-        method = Method("say_hello")
+        method = Method("say_hello", "says hello")
         method.set_function(self.say_hello)
         takes = MapMeta("takes")
-        takes.add_element(StringMeta("name"))
+        takes.add_element(StringMeta("name", "a name"))
         method.set_function_takes(takes)
         returns = MapMeta("returns")
-        returns.add_element(StringMeta("greeting"))
+        returns.add_element(StringMeta("greeting", "a greeting"))
         method.set_function_returns(returns)
         yield method

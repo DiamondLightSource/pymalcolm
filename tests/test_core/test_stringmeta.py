@@ -14,10 +14,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 class TestInit(unittest.TestCase):
 
     def setUp(self):
-        self.string_meta = StringMeta("TestMeta")
+        self.string_meta = StringMeta("TestMeta", "test string description")
 
-    def test_given_name_then_set(self):
+    def test_values_after_init(self):
         self.assertEqual("TestMeta", self.string_meta.name)
+        self.assertEqual("test string description",
+                         self.string_meta.description)
 
     def test_metaOf(self):
         self.assertEqual(StringMeta.metaOf, "malcolm:core/String:1.0")
@@ -26,7 +28,7 @@ class TestInit(unittest.TestCase):
 class TestValidate(unittest.TestCase):
 
     def setUp(self):
-        self.string_meta = StringMeta("TestMeta")
+        self.string_meta = StringMeta("TestMeta", "test string description")
 
     def test_given_value_str_then_return(self):
         response = self.string_meta.validate("TestValue")
@@ -52,10 +54,11 @@ class TestValidate(unittest.TestCase):
 class TestToDict(unittest.TestCase):
 
     def setUp(self):
-        self.string_meta = StringMeta("Test")
+        self.string_meta = StringMeta("Test", "test string description")
 
     def test_returns_dict(self):
         expected_dict = OrderedDict()
+        expected_dict["description"] = "test string description"
         expected_dict["metaOf"] = "malcolm:core/String:1.0"
 
         response = self.string_meta.to_dict()
@@ -63,8 +66,9 @@ class TestToDict(unittest.TestCase):
         self.assertEqual(expected_dict, response)
 
     def test_from_dict_deserialize(self):
-        s = AttributeMeta.from_dict(
-            "me", dict(metaOf="malcolm:core/String:1.0"))
+        d = dict(description="test string description",
+                 metaOf="malcolm:core/String:1.0")
+        s = AttributeMeta.from_dict("me", d)
         self.assertEqual(type(s), StringMeta)
         self.assertEqual(s.name, "me")
 

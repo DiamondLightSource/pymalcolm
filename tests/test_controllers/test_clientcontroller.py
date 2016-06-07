@@ -30,9 +30,11 @@ class TestClientController(unittest.TestCase):
         self.comms = MagicMock()
         serialized = dict(
             say_hello=dict(
+                description="Says hello",
                 takes=dict(
                     elements=dict(
                         name=dict(
+                            description="A name",
                             metaOf="malcolm:core/String:1.0",
                         ),
                     ),
@@ -42,6 +44,7 @@ class TestClientController(unittest.TestCase):
                 returns=dict(
                     elements=dict(
                         greeting=dict(
+                            description="A greeting",
                             metaOf="malcolm:core/String:1.0",
                         ),
                     ),

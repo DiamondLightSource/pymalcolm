@@ -17,16 +17,17 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 class TestInit(unittest.TestCase):
 
     def setUp(self):
-        self.attribute_meta = AttributeMeta("Test")
+        self.attribute_meta = AttributeMeta("Test", "test description")
 
-    def test_given_name_then_set(self):
+    def test_values_after_init(self):
         self.assertEqual("Test", self.attribute_meta.name)
+        self.assertEqual("test description", self.attribute_meta.description)
 
 
 class TestValidate(unittest.TestCase):
 
     def setUp(self):
-        self.attribute_meta = AttributeMeta("Test")
+        self.attribute_meta = AttributeMeta("Test", "test_description")
 
     def test_given_validate_called_then_raise_error(self):
 
@@ -42,10 +43,11 @@ class TestValidate(unittest.TestCase):
 class TestToDict(unittest.TestCase):
 
     def setUp(self):
-        self.attribute_meta = AttributeMeta("Test")
+        self.attribute_meta = AttributeMeta("Test", "test_description")
 
     def test_returns_dict(self):
         expected_dict = OrderedDict()
+        expected_dict["description"] = "test_description"
         expected_dict["metaOf"] = None
 
         response = self.attribute_meta.to_dict()
