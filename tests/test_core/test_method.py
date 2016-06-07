@@ -8,7 +8,7 @@ from pkg_resources import require
 require("mock")
 from mock import Mock, patch, call, MagicMock
 
-from malcolm.core.method import Method
+from malcolm.core.method import Method, takes, returns
 
 
 class DummyClass(object):
@@ -16,11 +16,11 @@ class DummyClass(object):
     def __init__(self):
         pass
 
-    @Method.takes()
+    @takes()
     def say_hello(self, name):
         print("Hello" + name)
 
-    @Method.returns()
+    @returns()
     def say_goodbye(self, name):
         print("Hello" + name)
 

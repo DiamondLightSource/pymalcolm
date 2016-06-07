@@ -107,56 +107,6 @@ class Method(Monitorable):
         method.set_function_returns(returns)
         return method
 
-    @staticmethod
-    def takes(*args):
-        """
-        Checks if function has a Method representation, calls wrap_method to
-        create one if it doesn't and then adds the takes attribute to it
-        from *args
-
-        Args:
-            *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
-            REQUIRED/OPTIONAL]
-
-        Returns:
-            function: Updated function
-        """
-
-        def decorator(func):
-
-            if not hasattr(func, "Method"):
-                Method.wrap_method(func)
-
-            func.Method.takes = args
-
-            return func
-        return decorator
-
-    @staticmethod
-    def returns(*args):
-        """
-        Checks if function has a Method representation, calls wrap_method to
-        create one if it doesn't and then adds the returns attribute to it
-        from *args
-
-        Args:
-            *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
-            REQUIRED/OPTIONAL]
-
-        Returns:
-            function: Updated function
-        """
-
-        def decorator(func):
-
-            if not hasattr(func, "Method"):
-                Method.wrap_method(func)
-
-            func.Method.returns = args
-
-            return func
-        return decorator
-
     @classmethod
     def wrap_method(cls, func):
         """
@@ -177,3 +127,53 @@ class Method(Monitorable):
             func.Method = method
 
         return func
+
+
+def takes(*args):
+    """
+    Checks if function has a Method representation, calls wrap_method to
+    create one if it doesn't and then adds the takes attribute to it
+    from *args
+
+    Args:
+        *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
+        REQUIRED/OPTIONAL]
+
+    Returns:
+        function: Updated function
+    """
+
+    def decorator(func):
+
+        if not hasattr(func, "Method"):
+            Method.wrap_method(func)
+
+        func.Method.takes = args
+
+        return func
+    return decorator
+
+
+def returns(*args):
+    """
+    Checks if function has a Method representation, calls wrap_method to
+    create one if it doesn't and then adds the returns attribute to it
+    from *args
+
+    Args:
+        *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
+        REQUIRED/OPTIONAL]
+
+    Returns:
+        function: Updated function
+    """
+
+    def decorator(func):
+
+        if not hasattr(func, "Method"):
+            Method.wrap_method(func)
+
+        func.Method.returns = args
+
+        return func
+    return decorator
