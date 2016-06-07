@@ -63,10 +63,10 @@ class TestRequest(unittest.TestCase):
         response = MagicMock()
         return_mock.return_value = response
 
-        self.request.respond_with_error(error_message="Test Error")
+        self.request.respond_with_error(message="Test Error")
 
         return_mock.assert_called_once_with(self.request.id_, self.request.context,
-                                            error_message="Test Error")
+                                            message="Test Error")
         self.response_queue.put.assert_called_once_with(response)
 
     @patch("malcolm.core.request.Request")

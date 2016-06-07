@@ -36,18 +36,18 @@ class Response(object):
         return response
 
     @classmethod
-    def Error(cls, id_, context, error_message):
+    def Error(cls, id_, context, message):
         """
         Create an Error Response object with the provided parameters.
 
         Args:
             id_(int): ID from initial message
             context(): Context associated with ID
-            error_message(str): Error message
+            message(str): Error message
         """
 
         response = cls(id_, context, "Error")
-        response.fields["error_message"] = error_message
+        response.fields["message"] = message
         return response
 
     @classmethod
