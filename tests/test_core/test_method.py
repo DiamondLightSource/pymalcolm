@@ -205,10 +205,10 @@ class TestMethod(unittest.TestCase):
     def test_decorators(self):
         dummy = DummyClass()
 
-        self.assertTrue(dummy.say_hello.is_Method)
-        self.assertEqual((), dummy.say_hello.takes)
-        self.assertTrue(dummy.say_goodbye.is_Method)
-        self.assertEqual((), dummy.say_goodbye.returns)
+        self.assertTrue(hasattr(dummy.say_hello, "Method"))
+        self.assertEqual((), dummy.say_hello.Method.takes)
+        self.assertTrue(hasattr(dummy.say_goodbye, "Method"))
+        self.assertEqual((), dummy.say_goodbye.Method.returns)
 
 
 if __name__ == "__main__":
