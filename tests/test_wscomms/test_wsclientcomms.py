@@ -1,5 +1,8 @@
 import unittest
+import os
+import sys
 from collections import OrderedDict
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from pkg_resources import require
 require("mock")
@@ -92,3 +95,6 @@ class TestWSServerComms(unittest.TestCase):
 
         loop_mock.add_callback.assert_called_once_with(ioloop_mock.current().stop)
         self.WS._loop_spawned.wait.assert_called_once_with()
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

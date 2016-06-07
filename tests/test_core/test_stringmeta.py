@@ -1,14 +1,11 @@
-#!/bin/env dls-python
-
+import sys
+import os
 import unittest
 from collections import OrderedDict
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from malcolm.core.stringmeta import StringMeta
 from malcolm.core.attributemeta import AttributeMeta
-
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 class TestInit(unittest.TestCase):
