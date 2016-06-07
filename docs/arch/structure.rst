@@ -80,12 +80,12 @@ the structure::
         string[]    tags         :opt // e.g. "widget:textinput"
         display_t   display      :opt // Display limits, units, etc, for numbers
         control_t   control      :opt // For writeable numbers
-        string[]    oneOf        :opt // Allowed values if type is "enum"
+        string[]    oneOf        :opt // Allowed values if type is "Enum"
         string      label        :opt // Short label if different to name
 
     TableMeta :=
         string      description     // Description of attribute
-        string      metaOf          // E.g. malcolm:zebra2/SeqTable:1.0
+        string      metaOf          // E.g. malcolm:core/Table:1.0
         structure   elements        // Metadata for each column, must have array
             {ScalarMeta <elname>}0+ // type
         string[]    tags       :opt // e.g. "widget:table"
@@ -101,13 +101,13 @@ more detail in the :ref:`types` section.
 A MethodMeta looks like this::
 
     MethodMeta :=
+        string      metaOf              // E.g. malcolm:core/Method:1.0    
         string      description         // Docstring
         MapMeta     takes               // Argument spec
         structure   defaults
             {any    <argname>}0+        // The defaults if not supplied
         MapMeta     returns        :opt // Return value spec if any
         bool        writeable      :opt // True if you can Post at the moment
-        bool        modifier       :opt // True if this will modify the Block
         string[]    tags           :opt // e.g. "widget:confirmbutton"
 
     MapMeta :=
