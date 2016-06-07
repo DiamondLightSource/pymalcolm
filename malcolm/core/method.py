@@ -106,3 +106,74 @@ class Method(Monitorable):
         returns = MapMeta.from_dict("returns", d["returns"])
         method.set_function_returns(returns)
         return method
+
+    @staticmethod
+    def takes(*args):
+        """
+        Checks if function has a Method representation, calls wrap_method to
+        create one if it doesn't and then adds the takes attribute to it
+        from *args
+
+        Args:
+            *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
+            REQUIRED/OPTIONAL]
+
+        Returns:
+            function: Updated function
+        """
+
+        def decorator(func):
+
+            if not hasattr(func, "Method"):
+                Method.wrap_method(func)
+
+            func.Method.takes = args
+
+            return func
+        return decorator
+
+    @staticmethod
+    def returns(*args):
+        """
+        Checks if function has a Method representation, calls wrap_method to
+        create one if it doesn't and then adds the returns attribute to it
+        from *args
+
+        Args:
+            *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
+            REQUIRED/OPTIONAL]
+
+        Returns:
+            function: Updated function
+        """
+
+        def decorator(func):
+
+            if not hasattr(func, "Method"):
+                Method.wrap_method(func)
+
+            func.Method.returns = args
+
+            return func
+        return decorator
+
+    @classmethod
+    def wrap_method(cls, func):
+        """
+        Checks if a function already has a Method implementation of itself and
+        if it does not, creates one.
+
+        Args:
+            func: Function to wrap
+
+        Returns:
+            function: Function with Method instance of itself as an attribute
+        """
+
+        if not hasattr(func, "Method"):
+            name = func.__name__
+            method = cls(name)
+            method.set_function(func)
+            func.Method = method
+
+        return func

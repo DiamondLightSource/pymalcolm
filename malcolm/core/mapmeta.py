@@ -3,6 +3,9 @@ from collections import OrderedDict
 from malcolm.core.attributemeta import AttributeMeta
 from malcolm.core.monitorable import Monitorable
 
+OPTIONAL = object()
+REQUIRED = object()
+
 
 class MapMeta(Monitorable):
     """An object containing a set of AttributeMeta objects"""

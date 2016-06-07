@@ -11,6 +11,20 @@ from mock import Mock, patch, call, MagicMock
 from malcolm.core.method import Method
 
 
+class DummyClass(object):
+
+    def __init__(self):
+        pass
+
+    @Method.takes()
+    def say_hello(self, name):
+        print("Hello" + name)
+
+    @Method.returns()
+    def say_goodbye(self, name):
+        print("Hello" + name)
+
+
 class TestMethod(unittest.TestCase):
     def test_init(self):
         m = Method("test_method", "test_description")
@@ -187,6 +201,14 @@ class TestMethod(unittest.TestCase):
         self.assertEqual(m.takes, mock_mapmeta.from_dict.return_value)
         self.assertEqual(m.returns, mock_mapmeta.from_dict.return_value)
         self.assertEqual(m.defaults, defaults)
+
+    def test_decorators(self):
+        dummy = DummyClass()
+
+        self.assertTrue(dummy.say_hello.is_Method)
+        self.assertEqual((), dummy.say_hello.takes)
+        self.assertTrue(dummy.say_goodbye.is_Method)
+        self.assertEqual((), dummy.say_goodbye.returns)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,6 @@
 from malcolm.core.loggable import Loggable
+from malcolm.core.method import Method
+import inspect
 
 
 class Controller(Loggable):
@@ -22,4 +24,10 @@ class Controller(Loggable):
             list: List or iterator of Method instances. Each one will be
                 attached to the Block by calling block.add_method(method)
         """
-        raise NotImplementedError("Controller subclass should implement this")
+
+        members = [value[1] for value in
+                   inspect.getmembers(self, predicate=inspect.ismethod)]
+
+        for member in members:
+            if hasattr(member, "Method"):
+                yield member
