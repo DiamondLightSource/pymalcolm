@@ -26,6 +26,7 @@ class WSClientComms(ClientComms):
         # TODO: Are we starting one or more IOLoops here?
         self.loop = IOLoop.current()
         self.conn = websocket_connect(url, on_message_callback=self.on_message)
+        self._loop_spawned = None
 
     def on_message(self, message):
         """
