@@ -51,12 +51,9 @@ class TestToDict(unittest.TestCase):
         self.meta_map.add_method(m1)
         self.meta_map.add_method(m2)
 
-        expected_methods_dict = OrderedDict()
-        expected_methods_dict['method_one'] = method_dict
-        expected_methods_dict['method_two'] = method_dict
-
         expected_dict = OrderedDict()
-        expected_dict['methods'] = expected_methods_dict
+        expected_dict['method_one'] = method_dict
+        expected_dict['method_two'] = method_dict
 
         response = self.meta_map.to_dict()
 

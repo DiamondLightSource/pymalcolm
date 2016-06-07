@@ -30,6 +30,7 @@ class AttributeMeta(Loggable):
 
         d = OrderedDict()
         # Will add description here once it exists
+        d["metaOf"] = self.metaOf
 
         return d
 

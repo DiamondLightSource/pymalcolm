@@ -56,6 +56,7 @@ class TestToDict(unittest.TestCase):
 
     def test_returns_dict(self):
         expected_dict = OrderedDict()
+        expected_dict["metaOf"] = "malcolm:core/String:1.0"
 
         response = self.string_meta.to_dict()
 
