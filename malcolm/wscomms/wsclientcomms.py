@@ -38,9 +38,7 @@ class WSClientComms(ClientComms):
         self.log_debug("Got message %s", message)
         d = json.loads(message, object_pairs_hook=OrderedDict)
         response = Response.from_dict(d)
-
-        req = self.requests[response.id_]
-        req.response_queue.put(response)
+        self.send_to_caller(response)
 
     def send_to_server(self, request):
         """Dispatch a request to the server

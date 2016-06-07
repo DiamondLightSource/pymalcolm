@@ -44,6 +44,10 @@ class ClientComms(Loggable):
         raise NotImplementedError(
             "Abstract method that must be implemented by deriving class")
 
+    def send_to_caller(self, response):
+        request = self.requests[response.id_]
+        request.response_queue.put(response)
+
     def start(self):
         """Start communications"""
         self._send_spawned = self.process.spawn(self.send_loop)

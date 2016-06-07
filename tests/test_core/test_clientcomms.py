@@ -96,5 +96,13 @@ class TestClientComms(unittest.TestCase):
         self.assertEqual(1234, request_1.id_)
         self.assertEqual(1235, request_2.id_)
 
+    def test_send_to_caller(self):
+        request = Mock(response_queue=Mock(), id_=1234)
+        client = ClientComms("c", Mock())
+        client.requests = {1234:request}
+        response = Mock(id_ = 1234)
+        client.send_to_caller(response)
+        request.response_queue.put.assert_called_once_with(response)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
