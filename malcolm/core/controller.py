@@ -1,5 +1,4 @@
 from malcolm.core.loggable import Loggable
-from malcolm.core.method import Method
 import inspect
 
 
