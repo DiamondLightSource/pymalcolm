@@ -14,6 +14,17 @@ class Block(Loggable):
         super(Block, self).__init__(logger_name=name)
         self.name = name
         self._methods = OrderedDict()
+        self._attributes = OrderedDict()
+
+    def add_attribute(self, attribute):
+        """Add an Attribute to the block and set the block as its parent"""
+
+        assert attribute.name not in self._attributes, \
+            "Attribute %s already defined for Block %s" \
+            % (attribute.name, self.name)
+        self._attributes[attribute.name] = attribute
+        attribute.set_parent(self)
+        setattr(self, attribute.name, attribute)
 
     def add_method(self, method):
         """Add a Method to the Block
@@ -52,6 +63,8 @@ class Block(Loggable):
 
         d = OrderedDict()
 
+        for attribute_name, attribute in self._attributes.items():
+            d[attribute_name] = attribute.to_dict()
         for method_name, method in self._methods.items():
             d[method_name] = method.to_dict()
 
