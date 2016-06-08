@@ -2,7 +2,6 @@ from collections import OrderedDict
 from inspect import getdoc
 
 from malcolm.core.monitorable import Monitorable
-from malcolm.core.loggable import Loggable
 from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
 
 
