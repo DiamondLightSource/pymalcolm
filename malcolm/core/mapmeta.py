@@ -3,6 +3,9 @@ from collections import OrderedDict
 from malcolm.core.attributemeta import AttributeMeta
 from malcolm.core.monitorable import Monitorable
 
+OPTIONAL = object()
+REQUIRED = object()
+
 
 class MapMeta(Monitorable):
     """An object containing a set of AttributeMeta objects"""
@@ -21,7 +24,7 @@ class MapMeta(Monitorable):
             required(bool): Whether attribute is required or optional
 
         Raises:
-            ValueError:
+            ValueError: Element already exists in dictionary
         """
 
         if attribute_meta.name in self.elements.keys():

@@ -8,7 +8,8 @@ from pkg_resources import require
 require("mock")
 from mock import Mock, patch, call, MagicMock
 
-from malcolm.core.method import Method
+from malcolm.core.method import Method, takes, returns
+from malcolm.core.mapmeta import OPTIONAL, REQUIRED
 
 
 class TestMethod(unittest.TestCase):
@@ -188,6 +189,64 @@ class TestMethod(unittest.TestCase):
         self.assertEqual(m.returns, mock_mapmeta.from_dict.return_value)
         self.assertEqual(m.defaults, defaults)
 
+    @patch("malcolm.core.method.MapMeta")
+    def test_takes_given_optional(self, map_meta_mock):
+        m1 = MagicMock()
+        map_meta_mock.return_value = m1
+        a1 = MagicMock()
+        a1.name = "name"
+
+        @takes(a1, OPTIONAL)
+        def say_hello(name):
+            """Say hello"""
+            print("Hello" + name)
+
+        self.assertTrue(hasattr(say_hello, "Method"))
+        self.assertEqual(m1, say_hello.Method.takes)
+        m1.add_element.assert_called_once_with(a1, False)
+        self.assertEqual(0, len(say_hello.Method.defaults))
+
+    @patch("malcolm.core.method.MapMeta")
+    def test_takes_given_defaults(self, map_meta_mock):
+        m1 = MagicMock()
+        map_meta_mock.return_value = m1
+        a1 = MagicMock()
+        a1.name = "name"
+
+        @takes(a1, "User")
+        def say_hello(name):
+            """Say hello"""
+            print("Hello" + name)
+
+        self.assertTrue(hasattr(say_hello, "Method"))
+        self.assertEqual(m1, say_hello.Method.takes)
+        m1.add_element.assert_called_once_with(a1, False)
+        self.assertEqual("User", say_hello.Method.defaults[a1.name])
+
+    @patch("malcolm.core.method.MapMeta")
+    def test_returns_given_valid_sets(self, map_meta_mock):
+        m1 = MagicMock()
+        map_meta_mock.return_value = m1
+        a1 = MagicMock()
+        a1.name = "name"
+
+        @returns(a1, REQUIRED)
+        def return_hello(name):
+            """Return hello"""
+            return "Hello" + name
+
+        self.assertTrue(hasattr(return_hello, "Method"))
+        self.assertEqual(m1, return_hello.Method.returns)
+        m1.add_element.assert_called_once_with(a1, True)
+
+    @patch("malcolm.core.method.MapMeta")
+    def test_returns_not_given_req_or_opt_raises(self, _):
+
+        with self.assertRaises(ValueError):
+            @returns(MagicMock(), "Raise Error")
+            def return_hello(name):
+                """Return hello"""
+                return "Hello" + name
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

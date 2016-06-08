@@ -1,7 +1,8 @@
 from collections import OrderedDict
+from inspect import getdoc
 
-from malcolm.core.mapmeta import MapMeta
 from malcolm.core.monitorable import Monitorable
+from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
 
 
 class Method(Monitorable):
@@ -106,3 +107,99 @@ class Method(Monitorable):
         returns = MapMeta.from_dict("returns", d["returns"])
         method.set_function_returns(returns)
         return method
+
+    @classmethod
+    def wrap_method(cls, func):
+        """
+        Checks if a function already has a Method implementation of itself and
+        if it does not, creates one.
+
+        Args:
+            func: Function to wrap
+
+        Returns:
+            function: Function with Method instance of itself as an attribute
+        """
+
+        if not hasattr(func, "Method"):
+            name = func.__name__
+            description = getdoc(func)
+            method = cls(name, description)
+            method.set_function(func)
+            func.Method = method
+
+        return func
+
+
+def takes(*args):
+    """
+    Checks if function has a Method representation, calls wrap_method to
+    create one if it doesn't and then adds the takes attribute to it
+    from *args
+
+    Args:
+        *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
+        REQUIRED/OPTIONAL]
+
+    Returns:
+        function: Updated function
+    """
+
+    def decorator(func):
+
+        if not hasattr(func, "Method"):
+            Method.wrap_method(func)
+
+        takes_meta = MapMeta("takes")
+        defaults = OrderedDict()
+        for index in range(0, len(args), 2):
+
+            meta = args[index]
+            is_required = args[index + 1] is REQUIRED
+            takes_meta.add_element(meta, is_required)
+
+            # If second of pair is not REQUIRED or OPTIONAL it is taken as
+            # the default value
+            if args[index + 1] not in [OPTIONAL, REQUIRED]:
+                defaults[meta.name] = args[index + 1]
+
+        func.Method.set_function_takes(takes_meta, defaults)
+
+        return func
+    return decorator
+
+
+def returns(*args):
+    """
+    Checks if function has a Method representation, calls wrap_method to
+    create one if it doesn't and then adds the returns attribute to it
+    from *args
+
+    Args:
+        *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
+        REQUIRED/OPTIONAL]
+
+    Returns:
+        function: Updated function
+    """
+
+    def decorator(func):
+
+        if not hasattr(func, "Method"):
+            Method.wrap_method(func)
+
+        returns_meta = MapMeta("returns")
+        for index in range(0, len(args), 2):
+
+            if args[index + 1] not in [OPTIONAL, REQUIRED]:
+                raise ValueError(
+                    "Must specify if return value is REQUIRED or OPTIONAL")
+
+            meta = args[index]
+            is_required = args[index + 1] is REQUIRED
+            returns_meta.add_element(meta, is_required)
+
+        func.Method.set_function_returns(returns_meta)
+
+        return func
+    return decorator
