@@ -45,15 +45,15 @@ class Request(object):
         response = Response.Return(self.id_, self.context, value=value)
         self.response_queue.put(response)
 
-    def respond_with_error(self, error_message=None):
+    def respond_with_error(self, message):
         """
         Create an Error Response object to handle the request
 
         Args:
-            error_message(str): Message explaining error
+            message(str): Message explaining error
         """
 
-        response = Response.Error(self.id_, self.context, error_message=error_message)
+        response = Response.Error(self.id_, self.context, message=message)
         self.response_queue.put(response)
 
     @classmethod
