@@ -8,7 +8,7 @@ from pkg_resources import require
 require("mock")
 from mock import Mock, patch, call, MagicMock
 
-from malcolm.core.method import Method, takes, returns
+from malcolm.core.method import Method, takes, returns, MapMeta
 
 
 class DummyClass(object):
@@ -22,7 +22,7 @@ class DummyClass(object):
 
     @returns()
     def say_goodbye(self, name):
-        print("Hello" + name)
+        print("Goodbye" + name)
 
 
 class TestMethod(unittest.TestCase):
@@ -202,13 +202,20 @@ class TestMethod(unittest.TestCase):
         self.assertEqual(m.returns, mock_mapmeta.from_dict.return_value)
         self.assertEqual(m.defaults, defaults)
 
-    def test_decorators(self):
+    @patch("malcolm.core.method.MapMeta")
+    def test_decorators(self, map_meta_mock):
+        m1 = MagicMock()
+        m2 = MagicMock()
+        map_meta_mock.side_effect = [m1, m2]
+
         dummy = DummyClass()
 
         self.assertTrue(hasattr(dummy.say_hello, "Method"))
-        self.assertEqual((), dummy.say_hello.Method.takes)
+        self.assertIsInstance(dummy.say_hello.Method.takes, MapMeta)
+        # self.assertEqual(m1, dummy.say_hello.Method.takes)
         self.assertTrue(hasattr(dummy.say_goodbye, "Method"))
-        self.assertEqual((), dummy.say_goodbye.Method.returns)
+        self.assertIsInstance(dummy.say_goodbye.Method.returns, MapMeta)
+        # self.assertEqual(m2, dummy.say_hello.Method.returns)
 
 
 if __name__ == "__main__":

@@ -24,7 +24,7 @@ class MapMeta(Monitorable):
             required(bool): Whether attribute is required or optional
 
         Raises:
-            ValueError:
+            ValueError: Element already exists in dictionary
         """
 
         if attribute_meta.name in self.elements.keys():

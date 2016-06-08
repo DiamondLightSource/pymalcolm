@@ -1,7 +1,8 @@
 from collections import OrderedDict
 
-from malcolm.core.mapmeta import MapMeta
 from malcolm.core.monitorable import Monitorable
+from malcolm.core.loggable import Loggable
+from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
 
 
 class Method(Monitorable):
@@ -148,7 +149,20 @@ def takes(*args):
         if not hasattr(func, "Method"):
             Method.wrap_method(func)
 
-        func.Method.takes = args
+        takes_meta = MapMeta("takes")
+        defaults = OrderedDict()
+        for index in range(0, len(args), 2):
+
+            meta = args[index]
+            is_required = args[index + 1] is REQUIRED
+            takes_meta.add_element(meta, is_required)
+
+            # If second of pair is not REQUIRED or OPTIONAL it is taken as
+            # the default value
+            if args[index + 1] not in [OPTIONAL, REQUIRED]:
+                defaults[meta.name] = args[index + 1]
+
+        func.Method.set_function_takes(takes_meta, defaults)
 
         return func
     return decorator
@@ -173,7 +187,18 @@ def returns(*args):
         if not hasattr(func, "Method"):
             Method.wrap_method(func)
 
-        func.Method.returns = args
+        returns_meta = MapMeta("returns")
+        for index in range(0, len(args), 2):
+
+            if args[index + 1] not in [OPTIONAL, REQUIRED]:
+                raise ValueError(
+                    "Must specify if return value is REQUIRED or OPTIONAL")
+
+            meta = args[index]
+            is_required = args[index + 1] is REQUIRED
+            returns_meta.add_element(meta, is_required)
+
+        func.Method.set_function_returns(returns_meta)
 
         return func
     return decorator
