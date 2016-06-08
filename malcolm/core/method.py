@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from inspect import getdoc
 
 from malcolm.core.monitorable import Monitorable
 from malcolm.core.loggable import Loggable
@@ -123,7 +124,8 @@ class Method(Monitorable):
 
         if not hasattr(func, "Method"):
             name = func.__name__
-            method = cls(name)
+            description = getdoc(func)
+            method = cls(name, description)
             method.set_function(func)
             func.Method = method
 

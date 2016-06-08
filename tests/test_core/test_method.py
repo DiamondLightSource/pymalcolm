@@ -18,10 +18,12 @@ class DummyClass(object):
 
     @takes()
     def say_hello(self, name):
+        """Say hello"""
         print("Hello" + name)
 
     @returns()
     def say_goodbye(self, name):
+        """Say goodbye"""
         print("Goodbye" + name)
 
 
