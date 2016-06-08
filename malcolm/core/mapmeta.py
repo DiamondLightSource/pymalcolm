@@ -1,16 +1,14 @@
 from collections import OrderedDict
 
-from malcolm.core.loggable import Loggable
 from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.monitorable import Monitorable
 
 
-class MapMeta(Loggable):
+class MapMeta(Monitorable):
     """An object containing a set of AttributeMeta objects"""
 
     def __init__(self, name):
-        super(MapMeta, self).__init__(logger_name=name)
-
-        self.name = name
+        super(MapMeta, self).__init__(name=name)
         self.elements = OrderedDict()
         self.required = []
 

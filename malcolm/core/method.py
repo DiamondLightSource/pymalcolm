@@ -1,15 +1,14 @@
 from collections import OrderedDict
 
-from malcolm.core.loggable import Loggable
 from malcolm.core.mapmeta import MapMeta
+from malcolm.core.monitorable import Monitorable
 
 
-class Method(Loggable):
+class Method(Monitorable):
     """Exposes a function with metadata for arguments and return values"""
 
     def __init__(self, name, description):
-        super(Method, self).__init__(logger_name=name)
-        self.name = name
+        super(Method, self).__init__(name=name)
         self.func = None
         self.description = description
         self.takes = None

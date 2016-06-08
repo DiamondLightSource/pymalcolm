@@ -1,8 +1,8 @@
-from malcolm.core.loggable import Loggable
 from collections import OrderedDict
 
+from malcolm.core.monitorable import Monitorable
 
-class AttributeMeta(Loggable):
+class AttributeMeta(Monitorable):
     """Abstract base class for Meta objects"""
 
     # This will be set by subclasses calling cls.register_subclass()
@@ -11,8 +11,7 @@ class AttributeMeta(Loggable):
     _subcls_lookup = {}
 
     def __init__(self, name, description):
-        super(AttributeMeta, self).__init__(logger_name=name)
-        self.name = name
+        super(AttributeMeta, self).__init__(name=name)
         self.description = description
 
     def validate(self, value):
