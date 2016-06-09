@@ -11,7 +11,8 @@ require("mock")
 from mock import MagicMock
 
 # module imports
-from malcolm.core.process import Process
+from malcolm.core.process import \
+        Process, BlockChanged, BlockNotify, PROCESS_STOP
 from malcolm.core.syncfactory import SyncFactory
 
 
@@ -58,6 +59,51 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(spawned, s.spawn.return_value)
         self.assertEqual(p._other_spawned, [spawned])
         s.spawn.assert_called_once_with(callable, "fred", a=4)
+
+class TestSubscriptions(unittest.TestCase):
+
+    def test_on_changed(self):
+        changes = [[["path"], "value"]]
+        s = MagicMock()
+        p = Process("proc", s)
+        p.on_changed(changes)
+        p.q.put.assert_called_once_with(BlockChanged(changes=changes))
+
+    def test_notify(self):
+        s = MagicMock()
+        p = Process("proc", s)
+        p.notify_subscribers("block")
+        p.q.put.assert_called_once_with(BlockNotify(name="block"))
+
+    def test_update_chain(self):
+        block = MagicMock(
+            to_dict=MagicMock(return_value={"attr":"value", "attr2":"other"}))
+        block.name = "block"
+        sub_1 = MagicMock()
+        sub_1.endpoint = ["block"]
+        sub_1.delta = False
+        sub_2 = MagicMock()
+        sub_2.endpoint = ["block"]
+        sub_2.delta = True
+        changes_1 = [[["block", "attr"], "changing_value"]]
+        changes_2 = [[["block", "attr"], "final_value"]]
+        request_1 = BlockChanged(changes_1)
+        request_2 = BlockChanged(changes_2)
+        request_3 = BlockNotify(block.name)
+        s = MagicMock()
+        p = Process("proc", s)
+        p._subscriptions.append(sub_1)
+        p._subscriptions.append(sub_2)
+        p.q.get = MagicMock(
+            side_effect = [request_1, request_2, request_3, PROCESS_STOP])
+
+        p.add_block(block)
+        p.recv_loop()
+
+        sub_1.response_queue.put.assert_called_once_with(
+            {"attr":"final_value", "attr2":"other"})
+        sub_2.response_queue.put.assert_called_once_with(
+            [[["attr"], "final_value"]])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

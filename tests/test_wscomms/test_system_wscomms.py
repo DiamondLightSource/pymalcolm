@@ -35,6 +35,7 @@ class TestSystemWSComms(unittest.TestCase):
         block = Block("hello")
         self.process.add_block(block)
         HelloController(block)
+        self.process.notify_subscribers(block.name)
         self.sc = WSServerComms("sc", self.process, 8888)
         self.process.start()
         self.sc.start()

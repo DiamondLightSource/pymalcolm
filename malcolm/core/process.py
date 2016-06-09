@@ -1,10 +1,14 @@
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 from malcolm.core.loggable import Loggable
 
 
 # Sentinel object that when received stops the recv_loop
 PROCESS_STOP = object()
+
+# Internal update messages
+BlockNotify = namedtuple("BlockNotify", "name")
+BlockChanged = namedtuple("BlockChanged", "changes")
 
 
 class Process(Loggable):
@@ -17,8 +21,11 @@ class Process(Loggable):
         self.q = self.create_queue()
         # map block name -> block object
         self._blocks = OrderedDict()
+        self._block_state_cache = OrderedDict()
         self._recv_spawned = None
         self._other_spawned = []
+        self._subscriptions = []
+        self._last_changes = []
 
     def recv_loop(self):
         """Service self.q, distributing the requests to the right block"""
@@ -28,12 +35,17 @@ class Process(Loggable):
             if request is PROCESS_STOP:
                 # Got the sentinel, stop immediately
                 break
-            try:
-                self.handle_request(request)
-            except Exception:
-                # TODO: request.respond_with_error()
-                self.log_exception("Exception while handling %s",
-                                   request.to_dict())
+            elif isinstance(request, BlockNotify):
+                self._handle_block_notify(request)
+            elif isinstance(request, BlockChanged):
+                self._handle_block_changed(request)
+            else:
+                try:
+                    self.handle_request(request)
+                except Exception:
+                    # TODO: request.respond_with_error()
+                    self.log_exception("Exception while handling %s",
+                                       request.to_dict())
 
     def start(self):
         """Start the process going"""
@@ -74,6 +86,7 @@ class Process(Loggable):
         assert block.name not in self._blocks, \
             "There is already a block called %s" % block.name
         self._blocks[block.name] = block
+        self._block_state_cache[block.name] = block.to_dict()
 
     def create_queue(self):
         """
@@ -91,3 +104,60 @@ class Process(Loggable):
         self._other_spawned.append(spawned)
         return spawned
 
+    def _handle_block_notify(self, request):
+        """Update subscribers with changes and applies stored changes to the
+        cached structure"""
+
+        # update cached dict
+        for path, value in self._last_changes:
+            d = self._block_state_cache
+            for p in path[:-1]:
+                d = d[p]
+            d[path[-1]] = value
+
+        for subscription in self._subscriptions:
+            # find stuff that's changed that is relevant to this subscriber
+            endpoint = subscription.endpoint
+            changes = []
+            for change_path, change_value in self._last_changes:
+                # look for a change_path where the beginning matches the
+                # endpoint path, then strip away the matching part and add
+                # to the change set
+                i = 0
+                for (cp_element, ep_element) in zip(change_path, endpoint):
+                    if cp_element != ep_element:
+                        break
+                    i += 1
+                else:
+                    # change has matching path, so keep it
+                    # but strip off the end point path
+                    filtered_change = [change_path[i:], change_value]
+                    changes.append(filtered_change)
+
+            if subscription.delta:
+                # respond with the filtered changes
+                subscription.response_queue.put(changes)
+            elif len(changes) > 0:
+                # respond with the structure of everything below the endpoint
+                update = self._block_state_cache
+                for p in endpoint:
+                    update = update[p]
+                subscription.response_queue.put(update)
+
+    def _handle_block_changed(self, request):
+        """Record changes to made to a block"""
+        for path, value in request.changes:
+            # update changes
+            for e in self._last_changes:
+                if e[0] == path:
+                    e[1] = value
+                    break
+            else:
+                self._last_changes.append([path, value])
+
+
+    def notify_subscribers(self, block_name):
+        self.q.put(BlockNotify(name=block_name))
+
+    def on_changed(self, changes):
+        self.q.put(BlockChanged(changes=changes))
