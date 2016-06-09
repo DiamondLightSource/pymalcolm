@@ -31,6 +31,14 @@ class TestBlock(unittest.TestCase):
         self.assertEqual(b.mymethod(), 42)
         m.assert_called_once_with()
 
+    def test_add_attribute(self):
+        b = Block("blockname")
+        attr = MagicMock()
+        attr.name = "attr"
+        b.add_attribute(attr)
+        attr.set_parent.assert_called_once_with(b)
+        self.assertEqual({"attr":attr}, b._attributes)
+        self.assertIs(attr, b.attr)
 
 class TestToDict(unittest.TestCase):
 
@@ -47,15 +55,29 @@ class TestToDict(unittest.TestCase):
         m2.name = "method_two"
         m2.to_dict.return_value = method_dict
 
-        self.meta_map = Block("Test")
-        self.meta_map.add_method(m1)
-        self.meta_map.add_method(m2)
+        a1 = MagicMock()
+        a1.name = "attr_one"
+        a1dict = OrderedDict(value="test", meta=MagicMock())
+        a1.to_dict.return_value = a1dict
+
+        a2 = MagicMock()
+        a2.name = "attr_two"
+        a2dict = OrderedDict(value="value", meta=MagicMock())
+        a2.to_dict.return_value = a2dict
+
+        block = Block("Test")
+        block.add_method(m1)
+        block.add_method(m2)
+        block.add_attribute(a1)
+        block.add_attribute(a2)
 
         expected_dict = OrderedDict()
+        expected_dict['attr_one'] = a1dict
+        expected_dict['attr_two'] = a2dict
         expected_dict['method_one'] = method_dict
         expected_dict['method_two'] = method_dict
 
-        response = self.meta_map.to_dict()
+        response = block.to_dict()
 
         m1.to_dict.assert_called_once_with()
         m2.to_dict.assert_called_once_with()
