@@ -51,6 +51,34 @@ class Response(object):
         return response
 
     @classmethod
+    def Update(cls, id_, context, value):
+        """
+        Create an Update Response object with the provided parameters.
+
+        Args:
+            id_ (int): id from intial message
+            context: Context associated with id
+            value (dict): Serialized state of update object
+        """
+        response = cls(id_, context, "Update")
+        response.fields["value"] = value
+        return response
+
+    @classmethod
+    def Delta(cls, id_, context, changes):
+        """
+        Create a Delta Response object with the provided parameters.
+
+        Args:
+            id_ (int): id from initial message
+            context: Context associated with id
+            changes (list): list of [[path], value] pairs for changed values
+        """
+        response = cls(id_, context, "Delta")
+        response.fields["changes"] = changes
+        return response
+
+    @classmethod
     def from_dict(cls, d):
         """Create a Response instance from a serialized version
 

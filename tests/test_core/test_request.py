@@ -69,6 +69,30 @@ class TestRequest(unittest.TestCase):
                                             message="Test Error")
         self.response_queue.put.assert_called_once_with(response)
 
+    @patch("malcolm.core.response.Response.Update")
+    def test_respond_with_update(self, return_mock):
+        response = MagicMock()
+        return_mock.return_value = response
+        value = MagicMock()
+
+        self.request.respond_with_update(value)
+
+        return_mock.assert_called_once_with(
+            self.request.id_, self.request.context, value=value)
+        self.response_queue.put.assert_called_once_with(response)
+
+    @patch("malcolm.core.response.Response.Delta")
+    def test_respond_with_delta(self, return_mock):
+        response = MagicMock()
+        return_mock.return_value = response
+        changes = [[["path"], "value"]]
+
+        self.request.respond_with_delta(changes)
+
+        return_mock.assert_called_once_with(
+            self.request.id_, self.request.context, changes=changes)
+        self.response_queue.put.assert_called_once_with(response)
+
     @patch("malcolm.core.request.Request")
     def test_Get(self, request_mock):
         endpoint = ["BL18I:XSPRESS3", "state", "value"]

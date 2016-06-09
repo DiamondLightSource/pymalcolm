@@ -56,6 +56,26 @@ class Request(object):
         response = Response.Error(self.id_, self.context, message=message)
         self.response_queue.put(response)
 
+    def respond_with_update(self, value):
+        """
+        Create an Update Response object to handle the request
+
+        Args:
+            value (dict): Dictionary describing the new structure
+        """
+        response = Response.Update(self.id_, self.context, value=value)
+        self.response_queue.put(response)
+
+    def respond_with_delta(self, changes):
+        """
+        Create a Delta Response object to handle the request
+
+        Args:
+            changes (list): list of [[path], value] pairs for changed values
+        """
+        response = Response.Delta(self.id_, self.context, changes=changes)
+        self.response_queue.put(response)
+
     @classmethod
     def Get(cls, context, response_queue, endpoint):
         """
