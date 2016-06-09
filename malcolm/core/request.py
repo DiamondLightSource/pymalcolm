@@ -6,6 +6,7 @@ class Request(object):
     """An object to interact with the attributes of a Block"""
 
     POST = "Post"
+    PUT = "Put"
     SUBSCRIBE = "Subscribe"
 
     def __init__(self, context, response_queue, type_):

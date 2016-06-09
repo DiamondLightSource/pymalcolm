@@ -1,6 +1,7 @@
 from collections import OrderedDict, namedtuple
 
 from malcolm.core.loggable import Loggable
+from malcolm.core.request import Request
 
 
 # Sentinel object that when received stops the recv_loop
@@ -9,6 +10,8 @@ PROCESS_STOP = object()
 # Internal update messages
 BlockNotify = namedtuple("BlockNotify", "name")
 BlockChanged = namedtuple("BlockChanged", "changes")
+BlockNotify.type_ = "BlockNotify"
+BlockChanged.type_ = "BlockChanged"
 
 
 class Process(Loggable):
@@ -26,6 +29,14 @@ class Process(Loggable):
         self._other_spawned = []
         self._subscriptions = []
         self._last_changes = []
+        self._handle_functions = {
+            # TODO: Handle GET
+            Request.POST: self._forward_block_request,
+            Request.PUT: self._forward_block_request,
+            Request.SUBSCRIBE: self._handle_subscribe,
+            BlockNotify.type_: self._handle_block_notify,
+            BlockChanged.type_: self._handle_block_changed
+        }
 
     def recv_loop(self):
         """Service self.q, distributing the requests to the right block"""
@@ -35,17 +46,12 @@ class Process(Loggable):
             if request is PROCESS_STOP:
                 # Got the sentinel, stop immediately
                 break
-            elif isinstance(request, BlockNotify):
-                self._handle_block_notify(request)
-            elif isinstance(request, BlockChanged):
-                self._handle_block_changed(request)
-            else:
-                try:
-                    self.handle_request(request)
-                except Exception:
-                    # TODO: request.respond_with_error()
-                    self.log_exception("Exception while handling %s",
-                                       request.to_dict())
+            try:
+                self._handle_functions[request.type_](request)
+            except Exception:
+                rep = request.to_dict() if hasattr(request, "to_dict") \
+                    else request
+                self.log_exception("Exception while handling %s", rep)
 
     def start(self):
         """Start the process going"""
@@ -66,7 +72,7 @@ class Process(Loggable):
         for s in self._other_spawned:
             s.wait(timeout=timeout)
 
-    def handle_request(self, request):
+    def _forward_block_request(self, request):
         """Lookup target Block and spawn block.handle_request(request)
 
         Args:
@@ -116,8 +122,10 @@ class Process(Loggable):
             d[path[-1]] = value
 
         for subscription in self._subscriptions:
-            # find stuff that's changed that is relevant to this subscriber
             endpoint = subscription.endpoint
+            if endpoint[0] != request.name:
+                continue
+            # find stuff that's changed that is relevant to this subscriber
             changes = []
             for change_path, change_value in self._last_changes:
                 # look for a change_path where the beginning matches the
@@ -155,6 +163,14 @@ class Process(Loggable):
             else:
                 self._last_changes.append([path, value])
 
+    def _handle_subscribe(self, request):
+        """Add a new subscriber and respond with the current
+        sub-structure state"""
+        self._subscriptions.append(request)
+        d = self._block_state_cache
+        for p in request.endpoint:
+            d = d[p]
+        request.response_queue.put(d)
 
     def notify_subscribers(self, block_name):
         self.q.put(BlockNotify(name=block_name))

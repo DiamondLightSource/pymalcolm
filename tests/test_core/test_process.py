@@ -14,6 +14,7 @@ from mock import MagicMock
 from malcolm.core.process import \
         Process, BlockChanged, BlockNotify, PROCESS_STOP
 from malcolm.core.syncfactory import SyncFactory
+from malcolm.core.request import Request
 
 
 class TestProcess(unittest.TestCase):
@@ -33,6 +34,7 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(p._blocks, dict(myblock=b))
         p.start()
         request = MagicMock()
+        request.type_ = Request.POST
         request.endpoint = ["myblock", "foo"]
         p.q.put(request)
         # wait for spawns to have done their job
@@ -75,7 +77,28 @@ class TestSubscriptions(unittest.TestCase):
         p.notify_subscribers("block")
         p.q.put.assert_called_once_with(BlockNotify(name="block"))
 
-    def test_update_chain(self):
+    def test_subscribe(self):
+        block = MagicMock(
+            to_dict=MagicMock(
+                return_value={"attr":"value", "inner":{"attr2":"other"}}))
+        block.name = "block"
+        p = Process("proc", MagicMock())
+        sub_1 = Request.Subscribe(
+            MagicMock(), MagicMock(), ["block"], False)
+        sub_2 = Request.Subscribe(
+            MagicMock(), MagicMock(), ["block", "inner"], True)
+        p.q.get = MagicMock(side_effect = [sub_1, sub_2, PROCESS_STOP])
+
+        p.add_block(block)
+        p.recv_loop()
+
+        self.assertEquals([sub_1, sub_2], p._subscriptions)
+        sub_1.response_queue.put.assert_called_once_with(
+                {"attr":"value", "inner":{"attr2":"other"}})
+        sub_2.response_queue.put.assert_called_once_with(
+                {"attr2":"other"})
+
+    def test_overlapped_changes(self):
         block = MagicMock(
             to_dict=MagicMock(return_value={"attr":"value", "attr2":"other"}))
         block.name = "block"
@@ -104,6 +127,43 @@ class TestSubscriptions(unittest.TestCase):
             {"attr":"final_value", "attr2":"other"})
         sub_2.response_queue.put.assert_called_once_with(
             [[["attr"], "final_value"]])
+
+    def test_partial_structure_subscriptions(self):
+        block_1 = MagicMock(
+            to_dict=MagicMock(
+                return_value={"attr":"value", "inner":{"attr2":"value"}}))
+        block_1.name = "block_1"
+        block_2 = MagicMock(
+            to_dict=MagicMock(return_value={"attr":"value"}))
+        block_2.name = "block_2"
+
+        sub_1 = MagicMock()
+        sub_1.endpoint = ["block_1", "inner"]
+        sub_1.delta = False
+        sub_2 = MagicMock()
+        sub_2.endpoint = ["block_1", "inner"]
+        sub_2.delta = True
+
+        changes_1 = [[["block_1", "inner", "attr2"], "new_value"],
+            [["block_1", "attr"], "new_value"]]
+        changes_2 = [[["block_2", "attr"], "block_2_value"]]
+        request_1 = BlockChanged(changes_1)
+        request_2 = BlockChanged(changes_2)
+        request_3 = BlockNotify(block_1.name)
+        request_4 = BlockNotify(block_2.name)
+        p = Process("proc", MagicMock())
+        p.q.get = MagicMock(side_effect = [request_1, request_2, request_3,
+                                           request_4, PROCESS_STOP])
+        p._subscriptions = [sub_1, sub_2]
+
+        p.add_block(block_1)
+        p.add_block(block_2)
+        p.recv_loop()
+
+        sub_1.response_queue.put.assert_called_once_with(
+            {"attr2":"new_value"})
+        sub_2.response_queue.put.assert_called_once_with(
+            [[["attr2"], "new_value"]])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
