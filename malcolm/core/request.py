@@ -6,6 +6,7 @@ class Request(object):
     """An object to interact with the attributes of a Block"""
 
     POST = "Post"
+    SUBSCRIBE = "Subscribe"
 
     def __init__(self, context, response_queue, type_):
         """
@@ -116,6 +117,24 @@ class Request(object):
         if parameters is not None:
             request.fields['parameters'] = parameters
 
+        return request
+
+    @classmethod
+    def Subscribe(cls, context, response_queue, endpoint, delta=False):
+        """Create a Subscribe Request object
+
+        Args:
+            context: Context of Subscribe
+            response_queue (Queue): Queue to return to
+            endpoint (list[str]): Path to target
+            delta (bool): Notify of differences only (default False)
+
+        Returns:
+            Subscribe object
+        """
+        request = Request(context, response_queue, type_="Subscribe")
+        request.fields["endpoint"] = endpoint
+        request.fields["delta"] = delta
         return request
 
     def to_dict(self):

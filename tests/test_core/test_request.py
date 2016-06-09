@@ -107,6 +107,18 @@ class TestRequest(unittest.TestCase):
 
         request_mock.assert_called_once_with(self.context, self.response_queue, type_="Post")
 
+    def test_Subscribe(self):
+        endpoint = ["BL18I:XSPRESS3", "state", "value"]
+        subscribe = Request.Subscribe(
+            self.context, self.response_queue, endpoint)
+
+        self.assertEquals(endpoint, subscribe.fields["endpoint"])
+        self.assertFalse(subscribe.delta)
+
+        subscribe = Request.Subscribe(
+            self.context, self.response_queue, endpoint, delta=True)
+        self.assertTrue(subscribe.delta)
+
     def test_given_valid_attr_then_return(self):
         param_dict = dict(one=7, two=23)
         post = Request.Post(self.context, self.response_queue, [""], parameters=param_dict)
