@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
-from malcolm.core.loggable import Loggable
+from malcolm.core.monitorable import Monitorable
 
 
-class Block(Loggable):
+class Block(Monitorable):
     """Object consisting of a number of Attributes and Methods"""
 
     def __init__(self, name):
@@ -11,7 +11,7 @@ class Block(Loggable):
         Args:
             name (str): Block name e.g. "BL18I:ZEBRA1"
         """
-        super(Block, self).__init__(logger_name=name)
+        super(Block, self).__init__(name=name)
         self.name = name
         self._methods = OrderedDict()
         self._attributes = OrderedDict()
