@@ -23,13 +23,12 @@ class Process(Loggable):
         self.name = name
         self.sync_factory = sync_factory
         self.q = self.create_queue()
-        # map block name -> block object
-        self._blocks = OrderedDict()
+        self._blocks = OrderedDict() # block name -> block
         self._block_state_cache = OrderedDict()
         self._recv_spawned = None
         self._other_spawned = []
-        self._subscriptions = []
-        self._last_changes = []
+        self._subscriptions = OrderedDict() # block name -> list of subs
+        self._last_changes = OrderedDict() # block name -> list of changes
         self._handle_functions = {
             Request.POST: self._forward_block_request,
             Request.PUT: self._forward_block_request,
@@ -115,21 +114,18 @@ class Process(Loggable):
     def _handle_block_notify(self, request):
         """Update subscribers with changes and applies stored changes to the
         cached structure"""
-
         # update cached dict
-        for path, value in self._last_changes:
+        for path, value in self._last_changes.setdefault(request.name, []):
             d = self._block_state_cache
             for p in path[:-1]:
                 d = d[p]
             d[path[-1]] = value
 
-        for subscription in self._subscriptions:
+        for subscription in self._subscriptions.setdefault(request.name, []):
             endpoint = subscription.endpoint
-            if endpoint[0] != request.name:
-                continue
             # find stuff that's changed that is relevant to this subscriber
             changes = []
-            for change_path, change_value in self._last_changes:
+            for change_path, change_value in self._last_changes[request.name]:
                 # look for a change_path where the beginning matches the
                 # endpoint path, then strip away the matching part and add
                 # to the change set
@@ -143,35 +139,40 @@ class Process(Loggable):
                     # but strip off the end point path
                     filtered_change = [change_path[i:], change_value]
                     changes.append(filtered_change)
-            if subscription.delta:
-                # respond with the filtered changes
-                response = Response.Delta(
-                    subscription.id_, subscription.context, changes)
-                subscription.response_queue.put(response)
-            elif len(changes) > 0:
-                # respond with the structure of everything below the endpoint
-                update = self._block_state_cache
-                for p in endpoint:
-                    update = update[p]
-                response = Response.Update(
-                    subscription.id_, subscription.context, update)
-                subscription.response_queue.put(response)
+            if len(changes) > 0:
+                if subscription.delta:
+                    # respond with the filtered changes
+                    response = Response.Delta(
+                        subscription.id_, subscription.context, changes)
+                    subscription.response_queue.put(response)
+                else:
+                    # respond with the structure of everything
+                    # below the endpoint
+                    update = self._block_state_cache
+                    for p in endpoint:
+                        update = update[p]
+                    response = Response.Update(
+                        subscription.id_, subscription.context, update)
+                    subscription.response_queue.put(response)
+        self._last_changes[request.name] = []
 
     def _handle_block_changed(self, request):
         """Record changes to made to a block"""
         for path, value in request.changes:
             # update changes
-            for e in self._last_changes:
+            block_changes = self._last_changes.setdefault(path[0], [])
+            for e in block_changes:
                 if e[0] == path:
                     e[1] = value
                     break
             else:
-                self._last_changes.append([path, value])
+                block_changes.append([path, value])
 
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current
         sub-structure state"""
-        self._subscriptions.append(request)
+        subs = self._subscriptions.setdefault(request.endpoint[0], [])
+        subs.append(request)
         d = self._block_state_cache
         for p in request.endpoint:
             d = d[p]
