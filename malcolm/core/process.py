@@ -30,9 +30,9 @@ class Process(Loggable):
         self._subscriptions = []
         self._last_changes = []
         self._handle_functions = {
-            # TODO: Handle GET
             Request.POST: self._forward_block_request,
             Request.PUT: self._forward_block_request,
+            Request.GET: self._handle_get,
             Request.SUBSCRIBE: self._handle_subscribe,
             BlockNotify.type_: self._handle_block_notify,
             BlockChanged.type_: self._handle_block_changed
@@ -171,6 +171,14 @@ class Process(Loggable):
         for p in request.endpoint:
             d = d[p]
         request.response_queue.put(d)
+
+    def _handle_get(self, request):
+        layer = self._block_state_cache[request.endpoint[0]]
+        for p in request.endpoint[1:]:
+            layer = layer[p]
+        result = layer.to_dict() if hasattr(layer, "to_dict") else layer
+        response = Response.Return(request.id_, request.context, result)
+        request.response_queue.put(response)
 
     def notify_subscribers(self, block_name):
         self.q.put(BlockNotify(name=block_name))

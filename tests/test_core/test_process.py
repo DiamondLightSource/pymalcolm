@@ -15,6 +15,7 @@ from malcolm.core.process import \
         Process, BlockChanged, BlockNotify, PROCESS_STOP
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Request
+from malcolm.core.response import Response
 
 
 class TestProcess(unittest.TestCase):
@@ -61,6 +62,24 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(spawned, s.spawn.return_value)
         self.assertEqual(p._other_spawned, [spawned])
         s.spawn.assert_called_once_with(callable, "fred", a=4)
+
+    def test_get(self):
+        p = Process("proc", MagicMock())
+        block = MagicMock()
+        block.name = "myblock"
+        block.to_dict = MagicMock(
+            return_value={"path_1":{"path_2":{"attr":"value"}}})
+        request = MagicMock()
+        request.type_ = Request.GET
+        request.endpoint = ["myblock", "path_1", "path_2"]
+        p.add_block(block)
+        p.q.get = MagicMock(side_effect=[request, PROCESS_STOP])
+
+        p.recv_loop()
+
+        response = request.response_queue.put.call_args[0][0]
+        self.assertEquals(Response.RETURN, response.type_)
+        self.assertEquals({"attr":"value"}, response.value)
 
 class TestSubscriptions(unittest.TestCase):
 

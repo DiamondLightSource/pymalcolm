@@ -7,6 +7,7 @@ class Request(object):
 
     POST = "Post"
     PUT = "Put"
+    GET = "Get"
     SUBSCRIBE = "Subscribe"
 
     def __init__(self, context, response_queue, type_):
