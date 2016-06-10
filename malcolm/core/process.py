@@ -2,6 +2,7 @@ from collections import OrderedDict, namedtuple
 
 from malcolm.core.loggable import Loggable
 from malcolm.core.request import Request
+from malcolm.core.response import Response
 
 
 # Sentinel object that when received stops the recv_loop
@@ -141,16 +142,19 @@ class Process(Loggable):
                     # but strip off the end point path
                     filtered_change = [change_path[i:], change_value]
                     changes.append(filtered_change)
-
             if subscription.delta:
                 # respond with the filtered changes
-                subscription.response_queue.put(changes)
+                response = Response.Delta(
+                    subscription.id_, subscription.context, changes)
+                subscription.response_queue.put(response)
             elif len(changes) > 0:
                 # respond with the structure of everything below the endpoint
                 update = self._block_state_cache
                 for p in endpoint:
                     update = update[p]
-                subscription.response_queue.put(update)
+                response = Response.Update(
+                    subscription.id_, subscription.context, update)
+                subscription.response_queue.put(response)
 
     def _handle_block_changed(self, request):
         """Record changes to made to a block"""
@@ -170,7 +174,8 @@ class Process(Loggable):
         d = self._block_state_cache
         for p in request.endpoint:
             d = d[p]
-        request.response_queue.put(d)
+        response = Response.Update(request.id_, request.context, d)
+        request.response_queue.put(response)
 
     def _handle_get(self, request):
         layer = self._block_state_cache[request.endpoint[0]]

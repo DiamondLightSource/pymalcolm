@@ -112,10 +112,11 @@ class TestSubscriptions(unittest.TestCase):
         p.recv_loop()
 
         self.assertEquals([sub_1, sub_2], p._subscriptions)
-        sub_1.response_queue.put.assert_called_once_with(
-                {"attr":"value", "inner":{"attr2":"other"}})
-        sub_2.response_queue.put.assert_called_once_with(
-                {"attr2":"other"})
+        response_1 = sub_1.response_queue.put.call_args[0][0]
+        response_2 = sub_2.response_queue.put.call_args[0][0]
+        self.assertEquals({"attr":"value", "inner":{"attr2":"other"}},
+                          response_1.value)
+        self.assertEquals({"attr2":"other"}, response_2.value)
 
     def test_overlapped_changes(self):
         block = MagicMock(
@@ -142,10 +143,13 @@ class TestSubscriptions(unittest.TestCase):
         p.add_block(block)
         p.recv_loop()
 
-        sub_1.response_queue.put.assert_called_once_with(
-            {"attr":"final_value", "attr2":"other"})
-        sub_2.response_queue.put.assert_called_once_with(
-            [[["attr"], "final_value"]])
+        sub_1.response_queue.put.assert_called_once()
+        sub_2.response_queue.put.assert_called_once()
+        response_1 = sub_1.response_queue.put.call_args[0][0]
+        response_2 = sub_2.response_queue.put.call_args[0][0]
+        self.assertEquals({"attr":"final_value", "attr2":"other"},
+                          response_1.value)
+        self.assertEquals([[["attr"], "final_value"]], response_2.changes)
 
     def test_partial_structure_subscriptions(self):
         block_1 = MagicMock(
@@ -179,10 +183,10 @@ class TestSubscriptions(unittest.TestCase):
         p.add_block(block_2)
         p.recv_loop()
 
-        sub_1.response_queue.put.assert_called_once_with(
-            {"attr2":"new_value"})
-        sub_2.response_queue.put.assert_called_once_with(
-            [[["attr2"], "new_value"]])
+        response_1 = sub_1.response_queue.put.call_args[0][0]
+        response_2 = sub_2.response_queue.put.call_args[0][0]
+        self.assertEquals({"attr2":"new_value"}, response_1.value)
+        self.assertEquals([[["attr2"], "new_value"]], response_2.changes)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
