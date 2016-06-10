@@ -57,11 +57,10 @@ class TestProcess(unittest.TestCase):
         p.start()
         request = MagicMock()
         request.endpoint = ["anything"]
-        request.to_dict.return_value = "<to_dict>"
         p.q.put(request)
         p.stop()
         p.log_exception.assert_called_once_with("Exception while handling %s",
-                                                "<to_dict>")
+                                                request)
 
     def test_spawned_adds_to_other_spawned(self):
         s = MagicMock()

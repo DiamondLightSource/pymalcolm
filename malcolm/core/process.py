@@ -49,9 +49,7 @@ class Process(Loggable):
             try:
                 self._handle_functions[request.type_](request)
             except Exception:
-                rep = request.to_dict() if hasattr(request, "to_dict") \
-                    else request
-                self.log_exception("Exception while handling %s", rep)
+                self.log_exception("Exception while handling %s", request)
 
     def start(self):
         """Start the process going"""

@@ -163,3 +163,6 @@ class Request(object):
         for field in [f for f in d.keys() if f not in ["id", "type"]]:
             request.fields[field] = d[field]
         return request
+
+    def __repr__(self):
+        return self.to_dict().__repr__()

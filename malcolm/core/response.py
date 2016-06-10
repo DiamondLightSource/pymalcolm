@@ -25,6 +25,9 @@ class Response(object):
     def __getattr__(self, attr):
         return self.fields[attr]
 
+    def __repr__(self):
+        return self.to_dict().__repr__()
+
     @classmethod
     def Return(cls, id_, context, value=None):
         """Create a Return Response object with the provided parameters.

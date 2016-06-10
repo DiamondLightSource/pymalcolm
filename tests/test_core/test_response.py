@@ -86,5 +86,12 @@ class TestResponse(unittest.TestCase):
         self.assertEquals({"field": "data"}, response.fields["extra_2"])
         self.assertIsNone(response.context)
 
+    def test_repr(self):
+        r = Response(123, Mock(), "mytype")
+        s = r.__repr__()
+        self.assertTrue(isinstance(s, str))
+        self.assertIn("mytype", s)
+        self.assertIn("123", s)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

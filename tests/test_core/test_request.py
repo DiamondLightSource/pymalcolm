@@ -24,6 +24,12 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(self.response_queue, self.request.response_queue)
         self.assertEqual("Put", self.request.type_)
 
+    def test_repr(self):
+        r = Request(MagicMock(), MagicMock(), "mytype")
+        s = r.__repr__()
+        self.assertTrue(isinstance(s, str))
+        self.assertIn("mytype", s)
+
     def test_to_dict(self):
         expected_dict = OrderedDict()
         expected_dict['id'] = 1
