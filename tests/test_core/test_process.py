@@ -26,6 +26,13 @@ class TestProcess(unittest.TestCase):
         s.create_queue.assert_called_once_with()
         self.assertEqual(p.q, s.create_queue.return_value)
 
+    def test_add_block(self):
+        p = Process("proc", MagicMock())
+        b = MagicMock()
+        b.name = "myblock"
+        p.add_block(b)
+        self.assertIs(p, b.parent)
+
     def test_starting_process(self):
         s = SyncFactory("sched")
         p = Process("proc", s)

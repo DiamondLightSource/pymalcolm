@@ -94,6 +94,7 @@ class Process(Loggable):
             "There is already a block called %s" % block.name
         self._blocks[block.name] = block
         self._block_state_cache[block.name] = block.to_dict()
+        block.parent = self
 
     def create_queue(self):
         """
