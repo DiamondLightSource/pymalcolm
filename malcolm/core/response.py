@@ -4,6 +4,9 @@ from collections import OrderedDict
 class Response(object):
     """Represents a response to a message"""
     RETURN = "Return"
+    DELTA = "Delta"
+    UPDATE = "Update"
+    ERROR = "Error"
 
     def __init__(self, id_, context, type_):
         self.id_ = id_
