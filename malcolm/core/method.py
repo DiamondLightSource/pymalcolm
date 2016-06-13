@@ -3,6 +3,7 @@ from inspect import getdoc
 
 from malcolm.core.monitorable import Monitorable
 from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
+from malcolm.core.response import Response
 
 
 class Method(Monitorable):
@@ -66,7 +67,7 @@ class Method(Monitorable):
                 self.returns.elements[r_name].validate(r_val)
         return return_val
 
-    def handle_request(self, request):
+    def get_response(self, request):
         """Call exposed function using request parameters and respond with the
         result
 
@@ -79,10 +80,10 @@ class Method(Monitorable):
         except Exception as error:
             self.log_debug("Error raised %s", error.message)
             message = "Method %s raised an error: %s" % (self.name, error.message)
-            request.respond_with_error(message)
+            return Response.Error(request.id_, request.context, message)
         else:
             self.log_debug("Returning result %s", result)
-            request.respond_with_return(result)
+            return Response.Return(request.id_, request.context, value=result)
 
     def to_dict(self):
         """Return ordered dictionary representing Method object."""

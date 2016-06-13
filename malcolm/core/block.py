@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from malcolm.core.monitorable import Monitorable
+from malcolm.core.process import BlockRespond
 
 
 class Block(Monitorable):
@@ -55,7 +56,9 @@ class Block(Monitorable):
         self.log_debug("Received request %s", request)
         if request.type_ == request.POST:
             method_name = request.endpoint[-1]
-            self._methods[method_name].handle_request(request)
+            response = self._methods[method_name].get_response(request)
+            response = BlockRespond(response, request.response_queue)
+            self.parent.q.put(response)
         else:
             layer = self
             for next_link in request.endpoint[1:]:
