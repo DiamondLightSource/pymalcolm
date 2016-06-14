@@ -4,6 +4,9 @@ from collections import OrderedDict
 class Response(object):
     """Represents a response to a message"""
     RETURN = "Return"
+    DELTA = "Delta"
+    UPDATE = "Update"
+    ERROR = "Error"
 
     def __init__(self, id_, context, type_):
         self.id_ = id_
@@ -21,6 +24,9 @@ class Response(object):
 
     def __getattr__(self, attr):
         return self.fields[attr]
+
+    def __repr__(self):
+        return self.to_dict().__repr__()
 
     @classmethod
     def Return(cls, id_, context, value=None):
@@ -48,6 +54,34 @@ class Response(object):
 
         response = cls(id_, context, "Error")
         response.fields["message"] = message
+        return response
+
+    @classmethod
+    def Update(cls, id_, context, value):
+        """
+        Create an Update Response object with the provided parameters.
+
+        Args:
+            id_ (int): id from intial message
+            context: Context associated with id
+            value (dict): Serialized state of update object
+        """
+        response = cls(id_, context, "Update")
+        response.fields["value"] = value
+        return response
+
+    @classmethod
+    def Delta(cls, id_, context, changes):
+        """
+        Create a Delta Response object with the provided parameters.
+
+        Args:
+            id_ (int): id from initial message
+            context: Context associated with id
+            changes (list): list of [[path], value] pairs for changed values
+        """
+        response = cls(id_, context, "Delta")
+        response.fields["changes"] = changes
         return response
 
     @classmethod

@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
-from malcolm.core.loggable import Loggable
+from malcolm.core.monitorable import Monitorable
 
 
-class Block(Loggable):
+class Block(Monitorable):
     """Object consisting of a number of Attributes and Methods"""
 
     def __init__(self, name):
@@ -11,7 +11,7 @@ class Block(Loggable):
         Args:
             name (str): Block name e.g. "BL18I:ZEBRA1"
         """
-        super(Block, self).__init__(logger_name=name)
+        super(Block, self).__init__(name=name)
         self.name = name
         self._methods = OrderedDict()
         self._attributes = OrderedDict()
@@ -25,6 +25,8 @@ class Block(Loggable):
         self._attributes[attribute.name] = attribute
         attribute.set_parent(self)
         setattr(self, attribute.name, attribute)
+        self.on_changed([[[attribute.name], attribute.to_dict()]])
+        self.notify_subscribers()
 
     def add_method(self, method):
         """Add a Method to the Block
@@ -36,6 +38,12 @@ class Block(Loggable):
             "Method %s already defined for Block %s" % (method.name, self.name)
         self._methods[method.name] = method
         setattr(self, method.name, method)
+        self.on_changed([[[method.name], method.to_dict()]])
+        self.notify_subscribers()
+
+    def notify_subscribers(self):
+        if self.parent is not None:
+            self.parent.notify_subscribers(self.name)
 
     def handle_request(self, request):
         """

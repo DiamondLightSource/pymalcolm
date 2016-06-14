@@ -24,6 +24,12 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(self.response_queue, self.request.response_queue)
         self.assertEqual("Put", self.request.type_)
 
+    def test_repr(self):
+        r = Request(MagicMock(), MagicMock(), "mytype")
+        s = r.__repr__()
+        self.assertTrue(isinstance(s, str))
+        self.assertIn("mytype", s)
+
     def test_to_dict(self):
         expected_dict = OrderedDict()
         expected_dict['id'] = 1
@@ -69,6 +75,30 @@ class TestRequest(unittest.TestCase):
                                             message="Test Error")
         self.response_queue.put.assert_called_once_with(response)
 
+    @patch("malcolm.core.response.Response.Update")
+    def test_respond_with_update(self, return_mock):
+        response = MagicMock()
+        return_mock.return_value = response
+        value = MagicMock()
+
+        self.request.respond_with_update(value)
+
+        return_mock.assert_called_once_with(
+            self.request.id_, self.request.context, value=value)
+        self.response_queue.put.assert_called_once_with(response)
+
+    @patch("malcolm.core.response.Response.Delta")
+    def test_respond_with_delta(self, return_mock):
+        response = MagicMock()
+        return_mock.return_value = response
+        changes = [[["path"], "value"]]
+
+        self.request.respond_with_delta(changes)
+
+        return_mock.assert_called_once_with(
+            self.request.id_, self.request.context, changes=changes)
+        self.response_queue.put.assert_called_once_with(response)
+
     @patch("malcolm.core.request.Request")
     def test_Get(self, request_mock):
         endpoint = ["BL18I:XSPRESS3", "state", "value"]
@@ -82,6 +112,18 @@ class TestRequest(unittest.TestCase):
         post = Request.Post(self.context, self.response_queue, endpoint)
 
         request_mock.assert_called_once_with(self.context, self.response_queue, type_="Post")
+
+    def test_Subscribe(self):
+        endpoint = ["BL18I:XSPRESS3", "state", "value"]
+        subscribe = Request.Subscribe(
+            self.context, self.response_queue, endpoint)
+
+        self.assertEquals(endpoint, subscribe.fields["endpoint"])
+        self.assertFalse(subscribe.delta)
+
+        subscribe = Request.Subscribe(
+            self.context, self.response_queue, endpoint, delta=True)
+        self.assertTrue(subscribe.delta)
 
     def test_given_valid_attr_then_return(self):
         param_dict = dict(one=7, two=23)

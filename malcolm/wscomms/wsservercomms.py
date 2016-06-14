@@ -66,7 +66,7 @@ class WSServerComms(ServerComms):
         """
 
         request.response_queue = self.q
-        self.process.handle_request(request)
+        self.process.q.put(request)
 
     def start_recv_loop(self):
         """Start a receive loop to dispatch requests to Process"""

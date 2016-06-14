@@ -6,6 +6,9 @@ class Request(object):
     """An object to interact with the attributes of a Block"""
 
     POST = "Post"
+    PUT = "Put"
+    GET = "Get"
+    SUBSCRIBE = "Subscribe"
 
     def __init__(self, context, response_queue, type_):
         """
@@ -56,6 +59,26 @@ class Request(object):
         response = Response.Error(self.id_, self.context, message=message)
         self.response_queue.put(response)
 
+    def respond_with_update(self, value):
+        """
+        Create an Update Response object to handle the request
+
+        Args:
+            value (dict): Dictionary describing the new structure
+        """
+        response = Response.Update(self.id_, self.context, value=value)
+        self.response_queue.put(response)
+
+    def respond_with_delta(self, changes):
+        """
+        Create a Delta Response object to handle the request
+
+        Args:
+            changes (list): list of [[path], value] pairs for changed values
+        """
+        response = Response.Delta(self.id_, self.context, changes=changes)
+        self.response_queue.put(response)
+
     @classmethod
     def Get(cls, context, response_queue, endpoint):
         """
@@ -98,6 +121,24 @@ class Request(object):
 
         return request
 
+    @classmethod
+    def Subscribe(cls, context, response_queue, endpoint, delta=False):
+        """Create a Subscribe Request object
+
+        Args:
+            context: Context of Subscribe
+            response_queue (Queue): Queue to return to
+            endpoint (list[str]): Path to target
+            delta (bool): Notify of differences only (default False)
+
+        Returns:
+            Subscribe object
+        """
+        request = Request(context, response_queue, type_="Subscribe")
+        request.fields["endpoint"] = endpoint
+        request.fields["delta"] = delta
+        return request
+
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
@@ -122,3 +163,6 @@ class Request(object):
         for field in [f for f in d.keys() if f not in ["id", "type"]]:
             request.fields[field] = d[field]
         return request
+
+    def __repr__(self):
+        return self.to_dict().__repr__()

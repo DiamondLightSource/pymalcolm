@@ -22,23 +22,28 @@ class TestBlock(unittest.TestCase):
 
     def test_add_method_registers(self):
         b = Block("blockname")
+        b.on_changed = MagicMock(side_effect=b.on_changed)
         m = MagicMock()
         m.name = "mymethod"
         b.add_method(m)
         self.assertEqual(b._methods.keys(), ["mymethod"])
         self.assertFalse(m.called)
+        b.on_changed.assert_called_with([[[m.name], m.to_dict.return_value]])
         m.return_value = 42
         self.assertEqual(b.mymethod(), 42)
         m.assert_called_once_with()
 
     def test_add_attribute(self):
         b = Block("blockname")
+        b.on_changed = MagicMock(side_effect=b.on_changed)
         attr = MagicMock()
         attr.name = "attr"
         b.add_attribute(attr)
         attr.set_parent.assert_called_once_with(b)
         self.assertEqual({"attr":attr}, b._attributes)
         self.assertIs(attr, b.attr)
+        b.on_changed.assert_called_with(
+            [[[attr.name], attr.to_dict.return_value]])
 
 class TestToDict(unittest.TestCase):
 
@@ -70,6 +75,11 @@ class TestToDict(unittest.TestCase):
         block.add_method(m2)
         block.add_attribute(a1)
         block.add_attribute(a2)
+
+        m1.reset_mock()
+        m2.reset_mock()
+        a1.reset_mock()
+        a2.reset_mock()
 
         expected_dict = OrderedDict()
         expected_dict['attr_one'] = a1dict

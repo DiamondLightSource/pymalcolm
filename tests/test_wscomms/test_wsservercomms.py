@@ -1,5 +1,8 @@
 import unittest
 from collections import OrderedDict
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from pkg_resources import require
 require("mock")
@@ -81,7 +84,7 @@ class TestWSServerComms(unittest.TestCase):
         json_mock.loads.assert_called_once_with("TestMessage",
                                                 object_pairs_hook=OrderedDict)
         request_mock.from_dict.assert_called_once_with(message_dict)
-        self.p.handle_request.assert_called_once_with(request)
+        self.p.q.put.assert_called_once_with(request)
 
     @patch('malcolm.wscomms.wsservercomms.json')
     @patch('malcolm.wscomms.wsservercomms.HTTPServer.listen')
@@ -95,3 +98,6 @@ class TestWSServerComms(unittest.TestCase):
         json_mock.dumps.assert_called_once_with(response_mock.to_dict())
         response_mock.context.write_message.assert_called_once_with(
             json_mock.dumps())
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
