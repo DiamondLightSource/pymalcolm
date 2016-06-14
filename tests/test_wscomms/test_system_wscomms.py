@@ -35,12 +35,13 @@ class TestSystemWSComms(unittest.TestCase):
         block = Block("hello")
         self.process.add_block(block)
         HelloController(block)
-        self.process.notify_subscribers(block.name)
         self.sc = WSServerComms("sc", self.process, 8888)
         self.process.start()
         self.sc.start()
 
     def tearDown(self):
+        if hasattr(self, "cc"):
+            self.cc.stop()
         self.sc.stop()
         self.process.stop()
 
@@ -81,7 +82,6 @@ class TestSystemWSComms(unittest.TestCase):
         ClientController(self.process, block2, self.cc)
         ret = block2.say_hello("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
-        self.cc.stop()
 
 
 if __name__ == "__main__":
