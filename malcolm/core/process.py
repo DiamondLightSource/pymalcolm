@@ -169,8 +169,10 @@ class Process(Loggable):
         d = self._block_state_cache
         for p in request.endpoint:
             d = d[p]
-        response = Response.Update(request.id_, request.context, d)
-        request.response_queue.put(response)
+        if request.delta:
+            request.respond_with_delta([[[], d]])
+        else:
+            request.respond_with_update(d)
 
     def _handle_get(self, request):
         layer = self._block_state_cache[request.endpoint[0]]

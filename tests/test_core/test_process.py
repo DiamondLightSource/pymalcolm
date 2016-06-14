@@ -124,7 +124,7 @@ class TestSubscriptions(unittest.TestCase):
         response_2 = sub_2.response_queue.put.call_args[0][0]
         self.assertEquals({"attr":"value", "inner":{"attr2":"other"}},
                           response_1.value)
-        self.assertEquals({"attr2":"other"}, response_2.value)
+        self.assertEquals([[[], {"attr2":"other"}]], response_2.changes)
 
     def test_overlapped_changes(self):
         block = MagicMock(
