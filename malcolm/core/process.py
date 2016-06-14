@@ -159,12 +159,7 @@ class Process(Loggable):
         for path, value in request.changes:
             # update changes
             block_changes = self._last_changes.setdefault(path[0], [])
-            for e in block_changes:
-                if e[0] == path:
-                    e[1] = value
-                    break
-            else:
-                block_changes.append([path, value])
+            block_changes.append([path, value])
 
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current

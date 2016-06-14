@@ -156,7 +156,9 @@ class TestSubscriptions(unittest.TestCase):
         response_2 = sub_2.response_queue.put.call_args[0][0]
         self.assertEquals({"attr":"final_value", "attr2":"other"},
                           response_1.value)
-        self.assertEquals([[["attr"], "final_value"]], response_2.changes)
+        self.assertEquals(
+            [[["attr"], "changing_value"], [["attr"], "final_value"]],
+            response_2.changes)
 
     def test_partial_structure_subscriptions(self):
         block_1 = MagicMock(
