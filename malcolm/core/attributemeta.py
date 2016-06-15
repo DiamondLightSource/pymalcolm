@@ -9,10 +9,13 @@ class AttributeMeta(Monitorable):
     metaOf = None
     # dict mapping metaOf name -> (cls, args)
     _subcls_lookup = {}
+    # dict mapping (cls, args) -> metaOf
+    _metaOf_lookup = {}
 
-    def __init__(self, name, description):
+    def __init__(self, name, description, *args):
         super(AttributeMeta, self).__init__(name=name)
         self.description = description
+        self.metaOf = self._metaOf_lookup[(type(self), args)]
 
     def validate(self, value):
         """
@@ -43,9 +46,9 @@ class AttributeMeta(Monitorable):
             metaOf (str): Like "malcolm:core/String:1.0"
             *args: Additional arguments to be registered
         """
-        subcls.metaOf = metaOf
         def decorator(subcls):
             cls._subcls_lookup[metaOf] = (subcls, args)
+            cls._metaOf_lookup[(subcls, args)] = metaOf
             return subcls
         return decorator
 
@@ -63,4 +66,5 @@ class AttributeMeta(Monitorable):
         assert subcls is not cls, \
             "Subclass %s did not redefine from_dict" % subcls
         attribute_meta = subcls.from_dict(name, d, *args)
+        attribute_meta.metaOf = metaOf
         return attribute_meta

@@ -10,6 +10,9 @@ from mock import MagicMock
 
 from malcolm.core.attributemeta import AttributeMeta
 
+# Register AttributeMeta as a sublcass of itself so we
+# can instantiate it for testing purposes.
+AttributeMeta.register_subclass("attribute_meta:test")(AttributeMeta)
 
 class TestInit(unittest.TestCase):
 
@@ -45,7 +48,7 @@ class TestToDict(unittest.TestCase):
     def test_returns_dict(self):
         expected_dict = OrderedDict()
         expected_dict["description"] = "test_description"
-        expected_dict["metaOf"] = None
+        expected_dict["metaOf"] = "attribute_meta:test"
 
         response = self.attribute_meta.to_dict()
 
@@ -58,7 +61,6 @@ class TestFromDict(unittest.TestCase):
         class Meta(AttributeMeta):
             from_dict = MagicMock()
         m = Meta("name", "desc")
-        self.assertEqual(m.metaOf, "foo:1.0")
 
         d = dict(metaOf = "foo:1.0")
         am = AttributeMeta.from_dict("me", d)
