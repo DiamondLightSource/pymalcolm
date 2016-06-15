@@ -54,8 +54,10 @@ class TestToDict(unittest.TestCase):
 class TestFromDict(unittest.TestCase):
 
     def test_from_dict_returns(self):
-        m = MagicMock()
-        AttributeMeta.register_subclass(m, "foo:1.0")
+        @AttributeMeta.register_subclass("foo:1.0")
+        class Meta(AttributeMeta):
+            from_dict = MagicMock()
+        m = Meta("name", "desc")
         self.assertEqual(m.metaOf, "foo:1.0")
 
         d = dict(metaOf = "foo:1.0")
@@ -65,9 +67,9 @@ class TestFromDict(unittest.TestCase):
         self.assertEqual(m.from_dict.return_value, am)
 
     def test_from_dict_not_defined_on_subclass_fails(self):
+        @AttributeMeta.register_subclass("anything")
         class Faulty(AttributeMeta):
             pass
-        AttributeMeta.register_subclass(Faulty, "anything")
         self.assertRaises(AssertionError, AttributeMeta.from_dict,
                           "me", dict(metaOf="anything"))
 
