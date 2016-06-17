@@ -10,6 +10,7 @@ from mock import Mock, patch, call, MagicMock
 
 from malcolm.core.method import Method, takes, returns
 from malcolm.core.mapmeta import OPTIONAL, REQUIRED
+from malcolm.core.response import Response
 
 
 class TestMethod(unittest.TestCase):
@@ -134,9 +135,9 @@ class TestMethod(unittest.TestCase):
         request = Mock(
                 id=(123, Mock()), type="Post", parameters={"first": 2},
                 respond_with_return=Mock())
-        m.handle_request(request)
+        response = m.get_response(request)
         func.assert_called_with({"first": 2})
-        request.respond_with_return.assert_called_with({"output": 1})
+        self.assertEquals({"output":1}, response.value)
 
     def test_handle_request_error(self):
         func = MagicMock()
@@ -147,10 +148,10 @@ class TestMethod(unittest.TestCase):
         m.returns = MagicMock()
         request = MagicMock()
 
-        m.handle_request(request)
-
-        request.respond_with_error.assert_called_once_with(
-            "Method test_method raised an error: Test error")
+        response = m.get_response(request)
+        self.assertEquals(Response.ERROR, response.type_)
+        self.assertEquals(
+            "Method test_method raised an error: Test error", response.message)
 
     def test_to_dict_serialization(self):
         func = Mock(return_value={"out": "dummy"})

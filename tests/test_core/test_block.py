@@ -98,6 +98,7 @@ class TestHandleRequest(unittest.TestCase):
 
     def setUp(self):
         self.block = Block("TestBlock")
+        self.block.parent = MagicMock()
         self.method = MagicMock()
         self.method.name = "get_things"
         self.response = MagicMock()
@@ -111,7 +112,7 @@ class TestHandleRequest(unittest.TestCase):
 
         self.block.handle_request(request)
 
-        self.method.handle_request.assert_called_once_with(request)
+        self.method.get_response.assert_called_once_with(request)
 
     def test_given_get_then_return_attribute(self):
         self.block.state = MagicMock()

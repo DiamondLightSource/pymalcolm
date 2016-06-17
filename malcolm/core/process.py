@@ -11,8 +11,10 @@ PROCESS_STOP = object()
 # Internal update messages
 BlockNotify = namedtuple("BlockNotify", "name")
 BlockChanged = namedtuple("BlockChanged", "changes")
+BlockRespond = namedtuple("BlockRespond", "response, response_queue")
 BlockNotify.type_ = "BlockNotify"
 BlockChanged.type_ = "BlockChanged"
+BlockRespond.type_ = "BlockRespond"
 
 
 class Process(Loggable):
@@ -35,7 +37,8 @@ class Process(Loggable):
             Request.GET: self._handle_get,
             Request.SUBSCRIBE: self._handle_subscribe,
             BlockNotify.type_: self._handle_block_notify,
-            BlockChanged.type_: self._handle_block_changed
+            BlockChanged.type_: self._handle_block_changed,
+            BlockRespond.type_: self._handle_block_respond
         }
 
     def recv_loop(self):
@@ -160,6 +163,10 @@ class Process(Loggable):
             # update changes
             block_changes = self._last_changes.setdefault(path[0], [])
             block_changes.append([path, value])
+
+    def _handle_block_respond(self, request):
+        """Push the response to the required queue"""
+        request.response_queue.put(request.response)
 
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current
