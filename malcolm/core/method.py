@@ -78,8 +78,11 @@ class Method(Monitorable):
         try:
             result = self(**request.parameters)
         except Exception as error:
-            self.log_debug("Error raised %s", error.message)
-            message = "Method %s raised an error: %s" % (self.name, error.message)
+            # TODO: python3 no longer has error.message, but error.args[0]
+            # seems the same. Is this always right?
+            err_message = error.args[0]
+            self.log_debug("Error raised %s", err_message)
+            message = "Method %s raised an error: %s" % (self.name, err_message)
             return Response.Error(request.id_, request.context, message)
         else:
             self.log_debug("Returning result %s", result)

@@ -15,7 +15,6 @@ class TestHelloController(unittest.TestCase):
         block = Mock()
         c = HelloController(block)
         self.assertIs(block, c.block)
-        block.add_method.assert_called_once()
         self.assertEquals(c.say_hello, block.add_method.call_args[0][0].func)
 
     def test_say_hello(self):

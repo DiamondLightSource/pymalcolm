@@ -60,12 +60,12 @@ class TestClientController(unittest.TestCase):
         self.cc = ClientController(self.p, self.b, self.comms)
 
     def test_methods_created(self):
-        self.assertEqual(self.b._methods.keys(), ["say_hello"])
+        self.assertEqual(list(self.b._methods), ["say_hello"])
         m = self.b._methods["say_hello"]
         self.assertEqual(m.name, "say_hello")
-        self.assertEqual(m.takes.elements.keys(), ["name"])
+        self.assertEqual(list(m.takes.elements), ["name"])
         self.assertEqual(type(m.takes.elements["name"]), StringMeta)
-        self.assertEqual(m.returns.elements.keys(), ["greeting"])
+        self.assertEqual(list(m.returns.elements), ["greeting"])
         self.assertEqual(type(m.returns.elements["greeting"]), StringMeta)
         self.assertEqual(m.defaults, {})
 
