@@ -34,7 +34,7 @@ class TestValidate(unittest.TestCase):
         with self.assertRaises(NotImplementedError) as error:
             self.attribute_meta.validate(1)
 
-        self.assertEqual(expected_error_message, error.exception.message)
+        self.assertEqual(expected_error_message, error.exception.args[0])
 
 
 class TestToDict(unittest.TestCase):

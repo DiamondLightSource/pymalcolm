@@ -150,8 +150,8 @@ class TestSubscriptions(unittest.TestCase):
         p.add_block(block)
         p.recv_loop()
 
-        sub_1.response_queue.put.assert_called_once()
-        sub_2.response_queue.put.assert_called_once()
+        self.assertEqual(sub_1.response_queue.put.call_count, 1)
+        self.assertEqual(sub_2.response_queue.put.call_count, 1)
         response_1 = sub_1.response_queue.put.call_args[0][0]
         response_2 = sub_2.response_queue.put.call_args[0][0]
         self.assertEquals({"attr":"final_value", "attr2":"other"},

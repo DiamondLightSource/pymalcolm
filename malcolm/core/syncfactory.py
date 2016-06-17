@@ -1,7 +1,7 @@
-from Queue import Queue
 from threading import Lock
 from multiprocessing.pool import ThreadPool
 
+from malcolm.compat import Queue
 from malcolm.core.loggable import Loggable
 
 

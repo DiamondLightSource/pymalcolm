@@ -49,7 +49,7 @@ class TestAddElement(unittest.TestCase):
         with self.assertRaises(ValueError) as error:
             self.meta_map.add_element(self.attribute_mock, required=False)
 
-        self.assertEqual(expected_error_message, error.exception.message)
+        self.assertEqual(expected_error_message, error.exception.args[0])
 
 
 class TestToDict(unittest.TestCase):

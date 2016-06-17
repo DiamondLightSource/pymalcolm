@@ -18,7 +18,7 @@ class TestBlock(unittest.TestCase):
     def test_init(self):
         b = Block("blockname")
         self.assertEqual(b.name, "blockname")
-        self.assertEqual(b._methods.keys(), [])
+        self.assertEqual(list(b._methods), [])
 
     def test_add_method_registers(self):
         b = Block("blockname")
@@ -26,7 +26,7 @@ class TestBlock(unittest.TestCase):
         m = MagicMock()
         m.name = "mymethod"
         b.add_method(m)
-        self.assertEqual(b._methods.keys(), ["mymethod"])
+        self.assertEqual(list(b._methods), ["mymethod"])
         self.assertFalse(m.called)
         b.on_changed.assert_called_with([[[m.name], m.to_dict.return_value]])
         m.return_value = 42
