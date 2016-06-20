@@ -1,11 +1,7 @@
-import sys
-import os
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from pkg_resources import require
-require("mock")
+from . import util
 from mock import Mock, patch
 
 from malcolm.core.attribute import Attribute

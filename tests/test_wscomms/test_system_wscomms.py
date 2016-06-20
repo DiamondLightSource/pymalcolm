@@ -1,8 +1,7 @@
 import unittest
-import sys
-import os
 import time
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+from . import util
 
 # logging
 # import logging

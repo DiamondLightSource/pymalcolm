@@ -47,7 +47,7 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     license='APACHE',
-    install_requires=[],
+    install_requires=['numpy'],
     extras_require={
         'zmq':  ['pyzmq']
     },
