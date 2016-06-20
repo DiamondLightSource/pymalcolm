@@ -1,14 +1,9 @@
 import unittest
-import sys
-import os
 from collections import OrderedDict
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-# mock
-from pkg_resources import require
-require("mock")
+from . import util
 from mock import MagicMock
 
 # module imports

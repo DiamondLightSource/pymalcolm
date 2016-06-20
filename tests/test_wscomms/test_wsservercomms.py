@@ -1,11 +1,8 @@
 import unittest
 from collections import OrderedDict
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
+from . import util
 from pkg_resources import require
-require("mock")
 require('tornado')
 from mock import MagicMock, patch
 

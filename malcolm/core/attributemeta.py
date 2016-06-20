@@ -7,12 +7,15 @@ class AttributeMeta(Monitorable):
 
     # This will be set by subclasses calling cls.register_subclass()
     metaOf = None
-    # dict mapping metaOf name -> cls
+    # dict mapping metaOf name -> (cls, args)
     _subcls_lookup = {}
+    # dict mapping (cls, args) -> metaOf
+    _metaOf_lookup = {}
 
-    def __init__(self, name, description):
+    def __init__(self, name, description, *args):
         super(AttributeMeta, self).__init__(name=name)
         self.description = description
+        self.metaOf = self._metaOf_lookup[(type(self), args)]
 
     def validate(self, value):
         """
@@ -35,15 +38,19 @@ class AttributeMeta(Monitorable):
         return d
 
     @classmethod
-    def register_subclass(cls, subcls, metaOf):
+    def register_subclass(cls, metaOf, *args):
         """Register a subclass so from_dict() works
 
         Args:
             subcls (AttributeMeta): AttributeMeta subclass to register
             metaOf (str): Like "malcolm:core/String:1.0"
+            *args: Additional arguments to be registered
         """
-        cls._subcls_lookup[metaOf] = subcls
-        subcls.metaOf = metaOf
+        def decorator(subcls):
+            cls._subcls_lookup[metaOf] = (subcls, args)
+            cls._metaOf_lookup[(subcls, args)] = metaOf
+            return subcls
+        return decorator
 
     @classmethod
     def from_dict(cls, name, d):
@@ -55,8 +62,9 @@ class AttributeMeta(Monitorable):
             d (dict): Something that self.to_dict() would create
         """
         metaOf = d["metaOf"]
-        subcls = cls._subcls_lookup[metaOf]
+        subcls, args = cls._subcls_lookup[metaOf]
         assert subcls is not cls, \
             "Subclass %s did not redefine from_dict" % subcls
-        attribute_meta = subcls.from_dict(name, d)
+        attribute_meta = subcls.from_dict(name, d, *args)
+        attribute_meta.metaOf = metaOf
         return attribute_meta

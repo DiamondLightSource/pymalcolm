@@ -1,6 +1,7 @@
 from malcolm.core.attributemeta import AttributeMeta
 
 
+@AttributeMeta.register_subclass("malcolm:core/String:1.0")
 class StringMeta(AttributeMeta):
     """Meta object containing information for a string"""
 
@@ -32,7 +33,7 @@ class StringMeta(AttributeMeta):
         return d
 
     @classmethod
-    def from_dict(self, name, d):
+    def from_dict(self, name, d, *args):
         """Create a AttributeMeta subclass instance from the serialized version
         of itself
 
@@ -42,5 +43,3 @@ class StringMeta(AttributeMeta):
         """
         string_meta = StringMeta(name, d["description"])
         return string_meta
-
-AttributeMeta.register_subclass(StringMeta, "malcolm:core/String:1.0")

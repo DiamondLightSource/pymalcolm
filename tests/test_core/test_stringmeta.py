@@ -1,8 +1,7 @@
-import sys
-import os
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+from . import util
 
 from malcolm.core.stringmeta import StringMeta
 from malcolm.core.attributemeta import AttributeMeta
@@ -19,7 +18,7 @@ class TestInit(unittest.TestCase):
                          self.string_meta.description)
 
     def test_metaOf(self):
-        self.assertEqual(StringMeta.metaOf, "malcolm:core/String:1.0")
+        self.assertEqual(self.string_meta.metaOf, "malcolm:core/String:1.0")
 
 
 class TestValidate(unittest.TestCase):
