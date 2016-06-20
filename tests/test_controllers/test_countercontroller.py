@@ -14,10 +14,10 @@ class TestCounterController(unittest.TestCase):
         self.assertEquals(2, len(block.add_method.call_args_list))
         method_1 = block.add_method.call_args_list[0][0][0]
         method_2 = block.add_method.call_args_list[1][0][0]
-        self.assertEquals("increment", method_1.Method.name)
-        self.assertEquals(c.increment, method_1)
-        self.assertEquals("reset", method_2.Method.name)
-        self.assertEquals(c.reset, method_2)
+        self.assertEquals("increment", method_1.name)
+        self.assertEquals(c.increment, method_1.func)
+        self.assertEquals("reset", method_2.name)
+        self.assertEquals(c.reset, method_2.func)
 
     def test_increment_increments(self):
         c = CounterController(Mock())

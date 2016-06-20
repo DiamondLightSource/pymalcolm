@@ -129,7 +129,6 @@ class Method(Monitorable):
             name = func.__name__
             description = getdoc(func)
             method = cls(name, description)
-            method.set_function(func)
             func.Method = method
 
         return func
