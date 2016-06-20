@@ -4,20 +4,20 @@ from malcolm.core.attributemeta import AttributeMeta
 class EnumMeta(AttributeMeta):
     """Meta object containing information for a enum"""
 
-    def __init__(self, name, description, one_of):
+    def __init__(self, name, description, oneOf):
         super(EnumMeta, self).__init__(name=name, description=description)
 
-        self.one_of = one_of
+        self.oneOf = oneOf
 
-    def set_one_of(self, one_of):
+    def set_one_of(self, oneOf):
         """
         Set allowed values
 
         Args:
-            one_of(list): List of allowed values
+            oneOf(list): List of allowed values
         """
 
-        self.one_of = one_of
+        self.oneOf = oneOf
 
     def validate(self, value):
         """
@@ -32,7 +32,7 @@ class EnumMeta(AttributeMeta):
             ValueError: If value not valid
         """
 
-        if value in self.one_of:
+        if value in self.oneOf:
             return value
         else:
             raise ValueError("%s is not a valid value" % value)
@@ -41,7 +41,7 @@ class EnumMeta(AttributeMeta):
         """Convert object attributes into a dictionary"""
 
         d = super(EnumMeta, self).to_dict()
-        d['one_of'] = self.one_of
+        d['oneOf'] = self.oneOf
 
         return d
 
@@ -56,8 +56,8 @@ class EnumMeta(AttributeMeta):
         """
 
         description = d['description']
-        one_of = d['one_of']
-        enum_meta = EnumMeta(name, description, one_of)
+        oneOf = d['oneOf']
+        enum_meta = EnumMeta(name, description, oneOf)
 
         return enum_meta
 
