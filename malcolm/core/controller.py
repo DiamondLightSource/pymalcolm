@@ -29,4 +29,5 @@ class Controller(Loggable):
 
         for member in members:
             if hasattr(member, "Method"):
-                yield member
+                member.Method.set_function(member)
+                yield member.Method
