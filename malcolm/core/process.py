@@ -3,6 +3,7 @@ from collections import OrderedDict, namedtuple
 from malcolm.core.loggable import Loggable
 from malcolm.core.request import Request
 from malcolm.core.response import Response
+from malcolm.core.cache import Cache
 
 
 # Sentinel object that when received stops the recv_loop
@@ -26,7 +27,7 @@ class Process(Loggable):
         self.sync_factory = sync_factory
         self.q = self.create_queue()
         self._blocks = OrderedDict() # block name -> block
-        self._block_state_cache = OrderedDict()
+        self._block_state_cache = Cache()
         self._recv_spawned = None
         self._other_spawned = []
         self._subscriptions = OrderedDict() # block name -> list of subs
@@ -116,17 +117,15 @@ class Process(Loggable):
         """Update subscribers with changes and applies stored changes to the
         cached structure"""
         # update cached dict
-        for path, value in self._last_changes.setdefault(request.name, []):
-            d = self._block_state_cache
-            for p in path[:-1]:
-                d = d[p]
-            d[path[-1]] = value
+        for delta in self._last_changes.setdefault(request.name, []):
+            self._block_state_cache.delta_update(delta)
 
         for subscription in self._subscriptions.setdefault(request.name, []):
             endpoint = subscription.endpoint
             # find stuff that's changed that is relevant to this subscriber
             changes = []
-            for change_path, change_value in self._last_changes[request.name]:
+            for change in self._last_changes[request.name]:
+                change_path = change[0]
                 # look for a change_path where the beginning matches the
                 # endpoint path, then strip away the matching part and add
                 # to the change set
@@ -138,7 +137,7 @@ class Process(Loggable):
                 else:
                     # change has matching path, so keep it
                     # but strip off the end point path
-                    filtered_change = [change_path[i:], change_value]
+                    filtered_change = [change_path[i:]] + change[1:]
                     changes.append(filtered_change)
             if len(changes) > 0:
                 if subscription.delta:
@@ -149,20 +148,19 @@ class Process(Loggable):
                 else:
                     # respond with the structure of everything
                     # below the endpoint
-                    update = self._block_state_cache
-                    for p in endpoint:
-                        update = update[p]
+                    d = self._block_state_cache.walk_path(endpoint)
                     response = Response.Update(
-                        subscription.id_, subscription.context, update)
+                        subscription.id_, subscription.context, d)
                     subscription.response_queue.put(response)
         self._last_changes[request.name] = []
 
     def _handle_block_changed(self, request):
         """Record changes to made to a block"""
-        for path, value in request.changes:
+        for change in request.changes:
             # update changes
+            path = change[0]
             block_changes = self._last_changes.setdefault(path[0], [])
-            block_changes.append([path, value])
+            block_changes.append(change)
 
     def _handle_block_respond(self, request):
         """Push the response to the required queue"""
@@ -173,20 +171,15 @@ class Process(Loggable):
         sub-structure state"""
         subs = self._subscriptions.setdefault(request.endpoint[0], [])
         subs.append(request)
-        d = self._block_state_cache
-        for p in request.endpoint:
-            d = d[p]
+        d = self._block_state_cache.walk_path(request.endpoint)
         if request.delta:
             request.respond_with_delta([[[], d]])
         else:
             request.respond_with_update(d)
 
     def _handle_get(self, request):
-        layer = self._block_state_cache[request.endpoint[0]]
-        for p in request.endpoint[1:]:
-            layer = layer[p]
-        result = layer.to_dict() if hasattr(layer, "to_dict") else layer
-        response = Response.Return(request.id_, request.context, result)
+        d = self._block_state_cache.walk_path(request.endpoint)
+        response = Response.Return(request.id_, request.context, d)
         request.response_queue.put(response)
 
     def notify_subscribers(self, block_name):
