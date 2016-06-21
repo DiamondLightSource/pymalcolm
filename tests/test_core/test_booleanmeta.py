@@ -17,7 +17,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TestMeta", self.boolean_meta.name)
         self.assertEqual("test description",
                          self.boolean_meta.description)
-        self.assertEqual(BooleanMeta.metaOf, "malcolm:core/Boolean:1.0")
+        self.assertEqual(self.boolean_meta.metaOf, "malcolm:core/Boolean:1.0")
 
 
 class TestValidate(unittest.TestCase):

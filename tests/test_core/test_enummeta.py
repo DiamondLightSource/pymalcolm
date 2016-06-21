@@ -17,7 +17,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TestMeta", self.enum_meta.name)
         self.assertEqual("test description",
                          self.enum_meta.description)
-        self.assertEqual(EnumMeta.metaOf, "malcolm:core/Enum:1.0")
+        self.assertEqual(self.enum_meta.metaOf, "malcolm:core/Enum:1.0")
 
 
 class TestValidate(unittest.TestCase):

@@ -1,6 +1,7 @@
 from malcolm.core.attributemeta import AttributeMeta
 
 
+@AttributeMeta.register_subclass("malcolm:core/Enum:1.0")
 class EnumMeta(AttributeMeta):
     """Meta object containing information for a enum"""
 

@@ -1,6 +1,7 @@
 from malcolm.core.attributemeta import AttributeMeta
 
 
+@AttributeMeta.register_subclass("malcolm:core/Boolean:1.0")
 class BooleanMeta(AttributeMeta):
     """Meta object containing information for a boolean"""
 
