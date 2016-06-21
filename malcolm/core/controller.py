@@ -1,5 +1,6 @@
-from malcolm.core.loggable import Loggable
 import inspect
+
+from malcolm.core.loggable import Loggable
 
 
 class Controller(Loggable):
@@ -13,15 +14,17 @@ class Controller(Loggable):
         logger_name = "%s.controller" % block.name
         super(Controller, self).__init__(logger_name)
         self.block = block
+        for attribute in self.create_attributes():
+            block.add_attribute(attribute)
         for method in self.create_methods():
             block.add_method(method)
 
     def create_methods(self):
         """Abstract method that should provide Method instances for Block
 
-        Returns:
-            list: List or iterator of Method instances. Each one will be
-                attached to the Block by calling block.add_method(method)
+        Yields:
+            Method: Each one will be attached to the Block by calling
+            block.add_method(method)
         """
 
         members = [value[1] for value in
@@ -31,3 +34,13 @@ class Controller(Loggable):
             if hasattr(member, "Method"):
                 member.Method.set_function(member)
                 yield member.Method
+
+
+    def create_attributes(self):
+        """Abstract method that should provide Attribute instances for Block
+
+        Yields:
+            Attribute: Each one will be attached to the Block by calling
+            block.add_attribute(attribute)
+        """
+        return iter(())
