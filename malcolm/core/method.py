@@ -16,6 +16,7 @@ class Method(Monitorable):
         self.takes = None
         self.returns = None
         self.defaults = None
+        self.writeable = True
 
     def set_function(self, func):
         """Set the function to expose.
@@ -41,10 +42,18 @@ class Method(Monitorable):
         """Set the return parameters for the method to validate against"""
         self.returns = return_meta
 
+    def set_writeable(self, writeable):
+        """Set writeable property to enable or disable calling method"""
+        self.writeable = writeable
+        self.on_changed([[["writeable"], writeable]])
+
     def __call__(self, *args, **kwargs):
         """Call the exposed function using regular keyword argument parameters.
         Will validate the output against provided return parameters.
         """
+
+        if not self.writeable:
+            raise ValueError("Can not call a method that is not writeable")
 
         # Assumes positional arguments represent arguments *before* any kw-args
         # in the ordered dictionary.
@@ -95,6 +104,7 @@ class Method(Monitorable):
         serialized["takes"] = self.takes.to_dict()
         serialized["defaults"] = self.defaults.copy()
         serialized["returns"] = self.returns.to_dict()
+        serialized["writeable"] = self.writeable
         return serialized
 
     @classmethod
@@ -110,6 +120,7 @@ class Method(Monitorable):
         method.set_function_takes(takes, d["defaults"])
         returns = MapMeta.from_dict("returns", d["returns"])
         method.set_function_returns(returns)
+        method.writeable = d["writeable"]
         return method
 
     @classmethod
