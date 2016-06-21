@@ -96,40 +96,44 @@ class TestHandleRequest(unittest.TestCase):
         self.block.parent = MagicMock()
         self.method = MagicMock()
         self.method.name = "get_things"
+        self.attribute = MagicMock()
+        self.attribute.name = "test_attribute"
         self.response = MagicMock()
         self.block.add_method(self.method)
+        self.block.add_attribute(self.attribute)
 
     def test_given_request_then_pass_to_correct_method(self):
         request = MagicMock()
-        request.POST = "Post"
         request.type_ = "Post"
         request.endpoint = ["TestBlock", "device", "get_things"]
 
         self.block.handle_request(request)
 
         self.method.get_response.assert_called_once_with(request)
+        response = self.block.parent.q.put.call_args[0][0]
+        self.assertEqual(self.method.get_response.return_value,
+                         response.response)
 
-    def test_given_get_then_return_attribute(self):
-        self.block.state = MagicMock()
-        self.block.state.value = "Running"
+    def test_given_put_then_update_attribute(self):
+        put_value = MagicMock()
         request = MagicMock()
-        request.type_ = "Get"
-        request.endpoint = ["TestBlock", "state", "value"]
+        request.type_ = "Put"
+        request.endpoint = ["TestBlock", "test_attribute"]
+        request.value = put_value
 
         self.block.handle_request(request)
 
-        request.respond_with_return.assert_called_once_with("Running")
+        self.attribute.put.assert_called_once_with(put_value)
+        self.attribute.set_value.assert_called_once_with(put_value)
+        response = self.block.parent.q.put.call_args[0][0]
+        self.assertEqual("Return", response.response.type_)
+        self.assertIsNone(response.response.value)
 
-    def test_given_get_block_then_return_self(self):
+    def test_invalid_request_fails(self):
         request = MagicMock()
         request.type_ = "Get"
-        request.endpoint = ["TestBlock"]
-        expected_call = self.block.to_dict()
 
-        self.block.handle_request(request)
-
-        request.respond_with_return.assert_called_once_with(expected_call)
-
+        self.assertRaises(AssertionError, self.block.handle_request, request)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
