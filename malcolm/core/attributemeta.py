@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from malcolm.core.monitorable import Monitorable
 
+
 class AttributeMeta(Monitorable):
     """Abstract base class for Meta objects"""
 

@@ -26,7 +26,7 @@ class Block(Monitorable):
         self._attributes[attribute.name] = attribute
         attribute.set_parent(self)
         setattr(self, attribute.name, attribute)
-        self.on_changed([[[attribute.name], attribute.to_dict()]])
+        self.on_changed([[attribute.name], attribute.to_dict()])
         self.notify_subscribers()
 
     def add_method(self, method):
@@ -39,7 +39,7 @@ class Block(Monitorable):
             "Method %s already defined for Block %s" % (method.name, self.name)
         self._methods[method.name] = method
         setattr(self, method.name, method)
-        self.on_changed([[[method.name], method.to_dict()]])
+        self.on_changed([[method.name], method.to_dict()])
         self.notify_subscribers()
 
     def notify_subscribers(self):

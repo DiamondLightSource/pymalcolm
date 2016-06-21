@@ -23,7 +23,7 @@ class TestBlock(unittest.TestCase):
         b.add_method(m)
         self.assertEqual(list(b._methods), ["mymethod"])
         self.assertFalse(m.called)
-        b.on_changed.assert_called_with([[[m.name], m.to_dict.return_value]])
+        b.on_changed.assert_called_with([[m.name], m.to_dict.return_value])
         m.return_value = 42
         self.assertEqual(b.mymethod(), 42)
         m.assert_called_once_with()
@@ -38,7 +38,7 @@ class TestBlock(unittest.TestCase):
         self.assertEqual({"attr":attr}, b._attributes)
         self.assertIs(attr, b.attr)
         b.on_changed.assert_called_with(
-            [[[attr.name], attr.to_dict.return_value]])
+            [[attr.name], attr.to_dict.return_value])
 
 class TestToDict(unittest.TestCase):
 

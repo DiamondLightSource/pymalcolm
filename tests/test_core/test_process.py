@@ -86,11 +86,11 @@ class TestProcess(unittest.TestCase):
 class TestSubscriptions(unittest.TestCase):
 
     def test_on_changed(self):
-        changes = [[["path"], "value"]]
+        change = [["path"], "value"]
         s = MagicMock()
         p = Process("proc", s)
-        p.on_changed(changes)
-        p.q.put.assert_called_once_with(BlockChanged(changes=changes))
+        p.on_changed(change)
+        p.q.put.assert_called_once_with(BlockChanged(change=change))
 
     def test_notify(self):
         s = MagicMock()
@@ -131,7 +131,7 @@ class TestSubscriptions(unittest.TestCase):
         sub_2 = MagicMock()
         sub_2.endpoint = ["block"]
         sub_2.delta = True
-        changes_1 = [[["block", "attr"]]]
+        changes_1 = [["block", "attr"]]
         request_1 = BlockChanged(changes_1)
         request_2 = BlockNotify(block.name)
         s = MagicMock()
@@ -160,8 +160,8 @@ class TestSubscriptions(unittest.TestCase):
         sub_2 = MagicMock()
         sub_2.endpoint = ["block"]
         sub_2.delta = True
-        changes_1 = [[["block", "attr"], "changing_value"]]
-        changes_2 = [[["block", "attr"], "final_value"]]
+        changes_1 = [["block", "attr"], "changing_value"]
+        changes_2 = [["block", "attr"], "final_value"]
         request_1 = BlockChanged(changes_1)
         request_2 = BlockChanged(changes_2)
         request_3 = BlockNotify(block.name)
@@ -200,16 +200,18 @@ class TestSubscriptions(unittest.TestCase):
         sub_2.endpoint = ["block_1", "inner"]
         sub_2.delta = True
 
-        changes_1 = [[["block_1", "inner", "attr2"], "new_value"],
-            [["block_1", "attr"], "new_value"]]
-        changes_2 = [[["block_2", "attr"], "block_2_value"]]
+        changes_1 = [["block_1", "inner", "attr2"], "new_value"]
+        changes_2 = [["block_1", "attr"], "new_value"]
+        changes_3 = [["block_2", "attr"], "block_2_value"]
         request_1 = BlockChanged(changes_1)
         request_2 = BlockChanged(changes_2)
-        request_3 = BlockNotify(block_1.name)
-        request_4 = BlockNotify(block_2.name)
+        request_3 = BlockChanged(changes_3)
+        request_4 = BlockNotify(block_1.name)
+        request_5 = BlockNotify(block_2.name)
         p = Process("proc", MagicMock())
-        p.q.get = MagicMock(side_effect = [request_1, request_2, request_3,
-                                           request_4, PROCESS_STOP])
+        p.q.get = MagicMock(side_effect = [
+            request_1, request_2, request_3, request_4, request_5,
+            PROCESS_STOP])
         p._subscriptions["block_1"] = [sub_1, sub_2]
 
         p.add_block(block_1)
@@ -240,8 +242,8 @@ class TestSubscriptions(unittest.TestCase):
         sub_4 = MagicMock()
         sub_4.endpoint = ["block_2"]
         sub_4.delta = True
-        change_1 = [[["block_1", "attr"], "final_value"]]
-        change_2 = [[["block_2", "attr2"], "final_value"]]
+        change_1 = [["block_1", "attr"], "final_value"]
+        change_2 = [["block_2", "attr2"], "final_value"]
         request_1 = BlockNotify("block_1")
         request_2 = BlockChanged(change_1)
         request_3 = BlockChanged(change_2)
