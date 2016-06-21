@@ -45,6 +45,7 @@ class TestClientController(unittest.TestCase):
                     ),
                     required=["response"],
                 ),
+                writeable=True,
             ),
         )
 

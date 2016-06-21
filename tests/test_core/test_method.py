@@ -149,6 +149,23 @@ class TestMethod(unittest.TestCase):
         self.assertEquals(
             "Method test_method raised an error: Test error", response.message)
 
+    def test_not_writeable_stops_call(self):
+        m = Method("test_method", "test_description")
+        m.set_function(Mock())
+        m.set_writeable(False)
+        with self.assertRaises(ValueError,
+                msg="Can not call a method that is not writeable"):
+            m()
+
+    def test_set_writeable_notifies(self):
+        m = Method("test_method", "test_description")
+        m.on_changed = MagicMock(side_effect=m.on_changed)
+        m.set_writeable(False)
+        m.on_changed.assert_called_once_with([[["writeable"], False]])
+        m.on_changed.reset_mock()
+        m.set_writeable(True)
+        m.on_changed.assert_called_once_with([[["writeable"], True]])
+
     def test_to_dict_serialization(self):
         func = Mock(return_value={"out": "dummy"})
         defaults = {"in_attr": "default"}
@@ -158,15 +175,18 @@ class TestMethod(unittest.TestCase):
         return_meta = Mock(elements={"out": Mock()},
                            to_dict=Mock(
                                return_value=OrderedDict({"dict": "return"})))
+        writeable_mock = Mock()
         m = Method("test_method", "test_description")
         m.set_function(func)
         m.set_function_takes(args_meta, defaults)
         m.set_function_returns(return_meta)
+        m.set_writeable(writeable_mock)
         expected = OrderedDict()
         expected["description"] = "test_description"
         expected["takes"] = OrderedDict({"dict": "args"})
         expected["defaults"] = OrderedDict({"in_attr": "default"})
         expected["returns"] = OrderedDict({"dict": "return"})
+        expected["writeable"] = writeable_mock
         self.assertEquals(expected, m.to_dict())
 
     @patch("malcolm.core.method.MapMeta")
@@ -176,8 +196,10 @@ class TestMethod(unittest.TestCase):
         takes = dict(a=object(), b=object())
         returns = dict(c=object())
         defaults = dict(a=43)
+        writeable_mock = Mock()
         d = dict(description=description, takes=takes,
-                 returns=returns, defaults=defaults)
+                 returns=returns, defaults=defaults,
+                 writeable=writeable_mock)
         m = Method.from_dict(name, d)
         self.assertEqual(mock_mapmeta.from_dict.call_args_list, [
             call("takes", takes), call("returns", returns)])
@@ -185,6 +207,7 @@ class TestMethod(unittest.TestCase):
         self.assertEqual(m.takes, mock_mapmeta.from_dict.return_value)
         self.assertEqual(m.returns, mock_mapmeta.from_dict.return_value)
         self.assertEqual(m.defaults, defaults)
+        self.assertEquals(m.writeable, writeable_mock)
 
     @patch("malcolm.core.method.MapMeta")
     def test_takes_given_optional(self, map_meta_mock):
