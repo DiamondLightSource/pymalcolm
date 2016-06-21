@@ -62,6 +62,23 @@ class TestController(unittest.TestCase):
         self.m1.set_writeable.assert_called_once_with(True)
         self.m2.set_writeable.assert_called_once_with(False)
 
+    def test_transition_not_busy(self):
+        self.c.writeable_methods["Configure"] = "say_hello"
+        self.c.stateMachine.allowed_transitions = dict(Idle="Configure")
+        self.c.state.value = "Idle"
+        self.c.stateMachine.busy_states = []
+
+        self.c.transition("Configure", "Attempting to configure scan...")
+
+        self.assertFalse(self.c.busy.value)
+
+    def test_transition_raises(self):
+        self.c.stateMachine.allowed_transitions = dict(Idle="")
+        self.c.state.value = "Idle"
+
+        with self.assertRaises(TypeError):
+            self.c.transition("Configure", "Attempting to configure scan...")
+
     def test_set_writeable_methods(self):
         m = MagicMock()
         m.name = "configure"
