@@ -13,8 +13,8 @@ class Method(Monitorable):
         super(Method, self).__init__(name=name)
         self.func = None
         self.description = description
-        self.takes = None
-        self.returns = None
+        self.takes = MapMeta("takes")
+        self.returns = MapMeta("returns")
         self.defaults = None
         self.writeable = True
 
@@ -67,8 +67,11 @@ class Method(Monitorable):
                 elif arg in self.takes.required:
                     raise ValueError(
                         "Argument %s is required but was not provided" % arg)
-        return_val = self.func(kwargs)
-        if self.returns is not None:
+        if len(self.takes.elements) > 0:
+            return_val = self.func(kwargs)
+        else:
+            return_val = self.func()
+        if len(self.returns.elements) > 0:
             if return_val.keys() != self.returns.elements.keys():
                 raise ValueError(
                     "Return result did not match specified return structure")

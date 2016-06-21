@@ -14,13 +14,9 @@ class CounterController(Controller):
         yield self.counter
 
     @takes()
-    @returns()
-    def reset(self, args=None):
+    def reset(self):
         self.counter.set_value(0)
-        return {}
 
     @takes()
-    @returns()
-    def increment(self, args=None):
+    def increment(self):
         self.counter.set_value(self.counter.value + 1)
-        return {}
