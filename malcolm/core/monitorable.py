@@ -14,14 +14,14 @@ class Monitorable(Loggable):
         self._logger_name = "%s.%s" % (parent.name, self.name)
         self.parent = parent
 
-    def on_changed(self, changes):
-        """Propagate changes to parent, adding self.name to paths.
+    def on_changed(self, change):
+        """Propagate change to parent, adding self.name to paths.
 
         Args:
-            changes: list of [[path], value] pairs for changed values
+            change: [[path], value] pair for changed values
         """
         if self.parent is None:
             return
-        for (path, change) in changes:
-            path.insert(0, self.name)
-        self.parent.on_changed(changes)
+        path = change[0]
+        path.insert(0, self.name)
+        self.parent.on_changed(change)

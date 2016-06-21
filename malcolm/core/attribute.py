@@ -7,8 +7,8 @@ from malcolm.core.monitorable import Monitorable
 class Attribute(Monitorable):
     """Represents a value with type information that may be backed elsewhere"""
 
-    def __init__(self, name, meta):
-        super(Attribute, self).__init__(name=name)
+    def __init__(self, meta):
+        super(Attribute, self).__init__(name=meta.name)
         self.meta = meta
         self.value = None
         self.put_func = None
@@ -41,6 +41,6 @@ class Attribute(Monitorable):
             d (dict): Output of self.to_dict()
         """
         meta = AttributeMeta.from_dict(name, d["meta"])
-        attribute = cls(name, meta)
+        attribute = cls(meta)
         attribute.value = d["value"]
         return attribute

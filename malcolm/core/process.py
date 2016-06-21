@@ -11,7 +11,7 @@ PROCESS_STOP = object()
 
 # Internal update messages
 BlockNotify = namedtuple("BlockNotify", "name")
-BlockChanged = namedtuple("BlockChanged", "changes")
+BlockChanged = namedtuple("BlockChanged", "change")
 BlockRespond = namedtuple("BlockRespond", "response, response_queue")
 BlockNotify.type_ = "BlockNotify"
 BlockChanged.type_ = "BlockChanged"
@@ -156,11 +156,10 @@ class Process(Loggable):
 
     def _handle_block_changed(self, request):
         """Record changes to made to a block"""
-        for change in request.changes:
-            # update changes
-            path = change[0]
-            block_changes = self._last_changes.setdefault(path[0], [])
-            block_changes.append(change)
+        # update changes
+        path = request.change[0]
+        block_changes = self._last_changes.setdefault(path[0], [])
+        block_changes.append(request.change)
 
     def _handle_block_respond(self, request):
         """Push the response to the required queue"""
@@ -185,5 +184,5 @@ class Process(Loggable):
     def notify_subscribers(self, block_name):
         self.q.put(BlockNotify(name=block_name))
 
-    def on_changed(self, changes):
-        self.q.put(BlockChanged(changes=changes))
+    def on_changed(self, change):
+        self.q.put(BlockChanged(change=change))

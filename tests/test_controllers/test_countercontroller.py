@@ -46,5 +46,13 @@ class TestCounterController(unittest.TestCase):
         c.reset()
         c.counter.on_changed.assert_called_once_with([["value"], 0])
 
+    def test_put_changes_value(self):
+        c = CounterController(Mock())
+        c.counter.parent = c.block
+        c.counter.put(32)
+        self.assertEqual(c.counter.value, 32)
+        c.block.on_changed.assert_called_once_with([["counter", "value"], 32])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
