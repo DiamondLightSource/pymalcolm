@@ -121,6 +121,35 @@ class TestSubscriptions(unittest.TestCase):
                           response_1.value)
         self.assertEquals([[[], {"attr2":"other"}]], response_2.changes)
 
+    def test_deletions(self):
+        block = MagicMock(
+            to_dict=MagicMock(return_value={"attr":"value", "attr2":"other"}))
+        block.name = "block"
+        sub_1 = MagicMock()
+        sub_1.endpoint = ["block"]
+        sub_1.delta = False
+        sub_2 = MagicMock()
+        sub_2.endpoint = ["block"]
+        sub_2.delta = True
+        changes_1 = [[["block", "attr"]]]
+        request_1 = BlockChanged(changes_1)
+        request_2 = BlockNotify(block.name)
+        s = MagicMock()
+        p = Process("proc", s)
+        p._subscriptions["block"] = [sub_1, sub_2]
+        p.q.get = MagicMock(
+            side_effect = [request_1, request_2, PROCESS_STOP])
+
+        p.add_block(block)
+        p.recv_loop()
+
+        self.assertEqual(sub_1.response_queue.put.call_count, 1)
+        self.assertEqual(sub_2.response_queue.put.call_count, 1)
+        response_1 = sub_1.response_queue.put.call_args[0][0]
+        response_2 = sub_2.response_queue.put.call_args[0][0]
+        self.assertEquals({"attr2":"other"}, response_1.value)
+        self.assertEquals([[["attr"]]], response_2.changes)
+
     def test_overlapped_changes(self):
         block = MagicMock(
             to_dict=MagicMock(return_value={"attr":"value", "attr2":"other"}))
