@@ -17,33 +17,43 @@ class StateMachine(Loggable):
         self.allowed_transitions = OrderedDict()
         self.busy_states = []
 
-    def is_allowed(self, state_1, state_2):
+        # Set transitions for standard states
+        self.set_allowed(self.FAULT, [self.RESETTING, self.DISABLED])
+        self.set_allowed(self.DISABLED, self.RESETTING)
+
+    def is_allowed(self, initial_state, target_state):
         """
         Check if a transition between two states is allowed
 
         Args:
-            state_1(str): Initial state
-            state_2(str): Target state
+            initial_state(str): Initial state
+            target_state(str): Target state
 
         Returns:
             bool: True if allowed, False if not
         """
 
-        return state_2 in self.allowed_transitions[state_1]
+        return target_state in self.allowed_transitions[initial_state]
 
-    def set_allowed(self, state_1, state_2):
+    def set_allowed(self, initial_state, allowed_states):
         """
         Add an allowed transition state
 
         Args:
-            state_1(str): Initial state
-            state_2(str): Target state
+            initial_state(str): Initial state
+            allowed_states(list(str) / str): States that initial_state can
+            transition to
         """
 
-        if state_1 in list(self.allowed_transitions.keys()):
-            self.allowed_transitions[state_1].append(state_2)
+        if not isinstance(allowed_states, list):
+            allowed_states = [allowed_states]
+
+        if initial_state in list(self.allowed_transitions.keys()):
+            for state in allowed_states:
+                if state not in self.allowed_transitions[initial_state]:
+                    self.allowed_transitions[initial_state].append(state)
         else:
-            self.allowed_transitions[state_1] = [state_2]
+            self.allowed_transitions[initial_state] = allowed_states
 
     def set_busy(self, state, busy=True):
         """

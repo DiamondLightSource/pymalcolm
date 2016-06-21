@@ -15,8 +15,11 @@ class TestStateMachine(unittest.TestCase):
         self.SM = StateMachine("test_state_machine")
 
     def test_init(self):
+        default_allowed_transitions = OrderedDict()
+        default_allowed_transitions['Fault'] = ["Resetting", "Disabled"]
+        default_allowed_transitions['Disabled'] = ["Resetting"]
         self.assertEqual("test_state_machine", self.SM.name)
-        self.assertEqual(OrderedDict(), self.SM.allowed_transitions)
+        self.assertEqual(default_allowed_transitions, self.SM.allowed_transitions)
         self.assertEqual([], self.SM.busy_states)
 
     def test_is_allowed(self):
@@ -35,7 +38,6 @@ class TestStateMachine(unittest.TestCase):
         self.assertEqual(["Prerun", "Resetting"], self.SM.allowed_transitions['Ready'])
 
     def test_set_busy(self):
-        self.assertEqual([], self.SM.busy_states)
         self.SM.set_busy("Ready", busy=False)
         self.assertEqual([], self.SM.busy_states)
         self.SM.set_busy("Ready", busy=True)
