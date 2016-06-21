@@ -85,7 +85,10 @@ class Method(Monitorable):
         """
         self.log_debug("Received request %s", request)
         try:
-            result = self(**request.parameters)
+            try:
+                result = self(**request.parameters)
+            except KeyError:
+                result = self()
         except Exception as error:
             # TODO: python3 no longer has error.message, but error.args[0]
             # seems the same. Is this always right?
