@@ -45,7 +45,7 @@ class Method(Monitorable):
     def set_writeable(self, writeable):
         """Set writeable property to enable or disable calling method"""
         self.writeable = writeable
-        self.on_changed([[["writeable"], writeable]])
+        self.on_changed([["writeable"], writeable])
 
     def __call__(self, *args, **kwargs):
         """Call the exposed function using regular keyword argument parameters.

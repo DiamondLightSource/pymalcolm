@@ -161,10 +161,10 @@ class TestMethod(unittest.TestCase):
         m = Method("test_method", "test_description")
         m.on_changed = MagicMock(side_effect=m.on_changed)
         m.set_writeable(False)
-        m.on_changed.assert_called_once_with([[["writeable"], False]])
+        m.on_changed.assert_called_once_with([["writeable"], False])
         m.on_changed.reset_mock()
         m.set_writeable(True)
-        m.on_changed.assert_called_once_with([[["writeable"], True]])
+        m.on_changed.assert_called_once_with([["writeable"], True])
 
     def test_to_dict_serialization(self):
         func = Mock(return_value={"out": "dummy"})
