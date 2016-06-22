@@ -3,6 +3,8 @@ from contextlib import contextmanager
 
 from malcolm.core.monitorable import Monitorable
 from malcolm.core.process import BlockRespond
+from malcolm.core.request import Request
+from malcolm.core.response import Response
 
 @contextmanager
 def dummy_lock():
@@ -59,21 +61,19 @@ class Block(Monitorable):
             request(Request): Request object specifying action
         """
         self.log_debug("Received request %s", request)
+        assert request.type_ == Request.POST or request.type_ == Request.PUT, \
+            "Expected Post or Put request, received %s" % request.type_
         with self.lock:
-            if request.type_ == request.POST:
+            if request.type_ == Request.POST:
                 method_name = request.endpoint[-1]
                 response = self._methods[method_name].get_response(request)
-                response = BlockRespond(response, request.response_queue)
-                self.parent.q.put(response)
-            else:
-                layer = self
-                for next_link in request.endpoint[1:]:
-                    layer = getattr(layer, next_link)
-
-                if hasattr(layer, "to_dict"):
-                    request.respond_with_return(layer.to_dict())
-                else:
-                    request.respond_with_return(layer)
+            elif request.type_ == Request.PUT:
+                attr_name = request.endpoint[-1]
+                self._attributes[attr_name].put(request.value)
+                self._attributes[attr_name].set_value(request.value)
+                response = Response.Return(request.id_, request.context)
+            response = BlockRespond(response, request.response_queue)
+            self.parent.q.put(response)
 
     def to_dict(self):
         """Convert object attributes into a dictionary"""
