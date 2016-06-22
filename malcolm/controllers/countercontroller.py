@@ -1,7 +1,7 @@
 from malcolm.core.controller import Controller
 from malcolm.core.attribute import Attribute
 from malcolm.core.numbermeta import NumberMeta
-from malcolm.core.method import takes
+from malcolm.core.method import takes, returns
 
 import numpy as np
 
