@@ -41,7 +41,9 @@ class TestSystemWSComms(unittest.TestCase):
     def tearDown(self):
         if hasattr(self, "cc"):
             self.cc.stop()
+            self.cc.wait()
         self.sc.stop()
+        self.sc.wait()
         self.process.stop()
 
     @gen.coroutine

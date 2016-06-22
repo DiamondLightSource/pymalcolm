@@ -1,9 +1,10 @@
 import unittest
 
 from . import util
-from mock import Mock
+from mock import Mock, patch, call
 
-from malcolm.core.servercomms import ServerComms, SERVER_STOP
+from malcolm.core.servercomms import ServerComms
+from malcolm.core.spawnable import Spawnable
 from malcolm.core.syncfactory import SyncFactory
 
 class TestServerComms(unittest.TestCase):
@@ -11,11 +12,17 @@ class TestServerComms(unittest.TestCase):
     def setUp(self):
         self.process = Mock()
 
-    def test_init(self):
+    @patch("malcolm.core.servercomms.ServerComms.add_spawn_function")
+    @patch("malcolm.core.servercomms.ServerComms.make_default_stop_func")
+    def test_init(self, def_stop, add_func):
         server = ServerComms("server", self.process)
         self.process.create_queue.assert_called_once_with()
         self.assertEqual(
             server.q, self.process.create_queue.return_value)
+        self.assertEquals(
+            [call(server.send_loop, def_stop.return_value),
+                call(server.start_recv_loop, server.stop_recv_loop)],
+            server.add_spawn_function.call_args_list)
 
     def test_not_implemented_error(self):
         server = ServerComms("server", self.process)
@@ -23,53 +30,14 @@ class TestServerComms(unittest.TestCase):
         self.assertRaises(NotImplementedError, server.start_recv_loop)
         self.assertRaises(NotImplementedError, server.stop_recv_loop)
 
-    def test_loop_starts(self):
-        self.process.spawn = lambda x: x()
-        server = ServerComms("server", self.process)
-        server.send_loop = Mock()
-        server.start_recv_loop = Mock()
-        server.start()
-        server.send_loop.assert_called_once_with()
-        server.start_recv_loop.assert_called_once_with()
-
-    def test_loop_stops(self):
-        self.process.spawn = lambda x: x()
-        self.process.create_queue = Mock(
-            return_value=Mock(get=Mock(return_value=SERVER_STOP)))
-        server = ServerComms("server", self.process)
-        server.start_recv_loop = Mock()
-        server.stop_recv_loop = Mock()
-        server.send_loop = Mock(side_effect = server.send_loop)
-        server.start()
-        server.send_loop.assert_called_once_with()
-
-    def test_start_stop(self):
-        self.process.sync_factory = SyncFactory("s")
-        self.process.spawn = self.process.sync_factory.spawn
-        self.process.create_queue = self.process.sync_factory.create_queue
-        server = ServerComms("server", self.process)
-        server.send_loop = Mock(side_effect = server.send_loop)
-        server.start_recv_loop = Mock()
-        server.stop_recv_loop = Mock()
-        server.start()
-        self.assertFalse(server._send_spawned.ready())
-        server.start_recv_loop.assert_called_once_with()
-        server.stop(0.1)
-        self.assertTrue(server._send_spawned.ready())
-        server.send_loop.assert_called_once_with()
-        server.stop_recv_loop.assert_called_once_with()
-
-    def test_send_to_client(self):
+    def test_send_to_client_called(self):
         request = Mock()
         dummy_queue = Mock()
-        dummy_queue.get = Mock(side_effect = [request, SERVER_STOP])
+        dummy_queue.get = Mock(side_effect = [request, Spawnable.STOP])
         self.process.create_queue = Mock(return_value = dummy_queue)
-        self.process.spawn = Mock(side_effect = lambda x: x())
         server = ServerComms("server", self.process)
-        server.send_to_client = Mock(
-            side_effect = server.send_to_client)
-        server.start_recv_loop = Mock()
-        server.start()
+        server.send_to_client = Mock()
+        server.send_loop()
         server.send_to_client.assert_called_once_with(request)
 
     def test_send_to_process(self):
