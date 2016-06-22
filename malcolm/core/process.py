@@ -96,6 +96,7 @@ class Process(Loggable):
         self._blocks[block.name] = block
         self._block_state_cache[block.name] = block.to_dict()
         block.parent = self
+        block.lock = self.create_lock()
 
     def create_queue(self):
         """
@@ -106,6 +107,15 @@ class Process(Loggable):
         """
 
         return self.sync_factory.create_queue()
+
+    def create_lock(self):
+        """
+        Create a lock using sync_factory object
+
+        Returns:
+            Lock: New lock
+        """
+        return self.sync_factory.create_lock()
 
     def spawn(self, function, *args, **kwargs):
         """Calls SyncFactory.spawn()"""
