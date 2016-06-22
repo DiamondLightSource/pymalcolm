@@ -1,8 +1,12 @@
 from collections import OrderedDict
+from contextlib import contextmanager
 
 from malcolm.core.monitorable import Monitorable
 from malcolm.core.process import BlockRespond
 
+@contextmanager
+def dummy_lock():
+    yield
 
 class Block(Monitorable):
     """Object consisting of a number of Attributes and Methods"""
@@ -16,6 +20,7 @@ class Block(Monitorable):
         self.name = name
         self._methods = OrderedDict()
         self._attributes = OrderedDict()
+        self.lock = dummy_lock()
 
     def add_attribute(self, attribute):
         """Add an Attribute to the block and set the block as its parent"""
@@ -54,20 +59,21 @@ class Block(Monitorable):
             request(Request): Request object specifying action
         """
         self.log_debug("Received request %s", request)
-        if request.type_ == request.POST:
-            method_name = request.endpoint[-1]
-            response = self._methods[method_name].get_response(request)
-            response = BlockRespond(response, request.response_queue)
-            self.parent.q.put(response)
-        else:
-            layer = self
-            for next_link in request.endpoint[1:]:
-                layer = getattr(layer, next_link)
-
-            if hasattr(layer, "to_dict"):
-                request.respond_with_return(layer.to_dict())
+        with self.lock:
+            if request.type_ == request.POST:
+                method_name = request.endpoint[-1]
+                response = self._methods[method_name].get_response(request)
+                response = BlockRespond(response, request.response_queue)
+                self.parent.q.put(response)
             else:
-                request.respond_with_return(layer)
+                layer = self
+                for next_link in request.endpoint[1:]:
+                    layer = getattr(layer, next_link)
+
+                if hasattr(layer, "to_dict"):
+                    request.respond_with_return(layer.to_dict())
+                else:
+                    request.respond_with_return(layer)
 
     def to_dict(self):
         """Convert object attributes into a dictionary"""
