@@ -1,9 +1,11 @@
-from . import util
-import unittest
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+import setup_malcolm_paths
+
 from collections import OrderedDict
 
-from pkg_resources import require
-require('tornado')
+import unittest
 from mock import MagicMock, patch, call
 
 from malcolm.wscomms.wsclientcomms import WSClientComms

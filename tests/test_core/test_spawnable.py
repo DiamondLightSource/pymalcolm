@@ -1,6 +1,9 @@
+import os
+import sys
 import unittest
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from . import util
+import setup_malcolm_paths
 from mock import Mock, call
 
 from malcolm.core.spawnable import Spawnable

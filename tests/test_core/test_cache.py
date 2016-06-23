@@ -1,9 +1,13 @@
+import os
+import sys
 import unittest
 from collections import OrderedDict
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
-from . import util
+import setup_malcolm_paths
 from mock import MagicMock
 
 # module imports
@@ -38,3 +42,6 @@ class TestProcess(unittest.TestCase):
         c[1] = {2: {3: "end"}}
         walked = c.walk_path([1, 2, 3])
         self.assertEqual(walked, "end")
+
+if __name__ == "__main__":
+    unittest.main()

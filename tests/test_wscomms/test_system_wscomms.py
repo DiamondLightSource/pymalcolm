@@ -1,15 +1,16 @@
-import unittest
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+import setup_malcolm_paths
+
 import time
-
-from . import util
-
 # logging
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
+import unittest
+
 # tornado
-from pkg_resources import require
-require("tornado")
 from tornado.websocket import websocket_connect
 from tornado import gen
 from tornado.ioloop import IOLoop
