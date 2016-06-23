@@ -36,8 +36,6 @@ class WSServerComms(ServerComms):
 
         self.name = name
         self.process = process
-        # The Result object for the IOLoop start() thread
-        self._loop_spawned = None
 
         MalcolmWebSocketHandler.servercomms = self
 
@@ -45,6 +43,7 @@ class WSServerComms(ServerComms):
         self.server = HTTPServer(application)
         self.server.listen(port)
         self.loop = IOLoop.current()
+        self.add_spawn_function(self.loop.start, self.stop_recv_loop)
 
     def send_to_client(self, response):
         """Dispatch response to a client
@@ -68,14 +67,8 @@ class WSServerComms(ServerComms):
         request.response_queue = self.q
         self.process.q.put(request)
 
-    def start_recv_loop(self):
-        """Start a receive loop to dispatch requests to Process"""
-        self._loop_spawned = self.process.spawn(self.loop.start)
-
     def stop_recv_loop(self):
-        """Stop the receive loop created by start_recv_loop"""
         # This is the only thing that is safe to do from outside the IOLoop
         # thread
         self.loop.add_callback(self.server.stop)
         self.loop.add_callback(self.loop.stop)
-        self._loop_spawned.wait()

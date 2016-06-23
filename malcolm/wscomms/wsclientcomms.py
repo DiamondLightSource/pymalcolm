@@ -26,7 +26,7 @@ class WSClientComms(ClientComms):
         # TODO: Are we starting one or more IOLoops here?
         self.loop = IOLoop.current()
         self.conn = websocket_connect(url, on_message_callback=self.on_message)
-        self._loop_spawned = None
+        self.add_spawn_function(self.loop.start, self.stop_recv_loop)
 
     def on_message(self, message):
         """
@@ -50,13 +50,7 @@ class WSClientComms(ClientComms):
         message = json.dumps(request.to_dict())
         self.conn.result().write_message(message)
 
-    def start_recv_loop(self):
-        """Start a receive loop to dispatch responses to a Method"""
-        self._loop_spawned = self.process.spawn(self.loop.start)
-
     def stop_recv_loop(self):
-        """Stop the receive loop created by start_recv_loop"""
         # This is the only thing that is safe to do from outside the IOLoop
         # thread
         self.loop.add_callback(self.loop.stop)
-        self._loop_spawned.wait()

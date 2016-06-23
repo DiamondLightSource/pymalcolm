@@ -4,7 +4,7 @@ from collections import OrderedDict
 from . import util
 from pkg_resources import require
 require('tornado')
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
 from malcolm.wscomms.wsservercomms import WSServerComms
 from malcolm.wscomms.wsservercomms import MalcolmWebSocketHandler
@@ -22,7 +22,6 @@ class TestWSServerComms(unittest.TestCase):
 
         self.assertEqual("TestWebSocket", self.WS.name)
         self.assertEqual(self.p, self.WS.process)
-        self.assertIsNone(self.WS._loop_spawned)
         self.assertEqual(server_mock(), self.WS.server)
         self.assertEqual(ioloop_mock.current(), self.WS.loop)
 
@@ -36,28 +35,42 @@ class TestWSServerComms(unittest.TestCase):
     @patch('malcolm.wscomms.wsservercomms.HTTPServer.listen')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')
     def test_start(self, _, _2):
-        spawn_mock = MagicMock()
-        self.p.spawn.return_value = spawn_mock
+        self.p.spawn = MagicMock()
 
         self.WS = WSServerComms("TestWebSocket", self.p, 1)
-        self.WS.start_recv_loop()
+        self.WS.start()
 
-        self.assertEqual(spawn_mock, self.WS._loop_spawned)
+        self.assertEqual([call(self.WS.send_loop), call(self.WS.loop.start)],
+                         self.p.spawn.call_args_list)
 
     @patch('malcolm.wscomms.wsservercomms.HTTPServer')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')
     def test_stop(self, ioloop_mock, server_mock):
         loop_mock = MagicMock()
         ioloop_mock.current.return_value = loop_mock
+        self.p.spawn = MagicMock()
 
         self.WS = WSServerComms("TestWebSocket", self.p, 1)
-        self.WS._loop_spawned = MagicMock()
-        self.WS.stop_recv_loop()
+        self.WS.start()
+        self.WS.stop()
 
-        call_args = [call[0][0] for call in loop_mock.add_callback.call_args_list]
-        self.assertIn(server_mock().stop, call_args)
-        self.assertIn(ioloop_mock.current().stop, call_args)
-        self.WS._loop_spawned.wait.assert_called_once_with()
+        self.assertEqual([call(self.WS.server.stop), call(self.WS.loop.stop)],
+                loop_mock.add_callback.call_args_list)
+        self.p.spawn.return_value.wait.assert_not_called()
+
+    @patch('malcolm.wscomms.wsservercomms.HTTPServer')
+    @patch('malcolm.wscomms.wsservercomms.IOLoop')
+    def test_wait(self, ioloop_mock, server_mock):
+        spawnable_mocks = [MagicMock(), MagicMock()]
+        timeout = MagicMock()
+        self.p.spawn = MagicMock(side_effect=spawnable_mocks)
+
+        self.WS = WSServerComms("TestWebSocket", self.p, 1)
+        self.WS.start()
+        self.WS.wait(timeout)
+
+        spawnable_mocks[0].wait.assert_called_once_with(timeout=timeout)
+        spawnable_mocks[1].wait.assert_called_once_with(timeout=timeout)
 
     @patch('malcolm.wscomms.wsservercomms.Request')
     @patch('malcolm.wscomms.wsservercomms.json')
