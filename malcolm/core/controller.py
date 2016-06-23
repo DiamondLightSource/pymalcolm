@@ -2,14 +2,14 @@ import inspect
 from collections import OrderedDict
 
 from malcolm.core.loggable import Loggable
-from malcolm.core.statemachine import StateMachine
+from malcolm.core.defaultstatemachine import DefaultStateMachine
 from malcolm.core.attribute import Attribute
 from malcolm.core.enummeta import EnumMeta
 from malcolm.core.stringmeta import StringMeta
 from malcolm.core.booleanmeta import BooleanMeta
 
 
-@StateMachine.insert
+@DefaultStateMachine.insert
 class Controller(Loggable):
     """Implement the logic that takes a Block through its statemachine"""
 
