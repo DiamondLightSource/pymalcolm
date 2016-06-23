@@ -17,15 +17,12 @@ class TestClientComms(unittest.TestCase):
         self.assertEqual(client.q, process.create_queue.return_value)
         spawn_function_calls = client.add_spawn_function.call_args_list
         self.assertEquals(
-            [call(client.send_loop, def_stop.return_value),
-                call(client.start_recv_loop, client.stop_recv_loop)],
+            [call(client.send_loop, def_stop.return_value)],
             spawn_function_calls)
 
     def test_not_implemented_error(self):
         client = ClientComms("c", Mock())
         self.assertRaises(NotImplementedError, client.send_to_server, Mock())
-        self.assertRaises(NotImplementedError, client.start_recv_loop)
-        self.assertRaises(NotImplementedError, client.stop_recv_loop)
 
     def test_send_logs_error(self):
         client = ClientComms("c", Mock())

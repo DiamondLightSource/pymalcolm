@@ -16,7 +16,6 @@ class ClientComms(Loggable, Spawnable):
         self.requests = OrderedDict()
         self.add_spawn_function(self.send_loop,
                                 self.make_default_stop_func(self.q))
-        self.add_spawn_function(self.start_recv_loop, self.stop_recv_loop)
 
     def send_loop(self):
         """Service self.q, sending requests to server"""
@@ -47,15 +46,3 @@ class ClientComms(Loggable, Spawnable):
     def send_to_caller(self, response):
         request = self.requests[response.id_]
         request.response_queue.put(response)
-
-    def start_recv_loop(self):
-        """Abstract method to start a receive loop to dispatch responses to a
-        a Method"""
-        raise NotImplementedError(
-            "Abstract method that must be implemented by deriving class")
-
-    def stop_recv_loop(self):
-        """Abstract method to stop the receive loop created by
-        start_recv_loop"""
-        raise NotImplementedError(
-            "Abstract method that must be implemented by deriving class")

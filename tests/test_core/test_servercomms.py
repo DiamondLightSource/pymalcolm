@@ -20,15 +20,12 @@ class TestServerComms(unittest.TestCase):
         self.assertEqual(
             server.q, self.process.create_queue.return_value)
         self.assertEquals(
-            [call(server.send_loop, def_stop.return_value),
-                call(server.start_recv_loop, server.stop_recv_loop)],
+            [call(server.send_loop, def_stop.return_value)],
             server.add_spawn_function.call_args_list)
 
     def test_not_implemented_error(self):
         server = ServerComms("server", self.process)
         self.assertRaises(NotImplementedError, server.send_to_client, Mock())
-        self.assertRaises(NotImplementedError, server.start_recv_loop)
-        self.assertRaises(NotImplementedError, server.stop_recv_loop)
 
     def test_send_to_client_called(self):
         request = Mock()

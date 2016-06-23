@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from pkg_resources import require
 require('tornado')
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
 from malcolm.wscomms.wsclientcomms import WSClientComms
 
@@ -25,7 +25,6 @@ class TestWSServerComms(unittest.TestCase):
         self.assertEqual(ioloop_mock.current(), self.WS.loop)
         connect_mock.assert_called_once_with(self.WS.url, on_message_callback=self.WS.on_message)
         self.assertEqual(connect_mock(), self.WS.conn)
-        self.assertIsNone(self.WS._loop_spawned)
 
     @patch('malcolm.wscomms.wsclientcomms.Response')
     @patch('malcolm.wscomms.wsclientcomms.json')
@@ -72,13 +71,11 @@ class TestWSServerComms(unittest.TestCase):
         loop_mock = MagicMock()
         ioloop_mock.current.return_value = loop_mock
         self.WS = WSClientComms("TestWebSocket", self.p, "test/url")
-        spawn_mock = MagicMock()
-        self.WS.process.spawn.return_value = spawn_mock
+        self.WS.process.spawn = MagicMock()
+        self.WS.start()
 
-        self.WS.start_recv_loop()
-
-        self.WS.process.spawn.assert_called_once_with(loop_mock.start)
-        self.assertEqual(spawn_mock, self.WS._loop_spawned)
+        self.assertEqual([call(self.WS.send_loop), call(self.WS.loop.start)],
+                         self.WS.process.spawn.call_args_list)
 
     @patch('malcolm.wscomms.wsclientcomms.websocket_connect')
     @patch('malcolm.wscomms.wsclientcomms.IOLoop')
@@ -87,12 +84,26 @@ class TestWSServerComms(unittest.TestCase):
         ioloop_mock.current.return_value = loop_mock
 
         self.WS = WSClientComms("TestWebSocket", self.p, "test/url")
-        self.WS._loop_spawned = MagicMock()
-        self.WS.stop_recv_loop()
+        self.WS.start()
+        self.WS.stop()
 
-        loop_mock.add_callback.assert_called_once_with(ioloop_mock.current().stop)
-        self.WS._loop_spawned.wait.assert_called_once_with()
+        loop_mock.add_callback.assert_called_once_with(
+            ioloop_mock.current().stop)
+        self.WS.process.spawn.return_value.assert_not_called()
 
+    @patch('malcolm.wscomms.wsclientcomms.websocket_connect')
+    @patch('malcolm.wscomms.wsclientcomms.IOLoop')
+    def test_wait(self, ioloop_mock, _):
+        spawnable_mocks = [MagicMock(), MagicMock()]
+        timeout = MagicMock()
+
+        self.WS = WSClientComms("TestWebSocket", self.p, "test/url")
+        self.WS.process.spawn = MagicMock(side_effect=spawnable_mocks)
+        self.WS.start()
+        self.WS.wait(timeout)
+
+        spawnable_mocks[0].wait.assert_called_once_with(timeout=timeout)
+        spawnable_mocks[1].wait.assert_called_once_with(timeout=timeout)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

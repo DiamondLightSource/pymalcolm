@@ -12,7 +12,6 @@ class ServerComms(Loggable, Spawnable):
         self.q = self.process.create_queue()
         self.add_spawn_function(self.send_loop,
                                 self.make_default_stop_func(self.q))
-        self.add_spawn_function(self.start_recv_loop, self.stop_recv_loop)
 
     def send_loop(self):
         """Service self.q, sending responses to client"""
@@ -38,15 +37,3 @@ class ServerComms(Loggable, Spawnable):
     def send_to_process(self, request):
         """Send request to process"""
         self.process.q.put(request)
-
-    def start_recv_loop(self):
-        """Abstract method to start a recieve loop to dispatch requests to
-        Process"""
-        raise NotImplementedError(
-            "Abstract method that must be implemented by deriving class")
-
-    def stop_recv_loop(self):
-        """Abstract method to stop the receive loop created by
-        start_recv_loop"""
-        raise NotImplementedError(
-            "Abstract method that must be implemented by deriving class")
