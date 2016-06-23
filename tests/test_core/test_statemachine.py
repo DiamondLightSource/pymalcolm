@@ -8,60 +8,10 @@ import setup_malcolm_paths
 
 from malcolm.core.statemachine import StateMachine
 
-
 class TestStateMachine(unittest.TestCase):
+    def test_init_raises_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            s = StateMachine("s")
 
-    def setUp(self):
-        self.SM = StateMachine("test_state_machine")
-
-    def test_init(self):
-        default_allowed_transitions = OrderedDict()
-        default_allowed_transitions['Fault'] = ["Resetting", "Disabled"]
-        default_allowed_transitions['Disabled'] = ["Resetting"]
-        self.assertEqual("test_state_machine", self.SM.name)
-        self.assertEqual(default_allowed_transitions, self.SM.allowed_transitions)
-        self.assertEqual([], self.SM.busy_states)
-
-    def test_is_allowed(self):
-        self.SM.allowed_transitions.update(dict(Ready=["Resetting",
-                                                       "Rewinding"]))
-
-        response = self.SM.is_allowed("Ready", "Resetting")
-        self.assertTrue(response)
-        response = self.SM.is_allowed("Ready", "Paused")
-        self.assertFalse(response)
-
-    def test_set_allowed(self):
-        self.SM.set_allowed("Ready", "Prerun")
-        self.assertEqual(["Prerun"], self.SM.allowed_transitions['Ready'])
-        self.SM.set_allowed("Ready", "Resetting")
-        self.assertEqual(["Prerun", "Resetting"], self.SM.allowed_transitions['Ready'])
-
-    def test_set_busy(self):
-        self.SM.set_busy("Ready", busy=False)
-        self.assertEqual([], self.SM.busy_states)
-        self.SM.set_busy("Ready", busy=True)
-        self.assertEqual(["Ready"], self.SM.busy_states)
-        self.SM.set_busy("Ready", busy=False)
-        self.assertEqual([], self.SM.busy_states)
-
-    def test_is_busy(self):
-        self.assertEqual([], self.SM.busy_states)
-        self.SM.set_busy("Resetting", busy=True)
-
-        response = self.SM.is_busy("Resetting")
-        self.assertTrue(response)
-
-        response = self.SM.is_busy("Ready")
-        self.assertFalse(response)
-
-    def test_insert(self):
-
-        @StateMachine.insert
-        class DummyController(object):
-            pass
-
-        d = DummyController()
-
-        self.assertIsInstance(d.stateMachine, StateMachine)
-        self.assertEqual("StateMachine", d.stateMachine.name)
+if __name__ == "__main__":
+    unittest.main()

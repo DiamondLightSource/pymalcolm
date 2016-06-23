@@ -3,6 +3,7 @@ from malcolm.core.statemachine import StateMachine
 
 class RunnableDeviceStateMachine(StateMachine):
 
+    READY = "Ready"
     IDLE = "Idle"
     CONFIGURING = "Configuring"
     PRERUN = "PreRun"
@@ -13,29 +14,26 @@ class RunnableDeviceStateMachine(StateMachine):
     ABORTING = "Aborting"
     ABORTED = "Aborted"
 
-    def __init__(self, name):
-        super(RunnableDeviceStateMachine, self).__init__(name)
-        
-        a = self.set_allowed
-
+    def create_states(self):
         # Set transitions for normal states
-        a(self.IDLE, self.CONFIGURING)
-        a(self.READY, [self.PRERUN, self.REWINDING, self.RESETTING])
-        a(self.CONFIGURING, self.READY)
-        a(self.PRERUN, [self.RUNNING, self.REWINDING])
-        a(self.RUNNING, [self.POSTRUN, self.REWINDING])
-        a(self.POSTRUN, [self.IDLE, self.READY])
-        a(self.RESETTING, self.IDLE)
-        a(self.PAUSED, [self.REWINDING, self.PRERUN])
-        a(self.REWINDING, self.PAUSED)
+        self.set_allowed(self.IDLE, self.CONFIGURING)
+        self.set_allowed(
+            self.READY, [self.PRERUN, self.REWINDING, self.RESETTING])
+        self.set_allowed(self.CONFIGURING, self.READY)
+        self.set_allowed(self.PRERUN, [self.RUNNING, self.REWINDING])
+        self.set_allowed(self.RUNNING, [self.POSTRUN, self.REWINDING])
+        self.set_allowed(self.POSTRUN, [self.IDLE, self.READY])
+        self.set_allowed(self.RESETTING, self.IDLE)
+        self.set_allowed(self.PAUSED, [self.REWINDING, self.PRERUN])
+        self.set_allowed(self.REWINDING, self.PAUSED)
 
         # Add Aborting to all normal states
         normal_states = [self.IDLE, self.READY, self.CONFIGURING, self.PRERUN,
                          self.RUNNING, self.POSTRUN, self.PAUSED,
                          self.RESETTING, self.REWINDING]
         for state in normal_states:
-            a(state, self.ABORTING)
+            self.set_allowed(state, self.ABORTING)
 
-        # Set transitions for other states
-        a(self.ABORTING, self.ABORTED)
-        a(self.ABORTED, self.RESETTING)
+        # Set trself.set_allowednsitions for other stself.set_allowedtes
+        self.set_allowed(self.ABORTING, self.ABORTED)
+        self.set_allowed(self.ABORTED, self.RESETTING)

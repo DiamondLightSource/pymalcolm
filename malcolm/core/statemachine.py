@@ -5,7 +5,6 @@ from malcolm.core.loggable import Loggable
 
 class StateMachine(Loggable):
 
-    READY = "Ready"
     RESETTING = "Resetting"
     DISABLED = "Disabled"
     FAULT = "Fault"
@@ -16,10 +15,22 @@ class StateMachine(Loggable):
         self.name = name
         self.allowed_transitions = OrderedDict()
         self.busy_states = []
+        self.create_states()
+        self.possible_states = list(self.allowed_transitions)
+        assert self.RESETTING in self.possible_states, \
+            "A transition from RESETTING must be provided"
 
         # Set transitions for standard states
         self.set_allowed(self.FAULT, [self.RESETTING, self.DISABLED])
         self.set_allowed(self.DISABLED, self.RESETTING)
+        for state in self.possible_states:
+            self.set_allowed(state, self.FAULT)
+            self.set_allowed(state, self.DISABLED)
+        self.possible_states.append(self.FAULT)
+        self.possible_states.append(self.DISABLED)
+
+    def create_states(self):
+        raise NotImplementedError()
 
     def is_allowed(self, initial_state, target_state):
         """
