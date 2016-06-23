@@ -8,7 +8,7 @@ from mock import MagicMock
 
 # module imports
 from malcolm.core.process import \
-        Process, BlockChanged, BlockNotify, PROCESS_STOP
+        Process, BlockChanged, BlockNotify, PROCESS_STOP, BlockAdd
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Request
 from malcolm.core.response import Response
@@ -27,6 +27,9 @@ class TestProcess(unittest.TestCase):
         b = MagicMock()
         b.name = "myblock"
         p.add_block(b)
+        req = p.q.put.call_args[0][0]
+        self.assertEqual(req.block, b)
+        p._handle_block_add(req)
         self.assertIs(p, b.parent)
 
     def test_starting_process(self):
@@ -34,7 +37,7 @@ class TestProcess(unittest.TestCase):
         p = Process("proc", s)
         b = MagicMock()
         b.name = "myblock"
-        p.add_block(b)
+        p._handle_block_add(BlockAdd(b))
         self.assertEqual(p._blocks, dict(myblock=b))
         p.start()
         request = MagicMock()
@@ -74,7 +77,7 @@ class TestProcess(unittest.TestCase):
         request = MagicMock()
         request.type_ = Request.GET
         request.endpoint = ["myblock", "path_1", "path_2"]
-        p.add_block(block)
+        p._handle_block_add(BlockAdd(block))
         p.q.get = MagicMock(side_effect=[request, PROCESS_STOP])
 
         p.recv_loop()
@@ -110,7 +113,7 @@ class TestSubscriptions(unittest.TestCase):
             MagicMock(), MagicMock(), ["block", "inner"], True)
         p.q.get = MagicMock(side_effect = [sub_1, sub_2, PROCESS_STOP])
 
-        p.add_block(block)
+        p._handle_block_add(BlockAdd(block))
         p.recv_loop()
 
         self.assertEquals(OrderedDict(block=[sub_1, sub_2]),
@@ -140,7 +143,7 @@ class TestSubscriptions(unittest.TestCase):
         p.q.get = MagicMock(
             side_effect = [request_1, request_2, PROCESS_STOP])
 
-        p.add_block(block)
+        p._handle_block_add(BlockAdd(block))
         p.recv_loop()
 
         self.assertEqual(sub_1.response_queue.put.call_count, 1)
@@ -171,7 +174,7 @@ class TestSubscriptions(unittest.TestCase):
         p.q.get = MagicMock(
             side_effect = [request_1, request_2, request_3, PROCESS_STOP])
 
-        p.add_block(block)
+        p._handle_block_add(BlockAdd(block))
         p.recv_loop()
 
         self.assertEqual(sub_1.response_queue.put.call_count, 1)
@@ -214,8 +217,8 @@ class TestSubscriptions(unittest.TestCase):
             PROCESS_STOP])
         p._subscriptions["block_1"] = [sub_1, sub_2]
 
-        p.add_block(block_1)
-        p.add_block(block_2)
+        p._handle_block_add(BlockAdd(block_1))
+        p._handle_block_add(BlockAdd(block_2))
         p.recv_loop()
 
         response_1 = sub_1.response_queue.put.call_args[0][0]
@@ -257,8 +260,8 @@ class TestSubscriptions(unittest.TestCase):
         p.q.put = MagicMock(side_effect = p.q.put)
         p._subscriptions["block_1"] = [sub_1, sub_2]
         p._subscriptions["block_2"] = [sub_3, sub_4]
-        p.add_block(block_1)
-        p.add_block(block_2)
+        p._handle_block_add(BlockAdd(block_1))
+        p._handle_block_add(BlockAdd(block_2))
 
         p.recv_loop()
 
