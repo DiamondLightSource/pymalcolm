@@ -44,5 +44,15 @@ class TestServerComms(unittest.TestCase):
         server.send_to_process(request)
         self.process.q.put.assert_called_once_with(request)
 
+    def test_send_logs_error(self):
+        server = ServerComms("server", self.process)
+        request = Mock()
+        request.to_dict = Mock()
+        server.q.get = Mock(side_effect = [request, server.STOP])
+        server.log_exception = Mock()
+        server.send_loop()
+        server.log_exception.assert_called_once_with(
+            "Exception sending response %s", request.to_dict.return_value)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
