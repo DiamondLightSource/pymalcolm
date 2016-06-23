@@ -59,12 +59,8 @@ class StateMachine(Loggable):
         if not isinstance(allowed_states, list):
             allowed_states = [allowed_states]
 
-        if initial_state in list(self.allowed_transitions.keys()):
-            for state in allowed_states:
-                if state not in self.allowed_transitions[initial_state]:
-                    self.allowed_transitions[initial_state].append(state)
-        else:
-            self.allowed_transitions[initial_state] = allowed_states
+        self.allowed_transitions.setdefault(initial_state, set()).update(
+            allowed_states)
 
     def set_busy(self, state, busy=True):
         """
