@@ -1,7 +1,7 @@
 from malcolm.core.controller import Controller
 from malcolm.core.attribute import Attribute
 from malcolm.core.numbermeta import NumberMeta
-from malcolm.core.method import takes, returns
+from malcolm.core.method import takes
 
 import numpy as np
 
@@ -16,7 +16,9 @@ class CounterController(Controller):
     @takes()
     def reset(self):
         self.counter.set_value(0)
+        self.block.notify_subscribers()
 
     @takes()
     def increment(self):
         self.counter.set_value(self.counter.value + 1)
+        self.block.notify_subscribers()

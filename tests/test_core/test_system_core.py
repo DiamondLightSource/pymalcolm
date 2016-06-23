@@ -56,7 +56,8 @@ class TestCounterControllerSystem(unittest.TestCase):
         q = sync_factory.create_queue()
 
         sub = Request.Subscribe(response_queue=q, context="ClientConnection",
-                                endpoint=["counting", "counter"], delta=False)
+                                endpoint=["counting", "counter"],
+                                delta=False)
         process.q.put(sub)
         resp = q.get(timeout=1)
         self.assertEqual(Response.UPDATE, resp.type_)
@@ -66,6 +67,9 @@ class TestCounterControllerSystem(unittest.TestCase):
         post = Request.Post(response_queue=q, context="ClientConnection",
                             endpoint=["counting", "increment"])
         process.q.put(post)
+        resp = q.get(timeout=1)
+        self.assertEqual(Response.UPDATE, resp.type_)
+        self.assertEqual(resp.value["value"], 1)
         resp = q.get(timeout=1)
         self.assertEqual(Response.RETURN, resp.type_)
 
