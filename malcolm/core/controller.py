@@ -21,13 +21,6 @@ class Controller(Loggable):
         logger_name = "%s.controller" % block.name
         super(Controller, self).__init__(logger_name)
 
-        enum_meta = EnumMeta("State", "State of Block", [])
-        self.state = Attribute(enum_meta)
-        string_meta = StringMeta("Status", "Status of Block")
-        self.status = Attribute(string_meta)
-        boolean_meta = BooleanMeta("Busy", "Whether Block busy or not")
-        self.busy = Attribute(boolean_meta)
-
         self.writeable_methods = OrderedDict()
 
         self.block = block
@@ -59,7 +52,16 @@ class Controller(Loggable):
             Attribute: Each one will be attached to the Block by calling
             block.add_attribute(attribute)
         """
-        return iter(())
+        self.state = Attribute(EnumMeta(
+            "State", "State of Block",
+            self.stateMachine.possible_states))
+        yield self.state
+        self.status = Attribute(StringMeta("Status", "Status of Block"))
+        yield self.status
+        self.busy = Attribute(BooleanMeta("Busy", "Whether Block busy or not"))
+        yield self.busy
+
+
 
     def transition(self, state, message):
         """
