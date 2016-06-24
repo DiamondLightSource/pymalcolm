@@ -1,7 +1,11 @@
-import unittest
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+import setup_malcolm_paths
+
 from collections import OrderedDict
 
-from . import util
+import unittest
 from mock import MagicMock, patch
 
 from malcolm.core.request import Request

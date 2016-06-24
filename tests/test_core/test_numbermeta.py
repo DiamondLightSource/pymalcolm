@@ -1,11 +1,16 @@
-from . import util
-import unittest
-from collections import OrderedDict
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+import setup_malcolm_paths
 
+from collections import OrderedDict
 import numpy as np
+
+import unittest
 
 from malcolm.core.numbermeta import NumberMeta
 from malcolm.core.attributemeta import AttributeMeta
+
 
 class TestNumberMeta(unittest.TestCase):
     def test_init_int(self):

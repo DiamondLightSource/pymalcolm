@@ -1,11 +1,15 @@
-import unittest
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+import setup_malcolm_paths
 
-from . import util
+import unittest
 from mock import Mock, patch, call
 
 from malcolm.core.servercomms import ServerComms
 from malcolm.core.spawnable import Spawnable
 from malcolm.core.syncfactory import SyncFactory
+
 
 class TestServerComms(unittest.TestCase):
 

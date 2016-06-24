@@ -1,11 +1,16 @@
-import unittest
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+import setup_malcolm_paths
+
 from collections import OrderedDict
 
-from . import util
+import unittest
 from mock import Mock, patch, call
 
 from malcolm.core.clientcomms import ClientComms
 from malcolm.core.syncfactory import SyncFactory
+
 
 class TestClientComms(unittest.TestCase):
     @patch("malcolm.core.clientcomms.ClientComms.add_spawn_function")
