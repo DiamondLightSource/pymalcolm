@@ -29,8 +29,17 @@ class TestProcess(unittest.TestCase):
         p.add_block(b)
         req = p.q.put.call_args[0][0]
         self.assertEqual(req.block, b)
-        p._handle_block_add(req)
+
+    def test_add_block_calls_handle(self):
+        s = SyncFactory("sched")
+        p = Process("proc", s)
+        b = MagicMock()
+        b.name = "myblock"
+        p.add_block(b)
+        p.start()
+        p.stop()
         self.assertIs(p, b.parent)
+        self.assertEqual(p._blocks, dict(myblock=b))
 
     def test_starting_process(self):
         s = SyncFactory("sched")
