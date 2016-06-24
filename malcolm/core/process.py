@@ -9,13 +9,16 @@ from malcolm.core.cache import Cache
 # Sentinel object that when received stops the recv_loop
 PROCESS_STOP = object()
 
+def internal_request(type_, args):
+    cls = namedtuple(type_, args)
+    cls.type_ = type_
+    return cls
+
 # Internal update messages
-BlockNotify = namedtuple("BlockNotify", "name")
-BlockChanged = namedtuple("BlockChanged", "change")
-BlockRespond = namedtuple("BlockRespond", "response, response_queue")
-BlockNotify.type_ = "BlockNotify"
-BlockChanged.type_ = "BlockChanged"
-BlockRespond.type_ = "BlockRespond"
+BlockNotify = internal_request("BlockNotify", "name")
+BlockChanged = internal_request("BlockChanged", "change")
+BlockRespond = internal_request("BlockRespond", "response, response_queue")
+BlockAdd = internal_request("BlockAdd", "block")
 
 
 class Process(Loggable):
@@ -39,7 +42,8 @@ class Process(Loggable):
             Request.SUBSCRIBE: self._handle_subscribe,
             BlockNotify.type_: self._handle_block_notify,
             BlockChanged.type_: self._handle_block_changed,
-            BlockRespond.type_: self._handle_block_respond
+            BlockRespond.type_: self._handle_block_respond,
+            BlockAdd.type_: self._handle_block_add,
         }
 
     def recv_loop(self):
@@ -93,10 +97,7 @@ class Process(Loggable):
         """
         assert block.name not in self._blocks, \
             "There is already a block called %s" % block.name
-        self._blocks[block.name] = block
-        self._block_state_cache[block.name] = block.to_dict()
-        block.parent = self
-        block.lock = self.create_lock()
+        self.q.put(BlockAdd(block=block))
 
     def create_queue(self):
         """
@@ -154,14 +155,14 @@ class Process(Loggable):
                     # respond with the filtered changes
                     response = Response.Delta(
                         subscription.id_, subscription.context, changes)
-                    subscription.response_queue.put(response)
                 else:
                     # respond with the structure of everything
                     # below the endpoint
                     d = self._block_state_cache.walk_path(endpoint)
                     response = Response.Update(
                         subscription.id_, subscription.context, d)
-                    subscription.response_queue.put(response)
+                self.log_debug("Responding to subscription %s", response)
+                subscription.response_queue.put(response)
         self._last_changes[request.name] = []
 
     def _handle_block_changed(self, request):
@@ -175,12 +176,23 @@ class Process(Loggable):
         """Push the response to the required queue"""
         request.response_queue.put(request.response)
 
+    def _handle_block_add(self, request):
+        """Add a block to be hosted by this process"""
+        block = request.block
+        assert block.name not in self._blocks, \
+            "There is already a block called %s" % block.name
+        self._blocks[block.name] = block
+        self._block_state_cache[block.name] = block.to_dict()
+        block.parent = self
+        block.lock = self.create_lock()
+
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current
         sub-structure state"""
         subs = self._subscriptions.setdefault(request.endpoint[0], [])
         subs.append(request)
         d = self._block_state_cache.walk_path(request.endpoint)
+        self.log_debug("Initial subscription value %s", d)
         if request.delta:
             request.respond_with_delta([[[], d]])
         else:
