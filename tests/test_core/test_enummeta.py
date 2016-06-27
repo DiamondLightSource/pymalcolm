@@ -2,7 +2,9 @@ import sys
 import os
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+import setup_malcolm_paths
 
 from malcolm.core.enummeta import EnumMeta
 from malcolm.core.attributemeta import AttributeMeta
