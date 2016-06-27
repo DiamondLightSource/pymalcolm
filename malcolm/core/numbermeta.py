@@ -30,6 +30,9 @@ class NumberMeta(AttributeMeta):
                 "Lost information converting %s to %s" % (value, cast)
         return cast
 
+    def attribute_type(self):
+        return AttributeMeta.SCALAR
+
     def to_dict(self):
         d = super(NumberMeta, self).to_dict()
         return d

@@ -20,6 +20,8 @@ class TestInit(unittest.TestCase):
         self.assertEqual("test description",
                          self.enum_meta.description)
         self.assertEqual(self.enum_meta.metaOf, "malcolm:core/Enum:1.0")
+        self.assertEqual(AttributeMeta.SCALAR,
+                         self.enum_meta.attribute_type())
 
 
 class TestValidate(unittest.TestCase):

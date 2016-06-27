@@ -36,6 +36,10 @@ class TestNumberMeta(unittest.TestCase):
         self.assertEqual("nm", nm.name)
         self.assertEqual(np.float64, nm.dtype)
 
+    def test_is_scalar(self):
+        nm = NumberMeta("nm", "desc", np.int32)
+        self.assertEqual(AttributeMeta.SCALAR, nm.attribute_type())
+
 class TestNumberMetaValidation(unittest.TestCase):
     def test_float_against_float(self):
         nm = NumberMeta("nm", "desc", np.float64)

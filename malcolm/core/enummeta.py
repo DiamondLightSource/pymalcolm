@@ -38,6 +38,9 @@ class EnumMeta(AttributeMeta):
         else:
             raise ValueError("%s is not a valid value" % value)
 
+    def attribute_type(self):
+        return AttributeMeta.SCALAR
+
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
@@ -61,5 +64,3 @@ class EnumMeta(AttributeMeta):
         enum_meta = EnumMeta(name, description, oneOf)
 
         return enum_meta
-
-AttributeMeta.register_subclass(EnumMeta, "malcolm:core/Enum:1.0")
