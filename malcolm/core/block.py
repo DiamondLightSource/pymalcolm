@@ -2,7 +2,6 @@ from collections import OrderedDict
 from contextlib import contextmanager
 
 from malcolm.core.monitorable import Monitorable
-from malcolm.core.process import BlockRespond
 from malcolm.core.request import Request
 from malcolm.core.response import Response
 
@@ -72,8 +71,7 @@ class Block(Monitorable):
                 self._attributes[attr_name].put(request.value)
                 self._attributes[attr_name].set_value(request.value)
                 response = Response.Return(request.id_, request.context)
-            response = BlockRespond(response, request.response_queue)
-            self.parent.q.put(response)
+            self.parent.block_respond(response, request.response_queue)
 
     def to_dict(self):
         """Convert object attributes into a dictionary"""

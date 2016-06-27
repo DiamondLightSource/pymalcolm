@@ -12,7 +12,7 @@ from mock import MagicMock
 
 # module imports
 from malcolm.core.process import \
-        Process, BlockChanged, BlockNotify, PROCESS_STOP, BlockAdd
+    Process, BlockChanged, BlockNotify, PROCESS_STOP, BlockAdd, BlockRespond
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Request
 from malcolm.core.response import Response
@@ -98,6 +98,28 @@ class TestProcess(unittest.TestCase):
         response = request.response_queue.put.call_args[0][0]
         self.assertEquals(Response.RETURN, response.type_)
         self.assertEquals({"attr":"value"}, response.value)
+
+    def test_block_respond(self):
+        p = Process("proc", MagicMock())
+        p.q.put = MagicMock()
+        response = MagicMock()
+        response_queue = MagicMock()
+        p.block_respond(response, response_queue)
+        block_response = p.q.put.call_args[0][0]
+        self.assertEquals(block_response.response, response)
+        self.assertEquals(block_response.response_queue, response_queue)
+        self.assertEquals("BlockRespond", block_response.type_)
+
+    def test_block_respond_triggers_response(self):
+        p = Process("proc", MagicMock())
+        response = MagicMock()
+        response_queue = MagicMock()
+        p.q.get = MagicMock(
+            side_effect=[BlockRespond(response, response_queue), PROCESS_STOP])
+
+        p.recv_loop()
+
+        response_queue.put.assert_called_once_with(response)
 
 class TestSubscriptions(unittest.TestCase):
 
