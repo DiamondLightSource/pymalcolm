@@ -2,7 +2,9 @@ import sys
 import os
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+import setup_malcolm_paths
 
 from malcolm.core.enummeta import EnumMeta
 from malcolm.core.attributemeta import AttributeMeta
@@ -18,6 +20,8 @@ class TestInit(unittest.TestCase):
         self.assertEqual("test description",
                          self.enum_meta.description)
         self.assertEqual(self.enum_meta.metaOf, "malcolm:core/Enum:1.0")
+        self.assertEqual(AttributeMeta.SCALAR,
+                         self.enum_meta.attribute_type())
 
 
 class TestValidate(unittest.TestCase):

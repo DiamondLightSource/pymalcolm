@@ -23,6 +23,9 @@ class TestInit(unittest.TestCase):
         self.assertEqual("Test", self.attribute_meta.name)
         self.assertEqual("test description", self.attribute_meta.description)
 
+    def test_type_unimplemented(self):
+        self.assertRaises(
+            NotImplementedError, self.attribute_meta.attribute_type)
 
 class TestValidate(unittest.TestCase):
 

@@ -24,6 +24,10 @@ class TestInit(unittest.TestCase):
     def test_metaOf(self):
         self.assertEqual(self.string_meta.metaOf, "malcolm:core/String:1.0")
 
+    def test_type(self):
+        self.assertEqual(AttributeMeta.SCALAR,
+                         self.string_meta.attribute_type())
+
 
 class TestValidate(unittest.TestCase):
 

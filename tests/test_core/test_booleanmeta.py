@@ -2,7 +2,9 @@ import sys
 import os
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+import setup_malcolm_paths
 
 from malcolm.core.booleanmeta import BooleanMeta
 from malcolm.core.attributemeta import AttributeMeta
@@ -18,6 +20,8 @@ class TestInit(unittest.TestCase):
         self.assertEqual("test description",
                          self.boolean_meta.description)
         self.assertEqual(self.boolean_meta.metaOf, "malcolm:core/Boolean:1.0")
+        self.assertEqual(
+            AttributeMeta.SCALAR, self.boolean_meta.attribute_type())
 
 
 class TestValidate(unittest.TestCase):

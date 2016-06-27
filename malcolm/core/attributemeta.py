@@ -6,6 +6,11 @@ from malcolm.core.monitorable import Monitorable
 class AttributeMeta(Monitorable):
     """Abstract base class for Meta objects"""
 
+    # Type constants
+    SCALAR = "scalar"
+    TABLE = "table"
+    SCALARARRAY = "scalar_array"
+
     # This will be set by subclasses calling cls.register_subclass()
     metaOf = None
     # dict mapping metaOf name -> (cls, args)
@@ -37,6 +42,11 @@ class AttributeMeta(Monitorable):
         d["metaOf"] = self.metaOf
 
         return d
+
+    def attribute_type(self):
+        """Return the attribute type for derived class
+        (scalar, scalar array, or table)"""
+        raise NotImplementedError("Type must be specified in child classes")
 
     @classmethod
     def register_subclass(cls, metaOf, *args):
