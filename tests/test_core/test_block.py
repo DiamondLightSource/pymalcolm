@@ -114,9 +114,9 @@ class TestHandleRequest(unittest.TestCase):
         self.block.handle_request(request)
 
         self.method.get_response.assert_called_once_with(request)
-        response = self.block.parent.q.put.call_args[0][0]
-        self.assertEqual(self.method.get_response.return_value,
-                         response.response)
+        response = self.method.get_response.return_value
+        self.block.parent.block_respond.assert_called_once_with(
+            response, request.response_queue)
 
     def test_given_put_then_update_attribute(self):
         put_value = MagicMock()
@@ -129,9 +129,11 @@ class TestHandleRequest(unittest.TestCase):
 
         self.attribute.put.assert_called_once_with(put_value)
         self.attribute.set_value.assert_called_once_with(put_value)
-        response = self.block.parent.q.put.call_args[0][0]
-        self.assertEqual("Return", response.response.type_)
-        self.assertIsNone(response.response.value)
+        response = self.block.parent.block_respond.call_args[0][0]
+        self.assertEqual("Return", response.type_)
+        self.assertIsNone(response.value)
+        response_queue = self.block.parent.block_respond.call_args[0][1]
+        self.assertEqual(request.response_queue, response_queue)
 
     def test_invalid_request_fails(self):
         request = MagicMock()

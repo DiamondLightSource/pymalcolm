@@ -203,6 +203,9 @@ class Process(Loggable):
         response = Response.Return(request.id_, request.context, d)
         request.response_queue.put(response)
 
+    def block_respond(self, response, response_queue):
+        self.q.put(BlockRespond(response, response_queue))
+
     def notify_subscribers(self, block_name):
         self.q.put(BlockNotify(name=block_name))
 
