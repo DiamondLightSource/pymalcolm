@@ -22,7 +22,7 @@ class TestScanPointTickerController(unittest.TestCase):
         sptc = ScanPointTickerController(block)
         self.assertEqual(block, sptc.block)
         self.assertEqual(RunnableDeviceStateMachine, type(sptc.stateMachine))
-        self.assertEqual("ScanPointTicker", sptc.stateMachine.name)
+        self.assertEqual("RunnableDeviceStateMachine", sptc.stateMachine.name)
         self.assertEquals(
             {"value":None, "meta":nmd_mock.return_value},
             sptc.value.to_dict())
