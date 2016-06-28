@@ -9,6 +9,17 @@ from malcolm.core.response import Response
 def dummy_lock():
     yield
 
+class LockRelease(object):
+    def __init__(self, lock):
+        self.lock = lock
+
+    def __enter__(self):
+        self.lock.__exit__(None, None, None)
+
+    def __exit__(self, type, value, traceback):
+        self.lock.__enter__()
+        return False
+
 class Block(Monitorable):
     """Object consisting of a number of Attributes and Methods"""
 
@@ -84,3 +95,6 @@ class Block(Monitorable):
             d[method_name] = method.to_dict()
 
         return d
+
+    def lock_unlock(self):
+        return LockRelease(self.lock)
