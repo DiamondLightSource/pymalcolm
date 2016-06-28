@@ -17,7 +17,7 @@ class TestStringArrayMeta(unittest.TestCase):
     def test_init(self):
         self.assertEqual("test_meta", self.meta.name)
         self.assertEqual("test description", self.meta.description)
-        self.assertEqual(self.meta.metaOf, "malcolm:core/StringArray:1.0")
+        self.assertEqual(self.meta.typeid, "malcolm:core/StringArray:1.0")
 
     def test_validate_none(self):
         self.assertIsNone(self.meta.validate(None))
@@ -39,13 +39,13 @@ class TestStringArrayMeta(unittest.TestCase):
     def test_to_dict(self):
         expected = OrderedDict()
         expected["description"] = "test description"
-        expected["metaOf"] = "malcolm:core/StringArray:1.0"
+        expected["typeid"] = "malcolm:core/StringArray:1.0"
         self.assertEqual(expected, self.meta.to_dict())
 
     def test_from_dict(self):
         d = OrderedDict()
         d["description"] = "test array description"
-        d["metaOf"]= "malcolm:core/StringArray:1.0"
+        d["typeid"]= "malcolm:core/StringArray:1.0"
         s = AttributeMeta.from_dict("test_array_meta", d)
         self.assertEqual(StringArrayMeta, type(s))
         self.assertEqual(s.name, "test_array_meta")

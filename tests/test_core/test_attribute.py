@@ -21,6 +21,7 @@ class TestAttribute(unittest.TestCase):
         self.assertEquals("test", a.name)
         self.assertIs(meta, a.meta)
         self.assertIsNone(a.value)
+        self.assertEqual("malcolm:core/Attribute:1.0", a.typeid)
 
     def test_set_put_function(self):
         func = Mock()

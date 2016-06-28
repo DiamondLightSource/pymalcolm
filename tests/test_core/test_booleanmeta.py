@@ -19,7 +19,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TestMeta", self.boolean_meta.name)
         self.assertEqual("test description",
                          self.boolean_meta.description)
-        self.assertEqual(self.boolean_meta.metaOf, "malcolm:core/Boolean:1.0")
+        self.assertEqual(self.boolean_meta.typeid, "malcolm:core/Boolean:1.0")
         self.assertEqual(
             AttributeMeta.SCALAR, self.boolean_meta.attribute_type())
 
@@ -64,7 +64,7 @@ class TestSerialisation(unittest.TestCase):
     def test_to_dict(self):
         expected_dict = OrderedDict()
         expected_dict["description"] = "test description"
-        expected_dict["metaOf"] = "malcolm:core/Boolean:1.0"
+        expected_dict["typeid"] = "malcolm:core/Boolean:1.0"
 
         response = self.string_meta.to_dict()
 
@@ -72,7 +72,7 @@ class TestSerialisation(unittest.TestCase):
 
     def test_from_dict(self):
         d = dict(description="test description",
-                 metaOf="malcolm:core/Boolean:1.0")
+                 typeid="malcolm:core/Boolean:1.0")
         s = AttributeMeta.from_dict("me", d)
         self.assertEqual(type(s), BooleanMeta)
         self.assertEqual(s.name, "me")

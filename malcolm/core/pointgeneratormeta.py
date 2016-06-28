@@ -2,7 +2,7 @@ from malcolm.core.attributemeta import AttributeMeta
 from scanpointgenerator import CompoundGenerator
 
 
-@AttributeMeta.register_subclass("malcolm:core/PointGenerator:1.0")
+@AttributeMeta.register("malcolm:core/PointGenerator:1.0")
 class PointGeneratorMeta(AttributeMeta):
 
     def __init__(self, name, description):

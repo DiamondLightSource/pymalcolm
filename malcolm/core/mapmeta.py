@@ -1,13 +1,14 @@
 from collections import OrderedDict
 
 from malcolm.core.attributemeta import AttributeMeta
-from malcolm.core.monitorable import Monitorable
+from malcolm.core.serializable import Serializable
 
 OPTIONAL = object()
 REQUIRED = object()
 
 
-class MapMeta(Monitorable):
+@Serializable.register("malcolm:core/MapMeta:1.0")
+class MapMeta(Serializable):
     """An object containing a set of AttributeMeta objects"""
 
     def __init__(self, name):

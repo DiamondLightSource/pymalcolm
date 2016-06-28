@@ -34,7 +34,7 @@ class TestClientController(unittest.TestCase):
                     elements=dict(
                         name=dict(
                             description="A name",
-                            metaOf="malcolm:core/String:1.0",
+                            typeid="malcolm:core/String:1.0",
                         ),
                     ),
                     required=["name"],
@@ -44,7 +44,7 @@ class TestClientController(unittest.TestCase):
                     elements=dict(
                         greeting=dict(
                             description="A greeting",
-                            metaOf="malcolm:core/String:1.0",
+                            typeid="malcolm:core/String:1.0",
                         ),
                     ),
                     required=["response"],

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from contextlib import contextmanager
 
-from malcolm.core.monitorable import Monitorable
+from malcolm.core.serializable import Serializable
 from malcolm.core.request import Request
 from malcolm.core.response import Response
 
@@ -20,7 +20,8 @@ class LockRelease(object):
         self.lock.__enter__()
         return False
 
-class Block(Monitorable):
+@Serializable.register("malcolm:core/Block:1.0")
+class Block(Serializable):
     """Object consisting of a number of Attributes and Methods"""
 
     def __init__(self, name):

@@ -18,6 +18,7 @@ class TestMethod(unittest.TestCase):
         m = Method("test_method", "test_description")
         self.assertEquals("test_method", m.name)
         self.assertEquals("test_description", m.description)
+        self.assertEquals("malcolm:core/Method:1.0", m.typeid)
 
     def test_simple_function(self):
         func = Mock(return_value={"first_out": "test"})

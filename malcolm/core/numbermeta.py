@@ -1,19 +1,20 @@
 from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string
 
 import numpy
 
 
-@AttributeMeta.register_subclass("malcolm:core/Byte:1.0", numpy.int8)
-@AttributeMeta.register_subclass("malcolm:core/UByte:1.0", numpy.uint8)
-@AttributeMeta.register_subclass("malcolm:core/Short:1.0", numpy.int16)
-@AttributeMeta.register_subclass("malcolm:core/UShort:1.0", numpy.uint16)
-@AttributeMeta.register_subclass("malcolm:core/Int:1.0", numpy.int32)
-@AttributeMeta.register_subclass("malcolm:core/UInt:1.0", numpy.uint32)
-@AttributeMeta.register_subclass("malcolm:core/Long:1.0", numpy.int64)
-@AttributeMeta.register_subclass("malcolm:core/ULong:1.0", numpy.uint64)
-@AttributeMeta.register_subclass("malcolm:core/Float:1.0", numpy.float32)
-@AttributeMeta.register_subclass("malcolm:core/Double:1.0", numpy.float64)
+@Serializable.register("malcolm:core/Byte:1.0", numpy.int8)
+@Serializable.register("malcolm:core/UByte:1.0", numpy.uint8)
+@Serializable.register("malcolm:core/Short:1.0", numpy.int16)
+@Serializable.register("malcolm:core/UShort:1.0", numpy.uint16)
+@Serializable.register("malcolm:core/Int:1.0", numpy.int32)
+@Serializable.register("malcolm:core/UInt:1.0", numpy.uint32)
+@Serializable.register("malcolm:core/Long:1.0", numpy.int64)
+@Serializable.register("malcolm:core/ULong:1.0", numpy.uint64)
+@Serializable.register("malcolm:core/Float:1.0", numpy.float32)
+@Serializable.register("malcolm:core/Double:1.0", numpy.float64)
 class NumberMeta(AttributeMeta):
     """Meta object containing information for a numerical value"""
 

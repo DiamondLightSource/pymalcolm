@@ -209,5 +209,6 @@ class Process(Loggable):
     def notify_subscribers(self, block_name):
         self.q.put(BlockNotify(name=block_name))
 
-    def on_changed(self, change):
-        self.q.put(BlockChanged(change=change))
+    def on_changed(self, change, notify=True):
+        if notify:
+            self.q.put(BlockChanged(change=change))

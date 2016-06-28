@@ -1,10 +1,11 @@
 from collections import OrderedDict
 
 from malcolm.core.attributemeta import AttributeMeta
-from malcolm.core.monitorable import Monitorable
+from malcolm.core.serializable import Serializable
 
 
-class Attribute(Monitorable):
+@Serializable.register("malcolm:core/Attribute:1.0")
+class Attribute(Serializable):
     """Represents a value with type information that may be backed elsewhere"""
 
     def __init__(self, meta):
