@@ -54,7 +54,8 @@ class TestCounterController(unittest.TestCase):
         c.counter.parent = c.block
         c.counter.put(32)
         self.assertEqual(c.counter.value, 32)
-        c.block.on_changed.assert_called_once_with([["counter", "value"], 32])
+        c.block.on_changed.assert_called_once_with(
+            [["counter", "value"], 32], True)
 
 
 if __name__ == "__main__":
