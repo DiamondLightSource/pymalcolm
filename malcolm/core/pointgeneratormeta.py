@@ -1,5 +1,5 @@
 from malcolm.core.attributemeta import AttributeMeta
-from scanpointgenerator import Generator
+from scanpointgenerator import CompoundGenerator
 
 
 @AttributeMeta.register_subclass("malcolm:core/PointGenerator:1.0")
@@ -11,8 +11,13 @@ class PointGeneratorMeta(AttributeMeta):
         self.name = name
 
     def validate(self, value):
-        if not isinstance(value, Generator):
-            raise TypeError("Value must be of type Generator")
+
+        if isinstance(value, CompoundGenerator):
+            return value
+        elif isinstance(value, dict):
+            return CompoundGenerator.from_dict(value)
+        else:
+            raise TypeError("Value must be a Generator object or dictionary")
 
     def to_dict(self):
         """Convert object attributes into a dictionary"""
