@@ -1,11 +1,11 @@
 from malcolm.core.loggable import Loggable
 
 
-class Monitorable(Loggable):
+class Serializable(Loggable):
     """Propagates changes to a monitoring parent"""
 
     def __init__(self, name):
-        super(Monitorable, self).__init__(logger_name=name)
+        super(Serializable, self).__init__(logger_name=name)
         self.name = name
         self.parent = None
 

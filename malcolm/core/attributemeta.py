@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
-from malcolm.core.monitorable import Monitorable
+from malcolm.core.serializable import Serializable
 
 
-class AttributeMeta(Monitorable):
+class AttributeMeta(Serializable):
     """Abstract base class for Meta objects"""
 
     # Type constants

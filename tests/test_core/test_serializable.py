@@ -6,19 +6,19 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock
 
-from malcolm.core.monitorable import Monitorable
+from malcolm.core.serializable import Serializable
 
 
-class TestMonitorable(unittest.TestCase):
+class TestSerializable(unittest.TestCase):
 
     def test_init(self):
-        m = Monitorable("mon")
+        m = Serializable("mon")
         self.assertEqual("mon", m.name)
 
     def test_parent(self):
         parent = Mock()
         parent.name = "parent"
-        m = Monitorable("mon")
+        m = Serializable("mon")
         m.set_parent(parent)
         self.assertIs(parent, m.parent)
         self.assertEquals("parent.mon", m._logger_name)
@@ -26,7 +26,7 @@ class TestMonitorable(unittest.TestCase):
     def test_on_changed(self):
         change = [["test_attr", "test_value"], 12]
         parent = Mock()
-        m = Monitorable("test_m")
+        m = Serializable("test_m")
         m.set_parent(parent)
         m.on_changed(change)
         expected = [["test_m", "test_attr", "test_value"], 12]
@@ -34,7 +34,7 @@ class TestMonitorable(unittest.TestCase):
 
     def test_nop_with_no_parent(self):
         change = [["test"], 123]
-        m = Monitorable("test_m")
+        m = Serializable("test_m")
         self.assertIsNone(m.parent)
         m.on_changed(change)
         self.assertEquals([["test"], 123], change)

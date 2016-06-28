@@ -1,12 +1,12 @@
 from collections import OrderedDict
 from inspect import getdoc
 
-from malcolm.core.monitorable import Monitorable
+from malcolm.core.serializable import Serializable
 from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
 from malcolm.core.response import Response
 
 
-class Method(Monitorable):
+class Method(Serializable):
     """Exposes a function with metadata for arguments and return values"""
 
     def __init__(self, name, description):
