@@ -15,22 +15,22 @@ from malcolm.core.attributemeta import AttributeMeta
 class TestNumberMeta(unittest.TestCase):
     def test_init_int(self):
         nm = NumberMeta("nm", "desc", np.int32)
-        self.assertEqual(nm.metaOf, "malcolm:core/Int:1.0")
+        self.assertEqual(nm.typeid, "malcolm:core/Int:1.0")
 
     def test_init_float(self):
         nm = NumberMeta("nm", "desc", np.float64)
-        self.assertEqual(nm.metaOf, "malcolm:core/Double:1.0")
+        self.assertEqual(nm.typeid, "malcolm:core/Double:1.0")
 
     def test_to_dict(self):
         nm = NumberMeta("nm", "desc", np.float64)
         expected = OrderedDict()
         expected["description"] = "desc"
-        expected["metaOf"] = "malcolm:core/Double:1.0"
+        expected["typeid"] = "malcolm:core/Double:1.0"
 
         self.assertEqual(expected, nm.to_dict())
 
     def test_from_dict(self):
-        d = {"description":"desc", "metaOf":"malcolm:core/Double:1.0"}
+        d = {"description":"desc", "typeid":"malcolm:core/Double:1.0"}
         nm = AttributeMeta.from_dict("nm", d)
         self.assertEqual(NumberMeta, type(nm))
         self.assertEqual("nm", nm.name)

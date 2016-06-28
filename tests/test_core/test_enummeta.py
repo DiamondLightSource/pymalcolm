@@ -19,7 +19,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TestMeta", self.enum_meta.name)
         self.assertEqual("test description",
                          self.enum_meta.description)
-        self.assertEqual(self.enum_meta.metaOf, "malcolm:core/Enum:1.0")
+        self.assertEqual(self.enum_meta.typeid, "malcolm:core/Enum:1.0")
         self.assertEqual(AttributeMeta.SCALAR,
                          self.enum_meta.attribute_type())
 
@@ -51,7 +51,7 @@ class TestSerialisation(unittest.TestCase):
     def test_to_dict(self):
         expected_dict = OrderedDict()
         expected_dict["description"] = "test description"
-        expected_dict["metaOf"] = "malcolm:core/Enum:1.0"
+        expected_dict["typeid"] = "malcolm:core/Enum:1.0"
         expected_dict["oneOf"] = [1, 2, 3]
 
         response = self.enum_meta.to_dict()
@@ -60,7 +60,7 @@ class TestSerialisation(unittest.TestCase):
 
     def test_from_dict(self):
         d = dict(description="test description",
-                 metaOf="malcolm:core/Enum:1.0",
+                 typeid="malcolm:core/Enum:1.0",
                  oneOf=[1, 2, 3])
         s = AttributeMeta.from_dict("me", d)
         self.assertEqual(type(s), EnumMeta)

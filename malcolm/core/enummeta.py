@@ -1,7 +1,8 @@
 from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.serializable import Serializable
 
 
-@AttributeMeta.register_subclass("malcolm:core/Enum:1.0")
+@Serializable.register_subclass("malcolm:core/Enum:1.0")
 class EnumMeta(AttributeMeta):
     """Meta object containing information for a enum"""
 

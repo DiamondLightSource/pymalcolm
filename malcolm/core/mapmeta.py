@@ -7,6 +7,7 @@ OPTIONAL = object()
 REQUIRED = object()
 
 
+@Serializable.register_subclass("malcolm:core/MapMeta:1.0")
 class MapMeta(Serializable):
     """An object containing a set of AttributeMeta objects"""
 

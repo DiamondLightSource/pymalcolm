@@ -20,6 +20,7 @@ class LockRelease(object):
         self.lock.__enter__()
         return False
 
+@Serializable.register_subclass("malcolm:core/Block:1.0")
 class Block(Serializable):
     """Object consisting of a number of Attributes and Methods"""
 

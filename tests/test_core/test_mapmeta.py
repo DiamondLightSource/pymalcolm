@@ -20,7 +20,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual(self.meta_map.name, "Test")
         self.assertIsInstance(self.meta_map.elements, OrderedDict)
         self.assertEqual(self.meta_map.elements, {})
-
+        self.assertEqual("malcolm:core/MapMeta:1.0", self.meta_map.typeid)
 
 class TestAddElement(unittest.TestCase):
 

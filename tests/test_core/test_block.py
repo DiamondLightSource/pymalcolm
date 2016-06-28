@@ -18,6 +18,7 @@ class TestBlock(unittest.TestCase):
         b = Block("blockname")
         self.assertEqual(b.name, "blockname")
         self.assertEqual(list(b._methods), [])
+        self.assertEqual("malcolm:core/Block:1.0", b.typeid)
 
     def test_add_method_registers(self):
         b = Block("blockname")

@@ -21,8 +21,8 @@ class TestInit(unittest.TestCase):
         self.assertEqual("test string description",
                          self.string_meta.description)
 
-    def test_metaOf(self):
-        self.assertEqual(self.string_meta.metaOf, "malcolm:core/String:1.0")
+    def test_typeid(self):
+        self.assertEqual(self.string_meta.typeid, "malcolm:core/String:1.0")
 
     def test_type(self):
         self.assertEqual(AttributeMeta.SCALAR,
@@ -63,7 +63,7 @@ class TestToDict(unittest.TestCase):
     def test_returns_dict(self):
         expected_dict = OrderedDict()
         expected_dict["description"] = "test string description"
-        expected_dict["metaOf"] = "malcolm:core/String:1.0"
+        expected_dict["typeid"] = "malcolm:core/String:1.0"
 
         response = self.string_meta.to_dict()
 
@@ -71,7 +71,7 @@ class TestToDict(unittest.TestCase):
 
     def test_from_dict_deserialize(self):
         d = dict(description="test string description",
-                 metaOf="malcolm:core/String:1.0")
+                 typeid="malcolm:core/String:1.0")
         s = AttributeMeta.from_dict("me", d)
         self.assertEqual(type(s), StringMeta)
         self.assertEqual(s.name, "me")

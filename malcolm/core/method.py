@@ -6,6 +6,7 @@ from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
 from malcolm.core.response import Response
 
 
+@Serializable.register_subclass("malcolm:core/Method:1.0")
 class Method(Serializable):
     """Exposes a function with metadata for arguments and return values"""
 
