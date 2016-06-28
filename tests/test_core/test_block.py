@@ -44,7 +44,7 @@ class TestBlock(unittest.TestCase):
         b.on_changed.assert_called_with(
             [[attr.name], attr.to_dict.return_value])
 
-    def test_lock_unlock(self):
+    def test_lock_released(self):
         b = Block("blockname")
         acquire = MagicMock()
         release = MagicMock()
@@ -60,7 +60,7 @@ class TestBlock(unittest.TestCase):
         b.lock.__exit__.side_effect = exit_side_effect
 
         with b.lock:
-            with b.lock_unlock():
+            with b.lock_released():
                 pass
 
         self.assertEquals(

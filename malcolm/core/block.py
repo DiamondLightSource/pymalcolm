@@ -96,5 +96,5 @@ class Block(Monitorable):
 
         return d
 
-    def lock_unlock(self):
+    def lock_released(self):
         return LockRelease(self.lock)
