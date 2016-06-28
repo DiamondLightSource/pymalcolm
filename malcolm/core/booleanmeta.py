@@ -2,7 +2,7 @@ from malcolm.core.attributemeta import AttributeMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register_subclass("malcolm:core/Boolean:1.0")
+@Serializable.register("malcolm:core/Boolean:1.0")
 class BooleanMeta(AttributeMeta):
     """Meta object containing information for a boolean"""
 

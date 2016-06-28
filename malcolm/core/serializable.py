@@ -7,7 +7,7 @@ class Serializable(Loggable):
     """Base class for serializable objects that can
     propagate changes to a parent"""
 
-    # This will be set by subclasses calling cls.register_subclass()
+    # This will be set by subclasses calling cls.register()
     typeid = None
     # dict mapping typeid name -> (cls, args)
     _subcls_lookup = {}
@@ -36,7 +36,7 @@ class Serializable(Loggable):
         return deserialized
 
     @classmethod
-    def register_subclass(cls, typeid, *args):
+    def register(cls, typeid, *args):
         """Register a subclass so from_dict() works
 
         Args:

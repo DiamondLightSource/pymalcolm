@@ -10,7 +10,7 @@ from malcolm.core.serializable import Serializable
 
 # Register AttributeMeta as a sublcass of itself so we
 # can instantiate it for testing purposes.
-Serializable.register_subclass("serializable:test")(Serializable)
+Serializable.register("serializable:test")(Serializable)
 
 class TestInit(unittest.TestCase):
 
@@ -61,14 +61,14 @@ class TestUpdates(unittest.TestCase):
 class TestSerialization(unittest.TestCase):
 
     def test_to_dict(self):
-        @Serializable.register_subclass("foo:1.0")
+        @Serializable.register("foo:1.0")
         class DummySerializable(Serializable):
             from_dict = Mock()
         s = DummySerializable("name")
         self.assertEquals({"typeid":"foo:1.0"}, s.to_dict())
 
     def test_from_dict_returns(self):
-        @Serializable.register_subclass("foo:1.0")
+        @Serializable.register("foo:1.0")
         class DummySerializable(Serializable):
             from_dict = Mock()
         s = DummySerializable("name")
@@ -80,7 +80,7 @@ class TestSerialization(unittest.TestCase):
         self.assertEqual(s.from_dict.return_value, deserialized)
 
     def test_from_dict_not_defined_on_subclass_fails(self):
-        @Serializable.register_subclass("anything")
+        @Serializable.register("anything")
         class Faulty(Serializable):
             pass
         self.assertRaises(AssertionError, Serializable.from_dict,

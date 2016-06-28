@@ -4,7 +4,7 @@ from malcolm.core.attributemeta import AttributeMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register_subclass("malcolm:core/Attribute:1.0")
+@Serializable.register("malcolm:core/Attribute:1.0")
 class Attribute(Serializable):
     """Represents a value with type information that may be backed elsewhere"""
 

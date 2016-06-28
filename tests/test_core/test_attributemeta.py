@@ -10,7 +10,7 @@ from malcolm.core.attributemeta import AttributeMeta
 
 # Register AttributeMeta as a sublcass of itself so we
 # can instantiate it for testing purposes.
-AttributeMeta.register_subclass("attribute_meta:test")(AttributeMeta)
+AttributeMeta.register("attribute_meta:test")(AttributeMeta)
 
 class TestInit(unittest.TestCase):
 

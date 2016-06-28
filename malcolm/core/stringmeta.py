@@ -2,7 +2,7 @@ from malcolm.core.attributemeta import AttributeMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register_subclass("malcolm:core/String:1.0")
+@Serializable.register("malcolm:core/String:1.0")
 class StringMeta(AttributeMeta):
     """Meta object containing information for a string"""
 
