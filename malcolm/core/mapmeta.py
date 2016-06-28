@@ -35,6 +35,29 @@ class MapMeta(Serializable):
             if required:
                 self.required.append(attribute_meta.name)
 
+    def validate(self, d):
+        """
+        Check if the elements in the given dictionary are valid
+
+        Args:
+            d(dict): Dictionary to check
+
+        Returns:
+            dict: Given dictionary, if valid
+        Raises:
+            KeyError: If dictionary not valid
+        """
+
+        for element in d.keys():
+            if element not in self.elements.keys():
+                raise KeyError("%s is not a valid element" % element)
+
+        for element in self.required:
+            if element not in d.keys():
+                raise KeyError("Required element %s is missing" % element)
+
+        return d
+
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
