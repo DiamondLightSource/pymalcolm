@@ -47,7 +47,7 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     license='APACHE',
-    install_requires=['numpy'],
+    install_requires=['numpy', 'scanpointgenerator'],
     extras_require={
         'zmq':  ['pyzmq']
     },
