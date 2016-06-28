@@ -6,7 +6,7 @@ import setup_malcolm_paths
 from collections import OrderedDict
 
 import unittest
-from mock import MagicMock, patch
+from mock import MagicMock, call
 
 # module imports
 from malcolm.core.block import Block
@@ -43,6 +43,29 @@ class TestBlock(unittest.TestCase):
         self.assertIs(attr, b.attr)
         b.on_changed.assert_called_with(
             [[attr.name], attr.to_dict.return_value])
+
+    def test_lock_released(self):
+        b = Block("blockname")
+        acquire = MagicMock()
+        release = MagicMock()
+        lock_methods = MagicMock()
+        lock_methods.attach_mock(acquire, "acquire")
+        lock_methods.attach_mock(release, "release")
+        def enter_side_effect(*args):
+            acquire()
+        def exit_side_effect(*args):
+            release()
+        b.lock = MagicMock()
+        b.lock.__enter__.side_effect = enter_side_effect
+        b.lock.__exit__.side_effect = exit_side_effect
+
+        with b.lock:
+            with b.lock_released():
+                pass
+
+        self.assertEquals(
+            [call.acquire(), call.release(), call.acquire(), call.release()],
+            lock_methods.method_calls)
 
 class TestToDict(unittest.TestCase):
 
