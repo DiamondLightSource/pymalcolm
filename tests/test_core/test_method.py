@@ -96,10 +96,17 @@ class TestMethod(unittest.TestCase):
         args_meta.elements = dict(first=Mock())
         m.set_function_takes(args_meta)
 
-        self.assertEquals({"first_out": "test"}, m.call_function(dict(first="test")))
-        call_arg = func.call_args[0][0]
-        self.assertEqual("test", call_arg.first)
-        self.assertEqual(args_meta, call_arg._meta)
+    def test_no_args_returns(self):
+        func = Mock(return_value={"first_out": "test"})
+        m = Method("test_method", "test_description")
+        m.set_function(func)
+        args_meta = Mock()
+        args_meta.elements = dict(first=Mock())
+        return_meta = Mock()
+        return_meta.elements = {"output1": Mock()}
+        m.set_function_returns(return_meta)
+
+        self.assertEquals({"first_out": "test"}, m.call_function(dict()))
 
     def test_defaults(self):
         func = Mock(return_value={"first_out": "test"})

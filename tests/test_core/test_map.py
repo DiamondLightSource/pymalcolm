@@ -33,8 +33,16 @@ class TestMap(unittest.TestCase):
 
         self.assertEqual("Test", response)
 
+    def test_get_attr_raises(self):
+        with self.assertRaises(AttributeError):
+            self.map.none
+
     def test_set_attr(self):
         self.map.name = "Test2"
 
         self.assertEqual("Test2", self.map['name'])
+
+    def test_set_attr_raises(self):
+        with self.assertRaises(KeyError):
+            self.map.none = "Test2"
 
