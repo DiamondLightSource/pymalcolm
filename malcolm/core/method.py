@@ -132,6 +132,7 @@ class Method(Serializable):
         serialized["defaults"] = self.defaults.copy()
         serialized["returns"] = self.returns.to_dict()
         serialized["writeable"] = self.writeable
+        serialized["typeid"] = self.typeid
         return serialized
 
     @classmethod

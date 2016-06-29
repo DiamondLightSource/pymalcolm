@@ -95,6 +95,8 @@ class Block(Serializable):
         for method_name, method in self._methods.items():
             d[method_name] = method.to_dict()
 
+        d["typeid"] = self.typeid
+
         return d
 
     def lock_released(self):

@@ -109,6 +109,7 @@ class TestToDict(unittest.TestCase):
         expected_dict['attr_two'] = a2dict
         expected_dict['method_one'] = method_dict
         expected_dict['method_two'] = method_dict
+        expected_dict['typeid'] = "malcolm:core/Block:1.0"
 
         response = block.to_dict()
 
