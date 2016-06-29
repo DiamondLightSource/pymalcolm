@@ -67,6 +67,6 @@ class Serializable(Loggable):
         path.insert(0, self.name)
         self.parent.on_changed(change, notify)
 
-    def update(self, d):
+    def update(self, change):
         raise NotImplementedError(
             "Abstract update function must be implemented in child classes")

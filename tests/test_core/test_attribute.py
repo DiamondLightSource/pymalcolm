@@ -58,6 +58,7 @@ class TestAttribute(unittest.TestCase):
         expected = OrderedDict()
         expected["value"] = "test_value"
         expected["meta"] = {"test_meta":"dict"}
+        expected["typeid"] = "malcolm:core/Attribute:1.0"
         a = Attribute(meta)
         a.set_value("test_value")
         self.assertEquals(expected, a.to_dict())

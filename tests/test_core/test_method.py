@@ -214,6 +214,19 @@ class TestMethod(unittest.TestCase):
         expected["defaults"] = OrderedDict({"in_attr": "default"})
         expected["returns"] = OrderedDict({"dict": "return"})
         expected["writeable"] = writeable_mock
+        expected["typeid"] = "malcolm:core/Method:1.0"
+        self.assertEquals(expected, m.to_dict())
+
+    @patch("malcolm.core.mapmeta.MapMeta.to_dict")
+    def test_empty_to_dict_serialization(self, map_to_dict_mock):
+        m = Method("test_method", "test_description")
+        expected = OrderedDict()
+        expected["description"] = "test_description"
+        expected["takes"] = map_to_dict_mock.return_value
+        expected["defaults"] = OrderedDict()
+        expected["returns"] = map_to_dict_mock.return_value
+        expected["writeable"] = True
+        expected["typeid"] = "malcolm:core/Method:1.0"
         self.assertEquals(expected, m.to_dict())
 
     @patch("malcolm.core.method.MapMeta")

@@ -17,7 +17,7 @@ class Method(Serializable):
         self.description = description
         self.takes = MapMeta("takes")
         self.returns = MapMeta("returns")
-        self.defaults = None
+        self.defaults = OrderedDict()
         self.writeable = True
 
     def set_function(self, func):
@@ -132,6 +132,7 @@ class Method(Serializable):
         serialized["defaults"] = self.defaults.copy()
         serialized["returns"] = self.returns.to_dict()
         serialized["writeable"] = self.writeable
+        serialized["typeid"] = self.typeid
         return serialized
 
     @classmethod

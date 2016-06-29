@@ -30,6 +30,7 @@ class Attribute(Serializable):
         d = OrderedDict()
         d["value"] = self.value
         d["meta"] = self.meta.to_dict()
+        d["typeid"] = self.typeid
         # TODO: add timeStamp and alarm
         return d
 
