@@ -5,6 +5,7 @@ from malcolm.core.method import takes
 
 import numpy as np
 
+
 class CounterController(Controller):
 
     def create_attributes(self):

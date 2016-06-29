@@ -72,10 +72,10 @@ class TestClientController(unittest.TestCase):
     def test_call_method(self):
         def f(request):
             request.respond_with_return(dict(
-                greeting="Hello %s" % request.parameters["name"]))
+                greeting="Hello %s" % request.parameters.name))
         self.comms.q.put.side_effect = f
         ret = self.b.say_hello(name="me")
-        self.assertEqual(ret["greeting"], "Hello me")
+        self.assertEqual(ret.greeting, "Hello me")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
