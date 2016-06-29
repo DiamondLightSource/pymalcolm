@@ -4,6 +4,8 @@ from contextlib import contextmanager
 from malcolm.core.serializable import Serializable
 from malcolm.core.request import Request
 from malcolm.core.response import Response
+from malcolm.core.attribute import Attribute
+from malcolm.core.method import Method
 
 @contextmanager
 def dummy_lock():
@@ -59,6 +61,33 @@ class Block(Serializable):
         setattr(self, method.name, method)
         self.on_changed([[method.name], method.to_dict()])
         self.notify_subscribers()
+
+    def update(self, change):
+        """Update block given a single change.
+        Delegates to children update methods if possible.
+
+        Args:
+            change [[path], new value]: Path to changed element and new value
+        """
+        name = change[0][0]
+        if hasattr(self, name):
+            # sub-structure exists in block - delegate down
+            # TODO: handle removal?
+            getattr(self, name).update([change[0][1:], change[1]])
+        else:
+            # sub-structure does not exist - create and add
+            if len(change[0]) > 1:
+                raise ValueError("Missing substructure at %s" % name)
+            obj = Serializable.from_dict(name, change[1])
+            if isinstance(obj, Method):
+                self.add_method(obj)
+            elif isinstance(obj, Attribute):
+                self.add_attribute(obj)
+            else:
+                raise ValueError(
+                    "Change %s deserialized to unknown object %s"
+                    % (change, obj))
+
 
     def notify_subscribers(self):
         if self.parent is not None:

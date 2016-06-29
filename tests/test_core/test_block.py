@@ -6,10 +6,14 @@ import setup_malcolm_paths
 from collections import OrderedDict
 
 import unittest
-from mock import MagicMock, call
+from mock import MagicMock, call, patch
 
 # module imports
 from malcolm.core.block import Block
+from malcolm.core.attribute import Attribute
+from malcolm.core.stringmeta import StringMeta
+from malcolm.core.method import Method
+from malcolm.core.serializable import Serializable
 
 
 class TestBlock(unittest.TestCase):
@@ -67,6 +71,66 @@ class TestBlock(unittest.TestCase):
         self.assertEquals(
             [call.acquire(), call.release(), call.acquire(), call.release()],
             lock_methods.method_calls)
+
+class TestUpdates(unittest.TestCase):
+
+    def test_simple_update(self):
+        b = Block("b")
+        m = MagicMock()
+        m.name = "m"
+        b.m = m
+        change_dict = MagicMock()
+        change = [["m", "sub_structure"], change_dict]
+        b.update(change)
+
+        m.update.assert_called_with([["sub_structure"], change_dict])
+
+    def test_update_adds_attribute(self):
+        b = Block("b")
+        b.add_attribute = MagicMock(wrap=b.add_attribute)
+        b.add_method = MagicMock(wrap=b.add_method)
+        attr_meta = StringMeta("attr", "desc")
+        attr = Attribute(attr_meta)
+        change_dict = attr.to_dict()
+        change = [["attr"], change_dict]
+
+        b.update(change)
+
+        added_attr = b.add_attribute.call_args[0][0]
+        self.assertEquals(Attribute, type(added_attr))
+        self.assertEquals(change_dict, added_attr.to_dict())
+        b.add_method.assert_not_called()
+
+    def test_update_adds_method(self):
+        b = Block("b")
+        b.add_attribute = MagicMock(wrap=b.add_attribute)
+        b.add_method = MagicMock(wrap=b.add_method)
+        method = Method("method", "desc")
+        change_dict = method.to_dict()
+        change = [["method"], change_dict]
+
+        b.update(change)
+
+        added_method = b.add_method.call_args[0][0]
+        self.assertEquals(Method, type(added_method))
+        self.assertEquals(change_dict, added_method.to_dict())
+        b.add_attribute.assert_not_called()
+
+    def test_update_raises_if_missing_path(self):
+        b = Block("b")
+        change = [["missing", "path"], MagicMock()]
+        with self.assertRaises(
+                ValueError, msg="Missing substructure at %s" % change[0][0]):
+            b.update(change)
+
+    @patch("malcolm.core.serializable.Serializable.from_dict")
+    def test_update_raises_if_wrong_object(self, from_dict_mock):
+        b = Block("b")
+        change = [["path"], MagicMock()]
+        with self.assertRaises(
+                ValueError, msg="Change %s deserializaed to unknown object %s"
+                % (change, from_dict_mock.return_value)):
+            b.update(change)
 
 class TestToDict(unittest.TestCase):
 
