@@ -14,32 +14,27 @@ class TestMap(unittest.TestCase):
 
     def setUp(self):
         self.meta = MagicMock()
-        self.meta.keys.return_value = ["name", "description"]
-        self.meta.elements = dict(test=0)
-
-    def test_init(self):
+        self.meta.elements.keys.return_value = ["name", "description"]
         d = dict(name="Test", description="Tests")
         self.map = Map(self.meta, d)
 
+    def test_init(self):
         self.assertEqual(self.meta, self.map._meta)
         self.assertEqual("Test", self.map.name)
         self.assertEqual("Tests", self.map.description)
 
     def test_init_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             Map(self.meta, dict(invalid_key=None))
 
     def test_get_attr(self):
-        self.map = Map(self.meta)
-        self.map['test'] = 1
 
-        response = self.map.test
+        response = self.map.name
 
-        self.assertEqual(1, response)
+        self.assertEqual("Test", response)
 
     def test_set_attr(self):
-        self.map = Map(self.meta)
-        self.map.test = 2
+        self.map.name = "Test2"
 
-        self.assertEqual(2, self.map['test'])
+        self.assertEqual("Test2", self.map['name'])
 

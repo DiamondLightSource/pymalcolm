@@ -10,7 +10,7 @@ class Map(OrderedDict):
             d = {}
 
         for key, value in d.items():
-            if key in meta.keys():
+            if key in meta.elements.keys():
                 self.__setattr__(key, value)
             else:
                 raise KeyError("%s is not a valid key for given meta" % key)
