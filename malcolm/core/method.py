@@ -4,6 +4,7 @@ from inspect import getdoc
 from malcolm.core.serializable import Serializable
 from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
 from malcolm.core.response import Response
+from malcolm.core.map import Map
 
 
 @Serializable.register("malcolm:core/Method:1.0")
@@ -52,32 +53,52 @@ class Method(Serializable):
         """Call the exposed function using regular keyword argument parameters.
         Will validate the output against provided return parameters.
         """
-
-        if not self.writeable:
-            raise ValueError("Can not call a method that is not writeable")
-
         # Assumes positional arguments represent arguments *before* any kw-args
         # in the ordered dictionary.
         for arg, arg_val in zip(self.takes.elements.keys(), args):
             kwargs[arg] = arg_val
 
+        return self.call_function(kwargs)
+
+    def call_function(self, parameters_dict):
+        """
+        Validate function parameters, call function and validate the response
+
+        Args:
+            parameters_dict(dict): Dictionary of parameter names and values
+
+        Returns:
+            Map: Return values
+        """
+
+        if not self.writeable:
+            raise ValueError("Cannot call a method that is not writeable")
+
         for arg in self.takes.elements:
-            if arg not in kwargs.keys():
+            if arg not in parameters_dict.keys():
                 if arg in self.defaults.keys():
-                    kwargs[arg] = self.defaults[arg]
+                    parameters_dict[arg] = self.defaults[arg]
                 elif arg in self.takes.required:
                     raise ValueError(
                         "Argument %s is required but was not provided" % arg)
+
+        parameters = Map(self.takes, parameters_dict)
+        expected_response = Map(self.returns)
+
         if len(self.takes.elements) > 0:
-            return_val = self.func(kwargs)
+            if len(self.returns.elements) > 0:
+                return_val = self.func(parameters, expected_response)
+            else:
+                return_val = self.func(parameters)
         else:
-            return_val = self.func()
+            if len(self.returns.elements) > 0:
+                return_val = self.func(expected_response)
+            else:
+                return_val = self.func()
+
         if len(self.returns.elements) > 0:
-            if return_val.keys() != self.returns.elements.keys():
-                raise ValueError(
-                    "Return result did not match specified return structure")
-            for r_name, r_val in return_val.items():
-                self.returns.elements[r_name].validate(r_val)
+            self.returns.validate(return_val)
+
         return return_val
 
     def get_response(self, request):
@@ -90,14 +111,13 @@ class Method(Serializable):
         self.log_debug("Received request %s", request)
         try:
             try:
-                result = self(**request.parameters)
+                parameters = request.parameters
             except KeyError:
-                result = self()
+                parameters = {}
+            result = self.call_function(parameters)
         except Exception as error:
-            # TODO: python3 no longer has error.message, but error.args[0]
-            # seems the same. Is this always right?
-            err_message = error.args[0]
-            self.log_debug("Error raised %s", err_message)
+            err_message = str(error)
+            self.log_exception("Error raised %s", err_message)
             message = "Method %s raised an error: %s" % (self.name, err_message)
             return Response.Error(request.id_, request.context, message)
         else:

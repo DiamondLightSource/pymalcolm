@@ -6,6 +6,8 @@ class Map(OrderedDict):
     def __init__(self, meta, d=None):
         super(Map, self).__init__()
 
+        self._meta = meta
+
         if d is None:
             d = {}
 
@@ -14,8 +16,6 @@ class Map(OrderedDict):
                 self.__setattr__(key, value)
             else:
                 raise KeyError("%s is not a valid key for given meta" % key)
-
-        self._meta = meta
 
     def __getattr__(self, item):
         """
