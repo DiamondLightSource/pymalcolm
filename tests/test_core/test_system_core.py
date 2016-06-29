@@ -26,7 +26,7 @@ class TestHelloControllerSystem(unittest.TestCase):
         block = Block("hello")
         HelloController(block)
         result = block.say_hello(name="me")
-        self.assertEquals(result["greeting"], "Hello me")
+        self.assertEquals(result.greeting, "Hello me")
 
     def test_hello_controller_with_process(self):
         sync_factory = SyncFactory("sched")
@@ -46,6 +46,7 @@ class TestHelloControllerSystem(unittest.TestCase):
         self.assertEqual(resp.context, "ClientConnection")
         self.assertEqual(resp.type_, "Return")
         self.assertEqual(resp.value, dict(greeting="Hello thing"))
+
 
 class TestCounterControllerSystem(unittest.TestCase):
 
@@ -76,7 +77,7 @@ class TestCounterControllerSystem(unittest.TestCase):
         resp = q.get(timeout=1)
         self.assertEqual(Response.RETURN, resp.type_)
 
-
         process.stop()
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

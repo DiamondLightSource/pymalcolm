@@ -45,17 +45,20 @@ class ClientController(Controller):
         self.log_debug("Wrapping method %s", method_name)
         return method
 
-    def call_server_method(self, method_name, args):
+    def call_server_method(self, method_name, parameters, returns):
         """Call method_name on the server
 
         Args:
             method_name (str): Name of the method
-            args (dict): Map of arguments to be called with
+            parameters (Map): Map of arguments to be called with
+            returns (Map): Returns map to fill and return
         """
+        self.log_debug(dict(parameters))
         request = Request.Post(None, self.q,
-                               [self.block.name, method_name], args)
+                               [self.block.name, method_name], parameters)
         self.client_comms.q.put(request)
         response = self.q.get()
         assert response.type_ == response.RETURN, \
             "Expected Return, got %s" % response.type_
-        return response.value
+        returns.update(response.value)
+        return returns

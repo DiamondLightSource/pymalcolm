@@ -22,6 +22,32 @@ class TestInit(unittest.TestCase):
         self.assertEqual(self.meta_map.elements, {})
         self.assertEqual("malcolm:core/MapMeta:1.0", self.meta_map.typeid)
 
+class TestValidate(unittest.TestCase):
+
+    def setUp(self):
+        self.meta_map = MapMeta("Test")
+
+    def test_given_valid_elements_then_return(self):
+        self.meta_map.elements = dict(Arg1="Meta1", Arg2="Meta2")
+        self.meta_map.required = ["Arg1"]
+
+        self.meta_map.validate(dict(Arg1="Instance1"))
+
+    def test_given_invalid_element_then_raise(self):
+        self.meta_map.elements = dict(Arg1="Meta1", Arg2="Meta2")
+        self.meta_map.required = ["Arg1"]
+
+        with self.assertRaises(KeyError):
+            self.meta_map.validate(dict(Arg3="Instance1"))
+
+    def test_missing_required_element_then_raise(self):
+        self.meta_map.elements = dict(Arg1="Meta1", Arg2="Meta2")
+        self.meta_map.required = ["Arg1"]
+
+        with self.assertRaises(KeyError):
+            self.meta_map.validate(dict(Arg2="Instance1"))
+
+
 class TestAddElement(unittest.TestCase):
 
     def setUp(self):

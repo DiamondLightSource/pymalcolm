@@ -14,50 +14,34 @@ from malcolm.core.response import Response
 
 
 class TestMethod(unittest.TestCase):
+
     def test_init(self):
         m = Method("test_method", "test_description")
         self.assertEquals("test_method", m.name)
         self.assertEquals("test_description", m.description)
         self.assertEquals("malcolm:core/Method:1.0", m.typeid)
 
-    def test_simple_function(self):
-        func = Mock(return_value={"first_out": "test"})
+    def test_call_calls_call_function(self):
         m = Method("test_method", "test_description")
+        call_func_mock = MagicMock()
+        call_func_mock.return_value = {"output": 2}
+        m.call_function = call_func_mock
+        func = Mock(return_value={"first_out": "test"})
         m.set_function(func)
         args_meta = Mock()
         args_meta.elements = {"first": Mock()}
         m.set_function_takes(args_meta)
-        result = m(first="test")
-        self.assertEquals({"first_out": "test"}, result)
-        func.assert_called_with({"first": "test"})
 
-    def test_defaults(self):
-        func = Mock(return_value={"first_out": "test"})
-        m = Method("test_method", "test_description")
-        arg_meta = Mock()
-        arg_meta.elements = {"first": Mock(), "second": Mock()}
-        m.set_function_takes(arg_meta, {"second": "default"})
-        m.set_function(func)
-        self.assertEquals({"first_out": "test"}, m(first="test"))
-        func.assert_called_with({"first": "test", "second": "default"})
+        response = m(first="test")
 
-    def test_required(self):
-        func = Mock(return_value={"first_out": "test"})
-        m = Method("test_method", "test_description")
-        m.set_function(func)
-        args_meta = Mock()
-        args_meta.elements = {"first": Mock(), "second": Mock()}
-        args_meta.required = ["first"]
-        m.set_function_takes(args_meta, {"first": "default"})
-        self.assertEquals({"first_out": "test"}, m())
-        func.assert_called_with({"first": "default"})
+        call_func_mock.assert_called_once_with(dict(first="test"))
+        self.assertEqual(response, {"output": 2})
 
-        m.set_function_takes(args_meta, {"second": "default"})
-        self.assertRaises(ValueError, m)
-
-    def test_positional_args(self):
+    def test_call_with_positional_args(self):
         func = Mock(return_value={"output": 2})
         m = Method("test_method", "test_description")
+        call_func_mock = MagicMock()
+        m.call_function = call_func_mock
         m.set_function(func)
         args_meta = Mock()
         validator = Mock(return_value=True)
@@ -68,79 +52,29 @@ class TestMethod(unittest.TestCase):
         args_meta.elements["fourth"] = Mock(validate=validator)
         args_meta.required = ["first", "third"]
         m.set_function_takes(args_meta)
-        self.assertEquals({"output": 2}, m(2, 3, third=1, fourth=4))
-        func.assert_called_with({"first": 2, "second": 3, "third": 1, "fourth": 4})
 
-    def test_valid_return(self):
-        func = Mock(return_value={"output1": 2, "output2": 4})
+        m(2, 3, third=1, fourth=4)
+
+        call_func_mock.assert_called_once_with({'second': 3, 'fourth': 4,
+                                                'third': 1, 'first': 2})
+
+    def test_get_response_calls_call_function(self):
         m = Method("test_method", "test_description")
+        call_func_mock = MagicMock()
+        m.call_function = call_func_mock
+        func = Mock(return_value={"first_out": "test"})
         m.set_function(func)
         args_meta = Mock()
-        args_meta.elements = {"first": Mock(), "second": Mock()}
-        args_meta.required = ["first", "second"]
-        return_meta = Mock()
-        return_meta.elements = {"output1": Mock(), "output2": Mock()}
-        validator1 = Mock(return_value=True)
-        validator2 = Mock(return_value=True)
-        return_meta.elements["output1"].validate = validator1
-        return_meta.elements["output2"].validate = validator2
+        args_meta.elements = {"first": Mock()}
         m.set_function_takes(args_meta)
-        m.set_function_returns(return_meta)
-        self.assertEquals({"output1": 2, "output2": 4}, m(first=1, second=2))
-        func.assert_called_with({"first": 1, "second": 2})
-        validator1.assert_called_with(2)
-        validator2.assert_called_with(4)
+        request = MagicMock()
+        request.parameters = dict(first="test")
 
-    def test_incomplete_return(self):
-        func = Mock(return_value={"output1": 2})
-        m = Method("test_method", "test_description")
-        m.set_function(func)
-        args_meta = Mock()
-        args_meta.elements = {"first": Mock(), "second": Mock()}
-        return_meta = Mock()
-        return_meta.elements = {"output1": Mock(), "output2": Mock()}
-        validator = Mock(return_value=True)
-        return_meta.elements["output1"].validate = validator
-        return_meta.elements["output2"].validate = validator
-        m.set_function_takes(args_meta)
-        m.set_function_returns(return_meta)
-        self.assertRaises(ValueError, m, first=1, second=2)
-        func.assert_called_with({"first": 1, "second": 2})
+        m.get_response(request)
 
-    def test_invalid_return(self):
-        func = Mock(return_value={"output1": 2, "output2": 4})
-        m = Method("test_method", "test_description")
-        m.set_function(func)
-        args_meta = Mock()
-        args_meta.elements = {"first": Mock(), "second": Mock()}
-        return_meta = Mock()
-        return_meta.elements = {"output1": Mock(), "output2": Mock()}
-        validator1 = Mock(return_value=True)
-        validator2 = Mock(side_effect=TypeError("Fake type error"))
-        return_meta.elements["output1"].validate = validator1
-        return_meta.elements["output2"].validate = validator2
-        m.set_function_takes(args_meta)
-        m.set_function_returns(return_meta)
-        self.assertRaises(TypeError, m, first=1, second=2)
-        func.assert_called_with({"first": 1, "second": 2})
-        validator2.assert_called_with(4)
+        call_func_mock.assert_called_once_with(dict(first="test"))
 
-    def test_handle_request(self):
-        func = Mock(return_value={"output": 1})
-        args_meta = Mock(elements={"first": Mock()})
-        return_meta = Mock(elements={"output": Mock()})
-        m = Method("test_method", "test_description")
-        m.set_function(func)
-        m.set_function_takes(args_meta)
-        m.set_function_returns(return_meta)
-        request = Mock(
-                id=(123, Mock()), type="Post", parameters={"first": 2},
-                respond_with_return=Mock())
-        response = m.get_response(request)
-        func.assert_called_with({"first": 2})
-        self.assertEquals({"output":1}, response.value)
-
-    def test_handle_request_error(self):
+    def test_get_response_raises(self):
         func = MagicMock()
         func.side_effect = ValueError("Test error")
         m = Method("test_method", "test_description")
@@ -154,12 +88,100 @@ class TestMethod(unittest.TestCase):
         self.assertEquals(
             "Method test_method raised an error: Test error", response.message)
 
+    def test_simple_function(self):
+        func = Mock(return_value={"first_out": "test"})
+        m = Method("test_method", "test_description")
+        m.set_function(func)
+        args_meta = Mock()
+        args_meta.elements = dict(first=Mock())
+        m.set_function_takes(args_meta)
+
+    def test_no_args_returns(self):
+        func = Mock(return_value={"first_out": "test"})
+        m = Method("test_method", "test_description")
+        m.set_function(func)
+        args_meta = Mock()
+        args_meta.elements = dict(first=Mock())
+        return_meta = Mock()
+        return_meta.elements = {"output1": Mock()}
+        m.set_function_returns(return_meta)
+
+        self.assertEquals({"first_out": "test"}, m.call_function(dict()))
+
+    def test_defaults(self):
+        func = Mock(return_value={"first_out": "test"})
+        m = Method("test_method", "test_description")
+        args_meta = Mock()
+        args_meta.elements = {"first": Mock(), "second": Mock()}
+        m.set_function_takes(args_meta, {"second": "default"})
+        m.set_function(func)
+
+        self.assertEquals({"first_out": "test"}, m.call_function(dict(first="test")))
+        call_arg = func.call_args[0][0]
+        self.assertEqual("test", call_arg.first)
+        self.assertEqual("default", call_arg.second)
+        self.assertEqual(args_meta, call_arg._meta)
+
+    def test_required(self):
+        func = Mock(return_value={"first_out": "test"})
+        m = Method("test_method", "test_description")
+        m.set_function(func)
+        args_meta = Mock()
+        args_meta.elements = {"first": Mock(), "second": Mock()}
+        args_meta.required = ["first"]
+        m.set_function_takes(args_meta, {"first": "default"})
+
+        self.assertEquals({"first_out": "test"}, m.call_function({}))
+        call_arg = func.call_args[0][0]
+        self.assertEqual("default", call_arg.first)
+        with self.assertRaises(AttributeError):
+            _ = call_arg.second
+        self.assertEqual(args_meta, call_arg._meta)
+
+        m.set_function_takes(args_meta, {"second": "default"})
+        with self.assertRaises(ValueError):
+            m.call_function({})
+
+    def test_incomplete_return(self):
+        func = Mock(return_value={"output1": 2})
+        m = Method("test_method", "test_description")
+        m.set_function(func)
+        args_meta = Mock()
+        args_meta.elements = {"first": Mock(), "second": Mock()}
+        return_meta = Mock()
+        return_meta.elements = {"output1": Mock(), "output2": Mock()}
+        return_meta.validate.side_effect = \
+            KeyError("Return value doesn't match return meta")
+        m.set_function_takes(args_meta)
+        m.set_function_returns(return_meta)
+
+        with self.assertRaises(KeyError):
+            m.call_function(dict(first=1, second=2))
+        call_arg1, call_arg2 = func.call_args_list[0][0]
+        self.assertEqual(1, call_arg1.first)
+        self.assertEqual(2, call_arg1.second)
+        self.assertEqual(args_meta, call_arg1._meta)
+        self.assertEqual(return_meta, call_arg2._meta)
+
+    @patch('malcolm.core.method.Method.call_function')
+    def test_handle_request(self, call_function_mock):
+        call_function_mock.return_value = {"output": 1}
+        m = Method("test_method", "test_description")
+        request = Mock(
+                id=(123, Mock()), type="Post", parameters={"first": 2},
+                respond_with_return=Mock())
+
+        response = m.get_response(request)
+
+        call_function_mock.assert_called_with({"first": 2})
+        self.assertEquals({"output": 1}, response.value)
+
     def test_not_writeable_stops_call(self):
         m = Method("test_method", "test_description")
         m.set_function(Mock())
         m.set_writeable(False)
         with self.assertRaises(ValueError,
-                msg="Can not call a method that is not writeable"):
+                msg="Cannot call a method that is not writeable"):
             m()
 
     def test_set_writeable_notifies(self):
