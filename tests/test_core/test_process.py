@@ -12,10 +12,13 @@ from mock import MagicMock, call
 
 # module imports
 from malcolm.core.process import \
-    Process, BlockChanged, BlockNotify, PROCESS_STOP, BlockAdd, BlockRespond
+    Process, BlockChanged, BlockNotify, PROCESS_STOP, BlockAdd, BlockRespond, \
+    BlockList
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Request
 from malcolm.core.response import Response
+from malcolm.core.attribute import Attribute
+from malcolm.core.stringarraymeta import StringArrayMeta
 
 
 class TestProcess(unittest.TestCase):
@@ -35,6 +38,7 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(req.block, b)
 
     def test_add_block_calls_handle(self):
+        from malcolm.core.stringarraymeta import StringArrayMeta
         s = SyncFactory("sched")
         p = Process("proc", s)
         b = MagicMock()
@@ -43,7 +47,7 @@ class TestProcess(unittest.TestCase):
         p.start()
         p.stop()
         self.assertIs(p, b.parent)
-        self.assertEqual(p._blocks, dict(myblock=b))
+        self.assertEqual(p._blocks, dict(myblock=b, proc=p.process_block))
 
     def test_starting_process(self):
         s = SyncFactory("sched")
@@ -121,12 +125,36 @@ class TestProcess(unittest.TestCase):
 
         response_queue.put.assert_called_once_with(response)
 
+    def test_make_process_block(self):
+        p = Process("proc", MagicMock())
+        p_block = p.process_block
+        self.assertEquals(p.name, p_block.name)
+        self.assertEquals(Attribute, type(p_block.blocks))
+        self.assertEquals(StringArrayMeta, type(p_block.blocks.meta))
+        self.assertEquals("blocks", p_block.blocks.name)
+        self.assertEquals("meta", p_block.blocks.meta.name)
+        self.assertEquals("Blocks hosted by this Process",
+                          p_block.blocks.meta.description)
+
+    def test_update_block_list(self):
+        p = Process("proc", MagicMock())
+        p.q.reset_mock()
+        p.update_block_list("cc", ["myblock"])
+        request = BlockList(client_comms="cc", blocks=["myblock"])
+        p.q.put.assert_called_once_with(request)
+        self.assertEqual(p._client_comms, {})
+        p._handle_block_list(request)
+        self.assertEqual(p._client_comms, dict(cc=["myblock"]))
+        self.assertEqual(p.get_client_comms("myblock"), "cc")
+
+
 class TestSubscriptions(unittest.TestCase):
 
     def test_on_changed(self):
         change = [["path"], "value"]
         s = MagicMock()
         p = Process("proc", s)
+        s.reset_mock()
         p.on_changed(change, notify=False)
         p.q.put.assert_called_once_with(BlockChanged(change=change))
 
@@ -134,6 +162,7 @@ class TestSubscriptions(unittest.TestCase):
         change = [["path"], "value"]
         s = MagicMock()
         p = Process("proc", s)
+        s.reset_mock()
         p.on_changed(change)
         p.q.put.assert_has_calls([
             call(BlockChanged(change=change)),
@@ -142,6 +171,7 @@ class TestSubscriptions(unittest.TestCase):
     def test_notify(self):
         s = MagicMock()
         p = Process("proc", s)
+        s.reset_mock()
         p.notify_subscribers("block")
         p.q.put.assert_called_once_with(BlockNotify(name="block"))
 

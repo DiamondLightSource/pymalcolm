@@ -4,6 +4,9 @@ from malcolm.core.loggable import Loggable
 from malcolm.core.request import Request
 from malcolm.core.response import Response
 from malcolm.core.cache import Cache
+from malcolm.core.block import Block
+from malcolm.core.attribute import Attribute
+from malcolm.core.stringarraymeta import StringArrayMeta
 
 
 # Sentinel object that when received stops the recv_loop
@@ -19,6 +22,7 @@ BlockNotify = internal_request("BlockNotify", "name")
 BlockChanged = internal_request("BlockChanged", "change")
 BlockRespond = internal_request("BlockRespond", "response, response_queue")
 BlockAdd = internal_request("BlockAdd", "block")
+BlockList = internal_request("BlockList", "client_comms, blocks")
 
 
 class Process(Loggable):
@@ -35,6 +39,7 @@ class Process(Loggable):
         self._other_spawned = []
         self._subscriptions = OrderedDict()  # block name -> list of subs
         self._last_changes = OrderedDict()  # block name -> list of changes
+        self._client_comms = OrderedDict()  # client comms -> list of blocks
         self._handle_functions = {
             Request.POST: self._forward_block_request,
             Request.PUT: self._forward_block_request,
@@ -44,7 +49,9 @@ class Process(Loggable):
             BlockChanged.type_: self._handle_block_changed,
             BlockRespond.type_: self._handle_block_respond,
             BlockAdd.type_: self._handle_block_add,
+            BlockList.type_ : self._handle_block_list,
         }
+        self.create_process_block()
 
     def recv_loop(self):
         """Service self.q, distributing the requests to the right block"""
@@ -113,6 +120,24 @@ class Process(Loggable):
         spawned = self.sync_factory.spawn(function, *args, **kwargs)
         self._other_spawned.append(spawned)
         return spawned
+
+    def get_client_comms(self, block_name):
+        for client_comms, blocks in list(self._client_comms.items()):
+            if block_name in blocks:
+                return client_comms
+
+    def create_process_block(self):
+        self.process_block = Block(self.name)
+        self.process_block.add_attribute(
+            Attribute("blocks", StringArrayMeta(
+                "meta", "Blocks hosted by this Process")))
+        self.add_block(self.process_block)
+
+    def update_block_list(self, client_comms, blocks):
+        self.q.put(BlockList(client_comms=client_comms, blocks=blocks))
+
+    def _handle_block_list(self, request):
+        self._client_comms[request.client_comms] = request.blocks
 
     def notify_subscribers(self, block_name):
         self.q.put(BlockNotify(name=block_name))
