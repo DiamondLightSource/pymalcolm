@@ -6,11 +6,6 @@ from malcolm.core.serializable import Serializable
 class AttributeMeta(Serializable):
     """Abstract base class for Meta objects"""
 
-    # Type constants
-    SCALAR = "scalar"
-    TABLE = "table"
-    SCALARARRAY = "scalar_array"
-
     def __init__(self, name, description, *args):
         super(AttributeMeta, self).__init__(name, *args)
         self.description = description
