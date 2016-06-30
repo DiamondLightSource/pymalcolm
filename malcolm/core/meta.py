@@ -7,8 +7,8 @@ from malcolm.core.serializable import Serializable
 class Meta(Serializable):
     """Meta class for describing Blocks"""
 
-    def __init__(self, name, description):
-        super(Meta, self).__init__(name)
+    def __init__(self, name, description, *args):
+        super(Meta, self).__init__(name, *args)
         self.description = description
         self.tags = []
 
@@ -46,7 +46,7 @@ class Meta(Serializable):
         return d
 
     @classmethod
-    def from_dict(cls, name, d):
-        meta = Meta(name, d["description"])
+    def from_dict(cls, name, d, *args):
+        meta = cls(name, d["description"], *args)
         meta.tags = d["tags"]
         return meta
