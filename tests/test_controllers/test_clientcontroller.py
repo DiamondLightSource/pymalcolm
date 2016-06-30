@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # module imports
 from malcolm.controllers.clientcontroller import ClientController
-from malcolm.core.process import Process
+from malcolm.core.process import Process, BlockList
 from malcolm.core.block import Block
 from malcolm.core.stringmeta import StringMeta
 from malcolm.core.syncfactory import SyncFactory
@@ -70,7 +70,8 @@ class TestClientController(unittest.TestCase):
             request.respond_with_return(serialized)
 
         self.comms.q.put.side_effect = f
-        self.cc = ClientController(self.p, self.b, self.comms)
+        self.p._handle_block_list(BlockList(client_comms=self.comms, blocks=["blockname"]))
+        self.cc = ClientController(self.p, self.b)
 
     def test_methods_created(self):
         self.assertEqual(list(self.b._methods), ["say_hello"])

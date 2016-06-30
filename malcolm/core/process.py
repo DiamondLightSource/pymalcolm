@@ -222,6 +222,8 @@ class Process(Loggable):
         self._block_state_cache[block.name] = block.to_dict()
         block.parent = self
         block.lock = self.create_lock()
+        # Regenerate list of blocks
+        self.process_block.blocks.set_value(list(self._blocks))
 
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current

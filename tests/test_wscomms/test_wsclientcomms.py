@@ -31,9 +31,9 @@ class TestWSClientComms(unittest.TestCase):
     @patch('malcolm.wscomms.wsclientcomms.IOLoop')
     def test_subscribe_initial(self, _, _2):
         self.WS = WSClientComms("TestWebSocket", self.p, "test/url")
-        self.WS.subscribe_server_blocks()
+        self.WS.subscribe_server_blocks("conn")
         self.WS.conn.result().write_message.assert_called_once_with(
-            '{"id": 0, "type": "Subscribe", "endpoint": [".", "blocks"], "delta": false}'
+            '{"id": 0, "type": "Subscribe", "endpoint": [".", "blocks", "value"], "delta": false}'
         )
 
     @patch('malcolm.wscomms.wsclientcomms.Response')

@@ -77,11 +77,11 @@ class TestSystemWSComms(unittest.TestCase):
         self.cc = WSClientComms("cc", self.process, "ws://localhost:8888/ws")
         self.cc.start()
         # Wait for comms to be connected
-        while not self.cc.conn.done():
-            time.sleep(0.001)
+#        while not self.cc.conn.done():
+        time.sleep(1)
         # Don't add to process as we already have a block of that name
         block2 = Block("hello")
-        ClientController(self.process, block2, self.cc)
+        ClientController(self.process, block2)
         ret = block2.say_hello("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
 

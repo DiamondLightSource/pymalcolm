@@ -8,7 +8,7 @@ from malcolm.core.method import Method
 class ClientController(Controller):
     """Sync a local block with a given remote block"""
 
-    def __init__(self, process, block, client_comms):
+    def __init__(self, process, block):
         """
         Args:
             process (Process): The process this should run under
@@ -17,7 +17,9 @@ class ClientController(Controller):
                 hosting the remote block
         """
         self.q = process.create_queue()
-        self.client_comms = client_comms
+        self.client_comms = process.get_client_comms(block.name)
+        assert self.client_comms, \
+            "Process doesn't know about block %s" % block.name
         # Call this last as it calls create_methods
         super(ClientController, self).__init__(block=block)
 

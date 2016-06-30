@@ -54,8 +54,8 @@ class WSClientComms(ClientComms):
         # thread
         self.loop.add_callback(self.loop.stop)
 
-    def subscribe_server_blocks(self):
+    def subscribe_server_blocks(self, conn):
         """Subscribe to process blocks"""
-        request = Request.Subscribe(None, None, [".", "blocks"])
+        request = Request.Subscribe(None, None, [".", "blocks", "value"])
         request.set_id(self.SERVER_BLOCKS_ID)
         self.send_to_server(request)
