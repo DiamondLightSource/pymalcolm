@@ -19,7 +19,9 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TestMeta", self.boolean_meta.name)
         self.assertEqual("test description",
                          self.boolean_meta.description)
-        self.assertEqual(self.boolean_meta.typeid, "malcolm:core/Boolean:1.0")
+        self.assertEqual
+        self.assertEqual("malcolm:core/BooleanMeta:1.0",
+                         self.boolean_meta.typeid)
 
 class TestValidate(unittest.TestCase):
 
@@ -60,8 +62,10 @@ class TestSerialisation(unittest.TestCase):
 
     def test_to_dict(self):
         expected_dict = OrderedDict()
+        expected_dict["typeid"] = "malcolm:core/BooleanMeta:1.0"
         expected_dict["description"] = "test description"
-        expected_dict["typeid"] = "malcolm:core/Boolean:1.0"
+        expected_dict["tags"] = []
+        expected_dict["writeable"] = True
 
         response = self.string_meta.to_dict()
 
@@ -69,10 +73,14 @@ class TestSerialisation(unittest.TestCase):
 
     def test_from_dict(self):
         d = dict(description="test description",
-                 typeid="malcolm:core/Boolean:1.0")
+                 typeid="malcolm:core/BooleanMeta:1.0",
+                 writeable=False,
+                 tags=["tag"])
         s = Serializable.from_dict("me", d)
         self.assertEqual(type(s), BooleanMeta)
         self.assertEqual(s.name, "me")
+        self.assertEqual(s.tags, ["tag"])
+        self.assertFalse(s.writeable)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

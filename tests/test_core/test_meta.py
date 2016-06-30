@@ -10,13 +10,14 @@ from mock import Mock
 from malcolm.core.meta import Meta
 from malcolm.core.serializable import Serializable
 
+Serializable.register("meta:test")(Meta)
+
 class TestMeta(unittest.TestCase):
     def test_init(self):
         meta = Meta("meta_name", "meta_description")
         self.assertEqual("meta_name", meta.name)
         self.assertEqual("meta_description", meta.description)
         self.assertEqual([], meta.tags)
-        self.assertEqual("malcolm:core/Meta:1.0", meta.typeid)
 
     def test_set_description(self):
         meta = Meta("meta_name", "meta_description")
@@ -63,20 +64,19 @@ class TestMeta(unittest.TestCase):
         meta = Meta("meta_name", "meta_description")
         meta.tags = ["tag"]
         expected = OrderedDict()
+        expected["typeid"] = "meta:test"
         expected["description"] = "meta_description"
         expected["tags"] = ["tag"]
-        expected["typeid"] = "malcolm:core/Meta:1.0"
         self.assertEquals(expected, meta.to_dict())
 
     def test_from_dict(self):
         d = {"description":"test_description", "tags":["tag1", "tag2"],
-             "typeid":"malcolm:core/Meta:1.0"}
+             "typeid":"meta:test"}
         meta = Serializable.from_dict("meta_name", d)
         self.assertEqual(Meta, type(meta))
         self.assertEqual("meta_name", meta.name)
         self.assertEqual("test_description", meta.description)
         self.assertEqual(["tag1", "tag2"], meta.tags)
-        self.assertEqual("malcolm:core/Meta:1.0", meta.typeid)
         self.assertEqual(d, meta.to_dict())
 
 if __name__ == "__main__":

@@ -24,13 +24,16 @@ class TestNumberMeta(unittest.TestCase):
     def test_to_dict(self):
         nm = NumberMeta("nm", "desc", np.float64)
         expected = OrderedDict()
-        expected["description"] = "desc"
         expected["typeid"] = "malcolm:core/Double:1.0"
+        expected["description"] = "desc"
+        expected["tags"] = []
+        expected["writeable"] = True
 
         self.assertEqual(expected, nm.to_dict())
 
     def test_from_dict(self):
-        d = {"description":"desc", "typeid":"malcolm:core/Double:1.0"}
+        d = {"description":"desc", "tags":[], "writeable":True,
+                "typeid":"malcolm:core/Double:1.0"}
         nm = Serializable.from_dict("nm", d)
         self.assertEqual(NumberMeta, type(nm))
         self.assertEqual("nm", nm.name)

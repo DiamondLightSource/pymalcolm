@@ -50,9 +50,11 @@ class TestSerialisation(unittest.TestCase):
 
     def test_to_dict(self):
         expected_dict = OrderedDict()
-        expected_dict["description"] = "test description"
         expected_dict["typeid"] = "malcolm:core/ChoiceMeta:1.0"
         expected_dict["choices"] = [1, 2, 3]
+        expected_dict["description"] = "test description"
+        expected_dict["tags"] = []
+        expected_dict["writeable"] = True
 
         response = self.choice_meta.to_dict()
 
@@ -62,10 +64,14 @@ class TestSerialisation(unittest.TestCase):
         d = dict(description="test description",
                  typeid="malcolm:core/ChoiceMeta:1.0",
                  choices=[1, 2, 3],
+                 tags=["tag"],
+                 writeable=False)
         s = Serializable.from_dict("me", d)
         self.assertEqual(type(s), ChoiceMeta)
         self.assertEqual(s.name, "me")
         self.assertEqual(s.choices, [1, 2, 3])
+        self.assertEqual(s.tags, ["tag"])
+        self.assertFalse(s.writeable)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

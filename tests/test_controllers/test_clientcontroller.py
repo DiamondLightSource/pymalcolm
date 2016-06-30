@@ -39,7 +39,7 @@ class TestClientController(unittest.TestCase):
                             description="A name",
                             tags=["tag"],
                             writeable=False,
-                            typeid="malcolm:core/String:1.0",
+                            typeid="malcolm:core/StringMeta:1.0",
                         ),
                     ),
                     required=["name"],
@@ -53,12 +53,13 @@ class TestClientController(unittest.TestCase):
                             description="A greeting",
                             tags=["tag"],
                             writeable=False,
-                            typeid="malcolm:core/String:1.0",
+                            typeid="malcolm:core/StringMeta:1.0",
                         ),
                     ),
                     required=["response"],
                 ),
                 writeable=True,
+                typeid="malcolm:core/Method:1.0",
             ),
         )
 

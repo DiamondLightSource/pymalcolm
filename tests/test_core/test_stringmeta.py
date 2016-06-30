@@ -20,9 +20,12 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TestMeta", self.string_meta.name)
         self.assertEqual("test string description",
                          self.string_meta.description)
+        self.assertEqual([], self.string_meta.tags)
+        self.assertTrue(self.string_meta.writeable)
 
     def test_typeid(self):
-        self.assertEqual(self.string_meta.typeid, "malcolm:core/String:1.0")
+        self.assertEqual(
+            self.string_meta.typeid, "malcolm:core/StringMeta:1.0")
 
 
 class TestValidate(unittest.TestCase):
@@ -51,26 +54,34 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(None, response)
 
 
-class TestToDict(unittest.TestCase):
+class TestDict(unittest.TestCase):
 
     def setUp(self):
         self.string_meta = StringMeta("Test", "test string description")
 
     def test_returns_dict(self):
         expected_dict = OrderedDict()
+        expected_dict["typeid"] = "malcolm:core/StringMeta:1.0"
         expected_dict["description"] = "test string description"
-        expected_dict["typeid"] = "malcolm:core/String:1.0"
+        expected_dict["tags"] = ["tag"]
+        expected_dict["writeable"] = True
 
+        self.string_meta.tags = ["tag"]
+        self.string_meta.writeable = True
         response = self.string_meta.to_dict()
 
         self.assertEqual(expected_dict, response)
 
     def test_from_dict_deserialize(self):
         d = dict(description="test string description",
-                 typeid="malcolm:core/String:1.0")
+                 writeable="True",
+                 tags=["tag1", "tag2"],
+                 typeid="malcolm:core/StringMeta:1.0")
         s = Serializable.from_dict("me", d)
         self.assertEqual(type(s), StringMeta)
         self.assertEqual(s.name, "me")
+        self.assertEqual(s.description, "test string description")
+        self.assertEqual(s.tags, ["tag1", "tag2"])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

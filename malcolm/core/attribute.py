@@ -30,9 +30,9 @@ class Attribute(Serializable):
     def to_dict(self):
         """Create ordered dictionary representing class instance"""
         d = OrderedDict()
+        d["typeid"] = self.typeid
         d["value"] = self.value
         d["meta"] = self.meta.to_dict()
-        d["typeid"] = self.typeid
         # TODO: add timeStamp and alarm
         return d
 

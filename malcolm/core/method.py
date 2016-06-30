@@ -132,13 +132,13 @@ class Method(Serializable):
     def to_dict(self):
         """Return ordered dictionary representing Method object."""
         serialized = OrderedDict()
-        serialized["description"] = self.description
+        serialized["typeid"] = self.typeid
         serialized["takes"] = self.takes.to_dict()
         serialized["defaults"] = self.defaults.copy()
-        serialized["returns"] = self.returns.to_dict()
+        serialized["description"] = self.description
         serialized["tags"] = self.tags
         serialized["writeable"] = self.writeable
-        serialized["typeid"] = self.typeid
+        serialized["returns"] = self.returns.to_dict()
         return serialized
 
     @classmethod

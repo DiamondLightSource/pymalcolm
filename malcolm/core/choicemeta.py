@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
@@ -42,8 +44,10 @@ class ChoiceMeta(ScalarMeta):
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
-        d = super(ChoiceMeta, self).to_dict()
+        d = OrderedDict()
+        d["typeid"] = self.typeid
         d["choices"] = self.choices
+        d.update(super(ChoiceMeta, self).to_dict())
         return d
 
     @classmethod
@@ -59,5 +63,7 @@ class ChoiceMeta(ScalarMeta):
         description = d['description']
         choices = d['choices']
         choice_meta = cls(name, description, choices)
+        choice_meta.tags = d['tags']
+        choice_meta.writeable = d['writeable']
 
         return choice_meta

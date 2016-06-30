@@ -3,9 +3,8 @@ from collections import OrderedDict
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/Meta:1.0")
 class Meta(Serializable):
-    """Meta class for describing Blocks"""
+    """Meta base class"""
 
     def __init__(self, name, description, *args):
         super(Meta, self).__init__(name, *args)
@@ -40,9 +39,9 @@ class Meta(Serializable):
 
     def to_dict(self):
         d = OrderedDict()
+        d["typeid"] = self.typeid
         d["description"] = self.description
         d["tags"] = self.tags
-        d["typeid"] = self.typeid
         return d
 
     @classmethod

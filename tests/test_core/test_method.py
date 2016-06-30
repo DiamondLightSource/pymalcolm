@@ -216,26 +216,26 @@ class TestMethod(unittest.TestCase):
         m.set_writeable(writeable_mock)
         m.set_tags(["tag_1", "tag_2"])
         expected = OrderedDict()
-        expected["description"] = "test_description"
+        expected["typeid"] = "malcolm:core/Method:1.0"
         expected["takes"] = OrderedDict({"dict": "args"})
         expected["defaults"] = OrderedDict({"in_attr": "default"})
-        expected["returns"] = OrderedDict({"dict": "return"})
+        expected["description"] = "test_description"
         expected["tags"] = ["tag_1", "tag_2"]
         expected["writeable"] = writeable_mock
-        expected["typeid"] = "malcolm:core/Method:1.0"
+        expected["returns"] = OrderedDict({"dict": "return"})
         self.assertEquals(expected, m.to_dict())
 
     @patch("malcolm.core.mapmeta.MapMeta.to_dict")
     def test_empty_to_dict_serialization(self, map_to_dict_mock):
         m = Method("test_method", "test_description")
         expected = OrderedDict()
-        expected["description"] = "test_description"
+        expected["typeid"] = "malcolm:core/Method:1.0"
         expected["takes"] = map_to_dict_mock.return_value
         expected["defaults"] = OrderedDict()
-        expected["returns"] = map_to_dict_mock.return_value
+        expected["description"] = "test_description"
         expected["tags"] = []
         expected["writeable"] = True
-        expected["typeid"] = "malcolm:core/Method:1.0"
+        expected["returns"] = map_to_dict_mock.return_value
         self.assertEquals(expected, m.to_dict())
 
     @patch("malcolm.core.method.MapMeta")

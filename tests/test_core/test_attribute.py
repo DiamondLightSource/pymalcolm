@@ -55,9 +55,9 @@ class TestAttribute(unittest.TestCase):
     def test_to_dict(self):
         self.meta.to_dict = Mock(return_value = {"test_meta":"dict"})
         expected = OrderedDict()
+        expected["typeid"] = "epics:nt/NTAttribute:1.0"
         expected["value"] = "test_value"
         expected["meta"] = {"test_meta":"dict"}
-        expected["typeid"] = "epics:nt/NTAttribute:1.0"
         a = Attribute("test", self.meta)
         a.set_value("test_value")
         self.assertEquals(expected, a.to_dict())
@@ -65,7 +65,8 @@ class TestAttribute(unittest.TestCase):
     @patch.object(Serializable, "from_dict")
     def test_from_dict(self, am_from_dict):
         am_from_dict.return_value = self.meta
-        d = {"value":"test_value", "meta":{"meta":"dict"}}
+        d = {"value":"test_value", "meta":{"meta":"dict"},
+             "typeid":"epics:nt/NTAttribute:1.0"}
         a = Attribute.from_dict("test", d)
         self.assertEquals("test", a.name)
         self.assertEquals("test_value", a.value)
