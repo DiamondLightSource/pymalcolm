@@ -1,14 +1,13 @@
 from collections import OrderedDict
 
-from malcolm.core.serializable import Serializable
+from malcolm.core.meta import Meta
 
 
-class ScalarMeta(Serializable):
+class ScalarMeta(Meta):
     """Abstract base class for Scalar Meta objects"""
 
     def __init__(self, name, description, *args):
-        super(ScalarMeta, self).__init__(name, *args)
-        self.description = description
+        super(ScalarMeta, self).__init__(name, description, *args)
         self.writeable = True
 
     def validate(self, value):
@@ -30,7 +29,23 @@ class ScalarMeta(Serializable):
         """Convert object attributes into a dictionary"""
 
         d = OrderedDict()
-        d["description"] = self.description
         d["typeid"] = self.typeid
+        d["description"] = self.description
+        d["tags"] = self.tags
+        d["writeable"] = self.writeable
 
         return d
+
+    @classmethod
+    def from_dict(cls, name, d, *args):
+        """Create a ScalarMeta subclass instance from the serialized version
+        of itself
+
+        Args:
+            name (str): ScalarMeta instance name
+            d (dict): Something that self.to_dict() would create
+        """
+        meta = cls(name, d["description"], *args)
+        meta.writeable = d["writeable"]
+        meta.tags = d["tags"]
+        return meta
