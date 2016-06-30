@@ -8,7 +8,7 @@ from collections import OrderedDict
 # logging.basicConfig(level=logging.DEBUG)
 
 import unittest
-from mock import MagicMock
+from mock import MagicMock, call
 
 # module imports
 from malcolm.core.process import \
@@ -127,8 +127,17 @@ class TestSubscriptions(unittest.TestCase):
         change = [["path"], "value"]
         s = MagicMock()
         p = Process("proc", s)
-        p.on_changed(change)
+        p.on_changed(change, notify=False)
         p.q.put.assert_called_once_with(BlockChanged(change=change))
+
+    def test_on_changed_with_notify(self):
+        change = [["path"], "value"]
+        s = MagicMock()
+        p = Process("proc", s)
+        p.on_changed(change)
+        p.q.put.assert_has_calls([
+            call(BlockChanged(change=change)),
+            call(BlockNotify(name="path"))])
 
     def test_notify(self):
         s = MagicMock()
