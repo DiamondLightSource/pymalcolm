@@ -29,7 +29,6 @@ A Block looks like this::
     Block :=
 
     malcolm:core/Block:1.0
-
         BlockMeta   meta
         Attribute   state       // ChoiceMeta
         Attribute   status      // StringMeta
@@ -41,7 +40,6 @@ A Block looks like this::
     BlockMeta :=
 
     malcolm:core/BlockMeta:1.0
-
         string      description // Description of Block
         string[]    tags  :opt  // e.g. "instance:FlowGraph"
 
@@ -54,13 +52,12 @@ field of the Meta object is defined in the :ref:`tags` section.
 
 An Attribute looks like this::
 
-    Attribute := Scalar | ScalarArray | Table
+    Attribute := Scalar | ScalarArray | Table | PointGenerator
 
 
     NTScalar :=
 
     epics:nt/NTScalar:1.0 // Conformant but optional fields -> meta
-
         scalar_t    value
         alarm_t     alarm       :opt
         time_t      timeStamp   :opt
@@ -70,7 +67,6 @@ An Attribute looks like this::
     ScalarArray :=
 
     epics:nt/NTScalarArray:1.0 // Conformant but optional fields -> meta
-
         scalar_t[]      value
         alarm_t         alarm       :opt
         time_t          timeStamp   :opt
@@ -79,13 +75,27 @@ An Attribute looks like this::
 
     Table :=
 
-    malcolm:core/TableAttribute:1.0 // Not conformant to NTTable: labels
-
-        structure   value
-            {scalar_t[] <colname>}0+
+    malcolm:core/Table:1.0 // Not conformant to NTTable: labels
+        TableValue  value
         alarm_t     alarm       :opt
         time_t      timeStamp   :opt
         TableMeta   meta        :opt
+
+
+    TableValue :=
+
+    structure
+        {scalar_t[] <colname>}0+
+
+
+    PointGenerator :=
+
+    malcolm:core/PointGenerator:1.0
+        PointGeneratorValue value
+        alarm_t             alarm       :opt
+        time_t              timeStamp   :opt
+        PointGeneratorMeta  meta        :opt
+
 
 The structures are very similar, and all hold the current value in whatever
 type is appropriate for the Attribute. Each structure contains a `meta` field
@@ -98,7 +108,6 @@ the structure::
     BooleanMeta :=
 
     malcolm:core/BooleanMeta:1.0
-
         string      description     // Description of attribute
         string[]    tags       :opt // e.g. "widget:led"
         bool        writeable  :opt // True if you can Put at the moment
@@ -108,7 +117,6 @@ the structure::
     StringMeta :=
 
     malcolm:core/StringMeta:1.0
-
         string      description     // Description of attribute
         string[]    tags       :opt // e.g. "widget:textinput"
         bool        writeable  :opt // True if you can Put at the moment
@@ -118,7 +126,6 @@ the structure::
     ChoiceMeta :=
 
     malcolm:core/ChoiceMeta:1.0
-
         string[]    choices         // Value will be one of these
         string      description     // Description of attribute
         string[]    tags       :opt // e.g. "widget:combo"
@@ -129,7 +136,6 @@ the structure::
     NumberMeta :=
 
     malcolm:core/NumberMeta:1.0
-
         string      dtype           // e.g. int8, uint32, float64
         string      description     // Description of attribute
         string[]    tags       :opt // e.g. "widget:textupdate"
@@ -141,10 +147,10 @@ the structure::
 The ScalarArrayMeta structures are identical to the ScalarMeta structures, but
 have "Array" in their typeid. TableMeta has similar fields::
 
+
     TableMeta :=
 
     malcolm:core/TableMeta:1.0
-
         structure   elements        // Metadata for each column
             {ScalarArrayMeta <elname>}0+
         string      description     // Description of attribute
@@ -157,15 +163,27 @@ have "Array" in their typeid. TableMeta has similar fields::
 It contains a structure of elements that describe the subelements that are
 allowed in the Table.
 
+A PointGeneratorMeta looks similar::
+
+    PointGeneratorMeta :=
+
+    malcolm:core/PointGeneratorMeta:1.0
+        string      description     // Description of attribute
+        string[]    tags       :opt // e.g. "widget:generatorpicker"
+        bool        writeable  :opt // True if you can Put at the moment
+        string      label      :opt // Short label if different to name
+
+
 A Method looks like this::
+
+    Argument := scalar_t | scalar_t[] | TableValue | PointGeneratorValue
 
     Method :=
 
     malcolm:core/Method:1.0
-
         MapMeta     takes           // Argument spec
         structure   defaults
-            {any    <argname>}0+    // The defaults if not supplied
+            {Argument   <argname>}0+    // The defaults if not supplied
         string      description     // Docstring
         string[]    tags       :opt // e.g. "widget:confirmbutton"
         bool        writeable  :opt // True if you can Post at the moment
@@ -173,12 +191,14 @@ A Method looks like this::
         MapMeta     returns    :opt // Return value spec if any
 
 
+    ArgumentMeta := ScalarMeta | ScalarArrayMeta | TableMeta |
+        PointGeneratorMeta
+
     MapMeta :=
 
     malcolm:core/MapMeta:1.0
-
         structure   elements            // Metadata for each element in map
-            {ScalarMeta | ScalarArrayMeta | TableMeta <elname>}0+
+            {ArgumentMeta <elname>}0+
         string      description         // Description of what the map is for
         string[]    tags           :opt // e.g. "widget:group"
         string[]    required       :opt // These fields will always be present
@@ -191,4 +211,12 @@ argument is not supplied.
 Methods are called by sending a Post message to the block with the name of the
 method and the arguments described in the takes MapMeta.
 
+The Map just looks like this::
+
+    Map :=
+
+    structure
+        {Arguemnt   <argname>}0+
+
+    
 
