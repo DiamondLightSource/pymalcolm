@@ -29,12 +29,12 @@ class Process(Loggable):
         self.name = name
         self.sync_factory = sync_factory
         self.q = self.create_queue()
-        self._blocks = OrderedDict() # block name -> block
+        self._blocks = OrderedDict()  # block name -> block
         self._block_state_cache = Cache()
         self._recv_spawned = None
         self._other_spawned = []
-        self._subscriptions = OrderedDict() # block name -> list of subs
-        self._last_changes = OrderedDict() # block name -> list of changes
+        self._subscriptions = OrderedDict()  # block name -> list of subs
+        self._last_changes = OrderedDict()  # block name -> list of changes
         self._handle_functions = {
             Request.POST: self._forward_block_request,
             Request.PUT: self._forward_block_request,
@@ -89,16 +89,6 @@ class Process(Loggable):
         self._other_spawned.append(
             self.sync_factory.spawn(block.handle_request, request))
 
-    def add_block(self, block):
-        """Add a block to be hosted by this process
-
-        Args:
-            block (Block): The block to be added
-        """
-        assert block.name not in self._blocks, \
-            "There is already a block called %s" % block.name
-        self.q.put(BlockAdd(block=block))
-
     def create_queue(self):
         """
         Create a queue using sync_factory object
@@ -123,6 +113,9 @@ class Process(Loggable):
         spawned = self.sync_factory.spawn(function, *args, **kwargs)
         self._other_spawned.append(spawned)
         return spawned
+
+    def notify_subscribers(self, block_name):
+        self.q.put(BlockNotify(name=block_name))
 
     def _handle_block_notify(self, request):
         """Update subscribers with changes and applies stored changes to the
@@ -165,6 +158,12 @@ class Process(Loggable):
                 subscription.response_queue.put(response)
         self._last_changes[request.name] = []
 
+    def on_changed(self, change, notify=True):
+        self.q.put(BlockChanged(change=change))
+        if notify:
+            block_name = change[0][0]
+            self.notify_subscribers(block_name)
+
     def _handle_block_changed(self, request):
         """Record changes to made to a block"""
         # update changes
@@ -172,9 +171,22 @@ class Process(Loggable):
         block_changes = self._last_changes.setdefault(path[0], [])
         block_changes.append(request.change)
 
+    def block_respond(self, response, response_queue):
+        self.q.put(BlockRespond(response, response_queue))
+
     def _handle_block_respond(self, request):
         """Push the response to the required queue"""
         request.response_queue.put(request.response)
+
+    def add_block(self, block):
+        """Add a block to be hosted by this process
+
+        Args:
+            block (Block): The block to be added
+        """
+        assert block.name not in self._blocks, \
+            "There is already a block called %s" % block.name
+        self.q.put(BlockAdd(block=block))
 
     def _handle_block_add(self, request):
         """Add a block to be hosted by this process"""
@@ -202,15 +214,3 @@ class Process(Loggable):
         d = self._block_state_cache.walk_path(request.endpoint)
         response = Response.Return(request.id_, request.context, d)
         request.response_queue.put(response)
-
-    def block_respond(self, response, response_queue):
-        self.q.put(BlockRespond(response, response_queue))
-
-    def notify_subscribers(self, block_name):
-        self.q.put(BlockNotify(name=block_name))
-
-    def on_changed(self, change, notify=True):
-        self.q.put(BlockChanged(change=change))
-        if notify:
-            block_name = change[0][0]
-            self.notify_subscribers(block_name)
