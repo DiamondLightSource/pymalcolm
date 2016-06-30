@@ -30,10 +30,15 @@ class TestClientController(unittest.TestCase):
         serialized = dict(
             say_hello=dict(
                 description="Says hello",
+                tags=[],
                 takes=dict(
+                    description="Hello takes",
+                    tags=[],
                     elements=dict(
                         name=dict(
                             description="A name",
+                            tags=["tag"],
+                            writeable=False,
                             typeid="malcolm:core/String:1.0",
                         ),
                     ),
@@ -41,9 +46,13 @@ class TestClientController(unittest.TestCase):
                 ),
                 defaults={},
                 returns=dict(
+                    description="Hello returns",
+                    tags=[],
                     elements=dict(
                         greeting=dict(
                             description="A greeting",
+                            tags=["tag"],
+                            writeable=False,
                             typeid="malcolm:core/String:1.0",
                         ),
                     ),

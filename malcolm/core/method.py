@@ -15,8 +15,8 @@ class Method(Serializable):
         super(Method, self).__init__(name=name)
         self.func = None
         self.description = description
-        self.takes = MapMeta("takes")
-        self.returns = MapMeta("returns")
+        self.takes = MapMeta("takes", "Method arguments")
+        self.returns = MapMeta("returns", "Method output structure")
         self.defaults = OrderedDict()
         self.writeable = True
 
@@ -192,7 +192,7 @@ def takes(*args):
         if not hasattr(func, "Method"):
             Method.wrap_method(func)
 
-        takes_meta = MapMeta("takes")
+        takes_meta = MapMeta("takes", "Method arguments")
         defaults = OrderedDict()
         for index in range(0, len(args), 2):
 
@@ -230,7 +230,7 @@ def returns(*args):
         if not hasattr(func, "Method"):
             Method.wrap_method(func)
 
-        returns_meta = MapMeta("returns")
+        returns_meta = MapMeta("returns", "Method output structure")
         for index in range(0, len(args), 2):
 
             if args[index + 1] not in [OPTIONAL, REQUIRED]:

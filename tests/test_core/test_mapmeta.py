@@ -14,18 +14,19 @@ from malcolm.core.mapmeta import MapMeta
 class TestInit(unittest.TestCase):
 
     def setUp(self):
-        self.meta_map = MapMeta("Test")
+        self.meta_map = MapMeta("Test", "description")
 
     def test_values_set(self):
         self.assertEqual(self.meta_map.name, "Test")
         self.assertIsInstance(self.meta_map.elements, OrderedDict)
         self.assertEqual(self.meta_map.elements, {})
         self.assertEqual("malcolm:core/MapMeta:1.0", self.meta_map.typeid)
+        self.assertEqual("description", self.meta_map.description)
 
 class TestValidate(unittest.TestCase):
 
     def setUp(self):
-        self.meta_map = MapMeta("Test")
+        self.meta_map = MapMeta("Test", "description")
 
     def test_given_valid_elements_then_return(self):
         self.meta_map.elements = dict(Arg1="Meta1", Arg2="Meta2")
@@ -51,7 +52,7 @@ class TestValidate(unittest.TestCase):
 class TestAddElement(unittest.TestCase):
 
     def setUp(self):
-        self.meta_map = MapMeta("Test")
+        self.meta_map = MapMeta("Test", "description")
         self.attribute_mock = MagicMock()
 
     def test_given_valid_required_element_then_add(self):
@@ -91,7 +92,7 @@ class TestToDict(unittest.TestCase):
         a2 = OrderedDict()
         e2.to_dict.return_value = a2
 
-        self.meta_map = MapMeta("Test")
+        self.meta_map = MapMeta("Test", "description")
         self.meta_map.add_element(e1, required=True)
         self.meta_map.add_element(e2, required=False)
 
@@ -100,8 +101,11 @@ class TestToDict(unittest.TestCase):
         expected_elements_dict['two'] = a2
 
         expected_dict = OrderedDict()
+        expected_dict['typeid'] = 'malcolm:core/MapMeta:1.0'
         expected_dict['elements'] = expected_elements_dict
-        expected_dict['required'] = ["one"]
+        expected_dict['description'] = 'description'
+        expected_dict['tags'] = []
+        expected_dict['required'] = ['one']
 
         response = self.meta_map.to_dict()
 
@@ -114,7 +118,8 @@ class TestToDict(unittest.TestCase):
         elements["one"] = "e1"
         elements["two"] = "e2"
         required = ["one"]
-        d = dict(elements=elements, required=required)
+        d = dict(elements=elements, required=required,
+            description="desc", tags=["tag"])
         # prep from_dict with ScalarMetas to return
         am1 = MagicMock()
         am1.name = "one"
@@ -129,6 +134,8 @@ class TestToDict(unittest.TestCase):
         self.assertEqual(map_meta.name, "Test")
         self.assertEqual(map_meta.required, ["one"])
         self.assertEqual(map_meta.elements, dict(one=am1, two=am2))
+        self.assertEqual(map_meta.description, "desc")
+        self.assertEqual(map_meta.tags, ["tag"])
 
 
 if __name__ == "__main__":
