@@ -5,6 +5,7 @@ from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import setup_malcolm_paths
+from mock import Mock
 
 from malcolm.core.scalarmeta import ScalarMeta
 
@@ -20,6 +21,7 @@ class TestInit(unittest.TestCase):
     def test_values_after_init(self):
         self.assertEqual("Test", self.attribute_meta.name)
         self.assertEqual("test description", self.attribute_meta.description)
+        self.assertTrue(self.attribute_meta.writeable)
 
 class TestValidate(unittest.TestCase):
 
@@ -36,6 +38,17 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(expected_error_message, error.exception.args[0])
 
+class TestUpdate(unittest.TestCase):
+
+    def test_set_writeable(self):
+        attribute_meta = ScalarMeta("Test", "test_description")
+        attribute_meta.on_changed = Mock(wrap=attribute_meta.on_changed)
+        writeable = Mock()
+        notify = Mock()
+        attribute_meta.set_writeable(writeable, notify=notify)
+        self.assertEquals(attribute_meta.writeable, writeable)
+        attribute_meta.on_changed.assert_called_once_with(
+            [["writeable"], writeable], notify)
 
 class TestToDict(unittest.TestCase):
 

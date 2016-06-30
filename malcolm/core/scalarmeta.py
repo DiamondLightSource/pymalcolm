@@ -9,6 +9,7 @@ class ScalarMeta(Serializable):
     def __init__(self, name, description, *args):
         super(ScalarMeta, self).__init__(name, *args)
         self.description = description
+        self.writeable = True
 
     def validate(self, value):
         """
@@ -20,6 +21,10 @@ class ScalarMeta(Serializable):
 
         raise NotImplementedError(
             "Abstract validate function must be implemented in child classes")
+
+    def set_writeable(self, writeable, notify=True):
+        self.writeable = writeable
+        self.on_changed([["writeable"], writeable], notify)
 
     def to_dict(self):
         """Convert object attributes into a dictionary"""
