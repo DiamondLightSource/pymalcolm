@@ -4,12 +4,15 @@ from malcolm.core.attributemeta import AttributeMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/Attribute:1.0")
+@Serializable.register("epics:nt/NTAttribute:1.0")
 class Attribute(Serializable):
     """Represents a value with type information that may be backed elsewhere"""
 
-    def __init__(self, meta):
-        super(Attribute, self).__init__(name=meta.name)
+    def __init__(self, name, meta):
+        super(Attribute, self).__init__(name)
+        if meta.name != "meta":
+            raise ValueError(
+                "Meta name must be 'meta' to be added to an Attribute")
         self.meta = meta
         self.value = None
         self.put_func = None
@@ -42,7 +45,7 @@ class Attribute(Serializable):
             name (str): Attribute instance name
             d (dict): Output of self.to_dict()
         """
-        meta = AttributeMeta.from_dict(name, d["meta"])
-        attribute = cls(meta)
+        meta = AttributeMeta.from_dict("meta", d["meta"])
+        attribute = cls(name, meta)
         attribute.value = d["value"]
         return attribute

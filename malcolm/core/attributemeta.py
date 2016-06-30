@@ -34,8 +34,3 @@ class AttributeMeta(Serializable):
         d["typeid"] = self.typeid
 
         return d
-
-    def attribute_type(self):
-        """Return the attribute type for derived class
-        (scalar, scalar array, or table)"""
-        raise NotImplementedError("Type must be specified in child classes")

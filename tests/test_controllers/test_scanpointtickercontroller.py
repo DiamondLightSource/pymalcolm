@@ -18,7 +18,7 @@ class TestScanPointTickerController(unittest.TestCase):
     @patch("malcolm.core.numbermeta.NumberMeta.to_dict")
     @patch("malcolm.core.pointgeneratormeta.PointGeneratorMeta.to_dict")
     def test_init(self, pgmd_mock, nmd_mock, smd_mock):
-        attr_id = "malcolm:core/Attribute:1.0"
+        attr_id = "epics:nt/NTAttribute:1.0"
         block = MagicMock()
         sptc = ScanPointTickerController(block)
         self.assertEqual(block, sptc.block)

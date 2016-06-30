@@ -20,9 +20,6 @@ class TestInit(unittest.TestCase):
         self.assertEqual("test description",
                          self.boolean_meta.description)
         self.assertEqual(self.boolean_meta.typeid, "malcolm:core/Boolean:1.0")
-        self.assertEqual(
-            AttributeMeta.SCALAR, self.boolean_meta.attribute_type())
-
 
 class TestValidate(unittest.TestCase):
 

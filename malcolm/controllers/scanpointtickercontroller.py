@@ -18,15 +18,17 @@ class ScanPointTickerController(Controller):
         super(ScanPointTickerController, self).__init__(block)
 
     def create_attributes(self):
-        self.value = Attribute(NumberMeta("value", "value", numpy.float64))
+        self.value = Attribute("value",
+                NumberMeta("meta", "Value", numpy.float64))
         yield self.value
         self.generator = Attribute(
-            PointGeneratorMeta("generator", "Scan Point Generator"))
+            "generator", PointGeneratorMeta("meta", "Scan Point Generator"))
         yield self.generator
-        self.axis_name = Attribute(StringMeta("axis_name", "Name of the axis"))
+        self.axis_name = Attribute(
+            "axis_name", StringMeta("meta", "Name of the axis"))
         yield self.axis_name
         self.exposure = Attribute(
-            NumberMeta("exposure", "Exposure time", numpy.float64))
+            "exposure", NumberMeta("meta", "Exposure time", numpy.float64))
         yield self.exposure
 
     @takes(PointGeneratorMeta("generator", "Generator instance"), REQUIRED,
