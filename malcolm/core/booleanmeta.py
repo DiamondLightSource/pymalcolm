@@ -26,9 +26,6 @@ class BooleanMeta(AttributeMeta):
         else:
             return bool(value)
 
-    def attribute_type(self):
-        return AttributeMeta.SCALAR
-
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 

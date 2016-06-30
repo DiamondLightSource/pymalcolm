@@ -26,9 +26,6 @@ class StringMeta(AttributeMeta):
         else:
             return str(value)
 
-    def attribute_type(self):
-        return AttributeMeta.SCALAR
-
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
