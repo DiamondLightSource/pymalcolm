@@ -19,6 +19,7 @@ class Method(Serializable):
         self.returns = MapMeta("returns", "Method output structure")
         self.defaults = OrderedDict()
         self.writeable = True
+        self.tags = []
 
     def set_function(self, func):
         """Set the function to expose.
@@ -48,6 +49,10 @@ class Method(Serializable):
         """Set writeable property to enable or disable calling method"""
         self.writeable = writeable
         self.on_changed([["writeable"], writeable])
+
+    def set_tags(self, tags):
+        self.tags = tags
+        self.on_changed([["tags"], tags])
 
     def __call__(self, *args, **kwargs):
         """Call the exposed function using regular keyword argument parameters.
@@ -131,6 +136,7 @@ class Method(Serializable):
         serialized["takes"] = self.takes.to_dict()
         serialized["defaults"] = self.defaults.copy()
         serialized["returns"] = self.returns.to_dict()
+        serialized["tags"] = self.tags
         serialized["writeable"] = self.writeable
         serialized["typeid"] = self.typeid
         return serialized
@@ -149,6 +155,7 @@ class Method(Serializable):
         returns = MapMeta.from_dict("returns", d["returns"])
         method.set_function_returns(returns)
         method.writeable = d["writeable"]
+        method.tags = d["tags"]
         return method
 
     @classmethod
