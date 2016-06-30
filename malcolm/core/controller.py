@@ -52,13 +52,15 @@ class Controller(Loggable):
             Attribute: Each one will be attached to the Block by calling
             block.add_attribute(attribute)
         """
-        self.state = Attribute(EnumMeta(
-            "State", "State of Block",
+        self.state = Attribute("State", EnumMeta(
+            "meta", "State of Block",
             self.stateMachine.possible_states))
         yield self.state
-        self.status = Attribute(StringMeta("Status", "Status of Block"))
+        self.status = Attribute(
+            "Status", StringMeta("meta", "Status of Block"))
         yield self.status
-        self.busy = Attribute(BooleanMeta("Busy", "Whether Block busy or not"))
+        self.busy = Attribute(
+            "Busy", BooleanMeta("meta", "Whether Block busy or not"))
         yield self.busy
 
 

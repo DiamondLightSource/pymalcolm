@@ -89,8 +89,8 @@ class TestUpdates(unittest.TestCase):
         b = Block("b")
         b.add_attribute = MagicMock(wrap=b.add_attribute)
         b.add_method = MagicMock(wrap=b.add_method)
-        attr_meta = StringMeta("attr", "desc")
-        attr = Attribute(attr_meta)
+        attr_meta = StringMeta("meta", "desc")
+        attr = Attribute("attr", attr_meta)
         change_dict = attr.to_dict()
         change = [["attr"], change_dict]
 
