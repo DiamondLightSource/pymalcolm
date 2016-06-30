@@ -80,7 +80,7 @@ class TestAddElement(unittest.TestCase):
 
 class TestToDict(unittest.TestCase):
 
-    @patch('malcolm.core.attributemeta.AttributeMeta.to_dict')
+    @patch('malcolm.core.scalarmeta.ScalarMeta.to_dict')
     def test_returns_dict(self, _):
         e1 = MagicMock()
         e1.name = "one"
@@ -107,7 +107,7 @@ class TestToDict(unittest.TestCase):
 
         self.assertEqual(expected_dict, response)
 
-    @patch('malcolm.core.mapmeta.AttributeMeta')
+    @patch('malcolm.core.mapmeta.ScalarMeta')
     def test_from_dict_deserialize(self, am_mock):
         # prep dict
         elements = OrderedDict()
@@ -115,7 +115,7 @@ class TestToDict(unittest.TestCase):
         elements["two"] = "e2"
         required = ["one"]
         d = dict(elements=elements, required=required)
-        # prep from_dict with AttributeMetas to return
+        # prep from_dict with ScalarMetas to return
         am1 = MagicMock()
         am1.name = "one"
         am2 = MagicMock()

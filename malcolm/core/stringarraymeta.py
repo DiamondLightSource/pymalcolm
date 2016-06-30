@@ -1,9 +1,9 @@
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
 @Serializable.register("malcolm:core/StringArray:1.0")
-class StringArrayMeta(AttributeMeta):
+class StringArrayMeta(ScalarMeta):
     """Meta object containing information for a string array"""
 
     def __init__(self, name, description):

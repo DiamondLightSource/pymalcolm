@@ -1,9 +1,9 @@
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 from scanpointgenerator import CompoundGenerator
 
 
-@AttributeMeta.register("malcolm:core/PointGenerator:1.0")
-class PointGeneratorMeta(AttributeMeta):
+@ScalarMeta.register("malcolm:core/PointGenerator:1.0")
+class PointGeneratorMeta(ScalarMeta):
 
     def __init__(self, name, description):
         super(PointGeneratorMeta, self).__init__(name, description)
@@ -32,7 +32,7 @@ class PointGeneratorMeta(AttributeMeta):
         version of itself
 
         Args:
-            name (str): AttributeMeta instance name
+            name (str): ScalarMeta instance name
             d (dict): Serialised version of PointGeneratorMeta
         """
 

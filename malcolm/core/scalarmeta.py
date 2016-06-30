@@ -3,11 +3,11 @@ from collections import OrderedDict
 from malcolm.core.serializable import Serializable
 
 
-class AttributeMeta(Serializable):
-    """Abstract base class for Meta objects"""
+class ScalarMeta(Serializable):
+    """Abstract base class for Scalar Meta objects"""
 
     def __init__(self, name, description, *args):
-        super(AttributeMeta, self).__init__(name, *args)
+        super(ScalarMeta, self).__init__(name, *args)
         self.description = description
 
     def validate(self, value):

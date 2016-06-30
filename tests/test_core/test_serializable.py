@@ -8,7 +8,7 @@ from mock import Mock
 
 from malcolm.core.serializable import Serializable
 
-# Register AttributeMeta as a sublcass of itself so we
+# Register ScalarMeta as a sublcass of itself so we
 # can instantiate it for testing purposes.
 Serializable.register("serializable:test")(Serializable)
 

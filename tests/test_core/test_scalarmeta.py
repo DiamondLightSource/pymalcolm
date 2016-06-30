@@ -6,16 +6,16 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import setup_malcolm_paths
 
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 
-# Register AttributeMeta as a sublcass of itself so we
+# Register ScalarMeta as a sublcass of itself so we
 # can instantiate it for testing purposes.
-AttributeMeta.register("attribute_meta:test")(AttributeMeta)
+ScalarMeta.register("attribute_meta:test")(ScalarMeta)
 
 class TestInit(unittest.TestCase):
 
     def setUp(self):
-        self.attribute_meta = AttributeMeta("Test", "test description")
+        self.attribute_meta = ScalarMeta("Test", "test description")
 
     def test_values_after_init(self):
         self.assertEqual("Test", self.attribute_meta.name)
@@ -24,7 +24,7 @@ class TestInit(unittest.TestCase):
 class TestValidate(unittest.TestCase):
 
     def setUp(self):
-        self.attribute_meta = AttributeMeta("Test", "test_description")
+        self.attribute_meta = ScalarMeta("Test", "test_description")
 
     def test_given_validate_called_then_raise_error(self):
 
@@ -40,7 +40,7 @@ class TestValidate(unittest.TestCase):
 class TestToDict(unittest.TestCase):
 
     def setUp(self):
-        self.attribute_meta = AttributeMeta("Test", "test_description")
+        self.attribute_meta = ScalarMeta("Test", "test_description")
 
     def test_returns_dict(self):
         expected_dict = OrderedDict()

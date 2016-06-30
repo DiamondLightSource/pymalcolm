@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 from malcolm.core.enummeta import EnumMeta
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 
 
 class TestInit(unittest.TestCase):
@@ -59,7 +59,7 @@ class TestSerialisation(unittest.TestCase):
         d = dict(description="test description",
                  typeid="malcolm:core/Enum:1.0",
                  oneOf=[1, 2, 3])
-        s = AttributeMeta.from_dict("me", d)
+        s = ScalarMeta.from_dict("me", d)
         self.assertEqual(type(s), EnumMeta)
         self.assertEqual(s.name, "me")
         self.assertEqual(s.oneOf, [1, 2, 3])

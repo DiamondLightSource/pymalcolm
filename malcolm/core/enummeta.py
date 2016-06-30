@@ -1,9 +1,9 @@
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
 @Serializable.register("malcolm:core/Enum:1.0")
-class EnumMeta(AttributeMeta):
+class EnumMeta(ScalarMeta):
     """Meta object containing information for a enum"""
 
     def __init__(self, name, description, oneOf):

@@ -1,9 +1,9 @@
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
 @Serializable.register("malcolm:core/Boolean:1.0")
-class BooleanMeta(AttributeMeta):
+class BooleanMeta(ScalarMeta):
     """Meta object containing information for a boolean"""
 
     def __init__(self, name, description):

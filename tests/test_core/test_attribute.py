@@ -9,7 +9,7 @@ import unittest
 from mock import Mock, patch
 
 from malcolm.core.attribute import Attribute
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 
 
 class TestAttribute(unittest.TestCase):
@@ -62,7 +62,7 @@ class TestAttribute(unittest.TestCase):
         a.set_value("test_value")
         self.assertEquals(expected, a.to_dict())
 
-    @patch.object(AttributeMeta, "from_dict")
+    @patch.object(ScalarMeta, "from_dict")
     def test_from_dict(self, am_from_dict):
         am_from_dict.return_value = self.meta
         d = {"value":"test_value", "meta":{"meta":"dict"}}

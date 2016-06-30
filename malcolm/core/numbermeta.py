@@ -1,4 +1,4 @@
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string
 
@@ -15,7 +15,7 @@ import numpy
 @Serializable.register("malcolm:core/ULong:1.0", numpy.uint64)
 @Serializable.register("malcolm:core/Float:1.0", numpy.float32)
 @Serializable.register("malcolm:core/Double:1.0", numpy.float64)
-class NumberMeta(AttributeMeta):
+class NumberMeta(ScalarMeta):
     """Meta object containing information for a numerical value"""
 
     def __init__(self, name, description, dtype):

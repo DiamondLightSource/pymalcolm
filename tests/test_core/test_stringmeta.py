@@ -8,7 +8,7 @@ from collections import OrderedDict
 import unittest
 
 from malcolm.core.stringmeta import StringMeta
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 
 
 class TestInit(unittest.TestCase):
@@ -68,7 +68,7 @@ class TestToDict(unittest.TestCase):
     def test_from_dict_deserialize(self):
         d = dict(description="test string description",
                  typeid="malcolm:core/String:1.0")
-        s = AttributeMeta.from_dict("me", d)
+        s = ScalarMeta.from_dict("me", d)
         self.assertEqual(type(s), StringMeta)
         self.assertEqual(s.name, "me")
 

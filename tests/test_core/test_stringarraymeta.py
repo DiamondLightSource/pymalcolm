@@ -7,7 +7,7 @@ import setup_malcolm_paths
 import unittest
 
 from malcolm.core.stringarraymeta import StringArrayMeta
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 
 class TestStringArrayMeta(unittest.TestCase):
 
@@ -46,7 +46,7 @@ class TestStringArrayMeta(unittest.TestCase):
         d = OrderedDict()
         d["description"] = "test array description"
         d["typeid"]= "malcolm:core/StringArray:1.0"
-        s = AttributeMeta.from_dict("test_array_meta", d)
+        s = ScalarMeta.from_dict("test_array_meta", d)
         self.assertEqual(StringArrayMeta, type(s))
         self.assertEqual(s.name, "test_array_meta")
         self.assertEqual(s.description, "test array description")
