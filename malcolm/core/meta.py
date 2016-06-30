@@ -3,12 +3,12 @@ from collections import OrderedDict
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/BlockMeta:1.0")
-class BlockMeta(Serializable):
+@Serializable.register("malcolm:core/Meta:1.0")
+class Meta(Serializable):
     """Meta class for describing Blocks"""
 
     def __init__(self, name, description):
-        super(BlockMeta, self).__init__(name)
+        super(Meta, self).__init__(name)
         self.description = description
         self.tags = []
 
@@ -47,6 +47,6 @@ class BlockMeta(Serializable):
 
     @classmethod
     def from_dict(cls, name, d):
-        meta = BlockMeta(name, d["description"])
+        meta = Meta(name, d["description"])
         meta.tags = d["tags"]
         return meta
