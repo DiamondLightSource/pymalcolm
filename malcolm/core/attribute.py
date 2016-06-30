@@ -4,7 +4,9 @@ from malcolm.core.attributemeta import AttributeMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/Attribute:1.0")
+@Serializable.register("epics:nt/NTScalar:1.0")
+@Serializable.register("epics:nt/NTScalarArray:1.0")
+@Serializable.register("malcolm:core/TableAttribute:1.0")
 class Attribute(Serializable):
     """Represents a value with type information that may be backed elsewhere"""
 
@@ -13,6 +15,15 @@ class Attribute(Serializable):
         self.meta = meta
         self.value = None
         self.put_func = None
+        if self.meta.attribute_type() == AttributeMeta.SCALAR:
+            self.typeid = "epics:nt/NTScalar:1.0"
+        elif self.meta.attribute_type() == AttributeMeta.SCALARARRAY:
+            self.typeid = "epics:nt/NTScalarArray:1.0"
+        elif self.meta.attribute_type() == AttributeMeta.TABLE:
+            self.typeid = "malcolm:core/TableAttribute:1.0"
+        else:
+            raise ValueError(
+                "Unknown typeid %s in meta %s" % (self.meta.typeid, self.meta))
 
     def set_put_function(self, func):
         self.put_func = func

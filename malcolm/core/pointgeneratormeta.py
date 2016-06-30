@@ -38,3 +38,6 @@ class PointGeneratorMeta(AttributeMeta):
 
         point_gen_meta = PointGeneratorMeta(name, d["description"])
         return point_gen_meta
+
+    def attribute_type(self):
+        return AttributeMeta.SCALAR
