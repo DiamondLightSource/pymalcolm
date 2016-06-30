@@ -23,7 +23,7 @@ class TestAttribute(unittest.TestCase):
         self.assertEquals("test", a.name)
         self.assertIs(self.meta, a.meta)
         self.assertIsNone(a.value)
-        self.assertEqual("malcolm:core/Attribute:1.0", a.typeid)
+        self.assertEquals("epics:nt/NTAttribute:1.0", a.typeid)
 
     def test_invalid_meta_name_raises(self):
         self.meta.name = "not_meta"
