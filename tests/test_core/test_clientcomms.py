@@ -53,6 +53,17 @@ class TestClientComms(unittest.TestCase):
         expected = OrderedDict({1234 : request})
         self.assertEquals(expected, client.requests)
 
+    def test_send_to_caller_with_block_update(self):
+        c = ClientComms("c", Mock())
+        response = Mock(type_="Update", id_=0, UPDATE="Update")
+        c.send_to_caller(response)
+        c.process.update_block_list.assert_called_once_with(c, response.value)
+
+    def test_send_to_caller_with_bad_block_update(self):
+        c = ClientComms("c", Mock())
+        response = Mock(type_="Delta", id_=0, UPDATE="Update")
+        self.assertRaises(AssertionError, c.send_to_caller, response)
+
     def test_sends_to_server(self):
         client = ClientComms("c", Mock())
         client.send_to_server = Mock()
