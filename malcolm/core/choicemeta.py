@@ -6,20 +6,20 @@ from malcolm.core.serializable import Serializable
 class ChoiceMeta(ScalarMeta):
     """Meta object containing information for a enum"""
 
-    def __init__(self, name, description, oneOf):
+    def __init__(self, name, description, choices):
         super(ChoiceMeta, self).__init__(name=name, description=description)
 
-        self.oneOf = oneOf
+        self.choices = choices
 
-    def set_one_of(self, oneOf):
+    def set_choices(self, choices):
         """
         Set allowed values
 
         Args:
-            oneOf(list): List of allowed values
+            choices (list): List of allowed values
         """
 
-        self.oneOf = oneOf
+        self.choices = choices
 
     def validate(self, value):
         """
@@ -34,7 +34,7 @@ class ChoiceMeta(ScalarMeta):
             ValueError: If value not valid
         """
 
-        if value in self.oneOf:
+        if value in self.choices:
             return value
         else:
             raise ValueError("%s is not a valid value" % value)
@@ -43,8 +43,7 @@ class ChoiceMeta(ScalarMeta):
         """Convert object attributes into a dictionary"""
 
         d = super(ChoiceMeta, self).to_dict()
-        d['oneOf'] = self.oneOf
-
+        d["choices"] = self.choices
         return d
 
     @classmethod
@@ -58,7 +57,7 @@ class ChoiceMeta(ScalarMeta):
         """
 
         description = d['description']
-        oneOf = d['oneOf']
-        enum_meta = ChoiceMeta(name, description, oneOf)
+        choices = d['choices']
+        choice_meta = cls(name, description, choices)
 
-        return enum_meta
+        return choice_meta

@@ -37,10 +37,10 @@ class TestValidate(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.choice_meta.validate(0)
 
-    def test_set_one_of(self):
-        self.choice_meta.set_one_of([4, 5, 6])
+    def test_set_choices(self):
+        self.choice_meta.set_choices([4, 5, 6])
 
-        self.assertEqual([4, 5, 6], self.choice_meta.oneOf)
+        self.assertEqual([4, 5, 6], self.choice_meta.choices)
 
 
 class TestSerialisation(unittest.TestCase):
@@ -52,7 +52,7 @@ class TestSerialisation(unittest.TestCase):
         expected_dict = OrderedDict()
         expected_dict["description"] = "test description"
         expected_dict["typeid"] = "malcolm:core/ChoiceMeta:1.0"
-        expected_dict["oneOf"] = [1, 2, 3]
+        expected_dict["choices"] = [1, 2, 3]
 
         response = self.choice_meta.to_dict()
 
@@ -61,11 +61,11 @@ class TestSerialisation(unittest.TestCase):
     def test_from_dict(self):
         d = dict(description="test description",
                  typeid="malcolm:core/ChoiceMeta:1.0",
-                 oneOf=[1, 2, 3])
+                 choices=[1, 2, 3],
         s = Serializable.from_dict("me", d)
         self.assertEqual(type(s), ChoiceMeta)
         self.assertEqual(s.name, "me")
-        self.assertEqual(s.oneOf, [1, 2, 3])
+        self.assertEqual(s.choices, [1, 2, 3])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
