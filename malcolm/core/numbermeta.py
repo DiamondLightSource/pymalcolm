@@ -30,12 +30,3 @@ class NumberMeta(ScalarMeta):
             assert cast == value, \
                 "Lost information converting %s to %s" % (value, cast)
         return cast
-
-    def to_dict(self):
-        d = super(NumberMeta, self).to_dict()
-        return d
-
-    @classmethod
-    def from_dict(self, name, d, *args):
-        number_meta = NumberMeta(name, d["description"], *args)
-        return number_meta

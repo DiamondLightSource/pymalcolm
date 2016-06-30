@@ -25,22 +25,3 @@ class StringMeta(ScalarMeta):
             return None
         else:
             return str(value)
-
-    def to_dict(self):
-        """Convert object attributes into a dictionary"""
-
-        d = super(StringMeta, self).to_dict()
-
-        return d
-
-    @classmethod
-    def from_dict(self, name, d, *args):
-        """Create a ScalarMeta subclass instance from the serialized version
-        of itself
-
-        Args:
-            name (str): ScalarMeta instance name
-            d (dict): Something that self.to_dict() would create
-        """
-        string_meta = StringMeta(name, d["description"])
-        return string_meta

@@ -29,17 +29,3 @@ class StringArrayMeta(ScalarMeta):
             raise ValueError("Array elements can not be null")
         return validated
 
-    def to_dict(self):
-        d = super(StringArrayMeta, self).to_dict()
-        return d
-
-    @classmethod
-    def from_dict(cls, name, d, *args):
-        """Create StringArrayMeta instance from serialized form
-
-        Args:
-            name (str): Instance name
-            d (dict): Serialized form created by self.to_dict()
-        """
-        meta = StringArrayMeta(name, d["description"])
-        return meta

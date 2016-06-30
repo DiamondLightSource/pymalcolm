@@ -25,24 +25,3 @@ class BooleanMeta(ScalarMeta):
             return None
         else:
             return bool(value)
-
-    def to_dict(self):
-        """Convert object attributes into a dictionary"""
-
-        d = super(BooleanMeta, self).to_dict()
-
-        return d
-
-    @classmethod
-    def from_dict(cls, name, d):
-        """Create a BooleanMeta subclass instance from the serialized version
-        of itself
-
-        Args:
-            name (str): BooleanMeta instance name
-            d (dict): Serialised version of BooleanMeta
-        """
-
-        boolean_meta = BooleanMeta(name, d["description"])
-
-        return boolean_meta

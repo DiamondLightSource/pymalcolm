@@ -18,23 +18,3 @@ class PointGeneratorMeta(ScalarMeta):
             return CompoundGenerator.from_dict(value)
         else:
             raise TypeError("Value must be a Generator object or dictionary")
-
-    def to_dict(self):
-        """Convert object attributes into a dictionary"""
-
-        d = super(PointGeneratorMeta, self).to_dict()
-
-        return d
-
-    @classmethod
-    def from_dict(cls, name, d):
-        """Create a PointGeneratorMeta subclass instance from the
-        version of itself
-
-        Args:
-            name (str): ScalarMeta instance name
-            d (dict): Serialised version of PointGeneratorMeta
-        """
-
-        point_gen_meta = PointGeneratorMeta(name, d["description"])
-        return point_gen_meta
