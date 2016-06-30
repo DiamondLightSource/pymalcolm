@@ -2,12 +2,12 @@ from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/Enum:1.0")
-class EnumMeta(ScalarMeta):
+@Serializable.register("malcolm:core/ChoiceMeta:1.0")
+class ChoiceMeta(ScalarMeta):
     """Meta object containing information for a enum"""
 
     def __init__(self, name, description, oneOf):
-        super(EnumMeta, self).__init__(name=name, description=description)
+        super(ChoiceMeta, self).__init__(name=name, description=description)
 
         self.oneOf = oneOf
 
@@ -42,23 +42,23 @@ class EnumMeta(ScalarMeta):
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
-        d = super(EnumMeta, self).to_dict()
+        d = super(ChoiceMeta, self).to_dict()
         d['oneOf'] = self.oneOf
 
         return d
 
     @classmethod
     def from_dict(cls, name, d):
-        """Create a EnumMeta subclass instance from the serialized version
+        """Create a ChoiceMeta subclass instance from the serialized version
         of itself
 
         Args:
-            name (str): EnumMeta instance name
-            d (dict): Serialised version of EnumMeta
+            name (str): ChoiceMeta instance name
+            d (dict): Serialised version of ChoiceMeta
         """
 
         description = d['description']
         oneOf = d['oneOf']
-        enum_meta = EnumMeta(name, description, oneOf)
+        enum_meta = ChoiceMeta(name, description, oneOf)
 
         return enum_meta
