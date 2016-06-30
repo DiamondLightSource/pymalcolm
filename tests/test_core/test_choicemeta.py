@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 from malcolm.core.choicemeta import ChoiceMeta
-from malcolm.core.scalarmeta import ScalarMeta
+from malcolm.core.serializable import Serializable
 
 
 class TestInit(unittest.TestCase):
@@ -62,7 +62,7 @@ class TestSerialisation(unittest.TestCase):
         d = dict(description="test description",
                  typeid="malcolm:core/ChoiceMeta:1.0",
                  oneOf=[1, 2, 3])
-        s = ScalarMeta.from_dict("me", d)
+        s = Serializable.from_dict("me", d)
         self.assertEqual(type(s), ChoiceMeta)
         self.assertEqual(s.name, "me")
         self.assertEqual(s.oneOf, [1, 2, 3])

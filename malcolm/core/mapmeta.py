@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 OPTIONAL = object()
@@ -80,7 +79,7 @@ class MapMeta(Serializable):
         """
         map_meta = cls(name)
         for ename, element in d["elements"].items():
-            attribute_meta = ScalarMeta.from_dict(ename, element)
+            attribute_meta = Serializable.from_dict(ename, element)
             map_meta.add_element(attribute_meta, ename in d["required"])
         return map_meta
 

@@ -80,7 +80,7 @@ class TestAddElement(unittest.TestCase):
 
 class TestToDict(unittest.TestCase):
 
-    @patch('malcolm.core.scalarmeta.ScalarMeta.to_dict')
+    @patch('malcolm.core.serializable.Serializable.to_dict')
     def test_returns_dict(self, _):
         e1 = MagicMock()
         e1.name = "one"
@@ -107,7 +107,7 @@ class TestToDict(unittest.TestCase):
 
         self.assertEqual(expected_dict, response)
 
-    @patch('malcolm.core.mapmeta.ScalarMeta')
+    @patch('malcolm.core.mapmeta.Serializable')
     def test_from_dict_deserialize(self, am_mock):
         # prep dict
         elements = OrderedDict()

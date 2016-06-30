@@ -9,7 +9,7 @@ import numpy as np
 import unittest
 
 from malcolm.core.numbermeta import NumberMeta
-from malcolm.core.scalarmeta import ScalarMeta
+from malcolm.core.serializable import Serializable
 
 
 class TestNumberMeta(unittest.TestCase):
@@ -31,7 +31,7 @@ class TestNumberMeta(unittest.TestCase):
 
     def test_from_dict(self):
         d = {"description":"desc", "typeid":"malcolm:core/Double:1.0"}
-        nm = ScalarMeta.from_dict("nm", d)
+        nm = Serializable.from_dict("nm", d)
         self.assertEqual(NumberMeta, type(nm))
         self.assertEqual("nm", nm.name)
         self.assertEqual(np.float64, nm.dtype)

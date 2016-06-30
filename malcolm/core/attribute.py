@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
@@ -45,7 +44,7 @@ class Attribute(Serializable):
             name (str): Attribute instance name
             d (dict): Output of self.to_dict()
         """
-        meta = ScalarMeta.from_dict("meta", d["meta"])
+        meta = Serializable.from_dict("meta", d["meta"])
         attribute = cls(name, meta)
         attribute.value = d["value"]
         return attribute

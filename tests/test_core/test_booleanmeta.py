@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 from malcolm.core.booleanmeta import BooleanMeta
-from malcolm.core.scalarmeta import ScalarMeta
+from malcolm.core.serializable import Serializable
 
 
 class TestInit(unittest.TestCase):
@@ -70,7 +70,7 @@ class TestSerialisation(unittest.TestCase):
     def test_from_dict(self):
         d = dict(description="test description",
                  typeid="malcolm:core/Boolean:1.0")
-        s = ScalarMeta.from_dict("me", d)
+        s = Serializable.from_dict("me", d)
         self.assertEqual(type(s), BooleanMeta)
         self.assertEqual(s.name, "me")
 
