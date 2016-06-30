@@ -44,6 +44,9 @@ class TestClientComms(unittest.TestCase):
         client = ClientComms("c", Mock())
         client._current_id = 1234
         request = Mock()
+        def f(id_):
+            request.id_ = id_
+        request.set_id.side_effect = f
         client.send_to_server = Mock()
         client.q.get = Mock(side_effect = [request, client.STOP])
         client.send_loop()
@@ -68,8 +71,8 @@ class TestClientComms(unittest.TestCase):
         request_2 = Mock(id_ = None)
         client.q.get = Mock(side_effect = [request_1, request_2, client.STOP])
         client.send_loop()
-        self.assertEqual(1234, request_1.id_)
-        self.assertEqual(1235, request_2.id_)
+        request_1.set_id.assert_called_once_with(1234)
+        request_2.set_id.assert_called_once_with(1235)
 
     def test_send_to_caller(self):
         request = Mock(response_queue=Mock(), id_=1234)

@@ -70,6 +70,10 @@ class WSServerComms(ServerComms):
         """
 
         request.response_queue = self.q
+        if "endpoint" in request.fields and len(request.endpoint) > 0 and \
+                request.endpoint[0] == ".":
+            # We're talking about the process block, so fill in the right name
+            request.endpoint[0] = self.process.name
         self.process.q.put(request)
 
     def stop_recv_loop(self):

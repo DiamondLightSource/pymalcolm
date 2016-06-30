@@ -7,6 +7,8 @@ from malcolm.core.spawnable import Spawnable
 class ClientComms(Loggable, Spawnable):
     """Abstract class for dispatching requests to a server and resonses to
     a method"""
+    # The id that will be use for subscriptions to the blocks the server has
+    SERVER_BLOCKS_ID=0
 
     def __init__(self, name, process):
         super(ClientComms, self).__init__(logger_name=name)
@@ -24,7 +26,7 @@ class ClientComms(Loggable, Spawnable):
             if request is Spawnable.STOP:
                 break
             try:
-                request.id_ = self._current_id
+                request.set_id(self._current_id)
                 self._current_id += 1
 
                 # TODO: Move request store into new method?
@@ -44,5 +46,10 @@ class ClientComms(Loggable, Spawnable):
             "Abstract method that must be implemented by deriving class")
 
     def send_to_caller(self, response):
-        request = self.requests[response.id_]
-        request.response_queue.put(response)
+        if response.id_ == self.SERVER_BLOCKS_ID:
+            assert response.type_ == response.UPDATE, \
+                "Expected server blocks Update, got %s" % response
+            self.process.update_block_list(self, response.value)
+        else:
+            request = self.requests[response.id_]
+            request.response_queue.put(response)
