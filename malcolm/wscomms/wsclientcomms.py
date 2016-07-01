@@ -34,10 +34,15 @@ class WSClientComms(ClientComms):
         Args:
             message(str): Received message
         """
-        self.log_debug("Got message %s", message)
-        d = json.loads(message, object_pairs_hook=OrderedDict)
-        response = Response.from_dict(d)
-        self.send_to_caller(response)
+        try:
+            self.log_debug("Got message %s", message)
+            d = json.loads(message, object_pairs_hook=OrderedDict)
+            response = Response.from_dict(d)
+            self.send_to_caller(response)
+        except Exception as e:
+            # If we don't catch the exception here, tornado will spew odd
+            # error messages about 'HTTPRequest' object has no attribute 'path'
+            self.log_exception(e)
 
     def send_to_server(self, request):
         """Dispatch a request to the server
@@ -45,7 +50,6 @@ class WSClientComms(ClientComms):
         Args:
             request(Request): The message to pass to the server
         """
-
         message = json.dumps(request.to_dict())
         self.conn.result().write_message(message)
 
@@ -58,4 +62,4 @@ class WSClientComms(ClientComms):
         """Subscribe to process blocks"""
         request = Request.Subscribe(None, None, [".", "blocks", "value"])
         request.set_id(self.SERVER_BLOCKS_ID)
-        self.send_to_server(request)
+        self.loop.add_callback(self.send_to_server, request)

@@ -32,9 +32,12 @@ class TestWSClientComms(unittest.TestCase):
     def test_subscribe_initial(self, _, _2):
         self.WS = WSClientComms("TestWebSocket", self.p, "test/url")
         self.WS.subscribe_server_blocks("conn")
-        self.WS.conn.result().write_message.assert_called_once_with(
-            '{"id": 0, "type": "Subscribe", "endpoint": [".", "blocks", "value"], "delta": false}'
-        )
+        self.assertEqual(self.WS.loop.add_callback.call_count, 1)
+        request = self.WS.loop.add_callback.call_args[0][1]
+        self.assertEqual(request.id_, 0)
+        self.assertEqual(request.type_, "Subscribe")
+        self.assertEqual(request.endpoint, [".", "blocks", "value"])
+        self.assertEqual(request.delta, False)
 
     @patch('malcolm.wscomms.wsclientcomms.Response')
     @patch('malcolm.wscomms.wsclientcomms.json')
