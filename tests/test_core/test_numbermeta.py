@@ -1,30 +1,29 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
-from collections import OrderedDict
-import numpy as np
-
 import unittest
+from collections import OrderedDict
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+import setup_malcolm_paths
+from mock import Mock
+import numpy as np
 
 from malcolm.core.numbermeta import NumberMeta
 from malcolm.core.serializable import Serializable
 
 
 class TestNumberMeta(unittest.TestCase):
-    def test_init_int(self):
-        nm = NumberMeta("nm", "desc", np.int32)
-        self.assertEqual(nm.typeid, "malcolm:core/Int:1.0")
-
-    def test_init_float(self):
-        nm = NumberMeta("nm", "desc", np.float64)
-        self.assertEqual(nm.typeid, "malcolm:core/Double:1.0")
+    def test_init(self):
+        dtype = np.float64
+        nm = NumberMeta("nm", "desc", dtype)
+        self.assertEqual(nm.typeid, "malcolm:core/NumberMeta:1.0")
+        self.assertEqual(nm.dtype, dtype)
 
     def test_to_dict(self):
         nm = NumberMeta("nm", "desc", np.float64)
         expected = OrderedDict()
-        expected["typeid"] = "malcolm:core/Double:1.0"
+        expected["typeid"] = "malcolm:core/NumberMeta:1.0"
+        expected["dtype"] = "float64"
         expected["description"] = "desc"
         expected["tags"] = []
         expected["writeable"] = True
@@ -33,11 +32,13 @@ class TestNumberMeta(unittest.TestCase):
 
     def test_from_dict(self):
         d = {"description":"desc", "tags":[], "writeable":True,
-                "typeid":"malcolm:core/Double:1.0"}
+                "typeid":"malcolm:core/NumberMeta:1.0",
+                "dtype":"float64"}
         nm = Serializable.from_dict("nm", d)
         self.assertEqual(NumberMeta, type(nm))
         self.assertEqual("nm", nm.name)
         self.assertEqual(np.float64, nm.dtype)
+        self.assertEqual(d, nm.to_dict())
 
 class TestNumberMetaValidation(unittest.TestCase):
     def test_float_against_float(self):
