@@ -65,6 +65,19 @@ class TestWSClientComms(unittest.TestCase):
     @patch('malcolm.wscomms.wsclientcomms.json')
     @patch('malcolm.wscomms.wsclientcomms.websocket_connect')
     @patch('malcolm.wscomms.wsclientcomms.IOLoop')
+    def test_on_message_logs_exception(self, _, _1, json_mock):
+        self.WS = WSClientComms("TestWebSocket", self.p, "test/url")
+        self.WS.log_exception = MagicMock()
+        exception = Exception()
+        json_mock.loads.side_effect = exception
+
+        self.WS.on_message("test")
+
+        self.WS.log_exception.assert_called_once_with(exception)
+
+    @patch('malcolm.wscomms.wsclientcomms.json')
+    @patch('malcolm.wscomms.wsclientcomms.websocket_connect')
+    @patch('malcolm.wscomms.wsclientcomms.IOLoop')
     def test_send_to_server(self, _, connect_mock, json_mock):
         self.WS = WSClientComms("TestWebSocket", self.p, "test/url")
         json_mock.reset_mock()
