@@ -6,7 +6,7 @@ import setup_malcolm_paths
 from collections import OrderedDict
 
 import unittest
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
 # logging
 # import logging
@@ -72,6 +72,37 @@ class TestClientController(unittest.TestCase):
         self.comms.q.put.side_effect = f
         ret = self.b.say_hello(name="me")
         self.assertEqual(ret.greeting, "Hello me")
+
+    def test_put_update_response(self):
+        response = MagicMock(
+            id_=self.cc.BLOCK_ID,
+            changes=[[["substructure"], "change"]])
+        self.b.update = MagicMock()
+        self.cc.put(response)
+        self.b.update.assert_called_once_with([["substructure"], "change"])
+
+    def test_put_root_update_response(self):
+        attr1 = StringMeta("dummy", "dummy")
+        attr2 = StringMeta("dummy2", "dummy2")
+        new_block_structure = {}
+        new_block_structure["attr1"] = attr1.to_dict()
+        new_block_structure["attr2"] = attr2.to_dict()
+        self.b.replace_children = MagicMock()
+        response = MagicMock(
+            id_=self.cc.BLOCK_ID,
+            changes=[[[], new_block_structure]])
+        self.cc.put(response)
+        self.assertIs(self.b, self.cc.block)
+        deserialized_changes = self.b.replace_children.call_args_list[0][0][0]
+        serialized_changes = [x.to_dict() for x in deserialized_changes]
+        expected = [attr1.to_dict(), attr2.to_dict()]
+        # dicts are not hashable, so cannot use set compare
+        for x in expected:
+            self.assertTrue(x in serialized_changes)
+        for x in serialized_changes:
+            self.assertTrue(x in expected)
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
