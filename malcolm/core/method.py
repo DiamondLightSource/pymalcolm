@@ -20,6 +20,7 @@ class Method(Serializable):
         self.defaults = OrderedDict()
         self.writeable = True
         self.tags = []
+        self.label = name
 
     def set_function(self, func):
         """Set the function to expose.
@@ -53,6 +54,10 @@ class Method(Serializable):
     def set_tags(self, tags):
         self.tags = tags
         self.on_changed([["tags"], tags])
+
+    def set_label(self, label):
+        self.label = label
+        self.on_changed([["label"], label])
 
     def __call__(self, *args, **kwargs):
         """Call the exposed function using regular keyword argument parameters.

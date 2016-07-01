@@ -22,6 +22,7 @@ class TestInit(unittest.TestCase):
                          self.string_meta.description)
         self.assertEqual([], self.string_meta.tags)
         self.assertTrue(self.string_meta.writeable)
+        self.assertEqual("TestMeta", self.string_meta.label)
 
     def test_typeid(self):
         self.assertEqual(
@@ -65,9 +66,11 @@ class TestDict(unittest.TestCase):
         expected_dict["description"] = "test string description"
         expected_dict["tags"] = ["tag"]
         expected_dict["writeable"] = True
+        expected_dict["label"] = "label"
 
         self.string_meta.tags = ["tag"]
         self.string_meta.writeable = True
+        self.string_meta.label = "label"
         response = self.string_meta.to_dict()
 
         self.assertEqual(expected_dict, response)
@@ -76,12 +79,14 @@ class TestDict(unittest.TestCase):
         d = dict(description="test string description",
                  writeable="True",
                  tags=["tag1", "tag2"],
-                 typeid="malcolm:core/StringMeta:1.0")
+                 typeid="malcolm:core/StringMeta:1.0",
+                 label="test_label")
         s = Serializable.from_dict("me", d)
         self.assertEqual(type(s), StringMeta)
         self.assertEqual(s.name, "me")
         self.assertEqual(s.description, "test string description")
         self.assertEqual(s.tags, ["tag1", "tag2"])
+        self.assertEqual(s.label, "test_label")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

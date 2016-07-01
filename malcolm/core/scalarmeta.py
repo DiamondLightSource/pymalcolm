@@ -9,6 +9,7 @@ class ScalarMeta(Meta):
     def __init__(self, name, description, *args):
         super(ScalarMeta, self).__init__(name, description, *args)
         self.writeable = True
+        self.label = name
 
     def validate(self, value):
         """
@@ -25,6 +26,10 @@ class ScalarMeta(Meta):
         self.writeable = writeable
         self.on_changed([["writeable"], writeable], notify)
 
+    def set_label(self, label, notify=True):
+        self.label = label
+        self.on_changed([["label"], label], notify)
+
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
@@ -33,6 +38,7 @@ class ScalarMeta(Meta):
         d["description"] = self.description
         d["tags"] = self.tags
         d["writeable"] = self.writeable
+        d["label"] = self.label
 
         return d
 
@@ -48,4 +54,5 @@ class ScalarMeta(Meta):
         meta = cls(name, d["description"], *args)
         meta.writeable = d["writeable"]
         meta.tags = d["tags"]
+        meta.label = d["label"]
         return meta

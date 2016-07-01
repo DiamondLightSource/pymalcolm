@@ -38,4 +38,5 @@ class NumberMeta(ScalarMeta):
         meta = cls(name, d["description"], dtype)
         meta.writeable = d["writeable"]
         meta.tags = d["tags"]
+        meta.label = d["label"]
         return meta

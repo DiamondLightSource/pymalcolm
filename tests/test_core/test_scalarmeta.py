@@ -51,6 +51,15 @@ class TestUpdate(unittest.TestCase):
         meta.on_changed.assert_called_once_with(
             [["writeable"], writeable], notify)
 
+    def test_set_label(self):
+        meta = ScalarMeta("Test", "test_description")
+        meta.on_changed = Mock(wrap=meta.on_changed)
+        label = Mock()
+        notify = Mock()
+        meta.set_label(label, notify=notify)
+        self.assertEquals(meta.label, label)
+        meta.on_changed.assert_called_once_with(
+            [["label"], label], notify)
 
 class TestDict(unittest.TestCase):
 
@@ -61,6 +70,7 @@ class TestDict(unittest.TestCase):
         expected_dict["description"] = "test_description"
         expected_dict["tags"] = ["tag"]
         expected_dict["writeable"] = True
+        expected_dict["label"] = "Test"
 
         meta.tags = ["tag"]
         response = meta.to_dict()
@@ -69,13 +79,14 @@ class TestDict(unittest.TestCase):
 
     def test_from_dict(self):
         d = {"typeid":"scalarmeta:test", "description":"test_desc",
-             "writeable":False, "tags":["tag"]}
+             "writeable":False, "tags":["tag"], "label":"test_label"}
         meta = Serializable.from_dict("Test", d)
         self.assertEqual("Test", meta.name)
         self.assertEqual("test_desc", meta.description)
         self.assertEqual(False, meta.writeable)
         self.assertEqual(["tag"], meta.tags)
         self.assertEqual("scalarmeta:test", meta.typeid)
+        self.assertEqual("test_label", meta.label)
         self.assertEqual(d, meta.to_dict())
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ class TestStringArrayMeta(unittest.TestCase):
     def test_init(self):
         self.assertEqual("test_meta", self.meta.name)
         self.assertEqual("test description", self.meta.description)
+        self.assertEqual(self.meta.label, "test_meta")
         self.assertEqual(self.meta.typeid, "malcolm:core/StringArrayMeta:1.0")
 
     def test_validate_none(self):
@@ -42,6 +43,7 @@ class TestStringArrayMeta(unittest.TestCase):
         expected["description"] = "test description"
         expected["tags"] = []
         expected["writeable"] = True
+        expected["label"] = "test_meta"
         self.assertEqual(expected, self.meta.to_dict())
 
     def test_from_dict(self):
@@ -50,12 +52,14 @@ class TestStringArrayMeta(unittest.TestCase):
         d["description"] = "test array description"
         d["tags"] = ["tag"]
         d["writeable"] = False
+        d["label"] = "test_label"
         s = Serializable.from_dict("test_array_meta", d)
         self.assertEqual(StringArrayMeta, type(s))
         self.assertEqual(s.name, "test_array_meta")
         self.assertEqual(s.description, "test array description")
         self.assertEqual(s.tags, ["tag"])
         self.assertEqual(s.writeable, False)
+        self.assertEqual(s.label, "test_label")
         self.assertEqual(d, s.to_dict())
 
 

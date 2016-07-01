@@ -18,10 +18,13 @@ class TestInit(unittest.TestCase):
 
     def test_values_after_init(self):
         self.assertEqual("TestMeta", self.choice_meta.name)
-        self.assertEqual("test description",
-                         self.choice_meta.description)
+        self.assertEqual(
+            "test description", self.choice_meta.description)
         self.assertEqual(
             self.choice_meta.typeid, "malcolm:core/ChoiceMeta:1.0")
+        self.assertEqual(
+            self.choice_meta.label, "TestMeta")
+
 
 class TestValidate(unittest.TestCase):
 
@@ -55,6 +58,7 @@ class TestSerialisation(unittest.TestCase):
         expected_dict["description"] = "test description"
         expected_dict["tags"] = []
         expected_dict["writeable"] = True
+        expected_dict["label"] = "Test"
 
         response = self.choice_meta.to_dict()
 
@@ -65,13 +69,15 @@ class TestSerialisation(unittest.TestCase):
                  typeid="malcolm:core/ChoiceMeta:1.0",
                  choices=[1, 2, 3],
                  tags=["tag"],
-                 writeable=False)
+                 writeable=False,
+                 label="label")
         s = Serializable.from_dict("me", d)
         self.assertEqual(type(s), ChoiceMeta)
         self.assertEqual(s.name, "me")
         self.assertEqual(s.choices, [1, 2, 3])
         self.assertEqual(s.tags, ["tag"])
         self.assertFalse(s.writeable)
+        self.assertEqual(s.label, "label")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

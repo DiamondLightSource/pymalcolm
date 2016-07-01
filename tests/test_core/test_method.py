@@ -20,6 +20,14 @@ class TestMethod(unittest.TestCase):
         self.assertEquals("test_method", m.name)
         self.assertEquals("test_description", m.description)
         self.assertEquals("malcolm:core/Method:1.0", m.typeid)
+        self.assertEquals("test_method", m.label)
+
+    def test_set_label(self):
+        m = Method("test_method", "test_description")
+        m.on_changed = Mock(wrap=m.on_changed)
+        m.set_label("new_label")
+        self.assertEquals("new_label", m.label)
+        m.on_changed.assert_called_once_with([["label"], "new_label"])
 
     def test_call_calls_call_function(self):
         m = Method("test_method", "test_description")

@@ -40,6 +40,7 @@ class TestClientController(unittest.TestCase):
                             tags=["tag"],
                             writeable=False,
                             typeid="malcolm:core/StringMeta:1.0",
+                            label="label",
                         ),
                     ),
                     required=["name"],
@@ -54,12 +55,14 @@ class TestClientController(unittest.TestCase):
                             tags=["tag"],
                             writeable=False,
                             typeid="malcolm:core/StringMeta:1.0",
+                            label="label",
                         ),
                     ),
                     required=["response"],
                 ),
                 writeable=True,
                 typeid="malcolm:core/Method:1.0",
+                label="label",
             ),
         )
 

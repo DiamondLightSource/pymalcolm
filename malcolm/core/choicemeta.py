@@ -65,5 +65,6 @@ class ChoiceMeta(ScalarMeta):
         choice_meta = cls(name, description, choices)
         choice_meta.tags = d['tags']
         choice_meta.writeable = d['writeable']
+        choice_meta.label = d['label']
 
         return choice_meta

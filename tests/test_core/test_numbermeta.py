@@ -18,6 +18,7 @@ class TestNumberMeta(unittest.TestCase):
         nm = NumberMeta("nm", "desc", dtype)
         self.assertEqual(nm.typeid, "malcolm:core/NumberMeta:1.0")
         self.assertEqual(nm.dtype, dtype)
+        self.assertEqual(nm.label, "nm")
 
     def test_to_dict(self):
         nm = NumberMeta("nm", "desc", np.float64)
@@ -27,17 +28,19 @@ class TestNumberMeta(unittest.TestCase):
         expected["description"] = "desc"
         expected["tags"] = []
         expected["writeable"] = True
+        expected["label"] = "nm"
 
         self.assertEqual(expected, nm.to_dict())
 
     def test_from_dict(self):
         d = {"description":"desc", "tags":[], "writeable":True,
                 "typeid":"malcolm:core/NumberMeta:1.0",
-                "dtype":"float64"}
+                "dtype":"float64", "label":"test_label"}
         nm = Serializable.from_dict("nm", d)
         self.assertEqual(NumberMeta, type(nm))
         self.assertEqual("nm", nm.name)
         self.assertEqual(np.float64, nm.dtype)
+        self.assertEqual("test_label", nm.label)
         self.assertEqual(d, nm.to_dict())
 
 class TestNumberMetaValidation(unittest.TestCase):
