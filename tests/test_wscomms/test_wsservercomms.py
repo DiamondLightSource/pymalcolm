@@ -98,6 +98,15 @@ class TestWSServerComms(unittest.TestCase):
         request_mock.from_dict.assert_called_once_with(message_dict)
         self.p.q.put.assert_called_once_with(request)
 
+    @patch('malcolm.wscomms.wsservercomms.HTTPServer')
+    @patch('malcolm.wscomms.wsservercomms.IOLoop')
+    def test_on_request_with_process_name(self, _, _2):
+        self.WS = WSServerComms("ws", self.p, 1)
+        request = MagicMock(fields=dict(endpoint="anything"), endpoint=[".", "blocks"])
+        self.WS.on_request(request)
+        self.p.q.put.assert_called_once_with(request)
+        self.assertEqual(request.endpoint, [self.p.name, "blocks"])
+
     @patch('malcolm.wscomms.wsservercomms.json')
     @patch('malcolm.wscomms.wsservercomms.HTTPServer.listen')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')

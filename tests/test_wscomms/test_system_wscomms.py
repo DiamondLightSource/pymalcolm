@@ -13,7 +13,6 @@ import unittest
 # tornado
 from tornado.websocket import websocket_connect
 from tornado import gen
-from tornado.ioloop import IOLoop
 import json
 
 
@@ -23,7 +22,6 @@ from malcolm.controllers.clientcontroller import ClientController
 from malcolm.core.block import Block
 from malcolm.core.process import Process
 from malcolm.core.syncfactory import SyncFactory
-from malcolm.core.request import Request
 from malcolm.wscomms.wsservercomms import WSServerComms
 from malcolm.wscomms.wsclientcomms import WSClientComms
 
@@ -76,12 +74,12 @@ class TestSystemWSComms(unittest.TestCase):
     def test_server_with_malcolm_client(self):
         self.cc = WSClientComms("cc", self.process, "ws://localhost:8888/ws")
         self.cc.start()
-        # Wait for comms to be connected
-        while not self.cc.conn.done():
-            time.sleep(0.001)
         # Don't add to process as we already have a block of that name
         block2 = Block("hello")
-        ClientController(self.process, block2, self.cc)
+        ClientController(self.process, block2)
+        # Normally we would wait for it to be connected here, but it isn't
+        # attached to a process so just sleep for a bit
+        time.sleep(0.1)
         ret = block2.say_hello("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
 

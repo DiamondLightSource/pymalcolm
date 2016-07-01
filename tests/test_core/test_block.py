@@ -21,7 +21,7 @@ class TestBlock(unittest.TestCase):
     def test_init(self):
         b = Block("blockname")
         self.assertEqual(b.name, "blockname")
-        self.assertEqual(list(b._methods), [])
+        self.assertEqual(list(b.methods), [])
         self.assertEqual("malcolm:core/Block:1.0", b.typeid)
 
     def test_add_method_registers(self):
@@ -30,9 +30,9 @@ class TestBlock(unittest.TestCase):
         m = MagicMock()
         m.name = "mymethod"
         b.add_method(m)
-        self.assertEqual(list(b._methods), ["mymethod"])
+        self.assertEqual(list(b.methods), ["mymethod"])
         self.assertFalse(m.called)
-        b.on_changed.assert_called_with([[m.name], m.to_dict.return_value])
+        b.on_changed.assert_called_with([[m.name], m.to_dict.return_value], True)
         m.return_value = 42
         self.assertEqual(b.mymethod(), 42)
         m.assert_called_once_with()
@@ -44,25 +44,18 @@ class TestBlock(unittest.TestCase):
         attr.name = "attr"
         b.add_attribute(attr)
         attr.set_parent.assert_called_once_with(b)
-        self.assertEqual({"attr":attr}, b._attributes)
+        self.assertEqual({"attr":attr}, b.attributes)
         self.assertIs(attr, b.attr)
         b.on_changed.assert_called_with(
-            [[attr.name], attr.to_dict.return_value])
+            [[attr.name], attr.to_dict.return_value], True)
 
     def test_lock_released(self):
         b = Block("blockname")
-        acquire = MagicMock()
-        release = MagicMock()
+        b.lock.acquire = MagicMock(wrap=b.lock.acquire)
+        b.lock.release = MagicMock(wrap=b.lock.release)
         lock_methods = MagicMock()
-        lock_methods.attach_mock(acquire, "acquire")
-        lock_methods.attach_mock(release, "release")
-        def enter_side_effect(*args):
-            acquire()
-        def exit_side_effect(*args):
-            release()
-        b.lock = MagicMock()
-        b.lock.__enter__.side_effect = enter_side_effect
-        b.lock.__exit__.side_effect = exit_side_effect
+        lock_methods.attach_mock(b.lock.acquire, "acquire")
+        lock_methods.attach_mock(b.lock.release, "release")
 
         with b.lock:
             with b.lock_released():
@@ -71,6 +64,24 @@ class TestBlock(unittest.TestCase):
         self.assertEquals(
             [call.acquire(), call.release(), call.acquire(), call.release()],
             lock_methods.method_calls)
+
+    def test_replace_children(self):
+        b = Block("blockname")
+        b.methods["m1"] = 2
+        b.attributes["a1"] = 3
+        setattr(b, "m1", 2)
+        setattr(b, "a1", 3)
+        attr_meta = StringMeta("meta", "desc")
+        attr = Attribute("attr", attr_meta)
+        method = Method("method", "desc")
+        b.on_changed = MagicMock(wrap=b.on_changed)
+        b.replace_children([attr, method])
+        self.assertEqual(b.attributes, dict(attr=attr))
+        self.assertEqual(b.methods, dict(method=method))
+        b.on_changed.assert_called_once_with(
+            [[], b.to_dict()], True)
+        self.assertFalse(hasattr(b, "m1"))
+        self.assertFalse(hasattr(b, "a1"))
 
 class TestUpdates(unittest.TestCase):
 
@@ -87,8 +98,7 @@ class TestUpdates(unittest.TestCase):
 
     def test_update_adds_attribute(self):
         b = Block("b")
-        b.add_attribute = MagicMock(wrap=b.add_attribute)
-        b.add_method = MagicMock(wrap=b.add_method)
+        b.add_child = MagicMock(wrap=b.add_child)
         attr_meta = StringMeta("meta", "desc")
         attr = Attribute("attr", attr_meta)
         change_dict = attr.to_dict()
@@ -96,25 +106,26 @@ class TestUpdates(unittest.TestCase):
 
         b.update(change)
 
-        added_attr = b.add_attribute.call_args[0][0]
+        added_attr = b.add_child.call_args[0][0]
         self.assertEquals(Attribute, type(added_attr))
         self.assertEquals(change_dict, added_attr.to_dict())
-        b.add_method.assert_not_called()
+        d = b.add_child.call_args[0][1]
+        self.assertEquals(d, b.attributes)
 
     def test_update_adds_method(self):
         b = Block("b")
-        b.add_attribute = MagicMock(wrap=b.add_attribute)
-        b.add_method = MagicMock(wrap=b.add_method)
+        b.add_child = MagicMock(wrap=b.add_child)
         method = Method("method", "desc")
         change_dict = method.to_dict()
         change = [["method"], change_dict]
 
         b.update(change)
 
-        added_method = b.add_method.call_args[0][0]
+        added_method = b.add_child.call_args[0][0]
         self.assertEquals(Method, type(added_method))
         self.assertEquals(change_dict, added_method.to_dict())
-        b.add_attribute.assert_not_called()
+        d = b.add_child.call_args[0][1]
+        self.assertEquals(d, b.methods)
 
     def test_update_raises_if_missing_path(self):
         b = Block("b")
@@ -127,10 +138,7 @@ class TestUpdates(unittest.TestCase):
     def test_update_raises_if_wrong_object(self, from_dict_mock):
         b = Block("b")
         change = [["path"], MagicMock()]
-        with self.assertRaises(
-                ValueError, msg="Change %s deserializaed to unknown object %s"
-                % (change, from_dict_mock.return_value)):
-            b.update(change)
+        self.assertRaises(AssertionError, b.update, change)
 
 class TestToDict(unittest.TestCase):
 

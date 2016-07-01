@@ -44,11 +44,25 @@ class TestClientComms(unittest.TestCase):
         client = ClientComms("c", Mock())
         client._current_id = 1234
         request = Mock()
+        def f(id_):
+            request.id_ = id_
+        request.set_id.side_effect = f
         client.send_to_server = Mock()
         client.q.get = Mock(side_effect = [request, client.STOP])
         client.send_loop()
         expected = OrderedDict({1234 : request})
         self.assertEquals(expected, client.requests)
+
+    def test_send_to_caller_with_block_update(self):
+        c = ClientComms("c", Mock())
+        response = Mock(type_="Update", id_=0, UPDATE="Update")
+        c.send_to_caller(response)
+        c.process.update_block_list.assert_called_once_with(c, response.value)
+
+    def test_send_to_caller_with_bad_block_update(self):
+        c = ClientComms("c", Mock())
+        response = Mock(type_="Delta", id_=0, UPDATE="Update")
+        self.assertRaises(AssertionError, c.send_to_caller, response)
 
     def test_sends_to_server(self):
         client = ClientComms("c", Mock())
@@ -68,8 +82,8 @@ class TestClientComms(unittest.TestCase):
         request_2 = Mock(id_ = None)
         client.q.get = Mock(side_effect = [request_1, request_2, client.STOP])
         client.send_loop()
-        self.assertEqual(1234, request_1.id_)
-        self.assertEqual(1235, request_2.id_)
+        request_1.set_id.assert_called_once_with(1234)
+        request_2.set_id.assert_called_once_with(1235)
 
     def test_send_to_caller(self):
         request = Mock(response_queue=Mock(), id_=1234)

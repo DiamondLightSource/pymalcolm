@@ -3,47 +3,64 @@ import functools
 from malcolm.core.controller import Controller
 from malcolm.core.request import Request
 from malcolm.core.method import Method
+from malcolm.core.serializable import Serializable
 
 
 class ClientController(Controller):
     """Sync a local block with a given remote block"""
+    REMOTE_BLOCKS_ID = 0
+    BLOCK_ID = 1
 
-    def __init__(self, process, block, client_comms):
+    def __init__(self, process, block):
         """
         Args:
             process (Process): The process this should run under
             block (Block): The local block we should be controlling
-            client_comms (ClientComms): Should be already connected to a server
-                hosting the remote block
         """
-        self.q = process.create_queue()
-        self.client_comms = client_comms
-        # Call this last as it calls create_methods
         super(ClientController, self).__init__(block=block)
+        self.process = process
+        request = Request.Subscribe(
+            None, self, [process.name, "remoteBlocks", "value"])
+        request.set_id(self.REMOTE_BLOCKS_ID)
+        self.process.q.put(request)
 
-    def create_methods(self):
-        """Get methods from remote block and mirror them internally"""
-        request = Request.Get(None, self.q, [self.block.name])
+    def put(self, response):
+        """We don't have a queue as no thread to service, but act like one"""
+        if response.id_ == self.REMOTE_BLOCKS_ID:
+            if response.value and self.block.name in response.value:
+                # process knows how to get to a block
+                self._subscribe_to_block(self.block.name)
+        elif response.id_ == self.BLOCK_ID:
+            with self.block.lock:
+                self.log_debug(response)
+                for change in response.changes:
+                    if change[0] == []:
+                        # update root
+                        self._regenerate_block(change[1])
+                    else:
+                        # just pass it to the block to handle
+                        self.block.update(change)
+
+    def _regenerate_block(self, d):
+        children = []
+        for k, v in d.items():
+            if k == "typeid":
+                continue
+            child = Serializable.from_dict(k, v)
+            children.append(child)
+            if isinstance(child, Method):
+                # calling method forwards to server
+                child.set_function(
+                    functools.partial(self.call_server_method, k))
+        self.block.replace_children(children)
+
+    def _subscribe_to_block(self, block_name):
+        self.client_comms = self.process.get_client_comms(block_name)
+        assert self.client_comms, \
+            "Process doesn't know about block %s" % block_name
+        request = Request.Subscribe(None, self, [block_name], delta=True)
+        request.set_id(self.BLOCK_ID)
         self.client_comms.q.put(request)
-        self.log_debug("Waiting for response to Get %s", self.block.name)
-        response = self.q.get()
-        # Find all the methods
-        for aname, amap in response.value.items():
-            # TODO: If it has "takes" it's a method, flaky...
-            if "takes" in amap:
-                yield self.wrap_method(aname, amap)
-
-    def wrap_method(self, method_name, method_map):
-        """Take the serialized method map and create a Method from it
-
-        Args:
-            method_map (dict): Serialized Method
-        """
-        method = Method.from_dict(method_name, method_map)
-        method.set_function(
-            functools.partial(self.call_server_method, method_name))
-        self.log_debug("Wrapping method %s", method_name)
-        return method
 
     def call_server_method(self, method_name, parameters, returns):
         """Call method_name on the server
@@ -54,10 +71,12 @@ class ClientController(Controller):
             returns (Map): Returns map to fill and return
         """
         self.log_debug(dict(parameters))
-        request = Request.Post(None, self.q,
+        q = self.process.create_queue()
+        request = Request.Post(None, q,
                                [self.block.name, method_name], parameters)
         self.client_comms.q.put(request)
-        response = self.q.get()
+        with self.block.lock_released():
+            response = q.get()
         assert response.type_ == response.RETURN, \
             "Expected Return, got %s" % response.type_
         returns.update(response.value)
