@@ -145,6 +145,7 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(p._client_comms, {})
         p._handle_block_list(request)
         self.assertEqual(p._client_comms, dict(cc=["myblock"]))
+        self.assertEqual(p.process_block.remoteBlocks.value, ["myblock"])
         self.assertEqual(p.get_client_comms("myblock"), "cc")
 
 

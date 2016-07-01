@@ -131,6 +131,9 @@ class Process(Loggable):
         self.process_block.add_attribute(
             Attribute("blocks", StringArrayMeta(
                 "meta", "Blocks hosted by this Process")))
+        self.process_block.add_attribute(
+            Attribute("remoteBlocks", StringArrayMeta(
+                "meta", "Blocks reachable via ClientComms")))
         self.add_block(self.process_block)
 
     def update_block_list(self, client_comms, blocks):
@@ -138,6 +141,10 @@ class Process(Loggable):
 
     def _handle_block_list(self, request):
         self._client_comms[request.client_comms] = request.blocks
+        remotes = []
+        for blocks in self._client_comms.values():
+            remotes += [b for b in blocks if b not in remotes]
+        self.process_block.remoteBlocks.set_value(remotes)
 
     def notify_subscribers(self, block_name):
         self.q.put(BlockNotify(name=block_name))
