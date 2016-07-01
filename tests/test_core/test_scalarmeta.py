@@ -8,6 +8,7 @@ import setup_malcolm_paths
 from mock import Mock
 
 from malcolm.core.scalarmeta import ScalarMeta
+from malcolm.core.serializable import Serializable
 
 # Register ScalarMeta as a sublcass of itself so we
 # can instantiate it for testing purposes.
@@ -50,22 +51,32 @@ class TestUpdate(unittest.TestCase):
         meta.on_changed.assert_called_once_with(
             [["writeable"], writeable], notify)
 
-class TestToDict(unittest.TestCase):
 
-    def setUp(self):
-        self.meta = ScalarMeta("Test", "test_description")
+class TestDict(unittest.TestCase):
 
-    def test_returns_dict(self):
+    def test_to_dict(self):
+        meta = ScalarMeta("Test", "test_description")
         expected_dict = OrderedDict()
         expected_dict["typeid"] = "scalarmeta:test"
         expected_dict["description"] = "test_description"
         expected_dict["tags"] = ["tag"]
         expected_dict["writeable"] = True
 
-        self.meta.tags = ["tag"]
-        response = self.meta.to_dict()
+        meta.tags = ["tag"]
+        response = meta.to_dict()
 
         self.assertEqual(expected_dict, response)
+
+    def test_from_dict(self):
+        d = {"typeid":"scalarmeta:test", "description":"test_desc",
+             "writeable":False, "tags":["tag"]}
+        meta = Serializable.from_dict("Test", d)
+        self.assertEqual("Test", meta.name)
+        self.assertEqual("test_desc", meta.description)
+        self.assertEqual(False, meta.writeable)
+        self.assertEqual(["tag"], meta.tags)
+        self.assertEqual("scalarmeta:test", meta.typeid)
+        self.assertEqual(d, meta.to_dict())
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
