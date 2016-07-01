@@ -1,9 +1,9 @@
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/StringArray:1.0")
-class StringArrayMeta(AttributeMeta):
+@Serializable.register("malcolm:core/StringArrayMeta:1.0")
+class StringArrayMeta(ScalarMeta):
     """Meta object containing information for a string array"""
 
     def __init__(self, name, description):
@@ -29,17 +29,3 @@ class StringArrayMeta(AttributeMeta):
             raise ValueError("Array elements can not be null")
         return validated
 
-    def to_dict(self):
-        d = super(StringArrayMeta, self).to_dict()
-        return d
-
-    @classmethod
-    def from_dict(cls, name, d, *args):
-        """Create StringArrayMeta instance from serialized form
-
-        Args:
-            name (str): Instance name
-            d (dict): Serialized form created by self.to_dict()
-        """
-        meta = StringArrayMeta(name, d["description"])
-        return meta

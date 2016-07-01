@@ -40,11 +40,14 @@ class TestController(unittest.TestCase):
             [call(self.c.say_goodbye.Method), call(self.c.say_hello.Method)])
 
         self.assertEqual(self.c.state.name, "State")
-        self.assertEqual(self.c.state.meta.typeid, "malcolm:core/Enum:1.0")
+        self.assertEqual(
+            self.c.state.meta.typeid, "malcolm:core/ChoiceMeta:1.0")
         self.assertEqual(self.c.status.name, "Status")
-        self.assertEqual(self.c.status.meta.typeid, "malcolm:core/String:1.0")
+        self.assertEqual(
+            self.c.status.meta.typeid, "malcolm:core/StringMeta:1.0")
         self.assertEqual(self.c.busy.name, "Busy")
-        self.assertEqual(self.c.busy.meta.typeid, "malcolm:core/Boolean:1.0")
+        self.assertEqual(
+            self.c.busy.meta.typeid, "malcolm:core/BooleanMeta:1.0")
 
         self.assertEqual(OrderedDict(), self.c.writeable_methods)
 

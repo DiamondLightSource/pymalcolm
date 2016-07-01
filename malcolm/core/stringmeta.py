@@ -1,9 +1,9 @@
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/String:1.0")
-class StringMeta(AttributeMeta):
+@Serializable.register("malcolm:core/StringMeta:1.0")
+class StringMeta(ScalarMeta):
     """Meta object containing information for a string"""
 
     def __init__(self, name, description):
@@ -25,22 +25,3 @@ class StringMeta(AttributeMeta):
             return None
         else:
             return str(value)
-
-    def to_dict(self):
-        """Convert object attributes into a dictionary"""
-
-        d = super(StringMeta, self).to_dict()
-
-        return d
-
-    @classmethod
-    def from_dict(self, name, d, *args):
-        """Create a AttributeMeta subclass instance from the serialized version
-        of itself
-
-        Args:
-            name (str): AttributeMeta instance name
-            d (dict): Something that self.to_dict() would create
-        """
-        string_meta = StringMeta(name, d["description"])
-        return string_meta

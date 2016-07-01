@@ -4,7 +4,7 @@ from collections import OrderedDict
 from malcolm.core.loggable import Loggable
 from malcolm.core.defaultstatemachine import DefaultStateMachine
 from malcolm.core.attribute import Attribute
-from malcolm.core.enummeta import EnumMeta
+from malcolm.core.choicemeta import ChoiceMeta
 from malcolm.core.stringmeta import StringMeta
 from malcolm.core.booleanmeta import BooleanMeta
 
@@ -52,7 +52,7 @@ class Controller(Loggable):
             Attribute: Each one will be attached to the Block by calling
             block.add_attribute(attribute)
         """
-        self.state = Attribute("State", EnumMeta(
+        self.state = Attribute("State", ChoiceMeta(
             "meta", "State of Block",
             self.stateMachine.possible_states))
         yield self.state

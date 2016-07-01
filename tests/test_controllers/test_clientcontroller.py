@@ -30,26 +30,39 @@ class TestClientController(unittest.TestCase):
         serialized = dict(
             say_hello=dict(
                 description="Says hello",
+                tags=[],
                 takes=dict(
+                    description="Hello takes",
+                    tags=[],
                     elements=dict(
                         name=dict(
                             description="A name",
-                            typeid="malcolm:core/String:1.0",
+                            tags=["tag"],
+                            writeable=False,
+                            typeid="malcolm:core/StringMeta:1.0",
+                            label="label",
                         ),
                     ),
                     required=["name"],
                 ),
                 defaults={},
                 returns=dict(
+                    description="Hello returns",
+                    tags=[],
                     elements=dict(
                         greeting=dict(
                             description="A greeting",
-                            typeid="malcolm:core/String:1.0",
+                            tags=["tag"],
+                            writeable=False,
+                            typeid="malcolm:core/StringMeta:1.0",
+                            label="label",
                         ),
                     ),
                     required=["response"],
                 ),
                 writeable=True,
+                typeid="malcolm:core/Method:1.0",
+                label="label",
             ),
         )
 

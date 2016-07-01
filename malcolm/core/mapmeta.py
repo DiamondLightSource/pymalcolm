@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-from malcolm.core.attributemeta import AttributeMeta
 from malcolm.core.serializable import Serializable
 
 OPTIONAL = object()
@@ -9,19 +8,21 @@ REQUIRED = object()
 
 @Serializable.register("malcolm:core/MapMeta:1.0")
 class MapMeta(Serializable):
-    """An object containing a set of AttributeMeta objects"""
+    """An object containing a set of ScalarMeta objects"""
 
-    def __init__(self, name):
-        super(MapMeta, self).__init__(name=name)
+    def __init__(self, name, description):
+        super(MapMeta, self).__init__(name)
+        self.description = description
         self.elements = OrderedDict()
         self.required = []
+        self.tags = []
 
     def add_element(self, attribute_meta, required=False):
         """
         Add an element and whether it is required.
 
         Args:
-            attribute_meta(AttributeMeta): Attribute instance to store
+            attribute_meta(ScalarMeta): Attribute instance to store
             required(bool): Whether attribute is required or optional
 
         Raises:
@@ -65,7 +66,10 @@ class MapMeta(Serializable):
         element_dict = OrderedDict()
         for element_name, meta in self.elements.items():
             element_dict[element_name] = meta.to_dict()
+        d['typeid'] = self.typeid
         d['elements'] = element_dict
+        d['description'] = self.description
+        d['tags'] = self.tags
         d['required'] = self.required
 
         return d
@@ -78,9 +82,10 @@ class MapMeta(Serializable):
             name (str): MapMeta instance name
             d (dict): Something that self.to_dict() would create
         """
-        map_meta = cls(name)
+        map_meta = cls(name, d["description"])
         for ename, element in d["elements"].items():
-            attribute_meta = AttributeMeta.from_dict(ename, element)
+            attribute_meta = Serializable.from_dict(ename, element)
             map_meta.add_element(attribute_meta, ename in d["required"])
+        map_meta.tags = d["tags"]
         return map_meta
 

@@ -1,9 +1,9 @@
-from malcolm.core.attributemeta import AttributeMeta
+from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/Boolean:1.0")
-class BooleanMeta(AttributeMeta):
+@Serializable.register("malcolm:core/BooleanMeta:1.0")
+class BooleanMeta(ScalarMeta):
     """Meta object containing information for a boolean"""
 
     def __init__(self, name, description):
@@ -25,24 +25,3 @@ class BooleanMeta(AttributeMeta):
             return None
         else:
             return bool(value)
-
-    def to_dict(self):
-        """Convert object attributes into a dictionary"""
-
-        d = super(BooleanMeta, self).to_dict()
-
-        return d
-
-    @classmethod
-    def from_dict(cls, name, d):
-        """Create a BooleanMeta subclass instance from the serialized version
-        of itself
-
-        Args:
-            name (str): BooleanMeta instance name
-            d (dict): Serialised version of BooleanMeta
-        """
-
-        boolean_meta = BooleanMeta(name, d["description"])
-
-        return boolean_meta

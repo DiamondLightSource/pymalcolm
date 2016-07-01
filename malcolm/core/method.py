@@ -15,10 +15,12 @@ class Method(Serializable):
         super(Method, self).__init__(name=name)
         self.func = None
         self.description = description
-        self.takes = MapMeta("takes")
-        self.returns = MapMeta("returns")
+        self.takes = MapMeta("takes", "Method arguments")
+        self.returns = MapMeta("returns", "Method output structure")
         self.defaults = OrderedDict()
         self.writeable = True
+        self.tags = []
+        self.label = name
 
     def set_function(self, func):
         """Set the function to expose.
@@ -48,6 +50,14 @@ class Method(Serializable):
         """Set writeable property to enable or disable calling method"""
         self.writeable = writeable
         self.on_changed([["writeable"], writeable])
+
+    def set_tags(self, tags):
+        self.tags = tags
+        self.on_changed([["tags"], tags])
+
+    def set_label(self, label):
+        self.label = label
+        self.on_changed([["label"], label])
 
     def __call__(self, *args, **kwargs):
         """Call the exposed function using regular keyword argument parameters.
@@ -127,12 +137,13 @@ class Method(Serializable):
     def to_dict(self):
         """Return ordered dictionary representing Method object."""
         serialized = OrderedDict()
-        serialized["description"] = self.description
+        serialized["typeid"] = self.typeid
         serialized["takes"] = self.takes.to_dict()
         serialized["defaults"] = self.defaults.copy()
-        serialized["returns"] = self.returns.to_dict()
+        serialized["description"] = self.description
+        serialized["tags"] = self.tags
         serialized["writeable"] = self.writeable
-        serialized["typeid"] = self.typeid
+        serialized["returns"] = self.returns.to_dict()
         return serialized
 
     @classmethod
@@ -149,6 +160,7 @@ class Method(Serializable):
         returns = MapMeta.from_dict("returns", d["returns"])
         method.set_function_returns(returns)
         method.writeable = d["writeable"]
+        method.tags = d["tags"]
         return method
 
     @classmethod
@@ -192,7 +204,7 @@ def takes(*args):
         if not hasattr(func, "Method"):
             Method.wrap_method(func)
 
-        takes_meta = MapMeta("takes")
+        takes_meta = MapMeta("takes", "Method arguments")
         defaults = OrderedDict()
         for index in range(0, len(args), 2):
 
@@ -230,7 +242,7 @@ def returns(*args):
         if not hasattr(func, "Method"):
             Method.wrap_method(func)
 
-        returns_meta = MapMeta("returns")
+        returns_meta = MapMeta("returns", "Method output structure")
         for index in range(0, len(args), 2):
 
             if args[index + 1] not in [OPTIONAL, REQUIRED]:

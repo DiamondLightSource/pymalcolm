@@ -40,7 +40,7 @@ class Serializable(Loggable):
         """Register a subclass so from_dict() works
 
         Args:
-            subcls (AttributeMeta): AttributeMeta subclass to register
+            subcls (Serializable): Serializable subclass to register
             typeid (str): Type identifier for subclass
             *args: Additional arguments to be registered
         """

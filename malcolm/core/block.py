@@ -119,12 +119,12 @@ class Block(Serializable):
 
         d = OrderedDict()
 
+        d["typeid"] = self.typeid
         for attribute_name, attribute in self._attributes.items():
             d[attribute_name] = attribute.to_dict()
         for method_name, method in self._methods.items():
             d[method_name] = method.to_dict()
 
-        d["typeid"] = self.typeid
 
         return d
 

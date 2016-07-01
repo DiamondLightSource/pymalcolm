@@ -19,6 +19,7 @@ class TestPointGeneratorMeta(unittest.TestCase):
     def test_init(self):
         self.assertEqual("test_name", self.PGM.name)
         self.assertEqual("test_description", self.PGM.description)
+        self.assertEqual("test_name", self.PGM.label)
 
     def test_validate(self):
         g = CompoundGenerator([MagicMock()], [])
@@ -42,8 +43,11 @@ class TestPointGeneratorMeta(unittest.TestCase):
 
     def test_to_dict(self):
         expected_dict = OrderedDict()
+        expected_dict["typeid"] = "malcolm:core/PointGeneratorMeta:1.0"
         expected_dict["description"] = "test_description"
-        expected_dict["typeid"] = "malcolm:core/PointGenerator:1.0"
+        expected_dict["tags"] = []
+        expected_dict["writeable"] = True
+        expected_dict["label"] = "test_name"
 
         response = self.PGM.to_dict()
 
@@ -52,13 +56,20 @@ class TestPointGeneratorMeta(unittest.TestCase):
     def test_from_dict(self):
         _dict = OrderedDict()
         _dict["description"] = "test_description"
-        _dict["typeid"] = "malcolm:core/PointGenerator:1.0"
+        _dict["typeid"] = "malcolm:core/PointGeneratorMeta:1.0"
+        _dict["tags"] = ["tag"]
+        _dict["writeable"] = False
+        _dict["label"] = "label"
 
         response = self.PGM.from_dict("test_name", _dict)
 
         self.assertEqual(response.name, "test_name")
         self.assertEqual(response.description, "test_description")
-        self.assertEqual(response.typeid, "malcolm:core/PointGenerator:1.0")
+        self.assertEqual(
+            response.typeid, "malcolm:core/PointGeneratorMeta:1.0")
+        self.assertEqual(response.tags, ["tag"])
+        self.assertEqual(response.writeable, False)
+        self.assertEqual(response.label, "label")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
