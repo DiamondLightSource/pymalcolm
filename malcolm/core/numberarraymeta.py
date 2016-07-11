@@ -36,7 +36,7 @@ class NumberArrayMeta(ScalarMeta):
             if type(value).__module__ != numpy.__name__:
                 raise TypeError("Expected numpy array or list, got %s"
                                 % type(value))
-            if value.dtype != numpy.dtype(self.numpy_type()):
+            if value.dtype != numpy.dtype(self.dtype()):
                 raise TypeError("Expected %s, got %s" %
                                 (self.numpy_type(), value.dtype))
             return value

@@ -46,6 +46,14 @@ class TestNumberMeta(unittest.TestCase):
 
 class TestNumberMetaValidation(unittest.TestCase):
 
+    def test_numpy_array(self):
+        nm = NumberArrayMeta("nm", "desc", np.float64)
+        values = np.array([1.2, 3.4, 5.6])
+        response = nm.validate(values)
+
+        for i, value in enumerate(response):
+            self.assertEqual(values[i], value)
+
     def test_float_against_float64(self):
         nm = NumberArrayMeta("nm", "desc", np.float64)
         values = [1.2, 3.4, 5.6]
