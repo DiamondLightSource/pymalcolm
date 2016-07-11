@@ -4,6 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 import unittest
+from mock import MagicMock
 
 # logging
 # import logging
@@ -24,7 +25,7 @@ class TestHelloControllerSystem(unittest.TestCase):
 
     def test_hello_controller_good_input(self):
         block = Block("hello")
-        HelloController(block)
+        HelloController(MagicMock(), block)
         result = block.say_hello(name="me")
         self.assertEquals(result.greeting, "Hello me")
 
@@ -32,8 +33,7 @@ class TestHelloControllerSystem(unittest.TestCase):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
         block = Block("hello")
-        HelloController(block)
-        process.add_block(block)
+        HelloController(process, block)
         process.start()
         q = sync_factory.create_queue()
         req = Request.Post(response_queue=q, context="ClientConnection",
@@ -54,7 +54,7 @@ class TestCounterControllerSystem(unittest.TestCase):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
         block = Block("counting")
-        CounterController(block)
+        CounterController(process, block)
         process.add_block(block)
         process.start()
         q = sync_factory.create_queue()

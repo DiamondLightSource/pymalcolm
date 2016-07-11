@@ -17,10 +17,9 @@ class ClientController(Controller):
             process (Process): The process this should run under
             block (Block): The local block we should be controlling
         """
-        super(ClientController, self).__init__(block=block)
-        self.process = process
+        super(ClientController, self).__init__(block=block, process=process)
         request = Request.Subscribe(
-            None, self, [process.name, "remoteBlocks", "value"])
+            None, self, [self.process.name, "remoteBlocks", "value"])
         request.set_id(self.REMOTE_BLOCKS_ID)
         self.process.q.put(request)
 
@@ -75,8 +74,7 @@ class ClientController(Controller):
         request = Request.Post(None, q,
                                [self.block.name, method_name], parameters)
         self.client_comms.q.put(request)
-        with self.block.lock_released():
-            response = q.get()
+        response = q.get()
         assert response.type_ == response.RETURN, \
             "Expected Return, got %s" % response.type_
         returns.update(response.value)

@@ -26,21 +26,17 @@ from malcolm.wscomms.wsservercomms import WSServerComms
 from malcolm.wscomms.wsclientcomms import WSClientComms
 
 
-class TestSystemWSComms(unittest.TestCase):
+class TestSystemWSCommsServerOnly(unittest.TestCase):
     def setUp(self):
-        sync_factory = SyncFactory("sync")
-        self.process = Process("proc", sync_factory)
+        self.sf = SyncFactory("sync")
+        self.process = Process("proc", self.sf)
         block = Block("hello")
-        self.process.add_block(block)
-        HelloController(block)
+        HelloController(self.process, block)
         self.sc = WSServerComms("sc", self.process, 8888)
         self.process.start()
         self.sc.start()
 
     def tearDown(self):
-        if hasattr(self, "cc"):
-            self.cc.stop()
-            self.cc.wait()
         self.sc.stop()
         self.sc.wait()
         self.process.stop()
@@ -71,16 +67,27 @@ class TestSystemWSComms(unittest.TestCase):
     def test_server_and_simple_client(self):
         self.send_message()
 
-    def test_server_with_malcolm_client(self):
-        self.cc = WSClientComms("cc", self.process, "ws://localhost:8888/ws")
+class TestSystemWSCommsServerAndClient(TestSystemWSCommsServerOnly):
+    def setUp(self):
+        super(TestSystemWSCommsServerAndClient, self).setUp()
+        self.process2 = Process("proc2", self.sf)
+        self.block2 = Block("hello")
+        ClientController(self.process2, self.block2)
+        self.cc = WSClientComms("cc", self.process2, "ws://localhost:8888/ws")
+        self.process2.start()
         self.cc.start()
-        # Don't add to process as we already have a block of that name
-        block2 = Block("hello")
-        ClientController(self.process, block2)
+
+    def tearDown(self):
+        super(TestSystemWSCommsServerAndClient, self).tearDown()
+        self.cc.stop()
+        self.cc.wait()
+        self.process2.stop()
+
+    def test_server_with_malcolm_client(self):
         # Normally we would wait for it to be connected here, but it isn't
         # attached to a process so just sleep for a bit
         time.sleep(0.1)
-        ret = block2.say_hello("me2")
+        ret = self.block2.say_hello("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
 
 

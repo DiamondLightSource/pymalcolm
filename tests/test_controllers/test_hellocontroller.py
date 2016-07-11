@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock
+from mock import Mock, MagicMock
 
 from malcolm.controllers.hellocontroller import HelloController
 
@@ -13,7 +13,7 @@ class TestHelloController(unittest.TestCase):
 
     def setUp(self):
         self.block = Mock()
-        self.c = HelloController(self.block)
+        self.c = HelloController(MagicMock(), self.block)
 
     def test_init(self):
         self.assertIs(self.block, self.c.block)
