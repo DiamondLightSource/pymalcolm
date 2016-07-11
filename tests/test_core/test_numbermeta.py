@@ -5,7 +5,7 @@ from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import setup_malcolm_paths
-from mock import Mock
+
 import numpy as np
 
 from malcolm.core.numbermeta import NumberMeta
@@ -13,6 +13,7 @@ from malcolm.core.serializable import Serializable
 
 
 class TestNumberMeta(unittest.TestCase):
+
     def test_init(self):
         dtype = np.float64
         nm = NumberMeta("nm", "desc", dtype)
@@ -33,9 +34,9 @@ class TestNumberMeta(unittest.TestCase):
         self.assertEqual(expected, nm.to_dict())
 
     def test_from_dict(self):
-        d = {"description":"desc", "tags":[], "writeable":True,
-                "typeid":"malcolm:core/NumberMeta:1.0",
-                "dtype":"float64", "label":"test_label"}
+        d = {"description": "desc", "tags": [], "writeable": True,
+             "typeid": "malcolm:core/NumberMeta:1.0",
+             "dtype": "float64", "label": "test_label"}
         nm = Serializable.from_dict("nm", d)
         self.assertEqual(NumberMeta, type(nm))
         self.assertEqual("nm", nm.name)
@@ -43,8 +44,14 @@ class TestNumberMeta(unittest.TestCase):
         self.assertEqual("test_label", nm.label)
         self.assertEqual(d, nm.to_dict())
 
+
 class TestNumberMetaValidation(unittest.TestCase):
-    def test_float_against_float(self):
+
+    def test_float_against_float32(self):
+        nm = NumberMeta("nm", "desc", np.float32)
+        self.assertAlmostEqual(123.456, nm.validate(123.456), places=5)
+
+    def test_float_against_float64(self):
         nm = NumberMeta("nm", "desc", np.float64)
         self.assertEqual(123.456, nm.validate(123.456))
 
@@ -58,7 +65,7 @@ class TestNumberMetaValidation(unittest.TestCase):
 
     def test_float_fails_against_int(self):
         nm = NumberMeta("nm", "desc", np.int32)
-        self.assertRaises(AssertionError, nm.validate, 123.456)
+        self.assertRaises(ValueError, nm.validate, 123.456)
 
     def test_none_validates(self):
         nm = NumberMeta("nm", "desc", np.int32)

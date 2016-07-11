@@ -20,8 +20,9 @@ class NumberMeta(ScalarMeta):
             return None
         cast = self.dtype(value)
         if not isinstance(value, base_string):
-            assert cast == value, \
-                "Lost information converting %s to %s" % (value, cast)
+            if not numpy.isclose(cast, value):
+                raise ValueError("Lost information converting %s to %s"
+                                 % (value, cast))
         return cast
 
     def to_dict(self):
