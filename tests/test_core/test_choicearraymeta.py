@@ -7,28 +7,27 @@ import setup_malcolm_paths
 import unittest
 
 from malcolm.core.choicearraymeta import ChoiceArrayMeta
-from malcolm.core.serializable import Serializable
 
 
 class TestChoiceArrayMeta(unittest.TestCase):
 
     def setUp(self):
-        self.meta = ChoiceArrayMeta("test_meta", "test description", [[1, 2, 3], [4, 5, 6]])
+        self.meta = ChoiceArrayMeta("test_meta", "test description", [1, 2, 3])
 
     def test_init(self):
         self.assertEqual("test_meta", self.meta.name)
         self.assertEqual("test description", self.meta.description)
         self.assertEqual(self.meta.label, "test_meta")
         self.assertEqual(self.meta.typeid, "malcolm:core/ChoiceArrayMeta:1.0")
-        self.assertEqual(self.meta.choices_list, [[1, 2, 3], [4, 5, 6]])
+        self.assertEqual(self.meta.choices, [1, 2, 3])
 
     def test_validate_none(self):
         self.assertIsNone(self.meta.validate(None))
 
     def test_validate(self):
-        response = self.meta.validate([2, 6])
+        response = self.meta.validate([2, 3])
 
-        self.assertEqual([2, 6], response)
+        self.assertEqual([2, 3], response)
 
     def test_not_iterable_raises(self):
         value = 1
@@ -45,7 +44,7 @@ class TestChoiceArrayMeta(unittest.TestCase):
     def test_to_dict(self):
         expected = OrderedDict()
         expected["typeid"] = "malcolm:core/ChoiceArrayMeta:1.0"
-        expected['choices_list'] = [[1, 2, 3], [4, 5, 6]]
+        expected['choices'] = [1, 2, 3]
         expected["description"] = "test description"
         expected["tags"] = []
         expected["writeable"] = True
@@ -55,7 +54,7 @@ class TestChoiceArrayMeta(unittest.TestCase):
     def test_from_dict(self):
         d = OrderedDict()
         d["typeid"] = "malcolm:core/ChoiceArrayMeta:1.0"
-        d['choices_list'] = [[1, 2, 3], [4, 5, 6]]
+        d['choices'] = [1, 2, 3]
         d["description"] = "test array description"
         d["tags"] = ["tag"]
         d["writeable"] = False

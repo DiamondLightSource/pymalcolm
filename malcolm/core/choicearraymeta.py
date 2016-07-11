@@ -4,15 +4,15 @@ from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/ChoiceArrayMeta:1.0", "choices_list")
+@Serializable.register("malcolm:core/ChoiceArrayMeta:1.0")
 class ChoiceArrayMeta(ScalarMeta):
     """Meta object containing information for a choice array"""
 
-    def __init__(self, name, description, choices_list):
+    def __init__(self, name, description, choices):
         super(ChoiceArrayMeta, self).__init__(
-            name, description, "choices_list")
+            name, description)
 
-        self.choices_list = choices_list  # A list of lists of choices
+        self.choices = choices
 
     def validate(self, value):
         """
@@ -33,7 +33,7 @@ class ChoiceArrayMeta(ScalarMeta):
         for i, choice in enumerate(value):
             if choice is None:
                 raise ValueError("Array elements can not be null")
-            if choice not in self.choices_list[i]:
+            if choice not in self.choices:
                 raise ValueError("%s is not a valid value for element %s" %
                                  (choice, i))
 
@@ -44,7 +44,7 @@ class ChoiceArrayMeta(ScalarMeta):
 
         d = OrderedDict()
         d["typeid"] = self.typeid
-        d["choices_list"] = self.choices_list
+        d["choices"] = self.choices
         d.update(super(ChoiceArrayMeta, self).to_dict())
 
         return d
@@ -60,8 +60,8 @@ class ChoiceArrayMeta(ScalarMeta):
         """
 
         description = d['description']
-        choices_list = d['choices_list']
-        choice_array_meta = cls(name, description, choices_list)
+        choices = d['choices']
+        choice_array_meta = cls(name, description, choices)
         choice_array_meta.tags = d['tags']
         choice_array_meta.writeable = d['writeable']
         choice_array_meta.label = d['label']
