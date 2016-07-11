@@ -11,38 +11,48 @@ from malcolm.compat import base_string
 class NumberArrayMeta(ScalarMeta):
     """Meta object containing information for an array of numerical values"""
 
-    def __init__(self, name, description, dtype_list):
+    def __init__(self, name, description, dtype):
         super(NumberArrayMeta, self).__init__(name, description)
-        self.dtype_list = dtype_list
+        self.dtype = dtype
 
     def validate(self, value):
+
         if value is None:
             return None
 
-        casted_array = []
-        for i, number in enumerate(value):
-            if number is None:
-                raise ValueError("Array elements can not be null")
-            cast = self.dtype_list[i](number)
-            if not isinstance(number, base_string):
-                assert cast == number, \
-                    "Lost information converting %s to %s" % (number, cast)
-            casted_array.append(cast)
+        elif type(value) == list:
+            casted_array = numpy.array(value, dtype=self.dtype)
+            for i, number in enumerate(value):
+                if number is None:
+                    raise ValueError("Array elements cannot be null")
+                if not isinstance(number, base_string):
+                    cast = casted_array[i]
+                    if not numpy.isclose(cast, number):
+                        raise ValueError("Lost information converting %s to %s"
+                                         % (value, cast))
+            return casted_array
 
-        return casted_array
+        else:
+            if type(value).__module__ != numpy.__name__:
+                raise TypeError("Expected numpy array or list, got %s"
+                                % type(value))
+            if value.dtype != numpy.dtype(self.numpy_type()):
+                raise TypeError("Expected %s, got %s" %
+                                (self.numpy_type(), value.dtype))
+            return value
 
     def to_dict(self):
         d = OrderedDict()
         d["typeid"] = self.typeid
-        d["dtype_list"] = [dtype().dtype.name for dtype in self.dtype_list]
+        d["dtype"] = self.dtype().dtype.name
 
         d.update(super(NumberArrayMeta, self).to_dict())
         return d
 
     @classmethod
     def from_dict(cls, name, d):
-        dtype_list = [numpy.dtype(dtype).type for dtype in d["dtype_list"]]
-        meta = cls(name, d["description"], dtype_list)
+        dtype = numpy.dtype(d["dtype"])
+        meta = cls(name, d["description"], dtype)
         meta.writeable = d["writeable"]
         meta.tags = d["tags"]
         meta.label = d["label"]
