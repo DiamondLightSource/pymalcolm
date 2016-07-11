@@ -22,7 +22,7 @@ class TestPointGeneratorMeta(unittest.TestCase):
         self.assertEqual("test_name", self.PGM.label)
 
     def test_validate(self):
-        g = CompoundGenerator([MagicMock()], [])
+        g = CompoundGenerator([MagicMock()], [], [])
 
         self.PGM.validate(g)
 
