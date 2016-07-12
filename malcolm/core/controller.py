@@ -19,8 +19,7 @@ class Controller(Loggable):
             process (Process): The process this should run under
             block (Block): Block instance to add Methods and Attributes to
         """
-        logger_name = "%s.controller" % block.name
-        super(Controller, self).__init__(logger_name)
+        self.set_logger_name("%s.controller" % block.name)
 
         self.writeable_methods = OrderedDict()
         self.process = process

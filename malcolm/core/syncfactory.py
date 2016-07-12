@@ -13,7 +13,7 @@ class SyncFactory(Loggable):
         Args:
             name(str): Logger name e.g. "Sync"
         """
-        super(SyncFactory, self).__init__(logger_name=name)
+        self.set_logger_name(name)
         self.pool = ThreadPool()
 
     def spawn(self, function, *args, **kwargs):

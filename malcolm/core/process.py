@@ -29,7 +29,7 @@ class Process(Loggable):
     """Hosts a number of Blocks, distributing requests between them"""
 
     def __init__(self, name, sync_factory):
-        super(Process, self).__init__(logger_name=name)
+        self.set_logger_name(name)
         self.name = name
         self.sync_factory = sync_factory
         self.q = self.create_queue()

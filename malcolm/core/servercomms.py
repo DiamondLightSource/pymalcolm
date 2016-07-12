@@ -7,7 +7,7 @@ class ServerComms(Loggable, Spawnable):
     client"""
 
     def __init__(self, name, process):
-        super(ServerComms, self).__init__(logger_name=name)
+        self.set_logger_name(name)
         self.process = process
         self.q = self.process.create_queue()
         self.add_spawn_function(self.send_loop,

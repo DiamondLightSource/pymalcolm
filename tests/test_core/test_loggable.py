@@ -13,12 +13,14 @@ class TestLoggable(unittest.TestCase):
 
     @patch("malcolm.core.loggable.logging")
     def test_init(self, mock_logging):
-        Loggable("foo")
+        l = Loggable()
+        l.set_logger_name("foo")
         mock_logging.getLogger.assert_called_once_with("foo")
 
     @patch("malcolm.core.loggable.logging")
     def test_calls_logger_function(self, mock_logging):
-        l = Loggable("bar")
+        l = Loggable()
+        l.set_logger_name("bar")
         for n in "debug info warning error exception".split():
             m = getattr(l, "log_%s" % n)
             m("hello", n)
