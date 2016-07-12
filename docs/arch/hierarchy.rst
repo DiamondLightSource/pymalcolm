@@ -382,14 +382,14 @@ example, a position plugin might look like this::
         def configure(self, task, device):
             pos = self.child
             # start some puts off in the background
-            future = task.put_async({
+            futures = task.put_async({
                 pos.delete: True,
                 pos.idStart: 1,
                 pos.enableCallbacks: True})
             # calculate the first 100 positions
             xml = self._generate_xml(0, 100)
             # wait until puts are done
-            task.wait_all(future)
+            task.wait_all(futures)
             # put the first 100 points
             task.put(pos.xml, xml)
             self._loaded = 100
@@ -408,8 +408,8 @@ example, a position plugin might look like this::
             pos = self.child
             # Each time the number of positions left changes, call a function
             # to load positions if we're getting low
-            # This will live for as long as the self.load_f future does
-            self.load_f = task.listen(pos.positions, self._load_pos, device)
+            # This will live until we unsubscribe from the self.load_id
+            self.load_id = task.subscribe(pos.positions, self._load_pos, device)
             # Start us off running
             running_f = task.when_matches(pos.running, True)
             self.done_f = task.put_async(pos.start, True)
@@ -418,7 +418,7 @@ example, a position plugin might look like this::
         @AreaDetectorRunnableDevice.Running
         def running(self, task, device):
             task.wait_all(self.done_f)
-            self.load_f.cancel()
+            task.unsubscribe(self.load_id)
 
 Co-ordination
 -------------
