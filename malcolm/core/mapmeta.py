@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
 
 OPTIONAL = object()
@@ -7,7 +8,7 @@ REQUIRED = object()
 
 
 @Serializable.register("malcolm:core/MapMeta:1.0")
-class MapMeta(Serializable):
+class MapMeta(Notifier):
     """An object containing a set of ScalarMeta objects"""
 
     def __init__(self, name, description):

@@ -3,7 +3,7 @@ from collections import OrderedDict
 from malcolm.core.loggable import Loggable
 
 
-class Serializable(Loggable):
+class Serializable(object):
     """Base class for serializable objects that can
     propagate changes to a parent"""
 
@@ -15,7 +15,6 @@ class Serializable(Loggable):
     _typeid_lookup = {}
 
     def __init__(self, name, *args):
-        super(Serializable, self).__init__(logger_name=name)
         self.name = name
         self.typeid = self._typeid_lookup[(type(self), args)]
         self.parent = None
@@ -49,23 +48,6 @@ class Serializable(Loggable):
             cls._typeid_lookup[(subcls, args)] = typeid
             return subcls
         return decorator
-
-    def set_parent(self, parent):
-        """Sets the parent for changes to be propagated to"""
-        self._logger_name = "%s.%s" % (parent.name, self.name)
-        self.parent = parent
-
-    def on_changed(self, change, notify=True):
-        """Propagate change to parent, adding self.name to paths.
-
-        Args:
-            change: [[path], value] pair for changed values
-        """
-        if self.parent is None:
-            return
-        path = change[0]
-        path.insert(0, self.name)
-        self.parent.on_changed(change, notify)
 
     def update(self, change):
         raise NotImplementedError(

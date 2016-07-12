@@ -1,10 +1,11 @@
 from collections import OrderedDict
 
+from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
 
 
 @Serializable.register("epics:nt/NTAttribute:1.0")
-class Attribute(Serializable):
+class Attribute(Notifier):
     """Represents a value with type information that may be backed elsewhere"""
 
     def __init__(self, name, meta):

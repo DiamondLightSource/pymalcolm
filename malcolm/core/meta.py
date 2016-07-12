@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
-from malcolm.core.serializable import Serializable
+from malcolm.core.notifier import Notifier
 
 
-class Meta(Serializable):
+class Meta(Notifier):
     """Meta base class"""
 
     def __init__(self, name, description, *args):
