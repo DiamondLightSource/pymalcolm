@@ -54,6 +54,20 @@ class TestNumberMetaValidation(unittest.TestCase):
         for i, value in enumerate(response):
             self.assertEqual(values[i], value)
 
+    def test_numpy_array_wrong_type_raises(self):
+        nm = NumberArrayMeta("nm", "desc", np.float64)
+        values = "[1.2, 3.4, 5.6]"
+
+        with self.assertRaises(TypeError):
+            nm.validate(values)
+
+    def test_numpy_array_wrong_number_type_raises(self):
+        nm = NumberArrayMeta("nm", "desc", np.int32)
+        values = np.array([1.2, 3.4, 5.6])
+
+        with self.assertRaises(TypeError):
+            nm.validate(values)
+
     def test_float_against_float64(self):
         nm = NumberArrayMeta("nm", "desc", np.float64)
         values = [1.2, 3.4, 5.6]

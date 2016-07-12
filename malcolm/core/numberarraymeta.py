@@ -38,7 +38,7 @@ class NumberArrayMeta(ScalarMeta):
                                 % type(value))
             if value.dtype != numpy.dtype(self.dtype()):
                 raise TypeError("Expected %s, got %s" %
-                                (self.numpy_type(), value.dtype))
+                                (numpy.dtype(self.dtype()), value.dtype))
             return value
 
     def to_dict(self):
