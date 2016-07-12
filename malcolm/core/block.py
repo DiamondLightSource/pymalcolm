@@ -33,7 +33,7 @@ class LockRelease(object):
         self.lock.acquire()
         return False
 
-@Serializable.register("malcolm:core/Block:1.0")
+@Serializable.register_subclass("malcolm:core/Block:1.0")
 class Block(Notifier):
     """Object consisting of a number of Attributes and Methods"""
 

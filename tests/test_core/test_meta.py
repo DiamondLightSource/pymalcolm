@@ -10,7 +10,7 @@ from mock import Mock
 from malcolm.core.meta import Meta
 from malcolm.core.serializable import Serializable
 
-Serializable.register("meta:test")(Meta)
+Serializable.register_subclass("meta:test")(Meta)
 
 class TestMeta(unittest.TestCase):
     def test_init(self):

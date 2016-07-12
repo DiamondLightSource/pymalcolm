@@ -2,7 +2,7 @@ from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/StringMeta:1.0")
+@Serializable.register_subclass("malcolm:core/StringMeta:1.0")
 class StringMeta(ScalarMeta):
     """Meta object containing information for a string"""
 

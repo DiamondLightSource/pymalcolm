@@ -4,7 +4,7 @@ from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("epics:nt/NTAttribute:1.0")
+@Serializable.register_subclass("epics:nt/NTAttribute:1.0")
 class Attribute(Notifier):
     """Represents a value with type information that may be backed elsewhere"""
 

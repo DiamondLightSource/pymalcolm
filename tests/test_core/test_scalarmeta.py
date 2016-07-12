@@ -12,7 +12,7 @@ from malcolm.core.serializable import Serializable
 
 # Register ScalarMeta as a sublcass of itself so we
 # can instantiate it for testing purposes.
-ScalarMeta.register("scalarmeta:test")(ScalarMeta)
+ScalarMeta.register_subclass("scalarmeta:test")(ScalarMeta)
 
 class TestInit(unittest.TestCase):
 

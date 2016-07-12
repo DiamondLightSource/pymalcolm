@@ -10,14 +10,14 @@ from malcolm.core.serializable import Serializable
 
 # Register Serializable as a sublcass of itself so we
 # can instantiate it for testing purposes.
-Serializable.register("serializable:test")(Serializable)
+Serializable.register_subclass("serializable:test")(Serializable)
 
 
 class TestSerialization(unittest.TestCase):
 
     def test_to_dict(self):
 
-        @Serializable.register("foo:1.0")
+        @Serializable.register_subclass("foo:1.0")
         class DummySerializable(Serializable):
             from_dict = Mock()
 
@@ -26,7 +26,7 @@ class TestSerialization(unittest.TestCase):
 
     def test_base_deserialize_calls_from_dict(self):
 
-        @Serializable.register("foo:1.0")
+        @Serializable.register_subclass("foo:1.0")
         class DummySerializable(Serializable):
             from_dict = Mock()
 
@@ -39,7 +39,7 @@ class TestSerialization(unittest.TestCase):
 
     def test_from_dict_calls_update(self):
 
-        @Serializable.register("foo:1.0")
+        @Serializable.register_subclass("foo:1.0")
         class DummySerializable(Serializable):
             update = Mock()
 
@@ -52,7 +52,7 @@ class TestSerialization(unittest.TestCase):
 
     def test_update_calls_set(self):
 
-        @Serializable.register("foo:1.0")
+        @Serializable.register_subclass("foo:1.0")
         class DummySerializable(Serializable):
             set_value = Mock()
 

@@ -10,7 +10,7 @@ from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
 
 
-Serializable.register("notifier:test")(Notifier)
+Serializable.register_subclass("notifier:test")(Notifier)
 
 class TestInit(unittest.TestCase):
 

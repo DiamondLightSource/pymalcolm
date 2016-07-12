@@ -7,7 +7,7 @@ OPTIONAL = object()
 REQUIRED = object()
 
 
-@Serializable.register("malcolm:core/MapMeta:1.0")
+@Serializable.register_subclass("malcolm:core/MapMeta:1.0")
 class MapMeta(Notifier):
     """An object containing a set of ScalarMeta objects"""
 

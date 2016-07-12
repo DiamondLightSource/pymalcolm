@@ -7,7 +7,7 @@ from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string
 
 
-@Serializable.register("malcolm:core/NumberMeta:1.0")
+@Serializable.register_subclass("malcolm:core/NumberMeta:1.0")
 class NumberMeta(ScalarMeta):
     """Meta object containing information for a numerical value"""
 

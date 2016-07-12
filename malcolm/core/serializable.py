@@ -4,7 +4,7 @@ from collections import OrderedDict
 class Serializable(object):
     """Mixin class for serializable objects"""
 
-    # This will be set by subclasses calling cls.register()
+    # This will be set by subclasses calling cls.register_subclass()
     typeid = None
 
     # List of endpoint strings for to_dict()
@@ -68,7 +68,7 @@ class Serializable(object):
         return subcls.from_dict(name, d)
 
     @classmethod
-    def register(cls, typeid):
+    def register_subclass(cls, typeid):
         """Register a subclass so from_dict() works
 
         Args:

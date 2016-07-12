@@ -8,7 +8,7 @@ from malcolm.core.response import Response
 from malcolm.core.map import Map
 
 
-@Serializable.register("malcolm:core/Method:1.0")
+@Serializable.register_subclass("malcolm:core/Method:1.0")
 class Method(Notifier):
     """Exposes a function with metadata for arguments and return values"""
 

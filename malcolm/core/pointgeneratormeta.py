@@ -3,7 +3,7 @@ from malcolm.core.serializable import Serializable
 from scanpointgenerator import CompoundGenerator
 
 
-@Serializable.register("malcolm:core/PointGeneratorMeta:1.0")
+@Serializable.register_subclass("malcolm:core/PointGeneratorMeta:1.0")
 class PointGeneratorMeta(ScalarMeta):
 
     def __init__(self, name, description):

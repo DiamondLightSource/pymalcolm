@@ -2,7 +2,7 @@ from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/BooleanArrayMeta:1.0")
+@Serializable.register_subclass("malcolm:core/BooleanArrayMeta:1.0")
 class BooleanArrayMeta(ScalarMeta):
     """Meta object containing information for a boolean array"""
 
