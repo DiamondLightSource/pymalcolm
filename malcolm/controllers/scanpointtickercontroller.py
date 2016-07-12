@@ -14,9 +14,6 @@ from malcolm.core.runnabledevicestatemachine import RunnableDeviceStateMachine
 @RunnableDeviceStateMachine.insert
 class ScanPointTickerController(Controller):
 
-    def __init__(self, block):
-        super(ScanPointTickerController, self).__init__(block)
-
     def create_attributes(self):
         self.value = Attribute("value",
                 NumberMeta("meta", "Value", numpy.float64))

@@ -24,7 +24,7 @@ class TestClientController(unittest.TestCase):
     def setUp(self):
         # Serialized version of the block we want
         source = Block("blockname")
-        HelloController(source)
+        HelloController(MagicMock(), source)
         self.serialized = source.to_dict()
         # Setup client controller prerequisites
         self.b = Block("blockname")

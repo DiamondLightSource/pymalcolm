@@ -30,13 +30,11 @@ class TestController(unittest.TestCase):
         self.m1 = MagicMock()
         self.m2 = MagicMock()
         b._methods.__getitem__.side_effect = [self.m1, self.m2]
-        self.c = DummyController(b)
+        self.c = DummyController(MagicMock(), b)
 
     def test_init(self):
-        b = MagicMock()
-        self.c = DummyController(b)
-        self.assertEqual(self.c.block, b)
-        b.add_method.assert_has_calls(
+        self.c.process.add_block.assert_called_once_with(self.c.block)
+        self.c.block.add_method.assert_has_calls(
             [call(self.c.say_goodbye.Method), call(self.c.say_hello.Method)])
 
         self.assertEqual(self.c.state.name, "State")

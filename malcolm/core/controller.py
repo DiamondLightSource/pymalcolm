@@ -13,21 +13,25 @@ from malcolm.core.booleanmeta import BooleanMeta
 class Controller(Loggable):
     """Implement the logic that takes a Block through its statemachine"""
 
-    def __init__(self, block):
+    def __init__(self, process, block):
         """
         Args:
+            process (Process): The process this should run under
             block (Block): Block instance to add Methods and Attributes to
         """
         logger_name = "%s.controller" % block.name
         super(Controller, self).__init__(logger_name)
 
         self.writeable_methods = OrderedDict()
+        self.process = process
 
         self.block = block
         for attribute in self.create_attributes():
             block.add_attribute(attribute)
         for method in self.create_methods():
             block.add_method(method)
+
+        self.process.add_block(block)
 
     def create_methods(self):
         """Abstract method that should provide Method instances for Block

@@ -20,7 +20,7 @@ class TestScanPointTickerController(unittest.TestCase):
     def test_init(self, pgmd_mock, nmd_mock, smd_mock):
         attr_id = "epics:nt/NTAttribute:1.0"
         block = MagicMock()
-        sptc = ScanPointTickerController(block)
+        sptc = ScanPointTickerController(MagicMock(), block)
         self.assertEqual(block, sptc.block)
         self.assertEqual(RunnableDeviceStateMachine, type(sptc.stateMachine))
         self.assertEqual("RunnableDeviceStateMachine", sptc.stateMachine.name)
@@ -42,7 +42,7 @@ class TestScanPointTickerController(unittest.TestCase):
         an = MagicMock()
         e = MagicMock()
         block = MagicMock()
-        sptc = ScanPointTickerController(block)
+        sptc = ScanPointTickerController(MagicMock(), block)
 
         sptc.configure(g, an, e)
 
@@ -60,7 +60,7 @@ class TestScanPointTickerController(unittest.TestCase):
         e = MagicMock()
         e.__float__ = MagicMock(return_value=0.1)
         block = MagicMock()
-        sptc = ScanPointTickerController(block)
+        sptc = ScanPointTickerController(MagicMock(), block)
         sptc.value.set_value = MagicMock(side_effect=sptc.value.set_value)
 
         sptc.configure(g, an, e)
