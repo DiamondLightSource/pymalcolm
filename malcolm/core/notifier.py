@@ -6,8 +6,6 @@ class Notifier(Loggable, Serializable):
         self.name = name
         self.set_logger_name(name)
         self.parent = None
-        self.typeid = self._typeid_lookup[(type(self), args)]
-        self.parent = None
 
     def set_parent(self, parent):
         """Sets the parent for changes to be propagated to"""
