@@ -62,9 +62,9 @@ class TestAttribute(unittest.TestCase):
         a.set_value("test_value")
         self.assertEquals(expected, a.to_dict())
 
-    @patch.object(Serializable, "from_dict")
-    def test_from_dict(self, am_from_dict):
-        am_from_dict.return_value = self.meta
+    @patch.object(Serializable, "deserialize")
+    def test_from_dict(self, am_deserialize):
+        am_deserialize.return_value = self.meta
         d = {"value":"test_value", "meta":{"meta":"dict"},
              "typeid":"epics:nt/NTAttribute:1.0"}
         a = Attribute.from_dict("test", d)

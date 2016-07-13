@@ -27,7 +27,7 @@ class TestUpdates(unittest.TestCase):
         n = Notifier("serialize")
         n.set_parent(parent)
         self.assertIs(parent, n.parent)
-        self.assertEquals("parent.serialize", n._logger_name)
+        self.assertEquals("parent.serialize", n._logger.name)
 
     def test_on_changed(self):
         change = [["test_attr", "test_value"], 12]

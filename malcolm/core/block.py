@@ -95,7 +95,7 @@ class Block(Notifier):
             # sub-structure does not exist - create and add
             if len(change[0]) > 1:
                 raise ValueError("Missing substructure at %s" % name)
-            child = Serializable.from_dict(name, change[1])
+            child = Serializable.deserialize(name, change[1])
             d = self._where_child_stored(child)
             assert d is not None, \
                 "Change %s deserialized to unknown object %s" % (change, child)

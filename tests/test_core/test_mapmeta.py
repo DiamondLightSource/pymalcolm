@@ -125,11 +125,11 @@ class TestToDict(unittest.TestCase):
         am1.name = "one"
         am2 = MagicMock()
         am2.name = "two"
-        am_mock.from_dict.side_effect = [am1, am2]
+        am_mock.deserialize.side_effect = [am1, am2]
 
         map_meta = MapMeta.from_dict("Test", d)
 
-        self.assertEqual(am_mock.from_dict.call_args_list, [
+        self.assertEqual(am_mock.deserialize.call_args_list, [
             call("one", "e1"), call("two", "e2")])
         self.assertEqual(map_meta.name, "Test")
         self.assertEqual(map_meta.required, ["one"])

@@ -79,9 +79,8 @@ class TestDict(unittest.TestCase):
         d = dict(description="test string description",
                  writeable="True",
                  tags=["tag1", "tag2"],
-                 typeid="malcolm:core/StringMeta:1.0",
                  label="test_label")
-        s = Serializable.from_dict("me", d)
+        s = StringMeta.from_dict("me", d)
         self.assertEqual(type(s), StringMeta)
         self.assertEqual(s.name, "me")
         self.assertEqual(s.description, "test string description")

@@ -35,7 +35,7 @@ class TestSerialization(unittest.TestCase):
 
         Serializable.deserialize("name", d)
 
-        s.from_dict.assert_called_once_with("name", dict(value=0))
+        s.from_dict.assert_called_once_with("name", d)
 
     def test_from_dict_calls_update(self):
 
@@ -48,7 +48,7 @@ class TestSerialization(unittest.TestCase):
         d = dict(value=0)
         DummySerializable.from_dict("name", d)
 
-        s.update.assert_called_once_with(("value", 0))
+        s.update.assert_called_once_with(["value", 0])
 
     def test_update_calls_set(self):
 

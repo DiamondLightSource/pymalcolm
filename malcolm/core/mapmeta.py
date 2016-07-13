@@ -85,7 +85,7 @@ class MapMeta(Notifier):
         """
         map_meta = cls(name, d["description"])
         for ename, element in d["elements"].items():
-            attribute_meta = Serializable.from_dict(ename, element)
+            attribute_meta = Serializable.deserialize(ename, element)
             map_meta.add_element(attribute_meta, ename in d["required"])
         map_meta.tags = d["tags"]
         return map_meta

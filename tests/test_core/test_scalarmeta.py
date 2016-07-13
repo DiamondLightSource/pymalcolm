@@ -80,7 +80,7 @@ class TestDict(unittest.TestCase):
     def test_from_dict(self):
         d = {"typeid":"scalarmeta:test", "description":"test_desc",
              "writeable":False, "tags":["tag"], "label":"test_label"}
-        meta = Serializable.from_dict("Test", d)
+        meta = ScalarMeta.from_dict("Test", d)
         self.assertEqual("Test", meta.name)
         self.assertEqual("test_desc", meta.description)
         self.assertEqual(False, meta.writeable)

@@ -74,11 +74,10 @@ class TestSerialisation(unittest.TestCase):
 
     def test_from_dict(self):
         d = dict(description="test description",
-                 typeid="malcolm:core/BooleanMeta:1.0",
                  writeable=False,
                  tags=["tag"],
                  label="label")
-        s = Serializable.from_dict("me", d)
+        s = BooleanMeta.from_dict("me", d)
         self.assertEqual(type(s), BooleanMeta)
         self.assertEqual(s.name, "me")
         self.assertEqual(s.tags, ["tag"])

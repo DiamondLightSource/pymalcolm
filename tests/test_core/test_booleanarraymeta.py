@@ -48,19 +48,17 @@ class TestBooleanArrayMeta(unittest.TestCase):
 
     def test_from_dict(self):
         d = OrderedDict()
-        d["typeid"] = "malcolm:core/BooleanArrayMeta:1.0"
         d["description"] = "test array description"
         d["tags"] = ["tag"]
         d["writeable"] = False
         d["label"] = "test_label"
-        s = Serializable.from_dict("test_array_meta", d)
+        s = BooleanArrayMeta.from_dict("test_array_meta", d)
         self.assertEqual(BooleanArrayMeta, type(s))
         self.assertEqual(s.name, "test_array_meta")
         self.assertEqual(s.description, "test array description")
         self.assertEqual(s.tags, ["tag"])
         self.assertEqual(s.writeable, False)
         self.assertEqual(s.label, "test_label")
-        self.assertEqual(d, s.to_dict())
 
 
 if __name__ == "__main__":

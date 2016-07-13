@@ -45,7 +45,7 @@ class Attribute(Notifier):
             name (str): Attribute instance name
             d (dict): Output of self.to_dict()
         """
-        meta = Serializable.from_dict("meta", d["meta"])
+        meta = Serializable.deserialize("meta", d["meta"])
         attribute = cls(name, meta)
         attribute.value = d["value"]
         return attribute

@@ -45,7 +45,7 @@ class ClientController(Controller):
         for k, v in d.items():
             if k == "typeid":
                 continue
-            child = Serializable.from_dict(k, v)
+            child = Serializable.deserialize(k, v)
             children.append(child)
             if isinstance(child, Method):
                 # calling method forwards to server

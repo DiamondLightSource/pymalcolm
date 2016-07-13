@@ -101,14 +101,13 @@ class TestUpdates(unittest.TestCase):
         b.add_child = MagicMock(wrap=b.add_child)
         attr_meta = StringMeta("meta", "desc")
         attr = Attribute("attr", attr_meta)
-        change_dict = attr.to_dict()
-        change = [["attr"], change_dict]
+        change = [["attr"], attr.to_dict()]
 
         b.update(change)
 
         added_attr = b.add_child.call_args[0][0]
         self.assertEquals(Attribute, type(added_attr))
-        self.assertEquals(change_dict, added_attr.to_dict())
+        self.assertEquals(attr.to_dict(), added_attr.to_dict())
         d = b.add_child.call_args[0][1]
         self.assertEquals(d, b.attributes)
 
@@ -116,14 +115,13 @@ class TestUpdates(unittest.TestCase):
         b = Block("b")
         b.add_child = MagicMock(wrap=b.add_child)
         method = Method("method", "desc")
-        change_dict = method.to_dict()
-        change = [["method"], change_dict]
+        change = [["method"], method.to_dict()]
 
         b.update(change)
 
         added_method = b.add_child.call_args[0][0]
         self.assertEquals(Method, type(added_method))
-        self.assertEquals(change_dict, added_method.to_dict())
+        self.assertEquals(method.to_dict(), added_method.to_dict())
         d = b.add_child.call_args[0][1]
         self.assertEquals(d, b.methods)
 
@@ -134,7 +132,7 @@ class TestUpdates(unittest.TestCase):
                 ValueError, msg="Missing substructure at %s" % change[0][0]):
             b.update(change)
 
-    @patch("malcolm.core.serializable.Serializable.from_dict")
+    @patch("malcolm.core.serializable.Serializable.deserialize")
     def test_update_raises_if_wrong_object(self, from_dict_mock):
         b = Block("b")
         change = [["path"], MagicMock()]

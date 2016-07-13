@@ -35,9 +35,8 @@ class TestNumberMeta(unittest.TestCase):
 
     def test_from_dict(self):
         d = {"description": "desc", "tags": [], "writeable": True,
-             "typeid": "malcolm:core/NumberMeta:1.0",
              "dtype": "float64", "label": "test_label"}
-        nm = self.nm.from_dict("nm", d)
+        nm = NumberArrayMeta.from_dict("nm", d)
         self.assertEqual(NumberArrayMeta, type(nm))
         self.assertEqual("nm", nm.name)
         self.assertEqual(np.float64, nm.dtype)
