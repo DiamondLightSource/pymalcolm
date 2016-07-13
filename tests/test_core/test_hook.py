@@ -37,7 +37,7 @@ class TestHook(unittest.TestCase):
 
     def test_decorator(self):
 
-        self.assertEqual(type(DummyPart1().do_thing.hook), Hook)
+        self.assertEqual(type(DummyPart1().do_thing.Hook), Hook)
 
     def setUp(self):
         block_mock = MagicMock()
@@ -47,11 +47,12 @@ class TestHook(unittest.TestCase):
 
     def test_run_sets_logger_name(self):
         self.c.parts = []
+        self.c.process = MagicMock()
         part = DummyPart1()
 
-        part.do_thing.hook.run(self.c)
+        part.do_thing.Hook.run(self.c)
 
-        self.assertEqual(part.do_thing.hook._logger.name, "TestBlock.Configuring")
+        self.assertEqual(part.do_thing.Hook._logger.name, "TestBlock.Configuring")
 
     @patch('malcolm.core.hook.Task')
     def test_run_makes_correct_calls(self, task_mock):
@@ -62,47 +63,48 @@ class TestHook(unittest.TestCase):
         spawn_mock.return_value = spawned_mock
         process_mock.create_queue.return_value = queue_mock
         process_mock.spawn = spawn_mock
+        process_mock.q.get.return_value = (task_mock.return_value, MagicMock())
         self.c.process = process_mock
         part1 = DummyPart1()
         part2 = DummyPart2()
         self.c.parts = [part1, part2]
 
-        response = part1.do_thing.hook.run(self.c)
+        response = part1.do_thing.Hook.run(self.c)
 
         task_calls = [call[0][0] for call in task_mock.call_args_list]
         self.assertEqual(task_calls, [self.c.process]*2)
         spawn_calls = [call[0] for call in spawn_mock.call_args_list]
         self.assertEqual(spawn_calls[0],
-                         (Hook._run_func, self.c.process.q, part1.do_thing,
+                         (Hook._run_func, queue_mock, part1.do_thing,
                           task_mock.return_value))
         self.assertEqual(spawn_calls[1],
-                         (Hook._run_func, self.c.process.q, part2.do_all_the_things,
+                         (Hook._run_func, queue_mock, part2.do_all_the_things,
                           task_mock.return_value))
-
-        queue_calls = [call[0][0] for call in queue_mock.put.call_args_list]
-        self.assertEqual(queue_calls, [spawned_mock]*2)
 
         self.assertEqual(2, process_mock.q.get.call_count)
 
         self.assertIsNone(response)
 
     @patch('malcolm.core.hook.Task')
-    def test_run_stops_after_exception_raised(self, _):
+    def test_run_stops_after_exception_raised(self, task_mock):
         process_mock = MagicMock()
         queue_mock = MagicMock()
         spawn_mock = MagicMock()
         spawned_mock = MagicMock()
         spawn_mock.return_value = spawned_mock
-        process_mock.create_queue.return_value = queue_mock
-        process_mock.q.get.side_effect = Exception
         process_mock.spawn = spawn_mock
+        process_mock.create_queue.return_value = queue_mock
+        process_mock.q.get.return_value = (task_mock.return_value, Exception())
         self.c.process = process_mock
         part1 = DummyPart1()
         part2 = DummyPart2()
         self.c.parts = [part1, part2]
 
         with self.assertRaises(Exception):
-            part1.do_thing.hook.run(self.c)
+            part1.do_thing.Hook.run(self.c)
+
+        task_mock.return_value.stop.assert_called_once_with()
+        self.assertEqual(2, spawned_mock.wait.call_count)
 
     def test_run_func(self):
         queue_mock = MagicMock()
@@ -113,7 +115,7 @@ class TestHook(unittest.TestCase):
         Hook._run_func(queue_mock, func_mock, task_mock)
 
         func_mock.assert_called_once_with(task_mock)
-        queue_mock.put.assert_called_once_with(1)
+        queue_mock.put.assert_called_once_with((task_mock, 1))
 
     def test_run_func_raises(self):
         queue_mock = MagicMock()
@@ -125,7 +127,7 @@ class TestHook(unittest.TestCase):
         Hook._run_func(queue_mock, func_mock, task_mock)
 
         func_mock.assert_called_once_with(task_mock)
-        queue_mock.put.assert_called_once_with(exception)
+        queue_mock.put.assert_called_once_with((task_mock, exception))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

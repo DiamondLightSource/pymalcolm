@@ -13,10 +13,26 @@ class Task(object):
 class Hook(Loggable):
 
     def __call__(self, func):
-        func.hook = self
+        """
+        Decorator function to add a Hook to a Part's function
+
+        Args:
+            func: Function to decorate with Hook
+
+        Returns:
+            Decorated function
+        """
+
+        func.Hook = self
         return func
 
     def run(self, controller):
+        """
+        Run all relevant functions for this Hook
+
+        Args:
+            controller(Controller): Controller who's parts' functions will be run
+        """
 
         names = [n for n in dir(controller) if getattr(controller, n) is self]
         assert len(names) > 0, \
@@ -26,37 +42,47 @@ class Hook(Loggable):
 
         self.set_logger_name("%s.%s" % (controller.block.name, names[0]))
 
+        task_queue = controller.process.create_queue()
+
+        spawned_list = []
         active_tasks = []
         for part in controller.parts:
             members = [value[1] for value in
                        inspect.getmembers(part, predicate=inspect.ismethod)]
 
             for function in members:
-                if hasattr(function, "hook") and function.hook == self:
-                    task_queue = controller.process.create_queue()
+                if hasattr(function, "Hook") and function.Hook == self:
                     task = Task(controller.process)
-                    task_queue.put(controller.process.spawn(
-                        self._run_func, controller.process.q, function, task))
-
+                    spawned_list.append(controller.process.spawn(
+                        self._run_func, task_queue, function, task))
                     active_tasks.append(task)
 
         while active_tasks:
-            response = controller.process.q.get()
-            active_tasks.pop(0)
+            task, response = controller.process.q.get()
+            active_tasks.remove(task)
 
             if isinstance(response, Exception):
                 for task in active_tasks:
                     task.stop()
-                raise response
+                for spawned in spawned_list:
+                    spawned.wait()
 
-        return
+                raise response
 
     @staticmethod
     def _run_func(q, func, task):
+        """
+        Run a function and place the response or exception back on the queue
+
+        Args:
+            q(Queue): Queue to place response/exception raised on
+            func: Function to run
+            task(Task): Task to run function with
+        """
+
         try:
             result = func(task)
         except Exception as e:
-            q.put(e)
+            q.put((task, e))
         else:
-            q.put(result)
-
+            q.put((task, result))
