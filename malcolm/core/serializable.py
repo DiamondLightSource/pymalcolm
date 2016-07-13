@@ -100,10 +100,17 @@ class Serializable(object):
         """
         Set a given attribute to a new value
         Args:
-            change(tuple): Attribute name and value e.g. (value, 5)
+            change(tuple): Attribute path and value e.g. (value, 5)
         """
 
-        attribute = change[0]
+        if len(change[0]) != 1:
+            raise ValueError(
+                "Cannot handle multiple element path in change %s" % change)
+        attribute = change[0][0]
         new_value = change[1]
-        setter = getattr(self, "set_%s" % attribute)
+        try:
+            setter = getattr(self, "set_%s" % attribute)
+        except AttributeError:
+            raise ValueError(
+                "Invalid update path specified in change %s" % change)
         setter(new_value)

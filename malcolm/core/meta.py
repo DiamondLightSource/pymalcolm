@@ -13,24 +13,6 @@ class Meta(Notifier):
         self.description = description
         self.tags = []
 
-    def update(self, change):
-        """Update meta state
-
-        Args:
-            change [[element], new_value]: change to make to meta
-        """
-        if len(change[0]) != 1:
-            raise ValueError(
-                "Change %s specifies substructure that can not exist in Meta"
-                % change)
-        if change[0][0] == "description":
-            self.set_description(change[1], notify=True)
-        elif change[0][0] == "tags":
-            self.set_tags(change[1], notify=True)
-        else:
-            raise ValueError(
-                "Change %s refers to unknown meta attribute" % change)
-
     def set_description(self, description, notify=True):
         self.description = description
         self.on_changed([["description"], description], notify)
