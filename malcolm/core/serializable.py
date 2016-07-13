@@ -13,7 +13,7 @@ class Serializable(object):
     # dict mapping typeid name -> cls
     _subcls_lookup = {}
 
-    def to_dict(self):
+    def to_dict(self, **overrides):
         """
         Create a dictionary representation of object attributes
 
@@ -26,7 +26,10 @@ class Serializable(object):
 
         if self.endpoints is not None:
             for endpoint in self.endpoints:
-                d[endpoint] = getattr(self, endpoint)
+                if endpoint in overrides:
+                    d[endpoint] = overrides[endpoint]
+                else:
+                    d[endpoint] = getattr(self, endpoint)
 
         return d
 

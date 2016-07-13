@@ -11,6 +11,8 @@ from malcolm.compat import base_string
 class NumberArrayMeta(ScalarMeta):
     """Meta object containing information for an array of numerical values"""
 
+    endpoints = ["dtype", "description", "tags", "writeable", "label"]
+
     def __init__(self, name, description, dtype):
         super(NumberArrayMeta, self).__init__(name, description)
         self.dtype = dtype
@@ -42,12 +44,8 @@ class NumberArrayMeta(ScalarMeta):
             return value
 
     def to_dict(self):
-        d = OrderedDict()
-        d["typeid"] = self.typeid
-        d["dtype"] = self.dtype().dtype.name
-
-        d.update(super(NumberArrayMeta, self).to_dict())
-        return d
+        return super(NumberArrayMeta, self).to_dict(
+            dtype=self.dtype().dtype.name)
 
     @classmethod
     def from_dict(cls, name, d):

@@ -11,6 +11,8 @@ REQUIRED = object()
 class MapMeta(Notifier):
     """An object containing a set of ScalarMeta objects"""
 
+    endpoints = ["elements", "description", "tags", "required"]
+
     def __init__(self, name, description):
         super(MapMeta, self).__init__(name)
         self.description = description
@@ -62,18 +64,10 @@ class MapMeta(Notifier):
 
     def to_dict(self):
         """Convert object attributes into a dictionary"""
-
-        d = OrderedDict()
         element_dict = OrderedDict()
         for element_name, meta in self.elements.items():
             element_dict[element_name] = meta.to_dict()
-        d['typeid'] = self.typeid
-        d['elements'] = element_dict
-        d['description'] = self.description
-        d['tags'] = self.tags
-        d['required'] = self.required
-
-        return d
+        return super(MapMeta, self).to_dict(elements=element_dict)
 
     @classmethod
     def from_dict(cls, name, d):

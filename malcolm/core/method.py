@@ -12,6 +12,9 @@ from malcolm.core.map import Map
 class Method(Notifier):
     """Exposes a function with metadata for arguments and return values"""
 
+    endpoints = ["takes", "defaults", "description", "tags", "writeable",
+        "returns"]
+
     def __init__(self, name, description):
         super(Method, self).__init__(name=name)
         self.func = None
@@ -137,15 +140,8 @@ class Method(Notifier):
 
     def to_dict(self):
         """Return ordered dictionary representing Method object."""
-        serialized = OrderedDict()
-        serialized["typeid"] = self.typeid
-        serialized["takes"] = self.takes.to_dict()
-        serialized["defaults"] = self.defaults.copy()
-        serialized["description"] = self.description
-        serialized["tags"] = self.tags
-        serialized["writeable"] = self.writeable
-        serialized["returns"] = self.returns.to_dict()
-        return serialized
+        return super(Method, self).to_dict(
+            takes=self.takes.to_dict(), returns=self.returns.to_dict())
 
     @classmethod
     def from_dict(cls, name, d):

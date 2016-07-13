@@ -6,6 +6,8 @@ from malcolm.core.notifier import Notifier
 class Meta(Notifier):
     """Meta base class"""
 
+    endpoints = ["description", "tags"]
+
     def __init__(self, name, description, *args):
         super(Meta, self).__init__(name, *args)
         self.description = description
@@ -36,13 +38,6 @@ class Meta(Notifier):
     def set_tags(self, tags, notify=True):
         self.tags = tags
         self.on_changed([["tags"], tags], notify)
-
-    def to_dict(self):
-        d = OrderedDict()
-        d["typeid"] = self.typeid
-        d["description"] = self.description
-        d["tags"] = self.tags
-        return d
 
     @classmethod
     def from_dict(cls, name, d, *args):

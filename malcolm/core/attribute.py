@@ -8,6 +8,8 @@ from malcolm.core.serializable import Serializable
 class Attribute(Notifier):
     """Represents a value with type information that may be backed elsewhere"""
 
+    endpoints = ["value", "meta"]
+
     def __init__(self, name, meta):
         super(Attribute, self).__init__(name)
         if meta.name != "meta":
@@ -30,12 +32,7 @@ class Attribute(Notifier):
 
     def to_dict(self):
         """Create ordered dictionary representing class instance"""
-        d = OrderedDict()
-        d["typeid"] = self.typeid
-        d["value"] = self.value
-        d["meta"] = self.meta.to_dict()
-        # TODO: add timeStamp and alarm
-        return d
+        return super(Attribute, self).to_dict(meta=self.meta.to_dict())
 
     @classmethod
     def from_dict(cls, name, d):

@@ -8,6 +8,8 @@ from malcolm.core.serializable import Serializable
 class ChoiceArrayMeta(ScalarMeta):
     """Meta object containing information for a choice array"""
 
+    endpoints = ["choices", "description", "tags", "writeable", "label"]
+
     def __init__(self, name, description, choices):
         super(ChoiceArrayMeta, self).__init__(
             name, description)
@@ -38,16 +40,6 @@ class ChoiceArrayMeta(ScalarMeta):
                                  (choice, i))
 
         return value
-
-    def to_dict(self):
-        """Convert object attributes into a dictionary"""
-
-        d = OrderedDict()
-        d["typeid"] = self.typeid
-        d["choices"] = self.choices
-        d.update(super(ChoiceArrayMeta, self).to_dict())
-
-        return d
 
     @classmethod
     def from_dict(cls, name, d):
