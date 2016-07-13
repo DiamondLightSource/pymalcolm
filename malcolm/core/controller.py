@@ -107,8 +107,8 @@ class Controller(Loggable):
         Set the methods that can be changed in the given state
 
         Args:
-            state(list(str)): States to set writeable
-            methods(Method): Method to set states for
+            state(str): State to set writeable methods in
+            methods(list(Method)): Methods to set writeable
         """
 
         self.writeable_methods[state] = [method.name for method in methods]
