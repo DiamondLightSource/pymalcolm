@@ -10,8 +10,7 @@ class StateMachine(Loggable):
     FAULT = "Fault"
 
     def __init__(self, name):
-        super(StateMachine, self).__init__(logger_name=name)
-
+        self.set_logger_name(name)
         self.name = name
         self.allowed_transitions = OrderedDict()
         self.busy_states = []

@@ -4,7 +4,7 @@ from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("malcolm:core/ChoiceMeta:1.0")
+@Serializable.register_subclass("malcolm:core/ChoiceMeta:1.0")
 class ChoiceMeta(ScalarMeta):
     """Meta object containing information for a enum"""
 

@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
 from malcolm.core.request import Request
 from malcolm.core.response import Response
@@ -32,8 +33,8 @@ class LockRelease(object):
         self.lock.acquire()
         return False
 
-@Serializable.register("malcolm:core/Block:1.0")
-class Block(Serializable):
+@Serializable.register_subclass("malcolm:core/Block:1.0")
+class Block(Notifier):
     """Object consisting of a number of Attributes and Methods"""
 
     def __init__(self, name):
@@ -94,7 +95,7 @@ class Block(Serializable):
             # sub-structure does not exist - create and add
             if len(change[0]) > 1:
                 raise ValueError("Missing substructure at %s" % name)
-            child = Serializable.from_dict(name, change[1])
+            child = Serializable.deserialize(name, change[1])
             d = self._where_child_stored(child)
             assert d is not None, \
                 "Change %s deserialized to unknown object %s" % (change, child)

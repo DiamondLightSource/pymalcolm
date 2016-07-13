@@ -2,13 +2,14 @@ from collections import OrderedDict
 from inspect import getdoc
 
 from malcolm.core.serializable import Serializable
+from malcolm.core.notifier import Notifier
 from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
 from malcolm.core.response import Response
 from malcolm.core.map import Map
 
 
-@Serializable.register("malcolm:core/Method:1.0")
-class Method(Serializable):
+@Serializable.register_subclass("malcolm:core/Method:1.0")
+class Method(Notifier):
     """Exposes a function with metadata for arguments and return values"""
 
     def __init__(self, name, description):

@@ -1,10 +1,11 @@
 from collections import OrderedDict
 
+from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
 
 
-@Serializable.register("epics:nt/NTAttribute:1.0")
-class Attribute(Serializable):
+@Serializable.register_subclass("epics:nt/NTAttribute:1.0")
+class Attribute(Notifier):
     """Represents a value with type information that may be backed elsewhere"""
 
     def __init__(self, name, meta):
@@ -44,7 +45,7 @@ class Attribute(Serializable):
             name (str): Attribute instance name
             d (dict): Output of self.to_dict()
         """
-        meta = Serializable.from_dict("meta", d["meta"])
+        meta = Serializable.deserialize("meta", d["meta"])
         attribute = cls(name, meta)
         attribute.value = d["value"]
         return attribute

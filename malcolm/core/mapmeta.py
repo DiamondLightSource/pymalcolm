@@ -1,13 +1,14 @@
 from collections import OrderedDict
 
+from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
 
 OPTIONAL = object()
 REQUIRED = object()
 
 
-@Serializable.register("malcolm:core/MapMeta:1.0")
-class MapMeta(Serializable):
+@Serializable.register_subclass("malcolm:core/MapMeta:1.0")
+class MapMeta(Notifier):
     """An object containing a set of ScalarMeta objects"""
 
     def __init__(self, name, description):
@@ -84,7 +85,7 @@ class MapMeta(Serializable):
         """
         map_meta = cls(name, d["description"])
         for ename, element in d["elements"].items():
-            attribute_meta = Serializable.from_dict(ename, element)
+            attribute_meta = Serializable.deserialize(ename, element)
             map_meta.add_element(attribute_meta, ename in d["required"])
         map_meta.tags = d["tags"]
         return map_meta

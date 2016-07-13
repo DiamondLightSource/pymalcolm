@@ -53,14 +53,13 @@ class TestChoiceArrayMeta(unittest.TestCase):
 
     def test_from_dict(self):
         d = OrderedDict()
-        d["typeid"] = "malcolm:core/ChoiceArrayMeta:1.0"
         d['choices'] = [1, 2, 3]
         d["description"] = "test array description"
         d["tags"] = ["tag"]
         d["writeable"] = False
         d["label"] = "test_label"
 
-        s = self.meta.from_dict("test_array_meta", d)
+        s = ChoiceArrayMeta.from_dict("test_array_meta", d)
 
         self.assertEqual(ChoiceArrayMeta, type(s))
         self.assertEqual(s.name, "test_array_meta")
@@ -68,7 +67,6 @@ class TestChoiceArrayMeta(unittest.TestCase):
         self.assertEqual(s.tags, ["tag"])
         self.assertEqual(s.writeable, False)
         self.assertEqual(s.label, "test_label")
-        self.assertEqual(d, s.to_dict())
 
 
 if __name__ == "__main__":

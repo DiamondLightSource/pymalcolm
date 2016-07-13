@@ -10,7 +10,7 @@ from mock import Mock
 from malcolm.core.meta import Meta
 from malcolm.core.serializable import Serializable
 
-Serializable.register("meta:test")(Meta)
+Serializable.register_subclass("meta:test")(Meta)
 
 class TestMeta(unittest.TestCase):
     def test_init(self):
@@ -70,14 +70,12 @@ class TestMeta(unittest.TestCase):
         self.assertEquals(expected, meta.to_dict())
 
     def test_from_dict(self):
-        d = {"description":"test_description", "tags":["tag1", "tag2"],
-             "typeid":"meta:test"}
-        meta = Serializable.from_dict("meta_name", d)
+        d = {"description":"test_description", "tags":["tag1", "tag2"]}
+        meta = Meta.from_dict("meta_name", d)
         self.assertEqual(Meta, type(meta))
         self.assertEqual("meta_name", meta.name)
         self.assertEqual("test_description", meta.description)
         self.assertEqual(["tag1", "tag2"], meta.tags)
-        self.assertEqual(d, meta.to_dict())
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -7,7 +7,7 @@ from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string
 
 
-@Serializable.register("malcolm:core/NumberArrayMeta:1.0")
+@Serializable.register_subclass("malcolm:core/NumberArrayMeta:1.0")
 class NumberArrayMeta(ScalarMeta):
     """Meta object containing information for an array of numerical values"""
 

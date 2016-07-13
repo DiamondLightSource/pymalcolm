@@ -66,12 +66,11 @@ class TestSerialisation(unittest.TestCase):
 
     def test_from_dict(self):
         d = dict(description="test description",
-                 typeid="malcolm:core/ChoiceMeta:1.0",
                  choices=[1, 2, 3],
                  tags=["tag"],
                  writeable=False,
                  label="label")
-        s = Serializable.from_dict("me", d)
+        s = ChoiceMeta.from_dict("me", d)
         self.assertEqual(type(s), ChoiceMeta)
         self.assertEqual(s.name, "me")
         self.assertEqual(s.choices, [1, 2, 3])

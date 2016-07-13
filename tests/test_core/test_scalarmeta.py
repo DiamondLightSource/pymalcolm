@@ -12,7 +12,7 @@ from malcolm.core.serializable import Serializable
 
 # Register ScalarMeta as a sublcass of itself so we
 # can instantiate it for testing purposes.
-ScalarMeta.register("scalarmeta:test")(ScalarMeta)
+ScalarMeta.register_subclass("scalarmeta:test")(ScalarMeta)
 
 class TestInit(unittest.TestCase):
 
@@ -80,7 +80,7 @@ class TestDict(unittest.TestCase):
     def test_from_dict(self):
         d = {"typeid":"scalarmeta:test", "description":"test_desc",
              "writeable":False, "tags":["tag"], "label":"test_label"}
-        meta = Serializable.from_dict("Test", d)
+        meta = ScalarMeta.from_dict("Test", d)
         self.assertEqual("Test", meta.name)
         self.assertEqual("test_desc", meta.description)
         self.assertEqual(False, meta.writeable)

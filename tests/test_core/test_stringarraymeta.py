@@ -53,7 +53,7 @@ class TestStringArrayMeta(unittest.TestCase):
         d["tags"] = ["tag"]
         d["writeable"] = False
         d["label"] = "test_label"
-        s = Serializable.from_dict("test_array_meta", d)
+        s = StringArrayMeta.from_dict("test_array_meta", d)
         self.assertEqual(StringArrayMeta, type(s))
         self.assertEqual(s.name, "test_array_meta")
         self.assertEqual(s.description, "test array description")
