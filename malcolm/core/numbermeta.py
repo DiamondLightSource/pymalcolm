@@ -11,6 +11,8 @@ from malcolm.compat import base_string
 class NumberMeta(ScalarMeta):
     """Meta object containing information for a numerical value"""
 
+    endpoints = ["dtype", "description", "tags", "writeable", "label"]
+
     def __init__(self, name, description, dtype):
         super(NumberMeta, self).__init__(name, description)
         self.dtype = dtype
@@ -26,12 +28,7 @@ class NumberMeta(ScalarMeta):
         return cast
 
     def to_dict(self):
-        d = OrderedDict()
-        d["typeid"] = self.typeid
-        d["dtype"] = self.dtype().dtype.name
-
-        d.update(super(NumberMeta, self).to_dict())
-        return d
+        return super(NumberMeta, self).to_dict(dtype=self.dtype().dtype.name)
 
     @classmethod
     def from_dict(cls, name, d):

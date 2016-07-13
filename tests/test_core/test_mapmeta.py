@@ -81,8 +81,7 @@ class TestAddElement(unittest.TestCase):
 
 class TestToDict(unittest.TestCase):
 
-    @patch('malcolm.core.serializable.Serializable.to_dict')
-    def test_returns_dict(self, _):
+    def test_returns_dict(self):
         e1 = MagicMock()
         e1.name = "one"
         a1 = OrderedDict()

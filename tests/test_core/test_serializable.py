@@ -62,7 +62,7 @@ class TestSerialization(unittest.TestCase):
 
         s = DummySerializable()
 
-        s.update(("value", 0))
+        s.update((["value"], 0))
 
         s.set_value.assert_called_once_with(0)
 

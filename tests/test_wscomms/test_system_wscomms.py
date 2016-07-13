@@ -86,7 +86,7 @@ class TestSystemWSCommsServerAndClient(TestSystemWSCommsServerOnly):
     def test_server_with_malcolm_client(self):
         # Normally we would wait for it to be connected here, but it isn't
         # attached to a process so just sleep for a bit
-        time.sleep(0.1)
+        time.sleep(0.5)
         ret = self.block2.say_hello("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
 

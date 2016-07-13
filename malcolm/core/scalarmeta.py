@@ -6,6 +6,8 @@ from malcolm.core.meta import Meta
 class ScalarMeta(Meta):
     """Abstract base class for Scalar Meta objects"""
 
+    endpoints = ["description", "tags", "writeable", "label"]
+
     def __init__(self, name, description, *args):
         super(ScalarMeta, self).__init__(name, description, *args)
         self.writeable = True
@@ -29,18 +31,6 @@ class ScalarMeta(Meta):
     def set_label(self, label, notify=True):
         self.label = label
         self.on_changed([["label"], label], notify)
-
-    def to_dict(self):
-        """Convert object attributes into a dictionary"""
-
-        d = OrderedDict()
-        d["typeid"] = self.typeid
-        d["description"] = self.description
-        d["tags"] = self.tags
-        d["writeable"] = self.writeable
-        d["label"] = self.label
-
-        return d
 
     @classmethod
     def from_dict(cls, name, d, *args):

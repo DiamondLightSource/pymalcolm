@@ -51,6 +51,10 @@ class Block(Notifier):
         self.attributes = OrderedDict()
         self.lock = DummyLock()
 
+    @property
+    def endpoints(self):
+        return list(self.attributes.keys()) + list(self.methods.keys())
+
     def add_attribute(self, attribute, notify=True):
         """Add an Attribute to the block and set the block as its parent"""
         self.add_child(attribute, self.attributes)
@@ -146,16 +150,12 @@ class Block(Notifier):
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
-        d = OrderedDict()
-
-        d["typeid"] = self.typeid
+        overrides = {}
         for attribute_name, attribute in self.attributes.items():
-            d[attribute_name] = attribute.to_dict()
+            overrides[attribute_name] = attribute.to_dict()
         for method_name, method in self.methods.items():
-            d[method_name] = method.to_dict()
-
-
-        return d
+            overrides[method_name] = method.to_dict()
+        return super(Block, self).to_dict(**overrides)
 
     def lock_released(self):
         return LockRelease(self.lock)
