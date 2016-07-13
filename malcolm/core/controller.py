@@ -23,7 +23,7 @@ class Controller(Loggable):
 
         self.writeable_methods = OrderedDict()
         self.process = process
-
+        self.parts = []
         self.block = block
         for attribute in self.create_attributes():
             block.add_attribute(attribute)
@@ -66,7 +66,8 @@ class Controller(Loggable):
             "Busy", BooleanMeta("meta", "Whether Block busy or not"))
         yield self.busy
 
-
+    def add_parts(self, parts):
+        self.parts.extend(parts)
 
     def transition(self, state, message):
         """

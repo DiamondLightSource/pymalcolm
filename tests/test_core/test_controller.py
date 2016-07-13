@@ -36,6 +36,7 @@ class TestController(unittest.TestCase):
         self.c.process.add_block.assert_called_once_with(self.c.block)
         self.c.block.add_method.assert_has_calls(
             [call(self.c.say_goodbye.Method), call(self.c.say_hello.Method)])
+        self.assertEqual([], self.c.parts)
 
         self.assertEqual(self.c.state.name, "State")
         self.assertEqual(
@@ -86,6 +87,11 @@ class TestController(unittest.TestCase):
         self.c.set_writeable_methods("Idle", [m])
 
         self.assertEqual(["configure"], self.c.writeable_methods['Idle'])
+
+    def test_add_part(self):
+        parts = [MagicMock(), MagicMock()]
+        self.c.add_parts(parts)
+        self.assertEqual(parts, self.c.parts)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
