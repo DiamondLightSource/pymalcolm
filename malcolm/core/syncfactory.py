@@ -11,7 +11,7 @@ class SyncFactory(Loggable):
     def __init__(self, name):
         """
         Args:
-            name(str): Scheduler name e.g. "Scheduler"
+            name(str): Logger name e.g. "Sync"
         """
         super(SyncFactory, self).__init__(logger_name=name)
         self.pool = ThreadPool()
