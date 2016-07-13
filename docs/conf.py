@@ -29,6 +29,7 @@ except:
     pass
 else:
     require("mock")
+    require("numpy")
     require("sphinxcontrib-plantuml")
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..')))
 
@@ -83,13 +84,12 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 if not which("plantuml"):
     # For github
-    print "download plantuml..."
-    import urllib
-    here_plantuml = os.path.join(here, "plantuml_downloaded.jar")
-    url = "http://downloads.sourceforge.net/project/plantuml/plantuml.8031.jar?r=http%3A%2F%2Fplantuml.com%2Fdownload.html&ts=1446734489&use_mirror=kent"
-    urllib.urlretrieve(url, here_plantuml)
-    print "download java..."
     import subprocess
+    print "download plantuml..."
+    here_plantuml = os.path.join(here, "plantuml_downloaded.jar")
+    url = "http://downloads.sourceforge.net/project/plantuml/plantuml.8045.jar"
+    subprocess.call(["curl", "-v", "-L", url, "-o", here_plantuml])
+    print "download java..."
     here_jre_tar = os.path.join(here, "jre.tar.gz")
     url = "http://download.oracle.com/otn-pub/java/jdk/8u65-b17/jre-8u65-linux-x64.tar.gz"
     subprocess.call(["curl", "-v", "-j", "-k", "-L", "-H", "Cookie: oraclelicense=accept-securebackup-cookie", url, "-o", here_jre_tar])
