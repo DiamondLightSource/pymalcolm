@@ -6,6 +6,7 @@ import re
 import os
 from setuptools import setup, find_packages
 
+
 module_name = "malcolm"
 
 
