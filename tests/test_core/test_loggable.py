@@ -18,6 +18,11 @@ class TestLoggable(unittest.TestCase):
         mock_logging.getLogger.assert_called_once_with("foo")
 
     @patch("malcolm.core.loggable.logging")
+    def test_call_method_no_log_name(self, mock_logging):
+        l = Loggable()
+        self.assertRaises(ValueError, l.log_info, "msg")
+
+    @patch("malcolm.core.loggable.logging")
     def test_calls_logger_function(self, mock_logging):
         l = Loggable()
         l.set_logger_name("bar")

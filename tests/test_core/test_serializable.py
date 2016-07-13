@@ -3,6 +3,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
+from collections import OrderedDict
 import unittest
 from mock import Mock
 
@@ -19,10 +20,13 @@ class TestSerialization(unittest.TestCase):
 
         @Serializable.register_subclass("foo:1.0")
         class DummySerializable(Serializable):
-            from_dict = Mock()
+            endpoints = ["boo"]
+            boo = 3
 
         s = DummySerializable()
-        self.assertEquals({"typeid": "foo:1.0"}, s.to_dict())
+        expected = OrderedDict(typeid="foo:1.0")
+        expected["boo"] = 3
+        self.assertEquals(expected, s.to_dict())
 
     def test_base_deserialize_calls_from_dict(self):
 
