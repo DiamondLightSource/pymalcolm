@@ -26,10 +26,10 @@ class TestController(unittest.TestCase):
 
     def setUp(self):
         b = MagicMock()
-        b._methods.values.return_value = ["say_hello", "say_goodbye"]
+        b.methods.values.return_value = ["say_hello", "say_goodbye"]
         self.m1 = MagicMock()
         self.m2 = MagicMock()
-        b._methods.__getitem__.side_effect = [self.m1, self.m2]
+        b.methods.__getitem__.side_effect = [self.m1, self.m2]
         self.c = DummyController(MagicMock(), b)
 
     def test_init(self):

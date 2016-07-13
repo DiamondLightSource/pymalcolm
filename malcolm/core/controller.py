@@ -89,11 +89,11 @@ class Controller(Loggable):
 
             self.status.set_value(message)
 
-            for method in self.block._methods.values():
+            for method in self.block.methods.values():
                 if method in self.writeable_methods[state]:
-                    self.block._methods[method].set_writeable(True)
+                    self.block.methods[method].set_writeable(True)
                 else:
-                    self.block._methods[method].set_writeable(False)
+                    self.block.methods[method].set_writeable(False)
 
             self.block.notify_subscribers()
 
