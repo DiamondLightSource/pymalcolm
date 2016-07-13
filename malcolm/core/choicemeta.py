@@ -36,7 +36,7 @@ class ChoiceMeta(ScalarMeta):
             ValueError: If value not valid
         """
 
-        if value in self.choices:
+        if value is None or value in self.choices:
             return value
         else:
             raise ValueError("%s is not a valid value" % value)
