@@ -7,6 +7,7 @@ from malcolm.core.response import Response
 from malcolm.core.attribute import Attribute
 from malcolm.core.method import Method
 
+
 class DummyLock(object):
 
     def acquire(self):
@@ -18,9 +19,10 @@ class DummyLock(object):
     def __enter__(self):
         self.acquire()
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type_, value, traceback):
         self.release()
         return False
+
 
 class LockRelease(object):
     def __init__(self, lock):
@@ -29,9 +31,10 @@ class LockRelease(object):
     def __enter__(self):
         self.lock.release()
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type_, value, traceback):
         self.lock.acquire()
         return False
+
 
 @Serializable.register_subclass("malcolm:core/Block:1.0")
 class Block(Notifier):

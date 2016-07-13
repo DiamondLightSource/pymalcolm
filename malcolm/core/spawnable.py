@@ -22,14 +22,14 @@ class Spawnable(object):
         if process is None:
             process = self.process
         self._initialize()
-        for (func, stop_func) in self._spawn_functions:
+        for (func, _) in self._spawn_functions:
             self._spawned.append(process.spawn(func))
 
     def stop(self):
         """Call registered stop functions"""
 
         self._initialize()
-        for (func, stop_func) in reversed(self._spawn_functions):
+        for (_, stop_func) in reversed(self._spawn_functions):
             if stop_func is not None:
                 stop_func()
 
