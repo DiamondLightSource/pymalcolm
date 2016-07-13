@@ -4,5 +4,4 @@ class DefaultStateMachine(StateMachine):
 
     READY = "Ready"
 
-    def create_states(self):
-        self.set_allowed(self.RESETTING, self.READY)
+    AFTER_RESETTING = READY

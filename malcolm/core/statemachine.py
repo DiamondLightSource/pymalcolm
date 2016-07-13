@@ -9,15 +9,23 @@ class StateMachine(Loggable):
     DISABLED = "Disabled"
     FAULT = "Fault"
 
+    # Subclasses must override this
+    AFTER_RESETTING = None
+
+
     def __init__(self, name):
         self.set_logger_name(name)
         self.name = name
         self.allowed_transitions = OrderedDict()
         self.busy_states = []
+        assert self.AFTER_RESETTING is not None, \
+            "No AFTER_RESETTING state given"
+        self.set_allowed(self.RESETTING, self.AFTER_RESETTING)
+        self.set_busy(self.RESETTING)
         self.create_states()
         self.possible_states = list(self.allowed_transitions)
-        assert self.RESETTING in self.possible_states, \
-            "A transition from RESETTING must be provided"
+        if self.AFTER_RESETTING not in self.possible_states:
+            self.possible_states.append(self.AFTER_RESETTING)
 
         # Set transitions for standard states
         self.set_allowed(self.FAULT, [self.RESETTING, self.DISABLED])
@@ -29,7 +37,7 @@ class StateMachine(Loggable):
         self.possible_states.append(self.DISABLED)
 
     def create_states(self):
-        raise NotImplementedError()
+        pass
 
     def is_allowed(self, initial_state, target_state):
         """

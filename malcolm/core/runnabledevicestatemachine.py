@@ -14,6 +14,8 @@ class RunnableDeviceStateMachine(StateMachine):
     ABORTING = "Aborting"
     ABORTED = "Aborted"
 
+    AFTER_RESETTING = IDLE
+
     def create_states(self):
         # Set transitions for normal states
         self.set_allowed(self.IDLE, self.CONFIGURING)
@@ -23,7 +25,6 @@ class RunnableDeviceStateMachine(StateMachine):
         self.set_allowed(self.PRERUN, [self.RUNNING, self.REWINDING])
         self.set_allowed(self.RUNNING, [self.POSTRUN, self.REWINDING])
         self.set_allowed(self.POSTRUN, [self.IDLE, self.READY])
-        self.set_allowed(self.RESETTING, self.IDLE)
         self.set_allowed(self.PAUSED, [self.REWINDING, self.PRERUN])
         self.set_allowed(self.REWINDING, self.PAUSED)
 
