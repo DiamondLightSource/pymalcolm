@@ -394,7 +394,7 @@ example, a position plugin might look like this::
             task.put(pos.xml, xml)
             self._loaded = 100
 
-        def _load_pos(self, device, positions):
+        def _load_pos(self, positions, device):
             pos = self.child
             if positions < 100 and self._loaded < device.totalSteps:
                 # add up to 100 more positions

@@ -16,7 +16,7 @@ from mock import MagicMock, patch, call
 from malcolm.controllers import ClientController, HelloController
 from malcolm.core.block import Block
 from malcolm.metas import StringMeta
-from malcolm.compat import Queue
+from malcolm.compat import queue
 
 class TestClientController(unittest.TestCase):
 
@@ -64,7 +64,7 @@ class TestClientController(unittest.TestCase):
         self.assertEqual(m.defaults, {})
 
     def test_call_method(self):
-        self.p.create_queue.return_value = Queue()
+        self.p.create_queue.return_value = queue.Queue()
         def f(request):
             request.respond_with_return(dict(
                 greeting="Hello %s" % request.parameters.name))

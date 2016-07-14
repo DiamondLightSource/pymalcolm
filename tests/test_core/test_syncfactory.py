@@ -18,7 +18,7 @@ class TestBlock(unittest.TestCase):
         mock_pool.assert_called_once_with()
         self.assertEqual(self.s.pool, mock_pool.return_value)
 
-    @patch("malcolm.core.syncfactory.Queue")
+    @patch("malcolm.core.syncfactory.queue.Queue")
     def test_queue_creation(self, mock_queue):
         q = self.s.create_queue()
         mock_queue.assert_called_once_with()

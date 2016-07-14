@@ -138,10 +138,16 @@ class Block(Notifier):
             "Expected Post or Put request, received %s" % request.typeid
         with self.lock:
             if isinstance(request, Post):
-                method_name = request.endpoint[-1]
+                if len(request.endpoint) != 2:
+                    raise ValueError("POST endpoint requires 2 part endpoint")
+                method_name = request.endpoint[1]
                 response = self.methods[method_name].get_response(request)
             elif isinstance(request, Put):
-                attr_name = request.endpoint[-1]
+                attr_name = request.endpoint[1]
+                if len(request.endpoint) != 3:
+                    raise ValueError("PUT endpoint requires 3 part endpoint")
+                assert request.endpoint[2] == "value", \
+                    "Can only put to an attribute value"
                 self.attributes[attr_name].put(request.value)
                 self.attributes[attr_name].set_value(request.value)
                 response = Return(request.id_, request.context)

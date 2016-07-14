@@ -208,7 +208,7 @@ class TestHandleRequest(unittest.TestCase):
         self.block.add_attribute(self.attribute)
 
     def test_given_request_then_pass_to_correct_method(self):
-        endpoint = ["TestBlock", "device", "get_things"]
+        endpoint = ["TestBlock", "get_things"]
         request = Post(MagicMock(), MagicMock(), endpoint)
 
         self.block.handle_request(request)
@@ -219,7 +219,7 @@ class TestHandleRequest(unittest.TestCase):
             response, request.response_queue)
 
     def test_given_put_then_update_attribute(self):
-        endpoint = ["TestBlock", "test_attribute"]
+        endpoint = ["TestBlock", "test_attribute", "value"]
         value = "5"
         request = Put(MagicMock(), MagicMock(), endpoint, value)
 
@@ -238,6 +238,14 @@ class TestHandleRequest(unittest.TestCase):
         request.type_ = "Get"
 
         self.assertRaises(AssertionError, self.block.handle_request, request)
+
+    def test_invalid_request_fails(self):
+        endpoint = ["a","b","c","d"]
+        request = Post(MagicMock(), MagicMock(), endpoint)
+        self.assertRaises(ValueError, self.block.handle_request, request)
+
+        request = Put(MagicMock(), MagicMock(), endpoint)
+        self.assertRaises(ValueError, self.block.handle_request, request)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
