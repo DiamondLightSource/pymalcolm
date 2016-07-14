@@ -51,28 +51,13 @@ class TestController(unittest.TestCase):
         self.assertEqual(OrderedDict(), self.c.writeable_methods)
 
     def test_transition(self):
-        self.c.writeable_methods["Configure"] = "say_hello"
-        self.c.stateMachine.allowed_transitions = dict(Idle="Configure")
-        self.c.state.value = "Idle"
-        self.c.stateMachine.busy_states = ["Configure"]
-
-        self.c.transition("Configure", "Attempting to configure scan...")
-
-        self.assertEqual("Configure", self.c.state.value)
-        self.assertEqual("Attempting to configure scan...", self.c.status.value)
-        self.assertTrue(self.c.busy.value)
-        self.m1.set_writeable.assert_called_once_with(True)
-        self.m2.set_writeable.assert_called_once_with(False)
-
-    def test_transition_not_busy(self):
-        self.c.writeable_methods["Configure"] = "say_hello"
-        self.c.stateMachine.allowed_transitions = dict(Idle="Configure")
-        self.c.state.value = "Idle"
-        self.c.stateMachine.busy_states = []
-
-        self.c.transition("Configure", "Attempting to configure scan...")
-
-        self.assertFalse(self.c.busy.value)
+        self.c.reset()
+        self.b.busy.set_value.assert_has_calls([call(True), call(False)])
+        self.b.state.set_value.assert_has_calls([call("Resetting"), call("Ready")])
+        self.b.status.set_value.assert_has_calls([
+            call("Resetting"), call("Done resetting")])
+        self.c.disable()
+        self.assertEqual(self.c.state.value, "Disabled")
 
     def test_transition_raises(self):
         self.c.stateMachine.allowed_transitions = dict(Idle="")
@@ -80,6 +65,16 @@ class TestController(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             self.c.transition("Configure", "Attempting to configure scan...")
+
+    def test_reset_fault(self):
+        self.c.Resetting = MagicMock()
+        self.c.Resetting.run.side_effect = ValueError("boom")
+        self.c.reset()
+        self.b.busy.set_value.assert_has_calls([call(True), call(False)])
+        self.b.state.set_value.assert_has_calls([call("Resetting"), call("Fault")])
+        self.b.status.set_value.assert_has_calls([
+            call("Resetting"), call("boom")])
+
 
     def test_set_writeable_methods(self):
         m = MagicMock()

@@ -7,11 +7,15 @@ from malcolm.core.attribute import Attribute
 from malcolm.core.choicemeta import ChoiceMeta
 from malcolm.core.stringmeta import StringMeta
 from malcolm.core.booleanmeta import BooleanMeta
+from malcolm.core.hook import Hook
+from malcolm.core.method import takes
 
 
 @DefaultStateMachine.insert
 class Controller(Loggable):
     """Implement the logic that takes a Block through its statemachine"""
+
+    Resetting = Hook()
 
     def __init__(self, process, block):
         """
@@ -65,6 +69,21 @@ class Controller(Loggable):
         self.busy = Attribute(
             "Busy", BooleanMeta("meta", "Whether Block busy or not"))
         yield self.busy
+
+    @takes()
+    def reset(self):
+        sm = self.stateMachine
+        try:
+            self.transition(sm.RESETTING, "Resetting")
+            self.Resetting.run()
+            self.transition(sm.AFTER_RESETTING, "Done resetting")
+        except Exception as e:
+            self.log_exception("Fault occurred while Resetting")
+            self.transition(sm.FAULT, str(e))
+
+    @takes()
+    def disable(self):
+        self.transition(self.stateMachine.DISABLED, "Disabled")
 
     def add_parts(self, parts):
         self.parts.extend(parts)
