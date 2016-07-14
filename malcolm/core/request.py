@@ -147,6 +147,8 @@ class Request(object):
         d['id'] = self.id_
         d['type'] = self.type_
         for field, value in self.fields.items():
+            if hasattr(value, "to_dict"):
+                value = value.to_dict()
             d[field] = value
 
         return d
