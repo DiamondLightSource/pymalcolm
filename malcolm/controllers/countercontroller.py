@@ -15,12 +15,11 @@ class CounterController(Controller):
         self.counter.set_value(0)
         yield self.counter
 
-    @takes()
-    def reset(self):
-        self.counter.set_value(0)
-        self.block.notify_subscribers()
+    @Controller.Resetting
+    def do_reset(self):
+        self.counter.set_value(0, notify=False)
+        # Transition will do the notify for us
 
     @takes()
     def increment(self):
         self.counter.set_value(self.counter.value + 1)
-        self.block.notify_subscribers()

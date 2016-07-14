@@ -41,8 +41,9 @@ class TestAttribute(unittest.TestCase):
         a = Attribute("test", self.meta)
         a.on_changed = Mock(a.on_changed)
         a.set_value(value)
-        self.assertEquals("test_value", a.value)
-        a.on_changed.assert_called_once_with([['value'], value])
+        self.meta.validate.assert_called_once_with(value)
+        self.assertEquals(self.meta.validate(), a.value)
+        a.on_changed.assert_called_once_with([['value'], self.meta.validate()], True)
 
     def test_put(self):
         func = Mock()
@@ -54,13 +55,15 @@ class TestAttribute(unittest.TestCase):
 
     def test_to_dict(self):
         self.meta.to_dict = Mock(return_value = {"test_meta":"dict"})
+        self.meta.validate.return_value = "test_value"
         expected = OrderedDict()
         expected["typeid"] = "epics:nt/NTAttribute:1.0"
         expected["value"] = "test_value"
         expected["meta"] = {"test_meta":"dict"}
         a = Attribute("test", self.meta)
-        a.set_value("test_value")
+        a.set_value("test_value2")
         self.assertEquals(expected, a.to_dict())
+        self.meta.validate.assert_called_once_with("test_value2")
 
     @patch.object(Serializable, "deserialize")
     def test_from_dict(self, am_deserialize):
