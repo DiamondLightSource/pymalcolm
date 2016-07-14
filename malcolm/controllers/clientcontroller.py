@@ -77,5 +77,7 @@ class ClientController(Controller):
         response = q.get()
         assert response.type_ == response.RETURN, \
             "Expected Return, got %s" % response.type_
+        if "typeid" in response.value:
+            response.value.pop("typeid")
         returns.update(response.value)
         return returns
