@@ -4,7 +4,7 @@ from inspect import getdoc
 from malcolm.core.serializable import Serializable
 from malcolm.core.notifier import Notifier
 from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
-from malcolm.core.response import Response
+from malcolm.core.response import Return, Error
 from malcolm.core.map import Map
 
 
@@ -126,6 +126,8 @@ class Method(Notifier):
         try:
             try:
                 parameters = request.parameters
+                if parameters is None:
+                    parameters = {}
             except KeyError:
                 parameters = {}
             if "typeid" in parameters:
@@ -135,10 +137,10 @@ class Method(Notifier):
             err_message = str(error)
             self.log_exception("Error raised %s", err_message)
             message = "Method %s raised an error: %s" % (self.name, err_message)
-            return Response.Error(request.id_, request.context, message)
+            return Error(request.id_, request.context, message)
         else:
             self.log_debug("Returning result %s", result)
-            return Response.Return(request.id_, request.context, value=result)
+            return Return(request.id_, request.context, value=result)
 
     def to_dict(self):
         """Return ordered dictionary representing Method object."""

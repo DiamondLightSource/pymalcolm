@@ -10,7 +10,6 @@ from mock import Mock, patch, call, MagicMock
 
 from malcolm.core.method import Method, takes, returns
 from malcolm.core.mapmeta import OPTIONAL, REQUIRED
-from malcolm.core.response import Response
 
 
 class TestMethod(unittest.TestCase):
@@ -92,7 +91,7 @@ class TestMethod(unittest.TestCase):
         request = MagicMock()
 
         response = m.get_response(request)
-        self.assertEquals(Response.ERROR, response.type_)
+        self.assertEquals("malcolm:core/Error:1.0", response.typeid)
         self.assertEquals(
             "Method test_method raised an error: Test error", response.message)
 
@@ -230,6 +229,7 @@ class TestMethod(unittest.TestCase):
         expected["description"] = "test_description"
         expected["tags"] = ["tag_1", "tag_2"]
         expected["writeable"] = writeable_mock
+        del expected["writeable"].to_dict
         expected["returns"] = OrderedDict({"dict": "return"})
         self.assertEquals(expected, m.to_dict())
 
@@ -239,6 +239,7 @@ class TestMethod(unittest.TestCase):
         expected = OrderedDict()
         expected["typeid"] = "malcolm:core/Method:1.0"
         expected["takes"] = map_to_dict_mock.return_value
+        del expected['takes'].to_dict
         expected["defaults"] = OrderedDict()
         expected["description"] = "test_description"
         expected["tags"] = []

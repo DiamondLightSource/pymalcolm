@@ -2,8 +2,8 @@ from collections import OrderedDict
 
 from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
-from malcolm.core.request import Request
-from malcolm.core.response import Response
+from malcolm.core.request import Request, Put, Post
+from malcolm.core.response import Return
 from malcolm.core.attribute import Attribute
 from malcolm.core.method import Method
 
@@ -134,17 +134,17 @@ class Block(Notifier):
             request(Request): Request object specifying action
         """
         self.log_debug("Received request %s", request)
-        assert request.type_ == Request.POST or request.type_ == Request.PUT, \
-            "Expected Post or Put request, received %s" % request.type_
+        assert isinstance(request, Post) or isinstance(request, Put), \
+            "Expected Post or Put request, received %s" % request.typeid
         with self.lock:
-            if request.type_ == Request.POST:
+            if isinstance(request, Post):
                 method_name = request.endpoint[-1]
                 response = self.methods[method_name].get_response(request)
-            elif request.type_ == Request.PUT:
+            elif isinstance(request, Put):
                 attr_name = request.endpoint[-1]
                 self.attributes[attr_name].put(request.value)
                 self.attributes[attr_name].set_value(request.value)
-                response = Response.Return(request.id_, request.context)
+                response = Return(request.id_, request.context)
             self.parent.block_respond(response, request.response_queue)
 
     def to_dict(self):

@@ -10,6 +10,7 @@ from mock import Mock, patch, call
 
 from malcolm.core.clientcomms import ClientComms
 from malcolm.core.syncfactory import SyncFactory
+from malcolm.core.response import Update
 
 
 class TestClientComms(unittest.TestCase):
@@ -55,7 +56,7 @@ class TestClientComms(unittest.TestCase):
 
     def test_send_to_caller_with_block_update(self):
         c = ClientComms("c", Mock())
-        response = Mock(type_="Update", id_=0, UPDATE="Update")
+        response = Update(id_=0)
         c.send_to_caller(response)
         c.process.update_block_list.assert_called_once_with(c, response.value)
 

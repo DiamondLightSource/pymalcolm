@@ -5,7 +5,8 @@ from tornado.ioloop import IOLoop
 from tornado.websocket import websocket_connect
 
 from malcolm.core.clientcomms import ClientComms
-from malcolm.core.request import Request, Response
+from malcolm.core.request import Request, Subscribe
+from malcolm.core.serializable import Serializable
 
 
 class WSClientComms(ClientComms):
@@ -37,7 +38,7 @@ class WSClientComms(ClientComms):
         try:
             self.log_debug("Got message %s", message)
             d = json.loads(message, object_pairs_hook=OrderedDict)
-            response = Response.from_dict(d)
+            response = Serializable.deserialize("Response", d)
             self.send_to_caller(response)
         except Exception as e:
             # If we don't catch the exception here, tornado will spew odd
@@ -60,6 +61,6 @@ class WSClientComms(ClientComms):
 
     def subscribe_server_blocks(self, _):
         """Subscribe to process blocks"""
-        request = Request.Subscribe(None, None, [".", "blocks", "value"])
+        request = Subscribe(None, None, [".", "blocks", "value"])
         request.set_id(self.SERVER_BLOCKS_ID)
         self.loop.add_callback(self.send_to_server, request)

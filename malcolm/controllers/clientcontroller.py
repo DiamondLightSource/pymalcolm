@@ -1,7 +1,8 @@
 import functools
 
 from malcolm.core.controller import Controller
-from malcolm.core.request import Request
+from malcolm.core.request import Post, Subscribe
+from malcolm.core.response import Return
 from malcolm.core.method import Method
 from malcolm.core.serializable import Serializable
 
@@ -18,7 +19,7 @@ class ClientController(Controller):
             block (Block): The local block we should be controlling
         """
         super(ClientController, self).__init__(block=block, process=process)
-        request = Request.Subscribe(
+        request = Subscribe(
             None, self, [self.process.name, "remoteBlocks", "value"])
         request.set_id(self.REMOTE_BLOCKS_ID)
         self.process.q.put(request)
@@ -57,7 +58,7 @@ class ClientController(Controller):
         self.client_comms = self.process.get_client_comms(block_name)
         assert self.client_comms, \
             "Process doesn't know about block %s" % block_name
-        request = Request.Subscribe(None, self, [block_name], delta=True)
+        request = Subscribe(None, self, [block_name], delta=True)
         request.set_id(self.BLOCK_ID)
         self.client_comms.q.put(request)
 
@@ -71,12 +72,12 @@ class ClientController(Controller):
         """
         self.log_debug(dict(parameters))
         q = self.process.create_queue()
-        request = Request.Post(None, q,
+        request = Post(None, q,
                                [self.block.name, method_name], parameters)
         self.client_comms.q.put(request)
         response = q.get()
-        assert response.type_ == response.RETURN, \
-            "Expected Return, got %s" % response.type_
+        assert isinstance(response, Return), \
+            "Expected Return, got %s" % response.typeid
         if "typeid" in response.value:
             response.value.pop("typeid")
         returns.update(response.value)

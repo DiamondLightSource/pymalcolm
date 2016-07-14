@@ -13,7 +13,7 @@ from malcolm.core.block import Block
 from malcolm.core.attribute import Attribute
 from malcolm.core.stringmeta import StringMeta
 from malcolm.core.method import Method
-from malcolm.core.serializable import Serializable
+from malcolm.core.request import Post, Put
 
 
 class TestBlock(unittest.TestCase):
@@ -202,9 +202,8 @@ class TestHandleRequest(unittest.TestCase):
         self.block.add_attribute(self.attribute)
 
     def test_given_request_then_pass_to_correct_method(self):
-        request = MagicMock()
-        request.type_ = "Post"
-        request.endpoint = ["TestBlock", "device", "get_things"]
+        endpoint = ["TestBlock", "device", "get_things"]
+        request = Post(MagicMock(), MagicMock(), endpoint)
 
         self.block.handle_request(request)
 
@@ -214,18 +213,16 @@ class TestHandleRequest(unittest.TestCase):
             response, request.response_queue)
 
     def test_given_put_then_update_attribute(self):
-        put_value = MagicMock()
-        request = MagicMock()
-        request.type_ = "Put"
-        request.endpoint = ["TestBlock", "test_attribute"]
-        request.value = put_value
+        endpoint = ["TestBlock", "test_attribute"]
+        value = "5"
+        request = Put(MagicMock(), MagicMock(), endpoint, value)
 
         self.block.handle_request(request)
 
-        self.attribute.put.assert_called_once_with(put_value)
-        self.attribute.set_value.assert_called_once_with(put_value)
+        self.attribute.put.assert_called_once_with(value)
+        self.attribute.set_value.assert_called_once_with(value)
         response = self.block.parent.block_respond.call_args[0][0]
-        self.assertEqual("Return", response.type_)
+        self.assertEqual("malcolm:core/Return:1.0", response.typeid)
         self.assertIsNone(response.value)
         response_queue = self.block.parent.block_respond.call_args[0][1]
         self.assertEqual(request.response_queue, response_queue)

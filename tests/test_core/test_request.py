@@ -3,12 +3,11 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
-from collections import OrderedDict
+from malcolm.core.request import Request, Get, Post, Subscribe, Put
+from malcolm.core.response import Return, Error, Update, Delta
 
 import unittest
 from mock import MagicMock, patch
-
-from malcolm.core.request import Request
 
 
 class TestRequest(unittest.TestCase):
@@ -16,126 +15,129 @@ class TestRequest(unittest.TestCase):
     def setUp(self):
         self.context = MagicMock()
         self.response_queue = MagicMock()
-        self.request = Request(self.context, self.response_queue, "Put")
+        self.request = Request(self.context, self.response_queue)
 
     def test_init(self):
         self.assertEqual(self.context, self.request.context)
         self.assertEqual(self.response_queue, self.request.response_queue)
-        self.assertEqual("Put", self.request.type_)
 
     def test_repr(self):
-        r = Request(MagicMock(), MagicMock(), "mytype")
+        r = Request(MagicMock(), MagicMock())
         s = r.__repr__()
         self.assertTrue(isinstance(s, str))
-        self.assertIn("mytype", s)
+        self.assertIn('id', s)
 
-    def test_to_dict(self):
-        expected_dict = OrderedDict()
-        expected_dict['id'] = 1
-        expected_dict['type'] = "Put"
-        parameters = OrderedDict(x=2, y=10)
-        expected_dict['parameters'] = parameters
-
-        self.request.id_ = 1
-        self.request.fields['parameters'] = parameters
-        return_dict = self.request.to_dict()
-
-        self.assertEqual(expected_dict, return_dict)
-
-    def test_from_dict(self):
-        serialized = {"id": 1, "type": "Put", "extra_1": "abc",
-                      "extra_2": {"field": "data"}}
-        request = Request.from_dict(serialized)
-        self.assertEquals(1, request.id_)
-        self.assertEquals("Put", request.type_)
-        self.assertEquals("abc", request.fields["extra_1"])
-        self.assertEquals({"field": "data"}, request.fields["extra_2"])
-        self.assertIsNone(request.context)
-        self.assertIsNone(request.response_queue)
-
-    @patch("malcolm.core.response.Response.Return")
-    def test_respond_with_return(self, return_mock):
-        response = MagicMock()
-        return_mock.return_value = response
+    def test_respond_with_return(self):
 
         self.request.respond_with_return(value=5)
 
-        return_mock.assert_called_once_with(self.request.id_, self.request.context, value=5)
-        self.response_queue.put.assert_called_once_with(response)
+        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
 
-    @patch("malcolm.core.response.Response.Error")
-    def test_respond_with_error(self, return_mock):
-        response = MagicMock()
-        return_mock.return_value = response
+        expected_response = Return(self.request.id_, self.request.context, value=5).to_dict()
+
+        self.assertEqual(call_arg, expected_response)
+
+    def test_respond_with_error(self):
 
         self.request.respond_with_error(message="Test Error")
 
-        return_mock.assert_called_once_with(self.request.id_, self.request.context,
-                                            message="Test Error")
-        self.response_queue.put.assert_called_once_with(response)
+        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
 
-    @patch("malcolm.core.response.Response.Update")
-    def test_respond_with_update(self, return_mock):
-        response = MagicMock()
-        return_mock.return_value = response
+        expected_response = Error(self.request.id_, self.request.context,
+                                  message="Test Error").to_dict()
+
+        self.assertEqual(call_arg, expected_response)
+
+    def test_respond_with_update(self):
         value = MagicMock()
 
         self.request.respond_with_update(value)
 
-        return_mock.assert_called_once_with(
-            self.request.id_, self.request.context, value=value)
-        self.response_queue.put.assert_called_once_with(response)
+        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
 
-    @patch("malcolm.core.response.Response.Delta")
-    def test_respond_with_delta(self, return_mock):
-        response = MagicMock()
-        return_mock.return_value = response
+        expected_response = Update(self.request.id_, self.request.context, value=value).to_dict()
+
+        self.assertEqual(call_arg, expected_response)
+
+    def test_respond_with_delta(self):
         changes = [[["path"], "value"]]
 
         self.request.respond_with_delta(changes)
 
-        return_mock.assert_called_once_with(
-            self.request.id_, self.request.context, changes=changes)
-        self.response_queue.put.assert_called_once_with(response)
+        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
 
-    @patch("malcolm.core.request.Request")
-    def test_Get(self, request_mock):
-        endpoint = ["BL18I:XSPRESS3", "state", "value"]
-        get = Request.Get(self.context, self.response_queue, endpoint)
+        expected_response = Delta(self.request.id_, self.request.context, changes=changes).to_dict()
 
-        request_mock.assert_called_once_with(self.context, self.response_queue, type_="Get")
+        self.assertEqual(call_arg, expected_response)
 
-    @patch("malcolm.core.request.Request")
-    def test_Post(self, request_mock):
-        endpoint = ["BL18I:XSPRESS3", "configure"]
-        post = Request.Post(self.context, self.response_queue, endpoint)
 
-        request_mock.assert_called_once_with(self.context, self.response_queue, type_="Post")
+class TestGet(unittest.TestCase):
 
-    def test_Subscribe(self):
-        endpoint = ["BL18I:XSPRESS3", "state", "value"]
-        subscribe = Request.Subscribe(
-            self.context, self.response_queue, endpoint)
+    def setUp(self):
+        self.context = MagicMock()
+        self.response_queue = MagicMock()
+        self.endpoint = ["BL18I:XSPRESS3", "state", "value"]
+        self.get = Get(self.context, self.response_queue, self.endpoint)
 
-        self.assertEquals(endpoint, subscribe.fields["endpoint"])
-        self.assertFalse(subscribe.delta)
+    def test_init(self):
+        self.assertEqual(self.context, self.get.context)
+        self.assertEqual(self.response_queue, self.get.response_queue)
+        self.assertEqual(self.endpoint, self.get.endpoint)
+        self.assertEqual("malcolm:core/Get:1.0", self.get.typeid)
 
-        subscribe = Request.Subscribe(
-            self.context, self.response_queue, endpoint, delta=True)
-        self.assertTrue(subscribe.delta)
 
-    def test_given_valid_attr_then_return(self):
-        param_dict = dict(one=7, two=23)
-        post = Request.Post(self.context, self.response_queue, [""], parameters=param_dict)
+class TestPut(unittest.TestCase):
 
-        self.assertEqual(param_dict, post.parameters)
+    def setUp(self):
+        self.context = MagicMock()
+        self.response_queue = MagicMock()
+        self.endpoint = ["BL18I:XSPRESS3", "state", "value"]
+        self.value = "5"
 
-    def test_given_invalid_attr_then_raise_error(self):
-        param_dict = dict(one=7, two=23)
-        post = Request.Post(self.context, self.response_queue, [""], parameters=param_dict)
+        self.put = Put(self.context, self.response_queue, self.endpoint, self.value)
 
-        with self.assertRaises(KeyError):
-            post.null
+    def test_init(self):
+        self.assertEqual(self.context, self.put.context)
+        self.assertEqual(self.response_queue, self.put.response_queue)
+        self.assertEqual(self.endpoint, self.put.endpoint)
+        self.assertEqual(self.value, self.put.value)
+        self.assertEqual("malcolm:core/Put:1.0", self.put.typeid)
+
+
+class TestPost(unittest.TestCase):
+
+    def setUp(self):
+        self.context = MagicMock()
+        self.response_queue = MagicMock()
+        self.endpoint = ["BL18I:XSPRESS3", "state", "value"]
+        self.parameters = dict(arg1=5, arg2=True)
+
+        self.post = Post(self.context, self.response_queue, self.endpoint, self.parameters)
+
+    def test_init(self):
+        self.assertEqual(self.context, self.post.context)
+        self.assertEqual(self.response_queue, self.post.response_queue)
+        self.assertEqual(self.endpoint, self.post.endpoint)
+        self.assertEqual(self.parameters, self.post.parameters)
+        self.assertEqual("malcolm:core/Post:1.0", self.post.typeid)
+
+
+class TestSubscribe(unittest.TestCase):
+
+    def setUp(self):
+        self.context = MagicMock()
+        self.response_queue = MagicMock()
+        self.endpoint = ["BL18I:XSPRESS3", "state", "value"]
+        self.delta = True
+        self.subscribe = Subscribe(
+            self.context, self.response_queue, self.endpoint, delta=self.delta)
+
+    def test_init(self):
+        self.assertEqual(self.context, self.subscribe.context)
+        self.assertEqual(self.response_queue, self.subscribe.response_queue)
+        self.assertEqual(self.endpoint, self.subscribe.endpoint)
+        self.assertEqual(self.delta, self.subscribe.delta)
+        self.assertEqual("malcolm:core/Subscribe:1.0", self.subscribe.typeid)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
