@@ -1,9 +1,9 @@
+import numpy as np
+
 from malcolm.core.controller import Controller
 from malcolm.core.attribute import Attribute
-from malcolm.core.numbermeta import NumberMeta
 from malcolm.core.method import takes
-
-import numpy as np
+from malcolm.metas import NumberMeta
 
 
 class CounterController(Controller):

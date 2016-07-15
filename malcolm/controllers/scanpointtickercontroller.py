@@ -3,12 +3,9 @@ import time
 
 from malcolm.core.attribute import Attribute
 from malcolm.core.controller import Controller
-from malcolm.core.mapmeta import REQUIRED
-from malcolm.core.method import takes, Method
-from malcolm.core.pointgeneratormeta import PointGeneratorMeta
-from malcolm.core.stringmeta import StringMeta
-from malcolm.core.numbermeta import NumberMeta
-from malcolm.core.runnabledevicestatemachine import RunnableDeviceStateMachine
+from malcolm.core.method import takes, Method, REQUIRED
+from malcolm.metas import PointGeneratorMeta, StringMeta, NumberMeta
+from malcolm.statemachines import RunnableDeviceStateMachine
 
 
 @RunnableDeviceStateMachine.insert

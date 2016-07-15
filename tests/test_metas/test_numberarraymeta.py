@@ -8,7 +8,7 @@ import setup_malcolm_paths
 
 import numpy as np
 
-from malcolm.core.numberarraymeta import NumberArrayMeta
+from malcolm.metas import NumberArrayMeta
 
 
 class TestNumberMeta(unittest.TestCase):

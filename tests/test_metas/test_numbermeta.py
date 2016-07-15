@@ -8,7 +8,7 @@ import setup_malcolm_paths
 
 import numpy as np
 
-from malcolm.core.numbermeta import NumberMeta
+from malcolm.metas import NumberMeta
 from malcolm.core.serializable import Serializable
 
 

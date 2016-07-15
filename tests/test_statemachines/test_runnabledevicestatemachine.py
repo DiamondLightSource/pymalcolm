@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import setup_malcolm_paths
 
-from malcolm.core.runnabledevicestatemachine import RunnableDeviceStateMachine
+from malcolm.statemachines import RunnableDeviceStateMachine
 
 
 class TestRunnableDeviceStateMachine(unittest.TestCase):

@@ -1,7 +1,6 @@
+from malcolm.metas import StringMeta
 from malcolm.core.controller import Controller
-from malcolm.core.method import takes, returns
-from malcolm.core.mapmeta import REQUIRED
-from malcolm.core.stringmeta import StringMeta
+from malcolm.core.method import takes, returns, REQUIRED
 
 
 class HelloController(Controller):

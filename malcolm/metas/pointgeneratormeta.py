@@ -1,8 +1,9 @@
 from collections import OrderedDict
 
-from malcolm.core.scalarmeta import ScalarMeta
-from malcolm.core.serializable import Serializable
 from scanpointgenerator import CompoundGenerator
+
+from malcolm.metas.scalarmeta import ScalarMeta
+from malcolm.core.serializable import Serializable
 
 
 @Serializable.register_subclass("malcolm:core/PointGeneratorMeta:1.0")

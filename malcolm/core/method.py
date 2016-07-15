@@ -3,9 +3,12 @@ from inspect import getdoc
 
 from malcolm.core.serializable import Serializable
 from malcolm.core.notifier import Notifier
-from malcolm.core.mapmeta import MapMeta, OPTIONAL, REQUIRED
 from malcolm.core.response import Return, Error
 from malcolm.core.map import Map
+from malcolm.metas.mapmeta import MapMeta
+
+OPTIONAL = object()
+REQUIRED = object()
 
 
 @Serializable.register_subclass("malcolm:core/Method:1.0")

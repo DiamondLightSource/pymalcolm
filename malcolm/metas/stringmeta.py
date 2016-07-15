@@ -1,4 +1,4 @@
-from malcolm.core.scalarmeta import ScalarMeta
+from malcolm.metas.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 
 
