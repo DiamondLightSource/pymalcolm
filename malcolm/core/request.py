@@ -111,7 +111,7 @@ class Put(Request):
             context(): Context of Put
             response_queue(Queue): Queue to return to
             endpoint(list[str]): Path to target Block substructure
-            value(str): Value to put to endpoint
+            value(): Value to put to endpoint e.g. String, dict
         """
 
         super(Put, self).__init__(context, response_queue)

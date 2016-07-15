@@ -19,7 +19,7 @@ class TestResponse(unittest.TestCase):
         self.assertEquals(None, r.typeid)
         self.assertEquals(context, r.context)
 
-    def test_return_response(self):
+    def test_Return(self):
         context = Mock()
         r = Return(123, context)
         self.assertEquals(123, r.id_)
@@ -29,6 +29,9 @@ class TestResponse(unittest.TestCase):
         r = Return(123, Mock(), {"key": "value"})
         self.assertEquals({"key": "value"}, r.value)
 
+        r.set_value({"key": "value2"})
+        self.assertEquals({"key": "value2"}, r.value)
+
     def test_Error(self):
         context = Mock()
         r = Error(123, context, "Test Error")
@@ -37,7 +40,10 @@ class TestResponse(unittest.TestCase):
         self.assertEquals("malcolm:core/Error:1.0", r.typeid)
         self.assertEquals(context, r.context)
 
-    def test_return_update(self):
+        r.set_message("Test Error 2")
+        self.assertEquals("Test Error 2", r.message)
+
+    def test_Update(self):
         context = Mock()
         value = {"attribute": "value"}
         r = Update(123, context, value)
@@ -45,13 +51,19 @@ class TestResponse(unittest.TestCase):
         self.assertEquals(context, r.context)
         self.assertEquals({"attribute": "value"}, r.value)
 
-    def test_return_delta(self):
+        r.set_value({"key": "value2"})
+        self.assertEquals({"key": "value2"}, r.value)
+
+    def test_Delta(self):
         context = Mock()
         changes = [[["path"], "value"]]
         r = Delta(123, context, changes)
         self.assertEquals(123, r.id_)
         self.assertEquals(context, r.context)
         self.assertEquals(changes, r.changes)
+
+        r.set_changes([[["path"], "value2"]])
+        self.assertEquals([[["path"], "value2"]], r.changes)
 
     def test_repr(self):
         r = Response(123, Mock())

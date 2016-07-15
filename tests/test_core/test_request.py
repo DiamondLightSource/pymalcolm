@@ -85,6 +85,10 @@ class TestGet(unittest.TestCase):
         self.assertEqual(self.endpoint, self.get.endpoint)
         self.assertEqual("malcolm:core/Get:1.0", self.get.typeid)
 
+    def test_setters(self):
+        self.get.set_endpoint(["BL18I:XSPRESS3", "state", "value2"])
+        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.get.endpoint)
+
 
 class TestPut(unittest.TestCase):
 
@@ -102,6 +106,13 @@ class TestPut(unittest.TestCase):
         self.assertEqual(self.endpoint, self.put.endpoint)
         self.assertEqual(self.value, self.put.value)
         self.assertEqual("malcolm:core/Put:1.0", self.put.typeid)
+
+    def test_setters(self):
+        self.put.set_endpoint(["BL18I:XSPRESS3", "state", "value2"])
+        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.put.endpoint)
+
+        self.put.set_value("7")
+        self.assertEquals("7", self.put.value)
 
 
 class TestPost(unittest.TestCase):
@@ -121,6 +132,13 @@ class TestPost(unittest.TestCase):
         self.assertEqual(self.parameters, self.post.parameters)
         self.assertEqual("malcolm:core/Post:1.0", self.post.typeid)
 
+    def test_setters(self):
+        self.post.set_endpoint(["BL18I:XSPRESS3", "state", "value2"])
+        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.post.endpoint)
+
+        self.post.set_parameters(dict(arg1=2, arg2=False))
+        self.assertEquals(dict(arg1=2, arg2=False), self.post.parameters)
+
 
 class TestSubscribe(unittest.TestCase):
 
@@ -138,6 +156,13 @@ class TestSubscribe(unittest.TestCase):
         self.assertEqual(self.endpoint, self.subscribe.endpoint)
         self.assertEqual(self.delta, self.subscribe.delta)
         self.assertEqual("malcolm:core/Subscribe:1.0", self.subscribe.typeid)
+
+    def test_setters(self):
+        self.subscribe.set_endpoint(["BL18I:XSPRESS3", "state", "value2"])
+        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.subscribe.endpoint)
+
+        self.subscribe.set_delta(False)
+        self.assertFalse(self.subscribe.delta)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
