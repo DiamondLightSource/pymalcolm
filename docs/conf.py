@@ -105,6 +105,7 @@ if not which("plantuml"):
         os.mkdir(fontdir)
     except OSError:
         pass
+    import urllib
     url = "https://github.com/shreyankg/xkcd-desktop/raw/master/Humor-Sans.ttf"
     urllib.urlretrieve(url, os.path.join(fontdir, "Humor-Sans.ttf"))
     # install it
