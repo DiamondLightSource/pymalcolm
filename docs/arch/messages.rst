@@ -279,7 +279,7 @@ Dictionary with members:
     String ``Delta``.
 - id
     Integer id from original client `Subscribe`_.
-- delta
+- changes
     List of [``key path``, optional ``update``] stanzas.
 
     - ``key path`` is a path to the changed element within the subscribed path.
