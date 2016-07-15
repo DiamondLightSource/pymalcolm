@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from malcolm.core.meta import Meta
 from malcolm.core.serializable import Serializable
+from malcolm.core.table import Table
 
 
 @Serializable.register_subclass("malcolm:core/TableMeta:1.0")
@@ -33,6 +34,13 @@ class TableMeta(Meta):
     def set_label(self, label, notify=True):
         self.label = label
         self.on_changed([["label"], label], notify)
+
+    def validate(self, d):
+        if set(d) != set(self.elements):
+            raise ValueError("%s keys do not match ours" % d)
+        for heading, column in d.items():
+            self.elements[heading].validate(column)
+        return Table(self, d)
 
     @classmethod
     def from_dict(cls, name, d):

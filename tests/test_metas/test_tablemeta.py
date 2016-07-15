@@ -120,5 +120,61 @@ class TestTableMetaSerialization(unittest.TestCase):
         self.assertEquals("label", tm.label)
         self.assertEquals(["heading_1", "heading_2"], tm.headings)
 
+class TestTableMetaValidation(unittest.TestCase):
+
+    def test_validate(self):
+        tm = TableMeta("name", "desc")
+        tm.elements["e1"] = Mock()
+        tm.elements["e2"] = Mock()
+        tm.elements["e3"] = Mock()
+        tm.elements["e4"] = Mock()
+        tm.headings = ["column 1", "column 2", "column 3", "column 4"]
+        d = {"e1":[1, 11, 21], "e2":[2, 12], "e3":[3, 13, 23], "e4":None}
+
+        t = tm.validate(d)
+
+        tm.elements["e1"].validate.assert_called_once_with([1, 11, 21])
+        tm.elements["e2"].validate.assert_called_once_with([2, 12])
+        tm.elements["e3"].validate.assert_called_once_with([3, 13, 23])
+        tm.elements["e4"].validate.assert_called_once_with(None)
+        self.assertEqual([1, 11, 21], t.e1)
+        self.assertEqual([2, 12], t.e2)
+        self.assertEqual([3, 13, 23], t.e3)
+        self.assertEqual(None, t.e4)
+
+    def test_validate_ignores_key_order(self):
+        tm = TableMeta("name", "desc")
+        tm.elements["e1"] = Mock()
+        tm.elements["e2"] = Mock()
+        d = OrderedDict()
+        d["e2"] = [2]
+        d["e1"] = [1]
+
+        t = tm.validate(d)
+
+        tm.elements["e1"].validate.assert_called_once_with([1])
+        tm.elements["e2"].validate.assert_called_once_with([2])
+        self.assertEqual([1], t.e1)
+        self.assertEqual([2], t.e2)
+
+    def test_validate_raises_on_bad_keys(self):
+        tm = TableMeta("name", "desc")
+        tm.elements["e1"] = Mock()
+        d = {"e1":[1], "e2":[2]}
+        self.assertRaises(ValueError, tm.validate, d)
+
+        tm.elements["e2"] = Mock()
+        tm.elements["e3"] = Mock()
+        self.assertRaises(ValueError, tm.validate, d)
+
+    def test_validate_raises_on_validation_failure(self):
+        tm = TableMeta("name", "desc")
+        tm.elements["e1"] = Mock()
+        tm.elements["e2"] = Mock(validate=Mock(side_effect=ValueError))
+        tm.elements["e3"] = Mock()
+
+        d = {"e1":[0], "e2":[0], "e3":[0]}
+        self.assertRaises(ValueError, tm.validate, d)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
