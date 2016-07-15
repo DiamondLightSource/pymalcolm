@@ -13,7 +13,7 @@ class Method(Notifier):
     """Exposes a function with metadata for arguments and return values"""
 
     endpoints = ["takes", "defaults", "description", "tags", "writeable",
-        "returns"]
+                 "returns"]
 
     def __init__(self, name, description):
         super(Method, self).__init__(name=name)
@@ -128,7 +128,7 @@ class Method(Notifier):
                 parameters = request.parameters
                 if parameters is None:
                     parameters = {}
-            except KeyError:
+            except AttributeError:
                 parameters = {}
             if "typeid" in parameters:
                 parameters.pop("typeid")

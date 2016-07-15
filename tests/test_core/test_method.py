@@ -81,6 +81,22 @@ class TestMethod(unittest.TestCase):
 
         call_func_mock.assert_called_once_with(dict(first="test"))
 
+    def test_get_response_no_parameters(self):
+        m = Method("test_method", "test_description")
+        call_func_mock = MagicMock()
+        m.call_function = call_func_mock
+        func = Mock(return_value={"first_out": "test"})
+        m.set_function(func)
+        args_meta = Mock()
+        args_meta.elements = {"first": Mock()}
+        m.set_function_takes(args_meta)
+        request = MagicMock()
+        del request.parameters  # Make sure mock doesn't have `parameters`
+
+        m.get_response(request)
+
+        call_func_mock.assert_called_once_with(dict())
+
     def test_get_response_raises(self):
         func = MagicMock()
         func.side_effect = ValueError("Test error")
