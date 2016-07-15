@@ -55,7 +55,7 @@ class TestClientController(unittest.TestCase):
         self.assertEqual(req.endpoint, ["blockname"])
 
     def test_methods_created(self):
-        self.assertEqual(list(self.b.methods), ["say_hello"])
+        self.assertEqual(list(self.b.methods), ["disable", "reset", "say_hello"])
         m = self.b.methods["say_hello"]
         self.assertEqual(m.name, "say_hello")
         self.assertEqual(list(m.takes.elements), ["name"])

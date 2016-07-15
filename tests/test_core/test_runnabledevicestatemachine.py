@@ -16,6 +16,8 @@ class TestRunnableDeviceStateMachine(unittest.TestCase):
 
     def test_init(self):
         default_allowed_transitions = OrderedDict()
+        default_allowed_transitions['Resetting'] = {"Idle", "Aborting",
+                                                    "Fault", "Disabled"}
         default_allowed_transitions['Idle'] = {"Configuring", "Aborting",
                                                "Fault", "Disabled"}
         default_allowed_transitions['Ready'] = {"PreRun", "Rewinding",
@@ -31,8 +33,6 @@ class TestRunnableDeviceStateMachine(unittest.TestCase):
                                                   "Disabled"}
         default_allowed_transitions['PostRun'] = {"Idle", "Ready", "Aborting",
                                                   "Fault", "Disabled"}
-        default_allowed_transitions['Resetting'] = {"Idle", "Aborting",
-                                                    "Fault", "Disabled"}
         default_allowed_transitions['Paused'] = {"Rewinding", "PreRun",
                                                  "Aborting", "Fault",
                                                  "Disabled"}

@@ -83,6 +83,12 @@ class TestBlock(unittest.TestCase):
         self.assertFalse(hasattr(b, "m1"))
         self.assertFalse(hasattr(b, "a1"))
 
+    def test_notify(self):
+        b = Block("n")
+        b.parent = MagicMock()
+        b.notify_subscribers()
+        b.parent.notify_subscribers.assert_called_once_with("n")
+
 class TestUpdates(unittest.TestCase):
 
     def test_simple_update(self):

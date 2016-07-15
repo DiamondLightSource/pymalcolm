@@ -21,10 +21,12 @@ class TestDefaultStateMachine(unittest.TestCase):
                                                     'Disabled'}
         default_allowed_transitions['Fault'] = {"Resetting", "Disabled"}
         default_allowed_transitions['Disabled'] = {"Resetting"}
+        default_allowed_transitions['Ready'] = {"Fault", "Disabled"}
+
         self.assertEqual("test_state_machine", self.SM.name)
         self.assertEqual(default_allowed_transitions,
                          self.SM.allowed_transitions)
-        self.assertEqual([], self.SM.busy_states)
+        self.assertEqual(["Resetting"], self.SM.busy_states)
 
     def test_is_allowed(self):
         self.SM.allowed_transitions.update(dict(Ready={"Resetting",
@@ -37,12 +39,16 @@ class TestDefaultStateMachine(unittest.TestCase):
 
     def test_set_allowed(self):
         self.SM.set_allowed("Ready", "Prerun")
-        self.assertEqual({"Prerun"}, self.SM.allowed_transitions['Ready'])
+        self.assertEqual({"Prerun", "Disabled", "Fault"},
+                         self.SM.allowed_transitions['Ready'])
         self.SM.set_allowed("Ready", "Resetting")
-        self.assertEqual({"Prerun", "Resetting"},
+        self.assertEqual({"Prerun", "Disabled", "Fault", "Resetting"},
                          self.SM.allowed_transitions['Ready'])
 
     def test_set_busy(self):
+        self.assertEqual(["Resetting"], self.SM.busy_states)
+        self.SM.set_busy("Resetting", busy=False)
+        self.assertEqual([], self.SM.busy_states)
         self.SM.set_busy("Ready", busy=False)
         self.assertEqual([], self.SM.busy_states)
         self.SM.set_busy("Ready", busy=True)
@@ -51,9 +57,7 @@ class TestDefaultStateMachine(unittest.TestCase):
         self.assertEqual([], self.SM.busy_states)
 
     def test_is_busy(self):
-        self.assertEqual([], self.SM.busy_states)
-        self.SM.set_busy("Resetting", busy=True)
-
+        self.assertEqual(['Resetting'], self.SM.busy_states)
         response = self.SM.is_busy("Resetting")
         self.assertTrue(response)
 

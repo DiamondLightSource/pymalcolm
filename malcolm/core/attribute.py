@@ -26,9 +26,9 @@ class Attribute(Notifier):
         """Call the put function with the given value"""
         self.put_func(value)
 
-    def set_value(self, value):
-        self.value = value
-        self.on_changed([["value"], value])
+    def set_value(self, value, notify=True):
+        self.value = self.meta.validate(value)
+        self.on_changed([["value"], self.value], notify)
 
     def to_dict(self):
         """Create ordered dictionary representing class instance"""

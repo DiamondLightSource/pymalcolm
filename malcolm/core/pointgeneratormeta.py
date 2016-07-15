@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from malcolm.core.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 from scanpointgenerator import CompoundGenerator
@@ -13,9 +15,10 @@ class PointGeneratorMeta(ScalarMeta):
 
     def validate(self, value):
 
-        if isinstance(value, CompoundGenerator):
+        if value is None or isinstance(value, CompoundGenerator):
             return value
-        elif isinstance(value, dict):
+        elif isinstance(value, (OrderedDict, dict)):
             return CompoundGenerator.from_dict(value)
         else:
-            raise TypeError("Value must be a Generator object or dictionary")
+            raise TypeError(
+                "Value %s must be a Generator object or dictionary" % value)

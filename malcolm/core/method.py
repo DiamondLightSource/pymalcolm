@@ -23,6 +23,8 @@ class Method(Notifier):
         self.returns = MapMeta("returns", "Method output structure")
         self.defaults = OrderedDict()
         self.writeable = True
+        # List of state names that we are writeable in
+        self.only_in = None
         self.tags = []
         self.label = name
 
@@ -255,6 +257,27 @@ def returns(*args):
             returns_meta.add_element(meta, is_required)
 
         func.Method.set_function_returns(returns_meta)
+
+        return func
+    return decorator
+
+def only_in(*states):
+    """
+    Checks if function has a Method representation, calls wrap_method to
+    create one if it doesn't and then adds only_in to it from *states
+
+    Args:
+        *args(list): List of state names, like DefaultStateMachine.RESETTING
+
+    Returns:
+        function: Updated function
+    """
+    def decorator(func):
+
+        if not hasattr(func, "Method"):
+            Method.wrap_method(func)
+
+        func.Method.only_in = states
 
         return func
     return decorator
