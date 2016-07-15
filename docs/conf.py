@@ -6,6 +6,11 @@ import os
 import re
 import sys
 
+sys.path.append(os.path.dirname(__file__))
+from generate_api_docs import generate_docs
+
+generate_docs()  # Generate core.rst
+
 
 def get_version():
     """
