@@ -128,6 +128,8 @@ class Method(Notifier):
                 parameters = request.parameters
             except KeyError:
                 parameters = {}
+            if "typeid" in parameters:
+                parameters.pop("typeid")
             result = self.call_function(parameters)
         except Exception as error:
             err_message = str(error)

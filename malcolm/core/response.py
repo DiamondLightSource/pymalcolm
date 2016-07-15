@@ -19,6 +19,8 @@ class Response(object):
         serialized["id"] = self.id_
         serialized["type"] = self.type_
         for (field, value) in self.fields.items():
+            if hasattr(value, "to_dict"):
+                value = value.to_dict()
             serialized[field] = value
         return serialized
 

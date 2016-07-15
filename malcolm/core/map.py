@@ -1,56 +1,108 @@
-from collections import OrderedDict
+from collections import Counter
+
+from malcolm.core.serializable import Serializable
 
 
-class Map(OrderedDict):
+@Serializable.register_subclass("malcolm:core/Map:1.0")
+class Map(Serializable):
 
     def __init__(self, meta, d=None):
-        super(Map, self).__init__()
-
-        self._meta = meta
-
-        if d is None:
-            d = {}
-
+        self.meta = meta
+        d = {} if d is None else d
         for key, value in d.items():
-            if key in meta.elements.keys():
+            if key in meta.elements:
                 self.__setattr__(key, value)
             else:
-                raise KeyError("%s is not a valid key for given meta" % key)
+                raise ValueError("%s is not a valid key for given meta" % key)
 
-    def __getattr__(self, item):
-        """
-        Override get attribute to get item from self
+    @property
+    def endpoints(self):
+        return [e for e in self.meta.elements if hasattr(self, e)]
 
-        Args:
-            item: Attribute to lookup as a key
+    def to_dict(self):
+        overrides = {}
+        for e in self.endpoints:
+            a = getattr(self, e)
+            if hasattr(a, "to_dict"):
+                overrides[e] = a.to_dict()
+        return super(Map, self).to_dict(**overrides)
 
-        Returns:
-            Value corresponding to item key
-        Raises:
-            AttributeError: If KeyError raised by __getitem__
-        """
+    @classmethod
+    def from_dict(cls, meta, d):
+        m = cls(meta)
+        for k, v in d.items():
+            if k == "meta":
+                continue
+            try:
+                # check if this is something that needs deserializing
+                if "typeid" in v:
+                    v = Serializable.deserialize(k, v)
+            except TypeError:
+                # not a dictionary - pass
+                pass
+            setattr(m, k, v)
+        return m
 
-        try:
-            return self.__getitem__(item)
-        except KeyError:
-            # Need to raise AttributeError as OrderedDict expects this
-            raise AttributeError
+    def __repr__(self):
+        return self.to_dict().__repr__()
 
-    def __setattr__(self, key, value):
-        """
-        Override set attribute to check if key is allowed in _meta
-        and then set value in self. Use default if _meta doesn't exist
+    def __eq__(self, rhs):
+        if hasattr(rhs, "meta"):
+            if self.meta.to_dict() != rhs.meta.to_dict():
+                return False
+        return Counter(self.items()) == Counter(rhs.items())
 
-        Args:
-            key: Key in self
-            value: Value corresponding to key
-        Raises:
-            KeyError: If key is invalid
-        """
-        if hasattr(self, "_meta"):
-            if key not in self._meta.elements.keys():
-                raise KeyError("Map does not have element %s" % key)
+    def __ne__(self, rhs):
+        return not self.__eq__(rhs)
 
-            self[key] = value
+    def __setitem__(self, key, val):
+        if key not in self.meta.elements:
+            raise ValueError("%s is not a valid key for given meta" % key)
+        setattr(self, key, val)
+
+    def __getitem__(self, key):
+        if key not in self.meta.elements or not hasattr(self, key):
+            raise KeyError
+        return getattr(self, key)
+
+    def __contains__(self, key):
+        return key in self.meta.elements and hasattr(self, key)
+
+    def __len__(self):
+        return len([e for e in self.meta.elements if hasattr(self, e)])
+
+    def __iter__(self):
+        for e in self.meta.elements:
+            if hasattr(self, e):
+                yield e
+
+    def update(self, d):
+        if not set(d).issubset(self.meta.elements):
+            raise ValueError("%s contains invalid keys for given meta" % d)
+        for k in d:
+            setattr(self, k, d[k])
+
+    def clear(self):
+        for e in self.meta.elements:
+            if hasattr(self, e):
+                delattr(self, e)
+
+    def keys(self):
+        return [e for e in self.meta.elements if hasattr(self, e)]
+
+    def values(self):
+        return [getattr(self, e)
+                for e in self.meta.elements if hasattr(self, e)]
+
+    def items(self):
+        return [(e, getattr(self, e))
+                for e in self.meta.elements if hasattr(self, e)]
+
+    def setdefault(self, key, default=None):
+        if key in self:
+            return self[key]
         else:
-            OrderedDict.__setattr__(self, key, value)
+            if key not in self.meta.elements:
+                raise ValueError("%s is not a valid key for given meta" % key)
+            self[key] = default
+            return default

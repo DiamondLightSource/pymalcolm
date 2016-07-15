@@ -128,7 +128,7 @@ class TestMethod(unittest.TestCase):
         call_arg = func.call_args[0][0]
         self.assertEqual("test", call_arg.first)
         self.assertEqual("default", call_arg.second)
-        self.assertEqual(args_meta, call_arg._meta)
+        self.assertEqual(args_meta, call_arg.meta)
 
     def test_required(self):
         func = Mock(return_value={"first_out": "test"})
@@ -144,7 +144,7 @@ class TestMethod(unittest.TestCase):
         self.assertEqual("default", call_arg.first)
         with self.assertRaises(AttributeError):
             _ = call_arg.second
-        self.assertEqual(args_meta, call_arg._meta)
+        self.assertEqual(args_meta, call_arg.meta)
 
         m.set_function_takes(args_meta, {"second": "default"})
         with self.assertRaises(ValueError):
@@ -168,8 +168,8 @@ class TestMethod(unittest.TestCase):
         call_arg1, call_arg2 = func.call_args_list[0][0]
         self.assertEqual(1, call_arg1.first)
         self.assertEqual(2, call_arg1.second)
-        self.assertEqual(args_meta, call_arg1._meta)
-        self.assertEqual(return_meta, call_arg2._meta)
+        self.assertEqual(args_meta, call_arg1.meta)
+        self.assertEqual(return_meta, call_arg2.meta)
 
     @patch('malcolm.core.method.Method.call_function')
     def test_handle_request(self, call_function_mock):
