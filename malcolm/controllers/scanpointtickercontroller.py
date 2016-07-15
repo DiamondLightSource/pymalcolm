@@ -15,8 +15,8 @@ from malcolm.core.runnabledevicestatemachine import RunnableDeviceStateMachine
 class ScanPointTickerController(Controller):
 
     def create_attributes(self):
-        self.value = Attribute("value",
-                NumberMeta("meta", "Value", numpy.float64))
+        self.value = Attribute("value", NumberMeta(
+            "meta", "Value", numpy.float64))
         yield self.value
         self.generator = Attribute(
             "generator", PointGeneratorMeta("meta", "Scan Point Generator"))
@@ -30,8 +30,9 @@ class ScanPointTickerController(Controller):
 
     @takes(PointGeneratorMeta("generator", "Generator instance"), REQUIRED,
            StringMeta("axis_name", "Specifier for axis"), REQUIRED,
-           NumberMeta("exposure", "Detector exposure time", numpy.float64), REQUIRED)
-    def configure(self, generator, axis_name, exposure):
+           NumberMeta("exposure",
+                      "Detector exposure time", numpy.float64), REQUIRED)
+    def configure(self, params):
         """
         Configure the controller
 
@@ -41,9 +42,9 @@ class ScanPointTickerController(Controller):
             exposure(Double): Exposure time for detector
         """
 
-        self.generator.set_value(generator)
-        self.axis_name.set_value(axis_name)
-        self.exposure.set_value(exposure)
+        self.generator.set_value(params.generator)
+        self.axis_name.set_value(params.axis_name)
+        self.exposure.set_value(params.exposure)
         self.block.notify_subscribers()
 
     @Method.wrap_method
@@ -54,8 +55,8 @@ class ScanPointTickerController(Controller):
         Yields:
             Point: Scan points from PointGenerator
         """
-
+        axis_name = self.axis_name.value
         for point in self.generator.value.iterator():
-            self.value.set_value(point)
+            self.value.set_value(point.positions[axis_name])
             self.block.notify_subscribers()
             time.sleep(self.exposure.value)
