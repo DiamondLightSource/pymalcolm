@@ -41,7 +41,8 @@ class ChoiceMeta(ScalarMeta):
         if value is None or value in self.choices:
             return value
         else:
-            raise ValueError("%s is not a valid value" % value)
+            raise ValueError(
+                "%s is not a valid value in %s" % (value, self.choices))
 
     @classmethod
     def from_dict(cls, name, d):
