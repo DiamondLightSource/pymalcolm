@@ -3,7 +3,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
-from malcolm.core.request import Request, Get, Post, Subscribe, Put
+from malcolm.core.request import Request, Get, Post, Subscribe, Unsubscribe, Put
 from malcolm.core.response import Return, Error, Update, Delta
 
 import unittest
@@ -47,6 +47,10 @@ class TestRequest(unittest.TestCase):
                                   message="Test Error").to_dict()
 
         self.assertEqual(call_arg, expected_response)
+
+    def test_setters(self):
+        self.request.set_id(123)
+        self.assertEquals(123, self.request.id_)
 
 
 class TestGet(unittest.TestCase):
@@ -163,6 +167,19 @@ class TestSubscribe(unittest.TestCase):
 
         self.subscribe.set_delta(False)
         self.assertFalse(self.subscribe.delta)
+
+
+class TestUnsubscribe(unittest.TestCase):
+
+    def setUp(self):
+        self.context = MagicMock()
+        self.response_queue = MagicMock()
+        self.unsubscribe = Unsubscribe(self.context, self.response_queue)
+
+    def test_init(self):
+        self.assertEqual(self.context, self.unsubscribe.context)
+        self.assertEqual(self.response_queue, self.unsubscribe.response_queue)
+        self.assertEqual("malcolm:core/Unsubscribe:1.0", self.unsubscribe.typeid)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

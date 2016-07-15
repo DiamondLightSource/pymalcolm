@@ -177,3 +177,17 @@ class Subscribe(Request):
 
     def set_delta(self, delta):
         self.delta = delta
+
+
+@Serializable.register_subclass("malcolm:core/Unsubscribe:1.0")
+class Unsubscribe(Request):
+    """Create a Unsubscribe Request object"""
+
+    def __init__(self, context=None, response_queue=None):
+        """
+        Args:
+            context: Context of Subscribe
+            response_queue (Queue): Queue to return to
+        """
+
+        super(Unsubscribe, self).__init__(context, response_queue)
