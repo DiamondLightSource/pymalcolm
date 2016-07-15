@@ -26,7 +26,8 @@ class Controller(Loggable):
         """
         self.set_logger_name("%s.controller" % block.name)
 
-        # dict of str state -> (dict of Method -> bool writeable)
+        # dictionary of dictionaries
+        # {state (str): {Method: writeable (bool)}
         self.methods_writeable = {}
         self.process = process
         self.parts = []
