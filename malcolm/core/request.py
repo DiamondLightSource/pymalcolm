@@ -53,26 +53,6 @@ class Request(Serializable):
         response = Error(self.id_, self.context, message=message)
         self.response_queue.put(response)
 
-    def respond_with_update(self, value):
-        """
-        Create an Update Response object to handle the request
-
-        Args:
-            value (dict): Dictionary describing the new structure
-        """
-        response = Update(self.id_, self.context, value=value)
-        self.response_queue.put(response)
-
-    def respond_with_delta(self, changes):
-        """
-        Create a Delta Response object to handle the request
-
-        Args:
-            changes (list): list of [[path], value] pairs for changed values
-        """
-        response = Delta(self.id_, self.context, changes=changes)
-        self.response_queue.put(response)
-
     def __repr__(self):
         return self.to_dict().__repr__()
 
@@ -171,6 +151,26 @@ class Subscribe(Request):
         super(Subscribe, self).__init__(context, response_queue)
         self.endpoint = endpoint
         self.delta = delta
+
+    def respond_with_update(self, value):
+        """
+        Create an Update Response object to handle the request
+
+        Args:
+            value (dict): Dictionary describing the new structure
+        """
+        response = Update(self.id_, self.context, value=value)
+        self.response_queue.put(response)
+
+    def respond_with_delta(self, changes):
+        """
+        Create a Delta Response object to handle the request
+
+        Args:
+            changes (list): list of [[path], value] pairs for changed values
+        """
+        response = Delta(self.id_, self.context, changes=changes)
+        self.response_queue.put(response)
 
     def set_endpoint(self, endpoint):
         self.endpoint = endpoint

@@ -48,28 +48,6 @@ class TestRequest(unittest.TestCase):
 
         self.assertEqual(call_arg, expected_response)
 
-    def test_respond_with_update(self):
-        value = MagicMock()
-
-        self.request.respond_with_update(value)
-
-        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
-
-        expected_response = Update(self.request.id_, self.request.context, value=value).to_dict()
-
-        self.assertEqual(call_arg, expected_response)
-
-    def test_respond_with_delta(self):
-        changes = [[["path"], "value"]]
-
-        self.request.respond_with_delta(changes)
-
-        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
-
-        expected_response = Delta(self.request.id_, self.request.context, changes=changes).to_dict()
-
-        self.assertEqual(call_arg, expected_response)
-
 
 class TestGet(unittest.TestCase):
 
@@ -156,6 +134,28 @@ class TestSubscribe(unittest.TestCase):
         self.assertEqual(self.endpoint, self.subscribe.endpoint)
         self.assertEqual(self.delta, self.subscribe.delta)
         self.assertEqual("malcolm:core/Subscribe:1.0", self.subscribe.typeid)
+
+    def test_respond_with_update(self):
+        value = MagicMock()
+
+        self.subscribe.respond_with_update(value)
+
+        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
+
+        expected_response = Update(self.subscribe.id_, self.subscribe.context, value=value).to_dict()
+
+        self.assertEqual(call_arg, expected_response)
+
+    def test_respond_with_delta(self):
+        changes = [[["path"], "value"]]
+
+        self.subscribe.respond_with_delta(changes)
+
+        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
+
+        expected_response = Delta(self.subscribe.id_, self.subscribe.context, changes=changes).to_dict()
+
+        self.assertEqual(call_arg, expected_response)
 
     def test_setters(self):
         self.subscribe.set_endpoint(["BL18I:XSPRESS3", "state", "value2"])
