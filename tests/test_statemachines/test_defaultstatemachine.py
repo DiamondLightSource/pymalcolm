@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 from mock import Mock
 
-from malcolm.core.defaultstatemachine import DefaultStateMachine
+from malcolm.statemachines import DefaultStateMachine
 
 
 class TestDefaultStateMachine(unittest.TestCase):

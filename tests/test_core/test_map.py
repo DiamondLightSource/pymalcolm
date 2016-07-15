@@ -56,7 +56,7 @@ class TestMap(unittest.TestCase):
         expected["e"] = "e"
         self.assertEquals(expected, m.to_dict())
 
-    @patch("malcolm.core.mapmeta.MapMeta.from_dict")
+    @patch("malcolm.metas.mapmeta.MapMeta.from_dict")
     def test_from_dict(self, mapmeta_mock):
         map_meta = MagicMock()
         map_meta.elements = {"a", "b", "c"}

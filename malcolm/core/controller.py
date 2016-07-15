@@ -2,15 +2,14 @@ import inspect
 from collections import OrderedDict
 
 from malcolm.core.loggable import Loggable
-from malcolm.core.defaultstatemachine import DefaultStateMachine
 from malcolm.core.attribute import Attribute
-from malcolm.core.choicemeta import ChoiceMeta
-from malcolm.core.stringmeta import StringMeta
-from malcolm.core.booleanmeta import BooleanMeta
 from malcolm.core.hook import Hook
 from malcolm.core.method import takes, only_in
+from malcolm.metas import ChoiceMeta, StringMeta, BooleanMeta
+from malcolm.statemachines import DefaultStateMachine
 
 sm = DefaultStateMachine
+
 
 @sm.insert
 class Controller(Loggable):

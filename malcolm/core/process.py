@@ -6,7 +6,7 @@ from malcolm.core.response import Return, Update, Delta
 from malcolm.core.cache import Cache
 from malcolm.core.block import Block
 from malcolm.core.attribute import Attribute
-from malcolm.core.stringarraymeta import StringArrayMeta
+from malcolm.metas import StringArrayMeta
 
 
 # Sentinel object that when received stops the recv_loop

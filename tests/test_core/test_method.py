@@ -8,8 +8,8 @@ from collections import OrderedDict
 import unittest
 from mock import Mock, patch, call, MagicMock
 
-from malcolm.core.method import Method, takes, returns, only_in
-from malcolm.core.mapmeta import OPTIONAL, REQUIRED
+from malcolm.core.method import Method, takes, returns, only_in, OPTIONAL, \
+    REQUIRED
 
 
 class TestMethod(unittest.TestCase):
@@ -249,7 +249,7 @@ class TestMethod(unittest.TestCase):
         expected["returns"] = OrderedDict({"dict": "return"})
         self.assertEquals(expected, m.to_dict())
 
-    @patch("malcolm.core.mapmeta.MapMeta.to_dict")
+    @patch("malcolm.metas.mapmeta.MapMeta.to_dict")
     def test_empty_to_dict_serialization(self, map_to_dict_mock):
         m = Method("test_method", "test_description")
         expected = OrderedDict()

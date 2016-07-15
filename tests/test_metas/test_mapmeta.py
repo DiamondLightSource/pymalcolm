@@ -8,7 +8,7 @@ from collections import OrderedDict
 import unittest
 from mock import MagicMock, patch, call
 
-from malcolm.core.mapmeta import MapMeta
+from malcolm.metas import MapMeta
 
 
 class TestInit(unittest.TestCase):
@@ -110,7 +110,7 @@ class TestToDict(unittest.TestCase):
 
         self.assertEqual(expected_dict, response)
 
-    @patch('malcolm.core.mapmeta.Serializable')
+    @patch('malcolm.metas.mapmeta.Serializable')
     def test_from_dict_deserialize(self, am_mock):
         # prep dict
         elements = OrderedDict()

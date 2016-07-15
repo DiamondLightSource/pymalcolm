@@ -4,7 +4,7 @@ import unittest
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
-from malcolm.core.blockmeta import BlockMeta
+from malcolm.metas import BlockMeta
 
 class TestBlockMeta(unittest.TestCase):
     def test_registered(self):

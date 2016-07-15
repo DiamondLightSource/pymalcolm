@@ -13,10 +13,9 @@ from mock import MagicMock, patch, call
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.controllers.clientcontroller import ClientController
-from malcolm.controllers.hellocontroller import HelloController
+from malcolm.controllers import ClientController, HelloController
 from malcolm.core.block import Block
-from malcolm.core.stringmeta import StringMeta
+from malcolm.metas import StringMeta
 from malcolm.compat import Queue
 
 class TestClientController(unittest.TestCase):

@@ -3,9 +3,6 @@ from collections import OrderedDict
 from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
 
-OPTIONAL = object()
-REQUIRED = object()
-
 
 @Serializable.register_subclass("malcolm:core/MapMeta:1.0")
 class MapMeta(Notifier):
