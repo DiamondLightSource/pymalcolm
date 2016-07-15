@@ -12,18 +12,12 @@ from malcolm.core.stringarraymeta import StringArrayMeta
 # Sentinel object that when received stops the recv_loop
 PROCESS_STOP = object()
 
-
-def internal_request(typeid, args):
-    cls = namedtuple(typeid, args)
-    cls.typeid = typeid
-    return cls
-
 # Internal update messages
-BlockNotify = internal_request("BlockNotify", "name")
-BlockChanged = internal_request("BlockChanged", "change")
-BlockRespond = internal_request("BlockRespond", "response, response_queue")
-BlockAdd = internal_request("BlockAdd", "block")
-BlockList = internal_request("BlockList", "client_comms, blocks")
+BlockNotify = namedtuple("BlockNotify", "name")
+BlockChanged = namedtuple("BlockChanged", "change")
+BlockRespond = namedtuple("BlockRespond", "response, response_queue")
+BlockAdd = namedtuple("BlockAdd", "block")
+BlockList = namedtuple("BlockList", "client_comms, blocks")
 
 
 class Process(Loggable):
@@ -42,15 +36,15 @@ class Process(Loggable):
         self._last_changes = OrderedDict()  # block name -> list of changes
         self._client_comms = OrderedDict()  # client comms -> list of blocks
         self._handle_functions = {
-            Post.typeid: self._forward_block_request,
-            Put.typeid: self._forward_block_request,
-            Get.typeid: self._handle_get,
-            Subscribe.typeid: self._handle_subscribe,
-            BlockNotify.typeid: self._handle_block_notify,
-            BlockChanged.typeid: self._handle_block_changed,
-            BlockRespond.typeid: self._handle_block_respond,
-            BlockAdd.typeid: self._handle_block_add,
-            BlockList.typeid: self._handle_block_list,
+            Post: self._forward_block_request,
+            Put: self._forward_block_request,
+            Get: self._handle_get,
+            Subscribe: self._handle_subscribe,
+            BlockNotify: self._handle_block_notify,
+            BlockChanged: self._handle_block_changed,
+            BlockRespond: self._handle_block_respond,
+            BlockAdd: self._handle_block_add,
+            BlockList: self._handle_block_list,
         }
         self.create_process_block()
 
@@ -63,7 +57,7 @@ class Process(Loggable):
                 # Got the sentinel, stop immediately
                 break
             try:
-                self._handle_functions[request.typeid](request)
+                self._handle_functions[type(request)](request)
             except Exception:
                 self.log_exception("Exception while handling %s", request)
 

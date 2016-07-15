@@ -15,8 +15,8 @@ from malcolm.core.process import \
     Process, BlockChanged, BlockNotify, PROCESS_STOP, BlockAdd, BlockRespond, \
     BlockList
 from malcolm.core.syncfactory import SyncFactory
-from malcolm.core.request import Request, Subscribe
-from malcolm.core.response import Response, Return, Update, Delta
+from malcolm.core.request import Subscribe, Post, Get
+from malcolm.core.response import Return, Update, Delta
 from malcolm.core.attribute import Attribute
 from malcolm.core.stringarraymeta import StringArrayMeta
 
@@ -56,9 +56,7 @@ class TestProcess(unittest.TestCase):
         p._handle_block_add(BlockAdd(b))
         self.assertEqual(p._blocks, dict(myblock=b))
         p.start()
-        request = MagicMock()
-        request.typeid = "malcolm:core/Post:1.0"
-        request.endpoint = ["myblock", "foo"]
+        request = Post(MagicMock(), MagicMock(), ["myblock", "foo"])
         p.q.put(request)
         # wait for spawns to have done their job
         p.stop()
@@ -90,9 +88,7 @@ class TestProcess(unittest.TestCase):
         block.name = "myblock"
         block.to_dict = MagicMock(
             return_value={"path_1": {"path_2": {"attr": "value"}}})
-        request = MagicMock()
-        request.typeid = "malcolm:core/Get:1.0"
-        request.endpoint = ["myblock", "path_1", "path_2"]
+        request = Get(MagicMock(), MagicMock(), ["myblock", "path_1", "path_2"])
         p._handle_block_add(BlockAdd(block))
         p.q.get = MagicMock(side_effect=[request, PROCESS_STOP])
 
@@ -111,7 +107,6 @@ class TestProcess(unittest.TestCase):
         block_response = p.q.put.call_args[0][0]
         self.assertEquals(block_response.response, response)
         self.assertEquals(block_response.response_queue, response_queue)
-        self.assertEquals("BlockRespond", block_response.typeid)
 
     def test_block_respond_triggers_response(self):
         p = Process("proc", MagicMock())
