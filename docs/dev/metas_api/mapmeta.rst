@@ -1,7 +1,7 @@
 MapMeta
 -------
 
-.. module:: malcolm.core.mapmeta
+.. module:: malcolm.metas.mapmeta
 
 .. autoclass:: MapMeta
     :members:

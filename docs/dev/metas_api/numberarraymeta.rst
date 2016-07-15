@@ -1,7 +1,7 @@
 NumberArrayMeta
 ---------------
 
-.. module:: malcolm.core.numberarraymeta
+.. module:: malcolm.metas.numberarraymeta
 
 .. autoclass:: NumberArrayMeta
     :members:

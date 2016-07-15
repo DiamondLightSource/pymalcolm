@@ -1,7 +1,7 @@
 ChoiceMeta
 ----------
 
-.. module:: malcolm.core.choicemeta
+.. module:: malcolm.metas.choicemeta
 
 .. autoclass:: ChoiceMeta
     :members:

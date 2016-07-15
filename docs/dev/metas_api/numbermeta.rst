@@ -1,7 +1,7 @@
 NumberMeta
 ----------
 
-.. module:: malcolm.core.numbermeta
+.. module:: malcolm.metas.numbermeta
 
 .. autoclass:: NumberMeta
     :members:

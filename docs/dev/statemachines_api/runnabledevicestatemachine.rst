@@ -1,7 +1,7 @@
 RunnableDeviceStateMachine
 --------------------------
 
-.. module:: malcolm.core.runnabledevicestatemachine
+.. module:: malcolm.statemachines.runnabledevicestatemachine
 
 .. autoclass:: RunnableDeviceStateMachine
     :members:

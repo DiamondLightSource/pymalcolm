@@ -1,7 +1,7 @@
 StringArrayMeta
 ---------------
 
-.. module:: malcolm.core.stringarraymeta
+.. module:: malcolm.metas.stringarraymeta
 
 .. autoclass:: StringArrayMeta
     :members:

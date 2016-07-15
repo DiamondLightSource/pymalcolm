@@ -41,7 +41,7 @@ The main documentation for the site is organised into a few sections:
 
     dev/tags
     dev/types
-    dev/core
+    dev/api
     dev/contributing
     dev/release_notes
 

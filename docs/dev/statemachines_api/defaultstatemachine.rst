@@ -1,7 +1,7 @@
 DefaultStateMachine
 -------------------
 
-.. module:: malcolm.core.defaultstatemachine
+.. module:: malcolm.statemachines.defaultstatemachine
 
 .. autoclass:: DefaultStateMachine
     :members:

@@ -1,7 +1,7 @@
 BooleanMeta
 -----------
 
-.. module:: malcolm.core.booleanmeta
+.. module:: malcolm.metas.booleanmeta
 
 .. autoclass:: BooleanMeta
     :members:
