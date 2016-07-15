@@ -27,6 +27,7 @@ from malcolm.wscomms.wsclientcomms import WSClientComms
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):
+
     def setUp(self):
         self.sf = SyncFactory("sync")
         self.process = Process("proc", self.sf)
@@ -67,7 +68,9 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
     def test_server_and_simple_client(self):
         self.send_message()
 
+
 class TestSystemWSCommsServerAndClient(TestSystemWSCommsServerOnly):
+
     def setUp(self):
         super(TestSystemWSCommsServerAndClient, self).setUp()
         self.process2 = Process("proc2", self.sf)

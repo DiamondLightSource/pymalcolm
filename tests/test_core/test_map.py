@@ -50,6 +50,7 @@ class TestMap(unittest.TestCase):
         expected = OrderedDict()
         expected["typeid"] = "malcolm:core/Map:1.0"
         expected["a"] = a_mock.to_dict.return_value
+        del expected["a"].to_dict
         expected["b"] = "test"
         expected["d"] = 123
         expected["e"] = "e"

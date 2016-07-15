@@ -9,10 +9,6 @@ from mock import Mock
 
 from malcolm.core.serializable import Serializable
 
-# Register Serializable as a sublcass of itself so we
-# can instantiate it for testing purposes.
-Serializable.register_subclass("serializable:test")(Serializable)
-
 
 class TestSerialization(unittest.TestCase):
 
@@ -52,7 +48,7 @@ class TestSerialization(unittest.TestCase):
         d = dict(value=0)
         DummySerializable.from_dict("name", d)
 
-        s.update.assert_called_once_with(["value", 0])
+        s.update.assert_called_once_with([["value"], 0])
 
     def test_update_calls_set(self):
 

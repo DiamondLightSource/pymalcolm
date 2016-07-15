@@ -3,95 +3,74 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
-from collections import OrderedDict
-
 import unittest
 from mock import Mock, MagicMock
 
-from malcolm.core.response import Response
+from malcolm.core.response import Response, Return, Error, Delta, Update
 
 
 class TestResponse(unittest.TestCase):
+
     def test_init(self):
         id_ = 123
-        type_ = "Return"
         context = Mock()
-        r = Response(id_, context, type_)
+        r = Response(id_, context)
         self.assertEquals(id_, r.id_)
-        self.assertEquals(type_, r.type_)
+        self.assertEquals(None, r.typeid)
         self.assertEquals(context, r.context)
 
-    def test_to_dict(self):
-        r = Response(123, Mock(), "Return")
-        expected = OrderedDict()
-        expected["id"] = 123
-        expected["type"] = "Return"
-        self.assertEquals(expected, r.to_dict())
-
-    def test_return_response(self):
+    def test_Return(self):
         context = Mock()
-        r = Response.Return(123, context)
+        r = Return(123, context)
         self.assertEquals(123, r.id_)
-        self.assertEquals("Return", r.type_)
+        self.assertEquals("malcolm:core/Return:1.0", r.typeid)
         self.assertEquals(context, r.context)
-        self.assertIsNone(r.fields["value"])
-        r = Response.Return(123, Mock(), {"key": "value"})
-        self.assertEquals({"key": "value"}, r.fields["value"])
+        self.assertIsNone(r.value)
+        r = Return(123, Mock(), {"key": "value"})
+        self.assertEquals({"key": "value"}, r.value)
+
+        r.set_value({"key": "value2"})
+        self.assertEquals({"key": "value2"}, r.value)
 
     def test_Error(self):
         context = Mock()
-        r = Response.Error(123, context, "Test Error")
+        r = Error(123, context, "Test Error")
 
         self.assertEquals(123, r.id_)
-        self.assertEquals("Error", r.type_)
+        self.assertEquals("malcolm:core/Error:1.0", r.typeid)
         self.assertEquals(context, r.context)
 
-    def test_return_update(self):
+        r.set_message("Test Error 2")
+        self.assertEquals("Test Error 2", r.message)
+
+    def test_Update(self):
         context = Mock()
-        value = {"attribute":"value"}
-        r = Response.Update(123, context, value)
+        value = {"attribute": "value"}
+        r = Update(123, context, value)
         self.assertEquals(123, r.id_)
         self.assertEquals(context, r.context)
-        self.assertEquals({"attribute":"value"}, r.fields["value"])
+        self.assertEquals({"attribute": "value"}, r.value)
 
-    def test_return_delta(self):
+        r.set_value({"key": "value2"})
+        self.assertEquals({"key": "value2"}, r.value)
+
+    def test_Delta(self):
         context = Mock()
         changes = [[["path"], "value"]]
-        r = Response.Delta(123, context, changes)
+        r = Delta(123, context, changes)
         self.assertEquals(123, r.id_)
         self.assertEquals(context, r.context)
-        self.assertEquals(changes, r.fields["changes"])
+        self.assertEquals(changes, r.changes)
 
-    def test_return_response_to_dict(self):
-        context = Mock()
-        r = Response.Return(123, context)
-        expected = OrderedDict()
-        expected["id"] = 123
-        expected["type"] = "Return"
-        expected["value"] = None
-        self.assertEquals(expected, r.to_dict())
-
-    def test_getattr(self):
-        r = Response.Return(22, None, "bar")
-        self.assertEquals(r.value, "bar")
-        self.assertRaises(KeyError, lambda: r.ffff)
-
-    def test_from_dict(self):
-        serialized = {"id": 123, "type": "Return", "extra_1": "abc",
-                      "extra_2": {"field": "data"}}
-        response = Response.from_dict(serialized)
-        self.assertEquals(123, response.id_)
-        self.assertEquals("Return", response.type_)
-        self.assertEquals("abc", response.fields["extra_1"])
-        self.assertEquals({"field": "data"}, response.fields["extra_2"])
-        self.assertIsNone(response.context)
+        r.set_changes([[["path"], "value2"]])
+        self.assertEquals([[["path"], "value2"]], r.changes)
 
     def test_repr(self):
-        r = Response(123, Mock(), "mytype")
+        r = Response(123, Mock())
         s = r.__repr__()
         self.assertTrue(isinstance(s, str))
-        self.assertIn("mytype", s)
         self.assertIn("123", s)
+        self.assertIn("id", s)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

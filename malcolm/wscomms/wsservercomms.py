@@ -7,6 +7,7 @@ from tornado.web import Application
 from tornado.httpserver import HTTPServer
 
 from malcolm.core.servercomms import ServerComms
+from malcolm.core.serializable import Serializable
 from malcolm.core.request import Request
 
 
@@ -23,7 +24,7 @@ class MalcolmWebSocketHandler(WebSocketHandler):
         """
 
         d = json.loads(message, object_pairs_hook=OrderedDict)
-        request = Request.from_dict(d)
+        request = Serializable.deserialize("Request", d)
         request.context = self
         self.servercomms.on_request(request)
 
@@ -65,7 +66,7 @@ class WSServerComms(ServerComms):
         """
 
         request.response_queue = self.q
-        if "endpoint" in request.fields and len(request.endpoint) > 0 and \
+        if hasattr(request, "endpoint") and len(request.endpoint) > 0 and \
                 request.endpoint[0] == ".":
             # We're talking about the process block, so fill in the right name
             request.endpoint[0] = self.process.name

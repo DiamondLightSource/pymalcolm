@@ -74,11 +74,11 @@ class TestWSServerComms(unittest.TestCase):
         spawnable_mocks[0].wait.assert_called_once_with(timeout=timeout)
         spawnable_mocks[1].wait.assert_called_once_with(timeout=timeout)
 
-    @patch('malcolm.wscomms.wsservercomms.Request')
+    @patch('malcolm.wscomms.wsservercomms.Serializable')
     @patch('malcolm.wscomms.wsservercomms.json')
     @patch('malcolm.wscomms.wsservercomms.HTTPServer.listen')
     @patch('malcolm.wscomms.wsservercomms.IOLoop')
-    def test_MWSH_on_message(self, _, _1, json_mock, request_mock):
+    def test_MWSH_on_message(self, _, _1, json_mock, serializable_mock):
         self.WS = WSServerComms("TestWebSocket", self.p, 1)
 
         message_dict = dict(name="TestMessage")
@@ -86,7 +86,7 @@ class TestWSServerComms(unittest.TestCase):
 
         request = MagicMock()
         request.context = self.WS.server.request_callback.handlers[0][1][0].handler_class
-        request_mock.from_dict.return_value = request
+        serializable_mock.deserialize.return_value = request
 
         m = MagicMock()
         MWSH = MalcolmWebSocketHandler(m, m)
@@ -95,7 +95,7 @@ class TestWSServerComms(unittest.TestCase):
 
         json_mock.loads.assert_called_once_with("TestMessage",
                                                 object_pairs_hook=OrderedDict)
-        request_mock.from_dict.assert_called_once_with(message_dict)
+        serializable_mock.deserialize.assert_called_once_with("Request", message_dict)
         self.p.q.put.assert_called_once_with(request)
 
     @patch('malcolm.wscomms.wsservercomms.HTTPServer')

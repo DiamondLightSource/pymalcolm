@@ -1,8 +1,8 @@
 from collections import OrderedDict, namedtuple
 
 from malcolm.core.loggable import Loggable
-from malcolm.core.request import Request
-from malcolm.core.response import Response
+from malcolm.core.request import Request, Post, Put, Subscribe, Get
+from malcolm.core.response import Return, Update, Delta
 from malcolm.core.cache import Cache
 from malcolm.core.block import Block
 from malcolm.core.attribute import Attribute
@@ -12,17 +12,12 @@ from malcolm.core.stringarraymeta import StringArrayMeta
 # Sentinel object that when received stops the recv_loop
 PROCESS_STOP = object()
 
-def internal_request(type_, args):
-    cls = namedtuple(type_, args)
-    cls.type_ = type_
-    return cls
-
 # Internal update messages
-BlockNotify = internal_request("BlockNotify", "name")
-BlockChanged = internal_request("BlockChanged", "change")
-BlockRespond = internal_request("BlockRespond", "response, response_queue")
-BlockAdd = internal_request("BlockAdd", "block")
-BlockList = internal_request("BlockList", "client_comms, blocks")
+BlockNotify = namedtuple("BlockNotify", "name")
+BlockChanged = namedtuple("BlockChanged", "change")
+BlockRespond = namedtuple("BlockRespond", "response, response_queue")
+BlockAdd = namedtuple("BlockAdd", "block")
+BlockList = namedtuple("BlockList", "client_comms, blocks")
 
 
 class Process(Loggable):
@@ -41,15 +36,15 @@ class Process(Loggable):
         self._last_changes = OrderedDict()  # block name -> list of changes
         self._client_comms = OrderedDict()  # client comms -> list of blocks
         self._handle_functions = {
-            Request.POST: self._forward_block_request,
-            Request.PUT: self._forward_block_request,
-            Request.GET: self._handle_get,
-            Request.SUBSCRIBE: self._handle_subscribe,
-            BlockNotify.type_: self._handle_block_notify,
-            BlockChanged.type_: self._handle_block_changed,
-            BlockRespond.type_: self._handle_block_respond,
-            BlockAdd.type_: self._handle_block_add,
-            BlockList.type_ : self._handle_block_list,
+            Post: self._forward_block_request,
+            Put: self._forward_block_request,
+            Get: self._handle_get,
+            Subscribe: self._handle_subscribe,
+            BlockNotify: self._handle_block_notify,
+            BlockChanged: self._handle_block_changed,
+            BlockRespond: self._handle_block_respond,
+            BlockAdd: self._handle_block_add,
+            BlockList: self._handle_block_list,
         }
         self.create_process_block()
 
@@ -62,7 +57,7 @@ class Process(Loggable):
                 # Got the sentinel, stop immediately
                 break
             try:
-                self._handle_functions[request.type_](request)
+                self._handle_functions[type(request)](request)
             except Exception:
                 self.log_exception("Exception while handling %s", request)
 
@@ -178,13 +173,13 @@ class Process(Loggable):
             if len(changes) > 0:
                 if subscription.delta:
                     # respond with the filtered changes
-                    response = Response.Delta(
+                    response = Delta(
                         subscription.id_, subscription.context, changes)
                 else:
                     # respond with the structure of everything
                     # below the endpoint
                     d = self._block_state_cache.walk_path(endpoint)
-                    response = Response.Update(
+                    response = Update(
                         subscription.id_, subscription.context, d)
                 self.log_debug("Responding to subscription %s", response)
                 subscription.response_queue.put(response)
@@ -246,5 +241,5 @@ class Process(Loggable):
 
     def _handle_get(self, request):
         d = self._block_state_cache.walk_path(request.endpoint)
-        response = Response.Return(request.id_, request.context, d)
+        response = Return(request.id_, request.context, d)
         request.response_queue.put(response)

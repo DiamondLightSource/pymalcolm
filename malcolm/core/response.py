@@ -1,99 +1,95 @@
-from collections import OrderedDict
+from malcolm.core.serializable import Serializable
 
 
-class Response(object):
+class Response(Serializable):
     """Represents a response to a message"""
-    RETURN = "Return"
-    DELTA = "Delta"
-    UPDATE = "Update"
-    ERROR = "Error"
 
-    def __init__(self, id_, context, type_):
+    endpoints = ["id"]
+
+    def __init__(self, id_=None, context=None):
         self.id_ = id_
-        self.type_ = type_
         self.context = context
-        self.fields = OrderedDict()
-
-    def to_dict(self):
-        serialized = OrderedDict()
-        serialized["id"] = self.id_
-        serialized["type"] = self.type_
-        for (field, value) in self.fields.items():
-            if hasattr(value, "to_dict"):
-                value = value.to_dict()
-            serialized[field] = value
-        return serialized
-
-    def __getattr__(self, attr):
-        return self.fields[attr]
 
     def __repr__(self):
         return self.to_dict().__repr__()
 
-    @classmethod
-    def Return(cls, id_, context, value=None):
-        """Create a Return Response object with the provided parameters.
+    def to_dict(self, **overrides):
+        return super(Response, self).to_dict(id=self.id_)
 
-        Args:
-            id_ (int): id from initial message
-            context: context associated with id
-            value: object return value (default None)
+    def set_id(self, id_):
+        self.id_ = id_
+
+
+@Serializable.register_subclass("malcolm:core/Return:1.0")
+class Return(Response):
+
+    endpoints = ["id", "value"]
+
+    def __init__(self, id_=None, context=None, value=None):
+        super(Return, self).__init__(id_, context)
+        self.value = value
+
+    def set_value(self, value):
+        self.value = value
+
+
+@Serializable.register_subclass("malcolm:core/Error:1.0")
+class Error(Response):
+    """Create an Error Response object with the provided parameters"""
+
+    endpoints = ["id", "message"]
+
+    def __init__(self, id_=None, context=None, message=None):
         """
-        response = cls(id_, context, "Return")
-        response.fields["value"] = value
-        return response
-
-    @classmethod
-    def Error(cls, id_, context, message):
-        """
-        Create an Error Response object with the provided parameters.
-
         Args:
             id_(int): ID from initial message
             context(): Context associated with ID
             message(str): Error message
         """
+        super(Error, self).__init__(id_, context)
+        self.message = message
 
-        response = cls(id_, context, "Error")
-        response.fields["message"] = message
-        return response
+    def set_message(self, message):
+        self.message = message
 
-    @classmethod
-    def Update(cls, id_, context, value):
+
+@Serializable.register_subclass("malcolm:core/Update:1.0")
+class Update(Response):
+    """Create an Update Response object with the provided parameters"""
+
+    endpoints = ["id", "value"]
+
+    def __init__(self, id_=None, context=None, value=None):
         """
-        Create an Update Response object with the provided parameters.
-
         Args:
-            id_ (int): id from intial message
+            id_ (int): id from initial message
             context: Context associated with id
             value (dict): Serialized state of update object
         """
-        response = cls(id_, context, "Update")
-        response.fields["value"] = value
-        return response
 
-    @classmethod
-    def Delta(cls, id_, context, changes):
+        super(Update, self).__init__(id_, context)
+        self.value = value
+
+    def set_value(self, value):
+        self.value = value
+
+
+@Serializable.register_subclass("malcolm:core/Delta:1.0")
+class Delta(Response):
+    """Create a Delta Response object with the provided parameters"""
+
+    endpoints = ["id", "changes"]
+
+    def __init__(self, id_=None, context=None, changes=None):
         """
-        Create a Delta Response object with the provided parameters.
-
         Args:
             id_ (int): id from initial message
             context: Context associated with id
             changes (list): list of [[path], value] pairs for changed values
         """
-        response = cls(id_, context, "Delta")
-        response.fields["changes"] = changes
-        return response
 
-    @classmethod
-    def from_dict(cls, d):
-        """Create a Response instance from a serialized version
+        super(Delta, self).__init__(id_, context)
+        self.changes = changes
 
-        Args:
-            d (dict): output of self.to_dict()
-        """
-        response = cls(id_=d["id"], context=None, type_=d["type"])
-        for field in [f for f in d.keys() if f not in ["id", "type"]]:
-            response.fields[field] = d[field]
-        return response
+    def set_changes(self, changes):
+        self.changes = changes

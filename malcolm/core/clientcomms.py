@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from malcolm.core.loggable import Loggable
 from malcolm.core.spawnable import Spawnable
+from malcolm.core.response import Update
 
 
 class ClientComms(Loggable, Spawnable):
@@ -47,7 +48,7 @@ class ClientComms(Loggable, Spawnable):
 
     def send_to_caller(self, response):
         if response.id_ == self.SERVER_BLOCKS_ID:
-            assert response.type_ == response.UPDATE, \
+            assert isinstance(response, Update), \
                 "Expected server blocks Update, got %s" % response.type_
             self.process.update_block_list(self, response.value)
         else:

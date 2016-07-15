@@ -27,9 +27,14 @@ class Serializable(object):
         if self.endpoints is not None:
             for endpoint in self.endpoints:
                 if endpoint in overrides:
-                    d[endpoint] = overrides[endpoint]
+                    value = overrides[endpoint]
                 else:
-                    d[endpoint] = getattr(self, endpoint)
+                    value = getattr(self, endpoint)
+
+                if hasattr(value, "to_dict"):
+                    value = value.to_dict()
+
+                d[endpoint] = value
 
         return d
 
@@ -49,7 +54,7 @@ class Serializable(object):
         for k, v in d.items():
             # attribute_assignment e.g. [attribute, value]
             if k != "typeid":
-                inst.update([k, v])
+                inst.update([[k], v])
 
         return inst
 

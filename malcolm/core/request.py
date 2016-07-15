@@ -1,31 +1,22 @@
-from collections import OrderedDict
-from malcolm.core.response import Response
+from malcolm.core.serializable import Serializable
+from malcolm.core.response import Return, Error, Update, Delta
 
 
-class Request(object):
+class Request(Serializable):
     """An object to interact with the attributes of a Block"""
 
-    POST = "Post"
-    PUT = "Put"
-    GET = "Get"
-    SUBSCRIBE = "Subscribe"
+    endpoints = ["id"]
 
-    def __init__(self, context, response_queue, type_):
+    def __init__(self, context=None, response_queue=None):
         """
         Args:
             context(): Context of request
             response_queue(Queue): Queue to return to
-            type_(str): Request type e.g. get, put, post, subscribe, unsubscribe
         """
 
         self.id_ = None
         self.context = context
         self.response_queue = response_queue
-        self.type_ = type_
-        self.fields = OrderedDict()
-
-    def __getattr__(self, attr):
-        return self.fields[attr]
 
     def set_id(self, id_):
         """
@@ -37,6 +28,9 @@ class Request(object):
 
         self.id_ = id_
 
+    def to_dict(self, **overrides):
+        return super(Request, self).to_dict(id=self.id_)
+
     def respond_with_return(self, value=None):
         """
         Create a Return Response object to handle the request
@@ -45,7 +39,7 @@ class Request(object):
             value(): Value to set endpoint to
         """
 
-        response = Response.Return(self.id_, self.context, value=value)
+        response = Return(self.id_, self.context, value=value)
         self.response_queue.put(response)
 
     def respond_with_error(self, message):
@@ -56,8 +50,107 @@ class Request(object):
             message(str): Message explaining error
         """
 
-        response = Response.Error(self.id_, self.context, message=message)
+        response = Error(self.id_, self.context, message=message)
         self.response_queue.put(response)
+
+    def __repr__(self):
+        return self.to_dict().__repr__()
+
+
+@Serializable.register_subclass("malcolm:core/Get:1.0")
+class Get(Request):
+    """Create a Get Request object"""
+
+    endpoints = ["id", "endpoint"]
+
+    def __init__(self, context=None, response_queue=None, endpoint=None):
+        """
+        Args:
+            context(): Context of Get
+            response_queue(Queue): Queue to return to
+            endpoint(list[str]): Path to target Block substructure
+        """
+
+        super(Get, self).__init__(context, response_queue)
+        self.endpoint = endpoint
+
+    def set_endpoint(self, endpoint):
+        self.endpoint = endpoint
+
+
+@Serializable.register_subclass("malcolm:core/Put:1.0")
+class Put(Request):
+    """Create a Put Request object"""
+
+    endpoints = ["id", "endpoint", "value"]
+
+    def __init__(self, context=None, response_queue=None,
+                 endpoint=None, value=None):
+        """
+        Args:
+            context(): Context of Put
+            response_queue(Queue): Queue to return to
+            endpoint(list[str]): Path to target Block substructure
+            value(): Value to put to endpoint e.g. String, dict
+        """
+
+        super(Put, self).__init__(context, response_queue)
+        self.endpoint = endpoint
+        self.value = value
+
+    def set_endpoint(self, endpoint):
+        self.endpoint = endpoint
+
+    def set_value(self, value):
+        self.value = value
+
+
+@Serializable.register_subclass("malcolm:core/Post:1.0")
+class Post(Request):
+    """Create a Post Request object"""
+
+    endpoints = ["id", "endpoint", "parameters"]
+
+    def __init__(self, context=None, response_queue=None,
+                 endpoint=None, parameters=None):
+        """
+        Args:
+            context(): Context of Post
+            response_queue(Queue): Queue to return to
+            endpoint(list[str]): Path to target Block substructure
+            parameters(dict): List of parameters to post to an endpoint
+                e.g. arguments for a Method
+        """
+
+        super(Post, self).__init__(context, response_queue)
+        self.endpoint = endpoint
+        self.parameters = parameters
+
+    def set_endpoint(self, endpoint):
+        self.endpoint = endpoint
+
+    def set_parameters(self, parameters):
+        self.parameters = parameters
+
+
+@Serializable.register_subclass("malcolm:core/Subscribe:1.0")
+class Subscribe(Request):
+    """Create a Subscribe Request object"""
+
+    endpoints = ["id", "endpoint", "delta"]
+
+    def __init__(self, context=None, response_queue=None, endpoint=None, delta=False):
+        """
+        Args:
+            context: Context of Subscribe
+            response_queue (Queue): Queue to return to
+            endpoint (list[str]): Path to target
+            delta (bool): Notify of differences only (default False)
+        """
+
+        super(Subscribe, self).__init__(context, response_queue)
+        self.endpoint = endpoint
+        self.delta = delta
 
     def respond_with_update(self, value):
         """
@@ -66,7 +159,7 @@ class Request(object):
         Args:
             value (dict): Dictionary describing the new structure
         """
-        response = Response.Update(self.id_, self.context, value=value)
+        response = Update(self.id_, self.context, value=value)
         self.response_queue.put(response)
 
     def respond_with_delta(self, changes):
@@ -76,95 +169,25 @@ class Request(object):
         Args:
             changes (list): list of [[path], value] pairs for changed values
         """
-        response = Response.Delta(self.id_, self.context, changes=changes)
+        response = Delta(self.id_, self.context, changes=changes)
         self.response_queue.put(response)
 
-    @classmethod
-    def Get(cls, context, response_queue, endpoint):
+    def set_endpoint(self, endpoint):
+        self.endpoint = endpoint
+
+    def set_delta(self, delta):
+        self.delta = delta
+
+
+@Serializable.register_subclass("malcolm:core/Unsubscribe:1.0")
+class Unsubscribe(Request):
+    """Create a Unsubscribe Request object"""
+
+    def __init__(self, context=None, response_queue=None):
         """
-        Create a Get Request object
-
-        Args:
-            context(): Context of Get
-            response_queue(Queue): Queue to return to
-            endpoint(list[str]): Path to target Block substructure
-
-        Returns:
-            Request object
-        """
-
-        request = Request(context, response_queue, type_="Get")
-        request.fields['endpoint'] = endpoint
-
-        return request
-
-    @classmethod
-    def Post(cls, context, response_queue, endpoint, parameters=None):
-        """
-        Create a Post Request object
-
-        Args:
-            context(): Context of Post
-            response_queue(Queue): Queue to return to
-            endpoint(list[str]): Path to target Block substructure
-            parameters(dict): List of parameters to post to an endpoint
-                e.g. arguments for a Method
-
-        Returns:
-            Request object
-        """
-
-        request = Request(context, response_queue, type_="Post")
-        request.fields['endpoint'] = endpoint
-        if parameters is not None:
-            request.fields['parameters'] = parameters
-
-        return request
-
-    @classmethod
-    def Subscribe(cls, context, response_queue, endpoint, delta=False):
-        """Create a Subscribe Request object
-
         Args:
             context: Context of Subscribe
             response_queue (Queue): Queue to return to
-            endpoint (list[str]): Path to target
-            delta (bool): Notify of differences only (default False)
-
-        Returns:
-            Subscribe object
         """
-        request = Request(context, response_queue, type_="Subscribe")
-        request.fields["endpoint"] = endpoint
-        request.fields["delta"] = delta
-        return request
 
-    def to_dict(self):
-        """Convert object attributes into a dictionary"""
-
-        d = OrderedDict()
-
-        d['id'] = self.id_
-        d['type'] = self.type_
-        for field, value in self.fields.items():
-            if hasattr(value, "to_dict"):
-                value = value.to_dict()
-            d[field] = value
-
-        return d
-
-    @classmethod
-    def from_dict(cls, d):
-        """Create a Request instance from a serialized version
-
-        Args:
-            d (dict): output of self.to_dict()
-        """
-        request = cls(context=None, response_queue=None, type_=d["type"])
-        request.set_id(d['id'])
-        for field in [f for f in d.keys() if f not in ["id", "type"]]:
-            request.fields[field] = d[field]
-        return request
-
-    def __repr__(self):
-        return self.to_dict().__repr__()
+        super(Unsubscribe, self).__init__(context, response_queue)

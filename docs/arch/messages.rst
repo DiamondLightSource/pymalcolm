@@ -29,11 +29,11 @@ the following message types:
 A Malcolm server recieves messages from a number of clients, and sends the
 following message types back:
 
+- `Return`_: Provide a return value to a `Post`_, `Get`_, `Put`_,
+  `Unsubscribe`_, and indicate the cancellation of a `Subscribe`_
 - `Error`_: Return an error to any one of the client side requests
 - `Update`_: Return a complete updated value to a subscription
 - `Delta`_: Return incremental changes to a subscription
-- `Return`_: Provide a return value to a `Post`_, `Get`_, `Put`_,
-  `Unsubscribe`_, and indicate the cancellation of a `Subscribe`_
 
 Get
 ---
@@ -206,6 +206,44 @@ Dictionary with members:
 
     .. include:: json/unsubscribe
 
+Return
+------
+
+This message is sent to signify completion of an operation:
+
+- In response to a `Get`_ to return the serialized version of an endpoint
+- In response to a `Put`_ or `Unsubscribe`_ with no value to indicate successful
+  completion
+- In response to a `Post`_ with the return value of that Method call, or no
+  value if nothing is returned
+
+Dictionary with members:
+
+- type
+    String ``Return``.
+- id
+    Integer id from original client `Get`_, `Put`_, `Post`_ or `Unsubscribe`_.
+- value (optional)
+    Object return value if it exists. For `Get`_ this will be the structure of
+    the endpoint. For `Post`_ this will be described by the ``returns`` element
+    of the Method. See :ref:`structure` for more details.
+
+.. container:: toggle
+
+    .. container:: header
+
+        **Example**: The return of a `Get`_ of a Blocks's state Attribute value:
+
+    .. include:: json/return_state_value
+
+.. container:: toggle
+
+    .. container:: header
+
+        **Example**: The successful completion of a `Put`_ or `Unsubscribe`_:
+
+    .. include:: json/return
+
 Error
 -----
 
@@ -279,7 +317,7 @@ Dictionary with members:
     String ``Delta``.
 - id
     Integer id from original client `Subscribe`_.
-- delta
+- changes
     List of [``key path``, optional ``update``] stanzas.
 
     - ``key path`` is a path to the changed element within the subscribed path.
@@ -297,43 +335,5 @@ Dictionary with members:
         the state Attribute's value changed:
 
     .. include:: json/changes_state_value
-
-Return
-------
-
-This message is sent to signify completion of an operation:
-
-- In response to a `Get`_ to return the serialized version of an endpoint
-- In response to a `Put`_ or `Unsubscribe`_ with no value to indicate successful
-  completion
-- In response to a `Post`_ with the return value of that Method call, or no
-  value if nothing is returned
-
-Dictionary with members:
-
-- type
-    String ``Return``.
-- id
-    Integer id from original client `Get`_, `Put`_, `Post`_ or `Unsubscribe`_.
-- value (optional)
-    Object return value if it exists. For `Get`_ this will be the structure of
-    the endpoint. For `Post`_ this will be described by the ``returns`` element
-    of the Method. See :ref:`structure` for more details.
-
-.. container:: toggle
-
-    .. container:: header
-
-        **Example**: The return of a `Get`_ of a Blocks's state Attribute value:
-
-    .. include:: json/return_state_value
-
-.. container:: toggle
-
-    .. container:: header
-
-        **Example**: The successful completion of a `Put`_ or `Unsubscribe`_:
-
-    .. include:: json/return
 
 

@@ -17,8 +17,8 @@ from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.process import Process
 from malcolm.core.syncfactory import SyncFactory
-from malcolm.core.request import Request
-from malcolm.core.response import Response
+from malcolm.core.request import Post, Subscribe
+from malcolm.core.response import Return, Update
 
 
 class TestHelloControllerSystem(unittest.TestCase):
@@ -36,15 +36,15 @@ class TestHelloControllerSystem(unittest.TestCase):
         HelloController(process, block)
         process.start()
         q = sync_factory.create_queue()
-        req = Request.Post(response_queue=q, context="ClientConnection",
-                           endpoint=["hello", "say_hello"],
-                           parameters=dict(name="thing"))
+        req = Post(response_queue=q, context="ClientConnection",
+                   endpoint=["hello", "say_hello"],
+                   parameters=dict(name="thing"))
         req.set_id(44)
         process.q.put(req)
         resp = q.get(timeout=1)
         self.assertEqual(resp.id_, 44)
         self.assertEqual(resp.context, "ClientConnection")
-        self.assertEqual(resp.type_, "Return")
+        self.assertEqual(resp.typeid, "malcolm:core/Return:1.0")
         self.assertEqual(resp.value, dict(greeting="Hello thing"))
 
 
@@ -59,23 +59,24 @@ class TestCounterControllerSystem(unittest.TestCase):
         process.start()
         q = sync_factory.create_queue()
 
-        sub = Request.Subscribe(response_queue=q, context="ClientConnection",
-                                endpoint=["counting", "counter"],
-                                delta=False)
+        sub = Subscribe(response_queue=q, context="ClientConnection",
+                        endpoint=["counting", "counter"],
+                        delta=False)
         process.q.put(sub)
         resp = q.get(timeout=1)
-        self.assertEqual(Response.UPDATE, resp.type_)
+        self.assertIsInstance(resp, Update)
         attr = Attribute.from_dict("counter", resp.value)
         self.assertEqual(0, attr.value)
 
-        post = Request.Post(response_queue=q, context="ClientConnection",
-                            endpoint=["counting", "increment"])
+        post = Post(response_queue=q, context="ClientConnection",
+                    endpoint=["counting", "increment"])
         process.q.put(post)
+
         resp = q.get(timeout=1)
-        self.assertEqual(Response.UPDATE, resp.type_)
+        self.assertIsInstance(resp, Update)
         self.assertEqual(resp.value["value"], 1)
         resp = q.get(timeout=1)
-        self.assertEqual(Response.RETURN, resp.type_)
+        self.assertIsInstance(resp, Return)
 
         process.stop()
 
