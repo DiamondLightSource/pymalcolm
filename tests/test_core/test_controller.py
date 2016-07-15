@@ -7,8 +7,8 @@ import unittest
 from mock import MagicMock, call
 
 # logging
-import logging
-logging.basicConfig(level=logging.DEBUG)
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
 
 from collections import OrderedDict
 
