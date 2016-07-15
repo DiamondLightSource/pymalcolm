@@ -37,7 +37,7 @@ class StateMachine(Loggable):
         self.possible_states.append(self.DISABLED)
 
     def create_states(self):
-        pass
+        raise NotImplementedError()
 
     def is_allowed(self, initial_state, target_state):
         """
