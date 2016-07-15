@@ -31,8 +31,6 @@ class Map(Serializable):
     def from_dict(cls, meta, d):
         m = cls(meta)
         for k, v in d.items():
-            if k == "meta":
-                continue
             try:
                 # check if this is something that needs deserializing
                 if "typeid" in v:
