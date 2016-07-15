@@ -8,7 +8,7 @@ from collections import OrderedDict
 import unittest
 from mock import Mock, patch, call, MagicMock
 
-from malcolm.core.method import Method, takes, returns
+from malcolm.core.method import Method, takes, returns, only_in
 from malcolm.core.mapmeta import OPTIONAL, REQUIRED
 from malcolm.core.response import Response
 
@@ -327,6 +327,14 @@ class TestMethod(unittest.TestCase):
             def return_hello(name):
                 """Return hello"""
                 return "Hello" + name
+
+    def test_only_in(self):
+        @only_in("boo", "boo2")
+        def f():
+            pass
+
+        self.assertTrue(hasattr(f, "Method"))
+        self.assertEqual(f.Method.only_in, ("boo", "boo2"))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

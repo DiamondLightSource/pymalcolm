@@ -6,49 +6,65 @@ import setup_malcolm_paths
 import unittest
 from mock import MagicMock, call
 
+# logging
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 from collections import OrderedDict
 
 # module imports
 from malcolm.core.controller import Controller
+from malcolm.core.block import Block
 
 
 class DummyController(Controller):
     def say_hello(self, name):
         print("Hello" + name)
-    say_hello.Method = MagicMock()
+    say_hello.Method = MagicMock(only_in=None)
+    say_hello.Method.name = "say_hello"
 
     def say_goodbye(self, name):
         print("Goodbye" + name)
-    say_goodbye.Method = MagicMock()
+    say_goodbye.Method = MagicMock(only_in=["Ready"])
+    say_goodbye.Method.name = "say_goodbye"
 
 
 class TestController(unittest.TestCase):
+    maxDiff = None
 
     def setUp(self):
-        b = MagicMock()
-        b.methods.values.return_value = ["say_hello", "say_goodbye"]
-        self.m1 = MagicMock()
-        self.m2 = MagicMock()
-        b.methods.__getitem__.side_effect = [self.m1, self.m2]
-        self.c = DummyController(MagicMock(), b)
+        self.b = Block("block")
+        self.c = DummyController(MagicMock(), self.b)
+        for attr in ["busy", "state", "status"]:
+            attr = self.b.attributes[attr]
+            attr.set_value = MagicMock(side_effect=attr.set_value)
 
     def test_init(self):
-        self.c.process.add_block.assert_called_once_with(self.c.block)
-        self.c.block.add_method.assert_has_calls(
-            [call(self.c.say_goodbye.Method), call(self.c.say_hello.Method)])
+        self.c.process.add_block.assert_called_once_with(self.b)
+        self.assertEqual(self.b.methods["say_hello"], self.c.say_hello.Method)
+        self.assertEqual(self.b.methods["say_goodbye"], self.c.say_goodbye.Method)
         self.assertEqual([], self.c.parts)
 
-        self.assertEqual(self.c.state.name, "State")
+        self.assertEqual(self.c.state.name, "state")
         self.assertEqual(
             self.c.state.meta.typeid, "malcolm:core/ChoiceMeta:1.0")
-        self.assertEqual(self.c.status.name, "Status")
+        self.assertEqual(self.c.state.value, "Disabled")
+        self.assertEqual(self.c.status.name, "status")
         self.assertEqual(
             self.c.status.meta.typeid, "malcolm:core/StringMeta:1.0")
-        self.assertEqual(self.c.busy.name, "Busy")
+        self.assertEqual(self.c.status.value, "Disabled")
+        self.assertEqual(self.c.busy.name, "busy")
         self.assertEqual(
             self.c.busy.meta.typeid, "malcolm:core/BooleanMeta:1.0")
+        self.assertEqual(self.c.busy.value, False)
+        expected = dict(
+            Disabled=dict(disable=False, reset=True, say_hello=False, say_goodbye=False),
+            Fault=dict(disable=True, reset=True, say_hello=True, say_goodbye=False),
+            Ready=dict(disable=True, reset=False, say_hello=True, say_goodbye=True),
+            Resetting=dict(disable=True, reset=False, say_hello=True, say_goodbye=False),
+        )
 
-        self.assertEqual(OrderedDict(), self.c.writeable_methods)
+        self.assertEqual(expected, self.c.methods_writeable)
 
     def test_transition(self):
         self.c.reset()
@@ -64,7 +80,7 @@ class TestController(unittest.TestCase):
         self.c.state.value = "Idle"
 
         with self.assertRaises(TypeError):
-            self.c.transition("Configure", "Attempting to configure scan...")
+            self.c.transition("Configuring", "Attempting to configure scan...")
 
     def test_reset_fault(self):
         self.c.Resetting = MagicMock()
@@ -79,9 +95,9 @@ class TestController(unittest.TestCase):
     def test_set_writeable_methods(self):
         m = MagicMock()
         m.name = "configure"
-        self.c.set_writeable_methods("Idle", [m])
+        self.c.set_method_writeable_in(m, "Ready")
 
-        self.assertEqual(["configure"], self.c.writeable_methods['Idle'])
+        self.assertEqual(self.c.methods_writeable['Ready']["configure"], True)
 
     def test_add_part(self):
         parts = [MagicMock(), MagicMock()]

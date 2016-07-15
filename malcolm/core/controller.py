@@ -8,10 +8,11 @@ from malcolm.core.choicemeta import ChoiceMeta
 from malcolm.core.stringmeta import StringMeta
 from malcolm.core.booleanmeta import BooleanMeta
 from malcolm.core.hook import Hook
-from malcolm.core.method import takes
+from malcolm.core.method import takes, only_in
 
+sm = DefaultStateMachine
 
-@DefaultStateMachine.insert
+@sm.insert
 class Controller(Loggable):
     """Implement the logic that takes a Block through its statemachine"""
 
@@ -25,14 +26,28 @@ class Controller(Loggable):
         """
         self.set_logger_name("%s.controller" % block.name)
 
-        self.writeable_methods = OrderedDict()
+        # dict of str state -> (dict of Method -> bool writeable)
+        self.methods_writeable = {}
         self.process = process
         self.parts = []
         self.block = block
+        for attribute in self._create_default_attributes():
+            block.add_attribute(attribute)
         for attribute in self.create_attributes():
             block.add_attribute(attribute)
         for method in self.create_methods():
             block.add_method(method)
+            # Set if the method is writeable
+            if method.only_in is None:
+                states = [x for x in self.stateMachine.possible_states
+                          if x != sm.DISABLED]
+            else:
+                states = method.only_in
+                for state in states:
+                    assert state in self.stateMachine.possible_states, \
+                        "State %s is not one of the valid states %s" % \
+                        (state, self.stateMachine.possible_states)
+            self.set_method_writeable_in(method, states)
 
         self.process.add_block(block)
 
@@ -59,23 +74,29 @@ class Controller(Loggable):
             Attribute: Each one will be attached to the Block by calling
             block.add_attribute(attribute)
         """
-        self.state = Attribute("State", ChoiceMeta(
-            "meta", "State of Block",
+        return iter(())
+
+    def _create_default_attributes(self):
+        self.state = Attribute(
+            "state", ChoiceMeta("meta", "State of Block",
             self.stateMachine.possible_states))
+        self.state.set_value(self.stateMachine.DISABLED)
         yield self.state
         self.status = Attribute(
-            "Status", StringMeta("meta", "Status of Block"))
+            "status", StringMeta("meta", "Status of Block"))
+        self.status.set_value("Disabled")
         yield self.status
         self.busy = Attribute(
-            "Busy", BooleanMeta("meta", "Whether Block busy or not"))
+            "busy", BooleanMeta("meta", "Whether Block busy or not"))
+        self.busy.set_value(False)
         yield self.busy
 
     @takes()
+    @only_in(sm.DISABLED, sm.FAULT)
     def reset(self):
-        sm = self.stateMachine
         try:
             self.transition(sm.RESETTING, "Resetting")
-            self.Resetting.run()
+            self.Resetting.run(self)
             self.transition(sm.AFTER_RESETTING, "Done resetting")
         except Exception as e:
             self.log_exception("Fault occurred while Resetting")
@@ -83,7 +104,7 @@ class Controller(Loggable):
 
     @takes()
     def disable(self):
-        self.transition(self.stateMachine.DISABLED, "Disabled")
+        self.transition(sm.DISABLED, "Disabled")
 
     def add_parts(self, parts):
         self.parts.extend(parts)
@@ -110,10 +131,8 @@ class Controller(Loggable):
             self.status.set_value(message)
 
             for method in self.block.methods.values():
-                if method in self.writeable_methods[state]:
-                    self.block.methods[method].set_writeable(True)
-                else:
-                    self.block.methods[method].set_writeable(False)
+                writeable = self.methods_writeable[state][method.name]
+                method.set_writeable(writeable)
 
             self.block.notify_subscribers()
 
@@ -121,13 +140,15 @@ class Controller(Loggable):
             raise TypeError("Cannot transition from %s to %s" %
                             (self.state.value, state))
 
-    def set_writeable_methods(self, state, methods):
+    def set_method_writeable_in(self, method, states):
         """
-        Set the methods that can be changed in the given state
+        Set the states that the given method can be called in
 
         Args:
-            state(str): State to set writeable methods in
-            methods(list(Method)): Methods to set writeable
+            method(Method): Method that will be set writeable or not
+            states(list[str]): List of states where method is writeable
         """
-
-        self.writeable_methods[state] = [method.name for method in methods]
+        for state in self.stateMachine.possible_states:
+            writeable_dict = self.methods_writeable.setdefault(state, {})
+            is_writeable = state in states
+            writeable_dict[method.name] = is_writeable
