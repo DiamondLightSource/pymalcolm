@@ -39,8 +39,8 @@ class Controller(Loggable):
             block.add_method(method)
             # Set if the method is writeable
             if method.only_in is None:
-                states = [x for x in self.stateMachine.possible_states
-                          if x != sm.DISABLED]
+                states = [state for state in self.stateMachine.possible_states
+                          if state != sm.DISABLED]
             else:
                 states = method.only_in
                 for state in states:
