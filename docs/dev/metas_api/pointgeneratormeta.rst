@@ -1,7 +1,7 @@
 StringArrayMeta
 ---------------
 
-.. module:: malcolm.metas.pointgeneratormeta
+.. module:: malcolm.metas
 
 .. autoclass:: PointGeneratorMeta
     :members:

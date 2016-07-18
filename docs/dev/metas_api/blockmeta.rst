@@ -1,7 +1,7 @@
 BlockMeta
 ---------
 
-.. module:: malcolm.metas.blockmeta
+.. module:: malcolm.metas
 
 .. autoclass:: BlockMeta
     :members:

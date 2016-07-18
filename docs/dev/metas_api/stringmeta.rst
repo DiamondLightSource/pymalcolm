@@ -1,7 +1,7 @@
 StringMeta
 ----------
 
-.. module:: malcolm.metas.stringmeta
+.. module:: malcolm.metas
 
 .. autoclass:: StringMeta
     :members:

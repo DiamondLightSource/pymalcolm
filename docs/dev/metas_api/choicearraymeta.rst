@@ -1,7 +1,7 @@
 ChoiceArrayMeta
 ---------------
 
-.. module:: malcolm.metas.choicearraymeta
+.. module:: malcolm.metas
 
 .. autoclass:: ChoiceArrayMeta
     :members:

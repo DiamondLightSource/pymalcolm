@@ -1,7 +1,7 @@
 BooleanArrayMeta
 ----------------
 
-.. module:: malcolm.metas.booleanarraymeta
+.. module:: malcolm.metas
 
 .. autoclass:: BooleanArrayMeta
     :members:
