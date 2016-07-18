@@ -5,7 +5,7 @@ import setup_malcolm_paths
 
 import unittest
 from collections import OrderedDict
-from mock import MagicMock, patch
+from mock import MagicMock
 
 from malcolm.core.map import Map
 from malcolm.core.serializable import Serializable
@@ -56,21 +56,19 @@ class TestMap(unittest.TestCase):
         expected["e"] = "e"
         self.assertEquals(expected, m.to_dict())
 
-    @patch("malcolm.metas.mapmeta.MapMeta.from_dict")
-    def test_from_dict(self, mapmeta_mock):
+    def test_from_dict(self):
+        map_meta = MagicMock()
+        map_meta.elements = {"a", "b", "c"}
         map_meta = MagicMock()
         map_meta.elements = {"a", "b", "c"}
         map_meta.required = {"a"}
-        mapmeta_mock.return_value = map_meta
 
         value_mock = MagicMock()
         Serializable.register_subclass("mock_typeid")(value_mock)
         value_mock.from_dict.return_value = value_mock
 
-        d = {"meta":{"typeid":"malcolm:core/MapMeta:1.0"},
-                "a":123,
-                "b":{"typeid":"mock_typeid"}}
-        m = Map.from_dict("", d)
+        d = {"a":123, "b":{"typeid":"mock_typeid"}}
+        m = Map.from_dict(map_meta, d)
 
         self.assertEquals(123, m.a)
         self.assertEquals(value_mock, m.b)
