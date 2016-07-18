@@ -6,11 +6,20 @@ import os
 import re
 import sys
 
+from pkg_resources import require
+require('mock')
+from mock import MagicMock
+
+# Mock out failing imports
+MOCK_MODULES = ["tornado", "tornado.websocket", "tornado.websocket",
+                "tornado.web", "tornado.httpserver", "tornado.ioloop",
+                "cothread", "scanpointgenerator"]
+sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
+
 sys.path.append(os.path.dirname(__file__))
 from generate_api_docs import generate_docs
 
 generate_docs()  # Generate api.rst
-
 
 def get_version():
     """

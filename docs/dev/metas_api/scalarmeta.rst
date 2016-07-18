@@ -1,7 +1,7 @@
 ScalarMeta
 ----------
 
-.. module:: malcolm.metas
+.. module:: malcolm.metas.scalarmeta
 
 .. autoclass:: ScalarMeta
     :members:

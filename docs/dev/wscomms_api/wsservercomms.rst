@@ -1,7 +1,7 @@
 WSServerComms
 -------------
 
-.. module:: malcolm.wscomms.wservercomms
+.. module:: malcolm.wscomms.wsservercomms
 
 .. autoclass:: WSServerComms
     :members:
