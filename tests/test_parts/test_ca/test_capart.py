@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
@@ -34,7 +34,7 @@ class TestCAPart(unittest.TestCase):
         p.block.add_attribute.assert_called_once_with(p.attr)
 
     def test_init_no_rbv(self):
-        from malcolm.parts.capart import CAPart
+        from malcolm.parts.ca.capart import CAPart
         meta = MagicMock()
         meta.name = "meta"
         p = CAPart("me", MagicMock(), MagicMock(), meta, "pv")
@@ -42,7 +42,7 @@ class TestCAPart(unittest.TestCase):
         self.assertEqual(p.pv, "pv")
 
     def create_part(self):
-        from malcolm.parts.capart import CAPart
+        from malcolm.parts.ca.capart import CAPart
         process = MagicMock()
         block = MagicMock()
         meta = MagicMock()
