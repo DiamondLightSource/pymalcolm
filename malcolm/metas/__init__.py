@@ -10,3 +10,4 @@ from malcolm.metas.numbermeta import NumberMeta  # noqa
 from malcolm.metas.pointgeneratormeta import PointGeneratorMeta  # noqa
 from malcolm.metas.stringarraymeta import StringArrayMeta  # noqa
 from malcolm.metas.stringmeta import StringMeta  # noqa
+from malcolm.metas.tablemeta import TableMeta  # noqa

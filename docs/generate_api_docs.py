@@ -33,13 +33,13 @@ def generate_docs():
 def add_module_entry(module, _root, modules_list):
     pkg_path = _root.split('pymalcolm/malcolm/')[1]
     sub_section = pkg_path.replace('/', '.')
-    prefix = "../dev/"
+    prefix = "../dev/api/"
 
     module.write(sub_section.capitalize() + '\n' + '-' * len(sub_section) + '\n')
     module.write('\n..  toctree::\n')
 
     for file_ in modules_list:
-        file_path = prefix + sub_section + '_api/' + file_
+        file_path = prefix + pkg_path + '/' + file_
         module.write(' ' * 4 + file_path.split('.py')[0] + '\n')
     module.write('\n\n')
 

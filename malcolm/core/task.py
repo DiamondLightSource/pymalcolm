@@ -139,10 +139,12 @@ class Task(Loggable):
         return [f]
 
     def subscribe(self, attr, callback, *args):
-        """subscribe to changes in a given attribute and call callback
-            with (*args) when it changes
+        """Subscribe to changes in a given attribute and call callback
+        with (\*args) when it changes
 
-            Returns an id for the subscription"""
+            Returns:
+                int: an id for the subscription
+        """
 
         endpoint = [attr.parent.name, attr.name]
         request = Subscribe(None, self.q, endpoint, False)
