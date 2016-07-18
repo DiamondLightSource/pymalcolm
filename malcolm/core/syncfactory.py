@@ -1,7 +1,7 @@
 from threading import Lock
 from multiprocessing.pool import ThreadPool
 
-from malcolm.compat import Queue
+from malcolm.compat import queue
 from malcolm.core.loggable import Loggable
 
 
@@ -32,7 +32,7 @@ class SyncFactory(Loggable):
 
     def create_queue(self):
         """Creates a new Queue object"""
-        return Queue()
+        return queue.Queue()
 
     def create_lock(self):
         """Creates a new simple Lock object"""

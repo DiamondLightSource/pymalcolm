@@ -1,13 +1,7 @@
 import inspect
 
 from malcolm.core.loggable import Loggable
-# from malcolm.core.task import Task
-
-
-class Task(object):
-
-    def __init__(self, process):
-        self.process = process
+from malcolm.core.task import Task
 
 
 class Hook(Loggable):
