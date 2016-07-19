@@ -1,0 +1,41 @@
+from malcolm.core.request import Post
+from malcolm.core.response import Error, Return
+from malcolm.gui.baseitem import BaseItem
+from malcolm.gui.parameteritem import ParameterItem
+
+
+class MethodItem(BaseItem):
+
+    def get_writeable(self):
+        return self.ref.writeable
+
+    def ref_children(self):
+        """Number of child objects our ref has"""
+        return len(self.ref.takes.elements)
+
+    def create_children(self):
+        for name, meta in self.ref.takes.elements.items():
+            default = self.ref.defaults.get(name, None)
+            endpoint = self.endpoint + ("takes", "elements", name)
+            item = ParameterItem(endpoint, meta, default)
+            self.add_child(item)
+            item.create_children()
+
+    def set_value(self, value):
+        args = {}
+        for item in self.children:
+            args[item.endpoint[-1]] = item.get_value()
+            item.reset_value()
+        self._state = self.RUNNING
+        request = Post(None, None, self.endpoint, args)
+        return request
+
+    def handle_response(self, response):
+        if isinstance(response, Error):
+            print("Error: %s" % response.message)
+            self._state = self.ERROR
+        elif isinstance(response, Return):
+            print("Return: %s" % response.value)
+            self._state = self.IDLE
+        else:
+            raise TypeError(type(response))
