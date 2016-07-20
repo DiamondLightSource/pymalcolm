@@ -161,7 +161,7 @@ allows itself to be introspected) and others manage some externally created
 blocks (like the BeamlineManager). They expose an interface according to their
 Controller, but the user can modify their behaviour at runtime by loading and
 saving settings which will modify the loaded Parts, and hence the top level
-interface of the Block. They have the :ref:`runnable-device-state-machine` with
+interface of the Block. They have the :ref:`manager-state-machine` with
 all its related Methods.
 
 .. uml::
@@ -281,7 +281,7 @@ logic for each of them when they are constructed::
         part: PosPluginPart
 
     # Attach to existing block
-    client.ADCore.DetectorDriver:
+    existing.ADCore.DetectorDriver:
         name: drv
         fullname: sim:drv
         part: DriverRunPart
@@ -448,12 +448,18 @@ An example for the generic case might look like this::
 
     controller.GenericScanController:
 
-    parts.DetectorPart:
-        input: {det}
+    existing.ADCore.DetectorBlock:
+        name: det1
+        fullname: {det}
+        part: parts.ADCore.DetectorPart
 
-    parts.ZebraPart:
-        input: {zebra}
+    existing.zebra2.Zebra2Block:
+        name: zebra1
+        fullname: {zebra}
+        part: parts.zebra2.ZebraPart
 
-    parts.MotorPart:
-        input: {motor}
+    existing.pmac.MotionBlock:
+        name: motion1
+        fullname: {motor}
+        part: parts.pmac.MotionPart
 

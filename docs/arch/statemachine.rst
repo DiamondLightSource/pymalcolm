@@ -59,10 +59,10 @@ If no state machine is specified, the following will be used:
         Resetting -left-> Ready
     }
 
-.. _runnable-device-state-machine:
+.. _manager-state-machine:
 
-Runnable Device State Machine
------------------------------
+Manager State Machine
+---------------------
 
 Mapping devices have a configure() method that allows the batch setting of a
 number of parameters, and can safely be called on a number of devices
@@ -119,11 +119,17 @@ become paused.
         state Aborted <<Abort>>
         Aborted : Rest state
         Aborted -up-> Resetting : Reset
+
+        Idle -up-> Editing : Edit
+        Editing -down-> Saving : Save
+        Editing -down-> Reverting : Revert
+        Saving -down-> Idle
+        Reverting -down-> Idle
     }
 
 There are some standard methods that Runnable Devices have:
 
-- validate(params) - Check for a consistent set of paraemeters, filling in any
+- validate(params) - Check for a consistent set of parameters, filling in any
   defaults, and adding time and timeout estimates
 - configure(params) - Configure a device for a scan so it is ready to run
 - run() - Run the configured scan
@@ -134,6 +140,9 @@ There are some standard methods that Runnable Devices have:
 - disable() - Disable device, stopping all activity
 - reset() - Reset the device, moving it back into Idle state after
   error, abort or disable
+- edit() - Start editing the child blocks of this block (normally via web gui)
+- save() - Save the edited state and move back to Idle
+- revert() - Discard any edited modifications and take it back to how it was
 
 Apart from validate(), all other methods take the block through some state
 transitions. These are listed below for each method.
@@ -352,7 +361,7 @@ The state diagram subset below shows the valid set of transitions:
     Disabled : End state
 
 disable()
-^^^^^^^^^^^^
+^^^^^^^^^
 
 This method will stop the block responding to external input until reset() is
 called. It is allowed from any state, and will mark the device as Disabled and
@@ -364,18 +373,18 @@ The state diagram subset below shows the valid set of transitions:
 
     !include docs/style.iuml
 
-    NormalStates : Start state
-    NormalStates :
-    NormalStates : Disable is allowed from
-    NormalStates : any normal block state
-    NormalStates --> Disabled : Disable
+    BlockStates : Start state
+    BlockStates :
+    BlockStates : Disable is allowed from
+    BlockStates : any block state
+    BlockStates --> Disabled : Disable
 
     state Disabled <<Disabled>>
     Disabled : End state
 
 
 reset()
-^^^^^^^^^^
+^^^^^^^
 
 This method will reset the device, putting it into Idle state. It is allowed
 from Aborted, Disabled, Ready or Fault states, and will block until the device
@@ -421,4 +430,112 @@ The state diagram subset below shows the valid set of transitions:
     Disabled : End state
     Disabled -up-> Resetting : Reset
 
+
+edit()
+^^^^^^
+
+This method will start editing the child blocks of this block (normally via web
+gui), putting it into an Editing state. It is allowed from the Idle state, and
+will block until the device is in a rest state. Normally it will return in Idle
+state. If something goes wrong it will return in Fault state.
+
+The state diagram subset below shows the valid set of transitions:
+
+.. uml::
+
+    !include docs/style.iuml
+
+    state BlockStates {
+
+        state Idle <<Rest>>
+        Idle : Start state
+        Idle : End state
+
+        Idle -up-> Editing : Edit
+        Editing -down-> Saving : Save
+        Editing -down-> Reverting : Revert
+        Saving -down-> Idle
+        Reverting -down-> Idle
+    }
+
+    BlockStates -down-> Fault : Error
+    BlockStates -down-> Disabled : Disable
+
+    state Fault <<Fault>>
+    Fault : End state
+
+    state Disabled <<Disabled>>
+    Disabled : End state
+
+
+save()
+^^^^^^
+
+This method will save the current state of child blocks of this block (normally
+via web gui), putting it back into an Idle state. It is allowed from the Editing
+state, and will block until the device is in a rest state. Normally it will
+return in Idle state. If something goes wrong it will return in Fault state.
+
+The state diagram subset below shows the valid set of transitions:
+
+.. uml::
+
+    !include docs/style.iuml
+
+    state BlockStates {
+
+        state Idle <<Rest>>
+        Idle : End state
+
+        state Editing
+        Editing : Start state
+
+        Editing -down-> Saving : Save
+        Saving -down-> Idle
+    }
+
+    BlockStates -down-> Fault : Error
+    BlockStates -down-> Disabled : Disable
+
+    state Fault <<Fault>>
+    Fault : End state
+
+    state Disabled <<Disabled>>
+    Disabled : End state
+
+revert()
+^^^^^^^^
+
+This method will discard any edited modifications and take it back to how it was
+before editing started, putting it back into an Idle state. It is allowed from
+the Editing state, and will block until the device is in a rest state. Normally
+it will return in Idle state. If something goes wrong it will return in Fault
+state.
+
+The state diagram subset below shows the valid set of transitions:
+
+.. uml::
+
+    !include docs/style.iuml
+
+    state BlockStates {
+
+        state Idle <<Rest>>
+        Idle : End state
+
+        state Editing
+        Editing : Start state
+
+        Editing -down-> Reverting : Revert
+        Reverting -down-> Idle
+    }
+
+    BlockStates -down-> Fault : Error
+    BlockStates -down-> Disabled : Disable
+
+    state Fault <<Fault>>
+    Fault : End state
+
+    state Disabled <<Disabled>>
+    Disabled : End state
 
