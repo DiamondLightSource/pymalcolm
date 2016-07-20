@@ -8,9 +8,8 @@ from malcolm.core.attribute import Attribute
 
 class CAPart(Part):
 
-    def __init__(self, name, process, block, meta, pv, rbv=None, rbv_suff=None,
-                 long_string=False):
-        super(CAPart, self).__init__(name=name, process=process, block=block)
+    def create_attribute(self, meta, pv, rbv=None, rbv_suff=None,
+                         long_string=False):
         if rbv is None:
             if rbv_suff is None:
                 rbv = pv
