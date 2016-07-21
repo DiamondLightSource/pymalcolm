@@ -30,12 +30,7 @@ class CAPart(Part):
         self.monitor = None
 
     def get_datatype(self):
-        # TODO: use meta to infer datatype
-        if self.long_string:
-            datatype = catools.DBR_CHAR_STR
-        else:
-            datatype = None
-        return datatype
+        raise NotImplementedError
 
     @Controller.Resetting
     def connect_pvs(self):

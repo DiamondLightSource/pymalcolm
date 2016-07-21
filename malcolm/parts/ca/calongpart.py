@@ -7,8 +7,8 @@ from malcolm.metas.stringmeta import StringMeta
 from malcolm.core.method import takes, returns, REQUIRED
 
 
-class CADoublePart(CAPart):
-    """ Defines a part which connects to a pv via channel access DBR_DOUBLE"""
+class CALongPart(CAPart):
+    """ Defines a part which connects to a pv via channel access DBR_LONG"""
 
     @takes(
         StringMeta("name", "name of created attribute"), REQUIRED,
@@ -25,10 +25,9 @@ class CADoublePart(CAPart):
         Args:
             params(Map): parameters described in @takes
         """
-        meta = NumberMeta("meta", params.description, np.float64)
+        meta = NumberMeta("meta", params.description, np.int32)
         self.create_attribute(meta, params.pv, rbv=params.rbv,
                               rbv_suff=params.rbv_suff)
 
-
     def get_datatype(self):
-        return catools.DBR_DOUBLE
+        return catools.DBR_LONG

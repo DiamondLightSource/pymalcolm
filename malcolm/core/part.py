@@ -14,10 +14,10 @@ class Part(Loggable):
         # have a Method attached to it. Calling the Method will fill in defaults
         if not hasattr(self.setup, "Method"):
             raise NotImplementedError()
-        # unfortunately thi has to be done now rather than at @takes decorate
+        # unfortunately this has to be done now rather than at @takes decorate
         # time so it gets the bound method rather than the unbound function
         self.setup.Method.set_function(self.setup)
         self.setup.Method.call_function(params)
 
-    def setup(selfself, params):
+    def setup(self, params):
         raise NotImplementedError()

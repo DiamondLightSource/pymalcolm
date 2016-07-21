@@ -46,6 +46,7 @@ class TestCAPart(unittest.TestCase):
 
     def test_reset(self):
         p = self.create_part()
+        p.get_datatype = MagicMock(return_value=None)
         catools.connect.return_value = MagicMock(ok=True)
         p.connect_pvs()
         catools.connect.assert_called_with(["pv", "pv2"], cainfo=True)
@@ -83,7 +84,7 @@ class TestCAPart(unittest.TestCase):
     def test_get_datatype(self):
         p = self.create_part()
         p.long_string = True
-        self.assertEqual(p.get_datatype(), catools.DBR_CHAR_STR)
+        self.assertRaises(NotImplementedError, p.get_datatype)
 
     def test_update_value_good(self):
         p = self.create_part()

@@ -1,14 +1,13 @@
-import numpy as np
 from cothread import catools
 
 from malcolm.parts.ca.capart import CAPart
-from malcolm.metas.numbermeta import NumberMeta
+from malcolm.metas.choicemeta import ChoiceMeta
 from malcolm.metas.stringmeta import StringMeta
-from malcolm.core.method import takes, returns, REQUIRED
+from malcolm.core.method import takes, REQUIRED
 
 
-class CADoublePart(CAPart):
-    """ Defines a part which connects to a pv via channel access DBR_DOUBLE"""
+class CAChoicePart(CAPart):
+    """Defines a part which connects to a pv via channel access DBR_ENUM"""
 
     @takes(
         StringMeta("name", "name of created attribute"), REQUIRED,
@@ -25,10 +24,9 @@ class CADoublePart(CAPart):
         Args:
             params(Map): parameters described in @takes
         """
-        meta = NumberMeta("meta", params.description, np.float64)
+        meta = ChoiceMeta("meta", params.description, [])
         self.create_attribute(meta, params.pv, rbv=params.rbv,
                               rbv_suff=params.rbv_suff)
 
-
     def get_datatype(self):
-        return catools.DBR_DOUBLE
+        return catools.DBR_ENUM
