@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from inspect import getdoc
+import inspect
 
 from malcolm.compat import base_string
 from malcolm.core.map import Map
@@ -7,14 +7,14 @@ from malcolm.core.mapmeta import MapMeta
 from malcolm.core.monitorable import NO_VALIDATE
 from malcolm.core.response import Return, Error
 from malcolm.core.serializable import Serializable
-from malcolm.core.vmeta import VMeta
+from malcolm.core.meta import Meta
 
 OPTIONAL = object()
 REQUIRED = object()
 
 
 @Serializable.register_subclass("malcolm:core/Method:1.0")
-class Method(VMeta):
+class Method(Meta):
     """Exposes a function with metadata for arguments and return values"""
 
     endpoints = ["takes", "defaults", "description", "tags", "writeable",
@@ -252,3 +252,11 @@ def only_in(*states):
 
         return func
     return decorator
+
+
+def get_method_decorated(instance):
+    members = [value[1] for value in
+                inspect.getmembers(instance, predicate=inspect.ismethod)]
+    for member in members:
+        if hasattr(member, "Method"):
+            yield member

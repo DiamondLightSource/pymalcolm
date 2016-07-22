@@ -1,12 +1,12 @@
 import inspect
-from collections import OrderedDict
 
 from malcolm.core.loggable import Loggable
 from malcolm.core.attribute import Attribute
 from malcolm.core.hook import Hook
-from malcolm.core.method import takes, only_in
+from malcolm.core.method import takes, only_in, Method, get_method_decorated
 from malcolm.vmetas import ChoiceMeta, StringMeta, BooleanMeta
 from malcolm.statemachines import DefaultStateMachine
+
 
 sm = DefaultStateMachine
 
@@ -32,12 +32,20 @@ class Controller(Loggable):
         self.process = process
         self.parts = []
         self.block = block
-        for name, attribute in self._create_default_attributes():
-            block.add_attribute(name, attribute)
-        for name, attribute in self.create_attributes():
-            block.add_attribute(name, attribute)
-        for name, method in self.create_methods():
-            block.add_method(name, method)
+        self._set_block_children()
+
+    def _set_block_children(self):
+        # reconfigure block with new children
+        children = []
+        children += list(self._create_default_attributes())
+        children += list(self.create_attributes())
+        children += list(self.create_methods())
+        for part in self.parts:
+            children += list(part.create_attributes())
+            children += list(part.create_methods())
+        # set methods_writeable
+        self.methods_writeable = {}
+        for method in [c for n, c in children if isinstance(c, Method)]:
             # Set if the method is writeable
             if method.only_in is None:
                 states = [state for state in self.stateMachine.possible_states
@@ -73,36 +81,50 @@ class Controller(Loggable):
         return iter(())
 
     def _create_default_attributes(self):
-        self.state = Attribute(ChoiceMeta(description="State of Block",
-                            choices=self.stateMachine.possible_states))
-        self.state.set_parent(self.block,'state')
+        # Add the state, status and busy attributes
+        self.state = Attribute(
+            "state", ChoiceMeta(
+                "State of Block", self.stateMachine.possible_states))
         self.state.set_value(self.stateMachine.DISABLED)
-        yield ('state', self.state)
-        self.status = Attribute(StringMeta(description="Status of Block"))
+        yield (self.state, None)
+        self.status = Attribute(
+            "status", StringMeta("Status of Block"))
         self.status.set_value("Disabled")
-        yield ('status', self.status)
-        self.busy = Attribute(BooleanMeta(
-            description="Whether Block busy or not"))
+        yield (self.status, None)
+        self.busy = Attribute(
+            "busy", BooleanMeta("Whether Block busy or not"))
         self.busy.set_value(False)
-        yield ('busy', self.busy)
+        yield (self.busy, None)
+        self.block.set_children(children)
 
-    @takes()
-    @only_in(sm.DISABLED, sm.FAULT)
-    def reset(self):
-        try:
-            self.transition(sm.RESETTING, "Resetting")
-            self.Resetting.run(self)
-            self.transition(sm.AFTER_RESETTING, "Done resetting")
-        except Exception as e:
-            self.log_exception("Fault occurred while Resetting")
-            self.transition(sm.FAULT, str(e))
+    def create_attributes(self):
+        """Abstract method that should provide Attribute instances for Block
 
-    @takes()
-    def disable(self):
-        self.transition(sm.DISABLED, "Disabled")
+        Yields:
+            tuple: (attribute Attribute, callable put_function). Each attribute
+            will be attached to the Block by calling
+            block.add_child(attribute, put_function)
+        """
+        return iter(())
 
-    def add_parts(self, parts):
-        self.parts.extend(parts)
+    def create_methods(self):
+        """Abstract method that should provide Method instances for Block
+
+        Yields:
+            Method: Each one will be attached to the Block by calling
+            block.add_method(method)
+        """
+        for func in get_method_decorated(self):
+            yield (func.Method, func)
+
+    def set_parts(self, parts):
+        """Set the parts that contribute Attributes and Methods to the block
+
+        Args:
+            parts (list): List of Part instances
+        """
+        self.parts = parts
+        self._set_block_children()
 
     def transition(self, state, message):
         """
@@ -113,24 +135,21 @@ class Controller(Loggable):
             message(str): Status message
         """
 
-        if self.stateMachine.is_allowed(initial_state=self.state.value,
-                                        target_state=state):
+        if self.stateMachine.is_allowed(
+                initial_state=self.state.value, target_state=state):
 
-            self.state.set_value(state)
+            # transition is allowed, so set attributes
+            self.state.set_value(state, notify=False)
+            self.status.set_value(message, notify=False)
+            is_busy = state in self.stateMachine.busy_states
+            self.busy.set_value(is_busy, notify=False)
 
-            if state in self.stateMachine.busy_states:
-                self.busy.set_value(True)
-            else:
-                self.busy.set_value(False)
-
-            self.status.set_value(message)
-
+            # say which methods can now be called
             for method in self.block.methods.values():
                 writeable = self.methods_writeable[state][method.name]
-                method.set_writeable(writeable)
+                method.set_writeable(writeable, notify=False)
 
             self.block.notify_subscribers()
-
         else:
             raise TypeError("Cannot transition from %s to %s" %
                             (self.state.value, state))
@@ -147,3 +166,18 @@ class Controller(Loggable):
             writeable_dict = self.methods_writeable.setdefault(state, {})
             is_writeable = state in states
             writeable_dict[method.name] = is_writeable
+
+    @takes()
+    @only_in(sm.DISABLED, sm.FAULT)
+    def reset(self):
+        try:
+            self.transition(sm.RESETTING, "Resetting")
+            self.Resetting.run(self)
+            self.transition(sm.AFTER_RESETTING, "Done resetting")
+        except Exception as e:
+            self.log_exception("Fault occurred while Resetting")
+            self.transition(sm.FAULT, str(e))
+
+    @takes()
+    def disable(self):
+        self.transition(sm.DISABLED, "Disabled")
