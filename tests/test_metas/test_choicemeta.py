@@ -42,7 +42,7 @@ class TestValidate(unittest.TestCase):
 
     def test_given_invalid_value_then_raises(self):
         with self.assertRaises(ValueError):
-            self.choice_meta.validate(0)
+            self.choice_meta.validate('badname')
 
     def test_set_choices(self):
         self.choice_meta.set_choices([4, 5, 6])

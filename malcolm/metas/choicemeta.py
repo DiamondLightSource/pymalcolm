@@ -38,6 +38,8 @@ class ChoiceMeta(ScalarMeta):
 
         if value is None or value in self.choices:
             return value
+        elif isinstance(value, int) and value < len(self.choices):
+            return value
         else:
             raise ValueError(
                 "%s is not a valid value in %s" % (value, self.choices))

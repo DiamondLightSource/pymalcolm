@@ -13,7 +13,7 @@ class CADoublePart(CAPart):
     @takes(
         StringMeta("name", "name of created attribute"), REQUIRED,
         StringMeta("description", "desc of created attribute"), REQUIRED,
-        StringMeta("pv", "full pv of demand and default for rbv"), REQUIRED,
+        StringMeta("pv", "full pv of demand and default for rbv"), None,
         StringMeta("rbv", "override for rbv"), None,
         StringMeta("rbv_suff", "set rbv ro pv + rbv_suff"), None,
     )
