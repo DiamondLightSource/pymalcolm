@@ -7,6 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 from mock import Mock
 
+from malcolm.core.serializable import Serializable
 from malcolm.metas.scalarmeta import ScalarMeta
 
 # Register ScalarMeta as a sublcass of itself so we
@@ -16,17 +17,17 @@ ScalarMeta.register_subclass("scalarmeta:test")(ScalarMeta)
 class TestInit(unittest.TestCase):
 
     def setUp(self):
-        self.meta = ScalarMeta("Test", "test description")
+        self.meta = ScalarMeta("test description")
 
     def test_values_after_init(self):
-        self.assertEqual("Test", self.meta.name)
         self.assertEqual("test description", self.meta.description)
-        self.assertTrue(self.meta.writeable)
+        self.assertFalse(self.meta.writeable)
+
 
 class TestValidate(unittest.TestCase):
 
     def setUp(self):
-        self.meta = ScalarMeta("Test", "test_description")
+        self.meta = ScalarMeta("test_description")
 
     def test_given_validate_called_then_raise_error(self):
 
@@ -38,12 +39,13 @@ class TestValidate(unittest.TestCase):
 
         self.assertEqual(expected_error_message, error.exception.args[0])
 
+
 class TestUpdate(unittest.TestCase):
 
     def test_set_writeable(self):
-        meta = ScalarMeta("Test", "test_description")
+        meta = ScalarMeta("test_description")
         meta.on_changed = Mock(wrap=meta.on_changed)
-        writeable = Mock()
+        writeable = True
         notify = Mock()
         meta.set_writeable(writeable, notify=notify)
         self.assertEquals(meta.writeable, writeable)
@@ -51,42 +53,40 @@ class TestUpdate(unittest.TestCase):
             [["writeable"], writeable], notify)
 
     def test_set_label(self):
-        meta = ScalarMeta("Test", "test_description")
+        meta = ScalarMeta("test_description")
         meta.on_changed = Mock(wrap=meta.on_changed)
-        label = Mock()
+        label = "my label"
         notify = Mock()
         meta.set_label(label, notify=notify)
         self.assertEquals(meta.label, label)
         meta.on_changed.assert_called_once_with(
             [["label"], label], notify)
 
-class TestDict(unittest.TestCase):
+
+class TestSerialization(unittest.TestCase):
+
+    def setUp(self):
+        self.serialized = OrderedDict()
+        self.serialized["typeid"] = "filled_in_by_subclass"
+        self.serialized["description"] = "desc"
+        self.serialized["tags"] = []
+        self.serialized["writeable"] = True
+        self.serialized["label"] = "my label"
 
     def test_to_dict(self):
-        meta = ScalarMeta("Test", "test_description")
-        expected_dict = OrderedDict()
-        expected_dict["typeid"] = "scalarmeta:test"
-        expected_dict["description"] = "test_description"
-        expected_dict["tags"] = ["tag"]
-        expected_dict["writeable"] = True
-        expected_dict["label"] = "Test"
-
-        meta.tags = ["tag"]
-        response = meta.to_dict()
-
-        self.assertEqual(expected_dict, response)
+        m = ScalarMeta("desc", writeable=True, label="my label")
+        m.typeid = "filled_in_by_subclass"
+        self.assertEqual(m.to_dict(), self.serialized)
 
     def test_from_dict(self):
-        d = {"typeid":"scalarmeta:test", "description":"test_desc",
-             "writeable":False, "tags":["tag"], "label":"test_label"}
-        meta = ScalarMeta.from_dict("Test", d)
-        self.assertEqual("Test", meta.name)
-        self.assertEqual("test_desc", meta.description)
-        self.assertEqual(False, meta.writeable)
-        self.assertEqual(["tag"], meta.tags)
-        self.assertEqual("scalarmeta:test", meta.typeid)
-        self.assertEqual("test_label", meta.label)
-        self.assertEqual(d, meta.to_dict())
+        @Serializable.register_subclass("filled_in_by_subclass")
+        class MyScalarMeta(ScalarMeta):
+            pass
+        m = MyScalarMeta.from_dict(self.serialized)
+        self.assertEquals(m.description, "desc")
+        self.assertEquals(m.tags, [])
+        self.assertEquals(m.writeable, True)
+        self.assertEquals(m.label, "my label")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

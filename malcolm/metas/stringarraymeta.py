@@ -1,14 +1,10 @@
-from malcolm.metas.scalarmeta import ScalarMeta
+from malcolm.metas.scalararraymeta import ScalarArrayMeta
 from malcolm.core.serializable import Serializable
 
 
 @Serializable.register_subclass("malcolm:core/StringArrayMeta:1.0")
-class StringArrayMeta(ScalarMeta):
+class StringArrayMeta(ScalarArrayMeta):
     """Meta object containing information for a string array"""
-
-    def __init__(self, name, description):
-        super(StringArrayMeta, self).__init__(
-            name=name, description=description)
 
     def validate(self, value):
         """
@@ -28,4 +24,3 @@ class StringArrayMeta(ScalarMeta):
         if None in validated:
             raise ValueError("Array elements can not be null")
         return validated
-

@@ -1,6 +1,5 @@
-from collections import OrderedDict
-
 from malcolm.core.meta import Meta
+from malcolm.compat import base_string
 
 
 class ScalarMeta(Meta):
@@ -8,10 +7,10 @@ class ScalarMeta(Meta):
 
     endpoints = ["description", "tags", "writeable", "label"]
 
-    def __init__(self, name, description, *args):
-        super(ScalarMeta, self).__init__(name, description, *args)
-        self.writeable = True
-        self.label = name
+    def __init__(self, description="", tags=None, writeable=False, label=None):
+        super(ScalarMeta, self).__init__(description, tags)
+        self.set_writeable(writeable)
+        self.set_label(label)
 
     def validate(self, value):
         """
@@ -20,29 +19,17 @@ class ScalarMeta(Meta):
         Args:
             value(abstract): Value to validate
         """
-
         raise NotImplementedError(
             "Abstract validate function must be implemented in child classes")
 
     def set_writeable(self, writeable, notify=True):
-        self.writeable = writeable
-        self.on_changed([["writeable"], writeable], notify)
+        """Set the writeable bool"""
+        assert isinstance(writeable, bool), \
+            "Expected writeable to be a bool, got %s" % (writeable,)
+        self.set_endpoint("writeable", writeable, notify)
 
     def set_label(self, label, notify=True):
-        self.label = label
-        self.on_changed([["label"], label], notify)
-
-    @classmethod
-    def from_dict(cls, name, d, *args):
-        """Create a ScalarMeta subclass instance from the serialized version
-        of itself
-
-        Args:
-            name (str): ScalarMeta instance name
-            d (dict): Something that self.to_dict() would create
-        """
-        meta = cls(name, d["description"], *args)
-        meta.writeable = d["writeable"]
-        meta.tags = d["tags"]
-        meta.label = d["label"]
-        return meta
+        """Set the label string"""
+        assert label is None or isinstance(label, base_string), \
+            "Expected label to be a string, got %s" % (label,)
+        self.set_endpoint("label", label, notify)

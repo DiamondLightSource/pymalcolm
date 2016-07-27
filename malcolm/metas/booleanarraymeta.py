@@ -1,14 +1,10 @@
-from malcolm.metas.scalarmeta import ScalarMeta
+from malcolm.metas.scalararraymeta import ScalarArrayMeta
 from malcolm.core.serializable import Serializable
 
 
 @Serializable.register_subclass("malcolm:core/BooleanArrayMeta:1.0")
-class BooleanArrayMeta(ScalarMeta):
+class BooleanArrayMeta(ScalarArrayMeta):
     """Meta object containing information for a boolean array"""
-
-    def __init__(self, name, description):
-        super(BooleanArrayMeta, self).__init__(
-            name=name, description=description)
 
     def validate(self, value):
         """
@@ -28,4 +24,3 @@ class BooleanArrayMeta(ScalarMeta):
         if None in validated:
             raise ValueError("Array elements can not be null")
         return validated
-

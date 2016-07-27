@@ -18,10 +18,9 @@ class Method(Notifier):
     endpoints = ["takes", "defaults", "description", "tags", "writeable",
                  "returns"]
 
-    def __init__(self, name, description):
-        super(Method, self).__init__(name=name)
+    def __init__(self, name, description=""):
+        super(Method, self).__init__(name, description)
         self.func = None
-        self.description = description
         self.takes = MapMeta("takes", "Method arguments")
         self.returns = MapMeta("returns", "Method output structure")
         self.defaults = OrderedDict()
@@ -38,35 +37,29 @@ class Method(Notifier):
         """
         self.func = func
 
-    def set_function_takes(self, arg_meta, defaults=None):
+    def set_takes(self, takes, defaults=None, notify=True):
         """Set the arguments and default values for the method
 
         Args:
-            arg_meta (MapMeta): Arguments to the function
-            default (dict): Default values for arguments (default None)
+            takes (MapMeta): Arguments to the function
+            defaults (dict): Dict {str name: value} of default values for args
         """
-        self.takes = arg_meta
         if defaults is not None:
             self.defaults = OrderedDict(defaults)
         else:
             self.defaults = OrderedDict()
+        self.set_endpoint("takes", takes, notify)
 
-    def set_function_returns(self, return_meta):
+    def set_returns(self, returns, notify=True):
         """Set the return parameters for the method to validate against"""
-        self.returns = return_meta
+        self.set_endpoint("returns", returns, notify)
 
-    def set_writeable(self, writeable):
+    def set_writeable(self, writeable, notify=True):
         """Set writeable property to enable or disable calling method"""
-        self.writeable = writeable
-        self.on_changed([["writeable"], writeable])
+        self.set_endpoint("writeable", writeable, notify)
 
-    def set_tags(self, tags):
-        self.tags = tags
-        self.on_changed([["tags"], tags])
-
-    def set_label(self, label):
-        self.label = label
-        self.on_changed([["label"], label])
+    def set_label(self, label, notify=True):
+        self.set_endpoint("label", label, notify)
 
     def __call__(self, *args, **kwargs):
         """Call the exposed function using regular keyword argument parameters.
@@ -146,28 +139,6 @@ class Method(Notifier):
         else:
             self.log_debug("Returning result %s", result)
             return Return(request.id_, request.context, value=result)
-
-    def to_dict(self):
-        """Return ordered dictionary representing Method object."""
-        return super(Method, self).to_dict(
-            takes=self.takes.to_dict(), returns=self.returns.to_dict())
-
-    @classmethod
-    def from_dict(cls, name, d):
-        """Create a Method instance from the serialized version of itself
-
-        Args:
-            name (str): Method instance name
-            d (dict): Something that self.to_dict() would create
-        """
-        method = cls(name, d["description"])
-        takes = MapMeta.from_dict("takes", d["takes"])
-        method.set_function_takes(takes, d["defaults"])
-        returns = MapMeta.from_dict("returns", d["returns"])
-        method.set_function_returns(returns)
-        method.writeable = d["writeable"]
-        method.tags = d["tags"]
-        return method
 
     @classmethod
     def wrap_method(cls, func):

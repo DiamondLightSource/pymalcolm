@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from malcolm.core.notifier import Notifier
 from malcolm.core.serializable import Serializable
-from malcolm.core.request import Request, Put, Post
+from malcolm.core.request import Put, Post
 from malcolm.core.response import Return
 from malcolm.core.attribute import Attribute
 from malcolm.core.method import Method
@@ -46,7 +46,6 @@ class Block(Notifier):
             name (str): Block name e.g. "BL18I:ZEBRA1"
         """
         super(Block, self).__init__(name=name)
-        self.name = name
         self.methods = OrderedDict()
         self.attributes = OrderedDict()
         self.lock = DummyLock()
@@ -86,27 +85,27 @@ class Block(Notifier):
         elif isinstance(child, Attribute):
             return self.attributes
 
-    def update(self, change):
-        """Update block given a single change.
-        Delegates to children update methods if possible.
-
-        Args:
-            change [[path], new value]: Path to changed element and new value
+    def handle_change(self, change):
         """
-        name = change[0][0]
-        if hasattr(self, name):
-            # sub-structure exists in block - delegate down
-            # TODO: handle removal?
-            getattr(self, name).update([change[0][1:], change[1]])
-        else:
-            # sub-structure does not exist - create and add
-            if len(change[0]) > 1:
-                raise ValueError("Missing substructure at %s" % name)
-            child = Serializable.deserialize(name, change[1])
+        Set a given attribute to a new value
+        Args:
+            change(tuple): Attribute path and value e.g. (["value"], 5)
+        """
+        endpoint, value = change
+        child_name = endpoint[0]
+        if not hasattr(self, child_name):
+            # Child doesn't exist, create it
+            if len(endpoint) > 1:
+                raise ValueError("Missing substructure at %s" % child_name)
+            child_cls = Serializable.lookup_subclass(value)
+            child = child_cls.from_dict(child_name, value)
             d = self._where_child_stored(child)
             assert d is not None, \
                 "Change %s deserialized to unknown object %s" % (change, child)
             self.add_child(child, d)
+        else:
+            # Let super class set child attr
+            super(Block, self).handle_change(change)
 
     def replace_children(self, children, notify=True):
         for method_name in self.methods:

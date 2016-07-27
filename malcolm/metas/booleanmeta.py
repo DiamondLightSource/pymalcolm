@@ -6,9 +6,6 @@ from malcolm.core.serializable import Serializable
 class BooleanMeta(ScalarMeta):
     """Meta object containing information for a boolean"""
 
-    def __init__(self, name, description):
-        super(BooleanMeta, self).__init__(name=name, description=description)
-
     def validate(self, value):
         """
         Check if the value is None and returns None, else casts value to a

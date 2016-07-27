@@ -1,16 +1,21 @@
 from malcolm.core.loggable import Loggable
-from malcolm.core.serializable import Serializable
+from malcolm.core.serializable import Serializable, serialize_object
+
 
 class Notifier(Loggable, Serializable):
-    def __init__(self, name):
+
+    def set_parent(self, parent, name):
+        """Sets the parent for changes to be propagated to"""
+        self.parent = parent
         self.name = name
         self.set_logger_name(name)
-        self.parent = None
 
-    def set_parent(self, parent):
-        """Sets the parent for changes to be propagated to"""
-        self.set_logger_name("%s.%s" % (parent.name, self.name))
-        self.parent = parent
+    def set_logger_name(self, name):
+        super(Notifier, self).set_logger_name(name)
+        for endpoint in self.endpoints:
+            attr = getattr(self, endpoint)
+            if hasattr(attr, "set_logger_name"):
+                attr.set_logger_name("%s.%s" % (name, endpoint))
 
     def on_changed(self, change, notify=True):
         """Propagate change to parent, adding self.name to paths.
@@ -18,7 +23,7 @@ class Notifier(Loggable, Serializable):
         Args:
             change: [[path], value] pair for changed values
         """
-        if self.parent is None:
+        if not hasattr(self, "parent"):
             return
         path = change[0]
         path.insert(0, self.name)
@@ -26,4 +31,4 @@ class Notifier(Loggable, Serializable):
 
     def set_endpoint(self, name, value, notify=True):
         setattr(self, name, value)
-        self.on_changed([[name], value], notify)
+        self.on_changed([[name], serialize_object(value)], notify)

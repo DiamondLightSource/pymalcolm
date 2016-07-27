@@ -1,8 +1,12 @@
+import numpy as np
+
 from malcolm.core.serializable import Serializable
 
 
 @Serializable.register_subclass("malcolm:core/Table:1.0")
 class Table(Serializable):
+    # real data stored as attributes
+    # getitem supported for row by row operations
 
     def __init__(self, meta, d={}):
         if d is None:
@@ -16,7 +20,7 @@ class Table(Serializable):
     def endpoints(self):
         return [e for e in self.meta.elements]
 
-    def _verify_column_lengths(self):
+    def verify_column_lengths(self):
         if len(self.meta.elements) == 0:
             return True
         l = len(getattr(self, list(self.meta.elements)[0]))
@@ -26,7 +30,8 @@ class Table(Serializable):
                 raise AssertionError("Column lengths do not match")
 
     def __getitem__(self, idx):
-        self._verify_column_lengths()
+        """Get row"""
+        self.verify_column_lengths()
         columns = len(self.meta.elements)
         row = [None] * columns
         for i in range(0, columns):
@@ -34,13 +39,21 @@ class Table(Serializable):
         return row
 
     def __setitem__(self, idx, row):
-        self._verify_column_lengths()
+        """Set row"""
+        self.verify_column_lengths()
         if len(row) != len(self.meta.elements):
             raise ValueError(
                 "Row %s does not specify correct number of values" % row)
         for e, v in zip(self.meta.elements, row):
             column = getattr(self, e)
             column[idx] = v
+
+    def __setattr__(self, attr, value):
+        """Set column"""
+        if hasattr(self, "meta"):
+            column_meta = self.meta.elements[attr]
+            value = column_meta.validate(value)
+        object.__setattr__(self, attr, value)
 
     def append(self, row):
         self._verify_column_lengths()
@@ -49,12 +62,14 @@ class Table(Serializable):
                 "Row %s does not specify correct number of values" % row)
         for e, v in zip(self.meta.elements, row):
             column = getattr(self, e)
-            column.append(v)
+            try:
+                column.append(v)
+            except:
+                new_column = np.append(column, [v])
+                setattr(self, e, new_column)
 
     @classmethod
-    def from_dict(cls, meta, d):
-        if "typeid" in d:
-            d = d.copy()
-            del d["typeid"]
+    def from_dict(cls, d, meta):
+        d.pop("typeid")
         t = cls(meta, d)
         return t

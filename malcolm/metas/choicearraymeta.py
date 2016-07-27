@@ -1,18 +1,11 @@
-from malcolm.metas.scalarmeta import ScalarMeta
+from malcolm.metas.choicemeta import ChoiceMeta
+from malcolm.metas.scalararraymeta import ScalarArrayMeta
 from malcolm.core.serializable import Serializable
 
 
 @Serializable.register_subclass("malcolm:core/ChoiceArrayMeta:1.0")
-class ChoiceArrayMeta(ScalarMeta):
+class ChoiceArrayMeta(ChoiceMeta, ScalarArrayMeta):
     """Meta object containing information for a choice array"""
-
-    endpoints = ["choices", "description", "tags", "writeable", "label"]
-
-    def __init__(self, name, description, choices):
-        super(ChoiceArrayMeta, self).__init__(
-            name, description)
-
-        self.choices = choices
 
     def validate(self, value):
         """
@@ -38,23 +31,3 @@ class ChoiceArrayMeta(ScalarMeta):
                                  (choice, i))
 
         return value
-
-    @classmethod
-    def from_dict(cls, name, d):
-        """Create a ChoiceMeta subclass instance from the serialized version
-        of itself
-
-        Args:
-            name (str): ChoiceMeta instance name
-            d (dict): Serialised version of ChoiceMeta
-        """
-
-        description = d['description']
-        choices = d['choices']
-        choice_array_meta = cls(name, description, choices)
-        choice_array_meta.tags = d['tags']
-        choice_array_meta.writeable = d['writeable']
-        choice_array_meta.label = d['label']
-
-        return choice_array_meta
-
