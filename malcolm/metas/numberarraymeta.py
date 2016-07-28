@@ -33,7 +33,7 @@ class NumberArrayMeta(ScalarMeta):
             return casted_array
 
         else:
-            if type(value).__module__ != numpy.__name__:
+            if not hasattr(value, 'dtype'):
                 raise TypeError("Expected numpy array or list, got %s"
                                 % type(value))
             if value.dtype != numpy.dtype(self.dtype()):
