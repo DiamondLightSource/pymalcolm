@@ -3,10 +3,11 @@ import functools
 from malcolm.core.controller import Controller
 from malcolm.core.request import Post, Subscribe
 from malcolm.core.response import Return
-from malcolm.core.method import Method
+from malcolm.core.method import Method, takes
 from malcolm.core.serializable import Serializable
 
 
+@takes()
 class ClientController(Controller):
     """Sync a local block with a given remote block"""
     REMOTE_BLOCKS_ID = 0
