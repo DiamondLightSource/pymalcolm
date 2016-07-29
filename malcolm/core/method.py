@@ -2,7 +2,7 @@ from collections import OrderedDict
 from inspect import getdoc
 
 from malcolm.core.serializable import Serializable
-from malcolm.core.notifier import Notifier
+from malcolm.core.meta import Meta
 from malcolm.core.response import Return, Error
 from malcolm.core.map import Map
 from malcolm.metas.mapmeta import MapMeta
@@ -12,53 +12,60 @@ REQUIRED = object()
 
 
 @Serializable.register_subclass("malcolm:core/Method:1.0")
-class Method(Notifier):
+class Method(Meta):
     """Exposes a function with metadata for arguments and return values"""
 
     endpoints = ["takes", "defaults", "description", "tags", "writeable",
-                 "returns"]
+                 "returns", "label"]
 
-    def __init__(self, name, description=""):
-        super(Method, self).__init__(name, description)
+    def __init__(self, description="", tags=None, writeable=True, label=None):
+        super(Method, self).__init__(description, tags)
         self.func = None
-        self.takes = MapMeta("takes", "Method arguments")
-        self.returns = MapMeta("returns", "Method output structure")
+        self.takes = MapMeta(description="Method arguments")
         self.defaults = OrderedDict()
-        self.writeable = True
+        self.writeable = writeable
+        self.returns = MapMeta(description="Method output structure")
+        self.label = label
         # List of state names that we are writeable in
         self.only_in = None
         self.tags = []
-        self.label = name
 
     def set_function(self, func):
         """Set the function to expose.
-        Function must return accept a dictionary of keyword arguments
-        and return either a single value or dictionary of results.
         """
         self.func = func
 
-    def set_takes(self, takes, defaults=None, notify=True):
-        """Set the arguments and default values for the method
+    def set_takes(self, takes, notify=True):
+        """Set the arguments for the method from a Takes object or serialized
+        dict
 
         Args:
-            takes (MapMeta): Arguments to the function
-            defaults (dict): Dict {str name: value} of default values for args
+            takes (MapMeta or Orderedict): Arguments to the function
         """
-        if defaults is not None:
-            self.defaults = OrderedDict(defaults)
-        else:
-            self.defaults = OrderedDict()
+        if isinstance(takes, dict):
+            takes = Serializable.from_dict(takes)
+        assert isinstance(takes, MapMeta), 'takes expects MapMeta'
         self.set_endpoint("takes", takes, notify)
+
+    def set_defaults(self, defaults, notify=True):
+        """ Set the defaults for takes
+        """
+        # TODO GK - confused about type checking for this
+        self.set_endpoint("defaults", defaults, notify)
 
     def set_returns(self, returns, notify=True):
         """Set the return parameters for the method to validate against"""
+        # TODO GK - confused about type checking for this
         self.set_endpoint("returns", returns, notify)
 
     def set_writeable(self, writeable, notify=True):
         """Set writeable property to enable or disable calling method"""
+        assert(isinstance(writeable, bool))
         self.set_endpoint("writeable", writeable, notify)
 
     def set_label(self, label, notify=True):
+        if label is not None:
+            assert(isinstance(label, basestring))
         self.set_endpoint("label", label, notify)
 
     def __call__(self, *args, **kwargs):
@@ -155,8 +162,8 @@ class Method(Notifier):
 
         if not hasattr(func, "Method"):
             name = func.__name__
-            description = getdoc(func)
-            method = cls(name, description)
+            description = getdoc(func) or ""
+            method = cls(description)
             func.Method = method
 
         return func
@@ -181,20 +188,25 @@ def takes(*args):
         if not hasattr(func, "Method"):
             Method.wrap_method(func)
 
-        takes_meta = MapMeta("takes", "Method arguments")
+        takes_meta = MapMeta(description="Method arguments")
         defaults = OrderedDict()
-        for index in range(0, len(args), 2):
+        elements = {}
+        required = []
+        for index in range(0, len(args), 3):
 
-            meta = args[index]
-            is_required = args[index + 1] is REQUIRED
-            takes_meta.add_element(meta, is_required)
+            if args[index + 2] not in [OPTIONAL, REQUIRED]:
+                raise ValueError(
+                    "Must specify if return value is REQUIRED or OPTIONAL")
 
-            # If second of pair is not REQUIRED or OPTIONAL it is taken as
-            # the default value
-            if args[index + 1] not in [OPTIONAL, REQUIRED]:
-                defaults[meta.name] = args[index + 1]
+            new_item = str(args[index])
+            elements[new_item] = args[index+1]
+            if args[index + 2] is REQUIRED:
+                required.append(new_item)
 
-        func.Method.set_function_takes(takes_meta, defaults)
+        takes_meta.set_elements(elements)
+        takes_meta.set_required(required)
+
+        func.Method.set_takes(takes_meta, defaults)
 
         return func
     return decorator
@@ -219,18 +231,24 @@ def returns(*args):
         if not hasattr(func, "Method"):
             Method.wrap_method(func)
 
-        returns_meta = MapMeta("returns", "Method output structure")
-        for index in range(0, len(args), 2):
+        returns_meta = MapMeta(description="Method output structure")
+        elements = {}
+        required = []
+        for index in range(0, len(args), 3):
 
-            if args[index + 1] not in [OPTIONAL, REQUIRED]:
+            if args[index + 2] not in [OPTIONAL, REQUIRED]:
                 raise ValueError(
                     "Must specify if return value is REQUIRED or OPTIONAL")
 
-            meta = args[index]
-            is_required = args[index + 1] is REQUIRED
-            returns_meta.add_element(meta, is_required)
+            new_item = str(args[index])
+            elements[new_item] = args[index+1]
+            if args[index + 2] is REQUIRED:
+                required.append(new_item)
 
-        func.Method.set_function_returns(returns_meta)
+        returns_meta.set_elements(elements)
+        returns_meta.set_required(required)
+
+        func.Method.set_returns(returns_meta)
 
         return func
     return decorator

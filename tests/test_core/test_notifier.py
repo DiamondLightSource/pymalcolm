@@ -13,9 +13,11 @@ from malcolm.core.notifier import Notifier
 class TestInit(unittest.TestCase):
 
     def test_init(self):
-        n = Notifier("notifier")
+        p = Mock()
+        n = Notifier()
+        self.assertFalse(hasattr(n, 'parent'))
+        n.set_parent(p, "notifier")
         self.assertEqual("notifier", n.name)
-        self.assertEqual(None, n.parent)
 
 
 class TestUpdates(unittest.TestCase):
@@ -23,16 +25,16 @@ class TestUpdates(unittest.TestCase):
     def test_set_parent(self):
         parent = Mock()
         parent.name = "parent"
-        n = Notifier("serialize")
-        n.set_parent(parent)
+        n = Notifier()
+        n.set_parent(parent, "serialize")
         self.assertIs(parent, n.parent)
         self.assertEquals("parent.serialize", n._logger.name)
 
     def test_on_changed(self):
         change = [["test_attr", "test_value"], 12]
         parent = Mock()
-        n = Notifier("test_n")
-        n.set_parent(parent)
+        n = Notifier()
+        n.set_parent(parent,"test_n")
         notify = Mock()
         n.on_changed(change, notify)
         expected = [["test_n", "test_attr", "test_value"], 12]
@@ -40,27 +42,28 @@ class TestUpdates(unittest.TestCase):
 
     def test_on_change_notify_flag_default(self):
         parent = Mock()
-        n = Notifier("test_n")
-        n.set_parent(parent)
+        n = Notifier()
+        n.set_parent(parent,"test_n")
         change = [[], Mock()]
         n.on_changed(change)
         parent.on_changed.assert_called_once_with(change, True)
 
     def test_nop_with_no_parent(self):
         change = [["test"], 123]
-        n = Notifier("test_n")
-        self.assertIsNone(n.parent)
+        n = Notifier()
+        with self.assertRaises(AttributeError):
+            p = n.parent
         n.on_changed(change)
         self.assertEquals([["test"], 123], change)
 
     def test_set_endpoint(self):
-        n = Notifier("test_n")
+        n = Notifier()
         parent = Mock()
         endpoint = Mock()
         # Check that the mock looks like it is serializable
         self.assertTrue(hasattr(endpoint, "to_dict"))
         notify = Mock()
-        n.set_parent(parent)
+        n.set_parent(parent,"test_n")
         n.set_endpoint("end", endpoint, notify)
         self.assertEqual(n.end, endpoint)
         parent.on_changed.assert_called_once_with(

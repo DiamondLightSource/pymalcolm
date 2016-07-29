@@ -9,21 +9,29 @@ from mock import MagicMock
 
 from malcolm.core.map import Map
 from malcolm.core.serializable import Serializable
-
+from malcolm.core.meta import Meta
+from malcolm.metas.numbermeta import NumberMeta
+from malcolm.metas.stringmeta import StringMeta
 
 class TestMap(unittest.TestCase):
 
     def setUp(self):
-        self.meta = MagicMock()
-        self.meta.elements = {"a":MagicMock(), "b":MagicMock()}
+        n = NumberMeta(description='a number')
+        s = StringMeta(description="a string")
+        self.meta = Meta()
+        self.meta.elements = {"a":s, "b":s}
         self.meta.required = ["a"]
+        self.nmeta = Meta()
+        self.nmeta.elements = {"a":n, "b":n}
+        self.nmeta.required = ["a"]
+        #self.meta = MagicMock(wraps=self.meta)
 
     def test_init(self):
         b_mock = MagicMock()
         m = Map(self.meta, {"a":"test", "b":b_mock})
         self.assertEqual(self.meta, m.meta)
         self.assertEqual("test", m.a)
-        self.assertIs(b_mock, m.b)
+        self.assertIs(str(b_mock), m.b)
         self.assertEqual("malcolm:core/Map:1.0", m.typeid)
 
     def test_init_raises_on_bad_key(self):
@@ -38,13 +46,14 @@ class TestMap(unittest.TestCase):
 
     def test_to_dict(self):
         a_mock = MagicMock()
-        meta = MagicMock()
+        s = StringMeta(description="a string")
+        meta = Meta()
         meta.elements = OrderedDict()
-        meta.elements["a"] = MagicMock()
-        meta.elements["b"] = MagicMock()
-        meta.elements["c"] = MagicMock()
-        meta.elements["d"] = MagicMock()
-        meta.elements["e"] = MagicMock()
+        meta.elements["a"] = s
+        meta.elements["b"] = s
+        meta.elements["c"] = s
+        meta.elements["d"] = s
+        meta.elements["e"] = s
         m = Map(meta, {"a":a_mock, "b":"test", "d":123, "e":"e"})
 
         expected = OrderedDict()
@@ -70,11 +79,12 @@ class TestMap(unittest.TestCase):
         d = {"a":123, "b":{"typeid":"mock_typeid"}}
         m = Map.from_dict(map_meta, d)
 
+        print m.a
         self.assertEquals(123, m.a)
         self.assertEquals(value_mock, m.b)
 
     def test_equals_maps(self):
-        self.meta.to_dict.return_value = MagicMock()
+        self.meta.to_dict = MagicMock()
         m1 = Map(self.meta, {"a":"test"})
         m2 = Map(self.meta, {"a":"test2"})
         self.assertFalse(m1 == m2)
@@ -88,13 +98,14 @@ class TestMap(unittest.TestCase):
         m1["b"] = "test"
         self.assertTrue(m1 == m2)
 
-        meta2 = MagicMock()
-        meta2.elements = {"a":MagicMock(), "b":MagicMock()}
+        s = StringMeta(description="a string")
+        meta2 = Meta()
+        meta2.elements = {"a":s, "b":s}
         meta2.required = ["a"]
-        meta2.to_dict.return_value = self.meta.to_dict.return_value
+        meta2.to_dict = self.meta.to_dict
         m2 = Map(meta2, {"a":"test", "b":"test"})
         self.assertTrue(m1 == m2)
-        meta2.to_dict.return_value = MagicMock()
+        meta2.to_dict = MagicMock()
         self.assertFalse(m1 == m2)
 
     def test_equals_dicts(self):
@@ -119,6 +130,7 @@ class TestMap(unittest.TestCase):
         m = Map(self.meta, {"a":"test"})
         self.assertTrue("a" in m)
         self.assertFalse("b" in m)
+        # TODO GK when did Map not have __init__ ???
         self.assertFalse("__init__" in m)
 
     def test_get_item(self):
@@ -143,8 +155,8 @@ class TestMap(unittest.TestCase):
         b_mock = MagicMock()
         m["a"] = a_mock
         m["b"] = b_mock
-        self.assertEqual(a_mock, m.a)
-        self.assertEqual(b_mock, m.b)
+        self.assertEqual(str(a_mock), m.a)
+        self.assertEqual(str(b_mock), m.b)
 
     def test_set_item_raises_invalid_key(self):
         m = Map(self.meta)
@@ -164,14 +176,14 @@ class TestMap(unittest.TestCase):
         self.assertEqual({"a", "b"}, {x for x in m})
 
     def test_update(self):
-        m = Map(self.meta, {"a":1})
+        m = Map(self.nmeta, {"a":1})
         d = {"a":2, "b":2}
         m.update(d)
         self.assertEqual(2, m.a)
         self.assertEqual(2, m.b)
 
     def test_update_raises_on_invalid_key(self):
-        m = Map(self.meta, {"a":1})
+        m = Map(self.nmeta, {"a":1})
         d = {"a":2, "b":2, "c":2}
         with self.assertRaises(ValueError):
             m.update(d)
@@ -182,41 +194,29 @@ class TestMap(unittest.TestCase):
             m.c
 
     def test_clear(self):
-        m = Map(self.meta, {"a":1})
+        m = Map(self.nmeta, {"a":1})
         m.clear()
         with self.assertRaises(AttributeError):
             m.a
 
     def test_keys(self):
-        m = Map(self.meta, {"a":1})
+
+        m = Map(self.nmeta, {"a":1})
         self.assertEqual(["a"], m.keys())
         m.b = 1
-        m.c = 1
         self.assertEqual({"a", "b"}, set(m.keys()))
 
     def test_values(self):
-        m = Map(self.meta, {"a":1})
+        m = Map(self.nmeta, {"a":1})
         self.assertEqual([1], m.values())
         m.b = 2
-        m.c = 3
         self.assertEqual({1, 2}, set(m.values()))
 
     def test_items(self):
-        m = Map(self.meta, {"b":2})
+        m = Map(self.nmeta, {"b":2})
         self.assertEqual([("b", 2)], m.items())
         m.a = 1
-        m.c = 3
         self.assertEqual({("a", 1), ("b", 2)}, set(m.items()))
-
-    def test_setdefault(self):
-        m = Map(self.meta, {"a":1})
-        self.assertEqual(1, m.setdefault("a"))
-        self.assertEqual(2, m.setdefault("b", 2))
-        self.assertEqual(2, m.b)
-
-    def test_setdefault_raises_with_invalid_key(self):
-        m = Map(self.meta)
-        self.assertRaises(ValueError, m.setdefault, "c")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

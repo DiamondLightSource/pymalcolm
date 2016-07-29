@@ -4,6 +4,8 @@ from malcolm.core.serializable import Serializable, serialize_object
 
 class Notifier(Loggable, Serializable):
 
+    endpoints = []
+
     def set_parent(self, parent, name):
         """Sets the parent for changes to be propagated to"""
         self.parent = parent

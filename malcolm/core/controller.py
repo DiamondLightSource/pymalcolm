@@ -17,13 +17,14 @@ class Controller(Loggable):
 
     Resetting = Hook()
 
-    def __init__(self, process, block):
+    def __init__(self, process, block, block_name):
         """
         Args:
             process (Process): The process this should run under
             block (Block): Block instance to add Methods and Attributes to
         """
-        self.set_logger_name("%s.controller" % block.name)
+        block.set_parent(process, block_name)
+        self.set_logger_name("%s.controller" % block_name)
 
         # dictionary of dictionaries
         # {state (str): {Method: writeable (bool)}
@@ -31,12 +32,12 @@ class Controller(Loggable):
         self.process = process
         self.parts = []
         self.block = block
-        for attribute in self._create_default_attributes():
-            block.add_attribute(attribute)
-        for attribute in self.create_attributes():
-            block.add_attribute(attribute)
-        for method in self.create_methods():
-            block.add_method(method)
+        for name, attribute in self._create_default_attributes():
+            block.add_attribute(name, attribute)
+        for name, attribute in self.create_attributes():
+            block.add_attribute(name, attribute)
+        for name, method in self.create_methods():
+            block.add_method(name, method)
             # Set if the method is writeable
             if method.only_in is None:
                 states = [state for state in self.stateMachine.possible_states
@@ -48,8 +49,6 @@ class Controller(Loggable):
                         "State %s is not one of the valid states %s" % \
                         (state, self.stateMachine.possible_states)
             self.set_method_writeable_in(method, states)
-
-        self.process.add_block(block)
 
     def create_methods(self):
         """Abstract method that should provide Method instances for Block
@@ -65,7 +64,7 @@ class Controller(Loggable):
         for member in members:
             if hasattr(member, "Method"):
                 member.Method.set_function(member)
-                yield member.Method
+                yield (member.__name__, member.Method)
 
     def create_attributes(self):
         """Abstract method that should provide Attribute instances for Block
@@ -77,19 +76,18 @@ class Controller(Loggable):
         return iter(())
 
     def _create_default_attributes(self):
-        self.state = Attribute(
-            "state", ChoiceMeta("meta", "State of Block",
-            self.stateMachine.possible_states))
+        self.state = Attribute(ChoiceMeta(description="State of Block",
+                            choices=self.stateMachine.possible_states))
+        self.state.set_parent(self.block,'state')
         self.state.set_value(self.stateMachine.DISABLED)
-        yield self.state
-        self.status = Attribute(
-            "status", StringMeta("meta", "Status of Block"))
+        yield ('state', self.state)
+        self.status = Attribute(StringMeta(description="Status of Block"))
         self.status.set_value("Disabled")
-        yield self.status
-        self.busy = Attribute(
-            "busy", BooleanMeta("meta", "Whether Block busy or not"))
+        yield ('status', self.status)
+        self.busy = Attribute(BooleanMeta(
+            description="Whether Block busy or not"))
         self.busy.set_value(False)
-        yield self.busy
+        yield ('busy', self.busy)
 
     @takes()
     @only_in(sm.DISABLED, sm.FAULT)

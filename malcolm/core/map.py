@@ -13,7 +13,7 @@ class Map(Serializable):
         d = {} if d is None else d
         for key, value in d.items():
             if key in meta.elements:
-                setattr(self, key, value)
+                self[key] = value
             else:
                 raise ValueError("%s is not a valid key for given meta" % key)
 
@@ -33,23 +33,26 @@ class Map(Serializable):
     def __ne__(self, rhs):
         return not self.__eq__(rhs)
 
-    def __setitem__(self, key, val):
-        setattr(self, key, val)
-
     def __setattr__(self, attr, val):
         if hasattr(self, "meta"):
-            if attr not in self.meta.elements:
-                raise ValueError("%s is not a valid key for given meta" % attr)
-            val = self.meta.elements[attr].validate(val)
-        object.__setattr__(self, attr, val)
+            self[attr] = val
+        else:
+            object.__setattr__(self, attr, val)
+
+    def __setitem__(self, key, val):
+        if key not in self.meta.elements:
+            raise ValueError("%s is not a valid key for given meta" % key)
+        val = self.meta.elements[key].validate(val)
+        object.__setattr__(self, key, val)
 
     def __getitem__(self, key):
-        if key == "meta" or not hasattr(self, key):
+        if key in self.endpoints:
+            return getattr(self, key)
+        else:
             raise KeyError
-        return getattr(self, key)
 
     def __contains__(self, key):
-        return key != "meta" and hasattr(self, key)
+        return key in self.endpoints
 
     def __len__(self):
         return len(self.endpoints)
@@ -62,7 +65,7 @@ class Map(Serializable):
         if not set(d).issubset(self.meta.elements):
             raise ValueError("%s contains invalid keys for given meta" % d)
         for k in d:
-            setattr(self, k, d[k])
+            self[k] = d[k]
 
     def clear(self):
         for e in self.meta.elements:
@@ -73,10 +76,10 @@ class Map(Serializable):
         return self.endpoints
 
     def values(self):
-        return [getattr(self, e) for e in self.endpoints]
+        return [self[e] for e in self.endpoints]
 
     def items(self):
-        return [(e, getattr(self, e)) for e in self.endpoints]
+        return [(e, self[e]) for e in self.endpoints]
 
     @classmethod
     def from_dict(cls, d, meta):

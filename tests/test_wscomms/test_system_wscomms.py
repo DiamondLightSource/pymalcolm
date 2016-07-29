@@ -27,13 +27,14 @@ from malcolm.wscomms.wsclientcomms import WSClientComms
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):
+    socket = 8881
 
     def setUp(self):
         self.sf = SyncFactory("sync")
         self.process = Process("proc", self.sf)
-        block = Block("hello")
-        HelloController(self.process, block)
-        self.sc = WSServerComms("sc", self.process, 8888)
+        block = Block()
+        HelloController(self.process, block,'hello')
+        self.sc = WSServerComms("sc", self.process, self.socket)
         self.process.start()
         self.sc.start()
 
@@ -42,9 +43,10 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.sc.wait()
         self.process.stop()
 
+
     @gen.coroutine
     def send_message(self):
-        conn = yield websocket_connect("ws://localhost:8888/ws")
+        conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
         req = dict(
             type="Post",
             id=0,
@@ -70,13 +72,15 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
 
 class TestSystemWSCommsServerAndClient(TestSystemWSCommsServerOnly):
+    socket = 8882
 
     def setUp(self):
         super(TestSystemWSCommsServerAndClient, self).setUp()
         self.process2 = Process("proc2", self.sf)
-        self.block2 = Block("hello")
-        ClientController(self.process2, self.block2)
-        self.cc = WSClientComms("cc", self.process2, "ws://localhost:8888/ws")
+        self.block2 = Block()
+        ClientController(self.process2, self.block2, 'hello')
+        self.cc = WSClientComms("cc", self.process2, "ws://localhost:%s/ws" %
+                                self.socket)
         self.process2.start()
         self.cc.start()
 

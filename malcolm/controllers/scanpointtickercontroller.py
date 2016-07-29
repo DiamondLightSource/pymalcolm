@@ -13,23 +13,23 @@ from malcolm.statemachines import RunnableDeviceStateMachine
 class ScanPointTickerController(Controller):
 
     def create_attributes(self):
-        self.value = Attribute("value", NumberMeta(
-            "meta", "Value", numpy.float64))
-        yield self.value
+        self.value = Attribute(NumberMeta(description="Value"))
+        self.value.meta.set_dtype('float64')
+        yield 'value', self.value
         self.generator = Attribute(
-            "generator", PointGeneratorMeta("meta", "Scan Point Generator"))
-        yield self.generator
-        self.axis_name = Attribute(
-            "axis_name", StringMeta("meta", "Name of the axis"))
-        yield self.axis_name
-        self.exposure = Attribute(
-            "exposure", NumberMeta("meta", "Exposure time", numpy.float64))
-        yield self.exposure
+            PointGeneratorMeta(description="Scan Point Generator"))
+        yield "generator", self.generator
+        self.axis_name = Attribute(StringMeta(description="Name of the axis"))
+        yield "axis_name", self.axis_name
+        self.exposure = Attribute(NumberMeta(description="Exposure time"))
+        self.value.meta.set_dtype('float64')
+        yield "exposure", self.exposure
 
-    @takes(PointGeneratorMeta("generator", "Generator instance"), REQUIRED,
-           StringMeta("axis_name", "Specifier for axis"), REQUIRED,
-           NumberMeta("exposure",
-                      "Detector exposure time", numpy.float64), REQUIRED)
+    @takes("generator", PointGeneratorMeta(
+                        description="Generator instance"), REQUIRED,
+           "axis_name", StringMeta( description="Specifier for axis"), REQUIRED,
+           "exposure", NumberMeta(
+                       description="Detector exposure time"), REQUIRED)
     def configure(self, params):
         """
         Configure the controller
@@ -43,6 +43,7 @@ class ScanPointTickerController(Controller):
         self.generator.set_value(params.generator)
         self.axis_name.set_value(params.axis_name)
         self.exposure.set_value(params.exposure)
+        self.exposure.meta.set_dtype('float64')
         self.block.notify_subscribers()
 
     @Method.wrap_method

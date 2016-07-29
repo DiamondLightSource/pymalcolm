@@ -23,7 +23,7 @@ class CAPart(Part):
         self.pv = pv
         self.rbv = rbv
         # The attribute we will be publishing
-        self.attr = Attribute(self.name, self.meta)
+        self.attr = Attribute(self.meta)
         self.attr.set_put_function(self.caput)
         self.block.add_attribute(self.attr)
         # camonitor subscription

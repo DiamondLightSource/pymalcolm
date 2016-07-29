@@ -21,7 +21,7 @@ class Attribute(Notifier):
 
     def set_meta(self, meta, notify=True):
         """Set the ScalarMeta object"""
-        if isinstance(meta, (dict, OrderedDict)):
+        if isinstance(meta, dict):
             meta = Serializable.from_dict(meta)
         assert isinstance(meta, ScalarMeta), \
             "Expected meta to be a ScalarMeta subclass, got %s" % (meta,)

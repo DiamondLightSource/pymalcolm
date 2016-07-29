@@ -40,12 +40,7 @@ class LockRelease(object):
 class Block(Notifier):
     """Object consisting of a number of Attributes and Methods"""
 
-    def __init__(self, name):
-        """
-        Args:
-            name (str): Block name e.g. "BL18I:ZEBRA1"
-        """
-        super(Block, self).__init__(name=name)
+    def __init__(self):
         self.methods = OrderedDict()
         self.attributes = OrderedDict()
         self.lock = DummyLock()
@@ -54,30 +49,29 @@ class Block(Notifier):
     def endpoints(self):
         return list(self.attributes.keys()) + list(self.methods.keys())
 
-    def add_attribute(self, attribute, notify=True):
+    def add_attribute(self, child_name, attribute, notify=True):
         """Add an Attribute to the block and set the block as its parent"""
-        self.add_child(attribute, self.attributes)
+        self.add_child(child_name, attribute, self.attributes)
         self.on_changed([[attribute.name], attribute.to_dict()], notify)
 
-    def add_method(self, method, notify=True):
+    def add_method(self, child_name, method, notify=True):
         """Add a Method to the Block
 
         Args:
             method (Method): The Method object that has already been filled in
         """
-        self.add_child(method, self.methods)
+        self.add_child(child_name, method, self.methods)
         self.on_changed([[method.name], method.to_dict()], notify)
 
-    def add_child(self, attribute_or_method, d):
+    def add_child(self, child_name, attribute_or_method, d):
         """Add an Attribute or Method to the block and set the block as its
         parent, but don't notify"""
-        child_name = attribute_or_method.name
         assert not hasattr(self, child_name), \
             "Attribute or Method %s already defined for Block %s" \
             % (child_name, self.name)
         setattr(self, child_name, attribute_or_method)
         d[child_name] = attribute_or_method
-        attribute_or_method.set_parent(self)
+        attribute_or_method.set_parent(self, child_name)
 
     def _where_child_stored(self, child):
         if isinstance(child, Method):
@@ -114,11 +108,11 @@ class Block(Notifier):
         for attr_name in self.attributes:
             delattr(self, attr_name)
         self.attributes.clear()
-        for child in children:
+        for name, child in children.items():
             d = self._where_child_stored(child)
             assert d is not None, \
                 "Don't know how to add a child %s" % child
-            self.add_child(child, d)
+            self.add_child(name, child, d)
         self.on_changed([[], self.to_dict()], notify)
 
     def notify_subscribers(self):
@@ -152,15 +146,6 @@ class Block(Notifier):
                 response = Return(request.id_, request.context)
             self.parent.block_respond(response, request.response_queue)
 
-    def to_dict(self):
-        """Convert object attributes into a dictionary"""
-
-        overrides = {}
-        for attribute_name, attribute in self.attributes.items():
-            overrides[attribute_name] = attribute.to_dict()
-        for method_name, method in self.methods.items():
-            overrides[method_name] = method.to_dict()
-        return super(Block, self).to_dict(**overrides)
 
     def lock_released(self):
         return LockRelease(self.lock)

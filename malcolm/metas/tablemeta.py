@@ -22,7 +22,7 @@ class TableMeta(ScalarMeta):
         """Set the elements dict from a ScalarArrayMeta or serialized dict"""
         # Check correct type
         for name, element in elements.items():
-            if isinstance(element, (dict, OrderedDict)):
+            if isinstance(element, dict):
                 element = Serializable.from_dict(element)
                 elements[name] = element
             assert isinstance(element, ScalarArrayMeta), \

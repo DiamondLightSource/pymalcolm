@@ -21,7 +21,7 @@ class MapMeta(Meta):
         """Set the elements dict from a ScalarMeta or serialized dict"""
         # Check correct type
         for name, element in elements.items():
-            if isinstance(element, (dict, OrderedDict)):
+            if isinstance(element, dict):
                 element = Serializable.from_dict(element)
                 elements[name] = element
             assert isinstance(element, ScalarMeta), \
@@ -36,3 +36,21 @@ class MapMeta(Meta):
             assert isinstance(element_name, base_string), \
                 "Expected element_name to be string, got %s" % (element_name,)
         self.set_endpoint("required", required, notify)
+
+    def validate(self, value):
+        """
+        Check if the value is valid returns it
+
+        Args:
+            value: Value to validate
+
+        Returns:
+            Value if it is valid
+        Raises:
+            ValueError: If value not valid
+        """
+        # TODO
+        if value is None:
+            return value
+        else:
+            return value

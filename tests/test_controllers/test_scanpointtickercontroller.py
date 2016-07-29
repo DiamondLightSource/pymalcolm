@@ -8,6 +8,7 @@ from mock import MagicMock, patch, call
 
 from malcolm.statemachines import RunnableDeviceStateMachine
 from malcolm.controllers import ScanPointTickerController
+from malcolm.core.block import Block
 
 
 class TestScanPointTickerController(unittest.TestCase):
@@ -20,8 +21,8 @@ class TestScanPointTickerController(unittest.TestCase):
         del nmd_mock.return_value.to_dict
         del smd_mock.return_value.to_dict
         attr_id = "epics:nt/NTAttribute:1.0"
-        block = MagicMock()
-        sptc = ScanPointTickerController(MagicMock(), block)
+        block = Block()
+        sptc = ScanPointTickerController(MagicMock(), block, 'block')
         self.assertEqual(block, sptc.block)
         self.assertEqual(RunnableDeviceStateMachine, type(sptc.stateMachine))
         self.assertEqual("RunnableDeviceStateMachine", sptc.stateMachine.name)
@@ -45,8 +46,8 @@ class TestScanPointTickerController(unittest.TestCase):
             params.generator = cg_mock()
         params.exposure = 1
         params.axis_name = "x"
-        block = MagicMock()
-        sptc = ScanPointTickerController(MagicMock(), block)
+        block = MagicMock(wraps=Block())
+        sptc = ScanPointTickerController(MagicMock(), block, 'block')
 
         sptc.configure(params)
 
@@ -66,7 +67,7 @@ class TestScanPointTickerController(unittest.TestCase):
         params.axis_name = "x"
         params.generator.iterator = MagicMock(return_value=points)
         block = MagicMock()
-        sptc = ScanPointTickerController(MagicMock(), block)
+        sptc = ScanPointTickerController(MagicMock(), block, 'block')
         sptc.value.set_value = MagicMock(side_effect=sptc.value.set_value)
 
         sptc.configure(params)
