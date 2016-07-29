@@ -19,6 +19,7 @@ def import_child_packages(package_name):
                 class_dict[cls.__name__] = cls
     return class_dict
 
+
 def find_decorated_classes(module):
     for n in dir(module):
         cls = getattr(module, n)
