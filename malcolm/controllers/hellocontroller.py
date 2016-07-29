@@ -3,6 +3,7 @@ from malcolm.core.controller import Controller
 from malcolm.core.method import takes, returns, REQUIRED
 
 
+@takes()
 class HelloController(Controller):
     @takes(StringMeta("name", "a name"), REQUIRED)
     @returns(StringMeta("greeting", "a greeting"), REQUIRED)

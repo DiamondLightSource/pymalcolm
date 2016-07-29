@@ -6,6 +6,7 @@ from malcolm.core.method import takes
 from malcolm.metas import NumberMeta
 
 
+@takes()
 class CounterController(Controller):
 
     def create_attributes(self):

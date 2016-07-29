@@ -9,6 +9,7 @@ from malcolm.statemachines import RunnableDeviceStateMachine
 
 
 @RunnableDeviceStateMachine.insert
+@takes()
 class ScanPointTickerController(Controller):
 
     def create_attributes(self):
