@@ -18,7 +18,7 @@ class TestPointGeneratorMeta(unittest.TestCase):
 
     def test_init(self):
         self.assertEqual("test_description", self.PGM.description)
-        self.assertEqual(self.PGM.label, None)
+        self.assertEqual(self.PGM.label, "")
 
     def test_validate(self):
         g = CompoundGenerator([MagicMock()], [], [])

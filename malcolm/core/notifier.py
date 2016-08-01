@@ -6,8 +6,6 @@ NO_VALIDATE = object()
 
 class Notifier(Loggable, Serializable):
 
-    endpoints = []
-
     def set_parent(self, parent, name):
         """Sets the parent for changes to be propagated to"""
         self.parent = parent
@@ -16,10 +14,11 @@ class Notifier(Loggable, Serializable):
 
     def set_logger_name(self, name):
         super(Notifier, self).set_logger_name(name)
-        for endpoint in self.endpoints:
-            attr = getattr(self, endpoint)
-            if hasattr(attr, "set_logger_name"):
-                attr.set_logger_name("%s.%s" % (name, endpoint))
+        if self.endpoints:
+            for endpoint in self.endpoints:
+                attr = getattr(self, endpoint)
+                if hasattr(attr, "set_logger_name"):
+                    attr.set_logger_name("%s.%s" % (name, endpoint))
 
     def on_changed(self, change, notify=True):
         """Propagate change to parent, adding self.name to paths.

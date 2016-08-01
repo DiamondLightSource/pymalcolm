@@ -51,7 +51,7 @@ class TestWSClientComms(unittest.TestCase):
 
         response = MagicMock()
         response.id_ = 1
-        serializable_mock.deserialize.return_value = response
+        serializable_mock.from_dict.return_value = response
         request_mock = MagicMock()
         self.WS.requests[1] = request_mock
 
@@ -59,7 +59,7 @@ class TestWSClientComms(unittest.TestCase):
 
         json_mock.loads.assert_called_once_with("TestMessage",
                                                 object_pairs_hook=OrderedDict)
-        serializable_mock.deserialize.assert_called_once_with("Response", message_dict)
+        serializable_mock.from_dict.assert_called_once_with(message_dict)
         request_mock.response_queue.put.assert_called_once_with(response)
 
     @patch('malcolm.wscomms.wsclientcomms.json')

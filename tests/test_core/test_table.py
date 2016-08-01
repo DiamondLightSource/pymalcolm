@@ -8,12 +8,14 @@ from collections import OrderedDict
 from mock import Mock
 
 from malcolm.core.table import Table
+from malcolm.metas import StringArrayMeta, NumberArrayMeta
 
 
 class TestTableInit(unittest.TestCase):
     def test_init(self):
         meta = Mock()
-        meta.elements = {"e1":Mock(), "e2":Mock(), "e3":Mock()}
+        s = StringArrayMeta()
+        meta.elements = {"e1":s, "e2":s, "e3":s}
         t = Table(meta)
         self.assertEquals([], t.e1)
         self.assertEquals([], t.e2)
@@ -22,17 +24,19 @@ class TestTableInit(unittest.TestCase):
 
     def test_init_with_dict(self):
         meta = Mock()
-        meta.elements = {"e1":Mock(), "e2":Mock(), "e3":Mock()}
+        meta.elements = {"e1": NumberArrayMeta("int32"),
+                         "e2": StringArrayMeta(),
+                         "e3": StringArrayMeta()}
         d = {"e1":[0, 1], "e3":["value"]}
         t = Table(meta, d)
-        self.assertEquals([0, 1], t.e1)
+        self.assertEquals([0, 1], list(t.e1))
         self.assertEquals([], t.e2)
         self.assertEquals(["value"], t.e3)
         self.assertEquals("malcolm:core/Table:1.0", t.typeid)
 
     def test_init_with_none(self):
         meta = Mock()
-        meta.elements = {"e1":Mock()}
+        meta.elements = {"e1": StringArrayMeta()}
         t = Table(meta, None)
         self.assertEquals([], t.e1)
         self.assertEquals("malcolm:core/Table:1.0", t.typeid)
@@ -41,13 +45,13 @@ class TestTableRowOperations(unittest.TestCase):
     def setUp(self):
         meta = Mock()
         meta.elements = OrderedDict()
-        meta.elements["e1"] = Mock()
-        meta.elements["e2"] = Mock()
-        meta.elements["e3"] = Mock()
+        meta.elements["e1"] = NumberArrayMeta("int32")
+        meta.elements["e2"] = NumberArrayMeta("int32")
+        meta.elements["e3"] = NumberArrayMeta("int32")
         self.t = Table(meta)
-        self.t.e1.append(1)
-        self.t.e2.append(2)
-        self.t.e3.append(3)
+        self.t.e1 = [1]
+        self.t.e2 = [2]
+        self.t.e3 = [3]
 
     def test_row_access(self):
         self.assertEqual([1, 2, 3], self.t[0])
@@ -55,9 +59,9 @@ class TestTableRowOperations(unittest.TestCase):
     def test_row_access_index_error(self):
         with self.assertRaises(IndexError):
             self.t[1]
-        self.t.e1.append(11)
-        self.t.e2.append(12)
-        self.t.e3.append(13)
+        self.t.e1 = [1, 11]
+        self.t.e2 = [2, 12]
+        self.t.e3 = [3, 13]
         self.t[1]
         with self.assertRaises(IndexError):
             self.t[2]
@@ -82,16 +86,16 @@ class TestTableRowOperations(unittest.TestCase):
     def test_row_append(self):
         self.t.append([11, 12, 13])
         self.t.append([21, 22, 23])
-        self.assertEquals([1, 11, 21], self.t.e1)
-        self.assertEquals([2, 12, 22], self.t.e2)
-        self.assertEquals([3, 13, 23], self.t.e3)
+        self.assertEquals([1, 11, 21], list(self.t.e1))
+        self.assertEquals([2, 12, 22], list(self.t.e2))
+        self.assertEquals([3, 13, 23], list(self.t.e3))
 
     def test_row_append_bad_row_raises(self):
         self.assertRaises(ValueError, self.t.append, [11, 12])
         self.assertRaises(ValueError, self.t.append, [11, 12, 13, 14])
 
     def test_bad_columns_raise(self):
-        self.t.e2.append(2)
+        self.t.e1 = [1, 2]
         with self.assertRaises(AssertionError):
             self.t[0]
         with self.assertRaises(AssertionError):
@@ -102,11 +106,12 @@ class TestTableRowOperations(unittest.TestCase):
 class TestTableMetaSerialization(unittest.TestCase):
 
     def setUp(self):
-        self.meta = Mock()
-        self.meta.elements = OrderedDict()
-        self.meta.elements["e1"] = Mock()
-        self.meta.elements["e2"] = Mock()
-        self.meta.elements["e3"] = Mock()
+        meta = Mock()
+        meta.elements = OrderedDict()
+        meta.elements["e1"] = StringArrayMeta()
+        meta.elements["e2"] = NumberArrayMeta("int32")
+        meta.elements["e3"] = NumberArrayMeta("int32")
+        self.meta = meta
 
     def test_to_dict(self):
         t = Table(self.meta)
@@ -119,24 +124,26 @@ class TestTableMetaSerialization(unittest.TestCase):
         expected["e1"] = ["value"]
         expected["e2"] = [1, 2]
         expected["e3"] = [0]
-        self.assertEquals(expected, t.to_dict())
+        actual = t.to_dict()
+        # numpy compare gets in the way...
+        for k, v in actual.items():
+            if k != "typeid":
+                actual[k] = list(v)
+        self.assertEquals(expected, actual)
 
     def test_from_dict(self):
         d = {"typeid":"malcolm:core/Table:1.0",
-            "e1":[0, 1, 2], "e2":["value"], "e3":[6, 7]}
-        t = Table.from_dict(self.meta, d)
+            "e2":[0, 1, 2], "e1":["value"], "e3":[6, 7]}
+        t = Table.from_dict(d, self.meta)
         self.assertEqual(self.meta, t.meta)
-        self.assertEqual([0, 1, 2], t.e1)
-        self.assertEqual(["value"], t.e2)
-        self.assertEqual([6, 7], t.e3)
+        self.assertEqual([0, 1, 2], list(t.e2))
+        self.assertEqual(["value"], t.e1)
+        self.assertEqual([6, 7], list(t.e3))
 
     def test_dict_roundtrip(self):
-        e1 = Mock()
-        e2 = [1, 2, 3]
-        e3 = [None]
         t = Table(self.meta)
         d = t.to_dict()
-        t2 = Table.from_dict(self.meta, d)
+        t2 = Table.from_dict(d.copy(), self.meta)
         self.assertEqual(d, t2.to_dict())
 
 if __name__ == "__main__":

@@ -56,7 +56,7 @@ class Table(Serializable):
         object.__setattr__(self, attr, value)
 
     def append(self, row):
-        self._verify_column_lengths()
+        self.verify_column_lengths()
         if len(row) != len(self.meta.elements):
             raise ValueError(
                 "Row %s does not specify correct number of values" % row)
@@ -65,7 +65,10 @@ class Table(Serializable):
             try:
                 column.append(v)
             except:
-                new_column = np.append(column, [v])
+                # numpy arrays have no append, so make an array of the right
+                # validated type, and use np.append
+                v = self.meta.elements[e].validate([v])
+                new_column = np.append(column, v)
                 setattr(self, e, new_column)
 
     @classmethod

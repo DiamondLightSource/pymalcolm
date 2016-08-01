@@ -116,7 +116,7 @@ class Block(Notifier):
         self.on_changed([[], self.to_dict()], notify)
 
     def notify_subscribers(self):
-        if self.parent is not None:
+        if hasattr(self, "parent"):
             self.parent.notify_subscribers(self.name)
 
     def handle_request(self, request):

@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from malcolm.core.meta import Meta
+from malcolm.core.map import Map
 from malcolm.metas.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string

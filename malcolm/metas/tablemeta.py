@@ -33,7 +33,7 @@ class TableMeta(ScalarMeta):
             value = Table.from_dict(value, meta=self)
         else:
             # Check that it's using the same meta object
-            assert self.to_dict() == value.meta.to_dict(), \
+            assert self == value.meta, \
                 "Supplied table with wrong meta type"
         # Check column lengths
         value.verify_column_lengths()

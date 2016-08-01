@@ -14,7 +14,7 @@ class TestStringArrayMeta(unittest.TestCase):
 
     def test_init(self):
         self.assertEqual("test description", self.meta.description)
-        self.assertEqual(self.meta.label, None)
+        self.assertEqual(self.meta.label, "")
         self.assertEqual(self.meta.typeid, "malcolm:core/StringArrayMeta:1.0")
 
     def test_validate_none(self):

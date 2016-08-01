@@ -44,7 +44,7 @@ class TestCounterController(unittest.TestCase):
         c.counter.on_changed = Mock(side_effect=c.counter.on_changed)
         c.increment()
         c.counter.on_changed.assert_called_once_with(
-            [['block', 'counter', 'value'], 1], True)
+            [['counter', 'value'], 1], True)
 
     def test_reset_sets_zero(self):
         c = CounterController(Mock(), Block(), 'c')
@@ -63,7 +63,7 @@ class TestCounterController(unittest.TestCase):
         c.counter.put(32)
         self.assertEqual(c.counter.value, 32)
         c.block.on_changed.assert_called_once_with(
-            [["block", "counter", "value"], 32], True)
+            [["counter", "value"], 32], True)
 
 
 if __name__ == "__main__":

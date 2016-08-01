@@ -86,7 +86,7 @@ class TestWSServerComms(unittest.TestCase):
 
         request = MagicMock()
         request.context = self.WS.server.request_callback.handlers[0][1][0].handler_class
-        serializable_mock.deserialize.return_value = request
+        serializable_mock.from_dict.return_value = request
 
         m = MagicMock()
         MWSH = MalcolmWebSocketHandler(m, m)
@@ -95,7 +95,7 @@ class TestWSServerComms(unittest.TestCase):
 
         json_mock.loads.assert_called_once_with("TestMessage",
                                                 object_pairs_hook=OrderedDict)
-        serializable_mock.deserialize.assert_called_once_with("Request", message_dict)
+        serializable_mock.from_dict.assert_called_once_with(message_dict)
         self.p.q.put.assert_called_once_with(request)
 
     @patch('malcolm.wscomms.wsservercomms.HTTPServer')

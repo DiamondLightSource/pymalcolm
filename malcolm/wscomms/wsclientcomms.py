@@ -38,7 +38,7 @@ class WSClientComms(ClientComms):
         try:
             self.log_debug("Got message %s", message)
             d = json.loads(message, object_pairs_hook=OrderedDict)
-            response = Serializable.deserialize("Response", d)
+            response = Serializable.from_dict(d)
             self.send_to_caller(response)
         except Exception as e:
             # If we don't catch the exception here, tornado will spew odd

@@ -7,7 +7,7 @@ import unittest
 from mock import Mock
 from collections import OrderedDict
 
-from malcolm.core.notifier import Notifier
+from malcolm.core.notifier import Notifier, NO_VALIDATE
 
 
 class TestInit(unittest.TestCase):
@@ -23,12 +23,16 @@ class TestInit(unittest.TestCase):
 class TestUpdates(unittest.TestCase):
 
     def test_set_parent(self):
+        class MyNotifier(Notifier):
+            endpoints = ["child"]
+            child = Mock()
         parent = Mock()
         parent.name = "parent"
-        n = Notifier()
+        n = MyNotifier()
         n.set_parent(parent, "serialize")
         self.assertIs(parent, n.parent)
-        self.assertEquals("parent.serialize", n._logger.name)
+        self.assertEquals("serialize", n._logger.name)
+        n.child.set_logger_name.assert_called_once_with("serialize.child")
 
     def test_on_changed(self):
         change = [["test_attr", "test_value"], 12]
@@ -64,37 +68,12 @@ class TestUpdates(unittest.TestCase):
         self.assertTrue(hasattr(endpoint, "to_dict"))
         notify = Mock()
         n.set_parent(parent,"test_n")
-        n.set_endpoint("end", endpoint, notify)
+        n.set_endpoint(NO_VALIDATE, "end", endpoint, notify)
         self.assertEqual(n.end, endpoint)
         parent.on_changed.assert_called_once_with(
             [["test_n", "end"], endpoint.to_dict()], notify)
 
 
-class MyNotifier(Notifier):
-
-    endpoints = ["end"]
-
-    def set_end(self, value, notify=True):
-        self.set_endpoint("end", value, notify)
-
-
-class TestSerialization(unittest.TestCase):
-
-    def setUp(self):
-        self.serialized = OrderedDict()
-        self.serialized["typeid"] = "filled_in_by_subclass"
-        self.serialized["end"] = "end_value"
-
-    def test_to_dict(self):
-        n = MyNotifier("test_n")
-        n.typeid = "filled_in_by_subclass"
-        n.end = "end_value"
-        self.assertEqual(n.to_dict(), self.serialized)
-
-    def test_from_dict(self):
-        n = MyNotifier.from_dict(self.serialized, "name")
-        self.assertEquals(n.name, "name")
-        self.assertEquals(n.end, "end_value")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

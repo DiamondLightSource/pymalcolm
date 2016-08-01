@@ -114,7 +114,9 @@ class Serializable(object):
         return subcls
 
     def __eq__(self, rhs):
-        return self.to_dict() == rhs.to_dict()
+        if hasattr(rhs, "to_dict"):
+            rhs = rhs.to_dict()
+        return self.to_dict() == rhs
 
     def __ne__(self, rhs):
         return not self.__eq__(rhs)

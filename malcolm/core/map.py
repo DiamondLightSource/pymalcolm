@@ -22,15 +22,6 @@ class Map(Serializable):
     def __repr__(self):
         return self.to_dict().__repr__()
 
-    def __eq__(self, rhs):
-        if hasattr(rhs, "meta"):
-            if self.meta.to_dict() != rhs.meta.to_dict():
-                return False
-        return self.to_dict() == rhs.to_dict()
-
-    def __ne__(self, rhs):
-        return not self.__eq__(rhs)
-
     def __setattr__(self, attr, val):
         if hasattr(self, "meta"):
             self[attr] = val
@@ -79,7 +70,15 @@ class Map(Serializable):
     def items(self):
         return [(e, self[e]) for e in self.endpoints]
 
-    @classmethod
-    def from_dict(cls, d, meta):
-        d.pop("typeid")
-        return cls(meta, d)
+    def check_valid(self):
+        for e in self.meta.required:
+            if e not in self.endpoints:
+                raise KeyError(e)
+
+    def __eq__(self, rhs):
+        if isinstance(rhs, dict):
+            # compare to dict
+            d = self.to_dict()
+            d.pop("typeid")
+            return d == rhs
+        return super(Map, self).__eq__(rhs)

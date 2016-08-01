@@ -106,6 +106,7 @@ class TestMethod(unittest.TestCase):
         func = MagicMock()
         func.side_effect = ValueError("Test error")
         m = Method("test_description")
+        m.set_parent(Mock(), "test_method")
         m.set_function(func)
         m.takes = MagicMock()
         m.returns = MagicMock()
@@ -116,24 +117,15 @@ class TestMethod(unittest.TestCase):
         self.assertEquals(
             "Method test_method raised an error: Test error", response.message)
 
-    def test_no_args_returns(self):
-        func = Mock(return_value={"first_out": "test"})
-        m = Method("test_description")
-        m.set_function(func)
-        args_meta = Mock(spec=MapMeta)
-        args_meta.elements = dict(first=Mock())
-        return_meta = Mock()
-        return_meta.elements = {"output1": Mock()}
-        m.set_returns(return_meta)
-
-        self.assertEquals({"first_out": "test"}, m.call_function(dict()))
-
     def test_defaults(self):
         func = Mock(return_value={"first_out": "test"})
-        m = Method("test_description")
-        args_meta = Mock()
-        args_meta.elements = {"first": Mock(), "second": Mock()}
-        m.set_function_takes(args_meta, {"second": "default"})
+        m = Method("test_description", writeable=True)
+        m.set_parent(Mock(), "test_method")
+        s = StringMeta(description='desc')
+        args_meta = MapMeta()
+        args_meta.elements = {"first": s, "second": s}
+        m.set_takes(args_meta)
+        m.set_defaults({"second": "default"})
         m.set_function(func)
 
         self.assertEquals({"first_out": "test"}, m.call_function(dict(first="test")))
@@ -142,37 +134,17 @@ class TestMethod(unittest.TestCase):
         self.assertEqual("default", call_arg.second)
         self.assertEqual(args_meta, call_arg.meta)
 
-    def test_required(self):
-        func = Mock(return_value={"first_out": "test"})
-        m = Method("test_description")
-        m.set_function(func)
-        args_meta = Mock(spec=MapMeta)
-        args_meta.elements = {"first": Mock(), "second": Mock()}
-        args_meta.required = ["first"]
-        m.set_takes(args_meta, {"first": "default"})
-
-        self.assertEquals({"first_out": "test"}, m.call_function({}))
-        call_arg = func.call_args[0][0]
-        self.assertEqual("default", call_arg.first)
-        with self.assertRaises(AttributeError):
-            _ = call_arg.second
-        self.assertEqual(args_meta, call_arg.meta)
-
-        m.set_takes(args_meta, {"second": "default"})
-        with self.assertRaises(ValueError):
-            m.call_function({})
-
     def test_incomplete_return(self):
         func = Mock(return_value={"output1": 2})
-        m = Method("test_description")
+        m = Method("test_description", writeable=True)
+        m.name = "test_method"
         m.set_function(func)
         s = StringMeta(description='desc')
         args_meta = MapMeta()
-        args_meta.elements = {"first": s, "second": s}
+        args_meta.set_elements({"first": s, "second": s})
         return_meta = MapMeta()
-        return_meta.elements = {"output1": s, "output2": s}
-        return_meta.validate = Mock(side_effect = \
-            KeyError("Return value doesn't match return meta"))
+        return_meta.set_elements({"output1": s, "output2": s})
+        return_meta.set_required(["output2"])
         m.set_takes(args_meta)
         m.set_returns(return_meta)
 
@@ -214,54 +186,58 @@ class TestDecorators(unittest.TestCase):
             """Say hello"""
             print("Hello" + params.name)
 
-        self.assertTrue(hasattr(say_hello, "Method"))
-        takes = MapMeta()
-        takes.set_elements(OrderedDict(hello=StringMeta()))
-        self.assertEqual(say_hello.Method.takes, takes)
+        itakes = MapMeta()
+        itakes.set_elements(OrderedDict(hello=StringMeta()))
+        self.assertEqual(say_hello.Method.takes, itakes)
+        self.assertEqual(say_hello.Method.returns, MapMeta())
         self.assertEqual(say_hello.Method.defaults, {})
-        self.assertEqual(say_hello.Method.takes.required, [])
 
-    @patch("malcolm.core.method.MapMeta")
-    def test_takes_given_defaults(self, map_meta_mock):
-        m1 = MagicMock()
-        map_meta_mock.return_value = m1
-        a1 = MagicMock()
-        a1.name = "name"
-
-        @takes(a1, "User", OPTIONAL)
-        def say_hello(name):
+    def test_takes_given_defaults(self):
+        @takes("hello", StringMeta(), "Something")
+        def say_hello(params):
             """Say hello"""
-            print("Hello" + name)
+            print("Hello" + params.name)
 
-        self.assertTrue(hasattr(say_hello, "Method"))
-        self.assertEqual(m1, say_hello.Method.takes)
-        m1.add_element.assert_called_once_with(a1, False)
-        self.assertEqual("User", say_hello.Method.defaults[a1.name])
+        itakes = MapMeta()
+        itakes.set_elements(OrderedDict(hello=StringMeta()))
+        self.assertEqual(say_hello.Method.takes, itakes)
+        self.assertEqual(say_hello.Method.returns, MapMeta())
+        self.assertEqual(say_hello.Method.defaults, {"hello": "Something"})
 
-    @patch("malcolm.core.method.MapMeta")
-    def test_returns_given_valid_sets(self, map_meta_mock):
-        m1 = MagicMock()
-        map_meta_mock.return_value = m1
-        a1 = MagicMock()
-        a1.name = "name"
+    def test_takes_given_required(self):
+        @takes("hello", StringMeta(), REQUIRED)
+        def say_hello(params):
+            """Say hello"""
+            print("Hello" + params.name)
 
-        @returns(a1, REQUIRED)
-        def return_hello(name):
-            """Return hello"""
-            return "Hello" + name
+        itakes = MapMeta()
+        itakes.set_elements(OrderedDict(hello=StringMeta()))
+        itakes.set_required(["hello"])
+        self.assertEqual(say_hello.Method.takes, itakes)
+        self.assertEqual(say_hello.Method.returns, MapMeta())
+        self.assertEqual(say_hello.Method.defaults, {})
 
-        self.assertTrue(hasattr(return_hello, "Method"))
-        self.assertEqual(m1, return_hello.Method.returns)
-        m1.add_element.assert_called_once_with(a1, True)
+    def test_returns_given_valid_sets(self):
+        @returns("hello", StringMeta(), REQUIRED)
+        def say_hello(ret):
+            """Say hello"""
+            ret.hello = "Hello"
+            return ret
 
-    @patch("malcolm.core.method.MapMeta")
-    def test_returns_not_given_req_or_opt_raises(self, _):
+        ireturns = MapMeta()
+        ireturns.set_elements(OrderedDict(hello=StringMeta()))
+        ireturns.set_required(["hello"])
+        self.assertEqual(say_hello.Method.takes, MapMeta())
+        self.assertEqual(say_hello.Method.returns, ireturns)
+        self.assertEqual(say_hello.Method.defaults, {})
 
-        with self.assertRaises(ValueError):
-            @returns(MagicMock(), "Raise Error")
-            def return_hello(name):
-                """Return hello"""
-                return "Hello" + name
+    def test_returns_not_given_req_or_opt_raises(self):
+        with self.assertRaises(AssertionError):
+            @returns("hello", StringMeta(), "A default")
+            def say_hello(ret):
+                """Say hello"""
+                ret.hello = "Hello"
+                return ret
 
     def test_only_in(self):
         @only_in("boo", "boo2")
@@ -270,7 +246,6 @@ class TestDecorators(unittest.TestCase):
 
         self.assertTrue(hasattr(f, "Method"))
         self.assertEqual(f.Method.only_in, ("boo", "boo2"))
-
 
 
 class TestSerialization(unittest.TestCase):
@@ -284,7 +259,7 @@ class TestSerialization(unittest.TestCase):
         self.serialized["defaults"] = OrderedDict({"in_attr": "default"})
         self.serialized["description"] = "test_description"
         self.serialized["tags"] = []
-        self.serialized["writeable"] = False
+        self.serialized["writeable"] = True
         self.serialized["label"] = ""
         self.serialized["returns"] = MapMeta().to_dict()
 
@@ -295,11 +270,11 @@ class TestSerialization(unittest.TestCase):
         self.assertEqual(m.to_dict(), self.serialized)
 
     def test_from_dict(self):
-        m = Method.from_dict(self.serialized)
+        m = Method.from_dict(self.serialized.copy())
         self.assertEqual(m.takes, self.takes)
         self.assertEqual(m.defaults, self.serialized["defaults"])
         self.assertEqual(m.tags, [])
-        self.assertEqual(m.writeable, False)
+        self.assertEqual(m.writeable, True)
         self.assertEqual(m.label, "")
         self.assertEqual(m.returns, MapMeta())
 

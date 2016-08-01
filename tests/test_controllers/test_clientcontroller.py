@@ -27,6 +27,7 @@ class TestClientController(unittest.TestCase):
         self.serialized = source.to_dict()
         # Setup client controller prerequisites
         self.b = Block()
+        self.b.name = "blockname"
         self.p = MagicMock()
         self.comms = MagicMock()
         self.cc = ClientController(self.p, self.b, "blockname")

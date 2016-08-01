@@ -23,7 +23,7 @@ class Controller(Loggable):
             process (Process): The process this should run under
             block (Block): Block instance to add Methods and Attributes to
         """
-        block.set_parent(process, block_name)
+        process.add_block(block_name, block)
         self.set_logger_name("%s.controller" % block_name)
 
         # dictionary of dictionaries

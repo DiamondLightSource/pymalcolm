@@ -5,7 +5,7 @@ import setup_malcolm_paths
 
 import unittest
 from collections import OrderedDict
-from mock import MagicMock
+from mock import MagicMock, Mock
 
 from malcolm.core.map import Map
 from malcolm.core.serializable import Serializable
@@ -49,17 +49,14 @@ class TestMap(unittest.TestCase):
         s = StringMeta(description="a string")
         meta = Meta()
         meta.elements = OrderedDict()
-        meta.elements["a"] = s
         meta.elements["b"] = s
         meta.elements["c"] = s
-        meta.elements["d"] = s
+        meta.elements["d"] = NumberMeta("int32")
         meta.elements["e"] = s
-        m = Map(meta, {"a":a_mock, "b":"test", "d":123, "e":"e"})
+        m = Map(meta, {"b":"test", "d":123, "e":"e"})
 
         expected = OrderedDict()
         expected["typeid"] = "malcolm:core/Map:1.0"
-        expected["a"] = a_mock.to_dict.return_value
-        del expected["a"].to_dict
         expected["b"] = "test"
         expected["d"] = 123
         expected["e"] = "e"
@@ -67,21 +64,15 @@ class TestMap(unittest.TestCase):
 
     def test_from_dict(self):
         map_meta = MagicMock()
-        map_meta.elements = {"a", "b", "c"}
-        map_meta = MagicMock()
-        map_meta.elements = {"a", "b", "c"}
-        map_meta.required = {"a"}
-
-        value_mock = MagicMock()
-        Serializable.register_subclass("mock_typeid")(value_mock)
-        value_mock.from_dict.return_value = value_mock
+        map_meta.elements = {"a": Mock(), "b": Mock(), "c": Mock()}
+        map_meta.elements["a"].validate.return_value = 124
+        map_meta.elements["b"].validate.return_value = "Something"
+        map_meta.required = ["a"]
 
         d = {"a":123, "b":{"typeid":"mock_typeid"}}
-        m = Map.from_dict(map_meta, d)
-
-        print m.a
-        self.assertEquals(123, m.a)
-        self.assertEquals(value_mock, m.b)
+        m = Map(map_meta, d)
+        self.assertEquals(124, m.a)
+        self.assertEquals("Something", m.b)
 
     def test_equals_maps(self):
         self.meta.to_dict = MagicMock()
@@ -105,8 +96,6 @@ class TestMap(unittest.TestCase):
         meta2.to_dict = self.meta.to_dict
         m2 = Map(meta2, {"a":"test", "b":"test"})
         self.assertTrue(m1 == m2)
-        meta2.to_dict = MagicMock()
-        self.assertFalse(m1 == m2)
 
     def test_equals_dicts(self):
         m = Map(self.meta, {"a":"test"})

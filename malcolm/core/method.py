@@ -20,7 +20,7 @@ class Method(ScalarMeta):
     endpoints = ["takes", "defaults", "description", "tags", "writeable",
                  "label", "returns"]
 
-    def __init__(self, description="", tags=None, writeable=False, label=""):
+    def __init__(self, description="", tags=None, writeable=True, label=""):
         super(Method, self).__init__(description, tags, writeable, label)
         self.func = None
         self.set_takes(MapMeta())
@@ -79,15 +79,12 @@ class Method(ScalarMeta):
         if not self.writeable:
             raise ValueError("Cannot call a method that is not writeable")
 
-        for arg in self.takes.elements:
+        for arg in self.defaults:
             if arg not in parameters_dict.keys():
-                if arg in self.defaults.keys():
-                    parameters_dict[arg] = self.defaults[arg]
-                elif arg in self.takes.required:
-                    raise ValueError(
-                        "Argument %s is required but was not provided" % arg)
+                parameters_dict[arg] = self.defaults[arg]
 
         parameters = Map(self.takes, parameters_dict)
+        parameters.check_valid()
         expected_response = Map(self.returns)
 
         if len(self.takes.elements) > 0:
@@ -102,7 +99,8 @@ class Method(ScalarMeta):
                 return_val = self.func()
 
         if len(self.returns.elements) > 0:
-            self.returns.validate(return_val)
+            return_val = Map(self.returns, return_val)
+            return_val.check_valid()
 
         return return_val
 
