@@ -10,7 +10,7 @@ class ChoiceMeta(ScalarMeta):
     endpoints = ["description", "choices", "tags", "writeable", "label"]
 
     def __init__(self, description="", choices=None, tags=None, writeable=False,
-                 label=None):
+                 label=""):
         super(ChoiceMeta, self).__init__(description, tags, writeable, label)
         if choices is None:
             choices = []
@@ -18,12 +18,7 @@ class ChoiceMeta(ScalarMeta):
 
     def set_choices(self, choices, notify=True):
         """Set the choices list"""
-        assert isinstance(choices, list), \
-            "Expected tags to be a list, got %s" % (choices,)
-        for choice in choices:
-            assert isinstance(choice, base_string), \
-                "Expected each choice to be a string, got %s" % (choice,)
-        self.set_endpoint("choices", choices, notify)
+        self.set_endpoint([base_string], "choices", choices, notify)
 
     def validate(self, value):
         """

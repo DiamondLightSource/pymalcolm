@@ -15,7 +15,7 @@ class TestInit(unittest.TestCase):
         nm = NumberMeta("float32")
         self.assertEqual(nm.typeid, "malcolm:core/NumberMeta:1.0")
         self.assertEqual(nm.dtype, "float32")
-        self.assertEqual(nm.label, None)
+        self.assertEqual(nm.label, "")
 
 
 class TestValidate(unittest.TestCase):

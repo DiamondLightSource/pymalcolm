@@ -13,30 +13,19 @@ class TableMeta(ScalarMeta):
     endpoints = ["elements", "description", "tags",
                  "writeable", "label", "headings"]
 
-    def __init__(self, description="", tags=None, writeable=False, label=None):
+    def __init__(self, description="", tags=None, writeable=False, label=""):
         super(TableMeta, self).__init__(description, tags, writeable, label)
         self.set_headings([])
         self.elements = OrderedDict()
 
     def set_elements(self, elements, notify=True):
         """Set the elements dict from a ScalarArrayMeta or serialized dict"""
-        # Check correct type
-        for name, element in elements.items():
-            if isinstance(element, dict):
-                element = Serializable.from_dict(element)
-                elements[name] = element
-            assert isinstance(element, ScalarArrayMeta), \
-                "Expected ScalarArrayMeta, got %s" % (element,)
-        self.set_endpoint("elements", elements, notify)
+        self.set_endpoint(
+            {base_string: ScalarArrayMeta}, "elements", elements, notify)
 
     def set_headings(self, headings, notify=True):
         """Set the headings list"""
-        assert isinstance(headings, list), \
-            "Expected tags to be a list, got %s" % (headings,)
-        for heading in headings:
-            assert isinstance(heading, base_string), \
-                "Expected heading to be string, got %s" % (heading,)
-        self.set_endpoint("headings", headings, notify)
+        self.set_endpoint([base_string], "headings", headings, notify)
 
     def validate(self, value):
         if not isinstance(value, Table):

@@ -16,6 +16,7 @@ class TestInit(unittest.TestCase):
         m = Meta("desc")
         self.assertEquals("desc", m.description)
 
+
 class TestSetters(unittest.TestCase):
     def setUp(self):
         m = Meta("desc")
@@ -61,13 +62,6 @@ class TestSerialization(unittest.TestCase):
         m = Meta("desc")
         m.typeid = "filled_in_by_subclass"
         self.assertEqual(m.to_dict(), self.serialized)
-
-    def test_from_dict(self):
-        class MyMeta(Meta):
-            typeid = "filled_in_by_subclass"
-        m = MyMeta.from_dict(self.serialized)
-        self.assertEquals(m.description, "desc")
-        self.assertEquals(m.tags, [])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

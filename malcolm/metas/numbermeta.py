@@ -1,5 +1,6 @@
 import numpy as np
 
+from malcolm.core.notifier import NO_VALIDATE
 from malcolm.metas.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string
@@ -14,7 +15,7 @@ class NumberMeta(ScalarMeta):
                "uint64", "float32", "float64"]
 
     def __init__(self, dtype="float64", description="", tags=None,
-                 writeable=False, label=None):
+                 writeable=False, label=""):
         super(NumberMeta, self).__init__(description, tags, writeable, label)
         # like "float64"
         self.set_dtype(dtype)
@@ -23,7 +24,7 @@ class NumberMeta(ScalarMeta):
         """Set the dtype string"""
         assert dtype in self._dtypes, \
             "Expected dtype to be in %s, got %s" % (self._dtypes, dtype)
-        self.set_endpoint("dtype", dtype, notify)
+        self.set_endpoint(NO_VALIDATE, "dtype", dtype, notify)
 
     def validate(self, value):
         if value is None:

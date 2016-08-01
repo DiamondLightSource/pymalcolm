@@ -7,7 +7,7 @@ class ScalarMeta(Meta):
 
     endpoints = ["description", "tags", "writeable", "label"]
 
-    def __init__(self, description="", tags=None, writeable=False, label=None):
+    def __init__(self, description="", tags=None, writeable=False, label=""):
         super(ScalarMeta, self).__init__(description, tags)
         self.set_writeable(writeable)
         self.set_label(label)
@@ -24,12 +24,8 @@ class ScalarMeta(Meta):
 
     def set_writeable(self, writeable, notify=True):
         """Set the writeable bool"""
-        assert isinstance(writeable, bool), \
-            "Expected writeable to be a bool, got %s" % (writeable,)
-        self.set_endpoint("writeable", writeable, notify)
+        self.set_endpoint(bool, "writeable", writeable, notify)
 
     def set_label(self, label, notify=True):
         """Set the label string"""
-        assert label is None or isinstance(label, base_string), \
-            "Expected label to be a string, got %s" % (label,)
-        self.set_endpoint("label", label, notify)
+        self.set_endpoint(base_string, "label", label, notify)

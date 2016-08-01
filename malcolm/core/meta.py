@@ -15,15 +15,8 @@ class Meta(Notifier):
 
     def set_description(self, description, notify=True):
         """Set the description string"""
-        assert isinstance(description, base_string), \
-            "Expected description to be a string, got %s" % (description,)
-        self.set_endpoint("description", description, notify)
+        self.set_endpoint(base_string, "description", description, notify)
 
     def set_tags(self, tags, notify=True):
         """Set the tags list"""
-        assert isinstance(tags, list), \
-            "Expected tags to be a list, got %s" % (tags,)
-        for tag in tags:
-            assert isinstance(tag, base_string), \
-                "Expected tag to be string, got %s" % (tag,)
-        self.set_endpoint("tags", tags, notify)
+        self.set_endpoint([base_string], "tags", tags, notify)

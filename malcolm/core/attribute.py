@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from malcolm.core.notifier import Notifier
+from malcolm.core.notifier import Notifier, NO_VALIDATE
 from malcolm.core.serializable import Serializable
 from malcolm.metas.scalarmeta import ScalarMeta
 
@@ -21,12 +21,7 @@ class Attribute(Notifier):
 
     def set_meta(self, meta, notify=True):
         """Set the ScalarMeta object"""
-        if isinstance(meta, dict):
-            meta = Serializable.from_dict(meta)
-        assert isinstance(meta, ScalarMeta), \
-            "Expected meta to be a ScalarMeta subclass, got %s" % (meta,)
-        meta.set_parent(self, "meta")
-        self.set_endpoint("meta", meta, notify)
+        self.set_endpoint(ScalarMeta, "meta", meta, notify)
 
     def set_put_function(self, func):
         self.put_func = func
@@ -37,4 +32,4 @@ class Attribute(Notifier):
 
     def set_value(self, value, notify=True):
         value = self.meta.validate(value)
-        self.set_endpoint("value", value, notify)
+        self.set_endpoint(NO_VALIDATE, "value", value, notify)

@@ -19,7 +19,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual(
             self.choice_meta.typeid, "malcolm:core/ChoiceMeta:1.0")
         self.assertEqual(
-            self.choice_meta.label, None)
+            self.choice_meta.label, "")
         self.assertEqual(
             self.choice_meta.choices, ["a", "b"])
 

@@ -19,7 +19,7 @@ class TestTableMetaInit(unittest.TestCase):
         self.assertEquals("malcolm:core/TableMeta:1.0", tm.typeid)
         self.assertEquals([], tm.tags)
         self.assertEquals(False, tm.writeable)
-        self.assertEquals(None, tm.label)
+        self.assertEquals("", tm.label)
         self.assertEquals([], tm.headings)
 
 

@@ -1,5 +1,3 @@
-from collections import Counter
-
 from malcolm.core.serializable import Serializable
 
 
@@ -28,7 +26,7 @@ class Map(Serializable):
         if hasattr(rhs, "meta"):
             if self.meta.to_dict() != rhs.meta.to_dict():
                 return False
-        return Counter(self.items()) == Counter(rhs.items())
+        return self.to_dict() == rhs.to_dict()
 
     def __ne__(self, rhs):
         return not self.__eq__(rhs)

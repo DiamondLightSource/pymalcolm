@@ -13,7 +13,7 @@ class TestInit(unittest.TestCase):
     def test_init(self):
         self.meta = ChoiceArrayMeta("test description", ["a", "b"])
         self.assertEqual("test description", self.meta.description)
-        self.assertEqual(self.meta.label, None)
+        self.assertEqual(self.meta.label, "")
         self.assertEqual(self.meta.typeid, "malcolm:core/ChoiceArrayMeta:1.0")
         self.assertEqual(self.meta.choices, ["a", "b"])
 
