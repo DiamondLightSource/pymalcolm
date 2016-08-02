@@ -81,4 +81,7 @@ class Map(Serializable):
             d = self.to_dict()
             d.pop("typeid")
             return d == rhs
-        return super(Map, self).__eq__(rhs)
+        return self.to_dict() == rhs.to_dict()
+
+    def __ne__(self, rhs):
+        return not self == rhs

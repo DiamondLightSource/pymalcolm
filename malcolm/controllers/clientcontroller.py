@@ -1,4 +1,5 @@
 import functools
+from collections import OrderedDict
 
 from malcolm.core.controller import Controller
 from malcolm.core.request import Post, Subscribe
@@ -45,7 +46,7 @@ class ClientController(Controller):
                         self.block.update(change)
 
     def _regenerate_block(self, d):
-        children = {}
+        children = OrderedDict()
         for k, v in d.items():
             if k == "typeid":
                 continue

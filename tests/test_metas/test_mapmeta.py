@@ -53,7 +53,7 @@ class TestSerialization(unittest.TestCase):
         tm = MapMeta.from_dict(self.serialized)
         self.assertEquals(tm.description, "desc")
         self.assertEquals(len(tm.elements), 1)
-        self.assertEquals(tm.elements["c1"], self.sam)
+        self.assertEquals(tm.elements["c1"].to_dict(), self.sam.to_dict())
         self.assertEquals(tm.tags, [])
         self.assertEquals(tm.required, ["c1"])
 

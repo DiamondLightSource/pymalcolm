@@ -58,13 +58,10 @@ class Controller(Loggable):
             block.add_method(method)
         """
 
-        members = [value[1] for value in
-                   inspect.getmembers(self, predicate=inspect.ismethod)]
-
-        for member in members:
+        for name, member in inspect.getmembers(self, inspect.ismethod):
             if hasattr(member, "Method"):
                 member.Method.set_function(member)
-                yield (member.__name__, member.Method)
+                yield (name, member.Method)
 
     def create_attributes(self):
         """Abstract method that should provide Attribute instances for Block

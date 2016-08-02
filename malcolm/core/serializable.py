@@ -113,10 +113,3 @@ class Serializable(object):
         subcls = cls._subcls_lookup[typeid]
         return subcls
 
-    def __eq__(self, rhs):
-        if hasattr(rhs, "to_dict"):
-            rhs = rhs.to_dict()
-        return self.to_dict() == rhs
-
-    def __ne__(self, rhs):
-        return not self.__eq__(rhs)

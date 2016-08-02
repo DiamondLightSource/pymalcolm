@@ -105,5 +105,10 @@ class TestController(unittest.TestCase):
         self.c.add_parts(parts)
         self.assertEqual(parts, self.c.parts)
 
+    def test_create_methods_order(self):
+        expected = ["disable", "reset", "say_goodbye", "say_hello"]
+        actual = list(aname for aname, _ in self.c.create_methods())
+        self.assertEqual(expected, actual)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

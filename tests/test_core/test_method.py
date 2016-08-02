@@ -191,8 +191,8 @@ class TestDecorators(unittest.TestCase):
 
         itakes = MapMeta()
         itakes.set_elements(OrderedDict(hello=StringMeta()))
-        self.assertEqual(say_hello.Method.takes, itakes)
-        self.assertEqual(say_hello.Method.returns, MapMeta())
+        self.assertEqual(say_hello.Method.takes.to_dict(), itakes.to_dict())
+        self.assertEqual(say_hello.Method.returns.to_dict(), MapMeta().to_dict())
         self.assertEqual(say_hello.Method.defaults, {})
 
     def test_takes_given_defaults(self):
@@ -203,8 +203,8 @@ class TestDecorators(unittest.TestCase):
 
         itakes = MapMeta()
         itakes.set_elements(OrderedDict(hello=StringMeta()))
-        self.assertEqual(say_hello.Method.takes, itakes)
-        self.assertEqual(say_hello.Method.returns, MapMeta())
+        self.assertEqual(say_hello.Method.takes.to_dict(), itakes.to_dict())
+        self.assertEqual(say_hello.Method.returns.to_dict(), MapMeta().to_dict())
         self.assertEqual(say_hello.Method.defaults, {"hello": "Something"})
 
     def test_takes_given_required(self):
@@ -216,8 +216,8 @@ class TestDecorators(unittest.TestCase):
         itakes = MapMeta()
         itakes.set_elements(OrderedDict(hello=StringMeta()))
         itakes.set_required(["hello"])
-        self.assertEqual(say_hello.Method.takes, itakes)
-        self.assertEqual(say_hello.Method.returns, MapMeta())
+        self.assertEqual(say_hello.Method.takes.to_dict(), itakes.to_dict())
+        self.assertEqual(say_hello.Method.returns.to_dict(), MapMeta().to_dict())
         self.assertEqual(say_hello.Method.defaults, {})
 
     def test_returns_given_valid_sets(self):
@@ -230,8 +230,8 @@ class TestDecorators(unittest.TestCase):
         ireturns = MapMeta()
         ireturns.set_elements(OrderedDict(hello=StringMeta()))
         ireturns.set_required(["hello"])
-        self.assertEqual(say_hello.Method.takes, MapMeta())
-        self.assertEqual(say_hello.Method.returns, ireturns)
+        self.assertEqual(say_hello.Method.takes.to_dict(), MapMeta().to_dict())
+        self.assertEqual(say_hello.Method.returns.to_dict(), ireturns.to_dict())
         self.assertEqual(say_hello.Method.defaults, {})
 
     def test_returns_not_given_req_or_opt_raises(self):
@@ -274,12 +274,12 @@ class TestSerialization(unittest.TestCase):
 
     def test_from_dict(self):
         m = Method.from_dict(self.serialized.copy())
-        self.assertEqual(m.takes, self.takes)
+        self.assertEqual(m.takes.to_dict(), self.takes.to_dict())
         self.assertEqual(m.defaults, self.serialized["defaults"])
         self.assertEqual(m.tags, [])
         self.assertEqual(m.writeable, True)
         self.assertEqual(m.label, "")
-        self.assertEqual(m.returns, MapMeta())
+        self.assertEqual(m.returns.to_dict(), MapMeta().to_dict())
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
