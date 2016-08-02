@@ -20,8 +20,9 @@ class ChoiceArrayMeta(ChoiceMeta, ScalarArrayMeta):
 
         if value is None:
             return None
-        if not hasattr(value, "__iter__"):
-            raise ValueError("%s is not iterable" % value)
+
+        if not isinstance(value, list):
+            raise ValueError("%r is not a list" % (value,))
 
         for i, choice in enumerate(value):
             if choice is None:

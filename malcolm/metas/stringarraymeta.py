@@ -18,9 +18,13 @@ class StringArrayMeta(ScalarArrayMeta):
         """
         if value is None:
             return None
-        if not hasattr(value, "__iter__"):
-            raise ValueError("%s is not iterable" % value)
+
+        if not isinstance(value, list):
+            raise ValueError("%r is not a list" % (value,))
+
         validated = [str(x) if x is not None else None for x in value]
+
         if None in validated:
             raise ValueError("Array elements can not be null")
+
         return validated
