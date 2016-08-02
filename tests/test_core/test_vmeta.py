@@ -4,20 +4,19 @@ import unittest
 from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-import setup_malcolm_paths
 from mock import Mock
 
 from malcolm.core.serializable import Serializable
-from malcolm.metas.scalarmeta import ScalarMeta
+from malcolm.core.vmeta import VMeta
 
 # Register ScalarMeta as a sublcass of itself so we
 # can instantiate it for testing purposes.
-ScalarMeta.register_subclass("scalarmeta:test")(ScalarMeta)
+VMeta.register_subclass("scalarmeta:test")(VMeta)
 
 class TestInit(unittest.TestCase):
 
     def setUp(self):
-        self.meta = ScalarMeta("test description")
+        self.meta = VMeta("test description")
 
     def test_values_after_init(self):
         self.assertEqual("test description", self.meta.description)
@@ -27,7 +26,7 @@ class TestInit(unittest.TestCase):
 class TestValidate(unittest.TestCase):
 
     def setUp(self):
-        self.meta = ScalarMeta("test_description")
+        self.meta = VMeta("test_description")
 
     def test_given_validate_called_then_raise_error(self):
 
@@ -43,7 +42,7 @@ class TestValidate(unittest.TestCase):
 class TestUpdate(unittest.TestCase):
 
     def test_set_writeable(self):
-        meta = ScalarMeta("test_description")
+        meta = VMeta("test_description")
         meta.on_changed = Mock(wrap=meta.on_changed)
         writeable = True
         notify = Mock()
@@ -53,7 +52,7 @@ class TestUpdate(unittest.TestCase):
             [["writeable"], writeable], notify)
 
     def test_set_label(self):
-        meta = ScalarMeta("test_description")
+        meta = VMeta("test_description")
         meta.on_changed = Mock(wrap=meta.on_changed)
         label = "my label"
         notify = Mock()
@@ -74,15 +73,15 @@ class TestSerialization(unittest.TestCase):
         self.serialized["label"] = "my label"
 
     def test_to_dict(self):
-        m = ScalarMeta("desc", writeable=True, label="my label")
+        m = VMeta("desc", writeable=True, label="my label")
         m.typeid = "filled_in_by_subclass"
         self.assertEqual(m.to_dict(), self.serialized)
 
     def test_from_dict(self):
         @Serializable.register_subclass("filled_in_by_subclass")
-        class MyScalarMeta(ScalarMeta):
+        class MyVMeta(VMeta):
             pass
-        m = MyScalarMeta.from_dict(self.serialized)
+        m = MyVMeta.from_dict(self.serialized)
         self.assertEquals(m.description, "desc")
         self.assertEquals(m.tags, [])
         self.assertEquals(m.writeable, True)

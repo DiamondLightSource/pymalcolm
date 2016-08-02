@@ -7,7 +7,8 @@ from collections import OrderedDict
 
 import unittest
 
-from malcolm.metas import MapMeta, StringArrayMeta
+from malcolm.vmetas import StringArrayMeta
+from malcolm.core.mapmeta import MapMeta
 
 
 class TestSetters(unittest.TestCase):

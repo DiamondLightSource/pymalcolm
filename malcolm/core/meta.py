@@ -1,8 +1,8 @@
-from malcolm.core.notifier import Notifier
+from malcolm.core.monitorable import Monitorable
 from malcolm.compat import base_string
 
 
-class Meta(Notifier):
+class Meta(Monitorable):
     """Meta base class"""
 
     endpoints = ["description", "tags"]

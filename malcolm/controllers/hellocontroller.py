@@ -1,6 +1,5 @@
-from malcolm.metas import StringMeta
-from malcolm.core.controller import Controller
-from malcolm.core.method import takes, returns, REQUIRED
+from malcolm.vmetas import StringMeta
+from malcolm.core import Controller, takes, returns, REQUIRED
 
 
 @takes()

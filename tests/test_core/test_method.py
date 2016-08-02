@@ -1,21 +1,17 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
 
 from collections import OrderedDict
 
 import unittest
-from mock import Mock, patch, call, MagicMock
+from mock import Mock, patch, MagicMock
 
 from malcolm.core.method import Method, takes, returns, only_in, OPTIONAL, \
     REQUIRED
-from malcolm.core.meta import Meta
-from malcolm.metas.mapmeta import MapMeta
-from malcolm.metas.stringmeta import StringMeta
-from malcolm.core.serializable import Serializable
 
-from malcolm.metas import MapMeta, StringMeta
+from malcolm.vmetas import StringMeta
+from malcolm.core.mapmeta import MapMeta
 
 
 class TestMethod(unittest.TestCase):

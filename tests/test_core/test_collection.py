@@ -7,7 +7,7 @@ import unittest
 from mock import Mock, patch
 
 from malcolm.core.method import takes, REQUIRED
-from malcolm.metas import StringMeta
+from malcolm.vmetas import StringMeta
 from malcolm.core.collection import make_collection, split_into_sections, \
     with_takes_from, substitute_params, make_block_instance, call_with_map
 

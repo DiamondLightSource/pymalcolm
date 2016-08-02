@@ -1,27 +1,22 @@
+import logging
 import os
 import sys
-import logging
-
-from collections import OrderedDict
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
 
 import unittest
-from mock import MagicMock, call, ANY
+from mock import MagicMock
 
 #module imports
 from malcolm.compat import queue
 from malcolm.core.task import Task
-from malcolm.core.response import Response, Error, Return, Update, Delta
+from malcolm.core.response import Error, Return, Update, Delta
 from malcolm.core.request import Request
 from malcolm.core.method import Method
-from malcolm.core.future import Future, TimeoutError
-from malcolm.core.meta import Meta
-from malcolm.metas.scalarmeta import ScalarMeta
+from malcolm.core.future import Future
+from malcolm.core.vmeta import VMeta
 from malcolm.core.attribute import Attribute
-from malcolm.core.block import Block
-from malcolm.core.serializable import Serializable
+
 
 #import logging
 #logging.basicConfig(level=logging.DEBUG)
@@ -34,7 +29,7 @@ class TestTask(unittest.TestCase):
     def setUp(self):
         self.callback_result = 0
         self.callback_value = ''
-        meta = ScalarMeta("meta for unit tests")
+        meta = VMeta("meta for unit tests")
         self.block = MagicMock()
         self.proc = MagicMock(q=queue.Queue())
         self.proc.create_queue = MagicMock(side_effect=queue.Queue)

@@ -1,13 +1,11 @@
 import numpy as np
 
-from malcolm.core.notifier import NO_VALIDATE
-from malcolm.metas.scalarmeta import ScalarMeta
-from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string
+from malcolm.core import Serializable, NO_VALIDATE, VMeta
 
 
 @Serializable.register_subclass("malcolm:core/NumberMeta:1.0")
-class NumberMeta(ScalarMeta):
+class NumberMeta(VMeta):
     """Meta object containing information for a numerical value"""
 
     endpoints = ["dtype", "description", "tags", "writeable", "label"]

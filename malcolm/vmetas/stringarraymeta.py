@@ -1,9 +1,8 @@
-from malcolm.metas.scalararraymeta import ScalarArrayMeta
-from malcolm.core.serializable import Serializable
+from malcolm.core import Serializable, VArrayMeta
 
 
 @Serializable.register_subclass("malcolm:core/StringArrayMeta:1.0")
-class StringArrayMeta(ScalarArrayMeta):
+class StringArrayMeta(VArrayMeta):
     """Meta object containing information for a string array"""
 
     def validate(self, value):

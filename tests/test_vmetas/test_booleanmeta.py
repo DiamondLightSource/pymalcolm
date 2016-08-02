@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import setup_malcolm_paths
 
-from malcolm.metas import BooleanMeta
+from malcolm.vmetas import BooleanMeta
 
 
 class TestValidate(unittest.TestCase):

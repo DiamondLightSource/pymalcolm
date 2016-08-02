@@ -2,13 +2,13 @@ from malcolm.core.meta import Meta
 from malcolm.compat import base_string
 
 
-class ScalarMeta(Meta):
+class VMeta(Meta):
     """Abstract base class for Scalar Meta objects"""
 
     endpoints = ["description", "tags", "writeable", "label"]
 
     def __init__(self, description="", tags=None, writeable=False, label=""):
-        super(ScalarMeta, self).__init__(description, tags)
+        super(VMeta, self).__init__(description, tags)
         self.set_writeable(writeable)
         self.set_label(label)
 

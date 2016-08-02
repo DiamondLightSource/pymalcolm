@@ -15,7 +15,7 @@ from mock import MagicMock, patch, call
 # module imports
 from malcolm.controllers import ClientController, HelloController
 from malcolm.core.block import Block
-from malcolm.metas import StringMeta
+from malcolm.vmetas import StringMeta
 from malcolm.compat import queue
 
 class TestClientController(unittest.TestCase):

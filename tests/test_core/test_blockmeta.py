@@ -6,7 +6,7 @@ import setup_malcolm_paths
 
 from collections import OrderedDict
 
-from malcolm.metas import BlockMeta
+from malcolm.core.blockmeta import BlockMeta
 
 
 class TestInit(unittest.TestCase):
