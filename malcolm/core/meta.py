@@ -1,6 +1,5 @@
-from collections import OrderedDict
-
 from malcolm.core.notifier import Notifier
+from malcolm.compat import base_string
 
 
 class Meta(Notifier):
@@ -8,21 +7,16 @@ class Meta(Notifier):
 
     endpoints = ["description", "tags"]
 
-    def __init__(self, name, description, *args):
-        super(Meta, self).__init__(name, *args)
-        self.description = description
-        self.tags = []
+    def __init__(self, description="", tags=None):
+        self.set_description(description)
+        if tags is None:
+            tags = []
+        self.set_tags(tags)
 
     def set_description(self, description, notify=True):
-        self.description = description
-        self.on_changed([["description"], description], notify)
+        """Set the description string"""
+        self.set_endpoint(base_string, "description", description, notify)
 
     def set_tags(self, tags, notify=True):
-        self.tags = tags
-        self.on_changed([["tags"], tags], notify)
-
-    @classmethod
-    def from_dict(cls, name, d, *args):
-        meta = cls(name, d["description"], *args)
-        meta.tags = d["tags"]
-        return meta
+        """Set the tags list"""
+        self.set_endpoint([base_string], "tags", tags, notify)

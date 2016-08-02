@@ -30,9 +30,9 @@ class TestParameters(unittest.TestCase):
                          ["name", "description", "default"])
         default_meta = parameters.string.Method.takes.elements["default"]
         self.assertIsInstance(default_meta, StringMeta)
-        meta, default = parameters.string(params)
+        name, meta, default = parameters.string(params)
         self.assertEqual(default, REQUIRED)
-        self.assertEqual(meta.name, "me")
+        self.assertEqual(name, "me")
         self.assertEqual(meta.description, "desc")
         self.assertIsInstance(meta, StringMeta)
 
@@ -44,9 +44,9 @@ class TestParameters(unittest.TestCase):
         default_meta = parameters.int32.Method.takes.elements["default"]
         self.assertIsInstance(default_meta, NumberMeta)
         self.assertEqual(default_meta.dtype, "int32")
-        meta, default = parameters.int32(params)
+        name, meta, default = parameters.int32(params)
         self.assertEqual(default, 32)
-        self.assertEqual(meta.name, "me")
+        self.assertEqual(name, "me")
         self.assertEqual(meta.description, "desc")
         self.assertIsInstance(meta, NumberMeta)
         self.assertEqual(meta.dtype, "int32")
@@ -56,9 +56,9 @@ class TestParameters(unittest.TestCase):
         params.name = "me"
         params.description = "desc"
         params.default = 32.6
-        meta, default = parameters.float64(params)
+        name, meta, default = parameters.float64(params)
         self.assertEqual(default, 32.6)
-        self.assertEqual(meta.name, "me")
+        self.assertEqual(name, "me")
         self.assertEqual(meta.description, "desc")
         self.assertIsInstance(meta, NumberMeta)
         self.assertEqual(meta.dtype, "float64")

@@ -122,14 +122,14 @@ class Process(Loggable):
                 return client_comms
 
     def create_process_block(self):
-        self.process_block = Block(self.name)
-        self.process_block.add_attribute(
-            Attribute("blocks", StringArrayMeta(
-                "meta", "Blocks hosted by this Process")))
-        self.process_block.add_attribute(
-            Attribute("remoteBlocks", StringArrayMeta(
-                "meta", "Blocks reachable via ClientComms")))
-        self.add_block(self.process_block)
+        self.process_block = Block()
+        a = Attribute(StringArrayMeta(
+            description="Blocks hosted by this Process"))
+        self.process_block.add_attribute("blocks", a)
+        a = Attribute(StringArrayMeta(
+                description="Blocks reachable via ClientComms"))
+        self.process_block.add_attribute("remoteBlocks", a)
+        self.add_block(self.name, self.process_block)
 
     def update_block_list(self, client_comms, blocks):
         self.q.put(BlockList(client_comms=client_comms, blocks=blocks))
@@ -205,14 +205,15 @@ class Process(Loggable):
         """Push the response to the required queue"""
         request.response_queue.put(request.response)
 
-    def add_block(self, block):
+    def add_block(self, name, block):
         """Add a block to be hosted by this process
 
         Args:
             block (Block): The block to be added
         """
-        assert block.name not in self._blocks, \
-            "There is already a block called %s" % block.name
+        assert name not in self._blocks, \
+            "There is already a block called %s" % name
+        block.set_parent(self, name)
         self.q.put(BlockAdd(block=block))
 
     def _handle_block_add(self, request):
@@ -222,7 +223,6 @@ class Process(Loggable):
             "There is already a block called %s" % block.name
         self._blocks[block.name] = block
         self._block_state_cache[block.name] = block.to_dict()
-        block.parent = self
         block.lock = self.create_lock()
         # Regenerate list of blocks
         self.process_block.blocks.set_value(list(self._blocks))

@@ -1,5 +1,6 @@
-import numpy
+import numpy as np
 
+from malcolm.core.notifier import NO_VALIDATE
 from malcolm.metas.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string
@@ -10,29 +11,27 @@ class NumberMeta(ScalarMeta):
     """Meta object containing information for a numerical value"""
 
     endpoints = ["dtype", "description", "tags", "writeable", "label"]
+    _dtypes = ["int8", "uint8", "int16", "uint16", "int32", "uint32", "int64",
+               "uint64", "float32", "float64"]
 
-    def __init__(self, name, description, dtype):
-        super(NumberMeta, self).__init__(name, description)
-        self.dtype = dtype
+    def __init__(self, dtype="float64", description="", tags=None,
+                 writeable=False, label=""):
+        super(NumberMeta, self).__init__(description, tags, writeable, label)
+        # like "float64"
+        self.set_dtype(dtype)
+
+    def set_dtype(self, dtype, notify=True):
+        """Set the dtype string"""
+        assert dtype in self._dtypes, \
+            "Expected dtype to be in %s, got %s" % (self._dtypes, dtype)
+        self.set_endpoint(NO_VALIDATE, "dtype", dtype, notify)
 
     def validate(self, value):
         if value is None:
             return None
-        cast = self.dtype(value)
+        cast = getattr(np, self.dtype)(value)
         if not isinstance(value, base_string):
-            if not numpy.isclose(cast, value):
+            if not np.isclose(cast, value):
                 raise ValueError("Lost information converting %s to %s"
                                  % (value, cast))
         return cast
-
-    def to_dict(self):
-        return super(NumberMeta, self).to_dict(dtype=self.dtype().dtype.name)
-
-    @classmethod
-    def from_dict(cls, name, d):
-        dtype = numpy.dtype(d["dtype"]).type
-        meta = cls(name, d["description"], dtype)
-        meta.writeable = d["writeable"]
-        meta.tags = d["tags"]
-        meta.label = d["label"]
-        return meta

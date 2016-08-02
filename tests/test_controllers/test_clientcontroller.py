@@ -22,14 +22,15 @@ class TestClientController(unittest.TestCase):
 
     def setUp(self):
         # Serialized version of the block we want
-        source = Block("blockname")
-        HelloController(MagicMock(), source)
+        source = Block()
+        HelloController(MagicMock(), source, "blockname")
         self.serialized = source.to_dict()
         # Setup client controller prerequisites
-        self.b = Block("blockname")
+        self.b = Block()
+        self.b.name = "blockname"
         self.p = MagicMock()
         self.comms = MagicMock()
-        self.cc = ClientController(self.p, self.b)
+        self.cc = ClientController(self.p, self.b, "blockname")
         # get process to give us comms
         self.p.get_client_comms.return_value = self.comms
         # tell our controller which blocks the process can talk to
@@ -54,7 +55,7 @@ class TestClientController(unittest.TestCase):
         self.assertEqual(req.endpoint, ["blockname"])
 
     def test_methods_created(self):
-        self.assertEqual(list(self.b.methods), ["disable", "reset", "say_hello"])
+        self.assertEqual(list(self.b.methods), ["reset", "say_hello", "disable"])
         m = self.b.methods["say_hello"]
         self.assertEqual(m.name, "say_hello")
         self.assertEqual(list(m.takes.elements), ["name"])
@@ -81,8 +82,8 @@ class TestClientController(unittest.TestCase):
         self.b.update.assert_called_once_with([["substructure"], "change"])
 
     def test_put_root_update_response(self):
-        attr1 = StringMeta("dummy", "dummy")
-        attr2 = StringMeta("dummy2", "dummy2")
+        attr1 = StringMeta("dummy")
+        attr2 = StringMeta("dummy2")
         new_block_structure = {}
         new_block_structure["attr1"] = attr1.to_dict()
         new_block_structure["attr2"] = attr2.to_dict()
@@ -93,7 +94,8 @@ class TestClientController(unittest.TestCase):
         self.cc.put(response)
         self.assertIs(self.b, self.cc.block)
         deserialized_changes = self.b.replace_children.call_args_list[0][0][0]
-        serialized_changes = [x.to_dict() for x in deserialized_changes]
+        serialized_changes = [x.to_dict() for x in
+                              deserialized_changes.values()]
         expected = [attr1.to_dict(), attr2.to_dict()]
         # dicts are not hashable, so cannot use set compare
         for x in expected:

@@ -3,26 +3,23 @@ from malcolm.metas import StringMeta, NumberMeta
 
 
 def takes_with_default_meta(meta_cls, *meta_args):
-    default_args = (
-        "default", "Default value for parameter. If not specified, "
-        "parameter is required") + meta_args
+    default_args = meta_args + (
+        "Default value for parameter. If not specified, parameter is required",)
     return takes(
-        StringMeta("name",
-                   "Specify that this class will take a parameter name"),
-        REQUIRED,
-        StringMeta("description", "Description of this parameter"),
-        REQUIRED,
-        meta_cls(*default_args),
-        OPTIONAL)
+        "name", StringMeta(
+            "Specify that this class will take a parameter name"), REQUIRED,
+        "description", StringMeta(
+            "Description of this parameter"), REQUIRED,
+        "default", meta_cls(*default_args), OPTIONAL)
 
 
 def args_for_takes(params, meta_cls, *meta_args):
-    meta_args = (params.name, params.description) + meta_args
+    meta_args = meta_args + (params.description,)
     meta = meta_cls(*meta_args)
     if hasattr(params, "default"):
-        return [meta, params.default]
+        return [params.name, meta, params.default]
     else:
-        return [meta, REQUIRED]
+        return [params.name, meta, REQUIRED]
 
 
 @takes_with_default_meta(StringMeta)

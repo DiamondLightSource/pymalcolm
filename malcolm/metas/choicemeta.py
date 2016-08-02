@@ -1,27 +1,24 @@
 from malcolm.metas.scalarmeta import ScalarMeta
 from malcolm.core.serializable import Serializable
+from malcolm.compat import base_string
 
 
 @Serializable.register_subclass("malcolm:core/ChoiceMeta:1.0")
 class ChoiceMeta(ScalarMeta):
     """Meta object containing information for a enum"""
 
-    endpoints = ["choices", "description", "tags", "writeable", "label"]
+    endpoints = ["description", "choices", "tags", "writeable", "label"]
 
-    def __init__(self, name, description, choices):
-        super(ChoiceMeta, self).__init__(name=name, description=description)
+    def __init__(self, description="", choices=None, tags=None, writeable=False,
+                 label=""):
+        super(ChoiceMeta, self).__init__(description, tags, writeable, label)
+        if choices is None:
+            choices = []
+        self.set_choices(choices)
 
-        self.choices = choices
-
-    def set_choices(self, choices):
-        """
-        Set allowed values
-
-        Args:
-            choices (list): List of allowed values
-        """
-
-        self.choices = choices
+    def set_choices(self, choices, notify=True):
+        """Set the choices list"""
+        self.set_endpoint([base_string], "choices", choices, notify)
 
     def validate(self, value):
         """
@@ -35,7 +32,6 @@ class ChoiceMeta(ScalarMeta):
         Raises:
             ValueError: If value not valid
         """
-
         if value is None or value in self.choices:
             return value
         elif isinstance(value, int) and value < len(self.choices):
@@ -43,22 +39,3 @@ class ChoiceMeta(ScalarMeta):
         else:
             raise ValueError(
                 "%s is not a valid value in %s" % (value, self.choices))
-
-    @classmethod
-    def from_dict(cls, name, d):
-        """Create a ChoiceMeta subclass instance from the serialized version
-        of itself
-
-        Args:
-            name (str): ChoiceMeta instance name
-            d (dict): Serialised version of ChoiceMeta
-        """
-
-        description = d['description']
-        choices = d['choices']
-        choice_meta = cls(name, description, choices)
-        choice_meta.tags = d['tags']
-        choice_meta.writeable = d['writeable']
-        choice_meta.label = d['label']
-
-        return choice_meta

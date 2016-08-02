@@ -7,174 +7,125 @@ import unittest
 from collections import OrderedDict
 from mock import Mock
 
-from malcolm.metas.tablemeta import TableMeta
+from malcolm.metas import TableMeta, StringArrayMeta
+from malcolm.core.table import Table
 
 
 class TestTableMetaInit(unittest.TestCase):
 
     def test_init(self):
-        tm = TableMeta("name", "desc")
-        self.assertEquals("name", tm.name)
+        tm = TableMeta("desc")
         self.assertEquals("desc", tm.description)
         self.assertEquals("malcolm:core/TableMeta:1.0", tm.typeid)
         self.assertEquals([], tm.tags)
-        self.assertEquals(True, tm.writeable)
+        self.assertEquals(False, tm.writeable)
         self.assertEquals("", tm.label)
         self.assertEquals([], tm.headings)
 
-    def test_add_element(self):
-        tm = TableMeta("name", "desc")
-        am1 = Mock()
-        am2 = Mock()
-        tm.add_element(am1)
-        tm.add_element(am2)
 
-        expected = OrderedDict()
-        expected[am1.name] = am1
-        expected[am2.name] = am2
-        self.assertEquals(expected, tm.elements)
-
-    def test_add_duplicate_element_raises(self):
-        tm = TableMeta("name", "desc")
-        am1 = Mock()
-        tm.add_element(am1)
-        self.assertRaises(ValueError, tm.add_element, am1)
-
-class TestTableMetaUpdates(unittest.TestCase):
-
-    def test_set_writeable(self):
-        tm = TableMeta("name", "desc")
+class TestTableMetaSetters(unittest.TestCase):
+    def setUp(self):
+        tm = TableMeta("desc")
         tm.on_changed = Mock(wrap=tm.on_changed)
-        notify = Mock()
-        writeable = Mock()
-        tm.set_writeable(writeable, notify=notify)
-        self.assertEquals(writeable, tm.writeable)
-        tm.on_changed.assert_called_once_with(
-            [["writeable"], writeable], notify)
+        self.tm = tm
 
-    def test_set_label(self):
-        tm = TableMeta("name", "desc")
-        tm.on_changed = Mock(wrap=tm.on_changed)
+    def test_set_elements(self):
+        tm = self.tm
         notify = Mock()
-        label = Mock()
-        tm.set_label(label, notify=notify)
-        self.assertEquals(label, tm.label)
+        elements = OrderedDict()
+        elements["col1"]=StringArrayMeta()
+        elements["col2"]=StringArrayMeta()
+        tm.set_elements(elements, notify)
+        serialized = OrderedDict((k, v.to_dict()) for k, v in elements.items())
+        self.assertEqual(elements, tm.elements)
         tm.on_changed.assert_called_once_with(
-            [["label"], label], notify)
+            [["elements"], serialized], notify)
+
+    def test_set_elements_from_serialized(self):
+        tm = self.tm
+        notify = Mock()
+        elements = OrderedDict()
+        elements["col1"]=StringArrayMeta()
+        elements["col2"]=StringArrayMeta()
+        serialized = OrderedDict((k, v.to_dict()) for k, v in elements.items())
+        tm.set_elements(serialized, notify)
+        self.assertEqual(len(elements), len(tm.elements))
+        for name, e in tm.elements.items():
+            self.assertEqual(e.to_dict(), elements[name].to_dict())
 
     def test_set_headings(self):
-        tm = TableMeta("name", "desc")
-        tm.on_changed = Mock(wrap=tm.on_changed)
+        tm = self.tm
         notify = Mock()
-        headings = Mock()
+        headings = ["boo", "foo"]
         tm.set_headings(headings, notify=notify)
         self.assertEquals(headings, tm.headings)
-        tm.on_changed.assert_called_once_with(
-            [["headings"], headings], notify)
+        tm.on_changed.assert_called_once_with([["headings"], headings], notify)
 
     def test_notify_default_is_true(self):
-        tm = TableMeta("name", "desc")
-        value = Mock()
-        tm.on_changed = Mock(wrap=tm.on_changed)
-        tm.set_writeable(value)
-        tm.set_headings(value)
-        tm.set_label(value)
+        tm = self.tm
+        tm.set_elements({})
+        tm.set_headings([])
+        self.assertEqual(tm.on_changed.call_count, 2)
         calls = tm.on_changed.call_args_list
         self.assertTrue(calls[0][0][1])
         self.assertTrue(calls[1][0][1])
-        self.assertTrue(calls[2][0][1])
+
 
 class TestTableMetaSerialization(unittest.TestCase):
 
+    def setUp(self):
+        self.sam = StringArrayMeta()
+        self.serialized = OrderedDict()
+        self.serialized["typeid"] = "malcolm:core/TableMeta:1.0"
+        self.serialized["elements"] = dict(c1 = self.sam.to_dict())
+        self.serialized["description"] = "desc"
+        self.serialized["tags"] = []
+        self.serialized["writeable"] = True
+        self.serialized["label"] = "Name"
+        self.serialized["headings"] = ["col1"]
+
     def test_to_dict(self):
-        tm = TableMeta("name", "desc")
-        tm.writeable = Mock(spec=[])
-        tm.label = Mock(spec=[])
-        tm.headings = Mock(spec=[])
-        expected = OrderedDict()
-        expected["typeid"] = "malcolm:core/TableMeta:1.0"
-        expected["elements"] = tm.elements
-        expected["description"] = tm.description
-        expected["tags"] = tm.tags
-        expected["writeable"] = tm.writeable
-        expected["label"] = tm.label
-        expected["headings"] = tm.headings
-        self.assertEqual(expected, tm.to_dict())
+        tm = TableMeta("desc")
+        tm.label = "Name"
+        tm.elements = dict(c1=self.sam)
+        tm.writeable = True
+        tm.headings = ["col1"]
+        self.assertEqual(tm.to_dict(), self.serialized)
 
     def test_from_dict(self):
-        e1_mock = Mock()
-        e2_mock = Mock()
-        d = {"typeid":"malcolm:core/TableMeta:1.0",
-                "elements":{"e1":e1_mock, "e2":e2_mock},
-                "description":"desc",
-                "tags":["tag"],
-                "writeable":False,
-                "label":"label",
-                "headings":["heading_1", "heading_2"]}
-        tm = TableMeta.from_dict("name", d)
-        self.assertEquals("name", tm.name)
-        self.assertEquals("desc", tm.description)
-        self.assertEquals({"e1":e1_mock, "e2":e2_mock}, tm.elements)
-        self.assertEquals(["tag"], tm.tags)
-        self.assertEquals(False, tm.writeable)
-        self.assertEquals("label", tm.label)
-        self.assertEquals(["heading_1", "heading_2"], tm.headings)
+        tm = TableMeta.from_dict(self.serialized)
+        self.assertEquals(tm.description, "desc")
+        self.assertEquals(len(tm.elements), 1)
+        self.assertEquals(tm.elements["c1"].to_dict(), self.sam.to_dict())
+        self.assertEquals(tm.tags, [])
+        self.assertEquals(tm.writeable, True)
+        self.assertEquals(tm.label, "Name")
+        self.assertEquals(tm.headings, ["col1"])
+
 
 class TestTableMetaValidation(unittest.TestCase):
+    def setUp(self):
+        self.tm = TableMeta("desc")
+        self.tm.set_elements(dict(c1=StringArrayMeta()))
 
-    def test_validate(self):
-        tm = TableMeta("name", "desc")
-        tm.elements["e1"] = Mock()
-        tm.elements["e2"] = Mock()
-        tm.elements["e3"] = Mock()
-        tm.elements["e4"] = Mock()
-        tm.headings = ["column 1", "column 2", "column 3", "column 4"]
-        d = {"e1":[1, 11, 21], "e2":[2, 12], "e3":[3, 13, 23], "e4":None}
+    def test_validate_from_good_table(self):
+        tm = self.tm
+        t = Table(tm)
+        t.c1 = ["me", "me3"]
+        t_serialized = t.to_dict()
+        t = tm.validate(t)
+        self.assertEqual(t.to_dict(), t_serialized)
 
-        t = tm.validate(d)
+    def test_validate_from_serialized(self):
+        tm = self.tm
+        serialized = dict(
+            typeid="anything",
+            c1=["me", "me3"]
+        )
+        t = tm.validate(serialized)
+        self.assertEqual(t.endpoints, ["c1"])
+        self.assertEqual(t.c1, serialized["c1"])
 
-        tm.elements["e1"].validate.assert_called_once_with([1, 11, 21])
-        tm.elements["e2"].validate.assert_called_once_with([2, 12])
-        tm.elements["e3"].validate.assert_called_once_with([3, 13, 23])
-        tm.elements["e4"].validate.assert_called_once_with(None)
-        self.assertEqual([1, 11, 21], t.e1)
-        self.assertEqual([2, 12], t.e2)
-        self.assertEqual([3, 13, 23], t.e3)
-        self.assertEqual(None, t.e4)
-
-    def test_validate_ignores_key_order(self):
-        tm = TableMeta("name", "desc")
-        tm.elements["e1"] = Mock()
-        tm.elements["e2"] = Mock()
-        d = OrderedDict()
-        d["e2"] = [2]
-        d["e1"] = [1]
-
-        t = tm.validate(d)
-
-        tm.elements["e1"].validate.assert_called_once_with([1])
-        tm.elements["e2"].validate.assert_called_once_with([2])
-        self.assertEqual([1], t.e1)
-        self.assertEqual([2], t.e2)
-
-    def test_validate_raises_on_bad_keys(self):
-        tm = TableMeta("name", "desc")
-        tm.elements["e1"] = Mock()
-        d = {"e1":[1], "e2":[2]}
-        self.assertRaises(ValueError, tm.validate, d)
-
-        tm.elements["e2"] = Mock()
-        tm.elements["e3"] = Mock()
-        self.assertRaises(ValueError, tm.validate, d)
-
-    def test_validate_raises_on_validation_failure(self):
-        tm = TableMeta("name", "desc")
-        tm.elements["e1"] = Mock()
-        tm.elements["e2"] = Mock(validate=Mock(side_effect=ValueError))
-        tm.elements["e3"] = Mock()
-
-        d = {"e1":[0], "e2":[0], "e3":[0]}
-        self.assertRaises(ValueError, tm.validate, d)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

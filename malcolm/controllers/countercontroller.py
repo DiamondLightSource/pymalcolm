@@ -10,11 +10,11 @@ from malcolm.metas import NumberMeta
 class CounterController(Controller):
 
     def create_attributes(self):
-        self.counter = Attribute(
-            "counter", NumberMeta("meta", "A counter", np.int32))
+        self.counter = Attribute(NumberMeta(description="A counter"))
+        self.counter.meta.set_dtype('uint32')
         self.counter.set_put_function(self.counter.set_value)
         self.counter.set_value(0)
-        yield self.counter
+        yield "counter", self.counter
 
     @Controller.Resetting
     def do_reset(self):

@@ -72,7 +72,7 @@ parts.ca.CADoublePart:
         pass
 
     def test_call_with_map(self):
-        @takes(StringMeta("desc", "description"), REQUIRED)
+        @takes("desc", StringMeta("description"), REQUIRED)
         def f(params, *args):
             return 2
 

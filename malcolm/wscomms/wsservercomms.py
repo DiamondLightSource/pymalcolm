@@ -24,7 +24,7 @@ class MalcolmWebSocketHandler(WebSocketHandler):
         """
 
         d = json.loads(message, object_pairs_hook=OrderedDict)
-        request = Serializable.deserialize("Request", d)
+        request = Serializable.from_dict(d)
         request.context = self
         self.servercomms.on_request(request)
 

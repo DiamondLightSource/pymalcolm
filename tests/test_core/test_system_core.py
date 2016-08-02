@@ -24,16 +24,16 @@ from malcolm.core.response import Return, Update
 class TestHelloControllerSystem(unittest.TestCase):
 
     def test_hello_controller_good_input(self):
-        block = Block("hello")
-        HelloController(MagicMock(), block)
+        block = Block()
+        HelloController(MagicMock(), block, "hello")
         result = block.say_hello(name="me")
         self.assertEquals(result.greeting, "Hello me")
 
     def test_hello_controller_with_process(self):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
-        block = Block("hello")
-        HelloController(process, block)
+        block = Block()
+        HelloController(process, block, "hello")
         process.start()
         q = sync_factory.create_queue()
         req = Post(response_queue=q, context="ClientConnection",
@@ -53,9 +53,8 @@ class TestCounterControllerSystem(unittest.TestCase):
     def test_counter_controller_subscribe(self):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
-        block = Block("counting")
-        CounterController(process, block)
-        process.add_block(block)
+        block = Block()
+        CounterController(process, block, "counting")
         process.start()
         q = sync_factory.create_queue()
 
@@ -65,7 +64,7 @@ class TestCounterControllerSystem(unittest.TestCase):
         process.q.put(sub)
         resp = q.get(timeout=1)
         self.assertIsInstance(resp, Update)
-        attr = Attribute.from_dict("counter", resp.value)
+        attr = Attribute.from_dict(resp.value)
         self.assertEqual(0, attr.value)
 
         post = Post(response_queue=q, context="ClientConnection",

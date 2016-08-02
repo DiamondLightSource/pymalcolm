@@ -1,6 +1,21 @@
 from collections import OrderedDict
 
 
+def serialize_object(o):
+    if hasattr(o, "to_dict"):
+        # This will do all the sub layers for us
+        return o.to_dict()
+    elif isinstance(o, (dict, OrderedDict)):
+        # Need to recurse down
+        d = OrderedDict()
+        for k, v in o.items():
+            d[k] = serialize_object(v)
+        return d
+    else:
+        # Hope it's serializable!
+        return o
+
+
 class Serializable(object):
     """Mixin class for serializable objects"""
 
@@ -30,16 +45,12 @@ class Serializable(object):
                     value = overrides[endpoint]
                 else:
                     value = getattr(self, endpoint)
-
-                if hasattr(value, "to_dict"):
-                    value = value.to_dict()
-
-                d[endpoint] = value
+                d[endpoint] = serialize_object(value)
 
         return d
 
     @classmethod
-    def from_dict(cls, name, d):
+    def from_dict(cls, d):
         """
         Base method to create a serializable instance from a dictionary
 
@@ -49,31 +60,30 @@ class Serializable(object):
         Returns:
             Instance of subclass given in d
         """
+        subcls = cls.lookup_subclass(d)
+        inst = subcls()
 
-        inst = cls()
+        # Update the instance with any values in the dictionary that are known
+        # endpoints
+        if inst.endpoints:
+            updates = [e for e in inst.endpoints if e in d]
+            for endpoint in updates:
+                setter = getattr(inst, "set_%s" % endpoint)
+                setter(d.pop(endpoint))
+
+        # For anything that is not a known endpoint it must be a typeid or a
+        # new endpoint
         for k, v in d.items():
-            # attribute_assignment e.g. [attribute, value]
-            if k != "typeid":
-                inst.update([[k], v])
-
+            if k == "typeid":
+                assert v == inst.typeid, \
+                    "Dict has typeid %s but Class has %s" % (v, inst.typeid)
+            else:
+                self.new_endpoint(k, v)
         return inst
 
-    @classmethod
-    def deserialize(cls, name, d):
-        """
-        Look up subclass and call its from_dict function
-
-        Args:
-            d(dict): Class instance attributes to set
-
-        Returns:
-            Instance of subclass given in d
-        """
-
-        typeid = d["typeid"]
-        subcls = cls.lookup_subclass(typeid)
-
-        return subcls.from_dict(name, d)
+    def new_endpoint(self, endpoint, value):
+        raise NotImplementedError(
+            "Setting new endpoint %s not implemented" % (endpoint,))
 
     @classmethod
     def register_subclass(cls, typeid):
@@ -89,33 +99,24 @@ class Serializable(object):
         return decorator
 
     @classmethod
-    def lookup_subclass(cls, type_id):
+    def lookup_subclass(cls, d):
         """
-        Look up a class instance based on its type id
+        Look up a class based on a serialized dictionary containing a typeid
+
         Args:
-            type_id: Specifier for subclass
+            d (dict): Dictionary with key "typeid"
 
         Returns:
-            Class instance
+            Serializable subclass
         """
+        typeid = d["typeid"]
+        subcls = cls._subcls_lookup[typeid]
+        return subcls
 
-        return cls._subcls_lookup[type_id]
+    def __eq__(self, rhs):
+        if hasattr(rhs, "to_dict"):
+            rhs = rhs.to_dict()
+        return self.to_dict() == rhs
 
-    def update(self, change):
-        """
-        Set a given attribute to a new value
-        Args:
-            change(tuple): Attribute path and value e.g. (value, 5)
-        """
-
-        if len(change[0]) != 1:
-            raise ValueError(
-                "Cannot handle multiple element path in change %s" % change)
-        attribute = change[0][0]
-        new_value = change[1]
-        try:
-            setter = getattr(self, "set_%s" % attribute)
-        except AttributeError:
-            raise ValueError(
-                "Invalid update path specified in change %s" % change)
-        setter(new_value)
+    def __ne__(self, rhs):
+        return not self.__eq__(rhs)

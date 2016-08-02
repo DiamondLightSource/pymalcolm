@@ -8,7 +8,7 @@ import setup_malcolm_paths
 # logging.basicConfig(level=logging.DEBUG)
 
 import unittest
-from mock import Mock
+from mock import Mock, ANY
 
 from malcolm.controllers.countercontroller import CounterController
 from malcolm.core.block import Block
@@ -16,13 +16,14 @@ from malcolm.core.block import Block
 
 class TestCounterController(unittest.TestCase):
     def test_init(self):
-        block = Mock()
-        c = CounterController(Mock(), block)
+        block = Block()
+        block.add_method = Mock(wraps=block.add_method)
+        c = CounterController(Mock(), block, 'block')
         self.assertIs(block, c.block)
         self.assertEquals(3, len(block.add_method.call_args_list))
-        method_1 = block.add_method.call_args_list[0][0][0]
-        method_2 = block.add_method.call_args_list[1][0][0]
-        method_3 = block.add_method.call_args_list[2][0][0]
+        method_1 = block.add_method.call_args_list[0][0][1]
+        method_2 = block.add_method.call_args_list[1][0][1]
+        method_3 = block.add_method.call_args_list[2][0][1]
         self.assertEquals("disable", method_1.name)
         self.assertEquals(c.disable, method_1.func)
         self.assertEquals("increment", method_2.name)
@@ -31,7 +32,7 @@ class TestCounterController(unittest.TestCase):
         self.assertEquals(c.reset, method_3.func)
 
     def test_increment_increments(self):
-        c = CounterController(Mock(), Mock())
+        c = CounterController(Mock(), Block(), 'block')
         self.assertEquals(0, c.counter.value)
         c.increment()
         self.assertEquals(1, c.counter.value)
@@ -39,20 +40,26 @@ class TestCounterController(unittest.TestCase):
         self.assertEquals(2, c.counter.value)
 
     def test_increment_calls_on_changed(self):
-        c = CounterController(Mock(), Mock())
+        c = CounterController(Mock(), Block(), 'block')
         c.counter.on_changed = Mock(side_effect=c.counter.on_changed)
         c.increment()
-        c.counter.on_changed.assert_called_once_with([["value"], 1], True)
+        c.counter.on_changed.assert_called_once_with(
+            [['counter', 'value'], 1], True)
 
     def test_reset_sets_zero(self):
-        c = CounterController(Mock(), Block("c"))
+        c = CounterController(Mock(), Block(), 'c')
         c.counter.value = 1234
         c.do_reset()
         self.assertEquals(0, c.counter.value)
 
+    def add_method(self, name, method):
+        method.name = name
+
     def test_put_changes_value(self):
-        c = CounterController(Mock(), Mock())
-        c.counter.parent = c.block
+        b = Block()
+        b.on_changed = Mock(wraps=b.on_changed)
+        c = CounterController(Mock(), b, 'block')
+        b.on_changed.reset_mock()
         c.counter.put(32)
         self.assertEqual(c.counter.value, 32)
         c.block.on_changed.assert_called_once_with(

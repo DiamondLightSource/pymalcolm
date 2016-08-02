@@ -13,13 +13,15 @@ class ClientController(Controller):
     REMOTE_BLOCKS_ID = 0
     BLOCK_ID = 1
 
-    def __init__(self, process, block):
+    def __init__(self, process, block, block_name):
         """
         Args:
             process (Process): The process this should run under
             block (Block): The local block we should be controlling
+            block_name (str): The local block's name
         """
-        super(ClientController, self).__init__(block=block, process=process)
+        super(ClientController, self).__init__(block=block, process=process,
+                                               block_name=block_name)
         request = Subscribe(
             None, self, [self.process.name, "remoteBlocks", "value"])
         request.set_id(self.REMOTE_BLOCKS_ID)
@@ -43,12 +45,12 @@ class ClientController(Controller):
                         self.block.update(change)
 
     def _regenerate_block(self, d):
-        children = []
+        children = {}
         for k, v in d.items():
             if k == "typeid":
                 continue
-            child = Serializable.deserialize(k, v)
-            children.append(child)
+            child = Serializable.from_dict(v)
+            children[k] = child
             if isinstance(child, Method):
                 # calling method forwards to server
                 child.set_function(

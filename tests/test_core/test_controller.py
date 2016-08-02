@@ -33,14 +33,15 @@ class TestController(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.b = Block("block")
-        self.c = DummyController(MagicMock(), self.b)
+        self.b = Block()
+        self.b.name = "block"
+        self.c = DummyController(MagicMock(), self.b, 'block')
         for attr in ["busy", "state", "status"]:
             attr = self.b.attributes[attr]
             attr.set_value = MagicMock(side_effect=attr.set_value)
 
     def test_init(self):
-        self.c.process.add_block.assert_called_once_with(self.b)
+        self.c.process.add_block.assert_called_once_with("block", self.b)
         self.assertEqual(self.b.methods["say_hello"], self.c.say_hello.Method)
         self.assertEqual(self.b.methods["say_goodbye"], self.c.say_goodbye.Method)
         self.assertEqual([], self.c.parts)

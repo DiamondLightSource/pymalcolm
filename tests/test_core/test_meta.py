@@ -8,74 +8,60 @@ import setup_malcolm_paths
 from mock import Mock
 
 from malcolm.core.meta import Meta
-from malcolm.core.serializable import Serializable
 
-Serializable.register_subclass("meta:test")(Meta)
 
-class TestMeta(unittest.TestCase):
+class TestInit(unittest.TestCase):
+
     def test_init(self):
-        meta = Meta("meta_name", "meta_description")
-        self.assertEqual("meta_name", meta.name)
-        self.assertEqual("meta_description", meta.description)
-        self.assertEqual([], meta.tags)
+        m = Meta("desc")
+        self.assertEquals("desc", m.description)
+
+
+class TestSetters(unittest.TestCase):
+    def setUp(self):
+        m = Meta("desc")
+        m.on_changed = Mock(wrap=m.on_changed)
+        self.m = m
 
     def test_set_description(self):
-        meta = Meta("meta_name", "meta_description")
-        meta.on_changed = Mock(wrap=meta.on_changed)
-        meta.set_description("new_description")
-        self.assertEquals("new_description", meta.description)
-        meta.on_changed.assert_called_once_with(
-            [["description"], "new_description"], True)
+        m = self.m
+        notify = Mock()
+        description = "desc2"
+        m.set_description(description, notify)
+        self.assertEqual(m.description, description)
+        m.on_changed.assert_called_once_with(
+            [["description"], description], notify)
 
     def test_set_tags(self):
-        meta = Meta("meta_name", "meta_description")
-        meta.on_changed = Mock(wrap=meta.on_changed)
-        meta.set_tags(["new_tag"])
-        self.assertEquals(["new_tag"], meta.tags)
-        meta.on_changed.assert_called_once_with(
-            [["tags"], ["new_tag"]], True)
+        m = self.m
+        notify = Mock()
+        tags = ["widget:textinput"]
+        m.set_tags(tags, notify=notify)
+        self.assertEquals(tags, m.tags)
+        m.on_changed.assert_called_once_with([["tags"], tags], notify)
 
-    def test_update_description(self):
-        meta = Meta("meta_name", "")
-        meta.on_changed = Mock(wrap=meta.on_changed)
-        meta.update([["description"], "new_description"])
-        self.assertEquals(meta.description, "new_description")
-        meta.on_changed.assert_called_once_with(
-            [["description"], "new_description"], True)
+    def test_notify_default_is_true(self):
+        m = self.m
+        m.set_description("desc3")
+        m.set_tags([])
+        self.assertEqual(m.on_changed.call_count, 2)
+        calls = m.on_changed.call_args_list
+        self.assertTrue(calls[0][0][1])
+        self.assertTrue(calls[1][0][1])
 
-    def test_update_tags(self):
-        meta = Meta("meta_name", "")
-        meta.on_changed = Mock(wrap=meta.on_changed)
-        meta.update([["tags"], ["new_tag"]])
-        self.assertEquals(meta.tags, ["new_tag"])
-        meta.on_changed.assert_called_once_with(
-            [["tags"], ["new_tag"]], True)
 
-    def test_invalid_update_raises(self):
-        meta = Meta("meta_name", "")
-        self.assertRaises(ValueError, meta.update, [["invalid_path"], ""])
+class TestSerialization(unittest.TestCase):
 
-    def test_substructure_update_raises(self):
-        meta = Meta("meta_name", "")
-        self.assertRaises(
-            ValueError, meta.update, [["tags", "invalid_substructure_path"], ""])
+    def setUp(self):
+        self.serialized = OrderedDict()
+        self.serialized["typeid"] = "filled_in_by_subclass"
+        self.serialized["description"] = "desc"
+        self.serialized["tags"] = []
 
     def test_to_dict(self):
-        meta = Meta("meta_name", "meta_description")
-        meta.tags = ["tag"]
-        expected = OrderedDict()
-        expected["typeid"] = "meta:test"
-        expected["description"] = "meta_description"
-        expected["tags"] = ["tag"]
-        self.assertEquals(expected, meta.to_dict())
-
-    def test_from_dict(self):
-        d = {"description":"test_description", "tags":["tag1", "tag2"]}
-        meta = Meta.from_dict("meta_name", d)
-        self.assertEqual(Meta, type(meta))
-        self.assertEqual("meta_name", meta.name)
-        self.assertEqual("test_description", meta.description)
-        self.assertEqual(["tag1", "tag2"], meta.tags)
+        m = Meta("desc")
+        m.typeid = "filled_in_by_subclass"
+        self.assertEqual(m.to_dict(), self.serialized)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

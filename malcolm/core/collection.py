@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from ruamel import yaml
 
 import malcolm.parameters
@@ -107,7 +109,7 @@ def with_takes_from(parameters, include_name):
     # find all the Takes objects and create them
     if include_name:
         takes_arguments = [
-            StringMeta("name", "Name of the created block"), REQUIRED]
+            "name", StringMeta("Name of the created block"), REQUIRED]
     else:
         takes_arguments = []
     for name, d in parameters.items():
@@ -152,9 +154,12 @@ def make_block_instance(name, process, controllers_d, parts_d):
         Block: The created block instance as managed by the controller with
             all the parts attached
     """
-    parts = []
+    parts = OrderedDict()
     for cls_name, d in parts_d.items():
-        parts.append(call_with_map(malcolm.parts, cls_name, d))
+        # Require all parts to have a name
+        # TODO: make sure this is added from gui?
+        name = d[name]
+        parts[name] = call_with_map(malcolm.parts, cls_name, d)
     if controllers_d:
         cls_name, d = list(controllers_d.items())[0]
         controller = call_with_map(

@@ -18,6 +18,7 @@ from malcolm.core.request import Request
 from malcolm.core.method import Method
 from malcolm.core.future import Future, TimeoutError
 from malcolm.core.meta import Meta
+from malcolm.metas.scalarmeta import ScalarMeta
 from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.serializable import Serializable
@@ -33,18 +34,18 @@ class TestTask(unittest.TestCase):
     def setUp(self):
         self.callback_result = 0
         self.callback_value = ''
-        meta = Meta("meta", "meta for unit tests")
+        meta = ScalarMeta("meta for unit tests")
         self.block = MagicMock()
         self.proc = MagicMock(q=queue.Queue())
         self.proc.create_queue = MagicMock(side_effect=queue.Queue)
-        self.attr = Attribute("testAttr", meta)
-        self.attr.set_parent(self.block)
-        self.attr2 = Attribute("testAttr2", meta)
-        self.attr2.set_parent(self.block)
-        self.method = Method("testFunc", "method for unit tests")
-        self.method.set_parent(self.block)
-        self.method2 = Method("testFunc", "method for unit tests")
-        self.method2.set_parent(self.block)
+        self.attr = Attribute(meta)
+        self.attr.set_parent(self.block, "testAttr")
+        self.attr2 = Attribute(meta)
+        self.attr2.set_parent(self.block, "testAttr2")
+        self.method = Method("method for unit tests")
+        self.method.set_parent(self.block, "testFunc")
+        self.method2 = Method("method for unit tests")
+        self.method2.set_parent(self.block, "testFunc")
         self.bad_called_back = False
 
     def test_init(self):
