@@ -13,9 +13,9 @@ from malcolm.core.block import Block
 
 class TestScanPointTickerController(unittest.TestCase):
 
-    @patch("malcolm.metas.stringmeta.StringMeta.to_dict")
-    @patch("malcolm.metas.numbermeta.NumberMeta.to_dict")
-    @patch("malcolm.metas.pointgeneratormeta.PointGeneratorMeta.to_dict")
+    @patch("malcolm.vmetas.stringmeta.StringMeta.to_dict")
+    @patch("malcolm.vmetas.numbermeta.NumberMeta.to_dict")
+    @patch("malcolm.vmetas.pointgeneratormeta.PointGeneratorMeta.to_dict")
     def test_init(self, pgmd_mock, nmd_mock, smd_mock):
         del pgmd_mock.return_value.to_dict
         del nmd_mock.return_value.to_dict
@@ -41,7 +41,7 @@ class TestScanPointTickerController(unittest.TestCase):
 
     def test_configure(self):
         params = MagicMock()
-        with patch("malcolm.metas.pointgeneratormeta.CompoundGenerator",
+        with patch("malcolm.vmetas.pointgeneratormeta.CompoundGenerator",
                    spec=True) as cg_mock:
             params.generator = cg_mock()
         params.exposure = 1
@@ -60,7 +60,7 @@ class TestScanPointTickerController(unittest.TestCase):
     def test_run(self, sleep_mock):
         points = [MagicMock(positions=dict(x=i)) for i in range(3)]
         params = MagicMock()
-        with patch("malcolm.metas.pointgeneratormeta.CompoundGenerator",
+        with patch("malcolm.vmetas.pointgeneratormeta.CompoundGenerator",
                    spec=True) as cg_mock:
             params.generator = cg_mock()
         params.exposure = 0.1

@@ -1,10 +1,9 @@
-from malcolm.metas.choicemeta import ChoiceMeta
-from malcolm.metas.scalararraymeta import ScalarArrayMeta
-from malcolm.core.serializable import Serializable
+from malcolm.core import Serializable, VArrayMeta
+from malcolm.vmetas.choicemeta import ChoiceMeta
 
 
 @Serializable.register_subclass("malcolm:core/ChoiceArrayMeta:1.0")
-class ChoiceArrayMeta(ChoiceMeta, ScalarArrayMeta):
+class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
     """Meta object containing information for a choice array"""
 
     def validate(self, value):

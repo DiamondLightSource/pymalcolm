@@ -5,7 +5,7 @@ from malcolm.core.loggable import Loggable
 from malcolm.core.attribute import Attribute
 from malcolm.core.hook import Hook
 from malcolm.core.method import takes, only_in
-from malcolm.metas import ChoiceMeta, StringMeta, BooleanMeta
+from malcolm.vmetas import ChoiceMeta, StringMeta, BooleanMeta
 from malcolm.statemachines import DefaultStateMachine
 
 sm = DefaultStateMachine

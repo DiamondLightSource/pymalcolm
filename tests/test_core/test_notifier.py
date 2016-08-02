@@ -7,14 +7,14 @@ import unittest
 from mock import Mock
 from collections import OrderedDict
 
-from malcolm.core.notifier import Notifier, NO_VALIDATE
+from malcolm.core.monitorable import Monitorable, NO_VALIDATE
 
 
 class TestInit(unittest.TestCase):
 
     def test_init(self):
         p = Mock()
-        n = Notifier()
+        n = Monitorable()
         self.assertFalse(hasattr(n, 'parent'))
         n.set_parent(p, "notifier")
         self.assertEqual("notifier", n.name)
@@ -23,12 +23,12 @@ class TestInit(unittest.TestCase):
 class TestUpdates(unittest.TestCase):
 
     def test_set_parent(self):
-        class MyNotifier(Notifier):
+        class MyMonitorable(Monitorable):
             endpoints = ["child"]
             child = Mock()
         parent = Mock()
         parent.name = "parent"
-        n = MyNotifier()
+        n = MyMonitorable()
         n.set_parent(parent, "serialize")
         self.assertIs(parent, n.parent)
         self.assertEquals("serialize", n._logger.name)
@@ -37,7 +37,7 @@ class TestUpdates(unittest.TestCase):
     def test_on_changed(self):
         change = [["test_attr", "test_value"], 12]
         parent = Mock()
-        n = Notifier()
+        n = Monitorable()
         n.set_parent(parent,"test_n")
         notify = Mock()
         n.on_changed(change, notify)
@@ -46,7 +46,7 @@ class TestUpdates(unittest.TestCase):
 
     def test_on_change_notify_flag_default(self):
         parent = Mock()
-        n = Notifier()
+        n = Monitorable()
         n.set_parent(parent,"test_n")
         change = [[], Mock()]
         n.on_changed(change)
@@ -54,14 +54,14 @@ class TestUpdates(unittest.TestCase):
 
     def test_nop_with_no_parent(self):
         change = [["test"], 123]
-        n = Notifier()
+        n = Monitorable()
         with self.assertRaises(AttributeError):
             p = n.parent
         n.on_changed(change)
         self.assertEquals([["test"], 123], change)
 
     def test_set_endpoint(self):
-        n = Notifier()
+        n = Monitorable()
         parent = Mock()
         endpoint = Mock()
         # Check that the mock looks like it is serializable

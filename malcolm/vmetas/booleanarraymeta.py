@@ -1,9 +1,8 @@
-from malcolm.metas.scalararraymeta import ScalarArrayMeta
-from malcolm.core.serializable import Serializable
+from malcolm.core import Serializable, VArrayMeta
 
 
 @Serializable.register_subclass("malcolm:core/BooleanArrayMeta:1.0")
-class BooleanArrayMeta(ScalarArrayMeta):
+class BooleanArrayMeta(VArrayMeta):
     """Meta object containing information for a boolean array"""
 
     def validate(self, value):

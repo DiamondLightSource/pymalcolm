@@ -1,11 +1,8 @@
 import functools
 from collections import OrderedDict
 
-from malcolm.core.controller import Controller
-from malcolm.core.request import Post, Subscribe
-from malcolm.core.response import Return
-from malcolm.core.method import Method, takes
-from malcolm.core.serializable import Serializable
+from malcolm.core import Controller,  Post, Subscribe, Return, Method, takes, \
+    Serializable
 
 
 @takes()

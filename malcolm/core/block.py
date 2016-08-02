@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from malcolm.core.notifier import Notifier
+from malcolm.core.monitorable import Monitorable
 from malcolm.core.serializable import Serializable
 from malcolm.core.request import Put, Post
 from malcolm.core.response import Return
@@ -37,7 +37,7 @@ class LockRelease(object):
 
 
 @Serializable.register_subclass("malcolm:core/Block:1.0")
-class Block(Notifier):
+class Block(Monitorable):
     """Object consisting of a number of Attributes and Methods"""
 
     def __init__(self):

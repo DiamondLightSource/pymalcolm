@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 import unittest
 
-from malcolm.metas import StringMeta
+from malcolm.vmetas import StringMeta
 from malcolm.core.serializable import Serializable
 
 

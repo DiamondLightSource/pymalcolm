@@ -5,7 +5,7 @@ from mock import Mock, patch, call, MagicMock
 
 from malcolm import parameters
 from malcolm.core.method import REQUIRED
-from malcolm.metas import NumberMeta, StringMeta
+from malcolm.vmetas import NumberMeta, StringMeta
 
 
 class TestParameters(unittest.TestCase):

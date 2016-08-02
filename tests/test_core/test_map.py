@@ -10,8 +10,8 @@ from mock import MagicMock, Mock
 from malcolm.core.map import Map
 from malcolm.core.serializable import Serializable
 from malcolm.core.meta import Meta
-from malcolm.metas.numbermeta import NumberMeta
-from malcolm.metas.stringmeta import StringMeta
+from malcolm.vmetas.numbermeta import NumberMeta
+from malcolm.vmetas.stringmeta import StringMeta
 
 class TestMap(unittest.TestCase):
 

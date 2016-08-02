@@ -1,10 +1,9 @@
-from malcolm.metas.scalarmeta import ScalarMeta
-from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string
+from malcolm.core import Serializable, VMeta
 
 
 @Serializable.register_subclass("malcolm:core/ChoiceMeta:1.0")
-class ChoiceMeta(ScalarMeta):
+class ChoiceMeta(VMeta):
     """Meta object containing information for a enum"""
 
     endpoints = ["description", "choices", "tags", "writeable", "label"]

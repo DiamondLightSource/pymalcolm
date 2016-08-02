@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 import unittest
 
-from malcolm.metas import StringArrayMeta
+from malcolm.vmetas import StringArrayMeta
 
 class TestStringArrayMeta(unittest.TestCase):
 

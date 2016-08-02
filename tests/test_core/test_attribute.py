@@ -10,7 +10,7 @@ from mock import Mock, patch
 
 from malcolm.core.attribute import Attribute
 from malcolm.core.serializable import Serializable
-from malcolm.metas import StringMeta
+from malcolm.vmetas import StringMeta
 
 
 class TestAttribute(unittest.TestCase):

@@ -1,10 +1,7 @@
-import numpy
 import time
 
-from malcolm.core.attribute import Attribute
-from malcolm.core.controller import Controller
-from malcolm.core.method import takes, Method, REQUIRED
-from malcolm.metas import PointGeneratorMeta, StringMeta, NumberMeta
+from malcolm.core import Attribute, Controller, takes, Method, REQUIRED
+from malcolm.vmetas import PointGeneratorMeta, StringMeta, NumberMeta
 from malcolm.statemachines import RunnableDeviceStateMachine
 
 

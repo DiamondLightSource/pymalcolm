@@ -1,20 +1,20 @@
 from collections import OrderedDict
 from inspect import getdoc
 
-from malcolm.core.serializable import Serializable
-from malcolm.core.response import Return, Error
-from malcolm.core.map import Map
-from malcolm.metas.mapmeta import MapMeta
-from malcolm.metas.scalarmeta import ScalarMeta
 from malcolm.compat import base_string
-from malcolm.core.notifier import NO_VALIDATE
+from malcolm.core.map import Map
+from malcolm.core.mapmeta import MapMeta
+from malcolm.core.monitorable import NO_VALIDATE
+from malcolm.core.response import Return, Error
+from malcolm.core.serializable import Serializable
+from malcolm.core.vmeta import VMeta
 
 OPTIONAL = object()
 REQUIRED = object()
 
 
 @Serializable.register_subclass("malcolm:core/Method:1.0")
-class Method(ScalarMeta):
+class Method(VMeta):
     """Exposes a function with metadata for arguments and return values"""
 
     endpoints = ["takes", "defaults", "description", "tags", "writeable",

@@ -1,9 +1,5 @@
-import numpy as np
-
-from malcolm.core.controller import Controller
-from malcolm.core.attribute import Attribute
-from malcolm.core.method import takes
-from malcolm.metas import NumberMeta
+from malcolm.core import Controller, Attribute, takes
+from malcolm.vmetas import NumberMeta
 
 
 @takes()

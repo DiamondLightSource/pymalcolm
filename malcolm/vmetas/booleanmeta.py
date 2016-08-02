@@ -1,9 +1,8 @@
-from malcolm.metas.scalarmeta import ScalarMeta
-from malcolm.core.serializable import Serializable
+from malcolm.core import Serializable, VMeta
 
 
 @Serializable.register_subclass("malcolm:core/BooleanMeta:1.0")
-class BooleanMeta(ScalarMeta):
+class BooleanMeta(VMeta):
     """Meta object containing information for a boolean"""
 
     def validate(self, value):

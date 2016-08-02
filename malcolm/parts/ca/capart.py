@@ -1,11 +1,8 @@
 import cothread
 from cothread import catools
 
-from malcolm.core.part import Part
-from malcolm.core.controller import Controller
-from malcolm.core.attribute import Attribute
-from malcolm.metas import StringMeta
-from malcolm.core.method import takes, REQUIRED
+from malcolm.core import Part, Controller, Attribute, takes, REQUIRED
+from malcolm.vmetas import StringMeta
 
 
 def capart_takes(*args):

@@ -1,9 +1,8 @@
-from malcolm.metas.scalarmeta import ScalarMeta
-from malcolm.core.serializable import Serializable
+from malcolm.core import Serializable, VMeta
 
 
 @Serializable.register_subclass("malcolm:core/StringMeta:1.0")
-class StringMeta(ScalarMeta):
+class StringMeta(VMeta):
     """Meta object containing information for a string"""
 
     def validate(self, value):

@@ -2,12 +2,11 @@ from collections import OrderedDict
 
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.metas.scalarmeta import ScalarMeta
-from malcolm.core.serializable import Serializable
+from malcolm.core import Serializable, VMeta
 
 
 @Serializable.register_subclass("malcolm:core/PointGeneratorMeta:1.0")
-class PointGeneratorMeta(ScalarMeta):
+class PointGeneratorMeta(VMeta):
 
     def validate(self, value):
         if value is None or isinstance(value, CompoundGenerator):

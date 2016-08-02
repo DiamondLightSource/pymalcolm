@@ -4,7 +4,7 @@ from malcolm.core.serializable import Serializable, serialize_object
 NO_VALIDATE = object()
 
 
-class Notifier(Loggable, Serializable):
+class Monitorable(Loggable, Serializable):
 
     def set_parent(self, parent, name):
         """Sets the parent for changes to be propagated to"""
@@ -13,7 +13,7 @@ class Notifier(Loggable, Serializable):
         self.set_logger_name(name)
 
     def set_logger_name(self, name):
-        super(Notifier, self).set_logger_name(name)
+        super(Monitorable, self).set_logger_name(name)
         if self.endpoints:
             for endpoint in self.endpoints:
                 attr = getattr(self, endpoint)
@@ -33,7 +33,7 @@ class Notifier(Loggable, Serializable):
         self.parent.on_changed(change, notify)
 
     def _cast(self, value, type_):
-        # Can't use metas here as we're the base class...
+        # Can't use vmetas here as we're the base class...
         if isinstance(value, dict):
             if hasattr(type_, "from_dict"):
                 # turn it into the class

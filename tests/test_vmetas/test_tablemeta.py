@@ -7,7 +7,7 @@ import unittest
 from collections import OrderedDict
 from mock import Mock
 
-from malcolm.metas import TableMeta, StringArrayMeta
+from malcolm.vmetas import TableMeta, StringArrayMeta
 from malcolm.core.table import Table
 
 

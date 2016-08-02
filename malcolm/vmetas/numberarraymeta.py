@@ -1,13 +1,12 @@
 import numpy as np
 
-from malcolm.metas.numbermeta import NumberMeta
-from malcolm.metas.scalararraymeta import ScalarArrayMeta
-from malcolm.core.serializable import Serializable
 from malcolm.compat import base_string
+from malcolm.core import Serializable, VArrayMeta
+from malcolm.vmetas.numbermeta import NumberMeta
 
 
 @Serializable.register_subclass("malcolm:core/NumberArrayMeta:1.0")
-class NumberArrayMeta(NumberMeta, ScalarArrayMeta):
+class NumberArrayMeta(NumberMeta, VArrayMeta):
     """Meta object containing information for an array of numerical values"""
 
     def validate(self, value):

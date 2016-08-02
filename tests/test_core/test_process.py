@@ -18,7 +18,7 @@ from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Subscribe, Post, Get
 from malcolm.core.response import Return, Update, Delta
 from malcolm.core.attribute import Attribute
-from malcolm.metas import StringArrayMeta
+from malcolm.vmetas import StringArrayMeta
 
 
 class TestProcess(unittest.TestCase):

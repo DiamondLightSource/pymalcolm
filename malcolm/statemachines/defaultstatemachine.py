@@ -1,4 +1,4 @@
-from malcolm.core.statemachine import StateMachine
+from malcolm.core import StateMachine
 
 
 class DefaultStateMachine(StateMachine):
