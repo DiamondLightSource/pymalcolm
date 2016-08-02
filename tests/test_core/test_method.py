@@ -72,6 +72,7 @@ class TestMethod(unittest.TestCase):
 
     def test_get_response_calls_call_function(self):
         m = Method("test_description")
+        m.set_logger_name("mname")
         call_func_mock = MagicMock()
         m.call_function = call_func_mock
         func = Mock(return_value={"first_out": "test"})
@@ -88,6 +89,7 @@ class TestMethod(unittest.TestCase):
 
     def test_get_response_no_parameters(self):
         m = Method("test_description")
+        m.set_logger_name("mname")
         call_func_mock = MagicMock()
         m.call_function = call_func_mock
         func = Mock(return_value={"first_out": "test"})
@@ -160,6 +162,7 @@ class TestMethod(unittest.TestCase):
     def test_handle_request(self, call_function_mock):
         call_function_mock.return_value = {"output": 1}
         m = Method("test_description")
+        m.set_logger_name("mname")
         request = Mock(
                 id=(123, Mock()), type="Post", parameters={"first": 2},
                 respond_with_return=Mock())

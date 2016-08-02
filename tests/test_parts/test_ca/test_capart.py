@@ -12,66 +12,87 @@ from cothread import catools
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.core.block import DummyLock
-from malcolm.parts.ca.capart import CAPart
+from malcolm.metas import NumberMeta
+from malcolm.parts.ca.capart import CAPart, capart_takes
+from malcolm.core.map import Map
+
+
+class caint(int):
+    ok = True
 
 class TestCAPart(unittest.TestCase):
 
     def create_part(self, params=None):
         if params is None:
-            params =  dict(meta=MagicMock(), pv="pv", rbv_suff="2")
-            params["meta"].name = "meta"
+            params = dict(
+                name="attrname",
+                description="desc",
+                pv="pv",
+                rbv_suff="2"
+            )
 
-        process = MagicMock()
-        block = MagicMock()
-
+        @capart_takes()
         class MyCAPart(CAPart):
-            def _call_setup(self, anything):
-                self.create_attribute(**params)
+            create_meta = MagicMock(return_value=NumberMeta("int32"))
+            get_datatype = MagicMock()
 
-        p = MyCAPart("me", process, block, "anything")
+        # TODO: defaults?
+        mparams = Map(MyCAPart.Method.takes, MyCAPart.Method.defaults)
+        mparams.update(params)
+        mparams.check_valid()
+
+        p = MyCAPart(mparams, MagicMock())
+        p.set_logger_name("something")
+        list(p.create_attributes())
         return p
 
     def test_init(self):
         p = self.create_part()
+        self.assertEqual(p.name, "attrname")
+        self.assertEqual(p.pv, "pv")
         self.assertEqual(p.rbv, "pv2")
-        p.block.add_attribute.assert_called_once_with(p.attr)
+        self.assertEqual(p.meta, p.create_meta.return_value)
 
+    def test_init_no_pv_no_rbv(self):
         # create test for no pv or rbv
-        params = dict(meta=MagicMock(), pv="pv", rbv_suff="2")
+        params = dict(name="", description="")
         self.assertRaises(ValueError, self.create_part, params)
 
     def test_init_no_rbv(self):
-        params = dict(meta=MagicMock(), pv="pv")
-        params["meta"].name = "meta"
+        params = dict(name="", description="", pv="pv", rbv="rbv")
+        p = self.create_part(params)
+        self.assertEqual(p.rbv, "rbv")
+        self.assertEqual(p.pv, "pv")
+
+    def test_init_no_rbv(self):
+        params = dict(name="", description="", pv="pv")
         p = self.create_part(params)
         self.assertEqual(p.rbv, "pv")
         self.assertEqual(p.pv, "pv")
 
     def test_reset(self):
         p = self.create_part()
-        p.get_datatype = MagicMock(return_value=None)
-        catools.caget.return_value = [MagicMock(ok=True), MagicMock(ok=True)]
+        catools.caget.return_value = [caint(4), caint(5)]
         p.connect_pvs()
-        catools.caget.assert_called_with(["pv2", "pv"], format=ANY)
+        catools.caget.assert_called_with(
+            ["pv2", "pv"],
+            format=catools.FORMAT_CTRL, datatype=p.get_datatype())
         catools.camonitor.assert_called_once_with(
-            "pv2", p.on_update, format=catools.FORMAT_TIME,
-            datatype=None, notify_disconnect=True)
+            "pv2", p.on_update, format=catools.FORMAT_CTRL,
+            datatype=p.get_datatype(), notify_disconnect=True)
+        self.assertEqual(p.attr.value, 4)
         self.assertEqual(p.monitor, catools.camonitor())
 
     def test_caput(self):
-        class caint(int):
-            ok = True
         catools.caget.return_value = caint(3)
         p = self.create_part()
-        p.get_datatype = MagicMock(return_value=None)
         p.attr.put(32)
+        datatype = p.get_datatype.return_value
         catools.caput.assert_called_once_with(
-            "pv", 32, wait=True, timeout=None, datatype=None)
+            "pv", 32, wait=True, timeout=None, datatype=datatype)
         catools.caget.assert_called_once_with(
-            "pv2", datatype=None)
-        p.meta.validate.assert_called_once_with(catools.caget.return_value)
-        self.assertEqual(p.attr.value, p.meta.validate())
+            "pv2", format=catools.FORMAT_CTRL, datatype=datatype)
+        self.assertEqual(p.attr.value, 3)
 
     def test_monitor_update(self):
         p = self.create_part()
@@ -86,29 +107,18 @@ class TestCAPart(unittest.TestCase):
         m.close.assert_called_once_with()
         self.assertEqual(p.monitor, None)
 
-    def test_get_datatype(self):
-        p = self.create_part()
-        p.long_string = True
-        self.assertRaises(NotImplementedError, p.get_datatype)
-
     def test_update_value_good(self):
         p = self.create_part()
-        p.block.lock = DummyLock()
-        value = MagicMock(ok=True)
+        value = caint(4)
         p.update_value(value)
-        p.meta.validate.assert_called_once_with(value)
-        self.assertEqual(p.attr.value, p.meta.validate())
+        self.assertEqual(p.attr.value, 4)
 
     def test_update_value_bad(self):
         p = self.create_part()
-        p.block.lock = DummyLock()
-        value = MagicMock(ok=False)
+        value = caint(44)
+        value.ok = False
         p.update_value(value)
-        p.block.state.set_value.assert_called_once_with(
-            "Fault", notify=False)
-        p.block.status.set_value.assert_called_once_with(
-            "CA disconnect on %s" % value.name, notify=False)
-        p.block.busy.set_value.assert_called_once_with(False)
+        self.assertEqual(p.attr.value, None)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
