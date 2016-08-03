@@ -39,7 +39,8 @@ class Block(Monitorable):
             object.__setattr__(self, attr, value)
 
     def __getattr__(self, attr):
-        if hasattr(self, "children") and attr in self.children:
+        if attr != "children" and hasattr(self, "children") \
+                and attr in self.children:
             child = self.children[attr]
             if isinstance(child, Attribute):
                 return child.value
