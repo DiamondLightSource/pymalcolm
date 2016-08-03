@@ -17,9 +17,9 @@ To get the source source code and run the unit tests, run::
 
     $ git clone git://github.com/dls-controls/pymalcolm.git
     $ cd malcolm
-    $ virtualenv env
-    $ . env/bin/activate
-    $ pip install nose
+    $ virtualenv --no-site-packages -p /path/to/python2.7 venv27
+    $ . venv27/bin/activate
+    $ pip install -r requirements/test.txt
     $ python setup.py install
     $ python setup.py nosetests
 
