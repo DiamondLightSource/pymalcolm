@@ -7,8 +7,10 @@ from malcolm.core.hook import Hook
 from malcolm.core.methodmeta import takes, only_in, MethodMeta, \
     get_method_decorated
 from malcolm.core.blockmeta import BlockMeta
-from malcolm.vmetas import ChoiceMeta, StringMeta, BooleanMeta
-from malcolm.statemachines import DefaultStateMachine
+from malcolm.vmetas.choicemeta import ChoiceMeta
+from malcolm.vmetas.stringmeta import StringMeta
+from malcolm.vmetas.booleanmeta import BooleanMeta
+from malcolm.statemachines.defaultstatemachine import DefaultStateMachine
 from malcolm.core.block import Block
 
 
@@ -136,18 +138,17 @@ class Controller(Loggable):
                     initial_state=self.state.value, target_state=state):
 
                 # transition is allowed, so set attributes
-                self.state.set_value(state, notify=False)
-                self.status.set_value(message, notify=False)
-                is_busy = state in self.stateMachine.busy_states
-                self.busy.set_value(is_busy, notify=False)
+                self.set_attributes({
+                    self.state: state,
+                    self.status: message,
+                    self.busy: state in self.stateMachine.busy_states,
+                })
 
                 # say which methods can now be called
                 for child in self.block.children:
                     if isinstance(child, MethodMeta):
                         writeable = self.methods_writeable[state][child]
-                        child.set_writeable(writeable, notify=False)
-
-                self.block.notify_subscribers()
+                        child.set_writeable(writeable)
             else:
                 raise TypeError("Cannot transition from %s to %s" %
                                 (self.state.value, state))
