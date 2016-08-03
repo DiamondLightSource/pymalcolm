@@ -1,9 +1,9 @@
-Method
+MethodMeta
 ------
 
-A Method exposes a function call for a Block:
+A MethodMeta exposes a function call for a Block:
 
 .. module:: malcolm.core.method
 
-.. autoclass:: Method
+.. autoclass:: MethodMeta
     :members:

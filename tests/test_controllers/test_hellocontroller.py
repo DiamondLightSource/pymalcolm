@@ -13,11 +13,7 @@ class TestHelloController(unittest.TestCase):
 
     def setUp(self):
         self.block = Mock()
-        self.c = HelloController(MagicMock(), self.block, 'block')
-
-    def test_init(self):
-        self.assertIs(self.block, self.c.block)
-        self.assertEquals(self.c.say_hello.Method, self.block.add_method.call_args[0][1])
+        self.c = HelloController('block', MagicMock())
 
     def test_say_hello(self):
         expected = "Hello test_name"

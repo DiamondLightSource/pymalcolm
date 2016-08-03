@@ -1,4 +1,4 @@
-from malcolm.core.method import takes, REQUIRED, OPTIONAL
+from malcolm.core.methodmeta import takes, REQUIRED, OPTIONAL
 from malcolm.vmetas import StringMeta, NumberMeta
 
 

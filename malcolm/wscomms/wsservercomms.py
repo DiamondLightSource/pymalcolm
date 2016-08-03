@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import json
+import logging
 
 from tornado.websocket import WebSocketHandler
 from tornado.ioloop import IOLoop
@@ -23,6 +24,7 @@ class MalcolmWebSocketHandler(WebSocketHandler):
             message(str): Received message
         """
 
+        logging.debug(message)
         d = json.loads(message, object_pairs_hook=OrderedDict)
         request = Serializable.from_dict(d)
         request.context = self

@@ -20,34 +20,39 @@ class TestInit(unittest.TestCase):
 class TestSetters(unittest.TestCase):
     def setUp(self):
         m = Meta("desc")
-        m.on_changed = Mock(wrap=m.on_changed)
+        m.report_changes = Mock(wrap=m.report_changes)
         self.m = m
 
     def test_set_description(self):
         m = self.m
-        notify = Mock()
         description = "desc2"
-        m.set_description(description, notify)
+        m.set_description(description)
         self.assertEqual(m.description, description)
-        m.on_changed.assert_called_once_with(
-            [["description"], description], notify)
+        m.report_changes.assert_called_once_with(
+            [["description"], description])
 
     def test_set_tags(self):
         m = self.m
-        notify = Mock()
         tags = ["widget:textinput"]
-        m.set_tags(tags, notify=notify)
+        m.set_tags(tags)
         self.assertEquals(tags, m.tags)
-        m.on_changed.assert_called_once_with([["tags"], tags], notify)
+        m.report_changes.assert_called_once_with([["tags"], tags])
 
-    def test_notify_default_is_true(self):
-        m = self.m
-        m.set_description("desc3")
-        m.set_tags([])
-        self.assertEqual(m.on_changed.call_count, 2)
-        calls = m.on_changed.call_args_list
-        self.assertTrue(calls[0][0][1])
-        self.assertTrue(calls[1][0][1])
+    def test_set_writeable(self):
+        meta = self.m
+        writeable = True
+        meta.set_writeable(writeable)
+        self.assertEquals(meta.writeable, writeable)
+        meta.report_changes.assert_called_once_with(
+            [["writeable"], writeable])
+
+    def test_set_label(self):
+        meta = self.m
+        label = "my label"
+        meta.set_label(label)
+        self.assertEquals(meta.label, label)
+        meta.report_changes.assert_called_once_with(
+            [["label"], label])
 
 
 class TestSerialization(unittest.TestCase):
@@ -57,6 +62,8 @@ class TestSerialization(unittest.TestCase):
         self.serialized["typeid"] = "filled_in_by_subclass"
         self.serialized["description"] = "desc"
         self.serialized["tags"] = []
+        self.serialized["writeable"] = False
+        self.serialized["label"] = ""
 
     def test_to_dict(self):
         m = Meta("desc")

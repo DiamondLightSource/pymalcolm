@@ -4,7 +4,7 @@ from malcolm.core.loggable import Loggable
 from malcolm.core.task import Task
 
 
-class Hook(Loggable):
+class Hook(object):
 
     def __call__(self, func):
         """
@@ -33,8 +33,6 @@ class Hook(Loggable):
             "Hook is not in controller"
         assert len(names) == 1, \
             "Hook appears in controller multiple times as %s" % names
-
-        self.set_logger_name("%s.%s" % (controller.block.name, names[0]))
 
         task_queue = controller.process.create_queue()
 

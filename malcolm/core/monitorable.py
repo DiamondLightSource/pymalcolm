@@ -16,21 +16,21 @@ class Monitorable(Loggable, Serializable):
         super(Monitorable, self).set_logger_name(name)
         if self.endpoints:
             for endpoint in self.endpoints:
-                attr = getattr(self, endpoint)
+                attr = self.get_endpoint(endpoint)
                 if hasattr(attr, "set_logger_name"):
                     attr.set_logger_name("%s.%s" % (name, endpoint))
 
-    def on_changed(self, change, notify=True):
+    def report_changes(self, *changes):
         """Propagate change to parent, adding self.name to paths.
 
         Args:
-            change: [[path], value] pair for changed values
+            changes: [[[path], value]] pairs for changed values
         """
         if not hasattr(self, "parent"):
             return
-        path = change[0]
-        path.insert(0, self.name)
-        self.parent.on_changed(change, notify)
+        for path, value in changes:
+            path.insert(0, self.name)
+        self.parent.report_changes(*changes)
 
     def _cast(self, value, type_):
         # Can't use vmetas here as we're the base class...
@@ -44,7 +44,7 @@ class Monitorable(Loggable, Serializable):
             "Expected %s, got %s" % (type_, value)
         return value
 
-    def set_endpoint(self, type_, name, value, notify=True):
+    def set_endpoint(self, type_, name, value, notify):
         if isinstance(type_, list):
             assert len(type_) == 1, \
                 "Can't deal with multi-type list %s" % (type_,)
@@ -66,4 +66,19 @@ class Monitorable(Loggable, Serializable):
         setattr(self, name, value)
         if hasattr(value, "set_parent"):
             value.set_parent(self, name)
-        self.on_changed([[name], serialize_object(value)], notify)
+        if notify:
+            self.report_changes([[name], serialize_object(value)])
+
+    def apply_changes(self, *changes):
+        serialized_changes = []
+        for path, value in changes:
+            ob = self
+            for node in path[:-1]:
+                ob = ob.get_endpoint(node)
+            attr = path[-1]
+            setter = getattr(ob, "set_%s" % attr)
+            setter(value, notify=False)
+            serialized = serialize_object(ob.get_endpoint(attr))
+            serialized_changes.append([path, serialized])
+        self.report_changes(*serialized_changes)
+

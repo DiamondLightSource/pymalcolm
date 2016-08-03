@@ -12,7 +12,7 @@ from malcolm.compat import queue
 from malcolm.core.task import Task
 from malcolm.core.response import Error, Return, Update, Delta
 from malcolm.core.request import Request
-from malcolm.core.method import Method
+from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.future import Future
 from malcolm.core.vmeta import VMeta
 from malcolm.core.attribute import Attribute
@@ -37,9 +37,9 @@ class TestTask(unittest.TestCase):
         self.attr.set_parent(self.block, "testAttr")
         self.attr2 = Attribute(meta)
         self.attr2.set_parent(self.block, "testAttr2")
-        self.method = Method("method for unit tests")
+        self.method = MethodMeta("method for unit tests")
         self.method.set_parent(self.block, "testFunc")
-        self.method2 = Method("method for unit tests")
+        self.method2 = MethodMeta("method for unit tests")
         self.method2.set_parent(self.block, "testFunc")
         self.bad_called_back = False
 

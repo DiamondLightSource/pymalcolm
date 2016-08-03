@@ -113,7 +113,7 @@ class Task(Loggable):
         """Synchronously calls a block method
 
             Args:
-                method (Method): the method to call
+                method (MethodMeta): the method to call
                 params (dict): parameters for the call
 
             Returns:

@@ -8,12 +8,8 @@ class Map(Serializable):
 
     def __init__(self, meta, d=None):
         self.meta = meta
-        d = {} if d is None else d
-        for key, value in d.items():
-            if key in meta.elements:
-                self[key] = value
-            else:
-                raise ValueError("%s is not a valid key for given meta" % key)
+        if d:
+            self.update(d)
 
     @property
     def endpoints(self):
@@ -51,10 +47,13 @@ class Map(Serializable):
             yield e
 
     def update(self, d):
-        if not set(d).issubset(self.meta.elements):
-            raise ValueError("%s contains invalid keys for given meta" % d)
+        invalid = [k for k in d
+                   if k not in self.meta.elements and k != "typeid"]
+        if invalid:
+            raise ValueError("Keys %s are not valid for this map" % (invalid,))
         for k in d:
-            self[k] = d[k]
+            if k != "typeid":
+                self[k] = d[k]
 
     def clear(self):
         for e in self.meta.elements:

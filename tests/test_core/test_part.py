@@ -15,7 +15,7 @@ class TestPart(unittest.TestCase):
     def test_init(self):
         process = Mock()
         params = Mock()
-        p = Part(params, process)
+        p = Part(process, params)
         self.assertEqual(p.params, params)
         self.assertEqual(p.process, process)
 

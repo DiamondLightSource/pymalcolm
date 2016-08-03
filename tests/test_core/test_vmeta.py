@@ -39,29 +39,6 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(expected_error_message, error.exception.args[0])
 
 
-class TestUpdate(unittest.TestCase):
-
-    def test_set_writeable(self):
-        meta = VMeta("test_description")
-        meta.on_changed = Mock(wrap=meta.on_changed)
-        writeable = True
-        notify = Mock()
-        meta.set_writeable(writeable, notify=notify)
-        self.assertEquals(meta.writeable, writeable)
-        meta.on_changed.assert_called_once_with(
-            [["writeable"], writeable], notify)
-
-    def test_set_label(self):
-        meta = VMeta("test_description")
-        meta.on_changed = Mock(wrap=meta.on_changed)
-        label = "my label"
-        notify = Mock()
-        meta.set_label(label, notify=notify)
-        self.assertEquals(meta.label, label)
-        meta.on_changed.assert_called_once_with(
-            [["label"], label], notify)
-
-
 class TestSerialization(unittest.TestCase):
 
     def setUp(self):

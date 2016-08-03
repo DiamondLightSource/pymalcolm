@@ -6,7 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, patch
 
-from malcolm.core.method import takes, REQUIRED
+from malcolm.core.methodmeta import takes, REQUIRED
 from malcolm.vmetas import StringMeta
 from malcolm.core.collection import make_collection, split_into_sections, \
     with_takes_from, substitute_params, make_block_instance, call_with_map
@@ -46,7 +46,7 @@ parts.ca.CADoublePart:
         @with_takes_from(parameters, include_name=True)
         def f():
             pass
-        elements = f.Method.takes.elements
+        elements = f.MethodMeta.takes.elements
         self.assertEquals(len(elements), 2)
         self.assertEquals(list(elements), ["name", "something"])
 
@@ -56,7 +56,7 @@ parts.ca.CADoublePart:
         @with_takes_from(parameters, include_name=False)
         def f():
             pass
-        elements = f.Method.takes.elements
+        elements = f.MethodMeta.takes.elements
         self.assertEquals(len(elements), 1)
         self.assertEquals(list(elements), ["something"])
 
@@ -72,22 +72,18 @@ parts.ca.CADoublePart:
         pass
 
     def test_call_with_map(self):
-        @takes("desc", StringMeta("description"), REQUIRED)
-        def f(params, *args):
-            return 2
+        @takes(
+            "desc", StringMeta("description"), REQUIRED,
+            "foo", StringMeta("optional thing"), "thing"
+        )
+        def f(extra, params):
+            return extra, 2, params.desc, params.foo
 
-        d = dict(desc="my name")
-        CAPart = Mock(wraps=f)
-        ca = Mock(CAPart=CAPart)
+        ca = Mock(CAPart=f)
         parts = Mock(ca=ca)
 
-        result = call_with_map(parts, "ca.CAPart", d, 43)
-        self.assertEqual(result, 2)
-        self.assertEqual(CAPart.call_count, 1)
-        call_args = CAPart.call_args_list[0][0]
-        self.assertEqual(len(call_args), 2)
-        self.assertEqual(call_args[1], 43)
-        self.assertEqual(call_args[0].desc, "my name")
+        result = call_with_map(parts, "ca.CAPart", dict(desc="my name"), "extra")
+        self.assertEqual(result, ("extra", 2, "my name", "thing"))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

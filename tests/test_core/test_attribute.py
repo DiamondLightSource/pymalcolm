@@ -25,27 +25,15 @@ class TestAttribute(unittest.TestCase):
         self.assertIsNone(a.value)
         self.assertEquals("epics:nt/NTAttribute:1.0", a.typeid)
 
-    def test_set_put_function(self):
-        func = Mock()
-        a = Attribute(self.meta)
-        a.set_put_function(func)
-        self.assertIs(func, a.put_func)
 
     def test_set_value(self):
         value = "test_value"
         a = Attribute(self.meta)
-        a.on_changed = Mock(wrap=a.on_changed)
+        a.report_changes = Mock(wrap=a.report_changes)
         a.set_value(value)
         self.assertEquals(a.value, value)
-        a.on_changed.assert_called_once_with([['value'], value], True)
+        a.report_changes.assert_called_once_with([['value'], value])
 
-    def test_put(self):
-        func = Mock()
-        value = "test_value"
-        a = Attribute(self.meta)
-        a.set_put_function(func)
-        a.put(value)
-        func.assert_called_once_with(value)
 
 
 class TestSerialization(unittest.TestCase):
