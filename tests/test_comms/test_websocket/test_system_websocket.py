@@ -1,7 +1,6 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
 
 import time
 # logging
@@ -19,11 +18,9 @@ import json
 # module imports
 from malcolm.controllers.hellocontroller import HelloController
 from malcolm.controllers.clientcontroller import ClientController
-from malcolm.core.block import Block
 from malcolm.core.process import Process
 from malcolm.core.syncfactory import SyncFactory
-from malcolm.wscomms.wsservercomms import WSServerComms
-from malcolm.wscomms.wsclientcomms import WSClientComms
+from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):
@@ -33,7 +30,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.sf = SyncFactory("sync")
         self.process = Process("proc", self.sf)
         HelloController("hello", self.process)
-        self.sc = WSServerComms("sc", self.process, self.socket)
+        self.sc = WebsocketServerComms("sc", self.process, self.socket)
         self.process.start()
         self.sc.start()
 
@@ -76,13 +73,13 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.sf = SyncFactory("sync")
         self.process = Process("proc", self.sf)
         HelloController("hello", self.process)
-        self.sc = WSServerComms("sc", self.process, self.socket)
+        self.sc = WebsocketServerComms("sc", self.process, self.socket)
         self.process.start()
         self.sc.start()
         self.process2 = Process("proc2", self.sf)
         self.block2 = ClientController('hello', self.process2).block
-        self.cc = WSClientComms("cc", self.process2, "ws://localhost:%s/ws" %
-                                self.socket)
+        self.cc = WebsocketClientComms("cc", self.process2, "ws://localhost:%s/ws" %
+                                       self.socket)
         self.process2.start()
         self.cc.start()
 

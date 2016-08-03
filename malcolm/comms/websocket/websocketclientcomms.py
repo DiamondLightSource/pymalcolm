@@ -9,7 +9,7 @@ from malcolm.core.request import Request, Subscribe
 from malcolm.core.serializable import Serializable
 
 
-class WSClientComms(ClientComms):
+class WebsocketClientComms(ClientComms):
     """A class for a client to communicate with the server"""
 
     def __init__(self, name, process, url):
@@ -19,7 +19,7 @@ class WSClientComms(ClientComms):
             process (Process): Process for primitive creation
             url (str): Url for websocket connection. E.g. ws://localhost:8888/ws
         """
-        super(WSClientComms, self).__init__(name, process)
+        super(WebsocketClientComms, self).__init__(name, process)
         self.url = url
         # TODO: Are we starting one or more IOLoops here?
         self.loop = IOLoop.current()

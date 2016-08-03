@@ -31,11 +31,11 @@ class MalcolmWebSocketHandler(WebSocketHandler):
         self.servercomms.on_request(request)
 
 
-class WSServerComms(ServerComms):
+class WebsocketServerComms(ServerComms):
     """A class for communication between browser and server"""
 
     def __init__(self, name, process, port):
-        super(WSServerComms, self).__init__(name, process)
+        super(WebsocketServerComms, self).__init__(name, process)
 
         self.name = name
         self.process = process

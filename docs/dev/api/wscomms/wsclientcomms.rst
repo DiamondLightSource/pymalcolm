@@ -1,7 +1,7 @@
-WSClientComms
+WebsocketClientComms
 -------------
 
 .. module:: malcolm.wscomms.wsclientcomms
 
-.. autoclass:: WSClientComms
+.. autoclass:: WebsocketClientComms
     :members:
