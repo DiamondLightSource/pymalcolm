@@ -36,12 +36,9 @@ class TestCAPart(unittest.TestCase):
             create_meta = MagicMock(return_value=NumberMeta("int32"))
             get_datatype = MagicMock()
 
-        # TODO: defaults?
-        mparams = Map(MyCAPart.Method.takes, MyCAPart.Method.defaults)
-        mparams.update(params)
-        mparams.check_valid()
+        params = MyCAPart.MethodMeta.prepare_input_map(params)
 
-        p = MyCAPart(mparams, MagicMock())
+        p = MyCAPart(MagicMock(), params)
         p.set_logger_name("something")
         list(p.create_attributes())
         return p
@@ -86,7 +83,7 @@ class TestCAPart(unittest.TestCase):
     def test_caput(self):
         catools.caget.return_value = caint(3)
         p = self.create_part()
-        p.attr.put(32)
+        p.caput(32)
         datatype = p.get_datatype.return_value
         catools.caput.assert_called_once_with(
             "pv", 32, wait=True, timeout=None, datatype=datatype)

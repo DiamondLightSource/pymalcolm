@@ -40,8 +40,7 @@ class CAPart(Part):
         self.attr = None
         # The attribute we will be publishing
         self.attr = Attribute(self.meta)
-        self.attr.set_put_function(self.caput)
-        yield self.name, self.attr
+        yield self.name, self.attr, self.caput
 
     def create_meta(self, description):
         raise NotImplementedError

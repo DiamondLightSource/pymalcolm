@@ -1,7 +1,6 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
 
 import time
 # logging
@@ -19,11 +18,9 @@ import json
 # module imports
 from malcolm.controllers.hellocontroller import HelloController
 from malcolm.controllers.clientcontroller import ClientController
-from malcolm.core.block import Block
 from malcolm.core.process import Process
 from malcolm.core.syncfactory import SyncFactory
-from malcolm.wscomms.wsservercomms import WSServerComms
-from malcolm.wscomms.wsclientcomms import WSClientComms
+from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):
@@ -32,9 +29,8 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
     def setUp(self):
         self.sf = SyncFactory("sync")
         self.process = Process("proc", self.sf)
-        block = Block()
-        HelloController(self.process, block,'hello')
-        self.sc = WSServerComms("sc", self.process, self.socket)
+        HelloController("hello", self.process)
+        self.sc = WebsocketServerComms("sc", self.process, self.socket)
         self.process.start()
         self.sc.start()
 
@@ -43,12 +39,11 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.sc.wait()
         self.process.stop()
 
-
     @gen.coroutine
     def send_message(self):
         conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
         req = dict(
-            type="Post",
+            type="malcolm:core/Post:1.0",
             id=0,
             endpoint=["hello", "say_hello"],
             parameters=dict(
@@ -60,7 +55,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         resp = json.loads(resp)
         self.assertEqual(resp, dict(
             id=0,
-            type="Return",
+            type="malcolm:core/Return:1.0",
             value=dict(
                 greeting="Hello me"
             )
@@ -71,21 +66,27 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.send_message()
 
 
-class TestSystemWSCommsServerAndClient(TestSystemWSCommsServerOnly):
+class TestSystemWSCommsServerAndClient(unittest.TestCase):
     socket = 8882
 
     def setUp(self):
-        super(TestSystemWSCommsServerAndClient, self).setUp()
+        self.sf = SyncFactory("sync")
+        self.process = Process("proc", self.sf)
+        HelloController("hello", self.process)
+        self.sc = WebsocketServerComms("sc", self.process, self.socket)
+        self.process.start()
+        self.sc.start()
         self.process2 = Process("proc2", self.sf)
-        self.block2 = Block()
-        ClientController(self.process2, self.block2, 'hello')
-        self.cc = WSClientComms("cc", self.process2, "ws://localhost:%s/ws" %
-                                self.socket)
+        self.block2 = ClientController('hello', self.process2).block
+        self.cc = WebsocketClientComms("cc", self.process2, "ws://localhost:%s/ws" %
+                                       self.socket)
         self.process2.start()
         self.cc.start()
 
     def tearDown(self):
-        super(TestSystemWSCommsServerAndClient, self).tearDown()
+        self.sc.stop()
+        self.sc.wait()
+        self.process.stop()
         self.cc.stop()
         self.cc.wait()
         self.process2.stop()

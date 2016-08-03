@@ -12,7 +12,7 @@ from mock import MagicMock, call
 
 # module imports
 from malcolm.core.process import \
-    Process, BlockChanged, BlockNotify, PROCESS_STOP, BlockAdd, BlockRespond, \
+    Process, BlockChanges, PROCESS_STOP, BlockAdd, BlockRespond, \
     BlockList
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Subscribe, Post, Get
@@ -124,12 +124,11 @@ class TestProcess(unittest.TestCase):
         p = Process("proc", MagicMock())
         p_block = p.process_block
         self.assertEquals(p.name, p_block.name)
-        self.assertEquals(Attribute, type(p_block.blocks))
-        self.assertEquals(StringArrayMeta, type(p_block.blocks.meta))
-        self.assertEquals("blocks", p_block.blocks.name)
-        self.assertEquals("meta", p_block.blocks.meta.name)
+        self.assertEquals(Attribute, type(p_block["blocks"]))
+        self.assertEquals(StringArrayMeta, type(p_block["blocks"].meta))
+        self.assertEquals([], p_block.blocks)
         self.assertEquals("Blocks hosted by this Process",
-                          p_block.blocks.meta.description)
+                          p_block["blocks"].meta.description)
 
     def test_update_block_list(self):
         p = Process("proc", MagicMock())
@@ -140,36 +139,19 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(p._client_comms, {})
         p._handle_block_list(request)
         self.assertEqual(p._client_comms, dict(cc=["myblock"]))
-        self.assertEqual(p.process_block.remoteBlocks.value, ["myblock"])
+        self.assertEqual(p.process_block.remoteBlocks, ["myblock"])
         self.assertEqual(p.get_client_comms("myblock"), "cc")
 
 
 class TestSubscriptions(unittest.TestCase):
 
-    def test_on_changed(self):
+    def test_report_changes(self):
         change = [["path"], "value"]
         s = MagicMock()
         p = Process("proc", s)
         s.reset_mock()
-        p.on_changed(change, notify=False)
-        p.q.put.assert_called_once_with(BlockChanged(change=change))
-
-    def test_on_changed_with_notify(self):
-        change = [["path"], "value"]
-        s = MagicMock()
-        p = Process("proc", s)
-        s.reset_mock()
-        p.on_changed(change)
-        p.q.put.assert_has_calls([
-            call(BlockChanged(change=change)),
-            call(BlockNotify(name="path"))])
-
-    def test_notify(self):
-        s = MagicMock()
-        p = Process("proc", s)
-        s.reset_mock()
-        p.notify_subscribers("block")
-        p.q.put.assert_called_once_with(BlockNotify(name="block"))
+        p.report_changes(change)
+        p.q.put.assert_called_once_with(BlockChanges(changes=[change]))
 
     def test_subscribe(self):
         block = MagicMock(
@@ -186,8 +168,7 @@ class TestSubscriptions(unittest.TestCase):
         p._handle_block_add(BlockAdd(block))
         p.recv_loop()
 
-        self.assertEquals(OrderedDict(block=[sub_1, sub_2]),
-                          p._subscriptions)
+        self.assertEquals([sub_1, sub_2], p._subscriptions)
         response_1 = sub_1.response_queue.put.call_args[0][0]
         response_2 = sub_2.response_queue.put.call_args[0][0]
         self.assertEquals({"attr": "value", "inner": {"attr2": "other"}},
@@ -204,14 +185,13 @@ class TestSubscriptions(unittest.TestCase):
         sub_2 = MagicMock()
         sub_2.endpoint = ["block"]
         sub_2.delta = True
-        changes_1 = [["block", "attr"]]
-        request_1 = BlockChanged(changes_1)
-        request_2 = BlockNotify(block.name)
+        changes_1 = [[["block", "attr"]]]
+        request_1 = BlockChanges(changes_1)
         s = MagicMock()
         p = Process("proc", s)
-        p._subscriptions["block"] = [sub_1, sub_2]
+        p._subscriptions = [sub_1, sub_2]
         p.q.get = MagicMock(
-            side_effect=[request_1, request_2, PROCESS_STOP])
+            side_effect=[request_1, PROCESS_STOP])
 
         p._handle_block_add(BlockAdd(block))
         p.recv_loop()
@@ -222,40 +202,6 @@ class TestSubscriptions(unittest.TestCase):
         response_2 = sub_2.response_queue.put.call_args[0][0]
         self.assertEquals({"attr2": "other"}, response_1.value)
         self.assertEquals([[["attr"]]], response_2.changes)
-
-    def test_overlapped_changes(self):
-        block = MagicMock(
-            to_dict=MagicMock(return_value={"attr": "value", "attr2": "other"}))
-        block.name = "block"
-        sub_1 = MagicMock()
-        sub_1.endpoint = ["block"]
-        sub_1.delta = False
-        sub_2 = MagicMock()
-        sub_2.endpoint = ["block"]
-        sub_2.delta = True
-        changes_1 = [["block", "attr"], "changing_value"]
-        changes_2 = [["block", "attr"], "final_value"]
-        request_1 = BlockChanged(changes_1)
-        request_2 = BlockChanged(changes_2)
-        request_3 = BlockNotify(block.name)
-        s = MagicMock()
-        p = Process("proc", s)
-        p._subscriptions["block"] = [sub_1, sub_2]
-        p.q.get = MagicMock(
-            side_effect=[request_1, request_2, request_3, PROCESS_STOP])
-
-        p._handle_block_add(BlockAdd(block))
-        p.recv_loop()
-
-        self.assertEqual(sub_1.response_queue.put.call_count, 1)
-        self.assertEqual(sub_2.response_queue.put.call_count, 1)
-        response_1 = sub_1.response_queue.put.call_args[0][0]
-        response_2 = sub_2.response_queue.put.call_args[0][0]
-        self.assertEquals({"attr": "final_value", "attr2": "other"},
-                          response_1.value)
-        self.assertEquals(
-            [[["attr"], "changing_value"], [["attr"], "final_value"]],
-            response_2.changes)
 
     def test_partial_structure_subscriptions(self):
         block_1 = MagicMock(
@@ -273,19 +219,16 @@ class TestSubscriptions(unittest.TestCase):
         sub_2.endpoint = ["block_1", "inner"]
         sub_2.delta = True
 
-        changes_1 = [["block_1", "inner", "attr2"], "new_value"]
-        changes_2 = [["block_1", "attr"], "new_value"]
-        changes_3 = [["block_2", "attr"], "block_2_value"]
-        request_1 = BlockChanged(changes_1)
-        request_2 = BlockChanged(changes_2)
-        request_3 = BlockChanged(changes_3)
-        request_4 = BlockNotify(block_1.name)
-        request_5 = BlockNotify(block_2.name)
+        changes_1 = [[["block_1", "inner", "attr2"], "new_value"],
+                     [["block_1", "attr"], "new_value"]]
+        changes_2 = [[["block_2", "attr"], "block_2_value"]]
+        request_1 = BlockChanges(changes_1)
+        request_2 = BlockChanges(changes_2)
         p = Process("proc", MagicMock())
         p.q.get = MagicMock(side_effect=[
-            request_1, request_2, request_3, request_4, request_5,
+            request_1, request_2,
             PROCESS_STOP])
-        p._subscriptions["block_1"] = [sub_1, sub_2]
+        p._subscriptions = [sub_1, sub_2]
 
         p._handle_block_add(BlockAdd(block_1))
         p._handle_block_add(BlockAdd(block_2))
@@ -296,66 +239,6 @@ class TestSubscriptions(unittest.TestCase):
         self.assertEquals({"attr2": "new_value"}, response_1.value)
         self.assertEquals([[["attr2"], "new_value"]], response_2.changes)
 
-    def test_multiple_notifies_single_change(self):
-        block_1 = MagicMock(
-            to_dict=MagicMock(return_value={"attr": "initial_value"}))
-        block_1.name = "block_1"
-        block_2 = MagicMock(
-            to_dict=MagicMock(return_value={"attr2": "initial_value"}))
-        block_2.name = "block_2"
-        sub_1 = MagicMock()
-        sub_1.endpoint = ["block_1"]
-        sub_1.delta = False
-        sub_2 = MagicMock()
-        sub_2.endpoint = ["block_1"]
-        sub_2.delta = True
-        sub_3 = MagicMock()
-        sub_3.endpoint = ["block_2"]
-        sub_3.delta = False
-        sub_4 = MagicMock()
-        sub_4.endpoint = ["block_2"]
-        sub_4.delta = True
-        change_1 = [["block_1", "attr"], "final_value"]
-        change_2 = [["block_2", "attr2"], "final_value"]
-        request_1 = BlockNotify("block_1")
-        request_2 = BlockChanged(change_1)
-        request_3 = BlockChanged(change_2)
-        request_4 = BlockNotify("block_1")
-        request_5 = BlockNotify("block_1")
-        request_6 = BlockNotify("block_2")
-        p = Process("proc", MagicMock())
-        p.q.get = MagicMock(side_effect=[request_1, request_2, request_3,
-                                         request_4, request_5, request_6,
-                                         PROCESS_STOP])
-        p.q.put = MagicMock(side_effect=p.q.put)
-        p._subscriptions["block_1"] = [sub_1, sub_2]
-        p._subscriptions["block_2"] = [sub_3, sub_4]
-        p._handle_block_add(BlockAdd(block_1))
-        p._handle_block_add(BlockAdd(block_2))
-
-        p.recv_loop()
-
-        call_list = sub_1.response_queue.put.call_args_list
-        self.assertEquals(1, len(call_list))
-        self.assertIsInstance(call_list[0][0][0], Update)
-        self.assertEquals({"attr": "final_value"}, call_list[0][0][0].value)
-
-        call_list = sub_2.response_queue.put.call_args_list
-        self.assertEquals(1, len(call_list))
-        self.assertIsInstance(call_list[0][0][0], Delta)
-        self.assertEquals([[["attr"], "final_value"]],
-                          call_list[0][0][0].changes)
-
-        call_list = sub_3.response_queue.put.call_args_list
-        self.assertEquals(1, len(call_list))
-        self.assertIsInstance(call_list[0][0][0], Update)
-        self.assertEquals({"attr2": "final_value"}, call_list[0][0][0].value)
-
-        call_list = sub_4.response_queue.put.call_args_list
-        self.assertEquals(1, len(call_list))
-        self.assertIsInstance(call_list[0][0][0], Delta)
-        self.assertEquals([[["attr2"], "final_value"]],
-                          call_list[0][0][0].changes)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

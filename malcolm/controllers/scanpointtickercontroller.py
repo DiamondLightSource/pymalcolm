@@ -1,6 +1,6 @@
 import time
 
-from malcolm.core import Attribute, Controller, takes, Method, REQUIRED
+from malcolm.core import Attribute, Controller, takes, MethodMeta, REQUIRED
 from malcolm.vmetas import PointGeneratorMeta, StringMeta, NumberMeta
 from malcolm.statemachines import RunnableDeviceStateMachine
 
@@ -10,17 +10,14 @@ from malcolm.statemachines import RunnableDeviceStateMachine
 class ScanPointTickerController(Controller):
 
     def create_attributes(self):
-        self.value = Attribute(NumberMeta(description="Value"))
-        self.value.meta.set_dtype('float64')
-        yield 'value', self.value
-        self.generator = Attribute(
-            PointGeneratorMeta(description="Scan Point Generator"))
-        yield "generator", self.generator
-        self.axis_name = Attribute(StringMeta(description="Name of the axis"))
-        yield "axis_name", self.axis_name
-        self.exposure = Attribute(NumberMeta(description="Exposure time"))
-        self.value.meta.set_dtype('float64')
-        yield "exposure", self.exposure
+        self.value = Attribute(NumberMeta("float64", "Value"))
+        yield 'value', self.value, None
+        self.generator = Attribute(PointGeneratorMeta("Scan Point Generator"))
+        yield "generator", self.generator, None
+        self.axis_name = Attribute(StringMeta("Name of the axis"))
+        yield "axis_name", self.axis_name, None
+        self.exposure = Attribute(NumberMeta("float64", "Exposure time"))
+        yield "exposure", self.exposure, None
 
     @takes("generator", PointGeneratorMeta(
                         description="Generator instance"), REQUIRED,
@@ -36,14 +33,13 @@ class ScanPointTickerController(Controller):
             axis_name(String): Specifier for axis
             exposure(Double): Exposure time for detector
         """
+        self.set_attributes({
+            self.generator: params.generator,
+            self.axis_name: params.axis_name,
+            self.exposure: params.exposure,
+        })
 
-        self.generator.set_value(params.generator)
-        self.axis_name.set_value(params.axis_name)
-        self.exposure.set_value(params.exposure)
-        self.exposure.meta.set_dtype('float64')
-        self.block.notify_subscribers()
-
-    @Method.wrap_method
+    @MethodMeta.wrap_method
     def run(self):
         """
         Start the ticker process
@@ -54,5 +50,4 @@ class ScanPointTickerController(Controller):
         axis_name = self.axis_name.value
         for point in self.generator.value.iterator():
             self.value.set_value(point.positions[axis_name])
-            self.block.notify_subscribers()
             time.sleep(self.exposure.value)

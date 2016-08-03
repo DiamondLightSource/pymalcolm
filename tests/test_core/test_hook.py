@@ -45,15 +45,6 @@ class TestHook(unittest.TestCase):
         self.c = DummyController()
         self.c.block = block_mock
 
-    def test_run_sets_logger_name(self):
-        self.c.parts = []
-        self.c.process = MagicMock()
-        part = DummyPart1()
-
-        part.do_thing.Hook.run(self.c)
-
-        self.assertEqual(part.do_thing.Hook._logger.name, "TestBlock.Configuring")
-
     @patch('malcolm.core.hook.Task')
     def test_run_makes_correct_calls(self, task_mock):
         process_mock = MagicMock()

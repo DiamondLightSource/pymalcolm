@@ -6,7 +6,7 @@ import malcolm.parameters
 import malcolm.controllers
 import malcolm.parts
 import malcolm.collections
-from malcolm.core.method import takes, REQUIRED
+from malcolm.core.methodmeta import takes, REQUIRED
 from malcolm.vmetas import StringMeta
 from malcolm.compat import base_string
 
@@ -103,7 +103,7 @@ def with_takes_from(parameters, include_name):
         include_name (bool): If True then put a "name" meta first
 
     Returns:
-        function: Decorator that will set a "Method" attribute on the callable
+        function: Decorator that will set a "MethodMeta" attribute on the callable
             with the arguments it should take
     """
     # find all the Takes objects and create them
@@ -190,11 +190,6 @@ def call_with_map(ob, name, d, *args):
     for n in split:
         ob = getattr(ob, n)
 
-    # TODO: get params from method
-    class Params(object):
-        pass
-
-    params = Params()
-    for k, v in d.items():
-        setattr(params, k, v)
-    return ob(params, *args)
+    params = ob.MethodMeta.prepare_input_map(d)
+    args += (params,)
+    return ob(*args)

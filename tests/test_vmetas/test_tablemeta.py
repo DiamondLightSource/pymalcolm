@@ -26,49 +26,37 @@ class TestTableMetaInit(unittest.TestCase):
 class TestTableMetaSetters(unittest.TestCase):
     def setUp(self):
         tm = TableMeta("desc")
-        tm.on_changed = Mock(wrap=tm.on_changed)
+        tm.report_changes = Mock(wrap=tm.report_changes)
         self.tm = tm
 
     def test_set_elements(self):
         tm = self.tm
-        notify = Mock()
         elements = OrderedDict()
         elements["col1"]=StringArrayMeta()
         elements["col2"]=StringArrayMeta()
-        tm.set_elements(elements, notify)
+        tm.set_elements(elements)
         serialized = OrderedDict((k, v.to_dict()) for k, v in elements.items())
         self.assertEqual(elements, tm.elements)
-        tm.on_changed.assert_called_once_with(
-            [["elements"], serialized], notify)
+        tm.report_changes.assert_called_once_with(
+            [["elements"], serialized])
 
     def test_set_elements_from_serialized(self):
         tm = self.tm
-        notify = Mock()
         elements = OrderedDict()
         elements["col1"]=StringArrayMeta()
         elements["col2"]=StringArrayMeta()
         serialized = OrderedDict((k, v.to_dict()) for k, v in elements.items())
-        tm.set_elements(serialized, notify)
+        tm.set_elements(serialized)
         self.assertEqual(len(elements), len(tm.elements))
         for name, e in tm.elements.items():
             self.assertEqual(e.to_dict(), elements[name].to_dict())
 
     def test_set_headings(self):
         tm = self.tm
-        notify = Mock()
         headings = ["boo", "foo"]
-        tm.set_headings(headings, notify=notify)
+        tm.set_headings(headings)
         self.assertEquals(headings, tm.headings)
-        tm.on_changed.assert_called_once_with([["headings"], headings], notify)
-
-    def test_notify_default_is_true(self):
-        tm = self.tm
-        tm.set_elements({})
-        tm.set_headings([])
-        self.assertEqual(tm.on_changed.call_count, 2)
-        calls = tm.on_changed.call_args_list
-        self.assertTrue(calls[0][0][1])
-        self.assertTrue(calls[1][0][1])
+        tm.report_changes.assert_called_once_with([["headings"], headings])
 
 
 class TestTableMetaSerialization(unittest.TestCase):

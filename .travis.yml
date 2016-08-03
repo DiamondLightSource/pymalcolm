@@ -23,7 +23,8 @@ install:
   - python setup.py bdist_egg
   
 # command to run tests
-script: nosetests
+script:
+  - nosetests tests
 
 after_script:
   - coveralls

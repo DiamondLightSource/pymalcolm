@@ -1,39 +1,13 @@
+import functools
 from collections import OrderedDict
 
 from malcolm.core.monitorable import Monitorable
-from malcolm.core.serializable import Serializable
+from malcolm.core.serializable import Serializable, serialize_object
 from malcolm.core.request import Put, Post
-from malcolm.core.response import Return
+from malcolm.core.response import Return, Error
+from malcolm.core.blockmeta import BlockMeta
 from malcolm.core.attribute import Attribute
-from malcolm.core.method import Method
-
-
-class DummyLock(object):
-
-    def acquire(self):
-        pass
-
-    def release(self):
-        pass
-
-    def __enter__(self):
-        self.acquire()
-
-    def __exit__(self, type_, value, traceback):
-        self.release()
-        return False
-
-
-class LockRelease(object):
-    def __init__(self, lock):
-        self.lock = lock
-
-    def __enter__(self):
-        self.lock.release()
-
-    def __exit__(self, type_, value, traceback):
-        self.lock.acquire()
-        return False
+from malcolm.core.methodmeta import MethodMeta
 
 
 @Serializable.register_subclass("malcolm:core/Block:1.0")
@@ -41,79 +15,69 @@ class Block(Monitorable):
     """Object consisting of a number of Attributes and Methods"""
 
     def __init__(self):
-        self.methods = OrderedDict()
-        self.attributes = OrderedDict()
-        self.lock = DummyLock()
+        self._writeable_functions = OrderedDict()
+        self.children = OrderedDict()
 
     @property
     def endpoints(self):
-        return list(self.attributes.keys()) + list(self.methods.keys())
+        return list(self.children)
 
-    def add_attribute(self, child_name, attribute, notify=True):
-        """Add an Attribute to the block and set the block as its parent"""
-        self.add_child(child_name, attribute, self.attributes)
-        self.on_changed([[attribute.name], attribute.to_dict()], notify)
+    def get_endpoint(self, endpoint):
+        return self.children[endpoint]
 
-    def add_method(self, child_name, method, notify=True):
-        """Add a Method to the Block
+    def __getitem__(self, key):
+        return self.children[key]
 
-        Args:
-            method (Method): The Method object that has already been filled in
-        """
-        self.add_child(child_name, method, self.methods)
-        self.on_changed([[method.name], method.to_dict()], notify)
-
-    def add_child(self, child_name, attribute_or_method, d):
-        """Add an Attribute or Method to the block and set the block as its
-        parent, but don't notify"""
-        assert not hasattr(self, child_name), \
-            "Attribute or Method %s already defined for Block %s" \
-            % (child_name, self.name)
-        setattr(self, child_name, attribute_or_method)
-        d[child_name] = attribute_or_method
-        attribute_or_method.set_parent(self, child_name)
-
-    def _where_child_stored(self, child):
-        if isinstance(child, Method):
-            return self.methods
-        elif isinstance(child, Attribute):
-            return self.attributes
-
-    def handle_change(self, change):
-        """
-        Set a given attribute to a new value
-        Args:
-            change(tuple): Attribute path and value e.g. (["value"], 5)
-        """
-        endpoint, value = change
-        child_name = endpoint[0]
-        if not hasattr(self, child_name):
-            # Child doesn't exist, create it
-            if len(endpoint) > 1:
-                raise ValueError("Missing substructure at %s" % child_name)
-            child_cls = Serializable.lookup_subclass(value)
-            child = child_cls.from_dict(child_name, value)
-            d = self._where_child_stored(child)
-            assert d is not None, \
-                "Change %s deserialized to unknown object %s" % (change, child)
-            self.add_child(child, d)
+    def __setattr__(self, attr, value):
+        if hasattr(self, "children") and attr in self.children:
+            child = self.children[attr]
+            assert isinstance(child, Attribute), \
+                "Expected Attribute, got %r" (child,)
+            func = self._writeable_functions[attr]
+            func(child, value)
         else:
-            # Let super class set child attr
-            super(Block, self).handle_change(change)
+            object.__setattr__(self, attr, value)
 
-    def replace_children(self, children, notify=True):
-        for method_name in self.methods:
-            delattr(self, method_name)
-        self.methods.clear()
-        for attr_name in self.attributes:
-            delattr(self, attr_name)
-        self.attributes.clear()
+    def __getattr__(self, attr):
+        if attr != "children" and hasattr(self, "children") \
+                and attr in self.children:
+            child = self.children[attr]
+            if isinstance(child, Attribute):
+                return child.value
+            else:
+                func = self._writeable_functions[attr]
+                return functools.partial(self._call_method, child, func)
+        else:
+            raise AttributeError(attr)
+
+    def _call_method(self, methodmeta, func, *args, **kwargs):
+        for name, v in zip(methodmeta.takes.elements, args):
+            assert name not in kwargs, \
+                "%s specified as positional and keyword args" % (name,)
+            kwargs[name] = v
+        return methodmeta.call_post_function(func, kwargs)
+
+    def set_children(self, children, writeable_functions={}):
+        """Set the child objects"""
+        assert isinstance(children, dict), \
+            "Expected dict, got %r" % children
         for name, child in children.items():
-            d = self._where_child_stored(child)
-            assert d is not None, \
-                "Don't know how to add a child %s" % child
-            self.add_child(name, child, d)
-        self.on_changed([[], self.to_dict()], notify)
+            assert name != "children", "Block child can't be called children"
+            if name == "meta":
+                assert isinstance(child, BlockMeta), \
+                    "Child called meta should be a BlockMeta, got %r" \
+                    % (child,)
+            else:
+                assert isinstance(child, (Attribute, MethodMeta)), \
+                    "Expected %s to be Attribute or MethodMeta, got %r" \
+                    % (name, child)
+        self._writeable_functions = OrderedDict()
+        self.children = children
+        for name, child in self.children.items():
+            child.set_parent(self, name)
+            if name in writeable_functions:
+                self._writeable_functions[name] = writeable_functions[name]
+        self.report_changes([[], serialize_object(self)])
 
     def notify_subscribers(self):
         if hasattr(self, "parent"):
@@ -127,25 +91,16 @@ class Block(Monitorable):
             request(Request): Request object specifying action
         """
         self.log_debug("Received request %s", request)
-        assert isinstance(request, Post) or isinstance(request, Put), \
-            "Expected Post or Put request, received %s" % request.typeid
-        with self.lock:
-            if isinstance(request, Post):
-                if len(request.endpoint) != 2:
-                    raise ValueError("POST endpoint requires 2 part endpoint")
-                method_name = request.endpoint[1]
-                response = self.methods[method_name].get_response(request)
-            elif isinstance(request, Put):
-                attr_name = request.endpoint[1]
-                if len(request.endpoint) != 3:
-                    raise ValueError("PUT endpoint requires 3 part endpoint")
-                assert request.endpoint[2] == "value", \
-                    "Can only put to an attribute value"
-                self.attributes[attr_name].put(request.value)
-                self.attributes[attr_name].set_value(request.value)
-                response = Return(request.id_, request.context)
-            self.parent.block_respond(response, request.response_queue)
+        try:
+            assert isinstance(request, Post) or isinstance(request, Put), \
+                "Expected Post or Put request, received %s" % request.typeid
+            child_name = request.endpoint[1]
+            child = self.children[child_name]
+            writeable_function = self._writeable_functions[child_name]
+            result = child.handle_request(request, writeable_function)
+            response = Return(request.id_, request.context, result)
+        except Exception as e:
+            self.log_exception("Exception while handling %s" % request)
+            response = Error(request.id_, request.context, str(e))
+        self.parent.block_respond(response, request.response_queue)
 
-
-    def lock_released(self):
-        return LockRelease(self.lock)

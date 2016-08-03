@@ -22,6 +22,8 @@ class TestSerialization(unittest.TestCase):
         self.serialized["typeid"] = "malcolm:core/BlockMeta:1.0"
         self.serialized["description"] = "desc"
         self.serialized["tags"] = []
+        self.serialized["writeable"] = False
+        self.serialized["label"] = ""
 
     def test_to_dict(self):
         m = BlockMeta("desc")
@@ -31,6 +33,8 @@ class TestSerialization(unittest.TestCase):
         m = BlockMeta.from_dict(self.serialized)
         self.assertEquals(m.description, "desc")
         self.assertEquals(m.tags, [])
+        self.assertEquals(m.writeable, False)
+        self.assertEquals(m.label, "")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

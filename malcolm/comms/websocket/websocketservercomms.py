@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import json
+import logging
 
 from tornado.websocket import WebSocketHandler
 from tornado.ioloop import IOLoop
@@ -23,17 +24,18 @@ class MalcolmWebSocketHandler(WebSocketHandler):
             message(str): Received message
         """
 
+        logging.debug(message)
         d = json.loads(message, object_pairs_hook=OrderedDict)
         request = Serializable.from_dict(d)
         request.context = self
         self.servercomms.on_request(request)
 
 
-class WSServerComms(ServerComms):
+class WebsocketServerComms(ServerComms):
     """A class for communication between browser and server"""
 
     def __init__(self, name, process, port):
-        super(WSServerComms, self).__init__(name, process)
+        super(WebsocketServerComms, self).__init__(name, process)
 
         self.name = name
         self.process = process

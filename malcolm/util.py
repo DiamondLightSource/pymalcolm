@@ -23,7 +23,7 @@ def import_child_packages(package_name):
 def find_decorated_classes(module):
     for n in dir(module):
         cls = getattr(module, n)
-        if hasattr(cls, "Method"):
+        if hasattr(cls, "MethodMeta"):
             module_name = module.__name__.split(".")[-1]
             if n.lower() != module_name:
                 logging.warning("Classname %s when lower cased should be %s" %

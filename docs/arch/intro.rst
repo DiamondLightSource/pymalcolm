@@ -30,7 +30,7 @@ Users of Malcolm need to know what the following terms mean:
   the State of a Block would be an Attribute, as would the CurrentStep of a
   scan.
 
-- Methods: Expose a function call. You can Call a Method with a (possibly empty)
+- Methods: Expose a function call. You can Call a MethodMeta with a (possibly empty)
   Map of arguments, and it will return a (possibly empty) Map of return values.
   In a client Block, the Call will be forwarded to the server Block, and the
   return value returned to the caller. For example, configure() and run() would
@@ -47,19 +47,19 @@ Process2 has a client of Block 2 as a local object:
         frame Block1 {
             [Attribute 1]
             [Attribute 2]
-            [Method 1]
+            [MethodMeta 1]
         }
 
         frame Block2 {
             [Attribute 1] as B2.A1
-            [Method 1] as B2.M1
+            [MethodMeta 1] as B2.M1
         }
     }
 
     frame Process2 {
         frame Block2Client {
             [Attribute 1] as B2C.A1
-            [Method 1] as B2C.M1
+            [MethodMeta 1] as B2C.M1
         }
     }
 

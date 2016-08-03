@@ -13,8 +13,7 @@ from malcolm.vmetas import StringArrayMeta
 PROCESS_STOP = object()
 
 # Internal update messages
-BlockNotify = namedtuple("BlockNotify", "name")
-BlockChanged = namedtuple("BlockChanged", "change")
+BlockChanges = namedtuple("BlockChanges", "changes")
 BlockRespond = namedtuple("BlockRespond", "response, response_queue")
 BlockAdd = namedtuple("BlockAdd", "block")
 BlockList = namedtuple("BlockList", "client_comms, blocks")
@@ -32,16 +31,14 @@ class Process(Loggable):
         self._block_state_cache = Cache()
         self._recv_spawned = None
         self._other_spawned = []
-        self._subscriptions = OrderedDict()  # block name -> list of subs
-        self._last_changes = OrderedDict()  # block name -> list of changes
+        self._subscriptions = []
         self._client_comms = OrderedDict()  # client comms -> list of blocks
         self._handle_functions = {
             Post: self._forward_block_request,
             Put: self._forward_block_request,
             Get: self._handle_get,
             Subscribe: self._handle_subscribe,
-            BlockNotify: self._handle_block_notify,
-            BlockChanged: self._handle_block_changed,
+            BlockChanges: self._handle_block_changes,
             BlockRespond: self._handle_block_respond,
             BlockAdd: self._handle_block_add,
             BlockList: self._handle_block_list,
@@ -123,12 +120,13 @@ class Process(Loggable):
 
     def create_process_block(self):
         self.process_block = Block()
-        a = Attribute(StringArrayMeta(
-            description="Blocks hosted by this Process"))
-        self.process_block.add_attribute("blocks", a)
-        a = Attribute(StringArrayMeta(
-                description="Blocks reachable via ClientComms"))
-        self.process_block.add_attribute("remoteBlocks", a)
+        # TODO: add a meta here
+        children = OrderedDict()
+        children["blocks"] = Attribute(StringArrayMeta(
+            description="Blocks hosted by this Process"), [])
+        children["remoteBlocks"] = Attribute(StringArrayMeta(
+                description="Blocks reachable via ClientComms"), [])
+        self.process_block.set_children(children)
         self.add_block(self.name, self.process_block)
 
     def update_block_list(self, client_comms, blocks):
@@ -139,23 +137,19 @@ class Process(Loggable):
         remotes = []
         for blocks in self._client_comms.values():
             remotes += [b for b in blocks if b not in remotes]
-        self.process_block.remoteBlocks.set_value(remotes)
+        self.process_block["remoteBlocks"].set_value(remotes)
 
-    def notify_subscribers(self, block_name):
-        self.q.put(BlockNotify(name=block_name))
-
-    def _handle_block_notify(self, request):
+    def _handle_block_changes(self, request):
         """Update subscribers with changes and applies stored changes to the
         cached structure"""
         # update cached dict
-        for delta in self._last_changes.setdefault(request.name, []):
-            self._block_state_cache.delta_update(delta)
+        self._block_state_cache.apply_changes(*request.changes)
 
-        for subscription in self._subscriptions.setdefault(request.name, []):
+        for subscription in self._subscriptions:
             endpoint = subscription.endpoint
             # find stuff that's changed that is relevant to this subscriber
             changes = []
-            for change in self._last_changes[request.name]:
+            for change in request.changes:
                 change_path = change[0]
                 # look for a change_path where the beginning matches the
                 # endpoint path, then strip away the matching part and add
@@ -183,20 +177,9 @@ class Process(Loggable):
                         subscription.id_, subscription.context, d)
                 self.log_debug("Responding to subscription %s", response)
                 subscription.response_queue.put(response)
-        self._last_changes[request.name] = []
 
-    def on_changed(self, change, notify=True):
-        self.q.put(BlockChanged(change=change))
-        if notify:
-            block_name = change[0][0]
-            self.notify_subscribers(block_name)
-
-    def _handle_block_changed(self, request):
-        """Record changes to made to a block"""
-        # update changes
-        path = request.change[0]
-        block_changes = self._last_changes.setdefault(path[0], [])
-        block_changes.append(request.change)
+    def report_changes(self, *changes):
+        self.q.put(BlockChanges(changes=list(changes)))
 
     def block_respond(self, response, response_queue):
         self.q.put(BlockRespond(response, response_queue))
@@ -225,13 +208,12 @@ class Process(Loggable):
         self._block_state_cache[block.name] = block.to_dict()
         block.lock = self.create_lock()
         # Regenerate list of blocks
-        self.process_block.blocks.set_value(list(self._blocks))
+        self.process_block["blocks"].set_value(list(self._blocks))
 
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current
         sub-structure state"""
-        subs = self._subscriptions.setdefault(request.endpoint[0], [])
-        subs.append(request)
+        self._subscriptions.append(request)
         d = self._block_state_cache.walk_path(request.endpoint)
         self.log_debug("Initial subscription value %s", d)
         if request.delta:

@@ -28,7 +28,10 @@ class Serializable(object):
     # dict mapping typeid name -> cls
     _subcls_lookup = {}
 
-    def to_dict(self, **overrides):
+    def get_endpoint(self, endpoint):
+        return getattr(self, endpoint)
+
+    def to_dict(self):
         """
         Create a dictionary representation of object attributes
 
@@ -41,10 +44,7 @@ class Serializable(object):
 
         if self.endpoints is not None:
             for endpoint in self.endpoints:
-                if endpoint in overrides:
-                    value = overrides[endpoint]
-                else:
-                    value = getattr(self, endpoint)
+                value = self.get_endpoint(endpoint)
                 d[endpoint] = serialize_object(value)
 
         return d
@@ -60,6 +60,7 @@ class Serializable(object):
         Returns:
             Instance of subclass given in d
         """
+        d = d.copy()
         subcls = cls.lookup_subclass(d)
         inst = subcls()
 
@@ -78,12 +79,9 @@ class Serializable(object):
                 assert v == inst.typeid, \
                     "Dict has typeid %s but Class has %s" % (v, inst.typeid)
             else:
-                self.new_endpoint(k, v)
+                raise ValueError(
+                    "Setting new endpoint %s not implemented" % (endpoint,))
         return inst
-
-    def new_endpoint(self, endpoint, value):
-        raise NotImplementedError(
-            "Setting new endpoint %s not implemented" % (endpoint,))
 
     @classmethod
     def register_subclass(cls, typeid):

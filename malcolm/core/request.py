@@ -28,8 +28,10 @@ class Request(Serializable):
 
         self.id_ = id_
 
-    def to_dict(self, **overrides):
-        return super(Request, self).to_dict(id=self.id_)
+    def get_endpoint(self, endpoint):
+        if endpoint == "id":
+            return self.id_
+        return getattr(self, endpoint)
 
     def respond_with_return(self, value=None):
         """
@@ -119,7 +121,7 @@ class Post(Request):
             response_queue(Queue): Queue to return to
             endpoint(list[str]): Path to target Block substructure
             parameters(dict): List of parameters to post to an endpoint
-                e.g. arguments for a Method
+                e.g. arguments for a MethodMeta
         """
 
         super(Post, self).__init__(context, response_queue)

@@ -13,8 +13,10 @@ class Response(Serializable):
     def __repr__(self):
         return self.to_dict().__repr__()
 
-    def to_dict(self, **overrides):
-        return super(Response, self).to_dict(id=self.id_)
+    def get_endpoint(self, endpoint):
+        if endpoint == "id":
+            return self.id_
+        return getattr(self, endpoint)
 
     def set_id(self, id_):
         self.id_ = id_
