@@ -49,7 +49,7 @@ setup(
     license='APACHE',
     install_requires=['numpy', 'scanpointgenerator'],
     extras_require={
-        'zmq':  ['pyzmq']
+        'websocket':  ['tornado']
     },
     include_package_data=True,
     test_suite='nose.collector',
