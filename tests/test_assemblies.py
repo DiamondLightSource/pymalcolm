@@ -8,14 +8,14 @@ from mock import Mock, patch
 
 from malcolm.core.methodmeta import takes, REQUIRED
 from malcolm.vmetas import StringMeta
-from malcolm.core.collection import make_collection, split_into_sections, \
+from malcolm.assemblies import make_assembly, split_into_sections, \
     with_takes_from, substitute_params, make_block_instance, call_with_map
 
 
-class TestCollection(unittest.TestCase):
+class TestAssemblies(unittest.TestCase):
 
-    @patch("malcolm.core.collection.make_block_instance")
-    def test_make_collection(self, mock_make):
+    @patch("malcolm.assemblies.make_block_instance")
+    def test_make_assembly(self, mock_make):
         yaml = """
 parameters.string:
     name: something
@@ -24,7 +24,7 @@ parameters.string:
 parts.ca.CADoublePart:
     pv: $(something)
 """
-        collection = make_collection(yaml)
+        collection = make_assembly(yaml)
         process = Mock()
         blocks = collection(dict(name="boo", something="mypv"), process)
         mock_make.assert_called_once_with(
@@ -38,7 +38,7 @@ parts.ca.CADoublePart:
             parameters={"string": {"name": "something"}},
             controllers={"ManagerController": None},
             parts={},
-            collections={})
+            assemblies={})
         self.assertEqual(split_into_sections(ds), expected)
 
     def test_with_takes_from(self):
