@@ -62,3 +62,8 @@ class Map(OrderedDict, Monitorable):
             if e not in self.endpoints:
                 raise KeyError(e)
 
+    def __eq__(self, rhs):
+        return list(self.items()) == list(rhs.items())
+
+    def __ne__(self, rhs):
+        return not self == rhs

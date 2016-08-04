@@ -189,19 +189,19 @@ class TestMap(unittest.TestCase):
     def test_keys(self):
 
         m = Map(self.nmeta, {"a":1})
-        self.assertEqual(["a"], m.keys())
+        self.assertEqual(["a"], list(m.keys()))
         m.b = 1
         self.assertEqual({"a", "b"}, set(m.keys()))
 
     def test_values(self):
         m = Map(self.nmeta, {"a":1})
-        self.assertEqual([1], m.values())
+        self.assertEqual([1], list(m.values()))
         m.b = 2
         self.assertEqual({1, 2}, set(m.values()))
 
     def test_items(self):
         m = Map(self.nmeta, {"b":2})
-        self.assertEqual([("b", 2)], m.items())
+        self.assertEqual([("b", 2)], list(m.items()))
         m.a = 1
         self.assertEqual({("a", 1), ("b", 2)}, set(m.items()))
 
