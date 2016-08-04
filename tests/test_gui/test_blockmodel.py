@@ -17,8 +17,8 @@ from malcolm.controllers.hellocontroller import HelloController
 class TestBlockModel(unittest.TestCase):
     def setUp(self):
         self.process = MagicMock()
-        self.block = Block("hello")
-        HelloController(self.process, self.block)
+        self.block = HelloController("hello", self.process).block
+        self.block.name = "hello"
         self.m = BlockModel(self.process, self.block)
 
     def test_init(self):

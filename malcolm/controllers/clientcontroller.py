@@ -22,9 +22,9 @@ class ClientController(Controller):
     def put(self, response):
         """We don't have a queue as no thread to service, but act like one"""
         if response.id_ == self.REMOTE_BLOCKS_ID:
-            if response.value and self.block_name in response.value:
+            if response.value and self.block.name in response.value:
                 # process knows how to get to a block
-                self._subscribe_to_block(self.block_name)
+                self._subscribe_to_block(self.block.name)
         elif response.id_ == self.BLOCK_ID:
             self.log_debug(response)
             # find all the regenerate block changesets
@@ -82,7 +82,7 @@ class ClientController(Controller):
             value (object: Value to put
         """
         ret = self._send_request(
-            Put, [self.block_name, attribute.name, "value"], value)
+            Put, [self.block.name, attribute.name, "value"], value)
         return ret
 
     def call_server_method(self, methodmeta, parameters=None, returns=None):
@@ -94,5 +94,5 @@ class ClientController(Controller):
             returns (Map): Returns map to fill and return
         """
         ret = self._send_request(
-            Post, [self.block_name, methodmeta.name], parameters)
+            Post, [self.block.name, methodmeta.name], parameters)
         return ret

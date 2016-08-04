@@ -9,6 +9,7 @@ from mock import MagicMock, patch
 
 # module imports
 from malcolm.gui.blockitem import BlockItem
+from malcolm.core import MethodMeta, Attribute
 
 
 class TestBlockItem(unittest.TestCase):
@@ -19,12 +20,12 @@ class TestBlockItem(unittest.TestCase):
         self.item = BlockItem(("endpoint",), ref)
 
     def test_ref_children(self):
-        self.item.ref.methods = dict(a=1, b=2)
-        self.item.ref.attributes = dict(c=MagicMock())
+        self.item.ref.children = dict(
+            a=MethodMeta(), b=MethodMeta(), c=Attribute())
         self.assertEqual(self.item.ref_children(), 3)
 
     def make_grouped_attr(self):
-        attr = MagicMock()
+        attr = Attribute()
         attr.tags = ["group:foo"]
         return attr
 
@@ -34,7 +35,7 @@ class TestBlockItem(unittest.TestCase):
 
     def test_grouped_children(self):
         attr = self.make_grouped_attr()
-        self.item.ref.attributes = dict(c=attr, d=MagicMock())
+        self.item.ref.children = dict(c=attr, d=Attribute())
         self.assertEqual(self.item.ref_children(), 1)
 
     @patch("malcolm.gui.blockitem.MethodItem")
@@ -46,11 +47,13 @@ class TestBlockItem(unittest.TestCase):
         ai1, ai2 = MagicMock(), MagicMock()
         attribute_mock.side_effect = [ai1, ai2]
         # Load up refs to get
-        group_attr = MagicMock()
+        group_attr = Attribute()
         child_attr = self.make_grouped_attr()
+        m1 = MethodMeta()
+        m2 = MethodMeta()
         BlockItem.items[("endpoint", "foo")] = ai1
-        self.item.ref.methods = OrderedDict((("a", 1), ("b", 2)))
-        self.item.ref.attributes = OrderedDict((("foo", group_attr), ("c", child_attr)))
+        self.item.ref.children = OrderedDict((
+            ("foo", group_attr), ("c", child_attr), ("a", m1), ("b", m2)))
         self.item.create_children()
         # Check it made the right thing
         self.assertEqual(len(self.item.children), 3)
@@ -58,9 +61,9 @@ class TestBlockItem(unittest.TestCase):
         self.assertEqual(self.item.children[0], ai1)
         attribute_mock.assert_any_call(("endpoint", "c"), child_attr)
         ai1.add_child.assert_called_once_with(ai2)
-        method_mock.assert_any_call(("endpoint", "a"), 1)
+        method_mock.assert_any_call(("endpoint", "a"), m1)
         self.assertEqual(self.item.children[1], mi1)
-        method_mock.assert_any_call(("endpoint", "b"), 2)
+        method_mock.assert_any_call(("endpoint", "b"), m2)
         self.assertEqual(self.item.children[2], mi2)
 
 

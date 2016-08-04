@@ -29,7 +29,6 @@ class Controller(Loggable):
             process (Process): The process this should run under
         """
         self.block = Block()
-        self.block_name = block_name
         self.params = params
         self.process = process
         self.lock = process.create_lock()
@@ -42,7 +41,8 @@ class Controller(Loggable):
 
         self.set_logger_name("%s(%s)" % (type(self).__name__, block_name))
         self._set_block_children()
-        process.add_block(block_name, self.block)
+        self.block.set_parent(process, block_name)
+        process.add_block(self.block)
 
     def set_attributes(self, attribute_dict):
         changes = []

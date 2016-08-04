@@ -52,14 +52,14 @@ class TestScanPointTickerController(unittest.TestCase):
         self.assertEqual(params.axis_name, sptc.axis_name.value)
         self.assertEqual(params.exposure, sptc.exposure.value)
 
-    @patch("time.sleep")
-    def test_run(self, sleep_mock):
-        points = [MagicMock(positions=dict(x=i)) for i in range(3)]
+    @patch("malcolm.controllers.scanpointtickercontroller.time")
+    def test_run(self, time_mock):
+        points = [MagicMock(positions=dict(x=i)) for i in range(5)]
         params = MagicMock()
         with patch("malcolm.vmetas.pointgeneratormeta.CompoundGenerator",
                    spec=True) as cg_mock:
             params.generator = cg_mock()
-        params.exposure = 0.1
+        params.exposure = 2.0
         params.axis_name = "x"
         params.generator.iterator = MagicMock(return_value=points)
         sptc = ScanPointTickerController('block', MagicMock())
@@ -68,10 +68,10 @@ class TestScanPointTickerController(unittest.TestCase):
         sptc.configure(params)
         sptc.run()
 
-        self.assertEquals([call(i) for i in range(3)],
+        self.assertEquals([call(i) for i in range(5)],
                           sptc.value.set_value.call_args_list)
-        self.assertEquals([call(params.exposure)] * len(points),
-                          sleep_mock.call_args_list)
+        self.assertEquals([call(params.exposure)] * 5,
+                          time_mock.sleep.call_args_list)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -127,7 +127,8 @@ class Process(Loggable):
         children["remoteBlocks"] = Attribute(StringArrayMeta(
                 description="Blocks reachable via ClientComms"), [])
         self.process_block.set_children(children)
-        self.add_block(self.name, self.process_block)
+        self.process_block.set_parent(self, self.name)
+        self.add_block(self.process_block)
 
     def update_block_list(self, client_comms, blocks):
         self.q.put(BlockList(client_comms=client_comms, blocks=blocks))
@@ -188,15 +189,14 @@ class Process(Loggable):
         """Push the response to the required queue"""
         request.response_queue.put(request.response)
 
-    def add_block(self, name, block):
+    def add_block(self, block):
         """Add a block to be hosted by this process
 
         Args:
             block (Block): The block to be added
         """
-        assert name not in self._blocks, \
-            "There is already a block called %s" % name
-        block.set_parent(self, name)
+        assert block.name not in self._blocks, \
+            "There is already a block called %s" % block.name
         self.q.put(BlockAdd(block=block))
 
     def _handle_block_add(self, request):

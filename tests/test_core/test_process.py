@@ -32,8 +32,7 @@ class TestProcess(unittest.TestCase):
     def test_add_block(self):
         p = Process("proc", MagicMock())
         b = MagicMock()
-        p.add_block("myblock", b)
-        b.set_parent.assert_called_once_with(p, "myblock")
+        p.add_block(b)
         req = p.q.put.call_args[0][0]
         self.assertEqual(req.block, b)
 
@@ -42,10 +41,9 @@ class TestProcess(unittest.TestCase):
         p = Process("proc", s)
         b = MagicMock()
         b.name = "myblock"
-        p.add_block("myblock", b)
+        p.add_block(b)
         p.start()
         p.stop()
-        b.set_parent.assert_called_once_with(p, "myblock")
         self.assertEqual(len(p._blocks), 2)
         self.assertEqual(p._blocks, dict(myblock=b, proc=p.process_block))
 
