@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 import unittest
 
-from malcolm.vmetas import StringArrayMeta
+from malcolm.core import StringArrayMeta, Map
 from malcolm.core.mapmeta import MapMeta
 
 
@@ -39,7 +39,7 @@ class TestSerialization(unittest.TestCase):
         self.sam = StringArrayMeta()
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/MapMeta:1.0"
-        self.serialized["elements"] = dict(c1 = self.sam.to_dict())
+        self.serialized["elements"] = Map(None, dict(c1 = self.sam)).to_dict()
         self.serialized["description"] = "desc"
         self.serialized["tags"] = []
         self.serialized["required"] = ["c1"]

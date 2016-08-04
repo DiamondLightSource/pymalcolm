@@ -41,7 +41,7 @@ class Monitorable(Loggable, Serializable):
             else:
                 raise ValueError("Got dict, but %s has no from_dict" % (type_,))
         assert isinstance(value, type_), \
-            "Expected %s, got %s" % (type_, value)
+            "Expected %s, got %r" % (type_, value)
         return value
 
     def set_endpoint(self, type_, name, value, notify):
@@ -51,16 +51,6 @@ class Monitorable(Loggable, Serializable):
             assert isinstance(value, list), \
                 "Expected list, got %s" % (value,)
             value = [self._cast(v, type_[0]) for v in value]
-        elif isinstance(type_, dict):
-            assert len(type_) == 1, \
-                "Can't deal with multi-type dict %s" % (type_,)
-            ktype, vtype = list(type_.items())[0]
-            assert isinstance(value, dict), \
-                "Expected dict, got %s" % (value,)
-            for k, v in value.items():
-                assert k == self._cast(k, ktype), \
-                    "Changing of key types not supported"
-                value[k] = self._cast(v, vtype)
         elif type_ is not NO_VALIDATE:
             value = self._cast(value, type_)
         setattr(self, name, value)

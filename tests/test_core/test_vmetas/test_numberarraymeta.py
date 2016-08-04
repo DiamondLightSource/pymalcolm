@@ -8,7 +8,7 @@ import setup_malcolm_paths
 
 import numpy as np
 
-from malcolm.vmetas import NumberArrayMeta
+from malcolm.core.vmetas import NumberArrayMeta
 
 
 class TestValidation(unittest.TestCase):

@@ -12,7 +12,7 @@ from cothread import catools
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.vmetas import NumberMeta
+from malcolm.core.vmetas import NumberMeta
 from malcolm.parts.ca.capart import CAPart, capart_takes
 from malcolm.core.map import Map
 

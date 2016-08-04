@@ -10,7 +10,7 @@ from mock import Mock, patch, MagicMock
 from malcolm.core.methodmeta import MethodMeta, takes, returns, only_in, OPTIONAL, \
     REQUIRED
 
-from malcolm.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.core.mapmeta import MapMeta
 
 

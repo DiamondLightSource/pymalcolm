@@ -1,5 +1,4 @@
-from malcolm.core.methodmeta import takes, REQUIRED, OPTIONAL
-from malcolm.vmetas import StringMeta, NumberMeta
+from malcolm.core import takes, REQUIRED, OPTIONAL, StringMeta, NumberMeta
 
 
 def takes_with_default_meta(meta_cls, *meta_args):

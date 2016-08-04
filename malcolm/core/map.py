@@ -1,86 +1,64 @@
+from collections import OrderedDict
+
 from malcolm.core.serializable import Serializable
+from malcolm.core.monitorable import Monitorable
 
 
 @Serializable.register_subclass("malcolm:core/Map:1.0")
-class Map(Serializable):
+class Map(OrderedDict, Monitorable):
     # real data stored as attributes
     # dictionary type view supported
 
-    def __init__(self, meta, d=None):
+    def __init__(self, meta=None, d=None):
+        super(Map, self).__init__(self)
         self.meta = meta
         if d:
             self.update(d)
 
     @property
     def endpoints(self):
-        return [e for e in self.meta.elements if hasattr(self, e)]
+        if self.meta:
+            return [e for e in self.meta.elements if e in self]
+        else:
+            return list(self)
 
-    def __repr__(self):
-        return self.to_dict().__repr__()
+    def get_endpoint(self, endpoint):
+        return self[endpoint]
 
     def __setattr__(self, attr, val):
-        if hasattr(self, "meta"):
+        if hasattr(self, "meta") and self.meta:
             self[attr] = val
         else:
             object.__setattr__(self, attr, val)
 
-    def __setitem__(self, key, val):
-        if key not in self.meta.elements:
-            raise ValueError("%s is not a valid key for given meta" % key)
-        val = self.meta.elements[key].validate(val)
-        object.__setattr__(self, key, val)
-
-    def __getitem__(self, key):
-        if key in self.endpoints:
-            return getattr(self, key)
+    def __getattr__(self, key):
+        if key in self:
+            return self[key]
         else:
-            raise KeyError
+            raise AttributeError(key)
 
-    def __contains__(self, key):
-        return key in self.endpoints
-
-    def __len__(self):
-        return len(self.endpoints)
-
-    def __iter__(self):
-        for e in self.endpoints:
-            yield e
+    def __setitem__(self, key, val):
+        if self.meta:
+            if key not in self.meta.elements:
+                raise ValueError("%s is not a valid key for given meta" % key)
+            val = self.meta.elements[key].validate(val)
+        if hasattr(val, "set_parent"):
+            val.set_parent(self, key)
+        super(Map, self).__setitem__(key, val)
 
     def update(self, d):
-        invalid = [k for k in d
-                   if k not in self.meta.elements and k != "typeid"]
-        if invalid:
-            raise ValueError("Keys %s are not valid for this map" % (invalid,))
+        if self.meta:
+            invalid = [k for k in d
+                       if k not in self.meta.elements and k != "typeid"]
+            if invalid:
+                raise ValueError(
+                    "Keys %s are not valid for this map" % (invalid,))
         for k in d:
             if k != "typeid":
                 self[k] = d[k]
-
-    def clear(self):
-        for e in self.meta.elements:
-            if hasattr(self, e):
-                delattr(self, e)
-
-    def keys(self):
-        return self.endpoints
-
-    def values(self):
-        return [self[e] for e in self.endpoints]
-
-    def items(self):
-        return [(e, self[e]) for e in self.endpoints]
 
     def check_valid(self):
         for e in self.meta.required:
             if e not in self.endpoints:
                 raise KeyError(e)
 
-    def __eq__(self, rhs):
-        if isinstance(rhs, dict):
-            # compare to dict
-            d = self.to_dict()
-            d.pop("typeid")
-            return d == rhs
-        return self.to_dict() == rhs.to_dict()
-
-    def __ne__(self, rhs):
-        return not self == rhs

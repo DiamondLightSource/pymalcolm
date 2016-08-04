@@ -14,7 +14,7 @@ from malcolm.core.response import Error, Return, Update, Delta
 from malcolm.core.request import Request
 from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.future import Future
-from malcolm.core.vmeta import VMeta
+from malcolm.core.vmetas import VMeta
 from malcolm.core.attribute import Attribute
 
 

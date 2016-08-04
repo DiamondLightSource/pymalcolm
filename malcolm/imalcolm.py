@@ -19,8 +19,7 @@ from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.process import Process
 from malcolm.core.block import Block
 from malcolm import controllers
-from malcolm.wscomms.wsclientcomms import WSClientComms
-from malcolm.wscomms.wsservercomms import WSServerComms
+from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
 from malcolm.gui.blockgui import BlockGui
 
 
@@ -58,13 +57,12 @@ class IMalcolm(object):
         self.process.stop()
 
     def make_block(self, block_name, controller="client"):
-        block = Block(block_name)
         desired_controller = "%sController" % controller
         for clsname in dir(controllers):
             if clsname.lower() == desired_controller.lower():
                 cls = getattr(controllers, clsname)
-                cls(self.process, block)
-                return block
+                inst = cls(block_name, self.process)
+                return inst.block
         raise TypeError("Can't find a %s" % desired_controller)
 
     def gui(self, block_name):

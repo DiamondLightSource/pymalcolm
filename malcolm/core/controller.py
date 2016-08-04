@@ -7,10 +7,8 @@ from malcolm.core.hook import Hook
 from malcolm.core.methodmeta import takes, only_in, MethodMeta, \
     get_method_decorated
 from malcolm.core.blockmeta import BlockMeta
-from malcolm.vmetas.choicemeta import ChoiceMeta
-from malcolm.vmetas.stringmeta import StringMeta
-from malcolm.vmetas.booleanmeta import BooleanMeta
-from malcolm.statemachines.defaultstatemachine import DefaultStateMachine
+from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
+from malcolm.core.statemachine import DefaultStateMachine
 from malcolm.core.block import Block
 
 
@@ -44,13 +42,12 @@ class Controller(Loggable):
         self.block.set_parent(process, block_name)
         process.add_block(self.block)
 
-    def set_attributes(self, attribute_dict):
-        changes = []
-        for attr, value in attribute_dict.items():
-            assert attr.parent is self.block, \
-                "Attr not attached to block"
-            changes.append([[attr.name, "value"], value])
-        self.block.apply_changes(*changes)
+    def add_change(self, changes, item, attr, value):
+        path = [attr]
+        while item is not self.block:
+            path.insert(0, item.name)
+            item = item.parent
+        changes.append([path, value])
 
     def _set_block_children(self):
         # reconfigure block with new children
@@ -79,7 +76,7 @@ class Controller(Loggable):
                         assert state in self.stateMachine.possible_states, \
                             "State %s is not one of the valid states %s" % \
                             (state, self.stateMachine.possible_states)
-                self.set_method_writeable_in(child, states)
+                self.register_method_writeable(child, states)
             children[name] = child
             if writeable_func:
                 writeable_functions[name] = functools.partial(
@@ -138,22 +135,29 @@ class Controller(Loggable):
                     initial_state=self.state.value, target_state=state):
 
                 # transition is allowed, so set attributes
-                self.set_attributes({
-                    self.state: state,
-                    self.status: message,
-                    self.busy: state in self.stateMachine.busy_states,
-                })
+                changes = []
+                self.add_change(changes, self.state, "value", state)
+                self.add_change(changes, self.status, "value", message)
+                self.add_change(changes, self.busy, "value",
+                                state in self.stateMachine.busy_states)
 
                 # say which methods can now be called
-                for child in self.block.children:
+                for child in self.block.children.values():
                     if isinstance(child, MethodMeta):
                         writeable = self.methods_writeable[state][child]
-                        child.set_writeable(writeable)
+                        self.set_method_writeable(changes, child, writeable)
+
+                self.block.apply_changes(*changes)
             else:
                 raise TypeError("Cannot transition from %s to %s" %
                                 (self.state.value, state))
 
-    def set_method_writeable_in(self, method, states):
+    def set_method_writeable(self, changes, method, writeable):
+        self.add_change(changes, method, "writeable", writeable)
+        for meta in method.takes.elements.values():
+            self.add_change(changes, meta, "writeable", writeable)
+
+    def register_method_writeable(self, method, states):
         """
         Set the states that the given method can be called in
 
@@ -180,4 +184,3 @@ class Controller(Loggable):
         except Exception as e:
             self.log_exception("Fault occurred while Resetting")
             self.transition(sm.FAULT, str(e))
-

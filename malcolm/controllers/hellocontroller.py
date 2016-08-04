@@ -1,4 +1,4 @@
-from malcolm.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.core import Controller, takes, returns, REQUIRED
 
 

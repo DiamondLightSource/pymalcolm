@@ -7,8 +7,7 @@ import unittest
 from collections import OrderedDict
 from mock import Mock
 
-from malcolm.core.table import Table
-from malcolm.vmetas import StringArrayMeta, NumberArrayMeta
+from malcolm.core import Table, NumberArrayMeta, StringArrayMeta
 
 
 class TestTableInit(unittest.TestCase):

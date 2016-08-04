@@ -7,11 +7,9 @@ import unittest
 from collections import OrderedDict
 from mock import MagicMock, Mock
 
-from malcolm.core.map import Map
-from malcolm.core.serializable import Serializable
+from malcolm.core import Map, Serializable, NumberMeta, StringMeta
 from malcolm.core.meta import Meta
-from malcolm.vmetas.numbermeta import NumberMeta
-from malcolm.vmetas.stringmeta import StringMeta
+
 
 class TestMap(unittest.TestCase):
 

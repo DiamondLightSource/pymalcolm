@@ -1,7 +1,7 @@
 from malcolm.core.monitorable import Monitorable, NO_VALIDATE
 from malcolm.core.serializable import Serializable
 from malcolm.core.request import Put
-from malcolm.core.vmeta import VMeta
+from malcolm.core.vmetas import VMeta
 
 
 @Serializable.register_subclass("epics:nt/NTAttribute:1.0")

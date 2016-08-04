@@ -1,5 +1,4 @@
-from malcolm.core import Controller, Attribute, takes
-from malcolm.vmetas import NumberMeta
+from malcolm.core import Attribute, takes, Controller, NumberMeta
 
 
 @takes()

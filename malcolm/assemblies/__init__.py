@@ -6,7 +6,7 @@ import malcolm.parameters
 import malcolm.controllers
 import malcolm.parts
 from malcolm.core import takes, REQUIRED
-from malcolm.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.compat import base_string
 
 

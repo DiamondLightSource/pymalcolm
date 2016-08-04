@@ -8,7 +8,8 @@ import setup_malcolm_paths
 
 from mock import MagicMock, patch
 
-from malcolm.vmetas.pointgeneratormeta import PointGeneratorMeta, CompoundGenerator
+from malcolm.core import PointGeneratorMeta
+from scanpointgenerator import CompoundGenerator
 
 
 class TestPointGeneratorMeta(unittest.TestCase):
@@ -24,7 +25,7 @@ class TestPointGeneratorMeta(unittest.TestCase):
         g = CompoundGenerator([MagicMock()], [], [])
         self.PGM.validate(g)
 
-    @patch('malcolm.vmetas.pointgeneratormeta.CompoundGenerator.from_dict')
+    @patch('malcolm.core.vmetas.CompoundGenerator.from_dict')
     def test_validate_dict_then_create_and_return(self, from_dict_mock):
         gen_mock = MagicMock()
         from_dict_mock.return_value = gen_mock

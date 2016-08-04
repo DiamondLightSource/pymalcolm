@@ -2,7 +2,7 @@ import cothread
 from cothread import catools
 
 from malcolm.core import Part, Controller, Attribute, takes, REQUIRED
-from malcolm.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 def capart_takes(*args):

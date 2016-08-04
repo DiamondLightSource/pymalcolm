@@ -100,7 +100,7 @@ class TestController(unittest.TestCase):
     def test_set_writeable_methods(self):
         m = MagicMock()
         m.name = "configure"
-        self.c.set_method_writeable_in(m, "Ready")
+        self.c.register_method_writeable(m, "Ready")
         self.assertEqual(self.c.methods_writeable['Ready'][m], True)
 
     def test_create_methods_order(self):

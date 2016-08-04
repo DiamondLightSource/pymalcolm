@@ -6,16 +6,16 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 from mock import MagicMock, patch, call
 
-from malcolm.statemachines import RunnableDeviceStateMachine
+from malcolm.core.statemachine import RunnableDeviceStateMachine
 from malcolm.controllers import ScanPointTickerController
 from malcolm.core.block import Block
 
 
 class TestScanPointTickerController(unittest.TestCase):
 
-    @patch("malcolm.vmetas.stringmeta.StringMeta.to_dict")
-    @patch("malcolm.vmetas.numbermeta.NumberMeta.to_dict")
-    @patch("malcolm.vmetas.pointgeneratormeta.PointGeneratorMeta.to_dict")
+    @patch("malcolm.core.vmetas.StringMeta.to_dict")
+    @patch("malcolm.core.vmetas.NumberMeta.to_dict")
+    @patch("malcolm.core.vmetas.PointGeneratorMeta.to_dict")
     def test_init(self, pgmd_mock, nmd_mock, smd_mock):
         del pgmd_mock.return_value.to_dict
         del nmd_mock.return_value.to_dict
@@ -39,7 +39,7 @@ class TestScanPointTickerController(unittest.TestCase):
 
     def test_configure(self):
         params = MagicMock()
-        with patch("malcolm.vmetas.pointgeneratormeta.CompoundGenerator",
+        with patch("malcolm.core.vmetas.CompoundGenerator",
                    spec=True) as cg_mock:
             params.generator = cg_mock()
         params.exposure = 1
@@ -56,7 +56,7 @@ class TestScanPointTickerController(unittest.TestCase):
     def test_run(self, time_mock):
         points = [MagicMock(positions=dict(x=i)) for i in range(5)]
         params = MagicMock()
-        with patch("malcolm.vmetas.pointgeneratormeta.CompoundGenerator",
+        with patch("malcolm.core.vmetas.CompoundGenerator",
                    spec=True) as cg_mock:
             params.generator = cg_mock()
         params.exposure = 2.0

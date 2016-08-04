@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import setup_malcolm_paths
 
-from malcolm.vmetas import ChoiceMeta
+from malcolm.core.vmetas import ChoiceMeta
 from malcolm.core.serializable import Serializable
 
 

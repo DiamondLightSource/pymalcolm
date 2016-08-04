@@ -11,7 +11,7 @@ from mock import MagicMock, call, patch
 # module imports
 from malcolm.core.block import Block
 from malcolm.core.attribute import Attribute
-from malcolm.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.request import Post, Put
 

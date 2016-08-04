@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 import unittest
 
-from malcolm.vmetas import ChoiceArrayMeta
+from malcolm.core.vmetas import ChoiceArrayMeta
 
 
 class TestInit(unittest.TestCase):
