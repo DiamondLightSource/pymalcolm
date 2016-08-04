@@ -23,21 +23,21 @@ class TestProcess(unittest.TestCase):
 
     def test_deletion(self):
         c = Cache()
-        c[1] = 2
-        c.apply_changes([[1]])
+        c["path"] = 2
+        c.apply_changes([["path"]])
         self.assertEqual(list(c), [])
 
     def test_change(self):
         c = Cache()
         c[1] = 3
-        c.apply_changes([[1], 4])
-        self.assertEqual(c[1], 4)
+        c.apply_changes([["path"], 4])
+        self.assertEqual(c["path"], 4)
 
-    def test_update_root_errors(self):
+    def test_non_string_path_errors(self):
         c = Cache()
-        self.assertRaises(AssertionError, c.apply_changes, [[], 3])
+        self.assertRaises(AssertionError, c.apply_changes, [[1], 3])
 
-    def test_walkt_path(self):
+    def test_walk_path(self):
         c = Cache()
         c[1] = {2: {3: "end"}}
         walked = c.walk_path([1, 2, 3])
