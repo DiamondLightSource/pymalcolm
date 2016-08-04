@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from malcolm.compat import base_string
+
 
 class Cache(OrderedDict):
     """OrderedDict subclass that supports delta changeset updates"""
@@ -19,16 +21,23 @@ class Cache(OrderedDict):
                 "Expected [path] for deletion or [path, update] for addition." \
                 " Got %s" % (change,)
             path = change[0]
-            assert len(path) > 0, \
-                "Expected path to be a non-empty list, got %s" % (path,)
-            d = self.walk_path(path[:-1])
-            if len(change) == 1:
-                # deletion
-                del d[path[-1]]
+            if len(path) == 0:
+                # Replace cache with value
+                self.clear()
+                if len(change) > 1:
+                    value = change[1]
+                    self.update(value)
             else:
-                # addition or change
-                value = change[1]
-                d[path[-1]] = value
+                assert isinstance(path[0], base_string), \
+                    "Expected string as first element of path, got %s" % (path[0])
+                d = self.walk_path(path[:-1])
+                if len(change) == 1:
+                    # deletion
+                    del d[path[-1]]
+                else:
+                    # addition or change
+                    value = change[1]
+                    d[path[-1]] = value
 
     def walk_path(self, path):
         """Walk the path, and return the given endpoint"""
