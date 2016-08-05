@@ -3,6 +3,7 @@ from collections import OrderedDict, namedtuple
 from malcolm.core.loggable import Loggable
 from malcolm.core.request import Request, Post, Put, Subscribe, Get
 from malcolm.core.response import Return, Update, Delta
+from malcolm.core.serializable import serialize_object
 from malcolm.core.cache import Cache
 from malcolm.core.block import Block
 from malcolm.core.attribute import Attribute
@@ -209,6 +210,24 @@ class Process(Loggable):
         block.lock = self.create_lock()
         # Regenerate list of blocks
         self.process_block["blocks"].set_value(list(self._blocks))
+        # Report updates to subscriptions
+        for subscription in self._subscriptions:
+            endpoint = subscription.endpoint
+            # only report changes if subscription is for the root of this block
+            if not endpoint:
+                if subscription.delta:
+                    # respond with the filtered changes
+                    response = Delta(
+                        subscription.id_, subscription.context,
+                        [[[block.name], serialize_object(self._block_state_cache[block.name])]])
+                else:
+                    # respond with the structure of everything
+                    # below the endpoint
+                    d = self._block_state_cache.walk_path(endpoint)
+                    response = Update(
+                        subscription.id_, subscription.context, d)
+                self.log_debug("Responding to subscription %s", response)
+                subscription.response_queue.put(response)
 
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current
