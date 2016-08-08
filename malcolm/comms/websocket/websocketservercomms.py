@@ -8,7 +8,7 @@ from tornado.web import Application
 from tornado.httpserver import HTTPServer
 
 from malcolm.core.servercomms import ServerComms
-from malcolm.core.serializable import Serializable
+from malcolm.core.serializable import deserialize_object, serialize_object
 from malcolm.core.request import Request
 
 
@@ -26,7 +26,7 @@ class MalcolmWebSocketHandler(WebSocketHandler):
 
         logging.debug(message)
         d = json.loads(message, object_pairs_hook=OrderedDict)
-        request = Serializable.from_dict(d)
+        request = deserialize_object(d, Request)
         request.context = self
         self.servercomms.on_request(request)
 
@@ -55,7 +55,7 @@ class WebsocketServerComms(ServerComms):
             response(Response): The message to pass to the client
         """
 
-        message = json.dumps(response.to_dict())
+        message = json.dumps(serialize_object(response))
         self.log_debug("Sending to client %s", message)
         response.context.write_message(message)
 

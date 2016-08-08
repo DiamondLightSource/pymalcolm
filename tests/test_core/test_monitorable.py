@@ -7,7 +7,7 @@ import unittest
 from mock import Mock
 from collections import OrderedDict
 
-from malcolm.core.monitorable import Monitorable, NO_VALIDATE
+from malcolm.core.monitorable import Monitorable
 
 
 class TestInit(unittest.TestCase):
@@ -15,9 +15,9 @@ class TestInit(unittest.TestCase):
     def test_init(self):
         p = Mock()
         n = Monitorable()
-        self.assertFalse(hasattr(n, 'parent'))
+        self.assertIsNone(n._parent)
         n.set_parent(p, "notifier")
-        self.assertEqual("notifier", n.name)
+        self.assertEqual("notifier", n._name)
 
 
 class TestUpdates(unittest.TestCase):
@@ -25,12 +25,12 @@ class TestUpdates(unittest.TestCase):
     def test_set_parent(self):
         class MyMonitorable(Monitorable):
             endpoints = ["child"]
-            child = Mock()
+
         parent = Mock()
-        parent.name = "parent"
         n = MyMonitorable()
+        n.set_endpoint_data("child", Mock())
         n.set_parent(parent, "serialize")
-        self.assertIs(parent, n.parent)
+        self.assertIs(parent, n._parent)
         self.assertEquals("serialize", n._logger.name)
         n.child.set_logger_name.assert_called_once_with("serialize.child")
 
@@ -47,8 +47,7 @@ class TestUpdates(unittest.TestCase):
     def test_nop_with_no_parent(self):
         change = [["test"], 123]
         n = Monitorable()
-        with self.assertRaises(AttributeError):
-            p = n.parent
+        self.assertIsNone(n._parent)
         n.report_changes(change)
         self.assertEquals([["test"], 123], change)
 
@@ -59,7 +58,8 @@ class TestUpdates(unittest.TestCase):
         # Check that the mock looks like it is serializable
         self.assertTrue(hasattr(endpoint, "to_dict"))
         n.set_parent(parent,"test_n")
-        n.set_endpoint(NO_VALIDATE, "end", endpoint, notify=True)
+        n.endpoints = ["end"]
+        n.set_endpoint_data("end", endpoint, notify=True)
         self.assertEqual(n.end, endpoint)
         parent.report_changes.assert_called_once_with(
             [["test_n", "end"], endpoint.to_dict()])
@@ -72,7 +72,8 @@ class TestUpdates(unittest.TestCase):
         # Check that the mock looks like it is serializable
         self.assertTrue(hasattr(endpoint, "to_dict"))
         n.set_parent(parent, "test_n")
-        n.set_endpoint(NO_VALIDATE, "end", endpoint, notify=False)
+        n.endpoints = ["end"]
+        n.set_endpoint_data("end", endpoint, notify=False)
         self.assertEqual(n.end, endpoint)
         self.assertEqual(parent.report_changes.called, False)
 

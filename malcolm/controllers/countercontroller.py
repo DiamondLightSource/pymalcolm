@@ -1,7 +1,8 @@
-from malcolm.core import Attribute, takes, Controller, NumberMeta
+from malcolm.core import Attribute, method_takes, Controller
+from malcolm.core.vmetas import NumberMeta
 
 
-@takes()
+@method_takes()
 class CounterController(Controller):
 
     def create_attributes(self):
@@ -13,6 +14,6 @@ class CounterController(Controller):
     def do_reset(self):
         self.counter.set_value(0)
 
-    @takes()
+    @method_takes()
     def increment(self):
         self.counter.set_value(self.counter.value + 1)

@@ -19,6 +19,7 @@ from malcolm.core.request import Subscribe, Post, Get
 from malcolm.core.response import Return, Update, Delta
 from malcolm.core.attribute import Attribute
 from malcolm.core.vmetas import StringArrayMeta
+from malcolm.core.block import Block
 
 
 class TestProcess(unittest.TestCase):
@@ -31,7 +32,8 @@ class TestProcess(unittest.TestCase):
 
     def test_add_block(self):
         p = Process("proc", MagicMock())
-        b = MagicMock()
+        b = Block()
+        b.set_parent(p, "name")
         p.add_block(b)
         req = p.q.put.call_args[0][0]
         self.assertEqual(req.block, b)
@@ -39,8 +41,8 @@ class TestProcess(unittest.TestCase):
     def test_add_block_calls_handle(self):
         s = SyncFactory("sched")
         p = Process("proc", s)
-        b = MagicMock()
-        b.name = "myblock"
+        b = Block()
+        b.set_parent(p, "myblock")
         p.add_block(b)
         p.start()
         p.stop()
@@ -51,8 +53,7 @@ class TestProcess(unittest.TestCase):
         s = SyncFactory("sched")
         p = Process("proc", s)
         b = MagicMock()
-        b.name = "myblock"
-        p._handle_block_add(BlockAdd(b))
+        p._handle_block_add(BlockAdd(b, "myblock"))
         self.assertEqual(p._blocks, dict(myblock=b))
         p.start()
         request = Post(MagicMock(), MagicMock(), ["myblock", "foo"])
@@ -84,11 +85,10 @@ class TestProcess(unittest.TestCase):
     def test_get(self):
         p = Process("proc", MagicMock())
         block = MagicMock()
-        block.name = "myblock"
         block.to_dict = MagicMock(
             return_value={"path_1": {"path_2": {"attr": "value"}}})
         request = Get(MagicMock(), MagicMock(), ["myblock", "path_1", "path_2"])
-        p._handle_block_add(BlockAdd(block))
+        p._handle_block_add(BlockAdd(block, "myblock"))
         p.q.get = MagicMock(side_effect=[request, PROCESS_STOP])
 
         p.recv_loop()
@@ -121,7 +121,7 @@ class TestProcess(unittest.TestCase):
     def test_make_process_block(self):
         p = Process("proc", MagicMock())
         p_block = p.process_block
-        self.assertEquals(p.name, p_block.name)
+        self.assertEquals(p_block.path_relative_to(p), ["proc"])
         self.assertEquals(Attribute, type(p_block["blocks"]))
         self.assertEquals(StringArrayMeta, type(p_block["blocks"].meta))
         self.assertEquals([], p_block.blocks)
@@ -155,7 +155,6 @@ class TestSubscriptions(unittest.TestCase):
         block = MagicMock(
             to_dict=MagicMock(
                 return_value={"attr": "value", "inner": {"attr2": "other"}}))
-        block.name = "block"
         p = Process("proc", MagicMock())
         sub_1 = Subscribe(
             MagicMock(), MagicMock(), ["block"], False)
@@ -163,7 +162,7 @@ class TestSubscriptions(unittest.TestCase):
             MagicMock(), MagicMock(), ["block", "inner"], True)
         p.q.get = MagicMock(side_effect=[sub_1, sub_2, PROCESS_STOP])
 
-        p._handle_block_add(BlockAdd(block))
+        p._handle_block_add(BlockAdd(block, "block"))
         p.recv_loop()
 
         self.assertEquals([sub_1, sub_2], p._subscriptions)
@@ -173,42 +172,12 @@ class TestSubscriptions(unittest.TestCase):
                           response_1.value)
         self.assertEquals([[[], {"attr2": "other"}]], response_2.changes)
 
-    def test_deletions(self):
-        block = MagicMock(
-            to_dict=MagicMock(return_value={"attr": "value", "attr2": "other"}))
-        block.name = "block"
-        sub_1 = MagicMock()
-        sub_1.endpoint = ["block"]
-        sub_1.delta = False
-        sub_2 = MagicMock()
-        sub_2.endpoint = ["block"]
-        sub_2.delta = True
-        changes_1 = [[["block", "attr"]]]
-        request_1 = BlockChanges(changes_1)
-        s = MagicMock()
-        p = Process("proc", s)
-        p._subscriptions = [sub_1, sub_2]
-        p.q.get = MagicMock(
-            side_effect=[request_1, PROCESS_STOP])
-
-        p._handle_block_add(BlockAdd(block))
-        p.recv_loop()
-
-        self.assertEqual(sub_1.response_queue.put.call_count, 1)
-        self.assertEqual(sub_2.response_queue.put.call_count, 1)
-        response_1 = sub_1.response_queue.put.call_args[0][0]
-        response_2 = sub_2.response_queue.put.call_args[0][0]
-        self.assertEquals({"attr2": "other"}, response_1.value)
-        self.assertEquals([[["attr"]]], response_2.changes)
-
     def test_partial_structure_subscriptions(self):
         block_1 = MagicMock(
             to_dict=MagicMock(
                 return_value={"attr": "value", "inner": {"attr2": "value"}}))
-        block_1.name = "block_1"
         block_2 = MagicMock(
             to_dict=MagicMock(return_value={"attr": "value"}))
-        block_2.name = "block_2"
 
         sub_1 = MagicMock()
         sub_1.endpoint = ["block_1", "inner"]
@@ -228,14 +197,14 @@ class TestSubscriptions(unittest.TestCase):
             PROCESS_STOP])
         p._subscriptions = [sub_1, sub_2]
 
-        p._handle_block_add(BlockAdd(block_1))
-        p._handle_block_add(BlockAdd(block_2))
+        p._handle_block_add(BlockAdd(block_1, "block_1"))
+        p._handle_block_add(BlockAdd(block_2, "block_2"))
         p.recv_loop()
 
-        response_1 = sub_1.response_queue.put.call_args[0][0]
-        response_2 = sub_2.response_queue.put.call_args[0][0]
-        self.assertEquals({"attr2": "new_value"}, response_1.value)
-        self.assertEquals([[["attr2"], "new_value"]], response_2.changes)
+        response_1 = sub_1.respond_with_update.call_args[0][0]
+        response_2 = sub_2.respond_with_delta.call_args[0][0]
+        self.assertEquals({"attr2": "new_value"}, response_1)
+        self.assertEquals([[["attr2"], "new_value"]], response_2)
 
 
 if __name__ == "__main__":

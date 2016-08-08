@@ -1,7 +1,7 @@
 import cothread
 from cothread import catools
 
-from malcolm.core import Part, Controller, Attribute, takes, REQUIRED
+from malcolm.core import Part, Controller, Attribute, method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
 
 
@@ -13,7 +13,7 @@ def capart_takes(*args):
         "rbv", StringMeta("override for rbv"), None,
         "rbv_suff", StringMeta("set rbv ro pv + rbv_suff"), None,
     ) + args
-    return takes(*args)
+    return method_takes(*args)
 
 
 class CAPart(Part):

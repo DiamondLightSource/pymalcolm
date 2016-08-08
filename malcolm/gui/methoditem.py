@@ -14,7 +14,8 @@ class MethodItem(BaseItem):
         return len(self.ref.takes.elements)
 
     def create_children(self):
-        for name, meta in self.ref.takes.elements.items():
+        for name in self.ref.takes.elements:
+            meta = self.ref.takes.elements[name]
             default = self.ref.defaults.get(name, None)
             endpoint = self.endpoint + ("takes", "elements", name)
             item = ParameterItem(endpoint, meta, default)

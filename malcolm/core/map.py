@@ -1,58 +1,37 @@
 from collections import OrderedDict
 
 from malcolm.core.serializable import Serializable
-from malcolm.core.monitorable import Monitorable
 
 
 @Serializable.register_subclass("malcolm:core/Map:1.0")
-class Map(OrderedDict, Monitorable):
-    # real data stored as attributes
-    # dictionary type view supported
+class Map(Serializable):
 
-    def __init__(self, meta=None, d=None):
-        super(Map, self).__init__(self)
+    def __init__(self, meta, d=None):
+        self.endpoints = []
         self.meta = meta
         if d:
             self.update(d)
 
-    @property
-    def endpoints(self):
-        if self.meta:
-            return [e for e in self.meta.elements if e in self]
-        else:
-            return list(self)
-
-    def get_endpoint(self, endpoint):
-        return self[endpoint]
-
     def __setattr__(self, attr, val):
-        if hasattr(self, "meta") and self.meta:
+        if hasattr(self, "meta") and attr in self.meta.elements:
             self[attr] = val
         else:
-            object.__setattr__(self, attr, val)
-
-    def __getattr__(self, key):
-        if key in self:
-            return self[key]
-        else:
-            raise AttributeError(key)
+            super(Map, self).__setattr__(attr, val)
 
     def __setitem__(self, key, val):
-        if self.meta:
-            if key not in self.meta.elements:
-                raise ValueError("%s is not a valid key for given meta" % key)
-            val = self.meta.elements[key].validate(val)
-        if hasattr(val, "set_parent"):
-            val.set_parent(self, key)
-        super(Map, self).__setitem__(key, val)
+        if key not in self.meta.elements:
+            raise ValueError("%s is not a valid key for given meta" % key)
+        val = self.meta.elements[key].validate(val)
+        self.endpoints = [
+            k for k in self.meta.elements if k in list(self) + [key]]
+        self.set_endpoint_data(key, val)
 
     def update(self, d):
-        if self.meta:
-            invalid = [k for k in d
-                       if k not in self.meta.elements and k != "typeid"]
-            if invalid:
-                raise ValueError(
-                    "Keys %s are not valid for this map" % (invalid,))
+        invalid = [k for k in d
+                   if k not in self.meta.elements and k != "typeid"]
+        if invalid:
+            raise ValueError(
+                "Keys %s are not valid for this map" % (invalid,))
         for k in d:
             if k != "typeid":
                 self[k] = d[k]
@@ -61,6 +40,19 @@ class Map(OrderedDict, Monitorable):
         for e in self.meta.required:
             if e not in self.endpoints:
                 raise KeyError(e)
+
+    def clear(self):
+        self._endpoint_data = {}
+        self.endpoints = []
+
+    def keys(self):
+        return self.endpoints
+
+    def values(self):
+        return [self[k] for k in self]
+
+    def items(self):
+        return [(k, self[k]) for k in self]
 
     def __eq__(self, rhs):
         return list(self.items()) == list(rhs.items())

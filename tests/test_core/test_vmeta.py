@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from mock import Mock
 
 from malcolm.core.serializable import Serializable
-from malcolm.core.vmetas import VMeta
+from malcolm.core.vmeta import VMeta
 
 # Register ScalarMeta as a sublcass of itself so we
 # can instantiate it for testing purposes.

@@ -40,10 +40,10 @@ class TestHelloControllerSystem(unittest.TestCase):
         req.set_id(44)
         process.q.put(req)
         resp = q.get(timeout=1)
-        self.assertEqual(resp.id_, 44)
+        self.assertEqual(resp.id, 44)
         self.assertEqual(resp.context, "ClientConnection")
         self.assertEqual(resp.typeid, "malcolm:core/Return:1.0")
-        self.assertEqual(resp.value, dict(greeting="Hello thing"))
+        self.assertEqual(resp.value["greeting"], "Hello thing")
 
 
 class TestCounterControllerSystem(unittest.TestCase):

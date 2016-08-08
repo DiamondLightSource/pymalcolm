@@ -16,14 +16,16 @@ class BlockItem(BaseItem):
     def ref_children(self):
         """Number of child objects our ref has"""
         nchildren = 0
-        for child in self.ref.children.values():
+        for name in self.ref:
+            child = self.ref[name]
             # check for group, otherwise put it in place
             if self._get_group_name(child) is None:
                 nchildren += 1
         return nchildren
 
     def create_children(self):
-        for name, child in self.ref.children.items():
+        for name in self.ref:
+            child = self.ref[name]
             if isinstance(child, Attribute):
                 attr = child
                 item = AttributeItem(self.endpoint + (name,), attr)

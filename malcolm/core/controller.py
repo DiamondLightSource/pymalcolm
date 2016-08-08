@@ -4,7 +4,7 @@ from collections import OrderedDict
 from malcolm.core.loggable import Loggable
 from malcolm.core.attribute import Attribute
 from malcolm.core.hook import Hook
-from malcolm.core.methodmeta import takes, only_in, MethodMeta, \
+from malcolm.core.methodmeta import method_takes, only_in, MethodMeta, \
     get_method_decorated
 from malcolm.core.blockmeta import BlockMeta
 from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
@@ -27,6 +27,7 @@ class Controller(Loggable):
             process (Process): The process this should run under
         """
         self.block = Block()
+        self.block_name = block_name
         self.params = params
         self.process = process
         self.lock = process.create_lock()
@@ -43,10 +44,7 @@ class Controller(Loggable):
         process.add_block(self.block)
 
     def add_change(self, changes, item, attr, value):
-        path = [attr]
-        while item is not self.block:
-            path.insert(0, item.name)
-            item = item.parent
+        path = item.path_relative_to(self.block) + [attr]
         changes.append([path, value])
 
     def _set_block_children(self):
@@ -82,7 +80,8 @@ class Controller(Loggable):
                 writeable_functions[name] = functools.partial(
                     self.call_writeable_function, writeable_func)
 
-        self.block.set_children(children, writeable_functions)
+        self.block.replace_endpoints(children)
+        self.block.set_writeable_functions(writeable_functions)
 
     def call_writeable_function(self, function, child, *args):
         with self.lock:
@@ -142,7 +141,8 @@ class Controller(Loggable):
                                 state in self.stateMachine.busy_states)
 
                 # say which methods can now be called
-                for child in self.block.children.values():
+                for name in self.block:
+                    child = self.block[name]
                     if isinstance(child, MethodMeta):
                         writeable = self.methods_writeable[state][child]
                         self.set_method_writeable(changes, child, writeable)
@@ -154,7 +154,8 @@ class Controller(Loggable):
 
     def set_method_writeable(self, changes, method, writeable):
         self.add_change(changes, method, "writeable", writeable)
-        for meta in method.takes.elements.values():
+        for name in method.takes.elements:
+            meta = method.takes.elements[name]
             self.add_change(changes, meta, "writeable", writeable)
 
     def register_method_writeable(self, method, states):
@@ -170,11 +171,11 @@ class Controller(Loggable):
             is_writeable = state in states
             writeable_dict[method] = is_writeable
 
-    @takes()
+    @method_takes()
     def disable(self):
         self.transition(sm.DISABLED, "Disabled")
 
-    @takes()
+    @method_takes()
     @only_in(sm.DISABLED, sm.FAULT)
     def reset(self):
         try:

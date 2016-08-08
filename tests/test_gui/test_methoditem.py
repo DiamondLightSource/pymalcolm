@@ -56,7 +56,7 @@ class TestMethodItem(unittest.TestCase):
         p2.reset_value.assert_called_once_with()
         self.assertEqual(self.item.get_state(), self.item.RUNNING)
         self.assertEqual(request.parameters, dict(p1=43, p2=1))
-        self.assertEqual(request.endpoint, ("endpoint",))
+        self.assertEqual(request.endpoint, ["endpoint"])
         self.assertIsInstance(request, Post)
 
     def test_handle_response_error(self):

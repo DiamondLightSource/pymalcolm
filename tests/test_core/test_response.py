@@ -15,14 +15,14 @@ class TestResponse(unittest.TestCase):
         id_ = 123
         context = Mock()
         r = Response(id_, context)
-        self.assertEquals(id_, r.id_)
+        self.assertEquals(id_, r.id)
         self.assertEquals(None, r.typeid)
         self.assertEquals(context, r.context)
 
     def test_Return(self):
         context = Mock()
         r = Return(123, context)
-        self.assertEquals(123, r.id_)
+        self.assertEquals(123, r.id)
         self.assertEquals("malcolm:core/Return:1.0", r.typeid)
         self.assertEquals(context, r.context)
         self.assertIsNone(r.value)
@@ -36,7 +36,7 @@ class TestResponse(unittest.TestCase):
         context = Mock()
         r = Error(123, context, "Test Error")
 
-        self.assertEquals(123, r.id_)
+        self.assertEquals(123, r.id)
         self.assertEquals("malcolm:core/Error:1.0", r.typeid)
         self.assertEquals(context, r.context)
 
@@ -47,7 +47,7 @@ class TestResponse(unittest.TestCase):
         context = Mock()
         value = {"attribute": "value"}
         r = Update(123, context, value)
-        self.assertEquals(123, r.id_)
+        self.assertEquals(123, r.id)
         self.assertEquals(context, r.context)
         self.assertEquals({"attribute": "value"}, r.value)
 
@@ -58,7 +58,7 @@ class TestResponse(unittest.TestCase):
         context = Mock()
         changes = [[["path"], "value"]]
         r = Delta(123, context, changes)
-        self.assertEquals(123, r.id_)
+        self.assertEquals(123, r.id)
         self.assertEquals(context, r.context)
         self.assertEquals(changes, r.changes)
 

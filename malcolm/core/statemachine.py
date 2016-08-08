@@ -50,7 +50,6 @@ class StateMachine(Loggable):
         Returns:
             bool: True if allowed, False if not
         """
-
         return target_state in self.allowed_transitions[initial_state]
 
     def set_allowed(self, initial_state, allowed_states):

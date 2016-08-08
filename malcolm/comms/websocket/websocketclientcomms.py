@@ -6,7 +6,8 @@ from tornado.websocket import websocket_connect
 
 from malcolm.core.clientcomms import ClientComms
 from malcolm.core.request import Request, Subscribe
-from malcolm.core.serializable import Serializable
+from malcolm.core.response import Response
+from malcolm.core.serializable import deserialize_object, serialize_object
 
 
 class WebsocketClientComms(ClientComms):
@@ -38,7 +39,7 @@ class WebsocketClientComms(ClientComms):
         try:
             self.log_debug("Got message %s", message)
             d = json.loads(message, object_pairs_hook=OrderedDict)
-            response = Serializable.from_dict(d)
+            response = deserialize_object(d, Response)
             self.send_to_caller(response)
         except Exception as e:
             # If we don't catch the exception here, tornado will spew odd
@@ -51,7 +52,7 @@ class WebsocketClientComms(ClientComms):
         Args:
             request(Request): The message to pass to the server
         """
-        message = json.dumps(request.to_dict())
+        message = json.dumps(serialize_object(request))
         self.conn.result().write_message(message)
 
     def stop_recv_loop(self):

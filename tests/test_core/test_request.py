@@ -33,7 +33,7 @@ class TestRequest(unittest.TestCase):
 
         call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
 
-        expected_response = Return(self.request.id_, self.request.context, value=5).to_dict()
+        expected_response = Return(self.request.id, self.request.context, value=5).to_dict()
 
         self.assertEqual(call_arg, expected_response)
 
@@ -43,14 +43,14 @@ class TestRequest(unittest.TestCase):
 
         call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
 
-        expected_response = Error(self.request.id_, self.request.context,
+        expected_response = Error(self.request.id, self.request.context,
                                   message="Test Error").to_dict()
 
         self.assertEqual(call_arg, expected_response)
 
     def test_setters(self):
         self.request.set_id(123)
-        self.assertEquals(123, self.request.id_)
+        self.assertEquals(123, self.request.id)
 
 
 class TestGet(unittest.TestCase):
@@ -146,7 +146,7 @@ class TestSubscribe(unittest.TestCase):
 
         call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
 
-        expected_response = Update(self.subscribe.id_, self.subscribe.context, value=value).to_dict()
+        expected_response = Update(self.subscribe.id, self.subscribe.context, value=value).to_dict()
 
         self.assertEqual(call_arg, expected_response)
 
@@ -157,7 +157,7 @@ class TestSubscribe(unittest.TestCase):
 
         call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
 
-        expected_response = Delta(self.subscribe.id_, self.subscribe.context, changes=changes).to_dict()
+        expected_response = Delta(self.subscribe.id, self.subscribe.context, changes=changes).to_dict()
 
         self.assertEqual(call_arg, expected_response)
 

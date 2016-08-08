@@ -7,8 +7,11 @@ import unittest
 from collections import OrderedDict
 from mock import MagicMock, Mock
 
-from malcolm.core import Map, Serializable, NumberMeta, StringMeta
+from malcolm.core import Map, Serializable
+from malcolm.core.vmetas import NumberMeta, StringMeta
 from malcolm.core.meta import Meta
+from malcolm.core.mapmeta import MapMeta
+from malcolm.core.elementmap import ElementMap
 
 
 class TestMap(unittest.TestCase):
@@ -16,13 +19,12 @@ class TestMap(unittest.TestCase):
     def setUp(self):
         n = NumberMeta(description='a number')
         s = StringMeta(description="a string")
-        self.meta = Meta()
-        self.meta.elements = {"a":s, "b":s}
-        self.meta.required = ["a"]
-        self.nmeta = Meta()
-        self.nmeta.elements = {"a":n, "b":n}
-        self.nmeta.required = ["a"]
-        #self.meta = MagicMock(wraps=self.meta)
+        self.meta = MapMeta()
+        self.meta.set_elements(ElementMap({"a": s, "b": s}))
+        self.meta.set_required(["a"])
+        self.nmeta = MapMeta()
+        self.nmeta.set_elements(ElementMap({"a": n, "b": n}))
+        self.nmeta.set_required(["a"])
 
     def test_init(self):
         b_mock = MagicMock()
@@ -187,8 +189,7 @@ class TestMap(unittest.TestCase):
             m.a
 
     def test_keys(self):
-
-        m = Map(self.nmeta, {"a":1})
+        m = Map(self.nmeta, {"a": 1})
         self.assertEqual(["a"], list(m.keys()))
         m.b = 1
         self.assertEqual({"a", "b"}, set(m.keys()))

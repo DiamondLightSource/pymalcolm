@@ -20,7 +20,7 @@ class TestBlockItem(unittest.TestCase):
         self.item = BlockItem(("endpoint",), ref)
 
     def test_ref_children(self):
-        self.item.ref.children = dict(
+        self.item.ref = dict(
             a=MethodMeta(), b=MethodMeta(), c=Attribute())
         self.assertEqual(self.item.ref_children(), 3)
 
@@ -35,7 +35,7 @@ class TestBlockItem(unittest.TestCase):
 
     def test_grouped_children(self):
         attr = self.make_grouped_attr()
-        self.item.ref.children = dict(c=attr, d=Attribute())
+        self.item.ref = dict(c=attr, d=Attribute())
         self.assertEqual(self.item.ref_children(), 1)
 
     @patch("malcolm.gui.blockitem.MethodItem")
@@ -52,7 +52,7 @@ class TestBlockItem(unittest.TestCase):
         m1 = MethodMeta()
         m2 = MethodMeta()
         BlockItem.items[("endpoint", "foo")] = ai1
-        self.item.ref.children = OrderedDict((
+        self.item.ref = OrderedDict((
             ("foo", group_attr), ("c", child_attr), ("a", m1), ("b", m2)))
         self.item.create_children()
         # Check it made the right thing

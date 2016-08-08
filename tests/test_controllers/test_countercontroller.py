@@ -33,7 +33,7 @@ class TestCounterController(unittest.TestCase):
 
     def test_reset_sets_zero(self):
         c = CounterController('block', Mock())
-        c.counter.value = 1234
+        c.counter.set_endpoint_data("value", 1234, notify=False)
         c.do_reset()
         self.assertEquals(0, c.counter.value)
         c.process.report_changes.assert_called_once_with(

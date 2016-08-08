@@ -6,7 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, patch
 
-from malcolm.core.methodmeta import takes, REQUIRED
+from malcolm.core.methodmeta import method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
 from malcolm.assemblies import make_assembly, split_into_sections, \
     with_takes_from, substitute_params, make_block_instance, call_with_map
@@ -72,7 +72,7 @@ parts.ca.CADoublePart:
         pass
 
     def test_call_with_map(self):
-        @takes(
+        @method_takes(
             "desc", StringMeta("description"), REQUIRED,
             "foo", StringMeta("optional thing"), "thing"
         )

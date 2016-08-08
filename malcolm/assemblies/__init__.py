@@ -5,7 +5,7 @@ from ruamel import yaml
 import malcolm.parameters
 import malcolm.controllers
 import malcolm.parts
-from malcolm.core import takes, REQUIRED
+from malcolm.core import method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
 from malcolm.compat import base_string
 
@@ -113,7 +113,7 @@ def with_takes_from(parameters, include_name):
         takes_arguments = []
     for name, d in parameters.items():
         takes_arguments += call_with_map(malcolm.parameters, name, d)
-    return takes(*takes_arguments)
+    return method_takes(*takes_arguments)
 
 
 def substitute_params(d, params):

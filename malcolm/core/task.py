@@ -1,8 +1,9 @@
 from malcolm.core.loggable import Loggable
 from malcolm.core.future import Future
+from malcolm.core.request import Subscribe, Unsubscribe, Post, Put
+from malcolm.core.response import Error, Return, Update
+from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.attribute import Attribute
-from malcolm.core.request import Request, Subscribe, Unsubscribe, Post
-from malcolm.core.response import Response, Error, Delta, Return, Update
 
 
 class Task(Loggable):
@@ -67,8 +68,11 @@ class Task(Loggable):
         result_f = []
 
         for attr, value in attr_or_items.items():
-            endpoint = [attr.parent.name, attr.name, "value"]
-            request = Post(None, self.q, endpoint, value)
+            assert isinstance(attr, Attribute), \
+                "Expected Attribute, got %r" % (attr,)
+
+            endpoint = attr.path_relative_to(self.process) + ["value"]
+            request = Put(None, self.q, endpoint, value)
             f = Future(self)
             new_id = self._save_future(f)
             request.set_id(new_id)
@@ -129,7 +133,11 @@ class Task(Loggable):
 
             Returns a list of one future which will proved the return value
             on completion"""
-        endpoint = [method.parent.name, method.name]
+        assert isinstance(method, MethodMeta), \
+            "Expected MethodMeta, got %r" % (method,)
+
+        endpoint = method.path_relative_to(self.process)
+
         request = Post(None, self.q, endpoint, params)
         f = Future(self)
         new_id = self._save_future(f)
@@ -145,8 +153,10 @@ class Task(Loggable):
             Returns:
                 int: an id for the subscription
         """
+        assert isinstance(attr, Attribute), \
+            "Expected Attribute, got %r" % (attr,)
 
-        endpoint = [attr.parent.name, attr.name]
+        endpoint = attr.path_relative_to(self.process) + ["value"]
         request = Subscribe(None, self.q, endpoint, False)
         new_id = self._save_subscription(endpoint, callback, *args)
         request.set_id(new_id)
@@ -192,11 +202,11 @@ class Task(Loggable):
             self.log_debug("wait_all received response %s", response)
             if response is Task.TASK_STOP:
                 raise RuntimeWarning("Task aborted")
-            elif response.id_ in self._futures:
+            elif response.id in self._futures:
                 f = self._update_future(response)
                 if f in futures:
                     futures.remove(f)
-            elif response.id_ in self._subscriptions:
+            elif response.id in self._subscriptions:
                 result = self._invoke_callback(response)
                 # Task's _match_update callback returns a future if it has
                 #  filled it (other callbacks not expected to return a val)
@@ -208,8 +218,8 @@ class Task(Loggable):
     def _update_future(self, response):
         """called when a future is filled. Updates the future accordingly and
             removes it from the futures list"""
-        self.log_debug("future %d filled", response.id_)
-        f = self._futures.pop(response.id_)
+        self.log_debug("future %d filled", response.id)
+        f = self._futures.pop(response.id)
         if isinstance(response, Error):
             f.set_exception(response.message)
         elif isinstance(response, Return):
@@ -220,9 +230,9 @@ class Task(Loggable):
         return f
 
     def _invoke_callback(self, response):
-        self.log_debug("subscription %d callback", response.id_)
+        self.log_debug("subscription %d callback", response.id)
         ret_val = None
-        (endpoint, func, args) = self._subscriptions[response.id_]
+        (endpoint, func, args) = self._subscriptions[response.id]
         if isinstance(response, Update):
             try:
                 if func == self._match_update:

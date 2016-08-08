@@ -4,3 +4,4 @@ tornado>=4.1
 git+https://github.com/dls-controls/scanpointgenerator.git
 cothread
 ruamel.yaml
+mock

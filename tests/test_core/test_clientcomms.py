@@ -46,7 +46,7 @@ class TestClientComms(unittest.TestCase):
         client._current_id = 1234
         request = Mock()
         def f(id_):
-            request.id_ = id_
+            request.id = id_
         request.set_id.side_effect = f
         client.send_to_server = Mock()
         client.q.get = Mock(side_effect = [request, client.STOP])
@@ -62,7 +62,7 @@ class TestClientComms(unittest.TestCase):
 
     def test_send_to_caller_with_bad_block_update(self):
         c = ClientComms("c", Mock())
-        response = Mock(type_="Delta", id_=0, UPDATE="Update")
+        response = Mock(type_="Delta", id=0, UPDATE="Update")
         self.assertRaises(AssertionError, c.send_to_caller, response)
 
     def test_sends_to_server(self):
@@ -79,8 +79,8 @@ class TestClientComms(unittest.TestCase):
         client = ClientComms("c", Mock())
         client._current_id = 1234
         client.send_to_server = Mock()
-        request_1 = Mock(id_ = None)
-        request_2 = Mock(id_ = None)
+        request_1 = Mock(id = None)
+        request_2 = Mock(id = None)
         client.q.get = Mock(side_effect = [request_1, request_2, client.STOP])
         client.send_loop()
         request_1.set_id.assert_called_once_with(1234)
@@ -90,7 +90,7 @@ class TestClientComms(unittest.TestCase):
         request = Mock(response_queue=Mock(), id_=1234)
         client = ClientComms("c", Mock())
         client.requests = {1234:request}
-        response = Mock(id_ = 1234)
+        response = Mock(id = 1234)
         client.send_to_caller(response)
         request.response_queue.put.assert_called_once_with(response)
 

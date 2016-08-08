@@ -16,6 +16,16 @@ def serialize_object(o):
         return o
 
 
+def deserialize_object(ob, type_check=None):
+    if isinstance(ob, dict):
+        subclass = Serializable.lookup_subclass(ob)
+        ob = subclass.from_dict(ob)
+    if type_check is not None:
+        assert isinstance(ob, type_check), \
+            "Expected %s, got %r" % (type_check, ob)
+    return ob
+
+
 class Serializable(object):
     """Mixin class for serializable objects"""
 
@@ -28,8 +38,40 @@ class Serializable(object):
     # dict mapping typeid name -> cls
     _subcls_lookup = {}
 
-    def get_endpoint(self, endpoint):
-        return getattr(self, endpoint)
+    # instance dictionary of endpoint data
+    _endpoint_data = None
+
+    def __len__(self):
+        if self.endpoints is None:
+            return 0
+        return len(self.endpoints)
+
+    def __iter__(self):
+        if self.endpoints is None:
+            return iter(())
+        return iter(self.endpoints)
+
+    def __getitem__(self, item):
+        """Dictionary access to endpoint data"""
+        if item in self:
+            return self._endpoint_data[item]
+        else:
+            raise KeyError(item)
+
+    def __getattr__(self, item):
+        """Attr access to endpoint data, if not already in self"""
+        if item in self:
+            return self._endpoint_data[item]
+        else:
+            raise AttributeError(item)
+
+    def __setattr__(self, item, value):
+        """Make sure we aren't shadowing an endpoint"""
+        if item in self:
+            raise AttributeError(
+                "Setting attr %s would shadow an endpoint %s. Use a setter" %
+                (item, list(self)))
+        super(Serializable, self).__setattr__(item, value)
 
     def to_dict(self):
         """
@@ -42,10 +84,9 @@ class Serializable(object):
         d = OrderedDict()
         d["typeid"] = self.typeid
 
-        if self.endpoints is not None:
-            for endpoint in self.endpoints:
-                value = self.get_endpoint(endpoint)
-                d[endpoint] = serialize_object(value)
+        for endpoint in self:
+            value = self._endpoint_data[endpoint]
+            d[endpoint] = serialize_object(value)
 
         return d
 
@@ -60,28 +101,39 @@ class Serializable(object):
         Returns:
             Instance of subclass given in d
         """
-        d = d.copy()
-        subcls = cls.lookup_subclass(d)
-        inst = subcls()
+        inst = cls()
+        inst.replace_endpoints(d)
+        return inst
 
+    def set_endpoint_data(self, name, value):
+        # Called by subclass to set endpoint data
+        assert name in self, \
+            "Endpoint %r not defined for %r" % (name, self)
+        if self._endpoint_data is None:
+            self._endpoint_data = {}
+        self._endpoint_data[name] = value
+
+    def replace_endpoints(self, d):
         # Update the instance with any values in the dictionary that are known
         # endpoints
-        if inst.endpoints:
-            updates = [e for e in inst.endpoints if e in d]
-            for endpoint in updates:
-                setter = getattr(inst, "set_%s" % endpoint)
-                setter(d.pop(endpoint))
+        done = []
+        for endpoint in self:
+            if endpoint in d:
+                setter = getattr(self, "set_%s" % endpoint)
+                setter(d[endpoint])
+                done.append(endpoint)
 
         # For anything that is not a known endpoint it must be a typeid or a
         # new endpoint
         for k, v in d.items():
-            if k == "typeid":
-                assert v == inst.typeid, \
-                    "Dict has typeid %s but Class has %s" % (v, inst.typeid)
-            else:
-                raise ValueError(
-                    "Setting new endpoint %s not implemented" % (endpoint,))
-        return inst
+            if k not in done:
+                if k == "typeid":
+                    assert v == self.typeid, \
+                        "Dict has typeid %s but %s has typeid %s" % \
+                        (v, self, self.typeid)
+                else:
+                    raise ValueError(
+                        "Unknown endpoint %s for %s" % (k, self))
 
     @classmethod
     def register_subclass(cls, typeid):
@@ -90,10 +142,10 @@ class Serializable(object):
         Args:
             typeid (str): Type identifier for subclass
         """
-        def decorator(subcls):
-            cls._subcls_lookup[typeid] = subcls
-            subcls.typeid = typeid
-            return subcls
+        def decorator(subclass):
+            cls._subcls_lookup[typeid] = subclass
+            subclass.typeid = typeid
+            return subclass
         return decorator
 
     @classmethod
@@ -108,6 +160,5 @@ class Serializable(object):
             Serializable subclass
         """
         typeid = d["typeid"]
-        subcls = cls._subcls_lookup[typeid]
-        return subcls
-
+        subclass = cls._subcls_lookup[typeid]
+        return subclass

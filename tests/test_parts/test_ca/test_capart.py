@@ -14,7 +14,6 @@ from cothread import catools
 # module imports
 from malcolm.core.vmetas import NumberMeta
 from malcolm.parts.ca.capart import CAPart, capart_takes
-from malcolm.core.map import Map
 
 
 class caint(int):

@@ -1,5 +1,6 @@
 from malcolm.core.monitorable import Monitorable
 from malcolm.compat import base_string
+from malcolm.core.serializable import deserialize_object
 
 
 class Meta(Monitorable):
@@ -17,16 +18,20 @@ class Meta(Monitorable):
 
     def set_description(self, description, notify=True):
         """Set the description string"""
-        self.set_endpoint(base_string, "description", description, notify)
+        description = deserialize_object(description, base_string)
+        self.set_endpoint_data("description", description, notify)
 
     def set_tags(self, tags, notify=True):
         """Set the tags list"""
-        self.set_endpoint([base_string], "tags", tags, notify)
+        tags = [deserialize_object(t, base_string) for t in tags]
+        self.set_endpoint_data("tags", tags, notify)
 
     def set_writeable(self, writeable, notify=True):
         """Set the writeable bool"""
-        self.set_endpoint(bool, "writeable", writeable, notify)
+        writeable = deserialize_object(writeable, bool)
+        self.set_endpoint_data("writeable", writeable, notify)
 
     def set_label(self, label, notify=True):
         """Set the label string"""
-        self.set_endpoint(base_string, "label", label, notify)
+        label = deserialize_object(label, base_string)
+        self.set_endpoint_data("label", label, notify)

@@ -14,8 +14,9 @@ from malcolm.core.response import Error, Return, Update, Delta
 from malcolm.core.request import Request
 from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.future import Future
-from malcolm.core.vmetas import VMeta
+from malcolm.core.vmeta import VMeta
 from malcolm.core.attribute import Attribute
+from malcolm.core.block import Block
 
 
 #import logging
@@ -30,9 +31,10 @@ class TestTask(unittest.TestCase):
         self.callback_result = 0
         self.callback_value = ''
         meta = VMeta("meta for unit tests")
-        self.block = MagicMock()
         self.proc = MagicMock(q=queue.Queue())
         self.proc.create_queue = MagicMock(side_effect=queue.Queue)
+        self.block = Block()
+        self.block.set_parent(self.proc, "testBlock")
         self.attr = Attribute(meta)
         self.attr.set_parent(self.block, "testAttr")
         self.attr2 = Attribute(meta)
@@ -55,7 +57,7 @@ class TestTask(unittest.TestCase):
         req = self.proc.q.get(timeout=0)
         self.assertIsInstance(req, Request)
         self.assertEqual(req.endpoint,
-                         [self.block.name, 'testAttr', 'value'])
+                         ['testBlock', 'testAttr', 'value'])
         self.assertEqual(len(t._futures), 1)
 
         d = {self.attr: "testValue", self.attr2: "testValue2"}
@@ -87,8 +89,8 @@ class TestTask(unittest.TestCase):
         t.q.put(resp1)
         t.q.put(resp2)
         t.stop()
-        t.post(self.method, "testParm")
-        t.post(self.method, "testParm2")
+        t.post(self.method, {"a": "testParm"})
+        t.post(self.method, {"a": "testParm2"})
         self.assertEqual(len(t._futures), 0)
         self.assertEqual(self.proc.q.qsize(), 2)
 

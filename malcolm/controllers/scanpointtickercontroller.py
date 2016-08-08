@@ -1,12 +1,12 @@
 import time
 
-from malcolm.core import Attribute, Controller, takes, MethodMeta, REQUIRED
-from malcolm.core import NumberMeta, PointGeneratorMeta, StringMeta
-from malcolm.core import RunnableDeviceStateMachine
+from malcolm.core import Attribute, Controller, method_takes, MethodMeta, \
+    REQUIRED, RunnableDeviceStateMachine
+from malcolm.core.vmetas import NumberMeta, PointGeneratorMeta, StringMeta
 
 
 @RunnableDeviceStateMachine.insert
-@takes()
+@method_takes()
 class ScanPointTickerController(Controller):
 
     def create_attributes(self):
@@ -19,7 +19,7 @@ class ScanPointTickerController(Controller):
         self.exposure = Attribute(NumberMeta("float64", "Exposure time"))
         yield "exposure", self.exposure, None
 
-    @takes("generator", PointGeneratorMeta(
+    @method_takes("generator", PointGeneratorMeta(
                         description="Generator instance"), REQUIRED,
            "axis_name", StringMeta( description="Specifier for axis"), REQUIRED,
            "exposure", NumberMeta(
