@@ -10,10 +10,8 @@ from mock import MagicMock, call
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
-from collections import OrderedDict
-
 # module imports
-from malcolm.core.controller import Controller
+from malcolm.core.controller import Controller, DefaultStateMachine
 from malcolm.core.methodmeta import only_in, method_takes
 
 
@@ -77,7 +75,6 @@ class TestController(unittest.TestCase):
         self.assertEqual(self.c.state.value, "Disabled")
 
     def test_transition_raises(self):
-        self.c.stateMachine.allowed_transitions = dict(Ready="")
         self.c.state.set_value("Ready")
 
         with self.assertRaises(TypeError):

@@ -41,6 +41,10 @@ class Map(Serializable):
             if e not in self.endpoints:
                 raise KeyError(e)
 
+    def __repr__(self):
+        elements = ", ".join("%r: %r" % kv for kv in self.items())
+        return "Map({%s})" % elements
+
     def clear(self):
         self._endpoint_data = {}
         self.endpoints = []

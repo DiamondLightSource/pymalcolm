@@ -1,5 +1,5 @@
 # Make a nice namespace
-from malcolm.core.serializable import Serializable  # noqa
+from malcolm.core.serializable import Serializable, deserialize_object  # noqa
 from malcolm.core.table import Table  # noqa
 from malcolm.core.statemachine import RunnableDeviceStateMachine, \
     DefaultStateMachine  # noqa

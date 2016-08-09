@@ -40,8 +40,13 @@ class Controller(Loggable):
 
         self.set_logger_name("%s(%s)" % (type(self).__name__, block_name))
         self._set_block_children()
+        self._do_transition(sm.DISABLED, "Disabled")
         self.block.set_parent(process, block_name)
         process.add_block(self.block)
+        self.do_initial_reset()
+
+    def do_initial_reset(self):
+        self.process.spawn(self.reset)
 
     def add_change(self, changes, item, attr, value):
         path = item.path_relative_to(self.block) + [attr]
@@ -93,12 +98,11 @@ class Controller(Loggable):
     def _create_default_attributes(self):
         # Add the state, status and busy attributes
         self.state = Attribute(
-            ChoiceMeta("State of Block", self.stateMachine.possible_states),
-            self.stateMachine.DISABLED)
+            ChoiceMeta("State of Block", self.stateMachine.possible_states))
         yield ("state", self.state, None)
-        self.status = Attribute(StringMeta("Status of Block"), "Disabled")
+        self.status = Attribute(StringMeta("Status of Block"))
         yield ("status", self.status, None)
-        self.busy = Attribute(BooleanMeta("Whether Block busy or not"), False)
+        self.busy = Attribute(BooleanMeta("Whether Block busy or not"))
         yield ("busy", self.busy, None)
 
     def create_meta(self):
@@ -132,31 +136,31 @@ class Controller(Loggable):
         with self.lock:
             if self.stateMachine.is_allowed(
                     initial_state=self.state.value, target_state=state):
-
-                # transition is allowed, so set attributes
-                changes = []
-                self.add_change(changes, self.state, "value", state)
-                self.add_change(changes, self.status, "value", message)
-                self.add_change(changes, self.busy, "value",
-                                state in self.stateMachine.busy_states)
-
-                # say which methods can now be called
-                for name in self.block:
-                    child = self.block[name]
-                    if isinstance(child, MethodMeta):
-                        writeable = self.methods_writeable[state][child]
-                        self.set_method_writeable(changes, child, writeable)
-
-                self.block.apply_changes(*changes)
+                self._do_transition(state, message)
             else:
                 raise TypeError("Cannot transition from %s to %s" %
                                 (self.state.value, state))
 
-    def set_method_writeable(self, changes, method, writeable):
-        self.add_change(changes, method, "writeable", writeable)
-        for name in method.takes.elements:
-            meta = method.takes.elements[name]
-            self.add_change(changes, meta, "writeable", writeable)
+    def _do_transition(self, state, message):
+        # transition is allowed, so set attributes
+        changes = []
+        self.add_change(changes, self.state, "value", state)
+        self.add_change(changes, self.status, "value", message)
+        self.add_change(changes, self.busy, "value",
+                        state in self.stateMachine.busy_states)
+
+        # say which methods can now be called
+        for name in self.block:
+            child = self.block[name]
+            if isinstance(child, MethodMeta):
+                method = child
+                writeable = self.methods_writeable[state][method]
+                self.add_change(changes, method, "writeable", writeable)
+                for ename in method.takes.elements:
+                    meta = method.takes.elements[ename]
+                    self.add_change(changes, meta, "writeable", writeable)
+
+        self.block.apply_changes(*changes)
 
     def register_method_writeable(self, method, states):
         """

@@ -206,5 +206,10 @@ class TestMap(unittest.TestCase):
         m.a = 1
         self.assertEqual({("a", 1), ("b", 2)}, set(m.items()))
 
+    def test_repr(self):
+        m = Map(self.nmeta, {"b": 44})
+        r = repr(m)
+        self.assertEqual(r, "Map({'b': 44.0})")
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

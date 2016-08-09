@@ -1,8 +1,5 @@
-import functools
-from collections import OrderedDict
-
-from malcolm.core import Controller,  Post, Subscribe, Return, MethodMeta, \
-    method_takes, Serializable, Error, Attribute, Put
+from malcolm.core import Controller, Post, Subscribe, Return, MethodMeta, \
+    method_takes, deserialize_object, Error, Attribute, Put, Map
 
 
 @method_takes()
@@ -11,9 +8,7 @@ class ClientController(Controller):
     REMOTE_BLOCKS_ID = 0
     BLOCK_ID = 1
 
-    def __init__(self, block_name, process, parts=None, params=None):
-        super(ClientController, self).__init__(
-            block_name, process, parts, params)
+    def do_initial_reset(self):
         request = Subscribe(
             None, self, [self.process.name, "remoteBlocks", "value"])
         request.set_id(self.REMOTE_BLOCKS_ID)
@@ -95,4 +90,6 @@ class ClientController(Controller):
         """
         ret = self._send_request(
             Post, methodmeta.path_relative_to(self.process), parameters)
+        if ret is not None:
+            ret = Map(methodmeta.returns, ret)
         return ret

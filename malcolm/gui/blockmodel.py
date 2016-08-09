@@ -15,12 +15,13 @@ class BlockModel(QAbstractItemModel):
         self.process = process
         self.block = block
         self.id_ = 1
-        self.root_item = BlockItem((block.name,), block)
+        self.block_path = tuple(block.path_relative_to(process))
+        self.root_item = BlockItem(self.block_path, block)
         # map id -> request
         self.requests = {}
         # TODO: unsubscribe when done
         self.response_received.connect(self.handle_response)
-        request = Subscribe(None, None, (block.name,), delta=True)
+        request = Subscribe(None, None, self.block_path, delta=True)
         self.send_request(request)
 
     def put(self, response):
@@ -57,8 +58,8 @@ class BlockModel(QAbstractItemModel):
         if isinstance(response, Delta):
             self.handle_changes(response.changes)
         else:
-            request = self.requests[response.id_]
-            item = BlockItem.items[request.endpoint]
+            request = self.requests[response.id]
+            item = BlockItem.items[tuple(request.endpoint)]
             item.handle_response(response)
             index = self.get_index(item, 2)
             self.dataChanged.emit(index, index)
@@ -66,7 +67,7 @@ class BlockModel(QAbstractItemModel):
     def handle_changes(self, changes):
         # create and update children where necessary
         for change in changes:
-            path = [self.block.name] + change[0]
+            path = list(self.block_path) + change[0]
             # See if we can find an item to update
             item, path = self.find_item(path)
             # this path is the biggest thing that has to change, so delete

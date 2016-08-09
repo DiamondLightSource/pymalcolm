@@ -25,6 +25,7 @@ class TestHelloControllerSystem(unittest.TestCase):
 
     def test_hello_controller_good_input(self):
         block = HelloController("hello", MagicMock()).block
+        block.reset()
         result = block.say_hello(name="me")
         self.assertEquals(result.greeting, "Hello me")
 
@@ -44,6 +45,7 @@ class TestHelloControllerSystem(unittest.TestCase):
         self.assertEqual(resp.context, "ClientConnection")
         self.assertEqual(resp.typeid, "malcolm:core/Return:1.0")
         self.assertEqual(resp.value["greeting"], "Hello thing")
+        process.stop()
 
 
 class TestCounterControllerSystem(unittest.TestCase):

@@ -12,7 +12,6 @@ class StateMachine(Loggable):
     # Subclasses must override this
     AFTER_RESETTING = None
 
-
     def __init__(self, name):
         self.set_logger_name(name)
         self.name = name
@@ -50,6 +49,8 @@ class StateMachine(Loggable):
         Returns:
             bool: True if allowed, False if not
         """
+        assert initial_state in self.allowed_transitions, \
+            "%s is not in %s" % (initial_state, list(self.allowed_transitions))
         return target_state in self.allowed_transitions[initial_state]
 
     def set_allowed(self, initial_state, allowed_states):
@@ -158,6 +159,6 @@ class RunnableDeviceStateMachine(StateMachine):
         for state in normal_states:
             self.set_allowed(state, self.ABORTING)
 
-        # Set trself.set_allowednsitions for other stself.set_allowedtes
+        # Set transitions for other states
         self.set_allowed(self.ABORTING, self.ABORTED)
         self.set_allowed(self.ABORTED, self.RESETTING)
