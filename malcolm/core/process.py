@@ -205,7 +205,8 @@ class Process(Loggable):
         assert request.name not in self._blocks, \
             "There is already a block called %r" % request.name
         self._blocks[request.name] = block
-        self._block_state_cache[request.name] = block.to_dict()
+        change_request = BlockChanges([[[request.name], block.to_dict()]])
+        self._handle_block_changes(change_request)
         # Regenerate list of blocks
         self.process_block["blocks"].set_value(list(self._blocks))
 
