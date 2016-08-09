@@ -10,6 +10,7 @@ from malcolm.core.methodmeta import method_takes, only_in, MethodMeta, \
     get_method_decorated
 from malcolm.core.statemachine import DefaultStateMachine
 from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
+from malcolm.core.request import Post
 
 
 sm = DefaultStateMachine
@@ -26,7 +27,9 @@ class Controller(Loggable):
         Args:
             process (Process): The process this should run under
         """
+        self.set_logger_name("%s(%s)" % (type(self).__name__, block_name))
         self.block = Block()
+        self.log_debug("Creating block %r as %r" % (self.block, block_name))
         self.block_name = block_name
         self.params = params
         self.process = process
@@ -38,7 +41,6 @@ class Controller(Loggable):
             parts = {}
         self.parts = parts
 
-        self.set_logger_name("%s(%s)" % (type(self).__name__, block_name))
         self._set_block_children()
         self._do_transition(sm.DISABLED, "Disabled")
         self.block.set_parent(process, block_name)
@@ -46,7 +48,9 @@ class Controller(Loggable):
         self.do_initial_reset()
 
     def do_initial_reset(self):
-        self.process.spawn(self.reset)
+        request = Post(
+            None, self.process.create_queue(), [self.block_name, "reset"])
+        self.process.q.put(request)
 
     def add_change(self, changes, item, attr, value):
         path = item.path_relative_to(self.block) + [attr]
@@ -79,6 +83,8 @@ class Controller(Loggable):
                         assert state in self.stateMachine.possible_states, \
                             "State %s is not one of the valid states %s" % \
                             (state, self.stateMachine.possible_states)
+                # Make a copy otherwise all instances will own the same one
+                child = MethodMeta.from_dict(child.to_dict())
                 self.register_method_writeable(child, states)
             children[name] = child
             if writeable_func:
@@ -155,6 +161,7 @@ class Controller(Loggable):
             if isinstance(child, MethodMeta):
                 method = child
                 writeable = self.methods_writeable[state][method]
+                self.log_debug("Setting %s %s to writeable %s", name, method, writeable)
                 self.add_change(changes, method, "writeable", writeable)
                 for ename in method.takes.elements:
                     meta = method.takes.elements[ename]

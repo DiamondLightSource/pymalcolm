@@ -13,30 +13,6 @@ from malcolm.core.block import Block
 
 class TestScanPointTickerController(unittest.TestCase):
 
-    @patch("malcolm.core.vmetas.stringmeta.StringMeta.to_dict")
-    @patch("malcolm.core.vmetas.numbermeta.NumberMeta.to_dict")
-    @patch("malcolm.core.vmetas.pointgeneratormeta.PointGeneratorMeta.to_dict")
-    def test_init(self, pgmd_mock, nmd_mock, smd_mock):
-        del pgmd_mock.return_value.to_dict
-        del nmd_mock.return_value.to_dict
-        del smd_mock.return_value.to_dict
-        attr_id = "epics:nt/NTAttribute:1.0"
-        sptc = ScanPointTickerController('block', MagicMock())
-        self.assertEqual(RunnableDeviceStateMachine, type(sptc.stateMachine))
-        self.assertEqual("RunnableDeviceStateMachine", sptc.stateMachine.name)
-        self.assertEquals(
-            {"value": None, "meta": nmd_mock.return_value, "typeid": attr_id},
-            sptc.value.to_dict())
-        self.assertEquals(
-            {"value": None, "meta": pgmd_mock.return_value, "typeid": attr_id},
-            sptc.generator.to_dict())
-        self.assertEquals(
-            {"value": None, "meta": smd_mock.return_value, "typeid": attr_id},
-            sptc.axis_name.to_dict())
-        self.assertEquals(
-            {"value": None, "meta": nmd_mock.return_value, "typeid": attr_id},
-            sptc.exposure.to_dict())
-
     def test_configure(self):
         params = MagicMock()
         with patch("malcolm.core.vmetas.pointgeneratormeta.CompoundGenerator",

@@ -79,8 +79,8 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.sc.start()
         self.process2 = Process("proc2", self.sf)
         self.block2 = ClientController('hello', self.process2).block
-        self.cc = WebsocketClientComms("cc", self.process2, "ws://localhost:%s/ws" %
-                                       self.socket)
+        self.cc = WebsocketClientComms("cc", self.process2,
+                                       "ws://localhost:%s/ws" % self.socket)
         self.process2.start()
         self.cc.start()
 

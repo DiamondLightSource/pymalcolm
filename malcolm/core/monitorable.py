@@ -8,9 +8,9 @@ class Monitorable(Loggable, Serializable):
 
     def set_parent(self, parent, name):
         """Sets the parent for changes to be propagated to"""
+        self.set_logger_name(name)
         self._parent = parent
         self._name = name
-        self.set_logger_name(name)
 
     def path_relative_to(self, elder):
         """Find the path of this item relative to some elder parent."""

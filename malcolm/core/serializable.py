@@ -53,13 +53,16 @@ class Serializable(object):
 
     def __getitem__(self, item):
         """Dictionary access to endpoint data"""
-        return self._endpoint_data[item]
+        try:
+            return self._endpoint_data[item]
+        except (KeyError, TypeError):
+            raise KeyError(item)
 
     def __getattr__(self, item):
         """Attr access to endpoint data, if not already in self"""
         try:
             return self._endpoint_data[item]
-        except KeyError:
+        except (KeyError, TypeError):
             raise AttributeError(item)
 
     def __setattr__(self, item, value):

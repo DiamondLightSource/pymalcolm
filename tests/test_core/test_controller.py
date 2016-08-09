@@ -37,8 +37,6 @@ class TestController(unittest.TestCase):
 
     def test_init(self):
         self.c.process.add_block.assert_called_once_with(self.b)
-        self.assertEqual(self.b["say_hello"], self.c.say_hello.MethodMeta)
-        self.assertEqual(self.b["say_goodbye"], self.c.say_goodbye.MethodMeta)
         self.assertEqual({}, self.c.parts)
 
         self.assertEqual(

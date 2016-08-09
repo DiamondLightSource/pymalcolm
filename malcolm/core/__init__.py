@@ -18,4 +18,3 @@ from malcolm.core.statemachine import RunnableDeviceStateMachine, \
     DefaultStateMachine  # noqa
 from malcolm.core.syncfactory import SyncFactory  # noqa
 from malcolm.core.table import Table  # noqa
-import vmetas  # noqa
