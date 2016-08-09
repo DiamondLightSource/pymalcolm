@@ -1,6 +1,6 @@
 # make the import path nice
-from malcolm.util import import_child_packages
+from malcolm.util import import_methodmeta_decorated_classes
 
-__all__ = import_child_packages(globals(), "controllers")
+__all__ = import_methodmeta_decorated_classes(globals(), "controllers")
 
-del import_child_packages
+del import_methodmeta_decorated_classes
