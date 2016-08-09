@@ -1,7 +1,7 @@
+from malcolm.core import MethodMeta, Attribute
 from malcolm.gui.baseitem import BaseItem
 from malcolm.gui.methoditem import MethodItem
 from malcolm.gui.attributeitem import AttributeItem
-from malcolm.core import MethodMeta, Attribute
 
 
 class BlockItem(BaseItem):

@@ -1,8 +1,8 @@
 from collections import OrderedDict
 
 from malcolm.core.loggable import Loggable
-from malcolm.core.spawnable import Spawnable
 from malcolm.core.response import Update
+from malcolm.core.spawnable import Spawnable
 
 
 class ClientComms(Loggable, Spawnable):

@@ -1,5 +1,6 @@
 from PyQt4.Qt import QStyledItemDelegate, QStyle, QStyleOptionButton, \
     QApplication, QEvent, QPushButton, QComboBox, QLineEdit, QVariant, Qt
+
 from malcolm.gui.attributeitem import AttributeItem
 from malcolm.gui.parameteritem import ParameterItem
 from malcolm.gui.methoditem import MethodItem

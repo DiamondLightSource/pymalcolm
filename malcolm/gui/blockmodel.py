@@ -1,8 +1,7 @@
 from PyQt4.Qt import QAbstractItemModel, QModelIndex, Qt
 from PyQt4.QtCore import pyqtSignal
 
-from malcolm.core.request import Subscribe
-from malcolm.core.response import Delta
+from malcolm.core import Subscribe, Delta
 from malcolm.gui.blockitem import BlockItem
 
 

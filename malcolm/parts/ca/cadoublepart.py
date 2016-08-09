@@ -1,6 +1,6 @@
 from cothread import catools
 
-from malcolm.core import NumberMeta
+from malcolm.core.vmetas import NumberMeta
 from malcolm.parts.ca.capart import CAPart, capart_takes
 
 

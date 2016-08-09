@@ -4,10 +4,8 @@ import json
 from tornado.ioloop import IOLoop
 from tornado.websocket import websocket_connect
 
-from malcolm.core.clientcomms import ClientComms
-from malcolm.core.request import Request, Subscribe
-from malcolm.core.response import Response
-from malcolm.core.serializable import deserialize_object, serialize_object
+from malcolm.core import ClientComms, Request, Subscribe, Response, \
+    deserialize_object, serialize_object
 
 
 class WebsocketClientComms(ClientComms):

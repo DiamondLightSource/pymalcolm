@@ -1,15 +1,15 @@
 import functools
 from collections import OrderedDict
 
-from malcolm.core.loggable import Loggable
 from malcolm.core.attribute import Attribute
+from malcolm.core.block import Block
+from malcolm.core.blockmeta import BlockMeta
 from malcolm.core.hook import Hook
+from malcolm.core.loggable import Loggable
 from malcolm.core.methodmeta import method_takes, only_in, MethodMeta, \
     get_method_decorated
-from malcolm.core.blockmeta import BlockMeta
-from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
 from malcolm.core.statemachine import DefaultStateMachine
-from malcolm.core.block import Block
+from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
 
 
 sm = DefaultStateMachine
@@ -35,7 +35,7 @@ class Controller(Loggable):
         # {state (str): {MethodMeta: writeable (bool)}
         self.methods_writeable = {}
         if parts is None:
-            parts = []
+            parts = {}
         self.parts = parts
 
         self.set_logger_name("%s(%s)" % (type(self).__name__, block_name))
@@ -58,7 +58,7 @@ class Controller(Loggable):
         child_list += list(self._create_default_attributes())
         child_list += list(self.create_attributes())
         child_list += list(self.create_methods())
-        for part in self.parts:
+        for part in self.parts.values():
             child_list += list(part.create_attributes())
             child_list += list(part.create_methods())
 

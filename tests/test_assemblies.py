@@ -4,18 +4,16 @@ sys.path.append(os.path.dirname(__file__))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, patch
+from mock import Mock
 
 from malcolm.core.methodmeta import method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
-from malcolm.assemblies import make_assembly, split_into_sections, \
-    with_takes_from, substitute_params, make_block_instance, call_with_map
+from malcolm.assemblies import AssemblyMaker
 
 
 class TestAssemblies(unittest.TestCase):
 
-    @patch("malcolm.assemblies.make_block_instance")
-    def test_make_assembly(self, mock_make):
+    def test_make_assembly(self):
         yaml = """
 parameters.string:
     name: something
@@ -24,12 +22,14 @@ parameters.string:
 parts.ca.CADoublePart:
     pv: $(something)
 """
-        collection = make_assembly(yaml)
+        maker = AssemblyMaker()
+        maker.make_block_instance = Mock()
+        collection = maker.make_assembly(yaml)
         process = Mock()
         blocks = collection(dict(name="boo", something="mypv"), process)
-        mock_make.assert_called_once_with(
+        maker.make_block_instance.assert_called_once_with(
             "boo", process, {}, {"ca.CADoublePart": {"pv": "mypv"}})
-        self.assertEqual(blocks, [mock_make.return_value])
+        self.assertEqual(blocks, [maker.make_block_instance.return_value])
 
     def test_split_into_sections(self):
         ds = {"parameters.string": {"name": "something"},
@@ -39,23 +39,28 @@ parts.ca.CADoublePart:
             controllers={"ManagerController": None},
             parts={},
             assemblies={})
-        self.assertEqual(split_into_sections(ds), expected)
+        self.assertEqual(AssemblyMaker().split_into_sections(ds), expected)
 
     def test_with_takes_from(self):
         parameters = {"string": {"name": "something", "description": ""}}
-        @with_takes_from(parameters, include_name=True)
+        maker = AssemblyMaker()
+
+        @maker.with_takes_from(parameters, include_name=True)
         def f():
             pass
+
         elements = f.MethodMeta.takes.elements
         self.assertEquals(len(elements), 2)
         self.assertEquals(list(elements), ["name", "something"])
 
-
     def test_with_takes_from_no_name(self):
         parameters = {"string": {"name": "something", "description": ""}}
-        @with_takes_from(parameters, include_name=False)
+        maker = AssemblyMaker()
+
+        @maker.with_takes_from(parameters, include_name=False)
         def f():
             pass
+
         elements = f.MethodMeta.takes.elements
         self.assertEquals(len(elements), 1)
         self.assertEquals(list(elements), ["something"])
@@ -63,13 +68,20 @@ parts.ca.CADoublePart:
     def test_substitute_params(self):
         d = {"name": "$(name):pos", "exposure": 1.0}
         params = {"name": "me"}
-        substitute_params(d, params)
+        AssemblyMaker().substitute_params(d, params)
         expected = {"name": "me:pos", "exposure": 1.0}
         self.assertEqual(d, expected)
 
     def test_make_block_instance(self):
+        return
         # TODO: needs new controller and part stuff
-        pass
+
+        parts_d = {"ca.CADoublePart": {"name": "me", "pv": "MY:PV:STRING"}}
+        controllers_d = {}
+        name = "block_name"
+        process = Mock()
+        inst = AssemblyMaker().make_block_instance(
+            name, process, controllers_d, parts_d)
 
     def test_call_with_map(self):
         @method_takes(
@@ -82,7 +94,8 @@ parts.ca.CADoublePart:
         ca = Mock(CAPart=f)
         parts = Mock(ca=ca)
 
-        result = call_with_map(parts, "ca.CAPart", dict(desc="my name"), "extra")
+        result = AssemblyMaker().call_with_map(
+            parts, "ca.CAPart", dict(desc="my name"), "extra")
         self.assertEqual(result, ("extra", 2, "my name", "thing"))
 
 if __name__ == "__main__":

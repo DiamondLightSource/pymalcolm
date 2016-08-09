@@ -1,9 +1,9 @@
-from malcolm.core.loggable import Loggable
+from malcolm.core.attribute import Attribute
 from malcolm.core.future import Future
+from malcolm.core.loggable import Loggable
+from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.request import Subscribe, Unsubscribe, Post, Put
 from malcolm.core.response import Error, Return, Update
-from malcolm.core.methodmeta import MethodMeta
-from malcolm.core.attribute import Attribute
 
 
 class Task(Loggable):

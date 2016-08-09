@@ -1,6 +1,6 @@
 from malcolm.core.monitorable import Monitorable
-from malcolm.core.serializable import Serializable, deserialize_object
 from malcolm.core.request import Put
+from malcolm.core.serializable import Serializable, deserialize_object
 from malcolm.core.vmeta import VMeta
 
 

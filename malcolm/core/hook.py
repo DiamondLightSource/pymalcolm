@@ -1,6 +1,5 @@
 import inspect
 
-from malcolm.core.loggable import Loggable
 from malcolm.core.task import Task
 
 

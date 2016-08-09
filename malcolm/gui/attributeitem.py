@@ -1,4 +1,4 @@
-from malcolm.core.response import Error, Return
+from malcolm.core import Error, Return
 from malcolm.gui.baseitem import BaseItem
 
 

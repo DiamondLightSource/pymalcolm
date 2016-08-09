@@ -12,7 +12,7 @@ from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, on
 
 from malcolm.core.vmetas import StringMeta
 from malcolm.core.mapmeta import MapMeta
-from malcolm.core import ElementMap
+from malcolm.core.elementmap import ElementMap
 
 
 class TestMethodMeta(unittest.TestCase):

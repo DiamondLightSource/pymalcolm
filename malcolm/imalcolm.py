@@ -15,9 +15,7 @@ if __name__ == "__main__":
 
 from PyQt4.Qt import QApplication
 
-from malcolm.core.syncfactory import SyncFactory
-from malcolm.core.process import Process
-from malcolm.core.block import Block
+from malcolm.core import SyncFactory, Process
 from malcolm import controllers
 from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
 from malcolm.gui.blockgui import BlockGui
@@ -32,13 +30,13 @@ class IMalcolm(object):
 
     def add_client_comms(self, url):
         assert url.startswith("ws://"), "Can only do websockets"
-        cc = WSClientComms(url, self.process, url)
+        cc = WebsocketClientComms(url, self.process, url)
         self.client_comms.append(cc)
         return cc
 
     def add_server_comms(self, url):
         #assert url.startswith("ws://"), "Can only do websockets"
-        ss = WSServerComms(url, self.process, url)
+        ss = WebsocketServerComms(url, self.process, url)
         self.server_comms.append(ss)
         return ss
 

@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
+from malcolm.compat import base_string
+from malcolm.core.response import Return, Error, Update, Delta
 from malcolm.core.serializable import Serializable, deserialize_object, \
     serialize_object
-from malcolm.core.response import Return, Error, Update, Delta
-from malcolm.compat import base_string
 
 
 class Request(Serializable):

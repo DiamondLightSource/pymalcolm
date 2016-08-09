@@ -1,4 +1,3 @@
-
 # Possible future states (for internal use).
 RUNNING = 'RUNNING'
 #  Task has set the return or exception and this future is filled
@@ -8,6 +7,7 @@ _FUTURE_STATES = [
     RUNNING,
     FINISHED
 ]
+
 
 class Error(Exception):
     """Base class for all future-related exceptions."""

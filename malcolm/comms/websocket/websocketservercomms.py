@@ -7,9 +7,8 @@ from tornado.ioloop import IOLoop
 from tornado.web import Application
 from tornado.httpserver import HTTPServer
 
-from malcolm.core.servercomms import ServerComms
-from malcolm.core.serializable import deserialize_object, serialize_object
-from malcolm.core.request import Request
+from malcolm.core import ServerComms, deserialize_object, serialize_object, \
+    Request
 
 
 class MalcolmWebSocketHandler(WebSocketHandler):

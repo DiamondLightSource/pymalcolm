@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from malcolm.core.serializable import Serializable
 
 

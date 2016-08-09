@@ -1,6 +1,6 @@
 from malcolm.core.serializable import Serializable
-from malcolm.core.vmetas.choicemeta import ChoiceMeta
 from malcolm.core.varraymeta import VArrayMeta
+from malcolm.core.vmetas.choicemeta import ChoiceMeta
 
 
 @Serializable.register_subclass("malcolm:core/ChoiceArrayMeta:1.0")

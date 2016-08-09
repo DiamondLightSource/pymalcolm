@@ -2,12 +2,12 @@ from collections import OrderedDict
 import inspect
 
 from malcolm.compat import base_string
+from malcolm.core.elementmap import ElementMap
 from malcolm.core.map import Map
 from malcolm.core.mapmeta import MapMeta
+from malcolm.core.meta import Meta
 from malcolm.core.request import Post
 from malcolm.core.serializable import Serializable, deserialize_object
-from malcolm.core.meta import Meta
-from malcolm.core.elementmap import ElementMap
 
 OPTIONAL = object()
 REQUIRED = object()

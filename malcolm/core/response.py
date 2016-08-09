@@ -1,6 +1,6 @@
+from malcolm.compat import base_string
 from malcolm.core.serializable import Serializable, deserialize_object, \
     serialize_object
-from malcolm.compat import base_string
 
 
 class Response(Serializable):

@@ -1,5 +1,5 @@
 from malcolm.core import Controller, Post, Subscribe, Return, MethodMeta, \
-    method_takes, deserialize_object, Error, Attribute, Put, Map
+    method_takes, Error, Attribute, Put, Map
 
 
 @method_takes()

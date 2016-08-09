@@ -1,10 +1,10 @@
 from collections import OrderedDict
 
+from malcolm.compat import base_string
 from malcolm.core.monitorable import Monitorable
 from malcolm.core.serializable import serialize_object, Serializable, \
     deserialize_object
 from malcolm.core.vmeta import VMeta
-from malcolm.compat import base_string
 
 
 @Serializable.register_subclass("malcolm:core/ElementMap:1.0")

@@ -1,8 +1,8 @@
 from malcolm.compat import base_string
 from malcolm.core.serializable import Serializable, deserialize_object
 from malcolm.core.table import Table
-from malcolm.core.vmeta import VMeta
 from malcolm.core.tableelementmap import TableElementMap
+from malcolm.core.vmeta import VMeta
 
 
 @Serializable.register_subclass("malcolm:core/TableMeta:1.0")

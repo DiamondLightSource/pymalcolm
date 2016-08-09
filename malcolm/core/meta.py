@@ -1,5 +1,5 @@
-from malcolm.core.monitorable import Monitorable
 from malcolm.compat import base_string
+from malcolm.core.monitorable import Monitorable
 from malcolm.core.serializable import deserialize_object
 
 

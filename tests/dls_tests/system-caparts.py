@@ -6,15 +6,9 @@ from pkg_resources import require
 
 require("numpy", "tornado", "cothread")
 
-from malcolm.parts.ca.cadoublepart import CADoublePart
-from malcolm.parts.ca.cachoicepart import CAChoicePart
-from malcolm.parts.ca.calongpart import CALongPart
-from malcolm.parts.ca.castringpart import CAStringPart
-from malcolm.parts.ca.cadoublearraypart import CADoubleArrayPart
-from malcolm.parts.ca.cachararraypart import CACharArrayPart
-from malcolm.core.block import Block
-from malcolm.core.process import Process
-from malcolm.core.syncfactory import SyncFactory
+from malcolm.parts.ca import CADoublePart, CAChoicePart, CALongPart, \
+    CAStringPart, CADoubleArrayPart, CACharArrayPart
+from malcolm.core import Block, Process, SyncFactory
 
 import unittest
 
@@ -31,7 +25,6 @@ class CAPartsTest(unittest.TestCase):
     def setUp(self):
         self.sync = SyncFactory("threads")
         self.process = Process("proc", self.sync)
-        self.block = Block("block")
         self.host = socket.gethostname().split('.')[0]
         self.prefix = "%s-AD-SIM-01" % self.host
         pass

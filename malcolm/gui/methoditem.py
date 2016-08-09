@@ -1,5 +1,4 @@
-from malcolm.core.request import Post
-from malcolm.core.response import Error, Return
+from malcolm.core import Post, Error, Return
 from malcolm.gui.baseitem import BaseItem
 from malcolm.gui.parameteritem import ParameterItem
 

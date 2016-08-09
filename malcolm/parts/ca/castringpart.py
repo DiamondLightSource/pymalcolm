@@ -1,7 +1,7 @@
 from cothread import catools
 
+from malcolm.core.vmetas import StringMeta
 from malcolm.parts.ca.capart import CAPart, capart_takes
-from malcolm.core import StringMeta
 
 
 @capart_takes()

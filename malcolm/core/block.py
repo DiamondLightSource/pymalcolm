@@ -1,12 +1,12 @@
 import functools
 
-from malcolm.core.serializable import Serializable
+from malcolm.core.attribute import Attribute
+from malcolm.core.blockmeta import BlockMeta
+from malcolm.core.elementmap import ElementMap
+from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.request import Put, Post
 from malcolm.core.response import Return, Error
-from malcolm.core.blockmeta import BlockMeta
-from malcolm.core.attribute import Attribute
-from malcolm.core.methodmeta import MethodMeta
-from malcolm.core.elementmap import ElementMap
+from malcolm.core.serializable import Serializable
 
 
 @Serializable.register_subclass("malcolm:core/Block:1.0")

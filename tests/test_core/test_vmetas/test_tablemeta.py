@@ -8,7 +8,8 @@ from collections import OrderedDict
 from mock import Mock
 
 from malcolm.core.vmetas import StringArrayMeta, TableMeta
-from malcolm.core import Table, Map, TableElementMap
+from malcolm.core import Table
+from malcolm.core.tableelementmap import TableElementMap
 
 
 class TestTableMetaInit(unittest.TestCase):

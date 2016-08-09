@@ -1,6 +1,6 @@
+from malcolm.core.elementmap import ElementMap
 from malcolm.core.meta import Meta
 from malcolm.core.serializable import Serializable, deserialize_object
-from malcolm.core.elementmap import ElementMap
 
 
 @Serializable.register_subclass("malcolm:core/MapMeta:1.0")

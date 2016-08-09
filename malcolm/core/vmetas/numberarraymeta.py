@@ -2,8 +2,8 @@ import numpy as np
 
 from malcolm.compat import base_string
 from malcolm.core.serializable import Serializable
-from malcolm.core.vmetas.numbermeta import NumberMeta
 from malcolm.core.varraymeta import VArrayMeta
+from malcolm.core.vmetas.numbermeta import NumberMeta
 
 
 @Serializable.register_subclass("malcolm:core/NumberArrayMeta:1.0")

@@ -10,185 +10,183 @@ from malcolm.core.vmetas import StringMeta
 from malcolm.compat import base_string
 
 
-def make_assembly(text):
-    """Make a collection function that will create a list of blocks
+class AssemblyMaker(object):
 
-    Args:
-        text (str): YAML text specifying parameters, controllers, parts and
-            other assemblies to be instantiated
+    def make_assembly(self, text):
+        """Make a collection function that will create a list of blocks
 
-    Returns:
-        function: A collection function decorated with @takes. This can be
-            used in other assemblies or instantiated by the process. If the
-            YAML text specified controllers or parts then a block instance
-            with the given name will be instantiated. If there are any
-            assemblies listed then they will be called. All created blocks by
-            this or any sub collection will be returned
-    """
-    ds = yaml.load(text, Loader=yaml.RoundTripLoader)
+        Args:
+            text (str): YAML text specifying parameters, controllers, parts and
+                other assemblies to be instantiated
 
-    sections = split_into_sections(ds)
+        Returns:
+            function: A collection function decorated with @takes. This can be
+                used in other assemblies or instantiated by the process. If the
+                YAML text specified controllers or parts then a block instance
+                with the given name will be instantiated. If there are any
+                assemblies listed then they will be called. All created blocks
+                by this or any sub collection will be returned
+        """
+        ds = yaml.load(text, Loader=yaml.RoundTripLoader)
 
-    # If we have parts then check we have a maximum of one controller
-    if sections["controllers"] or sections["parts"]:
-        num_controllers = len(sections["controllers"])
-        assert num_controllers in (0, 1), \
-            "Expected 0 or 1 controller with parts, got %s" % num_controllers
-        # We will be creating a block here, so we need a name
-        include_name = True
-    else:
-        # No name needed as just a collection of other assemblies
-        include_name = False
+        sections = self.split_into_sections(ds)
 
-    @with_takes_from(sections["parameters"], include_name)
-    def collection(params, process):
-        substitute_params(sections, params)
-        ret = []
-
-        # If told to make a block instance from controllers and parts
+        # If we have parts then check we have a maximum of one controller
         if sections["controllers"] or sections["parts"]:
-            ret.append(make_block_instance(
-                params["name"], process,
-                sections["controllers"], sections["parts"]))
-
-        # It we have any other assemblies
-        for name, d in sections["assemblies"].items():
-            ret += call_with_map(malcolm.assemblies, name, d, process)
-
-        return ret
-
-    return collection
-
-
-def split_into_sections(ds):
-    """Split a dictionary into parameters, controllers, parts and assemblies
-
-    Args:
-        ds (dict): Dictionary of section: params. E.g.
-            {
-                "parameters.string": {"name": "something"},
-                "controllers.ManagerController": None
-             }
-
-    Returns:
-        dict: dictionary containing sections sub dictionaries. E.g.
-            {
-                "parameters": {
-                    "string": {"name": "something"}
-                },
-                "controllers": {
-                    "ManagerController": None
-                }
-            }
-    """
-    # First separate them into their relevant sections
-    sections = dict(parameters={}, controllers={}, parts={}, assemblies={})
-    for name, d in ds.items():
-        section, subsection = name.split(".", 1)
-        if section in sections:
-            sections[section][subsection] = d
+            ncontrollers = len(sections["controllers"])
+            assert ncontrollers in (0, 1), \
+                "Expected 0 or 1 controller with parts, got %s" % ncontrollers
+            # We will be creating a block here, so we need a name
+            include_name = True
         else:
-            raise ValueError("Unknown section name %s" % name)
+            # No name needed as just a collection of other assemblies
+            include_name = False
 
-    return sections
+        @self.with_takes_from(sections["parameters"], include_name)
+        def collection(params, process):
+            self.substitute_params(sections, params)
+            ret = []
 
+            # If told to make a block instance from controllers and parts
+            if sections["controllers"] or sections["parts"]:
+                ret.append(self.make_block_instance(
+                    params["name"], process,
+                    sections["controllers"], sections["parts"]))
 
-def with_takes_from(parameters, include_name):
-    """Create an @takes decorator from parameters dict.
+            # It we have any other assemblies
+            for name, d in sections["assemblies"].items():
+                ret += self.call_with_map(malcolm.assemblies, name, d, process)
 
-    Args:
-        parameters (dict): Parameters sub dictionary. E.g.
-            {"string": {"name": "something"}}
-        include_name (bool): If True then put a "name" meta first
+            return ret
 
-    Returns:
-        function: Decorator that will set a "MethodMeta" attribute on the callable
-            with the arguments it should take
-    """
-    # find all the Takes objects and create them
-    if include_name:
-        takes_arguments = [
-            "name", StringMeta("Name of the created block"), REQUIRED]
-    else:
-        takes_arguments = []
-    for name, d in parameters.items():
-        takes_arguments += call_with_map(malcolm.parameters, name, d)
-    return method_takes(*takes_arguments)
+        return collection
 
+    def split_into_sections(self, ds):
+        """Split a dictionary into parameters, controllers, parts and assemblies
 
-def substitute_params(d, params):
-    """Substitute a dictionary in place with $(attr) macros in it with values
-    from params
+        Args:
+            ds (dict): Dictionary of section: params. E.g.
+                {
+                    "parameters.string": {"name": "something"},
+                    "controllers.ManagerController": None
+                 }
 
-    Args:
-        d (dict): Input dictionary {string key: any value}. E.g.
-            {"name": "$(name):pos", "exposure": 1.0}
-        params (Map or dict): Values to substitute. E.g. Map of
-            {"name": "me"}
+        Returns:
+            dict: dictionary containing sections sub dictionaries. E.g.
+                {
+                    "parameters": {
+                        "string": {"name": "something"}
+                    },
+                    "controllers": {
+                        "ManagerController": None
+                    }
+                }
+        """
+        # First separate them into their relevant sections
+        sections = dict(parameters={}, controllers={}, parts={}, assemblies={})
+        for name, d in ds.items():
+            section, subsection = name.split(".", 1)
+            if section in sections:
+                sections[section][subsection] = d
+            else:
+                raise ValueError("Unknown section name %s" % name)
 
-    After the call the dictionary will look like:
-        {"name": "me:pos", "exposure": 1.0}
-    """
-    for p in params:
-        for k, v in d.items():
-            search = "$(%s)" % p
-            if isinstance(v, base_string):
-                d[k] = v.replace(search, params[p])
-            elif isinstance(v, dict):
-                substitute_params(v, params)
+        return sections
 
+    def with_takes_from(self, parameters, include_name):
+        """Create an @takes decorator from parameters dict.
 
-def make_block_instance(name, process, controllers_d, parts_d):
-    """Make a block subclass from a series of parts.* and controllers.* dicts
+        Args:
+            parameters (dict): Parameters sub dictionary. E.g.
+                {"string": {"name": "something"}}
+            include_name (bool): If True then put a "name" meta first
 
-    Args:
-        name (str): The name of the resulting block instance
-        process (Process): The process it should be attached to
-        controllers_d (dict): Controllers sub dictionary. E.g.
-            {"ManagerController": None}
-        parts_d (dict): Parts sub dictionary. E.g.
-            {"ca.CADoublePart": {"pv": "MY:PV:STRING"}}
+        Returns:
+            function: Decorator that will set a "MethodMeta" attribute on the callable
+                with the arguments it should take
+        """
+        # find all the Takes objects and create them
+        if include_name:
+            takes_arguments = [
+                "name", StringMeta("Name of the created block"), REQUIRED]
+        else:
+            takes_arguments = []
+        for name, d in parameters.items():
+            takes_arguments += self.call_with_map(malcolm.parameters, name, d)
+        return method_takes(*takes_arguments)
 
-    Returns:
-        Block: The created block instance as managed by the controller with
-            all the parts attached
-    """
-    parts = OrderedDict()
-    for cls_name, d in parts_d.items():
-        # Require all parts to have a name
-        # TODO: make sure this is added from gui?
-        name = d[name]
-        parts[name] = call_with_map(malcolm.parts, cls_name, d)
-    if controllers_d:
-        cls_name, d = list(controllers_d.items())[0]
-        controller = call_with_map(
-            malcolm.controllers, cls_name, d, name, process, parts)
-    else:
-        controller = call_with_map(
-            malcolm.core.controller, "Controller", d, name, process, parts)
-    return controller.block
+    def substitute_params(self, d, params):
+        """Substitute a dictionary in place with $(attr) macros in it with values
+        from params
 
+        Args:
+            d (dict): Input dictionary {string key: any value}. E.g.
+                {"name": "$(name):pos", "exposure": 1.0}
+            params (Map or dict): Values to substitute. E.g. Map of
+                {"name": "me"}
 
-def call_with_map(ob, name, d, *args):
-    """Keep recursing down from ob using dotted name, then call it with d, *args
+        After the call the dictionary will look like:
+            {"name": "me:pos", "exposure": 1.0}
+        """
+        for p in params:
+            for k, v in d.items():
+                search = "$(%s)" % p
+                if isinstance(v, base_string):
+                    d[k] = v.replace(search, params[p])
+                elif isinstance(v, dict):
+                    self.substitute_params(v, params)
 
-    Args:
-        ob (object): The starting object
-        name (string): The dotted attribute path to follow
-        d (dict): A dictionary of parameters that will be turned into a Map and
-            passed to the found callable
-        *args: Any other args to pass to the callable
+    def make_block_instance(self, name, process, controllers_d, parts_d):
+        """Make a block subclass from a series of parts.* and controllers.* dicts
 
-    Returns:
-        object: The found object called with (map_from_d, *args)
+        Args:
+            name (str): The name of the resulting block instance
+            process (Process): The process it should be attached to
+            controllers_d (dict): Controllers sub dictionary. E.g.
+                {"ManagerController": None}
+            parts_d (dict): Parts sub dictionary. E.g.
+                {"ca.CADoublePart": {"name": "me", "pv": "MY:PV:STRING"}}
 
-    E.g. if ob is malcolm.parts, and name is "ca.CADoublePart", then the object
-    will be malcolm.parts.ca.CADoublePart
-    """
-    split = name.split(".")
-    for n in split:
-        ob = getattr(ob, n)
+        Returns:
+            Block: The created block instance as managed by the controller with
+                all the parts attached
+        """
+        parts = OrderedDict()
+        for cls_name, d in parts_d.items():
+            # Require all parts to have a name
+            # TODO: make sure this is added from gui?
+            name = d["name"]
+            parts[name] = self.call_with_map(malcolm.parts, cls_name, d)
+        if controllers_d:
+            ob = malcolm.controllers
+            cls_name, d = list(controllers_d.items())[0]
+        else:
+            ob = malcolm.core.controller
+            cls_name = "Controller"
+            d = None
+        controller = self.call_with_map(ob, cls_name, d, name, process, parts)
+        return controller.block
 
-    params = ob.MethodMeta.prepare_input_map(d)
-    args += (params,)
-    return ob(*args)
+    def call_with_map(self, ob, name, d, *args):
+        """Keep recursing down from ob using dotted name, then call it with d, *args
+
+        Args:
+            ob (object): The starting object
+            name (string): The dotted attribute path to follow
+            d (dict): A dictionary of parameters that will be turned into a Map and
+                passed to the found callable
+            *args: Any other args to pass to the callable
+
+        Returns:
+            object: The found object called with (map_from_d, *args)
+
+        E.g. if ob is malcolm.parts, and name is "ca.CADoublePart", then the object
+        will be malcolm.parts.ca.CADoublePart
+        """
+        split = name.split(".")
+        for n in split:
+            ob = getattr(ob, n)
+
+        params = ob.MethodMeta.prepare_input_map(d)
+        args += (params,)
+        return ob(*args)

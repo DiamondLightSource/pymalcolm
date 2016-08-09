@@ -18,4 +18,6 @@ except:
     cothread.CallbackResult.side_effect = callback_result
     sys.modules["cothread"] = cothread
 catools = MagicMock()
+# Tell Mock not to have a MethodMeta, otherwise we will be decorated
+del catools.MethodMeta
 cothread.catools = catools
