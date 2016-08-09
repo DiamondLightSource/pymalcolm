@@ -19,6 +19,7 @@ from malcolm.core.process import Process
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Post, Subscribe
 from malcolm.core.response import Return, Update
+from malcolm.core.task import Task
 
 
 class TestHelloControllerSystem(unittest.TestCase):
@@ -32,8 +33,12 @@ class TestHelloControllerSystem(unittest.TestCase):
     def test_hello_controller_with_process(self):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
-        HelloController("hello", process)
+        b = HelloController("hello", process).block
         process.start()
+        # wait until block is Ready
+        task = Task("task", process)
+        futures = task.when_matches(b["state"], "Ready")
+        task.wait_all(futures, timeout=0.1)
         q = sync_factory.create_queue()
         req = Post(response_queue=q, context="ClientConnection",
                    endpoint=["hello", "say_hello"],

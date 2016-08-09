@@ -17,6 +17,7 @@ sm = DefaultStateMachine
 
 
 @sm.insert
+@method_takes()
 class Controller(Loggable):
     """Implement the logic that takes a Block through its state machine"""
 
@@ -96,8 +97,9 @@ class Controller(Loggable):
 
     def call_writeable_function(self, function, child, *args):
         with self.lock:
-            assert child.writeable, \
-                "Child %r is not writeable" % (child,)
+            if not child.writeable:
+                child.log_error("I'm not writeable")
+                raise ValueError("Child %r is not writeable" % (child,))
         result = function(*args)
         return result
 

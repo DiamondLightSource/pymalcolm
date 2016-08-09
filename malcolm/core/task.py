@@ -176,7 +176,6 @@ class Task(Loggable):
         request.set_id(id_)
         self.process.q.put(request)
 
-
     def stop(self):
         """Puts an abort on the queue"""
         self.q.put(Task.TASK_STOP)

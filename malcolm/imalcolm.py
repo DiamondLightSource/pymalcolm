@@ -7,8 +7,7 @@ import os
 if __name__ == "__main__":
     # Test
     from pkg_resources import require
-    require("tornado")  # noqa
-    require("numpy") # noqa
+    require("tornado", "numpy", "cothread", "ruamel.yaml")  # noqa
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..",
                                  "scanpointgenerator"))
@@ -16,17 +15,22 @@ if __name__ == "__main__":
 from PyQt4.Qt import QApplication
 
 from malcolm.core import SyncFactory, Process
-from malcolm import controllers
+from malcolm.controllers import ClientController
 from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
 from malcolm.gui.blockgui import BlockGui
+from malcolm.assemblyutil import make_assembly
 
 
 class IMalcolm(object):
-    def __init__(self):
+    def __init__(self, yaml=None):
         self.client_comms = []
         self.server_comms = []
         self.sync_factory = SyncFactory("Sync")
         self.process = Process("Process", self.sync_factory)
+        if yaml:
+            with open(yaml) as f:
+                assembly = make_assembly(f.read())
+            assembly(self.process, {})
 
     def add_client_comms(self, url):
         assert url.startswith("ws://"), "Can only do websockets"
@@ -54,14 +58,12 @@ class IMalcolm(object):
             sc.stop()
         self.process.stop()
 
-    def make_block(self, block_name, controller="client"):
-        desired_controller = "%sController" % controller
-        for clsname in dir(controllers):
-            if clsname.lower() == desired_controller.lower():
-                cls = getattr(controllers, clsname)
-                inst = cls(block_name, self.process)
-                return inst.block
-        raise TypeError("Can't find a %s" % desired_controller)
+    def get_block(self, block_name):
+        return self.process._blocks[block_name]
+
+    def make_client(self, block_name):
+        controller = ClientController(block_name, self.process)
+        return controller.block
 
     def gui(self, block_name):
         if not hasattr(self, "app"):
@@ -69,6 +71,7 @@ class IMalcolm(object):
         gui = BlockGui(self.process, block_name)
         self.app.exec_()
         return gui
+
 
 def make_imalcolm():
     parser = argparse.ArgumentParser(
@@ -83,6 +86,10 @@ def make_imalcolm():
         '--log', default="INFO",
         help="Lowest level of logs to see. One of: ERROR, WARNING, INFO, DEBUG "
         "Default is INFO")
+    parser.add_argument(
+        'yaml', nargs="?",
+        help="The YAML file containing the assemblies to be loaded"
+    )
     args = parser.parse_args()
     # assuming loglevel is bound to the string value obtained from the
     # command line argument. Convert to upper case to allow the user to
@@ -90,9 +97,9 @@ def make_imalcolm():
     numeric_level = getattr(logging, args.log.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log)
-    logging.basicConfig(level=numeric_level)
+    #logging.basicConfig(level=numeric_level)
 
-    im = IMalcolm()
+    im = IMalcolm(args.yaml)
     if args.client:
         im.add_client_comms(args.client)
     if args.server:
@@ -105,15 +112,14 @@ def main():
     self.start()
 
     header = """Welcome to iMalcolm.
-Type self.make_block("<device_name>") to get a device client
+
 Try:
-hello = self.make_block("h", "hello")
+hello = self.get_block("hello")
 print hello.say_hello("me")
 
 or
 
-self.gui(self.make_counter("c", "counter"))
-self.gui("hello")
+self.gui(self.make_client("counter"))
 """
     try:
         import IPython

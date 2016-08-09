@@ -46,7 +46,6 @@ class BlockModel(QAbstractItemModel):
         endpoints.sort(key=len, reverse=True)
         for e in endpoints:
             item = BlockItem.items[e]
-            print("Removing %s %s" %(e, item))
             parent_index = self.get_index(item.parent_item, 0)
             row = item.parent_row()
             self.beginRemoveRows(parent_index, row, row)

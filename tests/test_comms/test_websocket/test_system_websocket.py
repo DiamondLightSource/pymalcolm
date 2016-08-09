@@ -17,10 +17,8 @@ import json
 
 
 # module imports
-from malcolm.controllers.hellocontroller import HelloController
-from malcolm.controllers.clientcontroller import ClientController
-from malcolm.core.process import Process
-from malcolm.core.syncfactory import SyncFactory
+from malcolm.controllers import HelloController, ClientController
+from malcolm.core import Process, SyncFactory, Task
 from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
 
 
@@ -93,9 +91,9 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.process2.stop()
 
     def test_server_with_malcolm_client(self):
-        # Normally we would wait for it to be connected here, but it isn't
-        # attached to a process so just sleep for a bit
-        time.sleep(0.5)
+        task = Task("task", self.process2)
+        futures = task.when_matches(self.block2["state"], "Ready")
+        task.wait_all(futures, timeout=0.1)
         ret = self.block2.say_hello("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
 
