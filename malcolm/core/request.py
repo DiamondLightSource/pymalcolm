@@ -1,5 +1,9 @@
-from malcolm.core.serializable import Serializable
+from collections import OrderedDict
+
+from malcolm.compat import base_string
 from malcolm.core.response import Return, Error, Update, Delta
+from malcolm.core.serializable import Serializable, deserialize_object, \
+    serialize_object
 
 
 class Request(Serializable):
@@ -13,8 +17,7 @@ class Request(Serializable):
             context(): Context of request
             response_queue(Queue): Queue to return to
         """
-
-        self.id_ = None
+        self.set_id(None)
         self.context = context
         self.response_queue = response_queue
 
@@ -25,13 +28,9 @@ class Request(Serializable):
         Args:
             id_(int): Unique identifier for request
         """
-
-        self.id_ = id_
-
-    def get_endpoint(self, endpoint):
-        if endpoint == "id":
-            return self.id_
-        return getattr(self, endpoint)
+        if id_ is not None:
+            id_ = deserialize_object(id_, int)
+        self.set_endpoint_data("id", id_)
 
     def respond_with_return(self, value=None):
         """
@@ -41,7 +40,7 @@ class Request(Serializable):
             value(): Value to set endpoint to
         """
 
-        response = Return(self.id_, self.context, value=value)
+        response = Return(self.id, self.context, value=value)
         self.response_queue.put(response)
 
     def respond_with_error(self, message):
@@ -52,7 +51,7 @@ class Request(Serializable):
             message(str): Message explaining error
         """
 
-        response = Error(self.id_, self.context, message=message)
+        response = Error(self.id, self.context, message=message)
         self.response_queue.put(response)
 
     def __repr__(self):
@@ -74,10 +73,12 @@ class Get(Request):
         """
 
         super(Get, self).__init__(context, response_queue)
-        self.endpoint = endpoint
+        self.set_endpoint(endpoint)
 
     def set_endpoint(self, endpoint):
-        self.endpoint = endpoint
+        if endpoint is not None:
+            endpoint = [deserialize_object(e, base_string) for e in endpoint]
+        self.set_endpoint_data("endpoint", endpoint)
 
 
 @Serializable.register_subclass("malcolm:core/Put:1.0")
@@ -97,14 +98,16 @@ class Put(Request):
         """
 
         super(Put, self).__init__(context, response_queue)
-        self.endpoint = endpoint
-        self.value = value
+        self.set_endpoint(endpoint)
+        self.set_value(value)
 
     def set_endpoint(self, endpoint):
-        self.endpoint = endpoint
+        if endpoint is not None:
+            endpoint = [deserialize_object(e, base_string) for e in endpoint]
+        self.set_endpoint_data("endpoint", endpoint)
 
     def set_value(self, value):
-        self.value = value
+        self.set_endpoint_data("value", serialize_object(value))
 
 
 @Serializable.register_subclass("malcolm:core/Post:1.0")
@@ -125,14 +128,20 @@ class Post(Request):
         """
 
         super(Post, self).__init__(context, response_queue)
-        self.endpoint = endpoint
-        self.parameters = parameters
+        self.set_endpoint(endpoint)
+        self.set_parameters(parameters)
 
     def set_endpoint(self, endpoint):
-        self.endpoint = endpoint
+        if endpoint is not None:
+            endpoint = [deserialize_object(e, base_string) for e in endpoint]
+        self.set_endpoint_data("endpoint", endpoint)
 
     def set_parameters(self, parameters):
-        self.parameters = parameters
+        if parameters is not None:
+            parameters = OrderedDict(
+                (deserialize_object(k, base_string), serialize_object(v))
+                for k, v in parameters.items())
+        self.set_endpoint_data("parameters", parameters)
 
 
 @Serializable.register_subclass("malcolm:core/Subscribe:1.0")
@@ -141,7 +150,8 @@ class Subscribe(Request):
 
     endpoints = ["id", "endpoint", "delta"]
 
-    def __init__(self, context=None, response_queue=None, endpoint=None, delta=False):
+    def __init__(self, context=None, response_queue=None, endpoint=None,
+                 delta=False):
         """
         Args:
             context: Context of Subscribe
@@ -151,8 +161,8 @@ class Subscribe(Request):
         """
 
         super(Subscribe, self).__init__(context, response_queue)
-        self.endpoint = endpoint
-        self.delta = delta
+        self.set_endpoint(endpoint)
+        self.set_delta(delta)
 
     def respond_with_update(self, value):
         """
@@ -161,7 +171,7 @@ class Subscribe(Request):
         Args:
             value (dict): Dictionary describing the new structure
         """
-        response = Update(self.id_, self.context, value=value)
+        response = Update(self.id, self.context, value=value)
         self.response_queue.put(response)
 
     def respond_with_delta(self, changes):
@@ -171,14 +181,17 @@ class Subscribe(Request):
         Args:
             changes (list): list of [[path], value] pairs for changed values
         """
-        response = Delta(self.id_, self.context, changes=changes)
+        response = Delta(self.id, self.context, changes=changes)
         self.response_queue.put(response)
 
     def set_endpoint(self, endpoint):
-        self.endpoint = endpoint
+        if endpoint is not None:
+            endpoint = [deserialize_object(e, base_string) for e in endpoint]
+        self.set_endpoint_data("endpoint", endpoint)
 
     def set_delta(self, delta):
-        self.delta = delta
+        delta = deserialize_object(delta, bool)
+        self.set_endpoint_data("delta", delta)
 
 
 @Serializable.register_subclass("malcolm:core/Unsubscribe:1.0")

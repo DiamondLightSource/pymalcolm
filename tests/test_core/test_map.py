@@ -7,24 +7,24 @@ import unittest
 from collections import OrderedDict
 from mock import MagicMock, Mock
 
-from malcolm.core.map import Map
-from malcolm.core.serializable import Serializable
+from malcolm.core import Map, Serializable
+from malcolm.core.vmetas import NumberMeta, StringMeta
 from malcolm.core.meta import Meta
-from malcolm.vmetas.numbermeta import NumberMeta
-from malcolm.vmetas.stringmeta import StringMeta
+from malcolm.core.mapmeta import MapMeta
+from malcolm.core.elementmap import ElementMap
+
 
 class TestMap(unittest.TestCase):
 
     def setUp(self):
         n = NumberMeta(description='a number')
         s = StringMeta(description="a string")
-        self.meta = Meta()
-        self.meta.elements = {"a":s, "b":s}
-        self.meta.required = ["a"]
-        self.nmeta = Meta()
-        self.nmeta.elements = {"a":n, "b":n}
-        self.nmeta.required = ["a"]
-        #self.meta = MagicMock(wraps=self.meta)
+        self.meta = MapMeta()
+        self.meta.set_elements(ElementMap({"a": s, "b": s}))
+        self.meta.set_required(["a"])
+        self.nmeta = MapMeta()
+        self.nmeta.set_elements(ElementMap({"a": n, "b": n}))
+        self.nmeta.set_required(["a"])
 
     def test_init(self):
         b_mock = MagicMock()
@@ -189,23 +189,27 @@ class TestMap(unittest.TestCase):
             m.a
 
     def test_keys(self):
-
-        m = Map(self.nmeta, {"a":1})
-        self.assertEqual(["a"], m.keys())
+        m = Map(self.nmeta, {"a": 1})
+        self.assertEqual(["a"], list(m.keys()))
         m.b = 1
         self.assertEqual({"a", "b"}, set(m.keys()))
 
     def test_values(self):
         m = Map(self.nmeta, {"a":1})
-        self.assertEqual([1], m.values())
+        self.assertEqual([1], list(m.values()))
         m.b = 2
         self.assertEqual({1, 2}, set(m.values()))
 
     def test_items(self):
         m = Map(self.nmeta, {"b":2})
-        self.assertEqual([("b", 2)], m.items())
+        self.assertEqual([("b", 2)], list(m.items()))
         m.a = 1
         self.assertEqual({("a", 1), ("b", 2)}, set(m.items()))
+
+    def test_repr(self):
+        m = Map(self.nmeta, {"b": 44})
+        r = repr(m)
+        self.assertEqual(r, "Map({'b': 44.0})")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

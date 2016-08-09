@@ -10,7 +10,7 @@ from mock import Mock, patch
 
 from malcolm.core.attribute import Attribute
 from malcolm.core.serializable import Serializable
-from malcolm.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 class TestAttribute(unittest.TestCase):
@@ -21,7 +21,6 @@ class TestAttribute(unittest.TestCase):
     def test_init(self):
         a = Attribute(self.meta)
         self.assertIs(self.meta, a.meta)
-        self.assertIs(self.meta.parent, a)
         self.assertIsNone(a.value)
         self.assertEquals("epics:nt/NTAttribute:1.0", a.typeid)
 
@@ -50,8 +49,8 @@ class TestSerialization(unittest.TestCase):
         self.assertEqual(a.to_dict(), self.serialized)
 
     def test_from_dict(self):
-        a = Serializable.from_dict(self.serialized)
-        self.assertEquals(a.meta.parent, a)
+        a = Attribute.from_dict(self.serialized)
+        self.assertEquals(a.meta._parent, a)
         self.assertEquals(a.meta.to_dict(), StringMeta("desc").to_dict())
         self.assertEquals(a.value, "some string")
 

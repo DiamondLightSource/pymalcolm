@@ -1,20 +1,16 @@
 import os
 import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "scanpointgenerator"))
 import socket
 
 from pkg_resources import require
 
 require("numpy", "tornado", "cothread")
 
-from malcolm.parts.ca.cadoublepart import CADoublePart
-from malcolm.parts.ca.cachoicepart import CAChoicePart
-from malcolm.parts.ca.calongpart import CALongPart
-from malcolm.parts.ca.castringpart import CAStringPart
-from malcolm.parts.ca.cadoublearraypart import CADoubleArrayPart
-from malcolm.parts.ca.cachararraypart import CACharArrayPart
-from malcolm.core.block import Block
-from malcolm.core.process import Process
-from malcolm.core.syncfactory import SyncFactory
+from malcolm.parts.ca import CADoublePart, CAChoicePart, CALongPart, \
+    CAStringPart, CADoubleArrayPart, CACharArrayPart
+from malcolm.core import Block, Process, SyncFactory
 
 import unittest
 
@@ -31,19 +27,24 @@ class CAPartsTest(unittest.TestCase):
     def setUp(self):
         self.sync = SyncFactory("threads")
         self.process = Process("proc", self.sync)
-        self.block = Block("block")
         self.host = socket.gethostname().split('.')[0]
         self.prefix = "%s-AD-SIM-01" % self.host
-        pass
+
+    def create_part(self, cls, **args):
+        params = cls.MethodMeta.prepare_input_map(args)
+        p = cls(self.process, params)
+        p.set_logger_name(cls.__name__)
+        list(p.create_attributes())
+        p.connect_pvs()
+        return p
 
     def test_double(self):
-        pvname = "%s:CAM:AcquireTime" % self.prefix
-        d = {"name": "pv",
-             "description": "a test pv",
-             "pv": pvname,
-             "rbv_suff": "_RBV"}
-        p = CADoublePart("p", self.process, self.block, d)
-        p.connect_pvs()
+        p = self.create_part(
+            CADoublePart,
+            name="pv",
+            description="a test pv",
+            pv="%s:CAM:AcquireTime" % self.prefix,
+            rbv_suff="_RBV")
 
         for i in range(1, 6):
             f = i / 2.0
@@ -53,13 +54,12 @@ class CAPartsTest(unittest.TestCase):
         p.close_monitor()
 
     def test_choice(self):
-        pvname = "%s:CAM:DataType" % self.prefix
-        d = {"name": "pv",
-             "description": "a test pv",
-             "pv": pvname,
-             "rbv_suff": "_RBV"}
-        p = CAChoicePart("p", self.process, self.block, d)
-        p.connect_pvs()
+        p = self.create_part(
+            CAChoicePart,
+            name="pv",
+            description="a test pv",
+            pv="%s:CAM:DataType" % self.prefix,
+            rbv_suff="_RBV")
 
         for i in [1, 5]:
             p.caput(i)
@@ -71,13 +71,12 @@ class CAPartsTest(unittest.TestCase):
         p.close_monitor()
 
     def test_long(self):
-        pvname = "%s:CAM:BinX" % self.prefix
-        d = {"name": "pv",
-             "description": "a test pv",
-             "pv": pvname,
-             "rbv_suff": "_RBV"}
-        p = CALongPart("p", self.process, self.block, d)
-        p.connect_pvs()
+        p = self.create_part(
+            CALongPart,
+            name="pv",
+            description="a test pv",
+            pv="%s:CAM:BinX" % self.prefix,
+            rbv_suff="_RBV")
 
         for i in range(1, 6):
             f = i / 2.0
@@ -87,13 +86,12 @@ class CAPartsTest(unittest.TestCase):
         p.close_monitor()
 
     def test_string(self):
-        pvname = "%s:ROI:Name" % self.prefix
-        d = {"name": "pv",
-             "description": "a test pv",
-             "pv": pvname,
-             "rbv_suff": "_RBV"}
-        p = CAStringPart("p", self.process, self.block, d)
-        p.connect_pvs()
+        p = self.create_part(
+            CAStringPart,
+            name="pv",
+            description="a test pv",
+            pv="%s:ROI:Name" % self.prefix,
+            rbv_suff="_RBV")
 
         for s in ["Hello", "World", "Again"]:
             p.caput(s)
@@ -102,31 +100,30 @@ class CAPartsTest(unittest.TestCase):
         p.close_monitor()
 
     def test_doublearray(self):
-        pvname = "%s:STAT:Histogram_RBV" % self.prefix
-        d = {"name": "pv",
-             "description": "a test pv",
-             "rbv": pvname}
-        p = CADoubleArrayPart("p", self.process, self.block, d)
+        p = self.create_part(
+            CAStringPart,
+            name="pv",
+            description="a test pv",
+            rbv="%s:STAT:Histogram_RBV" % self.prefix)
 
         # this is a read only PV - just check we read it
-        p.connect_pvs()
         da = [0] * len(p.attr.value)
         self.assertItemsEqual(p.attr.value, da)
         p.close_monitor()
 
     def test_chararray(self):
-        pvname = "%s:CAM:NDAttributesFile" % self.prefix
-        d = {"name": "pv",
-             "description": "a test pv",
-             "pv": pvname,
-             "rbv_suff": ""}
-        p = CACharArrayPart("p", self.process, self.block, d)
-
-        # this is a read only PV
-        p.connect_pvs()
+        p = self.create_part(
+            CACharArrayPart,
+            name="pv",
+            description="a test pv",
+            pv="%s:CAM:NDAttributesFile" % self.prefix,
+            rbv_suff="")
 
         for s in ['Testing', '1111', '2222']:
             p.caput(s)
             self.assertEqual(p.attr.value, s)
 
         p.close_monitor()
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

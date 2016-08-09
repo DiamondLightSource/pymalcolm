@@ -1,11 +1,11 @@
-from malcolm.vmetas import StringMeta
-from malcolm.core import Controller, takes, returns, REQUIRED
+from malcolm.core import Controller, method_takes, method_returns, REQUIRED
+from malcolm.core.vmetas import StringMeta
 
 
-@takes()
+@method_takes()
 class HelloController(Controller):
-    @takes("name", StringMeta(description="a name"), REQUIRED)
-    @returns("greeting", StringMeta(description="a greeting"), REQUIRED)
+    @method_takes("name", StringMeta(description="a name"), REQUIRED)
+    @method_returns("greeting", StringMeta(description="a greeting"), REQUIRED)
     def say_hello(self, parameters, return_map):
         """Says Hello to name
 

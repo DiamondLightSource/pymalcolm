@@ -7,11 +7,12 @@ from collections import OrderedDict
 import unittest
 from mock import Mock, patch, MagicMock
 
-from malcolm.core.methodmeta import MethodMeta, takes, returns, only_in, OPTIONAL, \
+from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, only_in, OPTIONAL, \
     REQUIRED
 
-from malcolm.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.core.mapmeta import MapMeta
+from malcolm.core.elementmap import ElementMap
 
 
 class TestMethodMeta(unittest.TestCase):
@@ -33,51 +34,51 @@ class TestMethodMeta(unittest.TestCase):
 
 class TestDecorators(unittest.TestCase):
     def test_takes_given_optional(self):
-        @takes("hello", StringMeta(), OPTIONAL)
+        @method_takes("hello", StringMeta(), OPTIONAL)
         def say_hello(params):
             """Say hello"""
             print("Hello" + params.name)
 
         itakes = MapMeta()
-        itakes.set_elements(OrderedDict(hello=StringMeta()))
+        itakes.set_elements(ElementMap(OrderedDict(hello=StringMeta())))
         self.assertEqual(say_hello.MethodMeta.takes.to_dict(), itakes.to_dict())
         self.assertEqual(say_hello.MethodMeta.returns.to_dict(), MapMeta().to_dict())
         self.assertEqual(say_hello.MethodMeta.defaults, {})
 
     def test_takes_given_defaults(self):
-        @takes("hello", StringMeta(), "Something")
+        @method_takes("hello", StringMeta(), "Something")
         def say_hello(params):
             """Say hello"""
             print("Hello" + params.name)
 
         itakes = MapMeta()
-        itakes.set_elements(OrderedDict(hello=StringMeta()))
+        itakes.set_elements(ElementMap(OrderedDict(hello=StringMeta())))
         self.assertEqual(say_hello.MethodMeta.takes.to_dict(), itakes.to_dict())
         self.assertEqual(say_hello.MethodMeta.returns.to_dict(), MapMeta().to_dict())
         self.assertEqual(say_hello.MethodMeta.defaults, {"hello": "Something"})
 
     def test_takes_given_required(self):
-        @takes("hello", StringMeta(), REQUIRED)
+        @method_takes("hello", StringMeta(), REQUIRED)
         def say_hello(params):
             """Say hello"""
             print("Hello" + params.name)
 
         itakes = MapMeta()
-        itakes.set_elements(OrderedDict(hello=StringMeta()))
+        itakes.set_elements(ElementMap(OrderedDict(hello=StringMeta())))
         itakes.set_required(["hello"])
         self.assertEqual(say_hello.MethodMeta.takes.to_dict(), itakes.to_dict())
         self.assertEqual(say_hello.MethodMeta.returns.to_dict(), MapMeta().to_dict())
         self.assertEqual(say_hello.MethodMeta.defaults, {})
 
     def test_returns_given_valid_sets(self):
-        @returns("hello", StringMeta(), REQUIRED)
+        @method_returns("hello", StringMeta(), REQUIRED)
         def say_hello(ret):
             """Say hello"""
             ret.hello = "Hello"
             return ret
 
         ireturns = MapMeta()
-        ireturns.set_elements(OrderedDict(hello=StringMeta()))
+        ireturns.set_elements(ElementMap(OrderedDict(hello=StringMeta())))
         ireturns.set_required(["hello"])
         self.assertEqual(say_hello.MethodMeta.takes.to_dict(), MapMeta().to_dict())
         self.assertEqual(say_hello.MethodMeta.returns.to_dict(), ireturns.to_dict())
@@ -85,7 +86,7 @@ class TestDecorators(unittest.TestCase):
 
     def test_returns_not_given_req_or_opt_raises(self):
         with self.assertRaises(AssertionError):
-            @returns("hello", StringMeta(), "A default")
+            @method_returns("hello", StringMeta(), "A default")
             def say_hello(ret):
                 """Say hello"""
                 ret.hello = "Hello"
@@ -106,7 +107,7 @@ class TestSerialization(unittest.TestCase):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/MethodMeta:1.0"
         self.takes = MapMeta()
-        self.takes.set_elements(OrderedDict({"in_attr": StringMeta("desc")}))
+        self.takes.set_elements(ElementMap({"in_attr": StringMeta("desc")}))
         self.serialized["takes"] = self.takes.to_dict()
         self.serialized["defaults"] = OrderedDict({"in_attr": "default"})
         self.serialized["description"] = "test_description"

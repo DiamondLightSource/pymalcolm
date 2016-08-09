@@ -1,11 +1,11 @@
-from malcolm.core.methodmeta import takes, REQUIRED, OPTIONAL
-from malcolm.vmetas import StringMeta, NumberMeta
+from malcolm.core import method_takes, REQUIRED, OPTIONAL
+from malcolm.core.vmetas import StringMeta, NumberMeta
 
 
 def takes_with_default_meta(meta_cls, *meta_args):
     default_args = meta_args + (
         "Default value for parameter. If not specified, parameter is required",)
-    return takes(
+    return method_takes(
         "name", StringMeta(
             "Specify that this class will take a parameter name"), REQUIRED,
         "description", StringMeta(

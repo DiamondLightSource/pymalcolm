@@ -1,11 +1,14 @@
+import os
+import sys
+sys.path.append(os.path.dirname(__file__))
 import setup_malcolm_paths
 
 import unittest
 from mock import Mock, patch, call, MagicMock
 
 from malcolm import parameters
-from malcolm.core.methodmeta import REQUIRED
-from malcolm.vmetas import NumberMeta, StringMeta
+from malcolm.core import REQUIRED
+from malcolm.core.vmetas import NumberMeta, StringMeta
 
 
 class TestParameters(unittest.TestCase):

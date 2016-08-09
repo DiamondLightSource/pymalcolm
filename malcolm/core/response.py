@@ -1,4 +1,6 @@
-from malcolm.core.serializable import Serializable
+from malcolm.compat import base_string
+from malcolm.core.serializable import Serializable, deserialize_object, \
+    serialize_object
 
 
 class Response(Serializable):
@@ -7,19 +9,22 @@ class Response(Serializable):
     endpoints = ["id"]
 
     def __init__(self, id_=None, context=None):
-        self.id_ = id_
         self.context = context
+        self.set_id(id_)
 
     def __repr__(self):
         return self.to_dict().__repr__()
 
-    def get_endpoint(self, endpoint):
-        if endpoint == "id":
-            return self.id_
-        return getattr(self, endpoint)
-
     def set_id(self, id_):
-        self.id_ = id_
+        """
+        Set the identifier for the request
+
+        Args:
+            id_(int): Unique identifier for request
+        """
+        if id_ is not None:
+            id_ = deserialize_object(id_, int)
+        self.set_endpoint_data("id", id_)
 
 
 @Serializable.register_subclass("malcolm:core/Return:1.0")
@@ -29,10 +34,10 @@ class Return(Response):
 
     def __init__(self, id_=None, context=None, value=None):
         super(Return, self).__init__(id_, context)
-        self.value = value
+        self.set_value(value)
 
     def set_value(self, value):
-        self.value = value
+        self.set_endpoint_data("value", serialize_object(value))
 
 
 @Serializable.register_subclass("malcolm:core/Error:1.0")
@@ -49,10 +54,12 @@ class Error(Response):
             message(str): Error message
         """
         super(Error, self).__init__(id_, context)
-        self.message = message
+        self.set_message(message)
 
     def set_message(self, message):
-        self.message = message
+        if message is not None:
+            message = deserialize_object(message, base_string)
+        self.set_endpoint_data("message", message)
 
 
 @Serializable.register_subclass("malcolm:core/Update:1.0")
@@ -70,10 +77,10 @@ class Update(Response):
         """
 
         super(Update, self).__init__(id_, context)
-        self.value = value
+        self.set_value(value)
 
     def set_value(self, value):
-        self.value = value
+        self.set_endpoint_data("value", serialize_object(value))
 
 
 @Serializable.register_subclass("malcolm:core/Delta:1.0")
@@ -91,7 +98,8 @@ class Delta(Response):
         """
 
         super(Delta, self).__init__(id_, context)
-        self.changes = changes
+        self.set_changes(changes)
 
     def set_changes(self, changes):
-        self.changes = changes
+        # TODO: validate this
+        self.set_endpoint_data("changes", changes)

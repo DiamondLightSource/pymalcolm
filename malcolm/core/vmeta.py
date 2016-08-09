@@ -1,5 +1,4 @@
 from malcolm.core.meta import Meta
-from malcolm.compat import base_string
 
 
 class VMeta(Meta):
@@ -14,4 +13,5 @@ class VMeta(Meta):
         """
         raise NotImplementedError(
             "Abstract validate function must be implemented in child classes")
+
 

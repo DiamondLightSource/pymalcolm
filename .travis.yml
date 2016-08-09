@@ -6,20 +6,29 @@ python:
   - "3.4"
   - "3.5"
 
+addons:
+  apt:
+    packages:
+      - qt4-qmake
+      - libqt4-dev
+
 cache:
   directories:
     - $HOME/.cache/pip
-    - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
-    - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/bin
+    - ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
+    - ${VIRTUAL_ENV}/bin
 
 install:
   - env
-  - ls -al $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
-  - ls -al $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/bin  
+  - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
+  - ls -al ${VIRTUAL_ENV}/bin
+  - ci/install_pyqt.sh
+  - python -c "import PyQt4;print(PyQt4)"
   - pip install -r requirements/test.txt
   - pip install coveralls
-  - ls -al $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
-  - ls -al $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/bin  
+  - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages  
+  - ldd ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages/PyQt4/*.so
+  - ls -al ${VIRTUAL_ENV}/bin
   - python setup.py bdist_egg
   
 # command to run tests

@@ -1,8 +1,8 @@
 from collections import OrderedDict
 
 from malcolm.core.loggable import Loggable
-from malcolm.core.spawnable import Spawnable
 from malcolm.core.response import Update
+from malcolm.core.spawnable import Spawnable
 
 
 class ClientComms(Loggable, Spawnable):
@@ -31,7 +31,7 @@ class ClientComms(Loggable, Spawnable):
                 self._current_id += 1
 
                 # TODO: Move request store into new method?
-                self.requests[request.id_] = request
+                self.requests[request.id] = request
                 self.send_to_server(request)
             except Exception:
                 self.log_exception(
@@ -47,10 +47,10 @@ class ClientComms(Loggable, Spawnable):
             "Abstract method that must be implemented by deriving class")
 
     def send_to_caller(self, response):
-        if response.id_ == self.SERVER_BLOCKS_ID:
+        if response.id == self.SERVER_BLOCKS_ID:
             assert isinstance(response, Update), \
                 "Expected server blocks Update, got %s" % response.type_
             self.process.update_block_list(self, response.value)
         else:
-            request = self.requests[response.id_]
+            request = self.requests[response.id]
             request.response_queue.put(response)

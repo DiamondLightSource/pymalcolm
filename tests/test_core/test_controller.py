@@ -10,15 +10,13 @@ from mock import MagicMock, call
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
-from collections import OrderedDict
-
 # module imports
-from malcolm.core.controller import Controller
-from malcolm.core.methodmeta import only_in, takes
+from malcolm.core.controller import Controller, DefaultStateMachine
+from malcolm.core.methodmeta import only_in, method_takes
 
 
 class DummyController(Controller):
-    @takes()
+    @method_takes()
     def say_hello(self, name):
         print("Hello" + name)
 
@@ -38,20 +36,15 @@ class TestController(unittest.TestCase):
             attr.set_value = MagicMock(side_effect=attr.set_value)
 
     def test_init(self):
-        self.c.process.add_block.assert_called_once_with("block", self.b)
-        self.assertEqual(self.b["say_hello"], self.c.say_hello.MethodMeta)
-        self.assertEqual(self.b["say_goodbye"], self.c.say_goodbye.MethodMeta)
-        self.assertEqual([], self.c.parts)
+        self.c.process.add_block.assert_called_once_with(self.b)
+        self.assertEqual({}, self.c.parts)
 
-        self.assertEqual(self.b["state"].name, "state")
         self.assertEqual(
             self.b["state"].meta.typeid, "malcolm:core/ChoiceMeta:1.0")
         self.assertEqual(self.b.state, "Disabled")
-        self.assertEqual(self.b["status"].name, "status")
         self.assertEqual(
             self.b["status"].meta.typeid, "malcolm:core/StringMeta:1.0")
         self.assertEqual(self.b.status, "Disabled")
-        self.assertEqual(self.b["busy"].name, "busy")
         self.assertEqual(
             self.b["busy"].meta.typeid, "malcolm:core/BooleanMeta:1.0")
         self.assertEqual(self.b.busy, False)
@@ -80,8 +73,7 @@ class TestController(unittest.TestCase):
         self.assertEqual(self.c.state.value, "Disabled")
 
     def test_transition_raises(self):
-        self.c.stateMachine.allowed_transitions = dict(Idle="")
-        self.c.state.value = "Idle"
+        self.c.state.set_value("Ready")
 
         with self.assertRaises(TypeError):
             self.c.transition("Configuring", "Attempting to configure scan...")
@@ -100,7 +92,7 @@ class TestController(unittest.TestCase):
     def test_set_writeable_methods(self):
         m = MagicMock()
         m.name = "configure"
-        self.c.set_method_writeable_in(m, "Ready")
+        self.c.register_method_writeable(m, "Ready")
         self.assertEqual(self.c.methods_writeable['Ready'][m], True)
 
     def test_create_methods_order(self):

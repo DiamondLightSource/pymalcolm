@@ -13,9 +13,13 @@ try:
 except:
     # cothread doesn't work on python3 at the moment
     cothread = MagicMock()
+    # Tell Mock not to have a MethodMeta, otherwise we will be decorated
+    del cothread.MethodMeta
     def callback_result(f, *args, **kwargs):
         return f(*args, **kwargs)
     cothread.CallbackResult.side_effect = callback_result
     sys.modules["cothread"] = cothread
 catools = MagicMock()
+# Tell Mock not to have a MethodMeta, otherwise we will be decorated
+del catools.MethodMeta
 cothread.catools = catools

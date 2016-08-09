@@ -9,6 +9,7 @@ import unittest
 from mock import MagicMock, patch, call
 
 from malcolm.comms.websocket import WebsocketClientComms
+from malcolm.core.response import Response
 
 
 class TestWSClientComms(unittest.TestCase):
@@ -34,24 +35,24 @@ class TestWSClientComms(unittest.TestCase):
         self.WS.subscribe_server_blocks("conn")
         self.assertEqual(self.WS.loop.add_callback.call_count, 1)
         request = self.WS.loop.add_callback.call_args[0][1]
-        self.assertEqual(request.id_, 0)
+        self.assertEqual(request.id, 0)
         self.assertEqual(request.typeid, "malcolm:core/Subscribe:1.0")
         self.assertEqual(request.endpoint, [".", "blocks", "value"])
         self.assertEqual(request.delta, False)
 
-    @patch('malcolm.comms.websocket.websocketclientcomms.Serializable')
+    @patch('malcolm.comms.websocket.websocketclientcomms.deserialize_object')
     @patch('malcolm.comms.websocket.websocketclientcomms.json')
     @patch('malcolm.comms.websocket.websocketclientcomms.websocket_connect')
     @patch('malcolm.comms.websocket.websocketclientcomms.IOLoop')
-    def test_on_message(self, _, _1, json_mock, serializable_mock):
+    def test_on_message(self, _, _1, json_mock, deserialize_mock):
         self.WS = WebsocketClientComms("TestWebSocket", self.p, "test/url")
 
         message_dict = dict(name="TestMessage")
         json_mock.loads.return_value = message_dict
 
         response = MagicMock()
-        response.id_ = 1
-        serializable_mock.from_dict.return_value = response
+        response.id = 1
+        deserialize_mock.return_value = response
         request_mock = MagicMock()
         self.WS.requests[1] = request_mock
 
@@ -59,7 +60,7 @@ class TestWSClientComms(unittest.TestCase):
 
         json_mock.loads.assert_called_once_with("TestMessage",
                                                 object_pairs_hook=OrderedDict)
-        serializable_mock.from_dict.assert_called_once_with(message_dict)
+        deserialize_mock.assert_called_once_with(message_dict, Response)
         request_mock.response_queue.put.assert_called_once_with(response)
 
     @patch('malcolm.comms.websocket.websocketclientcomms.json')

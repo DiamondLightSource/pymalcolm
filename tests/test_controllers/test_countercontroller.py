@@ -26,16 +26,19 @@ class TestCounterController(unittest.TestCase):
 
     def test_increment_calls_on_changed(self):
         c = CounterController('block', Mock())
-        c.counter.report_changes = Mock(side_effect=c.counter.report_changes)
         c.increment()
-        c.counter.report_changes.assert_called_once_with(
-            [['counter', 'value'], 1])
+        self.assertEquals(1, c.counter.value)
+        c.process.report_changes.assert_called_once_with(
+            [['block', 'counter', 'value'], 1])
 
     def test_reset_sets_zero(self):
         c = CounterController('block', Mock())
-        c.counter.value = 1234
+        c.counter.set_endpoint_data("value", 1234, notify=False)
         c.do_reset()
         self.assertEquals(0, c.counter.value)
+        c.process.report_changes.assert_called_once_with(
+            [['block', 'counter', 'value'], 0])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -2,13 +2,12 @@ from collections import OrderedDict
 import inspect
 
 from malcolm.compat import base_string
+from malcolm.core.elementmap import ElementMap
 from malcolm.core.map import Map
 from malcolm.core.mapmeta import MapMeta
-from malcolm.core.request import Post
-from malcolm.core.monitorable import NO_VALIDATE
-from malcolm.core.response import Return, Error
-from malcolm.core.serializable import Serializable
 from malcolm.core.meta import Meta
+from malcolm.core.request import Post
+from malcolm.core.serializable import Serializable, deserialize_object
 
 OPTIONAL = object()
 REQUIRED = object()
@@ -26,7 +25,7 @@ class MethodMeta(Meta):
         self.func = None
         self.set_takes(MapMeta())
         self.set_returns(MapMeta())
-        self.defaults = OrderedDict()
+        self.set_defaults(OrderedDict())
         # List of state names that we are writeable in
         self.only_in = None
 
@@ -41,7 +40,8 @@ class MethodMeta(Meta):
         Args:
             takes (MapMeta): Arguments to the function
         """
-        self.set_endpoint(MapMeta, "takes", takes, notify)
+        takes = deserialize_object(takes, MapMeta)
+        self.set_endpoint_data("takes", takes, notify)
 
     def set_defaults(self, defaults, notify=True):
         """Set the default dict"""
@@ -49,11 +49,12 @@ class MethodMeta(Meta):
             assert isinstance(k, base_string), \
                 "Expected string, got %s" % (k,)
             defaults[k] = self.takes.elements[k].validate(v)
-        self.set_endpoint(NO_VALIDATE, "defaults", defaults, notify)
+        self.set_endpoint_data("defaults", defaults, notify)
 
     def set_returns(self, returns, notify=True):
         """Set the return parameters for the method to validate against"""
-        self.set_endpoint(MapMeta, "returns", returns, notify)
+        returns = deserialize_object(returns, MapMeta)
+        self.set_endpoint_data("returns", returns, notify)
 
     def handle_request(self, request, post_function):
         self.log_debug("Received request %s", request)
@@ -133,12 +134,12 @@ def _prepare_map_meta(args, allow_defaults):
 
     # Setup the takes MapMeta and attach it to the function's MethodMeta
     meta = MapMeta()
-    meta.set_elements(elements)
+    meta.set_elements(ElementMap(elements))
     meta.set_required(required)
     return meta, defaults
 
 
-def takes(*args):
+def method_takes(*args):
     """
     Checks if function has a MethodMeta representation, calls wrap_method to
     create one if it doesn't and then adds the takes attribute to it
@@ -166,7 +167,7 @@ def takes(*args):
     return decorator
 
 
-def returns(*args):
+def method_returns(*args):
     """
     Checks if function has a MethodMeta representation, calls wrap_method to
     create one if it doesn't and then adds the returns attribute to it

@@ -52,7 +52,7 @@ class TestFuture(unittest.TestCase):
         # return after waiting for response object
         resp0 = Return(0, None, None)
         resp0.set_value('testVal')
-        resp1 = Error(1, None, None)
+        resp1 = Error(1, None, "test Error")
         resp1.set_message('test Error')
         self.task.q.put(resp0)
         self.task.q.put(resp1)

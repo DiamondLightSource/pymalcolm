@@ -1,13 +1,11 @@
 from collections import OrderedDict, namedtuple
 
+from malcolm.core.attribute import Attribute
+from malcolm.core.block import Block
+from malcolm.core.cache import Cache
 from malcolm.core.loggable import Loggable
 from malcolm.core.request import Request, Post, Put, Subscribe, Get
-from malcolm.core.response import Return, Update, Delta
-from malcolm.core.cache import Cache
-from malcolm.core.block import Block
-from malcolm.core.attribute import Attribute
-from malcolm.vmetas import StringArrayMeta
-
+from malcolm.core.vmetas import StringArrayMeta
 
 # Sentinel object that when received stops the recv_loop
 PROCESS_STOP = object()
@@ -15,7 +13,7 @@ PROCESS_STOP = object()
 # Internal update messages
 BlockChanges = namedtuple("BlockChanges", "changes")
 BlockRespond = namedtuple("BlockRespond", "response, response_queue")
-BlockAdd = namedtuple("BlockAdd", "block")
+BlockAdd = namedtuple("BlockAdd", "block, name")
 BlockList = namedtuple("BlockList", "client_comms, blocks")
 
 
@@ -55,8 +53,9 @@ class Process(Loggable):
                 break
             try:
                 self._handle_functions[type(request)](request)
-            except Exception:
+            except Exception as e:
                 self.log_exception("Exception while handling %s", request)
+                request.respond_with_error(str(e))
 
     def start(self):
         """Start the process going"""
@@ -126,8 +125,9 @@ class Process(Loggable):
             description="Blocks hosted by this Process"), [])
         children["remoteBlocks"] = Attribute(StringArrayMeta(
                 description="Blocks reachable via ClientComms"), [])
-        self.process_block.set_children(children)
-        self.add_block(self.name, self.process_block)
+        self.process_block.replace_endpoints(children)
+        self.process_block.set_parent(self, self.name)
+        self.add_block(self.process_block)
 
     def update_block_list(self, client_comms, blocks):
         self.q.put(BlockList(client_comms=client_comms, blocks=blocks))
@@ -167,16 +167,12 @@ class Process(Loggable):
             if len(changes) > 0:
                 if subscription.delta:
                     # respond with the filtered changes
-                    response = Delta(
-                        subscription.id_, subscription.context, changes)
+                    subscription.respond_with_delta(changes)
                 else:
                     # respond with the structure of everything
                     # below the endpoint
                     d = self._block_state_cache.walk_path(endpoint)
-                    response = Update(
-                        subscription.id_, subscription.context, d)
-                self.log_debug("Responding to subscription %s", response)
-                subscription.response_queue.put(response)
+                    subscription.respond_with_update(d)
 
     def report_changes(self, *changes):
         self.q.put(BlockChanges(changes=list(changes)))
@@ -188,25 +184,28 @@ class Process(Loggable):
         """Push the response to the required queue"""
         request.response_queue.put(request.response)
 
-    def add_block(self, name, block):
+    def add_block(self, block):
         """Add a block to be hosted by this process
 
         Args:
             block (Block): The block to be added
         """
+        path = block.path_relative_to(self)
+        assert len(path) == 1, \
+            "Expected block %r to have %r as parent, got path %r" % \
+            (block, self, path)
+        name = path[0]
         assert name not in self._blocks, \
-            "There is already a block called %s" % name
-        block.set_parent(self, name)
-        self.q.put(BlockAdd(block=block))
+            "There is already a block called %r" % name
+        self.q.put(BlockAdd(block=block, name=name))
 
     def _handle_block_add(self, request):
         """Add a block to be hosted by this process"""
         block = request.block
-        assert block.name not in self._blocks, \
-            "There is already a block called %s" % block.name
-        self._blocks[block.name] = block
-        self._block_state_cache[block.name] = block.to_dict()
-        block.lock = self.create_lock()
+        assert request.name not in self._blocks, \
+            "There is already a block called %r" % request.name
+        self._blocks[request.name] = block
+        self._block_state_cache[request.name] = block.to_dict()
         # Regenerate list of blocks
         self.process_block["blocks"].set_value(list(self._blocks))
 
@@ -223,5 +222,4 @@ class Process(Loggable):
 
     def _handle_get(self, request):
         d = self._block_state_cache.walk_path(request.endpoint)
-        response = Return(request.id_, request.context, d)
-        request.response_queue.put(response)
+        request.respond_with_return(d)

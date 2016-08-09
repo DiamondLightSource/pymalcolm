@@ -1,23 +1,23 @@
 import functools
 from collections import OrderedDict
 
-from malcolm.core.loggable import Loggable
 from malcolm.core.attribute import Attribute
-from malcolm.core.hook import Hook
-from malcolm.core.methodmeta import takes, only_in, MethodMeta, \
-    get_method_decorated
-from malcolm.core.blockmeta import BlockMeta
-from malcolm.vmetas.choicemeta import ChoiceMeta
-from malcolm.vmetas.stringmeta import StringMeta
-from malcolm.vmetas.booleanmeta import BooleanMeta
-from malcolm.statemachines.defaultstatemachine import DefaultStateMachine
 from malcolm.core.block import Block
+from malcolm.core.blockmeta import BlockMeta
+from malcolm.core.hook import Hook
+from malcolm.core.loggable import Loggable
+from malcolm.core.methodmeta import method_takes, only_in, MethodMeta, \
+    get_method_decorated
+from malcolm.core.statemachine import DefaultStateMachine
+from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
+from malcolm.core.request import Post
 
 
 sm = DefaultStateMachine
 
 
 @sm.insert
+@method_takes()
 class Controller(Loggable):
     """Implement the logic that takes a Block through its state machine"""
 
@@ -28,7 +28,9 @@ class Controller(Loggable):
         Args:
             process (Process): The process this should run under
         """
+        self.set_logger_name("%s(%s)" % (type(self).__name__, block_name))
         self.block = Block()
+        self.log_debug("Creating block %r as %r" % (self.block, block_name))
         self.block_name = block_name
         self.params = params
         self.process = process
@@ -37,20 +39,23 @@ class Controller(Loggable):
         # {state (str): {MethodMeta: writeable (bool)}
         self.methods_writeable = {}
         if parts is None:
-            parts = []
+            parts = {}
         self.parts = parts
 
-        self.set_logger_name("%s(%s)" % (type(self).__name__, block_name))
         self._set_block_children()
-        process.add_block(block_name, self.block)
+        self._do_transition(sm.DISABLED, "Disabled")
+        self.block.set_parent(process, block_name)
+        process.add_block(self.block)
+        self.do_initial_reset()
 
-    def set_attributes(self, attribute_dict):
-        changes = []
-        for attr, value in attribute_dict.items():
-            assert attr.parent is self.block, \
-                "Attr not attached to block"
-            changes.append([[attr.name, "value"], value])
-        self.block.apply_changes(*changes)
+    def do_initial_reset(self):
+        request = Post(
+            None, self.process.create_queue(), [self.block_name, "reset"])
+        self.process.q.put(request)
+
+    def add_change(self, changes, item, attr, value):
+        path = item.path_relative_to(self.block) + [attr]
+        changes.append([path, value])
 
     def _set_block_children(self):
         # reconfigure block with new children
@@ -58,7 +63,7 @@ class Controller(Loggable):
         child_list += list(self._create_default_attributes())
         child_list += list(self.create_attributes())
         child_list += list(self.create_methods())
-        for part in self.parts:
+        for part in self.parts.values():
             child_list += list(part.create_attributes())
             child_list += list(part.create_methods())
 
@@ -79,30 +84,33 @@ class Controller(Loggable):
                         assert state in self.stateMachine.possible_states, \
                             "State %s is not one of the valid states %s" % \
                             (state, self.stateMachine.possible_states)
-                self.set_method_writeable_in(child, states)
+                # Make a copy otherwise all instances will own the same one
+                child = MethodMeta.from_dict(child.to_dict())
+                self.register_method_writeable(child, states)
             children[name] = child
             if writeable_func:
                 writeable_functions[name] = functools.partial(
                     self.call_writeable_function, writeable_func)
 
-        self.block.set_children(children, writeable_functions)
+        self.block.replace_endpoints(children)
+        self.block.set_writeable_functions(writeable_functions)
 
     def call_writeable_function(self, function, child, *args):
         with self.lock:
-            assert child.writeable, \
-                "Child %r is not writeable" % (child,)
+            if not child.writeable:
+                child.log_error("I'm not writeable")
+                raise ValueError("Child %r is not writeable" % (child,))
         result = function(*args)
         return result
 
     def _create_default_attributes(self):
         # Add the state, status and busy attributes
         self.state = Attribute(
-            ChoiceMeta("State of Block", self.stateMachine.possible_states),
-            self.stateMachine.DISABLED)
+            ChoiceMeta("State of Block", self.stateMachine.possible_states))
         yield ("state", self.state, None)
-        self.status = Attribute(StringMeta("Status of Block"), "Disabled")
+        self.status = Attribute(StringMeta("Status of Block"))
         yield ("status", self.status, None)
-        self.busy = Attribute(BooleanMeta("Whether Block busy or not"), False)
+        self.busy = Attribute(BooleanMeta("Whether Block busy or not"))
         yield ("busy", self.busy, None)
 
     def create_meta(self):
@@ -136,24 +144,34 @@ class Controller(Loggable):
         with self.lock:
             if self.stateMachine.is_allowed(
                     initial_state=self.state.value, target_state=state):
-
-                # transition is allowed, so set attributes
-                self.set_attributes({
-                    self.state: state,
-                    self.status: message,
-                    self.busy: state in self.stateMachine.busy_states,
-                })
-
-                # say which methods can now be called
-                for child in self.block.children:
-                    if isinstance(child, MethodMeta):
-                        writeable = self.methods_writeable[state][child]
-                        child.set_writeable(writeable)
+                self._do_transition(state, message)
             else:
                 raise TypeError("Cannot transition from %s to %s" %
                                 (self.state.value, state))
 
-    def set_method_writeable_in(self, method, states):
+    def _do_transition(self, state, message):
+        # transition is allowed, so set attributes
+        changes = []
+        self.add_change(changes, self.state, "value", state)
+        self.add_change(changes, self.status, "value", message)
+        self.add_change(changes, self.busy, "value",
+                        state in self.stateMachine.busy_states)
+
+        # say which methods can now be called
+        for name in self.block:
+            child = self.block[name]
+            if isinstance(child, MethodMeta):
+                method = child
+                writeable = self.methods_writeable[state][method]
+                self.log_debug("Setting %s %s to writeable %s", name, method, writeable)
+                self.add_change(changes, method, "writeable", writeable)
+                for ename in method.takes.elements:
+                    meta = method.takes.elements[ename]
+                    self.add_change(changes, meta, "writeable", writeable)
+
+        self.block.apply_changes(*changes)
+
+    def register_method_writeable(self, method, states):
         """
         Set the states that the given method can be called in
 
@@ -166,11 +184,11 @@ class Controller(Loggable):
             is_writeable = state in states
             writeable_dict[method] = is_writeable
 
-    @takes()
+    @method_takes()
     def disable(self):
         self.transition(sm.DISABLED, "Disabled")
 
-    @takes()
+    @method_takes()
     @only_in(sm.DISABLED, sm.FAULT)
     def reset(self):
         try:
@@ -180,4 +198,3 @@ class Controller(Loggable):
         except Exception as e:
             self.log_exception("Fault occurred while Resetting")
             self.transition(sm.FAULT, str(e))
-

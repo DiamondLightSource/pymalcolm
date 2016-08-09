@@ -1,5 +1,5 @@
-from malcolm.core.loggable import Loggable
 from malcolm.core.methodmeta import get_method_decorated
+from malcolm.core.loggable import Loggable
 
 
 class Part(Loggable):

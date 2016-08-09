@@ -8,17 +8,17 @@ class Table(Serializable):
     # real data stored as attributes
     # getitem supported for row by row operations
 
-    def __init__(self, meta, d={}):
+    def __init__(self, meta, d=None):
+        self.meta = meta
         if d is None:
             d = {}
-        self.meta = meta
         for e in meta.elements:
             v = d[e] if e in d else []
             setattr(self, e, v)
 
     @property
     def endpoints(self):
-        return [e for e in self.meta.elements]
+        return list(self.meta.elements)
 
     def verify_column_lengths(self):
         if len(self.meta.elements) == 0:
@@ -34,7 +34,7 @@ class Table(Serializable):
         self.verify_column_lengths()
         columns = len(self.meta.elements)
         row = [None] * columns
-        for i in range(0, columns):
+        for i in range(columns):
             row[i] = getattr(self, list(self.meta.elements)[i])[idx]
         return row
 
@@ -50,10 +50,12 @@ class Table(Serializable):
 
     def __setattr__(self, attr, value):
         """Set column"""
-        if hasattr(self, "meta"):
+        if hasattr(self, "meta") and attr in self.meta.elements:
             column_meta = self.meta.elements[attr]
             value = column_meta.validate(value)
-        object.__setattr__(self, attr, value)
+            self.set_endpoint_data(attr, value)
+        else:
+            object.__setattr__(self, attr, value)
 
     def append(self, row):
         self.verify_column_lengths()

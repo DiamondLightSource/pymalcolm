@@ -5,20 +5,19 @@ import setup_malcolm_paths
 
 import unittest
 from mock import MagicMock, ANY
-from cothread import catools
 
 # logging
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.vmetas import NumberMeta
-from malcolm.parts.ca.capart import CAPart, capart_takes
-from malcolm.core.map import Map
+from malcolm.core.vmetas import NumberMeta
+from malcolm.parts.ca.capart import CAPart, capart_takes, catools
 
 
 class caint(int):
     ok = True
+
 
 class TestCAPart(unittest.TestCase):
 

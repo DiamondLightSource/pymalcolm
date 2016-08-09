@@ -1,27 +1,29 @@
-from collections import OrderedDict
-
-from malcolm.compat import base_string
+from malcolm.core.elementmap import ElementMap
 from malcolm.core.meta import Meta
-from malcolm.core.serializable import Serializable
-from malcolm.core.vmeta import VMeta
+from malcolm.core.serializable import Serializable, deserialize_object
 
 
 @Serializable.register_subclass("malcolm:core/MapMeta:1.0")
 class MapMeta(Meta):
     """An object containing a set of ScalarMeta objects"""
 
-    endpoints = ["elements", "description", "tags", "required"]
+    endpoints = ["elements", "description", "tags", "writeable", "label",
+                 "required"]
 
-    def __init__(self, description="", tags=None):
-        super(MapMeta, self).__init__(description, tags)
-        self.elements = OrderedDict()
-        self.required = []
+    def __init__(self, description="", tags=None, writeable=False, label=""):
+        super(MapMeta, self).__init__(description, tags, writeable, label)
+        self.set_elements(ElementMap())
+        self.set_required([])
 
     def set_elements(self, elements, notify=True):
         """Set the elements dict from a ScalarMeta or serialized dict"""
-        self.set_endpoint(
-            {base_string: VMeta}, "elements", elements, notify)
+        elements = deserialize_object(elements, ElementMap)
+        self.set_endpoint_data("elements", elements, notify)
 
     def set_required(self, required, notify=True):
         """Set the required string list"""
-        self.set_endpoint([base_string], "required", required, notify)
+        for r in required:
+            assert r in self.elements, \
+                "Expected one of %r, got %r" % (list(self.elements), r)
+        self.set_endpoint_data("required", required, notify)
+

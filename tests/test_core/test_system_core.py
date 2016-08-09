@@ -19,20 +19,26 @@ from malcolm.core.process import Process
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Post, Subscribe
 from malcolm.core.response import Return, Update
+from malcolm.core.task import Task
 
 
 class TestHelloControllerSystem(unittest.TestCase):
 
     def test_hello_controller_good_input(self):
         block = HelloController("hello", MagicMock()).block
+        block.reset()
         result = block.say_hello(name="me")
         self.assertEquals(result.greeting, "Hello me")
 
     def test_hello_controller_with_process(self):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
-        HelloController("hello", process)
+        b = HelloController("hello", process).block
         process.start()
+        # wait until block is Ready
+        task = Task("task", process)
+        futures = task.when_matches(b["state"], "Ready")
+        task.wait_all(futures, timeout=0.1)
         q = sync_factory.create_queue()
         req = Post(response_queue=q, context="ClientConnection",
                    endpoint=["hello", "say_hello"],
@@ -40,10 +46,11 @@ class TestHelloControllerSystem(unittest.TestCase):
         req.set_id(44)
         process.q.put(req)
         resp = q.get(timeout=1)
-        self.assertEqual(resp.id_, 44)
+        self.assertEqual(resp.id, 44)
         self.assertEqual(resp.context, "ClientConnection")
         self.assertEqual(resp.typeid, "malcolm:core/Return:1.0")
-        self.assertEqual(resp.value, dict(greeting="Hello thing"))
+        self.assertEqual(resp.value["greeting"], "Hello thing")
+        process.stop()
 
 
 class TestCounterControllerSystem(unittest.TestCase):

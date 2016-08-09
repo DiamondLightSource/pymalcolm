@@ -17,17 +17,17 @@ class TestSerialization(unittest.TestCase):
         @Serializable.register_subclass("foo:1.0")
         class DummySerializable(Serializable):
             endpoints = ["boo"]
-            boo = 3
 
             def set_boo(self, boo):
-                self.boo = boo
+                self.set_endpoint_data("boo", boo)
 
         s = DummySerializable()
+        s.set_boo(3)
         expected = OrderedDict(typeid="foo:1.0")
         expected["boo"] = 3
         self.assertEquals(expected, s.to_dict())
 
-        n = Serializable.from_dict(expected.copy())
+        n = DummySerializable.from_dict(expected)
         self.assertEqual(n.to_dict(), expected)
 
 
