@@ -4,10 +4,6 @@ import logging
 
 
 def import_methodmeta_decorated_classes(globals_d, package_name):
-    return import_pep8_named_classes(globals_d, package_name, True)
-
-
-def import_pep8_named_classes(globals_d, package_name, only_methodmeta=False):
     """Prepare a package namespace by importing all subclasses following PEP8
     rules that have @takes decorated functions"""
     def finder(package_fs_path, fname):
@@ -20,12 +16,9 @@ def import_pep8_named_classes(globals_d, package_name, only_methodmeta=False):
                 cls = getattr(module, n)
                 module_name = module.__name__.split(".")[-1]
                 if n.lower() == module_name:
-                    if only_methodmeta:
-                        found = hasattr(cls, "MethodMeta")
-                    else:
-                        found = True
-                    logging.debug("Found child class %s" % cls)
-                    yield cls.__name__, cls
+                    if hasattr(cls, "MethodMeta"):
+                        logging.debug("Found child class %s" % cls)
+                        yield cls.__name__, cls
 
     __all__ = prepare_globals_for_package(globals_d, package_name, finder)
     return __all__
