@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from malcolm.core import ClientComms, Request, Subscribe, Response, \
     deserialize_object, serialize_object
-from malcolm.core.request import Get, Return
+from malcolm.core.request import Get, Return, Error
 from pvaccess import *
 
 
@@ -27,13 +27,18 @@ class PvaClientComms(ClientComms):
 
         if isinstance(request, Get):
             self.log_debug("Endpoint: %s", request["endpoint"][0])
-            # Connect to the channel
-            c = Channel(request["endpoint"][0])
-            # Perform a get and record the response
-            response = c.get(request["endpoint"][1])
-            self.log_debug("Response: %s", response)
-            # Now create the Return object and populate it with the response
-            return_object = Return(id_=request["id"], value=response.toDict())
+            try:
+                # Connect to the channel
+                c = Channel(request["endpoint"][0])
+                # Perform a get and record the response
+                response = c.get(request["endpoint"][1])
+                self.log_debug("Response: %s", response)
+                # Now create the Return object and populate it with the response
+                return_object = Return(id_=request["id"], value=response.toDict())
+            except:
+                # PvAccess error, create the Error message
+                return_object = Error(id_=request["id"], message="To be determined")
+
             self.log_debug("Return object: %s", return_object)
             self.send_to_caller(return_object)
 
