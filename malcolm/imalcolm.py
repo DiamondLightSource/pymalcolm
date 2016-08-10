@@ -20,7 +20,7 @@ from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
 from malcolm.gui.blockgui import BlockGui
 from malcolm.assemblyutil import make_assembly
 
-
+# TODO: merge this into Process
 class IMalcolm(object):
     def __init__(self, yaml=None):
         self.client_comms = []
@@ -97,7 +97,7 @@ def make_imalcolm():
     numeric_level = getattr(logging, args.log.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.log)
-    #logging.basicConfig(level=numeric_level)
+    logging.basicConfig(level=numeric_level)
 
     im = IMalcolm(args.yaml)
     if args.client:

@@ -40,12 +40,12 @@ class Block(ElementMap):
         else:
             raise AttributeError(attr)
 
-    def _call_method(self, methodmeta, func, *args, **kwargs):
-        for name, v in zip(methodmeta.takes.elements, args):
+    def _call_method(self, method_meta, func, *args, **kwargs):
+        for name, v in zip(method_meta.takes.elements, args):
             assert name not in kwargs, \
                 "%s specified as positional and keyword args" % (name,)
             kwargs[name] = v
-        return methodmeta.call_post_function(func, kwargs)
+        return method_meta.call_post_function(func, kwargs)
 
     def set_endpoint_data(self, name, value, notify=True):
         if name == "meta":

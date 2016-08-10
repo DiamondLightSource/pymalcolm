@@ -73,7 +73,11 @@ def make_assembly(text):
                 sections["controllers"], sections["parts"]))
 
         # It we have any other assemblies
-        for name, d in sections["assemblies"].items():
+        for section_d in sections["assemblies"]:
+            assert len(section_d) == 1, \
+                "Expected section length 1, got %d" % len(section_d)
+            name, d = list(section_d.items())[0]
+            logging.debug("Instantiating sub assembly %s", name)
             ret += call_with_map(malcolm.assemblies, name, d, process)
 
         return ret
@@ -84,29 +88,30 @@ def split_into_sections(ds):
     """Split a dictionary into parameters, controllers, parts and assemblies
 
     Args:
-        ds (dict): Dictionary of section: params. E.g.
-            {
-                "parameters.string": {"name": "something"},
-                "controllers.ManagerController": None
-             }
+        ds (list): List of section dictionaries: params. E.g.
+            [{"parameters.string": {"name": "something"}},
+             {"controllers.ManagerController": None}]
 
     Returns:
-        dict: dictionary containing sections sub dictionaries. E.g.
+        dict: dictionary containing sections sub dictionaries lists. E.g.
             {
-                "parameters": {
+                "parameters": [{
                     "string": {"name": "something"}
-                },
-                "controllers": {
+                }],
+                "controllers": [{
                     "ManagerController": None
-                }
+                }]
             }
     """
     # First separate them into their relevant sections
-    sections = dict(parameters={}, controllers={}, parts={}, assemblies={})
-    for name, d in ds.items():
+    sections = dict(parameters=[], controllers=[], parts=[], assemblies=[])
+    for d in ds:
+        assert len(d) == 1, \
+            "Expected section length 1, got %d" % len(d)
+        name = list(d)[0]
         section, subsection = name.split(".", 1)
         if section in sections:
-            sections[section][subsection] = d
+            sections[section].append({subsection: d[name]})
         else:
             raise ValueError("Unknown section name %s" % name)
 
@@ -117,7 +122,7 @@ def with_takes_from(parameters, include_name):
 
     Args:
         parameters (dict): Parameters sub dictionary. E.g.
-            {"string": {"name": "something"}}
+            [{"string": {"name": "something"}}]
         include_name (bool): If True then put a "name" meta first
 
     Returns:
@@ -130,8 +135,11 @@ def with_takes_from(parameters, include_name):
             "name", StringMeta("Name of the created block"), REQUIRED]
     else:
         takes_arguments = []
-    for name, d in parameters.items():
-        takes_arguments += call_with_map(malcolm.parameters, name, d)
+    for param_d in parameters:
+        assert len(param_d) == 1, \
+            "Expected length 1, got %s" % (param_d,)
+        f_name, d = list(param_d.items())[0]
+        takes_arguments += call_with_map(malcolm.parameters, f_name, d)
     return method_takes(*takes_arguments)
 
 def substitute_params(d, params):
@@ -152,6 +160,9 @@ def substitute_params(d, params):
             search = "$(%s)" % p
             if isinstance(v, base_string):
                 d[k] = v.replace(search, params[p])
+            elif isinstance(v, list):
+                for d2 in v:
+                    substitute_params(d2, params)
             elif isinstance(v, dict):
                 substitute_params(v, params)
 
@@ -171,17 +182,26 @@ def make_block_instance(name, process, controllers_d, parts_d):
             all the parts attached
     """
     parts = OrderedDict()
-    for cls_name, d in parts_d.items():
+    for part_d in parts_d:
+        assert len(part_d) == 1, \
+            "Expected length 1, got %s" % (part_d,)
+        cls_name, d = list(part_d.items())[0]
         # Require all parts to have a name
         # TODO: make sure this is added from gui?
         parts[d["name"]] = call_with_map(malcolm.parts, cls_name, d, process)
     if controllers_d:
+        assert len(controllers_d) == 1, \
+            "Expected length 1, got %s" % (controllers_d,)
         ob = malcolm.controllers
-        cls_name, d = list(controllers_d.items())[0]
+        d = controllers_d[0]
+        assert len(d) == 1, \
+            "Expected length 1, got %s" % (d,)
+        cls_name, d = list(d.items())[0]
     else:
         ob = malcolm.core.controller
         cls_name = "Controller"
         d = None
+    logging.debug("Creating %s %r", cls_name, name)
     controller = call_with_map(ob, cls_name, d, name, process, parts)
     return controller.block
 
