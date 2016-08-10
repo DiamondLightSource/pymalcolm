@@ -1,10 +1,9 @@
-from malcolm.core import method_takes, method_returns, REQUIRED
+from malcolm.core import Part, method_takes, method_returns, REQUIRED
 from malcolm.core.vmetas import StringMeta
-from malcolm.controllers.defaultcontroller import DefaultController
 
 
 @method_takes()
-class HelloController(DefaultController):
+class HelloPart(Part):
     @method_takes("name", StringMeta(description="a name"), REQUIRED)
     @method_returns("greeting", StringMeta(description="a greeting"), REQUIRED)
     def say_hello(self, parameters, return_map):

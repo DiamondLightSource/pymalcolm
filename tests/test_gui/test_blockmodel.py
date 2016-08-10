@@ -11,13 +11,16 @@ from mock import MagicMock
 # module imports
 from malcolm.gui.blockmodel import BlockModel, BlockItem
 from malcolm.core.block import Block
-from malcolm.controllers.hellocontroller import HelloController
+from malcolm.controllers import DefaultController
+from malcolm.parts.demo import HelloPart
 
 
 class TestBlockModel(unittest.TestCase):
     def setUp(self):
         self.process = MagicMock()
-        self.block = HelloController("hello", self.process).block
+        part = HelloPart(self.process, None)
+        self.block = DefaultController(
+            "hello", self.process, parts={"hello":part}).block
         self.block.name = "hello"
         self.m = BlockModel(self.process, self.block)
 
