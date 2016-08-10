@@ -4,11 +4,12 @@ from malcolm.core.vmetas import NumberMeta
 
 @method_takes()
 class CounterController(Controller):
+    # Attribute for the counter value
+    counter = None
 
     def create_attributes(self):
-        self.counter = Attribute(
-            NumberMeta("uint32", "A counter"), 0)
-        yield "counter", self.counter, self.counter.set_value
+        self.counter = Attribute(NumberMeta("uint32", "A counter"), 0)
+        yield ("counter", self.counter, self.counter.set_value)
 
     @Controller.Resetting
     def do_reset(self):

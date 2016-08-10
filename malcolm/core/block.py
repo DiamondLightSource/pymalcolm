@@ -16,6 +16,7 @@ class Block(ElementMap):
     child_type_check = (Attribute, MethodMeta, BlockMeta)
 
     def __init__(self):
+        super(Block, self).__init__()
         self._writeable_functions = {}
 
     def __setattr__(self, attr, value):
@@ -39,12 +40,12 @@ class Block(ElementMap):
         else:
             raise AttributeError(attr)
 
-    def _call_method(self, methodmeta, func, *args, **kwargs):
-        for name, v in zip(methodmeta.takes.elements, args):
+    def _call_method(self, method_meta, func, *args, **kwargs):
+        for name, v in zip(method_meta.takes.elements, args):
             assert name not in kwargs, \
                 "%s specified as positional and keyword args" % (name,)
             kwargs[name] = v
-        return methodmeta.call_post_function(func, kwargs)
+        return method_meta.call_post_function(func, kwargs)
 
     def set_endpoint_data(self, name, value, notify=True):
         if name == "meta":
@@ -78,7 +79,7 @@ class Block(ElementMap):
             writeable_function = self._writeable_functions[child_name]
             result = child.handle_request(request, writeable_function)
             response = Return(request.id, request.context, result)
-        except Exception as e:
+        except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Exception while handling %s" % request)
             response = Error(request.id, request.context, str(e))
         self._parent.block_respond(response, request.response_queue)

@@ -8,6 +8,8 @@ class ClientController(Controller):
     REMOTE_BLOCKS_ID = 0
     BLOCK_ID = 1
 
+    client_comms = None
+
     def do_initial_reset(self):
         request = Subscribe(
             None, self, [self.process.name, "remoteBlocks", "value"])
@@ -90,6 +92,8 @@ class ClientController(Controller):
         """
         ret = self._send_request(
             Post, methodmeta.path_relative_to(self.process), parameters)
-        if ret is not None:
-            ret = Map(methodmeta.returns, ret)
-        return ret
+        if ret is None:
+            return None
+        else:
+            returns.update(ret)
+            return returns

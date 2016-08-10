@@ -9,7 +9,7 @@ import unittest
 from mock import MagicMock, patch, call
 
 from malcolm.comms.websocket import WebsocketServerComms
-from malcolm.comms.websocket.websocketservercomms import MalcolmWebSocketHandler
+from malcolm.comms.websocket.websocketservercomms import MalcWebSocketHandler
 from malcolm.core.request import Request
 
 
@@ -90,7 +90,7 @@ class TestWSServerComms(unittest.TestCase):
         deserialize_mock.return_value = request
 
         m = MagicMock()
-        MWSH = MalcolmWebSocketHandler(m, m)
+        MWSH = MalcWebSocketHandler(m, m)
         self.WS.server.request_callback.handlers[0][1][0].handler_class.on_message(
             MWSH, "TestMessage")
 

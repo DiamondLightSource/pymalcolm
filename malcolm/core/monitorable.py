@@ -40,7 +40,8 @@ class Monitorable(Loggable, Serializable):
         """
         if self._parent is None:
             return
-        for path, value in changes:
+        for change in changes:
+            path = change[0]
             path.insert(0, self._name)
         self._parent.report_changes(*changes)
 

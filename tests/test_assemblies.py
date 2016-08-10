@@ -17,32 +17,32 @@ class TestAssemblies(unittest.TestCase):
     @patch("malcolm.assemblyutil.make_block_instance")
     def test_make_assembly(self, mock_make):
         yaml = """
-parameters.string:
+- parameters.string:
     name: something
     description: my description
 
-parts.ca.CADoublePart:
+- parts.ca.CADoublePart:
     pv: $(something)
 """
         collection = make_assembly(yaml)
         process = Mock()
         blocks = collection(process, dict(name="boo", something="mypv"))
         mock_make.assert_called_once_with(
-            "boo", process, {}, {"ca.CADoublePart": {"pv": "mypv"}})
+            "boo", process, [], [{"ca.CADoublePart": {"pv": "mypv"}}])
         self.assertEqual(blocks, [mock_make.return_value])
 
     def test_split_into_sections(self):
-        ds = {"parameters.string": {"name": "something"},
-              "controllers.ManagerController": None}
+        ds = [{"parameters.string": {"name": "something"}},
+              {"controllers.ManagerController": None}]
         expected = dict(
-            parameters={"string": {"name": "something"}},
-            controllers={"ManagerController": None},
-            parts={},
-            assemblies={})
+            parameters=[{"string": {"name": "something"}}],
+            controllers=[{"ManagerController": None}],
+            parts=[],
+            assemblies=[])
         self.assertEqual(split_into_sections(ds), expected)
 
     def test_with_takes_from(self):
-        parameters = {"string": {"name": "something", "description": ""}}
+        parameters = [{"string": {"name": "something", "description": ""}}]
         @with_takes_from(parameters, include_name=True)
         def f():
             pass
@@ -52,7 +52,7 @@ parts.ca.CADoublePart:
 
 
     def test_with_takes_from_no_name(self):
-        parameters = {"string": {"name": "something", "description": ""}}
+        parameters = [{"string": {"name": "something", "description": ""}}]
         @with_takes_from(parameters, include_name=False)
         def f():
             pass
@@ -71,9 +71,9 @@ parts.ca.CADoublePart:
         # TODO: needs new controller and part stuff
         pass
 
-        parts_d = {"ca.CADoublePart": {
-            "name": "me", "description": "my pv desc", "pv": "MY:PV:STRING"}}
-        controllers_d = {}
+        parts_d = [{"ca.CADoublePart": {
+            "name": "me", "description": "my pv desc", "pv": "MY:PV:STRING"}}]
+        controllers_d = []
         name = "block_name"
         process = Mock()
         inst = make_block_instance(name, process, controllers_d, parts_d)

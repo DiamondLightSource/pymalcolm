@@ -29,7 +29,8 @@ class TableMeta(VMeta):
     def validate(self, value):
         if not isinstance(value, Table):
             # turn it into a table
-            value = Table.from_dict(value, meta=self)
+            value.pop("typeid")
+            value = Table(self, value)
         else:
             # Check that it's using the same meta object
             assert self == value.meta, \

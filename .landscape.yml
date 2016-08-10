@@ -1,0 +1,8 @@
+strictness: veryhigh
+ignore-paths:
+  - docs
+  - tests
+  - malcolm/core/__init__.py
+python-targets:
+  - 2
+  - 3

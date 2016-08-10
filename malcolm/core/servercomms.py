@@ -21,7 +21,7 @@ class ServerComms(Loggable, Spawnable):
                 break
             try:
                 self.send_to_client(response)
-            except Exception:
+            except Exception:  # pylint:disable=broad-except
                 self.log_exception(
                     "Exception sending response %s", response.to_dict())
 

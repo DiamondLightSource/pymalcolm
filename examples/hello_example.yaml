@@ -1,2 +1,5 @@
-assemblies.demo.hello:
-  name: hello
+- assemblies.demo.hello:
+    name: hello
+
+- assemblies.demo.hello:
+    name: hello2

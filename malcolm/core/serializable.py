@@ -105,7 +105,7 @@ class Serializable(object):
         inst.replace_endpoints(d)
         return inst
 
-    def set_endpoint_data(self, name, value):
+    def set_endpoint_data(self, name, value, **kwargs):
         # Called by subclass to set endpoint data
         assert name in self, \
             "Endpoint %r not defined for %r" % (name, self)

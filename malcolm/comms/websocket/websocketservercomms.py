@@ -11,7 +11,7 @@ from malcolm.core import ServerComms, deserialize_object, serialize_object, \
     Request
 
 
-class MalcolmWebSocketHandler(WebSocketHandler):
+class MalcWebSocketHandler(WebSocketHandler):  # pylint:disable=abstract-method
 
     servercomms = None
 
@@ -39,9 +39,9 @@ class WebsocketServerComms(ServerComms):
         self.name = name
         self.process = process
 
-        MalcolmWebSocketHandler.servercomms = self
+        MalcWebSocketHandler.servercomms = self
 
-        application = Application([(r"/ws", MalcolmWebSocketHandler)])
+        application = Application([(r"/ws", MalcWebSocketHandler)])
         self.server = HTTPServer(application)
         self.server.listen(port)
         self.loop = IOLoop.current()

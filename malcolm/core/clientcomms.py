@@ -33,7 +33,7 @@ class ClientComms(Loggable, Spawnable):
                 # TODO: Move request store into new method?
                 self.requests[request.id] = request
                 self.send_to_server(request)
-            except Exception:
+            except Exception:  # pylint:disable=broad-except
                 self.log_exception(
                     "Exception sending request %s", request.to_dict())
 

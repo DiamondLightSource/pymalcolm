@@ -4,7 +4,7 @@ from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.cache import Cache
 from malcolm.core.loggable import Loggable
-from malcolm.core.request import Request, Post, Put, Subscribe, Get
+from malcolm.core.request import Post, Put, Subscribe, Get
 from malcolm.core.vmetas import StringArrayMeta
 
 # Sentinel object that when received stops the recv_loop
@@ -53,7 +53,7 @@ class Process(Loggable):
                 break
             try:
                 self._handle_functions[type(request)](request)
-            except Exception as e:
+            except Exception as e:  # pylint:disable=broad-except
                 self.log_exception("Exception while handling %s", request)
                 request.respond_with_error(str(e))
 

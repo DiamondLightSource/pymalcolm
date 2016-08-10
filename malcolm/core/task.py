@@ -147,8 +147,8 @@ class Task(Loggable):
         return [f]
 
     def subscribe(self, attr, callback, *args):
-        """Subscribe to changes in a given attribute and call callback
-        with (\*args) when it changes
+        """Subscribe to changes in a given attribute and call
+        ``callback(*args)`` when it changes
 
             Returns:
                 int: an id for the subscription
@@ -212,7 +212,7 @@ class Task(Loggable):
                 if result in futures:
                     futures.remove(result)
             else:
-                self.log_debug("wait_all recieved unsolcited response")
+                self.log_debug("wait_all received unsolicited response")
 
     def _update_future(self, response):
         """called when a future is filled. Updates the future accordingly and
@@ -236,11 +236,12 @@ class Task(Loggable):
             try:
                 if func == self._match_update:
                     ret_val = func(response.value, *args)
-                else: # ignore return value from user callback functions
+                else:  # ignore return value from user callback functions
                     func(response.value, *args)
-            except Exception as e:
+            except Exception as e:  # pylint:disable=broad-except
+                # TODO: should we raise here?
                 self.log_exception("Exception %s in callback %s" %
-                                   (e, (func, args)))
+                                   (e, (endpoint, func, args)))
         elif isinstance(response, Error):
             raise RuntimeError(
                 "Subscription received ERROR response: %s" % response)

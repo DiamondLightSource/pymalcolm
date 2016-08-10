@@ -1,16 +1,19 @@
 class Spawnable(object):
     """Mixin for starting and stopping spawned functions.
     Functions called by self.start are spawned under a provided process
-    (or self.process if one is not provdied).
+    (or self.process if one is not provided).
     Functions called by self.stop are called synchronously, in reverse order.
     """
     # Sentinel object to stop spawned loops
     STOP = object()
 
+    _spawned = None
+    _spawn_functions = None
+
     def _initialize(self):
-        if not hasattr(self, "_spawn_functions"):
+        if self._spawn_functions is None:
             self._spawn_functions = []
-        if not hasattr(self, "_spawned"):
+        if self._spawned is None:
             self._spawned = []
 
     def start(self, process=None):
