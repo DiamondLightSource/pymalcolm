@@ -178,19 +178,22 @@ class PvaEndpoint(Endpoint, Loggable):
         self.log_debug("Get callback called for: %s", self._name)
         self.log_debug("Request structure: %s", request.toDict())
         # We need to convert the request object into a set of paths
-        field_dict = request["field"]
-        if not field_dict:
-            # The whole block has been requested
-            self.log_debug("Complete block %s requested for pvget", self._name)
-            # Retrieve the entire block structure
+        if "field" not in request:
             pv_object = self._server.cache_to_pvobject(self._name)
         else:
-            paths = []
-            # Create the list of paths
-            for field in field_dict:
-                paths.append(field)
-            pv_object = self._server.cache_to_pvobject(self._name, paths)
-        #return getimpl()
+            field_dict = request["field"]
+            if not field_dict:
+                # The whole block has been requested
+                self.log_debug("Complete block %s requested for pvget", self._name)
+                # Retrieve the entire block structure
+                pv_object = self._server.cache_to_pvobject(self._name)
+            else:
+                paths = []
+                # Create the list of paths
+                for field in field_dict:
+                    paths.append(field)
+                pv_object = self._server.cache_to_pvobject(self._name, paths)
+
         pva_impl = PvaGetImplementation(pv_object)
         return pva_impl
 
