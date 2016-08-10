@@ -1,9 +1,10 @@
-from malcolm.core import Attribute, method_takes, Controller
+from malcolm.core import Attribute, method_takes
 from malcolm.core.vmetas import NumberMeta
+from malcolm.controllers.defaultcontroller import DefaultController
 
 
 @method_takes()
-class CounterController(Controller):
+class CounterController(DefaultController):
     # Attribute for the counter value
     counter = None
 
@@ -11,7 +12,7 @@ class CounterController(Controller):
         self.counter = Attribute(NumberMeta("uint32", "A counter"), 0)
         yield ("counter", self.counter, self.counter.set_value)
 
-    @Controller.Resetting
+    @DefaultController.Resetting
     def do_reset(self):
         self.counter.set_value(0)
 

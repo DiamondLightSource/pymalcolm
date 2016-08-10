@@ -192,17 +192,16 @@ def make_block_instance(name, process, controllers_d, parts_d):
     if controllers_d:
         assert len(controllers_d) == 1, \
             "Expected length 1, got %s" % (controllers_d,)
-        ob = malcolm.controllers
         d = controllers_d[0]
         assert len(d) == 1, \
             "Expected length 1, got %s" % (d,)
         cls_name, d = list(d.items())[0]
     else:
-        ob = malcolm.core.controller
-        cls_name = "Controller"
+        cls_name = "DefaultController"
         d = None
     logging.debug("Creating %s %r", cls_name, name)
-    controller = call_with_map(ob, cls_name, d, name, process, parts)
+    controller = call_with_map(
+        malcolm.controllers, cls_name, d, name, process, parts)
     return controller.block
 
 def call_with_map(ob, name, d, *args):

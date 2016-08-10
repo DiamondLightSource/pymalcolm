@@ -11,6 +11,9 @@ class ClientController(Controller):
     client_comms = None
 
     def do_initial_reset(self):
+        self.state.set_value("Resetting")
+        self.status.set_value("Waiting for connection...")
+        self.busy.set_value(True)
         request = Subscribe(
             None, self, [self.process.name, "remoteBlocks", "value"])
         request.set_id(self.REMOTE_BLOCKS_ID)

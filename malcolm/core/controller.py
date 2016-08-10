@@ -6,7 +6,7 @@ from malcolm.core.block import Block
 from malcolm.core.blockmeta import BlockMeta
 from malcolm.core.hook import Hook
 from malcolm.core.loggable import Loggable
-from malcolm.core.methodmeta import method_takes, only_in, MethodMeta, \
+from malcolm.core.methodmeta import method_takes, method_only_in, MethodMeta, \
     get_method_decorated
 from malcolm.core.statemachine import DefaultStateMachine
 from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
@@ -20,8 +20,6 @@ sm = DefaultStateMachine
 @method_takes()
 class Controller(Loggable):
     """Implement the logic that takes a Block through its state machine"""
-
-    Resetting = Hook()
 
     # Attributes for all controllers
     state = None
@@ -191,17 +189,3 @@ class Controller(Loggable):
             is_writeable = state in states
             writeable_dict[method] = is_writeable
 
-    @method_takes()
-    def disable(self):
-        self.transition(sm.DISABLED, "Disabled")
-
-    @method_takes()
-    @only_in(sm.DISABLED, sm.FAULT)
-    def reset(self):
-        try:
-            self.transition(sm.RESETTING, "Resetting")
-            self.Resetting.run(self)
-            self.transition(sm.AFTER_RESETTING, "Done resetting")
-        except Exception as e:  # pylint:disable=broad-except
-            self.log_exception("Fault occurred while Resetting")
-            self.transition(sm.FAULT, str(e))

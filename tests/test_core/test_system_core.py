@@ -38,7 +38,7 @@ class TestHelloControllerSystem(unittest.TestCase):
         # wait until block is Ready
         task = Task("task", process)
         futures = task.when_matches(b["state"], "Ready")
-        task.wait_all(futures, timeout=0.1)
+        task.wait_all(futures, timeout=1)
         q = sync_factory.create_queue()
         req = Post(response_queue=q, context="ClientConnection",
                    endpoint=["hello", "say_hello"],

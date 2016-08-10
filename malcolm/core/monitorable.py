@@ -46,9 +46,11 @@ class Monitorable(Loggable, Serializable):
         self._parent.report_changes(*changes)
 
     def set_endpoint_data(self, name, value, notify=True):
-        super(Monitorable, self).set_endpoint_data(name, value)
+        # set parent first so that we don't put something in the tree that
+        # doesn't know how to get the path to the top of the tree
         if hasattr(value, "set_parent"):
             value.set_parent(self, name)
+        super(Monitorable, self).set_endpoint_data(name, value)
         if notify:
             self.report_changes([[name], serialize_object(value)])
 

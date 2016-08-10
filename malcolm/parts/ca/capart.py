@@ -1,8 +1,9 @@
 import cothread
 from cothread import catools
 
-from malcolm.core import Part, Controller, Attribute, method_takes, REQUIRED
+from malcolm.core import Part, Attribute, method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
+from malcolm.controllers import DefaultController
 
 
 def capart_takes(*args):
@@ -48,7 +49,7 @@ class CAPart(Part):
     def get_datatype(self):
         raise NotImplementedError
 
-    @Controller.Resetting
+    @DefaultController.Resetting
     def connect_pvs(self):
         # release old monitor
         self.close_monitor()

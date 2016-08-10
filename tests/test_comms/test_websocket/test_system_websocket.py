@@ -93,7 +93,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def test_server_with_malcolm_client(self):
         task = Task("task", self.process2)
         futures = task.when_matches(self.block2["state"], "Ready")
-        task.wait_all(futures, timeout=0.1)
+        task.wait_all(futures, timeout=1)
         ret = self.block2.say_hello("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
 
