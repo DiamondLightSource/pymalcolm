@@ -3,6 +3,7 @@ ignore-paths:
   - docs
   - tests
   - malcolm/core/__init__.py
+  - malcolm/core/vmetas/__init__.py
 python-targets:
   - 2
   - 3
