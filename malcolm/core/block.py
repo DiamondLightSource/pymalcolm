@@ -25,7 +25,7 @@ class Block(ElementMap):
             assert isinstance(child, Attribute), \
                 "Expected Attribute, got %r" % (child,)
             func = self._writeable_functions[attr]
-            func(child, value)
+            func(child.meta, value)
         else:
             object.__setattr__(self, attr, value)
 

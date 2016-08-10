@@ -33,7 +33,8 @@ class Controller(Loggable):
         Args:
             process (Process): The process this should run under
         """
-        self.set_logger_name("%s(%s)" % (type(self).__name__, block_name))
+        controller_name = "%s(%s)" % (type(self).__name__, block_name)
+        self.set_logger_name(controller_name)
         self.block = Block()
         self.log_debug("Creating block %r as %r" % (self.block, block_name))
         self.block_name = block_name
@@ -46,6 +47,8 @@ class Controller(Loggable):
         if parts is None:
             parts = {}
         self.parts = parts
+        for part_name, part in self.parts.items():
+            part.set_logger_name("%s.%s" % (controller_name, part_name))
 
         self._set_block_children()
         self._do_transition(sm.DISABLED, "Disabled")

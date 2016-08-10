@@ -22,7 +22,7 @@ class CAPart(Part):
     def create_attributes(self):
         params = self.params
         if params.pv is None and params.rbv is None:
-            raise ValueError('must pass pv rbv')
+            raise ValueError('Must pass pv or rbv')
         if params.rbv is None:
             if params.rbv_suff is None:
                 params.rbv = params.pv
@@ -50,13 +50,14 @@ class CAPart(Part):
         raise NotImplementedError
 
     @DefaultController.Resetting
-    def connect_pvs(self):
+    def connect_pvs(self, task):
         # release old monitor
         self.close_monitor()
         # make the connection in cothread's thread, use caget for initial value
         pvs = [self.rbv]
         if self.pv:
             pvs.append(self.pv)
+            self.meta.set_writeable(True)
         ca_values = cothread.CallbackResult(
             catools.caget, pvs,
             format=self.ca_format, datatype=self.get_datatype())
@@ -64,8 +65,9 @@ class CAPart(Part):
         for i, v in enumerate(ca_values):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
         self.update_value(ca_values[0])
+        self.log_debug("ca values connected %s", ca_values)
         # now setup monitor on rbv
-        self.monitor = catools.camonitor(
+        self.monitor = cothread.CallbackResult(catools.camonitor,
             self.rbv, self.on_update, notify_disconnect=True,
             format=self.ca_format, datatype=self.get_datatype())
 
