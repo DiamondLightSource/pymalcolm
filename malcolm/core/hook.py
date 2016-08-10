@@ -43,7 +43,7 @@ class Hook(object):
 
             for function in members:
                 if hasattr(function, "Hook") and function.Hook == self:
-                    task = Task(controller.process)
+                    task = Task(names[0], controller.process)
                     spawned_list.append(controller.process.spawn(
                         self._run_func, task_queue, function, task))
                     active_tasks.append(task)
@@ -73,7 +73,7 @@ class Hook(object):
 
         try:
             result = func(task)
-        except Exception as e:
+        except Exception as e:  # pylint:disable=broad-except
             q.put((task, e))
         else:
             q.put((task, result))

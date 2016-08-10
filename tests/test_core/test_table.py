@@ -132,9 +132,8 @@ class TestTableMetaSerialization(unittest.TestCase):
         self.assertEquals(expected, actual)
 
     def test_from_dict(self):
-        d = {"typeid":"malcolm:core/Table:1.0",
-            "e2":[0, 1, 2], "e1":["value"], "e3":[6, 7]}
-        t = Table.from_dict(d, self.meta)
+        d = {"e2":[0, 1, 2], "e1":["value"], "e3":[6, 7]}
+        t = Table(self.meta, d)
         self.assertEqual(self.meta, t.meta)
         self.assertEqual([0, 1, 2], list(t.e2))
         self.assertEqual(["value"], t.e1)
@@ -143,7 +142,9 @@ class TestTableMetaSerialization(unittest.TestCase):
     def test_dict_roundtrip(self):
         t = Table(self.meta)
         d = t.to_dict()
-        t2 = Table.from_dict(d.copy(), self.meta)
+        d2 = d.copy()
+        d2.pop("typeid")
+        t2 = Table(self.meta, d2)
         self.assertEqual(d, t2.to_dict())
 
 if __name__ == "__main__":

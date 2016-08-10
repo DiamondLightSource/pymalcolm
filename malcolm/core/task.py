@@ -236,11 +236,12 @@ class Task(Loggable):
             try:
                 if func == self._match_update:
                     ret_val = func(response.value, *args)
-                else: # ignore return value from user callback functions
+                else:  # ignore return value from user callback functions
                     func(response.value, *args)
-            except Exception as e:
+            except Exception as e:  # pylint:disable=broad-except
+                # TODO: should we raise here?
                 self.log_exception("Exception %s in callback %s" %
-                                   (e, (func, args)))
+                                   (e, (endpoint, func, args)))
         elif isinstance(response, Error):
             raise RuntimeError(
                 "Subscription received ERROR response: %s" % response)

@@ -63,6 +63,8 @@ class TestHook(unittest.TestCase):
         response = part1.do_thing.Hook.run(self.c)
 
         task_calls = [call[0][0] for call in task_mock.call_args_list]
+        self.assertEqual(task_calls, ["Configuring"]*2)
+        task_calls = [call[0][1] for call in task_mock.call_args_list]
         self.assertEqual(task_calls, [self.c.process]*2)
         spawn_calls = [call[0] for call in spawn_mock.call_args_list]
         self.assertEqual(spawn_calls[0],

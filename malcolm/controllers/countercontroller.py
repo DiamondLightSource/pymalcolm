@@ -4,6 +4,8 @@ from malcolm.core.vmetas import NumberMeta
 
 @method_takes()
 class CounterController(Controller):
+    # Attribute for the counter value
+    counter = None
 
     def create_attributes(self):
         self.counter = Attribute(

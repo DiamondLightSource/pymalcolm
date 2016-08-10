@@ -4,21 +4,17 @@ import logging
 
 from ruamel import yaml
 
-import malcolm.controllers
-import malcolm.parameters
-import malcolm.parts
+from malcolm.packageutil import prepare_globals_for_package
 from malcolm.compat import base_string
 from malcolm.core import REQUIRED, method_takes
 from malcolm.core.vmetas import StringMeta
+import malcolm.controllers
+import malcolm.parameters
+import malcolm.parts
 
 
 def make_all_assemblies(globals_d, package_name):
-    func_dict = {}
-    # this is the path to the package
-    package_relative = package_name.split(".")[1:]
-    package_fs_path = os.path.join(os.path.dirname(__file__), *package_relative)
-
-    for fname in os.listdir(package_fs_path):
+    def finder(package_fs_path, fname):
         split = fname.split(".")
         if split[-1] == "yaml":
             assert len(split) == 2, \
@@ -28,10 +24,9 @@ def make_all_assemblies(globals_d, package_name):
             with open(yaml_path) as f:
                 text = f.read()
                 func = make_assembly(text)
-                func_dict[split[0]] = func
+                yield split[0], func
 
-    globals_d.update(func_dict)
-    __all__ = list(func_dict)
+    __all__ = prepare_globals_for_package(globals_d, package_name, finder)
     return __all__
 
 def make_assembly(text):
@@ -49,6 +44,8 @@ def make_assembly(text):
             assemblies listed then they will be called. All created blocks
             by this or any sub collection will be returned
     """
+    import malcolm.assemblies
+
     ds = yaml.load(text, Loader=yaml.RoundTripLoader)
 
     sections = split_into_sections(ds)
@@ -77,7 +74,6 @@ def make_assembly(text):
 
         # It we have any other assemblies
         for name, d in sections["assemblies"].items():
-            import malcolm.assemblies
             ret += call_with_map(malcolm.assemblies, name, d, process)
 
         return ret

@@ -66,15 +66,10 @@ class Table(Serializable):
             column = getattr(self, e)
             try:
                 column.append(v)
-            except:
+            except AttributeError:
                 # numpy arrays have no append, so make an array of the right
                 # validated type, and use np.append
                 v = self.meta.elements[e].validate([v])
                 new_column = np.append(column, v)
                 setattr(self, e, new_column)
 
-    @classmethod
-    def from_dict(cls, d, meta):
-        d.pop("typeid")
-        t = cls(meta, d)
-        return t

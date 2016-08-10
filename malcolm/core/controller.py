@@ -23,6 +23,13 @@ class Controller(Loggable):
 
     Resetting = Hook()
 
+    # Attributes for all controllers
+    state = None
+    status = None
+    busy = None
+    # BlockMeta for descriptions
+    meta = None
+
     def __init__(self, block_name, process, parts=None, params=None):
         """
         Args:
@@ -195,6 +202,6 @@ class Controller(Loggable):
             self.transition(sm.RESETTING, "Resetting")
             self.Resetting.run(self)
             self.transition(sm.AFTER_RESETTING, "Done resetting")
-        except Exception as e:
+        except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Fault occurred while Resetting")
             self.transition(sm.FAULT, str(e))
