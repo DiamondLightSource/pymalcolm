@@ -157,6 +157,7 @@ class Task(Loggable):
             "Expected Attribute, got %r" % (attr,)
 
         endpoint = attr.path_relative_to(self.process) + ["value"]
+        self.log_debug("Subscribing to %s", endpoint)
         request = Subscribe(None, self.q, endpoint, False)
         new_id = self._save_subscription(endpoint, callback, *args)
         request.set_id(new_id)
