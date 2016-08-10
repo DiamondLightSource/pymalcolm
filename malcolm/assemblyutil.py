@@ -224,6 +224,9 @@ def call_with_map(ob, name, d, *args):
     for n in split:
         ob = getattr(ob, n)
 
+    if d and "name" not in ob.MethodMeta.takes.elements and "name" in d:
+        d = d.copy()
+        d.pop("name")
     params = ob.MethodMeta.prepare_input_map(d)
     args += (params,)
     return ob(*args)
