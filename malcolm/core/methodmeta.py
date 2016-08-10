@@ -194,7 +194,7 @@ def method_returns(*args):
     return decorator
 
 
-def only_in(*states):
+def method_only_in(*states):
     """
     Checks if function has a MethodMeta representation, calls wrap_method to
     create one if it doesn't and then adds only_in to it from *states

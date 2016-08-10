@@ -7,7 +7,7 @@ from collections import OrderedDict
 import unittest
 from mock import Mock, patch, MagicMock
 
-from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, only_in, OPTIONAL, \
+from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, method_only_in, OPTIONAL, \
     REQUIRED
 
 from malcolm.core.vmetas import StringMeta
@@ -93,7 +93,7 @@ class TestDecorators(unittest.TestCase):
                 return ret
 
     def test_only_in(self):
-        @only_in("boo", "boo2")
+        @method_only_in("boo", "boo2")
         def f():
             pass
 
