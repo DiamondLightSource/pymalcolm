@@ -26,15 +26,15 @@ class PvaServerComms(ServerComms):
         self._endpoints = {}
         self._cb = None
 
-        # Add a thread for executing the V4 PVA server
-        #self.add_spawn_function(self.run_pva_server)
-        self.run_pva_server()
+        # Create the V4 PVA server object
+        self.create_pva_server()
 
         # Set up the subscription for everything (root down)
         request = Subscribe(None, self.q, [], True)
         request.set_id(self._root_id)
         self.process.q.put(request)
 
+        # Add a thread for executing the V4 PVA server
         #self.add_spawn_function(self.start_v4)
 
     def _update_block_list(self):
@@ -44,14 +44,14 @@ class PvaServerComms(ServerComms):
                 old_blocks.pop(name)
             else:
                 # New block, so create the new Pva endpoint
-                self.log_debug("Adding block to PVA list: %s", name)
+                self.log_debug("Adding malcolm block to PVA list: %s", name)
                 self._current_id += 1
                 self._blocklist[name] = self._current_id
                 self._add_new_pva_channel(name)
 
         # Now loop over any remaining old blocks and remove their subscriptions
         for name in old_blocks:
-            self.log_debug("Removing stale block: %s", name)
+            self.log_debug("Removing stale malcolm block: %s", name)
 
     def _update_cache(self, response):
         if response.changes:
@@ -78,30 +78,35 @@ class PvaServerComms(ServerComms):
         self.log_debug("Creating PVA endpoint for %s", name)
         self._endpoints[name] = PvaEndpoint(name, self._server, self)
 
-    def run_pva_server(self):
-        self.log_debug("Executing PVA server")
+    def create_pva_server(self):
+        self.log_debug("Creating PVA server object")
         self._server = PvaServer()
 
-    def start_v4(self):
-        self.log_debug("Starting server")
+    def start_pva_server(self):
+        self.log_debug("Starting PVA server")
         self._server.listen(8)
-        #self._server.startListener()
-        self.log_debug("Server exited")
 
-    def stop_v4(self):
-        self.log_debug("Executing stop server")
+    def stop_pva_server(self):
+        self.log_debug("Executing stop PVA server")
         self._server.stop()
-        self.log_debug("Executing stop completed")
-        # self._server.startListener()
 
-    def cache_to_pvobject(self, name):
+    def cache_to_pvobject(self, name, paths=None):
         #self.log_debug("Cache[%s]: %s", name, self._cache[name])
         # Test parsing the cache to create the PV structure
         block = self._cache[name]
-        pv_object = self.dict_to_structure(block)
-        #self.log_debug("Structure: %s", structure)
-        pv_object.set(self.strip_type_id(block))
-        return PvaGetImplementation(pv_object)
+        if not paths:
+            pv_object = self.dict_to_structure(block)
+            #self.log_debug("Structure: %s", structure)
+            pv_object.set(self.strip_type_id(block))
+        else:
+            path_dict = OrderedDict()
+            for path in paths:
+                path_dict[path] = self.dict_to_structure(block[path])
+            pv_object = PvObject(path_dict)
+            for path in paths:
+                pv_object.set({path: self.strip_type_id(block[path])})
+
+        return pv_object
 
     def dict_to_structure(self, dict_in):
         structure = OrderedDict()
@@ -172,21 +177,33 @@ class PvaEndpoint(Endpoint, Loggable):
     def get_callback(self, request):
         self.log_debug("Get callback called for: %s", self._name)
         self.log_debug("Request structure: %s", request.toDict())
-        #self._server.cache_to_pvobject(self._name)
+        # We need to convert the request object into a set of paths
+        field_dict = request["field"]
+        if not field_dict:
+            # The whole block has been requested
+            self.log_debug("Complete block %s requested for pvget", self._name)
+            # Retrieve the entire block structure
+            pv_object = self._server.cache_to_pvobject(self._name)
+        else:
+            paths = []
+            # Create the list of paths
+            for field in field_dict:
+                paths.append(field)
+            pv_object = self._server.cache_to_pvobject(self._name, paths)
         #return getimpl()
-        return self._server.cache_to_pvobject(self._name)
+        pva_impl = PvaGetImplementation(pv_object)
+        return pva_impl
 
 
 class PvaGetImplementation:
-    def __init__(self, description):
-        print 'init(self)'
-        self.pvStructure = description
+    def __init__(self, structure):
+        self.pvStructure = structure
 
     def getPVStructure(self):
-        print 'getPVStructure(self)'
         return self.pvStructure
 
     def get(self):
+        # Null operation, the structure already contains the values
         print 'get(self)'
         #self.pvStructure['attribute.value'] = 5
 
