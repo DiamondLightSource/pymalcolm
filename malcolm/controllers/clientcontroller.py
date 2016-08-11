@@ -40,19 +40,19 @@ class ClientController(Controller):
 
     def _regenerate_block(self, d):
 
-        self.block.replace_endpoints(d)
-
         writeable_functions = {}
-        for name in self.block:
-            child = self.block[name]
-            if isinstance(child, MethodMeta):
+        for name, child in d.items():
+            if name == "typeid":
+                pass
+            elif child["typeid"] == MethodMeta.typeid:
                 # calling method forwards to server
                 writeable_functions[name] = self.call_server_method
-            elif isinstance(child, Attribute):
+            elif child["typeid"] == Attribute.typeid:
                 # putting attribute forwards to server
                 writeable_functions[name] = self.put_server_attribute
 
         self.block.set_writeable_functions(writeable_functions)
+        self.block.replace_endpoints(d)
 
     def _subscribe_to_block(self, block_name):
         self.client_comms = self.process.get_client_comms(block_name)

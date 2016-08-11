@@ -1,0 +1,7 @@
+- assemblies.motor.axis:
+    name: kphi
+    prefix: BL16I-MO-DIFF-01:SAMPLE:KPHI
+
+- assemblies.motor.axis:
+    name: kappa
+    prefix: BL16I-MO-DIFF-01:SAMPLE:KAPPA

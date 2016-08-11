@@ -4,7 +4,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
+from collections import OrderedDict
 
 from malcolm.core.hook import Hook
 
@@ -54,27 +55,23 @@ class TestHook(unittest.TestCase):
         spawn_mock.return_value = spawned_mock
         process_mock.create_queue.return_value = queue_mock
         process_mock.spawn = spawn_mock
-        process_mock.q.get.return_value = (task_mock.return_value, MagicMock())
+        queue_mock.get.return_value = (task_mock.return_value, MagicMock())
         self.c.process = process_mock
         part1 = DummyPart1()
         part2 = DummyPart2()
-        self.c.parts = [part1, part2]
+        self.c.parts = OrderedDict([("part1", part1), ("part2", part2)])
 
         response = part1.do_thing.Hook.run(self.c)
 
-        task_calls = [call[0][0] for call in task_mock.call_args_list]
-        self.assertEqual(task_calls, ["Configuring"]*2)
-        task_calls = [call[0][1] for call in task_mock.call_args_list]
-        self.assertEqual(task_calls, [self.c.process]*2)
-        spawn_calls = [call[0] for call in spawn_mock.call_args_list]
-        self.assertEqual(spawn_calls[0],
-                         (Hook._run_func, queue_mock, part1.do_thing,
-                          task_mock.return_value))
-        self.assertEqual(spawn_calls[1],
-                         (Hook._run_func, queue_mock, part2.do_all_the_things,
-                          task_mock.return_value))
-
-        self.assertEqual(2, process_mock.q.get.call_count)
+        task_mock.assert_has_calls([
+            call("Configuring.part1", self.c.process),
+            call("Configuring.part2", self.c.process)])
+        spawn_mock.assert_has_calls([
+            call(Hook._run_func, queue_mock, part1.do_thing,
+                 task_mock.return_value),
+            call(Hook._run_func, queue_mock, part2.do_all_the_things,
+                 task_mock.return_value)])
+        self.assertEqual(2, queue_mock.get.call_count)
 
         self.assertIsNone(response)
 
@@ -87,11 +84,11 @@ class TestHook(unittest.TestCase):
         spawn_mock.return_value = spawned_mock
         process_mock.spawn = spawn_mock
         process_mock.create_queue.return_value = queue_mock
-        process_mock.q.get.return_value = (task_mock.return_value, Exception())
+        queue_mock.get.return_value = (task_mock.return_value, Exception())
         self.c.process = process_mock
         part1 = DummyPart1()
         part2 = DummyPart2()
-        self.c.parts = [part1, part2]
+        self.c.parts = dict(part1=part1, part2=part2)
 
         with self.assertRaises(Exception):
             part1.do_thing.Hook.run(self.c)

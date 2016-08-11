@@ -37,19 +37,19 @@ class Hook(object):
 
         spawned_list = []
         active_tasks = []
-        for part in controller.parts:
+        for pname, part in controller.parts.items():
             members = [value[1] for value in
                        inspect.getmembers(part, predicate=inspect.ismethod)]
 
             for function in members:
                 if hasattr(function, "Hook") and function.Hook == self:
-                    task = Task(names[0], controller.process)
+                    task = Task("%s.%s" % (names[0], pname), controller.process)
                     spawned_list.append(controller.process.spawn(
                         self._run_func, task_queue, function, task))
                     active_tasks.append(task)
 
         while active_tasks:
-            task, response = controller.process.q.get()
+            task, response = task_queue.get()
             active_tasks.remove(task)
 
             if isinstance(response, Exception):

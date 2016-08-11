@@ -34,4 +34,4 @@ class Attribute(Monitorable):
         assert isinstance(request, Put), "Expected Put, got %r" % (request,)
         assert len(request.endpoint) == 3 and request.endpoint[-1] == "value", \
             "Can only Put to Attribute value, not %s" % (request.endpoint,)
-        put_function(self, request.value)
+        put_function(self.meta, request.value)

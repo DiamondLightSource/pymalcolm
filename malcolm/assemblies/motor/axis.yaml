@@ -1,0 +1,15 @@
+- parameters.string:
+    name: prefix
+    description: the root PV for the motor record
+
+- parts.ca.CADoublePart:
+    name: position
+    description: set the target position of the motor or get current position
+    pv: $(prefix)
+    rbv_suff: .RBV
+
+- parts.ca.CALongPart:
+    name: done_moving
+    description: set to zero when motor is stationary
+    rbv: $(prefix).DMOV
+
