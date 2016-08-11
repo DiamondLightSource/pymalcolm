@@ -225,7 +225,7 @@ def call_with_map(ob, name, d, *args):
         ob = getattr(ob, n)
 
     if d and "name" not in ob.MethodMeta.takes.elements and "name" in d:
-        d = d.copy()
+        d = dict(d)
         d.pop("name")
     params = ob.MethodMeta.prepare_input_map(d)
     args += (params,)
