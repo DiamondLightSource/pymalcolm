@@ -58,9 +58,6 @@ class Block(ElementMap):
         super(Block, self).set_endpoint_data(name, value, notify)
 
     def set_writeable_functions(self, writeable_functions):
-        for name in writeable_functions:
-            assert name in self, \
-                "Don't have a child %s to set writeable_function" % (name,)
         self._writeable_functions = writeable_functions
 
     def handle_request(self, request):
