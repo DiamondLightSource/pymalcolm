@@ -4,7 +4,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
+from collections import OrderedDict
 
 from malcolm.core.hook import Hook
 
@@ -58,22 +59,18 @@ class TestHook(unittest.TestCase):
         self.c.process = process_mock
         part1 = DummyPart1()
         part2 = DummyPart2()
-        self.c.parts = dict(part1=part1, part2=part2)
+        self.c.parts = OrderedDict([("part1", part1), ("part2", part2)])
 
         response = part1.do_thing.Hook.run(self.c)
 
-        task_calls = [call[0][0] for call in task_mock.call_args_list]
-        self.assertEqual(task_calls, ["Configuring.part1", "Configuring.part2"])
-        task_calls = [call[0][1] for call in task_mock.call_args_list]
-        self.assertEqual(task_calls, [self.c.process]*2)
-        spawn_calls = [call[0] for call in spawn_mock.call_args_list]
-        self.assertEqual(spawn_calls[0],
-                         (Hook._run_func, queue_mock, part1.do_thing,
-                          task_mock.return_value))
-        self.assertEqual(spawn_calls[1],
-                         (Hook._run_func, queue_mock, part2.do_all_the_things,
-                          task_mock.return_value))
-
+        task_mock.assert_has_calls([
+            call("Configuring.part1", self.c.process),
+            call("Configuring.part2", self.c.process)])
+        spawn_mock.assert_has_calls([
+            call(Hook._run_func, queue_mock, part1.do_thing,
+                 task_mock.return_value),
+            call(Hook._run_func, queue_mock, part2.do_all_the_things,
+                 task_mock.return_value)])
         self.assertEqual(2, queue_mock.get.call_count)
 
         self.assertIsNone(response)
