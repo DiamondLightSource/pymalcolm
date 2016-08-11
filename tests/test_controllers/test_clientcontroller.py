@@ -13,17 +13,21 @@ from mock import MagicMock, patch, call
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.controllers import ClientController, HelloController
+from malcolm.controllers import ClientController, DefaultController
 from malcolm.core import Attribute
 from malcolm.core.vmetas import StringMeta
 from malcolm.compat import queue
+from malcolm.parts.demo import HelloPart
 
 
 class TestClientController(unittest.TestCase):
 
     def setUp(self):
+        p = MagicMock()
+        part = HelloPart(p, None)
         # Serialized version of the block we want
-        source = HelloController("blockname", MagicMock()).block
+        source = DefaultController(
+            "blockname", p, parts={"hello":part}).block
         self.serialized = source.to_dict()
         # Setup client controller prerequisites
         self.p = MagicMock()

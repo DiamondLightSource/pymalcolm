@@ -17,9 +17,10 @@ import json
 
 
 # module imports
-from malcolm.controllers import HelloController, ClientController
+from malcolm.controllers import DefaultController, ClientController
 from malcolm.core import Process, SyncFactory, Task
 from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
+from malcolm.parts.demo import HelloPart
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):
@@ -28,7 +29,8 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
     def setUp(self):
         self.sf = SyncFactory("sync")
         self.process = Process("proc", self.sf)
-        HelloController("hello", self.process)
+        part = HelloPart(self.process, None)
+        DefaultController("hello", self.process, parts={"hello":part})
         self.sc = WebsocketServerComms("sc", self.process, self.socket)
         self.process.start()
         self.sc.start()
@@ -71,7 +73,8 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def setUp(self):
         self.sf = SyncFactory("sync")
         self.process = Process("proc", self.sf)
-        HelloController("hello", self.process)
+        part = HelloPart(self.process, None)
+        DefaultController("hello", self.process, parts={"hello":part})
         self.sc = WebsocketServerComms("sc", self.process, self.socket)
         self.process.start()
         self.sc.start()

@@ -11,8 +11,7 @@ from mock import MagicMock
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.controllers.hellocontroller import HelloController
-from malcolm.controllers.countercontroller import CounterController
+from malcolm.controllers import CounterController, DefaultController
 from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.process import Process
@@ -20,20 +19,24 @@ from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Post, Subscribe
 from malcolm.core.response import Return, Update
 from malcolm.core.task import Task
+from malcolm.parts.demo.hellopart import HelloPart
 
 
-class TestHelloControllerSystem(unittest.TestCase):
+class TestHelloDemoSystem(unittest.TestCase):
 
-    def test_hello_controller_good_input(self):
-        block = HelloController("hello", MagicMock()).block
+    def test_hello_good_input(self):
+        p = MagicMock()
+        part = HelloPart(p, None)
+        block = DefaultController("hello", p, parts={"hello":part}).block
         block.reset()
         result = block.say_hello(name="me")
         self.assertEquals(result.greeting, "Hello me")
 
-    def test_hello_controller_with_process(self):
+    def test_hello_with_process(self):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
-        b = HelloController("hello", process).block
+        part = HelloPart(process, None)
+        b = DefaultController("hello", process, parts={"hello":part}).block
         process.start()
         # wait until block is Ready
         task = Task("task", process)

@@ -1,19 +1,19 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
 from mock import Mock, MagicMock
 
-from malcolm.controllers.hellocontroller import HelloController
+from malcolm.parts.demo.hellopart import HelloPart
 
 
-class TestHelloController(unittest.TestCase):
+class TestHelloPart(unittest.TestCase):
 
     def setUp(self):
         self.block = Mock()
-        self.c = HelloController('block', MagicMock())
+        self.c = HelloPart('block', MagicMock())
 
     def test_say_hello(self):
         expected = "Hello test_name"
