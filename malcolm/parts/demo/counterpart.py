@@ -1,10 +1,10 @@
-from malcolm.core import Attribute, method_takes
+from malcolm.core import Attribute, method_takes, Part
 from malcolm.core.vmetas import NumberMeta
-from malcolm.controllers.defaultcontroller import DefaultController
+from malcolm.controllers import DefaultController
 
 
 @method_takes()
-class CounterController(DefaultController):
+class CounterPart(Part):
     # Attribute for the counter value
     counter = None
 

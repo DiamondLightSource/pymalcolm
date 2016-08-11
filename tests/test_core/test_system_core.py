@@ -11,7 +11,7 @@ from mock import MagicMock
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.controllers import CounterController, DefaultController
+from malcolm.controllers import DefaultController
 from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.process import Process
@@ -19,7 +19,7 @@ from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Post, Subscribe
 from malcolm.core.response import Return, Update
 from malcolm.core.task import Task
-from malcolm.parts.demo.hellopart import HelloPart
+from malcolm.parts.demo import HelloPart, CounterPart
 
 
 class TestHelloDemoSystem(unittest.TestCase):
@@ -56,12 +56,13 @@ class TestHelloDemoSystem(unittest.TestCase):
         process.stop()
 
 
-class TestCounterControllerSystem(unittest.TestCase):
+class TestCounterDemoSystem(unittest.TestCase):
 
-    def test_counter_controller_subscribe(self):
+    def test_counter_subscribe(self):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
-        CounterController("counting", process)
+        part = CounterPart(process, None)
+        DefaultController("counting", process, parts={"counter":part})
         process.start()
         q = sync_factory.create_queue()
 
