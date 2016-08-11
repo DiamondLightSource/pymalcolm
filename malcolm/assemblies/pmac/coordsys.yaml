@@ -1,0 +1,116 @@
+- parameters.string:
+    name: prefix
+    description: the root PV for the coordinate system
+
+- parts.ca.CALongPart:
+    name: scan_point_count
+    description: number of points in the scan
+    pv: $(prefix):NumPoints
+    rbv: $(prefix):NumPoints
+
+- parts.ca.CAActionPart:
+    name: build_profile
+    description: command to build the profile once times and positions are set
+    pv: $(prefix):Build
+
+- parts.ca.CAActionPart:
+    name: execute_profile
+    description: execute the profile prepared with 'build' command
+    pv: $(prefix):Execute.PROC
+
+- parts.ca.CADoubleArrayPart:
+    name: times
+    description: a list of the time slices for each step in the profile
+    pv: $(prefix):Times
+
+- parts.ca.CADoubleArrayPart:
+    name: positions1
+    description: a list of positions for CoordSys axis A
+    pv: $(prefix):M1Positions
+
+- parts.ca.CAChoicePart:
+    name: use1
+    description: is this axis is used in the trajectory scan? yes/no
+    pv: $(prefix):M1UseAxis
+
+- parts.ca.CADoubleArrayPart:
+    name: positions2
+    description: a list of positions for CoordSys axis B
+    pv: $(prefix):M2Positions
+
+- parts.ca.CAChoicePart:
+    name: use2
+    description: is this axis is used in the trajectory scan? yes/no
+    pv: $(prefix):M2UseAxis
+
+- parts.ca.CADoubleArrayPart:
+    name: positions3
+    description: a list of positions for CoordSys axis C
+    pv: $(prefix):M3Positions
+
+- parts.ca.CAChoicePart:
+    name: use3
+    description: is this axis is used in the trajectory scan? yes/no
+    pv: $(prefix):M3UseAxis
+
+# following not implemented in the IOC - they are wrong type
+
+#- parts.ca.CADoubleArrayPart:
+#    name: positions4
+#    description: a list of positions for CoordSys axis U
+#    pv: $(prefix):M4Positions
+#
+#- parts.ca.CAChoicePart:
+#    name: use4
+#    description: is this axis is used in the trajectory scan? yes/no
+#    pv: $(prefix):M4UseAxis
+
+#- parts.ca.CADoubleArrayPart:
+#    name: positions5
+#    description: a list of positions for CoordSys axis V
+#    pv: $(prefix):M5Positions
+#
+#- parts.ca.CAChoicePart:
+#    name: use5
+#    description: is this axis is used in the trajectory scan? yes/no
+#    pv: $(prefix):M5UseAxis
+#
+#- parts.ca.CADoubleArrayPart:
+#    name: positions6
+#    description: a list of positions for CoordSys axis W
+#    pv: $(prefix):M6Positions
+#
+#- parts.ca.CAChoicePart:
+#    name: use6
+#    description: is this axis is used in the trajectory scan? yes/no
+#    pv: $(prefix):M6UseAxis
+#
+#- parts.ca.CADoubleArrayPart:
+#    name: positions7
+#    description: a list of positions for CoordSys axis X
+#    pv: $(prefix):M7Positions
+#
+#- parts.ca.CAChoicePart:
+#    name: use7
+#    description: is this axis is used in the trajectory scan? yes/no
+#    pv: $(prefix):M7UseAxis
+#
+#- parts.ca.CADoubleArrayPart:
+#    name: positions8
+#    description: a list of positions for CoordSys axis Y
+#    pv: $(prefix):M8Positions
+#
+#- parts.ca.CAChoicePart:
+#    name: use8
+#    description: is this axis is used in the trajectory scan? yes/no
+#    pv: $(prefix):M8UseAxis
+#
+#- parts.ca.CADoubleArrayPart:
+#    name: positions9
+#    description: a list of positions for CoordSys axis Z
+#    pv: $(prefix):M9Positions
+#
+#- parts.ca.CAChoicePart:
+#    name: use9
+#    description: is this axis is used in the trajectory scan? yes/no
+#    pv: $(prefix):M9UseAxis

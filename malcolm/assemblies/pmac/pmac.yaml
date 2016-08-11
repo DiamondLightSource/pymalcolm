@@ -1,0 +1,64 @@
+- parameters.string:
+    name: prefix
+    description: the root PV for the pmac motor (hardware) controller
+
+- parts.ca.CALongPart:
+    name: axis1_cs
+    description: shows which coord sys this axis is currently mapped to
+    rbv: $(prefix):Motor1CS_RBV
+
+- parts.ca.CAChoicePart:
+    name: build_status
+    description: status of last profile build
+    rbv: $(prefix):PROFILE_BUILD_STATUS_RBV
+
+- parts.ca.CAChoicePart:
+    name: build_state
+    description: state of last profile build
+    rbv: $(prefix):PROFILE_BUILD_STATE_RBV
+
+- parts.ca.CAStringPart:
+    name: result_string
+    description: string description of current status of trajectory scan
+    rbv: $(prefix):PROFILE_EXECUTE_MESSAGE_RBV
+
+- parts.ca.CALongPart:
+    name: scan_percentage
+    description: percentage complete on current scan
+    rbv: $(prefix):TSCAN_PERCENT_RBV
+
+- parts.ca.CALongPart:
+    name: axis2_cs
+    description: shows which coord sys this axis is currently mapped to
+    rbv: $(prefix):Motor2CS_RBV
+
+- parts.ca.CALongPart:
+    name: axis3_cs
+    description: shows which coord sys this axis is currently mapped to
+    rbv: $(prefix):Motor3CS_RBV
+
+- parts.ca.CALongPart:
+    name: axis4_cs
+    description: shows which coord sys this axis is currently mapped to
+    rbv: $(prefix):Motor4CS_RBV
+
+- parts.ca.CALongPart:
+    name: axis5_cs
+    description: shows which coord sys this axis is currently mapped to
+    rbv: $(prefix):Motor5CS_RBV
+
+- parts.ca.CALongPart:
+    name: axis6_cs
+    description: shows which coord sys this axis is currently mapped to
+    rbv: $(prefix):Motor6CS_RBV
+
+- parts.ca.CALongPart:
+    name: axis7_cs
+    description: shows which coord sys this axis is currently mapped to
+    rbv: $(prefix):Motor7CS_RBV
+
+- parts.ca.CALongPart:
+    name: axis8_cs
+    description: shows which coord sys this axis is currently mapped to
+    rbv: $(prefix):Motor8CS_RBV
+
