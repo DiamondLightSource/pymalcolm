@@ -11,6 +11,7 @@ from mock import MagicMock
 #module imports
 from malcolm.compat import queue
 from malcolm.core.task import Task
+from malcolm.core.spawnable import Spawnable
 from malcolm.core.response import Error, Return, Update, Delta
 from malcolm.core.request import Request
 from malcolm.core.methodmeta import MethodMeta
@@ -133,7 +134,7 @@ class TestTask(unittest.TestCase):
 
         t._futures = {0: f0, 1: f1, 2: f2}
         t.q.put(resp1)
-        t.q.put(Task.TASK_STOP)
+        t.q.put(Spawnable.STOP)
         self.assertEqual(f1.result(), 'testVal')
 
     def test_wait_all_missing_futures(self):
@@ -142,7 +143,7 @@ class TestTask(unittest.TestCase):
         f1 = Future(t)
         resp10 = Return(10, None, None)
         t.q.put(resp10)
-        t.q.put(Task.TASK_STOP)
+        t.q.put(Spawnable.STOP)
         self.assertRaises(RuntimeWarning, t.wait_all, f1, 0)
 
         # same future twice
@@ -150,7 +151,7 @@ class TestTask(unittest.TestCase):
         t._futures = {1: f2}
         resp1 = Return(1, None, None)
         t.q.put(resp1)
-        t.q.put(Task.TASK_STOP)
+        t.q.put(Spawnable.STOP)
         t.wait_all(f2,0)
         t.wait_all(f2,0)
 
@@ -240,6 +241,23 @@ class TestTask(unittest.TestCase):
 
         # this will abort the task because f[0] never gets filled
         self.assertRaises(RuntimeWarning, f[0].result)
+
+    def test_clear_spawn_functions(self):
+        t = Task("testTask", self.proc)
+        f, sf = MagicMock(), MagicMock()
+        t.add_spawn_function(f, sf)
+        self.assertEquals([(f, sf)], t._spawn_functions)
+        t.clear_spawn_functions()
+        self.assertEquals([], t._spawn_functions)
+
+    def test_clear_raises_if_running(self):
+        t = Task("testTask", self.proc)
+        f, sf = MagicMock(), MagicMock()
+        t.add_spawn_function(f, sf)
+        t.start()
+        self.assertRaises(AssertionError, t.clear_spawn_functions)
+        t.wait()
+        t.clear_spawn_functions()
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

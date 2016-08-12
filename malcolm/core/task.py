@@ -4,16 +4,15 @@ from malcolm.core.loggable import Loggable
 from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.request import Subscribe, Unsubscribe, Post, Put
 from malcolm.core.response import Error, Return, Update
+from malcolm.core.spawnable import Spawnable
 
 
-class Task(Loggable):
+class Task(Loggable, Spawnable):
     """Provides a mechanism for executing commands and setting or monitoring
         attributes on blocks. Note that queue handling is executed in the
         caller's thread (by calling wait_all). Hence this module is not
         thread safe"""
     # TODO: when Task object is destroyed  we need to cancel all subscriptions
-    # Sentinel object that when received stops the recv_loop
-    TASK_STOP = object()
 
     def __init__(self, name, process):
         self.set_logger_name(name)
@@ -177,10 +176,6 @@ class Task(Loggable):
         request.set_id(id_)
         self.process.q.put(request)
 
-    def stop(self):
-        """Puts an abort on the queue"""
-        self.q.put(Task.TASK_STOP)
-
     def wait_all(self, futures, timeout=None):
         """services all futures until the list 'futures' are all done
             then returns. Calls relevant subscription callbacks as they
@@ -200,7 +195,7 @@ class Task(Loggable):
             self.log_debug("wait_all awaiting response ...")
             response = self.q.get(True, timeout)
             self.log_debug("wait_all received response %s", response)
-            if response is Task.TASK_STOP:
+            if response is Spawnable.STOP:
                 raise RuntimeWarning("Task aborted")
             elif response.id in self._futures:
                 f = self._update_future(response)
@@ -250,3 +245,9 @@ class Task(Loggable):
             raise ValueError(
                 "Subscription received unexpected response: %s" % response)
         return ret_val
+
+    def clear_spawn_functions(self):
+        self._initialize()
+        if len(self._spawned) > 0:
+            raise AssertionError("Spawned functions are still running")
+        self._spawn_functions = []
