@@ -86,12 +86,12 @@ class TestWSServerComms(unittest.TestCase):
         json_mock.loads.return_value = message_dict
 
         request = MagicMock()
-        request.context = self.WS.server.request_callback.handlers[0][1][0].handler_class
+        request.context = self.WS.server.request_callback.handlers[0][1][1].handler_class
         deserialize_mock.return_value = request
 
         m = MagicMock()
         MWSH = MalcWebSocketHandler(m, m)
-        self.WS.server.request_callback.handlers[0][1][0].handler_class.on_message(
+        self.WS.server.request_callback.handlers[0][1][1].handler_class.on_message(
             MWSH, "TestMessage")
 
         json_mock.loads.assert_called_once_with("TestMessage",
@@ -115,6 +115,7 @@ class TestWSServerComms(unittest.TestCase):
         self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
 
         response_mock = MagicMock()
+        response_mock.context = MagicMock(spec=MalcWebSocketHandler)
         self.WS.send_to_client(response_mock)
 
         json_mock.dumps.assert_called_once_with(response_mock.to_dict())

@@ -4,11 +4,11 @@ import logging
 
 from tornado.websocket import WebSocketHandler
 from tornado.ioloop import IOLoop
-from tornado.web import Application
+from tornado.web import Application, RequestHandler, asynchronous
 from tornado.httpserver import HTTPServer
 
 from malcolm.core import ServerComms, deserialize_object, serialize_object, \
-    Request
+    Request, Get, Return, Error, Post
 
 
 class MalcWebSocketHandler(WebSocketHandler):  # pylint:disable=abstract-method
@@ -30,6 +30,25 @@ class MalcWebSocketHandler(WebSocketHandler):  # pylint:disable=abstract-method
         self.servercomms.on_request(request)
 
 
+class MalcBlockHandler(RequestHandler):
+
+    servercomms = None
+
+    @asynchronous
+    def get(self, endpoint_str):
+        endpoint = endpoint_str.split("/")
+        request = Get(self, None, endpoint)
+        self.servercomms.on_request(request)
+
+    # curl --data 'parameters={"name": "me"}' http://localhost:8888/blocks/hello/say_hello
+    @asynchronous
+    def post(self, endpoint_str):
+        endpoint = endpoint_str.split("/")
+        parameters = json.loads(self.get_body_argument("parameters"))
+        request = Post(self, None, endpoint, parameters)
+        self.servercomms.on_request(request)
+
+
 class WebsocketServerComms(ServerComms):
     """A class for communication between browser and server"""
 
@@ -40,8 +59,12 @@ class WebsocketServerComms(ServerComms):
         self.process = process
 
         MalcWebSocketHandler.servercomms = self
+        MalcBlockHandler.servercomms = self
 
-        application = Application([(r"/ws", MalcWebSocketHandler)])
+        application = Application([
+            (r"/blocks/(.*)", MalcBlockHandler),
+            (r"/ws", MalcWebSocketHandler)
+        ])
         self.server = HTTPServer(application)
         self.server.listen(port)
         self.loop = IOLoop.current()
@@ -53,10 +76,20 @@ class WebsocketServerComms(ServerComms):
         Args:
             response(Response): The message to pass to the client
         """
-
-        message = json.dumps(serialize_object(response))
-        self.log_debug("Sending to client %s", message)
-        response.context.write_message(message)
+        if isinstance(response.context, MalcWebSocketHandler):
+            message = json.dumps(serialize_object(response))
+            response.context.write_message(message)
+        else:
+            if isinstance(response, Return):
+                message = json.dumps(serialize_object(response.value))
+                response.context.finish(message + "\n")
+            else:
+                if isinstance(response, Error):
+                    message = response.message
+                else:
+                    message = "Unknown response %s" % type(response)
+                response.context.set_status(500, message)
+                response.context.write_error(500)
 
     def on_request(self, request):
         """

@@ -48,10 +48,14 @@ class TestBlockModel(unittest.TestCase):
         self.assertEqual(len(b_item.children), 6)
         m_item = b_item.children[5]
         self.assertEqual(m_item.endpoint, ('hello', 'say_hello'))
-        self.assertEqual(len(m_item.children), 1)
+        self.assertEqual(len(m_item.children), 2)
         n_item = m_item.children[0]
         self.assertEqual(n_item.endpoint,
                          ('hello', 'say_hello', 'takes', 'elements', 'name'))
+        self.assertEqual(n_item.children, [])
+        n_item = m_item.children[1]
+        self.assertEqual(n_item.endpoint,
+                         ('hello', 'say_hello', 'takes', 'elements', 'sleep'))
         self.assertEqual(n_item.children, [])
 
 if __name__ == "__main__":
