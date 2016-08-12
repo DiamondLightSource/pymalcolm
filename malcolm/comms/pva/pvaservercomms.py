@@ -1,10 +1,12 @@
 from collections import OrderedDict
+from threading import Event
 
 from malcolm.core.cache import Cache
 from malcolm.core.loggable import Loggable
 from malcolm.core.servercomms import ServerComms
 from malcolm.core.serializable import Serializable
-from malcolm.core.request import Request, Subscribe
+from malcolm.core.request import Post, Subscribe
+from malcolm.core.response import Return
 from pvaccess import *
 
 class PvaServerComms(ServerComms):
@@ -26,6 +28,8 @@ class PvaServerComms(ServerComms):
         self._endpoints = {}
         self._cb = None
 
+        self._rpcs = {}
+
         # Create the V4 PVA server object
         self.create_pva_server()
 
@@ -35,7 +39,11 @@ class PvaServerComms(ServerComms):
         self.process.q.put(request)
 
         # Add a thread for executing the V4 PVA server
-        #self.add_spawn_function(self.start_v4)
+        self.add_spawn_function(self.start_pva_server)
+
+    def _get_unique_id(self):
+        self._current_id += 1
+        return self._current_id
 
     def _update_block_list(self):
         old_blocks = self._blocklist.copy()
@@ -45,8 +53,7 @@ class PvaServerComms(ServerComms):
             else:
                 # New block, so create the new Pva endpoint
                 self.log_debug("Adding malcolm block to PVA list: %s", name)
-                self._current_id += 1
-                self._blocklist[name] = self._current_id
+                self._blocklist[name] = self._get_unique_id()
                 self._add_new_pva_channel(name)
 
         # Now loop over any remaining old blocks and remove their subscriptions
@@ -67,7 +74,12 @@ class PvaServerComms(ServerComms):
             response (Response): The message to pass to the client
         """
         # Update the cache
-        self._update_cache(response)
+        if isinstance(response, Return):
+            # Do something
+            self.log_debug("Response: %s", response)
+            self._rpcs[response["id"]].notify_reply(response)
+        else:
+            self._update_cache(response)
 
     def _add_new_pva_channel(self, name):
         """Create a new PVA endpoint for the block name
@@ -84,14 +96,19 @@ class PvaServerComms(ServerComms):
 
     def start_pva_server(self):
         self.log_debug("Starting PVA server")
-        self._server.listen(8)
+        #self._server.listen()
+        self._server.startListener()
 
     def stop_pva_server(self):
         self.log_debug("Executing stop PVA server")
         self._server.stop()
 
+    def register_rpc(self, id, rpc):
+        self.log_debug("Registering RPC object with ID %d", id)
+        self._rpcs[id] = rpc
+
     def cache_to_pvobject(self, name, paths=None):
-        #self.log_debug("Cache[%s]: %s", name, self._cache[name])
+        self.log_debug("Cache[%s]: %s", name, self._cache[name])
         # Test parsing the cache to create the PV structure
         block = self._cache[name]
         if not paths:
@@ -143,6 +160,7 @@ class PvaServerComms(ServerComms):
             if not typeid:
                 pv_object = PvObject(structure)
             else:
+
                 pv_object = PvObject(structure, typeid)
         except:
             self.log_debug("*** Exception ***")
@@ -169,10 +187,10 @@ class PvaEndpoint(Endpoint, Loggable):
         self._name = name
         self._pva_server = pva_server
         self._server = server
-        self.log_debug("Testing...")
+        self.log_debug("Registering PVA Endpoint for block %s", self._name)
         self.registerEndpointGet(self.get_callback)
+        self.registerEndpointRPC(self.rpc_callback)
         self._pva_server.registerEndpoint(self._name, self)
-        self.log_debug("Registered...")
 
     def get_callback(self, request):
         self.log_debug("Get callback called for: %s", self._name)
@@ -197,6 +215,15 @@ class PvaEndpoint(Endpoint, Loggable):
         pva_impl = PvaGetImplementation(pv_object)
         return pva_impl
 
+    def rpc_callback(self, request):
+        self.log_debug("Rpc callback called for %s", self._name)
+        self.log_debug("Request structure: %s", request)
+        #self.log_debug("Request structure: %s", request["method"])
+        rpc_id = self._server._get_unique_id()
+        self.log_debug("RPC ID: %d", rpc_id)
+        rpc = PvaRpcImplementation(rpc_id, self._server, self._name, request["method"])
+        self._server.register_rpc(rpc_id, rpc)
+        return rpc.execute
 
 class PvaGetImplementation:
     def __init__(self, structure):
@@ -209,4 +236,44 @@ class PvaGetImplementation:
         # Null operation, the structure already contains the values
         print 'get(self)'
         #self.pvStructure['attribute.value'] = 5
+
+class PvaRpcImplementation(Loggable):
+    def __init__(self, id, server, block, method):
+        self.set_logger_name("sc")
+        self._id = id
+        self._server = server
+        self._block = block
+        self._method = method
+        self._response = None
+        self._event = Event()
+
+    def wait_for_reply(self):
+        # wait on the reply event
+        self._event.wait()
+
+    def notify_reply(self, response):
+        self._response = response
+        self._event.set()
+
+    def execute(self, args):
+        self.log_debug("Execute %s method called on [%s] with: %s", self._method, self._block, args)
+        # We now need to create the Post message and execute it
+        endpoint = [self._block, self._method]
+        request = Post(None, self._server.q, endpoint, args.toDict())
+        request.set_id(self._id)
+        self._server.process.q.put(request)
+
+        # Now wait for the Post reply
+        self.log_debug("Waiting for reply")
+        self.wait_for_reply()
+        self.log_debug("Reply received")
+        response_dict = OrderedDict()
+        response_dict[self._block] = self._response.to_dict()
+        pv_object = self._server.dict_to_structure(response_dict)
+        self.log_debug("Pv Object structure created")
+        self.log_debug("%s", self._server.strip_type_id(response_dict))
+        pv_object.set(self._server.strip_type_id(response_dict))
+        self.log_debug("Pv Object value set")
+        #pv = PvObject({'greeting' : STRING})
+        return pv_object
 
