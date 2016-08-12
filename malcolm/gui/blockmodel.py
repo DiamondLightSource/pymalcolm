@@ -57,7 +57,7 @@ class BlockModel(QAbstractItemModel):
             self.handle_changes(response.changes)
         else:
             request = self.requests[response.id]
-            item = BlockItem.items[tuple(request.endpoint)]
+            item = request.context
             item.handle_response(response)
             index = self.get_index(item, 2)
             self.dataChanged.emit(index, index)

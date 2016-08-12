@@ -12,7 +12,10 @@ if __name__ == "__main__":
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..",
                                  "scanpointgenerator"))
 
-from PyQt4.Qt import QApplication
+import cothread
+
+cothread.iqt()
+cothread.input_hook._qapp.setQuitOnLastWindowClosed(False)
 
 from malcolm.core import SyncFactory, Process
 from malcolm.controllers import ClientController
@@ -26,6 +29,7 @@ class IMalcolm(object):
         self.client_comms = []
         self.server_comms = []
         self.sync_factory = SyncFactory("Sync")
+        self.guis = {}
         self.process = Process("Process", self.sync_factory)
         if yaml:
             with open(yaml) as f:
@@ -65,12 +69,12 @@ class IMalcolm(object):
         controller = ClientController(block_name, self.process)
         return controller.block
 
-    def gui(self, block_name):
-        if not hasattr(self, "app"):
-            self.app = QApplication(sys.argv)
-        gui = BlockGui(self.process, block_name)
-        self.app.exec_()
-        return gui
+    def gui(self, block):
+        if block in self.guis:
+            self.guis[block].show()
+        else:
+            self.guis[block] = BlockGui(self.process, block)
+        return self.guis[block]
 
 
 def make_imalcolm():
