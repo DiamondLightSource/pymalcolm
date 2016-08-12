@@ -95,6 +95,8 @@ class Controller(Loggable):
                 # Make a copy otherwise all instances will own the same one
                 child = MethodMeta.from_dict(child.to_dict())
                 self.register_method_writeable(child, states)
+            elif isinstance(child, Attribute):
+                child.meta.set_writeable(writeable_func is not None)
             children[name] = child
             if writeable_func:
                 writeable_functions[name] = functools.partial(

@@ -36,7 +36,11 @@ class CAPart(Part):
                 params.rbv = params.pv + params.rbv_suff
         # The attribute we will be publishing
         self.attr = Attribute(self.create_meta(params.description))
-        yield params.name, self.attr, self.caput
+        if self.params.pv:
+            writeable_func = self.caput
+        else:
+            writeable_func = None
+        yield params.name, self.attr, writeable_func
 
     def create_meta(self, description):
         raise NotImplementedError
@@ -52,7 +56,6 @@ class CAPart(Part):
         pvs = [self.params.rbv]
         if self.params.pv:
             pvs.append(self.params.pv)
-            self.attr.meta.set_writeable(True)
         ca_values = cothread.CallbackResult(
             catools.caget, pvs,
             format=self.ca_format, datatype=self.get_datatype())

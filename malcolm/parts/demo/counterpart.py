@@ -12,8 +12,8 @@ class CounterPart(Part):
         self.counter = Attribute(NumberMeta("uint32", "A counter"), 0)
         yield ("counter", self.counter, self.counter.set_value)
 
-    @DefaultController.Resetting
-    def do_reset(self):
+    @method_takes()
+    def zero(self):
         self.counter.set_value(0)
 
     @method_takes()

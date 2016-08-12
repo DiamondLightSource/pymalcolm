@@ -29,7 +29,7 @@ class TestCounterPart(unittest.TestCase):
 
     def test_reset_sets_zero(self):
         self.c.counter.set_endpoint_data("value", 1234, notify=False)
-        self.c.do_reset()
+        self.c.zero()
         self.assertEquals(0, self.c.counter.value)
 
 

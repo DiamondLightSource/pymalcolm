@@ -3,3 +3,6 @@
 
 - assemblies.demo.hello:
     name: hello2
+
+- assemblies.demo.counter:
+    name: counter
