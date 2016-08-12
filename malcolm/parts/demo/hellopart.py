@@ -1,10 +1,15 @@
+import time
+
 from malcolm.core import Part, method_takes, method_returns, REQUIRED
-from malcolm.core.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta, NumberMeta
 
 
 @method_takes()
 class HelloPart(Part):
-    @method_takes("name", StringMeta(description="a name"), REQUIRED)
+    @method_takes(
+        "name", StringMeta("a name"), REQUIRED,
+        "sleep", NumberMeta("float64", "Time to wait before returning"), 0,
+    )
     @method_returns("greeting", StringMeta(description="a greeting"), REQUIRED)
     def say_hello(self, parameters, return_map):
         """Says Hello to name
@@ -18,4 +23,5 @@ class HelloPart(Part):
         """
 
         return_map.greeting = "Hello %s" % parameters.name
+        time.sleep(parameters.sleep)
         return return_map

@@ -15,7 +15,7 @@ from mock import MagicMock, patch, call
 # module imports
 from malcolm.controllers import ClientController, DefaultController
 from malcolm.core import Attribute
-from malcolm.core.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta, NumberMeta
 from malcolm.compat import queue
 from malcolm.parts.demo import HelloPart
 
@@ -62,11 +62,12 @@ class TestClientController(unittest.TestCase):
         self.assertEqual(list(self.b), [
             'meta', 'state', 'status', 'busy', 'disable', 'reset', 'say_hello'])
         m = self.b["say_hello"]
-        self.assertEqual(list(m.takes.elements), ["name"])
+        self.assertEqual(list(m.takes.elements), ["name", "sleep"])
         self.assertEqual(type(m.takes.elements["name"]), StringMeta)
+        self.assertEqual(type(m.takes.elements["sleep"]), NumberMeta)
         self.assertEqual(list(m.returns.elements), ["greeting"])
         self.assertEqual(type(m.returns.elements["greeting"]), StringMeta)
-        self.assertEqual(m.defaults, {})
+        self.assertEqual(m.defaults, dict(sleep=0))
 
     def test_call_method(self):
         self.p.create_queue.return_value = queue.Queue()
