@@ -194,3 +194,42 @@ class Controller(Loggable):
             is_writeable = state in states
             writeable_dict[method] = is_writeable
 
+    def create_part_tasks(self):
+        self.part_tasks = {}
+        for part_name in self.parts:
+            self.part_tasks[part_name] = Task(
+                "Task(%s)" % part_name, self.process)
+
+    def run_hook(self, hook, parts):
+        names = [n for n in dir(self) if getattr(self, n) is Hook]
+        assert len(names) > 0, \
+            "Hook is not in controller"
+        assert len(names) == 1, \
+            "Hook appears in controller multiple times as %s" % names
+
+        tasks = []
+        active_tasks = []
+        for part_name, part in self.parts.items():
+            function_name, part_hook, function = get_decorated_functions(part)
+            if part_hook is not hook:
+                continue
+            task = self.tasks[part_name]
+            task.clear_spawn_functions()
+            task.add_spawn_function(
+                function, task.make_default_stop_func(task.q))
+            task.start()
+            active_tasks.append(task)
+            tasks.append((task, part_name))
+
+        responses = {}
+        for task, part_name in tasks:
+            response = task.q.get()
+            active_tasks.remove(task)
+            if isinstance(response, Exception):
+                for task in active_tasks:
+                    task.stop()
+                for task in active_tasks:
+                    task.wait()
+                raise response
+            responses[part_name] = response
+        return responses
