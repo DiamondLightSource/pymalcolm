@@ -11,12 +11,14 @@
 - parts.ca.CAActionPart:
     name: build_profile
     description: command to build the profile once times and positions are set
-    pv: $(prefix):Build
+    pv: $(prefix):Build.PROC
+    wait: False
 
 - parts.ca.CAActionPart:
     name: execute_profile
     description: execute the profile prepared with 'build' command
     pv: $(prefix):Execute.PROC
+    wait: False
 
 - parts.ca.CADoubleArrayPart:
     name: times

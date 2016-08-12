@@ -153,7 +153,7 @@ class BlockModel(QAbstractItemModel):
 
         # Get the item
         item = index.internalPointer()
-        if role in (Qt.DisplayRole, Qt.DecorationRole):
+        if role in (Qt.DisplayRole, Qt.DecorationRole, Qt.EditRole):
             if index.column() == 0:
                 return item.get_label()
             elif index.column() == 1:

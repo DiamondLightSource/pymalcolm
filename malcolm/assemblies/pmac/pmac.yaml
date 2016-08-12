@@ -2,11 +2,6 @@
     name: prefix
     description: the root PV for the pmac motor (hardware) controller
 
-- parts.ca.CALongPart:
-    name: axis1_cs
-    description: shows which coord sys this axis is currently mapped to
-    rbv: $(prefix):Motor1CS_RBV
-
 - parts.ca.CAChoicePart:
     name: build_status
     description: status of last profile build
@@ -26,6 +21,11 @@
     name: scan_percentage
     description: percentage complete on current scan
     rbv: $(prefix):TSCAN_PERCENT_RBV
+
+- parts.ca.CALongPart:
+    name: axis1_cs
+    description: shows which coord sys this axis is currently mapped to
+    rbv: $(prefix):Motor1CS_RBV
 
 - parts.ca.CALongPart:
     name: axis2_cs
