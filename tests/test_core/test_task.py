@@ -3,6 +3,7 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+import setup_malcolm_paths
 
 import unittest
 from mock import MagicMock
@@ -239,3 +240,6 @@ class TestTask(unittest.TestCase):
 
         # this will abort the task because f[0] never gets filled
         self.assertRaises(RuntimeWarning, f[0].result)
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
