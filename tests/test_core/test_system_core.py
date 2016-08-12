@@ -39,7 +39,7 @@ class TestHelloDemoSystem(unittest.TestCase):
         b = DefaultController("hello", process, parts={"hello":part}).block
         process.start()
         # wait until block is Ready
-        task = Task("task", process)
+        task = Task("hello_ready_task", process)
         futures = task.when_matches(b["state"], "Ready")
         task.wait_all(futures, timeout=1)
         q = sync_factory.create_queue()
@@ -64,6 +64,10 @@ class TestCounterDemoSystem(unittest.TestCase):
         part = CounterPart(process, None)
         b = DefaultController("counting", process, parts={"counter":part}).block
         process.start()
+        # wait until block is Ready
+        task = Task("counter_ready_task", process)
+        futures = task.when_matches(b["state"], "Ready")
+        task.wait_all(futures, timeout=1)
         q = sync_factory.create_queue()
 
         sub = Subscribe(response_queue=q, context="ClientConnection",
@@ -75,10 +79,6 @@ class TestCounterDemoSystem(unittest.TestCase):
         attr = Attribute.from_dict(resp.value)
         self.assertEqual(0, attr.value)
 
-        # wait until block is Ready
-        task = Task("task", process)
-        futures = task.when_matches(b["state"], "Ready")
-        task.wait_all(futures, timeout=1)
         post = Post(response_queue=q, context="ClientConnection",
                     endpoint=["counting", "increment"])
         process.q.put(post)
