@@ -44,10 +44,9 @@ class TestCAPart(unittest.TestCase):
 
     def test_init(self):
         p = self.create_part()
-        self.assertEqual(p.name, "attrname")
-        self.assertEqual(p.pv, "pv")
-        self.assertEqual(p.rbv, "pv2")
-        self.assertEqual(p.meta, p.create_meta.return_value)
+        self.assertEqual(p.params.pv, "pv")
+        self.assertEqual(p.params.rbv, "pv2")
+        self.assertEqual(p.attr.meta, p.create_meta.return_value)
 
     def test_init_no_pv_no_rbv(self):
         # create test for no pv or rbv
@@ -57,14 +56,14 @@ class TestCAPart(unittest.TestCase):
     def test_init_no_rbv(self):
         params = dict(name="", description="", pv="pv", rbv="rbv")
         p = self.create_part(params)
-        self.assertEqual(p.rbv, "rbv")
-        self.assertEqual(p.pv, "pv")
+        self.assertEqual(p.params.rbv, "rbv")
+        self.assertEqual(p.params.pv, "pv")
 
     def test_init_no_rbv(self):
         params = dict(name="", description="", pv="pv")
         p = self.create_part(params)
-        self.assertEqual(p.rbv, "pv")
-        self.assertEqual(p.pv, "pv")
+        self.assertEqual(p.params.rbv, "pv")
+        self.assertEqual(p.params.pv, "pv")
 
     def test_reset(self):
         p = self.create_part()

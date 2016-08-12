@@ -1,10 +1,14 @@
-StateMachine
-------------
-
-Each Block has a StateMachine that determines the allowed transitions from
-any state and whether methods can be run in each state:
+State Machines
+--------------
 
 .. module:: malcolm.core.statemachine
 
 .. autoclass:: StateMachine
     :members:
+
+.. autoclass:: DefaultStateMachine
+    :members:
+
+.. autoclass:: RunnableDeviceStateMachine
+    :members:
+

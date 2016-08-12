@@ -7,6 +7,7 @@ class StateMachine(Loggable):
 
     RESETTING = "Resetting"
     DISABLED = "Disabled"
+    DISABLING = "Disabling"
     FAULT = "Fault"
 
     # Subclasses must override this
@@ -22,18 +23,18 @@ class StateMachine(Loggable):
         self.set_allowed(self.RESETTING, self.AFTER_RESETTING)
         self.set_busy(self.RESETTING)
         self.create_states()
-        self.possible_states = list(self.allowed_transitions)
-        if self.AFTER_RESETTING not in self.possible_states:
-            self.possible_states.append(self.AFTER_RESETTING)
+        custom_states = list(self.allowed_transitions) + [self.AFTER_RESETTING]
 
         # Set transitions for standard states
-        self.set_allowed(self.FAULT, [self.RESETTING, self.DISABLED])
-        self.set_allowed(self.DISABLED, self.RESETTING)
-        for state in self.possible_states:
+        for state in custom_states:
             self.set_allowed(state, self.FAULT)
-            self.set_allowed(state, self.DISABLED)
-        self.possible_states.append(self.FAULT)
-        self.possible_states.append(self.DISABLED)
+            self.set_allowed(state, self.DISABLING)
+        self.set_allowed(self.FAULT, [self.RESETTING, self.DISABLING])
+        self.set_allowed(self.DISABLING, [self.FAULT, self.DISABLED])
+        self.set_allowed(self.DISABLED, self.RESETTING)
+
+        # These are all the states we can possibly be in
+        self.possible_states = list(self.allowed_transitions)
 
     def create_states(self):
         raise NotImplementedError()

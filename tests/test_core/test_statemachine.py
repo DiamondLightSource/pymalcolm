@@ -29,10 +29,11 @@ class TestDefaultStateMachine(unittest.TestCase):
     def test_init(self):
         default_allowed_transitions = OrderedDict()
         default_allowed_transitions['Resetting'] = {'Ready', 'Fault',
-                                                    'Disabled'}
-        default_allowed_transitions['Fault'] = {"Resetting", "Disabled"}
+                                                    'Disabling'}
+        default_allowed_transitions['Ready'] = {"Fault", "Disabling"}
+        default_allowed_transitions['Fault'] = {"Resetting", "Disabling"}
+        default_allowed_transitions['Disabling'] = {"Disabled", "Fault"}
         default_allowed_transitions['Disabled'] = {"Resetting"}
-        default_allowed_transitions['Ready'] = {"Fault", "Disabled"}
 
         self.assertEqual("test_state_machine", self.SM.name)
         self.assertEqual(default_allowed_transitions,
@@ -50,10 +51,10 @@ class TestDefaultStateMachine(unittest.TestCase):
 
     def test_set_allowed(self):
         self.SM.set_allowed("Ready", "Prerun")
-        self.assertEqual({"Prerun", "Disabled", "Fault"},
+        self.assertEqual({"Prerun", "Disabling", "Fault"},
                          self.SM.allowed_transitions['Ready'])
         self.SM.set_allowed("Ready", "Resetting")
-        self.assertEqual({"Prerun", "Disabled", "Fault", "Resetting"},
+        self.assertEqual({"Prerun", "Disabling", "Fault", "Resetting"},
                          self.SM.allowed_transitions['Ready'])
 
     def test_set_busy(self):
@@ -95,32 +96,33 @@ class TestRunnableDeviceStateMachine(unittest.TestCase):
     def test_init(self):
         default_allowed_transitions = OrderedDict()
         default_allowed_transitions['Resetting'] = {"Idle", "Aborting",
-                                                    "Fault", "Disabled"}
+                                                    "Fault", "Disabling"}
         default_allowed_transitions['Idle'] = {"Configuring", "Aborting",
-                                               "Fault", "Disabled"}
+                                               "Fault", "Disabling"}
         default_allowed_transitions['Ready'] = {"PreRun", "Rewinding",
                                                 "Resetting", "Aborting",
-                                                "Fault", "Disabled"}
+                                                "Fault", "Disabling"}
         default_allowed_transitions['Configuring'] = {"Ready", "Aborting",
-                                                      "Fault", "Disabled"}
+                                                      "Fault", "Disabling"}
         default_allowed_transitions['PreRun'] = {"Running", "Rewinding",
                                                  "Aborting", "Fault",
-                                                 "Disabled"}
+                                                 "Disabling"}
         default_allowed_transitions['Running'] = {"PostRun", "Rewinding",
                                                   "Aborting", "Fault",
-                                                  "Disabled"}
+                                                  "Disabling"}
         default_allowed_transitions['PostRun'] = {"Idle", "Ready", "Aborting",
-                                                  "Fault", "Disabled"}
+                                                  "Fault", "Disabling"}
         default_allowed_transitions['Paused'] = {"Rewinding", "PreRun",
                                                  "Aborting", "Fault",
-                                                 "Disabled"}
+                                                 "Disabling"}
         default_allowed_transitions['Rewinding'] = {"Paused", "Aborting",
-                                                    "Fault", "Disabled"}
+                                                    "Fault", "Disabling"}
         default_allowed_transitions['Aborting'] = {"Aborted", "Fault",
-                                                   "Disabled"}
+                                                   "Disabling"}
         default_allowed_transitions['Aborted'] = {"Resetting", "Fault",
-                                                  "Disabled"}
-        default_allowed_transitions['Fault'] = {"Resetting", "Disabled"}
+                                                  "Disabling"}
+        default_allowed_transitions['Fault'] = {"Resetting", "Disabling"}
+        default_allowed_transitions['Disabling'] = {"Disabled", "Fault"}
         default_allowed_transitions['Disabled'] = {"Resetting"}
 
         self.assertEqual(default_allowed_transitions,

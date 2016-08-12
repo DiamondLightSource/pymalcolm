@@ -18,6 +18,12 @@ def capart_takes(*args):
 
 
 class CAPart(Part):
+    # Camonitor subscription
+    monitor = None
+    # Format for all caputs
+    ca_format = catools.FORMAT_CTRL
+    # Attribute instance
+    attr = None
 
     def create_attributes(self):
         params = self.params
@@ -28,20 +34,9 @@ class CAPart(Part):
                 params.rbv = params.pv
             else:
                 params.rbv = params.pv + params.rbv_suff
-        # Meta instance
-        self.name = params.name
-        self.meta = self.create_meta(params.description)
-        # Pv strings
-        self.pv = params.pv
-        self.rbv = params.rbv
-        # camonitor subscription
-        self.monitor = None
-        self.ca_format = catools.FORMAT_CTRL
-        # This will be our attr
-        self.attr = None
         # The attribute we will be publishing
-        self.attr = Attribute(self.meta)
-        yield self.name, self.attr, self.caput
+        self.attr = Attribute(self.create_meta(params.description))
+        yield params.name, self.attr, self.caput
 
     def create_meta(self, description):
         raise NotImplementedError
@@ -50,14 +45,14 @@ class CAPart(Part):
         raise NotImplementedError
 
     @DefaultController.Resetting
-    def connect_pvs(self, _):
+    def connect_pvs(self, _=None):
         # release old monitor
         self.close_monitor()
         # make the connection in cothread's thread, use caget for initial value
-        pvs = [self.rbv]
-        if self.pv:
-            pvs.append(self.pv)
-            self.meta.set_writeable(True)
+        pvs = [self.params.rbv]
+        if self.params.pv:
+            pvs.append(self.params.pv)
+            self.attr.meta.set_writeable(True)
         ca_values = cothread.CallbackResult(
             catools.caget, pvs,
             format=self.ca_format, datatype=self.get_datatype())
@@ -67,22 +62,24 @@ class CAPart(Part):
         self.update_value(ca_values[0])
         self.log_debug("ca values connected %s", ca_values)
         # now setup monitor on rbv
-        self.monitor = cothread.CallbackResult(catools.camonitor,
-            self.rbv, self.on_update, notify_disconnect=True,
-            format=self.ca_format, datatype=self.get_datatype())
+        self.monitor = cothread.CallbackResult(
+            catools.camonitor, self.params.rbv, self.on_update,
+            format=self.ca_format, datatype=self.get_datatype(),
+            notify_disconnect=True)
 
-    def close_monitor(self):
+    @DefaultController.Disabling
+    def close_monitor(self, _=None):
         if self.monitor is not None:
             cothread.CallbackResult(self.monitor.close)
             self.monitor = None
 
     def caput(self, value):
         cothread.CallbackResult(
-            catools.caput, self.pv, value, wait=True, timeout=None,
+            catools.caput, self.params.pv, value, wait=True, timeout=None,
             datatype=self.get_datatype())
         # now do a caget
         value = cothread.CallbackResult(
-            catools.caget, self.rbv,
+            catools.caget, self.params.rbv,
             format=self.ca_format, datatype=self.get_datatype())
         self.update_value(value)
 

@@ -85,7 +85,7 @@ class Controller(Loggable):
                 if child.only_in is None:
                     states = [
                         state for state in self.stateMachine.possible_states
-                        if state != sm.DISABLED]
+                        if state not in (sm.DISABLING, sm.DISABLED)]
                 else:
                     states = child.only_in
                     for state in states:
