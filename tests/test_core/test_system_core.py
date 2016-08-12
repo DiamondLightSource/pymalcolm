@@ -62,7 +62,7 @@ class TestCounterDemoSystem(unittest.TestCase):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
         part = CounterPart(process, None)
-        DefaultController("counting", process, parts={"counter":part})
+        b = DefaultController("counting", process, parts={"counter":part}).block
         process.start()
         q = sync_factory.create_queue()
 
@@ -75,6 +75,10 @@ class TestCounterDemoSystem(unittest.TestCase):
         attr = Attribute.from_dict(resp.value)
         self.assertEqual(0, attr.value)
 
+        # wait until block is Ready
+        task = Task("task", process)
+        futures = task.when_matches(b["state"], "Ready")
+        task.wait_all(futures, timeout=1)
         post = Post(response_queue=q, context="ClientConnection",
                     endpoint=["counting", "increment"])
         process.q.put(post)
