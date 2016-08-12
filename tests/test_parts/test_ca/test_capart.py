@@ -79,6 +79,8 @@ class TestCAPart(unittest.TestCase):
         self.assertEqual(p.monitor, catools.camonitor())
 
     def test_caput(self):
+        catools.caput.reset_mock()
+        catools.caget.reset_mock()
         catools.caget.return_value = caint(3)
         p = self.create_part()
         p.caput(32)
