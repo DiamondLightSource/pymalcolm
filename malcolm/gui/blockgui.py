@@ -17,4 +17,3 @@ class BlockGui(QTreeView):
         self.setItemDelegateForColumn(1, Delegate())
         self.setEditTriggers(self.AllEditTriggers)
         self.show()
-

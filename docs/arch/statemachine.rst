@@ -31,12 +31,14 @@ labelled transitions are triggered externally.
     BlockStates : Has one or more Rest states that Resetting can
     BlockStates : transition to. May contain block specific states
     BlockStates -down-> Fault : Error
-    BlockStates -down-> Disabled : Disable
+    BlockStates -down-> Disabling : Disable
+    Disabling --> Disabled
+    Disabling -left-> Fault: Error
 
     state Fault <<Fault>>
     Fault : Rest state
     Fault -up-> Resetting : Reset
-    Fault -left-> Disabled : Disable
+    Fault --> Disabled : Disable
 
     state Disabled <<Disabled>>
     Disabled : Rest state
@@ -185,21 +187,8 @@ The state diagram subset below shows the valid set of transitions:
         state Ready <<Rest>>
         Ready : End state
     }
-    NormalStates --> Aborting : Abort
-    NormalStates --> Fault : Error
-    NormalStates --> Disabled : Disable
 
-    Aborting -left-> Aborted
-    Aborting -right-> Fault : Error
-
-    state Aborted <<Abort>>
-    Aborted : End state
-
-    state Fault <<Fault>>
-    Fault : End state
-
-    state Disabled <<Disabled>>
-    Disabled : End state
+    !include docs/arch/stateMachineNotNormal.iuml
 
 run()
 ^^^^^
@@ -348,8 +337,11 @@ The state diagram subset below shows the valid set of transitions:
     NormalStates --> Aborting : Abort
 
     Aborting -left-> Aborted
-    Aborting -right-> Disabled : Disable
-    Aborting -right-> Fault : Error
+    Aborting -right-> Disabling : Disable
+    Aborting -down-> Fault : Error
+
+    Disabling -down-> Disabled
+    Disabling -left-> Fault : Error
 
     state Aborted <<Abort>>
     Aborted : End state
@@ -377,7 +369,13 @@ The state diagram subset below shows the valid set of transitions:
     BlockStates :
     BlockStates : Disable is allowed from
     BlockStates : any block state
-    BlockStates --> Disabled : Disable
+    BlockStates --> Disabling : Disable
+
+    Disabling -right-> Disabled
+    Disabling -left-> Fault : Error
+
+    state Fault <<Fault>>
+    Fault : End state
 
     state Disabled <<Disabled>>
     Disabled : End state
@@ -408,12 +406,15 @@ The state diagram subset below shows the valid set of transitions:
         Resetting -left-> Idle
     }
 
-    Resetting -down-> Aborting : Abort
-    Resetting -down-> Disabled : Disable
-    Resetting -down-> Fault : Fault
+    Disabling -down-> Disabled
+    Disabling --> Fault : Error
 
-    Aborting -left-> Aborted
-    Aborting -right-> Fault : Error
+    Resetting -down-> Aborting : Abort
+    Resetting -down-> Disabling : Disable
+    Resetting --> Fault : Error
+
+    Aborting --> Aborted
+    Aborting --> Fault : Error
 
     state Aborted <<Abort>>
     Aborted : Start state
@@ -458,14 +459,7 @@ The state diagram subset below shows the valid set of transitions:
         Reverting -down-> Idle
     }
 
-    BlockStates -down-> Fault : Error
-    BlockStates -down-> Disabled : Disable
-
-    state Fault <<Fault>>
-    Fault : End state
-
-    state Disabled <<Disabled>>
-    Disabled : End state
+    !include docs/arch/stateMachineNotBlock.iuml
 
 
 save()
@@ -494,14 +488,7 @@ The state diagram subset below shows the valid set of transitions:
         Saving -down-> Idle
     }
 
-    BlockStates -down-> Fault : Error
-    BlockStates -down-> Disabled : Disable
-
-    state Fault <<Fault>>
-    Fault : End state
-
-    state Disabled <<Disabled>>
-    Disabled : End state
+    !include docs/arch/stateMachineNotBlock.iuml
 
 revert()
 ^^^^^^^^
@@ -530,12 +517,7 @@ The state diagram subset below shows the valid set of transitions:
         Reverting -down-> Idle
     }
 
-    BlockStates -down-> Fault : Error
-    BlockStates -down-> Disabled : Disable
+    !include docs/arch/stateMachineNotBlock.iuml
 
-    state Fault <<Fault>>
-    Fault : End state
 
-    state Disabled <<Disabled>>
-    Disabled : End state
 

@@ -10,17 +10,25 @@ sm = DefaultStateMachine
 class DefaultController(Controller):
 
     Resetting = Hook()
+    Disabling = Hook()
 
     @method_takes()
     def disable(self):
-        self.transition(sm.DISABLED, "Disabled")
+        try:
+            self.transition(sm.DISABLING, "Disabling")
+            self.Disabling.run(self)
+            self.transition(sm.DISABLED, "Done Disabling")
+        except Exception as e:  # pylint:disable=broad-except
+            self.log_exception("Fault occurred while Disabling")
+            self.transition(sm.FAULT, str(e))
+            raise
 
     @method_only_in(sm.DISABLED, sm.FAULT)
     def reset(self):
         try:
             self.transition(sm.RESETTING, "Resetting")
             self.Resetting.run(self)
-            self.transition(sm.AFTER_RESETTING, "Done resetting")
+            self.transition(sm.AFTER_RESETTING, "Done Resetting")
         except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Fault occurred while Resetting")
             self.transition(sm.FAULT, str(e))

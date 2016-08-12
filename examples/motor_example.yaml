@@ -1,7 +1,22 @@
-- assemblies.motor.axis:
-    name: kphi
-    prefix: BL16I-MO-DIFF-01:SAMPLE:KPHI
+# this sample is intended for use with the test lab setup LAB-MO-IOC-02
+# in MAPPING-BUILDER module
 
-- assemblies.motor.axis:
-    name: kappa
-    prefix: BL16I-MO-DIFF-01:SAMPLE:KAPPA
+- assemblies.pmac.rawmotor:
+    name: stage_x
+    prefix: LAB-MO-MAP-02:STAGE:X
+
+- assemblies.pmac.rawmotor:
+    name: stage_y
+    prefix: LAB-MO-MAP-02:STAGE:Y
+
+- assemblies.pmac.rawmotor:
+    name: stage_z
+    prefix: LAB-MO-MAP-02:STAGE:Z
+
+- assemblies.pmac.pmac:
+    name: brick1
+    prefix: LAB-MO-MAP-02:STAGEGB1
+
+- assemblies.pmac.coordsys:
+    name: CS1
+    prefix: LAB-MO-MAP-02:STAGE:CS1

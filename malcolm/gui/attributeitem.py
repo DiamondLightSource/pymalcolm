@@ -1,4 +1,4 @@
-from malcolm.core import Error, Return
+from malcolm.core import Error, Return, Put
 from malcolm.gui.baseitem import BaseItem
 
 
@@ -7,13 +7,13 @@ class AttributeItem(BaseItem):
     def get_value(self):
         return str(self.ref.value)
 
-#    def get_writeable(self):
-        #return self.ref.meta.writeable
+    def get_writeable(self):
+        return self.ref.meta.writeable
 
-#    def set_value(self, value):
-#        self._state = self.RUNNING
-#        request = Request.Put(None, None, self.endpoint, value)
-#        return request
+    def set_value(self, value):
+        self._state = self.RUNNING
+        request = Put(self, None, self.endpoint + ("value",), str(value))
+        return request
 
     def handle_response(self, response):
         if isinstance(response, Error):

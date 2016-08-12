@@ -54,6 +54,7 @@ class TestDefaultController(unittest.TestCase):
         say_goodbye = self.b["say_goodbye"]
         expected = dict(
             Disabled={disable: False, reset: True, say_hello: False, say_goodbye: False},
+            Disabling={disable: False, reset: False, say_hello: False, say_goodbye: False},
             Fault={disable: True, reset: True, say_hello: True, say_goodbye: False},
             Ready={disable: True, reset: False, say_hello: True, say_goodbye: True},
             Resetting={disable: True, reset: False, say_hello: True, say_goodbye: False},
@@ -66,7 +67,7 @@ class TestDefaultController(unittest.TestCase):
         self.b["busy"].set_value.assert_has_calls([
             call(True, notify=False), call(False, notify=False)])
         self.b["status"].set_value.assert_has_calls([
-            call("Resetting", notify=False), call("Done resetting", notify=False)])
+            call("Resetting", notify=False), call("Done Resetting", notify=False)])
         self.b["state"].set_value.assert_has_calls([
             call("Resetting", notify=False), call("Ready", notify=False)])
         self.c.disable()

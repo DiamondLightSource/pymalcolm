@@ -1,6 +1,8 @@
 NormalStates --> Aborting : Abort
 NormalStates --> Fault : Error
-NormalStates --> Disabled : Disable
+NormalStates --> Disabling : Disable
+Disabling --> Disabled
+Disabling -left-> Fault : Error
 
 Aborting -left-> Aborted
 Aborting -right-> Fault : Error

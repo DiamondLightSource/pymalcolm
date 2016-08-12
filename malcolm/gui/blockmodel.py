@@ -57,7 +57,7 @@ class BlockModel(QAbstractItemModel):
             self.handle_changes(response.changes)
         else:
             request = self.requests[response.id]
-            item = BlockItem.items[tuple(request.endpoint)]
+            item = request.context
             item.handle_response(response)
             index = self.get_index(item, 2)
             self.dataChanged.emit(index, index)
@@ -153,7 +153,7 @@ class BlockModel(QAbstractItemModel):
 
         # Get the item
         item = index.internalPointer()
-        if role in (Qt.DisplayRole, Qt.DecorationRole):
+        if role in (Qt.DisplayRole, Qt.DecorationRole, Qt.EditRole):
             if index.column() == 0:
                 return item.get_label()
             elif index.column() == 1:
