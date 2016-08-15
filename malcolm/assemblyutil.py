@@ -29,6 +29,7 @@ def make_all_assemblies(globals_d, package_name):
     __all__ = prepare_globals_for_package(globals_d, package_name, finder)
     return __all__
 
+
 def make_assembly(text):
     """Make a collection function that will create a list of blocks
 
@@ -84,6 +85,7 @@ def make_assembly(text):
 
     return collection
 
+
 def split_into_sections(ds):
     """Split a dictionary into parameters, controllers, parts and assemblies
 
@@ -117,6 +119,7 @@ def split_into_sections(ds):
 
     return sections
 
+
 def with_takes_from(parameters, include_name):
     """Create an @takes decorator from parameters dict.
 
@@ -142,6 +145,7 @@ def with_takes_from(parameters, include_name):
         takes_arguments += call_with_map(malcolm.parameters, f_name, d)
     return method_takes(*takes_arguments)
 
+
 def substitute_params(d, params):
     """Substitute a dictionary in place with $(attr) macros in it with values
     from params
@@ -165,6 +169,7 @@ def substitute_params(d, params):
                     substitute_params(d2, params)
             elif isinstance(v, dict):
                 substitute_params(v, params)
+
 
 def make_block_instance(name, process, controllers_d, parts_d):
     """Make a block subclass from a series of parts.* and controllers.* dicts
@@ -197,12 +202,13 @@ def make_block_instance(name, process, controllers_d, parts_d):
             "Expected length 1, got %s" % (d,)
         cls_name, d = list(d.items())[0]
     else:
-        cls_name = "DefaultController"
+        cls_name = "builtin.DefaultController"
         d = None
     logging.debug("Creating %s %r", cls_name, name)
     controller = call_with_map(
         malcolm.controllers, cls_name, d, name, process, parts)
     return controller.block
+
 
 def call_with_map(ob, name, d, *args):
     """Keep recursing down from ob using dotted name, then call it with d, *args
@@ -224,9 +230,12 @@ def call_with_map(ob, name, d, *args):
     for n in split:
         ob = getattr(ob, n)
 
-    if d and "name" not in ob.MethodMeta.takes.elements and "name" in d:
-        d = dict(d)
-        d.pop("name")
-    params = ob.MethodMeta.prepare_input_map(d)
+    if d is None:
+        param_dict = {}
+    else:
+        # dictify yaml's intermediate dict like object
+        param_dict = dict(d)
+
+    params = ob.MethodMeta.prepare_input_map_optional_name(param_dict)
     args += (params,)
     return ob(*args)

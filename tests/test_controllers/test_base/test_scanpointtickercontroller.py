@@ -7,7 +7,7 @@ import setup_malcolm_paths
 from mock import MagicMock, patch, call
 
 from malcolm.core.statemachine import RunnableDeviceStateMachine
-from malcolm.controllers import ScanPointTickerController
+from malcolm.controllers.builtin import ScanPointTickerController
 from malcolm.core.block import Block
 
 
@@ -28,7 +28,7 @@ class TestScanPointTickerController(unittest.TestCase):
         self.assertEqual(params.axis_name, sptc.axis_name.value)
         self.assertEqual(params.exposure, sptc.exposure.value)
 
-    @patch("malcolm.controllers.scanpointtickercontroller.time")
+    @patch("malcolm.controllers.builtin.scanpointtickercontroller.time")
     def test_run(self, time_mock):
         points = [MagicMock(positions=dict(x=i)) for i in range(5)]
         params = MagicMock()

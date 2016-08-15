@@ -1,6 +1,7 @@
-# make the import path nice
-from malcolm.packageutil import import_methodmeta_decorated_classes
+# import subpackages
+from malcolm.packageutil import import_sub_packages
 
-__all__ = import_methodmeta_decorated_classes(globals(), __name__)
+__all__ = import_sub_packages(globals(), __name__)
 
-del import_methodmeta_decorated_classes
+del import_sub_packages
+

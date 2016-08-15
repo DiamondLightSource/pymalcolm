@@ -62,6 +62,11 @@ class MethodMeta(Meta):
         assert len(request.endpoint) == 2, "Can only Post to MethodMeta root"
         return self.call_post_function(post_function, request.parameters)
 
+    def prepare_input_map_optional_name(self, param_dict):
+        if "name" not in self.takes.elements and "name" in param_dict:
+            param_dict.pop("name")
+        return self.prepare_input_map(param_dict)
+
     def prepare_input_map(self, param_dict):
         params = Map(self.takes, self.defaults)
         if param_dict:
