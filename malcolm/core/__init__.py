@@ -3,6 +3,8 @@ from malcolm.core.attribute import Attribute  # noqa
 from malcolm.core.block import Block  # noqa
 from malcolm.core.controller import Controller  # noqa
 from malcolm.core.clientcomms import ClientComms  # noqa
+from malcolm.core.clientcontroller import ClientController  # noqa
+from malcolm.core.elementmap import ElementMap  # noqa
 from malcolm.core.hook import Hook  # noqa
 from malcolm.core.map import Map  # noqa
 from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, \
