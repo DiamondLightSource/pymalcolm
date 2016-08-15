@@ -124,6 +124,10 @@ print hello.say_hello("me")
 or
 
 self.gui(self.make_client("counter"))
+
+or
+
+self.process.process_block.blocks
 """
     try:
         import IPython

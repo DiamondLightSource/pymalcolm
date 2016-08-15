@@ -41,5 +41,13 @@ class TestController(unittest.TestCase):
         self.c.register_method_writeable(m, "Ready")
         self.assertEqual(self.c.methods_writeable['Ready'][m], True)
 
+    def test_run_hook(self):
+        # TODO: write this
+        pass
+
+    def test_run_hook_raises(self):
+        # TODO: write this
+        pass
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

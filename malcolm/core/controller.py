@@ -4,13 +4,14 @@ from collections import OrderedDict
 from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.blockmeta import BlockMeta
-from malcolm.core.hook import Hook
+from malcolm.core.hook import Hook, get_hook_decorated
 from malcolm.core.loggable import Loggable
-from malcolm.core.methodmeta import method_takes, method_only_in, MethodMeta, \
+from malcolm.core.methodmeta import method_takes, MethodMeta, \
     get_method_decorated
-from malcolm.core.statemachine import DefaultStateMachine
-from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
 from malcolm.core.request import Post
+from malcolm.core.statemachine import DefaultStateMachine
+from malcolm.core.task import Task
+from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
 
 
 sm = DefaultStateMachine
@@ -44,17 +45,37 @@ class Controller(Loggable):
         # dictionary of dictionaries
         # {state (str): {MethodMeta: writeable (bool)}
         self.methods_writeable = {}
-        if parts is None:
-            parts = {}
-        self.parts = parts
-        for part_name, part in self.parts.items():
-            part.set_logger_name("%s.%s" % (controller_name, part_name))
-
+        # dict {hook: name}
+        self.hook_names = self._find_hooks()
+        self.parts = self._setup_parts(parts, controller_name)
         self._set_block_children()
         self._do_transition(sm.DISABLED, "Disabled")
         self.block.set_parent(process, block_name)
         process.add_block(self.block)
         self.do_initial_reset()
+
+    def _find_hooks(self):
+        hook_names = {}
+        for n in dir(self):
+            attr = getattr(self, n)
+            if isinstance(attr, Hook):
+                assert attr not in hook_names, \
+                    "Hook %s already in controller as %s" % (
+                        n, hook_names[attr])
+                hook_names[attr] = n
+        return hook_names
+
+    def _setup_parts(self, parts, controller_name):
+        if parts is None:
+            parts = {}
+        for part_name, part in parts.items():
+            part.set_logger_name("%s.%s" % (controller_name, part_name))
+            # Check part hooks into one of our hooks
+            for func_name, part_hook, _ in get_hook_decorated(part):
+                assert part_hook in self.hook_names, \
+                    "Part %s func %s not hooked into %s" % (
+                        part, func_name, self)
+        return parts
 
     def do_initial_reset(self):
         request = Post(
@@ -194,3 +215,58 @@ class Controller(Loggable):
             is_writeable = state in states
             writeable_dict[method] = is_writeable
 
+    def create_part_tasks(self):
+        part_tasks = {}
+        for part_name, part in self.parts.items():
+            part_tasks[part] = Task("Task(%s)" % part_name, self.process)
+        return part_tasks
+
+    def run_hook(self, hook, part_tasks=None):
+        assert hook in self.hook_names, \
+            "Hook %s doesn't appear in controller hooks %s" % (
+                hook, self.hook_names)
+        self.log_debug("Running %s hook", self.hook_names[hook])
+
+        if part_tasks is None:
+            part_tasks = self.create_part_tasks()
+
+        # ask the hook to find the functions it should run
+        func_tasks = hook.find_func_tasks(part_tasks)
+
+        # now start them off
+        hook_queue = self.process.create_queue()
+
+        def _gather_task_return_value(func, task):
+            try:
+                result = func(task)
+            except Exception as e:  # pylint:disable=broad-except
+                hook_queue.put((func, e))
+            else:
+                hook_queue.put((func, result))
+
+        for func, task in func_tasks.items():
+            task.define_spawn_function(_gather_task_return_value, func, task)
+            task.start()
+
+        # Create the reverse dictionary so we know where to store the results
+        task_part_names = {}
+        for part_name, part in self.parts.items():
+            if part in part_tasks:
+                task_part_names[part_tasks[part]] = part_name
+
+        # Wait for them all to finish
+        return_dict = {}
+        while func_tasks:
+            func, ret = hook_queue.get()
+            task = func_tasks.pop(func)
+            part_name = task_part_names[task]
+            return_dict[part_name] = ret
+            if isinstance(ret, Exception):
+                # Stop all other tasks
+                for task in func_tasks.values():
+                    task.stop()
+                for task in func_tasks.values():
+                    task.wait()
+                raise
+
+        return return_dict

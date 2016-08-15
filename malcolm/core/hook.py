@@ -19,61 +19,21 @@ class Hook(object):
         func.Hook = self
         return func
 
-    def run(self, controller):
-        """
-        Run all relevant functions for this Hook
+    def find_func_tasks(self, part_tasks):
+        func_tasks = {}
 
-        Args:
-            controller(Controller): Controller who's parts' functions will be run
-        """
+        # Filter part tasks so that we only run the ones hooked to us
+        for part, task in part_tasks.items():
+            for func_name, part_hook, func in get_hook_decorated(part):
+                if part_hook is self:
+                    assert func not in func_tasks, \
+                        "Function %s is second defined for a hook" % func_name
+                    func_tasks[func] = task
 
-        names = [n for n in dir(controller) if getattr(controller, n) is self]
-        assert len(names) > 0, \
-            "Hook is not in controller"
-        assert len(names) == 1, \
-            "Hook appears in controller multiple times as %s" % names
+        return func_tasks
 
-        task_queue = controller.process.create_queue()
 
-        spawned_list = []
-        active_tasks = []
-        for pname, part in controller.parts.items():
-            members = [value[1] for value in
-                       inspect.getmembers(part, predicate=inspect.ismethod)]
-
-            for function in members:
-                if hasattr(function, "Hook") and function.Hook == self:
-                    task = Task("%s.%s" % (names[0], pname), controller.process)
-                    spawned_list.append(controller.process.spawn(
-                        self._run_func, task_queue, function, task))
-                    active_tasks.append(task)
-
-        while active_tasks:
-            task, response = task_queue.get()
-            active_tasks.remove(task)
-
-            if isinstance(response, Exception):
-                for task in active_tasks:
-                    task.stop()
-                for spawned in spawned_list:
-                    spawned.wait()
-
-                raise response
-
-    @staticmethod
-    def _run_func(q, func, task):
-        """
-        Run a function and place the response or exception back on the queue
-
-        Args:
-            q(Queue): Queue to place response/exception raised on
-            func: Function to run
-            task(Task): Task to run function with
-        """
-
-        try:
-            result = func(task)
-        except Exception as e:  # pylint:disable=broad-except
-            q.put((task, e))
-        else:
-            q.put((task, result))
+def get_hook_decorated(part):
+    for name, member in inspect.getmembers(part, inspect.ismethod):
+        if hasattr(member, "Hook"):
+            yield name, member.Hook, member

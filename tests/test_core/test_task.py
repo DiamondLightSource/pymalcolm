@@ -3,13 +3,15 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+import setup_malcolm_paths
 
 import unittest
-from mock import MagicMock
+from mock import MagicMock, ANY
 
 #module imports
 from malcolm.compat import queue
 from malcolm.core.task import Task
+from malcolm.core.spawnable import Spawnable
 from malcolm.core.response import Error, Return, Update, Delta
 from malcolm.core.request import Request
 from malcolm.core.methodmeta import MethodMeta
@@ -132,7 +134,7 @@ class TestTask(unittest.TestCase):
 
         t._futures = {0: f0, 1: f1, 2: f2}
         t.q.put(resp1)
-        t.q.put(Task.TASK_STOP)
+        t.q.put(Spawnable.STOP)
         self.assertEqual(f1.result(), 'testVal')
 
     def test_wait_all_missing_futures(self):
@@ -141,7 +143,7 @@ class TestTask(unittest.TestCase):
         f1 = Future(t)
         resp10 = Return(10, None, None)
         t.q.put(resp10)
-        t.q.put(Task.TASK_STOP)
+        t.q.put(Spawnable.STOP)
         self.assertRaises(RuntimeWarning, t.wait_all, f1, 0)
 
         # same future twice
@@ -149,7 +151,7 @@ class TestTask(unittest.TestCase):
         t._futures = {1: f2}
         resp1 = Return(1, None, None)
         t.q.put(resp1)
-        t.q.put(Task.TASK_STOP)
+        t.q.put(Spawnable.STOP)
         t.wait_all(f2,0)
         t.wait_all(f2,0)
 
@@ -196,7 +198,6 @@ class TestTask(unittest.TestCase):
         t._futures = {1: f1}
         self.assertRaises(ValueError, t.wait_all, f1, 0)
 
-
     def _bad_callback(self, value):
         self.bad_called_back = True
         raise TestWarning()
@@ -216,6 +217,7 @@ class TestTask(unittest.TestCase):
 
     def test_when_matches(self):
         t = Task("testTask", self.proc)
+
         f = t.when_matches(self.attr, "matchTest")
 
         # match (response goes to the subscription at id 1,
@@ -239,3 +241,25 @@ class TestTask(unittest.TestCase):
 
         # this will abort the task because f[0] never gets filled
         self.assertRaises(RuntimeWarning, f[0].result)
+
+    def test_start_default_raises(self):
+        t = Task("t", self.proc)
+        self.assertRaises(AssertionError, t.start)
+
+    def test_clear_spawn_functions(self):
+        t = Task("testTask", self.proc)
+        f = MagicMock()
+        t.define_spawn_function(None)
+        self.assertEquals([(None, (), ANY)], t._spawn_functions)
+
+    def test_clear_raises_if_running(self):
+        t = Task("testTask", self.proc)
+        f = MagicMock()
+        t.define_spawn_function(f)
+        t.start()
+        self.assertRaises(AssertionError, t.define_spawn_function, None)
+        t.wait()
+        t.define_spawn_function(None)
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

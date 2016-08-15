@@ -61,6 +61,8 @@ class TestDefaultController(unittest.TestCase):
         )
 
         self.assertEqual(expected, self.c.methods_writeable)
+        self.assertEqual(self.c.hook_names, {
+            self.c.Resetting: "Resetting", self.c.Disabling: "Disabling"})
 
     def test_transition(self):
         self.c.reset()
@@ -80,8 +82,7 @@ class TestDefaultController(unittest.TestCase):
             self.c.transition("Configuring", "Attempting to configure scan...")
 
     def test_reset_fault(self):
-        self.c.Resetting = MagicMock()
-        self.c.Resetting.run.side_effect = ValueError("boom")
+        self.c.run_hook = MagicMock(side_effect = ValueError("boom"))
         with self.assertRaises(ValueError):
             self.c.reset()
         self.b["busy"].set_value.assert_has_calls(

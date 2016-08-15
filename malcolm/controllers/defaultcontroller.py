@@ -16,7 +16,7 @@ class DefaultController(Controller):
     def disable(self):
         try:
             self.transition(sm.DISABLING, "Disabling")
-            self.Disabling.run(self)
+            self.run_hook(self.Disabling)
             self.transition(sm.DISABLED, "Done Disabling")
         except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Fault occurred while Disabling")
@@ -27,7 +27,7 @@ class DefaultController(Controller):
     def reset(self):
         try:
             self.transition(sm.RESETTING, "Resetting")
-            self.Resetting.run(self)
+            self.run_hook(self.Resetting)
             self.transition(sm.AFTER_RESETTING, "Done Resetting")
         except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Fault occurred while Resetting")
