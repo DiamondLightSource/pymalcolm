@@ -267,6 +267,6 @@ class Controller(Loggable):
                     task.stop()
                 for task in func_tasks.values():
                     task.wait()
-                raise
+                raise ret
 
         return return_dict
