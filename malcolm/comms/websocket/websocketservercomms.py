@@ -76,6 +76,7 @@ class WebsocketServerComms(ServerComms):
         Args:
             response(Response): The message to pass to the client
         """
+        # TODO: should this be self.loop.add_callback ?
         if isinstance(response.context, MalcWebSocketHandler):
             message = json.dumps(serialize_object(response))
             response.context.write_message(message)

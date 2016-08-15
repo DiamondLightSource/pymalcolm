@@ -20,7 +20,7 @@ import json
 from malcolm.controllers import DefaultController, ClientController
 from malcolm.core import Process, SyncFactory, Task
 from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
-from malcolm.parts.demo import HelloPart
+from malcolm.parts.demo import HelloPart, CounterPart
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):
@@ -73,13 +73,14 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def setUp(self):
         self.sf = SyncFactory("sync")
         self.process = Process("proc", self.sf)
-        part = HelloPart(self.process, None)
-        DefaultController("hello", self.process, parts={"hello":part})
+        DefaultController("hello", self.process, parts=dict(
+            hello=HelloPart(self.process, None)))
+        DefaultController("counter", self.process, parts=dict(
+            counter=CounterPart(self.process, None)))
         self.sc = WebsocketServerComms("sc", self.process, self.socket)
         self.process.start()
         self.sc.start()
         self.process2 = Process("proc2", self.sf)
-        self.block2 = ClientController('hello', self.process2).block
         self.cc = WebsocketClientComms("cc", self.process2,
                                        "ws://localhost:%s/ws" % self.socket)
         self.process2.start()
@@ -92,14 +93,24 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.cc.stop()
         self.cc.wait()
         self.process2.stop()
+        self.socket += 1
 
-    def test_server_with_malcolm_client(self):
+    def test_server_hello_with_malcolm_client(self):
+        block2 = ClientController('hello', self.process2).block
         task = Task("task", self.process2)
-        futures = task.when_matches(self.block2["state"], "Ready")
+        futures = task.when_matches(block2["state"], "Ready")
         task.wait_all(futures, timeout=1)
-        ret = self.block2.say_hello("me2")
+        ret = block2.say_hello("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
 
+    def test_server_counter_with_malcolm_client(self):
+        block2 = ClientController('counter', self.process2).block
+        task = Task("task", self.process2)
+        futures = task.when_matches(block2["state"], "Ready")
+        task.wait_all(futures, timeout=1)
+        self.assertEqual(block2.counter, 0)
+        block2.increment()
+        self.assertEqual(block2.counter, 1)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
