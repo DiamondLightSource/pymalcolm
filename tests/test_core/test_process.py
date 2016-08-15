@@ -8,7 +8,7 @@ from collections import OrderedDict
 # logging.basicConfig(level=logging.DEBUG)
 
 import unittest
-from mock import MagicMock, call
+from mock import MagicMock, ANY
 
 # module imports
 from malcolm.core.process import \
@@ -35,8 +35,7 @@ class TestProcess(unittest.TestCase):
         b = Block()
         b.set_parent(p, "name")
         p.add_block(b)
-        req = p.q.put.call_args[0][0]
-        self.assertEqual(req.block, b)
+        self.assertEqual(p._blocks["name"], b)
 
     def test_add_block_calls_handle(self):
         s = SyncFactory("sched")
@@ -54,7 +53,7 @@ class TestProcess(unittest.TestCase):
         p = Process("proc", s)
         b = MagicMock()
         p._handle_block_add(BlockAdd(b, "myblock"))
-        self.assertEqual(p._blocks, dict(myblock=b))
+        self.assertEqual(p._blocks, dict(myblock=b, proc=ANY))
         p.start()
         request = Post(MagicMock(), MagicMock(), ["myblock", "foo"])
         p.q.put(request)
@@ -124,7 +123,7 @@ class TestProcess(unittest.TestCase):
         self.assertEquals(p_block.path_relative_to(p), ["proc"])
         self.assertEquals(Attribute, type(p_block["blocks"]))
         self.assertEquals(StringArrayMeta, type(p_block["blocks"].meta))
-        self.assertEquals([], p_block.blocks)
+        self.assertEquals(["proc"], p_block.blocks)
         self.assertEquals("Blocks hosted by this Process",
                           p_block["blocks"].meta.description)
 

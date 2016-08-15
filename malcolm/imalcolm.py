@@ -18,7 +18,6 @@ cothread.iqt()
 cothread.input_hook._qapp.setQuitOnLastWindowClosed(False)
 
 from malcolm.core import SyncFactory, Process
-from malcolm.controllers import ClientController
 from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
 from malcolm.gui.blockgui import BlockGui
 from malcolm.assemblyutil import make_assembly
@@ -63,11 +62,7 @@ class IMalcolm(object):
         self.process.stop()
 
     def get_block(self, block_name):
-        return self.process._blocks[block_name]
-
-    def make_client(self, block_name):
-        controller = ClientController(block_name, self.process)
-        return controller.block
+        return self.process.get_block(block_name)
 
     def gui(self, block):
         if block in self.guis:
@@ -123,7 +118,7 @@ print hello.say_hello("me")
 
 or
 
-self.gui(self.make_client("counter"))
+self.gui(self.get_block("counter"))
 
 or
 
