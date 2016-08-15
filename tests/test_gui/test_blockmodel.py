@@ -10,8 +10,7 @@ from mock import MagicMock
 
 # module imports
 from malcolm.gui.blockmodel import BlockModel, BlockItem
-from malcolm.core.block import Block
-from malcolm.controllers import DefaultController
+from malcolm.controllers.builtin import DefaultController
 from malcolm.parts.demo import HelloPart
 
 

@@ -11,7 +11,7 @@ from mock import MagicMock
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.controllers import DefaultController
+from malcolm.controllers.builtin import DefaultController
 from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.process import Process
