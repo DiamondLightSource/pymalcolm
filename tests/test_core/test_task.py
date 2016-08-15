@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import MagicMock
+from mock import MagicMock, ANY
 
 #module imports
 from malcolm.compat import queue
@@ -198,7 +198,6 @@ class TestTask(unittest.TestCase):
         t._futures = {1: f1}
         self.assertRaises(ValueError, t.wait_all, f1, 0)
 
-
     def _bad_callback(self, value):
         self.bad_called_back = True
         raise TestWarning()
@@ -218,6 +217,7 @@ class TestTask(unittest.TestCase):
 
     def test_when_matches(self):
         t = Task("testTask", self.proc)
+
         f = t.when_matches(self.attr, "matchTest")
 
         # match (response goes to the subscription at id 1,
@@ -242,22 +242,24 @@ class TestTask(unittest.TestCase):
         # this will abort the task because f[0] never gets filled
         self.assertRaises(RuntimeWarning, f[0].result)
 
+    def test_start_default_raises(self):
+        t = Task("t", self.proc)
+        self.assertRaises(AssertionError, t.start)
+
     def test_clear_spawn_functions(self):
         t = Task("testTask", self.proc)
-        f, sf = MagicMock(), MagicMock()
-        t.add_spawn_function(f, sf)
-        self.assertEquals([(f, sf)], t._spawn_functions)
-        t.clear_spawn_functions()
-        self.assertEquals([], t._spawn_functions)
+        f = MagicMock()
+        t.define_spawn_function(None)
+        self.assertEquals([(None, (), ANY)], t._spawn_functions)
 
     def test_clear_raises_if_running(self):
         t = Task("testTask", self.proc)
-        f, sf = MagicMock(), MagicMock()
-        t.add_spawn_function(f, sf)
+        f = MagicMock()
+        t.define_spawn_function(f)
         t.start()
-        self.assertRaises(AssertionError, t.clear_spawn_functions)
+        self.assertRaises(AssertionError, t.define_spawn_function, None)
         t.wait()
-        t.clear_spawn_functions()
+        t.define_spawn_function(None)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

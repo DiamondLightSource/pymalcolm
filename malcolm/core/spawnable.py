@@ -25,14 +25,15 @@ class Spawnable(object):
         if process is None:
             process = self.process
         self._initialize()
-        for (func, _) in self._spawn_functions:
-            self._spawned.append(process.spawn(func))
+        for (func, args, _) in self._spawn_functions:
+            assert func is not None, "Spawned function is None"
+            self._spawned.append(process.spawn(func, *args))
 
     def stop(self):
         """Call registered stop functions"""
 
         self._initialize()
-        for (_, stop_func) in reversed(self._spawn_functions):
+        for (_, _, stop_func) in reversed(self._spawn_functions):
             if stop_func is not None:
                 stop_func()
 
@@ -42,7 +43,7 @@ class Spawnable(object):
             spawned.wait(timeout=timeout)
         self._spawned = []
 
-    def add_spawn_function(self, func, stop_func=None):
+    def add_spawn_function(self, func, stop_func=None, *args):
         """Register functions to be triggered by self.start and self.stop
 
         Args:
@@ -50,7 +51,7 @@ class Spawnable(object):
             stop_func: function to halt the spawned function (default None)
         """
         self._initialize()
-        self._spawn_functions.append((func, stop_func))
+        self._spawn_functions.append((func, args, stop_func))
 
     def make_default_stop_func(self, q):
         """Convenience function for creating a default stop function that puts

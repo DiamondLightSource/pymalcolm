@@ -22,6 +22,8 @@ class Task(Loggable, Spawnable):
         self._next_id = 0
         self._futures = {}  # dict {int id: Future}
         self._subscriptions = {}  # dict  {int id: (endpoint, func, args)}
+        # For testing, make it so start() will raise, but stop() works
+        self.define_spawn_function(None)
 
     def _save_future(self, future):
         """ stores the future with unique id"""
@@ -246,8 +248,10 @@ class Task(Loggable, Spawnable):
                 "Subscription received unexpected response: %s" % response)
         return ret_val
 
-    def clear_spawn_functions(self):
+    def define_spawn_function(self, func, *args):
         self._initialize()
         if len(self._spawned) > 0:
             raise AssertionError("Spawned functions are still running")
         self._spawn_functions = []
+        self.add_spawn_function(
+            func, self.make_default_stop_func(self.q), *args)

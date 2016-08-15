@@ -19,25 +19,21 @@ class Hook(object):
         func.Hook = self
         return func
 
-    @staticmethod
-    def _run_func(q, func, task):
-        """
-        Run a function and place the response or exception back on the queue
+    def find_func_tasks(self, part_tasks):
+        func_tasks = {}
 
-        Args:
-            q(Queue): Queue to place response/exception raised on
-            func: Function to run
-            task(Task): Task to run function with
-        """
+        # Filter part tasks so that we only run the ones hooked to us
+        for part, task in part_tasks.items():
+            for func_name, part_hook, func in get_hook_decorated(part):
+                if part_hook is self:
+                    assert func not in func_tasks, \
+                        "Function %s is second defined for a hook" % func_name
+                    func_tasks[func] = task
 
-        try:
-            result = func(task)
-        except Exception as e:  # pylint:disable=broad-except
-            q.put((task, e))
-        else:
-            q.put((task, result))
+        return func_tasks
 
-def get_decorated_functions(part):
+
+def get_hook_decorated(part):
     for name, member in inspect.getmembers(part, inspect.ismethod):
         if hasattr(member, "Hook"):
             yield name, member.Hook, member
