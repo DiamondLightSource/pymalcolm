@@ -3,6 +3,7 @@ from collections import OrderedDict, namedtuple
 from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.cache import Cache
+from malcolm.core.clientcontroller import ClientController
 from malcolm.core.loggable import Loggable
 from malcolm.core.request import Post, Put, Subscribe, Get
 from malcolm.core.vmetas import StringArrayMeta
@@ -197,7 +198,13 @@ class Process(Loggable):
         name = path[0]
         assert name not in self._blocks, \
             "There is already a block called %r" % name
-        self.q.put(BlockAdd(block=block, name=name))
+        request = BlockAdd(block=block, name=name)
+        if self._recv_spawned:
+            # Started, so call in Process thread
+            self.q.put(request)
+        else:
+            # Not started yet so we are safe to add in this thread
+            self._handle_block_add(request)
 
     def _handle_block_add(self, request):
         """Add a block to be hosted by this process"""
@@ -209,6 +216,13 @@ class Process(Loggable):
         self._handle_block_changes(change_request)
         # Regenerate list of blocks
         self.process_block["blocks"].set_value(list(self._blocks))
+
+    def get_block(self, block_name):
+        try:
+            return self._blocks[block_name]
+        except KeyError:
+            controller = ClientController(block_name, self)
+            return controller.block
 
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current

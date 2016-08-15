@@ -1,5 +1,9 @@
-from malcolm.core import Controller, Post, Subscribe, Return, MethodMeta, \
-    method_takes, Error, Attribute, Put, Map
+from malcolm.core.attribute import Attribute
+from malcolm.core.controller import Controller
+from malcolm.core.map import Map
+from malcolm.core.methodmeta import MethodMeta, method_takes
+from malcolm.core.request import Post, Subscribe, Return, Put
+from malcolm.core.response import Error
 
 
 @method_takes()
