@@ -9,6 +9,7 @@ from malcolm.core.request import Error, Post, Subscribe
 from malcolm.core.response import Return
 from pvaccess import *
 
+
 class PvaServerComms(ServerComms):
     """A class for communication between pva client and server"""
     CACHE_UPDATE = 0
@@ -78,7 +79,6 @@ class PvaServerComms(ServerComms):
         Args:
             response (Response): The message to pass to the client
         """
-        # Update the cache
         if isinstance(response, Return):
             # Notify RPC of return value
             self.log_debug("Response: %s", response)
@@ -88,6 +88,7 @@ class PvaServerComms(ServerComms):
             self.log_debug("Response: %s", response)
             self._rpcs[response["id"]].notify_reply(response)
         else:
+            # Update the cache
             self._update_cache(response)
 
     def _add_new_pva_channel(self, block):
@@ -139,20 +140,59 @@ class PvaServerComms(ServerComms):
                         self._dead_rpcs.remove(id)
 
     def cache_to_pvobject(self, name, paths=None):
-        self.log_debug("Cache[%s]: %s", name, self._cache[name])
+        #self.log_debug("Cache[%s]: %s", name, self._cache[name])
         # Test parsing the cache to create the PV structure
         block = self._cache[name]
         if not paths:
+            # No paths provided, so just return the whole block
             pv_object = self.dict_to_structure(block)
-            #self.log_debug("Structure: %s", structure)
             pv_object.set(self.strip_type_id(block))
         else:
+            #self.log_debug("Path route: %s", paths)
+            # List of path lists provided
+            # Create empty dict to store the structure
             path_dict = OrderedDict()
+            # Create empty dict to store the values
+            val_dict = OrderedDict()
+            # Loop over each path list
             for path in paths:
-                path_dict[path] = self.dict_to_structure(block[path])
-            pv_object = PvObject(path_dict)
-            for path in paths:
-                pv_object.set({path: self.strip_type_id(block[path])})
+                # Insert the block name as the first endpoint (needed for walking cache)
+                path.insert(0, name)
+                # set pointer to structure dict
+                d = path_dict
+                # set pointer to value dict
+                v = val_dict
+                # set pointer to cache
+                t = self._cache
+                # Loop over each node in the path (except for the last)
+                for node in path[:-1]:
+                    #self.log_debug("Node: %s", node)
+                    # Update the cache pointer
+                    t = t[node]
+                    # Check if the structure for this node has already been created
+                    if node not in d:
+                        # No structure, so create it
+                        d[node] = OrderedDict()
+                        # Collect and assign the correct type for this structure
+                        d[node]["typeid"] = t["typeid"]
+                    # Update the structure pointer
+                    d = d[node]
+                    # Check if the value structure for this node has already been created
+                    if node not in v:
+                        # No value structure so create it
+                        v[node] = OrderedDict()
+                    # Update the value pointer
+                    v = v[node]
+                # Walk the cache path and update the structure with the final element
+                d[path[-1]] = self._cache.walk_path(path)
+                # Walk the cache path and update the value with the final element
+                v[path[-1]] = self._cache.walk_path(path)
+                #self.log_debug("Walk path: %s", path)
+                #self.log_debug("Path dict: %s", path_dict)
+            # Create our PV object from the structure dict
+            pv_object = self.dict_to_structure(path_dict[name])
+            # Set the value of the PV object from the value dict
+            pv_object.set(self.strip_type_id(val_dict[name]))
 
         return pv_object
 
@@ -241,14 +281,31 @@ class PvaEndpoint(Endpoint, Loggable):
                 # Retrieve the entire block structure
                 pv_object = self._server.cache_to_pvobject(self._block)
             else:
-                paths = []
+                paths = self.dict_to_path(field_dict)
+                self.log_debug("Paths: %s", paths)
+                #paths = []
                 # Create the list of paths
-                for field in field_dict:
-                    paths.append(field)
+                #for field in field_dict:
+                #    paths.append(field)
                 pv_object = self._server.cache_to_pvobject(self._block, paths)
 
         pva_impl = PvaGetImplementation(self._name, pv_object)
         return pva_impl
+
+    def dict_to_path(self, dict_in):
+        items = []
+        for item in dict_in:
+            if not dict_in[item]:
+                items.append([item])
+            else:
+                temp_list = self.dict_to_path(dict_in[item])
+                for temp_item in temp_list:
+                    if isinstance(temp_item, list):
+                        temp_item.insert(0, item)
+                        items.append(temp_item)
+                    else:
+                        items.append([item, temp_item])
+        return items
 
     def rpc_callback(self, request):
         self.log_debug("Rpc callback called for %s", self._block)
