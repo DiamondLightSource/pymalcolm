@@ -42,12 +42,42 @@ class TestController(unittest.TestCase):
         self.assertEqual(self.c.methods_writeable['Ready'][m], True)
 
     def test_run_hook(self):
-        # TODO: write this
-        pass
+        hook = MagicMock()
+        func = MagicMock()
+        task = MagicMock()
+        part = MagicMock()
+        hook_tasks = {func:task}
+        part_tasks = {part:task}
+        hook_queue = self.c.process.create_queue.return_value
+        hook_queue.get.return_value = (func, func.return_value)
+        hook.find_func_tasks.return_value = {func:task}
+        self.c.test_hook = hook
+        self.c.hook_names = {hook:"test_hook"}
+        self.c.parts = {"test_part":part}
+        result = self.c.run_hook(hook, part_tasks)
+
+        # TODO: would like this assertion - difficult to test with mocks
+        #hook_queue.put.assert_called_once_with((func, func.return_value))
+        self.assertEquals({"test_part":func.return_value}, result)
 
     def test_run_hook_raises(self):
-        # TODO: write this
-        pass
+        hook = MagicMock()
+        func = MagicMock(side_effect=Exception("Test Exception"))
+        task = MagicMock()
+        part = MagicMock()
+        hook_tasks = {func:task}
+        part_tasks = {part:task}
+        hook_queue = self.c.process.create_queue.return_value
+        hook_queue.get.return_value = (func, func.side_effect)
+        hook.find_func_tasks.return_value = {func:task}
+        self.c.test_hook = hook
+        self.c.hook_names = {hook:"test_hook"}
+        self.c.parts = {"test_part":part}
+
+        with self.assertRaises(Exception) as cm:
+            self.c.run_hook(hook, part_tasks)
+        self.assertIs(func.side_effect, cm.exception)
+        #TODO: test hook_queue.put/get mechanism
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
