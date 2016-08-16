@@ -140,7 +140,7 @@ class PvaServerComms(ServerComms):
                         self._dead_rpcs.remove(id)
 
     def cache_to_pvobject(self, name, paths=None):
-        #self.log_debug("Cache[%s]: %s", name, self._cache[name])
+        self.log_debug("Cache[%s]: %s", name, self._cache[name])
         # Test parsing the cache to create the PV structure
         try:
             block = self._cache[name]
@@ -259,18 +259,18 @@ class PvaServerComms(ServerComms):
         return dict_out
 
 
-class PvaEndpoint(Endpoint, Loggable):
+class PvaEndpoint(Loggable):
     def __init__(self, name, block, pva_server, server):
-        super(PvaEndpoint, self).__init__()
         self.set_logger_name(name)
+        self._endpoint = Endpoint()
         self._name = name
         self._block = block
         self._pva_server = pva_server
         self._server = server
         self.log_debug("Registering PVA Endpoint for block %s", self._block)
-        self.registerEndpointGet(self.get_callback)
-        self.registerEndpointRPC(self.rpc_callback)
-        self._pva_server.registerEndpoint(self._block, self)
+        self._endpoint.registerEndpointGet(self.get_callback)
+        self._endpoint.registerEndpointRPC(self.rpc_callback)
+        self._pva_server.registerEndpoint(self._block, self._endpoint)
 
     def get_callback(self, request):
         self.log_debug("Get callback called for: %s", self._block)
@@ -290,10 +290,6 @@ class PvaEndpoint(Endpoint, Loggable):
                 else:
                     paths = self.dict_to_path(field_dict)
                     self.log_debug("Paths: %s", paths)
-                    #paths = []
-                    # Create the list of paths
-                    #for field in field_dict:
-                    #    paths.append(field)
                     pv_object = self._server.cache_to_pvobject(self._block, paths)
         except:
             # There has been a failure, return an error object
