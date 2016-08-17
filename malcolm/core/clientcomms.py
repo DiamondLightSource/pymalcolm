@@ -11,14 +11,15 @@ class ClientComms(Loggable, Spawnable):
     # The id that will be use for subscriptions to the blocks the server has
     SERVER_BLOCKS_ID=0
 
-    def __init__(self, name, process):
-        self.set_logger_name(name)
+    def __init__(self, logger_name, process):
+        self.set_logger_name(logger_name)
         self.process = process
         self.q = self.process.create_queue()
         self._current_id = 1
         self.requests = OrderedDict()
         self.add_spawn_function(self.send_loop,
                                 self.make_default_stop_func(self.q))
+        self.process.add_comms(self)
 
     def send_loop(self):
         """Service self.q, sending requests to server"""

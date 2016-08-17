@@ -5,20 +5,25 @@ from tornado.ioloop import IOLoop
 from tornado.websocket import websocket_connect
 
 from malcolm.core import ClientComms, Request, Subscribe, Response, \
-    deserialize_object, serialize_object
+    deserialize_object, serialize_object, method_takes
+from malcolm.core.vmetas import StringMeta, NumberMeta
 
 
+@method_takes(
+    "hostname", StringMeta("Hostname of malcolm websocket server"), "localhost",
+    "port", NumberMeta("int32", "Port number to run up under"), 8080)
 class WebsocketClientComms(ClientComms):
     """A class for a client to communicate with the server"""
 
-    def __init__(self, name, process, url):
+    def __init__(self, process, params):
         """
         Args:
             name (str): Name for logging
             process (Process): Process for primitive creation
             url (str): Url for websocket connection. E.g. ws://localhost:8888/ws
         """
-        super(WebsocketClientComms, self).__init__(name, process)
+        url = "ws://%(hostname)s:%(port)d/ws" % params
+        super(WebsocketClientComms, self).__init__(url, process)
         self.url = url
         # TODO: Are we starting one or more IOLoops here?
         self.loop = IOLoop.current()

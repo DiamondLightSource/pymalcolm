@@ -64,6 +64,7 @@ class MethodMeta(Meta):
 
     def prepare_input_map_optional_name(self, param_dict):
         if "name" not in self.takes.elements and "name" in param_dict:
+            param_dict = param_dict.copy()
             param_dict.pop("name")
         return self.prepare_input_map(param_dict)
 

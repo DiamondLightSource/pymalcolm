@@ -21,9 +21,8 @@ class TestWSServerComms(unittest.TestCase):
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
     def test_init(self, ioloop_mock, server_mock):
-        self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
+        self.WS = WebsocketServerComms(self.p, dict(port=1))
 
-        self.assertEqual("TestWebSocket", self.WS.name)
         self.assertEqual(self.p, self.WS.process)
         self.assertEqual(server_mock(), self.WS.server)
         self.assertEqual(ioloop_mock.current(), self.WS.loop)
@@ -31,7 +30,7 @@ class TestWSServerComms(unittest.TestCase):
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
     def test_listen_called(self, ioloop_mock, listen_mock):
-        self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
+        self.WS = WebsocketServerComms(self.p, dict(port=1))
 
         self.assertEqual(ioloop_mock.current(), self.WS.loop)
 
@@ -40,7 +39,7 @@ class TestWSServerComms(unittest.TestCase):
     def test_start(self, _, _2):
         self.p.spawn = MagicMock()
 
-        self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
+        self.WS = WebsocketServerComms(self.p, dict(port=1))
         self.WS.start()
 
         self.assertEqual([call(self.WS.send_loop), call(self.WS.loop.start)],
@@ -53,7 +52,7 @@ class TestWSServerComms(unittest.TestCase):
         ioloop_mock.current.return_value = loop_mock
         self.p.spawn = MagicMock()
 
-        self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
+        self.WS = WebsocketServerComms(self.p, dict(port=1))
         self.WS.start()
         self.WS.stop()
 
@@ -68,7 +67,7 @@ class TestWSServerComms(unittest.TestCase):
         timeout = MagicMock()
         self.p.spawn = MagicMock(side_effect=spawnable_mocks)
 
-        self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
+        self.WS = WebsocketServerComms(self.p, dict(port=1))
         self.WS.start()
         self.WS.wait(timeout)
 
@@ -80,7 +79,7 @@ class TestWSServerComms(unittest.TestCase):
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
     def test_MWSH_on_message(self, _, _1, json_mock, deserialize_mock):
-        self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
+        self.WS = WebsocketServerComms(self.p, dict(port=1))
 
         message_dict = dict(name="TestMessage")
         json_mock.loads.return_value = message_dict
@@ -102,7 +101,7 @@ class TestWSServerComms(unittest.TestCase):
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
     def test_on_request_with_process_name(self, _, _2):
-        self.WS = WebsocketServerComms("ws", self.p, 1)
+        self.WS = WebsocketServerComms(self.p, dict(port=1))
         request = MagicMock(fields=dict(endpoint="anything"), endpoint=[".", "blocks"])
         self.WS.on_request(request)
         self.p.q.put.assert_called_once_with(request)
@@ -112,7 +111,7 @@ class TestWSServerComms(unittest.TestCase):
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
     def test_send_to_client(self, _, _2, json_mock):
-        self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
+        self.WS = WebsocketServerComms(self.p, dict(port=1))
 
         response_mock = MagicMock()
         response_mock.context = MagicMock(spec=MalcWebSocketHandler)

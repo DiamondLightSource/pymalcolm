@@ -31,6 +31,7 @@ class Process(Loggable):
         self._recv_spawned = None
         self._other_spawned = []
         self._subscriptions = []
+        self.comms = []
         self._client_comms = OrderedDict()  # client comms -> list of blocks
         self._handle_functions = {
             Post: self._forward_block_request,
@@ -58,9 +59,16 @@ class Process(Loggable):
                 self.log_exception("Exception while handling %s", request)
                 request.respond_with_error(str(e))
 
+    def add_comms(self, comms):
+        assert not self._recv_spawned, \
+            "Can't add comms when process has been started"
+        self.comms.append(comms)
+
     def start(self):
         """Start the process going"""
         self._recv_spawned = self.sync_factory.spawn(self.recv_loop)
+        for comms in self.comms:
+            comms.start()
 
     def stop(self, timeout=None):
         """Stop the process and wait for it to finish
@@ -71,6 +79,8 @@ class Process(Loggable):
         """
         assert self._recv_spawned, "Process not started"
         self.q.put(PROCESS_STOP)
+        for comms in self.comms:
+            comms.stop()
         # Wait for recv_loop to complete first
         self._recv_spawned.wait(timeout=timeout)
         # Now wait for anything it spawned to complete

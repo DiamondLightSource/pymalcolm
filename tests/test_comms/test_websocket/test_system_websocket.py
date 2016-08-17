@@ -31,13 +31,10 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.process = Process("proc", self.sf)
         part = HelloPart(self.process, None)
         DefaultController("hello", self.process, parts={"hello":part})
-        self.sc = WebsocketServerComms("sc", self.process, self.socket)
+        WebsocketServerComms(self.process, dict(port=self.socket))
         self.process.start()
-        self.sc.start()
 
     def tearDown(self):
-        self.sc.stop()
-        self.sc.wait()
         self.process.stop()
 
     @gen.coroutine
@@ -77,21 +74,15 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
             hello=HelloPart(self.process, None)))
         DefaultController("counter", self.process, parts=dict(
             counter=CounterPart(self.process, None)))
-        self.sc = WebsocketServerComms("sc", self.process, self.socket)
+        WebsocketServerComms(self.process, dict(port=self.socket))
         self.process.start()
-        self.sc.start()
         self.process2 = Process("proc2", self.sf)
-        self.cc = WebsocketClientComms("cc", self.process2,
-                                       "ws://localhost:%s/ws" % self.socket)
+        WebsocketClientComms(self.process2,
+                             dict(hostname="localhost", port=self.socket))
         self.process2.start()
-        self.cc.start()
 
     def tearDown(self):
-        self.sc.stop()
-        self.sc.wait()
         self.process.stop()
-        self.cc.stop()
-        self.cc.wait()
         self.process2.stop()
         self.socket += 1
 

@@ -6,3 +6,6 @@
 
 - assemblies.demo.counter:
     name: counter
+
+- comms.websocket.WebsocketServerComms:
+    port: 8080
