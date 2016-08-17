@@ -394,6 +394,6 @@ class PvaRpcImplementation(Loggable):
             pv_object.set(self._server.strip_type_id(response_dict))
             self.log_debug("Pv Object value set: %s", pv_object)
             # Add this RPC to the purge list
-            self._server.register_dead_rpc(self._id)
+            #self._server.register_dead_rpc(self._id)
             return pv_object
 
