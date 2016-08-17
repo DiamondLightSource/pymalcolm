@@ -1,86 +1,18 @@
 #!/bin/env dls-python
-import argparse
-import logging
-import sys
-import os
 
-if __name__ == "__main__":
-    # Test
-    from pkg_resources import require
-    require("tornado", "numpy", "cothread", "ruamel.yaml")  # noqa
-    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-    sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..",
-                                 "scanpointgenerator"))
+def make_process():
+    import argparse
+    import logging
+    import cothread
 
-import cothread
+    cothread.iqt()
+    cothread.input_hook._qapp.setQuitOnLastWindowClosed(False)
 
-cothread.iqt()
-cothread.input_hook._qapp.setQuitOnLastWindowClosed(False)
-
-from malcolm.core import SyncFactory, Process
-from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
-from malcolm.gui.blockgui import BlockGui
-from malcolm.assemblyutil import make_assembly
-
-# TODO: merge this into Process
-class IMalcolm(object):
-    def __init__(self, yaml=None):
-        self.client_comms = []
-        self.server_comms = []
-        self.sync_factory = SyncFactory("Sync")
-        self.guis = {}
-        self.process = Process("Process", self.sync_factory)
-        if yaml:
-            with open(yaml) as f:
-                assembly = make_assembly(f.read())
-            assembly(self.process, {})
-
-    def add_client_comms(self, url):
-        assert url.startswith("ws://"), "Can only do websockets"
-        cc = WebsocketClientComms(url, self.process, url)
-        self.client_comms.append(cc)
-        return cc
-
-    def add_server_comms(self, url):
-        #assert url.startswith("ws://"), "Can only do websockets"
-        ss = WebsocketServerComms(url, self.process, url)
-        self.server_comms.append(ss)
-        return ss
-
-    def start(self):
-        self.process.start()
-        for sc in self.server_comms:
-            sc.start()
-        for cc in self.client_comms:
-            cc.start()
-
-    def stop(self):
-        for cc in self.client_comms:
-            cc.stop()
-        for sc in self.server_comms:
-            sc.stop()
-        self.process.stop()
-
-    def get_block(self, block_name):
-        return self.process.get_block(block_name)
-
-    def gui(self, block):
-        if block in self.guis:
-            self.guis[block].show()
-        else:
-            self.guis[block] = BlockGui(self.process, block)
-        return self.guis[block]
-
-
-def make_imalcolm():
     parser = argparse.ArgumentParser(
         description="Interactive shell for malcolm")
     parser.add_argument(
         '--client', '-c',
-        help="Add a client to given server, like ws://172.23.243.13:5600")
-    parser.add_argument(
-        '--server', '-s',
-        help="Start a server with the given string, like ws://0.0.0.0:5600")
+        help="Add a client to given server, like ws://localhost:8080 or pva")
     parser.add_argument(
         '--log', default="INFO",
         help="Lowest level of logs to see. One of: ERROR, WARNING, INFO, DEBUG "
@@ -98,19 +30,44 @@ def make_imalcolm():
         raise ValueError('Invalid log level: %s' % args.log)
     logging.basicConfig(level=numeric_level)
 
-    im = IMalcolm(args.yaml)
+    from malcolm.core import SyncFactory, Process
+    from malcolm.assemblyutil import make_assembly
+    from malcolm.gui.blockgui import BlockGui
+
+    proc = Process("Process", SyncFactory("Sync"))
+    guis = {}
+
+    if args.yaml:
+        with open(args.yaml) as f:
+            assembly = make_assembly(f.read())
+        assembly(proc, {})
+
+    def gui(block):
+        if block in guis:
+            guis[block].show()
+        else:
+            guis[block] = BlockGui(proc, block)
+        return guis[block]
+
     if args.client:
-        im.add_client_comms(args.client)
-    if args.server:
-        im.add_server_comms(args.server)
-    return im
+        if args.client.startswith("ws://"):
+            from malcolm.comms.websocket import WebsocketClientComms
+            hostname, port = args.client[5:].split(":")
+            WebsocketClientComms(proc, dict(hostname=hostname, port=int(port)))
+        else:
+            raise ValueError(
+                "Don't know how to create client to %s" % args.client)
+
+    return proc, gui
 
 
 def main():
-    self = make_imalcolm()
-    self.start()
+    self, gui = make_process()
 
     header = """Welcome to iMalcolm.
+
+self.process_block.blocks:
+    %s
 
 Try:
 hello = self.get_block("hello")
@@ -118,12 +75,14 @@ print hello.say_hello("me")
 
 or
 
-self.gui(self.get_block("counter"))
+gui(self.get_block("counter"))
 
 or
 
-self.process.process_block.blocks
-"""
+self.process_block.blocks
+""" % self.process_block.blocks
+
+    self.start()
     try:
         import IPython
     except ImportError:
@@ -133,5 +92,13 @@ self.process.process_block.blocks
         IPython.embed(header=header)
 
 if __name__ == "__main__":
-    # Entry point
+    # Test
+    import os
+    import sys
+    from pkg_resources import require
+
+    require("tornado", "numpy", "cothread", "ruamel.yaml")  # noqa
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..",
+                                 "scanpointgenerator"))
     main()

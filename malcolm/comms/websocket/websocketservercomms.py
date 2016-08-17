@@ -8,7 +8,8 @@ from tornado.web import Application, RequestHandler, asynchronous
 from tornado.httpserver import HTTPServer
 
 from malcolm.core import ServerComms, deserialize_object, serialize_object, \
-    Request, Get, Return, Error, Post
+    Request, Get, Return, Error, Post, method_takes
+from malcolm.core.vmetas import NumberMeta
 
 
 class MalcWebSocketHandler(WebSocketHandler):  # pylint:disable=abstract-method
@@ -49,13 +50,14 @@ class MalcBlockHandler(RequestHandler):
         self.servercomms.on_request(request)
 
 
+@method_takes("port", NumberMeta("int32", "Port number to run up under"), 8080)
 class WebsocketServerComms(ServerComms):
     """A class for communication between browser and server"""
 
-    def __init__(self, name, process, port):
-        super(WebsocketServerComms, self).__init__(name, process)
+    def __init__(self, process, params):
+        logger_name = "WebsocketServerComms(%(port)d)" % params
+        super(WebsocketServerComms, self).__init__(logger_name, process)
 
-        self.name = name
         self.process = process
 
         MalcWebSocketHandler.servercomms = self
@@ -66,7 +68,7 @@ class WebsocketServerComms(ServerComms):
             (r"/ws", MalcWebSocketHandler)
         ])
         self.server = HTTPServer(application)
-        self.server.listen(port)
+        self.server.listen(int(params["port"]))
         self.loop = IOLoop.current()
         self.add_spawn_function(self.loop.start, self.stop_recv_loop)
 
