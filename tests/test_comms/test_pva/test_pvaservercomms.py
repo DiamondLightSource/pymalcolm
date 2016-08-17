@@ -27,7 +27,13 @@ class PvTempObject(object):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
+            for key in self._dict:
+                if key in other._dict:
+                    if self._dict[key] != other._dict[key]:
+                        return False
+                else:
+                    return False
+            return self._type == other._type
         else:
             return False
 
@@ -95,13 +101,13 @@ class TestPVAServerComms(unittest.TestCase):
         self.PVA._update_block_list()
 
         calls = [call("block3"), call("block2"), call("block1")]
-        self.PVA._add_new_pva_channel.assert_has_calls(calls)
+        self.PVA._add_new_pva_channel.assert_has_calls(calls, any_order=True)
 
         self.PVA._add_new_pva_channel.reset_mock()
         self.PVA._cache = {"block1": 1, "block2": 2, "block3": 3, "block4": 4}
         self.PVA._update_block_list()
         calls = [call("block4")]
-        self.PVA._add_new_pva_channel.assert_has_calls(calls)
+        self.PVA._add_new_pva_channel.assert_has_calls(calls, any_order=True)
 
     def test_update_cache(self):
         self.PVA = PvaServerComms("TestPva", self.p)
@@ -111,7 +117,7 @@ class TestPVAServerComms(unittest.TestCase):
         self.PVA._update_cache(request)
 
         calls = [call("block1"), call("block2"), call("block3")]
-        self.PVA._add_new_pva_channel.assert_has_calls(calls)
+        self.PVA._add_new_pva_channel.assert_has_calls(calls, any_order=True)
 
         self.assertEqual(self.PVA._cache, {"block1": 1, "block2": 2, "block3": 3})
 
