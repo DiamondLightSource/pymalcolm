@@ -4,17 +4,19 @@ from threading import Event, Lock, RLock
 from malcolm.core.cache import Cache
 from malcolm.core.loggable import Loggable
 from malcolm.core.servercomms import ServerComms
-from malcolm.core.serializable import Serializable
+from malcolm.core.methodmeta import method_takes
 from malcolm.core.request import Error, Post, Subscribe
 from malcolm.core.response import Return
-from pvaccess import *
+import pvaccess
 
 
+@method_takes()
 class PvaServerComms(ServerComms):
     """A class for communication between pva client and server"""
     CACHE_UPDATE = 0
 
-    def __init__(self, name, process):
+    def __init__(self, process, _=None):
+        name = "PvaServerComms"
         super(PvaServerComms, self).__init__(name, process)
 
         self.name = name
@@ -102,7 +104,7 @@ class PvaServerComms(ServerComms):
 
     def create_pva_server(self):
         self.log_debug("Creating PVA server object")
-        self._server = PvaServer()
+        self._server = pvaccess.PvaServer()
 
     def start_pva_server(self):
         self.log_debug("Starting PVA server")
@@ -208,26 +210,26 @@ class PvaServerComms(ServerComms):
                 typeid = dict_in[item]
             else:
                 if isinstance(dict_in[item], str):
-                    structure[item] = STRING
+                    structure[item] = pvaccess.STRING
                 elif isinstance(dict_in[item], bool):
-                    structure[item] = BOOLEAN
+                    structure[item] = pvaccess.BOOLEAN
                 elif isinstance(dict_in[item], float):
-                    structure[item] = FLOAT
+                    structure[item] = pvaccess.FLOAT
                 elif isinstance(dict_in[item], int):
-                    structure[item] = INT
+                    structure[item] = pvaccess.INT
                 elif isinstance(dict_in[item], list):
                     #self.log_debug("List found: %s", item)
                     if not dict_in[item]:
-                        structure[item] = [STRING]
+                        structure[item] = [pvaccess.STRING]
                     else:
                         if isinstance(dict_in[item][0], str):
-                            structure[item] = [STRING]
+                            structure[item] = [pvaccess.STRING]
                         if isinstance(dict_in[item][0], bool):
-                            structure[item] = [BOOLEAN]
+                            structure[item] = [pvaccess.BOOLEAN]
                         if isinstance(dict_in[item][0], float):
-                            structure[item] = [FLOAT]
+                            structure[item] = [pvaccess.FLOAT]
                         if isinstance(dict_in[item][0], int):
-                            structure[item] = [INT]
+                            structure[item] = [pvaccess.INT]
                 elif isinstance(dict_in[item], OrderedDict):
                     dict_structure = self.dict_to_structure(dict_in[item])
                     if dict_structure:
@@ -237,10 +239,10 @@ class PvaServerComms(ServerComms):
                 return None
 
             if not typeid:
-                pv_object = PvObject(structure)
+                pv_object = pvaccess.PvObject(structure)
             else:
 
-                pv_object = PvObject(structure, typeid)
+                pv_object = pvaccess.PvObject(structure, typeid)
         except:
             raise
 
@@ -262,7 +264,7 @@ class PvaServerComms(ServerComms):
 class PvaEndpoint(Loggable):
     def __init__(self, name, block, pva_server, server):
         self.set_logger_name(name)
-        self._endpoint = Endpoint()
+        self._endpoint = pvaccess.Endpoint()
         self._name = name
         self._block = block
         self._pva_server = pva_server

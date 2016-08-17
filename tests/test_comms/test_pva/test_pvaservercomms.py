@@ -2,9 +2,6 @@ import unittest
 from mock import Mock, MagicMock, patch, call
 from collections import OrderedDict
 
-import sys
-sys.modules['pvaccess'] = MagicMock()
-
 from malcolm.core.response import Return, Delta
 from malcolm.core.request import Post
 import pvaccess
@@ -14,7 +11,6 @@ pvaccess.STRING = "STRING"
 pvaccess.BOOLEAN = "BOOLEAN"
 pvaccess.FLOAT = "FLOAT"
 pvaccess.INT = "INT"
-
 
 class PvTempObject(object):
     def __init__(self, dict_in, type):
@@ -41,6 +37,7 @@ class PvTempObject(object):
         return not self.__eq__(other)
 
 pvaccess.PvObject = PvTempObject
+
 from malcolm.comms.pva.pvaservercomms import PvaServerComms, PvaGetImplementation, PvaRpcImplementation, PvaEndpoint
 
 class TestPVAServerComms(unittest.TestCase):
