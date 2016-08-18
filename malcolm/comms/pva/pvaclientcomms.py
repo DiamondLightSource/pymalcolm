@@ -3,7 +3,7 @@ from collections import OrderedDict
 from malcolm.core import ClientComms, Request, Subscribe, Response, \
     deserialize_object, serialize_object
 from malcolm.core.request import Get, Return, Error
-from pvaccess import *
+import pvaccess
 
 
 class PvaClientComms(ClientComms):
@@ -29,7 +29,7 @@ class PvaClientComms(ClientComms):
             self.log_debug("Endpoint: %s", request["endpoint"][0])
             try:
                 # Connect to the channel
-                c = Channel(request["endpoint"][0])
+                c = pvaccess.Channel(request["endpoint"][0])
                 # Perform a get and record the response
                 response = c.get(request["endpoint"][1])
                 self.log_debug("Response: %s", response)
