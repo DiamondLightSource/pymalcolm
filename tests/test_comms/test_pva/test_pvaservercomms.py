@@ -77,13 +77,13 @@ class TestPVAServerComms(unittest.TestCase):
         self.pv.toDict.assert_called_once()
 
     def test_init(self):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
 
-        self.assertEqual("TestPva", self.PVA.name)
+        self.assertEqual("PvaServerComms", self.PVA.name)
         self.assertEqual(self.p, self.PVA.process)
 
     def test_unique_id(self):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
 
         self.assertEqual(self.PVA._get_unique_id(), 2)
         self.assertEqual(self.PVA._get_unique_id(), 3)
@@ -91,7 +91,7 @@ class TestPVAServerComms(unittest.TestCase):
         self.assertEqual(self.PVA._get_unique_id(), 5)
 
     def test_update_block_list(self):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
         self.PVA._add_new_pva_channel = MagicMock()
 
         self.PVA._cache = {"block1": 1, "block2": 2, "block3": 3}
@@ -107,7 +107,7 @@ class TestPVAServerComms(unittest.TestCase):
         self.PVA._add_new_pva_channel.assert_has_calls(calls, any_order=True)
 
     def test_update_cache(self):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
         self.PVA._add_new_pva_channel = MagicMock()
 
         request = Delta(id_=1, changes=[[["block1"], 1], [["block2"], 2], [["block3"], 3]])
@@ -120,24 +120,24 @@ class TestPVAServerComms(unittest.TestCase):
 
     @patch('malcolm.comms.pva.pvaservercomms.PvaEndpoint')
     def test_add_new_pva_channel(self, mock_endpoint):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
         self.PVA._add_new_pva_channel("test.block")
-        mock_endpoint.assert_called_with("TestPva", "test.block", self.PVA._server, self.PVA)
+        mock_endpoint.assert_called_with("PvaServerComms", "test.block", self.PVA._server, self.PVA)
 
     def test_register_rpc(self):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
         self.rpc = MagicMock()
         self.PVA.register_rpc(1, self.rpc)
         self.assertEqual(self.PVA._rpcs, {1: self.rpc})
 
     def test_register_dead_rpc(self):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
         self.PVA.register_dead_rpc(1)
         self.PVA.register_dead_rpc(2)
         self.assertEqual(self.PVA._dead_rpcs, [1, 2])
 
     def test_purge_rpcs(self):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
         self.rpc1 = MagicMock()
         self.rpc2 = MagicMock()
         self.PVA.register_rpc(1, self.rpc1)
@@ -150,7 +150,7 @@ class TestPVAServerComms(unittest.TestCase):
         self.assertEqual(self.PVA._dead_rpcs, [])
 
     def test_dict_to_stucture(self):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
         #val = self.PVA.dict_to_structure({"typeid": "type1", "level1": {"typeid": "type2", "level2": {"typeid": "type3", "item1": 1, "item2": "2", "item3": True}}})
         val = self.PVA.dict_to_structure(OrderedDict({"typeid": "type1", "val1": "1", "val2": 2, "val3": True}))
         test_dict = OrderedDict()
@@ -161,7 +161,7 @@ class TestPVAServerComms(unittest.TestCase):
         self.assertEquals(val, test_val)
 
     def test_strip_type_id(self):
-        self.PVA = PvaServerComms("TestPva", self.p)
+        self.PVA = PvaServerComms(self.p)
         #val = self.PVA.dict_to_structure({"typeid": "type1", "level1": {"typeid": "type2", "level2": {"typeid": "type3", "item1": 1, "item2": "2", "item3": True}}})
         val = self.PVA.strip_type_id(OrderedDict({"typeid": "type1", "val1": "1"}))
         self.assertEquals(val, OrderedDict({"val1": "1"}))
