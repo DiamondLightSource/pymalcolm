@@ -217,6 +217,8 @@ class PvaServerComms(ServerComms):
                     structure[item] = pvaccess.FLOAT
                 elif isinstance(dict_in[item], int):
                     structure[item] = pvaccess.INT
+                elif isinstance(dict_in[item], long):
+                    structure[item] = pvaccess.LONG
                 elif isinstance(dict_in[item], list):
                     #self.log_debug("List found: %s", item)
                     if not dict_in[item]:
@@ -230,6 +232,8 @@ class PvaServerComms(ServerComms):
                             structure[item] = [pvaccess.FLOAT]
                         if isinstance(dict_in[item][0], int):
                             structure[item] = [pvaccess.INT]
+                        if isinstance(dict_in[item][0], long):
+                            structure[item] = [pvaccess.LONG]
                 elif isinstance(dict_in[item], OrderedDict):
                     dict_structure = self.dict_to_structure(dict_in[item])
                     if dict_structure:
