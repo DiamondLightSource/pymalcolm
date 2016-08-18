@@ -2,7 +2,7 @@ import unittest
 from mock import Mock, MagicMock, patch, call
 from collections import OrderedDict
 
-from malcolm.core.response import Return, Delta
+from malcolm.core.response import Error, Return, Delta
 from malcolm.core.request import Post
 import pvaccess
 pvaccess.PvaServer = MagicMock()
@@ -11,6 +11,7 @@ pvaccess.STRING = "STRING"
 pvaccess.BOOLEAN = "BOOLEAN"
 pvaccess.FLOAT = "FLOAT"
 pvaccess.INT = "INT"
+pvaccess.LONG = "LONG"
 
 class PvTempObject(object):
     def __init__(self, dict_in, type):
@@ -36,6 +37,9 @@ class PvTempObject(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def set(self, dict_in):
+        self._dict = dict_in
+
 pvaccess.PvObject = PvTempObject
 
 from malcolm.comms.pva.pvaservercomms import PvaServerComms, PvaGetImplementation, PvaRpcImplementation, PvaEndpoint
@@ -48,15 +52,26 @@ class TestPVAServerComms(unittest.TestCase):
         pvaccess.PvObject = PvTempObject
         self.p = MagicMock()
 
-    def test_pva_endpoint(self):
+    @patch('malcolm.comms.pva.pvaservercomms.PvaRpcImplementation')
+    def test_pva_endpoint(self, mock_rpc):
         pva_server_mock = MagicMock()
         server_mock = MagicMock()
+        pvaccess.Endpoint.registerEndpointGet = MagicMock()
+        pvaccess.Endpoint.registerEndpointRPC = MagicMock()
         endpoint = PvaEndpoint("test.name", "test.block", pva_server_mock, server_mock)
-        calls = [call(endpoint.get_callback), call(endpoint.get_callback)]
-        #endpoint._add_new_pva_channel.assert_has_calls(calls)
+        request = MagicMock()
+        endpoint.get_callback(request)
+        server_mock.cache_to_pvobject.assert_has_calls([call("test.block")])
+        paths = endpoint.dict_to_path({'path1': {'path2': {'path3': {}, 'path4': {}}}})
+        self.assertEqual(paths, [['path1', 'path2', 'path3'], ['path1', 'path2', 'path4']])
+        request = MagicMock()
+        endpoint.rpc_callback(request)
+        server_mock._get_unique_id.assert_called_once()
+        server_mock.register_rpc.assert_called_once()
 
     def test_pva_get_implementation(self):
         pva = PvaGetImplementation("test.name", self.p)
+        pva.get()
         self.assertEqual(pva.getPVStructure(), self.p)
         self.assertEqual(pva._name, "test.name")
 
@@ -75,6 +90,14 @@ class TestPVAServerComms(unittest.TestCase):
         pva.execute(self.pv)
         self.p.process.q.put.assert_called_once()
         self.pv.toDict.assert_called_once()
+
+        pva._lock = MagicMock()
+        pva.check_lock()
+        pva._lock.acquire.assert_has_calls([call(False)])
+
+        pva._event = MagicMock()
+        pva.wait_for_reply()
+        pva._event.wait.assert_called_once()
 
     def test_init(self):
         self.PVA = PvaServerComms(self.p)
@@ -118,6 +141,41 @@ class TestPVAServerComms(unittest.TestCase):
 
         self.assertEqual(self.PVA._cache, {"block1": 1, "block2": 2, "block3": 3})
 
+    def test_send_to_client(self):
+        self.PVA = PvaServerComms(self.p)
+        self.PVA._update_cache = MagicMock()
+        rpc_mock1 = MagicMock()
+        rpc_mock2 = MagicMock()
+        self.PVA._rpcs[1] = rpc_mock1
+        self.PVA._rpcs[2] = rpc_mock2
+        response1 = Return(id_=1)
+        self.PVA.send_to_client(response1)
+        rpc_mock1.notify_reply.assert_has_calls([call(response1)])
+        response2 = Error(id_=2)
+        self.PVA.send_to_client(response2)
+        rpc_mock2.notify_reply.assert_has_calls([call(response2)])
+        response3 = Delta(id_=3)
+        self.PVA.send_to_client(response3)
+        self.PVA._update_cache.assert_has_calls([call(response3)])
+
+    def test_create_pva_server(self):
+        self.PVA = PvaServerComms(self.p)
+        pvaccess.PvaServer.reset_mock()
+        self.PVA.create_pva_server()
+        pvaccess.PvaServer.assert_called_once()
+
+    def test_start_pva_server(self):
+        self.PVA = PvaServerComms(self.p)
+        self.PVA._server.startListener = MagicMock()
+        self.PVA.start_pva_server()
+        self.PVA._server.startListener.assert_called_once()
+
+    def test_stop_pva_server(self):
+        self.PVA = PvaServerComms(self.p)
+        self.PVA._server.stop = MagicMock()
+        self.PVA.stop_pva_server()
+        self.PVA._server.stop.assert_called_once()
+
     @patch('malcolm.comms.pva.pvaservercomms.PvaEndpoint')
     def test_add_new_pva_channel(self, mock_endpoint):
         self.PVA = PvaServerComms(self.p)
@@ -149,14 +207,38 @@ class TestPVAServerComms(unittest.TestCase):
         self.assertEqual(self.PVA._rpcs, {2: self.rpc2})
         self.assertEqual(self.PVA._dead_rpcs, [])
 
+    def test_cache_to_pvobject(self):
+        self.PVA = PvaServerComms(self.p)
+        self.PVA._cache["test.block"] = OrderedDict({"p1": OrderedDict({"p2": "val2", "typeid": "type2"}), "typeid": "type1"})
+        object = self.PVA.cache_to_pvobject("test.block", [["p1", "p2"]])
+        self.assertEqual(object, PvTempObject(OrderedDict({"p1": OrderedDict({"p2": "val2"})}), "type1"))
+
     def test_dict_to_stucture(self):
         self.PVA = PvaServerComms(self.p)
         #val = self.PVA.dict_to_structure({"typeid": "type1", "level1": {"typeid": "type2", "level2": {"typeid": "type3", "item1": 1, "item2": "2", "item3": True}}})
-        val = self.PVA.dict_to_structure(OrderedDict({"typeid": "type1", "val1": "1", "val2": 2, "val3": True}))
+        val = self.PVA.dict_to_structure(OrderedDict({"typeid": "type1",
+                                                      "val1": "1",
+                                                      "val2": 2,
+                                                      "val3": True,
+                                                      "val4": 0L,
+                                                      "val5": 0.5,
+                                                      "val6": ['', ''],
+                                                      "val7": [5, 1],
+                                                      "val8": [True, False],
+                                                      "val9": [0L, 1L],
+                                                      "val10": [0.2, 0.3],
+                                                      }))
         test_dict = OrderedDict()
-        test_dict["val3"] = pvaccess.BOOLEAN
         test_dict["val1"] = pvaccess.STRING
         test_dict["val2"] = pvaccess.INT
+        test_dict["val3"] = pvaccess.BOOLEAN
+        test_dict["val4"] = pvaccess.LONG
+        test_dict["val5"] = pvaccess.FLOAT
+        test_dict["val6"] = [pvaccess.STRING]
+        test_dict["val7"] = [pvaccess.INT]
+        test_dict["val8"] = [pvaccess.BOOLEAN]
+        test_dict["val9"] = [pvaccess.LONG]
+        test_dict["val10"] = [pvaccess.FLOAT]
         test_val = pvaccess.PvObject(test_dict, "type1")
         self.assertEquals(val, test_val)
 
