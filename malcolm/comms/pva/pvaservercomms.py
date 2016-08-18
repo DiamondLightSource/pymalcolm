@@ -226,13 +226,13 @@ class PvaServerComms(ServerComms):
                     else:
                         if isinstance(dict_in[item][0], str):
                             structure[item] = [pvaccess.STRING]
-                        if isinstance(dict_in[item][0], bool):
+                        elif isinstance(dict_in[item][0], bool):
                             structure[item] = [pvaccess.BOOLEAN]
-                        if isinstance(dict_in[item][0], float):
+                        elif isinstance(dict_in[item][0], float):
                             structure[item] = [pvaccess.FLOAT]
-                        if isinstance(dict_in[item][0], int):
+                        elif isinstance(dict_in[item][0], int):
                             structure[item] = [pvaccess.INT]
-                        if isinstance(dict_in[item][0], long):
+                        elif isinstance(dict_in[item][0], long):
                             structure[item] = [pvaccess.LONG]
                 elif isinstance(dict_in[item], OrderedDict):
                     dict_structure = self.dict_to_structure(dict_in[item])
