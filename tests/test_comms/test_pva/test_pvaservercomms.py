@@ -220,12 +220,12 @@ class TestPVAServerComms(unittest.TestCase):
                                                       "val1": "1",
                                                       "val2": 2,
                                                       "val3": True,
-                                                      "val4": 0L,
+                                                      "val4": long(0),
                                                       "val5": 0.5,
                                                       "val6": ['', ''],
                                                       "val7": [5, 1],
                                                       "val8": [True, False],
-                                                      "val9": [0L, 1L],
+                                                      "val9": [long(0), long(1)],
                                                       "val10": [0.2, 0.3],
                                                       }))
         test_dict = OrderedDict()
