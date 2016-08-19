@@ -63,7 +63,7 @@ class TestPVAServerComms(unittest.TestCase):
         endpoint.get_callback(request)
         server_mock.cache_to_pvobject.assert_has_calls([call("test.block")])
         paths = endpoint.dict_to_path({'path1': {'path2': {'path3': {}, 'path4': {}}}})
-        self.assertEqual(paths, [['path1', 'path2', 'path3'], ['path1', 'path2', 'path4']])
+        self.assertEqual(sorted(paths), [['path1', 'path2', 'path3'], ['path1', 'path2', 'path4']])
         request = MagicMock()
         endpoint.rpc_callback(request)
         server_mock._get_unique_id.assert_called_once()

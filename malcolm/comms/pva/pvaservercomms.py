@@ -1,3 +1,5 @@
+import sys
+
 from collections import OrderedDict
 from threading import Event, Lock, RLock
 
@@ -8,6 +10,9 @@ from malcolm.core.methodmeta import method_takes
 from malcolm.core.request import Error, Post, Subscribe
 from malcolm.core.response import Return
 import pvaccess
+
+if (sys.version_info > (3, 0)):
+    long = int
 
 
 @method_takes()
