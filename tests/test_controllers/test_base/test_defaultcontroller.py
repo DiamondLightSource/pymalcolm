@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
@@ -12,7 +12,7 @@ from mock import MagicMock, call
 
 # module imports
 from malcolm.controllers.builtin import DefaultController
-from malcolm.core import method_only_in, method_takes
+from malcolm.core import method_only_in, method_takes, DefaultStateMachine
 
 
 class DummyController(DefaultController):
@@ -80,6 +80,18 @@ class TestDefaultController(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             self.c.transition("Configuring", "Attempting to configure scan...")
+
+    def test_disable_exception(self):
+        self.c.reset()
+        self.c.run_hook = MagicMock(side_effect=Exception("test exception"))
+        self.c.transition = MagicMock()
+        with self.assertRaises(Exception):
+            self.c.disable()
+        transition_calls = self.c.transition.call_args_list
+        expected_calls = [
+            call(DefaultStateMachine.DISABLING, "Disabling"),
+            call(DefaultStateMachine.FAULT, "test exception")]
+        self.assertEqual(expected_calls, transition_calls)
 
     def test_reset_fault(self):
         self.c.run_hook = MagicMock(side_effect = ValueError("boom"))
