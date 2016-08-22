@@ -30,7 +30,6 @@ class Attribute(Monitorable):
         self.set_endpoint_data("value", value, notify)
 
     def handle_request(self, request, put_function):
-        self.log_debug("Received request %s", request)
         assert isinstance(request, Put), "Expected Put, got %r" % (request,)
         assert len(request.endpoint) == 3 and request.endpoint[-1] == "value", \
             "Can only Put to Attribute value, not %s" % (request.endpoint,)

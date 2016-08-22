@@ -9,6 +9,7 @@ import unittest
 from mock import Mock, patch
 
 from malcolm.core.attribute import Attribute
+from malcolm.core.request import Put
 from malcolm.core.serializable import Serializable
 from malcolm.core.vmetas import StringMeta
 
@@ -16,14 +17,13 @@ from malcolm.core.vmetas import StringMeta
 class TestAttribute(unittest.TestCase):
 
     def setUp(self):
-        self.meta = StringMeta("something")
+        self.meta = StringMeta()
 
     def test_init(self):
         a = Attribute(self.meta)
         self.assertIs(self.meta, a.meta)
         self.assertIsNone(a.value)
         self.assertEquals("epics:nt/NTAttribute:1.0", a.typeid)
-
 
     def test_set_value(self):
         value = "test_value"
@@ -33,7 +33,12 @@ class TestAttribute(unittest.TestCase):
         self.assertEquals(a.value, value)
         a.report_changes.assert_called_once_with([['value'], value])
 
-
+    def test_handle_request(self):
+        a = Attribute(self.meta)
+        request = Put(endpoint=["1", "2", "value"], value=Mock())
+        put_function = Mock()
+        a.handle_request(request, put_function)
+        put_function.assert_called_once_with(self.meta, request.value)
 
 class TestSerialization(unittest.TestCase):
 
