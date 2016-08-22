@@ -33,6 +33,14 @@ class TestProcess(unittest.TestCase):
         c.apply_changes([["path"], 4])
         self.assertEqual(c["path"], 4)
 
+    def test_cache_update(self):
+        c = Cache()
+        c["path"] = 2
+        c.apply_changes([[], {123:"test"}])
+        self.assertEqual("test", c[123])
+        with self.assertRaises(KeyError):
+            c["path"]
+
     def test_non_string_path_errors(self):
         c = Cache()
         self.assertRaises(AssertionError, c.apply_changes, [[1], 3])
@@ -44,4 +52,4 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(walked, "end")
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(verbosity=2)
