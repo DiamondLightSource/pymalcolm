@@ -9,13 +9,17 @@ import pvaccess
 class PvaClientComms(ClientComms):
     """A class for a client to communicate with the server"""
 
-    def __init__(self, name, process):
+    def __init__(self, process, _=None):
         """
         Args:
             name (str): Name for logging
             process (Process): Process for primitive creation
         """
+        name = "PvaClientComms"
         super(PvaClientComms, self).__init__(name, process)
+
+        self.name = name
+        self.process = process
 
     def send_to_server(self, request):
         """Dispatch a request to the server
@@ -43,8 +47,8 @@ class PvaClientComms(ClientComms):
             self.send_to_caller(return_object)
 
 
-    def subscribe_server_blocks(self, _):
-        """Subscribe to process blocks"""
-        request = Subscribe(None, None, [".", "blocks", "value"])
-        request.set_id(self.SERVER_BLOCKS_ID)
-        self.loop.add_callback(self.send_to_server, request)
+#    def subscribe_server_blocks(self, _):
+#        """Subscribe to process blocks"""
+#        request = Subscribe(None, None, [".", "blocks", "value"])
+#        request.set_id(self.SERVER_BLOCKS_ID)
+#        self.loop.add_callback(self.send_to_server, request)
