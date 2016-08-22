@@ -30,8 +30,12 @@ def import_sub_packages(globals_d, package_name):
             # import it and add it to the list
             import_name = "%s.%s" % (package_name, fname)
             logging.debug("Importing %s", import_name)
-            module = importlib.import_module(import_name)
-            yield fname, module
+            try:
+                module = importlib.import_module(import_name)
+            except Exception:
+                logging.exception("Importing %s failed", import_name)
+            else:
+                yield fname, module
 
     __all__ = prepare_globals_for_package(globals_d, package_name, finder)
     return __all__
