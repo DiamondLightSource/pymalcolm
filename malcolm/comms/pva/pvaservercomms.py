@@ -1,4 +1,3 @@
-import sys
 from collections import OrderedDict
 from threading import Event, Lock, RLock
 

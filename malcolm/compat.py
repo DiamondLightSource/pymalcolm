@@ -14,7 +14,7 @@ except NameError:
 
 try:
     # python 2
-    long_ = long
+    long_ = long  # pylint:disable=invalid-name
 except NameError:
     # python 3
-    long_ = int
+    long_ = int  # pylint:disable=invalid-name
