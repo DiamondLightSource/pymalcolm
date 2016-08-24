@@ -44,7 +44,7 @@ class TestWSServerComms(unittest.TestCase):
         self.WS = WebsocketServerComms(self.p, dict(port=1))
         self.WS.start()
 
-        self.assertEqual([call(self.WS.send_loop), call(self.WS.loop.start)],
+        self.assertEqual([call(self.WS.loop.start), call(self.WS.send_loop)],
                          self.p.spawn.call_args_list)
 
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer')

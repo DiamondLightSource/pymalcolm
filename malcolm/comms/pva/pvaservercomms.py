@@ -18,11 +18,7 @@ class PvaServerComms(ServerComms):
     CACHE_UPDATE = 0
 
     def __init__(self, process, _=None):
-        name = "PvaServerComms"
-        super(PvaServerComms, self).__init__(name, process)
-
-        self.name = name
-        self.process = process
+        self.name = "PvaServerComms"
 
         self._lock = RLock()
 
@@ -41,13 +37,15 @@ class PvaServerComms(ServerComms):
         # Create the V4 PVA server object
         self.create_pva_server()
 
+        # Add a thread for executing the V4 PVA server
+        self.add_spawn_function(self.start_pva_server)
+
+        super(PvaServerComms, self).__init__(self.name, process)
+
         # Set up the subscription for everything (root down)
         request = Subscribe(None, self.q, [], True)
         request.set_id(self._root_id)
         self.process.q.put(request)
-
-        # Add a thread for executing the V4 PVA server
-        self.add_spawn_function(self.start_pva_server)
 
     def _get_unique_id(self):
         with self._lock:
@@ -105,7 +103,7 @@ class PvaServerComms(ServerComms):
         self._endpoints[block] = PvaEndpoint(self.name, block, self._server, self)
 
     def create_pva_server(self):
-        self.log_debug("Creating PVA server object")
+        #self.log_debug("Creating PVA server object")
         self._server = pvaccess.PvaServer()
 
     def start_pva_server(self):
