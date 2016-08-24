@@ -33,6 +33,10 @@ class TestValidate(unittest.TestCase):
         response = self.choice_meta.validate("a")
         self.assertEqual("a", response)
 
+    def test_int_validate(self):
+        response = self.choice_meta.validate(1)
+        self.assertEqual("b", response)
+
     def test_None_valid(self):
         response = self.choice_meta.validate(None)
         self.assertEqual(None, response)
