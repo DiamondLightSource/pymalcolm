@@ -21,16 +21,15 @@ class TestAttributeItem(unittest.TestCase):
     def test_get_value(self):
         self.assertEqual(self.item.get_value(), str(self.item.ref.value))
 
-#    def test_get_writeable(self):
-#        self.assertEqual(self.item.get_writeable(), self.item.ref.writeable)
+    def test_set_value(self):
+        value = MagicMock()
+        request = self.item.set_value(value)
+        self.assertEqual(AttributeItem.RUNNING, self.item.get_state())
+        self.assertEqual(
+            list(self.item.endpoint + ("value",)), request.endpoint)
+        self.assertEqual(value.__str__.return_value, request.value)
+        self.assertIsNone(request.response_queue)
 
-#    def test_set_value(self):
-#        request = self.item.set_value("anything")
-#        self.assertEqual(self.item.get_state(), self.item.RUNNING)
-#        self.assertEqual(request.endpoint, ("endpoint",))
-#        self.assertEqual(request.value, dict(p1=43, p2=1))
-#        self.assertEqual(request.type_, request.PUT)
-#
     def test_handle_response_error(self):
         response = Error(None, None, "bad")
         self.item.handle_response(response)

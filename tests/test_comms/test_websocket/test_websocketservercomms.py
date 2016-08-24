@@ -9,8 +9,10 @@ import unittest
 from mock import MagicMock, patch, call
 
 from malcolm.comms.websocket import WebsocketServerComms
-from malcolm.comms.websocket.websocketservercomms import MalcWebSocketHandler
-from malcolm.core.request import Request
+from malcolm.comms.websocket.websocketservercomms import MalcWebSocketHandler,\
+        MalcBlockHandler
+from malcolm.core.request import Request, Get, Post
+from malcolm.core.response import Return, Error
 
 
 class TestWSServerComms(unittest.TestCase):
@@ -120,6 +122,68 @@ class TestWSServerComms(unittest.TestCase):
         json_mock.dumps.assert_called_once_with(response_mock.to_dict())
         response_mock.context.write_message.assert_called_once_with(
             json_mock.dumps())
+
+    @patch('malcolm.comms.websocket.websocketservercomms.json')
+    @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
+    @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
+    def test_send_to_client_return(self, _, _2, json_mock):
+        ws = WebsocketServerComms(self.p, dict(port=1))
+        response = MagicMock(spec=Return)
+        response.value = MagicMock()
+        response.context = MagicMock()
+        ws.send_to_client(response)
+
+        json_mock.dumps.assert_called_once_with(response.value.to_dict())
+        response.context.finish.assert_called_once_with(
+            json_mock.dumps.return_value + "\n")
+
+    @patch('malcolm.comms.websocket.websocketservercomms.json')
+    @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
+    @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
+    def test_send_to_client_error(self, _, _2, json_mock):
+        ws = WebsocketServerComms(self.p, dict(port=1))
+        response = MagicMock(spec=Error)
+        response.context = MagicMock()
+        response.message = MagicMock()
+        ws.send_to_client(response)
+
+        response.context.set_status.assert_called_once_with(
+            500, response.message)
+        response.context.write_error.assert_called_once_with(500)
+
+    @patch('malcolm.comms.websocket.websocketservercomms.json')
+    @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
+    @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
+    def test_send_to_client_unknown(self, _, _2, json_mock):
+        ws = WebsocketServerComms(self.p, dict(port=1))
+        response = MagicMock()
+        ws.send_to_client(response)
+
+        response.context.set_status.assert_called_once_with(
+            500, "Unknown response %s" % type(response))
+        response.context.write_error.assert_called_once_with(500)
+
+class TestMalcolmBlockHandler(unittest.TestCase):
+
+    def test_get(self):
+        mbh = MalcBlockHandler(MagicMock(), MagicMock())
+        mbh.servercomms = MagicMock()
+        mbh.get("test/endpoint/string")
+        request = mbh.servercomms.on_request.call_args[0][0]
+        self.assertIsInstance(request, Get)
+        self.assertEqual(["test", "endpoint", "string"], request.endpoint)
+        self.assertIsNone(request.response_queue)
+
+    def test_post(self):
+        mbh = MalcBlockHandler(MagicMock(), MagicMock())
+        mbh.servercomms = MagicMock()
+        mbh.get_body_argument = MagicMock(side_effect=['{"test_json":12345}'])
+        mbh.post("test/endpoint/string")
+        request = mbh.servercomms.on_request.call_args[0][0]
+        self.assertIsInstance(request, Post)
+        self.assertEqual(["test", "endpoint", "string"], request.endpoint)
+        self.assertEqual({"test_json":12345}, request.parameters)
+        self.assertIsNone(request.response_queue)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
