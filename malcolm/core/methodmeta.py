@@ -22,17 +22,11 @@ class MethodMeta(Meta):
 
     def __init__(self, description="", tags=None, writeable=True, label=""):
         super(MethodMeta, self).__init__(description, tags, writeable, label)
-        self.func = None
         self.set_takes(MapMeta())
         self.set_returns(MapMeta())
         self.set_defaults(OrderedDict())
         # List of state names that we are writeable in
         self.only_in = None
-
-    def set_function(self, func):
-        """Set the function to expose.
-        """
-        self.func = func
 
     def set_takes(self, takes, notify=True):
         """Set the arguments and default values for the method
