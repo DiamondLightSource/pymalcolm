@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from malcolm.compat import base_string
+from malcolm.compat import str_
 
 
 class Cache(OrderedDict):
@@ -28,7 +28,7 @@ class Cache(OrderedDict):
                     value = change[1]
                     self.update(value)
             else:
-                assert isinstance(path[0], base_string), \
+                assert isinstance(path[0], str_), \
                     "Expected string as first element of path, got %s" % (path[0])
                 d = self.walk_path(path[:-1])
                 if len(change) == 1:

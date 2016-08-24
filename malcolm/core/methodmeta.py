@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import inspect
 
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core.elementmap import ElementMap
 from malcolm.core.map import Map
 from malcolm.core.mapmeta import MapMeta
@@ -46,7 +46,7 @@ class MethodMeta(Meta):
     def set_defaults(self, defaults, notify=True):
         """Set the default dict"""
         for k, v in defaults.items():
-            assert isinstance(k, base_string), \
+            assert isinstance(k, str_), \
                 "Expected string, got %s" % (k,)
             defaults[k] = self.takes.elements[k].validate(v)
         self.set_endpoint_data("defaults", defaults, notify)

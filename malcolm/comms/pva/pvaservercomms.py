@@ -1,7 +1,8 @@
 import sys
-
 from collections import OrderedDict
 from threading import Event, Lock, RLock
+
+import pvaccess
 
 from malcolm.core.cache import Cache
 from malcolm.core.loggable import Loggable
@@ -9,10 +10,7 @@ from malcolm.core.servercomms import ServerComms
 from malcolm.core.methodmeta import method_takes
 from malcolm.core.request import Error, Post, Subscribe
 from malcolm.core.response import Return
-import pvaccess
-
-if (sys.version_info > (3, 0)):
-    long = int
+from malcolm.compat import long_
 
 
 @method_takes()
@@ -222,7 +220,7 @@ class PvaServerComms(ServerComms):
                     structure[item] = pvaccess.FLOAT
                 elif isinstance(dict_in[item], int):
                     structure[item] = pvaccess.INT
-                elif isinstance(dict_in[item], long):
+                elif isinstance(dict_in[item], long_):
                     structure[item] = pvaccess.LONG
                 elif isinstance(dict_in[item], list):
                     #self.log_debug("List found: %s", item)
@@ -237,7 +235,7 @@ class PvaServerComms(ServerComms):
                             structure[item] = [pvaccess.FLOAT]
                         elif isinstance(dict_in[item][0], int):
                             structure[item] = [pvaccess.INT]
-                        elif isinstance(dict_in[item][0], long):
+                        elif isinstance(dict_in[item][0], long_):
                             structure[item] = [pvaccess.LONG]
                 elif isinstance(dict_in[item], OrderedDict):
                     dict_structure = self.dict_to_structure(dict_in[item])
