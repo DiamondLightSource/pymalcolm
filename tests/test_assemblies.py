@@ -91,5 +91,11 @@ class TestAssemblies(unittest.TestCase):
             list(inst),
             ['meta', 'state', 'status', 'busy', 'disable', 'reset', 'me'])
 
+    def test_repr(self):
+        s = Section("ca.CADoublePart", {"name": "me"})
+        expected = "Section(ca.CADoublePart, {'name': 'me'})"
+        self.assertEqual(repr(s), expected)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
