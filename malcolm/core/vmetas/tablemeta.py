@@ -1,4 +1,4 @@
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core.serializable import Serializable, deserialize_object
 from malcolm.core.table import Table
 from malcolm.core.tableelementmap import TableElementMap
@@ -23,7 +23,7 @@ class TableMeta(VMeta):
 
     def set_headings(self, headings, notify=True):
         """Set the headings list"""
-        headings = [deserialize_object(h, base_string) for h in headings]
+        headings = [deserialize_object(h, str_) for h in headings]
         self.set_endpoint_data("headings", headings, notify)
 
     def validate(self, value):

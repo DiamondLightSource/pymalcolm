@@ -1,7 +1,7 @@
-import sys
-
 from collections import OrderedDict
 from threading import Event, Lock, RLock
+
+import pvaccess
 
 from malcolm.core.cache import Cache
 from malcolm.core.loggable import Loggable
@@ -9,10 +9,7 @@ from malcolm.core.servercomms import ServerComms
 from malcolm.core.methodmeta import method_takes
 from malcolm.core.request import Error, Post, Subscribe
 from malcolm.core.response import Return
-import pvaccess
-
-if (sys.version_info > (3, 0)):
-    long = int
+from malcolm.compat import long_
 
 
 @method_takes()
@@ -21,11 +18,7 @@ class PvaServerComms(ServerComms):
     CACHE_UPDATE = 0
 
     def __init__(self, process, _=None):
-        name = "PvaServerComms"
-        super(PvaServerComms, self).__init__(name, process)
-
-        self.name = name
-        self.process = process
+        self.name = "PvaServerComms"
 
         self._lock = RLock()
 
@@ -44,13 +37,15 @@ class PvaServerComms(ServerComms):
         # Create the V4 PVA server object
         self.create_pva_server()
 
+        # Add a thread for executing the V4 PVA server
+        self.add_spawn_function(self.start_pva_server)
+
+        super(PvaServerComms, self).__init__(self.name, process)
+
         # Set up the subscription for everything (root down)
         request = Subscribe(None, self.q, [], True)
         request.set_id(self._root_id)
         self.process.q.put(request)
-
-        # Add a thread for executing the V4 PVA server
-        self.add_spawn_function(self.start_pva_server)
 
     def _get_unique_id(self):
         with self._lock:
@@ -108,7 +103,7 @@ class PvaServerComms(ServerComms):
         self._endpoints[block] = PvaEndpoint(self.name, block, self._server, self)
 
     def create_pva_server(self):
-        self.log_debug("Creating PVA server object")
+        #self.log_debug("Creating PVA server object")
         self._server = pvaccess.PvaServer()
 
     def start_pva_server(self):
@@ -222,7 +217,7 @@ class PvaServerComms(ServerComms):
                     structure[item] = pvaccess.FLOAT
                 elif isinstance(dict_in[item], int):
                     structure[item] = pvaccess.INT
-                elif isinstance(dict_in[item], long):
+                elif isinstance(dict_in[item], long_):
                     structure[item] = pvaccess.LONG
                 elif isinstance(dict_in[item], list):
                     #self.log_debug("List found: %s", item)
@@ -237,7 +232,7 @@ class PvaServerComms(ServerComms):
                             structure[item] = [pvaccess.FLOAT]
                         elif isinstance(dict_in[item][0], int):
                             structure[item] = [pvaccess.INT]
-                        elif isinstance(dict_in[item][0], long):
+                        elif isinstance(dict_in[item][0], long_):
                             structure[item] = [pvaccess.LONG]
                 elif isinstance(dict_in[item], OrderedDict):
                     dict_structure = self.dict_to_structure(dict_in[item])

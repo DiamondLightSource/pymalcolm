@@ -23,7 +23,6 @@ class WebsocketClientComms(ClientComms):
             url (str): Url for websocket connection. E.g. ws://localhost:8888/ws
         """
         url = "ws://%(hostname)s:%(port)d/ws" % params
-        super(WebsocketClientComms, self).__init__(url, process)
         self.url = url
         # TODO: Are we starting one or more IOLoops here?
         self.loop = IOLoop.current()
@@ -31,6 +30,7 @@ class WebsocketClientComms(ClientComms):
             url, callback=self.subscribe_server_blocks,
             on_message_callback=self.on_message)
         self.add_spawn_function(self.loop.start, self.stop_recv_loop)
+        super(WebsocketClientComms, self).__init__(url, process)
 
     def on_message(self, message):
         """

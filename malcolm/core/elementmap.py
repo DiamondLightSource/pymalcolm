@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core.monitorable import Monitorable
 from malcolm.core.serializable import serialize_object, Serializable, \
     deserialize_object
@@ -20,7 +20,7 @@ class ElementMap(Monitorable):
         children = OrderedDict()
 
         for k, v in d.items():
-            assert isinstance(k, base_string), "Expected string, got %s" % (k,)
+            assert isinstance(k, str_), "Expected string, got %s" % (k,)
             if k == "typeid":
                 assert v == self.typeid, \
                     "Dict has typeid %s but Class has %s" % (v, self.typeid)

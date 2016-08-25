@@ -1,6 +1,6 @@
 import numpy as np
 
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core.serializable import Serializable
 from malcolm.core.vmeta import VMeta
 
@@ -29,7 +29,7 @@ class NumberMeta(VMeta):
         if value is None:
             return None
         cast = getattr(np, self.dtype)(value)
-        if not isinstance(value, base_string):
+        if not isinstance(value, str_):
             if not np.isclose(cast, value):
                 raise ValueError("Lost information converting %s to %s"
                                  % (value, cast))

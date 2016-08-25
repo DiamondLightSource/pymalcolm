@@ -85,9 +85,8 @@ class ClientController(Controller):
             attribute (Attribute): Attribute object to put a value to
             value (object: Value to put
         """
-        ret = self._send_request(
+        self._send_request(
             Put, attribute.path_relative_to(self.process) + ["value"], value)
-        return ret
 
     def call_server_method(self, methodmeta, parameters=None, returns=None):
         """Call method_name on the server

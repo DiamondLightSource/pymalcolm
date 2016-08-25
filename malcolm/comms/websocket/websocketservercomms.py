@@ -55,11 +55,6 @@ class WebsocketServerComms(ServerComms):
     """A class for communication between browser and server"""
 
     def __init__(self, process, params):
-        logger_name = "WebsocketServerComms(%(port)d)" % params
-        super(WebsocketServerComms, self).__init__(logger_name, process)
-
-        self.process = process
-
         MalcWebSocketHandler.servercomms = self
         MalcBlockHandler.servercomms = self
 
@@ -71,6 +66,8 @@ class WebsocketServerComms(ServerComms):
         self.server.listen(int(params["port"]))
         self.loop = IOLoop.current()
         self.add_spawn_function(self.loop.start, self.stop_recv_loop)
+        logger_name = "WebsocketServerComms(%(port)d)" % params
+        super(WebsocketServerComms, self).__init__(logger_name, process)
 
     def send_to_client(self, response):
         """Dispatch response to a client

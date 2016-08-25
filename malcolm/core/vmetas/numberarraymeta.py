@@ -1,6 +1,6 @@
 import numpy as np
 
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core.serializable import Serializable
 from malcolm.core.varraymeta import VArrayMeta
 from malcolm.core.vmetas.numbermeta import NumberMeta
@@ -20,7 +20,7 @@ class NumberArrayMeta(NumberMeta, VArrayMeta):
             for i, number in enumerate(value):
                 if number is None:
                     raise ValueError("Array elements cannot be null")
-                if not isinstance(number, base_string):
+                if not isinstance(number, str_):
                     cast = casted_array[i]
                     if not np.isclose(cast, number):
                         raise ValueError("Lost information converting %s to %s"

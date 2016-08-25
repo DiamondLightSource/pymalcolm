@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core.response import Return, Error, Update, Delta
 from malcolm.core.serializable import Serializable, deserialize_object, \
     serialize_object
@@ -77,7 +77,7 @@ class Get(Request):
 
     def set_endpoint(self, endpoint):
         if endpoint is not None:
-            endpoint = [deserialize_object(e, base_string) for e in endpoint]
+            endpoint = [deserialize_object(e, str_) for e in endpoint]
         self.set_endpoint_data("endpoint", endpoint)
 
 
@@ -103,7 +103,7 @@ class Put(Request):
 
     def set_endpoint(self, endpoint):
         if endpoint is not None:
-            endpoint = [deserialize_object(e, base_string) for e in endpoint]
+            endpoint = [deserialize_object(e, str_) for e in endpoint]
         self.set_endpoint_data("endpoint", endpoint)
 
     def set_value(self, value):
@@ -133,13 +133,13 @@ class Post(Request):
 
     def set_endpoint(self, endpoint):
         if endpoint is not None:
-            endpoint = [deserialize_object(e, base_string) for e in endpoint]
+            endpoint = [deserialize_object(e, str_) for e in endpoint]
         self.set_endpoint_data("endpoint", endpoint)
 
     def set_parameters(self, parameters):
         if parameters is not None:
             parameters = OrderedDict(
-                (deserialize_object(k, base_string), serialize_object(v))
+                (deserialize_object(k, str_), serialize_object(v))
                 for k, v in parameters.items())
         self.set_endpoint_data("parameters", parameters)
 
@@ -186,7 +186,7 @@ class Subscribe(Request):
 
     def set_endpoint(self, endpoint):
         if endpoint is not None:
-            endpoint = [deserialize_object(e, base_string) for e in endpoint]
+            endpoint = [deserialize_object(e, str_) for e in endpoint]
         self.set_endpoint_data("endpoint", endpoint)
 
     def set_delta(self, delta):

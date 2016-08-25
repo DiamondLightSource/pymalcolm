@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import inspect
 
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core.elementmap import ElementMap
 from malcolm.core.map import Map
 from malcolm.core.mapmeta import MapMeta
@@ -22,17 +22,11 @@ class MethodMeta(Meta):
 
     def __init__(self, description="", tags=None, writeable=True, label=""):
         super(MethodMeta, self).__init__(description, tags, writeable, label)
-        self.func = None
         self.set_takes(MapMeta())
         self.set_returns(MapMeta())
         self.set_defaults(OrderedDict())
         # List of state names that we are writeable in
         self.only_in = None
-
-    def set_function(self, func):
-        """Set the function to expose.
-        """
-        self.func = func
 
     def set_takes(self, takes, notify=True):
         """Set the arguments and default values for the method
@@ -46,7 +40,7 @@ class MethodMeta(Meta):
     def set_defaults(self, defaults, notify=True):
         """Set the default dict"""
         for k, v in defaults.items():
-            assert isinstance(k, base_string), \
+            assert isinstance(k, str_), \
                 "Expected string, got %s" % (k,)
             defaults[k] = self.takes.elements[k].validate(v)
         self.set_endpoint_data("defaults", defaults, notify)

@@ -1,4 +1,4 @@
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core.serializable import Serializable, deserialize_object, \
     serialize_object
 
@@ -58,7 +58,7 @@ class Error(Response):
 
     def set_message(self, message):
         if message is not None:
-            message = deserialize_object(message, base_string)
+            message = deserialize_object(message, str_)
         self.set_endpoint_data("message", message)
 
 

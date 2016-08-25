@@ -5,7 +5,7 @@ import logging
 from ruamel import yaml
 
 from malcolm.packageutil import prepare_globals_for_package
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core import REQUIRED, method_takes
 from malcolm.core.vmetas import StringMeta
 import malcolm.controllers
@@ -204,7 +204,7 @@ class Section(object):
         for s in substitutions:
             for k, v in self.param_dict.items():
                 search = "$(%s)" % s
-                if isinstance(v, base_string):
+                if isinstance(v, str_):
                     self.param_dict[k] = v.replace(search, substitutions[s])
 
     def __repr__(self):

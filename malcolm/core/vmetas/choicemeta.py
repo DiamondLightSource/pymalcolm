@@ -1,4 +1,4 @@
-from malcolm.compat import base_string
+from malcolm.compat import str_
 from malcolm.core.serializable import Serializable, deserialize_object
 from malcolm.core.vmeta import VMeta
 
@@ -18,7 +18,7 @@ class ChoiceMeta(VMeta):
 
     def set_choices(self, choices, notify=True):
         """Set the choices list"""
-        choices = [deserialize_object(c, base_string) for c in choices]
+        choices = [deserialize_object(c, str_) for c in choices]
         self.set_endpoint_data("choices", choices, notify)
 
     def validate(self, value):
@@ -36,7 +36,7 @@ class ChoiceMeta(VMeta):
         if value is None or value in self.choices:
             return value
         elif isinstance(value, int) and value < len(self.choices):
-            return value
+            return self.choices[value]
         else:
             raise ValueError(
                 "%s is not a valid value in %s" % (value, self.choices))

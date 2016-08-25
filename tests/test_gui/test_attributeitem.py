@@ -21,6 +21,9 @@ class TestAttributeItem(unittest.TestCase):
     def test_get_value(self):
         self.assertEqual(self.item.get_value(), str(self.item.ref.value))
 
+    def test_get_writeable(self):
+        self.assertEqual(self.item.get_writeable(), self.item.ref.meta.writeable)
+
     def test_set_value(self):
         value = MagicMock()
         request = self.item.set_value(value)
