@@ -7,20 +7,22 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 --------------------------
 Added:
 
-- Added device name and type to structure, along with exit() method
+- Nothing yet
 
-`0-2`_ - 2014-08-05
--------------------
+`2-0a2`_ - 2014-08-15
+---------------------
 Added:
 
-- Documentation
+- Ability to start comms from YAML
+- PVAccess comms
+- Dummy PMAC trajectory scan
 
-0-1 - 2014-08-03
-----------------
+2-0a1 - 2016-08-15
+------------------
 Added:
 
-- Initial structure with ZeroMQ comms
+- Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/0-2...HEAD
-.. _0-2: https://github.com/dls-controls/pymalcolm/compare/0-1...0-2
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a2...HEAD
+.. _2-0a2: https://github.com/dls-controls/pymalcolm/compare/2.0a1...2-0a2
 
