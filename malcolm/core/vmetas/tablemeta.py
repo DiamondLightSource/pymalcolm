@@ -11,9 +11,12 @@ class TableMeta(VMeta):
     endpoints = ["elements", "description", "tags", "writeable", "label",
                  "headings"]
 
-    def __init__(self, description="", tags=None, writeable=False, label=""):
+    def __init__(self, description="", tags=None, writeable=False, label="",
+                 columns=None):
         super(TableMeta, self).__init__(description, tags, writeable, label)
-        self.set_elements(TableElementMap())
+        if columns is None:
+            columns = {}
+        self.set_elements(TableElementMap(columns))
         self.set_headings([])
 
     def set_elements(self, elements, notify=True):
