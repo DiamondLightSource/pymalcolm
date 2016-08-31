@@ -9,7 +9,13 @@ Added:
 
 - Nothing yet
 
-`2-0a2`_ - 2014-08-15
+`2-0a3`_ - 2014-08-31
+---------------------
+Added:
+
+- imalcolm client script
+
+`2-0a2`_ - 2014-08-30
 ---------------------
 Added:
 
@@ -23,6 +29,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a2...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a3...HEAD
+.. _2-0a2: https://github.com/dls-controls/pymalcolm/compare/2.0a2...2-0a3
 .. _2-0a2: https://github.com/dls-controls/pymalcolm/compare/2.0a1...2-0a2
 
