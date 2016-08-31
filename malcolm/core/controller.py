@@ -42,6 +42,8 @@ class Controller(Loggable):
         self.params = params
         self.process = process
         self.lock = process.create_lock()
+        # {part: task}
+        self.part_tasks = {}
         # dictionary of dictionaries
         # {state (str): {MethodMeta: writeable (bool)}
         self.methods_writeable = {}
@@ -164,18 +166,21 @@ class Controller(Loggable):
         """
         return get_method_decorated(self)
 
-    def transition(self, state, message):
+    def transition(self, state, message, create_tasks=False):
         """
         Change to a new state if the transition is allowed
 
         Args:
             state(str): State to transition to
             message(str): Status message
+            create_tasks(bool): If true then make self.part_tasks
         """
         with self.lock:
             if self.stateMachine.is_allowed(
                     initial_state=self.state.value, target_state=state):
                 self._do_transition(state, message)
+                if create_tasks:
+                    self.part_tasks = self.create_part_tasks()
             else:
                 raise TypeError("Cannot transition from %s to %s" %
                                 (self.state.value, state))
@@ -221,14 +226,16 @@ class Controller(Loggable):
             part_tasks[part] = Task("Task(%s)" % part_name, self.process)
         return part_tasks
 
-    def run_hook(self, hook, part_tasks=None):
+    def run_hook(self, hook, part_tasks, **kwargs):
+        hook_queue, func_tasks, task_part_names = self.start_hook(
+            hook, part_tasks, **kwargs)
+        return self.wait_hook(hook_queue, func_tasks, task_part_names)
+
+    def start_hook(self, hook, part_tasks, **kwargs):
         assert hook in self.hook_names, \
             "Hook %s doesn't appear in controller hooks %s" % (
                 hook, self.hook_names)
         self.log_debug("Running %s hook", self.hook_names[hook])
-
-        if part_tasks is None:
-            part_tasks = self.create_part_tasks()
 
         # ask the hook to find the functions it should run
         func_tasks = hook.find_func_tasks(part_tasks)
@@ -238,8 +245,9 @@ class Controller(Loggable):
 
         def _gather_task_return_value(func, task):
             try:
-                result = func(task)
+                result = func.MethodMeta.call_post_function(func, kwargs, task)
             except Exception as e:  # pylint:disable=broad-except
+                self.log_exception("%s %s raised exception", func, kwargs)
                 hook_queue.put((func, e))
             else:
                 hook_queue.put((func, result))
@@ -254,11 +262,16 @@ class Controller(Loggable):
             if part in part_tasks:
                 task_part_names[part_tasks[part]] = part_name
 
+        return hook_queue, func_tasks, task_part_names
+
+    def wait_hook(self, hook_queue, func_tasks, task_part_names):
         # Wait for them all to finish
         return_dict = {}
         while func_tasks:
             func, ret = hook_queue.get()
             task = func_tasks.pop(func)
+            # Need to wait on it to clear spawned
+            task.wait()
             part_name = task_part_names[task]
             return_dict[part_name] = ret
             if isinstance(ret, Exception):
