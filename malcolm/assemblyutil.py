@@ -116,8 +116,10 @@ def make_block_instance(block_name, process, controllers, parts):
         part_name = section.param_dict["name"]
         parts_d[part_name] = section.instantiate(malcolm.parts, process)
     if controllers:
-        controller = section.instantiate(
-            malcolm.controllers, block_name, process, parts)
+        assert len(controllers) == 1, \
+            "Expected maximum of 1 controllers, got %s" % (controllers,)
+        controller = controllers[0].instantiate(
+            malcolm.controllers, block_name, process, parts_d)
     else:
         controller = malcolm.controllers.builtin.DefaultController(
             block_name, process, parts_d)
@@ -149,7 +151,11 @@ class Section(object):
         """
         split = self.name.split(".")
         for n in split:
-            base = getattr(base, n)
+            try:
+                base = getattr(base, n)
+            except AttributeError:
+                logging.error("Can't find %s of %s", n, self.name)
+                raise
         args += (
             base.MethodMeta.prepare_input_map_optional_name(self.param_dict),)
         return base(*args)

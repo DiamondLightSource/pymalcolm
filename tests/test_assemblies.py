@@ -91,6 +91,15 @@ class TestAssemblies(unittest.TestCase):
             list(inst),
             ['meta', 'state', 'status', 'busy', 'disable', 'reset', 'me'])
 
+    def test_make_block_instance_custom_controller(self):
+        parts = []
+        controllers = [Section("pmac.PMACTrajectoryController")]
+        block_name = "block_name"
+        process = Mock()
+        inst = make_block_instance(block_name, process, controllers, parts)
+        self.assertIsInstance(inst, Block)
+        process.add_block.assert_called_once_with(inst)
+
     def test_repr(self):
         s = Section("ca.CADoublePart", {"name": "me"})
         expected = "Section(ca.CADoublePart, {'name': 'me'})"
