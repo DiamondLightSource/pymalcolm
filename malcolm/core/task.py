@@ -114,7 +114,7 @@ class Task(Loggable, Spawnable):
 
         return [f]
 
-    def post(self, method, params):
+    def post(self, method, params=None):
         """Synchronously calls a block method
 
             Args:
@@ -129,7 +129,7 @@ class Task(Loggable, Spawnable):
 
         return f
 
-    def post_async(self, method, params):
+    def post_async(self, method, params=None):
         """Asynchronously calls a function on a child block
 
             Returns a list of one future which will proved the return value

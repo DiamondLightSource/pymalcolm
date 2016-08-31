@@ -92,6 +92,7 @@ class TestRunnableDeviceStateMachine(unittest.TestCase):
 
     def setUp(self):
         self.SM = RunnableDeviceStateMachine("test_state_machine")
+        self.assertEqual(self.SM.AFTER_RESETTING, "Idle")
 
     def test_init(self):
         default_allowed_transitions = OrderedDict()

@@ -1,6 +1,6 @@
 import inspect
 
-from malcolm.core.task import Task
+from malcolm.core.methodmeta import MethodMeta
 
 
 class Hook(object):
@@ -17,6 +17,7 @@ class Hook(object):
         """
 
         func.Hook = self
+        MethodMeta.wrap_method(func)
         return func
 
     def find_func_tasks(self, part_tasks):

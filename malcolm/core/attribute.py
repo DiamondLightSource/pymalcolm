@@ -4,6 +4,7 @@ from malcolm.core.serializable import Serializable, deserialize_object
 from malcolm.core.vmeta import VMeta
 
 
+# TODO: use NTScalar, NTScalarArray, NTTable and NTUnion here. Metas can create
 @Serializable.register_subclass("epics:nt/NTAttribute:1.0")
 class Attribute(Monitorable):
     """Represents a value with type information that may be backed elsewhere"""

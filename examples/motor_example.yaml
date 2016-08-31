@@ -3,20 +3,19 @@
 
 - assemblies.pmac.rawmotor:
     name: stage_x
-    prefix: LAB-MO-MAP-02:STAGE:X
+    motor_prefix: LAB-MO-MAP-02:STAGE:X
+    prefix: LAB-MO-MAP-02:STAGEGB1:M1
 
 - assemblies.pmac.rawmotor:
     name: stage_y
-    prefix: LAB-MO-MAP-02:STAGE:Y
+    motor_prefix: LAB-MO-MAP-02:STAGE:Y
+    prefix: LAB-MO-MAP-02:STAGEGB1:M2
 
 - assemblies.pmac.rawmotor:
     name: stage_z
-    prefix: LAB-MO-MAP-02:STAGE:Z
+    motor_prefix: LAB-MO-MAP-02:STAGE:Z
+    prefix: LAB-MO-MAP-02:STAGEGB1:M3
 
 - assemblies.pmac.pmac:
     name: brick1
     prefix: LAB-MO-MAP-02:STAGEGB1
-
-- assemblies.pmac.coordsys:
-    name: CS1
-    prefix: LAB-MO-MAP-02:STAGE:CS1

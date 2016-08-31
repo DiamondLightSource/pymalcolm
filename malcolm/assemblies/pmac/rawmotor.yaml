@@ -2,14 +2,50 @@
     name: prefix
     description: the root PV for the motor record
 
+- parameters.string:
+    name: motor_prefix
+    description: the root PV for the motor record (will eventuallu be prefix)
+
 - parts.ca.CADoublePart:
     name: position
     description: set the target position of the motor or get current position
-    pv: $(prefix)
+    pv: $(motor_prefix)
     rbv_suff: .RBV
 
 - parts.ca.CALongPart:
     name: done_moving
     description: set to zero when motor is stationary
-    rbv: $(prefix).DMOV
+    rbv: $(motor_prefix).DMOV
+
+- parts.ca.CADoublePart:
+    name: acceleration_time
+    description: time taken to accelerate to velocity
+    rbv: $(motor_prefix).ACCL
+
+- parts.ca.CADoublePart:
+    name: max_velocity
+    description: maximum velocity
+    rbv: $(motor_prefix).VMAX
+
+- parts.ca.CADoublePart:
+    name: resolution
+    description: Motor resolution
+    rbv: $(motor_prefix).ERES
+
+- parts.ca.CADoublePart:
+    name: offset
+    description: User offset
+    rbv: $(motor_prefix).OFF
+
+- parts.ca.CAStringPart:
+    name: cs_port
+    description: CS asyn port name
+    pv: $(prefix):CS_PORT
+    rbv_suff: _RBV
+
+- parts.ca.CALongPart:
+    name: cs_axis
+    description: CS axis definition (like X, B, 0 or I)
+    pv: $(prefix):CS_AXIS
+    rbv_suff: _RBV
 
