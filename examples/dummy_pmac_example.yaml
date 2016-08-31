@@ -1,5 +1,4 @@
 - assemblies.demo.dummy_pmac:
     name: pmac1
 
-- comms.websocket.WebsocketServerComms:
-    port: 8080
+- comms.pva.PvaServerComms:

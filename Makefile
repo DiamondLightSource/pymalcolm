@@ -34,7 +34,7 @@ test:
 	PYTHONPATH=../scanpointgenerator $(PYTHON) setup.py test
 
 docs/html/index.html: $(wildcard docs/*.rst docs/*/*.rst docs/conf.py)
-	sphinx-build -W -b html docs docs/html
+	sphinx-build -b html docs docs/html
 
 docs: dist docs/html/index.html
 

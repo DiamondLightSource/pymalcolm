@@ -59,4 +59,7 @@ setup(
         'nose>=1.3.0',
     ],
     zip_safe=False,
+    entry_points={'console_scripts':
+                  ["imalcolm = malcolm.imalcolm:main"]
+                  },
 )

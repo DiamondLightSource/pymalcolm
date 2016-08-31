@@ -100,4 +100,6 @@ if __name__ == "__main__":
     require("tornado", "numpy", "cothread", "ruamel.yaml",
             "scanpointgenerator")
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    sys.path.append(
+        "/dls_sw/work/R3.14.12.3/support/pvaPy/lib/python/2.7/linux-x86_64")
     main()

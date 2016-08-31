@@ -22,7 +22,7 @@ Installation
 ------------
 To install the latest release, type::
 
-    pip install pymalcolm
+    pip install malcolm
 
 To install the latest code directly from source, type::
 
