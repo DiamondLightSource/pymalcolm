@@ -45,7 +45,7 @@ class Block(ElementMap):
             assert name not in kwargs, \
                 "%s specified as positional and keyword args" % (name,)
             kwargs[name] = v
-        return method_meta.call_post_function(func, kwargs)
+        return method_meta.call_post_function(func, kwargs, method_meta)
 
     def set_endpoint_data(self, name, value, notify=True):
         if name == "meta":

@@ -54,7 +54,7 @@ class MethodMeta(Meta):
         self.log_debug("Received request %s", request)
         assert isinstance(request, Post), "Expected Post, got %r" % (request,)
         assert len(request.endpoint) == 2, "Can only Post to MethodMeta root"
-        return self.call_post_function(post_function, request.parameters)
+        return self.call_post_function(post_function, request.parameters, self)
 
     def prepare_input_map_optional_name(self, param_dict):
         if "name" not in self.takes.elements and "name" in param_dict:
@@ -69,10 +69,10 @@ class MethodMeta(Meta):
         params.check_valid()
         return params
 
-    def call_post_function(self, post_function, param_dict):
+    def call_post_function(self, post_function, param_dict, *args):
         need_params = bool(self.takes.elements)
         need_ret = bool(self.returns.elements)
-        args = []
+        args = list(args)
         # Prepare input map
         if need_params:
             params = self.prepare_input_map(param_dict)
@@ -85,7 +85,7 @@ class MethodMeta(Meta):
 
         self.log_debug("Calling with %s" % (args,))
 
-        result = post_function(self, *args)
+        result = post_function(*args)
         if need_ret:
             result = Map(self.returns, result)
             result.check_valid()
@@ -109,6 +109,7 @@ class MethodMeta(Meta):
             description = inspect.getdoc(func) or ""
             method = cls(description)
             func.MethodMeta = method
+            method.set_logger_name("%s.MethodMeta" % func.__name__)
 
         return func
 
