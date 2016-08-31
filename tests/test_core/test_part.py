@@ -8,7 +8,19 @@ import unittest
 
 from mock import Mock
 
-from malcolm.core.part import Part
+from malcolm.controllers.builtin import DefaultController
+from malcolm.core import Part, method_takes
+
+
+class MyPart(Part):
+    @method_takes()
+    @DefaultController.Resetting
+    def foo(self):
+        pass
+
+    @method_takes()
+    def bar(self):
+        pass
 
 
 class TestPart(unittest.TestCase):
@@ -18,6 +30,12 @@ class TestPart(unittest.TestCase):
         p = Part(process, params)
         self.assertEqual(p.params, params)
         self.assertEqual(p.process, process)
+
+    def test_non_hooked_methods(self):
+        p = MyPart(Mock(), Mock())
+        methods = list(p.create_methods())
+        self.assertEqual(methods, [("bar", p.bar.MethodMeta, p.bar)])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
