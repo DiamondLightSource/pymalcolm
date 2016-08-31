@@ -1,5 +1,6 @@
-import operator
 from collections import OrderedDict
+
+import numpy as np
 
 from malcolm.core import RunnableDeviceStateMachine, REQUIRED, method_returns, \
     method_only_in, method_takes, ElementMap, Attribute
@@ -33,7 +34,7 @@ class ManagerController(DefaultController):
         if num >= npoints:
             # Generate some more points and cache them
             for i in range(num - npoints + 1):
-                self.points.append(self.iterator.next())
+                self.points.append(next(self.iterator))
         return self.points[num]
 
     def create_attributes(self):
@@ -84,7 +85,7 @@ class ManagerController(DefaultController):
             self.points = []
             self.iterator = params.generator.iterator()
             self.currentStep.set_value(0)
-            steps = reduce(operator.mul, params.generator.index_dims)
+            steps = np.prod(params.generator.index_dims)
             self.totalSteps.set_value(steps)
             self.do_configure(params)
             self.transition(sm.READY, "Done configuring")
