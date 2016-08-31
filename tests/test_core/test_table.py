@@ -41,6 +41,7 @@ class TestTableInit(unittest.TestCase):
         self.assertEquals([], t.e1)
         self.assertEquals("malcolm:core/Table:1.0", t.typeid)
 
+
 class TestTableRowOperations(unittest.TestCase):
     def setUp(self):
         meta = Mock()
@@ -55,6 +56,14 @@ class TestTableRowOperations(unittest.TestCase):
 
     def test_row_access(self):
         self.assertEqual([1, 2, 3], self.t[0])
+
+    def test_string_access(self):
+        self.assertEqual(self.t.e1, self.t["e1"])
+        self.assertEqual(self.t.e2, self.t["e2"])
+
+    def test_string_setters(self):
+        self.t["e2"] = [4]
+        self.assertEqual(list(self.t.e2), [4])
 
     def test_row_access_index_error(self):
         with self.assertRaises(IndexError):
@@ -102,6 +111,7 @@ class TestTableRowOperations(unittest.TestCase):
             self.t[0] = [0, 0, 0]
         with self.assertRaises(AssertionError):
             self.t.append([0, 0, 0])
+
 
 class TestTableMetaSerialization(unittest.TestCase):
 

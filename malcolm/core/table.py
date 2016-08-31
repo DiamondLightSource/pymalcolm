@@ -23,30 +23,35 @@ class Table(Serializable):
     def verify_column_lengths(self):
         if len(self.meta.elements) == 0:
             return True
-        l = len(getattr(self, list(self.meta.elements)[0]))
-        for e in self.meta.elements:
-            column = getattr(self, e)
-            if l != len(column):
-                raise AssertionError("Column lengths do not match")
+        lengths = [len(getattr(self, e)) for e in self.meta.elements]
+        assert len(set(lengths)) == 1, \
+            "Column lengths %s don't match" % lengths
 
     def __getitem__(self, idx):
         """Get row"""
-        self.verify_column_lengths()
-        columns = len(self.meta.elements)
-        row = [None] * columns
-        for i in range(columns):
-            row[i] = getattr(self, list(self.meta.elements)[i])[idx]
-        return row
+        if isinstance(idx, int):
+            self.verify_column_lengths()
+            columns = len(self.meta.elements)
+            row = [None] * columns
+            for i in range(columns):
+                row[i] = getattr(self, list(self.meta.elements)[i])[idx]
+            return row
+        else:
+            return getattr(self, idx)
 
     def __setitem__(self, idx, row):
-        """Set row"""
-        self.verify_column_lengths()
-        if len(row) != len(self.meta.elements):
-            raise ValueError(
-                "Row %s does not specify correct number of values" % row)
-        for e, v in zip(self.meta.elements, row):
-            column = getattr(self, e)
-            column[idx] = v
+        """Set row for int, column for string"""
+        if isinstance(idx, int):
+            # set row
+            self.verify_column_lengths()
+            if len(row) != len(self.meta.elements):
+                raise ValueError(
+                    "Row %s does not specify correct number of values" % row)
+            for e, v in zip(self.meta.elements, row):
+                column = getattr(self, e)
+                column[idx] = v
+        else:
+            setattr(self, idx, row)
 
     def __setattr__(self, attr, value):
         """Set column"""
