@@ -276,8 +276,13 @@ class PvaEndpoint(Loggable):
         self.log_debug("Registering PVA Endpoint for block %s", self._block)
         self._endpoint.registerEndpointGet(self.get_callback)
         self._endpoint.registerEndpointRPC(self.rpc_callback)
+#        self._endpoint.registerEndpointMonitor(self.monitor_callback)
         self._pva_server.registerEndpoint(self._block, self._endpoint)
 
+#    def monitor_callback(self, request):
+#        self.log_debug("Monitor callback called for: %s", self._block)
+#        self.log_debug("Request structure: %s", request.toDict())
+#
     def get_callback(self, request):
         self.log_debug("Get callback called for: %s", self._block)
         self.log_debug("Request structure: %s", request.toDict())
@@ -394,10 +399,13 @@ class PvaRpcImplementation(Loggable):
                 response_dict = self._response.to_dict()
                 response_dict.pop("id")
 
-            pv_object = self._server.dict_to_structure(response_dict)
-            self.log_debug("Pv Object structure created")
-            self.log_debug("%s", self._server.strip_type_id(response_dict))
-            pv_object.set(self._server.strip_type_id(response_dict))
+            if not response_dict:
+                pv_object = pvaccess.PvObject(OrderedDict({}), 'malcolm:core/Map:1.0')
+            else:
+                pv_object = self._server.dict_to_structure(response_dict)
+                self.log_debug("Pv Object structure created")
+                self.log_debug("%s", self._server.strip_type_id(response_dict))
+                pv_object.set(self._server.strip_type_id(response_dict))
             self.log_debug("Pv Object value set: %s", pv_object)
             # Add this RPC to the purge list
             #self._server.register_dead_rpc(self._id)
