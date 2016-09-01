@@ -71,7 +71,7 @@ class PMACTrajectoryController(ManagerController):
     def do_run(self):
         self.transition(sm.RUNNING, "Waiting for scan to complete")
         self.run_hook(self.RunProfile, self.part_tasks)
-        more_to_do = self.points_built < self.currentStep.value - 1
+        more_to_do = self.points_built < self.totalSteps.value - 1
         if more_to_do:
             self.transition(sm.POSTRUN, "Building next stage")
             self.points_built = self.build_generator_profile(self.points_built)
@@ -164,7 +164,7 @@ class PMACTrajectoryController(ManagerController):
             point = self.get_point(i)
 
             # Check that none of the external motors need moving
-            if self.external_axis_has_moved(last_point, point):
+            if last_point and self.external_axis_has_moved(last_point, point):
                 break
 
             # Check if we need to insert the lower bound point
