@@ -51,8 +51,8 @@ APACHE License. (see `LICENSE`_)
     :target: https://coveralls.io/github/dls-controls/pymalcolm?branch=master
     :alt: Test coverage
 
-.. |pypi-version| image:: https://img.shields.io/pypi/v/pymalcolm.svg
-    :target: https://pypi.python.org/pypi/pymalcolm/
+.. |pypi-version| image:: https://img.shields.io/pypi/v/malcolm.svg
+    :target: https://pypi.python.org/pypi/malcolm/
     :alt: Latest PyPI version
 
 .. |readthedocs| image:: https://readthedocs.org/projects/pymalcolm/badge/?version=latest

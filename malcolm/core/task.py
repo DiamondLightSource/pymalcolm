@@ -149,7 +149,7 @@ class Task(Loggable, Spawnable):
 
     def subscribe(self, attr, callback, *args):
         """Subscribe to changes in a given attribute and call
-        ``callback(*args)`` when it changes
+        ``callback(value, *args)`` when it changes
 
             Returns:
                 int: an id for the subscription

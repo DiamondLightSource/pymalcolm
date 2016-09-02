@@ -121,7 +121,7 @@ class TestPMACTrajectoryController(unittest.TestCase):
         expected = 3 * 2 * 0.05 + turnaround + 2 * self.parts["x"].get_acceleration_time()
         self.assertAlmostEqual(end - start, expected, delta=0.05)
 
-    def test_configure_run_extenal_move(self):
+    def test_configure_run_external_move(self):
         self.assertEqual(self.b.state, "Idle")
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
@@ -130,6 +130,8 @@ class TestPMACTrajectoryController(unittest.TestCase):
         trajx.set_value = Mock(wraps=trajx.set_value)
         trajy = self.traj.axis_rbv["B"]
         trajy.set_value = Mock(wraps=trajy.set_value)
+        curr = self.b["currentStep"]
+        curr.set_value = Mock(wraps=curr.set_value)
         self.b.configure(
             generator=gen,
             axes_to_move=["x"],
@@ -138,7 +140,8 @@ class TestPMACTrajectoryController(unittest.TestCase):
         trajx.set_value.assert_called_once_with(-0.625)
         trajx.set_value.reset_mock()
         trajy.set_value.assert_not_called()
-
+        curr.set_value.assert_called_once_with(0)
+        curr.set_value.reset_mock()
         start = time.time()
         self.b.run()
         end = time.time()
@@ -157,6 +160,11 @@ class TestPMACTrajectoryController(unittest.TestCase):
         self.assertEqual(self.b.state, "Ready")
         expected = 3 * 0.05 + 2 * self.parts["x"].get_acceleration_time()
         self.assertAlmostEqual(end - start, expected, delta=0.05)
+        self.assertEqual(curr.set_value.call_args_list, [
+            call(1),
+            call(2),
+            call(3)])
+        curr.set_value.reset_mock()
 
         start = time.time()
         self.b.run()
@@ -174,6 +182,10 @@ class TestPMACTrajectoryController(unittest.TestCase):
         self.assertEqual(self.b.state, "Idle")
         expected = 3 * 0.05 + 2 * self.parts["x"].get_acceleration_time()
         self.assertAlmostEqual(end - start, expected, delta=0.05)
+        self.assertEqual(curr.set_value.call_args_list, [
+            call(4),
+            call(5),
+            call(6)])
 
 
 if __name__ == "__main__":

@@ -70,24 +70,29 @@ def make_assembly(text):
 
     @method_takes(*takes_arguments)
     def collection(process, params):
-        for section_l in sections.values():
+        # TODO: move this into Section.substitute_params
+        ssections = dict()
+        for name, section_l in sections.items():
+            ssections[name] = []
             for section in section_l:
+                section = Section(section.name, section.param_dict.copy())
                 section.substitute_params(params)
+                ssections[name].append(section)
         ret = []
 
         # If we have any comms things
-        for section in sections["comms"]:
+        for section in ssections["comms"]:
             section.instantiate(malcolm.comms, process)
 
         # If we have any other assemblies
-        for section in sections["assemblies"]:
+        for section in ssections["assemblies"]:
             ret += section.instantiate(malcolm.assemblies, process)
 
         # If told to make a block instance from controllers and parts
-        if sections["controllers"] or sections["parts"]:
+        if ssections["controllers"] or ssections["parts"]:
             ret.append(make_block_instance(
                 params["name"], process,
-                sections["controllers"], sections["parts"]))
+                ssections["controllers"], ssections["parts"]))
 
         return ret
 
@@ -156,6 +161,7 @@ class Section(object):
             except AttributeError:
                 logging.error("Can't find %s of %s", n, self.name)
                 raise
+        logging.debug("Instantiating %s with %s", base, self.param_dict)
         args += (
             base.MethodMeta.prepare_input_map_optional_name(self.param_dict),)
         return base(*args)

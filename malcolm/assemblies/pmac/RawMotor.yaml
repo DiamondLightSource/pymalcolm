@@ -40,12 +40,12 @@
 - parts.ca.CAStringPart:
     name: cs_port
     description: CS asyn port name
-    pv: $(prefix):CS_PORT
+    pv: $(prefix):CsPort
     rbv_suff: _RBV
 
-- parts.ca.CALongPart:
+- parts.ca.CAStringPart:
     name: cs_axis
     description: CS axis definition (like X, B, 0 or I)
-    pv: $(prefix):CS_AXIS
+    pv: $(prefix):CsAxis
     rbv_suff: _RBV
 

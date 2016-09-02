@@ -6,10 +6,10 @@ from malcolm.parts.builtin.layoutpart import LayoutPart
 
 class RawMotorPart(LayoutPart):
 
-    @PMACTrajectoryController.MotorReportCSInfo
-    @method_returns([
+    @PMACTrajectoryController.ReportCSInfo
+    @method_returns(
         "cs_axis", StringMeta("CS axis (like A, B, I, 0)"), REQUIRED,
-        "cs_port", StringMeta("CS port name"), REQUIRED])
+        "cs_port", StringMeta("CS port name"), REQUIRED)
     def report_cs_info(self, _, returns):
         returns.cs_axis = self.child.cs_axis
         returns.cs_port = self.child.cs_port

@@ -9,9 +9,9 @@
     rbv_suff: _RBV
 
 - parts.ca.CAActionPart:
-    name: profile_build
+    name: build_profile
     description: command to build the profile once times and positions are set
-    pv: $(prefix):ProfileBuild.PROC
+    pv: $(prefix):ProfileBuild
 
 - parts.ca.CAChoicePart:
     name: build_status
@@ -21,42 +21,48 @@
 - parts.ca.CAStringPart:
     name: build_message
     description: message of last profile build
-    rbv: $(prefix)::ProfileBuildMessage_RBV
+    rbv: $(prefix):ProfileBuildMessage_RBV
 
 - parts.ca.CAActionPart:
-    name: profile_executr
+    name: execute_profile
     description: command to execute the profile once built
-    pv: $(prefix):ProfileExecute.PROC
+    pv: $(prefix):ProfileExecute
 
 - parts.ca.CAChoicePart:
-    name: build_status
+    name: execute_status
     description: status of last profile execute
     rbv: $(prefix):ProfileExecuteStatus_RBV
 
 - parts.ca.CAStringPart:
-    name: build_message
+    name: execute_message
     description: message of last profile execute
-    rbv: $(prefix)::ProfileExecuteMessage_RBV
+    rbv: $(prefix):ProfileExecuteMessage_RBV
 
 - parts.ca.CALongPart:
     name: scan_percentage
     description: percentage complete on current scan
-    rbv: $(prefix):Tscan_percent_RBV
+    rbv: $(prefix):TscanPercent_RBV
 
 - parts.ca.CALongPart:
     name: points_scanned
     description: Number of point scanned so far
     rbv: $(prefix):TotalPoints_RBV
 
-- parts.ca.CADoubleArrayPart:
-    name: times
-    description: a list of the time slices for each step in the profile
-    pv: $(prefix):Times
+- parts.ca.CALongArrayPart:
+    name: time_array
+    description: time slices for each step in the profile in 0.25ms ticks
+    pv: $(prefix):ProfileTimeArray
 
-- parts.ca.CAIntArrayPart:
+- parts.ca.CALongArrayPart:
     name: velocity_mode
     description: a list of the velocity mode masks, lower bit is Prev->Current
-    pv: $(prefix):VelMode
+    pv: $(prefix):VelocityMode
+
+- parts.ca.CALongPart:
+    name: num_points
+    description: Number of points in scan
+    pv: $(prefix):ProfileNumPoints
+    rbv_suff: _RBV
 
 - parts.ca.CAChoicePart:
     name: useA

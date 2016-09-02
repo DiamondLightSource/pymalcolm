@@ -23,7 +23,6 @@ class ManagerController(DefaultController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # default attributes
     totalSteps = None
-    currentStep = None
     exposure = None
     generator = None
     iterator = None
@@ -41,9 +40,6 @@ class ManagerController(DefaultController):
         self.totalSteps = Attribute(NumberMeta(
             "int32", "Readback of number of scan steps"), 0)
         yield "totalSteps", self.totalSteps, None
-        self.currentStep = Attribute(NumberMeta(
-            "int32", "Readback of number of scan steps"), 0)
-        yield "currentStep", self.currentStep, None
 
     def something_create_methods(self):
         # Look for all parts that hook into the validate method
@@ -84,7 +80,6 @@ class ManagerController(DefaultController):
             self.generator = params.generator
             self.points = []
             self.iterator = params.generator.iterator()
-            self.currentStep.set_value(0)
             steps = np.prod(params.generator.index_dims)
             self.totalSteps.set_value(steps)
             self.do_configure(params)
