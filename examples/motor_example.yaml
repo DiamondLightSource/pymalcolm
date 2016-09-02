@@ -1,21 +1,28 @@
 # this sample is intended for use with the test lab setup LAB-MO-IOC-02
 # in MAPPING-BUILDER module
 
-- assemblies.pmac.rawmotor:
+- assemblies.pmac.RawMotor:
     name: stage_x
     motor_prefix: LAB-MO-MAP-02:STAGE:X
     prefix: LAB-MO-MAP-02:STAGEGB1:M1
 
-- assemblies.pmac.rawmotor:
+- assemblies.pmac.RawMotor:
     name: stage_y
     motor_prefix: LAB-MO-MAP-02:STAGE:Y
     prefix: LAB-MO-MAP-02:STAGEGB1:M2
 
-- assemblies.pmac.rawmotor:
+- assemblies.pmac.RawMotor:
     name: stage_z
     motor_prefix: LAB-MO-MAP-02:STAGE:Z
     prefix: LAB-MO-MAP-02:STAGEGB1:M3
 
-- assemblies.pmac.pmac:
-    name: brick1
+- assemblies.pmac.PMACTrajectory:
+    name: brick1_traj
     prefix: LAB-MO-MAP-02:STAGEGB1
+
+- assemblies.pmac.PMACManager:
+    name: brick1
+    traj: brick1_traj
+    m1: stage_x
+    m2: stage_y
+    m3: stage_z

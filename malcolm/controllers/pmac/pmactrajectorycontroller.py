@@ -31,6 +31,7 @@ class PMACTrajectoryController(ManagerController):
     axis_mapping = None
     cs_port = None
     points_built = 0
+    current_steps = None
 
     def do_validate(self, params):
         self.get_cs_port(params.axes_to_move)
@@ -66,15 +67,18 @@ class PMACTrajectoryController(ManagerController):
         self.cs_port, self.axis_mapping = self.get_cs_port(params.axes_to_move)
         self.build_start_profile()
         self.run_hook(self.RunProfile, self.part_tasks)
-        self.points_built = self.build_generator_profile()
+        self.points_built, self.current_steps = self.build_generator_profile()
 
     def do_run(self):
         self.transition(sm.RUNNING, "Waiting for scan to complete")
-        self.run_hook(self.RunProfile, self.part_tasks)
-        more_to_do = self.points_built < self.currentStep.value - 1
+        self.run_hook(self.RunProfile, self.part_tasks,
+                      current_steps=self.current_steps)
+        more_to_do = self.points_built < self.totalSteps.value - 1
         if more_to_do:
             self.transition(sm.POSTRUN, "Building next stage")
-            self.points_built = self.build_generator_profile(self.points_built)
+            self.points_built, self.current_steps = \
+                self.build_generator_profile(self.points_built,
+                                             reset_current_step=False)
             return self.stateMachine.READY
         else:
             self.transition(sm.POSTRUN, "Finishing run")
@@ -123,13 +127,15 @@ class PMACTrajectoryController(ManagerController):
         velocity_mode = [ZERO]
         self.build_profile(time_array, velocity_mode, trajectory)
 
-    def build_profile(self, time_array, velocity_mode, trajectory):
+    def build_profile(self, time_array, velocity_mode, trajectory,
+                      reset_current_step=False):
         """Build profile using self.part_tasks
 
         Args:
             time_array (list): List of times in ms
             velocity_mode (list): List of velocity modes like PREV_TO_NEXT
             trajectory (dict): {axis_name: [positions in EGUs]}
+            reset_current_step (bool): Whether to reset currentStep attribute
         """
         profile = Table(profile_table)
         profile.time = time_array
@@ -150,21 +156,23 @@ class PMACTrajectoryController(ManagerController):
                 profile[cs_axis] = [0] * len(time_array)
 
         self.run_hook(self.BuildProfile, self.part_tasks, profile=profile,
-                      use=use, resolutions=resolutions, offsets=offsets)
+                      use=use, resolutions=resolutions, offsets=offsets,
+                      reset_current_step=reset_current_step)
 
-    def build_generator_profile(self, start=0):
+    def build_generator_profile(self, start=0, reset_current_step=True):
         acceleration_time = self.calculate_acceleration_time()
         fraction = acceleration_time / self.exposure
         trajectory = {}
         time_array = []
         velocity_mode = []
+        current_steps = []
         last_point = None
 
         for i in range(start, self.totalSteps.value):
             point = self.get_point(i)
 
             # Check that none of the external motors need moving
-            if self.external_axis_has_moved(last_point, point):
+            if last_point and self.external_axis_has_moved(last_point, point):
                 break
 
             # Check if we need to insert the lower bound point
@@ -180,11 +188,14 @@ class PMACTrajectoryController(ManagerController):
                     velocity_mode[-1] = PREV_TO_CURRENT
                 velocity_mode.append(CURRENT_TO_NEXT)
                 time_array.append(lower_move_time)
+                current_steps.append(i)
 
             # Add position and upper bound
             for x in range(2):
                 time_array.append(self.exposure / 2.0)
                 velocity_mode.append(PREV_TO_NEXT)
+            current_steps.append(i)
+            current_steps.append(i + 1)
 
             # Add the axis positions
             for axis_name, cs_def in self.axis_mapping.items():
@@ -203,9 +214,15 @@ class PMACTrajectoryController(ManagerController):
             positions.append(positions[-1] + tail_off)
         velocity_mode.append(ZERO)
         time_array.append(acceleration_time)
+        if i + 1 < self.totalSteps.value:
+            # We broke, so don't add i + 1 to current step
+            current_steps.append(i)
+        else:
+            current_steps.append(i + 1)
 
-        self.build_profile(time_array, velocity_mode, trajectory)
-        return i
+        self.build_profile(time_array, velocity_mode, trajectory,
+                           reset_current_step=reset_current_step)
+        return i, current_steps
 
     def need_lower_move_time(self, last_point, point):
         # First point needs to insert lower bound point

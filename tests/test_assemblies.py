@@ -14,9 +14,9 @@ from malcolm.assemblyutil import make_assembly, Section, make_block_instance
 class TestAssemblies(unittest.TestCase):
 
     def test_all_yamls(self):
-        from malcolm.assemblies.demo import hello
+        from malcolm.assemblies.demo import Hello
         process = Mock()
-        blocks = hello(process, dict(name="boo"))
+        blocks = Hello(process, dict(name="boo"))
         self.assertEqual(len(blocks), 1)
         process.add_block.assert_called_once_with(blocks[0])
 
