@@ -61,6 +61,20 @@ class TestPMACTrajectoryController(unittest.TestCase):
         self.assertEqual(params.axes_to_move, ["x"])
         self.assertEqual(params.exposure, 0.05)
 
+    def test_abort(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        gen = CompoundGenerator([ys, xs], [], [])
+        self.b.configure(
+            generator=gen,
+            axes_to_move=["x", "y"],
+            exposure=0.1)
+        r = self.process.spawn(self.b.run)
+        time.sleep(0.25)
+        self.b.abort()
+        self.assertEqual(self.b.currentStep, 1)
+        self.assertRaises(StopIteration, r.get)
+
     def test_configure_run(self):
         self.assertEqual(self.b.state, "Idle")
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)

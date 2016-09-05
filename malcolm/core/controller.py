@@ -252,11 +252,14 @@ class Controller(Loggable):
         def _gather_task_return_value(func, task):
             try:
                 result = func.MethodMeta.call_post_function(func, kwargs, task)
+            except StopIteration as e:
+                self.log_warning("%s has been aborted", func)
+                result = e
             except Exception as e:  # pylint:disable=broad-except
                 self.log_exception("%s %s raised exception", func, kwargs)
-                hook_queue.put((func, e))
-            else:
-                hook_queue.put((func, result))
+                result = e
+            self.log_debug("Putting %r on queue", result)
+            hook_queue.put((func, result))
 
         for func, task in func_tasks.items():
             task.define_spawn_function(_gather_task_return_value, func, task)

@@ -33,7 +33,7 @@ class DummyTrajectoryPart(Part):
         "offsets", NumberArrayMeta(
             "float64", "Offsets for used axes"), REQUIRED,
         "reset_current_step", BooleanMeta("Reset currentStep attr"), True)
-    def build_profile(self, task, params):
+    def build_profile(self, _, params):
         if params.reset_current_step:
             self.currentStep.set_value(0)
         self.profile = params.profile
