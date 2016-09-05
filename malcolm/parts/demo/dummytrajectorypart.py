@@ -43,9 +43,9 @@ class DummyTrajectoryPart(Part):
     @method_takes(
         "current_steps", NumberArrayMeta(
             "int32", "Value of currentStep for each line scanned"), [])
-    def execute_profile(self, _, params):
+    def execute_profile(self, task, params):
         for i, t in enumerate(self.profile.time):
-            time.sleep(t)
+            task.sleep(t)
             for cs_axis in self.use:
                 self.axis_rbv[cs_axis].set_value(self.profile[cs_axis][i])
             if len(params.current_steps) > 0:

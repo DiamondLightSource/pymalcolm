@@ -7,6 +7,7 @@ import setup_malcolm_paths
 
 import unittest
 from mock import MagicMock, ANY
+import time
 
 #module imports
 from malcolm.compat import queue
@@ -124,7 +125,7 @@ class TestTask(unittest.TestCase):
         f_wait1 = [f3]
         self.assertRaises(ValueError, t.wait_all, f_wait1, 0.01)
         t.stop()
-        self.assertRaises(RuntimeWarning, t.wait_all, f_wait1, 0.01)
+        self.assertRaises(StopIteration, t.wait_all, f_wait1, 0.01)
 
         resp1 = Return(1, None, None)
         resp1.set_value('testVal')
@@ -144,7 +145,7 @@ class TestTask(unittest.TestCase):
         resp10 = Return(10, None, None)
         t.q.put(resp10)
         t.q.put(Spawnable.STOP)
-        self.assertRaises(RuntimeWarning, t.wait_all, f1, 0)
+        self.assertRaises(StopIteration, t.wait_all, f1, 0)
 
         # same future twice
         f2 = Future(t)
@@ -171,7 +172,7 @@ class TestTask(unittest.TestCase):
         f1 = Future(t)
         t._futures = {1: f1}
 
-        self.assertRaises(RuntimeWarning, t.wait_all, f1, 0)
+        self.assertRaises(StopIteration, t.wait_all, f1, 0)
         self.assertEqual(self.callback_value, 'changedVal')
         self.assertEqual(self.callback_result, 8)
         t.unsubscribe(new_id)
@@ -212,8 +213,15 @@ class TestTask(unittest.TestCase):
         t.subscribe(self.attr, self._bad_callback)
         f1 = Future(t)
         t._futures = {1: f1}
-        self.assertRaises(RuntimeWarning, t.wait_all, f1, 0)
+        self.assertRaises(StopIteration, t.wait_all, f1, 0)
         self.assertEquals(self.bad_called_back, True)
+
+    def test_sleep(self):
+        t = Task("testTask", self.proc)
+        start = time.time()
+        t.sleep(0.1)
+        end = time.time()
+        self.assertAlmostEqual(end-start, 0.1, delta=0.01)
 
     def test_when_matches(self):
         t = Task("testTask", self.proc)
@@ -240,7 +248,7 @@ class TestTask(unittest.TestCase):
         t.stop()
 
         # this will abort the task because f[0] never gets filled
-        self.assertRaises(RuntimeWarning, f[0].result)
+        self.assertRaises(StopIteration, f[0].result)
 
     def test_start_default_raises(self):
         t = Task("t", self.proc)

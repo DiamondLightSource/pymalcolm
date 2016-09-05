@@ -19,6 +19,7 @@ class PvaServerComms(ServerComms):
 
     def __init__(self, process, _=None):
         self.name = "PvaServerComms"
+        self.set_logger_name(self.name)
 
         self._lock = RLock()
 
@@ -40,7 +41,7 @@ class PvaServerComms(ServerComms):
         # Add a thread for executing the V4 PVA server
         self.add_spawn_function(self.start_pva_server)
 
-        super(PvaServerComms, self).__init__(self.name, process)
+        super(PvaServerComms, self).__init__(process)
 
         # Set up the subscription for everything (root down)
         request = Subscribe(None, self.q, [], True)

@@ -18,19 +18,18 @@ class WebsocketClientComms(ClientComms):
     def __init__(self, process, params):
         """
         Args:
-            name (str): Name for logging
             process (Process): Process for primitive creation
-            url (str): Url for websocket connection. E.g. ws://localhost:8888/ws
+            params (Map): Parameters map
         """
-        url = "ws://%(hostname)s:%(port)d/ws" % params
-        self.url = url
+        self.url = "ws://%(hostname)s:%(port)d/ws" % params
+        self.set_logger_name(self.url)
         # TODO: Are we starting one or more IOLoops here?
         self.loop = IOLoop.current()
         self.conn = websocket_connect(
-            url, callback=self.subscribe_server_blocks,
+            self.url, callback=self.subscribe_server_blocks,
             on_message_callback=self.on_message)
         self.add_spawn_function(self.loop.start, self.stop_recv_loop)
-        super(WebsocketClientComms, self).__init__(url, process)
+        super(WebsocketClientComms, self).__init__(process)
 
     def on_message(self, message):
         """

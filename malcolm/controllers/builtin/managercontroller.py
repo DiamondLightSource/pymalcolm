@@ -106,7 +106,20 @@ class ManagerController(DefaultController):
     def do_run(self):
         raise NotImplementedError()
 
+    @method_only_in(sm.IDLE, sm.CONFIGURING, sm.READY, sm.PRERUN, sm.RUNNING,
+                    sm.POSTRUN, sm.RESETTING, sm.PAUSED, sm.REWINDING)
+    def abort(self):
+        try:
+            self.transition(sm.ABORTING, "Aborting")
+            self.do_abort()
+            self.transition(sm.ABORTED, "Abort finished")
+        except Exception as e:  # pylint:disable=broad-except
+            self.log_exception("Fault occurred while Aborting")
+            self.transition(sm.FAULT, str(e))
+            raise
 
+    def do_abort(self):
+        self.stop_and_wait_part_tasks()
 
 
 
