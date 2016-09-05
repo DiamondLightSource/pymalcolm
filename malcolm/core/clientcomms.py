@@ -11,8 +11,7 @@ class ClientComms(Loggable, Spawnable):
     # The id that will be use for subscriptions to the blocks the server has
     SERVER_BLOCKS_ID=0
 
-    def __init__(self, logger_name, process):
-        self.set_logger_name(logger_name)
+    def __init__(self, process):
         self.process = process
         self.q = self.process.create_queue()
         self._current_id = 1

@@ -18,7 +18,7 @@ class TestClientComms(unittest.TestCase):
     @patch("malcolm.core.clientcomms.ClientComms.make_default_stop_func")
     def test_init(self, def_stop, add_func):
         process = Mock()
-        client = ClientComms("c", process)
+        client = ClientComms(process)
         process.create_queue.assert_called_once_with()
         self.assertEqual(client.q, process.create_queue.return_value)
         spawn_function_calls = client.add_spawn_function.call_args_list
@@ -27,11 +27,11 @@ class TestClientComms(unittest.TestCase):
             spawn_function_calls)
 
     def test_not_implemented_error(self):
-        client = ClientComms("c", Mock())
+        client = ClientComms(Mock())
         self.assertRaises(NotImplementedError, client.send_to_server, Mock())
 
     def test_send_logs_error(self):
-        client = ClientComms("c", Mock())
+        client = ClientComms(Mock())
         client.send_to_server = Mock(side_effect=Exception)
         request = Mock()
         request.to_dict = Mock(return_value = "<to_dict>")
@@ -42,7 +42,7 @@ class TestClientComms(unittest.TestCase):
             "Exception sending request %s", "<to_dict>")
 
     def test_requests_are_stored(self):
-        client = ClientComms("c", Mock())
+        client = ClientComms(Mock())
         client._current_id = 1234
         request = Mock()
         def f(id_):
@@ -55,18 +55,18 @@ class TestClientComms(unittest.TestCase):
         self.assertEquals(expected, client.requests)
 
     def test_send_to_caller_with_block_update(self):
-        c = ClientComms("c", Mock())
+        c = ClientComms(Mock())
         response = Update(id_=0)
         c.send_to_caller(response)
         c.process.update_block_list.assert_called_once_with(c, response.value)
 
     def test_send_to_caller_with_bad_block_update(self):
-        c = ClientComms("c", Mock())
+        c = ClientComms(Mock())
         response = Mock(type_="Delta", id=0, UPDATE="Update")
         self.assertRaises(AssertionError, c.send_to_caller, response)
 
     def test_sends_to_server(self):
-        client = ClientComms("c", Mock())
+        client = ClientComms(Mock())
         client.send_to_server = Mock()
         request = Mock()
         client.q.get = Mock(side_effect = [request, client.STOP])
@@ -76,7 +76,7 @@ class TestClientComms(unittest.TestCase):
         client.log_exception.assert_not_called()
 
     def test_request_id_provided(self):
-        client = ClientComms("c", Mock())
+        client = ClientComms(Mock())
         client._current_id = 1234
         client.send_to_server = Mock()
         request_1 = Mock(id = None)
@@ -88,7 +88,7 @@ class TestClientComms(unittest.TestCase):
 
     def test_send_to_caller(self):
         request = Mock(response_queue=Mock(), id_=1234)
-        client = ClientComms("c", Mock())
+        client = ClientComms(Mock())
         client.requests = {1234:request}
         response = Mock(id = 1234)
         client.send_to_caller(response)

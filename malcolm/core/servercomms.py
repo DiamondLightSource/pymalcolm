@@ -6,8 +6,7 @@ class ServerComms(Loggable, Spawnable):
     """Abstract class for dispatching requests to a process and responses to a
     client"""
 
-    def __init__(self, logger_name, process):
-        self.set_logger_name(logger_name)
+    def __init__(self, process):
         self.process = process
         self.q = self.process.create_queue()
         self.add_spawn_function(self.send_loop,
