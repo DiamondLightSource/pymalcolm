@@ -5,6 +5,7 @@ from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.request import Subscribe, Unsubscribe, Post, Put
 from malcolm.core.response import Error, Return, Update
 from malcolm.core.spawnable import Spawnable
+from malcolm.compat import queue
 
 
 class Task(Loggable, Spawnable):
@@ -198,7 +199,7 @@ class Task(Loggable, Spawnable):
             response = self.q.get(True, timeout)
             self.log_debug("wait_all received response %s", response)
             if response is Spawnable.STOP:
-                raise RuntimeWarning("Task aborted")
+                raise StopIteration()
             elif response.id in self._futures:
                 f = self._update_future(response)
                 if f in futures:
@@ -211,6 +212,17 @@ class Task(Loggable, Spawnable):
                     futures.remove(result)
             else:
                 self.log_debug("wait_all received unsolicited response")
+
+    def sleep(self, seconds):
+        """Services all futures while waiting
+
+        Args:
+            seconds (float): Time to wait
+        """
+        try:
+            self.wait_all([Future(task=None)], seconds)
+        except queue.Empty:
+            return
 
     def _update_future(self, response):
         """called when a future is filled. Updates the future accordingly and
