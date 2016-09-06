@@ -71,4 +71,6 @@ class TestFuture(unittest.TestCase):
         resp1.set_message('test Error')
         self.task.q.put(resp0)
         self.task.q.put(resp1)
-        self.assertEqual(f1.exception(), 'test Error')
+        with self.assertRaises(ValueError) as cm:
+            f1.exception()
+        self.assertEqual(str(cm.exception), 'test Error')

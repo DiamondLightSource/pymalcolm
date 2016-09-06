@@ -241,6 +241,7 @@ class Task(Loggable, Spawnable):
         f = self._futures.pop(response.id)
         if isinstance(response, Error):
             f.set_exception(response.message)
+            raise ValueError(response.message)
         elif isinstance(response, Return):
             f.set_result(response.value)
         else:

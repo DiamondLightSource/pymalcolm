@@ -93,7 +93,7 @@ class TestTask(unittest.TestCase):
         t.q.put(resp2)
         t.stop()
         t.post(self.method, {"a": "testParm"})
-        t.post(self.method, {"a": "testParm2"})
+        self.assertRaises(ValueError, t.post, self.method, {"a": "testParm2"})
         self.assertEqual(len(t._futures), 0)
         self.assertEqual(self.proc.q.qsize(), 2)
 
@@ -112,7 +112,7 @@ class TestTask(unittest.TestCase):
         resp2 = Error(2, None, None)
         t.q.put(resp0)
         t.q.put(resp2)
-        t.wait_all( f_wait1, 0)
+        self.assertRaises(ValueError, t.wait_all, f_wait1, 0)
         self.assertEqual(t._futures, {1: f1, 3: f3})
         self.assertEqual(f0.done(), True)
         self.assertEqual(f1.done(), False)
