@@ -3,7 +3,7 @@ from collections import OrderedDict
 import numpy as np
 
 from malcolm.core import RunnableDeviceStateMachine, REQUIRED, method_returns, \
-    method_only_in, method_takes, ElementMap, Attribute, Task
+    method_only_in, method_takes, ElementMap, Attribute, Task, Hook
 from malcolm.core.vmetas import PointGeneratorMeta, StringArrayMeta, NumberMeta
 from malcolm.controllers.builtin.defaultcontroller import DefaultController
 
@@ -21,6 +21,8 @@ configure_args = [
 @method_takes()
 class ManagerController(DefaultController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
+    # hooks
+    Aborting = Hook()
     # default attributes
     totalSteps = None
     # For storing iterator
@@ -145,7 +147,11 @@ class ManagerController(DefaultController):
             raise
 
     def do_abort(self):
-        self.stop_and_wait_part_tasks()
+        for task in self.part_tasks.values():
+            task.stop()
+        self.run_hook(self.Aborting, self.create_part_tasks())
+        for task in self.part_tasks.values():
+            task.wait()
 
     @method_only_in(sm.PRERUN, sm.RUNNING)
     def pause(self):

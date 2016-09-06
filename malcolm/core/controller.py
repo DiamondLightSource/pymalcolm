@@ -226,12 +226,6 @@ class Controller(Loggable):
             part_tasks[part] = Task("Task(%s)" % part_name, self.process)
         return part_tasks
 
-    def stop_and_wait_part_tasks(self):
-        for task in self.part_tasks.values():
-            task.stop()
-        for task in self.part_tasks.values():
-            task.wait()
-
     def run_hook(self, hook, part_tasks, **kwargs):
         hook_queue, func_tasks, task_part_names = self.start_hook(
             hook, part_tasks, **kwargs)

@@ -73,3 +73,7 @@ class PMACTrajectoryPart(LayoutPart):
         task.subscribe(self.child["points_scanned"], self.update_step,
                        params.completed_steps)
         task.post(self.child["execute_profile"])
+
+    @PMACTrajectoryController.Aborting
+    def stop_execution(self, task):
+        task.post(self.child["abort_profile"])

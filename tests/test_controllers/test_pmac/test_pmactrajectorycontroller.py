@@ -13,7 +13,7 @@ import time
 
 # module imports
 from malcolm.controllers.pmac import PMACTrajectoryController
-from malcolm.controllers.builtin import DefaultController
+from malcolm.controllers.builtin import DefaultController, ManagerController
 from malcolm.core import Process, SyncFactory, Task
 from malcolm.parts.demo.dummymotorpart import DummyMotorPart
 from malcolm.parts.demo.dummytrajectorypart import DummyTrajectoryPart
@@ -48,6 +48,7 @@ class TestPMACTrajectoryController(unittest.TestCase):
             self.c.ReportCSInfo: "ReportCSInfo",
             self.c.BuildProfile: "BuildProfile",
             self.c.RunProfile: "RunProfile",
+            ManagerController.Aborting: "Aborting",
             DefaultController.Resetting: "Resetting",
             DefaultController.Disabling: "Disabling",
         })

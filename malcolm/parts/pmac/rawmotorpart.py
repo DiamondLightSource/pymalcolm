@@ -18,7 +18,8 @@ class RawMotorPart(LayoutPart):
     def get_move_time(self, demand, current=None):
         if current is None:
             current = self.child.position
-        time = abs(demand - current) / self.child.max_velocity
+        time = abs(demand - current) / self.child.max_velocity + \
+            self.get_acceleration_time()
         return time
 
     def get_acceleration_time(self):

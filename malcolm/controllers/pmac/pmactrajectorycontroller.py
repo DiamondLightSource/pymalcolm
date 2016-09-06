@@ -119,9 +119,10 @@ class PMACTrajectoryController(ManagerController):
 
         for axis_name, run_up in \
                 self.run_up_positions(first_point, fraction).items():
-            trajectory[axis_name] = [first_point.lower[axis_name] - run_up]
+            start_pos = first_point.lower[axis_name] - run_up
+            trajectory[axis_name] = [start_pos]
             part = self.parts[axis_name]
-            move_time = max(move_time, part.get_move_time(run_up))
+            move_time = max(move_time, part.get_move_time(start_pos))
 
         time_array = [move_time]
         velocity_mode = [ZERO]
@@ -226,10 +227,19 @@ class PMACTrajectoryController(ManagerController):
         lower_move_time = 0
         for axis_name, cs_def in self.axis_mapping.items():
             if last_point.upper[axis_name] != point.lower[axis_name]:
-                # need to insert lower bound
+                # axis needs to move during turnaround, so insert lower bound
                 move_time = self.parts[axis_name].get_move_time(
                     last_point.upper[axis_name], point.lower[axis_name])
                 lower_move_time = max(lower_move_time, move_time)
+            else:
+                # axis has been moving
+                direction = last_point.upper[axis_name] - \
+                            last_point.lower[axis_name]
+                new_direction = point.upper[axis_name] - point.lower[axis_name]
+                if (direction > 0 and new_direction < 0) or \
+                        (direction < 0 and new_direction > 0):
+                    move_time = self.parts[axis_name].get_acceleration_time() * 2
+                    lower_move_time = max(lower_move_time, move_time)
         return lower_move_time
 
     def external_axis_has_moved(self, last_point, point):
