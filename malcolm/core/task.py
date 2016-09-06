@@ -83,9 +83,13 @@ class Task(Loggable, Spawnable):
 
         return result_f
 
-    def _match_update(self, value, future, required_value, subscription_ids):
+    def _match_update(self, value, future, required_value, subscription_ids,
+                      bad_values=None):
         """a callback for monitoring 'when_matches' requests"""
         self.log_debug("_match_update callback fired")
+        if bad_values is not None:
+            assert value not in bad_values, \
+                "Waiting for %r, got %r" (required_value, value)
 
         ret_val = None
         if value == required_value:
@@ -96,12 +100,13 @@ class Task(Loggable, Spawnable):
             ret_val = future
         return ret_val
 
-    def when_matches(self, attr, value):
+    def when_matches(self, attr, value, bad_values=None):
         """ Wait for an attribute to become a given value
 
             Args:
                 attr (Attribute): The attribute to wait for
                 value (object): the value to wait for
+                bad_values (list): values to raise an error on
 
             Returns: a list of one futures which will complete when
                 all attribute values match the input"""
@@ -110,7 +115,7 @@ class Task(Loggable, Spawnable):
         self._save_future(f)
         subscription_ids = []
         subscription_id = self.subscribe(
-            attr, self._match_update, f, value, subscription_ids)
+            attr, self._match_update, f, value, subscription_ids, bad_values)
         subscription_ids.append(subscription_id)
 
         return [f]
@@ -197,10 +202,11 @@ class Task(Loggable, Spawnable):
         while futures:
             self.log_debug("wait_all awaiting response ...")
             response = self.q.get(True, timeout)
-            self.log_debug("wait_all received response %s", response)
             if response is Spawnable.STOP:
+                self.log_debug("wait_all received Spawnable.STOP")
                 raise StopIteration()
-            elif response.id in self._futures:
+            self.log_debug("wait_all received response %s", response)
+            if response.id in self._futures:
                 f = self._update_future(response)
                 if f in futures:
                     futures.remove(f)
@@ -262,8 +268,8 @@ class Task(Loggable, Spawnable):
 
     def define_spawn_function(self, func, *args):
         self._initialize()
-        if len(self._spawned) > 0:
-            raise AssertionError("Spawned functions are still running")
+        for spawned in self._spawned:
+            assert spawned.ready(), "Spawned %r still running" % spawned
         self._spawn_functions = []
         self.add_spawn_function(
             func, self.make_default_stop_func(self.q), *args)

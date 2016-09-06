@@ -10,12 +10,12 @@ TICK_S = 0.00025
 
 
 class PMACTrajectoryPart(LayoutPart):
-    currentStep = None
+    completedSteps = None
 
     def create_attributes(self):
-        self.currentStep = Attribute(NumberMeta(
+        self.completedSteps = Attribute(NumberMeta(
             "int32", "Readback of number of scan steps"), 0)
-        yield "currentStep", self.currentStep, None
+        yield "completedSteps", self.completedSteps, None
 
     @PMACTrajectoryController.BuildProfile
     @method_takes(
@@ -24,11 +24,8 @@ class PMACTrajectoryPart(LayoutPart):
         "resolutions", NumberArrayMeta(
             "float64", "Resolutions for used axes"), REQUIRED,
         "offsets", NumberArrayMeta(
-            "float64", "Offsets for used axes"), REQUIRED,
-        "reset_current_step", BooleanMeta("Reset currentStep attr"), True)
+            "float64", "Offsets for used axes"), REQUIRED)
     def build_profile(self, task, params):
-        if params.reset_current_step:
-            self.currentStep.set_value(0)
         # First set the resolutions and offsets
         attr_dict = dict()
         for i, cs_axis in enumerate(params.use):
@@ -63,17 +60,17 @@ class PMACTrajectoryPart(LayoutPart):
         task.put({self.child[k]: v for k, v in attr_dict.items()})
         task.post(self.child["build_profile"])
 
-    def update_step(self, scanned, current_steps):
-        if len(current_steps) > 0:
-            current_step = current_steps[scanned - 1]
-            if current_step != self.currentStep.value:
-                self.currentStep.set_value(current_step)
+    def update_step(self, scanned, completed_steps):
+        if len(completed_steps) > 0:
+            completed_steps = completed_steps[scanned - 1]
+            if completed_steps != self.completedSteps.value:
+                self.completedSteps.set_value(completed_steps)
 
     @PMACTrajectoryController.RunProfile
     @method_takes(
-        "current_steps", NumberArrayMeta(
-            "int32", "Value of currentStep for each line scanned"), [])
+        "completed_steps", NumberArrayMeta(
+            "int32", "Value of completedSteps for each line scanned"), [])
     def execute_profile(self, task, params):
         task.subscribe(self.child["points_scanned"], self.update_step,
-                       params.current_steps)
+                       params.completed_steps)
         task.post(self.child["execute_profile"])

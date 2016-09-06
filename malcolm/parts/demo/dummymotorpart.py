@@ -1,11 +1,14 @@
 from malcolm.core import method_takes, method_returns, REQUIRED, Part
-from malcolm.core.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta, NumberMeta
 from malcolm.controllers.pmac import PMACTrajectoryController
 
 
 @method_takes(
     "cs_axis", StringMeta("CS axis to return"), REQUIRED,
     "cs_port", StringMeta("CS port name to return"), "CS1",
+    "acceleration", NumberMeta("float64", "Acceleration Time"), 0.1,
+    "max_velocity", NumberMeta("float64", "Max velocity"), 1.0,
+
 )
 class DummyMotorPart(Part):
 
@@ -21,12 +24,11 @@ class DummyMotorPart(Part):
     def get_move_time(self, demand, current=None):
         if current is None:
             current = demand
-        max_velocity = 1.0
-        time = abs(demand - current) / max_velocity
+        time = abs(demand - current) / self.params.max_velocity
         return time
 
     def get_acceleration_time(self):
-        return 0.1
+        return self.params.acceleration
 
     def get_resolution(self):
         return 0.001

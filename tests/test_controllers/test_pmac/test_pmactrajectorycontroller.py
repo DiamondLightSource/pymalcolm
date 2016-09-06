@@ -14,7 +14,7 @@ import time
 # module imports
 from malcolm.controllers.pmac import PMACTrajectoryController
 from malcolm.controllers.builtin import DefaultController
-from malcolm.core import Process, SyncFactory
+from malcolm.core import Process, SyncFactory, Task
 from malcolm.parts.demo.dummymotorpart import DummyMotorPart
 from malcolm.parts.demo.dummytrajectorypart import DummyTrajectoryPart
 from scanpointgenerator import LineGenerator, CompoundGenerator
@@ -29,11 +29,19 @@ class TestPMACTrajectoryController(unittest.TestCase):
         self.parts = dict(traj=self.traj)
         for m, cs_axis in zip("xyz", "ABC"):
             params = DummyMotorPart.MethodMeta.prepare_input_map(
-                dict(cs_axis=cs_axis))
+                dict(cs_axis=cs_axis, acceleration=0.01, max_velocity=10.0))
             self.parts[m] = DummyMotorPart(self.process, params)
         self.c = PMACTrajectoryController('block', self.process, self.parts)
         self.b = self.c.block
-        self.b.reset()
+        self.process.start()
+
+        # wait until block is Ready
+        task = Task("counter_ready_task", self.process)
+        futures = task.when_matches(self.b["state"], "Idle")
+        task.wait_all(futures, timeout=1)
+
+    def tearDown(self):
+        self.process.stop()
 
     def test_init(self):
         self.assertEqual(self.c.hook_names, {
@@ -62,6 +70,8 @@ class TestPMACTrajectoryController(unittest.TestCase):
         self.assertEqual(params.exposure, 0.05)
 
     def test_abort(self):
+        trajx = self.traj.axis_rbv["A"]
+        trajx.set_value = Mock(wraps=trajx.set_value)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         gen = CompoundGenerator([ys, xs], [], [])
@@ -69,11 +79,70 @@ class TestPMACTrajectoryController(unittest.TestCase):
             generator=gen,
             axes_to_move=["x", "y"],
             exposure=0.1)
+        trajx.set_value.assert_called_once_with(-0.15)
+        trajx.set_value.reset_mock()
         r = self.process.spawn(self.b.run)
-        time.sleep(0.25)
+        time.sleep(0.1 * 1.1 + self.parts["x"].get_acceleration_time())
         self.b.abort()
-        self.assertEqual(self.b.currentStep, 1)
+        self.assertEqual(self.b.completedSteps, 1)
+        self.assertEqual(self.b.state, "Aborted")
         self.assertRaises(StopIteration, r.get)
+        self.assertEqual(trajx.set_value.call_args_list, [
+            call(-0.125),
+            call(0.0),
+            call(0.125)])
+
+    def test_pause(self):
+        trajx = self.traj.axis_rbv["A"]
+        trajx.set_value = Mock(wraps=trajx.set_value)
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        gen = CompoundGenerator([ys, xs], [], [])
+        self.b.configure(
+            generator=gen,
+            axes_to_move=["x", "y"],
+            exposure=0.1)
+        trajx.set_value.assert_called_once_with(-0.15)
+        trajx.set_value.reset_mock()
+        r = self.process.spawn(self.b.run)
+        time.sleep(0.1 * 2.1 + self.parts["x"].get_acceleration_time())
+        self.b.pause()
+        self.assertEqual(self.b.state, "Paused")
+        self.assertEqual(self.b.completedSteps, 2)
+        self.assertEqual(trajx.set_value.call_args_list, [
+            call(-0.125),
+            call(0.0),
+            call(0.125),
+            call(0.25),
+            call(0.375),
+            call(0.35)])
+        trajx.set_value.reset_mock()
+        # rewind one
+        self.b.rewind(1)
+        self.assertEqual(self.b.state, "Paused")
+        self.assertEqual(self.b.completedSteps, 1)
+        trajx.set_value.assert_called_once_with(0.1)
+        trajx.set_value.reset_mock()
+        # kick it off again
+        self.b.resume()
+        time.sleep(0.1)
+        self.assertEqual(self.b.state, "Running")
+        r.wait(1)
+        self.assertEqual(self.b.state, "Idle")
+        self.assertEqual(trajx.set_value.call_args_list, [
+            call(0.125),
+            call(0.25),
+            call(0.375),
+            call(0.5),
+            call(0.625),
+            call(0.625),
+            call(0.5),
+            call(0.375),
+            call(0.25),
+            call(0.125),
+            call(0.0),
+            call(-0.125),
+            call(-0.15)])
 
     def test_configure_run(self):
         self.assertEqual(self.b.state, "Idle")
@@ -87,15 +156,13 @@ class TestPMACTrajectoryController(unittest.TestCase):
         self.b.configure(
             generator=gen,
             axes_to_move=["x", "y"],
-            exposure=0.05)
+            exposure=0.005)
         self.assertEqual(self.b.state, "Ready")
         trajx.set_value.assert_called_once_with(-0.625)
         trajx.set_value.reset_mock()
         trajy.set_value.assert_called_once_with(0.0)
         trajy.set_value.reset_mock()
-        start = time.time()
         self.b.run()
-        end = time.time()
         self.assertEqual(trajx.set_value.call_args_list, [
             call(-0.125),
             call(0.0),
@@ -131,11 +198,9 @@ class TestPMACTrajectoryController(unittest.TestCase):
             call(0.1),
             call(0.1)])
         self.assertEqual(self.b.state, "Idle")
-        turnaround = 0.1
-        expected = 3 * 2 * 0.05 + turnaround + 2 * self.parts["x"].get_acceleration_time()
-        self.assertAlmostEqual(end - start, expected, delta=0.05)
 
     def test_configure_run_external_move(self):
+        overhead = 0.008
         self.assertEqual(self.b.state, "Idle")
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
@@ -144,21 +209,19 @@ class TestPMACTrajectoryController(unittest.TestCase):
         trajx.set_value = Mock(wraps=trajx.set_value)
         trajy = self.traj.axis_rbv["B"]
         trajy.set_value = Mock(wraps=trajy.set_value)
-        curr = self.b["currentStep"]
+        curr = self.b["completedSteps"]
         curr.set_value = Mock(wraps=curr.set_value)
         self.b.configure(
             generator=gen,
             axes_to_move=["x"],
-            exposure=0.05)
+            exposure=0.005)
         self.assertEqual(self.b.state, "Ready")
         trajx.set_value.assert_called_once_with(-0.625)
         trajx.set_value.reset_mock()
-        trajy.set_value.assert_not_called()
+        self.assertEqual(trajy.set_value.called, False)
         curr.set_value.assert_called_once_with(0)
         curr.set_value.reset_mock()
-        start = time.time()
         self.b.run()
-        end = time.time()
         self.assertEqual(trajx.set_value.call_args_list, [
             call(-0.125),
             call(0.0),
@@ -169,20 +232,15 @@ class TestPMACTrajectoryController(unittest.TestCase):
             call(0.625),
             call(1.125)])
         trajx.set_value.reset_mock()
-        trajy.set_value.assert_not_called()
-        trajy.set_value.assert_not_called()
+        self.assertEqual(trajy.set_value.called, False)
         self.assertEqual(self.b.state, "Ready")
-        expected = 3 * 0.05 + 2 * self.parts["x"].get_acceleration_time()
-        self.assertAlmostEqual(end - start, expected, delta=0.05)
         self.assertEqual(curr.set_value.call_args_list, [
             call(1),
             call(2),
             call(3)])
         curr.set_value.reset_mock()
 
-        start = time.time()
         self.b.run()
-        end = time.time()
         self.assertEqual(trajx.set_value.call_args_list, [
             call(0.625),
             call(0.5),
@@ -192,10 +250,8 @@ class TestPMACTrajectoryController(unittest.TestCase):
             call(0.0),
             call(-0.125),
             call(-0.625)])
-        trajy.set_value.assert_not_called()
+        self.assertEqual(trajy.set_value.called, False)
         self.assertEqual(self.b.state, "Idle")
-        expected = 3 * 0.05 + 2 * self.parts["x"].get_acceleration_time()
-        self.assertAlmostEqual(end - start, expected, delta=0.05)
         self.assertEqual(curr.set_value.call_args_list, [
             call(4),
             call(5),

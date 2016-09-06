@@ -199,12 +199,12 @@ class Controller(Loggable):
             if isinstance(child, MethodMeta):
                 method = child
                 writeable = self.methods_writeable[state][method]
-                self.log_debug("Setting %s %s to writeable %s", name, method, writeable)
                 self.add_change(changes, method, "writeable", writeable)
                 for ename in method.takes.elements:
                     meta = method.takes.elements[ename]
                     self.add_change(changes, meta, "writeable", writeable)
 
+        self.log_debug("Transitioning to %s", state)
         self.block.apply_changes(*changes)
 
     def register_method_writeable(self, method, states):
@@ -263,6 +263,7 @@ class Controller(Loggable):
 
         for func, task in func_tasks.items():
             task.define_spawn_function(_gather_task_return_value, func, task)
+            self.log_debug("Starting task %r", task)
             task.start()
 
         # Create the reverse dictionary so we know where to store the results
@@ -279,16 +280,22 @@ class Controller(Loggable):
         while func_tasks:
             func, ret = hook_queue.get()
             task = func_tasks.pop(func)
-            # Need to wait on it to clear spawned
-            task.wait()
             part_name = task_part_names[task]
             return_dict[part_name] = ret
+
             if isinstance(ret, Exception):
                 # Stop all other tasks
                 for task in func_tasks.values():
                     task.stop()
                 for task in func_tasks.values():
                     task.wait()
+
+            # If we got a StopIteration, someone asked us to stop, so
+            # don't wait, otherwise make sure we finished
+            if not isinstance(ret, StopIteration):
+                task.wait()
+
+            if isinstance(ret, Exception):
                 raise ret
 
         return return_dict
