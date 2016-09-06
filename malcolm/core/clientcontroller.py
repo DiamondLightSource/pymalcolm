@@ -25,7 +25,7 @@ class ClientController(Controller):
 
     def put(self, response):
         """We don't have a queue as no thread to service, but act like one"""
-        if response.id == self.REMOTE_BLOCKS_ID:
+        if response.id == self.REMOTE_BLOCKS_ID and self.client_comms is None:
             if response.value and self.block_name in response.value:
                 # process knows how to get to a block
                 self._subscribe_to_block(self.block_name)

@@ -3,7 +3,7 @@ from collections import OrderedDict
 import numpy as np
 
 from malcolm.core import RunnableDeviceStateMachine, REQUIRED, method_returns, \
-    method_only_in, method_takes, ElementMap, Attribute
+    method_only_in, method_takes, ElementMap, Attribute, Task
 from malcolm.core.vmetas import PointGeneratorMeta, StringArrayMeta, NumberMeta
 from malcolm.controllers.builtin.defaultcontroller import DefaultController
 
@@ -23,10 +23,11 @@ class ManagerController(DefaultController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # default attributes
     totalSteps = None
-    exposure = None
-    generator = None
+    # For storing iterator
     iterator = None
     points = None
+    # Params passed to configure()
+    configure_params = None
 
     def get_point(self, num):
         npoints = len(self.points)
@@ -76,34 +77,59 @@ class ManagerController(DefaultController):
     def configure(self, params):
         try:
             self.transition(sm.CONFIGURING, "Configuring", create_tasks=True)
-            self.exposure = params.exposure
-            self.generator = params.generator
+            self.configure_params = params
             self.points = []
             self.iterator = params.generator.iterator()
             steps = np.prod(params.generator.index_dims)
             self.totalSteps.set_value(steps)
-            self.do_configure(params)
+            self.block["completedSteps"].set_value(0)
+            self.do_configure(self.part_tasks, params)
             self.transition(sm.READY, "Done configuring")
         except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Fault occurred while Configuring")
             self.transition(sm.FAULT, str(e))
             raise
 
-    def do_configure(self, params):
+    def do_configure(self, part_tasks, params, start_index=0):
         raise NotImplementedError()
 
     @method_only_in(sm.READY)
     def run(self):
         try:
             self.transition(sm.PRERUN, "Preparing for run", create_tasks=True)
-            next_state = self.do_run()
+            next_state = self._call_do_run()
             self.transition(next_state, "Run finished")
+        except StopIteration:
+            self.log_warning("Run aborted")
+            raise
         except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Fault occurred while Running")
             self.transition(sm.FAULT, str(e))
             raise
 
-    def do_run(self):
+    def _call_do_run(self):
+        try:
+            return self.do_run(self.part_tasks)
+        except StopIteration:
+            # Work out if it was an abort or pause
+            with self.lock:
+                state = self.state.value
+            self.log_debug("Do run got StopIteration from %s", state)
+            if state in (sm.REWINDING, sm.PAUSED):
+                # Wait to be restarted
+                self.log_debug("Waiting for PreRun")
+                task = Task("StateWaiter", self.process)
+                futures = task.when_matches(self.state, sm.PRERUN, [
+                    sm.DISABLING, sm.ABORTING, sm.FAULT])
+                task.wait_all(futures, timeout=10)
+                # Restart it
+                return self._call_do_run()
+            else:
+                # just drop out
+                self.log_debug("We were aborted")
+                raise
+
+    def do_run(self, part_tasks):
         raise NotImplementedError()
 
     @method_only_in(sm.IDLE, sm.CONFIGURING, sm.READY, sm.PRERUN, sm.RUNNING,
@@ -121,6 +147,43 @@ class ManagerController(DefaultController):
     def do_abort(self):
         self.stop_and_wait_part_tasks()
 
+    @method_only_in(sm.PRERUN, sm.RUNNING)
+    def pause(self):
+        try:
+            self.transition(sm.REWINDING, "Rewinding")
+            current_index = self.block.completedSteps
+            self.do_abort()
+            self.part_tasks = self.create_part_tasks()
+            self.do_configure(
+                self.part_tasks, self.configure_params, current_index)
+            self.transition(sm.PAUSED, "Pause finished")
+        except Exception as e:  # pylint:disable=broad-except
+            self.log_exception("Fault occurred while Pausing")
+            self.transition(sm.FAULT, str(e))
+            raise
+
+    @method_only_in(sm.READY, sm.PAUSED)
+    @method_takes("steps", NumberMeta(
+        "uint32", "Number of steps to rewind"), REQUIRED)
+    def rewind(self, params):
+        try:
+            self.transition(sm.REWINDING, "Rewinding")
+            current_index = self.block.completedSteps
+            requested_index = current_index - params.steps
+            assert requested_index >= 0, \
+                "Cannot retrace to before the start of the scan"
+            self.block["completedSteps"].set_value(requested_index)
+            self.do_configure(
+                self.part_tasks, self.configure_params, requested_index)
+            self.transition(sm.PAUSED, "Rewind finished")
+        except Exception as e:  # pylint:disable=broad-except
+            self.log_exception("Fault occurred while Rewinding")
+            self.transition(sm.FAULT, str(e))
+            raise
+
+    @method_only_in(sm.PAUSED)
+    def resume(self):
+        self.transition(sm.PRERUN, "Resuming run")
 
 
 

@@ -199,12 +199,12 @@ class Controller(Loggable):
             if isinstance(child, MethodMeta):
                 method = child
                 writeable = self.methods_writeable[state][method]
-                self.log_debug("Setting %s %s to writeable %s", name, method, writeable)
                 self.add_change(changes, method, "writeable", writeable)
                 for ename in method.takes.elements:
                     meta = method.takes.elements[ename]
                     self.add_change(changes, meta, "writeable", writeable)
 
+        self.log_debug("Transitioning to %s", state)
         self.block.apply_changes(*changes)
 
     def register_method_writeable(self, method, states):
@@ -237,6 +237,22 @@ class Controller(Loggable):
             hook, part_tasks, **kwargs)
         return self.wait_hook(hook_queue, func_tasks, task_part_names)
 
+    def make_task_return_value_function(self, hook_queue, **kwargs):
+
+        def task_return(func, task):
+            try:
+                result = func.MethodMeta.call_post_function(func, kwargs, task)
+            except StopIteration as e:
+                self.log_warning("%s has been aborted", func)
+                result = e
+            except Exception as e:  # pylint:disable=broad-except
+                self.log_exception("%s %s raised exception", func, kwargs)
+                result = e
+            self.log_debug("Putting %r on queue", result)
+            hook_queue.put((func, result))
+
+        return task_return
+
     def start_hook(self, hook, part_tasks, **kwargs):
         assert hook in self.hook_names, \
             "Hook %s doesn't appear in controller hooks %s" % (
@@ -248,18 +264,11 @@ class Controller(Loggable):
 
         # now start them off
         hook_queue = self.process.create_queue()
-
-        def _gather_task_return_value(func, task):
-            try:
-                result = func.MethodMeta.call_post_function(func, kwargs, task)
-            except Exception as e:  # pylint:disable=broad-except
-                self.log_exception("%s %s raised exception", func, kwargs)
-                hook_queue.put((func, e))
-            else:
-                hook_queue.put((func, result))
+        task_return = self.make_task_return_value_function(hook_queue, **kwargs)
 
         for func, task in func_tasks.items():
-            task.define_spawn_function(_gather_task_return_value, func, task)
+            task.define_spawn_function(task_return, func, task)
+            self.log_debug("Starting task %r", task)
             task.start()
 
         # Create the reverse dictionary so we know where to store the results
@@ -276,16 +285,22 @@ class Controller(Loggable):
         while func_tasks:
             func, ret = hook_queue.get()
             task = func_tasks.pop(func)
-            # Need to wait on it to clear spawned
-            task.wait()
             part_name = task_part_names[task]
             return_dict[part_name] = ret
+
             if isinstance(ret, Exception):
                 # Stop all other tasks
                 for task in func_tasks.values():
                     task.stop()
                 for task in func_tasks.values():
                     task.wait()
+
+            # If we got a StopIteration, someone asked us to stop, so
+            # don't wait, otherwise make sure we finished
+            if not isinstance(ret, StopIteration):
+                task.wait()
+
+            if isinstance(ret, Exception):
                 raise ret
 
         return return_dict

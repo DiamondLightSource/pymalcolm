@@ -117,7 +117,7 @@ class TestWSServerComms(unittest.TestCase):
 
         response_mock = MagicMock()
         response_mock.context = MagicMock(spec=MalcWebSocketHandler)
-        self.WS.send_to_client(response_mock)
+        self.WS._send_to_client(response_mock)
 
         json_mock.dumps.assert_called_once_with(response_mock.to_dict())
         response_mock.context.write_message.assert_called_once_with(
@@ -131,7 +131,7 @@ class TestWSServerComms(unittest.TestCase):
         response = MagicMock(spec=Return)
         response.value = MagicMock()
         response.context = MagicMock()
-        ws.send_to_client(response)
+        ws._send_to_client(response)
 
         json_mock.dumps.assert_called_once_with(response.value.to_dict())
         response.context.finish.assert_called_once_with(
@@ -145,7 +145,7 @@ class TestWSServerComms(unittest.TestCase):
         response = MagicMock(spec=Error)
         response.context = MagicMock()
         response.message = MagicMock()
-        ws.send_to_client(response)
+        ws._send_to_client(response)
 
         response.context.set_status.assert_called_once_with(
             500, response.message)
@@ -157,7 +157,7 @@ class TestWSServerComms(unittest.TestCase):
     def test_send_to_client_unknown(self, _, _2, json_mock):
         ws = WebsocketServerComms(self.p, dict(port=1))
         response = MagicMock()
-        ws.send_to_client(response)
+        ws._send_to_client(response)
 
         response.context.set_status.assert_called_once_with(
             500, "Unknown response %s" % type(response))

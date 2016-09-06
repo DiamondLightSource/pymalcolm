@@ -40,7 +40,7 @@ class Task(Loggable, Spawnable):
         self._subscriptions[new_id] = (endpoint, function, args)
         return new_id
 
-    def put(self, attr_or_items, value=None):
+    def put(self, attr_or_items, value=None, timeout=None):
         """"puts a value or values into an attribute or attributes and returns
                 once all values have been set
 
@@ -48,11 +48,13 @@ class Task(Loggable, Spawnable):
                 attr_or_items (Attribute or Dict): The attribute or dictionary
                     of {attributes: values} to set
                 value (object): For single attr, the value set
+                timeout (Float) time in seconds to wait for responses, wait
+                    forever if None
 
             Returns:
                  a list of futures to monitor when each put completes"""
         f = self.put_async(attr_or_items, value)
-        self.wait_all(f)
+        self.wait_all(f, timeout=timeout)
 
     def put_async(self, attr_or_items, value=None):
         """"puts a value or values into an attribute or attributes and returns
@@ -83,9 +85,13 @@ class Task(Loggable, Spawnable):
 
         return result_f
 
-    def _match_update(self, value, future, required_value, subscription_ids):
+    def _match_update(self, value, future, required_value, subscription_ids,
+                      bad_values=None):
         """a callback for monitoring 'when_matches' requests"""
         self.log_debug("_match_update callback fired")
+        if bad_values is not None:
+            assert value not in bad_values, \
+                "Waiting for %r, got %r" % (required_value, value)
 
         ret_val = None
         if value == required_value:
@@ -96,12 +102,13 @@ class Task(Loggable, Spawnable):
             ret_val = future
         return ret_val
 
-    def when_matches(self, attr, value):
+    def when_matches(self, attr, value, bad_values=None):
         """ Wait for an attribute to become a given value
 
             Args:
                 attr (Attribute): The attribute to wait for
                 value (object): the value to wait for
+                bad_values (list): values to raise an error on
 
             Returns: a list of one futures which will complete when
                 all attribute values match the input"""
@@ -110,23 +117,25 @@ class Task(Loggable, Spawnable):
         self._save_future(f)
         subscription_ids = []
         subscription_id = self.subscribe(
-            attr, self._match_update, f, value, subscription_ids)
+            attr, self._match_update, f, value, subscription_ids, bad_values)
         subscription_ids.append(subscription_id)
 
         return [f]
 
-    def post(self, method, params=None):
+    def post(self, method, params=None, timeout=None):
         """Synchronously calls a block method
 
             Args:
                 method (MethodMeta): the method to call
                 params (dict): parameters for the call
+                timeout (Float) time in seconds to wait for responses, wait
+                    forever if None
 
             Returns:
                 the result from 'method'"""
 
         f = self.post_async(method, params)
-        self.wait_all(f)
+        self.wait_all(f, timeout=timeout)
 
         return f
 
@@ -197,10 +206,11 @@ class Task(Loggable, Spawnable):
         while futures:
             self.log_debug("wait_all awaiting response ...")
             response = self.q.get(True, timeout)
-            self.log_debug("wait_all received response %s", response)
             if response is Spawnable.STOP:
+                self.log_debug("wait_all received Spawnable.STOP")
                 raise StopIteration()
-            elif response.id in self._futures:
+            self.log_debug("wait_all received response %s", response)
+            if response.id in self._futures:
                 f = self._update_future(response)
                 if f in futures:
                     futures.remove(f)
@@ -262,8 +272,8 @@ class Task(Loggable, Spawnable):
 
     def define_spawn_function(self, func, *args):
         self._initialize()
-        if len(self._spawned) > 0:
-            raise AssertionError("Spawned functions are still running")
+        for spawned in self._spawned:
+            assert spawned.ready(), "Spawned %r still running" % spawned
         self._spawn_functions = []
         self.add_spawn_function(
             func, self.make_default_stop_func(self.q), *args)

@@ -19,7 +19,7 @@ from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.future import Future
 from malcolm.core.vmeta import VMeta
 from malcolm.core.attribute import Attribute
-from malcolm.core.block import Block
+from malcolm.core import Process, Block, SyncFactory
 
 
 #import logging
@@ -219,9 +219,9 @@ class TestTask(unittest.TestCase):
     def test_sleep(self):
         t = Task("testTask", self.proc)
         start = time.time()
-        t.sleep(0.1)
+        t.sleep(0.05)
         end = time.time()
-        self.assertAlmostEqual(end-start, 0.1, delta=0.01)
+        self.assertAlmostEqual(end-start, 0.05, delta=0.001)
 
     def test_when_matches(self):
         t = Task("testTask", self.proc)
@@ -261,12 +261,18 @@ class TestTask(unittest.TestCase):
         self.assertEquals([(None, (), ANY)], t._spawn_functions)
 
     def test_clear_raises_if_running(self):
-        t = Task("testTask", self.proc)
-        f = MagicMock()
+        proc = Process("proc", SyncFactory("sync"))
+        t = Task("testTask", proc)
+        import time
+        def f():
+            time.sleep(0.05)
         t.define_spawn_function(f)
+        start = time.time()
         t.start()
         self.assertRaises(AssertionError, t.define_spawn_function, None)
         t.wait()
+        end = time.time()
+        self.assertAlmostEqual(end-start, 0.05, delta=0.001)
         t.define_spawn_function(None)
 
 if __name__ == "__main__":

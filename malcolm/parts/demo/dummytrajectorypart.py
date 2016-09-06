@@ -1,8 +1,5 @@
-import time
-
 from malcolm.core import method_takes, REQUIRED, Attribute, Part
-from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, NumberMeta, \
-    BooleanMeta
+from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, NumberMeta
 from malcolm.controllers.pmac.pmactrajectorycontroller import \
     PMACTrajectoryController, profile_table, cs_axis_names
 
@@ -12,7 +9,7 @@ class DummyTrajectoryPart(Part):
     profile = None
     use = None
     axis_rbv = None
-    currentStep = None
+    completedSteps = None
 
     def create_attributes(self):
         self.axis_rbv = {}
@@ -20,9 +17,9 @@ class DummyTrajectoryPart(Part):
             self.axis_rbv[cs_axis] = Attribute(NumberMeta(
                 "float64", "%s readback value" % cs_axis), 0.0)
             yield (cs_axis, self.axis_rbv[cs_axis], None)
-        self.currentStep = Attribute(NumberMeta(
+        self.completedSteps = Attribute(NumberMeta(
             "int32", "Readback of number of scan steps"), 0)
-        yield "currentStep", self.currentStep, None
+        yield "completedSteps", self.completedSteps, None
 
     @PMACTrajectoryController.BuildProfile
     @method_takes(
@@ -31,24 +28,21 @@ class DummyTrajectoryPart(Part):
         "resolutions", NumberArrayMeta(
             "float64", "Resolutions for used axes"), REQUIRED,
         "offsets", NumberArrayMeta(
-            "float64", "Offsets for used axes"), REQUIRED,
-        "reset_current_step", BooleanMeta("Reset currentStep attr"), True)
-    def build_profile(self, task, params):
-        if params.reset_current_step:
-            self.currentStep.set_value(0)
+            "float64", "Offsets for used axes"), REQUIRED)
+    def build_profile(self, _, params):
         self.profile = params.profile
         self.use = params.use
 
     @PMACTrajectoryController.RunProfile
     @method_takes(
-        "current_steps", NumberArrayMeta(
-            "int32", "Value of currentStep for each line scanned"), [])
+        "completed_steps", NumberArrayMeta(
+            "int32", "Value of completedSteps for each line scanned"), [])
     def execute_profile(self, task, params):
         for i, t in enumerate(self.profile.time):
             task.sleep(t)
             for cs_axis in self.use:
                 self.axis_rbv[cs_axis].set_value(self.profile[cs_axis][i])
-            if len(params.current_steps) > 0:
-                current_step = params.current_steps[i]
-                if current_step != self.currentStep.value:
-                    self.currentStep.set_value(current_step)
+            if len(params.completed_steps) > 0:
+                completed_steps = params.completed_steps[i]
+                if completed_steps != self.completedSteps.value:
+                    self.completedSteps.set_value(completed_steps)

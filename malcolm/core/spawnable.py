@@ -25,6 +25,7 @@ class Spawnable(object):
         if process is None:
             process = self.process
         self._initialize()
+        self._spawned = []
         for (func, args, _) in self._spawn_functions:
             assert func is not None, "Spawned function is None"
             self._spawned.append(process.spawn(func, *args))
@@ -41,7 +42,7 @@ class Spawnable(object):
         self._initialize()
         for spawned in self._spawned:
             spawned.wait(timeout=timeout)
-        self._spawned = []
+            assert spawned.ready(), "Spawned %r still running" % spawned
 
     def add_spawn_function(self, func, stop_func=None, *args):
         """Register functions to be triggered by self.start and self.stop
