@@ -237,19 +237,9 @@ class Controller(Loggable):
             hook, part_tasks, **kwargs)
         return self.wait_hook(hook_queue, func_tasks, task_part_names)
 
-    def start_hook(self, hook, part_tasks, **kwargs):
-        assert hook in self.hook_names, \
-            "Hook %s doesn't appear in controller hooks %s" % (
-                hook, self.hook_names)
-        self.log_debug("Running %s hook", self.hook_names[hook])
+    def make_task_return_value_function(self, hook_queue, **kwargs):
 
-        # ask the hook to find the functions it should run
-        func_tasks = hook.find_func_tasks(part_tasks)
-
-        # now start them off
-        hook_queue = self.process.create_queue()
-
-        def _gather_task_return_value(func, task):
+        def task_return(func, task):
             try:
                 result = func.MethodMeta.call_post_function(func, kwargs, task)
             except StopIteration as e:
@@ -261,8 +251,23 @@ class Controller(Loggable):
             self.log_debug("Putting %r on queue", result)
             hook_queue.put((func, result))
 
+        return task_return
+
+    def start_hook(self, hook, part_tasks, **kwargs):
+        assert hook in self.hook_names, \
+            "Hook %s doesn't appear in controller hooks %s" % (
+                hook, self.hook_names)
+        self.log_debug("Running %s hook", self.hook_names[hook])
+
+        # ask the hook to find the functions it should run
+        func_tasks = hook.find_func_tasks(part_tasks)
+
+        # now start them off
+        hook_queue = self.process.create_queue()
+        task_return = self.make_task_return_value_function(hook_queue, **kwargs)
+
         for func, task in func_tasks.items():
-            task.define_spawn_function(_gather_task_return_value, func, task)
+            task.define_spawn_function(task_return, func, task)
             self.log_debug("Starting task %r", task)
             task.start()
 

@@ -1,6 +1,5 @@
 from malcolm.core import method_takes, REQUIRED, Attribute, Part
-from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, NumberMeta, \
-    BooleanMeta
+from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, NumberMeta
 from malcolm.controllers.pmac.pmactrajectorycontroller import \
     PMACTrajectoryController, profile_table, cs_axis_names
 

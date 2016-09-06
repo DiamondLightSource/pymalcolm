@@ -89,7 +89,7 @@ class Task(Loggable, Spawnable):
         self.log_debug("_match_update callback fired")
         if bad_values is not None:
             assert value not in bad_values, \
-                "Waiting for %r, got %r" (required_value, value)
+                "Waiting for %r, got %r" % (required_value, value)
 
         ret_val = None
         if value == required_value:

@@ -204,7 +204,7 @@ class PMACTrajectoryController(ManagerController):
                 positions.append(point.positions[axis_name])
                 positions.append(point.upper[axis_name])
             last_point = point
-        a = 1
+
         # Add a tail off position
         for axis_name, tail_off in \
                 self.run_up_positions(last_point, fraction).items():
