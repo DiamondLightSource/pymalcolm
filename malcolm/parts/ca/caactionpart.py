@@ -10,6 +10,8 @@ from malcolm.controllers.builtin import DefaultController
     "name", StringMeta("name of the created method"), REQUIRED,
     "description", StringMeta("desc of created method"), REQUIRED,
     "pv", StringMeta("full pv to write to when method called"), REQUIRED,
+    "status_pv", StringMeta("Status pv to see if successful"), None,
+    "good_status", StringMeta("Good value for status pv"), "",
     "value", NumberMeta("int32", "value to write to pv when method called"), 1,
     "wait", BooleanMeta("Wait for caput callback?"), True)
 class CAActionPart(Part):
@@ -23,11 +25,21 @@ class CAActionPart(Part):
     @DefaultController.Resetting
     def connect_pvs(self, _):
         # make the connection in cothread's thread
-        v = cothread.CallbackResult(catools.caget, self.params.pv)
+        pvs = [self.params.pv]
+        if self.params.status_pv:
+            pvs.append(self.params.status_pv)
+        ca_values = cothread.CallbackResult(catools.caget, pvs)
         # check connection is ok
-        assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
+        for i, v in enumerate(ca_values):
+            assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
 
     def caput(self):
         cothread.CallbackResult(
             catools.caput, self.params.pv, self.params.value,
             wait=self.params.wait, timeout=None)
+        if self.params.status_pv:
+            value = cothread.CallbackResult(
+                catools.caget, self.params.status_pv,
+                datatype=catools.DBR_STRING)
+            assert value == self.params.good_status, \
+                "Action failed with status %r" % (value,)
