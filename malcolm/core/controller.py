@@ -243,7 +243,7 @@ class Controller(Loggable):
             try:
                 result = func.MethodMeta.call_post_function(func, kwargs, task)
             except StopIteration as e:
-                self.log_warning("%s has been aborted", func)
+                self.log_debug("%s has been aborted", func)
                 result = e
             except Exception as e:  # pylint:disable=broad-except
                 self.log_exception("%s %s raised exception", func, kwargs)

@@ -121,7 +121,7 @@ class ManagerController(DefaultController):
                 task = Task("StateWaiter", self.process)
                 futures = task.when_matches(self.state, sm.PRERUN, [
                     sm.DISABLING, sm.ABORTING, sm.FAULT])
-                task.wait_all(futures, timeout=10)
+                task.wait_all(futures)
                 # Restart it
                 return self._call_do_run()
             else:
@@ -166,12 +166,12 @@ class ManagerController(DefaultController):
     @method_takes("steps", NumberMeta(
         "uint32", "Number of steps to rewind"), REQUIRED)
     def rewind(self, params):
+        current_index = self.block.completedSteps
+        requested_index = current_index - params.steps
+        assert requested_index >= 0, \
+            "Cannot retrace to before the start of the scan"
         try:
             self.transition(sm.REWINDING, "Rewinding")
-            current_index = self.block.completedSteps
-            requested_index = current_index - params.steps
-            assert requested_index >= 0, \
-                "Cannot retrace to before the start of the scan"
             self.block["completedSteps"].set_value(requested_index)
             self.do_configure(
                 self.part_tasks, self.configure_params, requested_index)
