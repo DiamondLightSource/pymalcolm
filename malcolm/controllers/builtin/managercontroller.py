@@ -121,7 +121,7 @@ class ManagerController(DefaultController):
                 task = Task("StateWaiter", self.process)
                 futures = task.when_matches(self.state, sm.PRERUN, [
                     sm.DISABLING, sm.ABORTING, sm.FAULT])
-                task.wait_all(futures)
+                task.wait_all(futures, timeout=10)
                 # Restart it
                 return self._call_do_run()
             else:
