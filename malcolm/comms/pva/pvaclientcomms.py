@@ -78,6 +78,8 @@ class PvaClientComms(ClientComms, PvaUtil):
                         return_object = Error(id_=request["id"], message=value['message'])
                     else:
                         return_object = Return(id_=request["id"], value=value)
+                else:
+                    return_object = Error(id_=request["id"], message="No valid return typeid")
             except:
                 # PvAccess error, create the Error message
                 return_object = Error(id_=request["id"], message="PvAccess error")
