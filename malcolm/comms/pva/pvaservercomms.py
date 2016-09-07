@@ -235,6 +235,8 @@ class PvaServerComms(ServerComms):
                             structure[item] = [pvaccess.INT]
                         elif isinstance(dict_in[item][0], long_):
                             structure[item] = [pvaccess.LONG]
+                        elif isinstance(dict_in[item][0], OrderedDict):
+                            structure[item] = [({},)]
                 elif isinstance(dict_in[item], OrderedDict):
                     dict_structure = self.dict_to_structure(dict_in[item])
                     if dict_structure:
@@ -244,7 +246,7 @@ class PvaServerComms(ServerComms):
                 return None
 
             if not typeid:
-                pv_object = pvaccess.PvObject(structure)
+                pv_object = pvaccess.PvObject(structure, "")
             else:
 
                 pv_object = pvaccess.PvObject(structure, typeid)
@@ -277,13 +279,15 @@ class PvaEndpoint(Loggable):
         self.log_debug("Registering PVA Endpoint for block %s", self._block)
         self._endpoint.registerEndpointGet(self.get_callback)
         self._endpoint.registerEndpointRPC(self.rpc_callback)
-#        self._endpoint.registerEndpointMonitor(self.monitor_callback)
+        #self._endpoint.registerEndpointMonitor(self.monitor_callback)
         self._pva_server.registerEndpoint(self._block, self._endpoint)
 
-#    def monitor_callback(self, request):
-#        self.log_debug("Monitor callback called for: %s", self._block)
-#        self.log_debug("Request structure: %s", request.toDict())
-#
+    def monitor_callback(self, request):
+        self.log_debug("Monitor callback called for: %s", self._block)
+        self.log_debug("Request structure: %s", request.toDict())
+        pva_impl = PvaMonitorImplementation()
+        return pva_impl
+
     def get_callback(self, request):
         self.log_debug("Get callback called for: %s", self._block)
         self.log_debug("Request structure: %s", request.toDict())
@@ -357,7 +361,7 @@ class PvaGetImplementation(Loggable):
 
 class PvaRpcImplementation(Loggable):
     def __init__(self, id, server, block, method):
-        self.set_logger_name("sc")
+        self.set_logger_name("PvaRpcImplementation")
         self._id = id
         self._server = server
         self._block = block
@@ -380,11 +384,14 @@ class PvaRpcImplementation(Loggable):
 
     def execute(self, args):
         self.log_debug("Execute %s method called on [%s] with: %s", self._method, self._block, args)
+        self.log_debug("Structure: %s", args.getStructureDict())
+        #self.log_debug("Structure ID: %s", args.getStructureID())
+        #self.log_debug("Structure ID: %s", args.getPyObject('next').getStructureID())
         # Acquire the lock
         with self._lock:
             # We now need to create the Post message and execute it
             endpoint = [self._block, self._method]
-            request = Post(None, self._server.q, endpoint, args.toDict())
+            request = Post(None, self._server.q, endpoint, args.toDict(True))
             request.set_id(self._id)
             self._server.process.q.put(request)
 
@@ -412,3 +419,14 @@ class PvaRpcImplementation(Loggable):
             #self._server.register_dead_rpc(self._id)
             return pv_object
 
+#class PvaMonitorImplementation(Loggable):
+#    def __init__(self):
+#        self.set_logger_name("PvaMonitorImplementation")
+#
+#    def getPVStructure(self):
+#        self.log_debug("getPVStructure called")
+#        pv_object = pvaccess.PvObject(OrderedDict({'value': pvaccess.INT}))
+#        return pv_object
+#
+#    def set_event_queue(self, arg1):
+#        self.log_debug("setEventQueue called with argument: %s", arg1)

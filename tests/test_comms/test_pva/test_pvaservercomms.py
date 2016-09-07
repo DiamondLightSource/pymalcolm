@@ -213,6 +213,13 @@ class TestPVAServerComms(unittest.TestCase):
         object = self.PVA.cache_to_pvobject("test.block", [["p1", "p2"]])
         self.assertEqual(object, PvTempObject(OrderedDict({"p1": OrderedDict({"p2": "val2"})}), "type1"))
 
+        self.PVA._cache["test.block"] = OrderedDict({"p1": [OrderedDict({"p2": 2, "typeid": "type2"}),
+                                                            OrderedDict({"p3": "val3", "typeid": "type3"})],
+                                                     "typeid": "type1"})
+        object = self.PVA.cache_to_pvobject("test.block", [["p1"]])
+        print(object)
+        raise
+
     def test_dict_to_stucture(self):
         self.PVA = PvaServerComms(self.p)
         #val = self.PVA.dict_to_structure({"typeid": "type1", "level1": {"typeid": "type2", "level2": {"typeid": "type3", "item1": 1, "item2": "2", "item3": True}}})
@@ -265,6 +272,13 @@ class TestPVAServerComms(unittest.TestCase):
             test_dict["val10"] = [pvaccess.FLOAT]
             test_val = pvaccess.PvObject(test_dict, "type1")
             self.assertEquals(val, test_val)
+
+        # Test the variant union array type
+        val = self.PVA.dict_to_structure(OrderedDict({"union_array": [OrderedDict({"val1": 1}), OrderedDict({"val2": "2"})]}))
+        test_dict = OrderedDict()
+        test_dict["union_array"] = [({},)]
+        test_val = pvaccess.PvObject(test_dict, "")
+        self.assertEquals(val, test_val)
 
     def test_strip_type_id(self):
         self.PVA = PvaServerComms(self.p)
