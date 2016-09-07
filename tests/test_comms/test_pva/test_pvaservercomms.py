@@ -217,8 +217,9 @@ class TestPVAServerComms(unittest.TestCase):
                                                             OrderedDict({"p3": "val3", "typeid": "type3"})],
                                                      "typeid": "type1"})
         object = self.PVA.cache_to_pvobject("test.block", [["p1"]])
-        print(object)
-        raise
+        self.assertEqual(object, PvTempObject(OrderedDict({"p1": [OrderedDict({"p2": 2, "typeid": "type2"}),
+                                                                  OrderedDict({"p3": "val3", "typeid": "type3"})]}),
+                                                           "type1"))
 
     def test_dict_to_stucture(self):
         self.PVA = PvaServerComms(self.p)
