@@ -34,6 +34,11 @@ class CAActionPart(Part):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
 
     def caput(self):
+        if self.params.wait:
+            cmd = "caput -c -w 1000"
+        else:
+            cmd = "caput"
+        self.log_info("%s %s %s", cmd, self.params.pv, self.params.value)
         cothread.CallbackResult(
             catools.caput, self.params.pv, self.params.value,
             wait=self.params.wait, timeout=None)
