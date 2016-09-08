@@ -4,17 +4,25 @@ from malcolm.controllers.builtin.managercontroller import ManagerController
 from malcolm.core import Hook, Table
 from malcolm.core.vmetas import NumberArrayMeta, TableMeta
 
+# velocity modes
 PREV_TO_NEXT = 0
 PREV_TO_CURRENT = 1
 CURRENT_TO_NEXT = 2
-# TODO: this should be handled in the motion program
-ZERO = 0
+ZERO_VELOCITY = 3
+
+# user programs
+NO_PROGRAM = 0       # Do nothing
+TRIG_CAPTURE = 1     # Capture 1, Frame 0, Detector 0
+TRIG_DEAD_FRAME = 2  # Capture 0, Frame 1, Detector 0
+TRIG_LIVE_FRAME = 3  # Capture 0, Frame 1, Detector 1
+TRIG_ZERO = 4        # Capture 0, Frame 0, Detector 0
 
 cs_axis_names = list("ABCUVWXYZ")
 
 columns = OrderedDict(
     time=NumberArrayMeta("float64", "Time in ms to spend getting to point"))
 columns["velocity_mode"] = NumberArrayMeta("uint8", "Velocity mode for point")
+columns["user_programs"] = NumberArrayMeta("uint8", "User program for point")
 
 for axis in cs_axis_names:
     columns[axis] = NumberArrayMeta(
@@ -125,10 +133,13 @@ class PMACTrajectoryController(ManagerController):
             move_time = max(move_time, part.get_move_time(start_pos))
 
         time_array = [move_time]
-        velocity_mode = [ZERO]
-        self.build_profile(part_tasks, time_array, velocity_mode, trajectory)
+        velocity_mode = [ZERO_VELOCITY]
+        user_programs = [NO_PROGRAM]
+        self.build_profile(part_tasks, time_array, velocity_mode, trajectory,
+                           user_programs)
 
-    def build_profile(self, part_tasks, time_array, velocity_mode, trajectory):
+    def build_profile(self, part_tasks, time_array, velocity_mode, trajectory,
+                      user_programs):
         """Build profile using part_tasks
 
         Args:
@@ -136,10 +147,12 @@ class PMACTrajectoryController(ManagerController):
             velocity_mode (list): List of velocity modes like PREV_TO_NEXT
             trajectory (dict): {axis_name: [positions in EGUs]}
             part_tasks (dict): {part: task}
+            user_programs (list): List of user programs like TRIG_LIVE_FRAME
         """
         profile = Table(profile_table)
         profile.time = time_array
         profile.velocity_mode = velocity_mode
+        profile.user_programs = user_programs
         use = []
         resolutions = []
         offsets = []
@@ -164,6 +177,7 @@ class PMACTrajectoryController(ManagerController):
         trajectory = {}
         time_array = []
         velocity_mode = []
+        user_programs = []
         completed_steps = []
         last_point = None
 
@@ -180,20 +194,29 @@ class PMACTrajectoryController(ManagerController):
             else:
                 lower_move_time = self.need_lower_move_time(last_point, point)
 
-            # Add lower bound time point
             if lower_move_time:
                 if velocity_mode:
                     # set the previous point to not take this point into account
                     velocity_mode[-1] = PREV_TO_CURRENT
-                velocity_mode.append(CURRENT_TO_NEXT)
+                    # and tell it that this was an empty frame
+                    user_programs[-1] = TRIG_DEAD_FRAME
+
+                # Add lower bound
                 time_array.append(lower_move_time)
+                velocity_mode.append(CURRENT_TO_NEXT)
+                user_programs.append(TRIG_LIVE_FRAME)
                 completed_steps.append(i)
 
-            # Add position and upper bound
-            for x in range(2):
-                time_array.append(self.configure_params.exposure / 2.0)
-                velocity_mode.append(PREV_TO_NEXT)
+            # Add position
+            time_array.append(self.configure_params.exposure / 2.0)
+            velocity_mode.append(PREV_TO_NEXT)
+            user_programs.append(TRIG_CAPTURE)
             completed_steps.append(i)
+
+            # Add upper bound
+            time_array.append(self.configure_params.exposure / 2.0)
+            velocity_mode.append(PREV_TO_NEXT)
+            user_programs.append(TRIG_LIVE_FRAME)
             completed_steps.append(i + 1)
 
             # Add the axis positions
@@ -206,20 +229,24 @@ class PMACTrajectoryController(ManagerController):
                 positions.append(point.upper[axis_name])
             last_point = point
 
-        # Add a tail off position
-        for axis_name, tail_off in \
-                self.run_up_positions(last_point, fraction).items():
-            positions = trajectory[axis_name]
-            positions.append(positions[-1] + tail_off)
-        velocity_mode.append(ZERO)
+        # Add the last point
         time_array.append(acceleration_time)
+        velocity_mode.append(ZERO_VELOCITY)
+        user_programs.append(TRIG_ZERO)
         if i + 1 < self.totalSteps.value:
             # We broke, so don't add i + 1 to current step
             completed_steps.append(i)
         else:
             completed_steps.append(i + 1)
 
-        self.build_profile(part_tasks, time_array, velocity_mode, trajectory)
+        # Add a tail off position
+        for axis_name, tail_off in \
+                self.run_up_positions(last_point, fraction).items():
+            positions = trajectory[axis_name]
+            positions.append(positions[-1] + tail_off)
+
+        self.build_profile(part_tasks, time_array, velocity_mode, trajectory,
+                           user_programs)
         return i, completed_steps
 
     def need_lower_move_time(self, last_point, point):

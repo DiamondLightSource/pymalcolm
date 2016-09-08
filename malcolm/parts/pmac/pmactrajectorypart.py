@@ -50,6 +50,7 @@ class PMACTrajectoryPart(LayoutPart):
         attr_dict = dict(
             time_array=time_array,
             velocity_mode=params.profile.velocity_mode,
+            user_programs=params.profile.user_programs,
             num_points=len(time_array)
         )
         for cs_axis in cs_axis_names:

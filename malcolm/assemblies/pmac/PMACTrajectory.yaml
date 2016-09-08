@@ -57,6 +57,11 @@
     description: a list of the velocity mode masks, lower bit is Prev->Current
     pv: $(prefix):VelocityMode
 
+- parts.ca.CALongArrayPart:
+    name: user_programs
+    description: a list of the user programs to run at each point
+    pv: $(prefix):UserArray
+
 - parts.ca.CALongPart:
     name: num_points
     description: Number of points in scan
