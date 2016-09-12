@@ -15,8 +15,8 @@ from malcolm.core.process import \
     Process, BlockChanges, PROCESS_STOP, BlockAdd, BlockRespond, \
     BlockList
 from malcolm.core.syncfactory import SyncFactory
-from malcolm.core.request import Subscribe, Post, Get
-from malcolm.core.response import Return, Update, Delta
+from malcolm.core.request import Subscribe, Unsubscribe, Post, Get
+from malcolm.core.response import Return, Update, Delta, Error
 from malcolm.core.attribute import Attribute
 from malcolm.core.vmetas import StringArrayMeta
 from malcolm.core.block import Block
@@ -205,6 +205,54 @@ class TestSubscriptions(unittest.TestCase):
         self.assertEquals({"attr2": "new_value"}, response_1)
         self.assertEquals([[["attr2"], "new_value"]], response_2)
 
+    def test_unsubscribe(self):
+        # Test that we remove the relevant subscription only and that
+        # updates are no longer sent
+        block = MagicMock(
+            to_dict=MagicMock(
+                return_value={"attr": "0", "inner": {"attr2": "other"}}))
+        p = Process("proc", MagicMock())
+        sub_1 = Subscribe(
+            MagicMock(), MagicMock(), ["block"], False)
+        sub_2 = Subscribe(
+            MagicMock(), MagicMock(), ["block"], False)
+        sub_1.set_id(1234)
+        sub_2.set_id(4321)
+        change_1 = BlockChanges([[["block", "attr"], "1"]])
+        change_2 = BlockChanges([[["block", "attr"], "2"]])
+        unsub_1 = Unsubscribe(MagicMock(), MagicMock())
+        unsub_1.set_id(1234)
+
+        p.q.get = MagicMock(side_effect=[sub_1, sub_2, change_1,
+                                         unsub_1, change_2, PROCESS_STOP])
+        p._handle_block_add(BlockAdd(block, "block"))
+        p.recv_loop()
+
+        self.assertEqual([sub_2], p._subscriptions)
+        self.assertEquals(1, len(unsub_1.response_queue.put.call_args_list))
+        response = unsub_1.response_queue.put.call_args_list[0][0][0]
+        self.assertIsNone(response.value)
+        self.assertIs(unsub_1.context, response.context)
+
+        sub_1_responses = sub_1.response_queue.put.call_args_list
+        sub_2_responses = sub_2.response_queue.put.call_args_list
+        self.assertEquals(2, len(sub_1_responses))
+        self.assertEquals(3, len(sub_2_responses))
+
+    def test_unsubscribe_error(self):
+        p = Process("proc", MagicMock())
+        unsub = Unsubscribe(MagicMock(), MagicMock())
+        unsub.set_id(1234)
+        p.q.get = MagicMock(side_effect=[unsub, PROCESS_STOP])
+
+        p.recv_loop()
+
+        responses = unsub.response_queue.put.call_args_list
+        self.assertEquals(1, len(responses))
+        response = responses[0][0][0]
+        self.assertEquals(Error, type(response))
+        self.assertEquals(
+            "No subscription found for id 1234", response.message)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -5,7 +5,7 @@ from malcolm.core.block import Block
 from malcolm.core.cache import Cache
 from malcolm.core.clientcontroller import ClientController
 from malcolm.core.loggable import Loggable
-from malcolm.core.request import Post, Put, Subscribe, Get
+from malcolm.core.request import Post, Put, Subscribe, Unsubscribe, Get
 from malcolm.core.vmetas import StringArrayMeta
 
 # Sentinel object that when received stops the recv_loop
@@ -38,6 +38,7 @@ class Process(Loggable):
             Put: self._forward_block_request,
             Get: self._handle_get,
             Subscribe: self._handle_subscribe,
+            Unsubscribe: self._handle_unsubscribe,
             BlockChanges: self._handle_block_changes,
             BlockRespond: self._handle_block_respond,
             BlockAdd: self._handle_block_add,
@@ -244,6 +245,19 @@ class Process(Loggable):
             request.respond_with_delta([[[], d]])
         else:
             request.respond_with_update(d)
+
+    def _handle_unsubscribe(self, request):
+        """Remove a subscriber and respond with success or error"""
+        subs = [s for s in self._subscriptions if s.id == request.id]
+        # TODO: currently this will remove all subscriptions with a matching id
+        #       there should only be one, we may want to warn if we see several
+        if len(subs) == 0:
+            request.respond_with_error(
+                "No subscription found for id %d" % request.id)
+        else:
+            self._subscriptions = \
+                [s for s in self._subscriptions if s.id != request.id]
+            request.respond_with_return()
 
     def _handle_get(self, request):
         d = self._block_state_cache.walk_path(request.endpoint)
