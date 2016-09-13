@@ -3,17 +3,18 @@ from threading import Event, Lock, RLock
 
 import pvaccess
 
+from malcolm.comms.pva.pvautil import PvaUtil
 from malcolm.core.cache import Cache
 from malcolm.core.loggable import Loggable
 from malcolm.core.servercomms import ServerComms
 from malcolm.core.methodmeta import method_takes
-from malcolm.core.request import Error, Post, Subscribe
+from malcolm.core.request import Error, Post, Put, Subscribe
 from malcolm.core.response import Return
 from malcolm.compat import long_
 
 
 @method_takes()
-class PvaServerComms(ServerComms):
+class PvaServerComms(ServerComms, PvaUtil):
     """A class for communication between pva client and server"""
     CACHE_UPDATE = 0
 
@@ -33,6 +34,7 @@ class PvaServerComms(ServerComms):
         self._cb = None
 
         self._rpcs = {}
+        self._puts = {}
         self._dead_rpcs = []
 
         # Create the V4 PVA server object
@@ -71,7 +73,7 @@ class PvaServerComms(ServerComms):
 
     def _update_cache(self, response):
         if response.changes:
-            #self.log_debug("Update received: %s", response.changes)
+            self.log_debug("Update received: %s", response.changes)
             self._cache.apply_changes(*response.changes)
             # Update the block list to create new PVA channels if required
             self._update_block_list()
@@ -85,7 +87,10 @@ class PvaServerComms(ServerComms):
         if isinstance(response, Return):
             # Notify RPC of return value
             self.log_debug("Response: %s", response)
-            self._rpcs[response["id"]].notify_reply(response)
+            if response["id"] in self._rpcs:
+                self._rpcs[response["id"]].notify_reply(response)
+            elif response["id"] in self._puts:
+                self._puts[response["id"]].notify_reply(response)
         elif isinstance(response, Error):
             # Notify RPC of error value
             self.log_debug("Response: %s", response)
@@ -121,6 +126,18 @@ class PvaServerComms(ServerComms):
             self.log_debug("Registering RPC object with ID %d", id)
             self._rpcs[id] = rpc
 
+    def register_put(self, id, put):
+        with self._lock:
+            self.log_debug("Registering Put object with ID %d", id)
+            self._puts[id] = put
+
+    def remove_put(self, id):
+        with self._lock:
+            self.log_debug("Removing Put object with ID %d", id)
+            if id in self._puts:
+                if self._puts[id].check_lock():
+                    self._puts.pop(id, None)
+
     def register_dead_rpc(self, id):
         with self._lock:
             self.log_debug("Notifying server that RPC [%d] can be tested for purging", id)
@@ -149,8 +166,7 @@ class PvaServerComms(ServerComms):
             block = self._cache[name]
             if not paths:
                 # No paths provided, so just return the whole block
-                pv_object = self.dict_to_structure(block)
-                pv_object.set(self.strip_type_id(block))
+                pv_object = self.dict_to_pv_object(block)
             else:
                 #self.log_debug("Path route: %s", paths)
                 # List of path lists provided
@@ -194,7 +210,7 @@ class PvaServerComms(ServerComms):
                     #self.log_debug("Walk path: %s", path)
                     #self.log_debug("Path dict: %s", path_dict)
                 # Create our PV object from the structure dict
-                pv_object = self.dict_to_structure(path_dict[name])
+                pv_object = self.dict_to_pv_object_structure(path_dict[name])
                 # Set the value of the PV object from the value dict
                 pv_object.set(self.strip_type_id(val_dict[name]))
         except:
@@ -202,121 +218,31 @@ class PvaServerComms(ServerComms):
 
         return pv_object
 
-    def dict_to_structure(self, dict_in):
-        structure = OrderedDict()
-        typeid = None
-        for item in dict_in:
-            #self.log_debug("ITEM: %s", item)
-            if item == "typeid":
-                typeid = dict_in[item]
-            else:
-                if isinstance(dict_in[item], str):
-                    structure[item] = pvaccess.STRING
-                elif isinstance(dict_in[item], bool):
-                    structure[item] = pvaccess.BOOLEAN
-                elif isinstance(dict_in[item], float):
-                    structure[item] = pvaccess.FLOAT
-                elif isinstance(dict_in[item], int):
-                    structure[item] = pvaccess.INT
-                elif isinstance(dict_in[item], long_):
-                    structure[item] = pvaccess.LONG
-                elif isinstance(dict_in[item], list):
-                    #self.log_debug("List found: %s", item)
-                    if not dict_in[item]:
-                        structure[item] = [pvaccess.STRING]
-                    else:
-                        if isinstance(dict_in[item][0], str):
-                            structure[item] = [pvaccess.STRING]
-                        elif isinstance(dict_in[item][0], bool):
-                            structure[item] = [pvaccess.BOOLEAN]
-                        elif isinstance(dict_in[item][0], float):
-                            structure[item] = [pvaccess.FLOAT]
-                        elif isinstance(dict_in[item][0], int):
-                            structure[item] = [pvaccess.INT]
-                        elif isinstance(dict_in[item][0], long_):
-                            structure[item] = [pvaccess.LONG]
-                        elif isinstance(dict_in[item][0], OrderedDict):
-                            structure[item] = [({},)]
-                elif isinstance(dict_in[item], OrderedDict):
-                    dict_structure = self.dict_to_structure(dict_in[item])
-                    if dict_structure:
-                        structure[item] = self.dict_to_structure(dict_in[item])
-        try:
-            if not structure:
-                return None
-
-            if not typeid:
-                pv_object = pvaccess.PvObject(structure, "")
-            else:
-
-                pv_object = pvaccess.PvObject(structure, typeid)
-        except:
-            raise
-
-        return pv_object
-
-    def strip_type_id(self, dict_in):
-        dict_out = OrderedDict()
-        for item in dict_in:
-            if item != "typeid":
-                if isinstance(dict_in[item], OrderedDict):
-                    dict_values = self.strip_type_id(dict_in[item])
-                    if dict_values:
-                        dict_out[item] = dict_values
-                else:
-                    dict_out[item] = dict_in[item]
-        return dict_out
-
-
-class PvaEndpoint(Loggable):
-    def __init__(self, name, block, pva_server, server):
-        self.set_logger_name(name)
-        self._endpoint = pvaccess.Endpoint()
-        self._name = name
-        self._block = block
-        self._pva_server = pva_server
-        self._server = server
-        self.log_debug("Registering PVA Endpoint for block %s", self._block)
-        self._endpoint.registerEndpointGet(self.get_callback)
-        self._endpoint.registerEndpointRPC(self.rpc_callback)
-        #self._endpoint.registerEndpointMonitor(self.monitor_callback)
-        self._pva_server.registerEndpoint(self._block, self._endpoint)
-
-    def monitor_callback(self, request):
-        self.log_debug("Monitor callback called for: %s", self._block)
-        self.log_debug("Request structure: %s", request.toDict())
-        pva_impl = PvaMonitorImplementation()
-        return pva_impl
-
-    def get_callback(self, request):
-        self.log_debug("Get callback called for: %s", self._block)
-        self.log_debug("Request structure: %s", request.toDict())
-
+    def get_request(self, block, request):
+        self.log_debug("Get request made with: %s", request)
         try:
             # We need to convert the request object into a set of paths
             if "field" not in request:
-                pv_object = self._server.cache_to_pvobject(self._block)
+                pv_object = self.cache_to_pvobject(block)
             else:
                 field_dict = request["field"]
                 if not field_dict:
                     # The whole block has been requested
-                    self.log_debug("Complete block %s requested for pvget", self._block)
+                    self.log_debug("Complete block %s requested for pvget", block)
                     # Retrieve the entire block structure
-                    pv_object = self._server.cache_to_pvobject(self._block)
+                    pv_object = self.cache_to_pvobject(block)
                 else:
                     paths = self.dict_to_path(field_dict)
                     self.log_debug("Paths: %s", paths)
-                    pv_object = self._server.cache_to_pvobject(self._block, paths)
+                    pv_object = self.cache_to_pvobject(block, paths)
         except:
             # There has been a failure, return an error object
             err = Error(id_=1, message="Failed to retrieve endpoints")
             response_dict = err.to_dict()
             response_dict.pop("id")
-            pv_object = self._server.dict_to_structure(response_dict)
-            pv_object.set(self._server.strip_type_id(response_dict))
+            pv_object = self.dict_to_pv_object(response_dict)
 
-        pva_impl = PvaGetImplementation(self._name, pv_object)
-        return pva_impl
+        return pv_object
 
     def dict_to_path(self, dict_in):
         items = []
@@ -333,12 +259,47 @@ class PvaEndpoint(Loggable):
                         items.append([item, temp_item])
         return items
 
+
+class PvaEndpoint(Loggable):
+    def __init__(self, name, block, pva_server, server):
+        self.set_logger_name(name)
+        self._endpoint = pvaccess.Endpoint()
+        self._name = name
+        self._block = block
+        self._pva_server = pva_server
+        self._server = server
+        self.log_debug("Registering PVA Endpoint for block %s", self._block)
+        self._endpoint.registerEndpointGet(self.get_callback)
+        self._endpoint.registerEndpointPut(self.put_callback)
+        self._endpoint.registerEndpointRPC(self.rpc_callback)
+        #self._endpoint.registerEndpointMonitor(self.monitor_callback)
+        self._pva_server.registerEndpoint(self._block, self._endpoint)
+
+#    def monitor_callback(self, request):
+#        self.log_debug("Monitor callback called for: %s", self._block)
+#        self.log_debug("Request structure: %s", request.toDict())
+#        pva_impl = PvaMonitorImplementation()
+#        return pva_impl
+
+    def get_callback(self, request):
+        self.log_debug("Get callback called for: %s", self._block)
+        self.log_debug("Request structure: %s", request.toDict())
+        pva_impl = PvaGetImplementation(self._name, request, self._block, self._server)
+        return pva_impl
+
+    def put_callback(self, request):
+        self.log_debug("Put callback called for: %s", self._block)
+        self.log_debug("Request structure: %s", request.toDict())
+        put_id = self._server._get_unique_id()
+        put = PvaPutImplementation(put_id, self._name, request, self._block, self._server)
+        self._server.register_put(put_id, put)
+        return put
+
     def rpc_callback(self, request):
         self.log_debug("Rpc callback called for %s", self._block)
         self.log_debug("Request structure: %s", request)
         # Purge old RPCs
         self._server.purge_rpcs()
-        #self.log_debug("Request structure: %s", request["method"])
         rpc_id = self._server._get_unique_id()
         self.log_debug("RPC ID: %d", rpc_id)
         rpc = PvaRpcImplementation(rpc_id, self._server, self._block, request["method"])
@@ -347,17 +308,93 @@ class PvaEndpoint(Loggable):
 
 
 class PvaGetImplementation(Loggable):
-    def __init__(self, name, structure):
+    def __init__(self, name, request, block, server):
         self.set_logger_name(name)
         self._name = name
-        self.pvStructure = structure
+        self._block = block
+        self._server = server
+        self._request = request
+        self._pv_structure = self._server.get_request(block, request)
 
     def getPVStructure(self):
-        return self.pvStructure
+        return self._pv_structure
 
     def get(self):
         # Null operation, the structure already contains the values
         self.log_debug("Get method called")
+        self._pv_structure = self._server.get_request(self._block, self._request)
+
+
+class PvaPutImplementation(Loggable):
+    def __init__(self, id, name, request, block, server):
+        self.set_logger_name(name)
+        self._id = id
+        self._name = name
+        self._block = block
+        self._server = server
+        self._request = request
+        self._response = None
+        self._event = Event()
+        self._lock = Lock()
+        self._pv_structure = self._server.get_request(block, request)
+
+    def check_lock(self):
+        # Check the lock to see if it is still acquired
+        return self._lock.acquire(False)
+
+    def wait_for_reply(self):
+        # wait on the reply event
+        self._event.wait()
+
+    def notify_reply(self, response):
+        self._response = response
+        self._event.set()
+
+    def getPVStructure(self):
+        return self._pv_structure
+
+    def get(self):
+        # Null operation, the structure already contains the values
+        self.log_debug("Get method called")
+        self._pv_structure = self._server.get_request(self._block, self._request)
+
+    def put(self, pv):
+        # Null operation, the structure already contains the values
+        self.log_debug("Put method called with: %s", pv)
+        self.log_debug("Put method called with: %s", pv.toDict())
+        put_dict = pv.toDict()
+        endpoints = [self._block]
+        endpoints = endpoints + self.dict_to_path(put_dict)
+        self.log_debug("Endpoints: %s", endpoints)
+        values = self.dict_to_value(put_dict)
+        msg = Put(response_queue=self._server.q, endpoint=endpoints, value=values)
+        msg.set_id(self._id)
+        self._server.send_to_process(msg)
+        with self._lock:
+            self.wait_for_reply()
+            self.log_debug("Put method reply received")
+        self._server.remove_put(self._id)
+
+    def dict_to_path(self, dict_in):
+        self.log_debug("dict_to_path called with: %s", dict_in)
+        items = []
+        for item in dict_in:
+            self.log_debug("Item: %s", item)
+            items.append(item)
+            if dict_in[item]:
+                if isinstance(dict_in[item], dict):
+                    items = items + self.dict_to_path(dict_in[item])
+        return items
+
+    def dict_to_value(self, dict_in):
+        self.log_debug("dict_to_value called with: %s", dict_in)
+        for item in dict_in:
+            self.log_debug("Item: %s", item)
+            if isinstance(dict_in[item], dict):
+               return self.dict_to_value(dict_in[item])
+            else:
+                return dict_in[item]
+
 
 class PvaRpcImplementation(Loggable):
     def __init__(self, id, server, block, method):
@@ -410,10 +447,11 @@ class PvaRpcImplementation(Loggable):
             if not response_dict:
                 pv_object = pvaccess.PvObject(OrderedDict({}), 'malcolm:core/Map:1.0')
             else:
-                pv_object = self._server.dict_to_structure(response_dict)
-                self.log_debug("Pv Object structure created")
-                self.log_debug("%s", self._server.strip_type_id(response_dict))
-                pv_object.set(self._server.strip_type_id(response_dict))
+                #pv_object = self._server.dict_to_structure(response_dict)
+                #self.log_debug("Pv Object structure created")
+                #self.log_debug("%s", self._server.strip_type_id(response_dict))
+                #pv_object.set(self._server.strip_type_id(response_dict))
+                pv_object = self._server.dict_to_pv_object(response_dict)
             self.log_debug("Pv Object value set: %s", pv_object)
             # Add this RPC to the purge list
             #self._server.register_dead_rpc(self._id)
