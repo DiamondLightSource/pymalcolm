@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import pvaccess
+from malcolm.compat import long_
 
 class PvaUtil(object):
     """A utility class for PvAccess conversions"""
@@ -14,7 +15,6 @@ class PvaUtil(object):
         structure = OrderedDict()
         typeid = None
         for item in dict_in:
-            # self.log_debug("ITEM: %s", item)
             if item == "typeid":
                 typeid = dict_in[item]
             else:
@@ -46,9 +46,10 @@ class PvaUtil(object):
                         elif isinstance(dict_in[item][0], OrderedDict):
                             structure[item] = [({},)]
                 elif isinstance(dict_in[item], OrderedDict):
-                    dict_structure = self.dict_to_structure(dict_in[item])
+                    dict_structure = self.dict_to_pv_object_structure(dict_in[item])
                     if dict_structure:
-                        structure[item] = self.dict_to_structure(dict_in[item])
+                        structure[item] = dict_structure
+
         try:
             if not structure:
                 return None
@@ -59,6 +60,7 @@ class PvaUtil(object):
 
                 pv_object = pvaccess.PvObject(structure, typeid)
         except:
+            self.log_error("Unable to create PvObject structure from OrderedDict")
             raise
 
         return pv_object
