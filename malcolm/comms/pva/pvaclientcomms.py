@@ -3,7 +3,7 @@ from collections import OrderedDict
 from malcolm.comms.pva.pvautil import PvaUtil
 from malcolm.core import ClientComms, Request, Subscribe, Response, \
     deserialize_object, serialize_object
-from malcolm.core.request import Get, Post, Return, Error
+from malcolm.core.request import Get, Put, Post, Return, Error
 import pvaccess
 
 
@@ -29,7 +29,7 @@ class PvaClientComms(ClientComms, PvaUtil):
         self.log_debug("Request: %s", request)
 
         if isinstance(request, Get):
-            self.log_debug("Get called with endpoint: %s", request["endpoint"])
+            self.log_debug("Get message with endpoint: %s", request["endpoint"])
             try:
                 # Connect to the channel
                 c = pvaccess.Channel(request["endpoint"][0])
@@ -57,8 +57,30 @@ class PvaClientComms(ClientComms, PvaUtil):
             self.log_debug("Return object: %s", return_object)
             self.send_to_caller(return_object)
 
+        elif isinstance(request, Put):
+            self.log_debug("Put message with endpoint: %s", request["endpoint"])
+            self.log_debug("Put message with value: %s", request["value"])
+            try:
+                # Connect to the channel
+                c = pvaccess.Channel(request["endpoint"][0])
+                # Create the path request from the endpoints (not including the block name endpoint)
+                path = ""
+                for item in request["endpoint"][1:]:
+                    path = path + item + "."
+                self.log_debug("path: %s", path[:-1])
+                # Perform a put, but there is no response available
+                c.put(request["value"], path[:-1])
+                # Now create the Return object and populate it with the response
+                return_object = Return(id_=request["id"], value="No return value from put")
+            except:
+                # PvAccess error, create the Error message
+                return_object = Error(id_=request["id"], message="PvAccess error")
+
+            self.log_debug("Return object: %s", return_object)
+            self.send_to_caller(return_object)
+
         elif isinstance(request, Post):
-            self.log_debug("Endpoint: %s", request["endpoint"][0])
+            self.log_debug("Post message with endpoint: %s", request["endpoint"])
             self.log_debug("Parameters: %s", request["parameters"])
             try:
                 method = pvaccess.PvObject({'method': pvaccess.STRING})
