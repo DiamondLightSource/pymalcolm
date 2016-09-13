@@ -94,7 +94,10 @@ class PvaServerComms(ServerComms, PvaUtil):
         elif isinstance(response, Error):
             # Notify RPC of error value
             self.log_debug("Response: %s", response)
-            self._rpcs[response["id"]].notify_reply(response)
+            if response["id"] in self._rpcs:
+                self._rpcs[response["id"]].notify_reply(response)
+            elif response["id"] in self._puts:
+                self._puts[response["id"]].notify_reply(response)
         else:
             # Update the cache
             self._update_cache(response)
