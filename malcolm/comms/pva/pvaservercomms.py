@@ -422,16 +422,37 @@ class PvaRpcImplementation(Loggable):
         self._response = response
         self._event.set()
 
+    def parse_variants(self, item_in):
+        # Iterate over item_in looking for tuples
+        if isinstance(item_in, dict):
+            # item_in is a dict so parse each item
+            new_dict = OrderedDict()
+            for item in item_in:
+                new_dict[item] = self.parse_variants(item_in[item])
+            return new_dict
+        elif isinstance(item_in, list):
+            # item_in is a list so parse each item
+            new_list = []
+            for item in item_in:
+                new_list.append(self.parse_variants(item))
+            return new_list
+        elif isinstance(item_in, tuple):
+            # item_in is not a dict or list so check for tuple
+            item = self.parse_variants(item_in[0])
+            return item
+        else:
+            # Just return the item as is
+            return item_in
+
+
     def execute(self, args):
         self.log_debug("Execute %s method called on [%s] with: %s", self._method, self._block, args)
         self.log_debug("Structure: %s", args.getStructureDict())
-        #self.log_debug("Structure ID: %s", args.getStructureID())
-        #self.log_debug("Structure ID: %s", args.getPyObject('next').getStructureID())
         # Acquire the lock
         with self._lock:
             # We now need to create the Post message and execute it
             endpoint = [self._block, self._method]
-            request = Post(None, self._server.q, endpoint, args.toDict(True))
+            request = Post(None, self._server.q, endpoint, self.parse_variants(args.toDict(True)))
             request.set_id(self._id)
             self._server.process.q.put(request)
 
