@@ -196,5 +196,14 @@ class Subscribe(Request):
 
 @Serializable.register_subclass("malcolm:core/Unsubscribe:1.0")
 class Unsubscribe(Request):
-    """Create a Unsubscribe Request object"""
-    pass
+    """Create an Unsubscribe Request object"""
+
+    endpoints = ["id"]
+
+    def __init__(self, context=None, response_queue=None):
+        """
+        Args:
+            context: Context of the Unsubscribe
+            response_queue (Queue): Queue to return to
+        """
+        super(Unsubscribe, self).__init__(context, response_queue)
