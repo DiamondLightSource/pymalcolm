@@ -47,9 +47,9 @@ class TestCAPart(unittest.TestCase):
     def test_reset(self):
         catools.caget.reset_mock()
         p = self.create_part()
-        catools.caget.return_value = caint(4)
+        catools.caget.return_value = [caint(4)]
         p.connect_pvs("unused task object")
-        catools.caget.assert_called_with("pv")
+        catools.caget.assert_called_with(["pv"])
 
     def test_caput(self):
         catools.caput.reset_mock()
@@ -57,6 +57,23 @@ class TestCAPart(unittest.TestCase):
         p.caput()
         catools.caput.assert_called_once_with(
             "pv", 1, wait=True, timeout=None)
+
+    def test_caput_status_pv_ok(self):
+        catools.caput.reset_mock()
+        p = self.create_part(dict(
+            name="mname", description="desc", pv="pv", status_pv="spv",
+            good_status="All Good"))
+        catools.caget.return_value = "All Good"
+        p.caput()
+
+    def test_caput_status_pv_no_good(self):
+        catools.caput.reset_mock()
+        p = self.create_part(dict(
+            name="mname", description="desc", pv="pv", status_pv="spv",
+            good_status="All Good"))
+        catools.caget.return_value = "No Good"
+        self.assertRaises(AssertionError, p.caput)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

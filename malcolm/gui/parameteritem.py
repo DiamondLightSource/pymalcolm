@@ -13,7 +13,7 @@ class ParameterItem(BaseItem):
 
     def set_value(self, value):
         try:
-            self._value = self.ref.validate(value)
+            self._value = self.ref.validate(str(value))
         except Exception:
             self._state = self.ERROR
         else:

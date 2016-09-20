@@ -2,7 +2,7 @@ import os
 import sys
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import setup_malcolm_paths
 
@@ -43,6 +43,11 @@ class TestValidate(unittest.TestCase):
     def test_none_validates(self):
         nm = NumberMeta("int32")
         self.assertIsNone(nm.validate(None))
+
+    def test_unsigned_validates(self):
+        nm = NumberMeta("uint32")
+        self.assertEqual(nm.validate("22"), 22)
+        self.assertRaises(ValueError, nm.validate, -22)
 
 
 class TestSerialization(unittest.TestCase):

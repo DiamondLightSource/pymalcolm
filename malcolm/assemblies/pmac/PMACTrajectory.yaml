@@ -12,11 +12,8 @@
     name: build_profile
     description: command to build the profile once times and positions are set
     pv: $(prefix):ProfileBuild
-
-- parts.ca.CAChoicePart:
-    name: build_status
-    description: status of last profile build
-    rbv: $(prefix):ProfileBuildStatus_RBV
+    status_pv: $(prefix):ProfileBuildStatus_RBV
+    good_status: Success
 
 - parts.ca.CAStringPart:
     name: build_message
@@ -27,11 +24,8 @@
     name: execute_profile
     description: command to execute the profile once built
     pv: $(prefix):ProfileExecute
-
-- parts.ca.CAChoicePart:
-    name: execute_status
-    description: status of last profile execute
-    rbv: $(prefix):ProfileExecuteStatus_RBV
+    status_pv: $(prefix):ProfileExecuteStatus_RBV
+    good_status: Success
 
 - parts.ca.CAStringPart:
     name: execute_message
@@ -48,6 +42,11 @@
     description: Number of point scanned so far
     rbv: $(prefix):TotalPoints_RBV
 
+- parts.ca.CAActionPart:
+    name: abort_profile
+    description: command to abort a currently running profile
+    pv: $(prefix):ProfileAbort
+
 - parts.ca.CALongArrayPart:
     name: time_array
     description: time slices for each step in the profile in 0.25ms ticks
@@ -57,6 +56,11 @@
     name: velocity_mode
     description: a list of the velocity mode masks, lower bit is Prev->Current
     pv: $(prefix):VelocityMode
+
+- parts.ca.CALongArrayPart:
+    name: user_programs
+    description: a list of the user programs to run at each point
+    pv: $(prefix):UserArray
 
 - parts.ca.CALongPart:
     name: num_points

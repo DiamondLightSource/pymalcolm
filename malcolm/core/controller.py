@@ -226,12 +226,6 @@ class Controller(Loggable):
             part_tasks[part] = Task("Task(%s)" % part_name, self.process)
         return part_tasks
 
-    def stop_and_wait_part_tasks(self):
-        for task in self.part_tasks.values():
-            task.stop()
-        for task in self.part_tasks.values():
-            task.wait()
-
     def run_hook(self, hook, part_tasks, **kwargs):
         hook_queue, func_tasks, task_part_names = self.start_hook(
             hook, part_tasks, **kwargs)
@@ -243,7 +237,7 @@ class Controller(Loggable):
             try:
                 result = func.MethodMeta.call_post_function(func, kwargs, task)
             except StopIteration as e:
-                self.log_warning("%s has been aborted", func)
+                self.log_debug("%s has been aborted", func)
                 result = e
             except Exception as e:  # pylint:disable=broad-except
                 self.log_exception("%s %s raised exception", func, kwargs)

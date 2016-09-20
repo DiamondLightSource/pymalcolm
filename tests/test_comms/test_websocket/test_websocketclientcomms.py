@@ -104,7 +104,7 @@ class TestWSClientComms(unittest.TestCase):
         self.WS.process.spawn = MagicMock()
         self.WS.start()
 
-        self.assertEqual([call(self.WS.loop.start), call(self.WS.send_loop)],
+        self.assertEqual([call(self.WS.send_loop), call(self.WS.loop.start)],
                          self.WS.process.spawn.call_args_list)
 
     @patch('malcolm.comms.websocket.websocketclientcomms.websocket_connect')

@@ -157,7 +157,7 @@ class BlockModel(QAbstractItemModel):
             if index.column() == 0:
                 return item.get_label()
             elif index.column() == 1:
-                return item.get_value()
+                return str(item.get_value())
             elif index.column() == 2:
                 return item.get_icon()
 

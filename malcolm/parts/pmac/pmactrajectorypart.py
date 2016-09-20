@@ -50,6 +50,7 @@ class PMACTrajectoryPart(LayoutPart):
         attr_dict = dict(
             time_array=time_array,
             velocity_mode=params.profile.velocity_mode,
+            user_programs=params.profile.user_programs,
             num_points=len(time_array)
         )
         for cs_axis in cs_axis_names:
@@ -73,3 +74,7 @@ class PMACTrajectoryPart(LayoutPart):
         task.subscribe(self.child["points_scanned"], self.update_step,
                        params.completed_steps)
         task.post(self.child["execute_profile"])
+
+    @PMACTrajectoryController.Aborting
+    def stop_execution(self, task):
+        task.post(self.child["abort_profile"])
