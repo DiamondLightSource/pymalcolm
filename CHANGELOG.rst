@@ -9,6 +9,14 @@ Added:
 
 - Nothing yet
 
+`2-0a4`_ - 2014-09-20
+---------------------
+Added:
+
+- PMAC trajectory scanning
+- Pause, Abort and Rewind
+- PVA: Get and Post for client
+
 `2-0a3`_ - 2014-08-31
 ---------------------
 Added:
@@ -29,7 +37,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a3...HEAD
-.. _2-0a2: https://github.com/dls-controls/pymalcolm/compare/2.0a2...2-0a3
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a4...HEAD
+.. _2-0a4: https://github.com/dls-controls/pymalcolm/compare/2.0a3...2-0a4
+.. _2-0a3: https://github.com/dls-controls/pymalcolm/compare/2.0a2...2-0a3
 .. _2-0a2: https://github.com/dls-controls/pymalcolm/compare/2.0a1...2-0a2
 
