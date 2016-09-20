@@ -16,9 +16,9 @@ class PvaClientComms(ClientComms, PvaUtil):
             name (str): Name for logging
             process (Process): Process for primitive creation
         """
+        super(PvaClientComms, self).__init__(process)
         self.name = "PvaClientComms"
         self.set_logger_name(self.name)
-        super(PvaClientComms, self).__init__(process)
 
     def send_to_server(self, request):
         """Dispatch a request to the server

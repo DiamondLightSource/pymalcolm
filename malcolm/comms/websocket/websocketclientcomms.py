@@ -21,6 +21,7 @@ class WebsocketClientComms(ClientComms):
             process (Process): Process for primitive creation
             params (Map): Parameters map
         """
+        super(WebsocketClientComms, self).__init__(process)
         self.url = "ws://%(hostname)s:%(port)d/ws" % params
         self.set_logger_name(self.url)
         # TODO: Are we starting one or more IOLoops here?
@@ -29,7 +30,6 @@ class WebsocketClientComms(ClientComms):
             self.url, callback=self.subscribe_server_blocks,
             on_message_callback=self.on_message)
         self.add_spawn_function(self.loop.start, self.stop_recv_loop)
-        super(WebsocketClientComms, self).__init__(process)
 
     def on_message(self, message):
         """
