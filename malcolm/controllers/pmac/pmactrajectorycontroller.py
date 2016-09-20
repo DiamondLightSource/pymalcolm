@@ -12,10 +12,10 @@ ZERO_VELOCITY = 3
 
 # user programs
 NO_PROGRAM = 0       # Do nothing
-TRIG_CAPTURE = 1     # Capture 1, Frame 0, Detector 0
+TRIG_CAPTURE = 4     # Capture 1, Frame 0, Detector 0
 TRIG_DEAD_FRAME = 2  # Capture 0, Frame 1, Detector 0
 TRIG_LIVE_FRAME = 3  # Capture 0, Frame 1, Detector 1
-TRIG_ZERO = 4        # Capture 0, Frame 0, Detector 0
+TRIG_ZERO = 8        # Capture 0, Frame 0, Detector 0
 
 cs_axis_names = list("ABCUVWXYZ")
 
@@ -132,9 +132,29 @@ class PMACTrajectoryController(ManagerController):
             part = self.parts[axis_name]
             move_time = max(move_time, part.get_move_time(start_pos))
 
-        time_array = [move_time]
-        velocity_mode = [ZERO_VELOCITY]
-        user_programs = [NO_PROGRAM]
+        # if we are spending any time at max_velocity, put in points at
+        # the acceleration times
+        if move_time > 2 * acceleration_time:
+            time_array = [acceleration_time, move_time - acceleration_time,
+                          move_time]
+            velocity_mode = [CURRENT_TO_NEXT, PREV_TO_CURRENT, ZERO_VELOCITY]
+            user_programs = [NO_PROGRAM, NO_PROGRAM, NO_PROGRAM]
+            for axis_name, positions in trajectory.items():
+                part = self.parts[axis_name]
+                # TODO: move this to the trajectory when current pos is reported
+                current = part.child.position
+                accl_dist = acceleration_time * part.child.max_velocity / 2
+                start_pos = positions[0]
+                if current > start_pos:
+                    # backwards
+                    accl_dist = - accl_dist
+                positions.insert(0, current + accl_dist)
+                positions.insert(1, start_pos - accl_dist)
+        else:
+            time_array = [move_time]
+            velocity_mode = [ZERO_VELOCITY]
+            user_programs = [NO_PROGRAM]
+
         self.build_profile(part_tasks, time_array, velocity_mode, trajectory,
                            user_programs)
 
