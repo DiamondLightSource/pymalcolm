@@ -3,7 +3,7 @@ from cothread import catools
 
 from malcolm.core import Part, method_takes, REQUIRED, MethodMeta
 from malcolm.core.vmetas import StringMeta, NumberMeta, BooleanMeta
-from malcolm.controllers.builtin import DefaultController
+from malcolm.controllers.defaultcontroller import DefaultController
 
 
 @method_takes(

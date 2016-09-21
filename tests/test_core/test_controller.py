@@ -44,6 +44,7 @@ class TestController(unittest.TestCase):
     def test_run_hook(self):
         hook = MagicMock()
         func = MagicMock()
+        func.return_value = {"foo": "bar"}
         task = MagicMock()
         part = MagicMock()
         hook_tasks = {func:task}
@@ -51,6 +52,7 @@ class TestController(unittest.TestCase):
         hook_queue = self.c.process.create_queue.return_value
         hook_queue.get.return_value = (func, func.return_value)
         hook.find_func_tasks.return_value = {func:task}
+        hook.make_return_table.return_value.endpoints = ["foo"]
         self.c.test_hook = hook
         self.c.hook_names = {hook:"test_hook"}
         self.c.parts = {"test_part":part}
@@ -58,7 +60,9 @@ class TestController(unittest.TestCase):
 
         # TODO: would like this assertion - difficult to test with mocks
         #hook_queue.put.assert_called_once_with((func, func.return_value))
-        self.assertEquals({"test_part":func.return_value}, result)
+        self.assertEquals(hook.make_return_table.return_value, result)
+        result.append.assert_called_once_with(
+            ["test_part", "bar"])
 
     def test_run_hook_raises(self):
         hook = MagicMock()

@@ -14,7 +14,7 @@
     name: m3
     description: name of the raw motor object 3
 
-- controllers.pmac.PMACTrajectoryController:
+- controllers.ManagerController:
 
 - parts.pmac.PMACTrajectoryPart:
     name: traj

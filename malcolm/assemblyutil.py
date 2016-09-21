@@ -126,7 +126,7 @@ def make_block_instance(block_name, process, controllers, parts):
         controller = controllers[0].instantiate(
             malcolm.controllers, block_name, process, parts_d)
     else:
-        controller = malcolm.controllers.builtin.DefaultController(
+        controller = malcolm.controllers.DefaultController(
             block_name, process, parts_d)
     return controller.block
 

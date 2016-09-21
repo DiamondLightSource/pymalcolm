@@ -3,7 +3,7 @@ from cothread import catools
 
 from malcolm.core import Part, Attribute, method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
-from malcolm.controllers.builtin import DefaultController
+from malcolm.controllers.defaultcontroller import DefaultController
 
 
 def capart_takes(*args):

@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 import unittest
@@ -11,7 +11,7 @@ from mock import MagicMock, call
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.controllers.builtin import DefaultController
+from malcolm.controllers import DefaultController
 from malcolm.core import method_only_in, method_takes, DefaultStateMachine
 
 

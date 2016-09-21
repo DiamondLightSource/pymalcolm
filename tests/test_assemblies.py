@@ -93,7 +93,7 @@ class TestAssemblies(unittest.TestCase):
 
     def test_make_block_instance_custom_controller(self):
         parts = []
-        controllers = [Section("pmac.PMACTrajectoryController")]
+        controllers = [Section("ManagerController")]
         block_name = "block_name"
         process = Mock()
         inst = make_block_instance(block_name, process, controllers, parts)
