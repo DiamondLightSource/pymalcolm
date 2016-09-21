@@ -328,18 +328,11 @@ class PvaGetImplementation(Loggable):
         self._pv_structure = self._server.get_request(self._block, self._request)
 
 
-class PvaPutImplementation(Loggable):
-    def __init__(self, id, name, request, block, server):
-        self.set_logger_name(name)
-        self._id = id
-        self._name = name
-        self._block = block
-        self._server = server
-        self._request = request
+class PvaBlockingImplementation():
+    def __init__(self):
         self._response = None
         self._event = Event()
         self._lock = Lock()
-        self._pv_structure = self._server.get_request(block, request)
 
     def check_lock(self):
         # Check the lock to see if it is still acquired
@@ -352,6 +345,18 @@ class PvaPutImplementation(Loggable):
     def notify_reply(self, response):
         self._response = response
         self._event.set()
+
+
+class PvaPutImplementation(PvaBlockingImplementation, Loggable):
+    def __init__(self, id, name, request, block, server):
+        super(PvaPutImplementation, self).__init__()
+        self.set_logger_name(name)
+        self._id = id
+        self._name = name
+        self._block = block
+        self._server = server
+        self._request = request
+        self._pv_structure = self._server.get_request(block, request)
 
     def getPVStructure(self):
         return self._pv_structure
@@ -399,28 +404,14 @@ class PvaPutImplementation(Loggable):
                 return dict_in[item]
 
 
-class PvaRpcImplementation(Loggable):
+class PvaRpcImplementation(PvaBlockingImplementation, Loggable):
     def __init__(self, id, server, block, method):
+        super(PvaRpcImplementation, self).__init__()
         self.set_logger_name("PvaRpcImplementation")
         self._id = id
         self._server = server
         self._block = block
         self._method = method
-        self._response = None
-        self._event = Event()
-        self._lock = Lock()
-
-    def check_lock(self):
-        # Check the lock to see if it is still acquired
-        return self._lock.acquire(False)
-
-    def wait_for_reply(self):
-        # wait on the reply event
-        self._event.wait()
-
-    def notify_reply(self, response):
-        self._response = response
-        self._event.set()
 
     def parse_variants(self, item_in):
         # Iterate over item_in looking for tuples
