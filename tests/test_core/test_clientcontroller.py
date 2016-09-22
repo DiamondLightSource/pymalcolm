@@ -13,7 +13,7 @@ from mock import MagicMock, patch, call
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.controllers.builtin import DefaultController
+from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import Attribute, ClientController
 from malcolm.core.vmetas import StringMeta, NumberMeta
 from malcolm.compat import queue

@@ -1,6 +1,11 @@
 import inspect
+from collections import OrderedDict
 
-from malcolm.core.methodmeta import MethodMeta
+from malcolm.core.methodmeta import MethodMeta, get_method_decorated
+from malcolm.core.vmetas import StringArrayMeta, TableMeta
+from malcolm.core.serializable import deserialize_object
+from malcolm.core.varraymeta import VArrayMeta
+from malcolm.core.table import Table
 
 
 class Hook(object):
@@ -32,6 +37,27 @@ class Hook(object):
                     func_tasks[func] = task
 
         return func_tasks
+
+    def make_return_table(self, part_tasks):
+        # Filter part tasks so that we only run the ones hooked to us
+        columns = OrderedDict(name=StringArrayMeta("Part name"))
+        for part in part_tasks:
+            hooked = [method_name for (method_name, hook, _) in
+                      get_hook_decorated(part) if hook is self]
+            for method_name, method_meta, func in get_method_decorated(part):
+                if method_name in hooked:
+                    # Add return metas to the table columns
+                    for arg_name in method_meta.returns.elements:
+                        md = method_meta.returns.elements[arg_name].to_dict()
+                        md["typeid"] = md["typeid"].replace("Meta", "ArrayMeta")
+                        meta = deserialize_object(md, VArrayMeta)
+                        if arg_name in columns:
+                            assert columns[arg_name].to_dict() == md, \
+                                "Non matching description %s" % md
+                        columns[arg_name] = meta
+        meta = TableMeta("Part returns from hook", columns=columns)
+        return_table = Table(meta)
+        return return_table
 
 
 def get_hook_decorated(part):

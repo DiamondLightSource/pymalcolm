@@ -30,14 +30,12 @@ class TableMeta(VMeta):
         self.set_endpoint_data("headings", headings, notify)
 
     def validate(self, value):
-        if not isinstance(value, Table):
-            # turn it into a table
+        if not isinstance(value, Table) or self != value.meta:
+            if isinstance(value, Table):
+                value = value.to_dict()
+            # Make a table using ourself as the meta
             value.pop("typeid")
             value = Table(self, value)
-        else:
-            # Check that it's using the same meta object
-            assert self == value.meta, \
-                "Supplied table with wrong meta type"
         # Check column lengths
         value.verify_column_lengths()
         return value

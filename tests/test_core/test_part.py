@@ -8,7 +8,7 @@ import unittest
 
 from mock import Mock
 
-from malcolm.controllers.builtin import DefaultController
+from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import Part, method_takes
 
 

@@ -17,7 +17,7 @@ import json
 
 
 # module imports
-from malcolm.controllers.builtin import DefaultController
+from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import Process, SyncFactory, Task, ClientController
 from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
 from malcolm.parts.demo import HelloPart, CounterPart

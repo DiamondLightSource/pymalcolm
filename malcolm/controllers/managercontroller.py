@@ -1,11 +1,9 @@
 from collections import OrderedDict
 
-import numpy as np
-
+from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import RunnableDeviceStateMachine, REQUIRED, method_returns, \
     method_only_in, method_takes, ElementMap, Attribute, Task, Hook
 from malcolm.core.vmetas import PointGeneratorMeta, StringArrayMeta, NumberMeta
-from malcolm.controllers.builtin.defaultcontroller import DefaultController
 
 
 sm = RunnableDeviceStateMachine
@@ -22,22 +20,19 @@ configure_args = [
 class ManagerController(DefaultController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # hooks
+    Report = Hook()
+    Validate = Hook()
+    Configuring = Hook()
+    PreRun = Hook()
+    Running = Hook()
+    PostRun = Hook()
     Aborting = Hook()
+
     # default attributes
     totalSteps = None
-    # For storing iterator
-    iterator = None
-    points = None
+
     # Params passed to configure()
     configure_params = None
-
-    def get_point(self, num):
-        npoints = len(self.points)
-        if num >= npoints:
-            # Generate some more points and cache them
-            for i in range(num - npoints + 1):
-                self.points.append(next(self.iterator))
-        return self.points[num]
 
     def create_attributes(self):
         self.totalSteps = Attribute(NumberMeta(
@@ -78,28 +73,39 @@ class ManagerController(DefaultController):
     @method_takes(*configure_args)
     def configure(self, params):
         try:
+            # Transition first so no-one else can run configure()
             self.transition(sm.CONFIGURING, "Configuring", create_tasks=True)
+
+            # Store the params and set attributes
             self.configure_params = params
-            self.points = []
-            self.iterator = params.generator.iterator()
-            steps = np.prod(params.generator.index_dims)
-            self.totalSteps.set_value(steps)
+            self.totalSteps.set_value(params.generator.num)
             self.block["completedSteps"].set_value(0)
-            self.do_configure(self.part_tasks, params)
+
+            # Do the actual configure
+            self.do_configure()
             self.transition(sm.READY, "Done configuring")
         except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Fault occurred while Configuring")
             self.transition(sm.FAULT, str(e))
             raise
 
-    def do_configure(self, part_tasks, params, start_index=0):
-        raise NotImplementedError()
+    def do_configure(self, start_step=0):
+        # Ask all parts to report relevant info and pass results to anyone
+        # who cares
+        info_table = self.run_hook(self.Report, self.part_tasks)
+        # Pass results to anyone who cares
+        self.run_hook(self.Configuring, self.part_tasks, info_table=info_table,
+                      start_step=start_step, **self.configure_params)
 
     @method_only_in(sm.READY)
     def run(self):
         try:
-            self.transition(sm.PRERUN, "Preparing for run", create_tasks=True)
-            next_state = self._call_do_run()
+            self.transition(sm.PRERUN, "Preparing for run")
+            self._call_do_run()
+            if self.block["completedSteps"].value < self.totalSteps.value:
+                next_state = sm.READY
+            else:
+                next_state = sm.IDLE
             self.transition(next_state, "Run finished")
         except StopIteration:
             self.log_warning("Run aborted")
@@ -111,7 +117,7 @@ class ManagerController(DefaultController):
 
     def _call_do_run(self):
         try:
-            return self.do_run(self.part_tasks)
+            self.do_run()
         except StopIteration:
             # Work out if it was an abort or pause
             with self.lock:
@@ -125,14 +131,18 @@ class ManagerController(DefaultController):
                     sm.DISABLING, sm.ABORTING, sm.FAULT])
                 task.wait_all(futures)
                 # Restart it
-                return self._call_do_run()
+                self.do_run()
             else:
                 # just drop out
                 self.log_debug("We were aborted")
                 raise
 
-    def do_run(self, part_tasks):
-        raise NotImplementedError()
+    def do_run(self):
+        self.run_hook(self.PreRun, self.part_tasks)
+        self.transition(sm.RUNNING, "Waiting for scan to complete")
+        self.run_hook(self.Running, self.part_tasks)
+        self.transition(sm.POSTRUN, "Finishing run")
+        self.run_hook(self.PostRun, self.part_tasks)
 
     @method_only_in(sm.IDLE, sm.CONFIGURING, sm.READY, sm.PRERUN, sm.RUNNING,
                     sm.POSTRUN, sm.RESETTING, sm.PAUSED, sm.REWINDING)
@@ -160,8 +170,7 @@ class ManagerController(DefaultController):
             current_index = self.block.completedSteps
             self.do_abort()
             self.part_tasks = self.create_part_tasks()
-            self.do_configure(
-                self.part_tasks, self.configure_params, current_index)
+            self.do_configure(current_index)
             self.transition(sm.PAUSED, "Pause finished")
         except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Fault occurred while Pausing")
@@ -179,8 +188,7 @@ class ManagerController(DefaultController):
         try:
             self.transition(sm.REWINDING, "Rewinding")
             self.block["completedSteps"].set_value(requested_index)
-            self.do_configure(
-                self.part_tasks, self.configure_params, requested_index)
+            self.do_configure(requested_index)
             self.transition(sm.PAUSED, "Rewind finished")
         except Exception as e:  # pylint:disable=broad-except
             self.log_exception("Fault occurred while Rewinding")

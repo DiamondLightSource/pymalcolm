@@ -12,7 +12,6 @@ from malcolm.parts.demo.hellopart import HelloPart
 class TestHelloPart(unittest.TestCase):
 
     def setUp(self):
-        self.block = Mock()
         self.c = HelloPart('block', MagicMock())
 
     def test_say_hello(self):

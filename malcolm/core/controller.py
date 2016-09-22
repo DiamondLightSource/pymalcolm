@@ -229,7 +229,16 @@ class Controller(Loggable):
     def run_hook(self, hook, part_tasks, **kwargs):
         hook_queue, func_tasks, task_part_names = self.start_hook(
             hook, part_tasks, **kwargs)
-        return self.wait_hook(hook_queue, func_tasks, task_part_names)
+        return_table = hook.make_return_table(part_tasks)
+        return_dict = self.wait_hook(hook_queue, func_tasks, task_part_names)
+        for part_name, return_map in return_dict.items():
+            if return_map:
+                # Add a row to the table
+                row = [part_name]
+                row += [return_map[k] for k in return_table.endpoints
+                        if k != "name"]
+                return_table.append(row)
+        return return_table
 
     def make_task_return_value_function(self, hook_queue, **kwargs):
 

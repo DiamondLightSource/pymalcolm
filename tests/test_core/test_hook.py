@@ -8,6 +8,8 @@ from mock import MagicMock, patch, call
 from collections import OrderedDict
 
 from malcolm.core.hook import Hook, get_hook_decorated
+from malcolm.core.vmetas import StringMeta, StringArrayMeta
+from malcolm.core import method_returns, REQUIRED
 
 
 class DummyController(object):
@@ -19,12 +21,17 @@ class DummyController(object):
 class DummyPart1(object):
 
     @DummyController.Configuring
-    def do_thing(self):
+    def do_thing(self, task):
         pass
 
     @DummyController.Running
-    def do_the_other_thing(self):
-        pass
+    @method_returns(
+        "foo", StringMeta("Value of foo"), REQUIRED,
+        "bar", StringMeta("Value of bar"), REQUIRED)
+    def do_the_other_thing(self, task, returns):
+        returns.foo = "foo1"
+        returns.bar = "bar2"
+        return returns
 
 
 class DummyPart2(object):
@@ -61,7 +68,12 @@ class TestHook(unittest.TestCase):
                          inst1.do_thing: part_tasks[inst1],
                          inst2.do_all_the_things: part_tasks[inst2]})
 
-
+    def test_make_return_table(self):
+        inst1 = DummyPart1()
+        inst2 = DummyPart2()
+        part_tasks = {inst1: MagicMock(), inst2: MagicMock()}
+        table_meta = DummyController().Running.make_return_table(part_tasks)
+        self.assertEqual(list(table_meta.endpoints), ["name", "foo", "bar"])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
