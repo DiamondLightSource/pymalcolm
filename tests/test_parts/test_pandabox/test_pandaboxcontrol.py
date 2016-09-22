@@ -153,3 +153,12 @@ class PandABoxControlTest(unittest.TestCase):
         resp = self.c.get_positions()
         self.c.stop()
         self.assertEqual(resp, positions)
+
+    def test_enum_labels(self):
+        labels = ["High-Z", "50-Ohm"]
+        self.c.socket.recv.side_effect = ["!High-Z\n!50-Ohm\n.\n"]
+        self.c.start()
+        resp = self.c.get_enum_labels("TTLIN1", "TERM")
+        self.c.stop()
+        self.assertEqual(resp, labels)
+        self.c.socket.send.assert_called_once_with("*ENUMS.TTLIN1.TERM?\n")

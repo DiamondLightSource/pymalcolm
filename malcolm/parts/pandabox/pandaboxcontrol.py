@@ -43,12 +43,6 @@ class PandABoxControl(Loggable, Spawnable):
         else:
             return response
 
-        try:
-            return response_queue.get(timeout=timeout)
-        except:
-            self.response_queues.remove(response_queue)
-            raise
-
     def send_loop(self):
         """Service self.q, sending requests to server"""
         while True:
@@ -132,7 +126,7 @@ class PandABoxControl(Loggable, Spawnable):
 
     def get_enum_labels(self, block, field):
         enum_labels = []
-        for line in self.send_recv("{}.{}.LABELS?\n".format(block, field)):
+        for line in self.send_recv("*ENUMS.{}.{}?\n".format(block, field)):
             enum_labels.append(line)
         return enum_labels
 
