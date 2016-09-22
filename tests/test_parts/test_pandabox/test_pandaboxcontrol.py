@@ -43,55 +43,25 @@ class PandABoxControlTest(unittest.TestCase):
         self.assertEqual(self.c.send_recv(""), "OK =232")
         self.c.stop()
 
-    def test_num_blocks(self):
-        self.c.socket.recv.return_value = """!TTLIN 6
-!OUTENC 4
-!CALC 2
-!SRGATE 4
-!PCOMP 4
-!LUT 8
-!TTLOUT 10
-!LVDSOUT 2
-!ADC 8
-!DIV 4
-!INENC 4
-!COUNTER 8
-!ADDER 1
-!PCAP 1
-!POSENC 4
-!LVDSIN 2
-!PGEN 2
-!QDEC 4
-!SEQ 4
-!PULSE 4
-.
-"""
+    def test_block_data(self):
+        self.c.socket.recv.side_effect = [
+            "!TTLIN 6\n!TTLOUT 10\n.\n",
+            "!VAL 1 bit_out\n!TERM 0 param enum\n.\n",
+            "!VAL 0 bit_mux\n.\n"]
         self.c.start()
-        blocks = self.c.get_num_blocks()
+        block_data = self.c.get_block_data()
         self.c.stop()
-        self.c.socket.send.assert_called_once_with("*BLOCKS?\n")
-        pretty = ",".join("{}={}".format(k, v) for k, v in blocks.items())
-        expected = "TTLIN=6,OUTENC=4,CALC=2,SRGATE=4,PCOMP=4,LUT=8,TTLOUT=10,LVDSOUT=2,ADC=8,DIV=4,INENC=4,COUNTER=8,ADDER=1,PCAP=1,POSENC=4,LVDSIN=2,PGEN=2,QDEC=4,SEQ=4,PULSE=4"
-        self.assertEqual(pretty, expected)
-
-    def test_field_data(self):
-        self.c.socket.recv.return_value = """!FUNC 0 param lut
-!INPA 1 bit_in
-!INPB 2 bit_in
-!INPC 3 bit_in
-!INPD 4 bit_in
-!INPE 5 bit_in
-!VAL 6 bit_out bit
-.
-"""
-        self.c.start()
-        field_data = self.c.get_field_data("LUT")
-        self.c.stop()
-        self.c.socket.send.assert_called_once_with("LUT.*?\n")
-        pretty = ",".join("{}={}:{}".format(k, c, t)
-                          for k, (c, t) in field_data.items())
-        expected = "FUNC=param:lut,INPA=bit_in:,INPB=bit_in:,INPC=bit_in:,INPD=bit_in:,INPE=bit_in:,VAL=bit_out:bit"
-        self.assertEqual(pretty, expected)
+        self.assertEqual(self.c.socket.send.call_args_list, [
+            call("*BLOCKS?\n"), call("TTLIN.*?\n"), call("TTLOUT.*?\n")])
+        expected = OrderedDict()
+        expected["TTLIN"] = OrderedDict()
+        expected["TTLIN"]["num"] = 6
+        expected["TTLIN"]["TERM"] = ("param", "enum")
+        expected["TTLIN"]["VAL"] = ("bit_out", "")
+        expected["TTLOUT"] = OrderedDict()
+        expected["TTLOUT"]["num"] = 10
+        expected["TTLOUT"]["VAL"] = ("bit_mux", "")
+        self.assertEqual(block_data, expected)
 
     def test_changes(self):
         self.c.socket.recv.return_value = """!PULSE0.WIDTH=1.43166e+09

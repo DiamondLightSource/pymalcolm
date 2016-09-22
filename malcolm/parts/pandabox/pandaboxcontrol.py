@@ -24,6 +24,19 @@ class PandABoxControl(Loggable, Spawnable):
                                 self.make_default_stop_func(self.q))
         self.add_spawn_function(self.recv_loop, self.socket.close)
 
+    def send(self, message):
+        response_queue = self.process.create_queue()
+        self.response_queues.put(response_queue)
+        self.q.put(message)
+        return response_queue
+
+    def recv(self, response_queue, timeout=1.0):
+        response = response_queue.get(timeout=timeout)
+        if isinstance(response, Exception):
+            raise response
+        else:
+            return response
+
     def send_recv(self, message, timeout=1.0):
         """Send a message to a PandABox and wait for the response
 
@@ -34,14 +47,9 @@ class PandABoxControl(Loggable, Spawnable):
         Returns:
             str: The response
         """
-        response_queue = self.process.create_queue()
-        self.response_queues.put(response_queue)
-        self.q.put(message)
-        response = response_queue.get(timeout=timeout)
-        if isinstance(response, Exception):
-            raise response
-        else:
-            return response
+        response_queue = self.send(message)
+        response = self.recv(response_queue, timeout)
+        return response
 
     def send_loop(self):
         """Service self.q, sending requests to server"""
@@ -50,6 +58,7 @@ class PandABoxControl(Loggable, Spawnable):
             if message is Spawnable.STOP:
                 break
             try:
+                self.log_debug("Sending %r", message)
                 self.socket.send(message)
             except Exception:  # pylint:disable=broad-except
                 self.log_exception(
@@ -70,6 +79,7 @@ class PandABoxControl(Loggable, Spawnable):
 
     def _respond(self, resp):
         """Respond to the person waiting"""
+        self.log_debug("Response %r", resp)
         response_queue = self.response_queues.get(timeout=0.1)
         response_queue.put(resp)
         self._completed_response_lines = []
@@ -100,29 +110,30 @@ class PandABoxControl(Loggable, Spawnable):
             except Exception:
                 self.log_exception(
                     "Exception receiving message")
+                raise
 
-    def get_num_blocks(self):
-        num_blocks = OrderedDict()
+    def get_block_data(self):
+        block_data = OrderedDict()
         for line in self.send_recv("*BLOCKS?\n"):
             block, num = line.split()
-            num_blocks[block] = int(num)
-        return num_blocks
-
-    def get_field_data(self, block):
-        results = {}
-        for line in self.send_recv("{}.*?\n".format(block)):
-            data = line.split()
-            assert len(data) in (3, 4), \
-                "Expected field_data to have len 3 or 4, got {}"\
-                .format(len(data))
-            if len(data) == 3:
-                data.append("")
-            name, index, cls, typ = data
-            results[int(index)] = (name, cls, typ)
-        field_data = OrderedDict()
-        for _, (name, cls, typ) in sorted(results.items()):
-            field_data[name] = (cls, typ)
-        return field_data
+            response_queue = self.send("%s.*?\n" % block)
+            block_data[block] = OrderedDict(
+                num=int(num), response_queue=response_queue)
+        for block, field_data in block_data.items():
+            response = self.recv(field_data.pop("response_queue"))
+            results = {}
+            for line in response:
+                data = line.split()
+                assert len(data) in (3, 4), \
+                    "Expected field_data to have len 3 or 4, got {}"\
+                    .format(len(data))
+                if len(data) == 3:
+                    data.append("")
+                name, index, cls, typ = data
+                results[int(index)] = (name, cls, typ)
+            for _, (name, cls, typ) in sorted(results.items()):
+                field_data[name] = (cls, typ)
+        return block_data
 
     def get_enum_labels(self, block, field):
         enum_labels = []
