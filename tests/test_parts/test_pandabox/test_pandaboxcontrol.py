@@ -1,5 +1,6 @@
 import os
 import sys
+from collections import OrderedDict
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
@@ -107,10 +108,16 @@ class PandABoxControlTest(unittest.TestCase):
         changes = self.c.get_changes()
         self.c.stop()
         self.c.socket.send.assert_called_once_with("*CHANGES?\n")
-        pretty = ",".join("{}={}".format(k, v)
-                          for k, v in changes.items())
-        expected = "PULSE0.WIDTH=1.43166e+09,PULSE1.WIDTH=1.43166e+09,PULSE2.WIDTH=1.43166e+09,PULSE3.WIDTH=1.43166e+09,PULSE0.INP=<type 'exceptions.Exception'>,PULSE1.INP=<type 'exceptions.Exception'>,PULSE2.INP=<type 'exceptions.Exception'>,PULSE3.INP=<type 'exceptions.Exception'>"
-        self.assertEqual(pretty, expected)
+        expected = OrderedDict()
+        expected["PULSE0.WIDTH"] = "1.43166e+09"
+        expected["PULSE1.WIDTH"] = "1.43166e+09"
+        expected["PULSE2.WIDTH"] = "1.43166e+09"
+        expected["PULSE3.WIDTH"] = "1.43166e+09"
+        expected["PULSE0.INP"] = Exception
+        expected["PULSE1.INP"] = Exception
+        expected["PULSE2.INP"] = Exception
+        expected["PULSE3.INP"] = Exception
+        self.assertEqual(changes, expected)
 
     def test_set(self):
         self.c.socket.recv.return_value = "OK\n"
