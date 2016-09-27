@@ -19,7 +19,6 @@ class PandABoxTablePart(PandABoxFieldPart):
             nbits = bits_hi - bits_lo
             if nbits < 1:
                 raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
-            # TODO: what about time scaling?
             if nbits == 1:
                 column_meta = BooleanMeta(name)
             else:

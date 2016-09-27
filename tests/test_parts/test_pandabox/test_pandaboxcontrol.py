@@ -25,6 +25,7 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.start()
         resp = list(self.c.send_recv(""))
         self.c.stop()
+        self.c.wait()
         expected = ["TTLIN 6", "OUTENC 4", "CALC 2"]
         self.assertEqual(resp, expected)
 
@@ -34,7 +35,6 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.start()
         self.assertEqual(self.c.send_recv(""), "OK =mm")
         self.assertEqual(self.c.send_recv(""), "OK =232")
-        self.c.stop()
 
     def test_bad_good(self):
         messages = ["ERR Invalid bit value\n", "OK =232\n"]
@@ -42,7 +42,6 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.start()
         self.assertRaises(ValueError, self.c.send_recv, "")
         self.assertEqual(self.c.send_recv(""), "OK =232")
-        self.c.stop()
 
     def test_block_data(self):
         self.c.socket.recv.side_effect = [
@@ -61,6 +60,7 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.start()
         block_data = self.c.get_blocks_data()
         self.c.stop()
+        self.c.wait()
         self.assertEqual(self.c.socket.send.call_args_list, [
             call("*BLOCKS?\n"),
             call("*DESC.TTLIN?\n"),
@@ -102,6 +102,7 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.start()
         changes = self.c.get_changes()
         self.c.stop()
+        self.c.wait()
         self.c.socket.send.assert_called_once_with("*CHANGES?\n")
         expected = OrderedDict()
         expected["PULSE0.WIDTH"] = "1.43166e+09"
@@ -119,5 +120,6 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.start()
         self.c.set_field("PULSE0", "WIDTH", 0)
         self.c.stop()
+        self.c.wait()
         self.c.socket.send.assert_called_once_with("PULSE0.WIDTH=0\n")
 

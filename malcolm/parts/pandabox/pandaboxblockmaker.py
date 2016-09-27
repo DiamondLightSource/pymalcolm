@@ -30,7 +30,6 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
     elif subtyp == "enum":
         meta = ChoiceMeta(description, labels, tags + ["widget:combo"])
     elif subtyp == "pos":
-        # TODO: add to list of see if we need units etc.
         meta = NumberMeta("float64", description, tags + [widget])
     else:
         raise ValueError("Unknown subtype %r" % subtyp)
@@ -152,9 +151,10 @@ class PandABoxBlockMaker(Loggable):
 
     def _make_out(self, field_name, field_data, typ):
         group_tag = self._make_group("outputs")
+        flow_tag = "flowgraph:outport:%s:%s.%s" % (
+            typ, self.block_name, field_name)
         meta = make_meta(typ, field_data.description,
-                         tags=[group_tag, "flowgraph:outport:%s" % typ],
-                         writeable=False)
+                         tags=[group_tag, flow_tag], writeable=False)
         self._make_field_part(field_name, meta, writeable=False)
 
     def _make_out_capture(self, field_name, field_data):

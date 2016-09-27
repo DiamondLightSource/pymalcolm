@@ -86,7 +86,8 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(out.meta, NumberMeta)
         self.assertEqual(out.meta.dtype, "float64")
         self.assertEqual(out.meta.tags, [
-            "group:outputs", "flowgraph:outport:pos", "widget:textupdate"])
+            "group:outputs", "flowgraph:outport:pos:ADDER1.OUT",
+            "widget:textupdate"])
 
         units = o.parts["OUT.UNITS"]
         self.assertEqual(units.params.block_name, "ADDER1")
@@ -202,7 +203,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(out.params.writeable, False)
         self.assertIsInstance(out.meta, BooleanMeta)
         self.assertEqual(out.meta.tags, [
-            "group:outputs", "flowgraph:outport:bit", "widget:led"])
+            "group:outputs", "flowgraph:outport:bit:PULSE2.OUT", "widget:led"])
 
         err = o.parts["ERR_PERIOD"]
         self.assertEqual(err.params.block_name, "PULSE2")

@@ -57,9 +57,6 @@ class TestController(unittest.TestCase):
         self.c.hook_names = {hook:"test_hook"}
         self.c.parts = {"test_part":part}
         result = self.c.run_hook(hook, part_tasks)
-
-        # TODO: would like this assertion - difficult to test with mocks
-        #hook_queue.put.assert_called_once_with((func, func.return_value))
         self.assertEquals(hook.make_return_table.return_value, result)
         result.append.assert_called_once_with(
             ["test_part", "bar"])

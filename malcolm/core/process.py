@@ -251,6 +251,8 @@ class Process(Loggable):
         subs = [s for s in self._subscriptions if s.id == request.id]
         # TODO: currently this will remove all subscriptions with a matching id
         #       there should only be one, we may want to warn if we see several
+        #       Also, this should only filter by the queue/context, not sure
+        #       which yet...
         if len(subs) == 0:
             request.respond_with_error(
                 "No subscription found for id %d" % request.id)
