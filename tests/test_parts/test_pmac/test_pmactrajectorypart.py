@@ -87,20 +87,20 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.check_resolutions_and_use(task.put.call_args_list[2][0][0])
         self.assertEqual(task.put.call_args_list[3][0][0], {
             self.child["time_array"]: [
-                400, 2000, 2000, 2000, 2000, 2000, 2000,
-                800, 2000, 2000, 2000, 2000, 2000, 2000, 400],
+                400, 2000, 2000, 2000, 2000, 2000, 2000, 400,
+                400, 2000, 2000, 2000, 2000, 2000, 2000, 400],
             self.child["velocity_mode"]: [
-                2, 0, 0, 0, 0, 0, 1,
+                2, 0, 0, 0, 0, 0, 1, 0,
                 2, 0, 0, 0, 0, 0, 1, 3],
             self.child["user_programs"]: [
-                3, 4, 3, 4, 3, 4, 2,
-                3, 4, 3, 4, 3, 4, 3, 8],
-            self.child["num_points"]: 15,
+                3, 4, 3, 4, 3, 4, 2, 8,
+                3, 4, 3, 4, 3, 4, 2, 8],
+            self.child["num_points"]: 16,
             self.child["positionsA"]: [
-                -0.125, 0.0, 0.125, 0.25, 0.375, 0.5, 0.625,
+                -0.125, 0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
                 0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375],
             self.child["positionsB"]: [
-                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]})
 
     def test_run(self):
@@ -135,7 +135,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(task.put.call_args_list[3][0][0], {
             self.child["time_array"]: [400, 2000, 2000, 2000, 2000, 400],
             self.child["velocity_mode"]: [2, 0, 0, 0, 1, 3],
-            self.child["user_programs"]: [3, 4, 3, 4, 3, 8],
+            self.child["user_programs"]: [3, 4, 3, 4, 2, 8],
             self.child["num_points"]: 6,
             self.child["positionsA"]: [0.375, 0.25, 0.125, 0.0, -0.125, -0.1375],
             self.child["positionsB"]: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]})

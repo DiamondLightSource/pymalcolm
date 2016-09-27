@@ -140,7 +140,7 @@ class PMACTrajectoryPart(LayoutPart):
         if completed_steps != self.completedSteps.value:
             self.completedSteps.set_value(completed_steps)
 
-    def run_up_positions(self, point, fraction):
+    def run_up_positions(self, point):
         """Generate a dict of axis run up distances given a time
 
         Args:
@@ -150,11 +150,12 @@ class PMACTrajectoryPart(LayoutPart):
         """
         positions = {}
 
-        for axis_name in self.axis_mapping:
+        for axis_name, motor_info in self.axis_mapping.items():
             full_distance = point.upper[axis_name] - point.lower[axis_name]
+            velocity = full_distance / self.exposure
             # Divide by 2 as we are decelerating to zero
-            run_up = full_distance * fraction / 2.0
-            positions[axis_name] = run_up
+            accl_dist = motor_info.acceleration_time * velocity * 0.5
+            positions[axis_name] = accl_dist
 
         return positions
 
@@ -166,13 +167,11 @@ class PMACTrajectoryPart(LayoutPart):
     def build_start_profile(self, task, start_index):
         """Move to the run up position ready to start the scan"""
         acceleration_time = self.calculate_acceleration_time()
-        fraction = acceleration_time / self.exposure
         first_point = self.generator.get_point(start_index)
         trajectory = {}
         move_time = 0.0
 
-        for axis_name, run_up in \
-                self.run_up_positions(first_point, fraction).items():
+        for axis_name, run_up in self.run_up_positions(first_point).items():
             start_pos = first_point.lower[axis_name] - run_up
             trajectory[axis_name] = [start_pos]
             move_time = max(move_time, self.get_move_time(axis_name, start_pos))
@@ -252,7 +251,6 @@ class PMACTrajectoryPart(LayoutPart):
 
     def build_generator_profile(self, part_tasks, start_index=0):
         acceleration_time = self.calculate_acceleration_time()
-        fraction = acceleration_time / self.exposure
         trajectory = {}
         time_array = []
         velocity_mode = []
@@ -269,17 +267,25 @@ class PMACTrajectoryPart(LayoutPart):
 
             # Check if we need to insert the lower bound point
             if last_point is None:
-                lower_move_time = acceleration_time
+                lower_move_time, turnaround_midpoint = acceleration_time, None
             else:
-                lower_move_time = self.need_lower_move_time(last_point, point)
+                lower_move_time, turnaround_midpoint = \
+                    self.need_lower_move_time(last_point, point)
+
+            # Check if we need a turnaround midpoint
+            if turnaround_midpoint:
+                # set the previous point to not take this point into account
+                velocity_mode[-1] = PREV_TO_CURRENT
+                # and tell it that this was an empty frame
+                user_programs[-1] = TRIG_DEAD_FRAME
+
+                # Add a padding point
+                time_array.append(lower_move_time)
+                velocity_mode.append(PREV_TO_NEXT)
+                user_programs.append(TRIG_ZERO)
+                completed_steps.append(i)
 
             if lower_move_time:
-                if velocity_mode:
-                    # set the previous point to not take this point into account
-                    velocity_mode[-1] = PREV_TO_CURRENT
-                    # and tell it that this was an empty frame
-                    user_programs[-1] = TRIG_DEAD_FRAME
-
                 # Add lower bound
                 time_array.append(lower_move_time)
                 velocity_mode.append(CURRENT_TO_NEXT)
@@ -301,7 +307,9 @@ class PMACTrajectoryPart(LayoutPart):
             # Add the axis positions
             for axis_name, cs_def in self.axis_mapping.items():
                 positions = trajectory.setdefault(axis_name, [])
-                # Add lower bound axis positions
+                # Add padding and lower bound axis positions
+                if turnaround_midpoint:
+                    positions.append(turnaround_midpoint[axis_name])
                 if lower_move_time:
                     positions.append(point.lower[axis_name])
                 positions.append(point.positions[axis_name])
@@ -312,6 +320,7 @@ class PMACTrajectoryPart(LayoutPart):
         time_array.append(acceleration_time)
         velocity_mode[-1] = PREV_TO_CURRENT
         velocity_mode.append(ZERO_VELOCITY)
+        user_programs[-1] = TRIG_DEAD_FRAME
         user_programs.append(TRIG_ZERO)
         if i + 1 < self.generator.num:
             # We broke, so don't add i + 1 to current step
@@ -319,8 +328,7 @@ class PMACTrajectoryPart(LayoutPart):
         else:
             completed_steps.append(i + 1)
 
-        for axis_name, tail_off in \
-                self.run_up_positions(last_point, fraction).items():
+        for axis_name, tail_off in self.run_up_positions(last_point).items():
             positions = trajectory[axis_name]
             positions.append(positions[-1] + tail_off)
             # Store the last position in axis_mapping so that we can build
@@ -338,12 +346,16 @@ class PMACTrajectoryPart(LayoutPart):
     def need_lower_move_time(self, last_point, point):
         # First point needs to insert lower bound point
         lower_move_time = 0
+        run_ups = self.run_up_positions(last_point)
+        turnaround_midpoint = {}
+
         for axis_name, motor_info in self.axis_mapping.items():
-            if last_point.upper[axis_name] != point.lower[axis_name]:
+            first = last_point.upper[axis_name]
+            second = point.lower[axis_name]
+            turnaround_midpoint[axis_name] = (second - first) * 0.5 + first
+            if first != second:
                 # axis needs to move during turnaround, so insert lower bound
-                move_time = self.get_move_time(
-                    axis_name, last_point.upper[axis_name],
-                    point.lower[axis_name])
+                move_time = self.get_move_time(axis_name, first, second)
                 lower_move_time = max(lower_move_time, move_time)
             else:
                 # axis has been moving
@@ -353,7 +365,10 @@ class PMACTrajectoryPart(LayoutPart):
                 if not self._same_sign(direction, new_direction):
                     move_time = motor_info.acceleration_time * 2
                     lower_move_time = max(lower_move_time, move_time)
-        return lower_move_time
+                    turnaround_midpoint[axis_name] = first + run_ups[axis_name]
+        if lower_move_time == 0:
+            turnaround_midpoint = None
+        return lower_move_time * 0.5, turnaround_midpoint
 
     def external_axis_has_moved(self, last_point, point):
         for axis_name in self.generator.position_units:
