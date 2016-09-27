@@ -23,4 +23,5 @@ from malcolm.core.statemachine import RunnableDeviceStateMachine, \
     DefaultStateMachine  # noqa
 from malcolm.core.syncfactory import SyncFactory  # noqa
 from malcolm.core.table import Table  # noqa
+from malcolm.core.tableelementmap import TableElementMap  # noqa
 from malcolm.core.task import Task  # noqa

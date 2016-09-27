@@ -6,9 +6,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import MagicMock, call, patch
+from mock import call, patch
 
-from malcolm.parts.pandabox.pandaboxcontrol import PandABoxControl
+from malcolm.parts.pandabox.pandaboxcontrol import PandABoxControl, BlockData, \
+    FieldData
 from malcolm.core import Process, SyncFactory
 
 
@@ -46,22 +47,46 @@ class PandABoxControlTest(unittest.TestCase):
     def test_block_data(self):
         self.c.socket.recv.side_effect = [
             "!TTLIN 6\n!TTLOUT 10\n.\n",
-            "!VAL 1 bit_out\n!TERM 0 param enum\n.\n",
-            "!VAL 0 bit_mux\n.\n"]
+            "OK =TTL input\n",
+            "OK =TTL output\n",
+            "!VAL 1 pos_out\n!TERM 0 param enum\n.\n",
+            "!VAL 0 bit_mux\n.\n",
+            "OK =TTL termination\n",
+            "OK =TTL input value\n",
+            "!High-Z\n!50-Ohm\n.\n",
+            "!Average\n!No\n.\n",
+            "OK =TTL output value\n",
+            "!ZERO\n!TTLIN1.VAL\n!TTLIN2.VAL\n.\n",
+        ]
         self.c.start()
-        block_data = self.c.get_block_data()
+        block_data = self.c.get_blocks_data()
         self.c.stop()
         self.assertEqual(self.c.socket.send.call_args_list, [
-            call("*BLOCKS?\n"), call("TTLIN.*?\n"), call("TTLOUT.*?\n")])
-        expected = OrderedDict()
-        expected["TTLIN"] = OrderedDict()
-        expected["TTLIN"]["num"] = 6
-        expected["TTLIN"]["TERM"] = ("param", "enum")
-        expected["TTLIN"]["VAL"] = ("bit_out", "")
-        expected["TTLOUT"] = OrderedDict()
-        expected["TTLOUT"]["num"] = 10
-        expected["TTLOUT"]["VAL"] = ("bit_mux", "")
-        self.assertEqual(block_data, expected)
+            call("*BLOCKS?\n"),
+            call("*DESC.TTLIN?\n"),
+            call("*DESC.TTLOUT?\n"),
+            call("TTLIN.*?\n"),
+            call("TTLOUT.*?\n"),
+            call("*DESC.TTLIN.TERM?\n"),
+            call("*DESC.TTLIN.VAL?\n"),
+            call("*ENUMS.TTLIN.TERM?\n"),
+            call("*ENUMS.TTLIN.VAL.CAPTURE?\n"),
+            call("*DESC.TTLOUT.VAL?\n"),
+            call("*ENUMS.TTLOUT.VAL?\n"),
+        ])
+        self.assertEqual(list(block_data), ["TTLIN", "TTLOUT"])
+        in_fields = OrderedDict()
+        in_fields["TERM"] = FieldData("param", "enum", "TTL termination",
+                                      ["High-Z", "50-Ohm"])
+        in_fields["VAL"] = FieldData("pos_out", "", "TTL input value",
+                                     ["Average", "No"])
+        self.assertEqual(block_data["TTLIN"],
+                         BlockData(6, "TTL input", in_fields))
+        out_fields = OrderedDict()
+        out_fields["VAL"] = FieldData("bit_mux", "", "TTL output value", [
+            "ZERO", "TTLIN1.VAL", "TTLIN2.VAL"])
+        self.assertEqual(block_data["TTLOUT"],
+                         BlockData(10, "TTL output", out_fields))
 
     def test_changes(self):
         self.c.socket.recv.return_value = """!PULSE0.WIDTH=1.43166e+09
@@ -96,39 +121,3 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.stop()
         self.c.socket.send.assert_called_once_with("PULSE0.WIDTH=0\n")
 
-    def test_bits(self):
-        bits = []
-        messages = []
-        for i in range(4):
-            names = []
-            for j in range(32):
-                names.append("field {}".format(i * 32 + j))
-            bits += names
-            messages += ["!{}\n".format(f) for f in names]
-            messages.append(".\n")
-        self.c.socket.recv.side_effect = messages
-        self.c.start()
-        resp = self.c.get_bits()
-        self.c.stop()
-        self.assertEqual(resp, bits)
-
-    def test_positions(self):
-        positions = []
-        for j in range(32):
-            positions.append("field {}".format(j))
-        messages = ["!{}\n".format(f) for f in positions]
-        messages.append(".\n")
-        self.c.socket.recv.side_effect = messages
-        self.c.start()
-        resp = self.c.get_positions()
-        self.c.stop()
-        self.assertEqual(resp, positions)
-
-    def test_enum_labels(self):
-        labels = ["High-Z", "50-Ohm"]
-        self.c.socket.recv.side_effect = ["!High-Z\n!50-Ohm\n.\n"]
-        self.c.start()
-        resp = self.c.get_enum_labels("TTLIN1", "TERM")
-        self.c.stop()
-        self.assertEqual(resp, labels)
-        self.c.socket.send.assert_called_once_with("*ENUMS.TTLIN1.TERM?\n")

@@ -1,8 +1,12 @@
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 import socket
 
 from malcolm.core import Loggable, Spawnable
 
+
+BlockData = namedtuple("BlockData", "number,description,fields")
+FieldData = namedtuple("FieldData",
+                       "field_type,field_subtype,description,labels")
 
 class PandABoxControl(Loggable, Spawnable):
 
@@ -112,34 +116,99 @@ class PandABoxControl(Loggable, Spawnable):
                     "Exception receiving message")
                 raise
 
-    def get_block_data(self):
-        block_data = OrderedDict()
+    def _get_block_numbers(self):
+        block_numbers = OrderedDict()
         for line in self.send_recv("*BLOCKS?\n"):
-            block, num = line.split()
-            response_queue = self.send("%s.*?\n" % block)
-            block_data[block] = OrderedDict(
-                num=int(num), response_queue=response_queue)
-        for block, field_data in block_data.items():
-            response = self.recv(field_data.pop("response_queue"))
-            results = {}
-            for line in response:
-                data = line.split()
-                assert len(data) in (3, 4), \
-                    "Expected field_data to have len 3 or 4, got {}"\
-                    .format(len(data))
-                if len(data) == 3:
-                    data.append("")
-                name, index, cls, typ = data
-                results[int(index)] = (name, cls, typ)
-            for _, (name, cls, typ) in sorted(results.items()):
-                field_data[name] = (cls, typ)
-        return block_data
+            block_name, number = line.split()
+            block_numbers[block_name] = int(number)
+        return block_numbers
 
-    def get_enum_labels(self, block, field):
-        enum_labels = []
-        for line in self.send_recv("*ENUMS.{}.{}?\n".format(block, field)):
-            enum_labels.append(line)
-        return enum_labels
+    def _parameterized_request(self, request, parameter_list):
+        """Send batched requests for a list of parameters
+
+        Args:
+            request (str): Request to send, like "%s.*?\n"
+            parameter_list (list): parameters to format with, like
+                ["TTLIN", "TTLOUT"]
+
+        Returns:
+            dict: {parameter: response_queue}
+        """
+        response_queues = OrderedDict()
+        for parameter in parameter_list:
+            response_queues[parameter] = self.send(request % parameter)
+        return response_queues
+
+    def get_blocks_data(self):
+        blocks = OrderedDict()
+
+        # Get details about number of blocks
+        block_numbers = self._get_block_numbers()
+        block_names = list(block_numbers)
+
+        # Queue up info about each block
+        desc_queues = self._parameterized_request("*DESC.%s?\n", block_names)
+        field_queues = self._parameterized_request("%s.*?\n", block_names)
+
+        # Create BlockData for each block
+        for block_name in block_names:
+            number = block_numbers[block_name]
+            description = self.recv(desc_queues[block_name])[4:]
+            fields = OrderedDict()
+            blocks[block_name] = BlockData(number, description, fields)
+
+            # Parse the field list
+            unsorted_fields = {}
+            for line in self.recv(field_queues[block_name]):
+                split = line.split()
+                assert len(split) in (3, 4), \
+                    "Expected field_data to have len 3 or 4, got {}"\
+                    .format(len(split))
+                if len(split) == 3:
+                    split.append("")
+                field_name, index, field_type, field_subtype = split
+                # TODO: goes in server
+                if field_subtype == "position":
+                    field_subtype = "pos"
+                unsorted_fields[field_name] = (
+                    int(index), field_type, field_subtype)
+
+            # Sort the field list
+            def get_field_index(field_name):
+                return unsorted_fields[field_name][0]
+
+            field_names = sorted(unsorted_fields, key=get_field_index)
+
+            # Request description for each field
+            field_desc_queues = self._parameterized_request(
+                "*DESC.%s.%%s?\n" % block_name, field_names)
+
+            # Request enum labels for fields that are enums
+            enum_fields = []
+            for field_name in field_names:
+                _, field_type, field_subtype = unsorted_fields[field_name]
+                if field_type in ("bit_mux", "pos_mux") or field_subtype == \
+                        "enum":
+                    enum_fields.append(field_name)
+                elif field_type == "pos_out":
+                    enum_fields.append(field_name + ".CAPTURE")
+            enum_queues = self._parameterized_request(
+                "*ENUMS.%s.%%s?\n" % block_name, enum_fields)
+
+            # Get desc and enum data for each field
+            for field_name in field_names:
+                _, field_type, field_subtype = unsorted_fields[field_name]
+                if field_name in enum_queues:
+                    labels = self.recv(enum_queues[field_name])
+                elif field_name + ".CAPTURE" in enum_queues:
+                    labels = self.recv(enum_queues[field_name + ".CAPTURE"])
+                else:
+                    labels = []
+                description = self.recv(field_desc_queues[field_name])[4:]
+                fields[field_name] = FieldData(
+                    field_type, field_subtype, description, labels)
+
+        return blocks
 
     def get_changes(self):
         changes = OrderedDict()
@@ -156,16 +225,15 @@ class PandABoxControl(Loggable, Spawnable):
             changes[field] = val
         return changes
 
+    def get_table_fields(self, block, field):
+        fields = OrderedDict()
+        for line in self.send_recv("%s.%s.FIELDS?" % (block, field)):
+            bits_str, name = line.split(" ", 1)
+            bits = [int(x) for x in bits_str.split(":")]
+            fields[name] = bits
+        return fields
+
     def set_field(self, block, field, value):
         resp = self.send_recv("{}.{}={}\n".format(block, field, value))
         assert resp == "OK", \
             "Expected OK, got {}".format(resp)
-
-    def get_bits(self):
-        bits = []
-        for i in range(4):
-            bits += self.send_recv("*BITS{}?\n".format(i))
-        return bits
-
-    def get_positions(self):
-        return self.send_recv("*POSITIONS?\n")
