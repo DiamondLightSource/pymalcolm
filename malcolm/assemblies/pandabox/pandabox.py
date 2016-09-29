@@ -10,7 +10,7 @@ from malcolm.controllers.managercontroller import ManagerController
 @method_takes(
     "name", StringMeta("Name of the created PandABox block"), REQUIRED,
     "hostname", StringMeta("Hostname of the box"), "localhost",
-    "port", NumberMeta("uint8", "Port number of the server control"), 8888
+    "port", NumberMeta("uint32", "Port number of the server control"), 8888
 )
 def PandABox(process, params):
 
@@ -36,8 +36,9 @@ def PandABox(process, params):
         for bn in block_names:
             malcolm_name = "%s:%s" % (params.name, bn)
             ret.append(poller.make_panda_block(malcolm_name, bn, block_data))
-            params = LayoutPart.MethodMeta.prepare_input_map(child=malcolm_name)
-            parts[bn] = LayoutPart(process, params)
+            part_params = LayoutPart.MethodMeta.prepare_input_map(
+                dict(child=malcolm_name))
+            parts[bn] = LayoutPart(process, part_params)
 
     # Make a controller
     controller = ManagerController(params.name, process, parts)

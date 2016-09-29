@@ -126,7 +126,7 @@ class BlockModel(QAbstractItemModel):
         index = self.createIndex(parent_item.parent_row(), 0, parent_item)
         return index
 
-    def rowCount(self, parent):
+    def rowCount(self, parent=QModelIndex()):
         if parent.column() > 0:
             return 0
         if parent.isValid():
@@ -136,7 +136,7 @@ class BlockModel(QAbstractItemModel):
         rows = len(parent_item.children)
         return rows
 
-    def columnCount(self, parent):
+    def columnCount(self, parent=QModelIndex()):
         return 3
 
     def flags(self, index):

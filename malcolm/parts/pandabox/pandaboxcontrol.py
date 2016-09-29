@@ -201,7 +201,7 @@ class PandABoxControl(Loggable, Spawnable):
                 if field_type in ("bit_mux", "pos_mux") or field_subtype == \
                         "enum":
                     enum_fields.append(field_name)
-                elif field_type == "pos_out":
+                elif field_type in ("pos_out", "ext_out"):
                     enum_fields.append(field_name + ".CAPTURE")
             enum_queues = self.parameterized_send(
                 "*ENUMS.%s.%%s?\n" % block_name, enum_fields)
@@ -215,6 +215,12 @@ class PandABoxControl(Loggable, Spawnable):
                     labels = self.recv(enum_queues[field_name + ".CAPTURE"])
                 else:
                     labels = []
+                # TODO: goes in server
+                for i, label in enumerate(labels):
+                    if label in ("POSITIONS.ZERO", "BITS.ZERO"):
+                        labels[i] = "ZERO"
+                    elif label == "BITS.ONE":
+                        labels[i] = "ONE"
                 description = self.recv(field_desc_queues[field_name])[4:]
                 fields[field_name] = FieldData(
                     field_type, field_subtype, description, labels)
@@ -229,16 +235,21 @@ class PandABoxControl(Loggable, Spawnable):
                 val = Exception
             elif "<" in line:
                 # table
-                field = None
-                val = None
+                field = line.split(" ", 1)[0]
+                val = []
             else:
                 field, val = line.split("=", 1)
+            # TODO: Goes in server
+            if val in ("POSITIONS.ZERO", "BITS.ZERO"):
+                val = "ZERO"
+            elif val == "BITS.ONE":
+                val = "ONE"
             changes[field] = val
         return changes
 
     def get_table_fields(self, block, field):
         fields = OrderedDict()
-        for line in self.send_recv("%s.%s.FIELDS?" % (block, field)):
+        for line in self.send_recv("%s.%s.FIELDS?\n" % (block, field)):
             bits_str, name = line.split(" ", 1)
             bits = [int(x) for x in bits_str.split(":")]
             fields[name] = bits
@@ -247,4 +258,7 @@ class PandABoxControl(Loggable, Spawnable):
     def set_field(self, block, field, value):
         resp = self.send_recv("{}.{}={}\n".format(block, field, value))
         assert resp == "OK", \
-            "Expected OK, got {}".format(resp)
+            "Expected OK, got %r" % resp
+
+    def set_table(self, full_field, value):
+        raise NotImplementedError()

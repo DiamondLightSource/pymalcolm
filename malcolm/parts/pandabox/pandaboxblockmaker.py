@@ -4,6 +4,7 @@ from malcolm.core import Loggable
 from malcolm.core.vmetas import BooleanMeta, NumberMeta, StringMeta, \
     ChoiceMeta, TableMeta
 from malcolm.parts.pandabox.pandaboxfieldpart import PandABoxFieldPart
+from malcolm.parts.pandabox.pandaboxgrouppart import PandABoxGroupPart
 from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 from malcolm.parts.pandabox.pandaboxactionpart import PandABoxActionPart
 
@@ -38,6 +39,7 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
 
 class PandABoxBlockMaker(Loggable):
     def __init__(self, process, control, block_name, block_data):
+        self.set_logger_name("PandABoxBlockMaker")
         self.process = process
         self.control = control
         self.block_name = block_name
@@ -138,13 +140,10 @@ class PandABoxBlockMaker(Loggable):
             arg_meta = make_meta(
                 field_data.field_subtype, field_data.description,
                 tags=[group_tag], writeable=True, labels=field_data.labels)
-        params = PandABoxFieldPart.MethodMeta.prepare_input_map(dict(
-            block_name=self.block_name, field_name=field_name,
-            description=field_data.description))
-        part = PandABoxActionPart(self.process, params, self.control,
-                                  arg_name, arg_meta)
-        tags = ["widget:action", group_tag]
-        part.method.set_tags(tags)
+        part = PandABoxActionPart(
+            self.process, self.control, self.block_name, field_name,
+            field_data.description, ["widget:action", group_tag], arg_name,
+            arg_meta)
         self._add_part(field_name, part)
 
     def _make_out(self, field_name, field_data, typ):
@@ -185,11 +184,9 @@ class PandABoxBlockMaker(Loggable):
     def _make_table(self, field_name, field_data):
         widget_tag = "widget:table"
         group_tag = self._make_group("parameters")
-        params = PandABoxFieldPart.MethodMeta.prepare_input_map(dict(
-            block_name=self.block_name, field_name=field_name,
-            writeable=True))
         meta = TableMeta(field_data.description, [widget_tag, group_tag])
-        part = PandABoxTablePart(self.process, params, self.control, meta)
+        part = PandABoxTablePart(self.process, self.control, meta,
+                                 self.block_name, field_name, writeable=True)
         self._add_part(field_name, part)
 
     def _add_part(self, field_name, part):
@@ -197,19 +194,15 @@ class PandABoxBlockMaker(Loggable):
             "Already have a field %r" % field_name
         self.parts[field_name] = part
 
-    def _make_field_part(self, field_name, meta, writeable):
-        params = PandABoxFieldPart.MethodMeta.prepare_input_map(dict(
-            block_name=self.block_name, field_name=field_name,
-            writeable=writeable))
-        part = PandABoxFieldPart(self.process, params, self.control, meta)
+    def _make_field_part(self, field_name, meta, writeable, initial_value=None):
+        part = PandABoxFieldPart(self.process, self.control, meta,
+                                 self.block_name, field_name, writeable,
+                                 initial_value)
         self._add_part(field_name, part)
 
-    def _make_group(self, field_name):
-        if field_name not in self.parts:
-            tags = ["widget:group"]
-            meta = ChoiceMeta("All %s attributes" % field_name,
-                              choices=["expanded", "collapsed"], tags=tags,
-                              label=field_name.title())
-            self._make_field_part(field_name, meta, writeable=True)
-        group_tag = "group:%s" % field_name
+    def _make_group(self, attr_name):
+        if attr_name not in self.parts:
+            part = PandABoxGroupPart(self.process, attr_name)
+            self._add_part(attr_name, part)
+        group_tag = "group:%s" % attr_name
         return group_tag

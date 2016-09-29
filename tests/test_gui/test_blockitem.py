@@ -26,7 +26,8 @@ class TestBlockItem(unittest.TestCase):
 
     def make_grouped_attr(self):
         attr = Attribute()
-        attr.tags = ["group:foo"]
+        attr.set_endpoint_data("meta", MagicMock())
+        attr.meta.tags = ["group:foo"]
         return attr
 
     def test_group_name(self):

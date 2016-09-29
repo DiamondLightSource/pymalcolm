@@ -7,7 +7,11 @@ from malcolm.gui.attributeitem import AttributeItem
 class BlockItem(BaseItem):
 
     def _get_group_name(self, attr):
-        tags = getattr(attr, "tags", [])
+        meta = getattr(attr, "meta", None)
+        if meta:
+            tags = getattr(meta, "tags", [])
+        else:
+            tags = []
         groups = [x for x in tags if x.startswith("group:")]
         if groups:
             group_name = groups[0][len("group:"):]

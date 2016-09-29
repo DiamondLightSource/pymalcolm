@@ -2,6 +2,7 @@ from PyQt4.Qt import QTreeView, QSize
 
 from malcolm.gui.blockmodel import BlockModel
 from malcolm.gui.delegate import Delegate
+from malcolm.gui.attributeitem import AttributeItem
 
 
 class BlockGui(QTreeView):
@@ -16,4 +17,34 @@ class BlockGui(QTreeView):
         self.resize(QSize(370, 800))
         self.setItemDelegateForColumn(1, Delegate())
         self.setEditTriggers(self.AllEditTriggers)
+        self.expanded.connect(self.write_expanded)
+        self.collapsed.connect(self.write_collapsed)
         self.show()
+
+    def write_expanded(self, index):
+        self._write_group(index, "expanded")
+
+    def write_collapsed(self, index):
+        self._write_group(index, "collapsed")
+
+    def dataChanged(self, topLeft, bottomRight):
+        model = self.model()
+        for row in range(model.rowCount()):
+            str_data = str(model.index(row, 1).data().toString())
+            index = model.index(row, 0)
+            if str_data == "expanded":
+                self.setExpanded(index, True)
+            elif str_data == "collapsed":
+                self.setExpanded(index, False)
+        super(BlockGui, self).dataChanged(topLeft, bottomRight)
+
+    def _write_group(self, index, value):
+        item = index.internalPointer()
+        if isinstance(item, AttributeItem):
+            model = self.model()
+            index = model.index(index.row(), 1, index.parent())
+            model.setData(index, value)
+
+
+
+

@@ -101,17 +101,22 @@ class PandABoxPoller(Spawnable, Loggable):
     def poll_loop(self):
         """At 10Hz poll for changes"""
         next_poll = time.time()
-
         while True:
             next_poll += 0.1
+            timeout = next_poll - time.time()
+            if timeout < 0:
+                timeout = 0
             try:
-                message = self.q.get(timeout=next_poll - time.time())
+                message = self.q.get(timeout=timeout)
                 if message is Spawnable.STOP:
                     break
             except queue.Empty:
                 # No problem
                 pass
-            self.handle_changes(self.control.get_changes())
+            try:
+                self.handle_changes(self.control.get_changes())
+            except Exception:
+                self.log_exception("Error while getting changes")
 
     def handle_changes(self, changes):
         self.changes.update(changes)
@@ -164,8 +169,8 @@ class PandABoxPoller(Spawnable, Loggable):
             self._update_val_attr(val_attr, val)
             if field_data.field_type == "pos_mux" and field_name == "INP":
                 # all param pos fields should inherit scale and offset
-                for dest_field_name in self._scale_offset_fields[
-                        (block_name, field_name)]:
+                for dest_field_name in self._scale_offset_fields.get(
+                        (block_name, field_name), []):
                     self._update_scale_offset_mapping(
                         block_name, dest_field_name, val)
         return ret
