@@ -29,7 +29,7 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
         meta = StringMeta(description, tags + [widget])
     elif subtyp == "enum":
         meta = ChoiceMeta(description, labels, tags + ["widget:combo"])
-    elif subtyp == "pos":
+    elif subtyp in ("pos", "relative_pos"):
         meta = NumberMeta("float64", description, tags + [widget])
     else:
         raise ValueError("Unknown subtype %r" % subtyp)
@@ -37,12 +37,6 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
 
 
 class PandABoxBlockMaker(Loggable):
-    _suppress_fields = [
-        ("BITS", "ZERO"),
-        ("BITS", "ONE"),
-        ("POSITIONS", "ZERO"),
-    ]
-
     def __init__(self, process, control, block_name, block_data):
         self.process = process
         self.control = control
@@ -67,10 +61,7 @@ class PandABoxBlockMaker(Loggable):
         else:
             writeable = True
 
-        if (field_name, field_data) in self._suppress_fields:
-            # TODO: move to server
-            return
-        elif typ == "time" or typ in ("param", "read") and subtyp == "time":
+        if typ == "time" or typ in ("param", "read") and subtyp == "time":
             self._make_time_parts(field_name, field_data, writeable)
         elif typ in ("param", "read"):
             self._make_param_part(field_name, field_data, writeable)

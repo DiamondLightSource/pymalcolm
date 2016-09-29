@@ -123,7 +123,7 @@ class PandABoxControl(Loggable, Spawnable):
             block_numbers[block_name] = int(number)
         return block_numbers
 
-    def _parameterized_request(self, request, parameter_list):
+    def parameterized_send(self, request, parameter_list):
         """Send batched requests for a list of parameters
 
         Args:
@@ -146,9 +146,12 @@ class PandABoxControl(Loggable, Spawnable):
         block_numbers = self._get_block_numbers()
         block_names = list(block_numbers)
 
+        # TODO: goes in server
+        block_names = [n for n in block_names if n != "POSITIONS"]
+
         # Queue up info about each block
-        desc_queues = self._parameterized_request("*DESC.%s?\n", block_names)
-        field_queues = self._parameterized_request("%s.*?\n", block_names)
+        desc_queues = self.parameterized_send("*DESC.%s?\n", block_names)
+        field_queues = self.parameterized_send("%s.*?\n", block_names)
 
         # Create BlockData for each block
         for block_name in block_names:
@@ -168,8 +171,16 @@ class PandABoxControl(Loggable, Spawnable):
                     split.append("")
                 field_name, index, field_type, field_subtype = split
                 # TODO: goes in server
+                if block_name == "BITS" and field_name in ("ONE", "ZERO"):
+                    continue
+                # TODO: goes in server
                 if field_subtype == "position":
-                    field_subtype = "pos"
+                    if block_name.startswith("PCOMP") and field_name in (
+                            "STEP", "WIDTH"):
+                        field_subtype = "relative_pos"
+                    else:
+                        field_subtype = "pos"
+
                 unsorted_fields[field_name] = (
                     int(index), field_type, field_subtype)
 
@@ -180,7 +191,7 @@ class PandABoxControl(Loggable, Spawnable):
             field_names = sorted(unsorted_fields, key=get_field_index)
 
             # Request description for each field
-            field_desc_queues = self._parameterized_request(
+            field_desc_queues = self.parameterized_send(
                 "*DESC.%s.%%s?\n" % block_name, field_names)
 
             # Request enum labels for fields that are enums
@@ -192,7 +203,7 @@ class PandABoxControl(Loggable, Spawnable):
                     enum_fields.append(field_name)
                 elif field_type == "pos_out":
                     enum_fields.append(field_name + ".CAPTURE")
-            enum_queues = self._parameterized_request(
+            enum_queues = self.parameterized_send(
                 "*ENUMS.%s.%%s?\n" % block_name, enum_fields)
 
             # Get desc and enum data for each field
