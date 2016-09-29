@@ -43,6 +43,8 @@ class PandABoxBlockMaker(Loggable):
         self.block_name = block_name
         self.block_data = block_data
         self.parts = OrderedDict()
+        # Make an icon
+        self._make_icon()
         for field_name, field_data in block_data.fields.items():
             self.make_parts_for(field_name, field_data)
 
@@ -84,6 +86,11 @@ class PandABoxBlockMaker(Loggable):
             self._make_table(field_name, field_data)
         else:
             raise ValueError("Unknown type %r subtype %r" % (type, subtyp))
+
+    def _make_icon(self):
+        # TODO: fix to be relative when we are hosting web gui
+        meta = StringMeta("URL for ICON", tags=["flowgraph:icon"])
+        self._make_field_part("ICON", meta, writeable=False)
 
     def _make_scale_offset(self, field_name):
         group_tag = self._make_group("outputs")
@@ -200,8 +207,9 @@ class PandABoxBlockMaker(Loggable):
     def _make_group(self, field_name):
         if field_name not in self.parts:
             tags = ["widget:group"]
-            meta = BooleanMeta("All %s attributes" % field_name, tags=tags,
-                               label=field_name.title())
+            meta = ChoiceMeta("All %s attributes" % field_name,
+                              choices=["expanded", "collapsed"], tags=tags,
+                              label=field_name.title())
             self._make_field_part(field_name, meta, writeable=True)
         group_tag = "group:%s" % field_name
         return group_tag

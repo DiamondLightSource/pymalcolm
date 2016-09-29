@@ -28,6 +28,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         fields["OUT"] = FieldData("pos_out", "", "Output", ["No", "Capture"])
         o = PandABoxBlockMaker(self.process, self.control, "ADDER1", block_data)
         self.assertEqual(list(o.parts), [
+            'ICON',
             'inputs',
             'INPA',
             'INPA.VAL',
@@ -45,8 +46,9 @@ class PandABoxBlockMakerTest(unittest.TestCase):
 
         group = o.parts["inputs"]
         self.assertEqual(group.params.writeable, True)
-        self.assertIsInstance(group.meta, BooleanMeta)
+        self.assertIsInstance(group.meta, ChoiceMeta)
         self.assertEqual(group.meta.tags, ["widget:group"])
+        self.assertEqual(group.meta.choices, ["expanded", "collapsed"])
         self.assertEqual(group.control, self.control)
         self.assertEqual(group.process, self.process)
 
@@ -142,6 +144,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         fields["ERR_PERIOD"] = FieldData("read", "bit", "Error", [])
         o = PandABoxBlockMaker(self.process, self.control, "PULSE2", block_data)
         self.assertEqual(list(o.parts), [
+            'ICON',
             'parameters',
             'DELAY',
             'DELAY.UNITS',

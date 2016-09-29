@@ -47,7 +47,20 @@ class PandABoxPoller(Spawnable, Loggable):
 
         self._blocks[block_name] = block
 
+        # Set the initial block_url
+        self._set_icon_url(block_name)
+
         return block
+
+    def _set_icon_url(self, block_name):
+        icon_attr = self._blocks[block_name]["ICON"]
+        fname = block_name.rstrip("0123456789")
+        if fname == "LUT":
+            # TODO: Get fname from func
+            pass
+        # TODO: make relative
+        url = "http://localhost:8080/path/to/%s" % fname
+        icon_attr.set_value(url)
 
     def _store_block_data(self, block_name, block_data):
         self._block_data[block_name] = block_data
@@ -88,6 +101,7 @@ class PandABoxPoller(Spawnable, Loggable):
     def poll_loop(self):
         """At 10Hz poll for changes"""
         next_poll = time.time()
+
         while True:
             next_poll += 0.1
             try:
@@ -112,6 +126,9 @@ class PandABoxPoller(Spawnable, Loggable):
                 self.changes[full_field] = ret
             else:
                 self.changes.pop(full_field)
+            # If it was LUT.FUNC then recalculate icon
+            if block_name.startswith("LUT") and field_name == "FUNC":
+                self._set_icon_url(block_name)
 
     def update_attribute(self, block_name, field_name, val):
         ret = None
