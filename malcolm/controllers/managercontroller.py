@@ -2,8 +2,9 @@ from collections import OrderedDict
 
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import RunnableDeviceStateMachine, REQUIRED, method_returns, \
-    method_only_in, method_takes, ElementMap, Attribute, Task, Hook
-from malcolm.core.vmetas import PointGeneratorMeta, StringArrayMeta, NumberMeta
+    method_only_in, method_takes, ElementMap, Attribute, Task, Hook, Table
+from malcolm.core.vmetas import PointGeneratorMeta, StringArrayMeta, \
+    NumberMeta, NumberArrayMeta, BooleanArrayMeta, TableMeta
 
 
 sm = RunnableDeviceStateMachine
@@ -13,6 +14,16 @@ configure_args = [
     "axes_to_move", StringArrayMeta("Axes that should be moved"), REQUIRED,
     "exposure", NumberMeta("float64", "How long to remain at each point"),
     REQUIRED]
+
+
+# Make a table for the raw motor info we need
+columns = OrderedDict()
+columns["name"] = StringArrayMeta("Name of layout part")
+columns["mri"] = StringArrayMeta("Malcolm full name of child block")
+columns["x"] = NumberArrayMeta("float64", "X Co-ordinate of child block")
+columns["y"] = NumberArrayMeta("float64", "X Co-ordinate of child block")
+columns["visible"] = BooleanArrayMeta("Whether child block is visible")
+layout_table_meta = TableMeta("Layout of child blocks", columns=columns)
 
 
 @sm.insert
@@ -27,9 +38,11 @@ class ManagerController(DefaultController):
     Running = Hook()
     PostRun = Hook()
     Aborting = Hook()
+    UpdateLayout = Hook()
 
     # default attributes
     totalSteps = None
+    layout = None
 
     # Params passed to configure()
     configure_params = None
@@ -38,6 +51,17 @@ class ManagerController(DefaultController):
         self.totalSteps = Attribute(NumberMeta(
             "int32", "Readback of number of scan steps"), 0)
         yield "totalSteps", self.totalSteps, None
+        self.layout = Attribute(layout_table_meta)
+        yield "layout", self.layout, self.set_layout
+
+    def do_reset(self):
+        super(ManagerController, self).do_reset()
+        self.set_layout(Table(layout_table_meta))
+
+    def set_layout(self, value):
+        layout_table = self.run_hook(
+            self.UpdateLayout, self.create_part_tasks(), layout_table=value)
+        self.layout.set_value(layout_table)
 
     def something_create_methods(self):
         # Look for all parts that hook into the validate method

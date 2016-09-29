@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from malcolm.core import method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta, NumberMeta
 
@@ -23,7 +25,7 @@ def PandABox(process, params):
 
     # Get some information about what is available in this PandABox
     blocks_data = control.get_blocks_data()
-    parts = {}
+    parts = OrderedDict()
     ret = []
 
     for block_name, block_data in blocks_data.items():
@@ -37,7 +39,7 @@ def PandABox(process, params):
             malcolm_name = "%s:%s" % (params.name, bn)
             ret.append(poller.make_panda_block(malcolm_name, bn, block_data))
             part_params = LayoutPart.MethodMeta.prepare_input_map(
-                dict(child=malcolm_name))
+                dict(name=bn, child=malcolm_name))
             parts[bn] = LayoutPart(process, part_params)
 
     # Make a controller

@@ -231,7 +231,8 @@ class Controller(Loggable):
             hook, part_tasks, **kwargs)
         return_table = hook.make_return_table(part_tasks)
         return_dict = self.wait_hook(hook_queue, func_tasks, task_part_names)
-        for part_name, return_map in return_dict.items():
+        for part_name in self.parts:
+            return_map = return_dict.get(part_name, None)
             if return_map:
                 # Add a row to the table
                 row = [part_name]
