@@ -12,6 +12,7 @@ from malcolm.core.request import Post
 from malcolm.core.statemachine import DefaultStateMachine
 from malcolm.core.task import Task
 from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
+from malcolm.core.varraymeta import VArrayMeta
 
 
 sm = DefaultStateMachine
@@ -234,12 +235,35 @@ class Controller(Loggable):
         for part_name in self.parts:
             return_map = return_dict.get(part_name, None)
             if return_map:
-                # Add a row to the table
-                row = [part_name]
-                row += [return_map[k] for k in return_table.endpoints
-                        if k != "name"]
-                return_table.append(row)
+                self.fill_in_table(part_name, return_table, return_map)
         return return_table
+
+    def fill_in_table(self, part_name, table, return_map):
+        # Find all the array columns
+        arrays = {}
+        for column_name in table.meta.elements:
+            meta = table.meta.elements[column_name]
+            if "hook:return_array" in meta.tags:
+                arrays[column_name] = return_map[column_name]
+        # If there are any arrays, make sure they are the right length
+        lengths = set(len(arr) for arr in arrays.values())
+        if len(lengths) == 0:
+            # no arrays
+            iterations = 1
+        else:
+            assert len(lengths) == 1, \
+                "Varying array length %s for rows %s" % (lengths, arrays)
+            iterations = lengths.pop()
+        for i in range(iterations):
+            row = []
+            for k in table.endpoints:
+                if k == "name":
+                    row.append(part_name)
+                elif k in arrays:
+                    row.append(arrays[k][i])
+                else:
+                    row.append(return_map[k])
+            table.append(row)
 
     def make_task_return_value_function(self, hook_queue, **kwargs):
 

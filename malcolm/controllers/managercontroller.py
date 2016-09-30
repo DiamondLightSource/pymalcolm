@@ -16,7 +16,7 @@ configure_args = [
     REQUIRED]
 
 
-# Make a table for the raw motor info we need
+# Make a table for the layout info we need
 columns = OrderedDict()
 columns["name"] = StringArrayMeta("Name of layout part")
 columns["mri"] = StringArrayMeta("Malcolm full name of child block")
@@ -24,6 +24,13 @@ columns["x"] = NumberArrayMeta("float64", "X Co-ordinate of child block")
 columns["y"] = NumberArrayMeta("float64", "X Co-ordinate of child block")
 columns["visible"] = BooleanArrayMeta("Whether child block is visible")
 layout_table_meta = TableMeta("Layout of child blocks", columns=columns)
+
+# Make a table for the port info we need
+columns = OrderedDict()
+columns["name"] = StringArrayMeta("Name of layout part")
+columns["type"] = StringArrayMeta("Type of outport (e.g. bit or pos)")
+columns["value"] = StringArrayMeta("Value of outport (e.g. PULSE1.OUT)")
+outport_table_meta = TableMeta("List of ports on blocks", columns=columns)
 
 
 @sm.insert
@@ -39,6 +46,7 @@ class ManagerController(DefaultController):
     PostRun = Hook()
     Aborting = Hook()
     UpdateLayout = Hook()
+    ListOutports = Hook()
 
     # default attributes
     totalSteps = None
@@ -59,8 +67,12 @@ class ManagerController(DefaultController):
         self.set_layout(Table(layout_table_meta))
 
     def set_layout(self, value):
+        outport_table = self.run_hook(
+            self.ListOutports, self.create_part_tasks())
         layout_table = self.run_hook(
-            self.UpdateLayout, self.create_part_tasks(), layout_table=value)
+            self.UpdateLayout, self.create_part_tasks(), layout_table=value,
+            outport_table=outport_table
+        )
         self.layout.set_value(layout_table)
 
     def something_create_methods(self):

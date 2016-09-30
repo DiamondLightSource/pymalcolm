@@ -229,14 +229,16 @@ class PandABoxControl(Loggable, Spawnable):
 
     def get_changes(self):
         changes = OrderedDict()
+        table_queues = {}
         for line in self.send_recv("*CHANGES?\n"):
             if line.endswith("(error)"):
                 field = line.split(" ", 1)[0]
                 val = Exception
             elif "<" in line:
                 # table
-                field = line.split(" ", 1)[0]
-                val = []
+                field = line.rstrip("<")
+                val = None
+                table_queues[field] = self.send("%s?\n" % field)
             else:
                 field, val = line.split("=", 1)
             # TODO: Goes in server
@@ -245,6 +247,8 @@ class PandABoxControl(Loggable, Spawnable):
             elif val == "BITS.ONE":
                 val = "ONE"
             changes[field] = val
+        for field, q in table_queues.items():
+            changes[field] = self.recv(q)
         return changes
 
     def get_table_fields(self, block, field):
@@ -256,9 +260,14 @@ class PandABoxControl(Loggable, Spawnable):
         return fields
 
     def set_field(self, block, field, value):
-        resp = self.send_recv("{}.{}={}\n".format(block, field, value))
+        resp = self.send_recv("%s.%s=%s\n" % (block, field, value))
         assert resp == "OK", \
             "Expected OK, got %r" % resp
 
-    def set_table(self, full_field, value):
-        raise NotImplementedError()
+    def set_table(self, block, field, int_values):
+        lines = ["%s.%s<\n" % (block, field)]
+        lines += ["%s\n" % int_value for int_value in int_values]
+        lines += ["\n"]
+        resp = self.send_recv("".join(lines))
+        assert resp == "OK", \
+            "Expected OK, got %r" % resp

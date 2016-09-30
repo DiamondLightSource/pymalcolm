@@ -50,6 +50,7 @@ class Table(Serializable):
             for e, v in zip(self.meta.elements, row):
                 column = getattr(self, e)
                 column[idx] = v
+                setattr(self, e, column)
         else:
             setattr(self, idx, row)
 
@@ -75,6 +76,6 @@ class Table(Serializable):
                 # numpy arrays have no append, so make an array of the right
                 # validated type, and use np.append
                 v = self.meta.elements[e].validate([v])
-                new_column = np.append(column, v)
-                setattr(self, e, new_column)
+                column = np.append(column, v)
+            setattr(self, e, column)
 

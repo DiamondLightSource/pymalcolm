@@ -89,33 +89,40 @@ class PandABoxControlTest(unittest.TestCase):
                          BlockData(10, "TTL output", out_fields))
 
     def test_changes(self):
-        self.c.socket.recv.return_value = """!PULSE0.WIDTH=1.43166e+09
+        self.c.socket.recv.side_effect = ["""!PULSE0.WIDTH=1.43166e+09
 !PULSE1.WIDTH=1.43166e+09
 !PULSE2.WIDTH=1.43166e+09
 !PULSE3.WIDTH=1.43166e+09
+!SEQ1.TABLE<
 !PULSE0.INP (error)
 !PULSE1.INP (error)
 !PULSE2.INP (error)
 !PULSE3.INP (error)
 .
-"""
+""","""!1
+!2
+!3
+.
+"""]
         self.c.start()
         changes = self.c.get_changes()
         self.c.stop()
         self.c.wait()
-        self.c.socket.send.assert_called_once_with("*CHANGES?\n")
+        self.assertEqual(self.c.socket.send.call_args_list, [
+            call("*CHANGES?\n"), call("SEQ1.TABLE?\n")])
         expected = OrderedDict()
         expected["PULSE0.WIDTH"] = "1.43166e+09"
         expected["PULSE1.WIDTH"] = "1.43166e+09"
         expected["PULSE2.WIDTH"] = "1.43166e+09"
         expected["PULSE3.WIDTH"] = "1.43166e+09"
+        expected["SEQ1.TABLE"] = ["1", "2", "3"]
         expected["PULSE0.INP"] = Exception
         expected["PULSE1.INP"] = Exception
         expected["PULSE2.INP"] = Exception
         expected["PULSE3.INP"] = Exception
         self.assertEqual(changes, expected)
 
-    def test_set(self):
+    def test_set_field(self):
         self.c.socket.recv.return_value = "OK\n"
         self.c.start()
         self.c.set_field("PULSE0", "WIDTH", 0)
@@ -123,3 +130,15 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.wait()
         self.c.socket.send.assert_called_once_with("PULSE0.WIDTH=0\n")
 
+    def test_set_table(self):
+        self.c.socket.recv.return_value = "OK\n"
+        self.c.start()
+        self.c.set_table("SEQ1", "TABLE", [1, 2, 3])
+        self.c.stop()
+        self.c.wait()
+        self.c.socket.send.assert_called_once_with("""SEQ1.TABLE<
+1
+2
+3
+
+""")

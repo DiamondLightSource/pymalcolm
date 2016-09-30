@@ -49,11 +49,16 @@ class Hook(object):
                     # Add return metas to the table columns
                     for arg_name in method_meta.returns.elements:
                         md = method_meta.returns.elements[arg_name].to_dict()
-                        md["typeid"] = md["typeid"].replace("Meta", "ArrayMeta")
+                        if "ArrayMeta" in md["typeid"]:
+                            md["tags"] = md["tags"] + ["hook:return_array"]
+                        else:
+                            md["typeid"] = md["typeid"].replace(
+                                "Meta", "ArrayMeta")
                         meta = deserialize_object(md, VArrayMeta)
                         if arg_name in columns:
-                            assert columns[arg_name].to_dict() == md, \
-                                "Non matching description %s" % md
+                            column_d = columns[arg_name].to_dict()
+                            assert column_d == md, \
+                                "%s != %s" % (column_d, md)
                         columns[arg_name] = meta
         meta = TableMeta("Part returns from hook", columns=columns)
         return_table = Table(meta)

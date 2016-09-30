@@ -2,9 +2,10 @@ import time
 from collections import OrderedDict
 
 from malcolm.core import Spawnable, Loggable
-from malcolm.core.vmetas import BooleanMeta
+from malcolm.core.vmetas import BooleanMeta, TableMeta
 from malcolm.compat import queue
 from malcolm.parts.pandabox.pandaboxblockmaker import PandABoxBlockMaker
+from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 
 from malcolm.controllers.defaultcontroller import DefaultController
 
@@ -18,6 +19,8 @@ class PandABoxPoller(Spawnable, Loggable):
         self._block_data = {}
         # block_name -> Block
         self._blocks = {}
+        # block_name -> {field_name: Part}
+        self._parts = {}
         # src_attr -> [dest_attr]
         self._listening_attrs = {}
         # (block_name, src_field_name) -> [dest_field_name]
@@ -46,6 +49,7 @@ class PandABoxPoller(Spawnable, Loggable):
         block = controller.block
 
         self._blocks[block_name] = block
+        self._parts[block_name] = maker.parts
 
         # Set the initial block_url
         self._set_icon_url(block_name)
@@ -157,6 +161,9 @@ class PandABoxPoller(Spawnable, Loggable):
                 # make bit_out things toggle while changing
                 ret = val
                 val = not val
+        elif isinstance(attr.meta, TableMeta):
+            table_part = self._parts[block_name][field_name]
+            val = table_part.table_from_list(val)
 
         # Update the value of our attribute and anyone listening
         attr.set_value(val)

@@ -26,5 +26,15 @@ class PandABoxFieldPart(Part):
         yield attr_name, self.attr, writeable_func
 
     def set_field(self, value):
+        # TODO: goes in the server
+        if hasattr(self.meta, "choices"):
+            if len(self.meta.choices) <= 32:
+                if value == "ZERO":
+                    value = "POSITIONS.ZERO"
+            else:
+                if value == "ZERO":
+                    value = "BITS.ZERO"
+                elif value == "ONE":
+                    value = "BITS.ONE"
         self.control.set_field(self.block_name, self.field_name, value)
 
