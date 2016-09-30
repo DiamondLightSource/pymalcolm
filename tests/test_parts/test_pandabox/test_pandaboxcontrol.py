@@ -142,3 +142,22 @@ class PandABoxControlTest(unittest.TestCase):
 3
 
 """)
+
+    def test_table_fields(self):
+        self.c.socket.recv.return_value = """!31:0    REPEATS
+!32:32   USE_INPA
+!64:54   STUFF
+!37:37   INPB
+.
+"""
+        self.c.start()
+        fields = self.c.get_table_fields("SEQ1", "TABLE")
+        self.c.stop()
+        self.c.wait()
+        self.c.socket.send.assert_called_once_with("SEQ1.TABLE.FIELDS?\n")
+        expected = OrderedDict()
+        expected["REPEATS"] = (31, 0)
+        expected["USE_INPA"] = (32, 32)
+        expected["STUFF"] = (64, 54)
+        expected["INPB"] = (37, 37)
+        self.assertEqual(fields, expected)

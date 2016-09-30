@@ -16,12 +16,12 @@ class PandABoxTablePart(PandABoxFieldPart):
         # Fill in the meta object with the correct headers
         columns = OrderedDict()
         self.fields = control.get_table_fields(block_name, field_name)
-        for name, (bits_hi, bits_lo) in self.fields.items():
+        for column_name, (bits_hi, bits_lo) in self.fields.items():
             nbits = bits_hi - bits_lo + 1
             if nbits < 1:
                 raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
             if nbits == 1:
-                column_meta = BooleanArrayMeta(name)
+                column_meta = BooleanArrayMeta(column_name)
             else:
                 if nbits <= 8:
                     dtype = "uint8"
@@ -33,8 +33,10 @@ class PandABoxTablePart(PandABoxFieldPart):
                     dtype = "uint64"
                 else:
                     raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
-                column_meta = NumberArrayMeta(dtype, name)
-            columns[name] = column_meta
+                column_meta = NumberArrayMeta(dtype, column_name)
+            label = column_name.replace(".", " ").replace("_", " ").title()
+            column_meta.set_label(label)
+            columns[column_name] = column_meta
         meta.set_elements(TableElementMap(columns))
 
     def set_field(self, value):

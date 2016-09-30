@@ -21,7 +21,6 @@ class TestTableMetaInit(unittest.TestCase):
         self.assertEquals([], tm.tags)
         self.assertEquals(False, tm.writeable)
         self.assertEquals("", tm.label)
-        self.assertEquals([], tm.headings)
 
 
 class TestTableMetaSetters(unittest.TestCase):
@@ -51,13 +50,6 @@ class TestTableMetaSetters(unittest.TestCase):
         tm.set_elements(serialized)
         self.assertEqual(serialized, tm.elements.to_dict())
 
-    def test_set_headings(self):
-        tm = self.tm
-        headings = ["boo", "foo"]
-        tm.set_headings(headings)
-        self.assertEquals(headings, tm.headings)
-        tm.report_changes.assert_called_once_with([["headings"], headings])
-
 
 class TestTableMetaSerialization(unittest.TestCase):
 
@@ -71,14 +63,12 @@ class TestTableMetaSerialization(unittest.TestCase):
         self.serialized["tags"] = []
         self.serialized["writeable"] = True
         self.serialized["label"] = "Name"
-        self.serialized["headings"] = ["col1"]
 
     def test_to_dict(self):
         tm = TableMeta("desc")
         tm.set_label("Name")
         tm.set_elements(TableElementMap(dict(c1=self.sam)))
         tm.set_writeable(True)
-        tm.set_headings(["col1"])
         self.assertEqual(tm.to_dict(), self.serialized)
 
     def test_from_dict(self):
@@ -89,7 +79,6 @@ class TestTableMetaSerialization(unittest.TestCase):
         self.assertEquals(tm.tags, [])
         self.assertEquals(tm.writeable, True)
         self.assertEquals(tm.label, "Name")
-        self.assertEquals(tm.headings, ["col1"])
 
 
 class TestTableMetaValidation(unittest.TestCase):

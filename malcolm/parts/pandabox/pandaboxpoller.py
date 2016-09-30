@@ -129,28 +129,28 @@ class PandABoxPoller(Spawnable, Loggable):
             for dest_field in self._mirrored_fields.get(full_field, []):
                 self.control.send("%s=%s\n" % (dest_field, val))
             block_name, field_name = full_field.split(".", 1)
-            field_name = field_name.replace(".", ":")
-            ret = self.update_attribute(block_name, field_name, val)
+            attr_name = field_name.replace(".", "_")
+            ret = self.update_attribute(block_name, attr_name, val)
             if ret is not None:
                 self.changes[full_field] = ret
             else:
                 self.changes.pop(full_field)
             # If it was LUT.FUNC then recalculate icon
-            if block_name.startswith("LUT") and field_name == "FUNC":
+            if block_name.startswith("LUT") and attr_name == "FUNC":
                 self._set_icon_url(block_name)
 
-    def update_attribute(self, block_name, field_name, val):
+    def update_attribute(self, block_name, attr_name, val):
         ret = None
         if block_name not in self._blocks:
             self.log_debug("Block %s not known", block_name)
             return
         block = self._blocks[block_name]
-        if field_name not in block:
+        if attr_name not in block:
             self.log_debug("Block %s has no attribute %s", block_name,
-                           field_name)
+                           attr_name)
             return
-        attr = block[field_name]
-        field_data = self._block_data[block_name].fields.get(field_name, None)
+        attr = block[attr_name]
+        field_data = self._block_data[block_name].fields.get(attr_name, None)
         if val == Exception:
             # TODO: set error
             val = None
@@ -162,7 +162,7 @@ class PandABoxPoller(Spawnable, Loggable):
                 ret = val
                 val = not val
         elif isinstance(attr.meta, TableMeta):
-            table_part = self._parts[block_name][field_name]
+            table_part = self._parts[block_name][attr_name]
             val = table_part.table_from_list(val)
 
         # Update the value of our attribute and anyone listening
@@ -172,12 +172,12 @@ class PandABoxPoller(Spawnable, Loggable):
 
         # if we changed the value of a mux, update the slaved values
         if field_data and field_data.field_type in ("bit_mux", "pos_mux"):
-            val_attr = block[field_name + ":VAL"]
+            val_attr = block[attr_name + "_VAL"]
             self._update_val_attr(val_attr, val)
-            if field_data.field_type == "pos_mux" and field_name == "INP":
+            if field_data.field_type == "pos_mux" and attr_name == "INP":
                 # all param pos fields should inherit scale and offset
                 for dest_field_name in self._scale_offset_fields.get(
-                        (block_name, field_name), []):
+                        (block_name, attr_name), []):
                     self._update_scale_offset_mapping(
                         block_name, dest_field_name, val)
         return ret
@@ -209,7 +209,7 @@ class PandABoxPoller(Spawnable, Loggable):
             else:
                 mon_block_name, mon_field_name = mux_val.split(".", 1)
                 mon_block = self._blocks[mon_block_name]
-                src_attr = mon_block["%s:%s" % (mon_field_name, suff)]
+                src_attr = mon_block["%s_%s" % (mon_field_name, suff)]
                 value = src_attr.value
             self.control.send("%s=%s\n" % (full_dest_field, value))
 

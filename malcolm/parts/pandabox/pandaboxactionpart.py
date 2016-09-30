@@ -32,6 +32,8 @@ class PandABoxActionPart(Part):
             writeable_func = None
         self.method.set_description(self.description)
         self.method.set_tags(self.tags)
+        label = self.field_name.replace(".", " ").replace("_", " ").title()
+        self.method.set_label(label)
         yield method_name, self.method, writeable_func
 
     def set_field(self, params=None):

@@ -157,8 +157,6 @@ have "Array" in their typeid. TableMeta has similar fields::
         string[]    tags       :opt // e.g. "widget:table"
         bool        writeable  :opt // True if you can Put at the moment
         string      label      :opt // Short label if different to name
-        string[]    headings   :opt // List of column headings if different to
-                                    // element names
 
 It contains a structure of elements that describe the subelements that are
 allowed in the Table.

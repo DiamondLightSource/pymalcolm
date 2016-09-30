@@ -8,8 +8,7 @@ from malcolm.core.vmeta import VMeta
 @Serializable.register_subclass("malcolm:core/TableMeta:1.0")
 class TableMeta(VMeta):
 
-    endpoints = ["elements", "description", "tags", "writeable", "label",
-                 "headings"]
+    endpoints = ["elements", "description", "tags", "writeable", "label"]
 
     def __init__(self, description="", tags=None, writeable=False, label="",
                  columns=None):
@@ -17,17 +16,11 @@ class TableMeta(VMeta):
         if columns is None:
             columns = {}
         self.set_elements(TableElementMap(columns))
-        self.set_headings([])
 
     def set_elements(self, elements, notify=True):
         """Set the elements dict from a ScalarArrayMeta or serialized dict"""
         elements = deserialize_object(elements, TableElementMap)
         self.set_endpoint_data("elements", elements, notify)
-
-    def set_headings(self, headings, notify=True):
-        """Set the headings list"""
-        headings = [deserialize_object(h, str_) for h in headings]
-        self.set_endpoint_data("headings", headings, notify)
 
     def validate(self, value):
         if not isinstance(value, Table) or self != value.meta:

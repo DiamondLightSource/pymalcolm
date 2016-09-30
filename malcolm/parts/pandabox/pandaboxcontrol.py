@@ -255,7 +255,8 @@ class PandABoxControl(Loggable, Spawnable):
         fields = OrderedDict()
         for line in self.send_recv("%s.%s.FIELDS?\n" % (block, field)):
             bits_str, name = line.split(" ", 1)
-            bits = [int(x) for x in bits_str.split(":")]
+            name = name.strip()
+            bits = tuple(int(x) for x in bits_str.split(":"))
             fields[name] = bits
         return fields
 
