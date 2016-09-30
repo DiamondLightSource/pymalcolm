@@ -70,7 +70,7 @@ class PandABoxTablePart(PandABoxFieldPart):
         if self.fields:
             nconsume = self._calc_nconsume()
 
-            for i in range(len(int_values) / nconsume):
+            for i in range(int(len(int_values) / nconsume)):
                 int_value = 0
                 for c in range(nconsume):
                     int_value += int_values[i*nconsume+c] << (32 * c)

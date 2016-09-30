@@ -85,13 +85,13 @@ class TestController(unittest.TestCase):
         self.c.parts = {"test_part": part, "part2": part2}
         result = self.c.run_hook(hook, part_tasks)
         self.assertEquals(hook.make_return_table.return_value, result)
-        self.assertEqual(result.append.call_args_list, [
+        result.append.assert_has_calls([
             call(["test_part", "bar", 2]),
             call(["test_part", "bat", 2]),
             call(["test_part", "baz", 2]),
             call(["part2", "bar2", 3]),
             call(["part2", "bat2", 3]),
-        ])
+        ], any_order=True)
 
     def test_run_hook_raises(self):
         hook = MagicMock()
