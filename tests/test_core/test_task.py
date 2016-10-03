@@ -221,7 +221,7 @@ class TestTask(unittest.TestCase):
         start = time.time()
         t.sleep(0.05)
         end = time.time()
-        self.assertAlmostEqual(end-start, 0.05, delta=0.001)
+        self.assertAlmostEqual(end-start, 0.05, delta=0.005)
 
     def test_when_matches(self):
         t = Task("testTask", self.proc)
@@ -272,7 +272,7 @@ class TestTask(unittest.TestCase):
         self.assertRaises(AssertionError, t.define_spawn_function, None)
         t.wait()
         end = time.time()
-        self.assertAlmostEqual(end-start, 0.05, delta=0.001)
+        self.assertAlmostEqual(end-start, 0.05, delta=0.005)
         t.define_spawn_function(None)
 
 if __name__ == "__main__":

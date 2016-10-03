@@ -34,6 +34,9 @@ class BaseItem(object):
         return QApplication.style().standardIcon(icon)
 
     def get_label(self):
+        if hasattr(self.ref, "meta"):
+            if self.ref.meta.label:
+                return self.ref.meta.label
         return self.endpoint[-1]
 
     def get_value(self):

@@ -28,8 +28,14 @@ class TestBaseItem(unittest.TestCase):
         app_mock.style().standardIcon.assert_called_once_with(
             BaseItem.icons[BaseItem.IDLE])
 
-    def test_get_label(self):
+    def test_get_label_from_meta(self):
         self.item.endpoint = ("foo", "bar")
+        self.item.ref.meta.label = "Bar"
+        self.assertEqual(self.item.get_label(), "Bar")
+
+    def test_get_label_from_meta(self):
+        self.item.endpoint = ("foo", "bar")
+        del self.item.ref.meta
         self.assertEqual(self.item.get_label(), "bar")
 
     def test_get_value(self):

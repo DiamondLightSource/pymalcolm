@@ -75,7 +75,6 @@ class WebsocketServerComms(ServerComms):
         Args:
             response(Response): The message to pass to the client
         """
-        # TODO: should this be self.loop.add_callback ?
         self.loop.add_callback(self._send_to_client, response)
 
     def _send_to_client(self, response):

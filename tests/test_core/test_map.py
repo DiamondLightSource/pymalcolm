@@ -119,7 +119,6 @@ class TestMap(unittest.TestCase):
         m = Map(self.meta, {"a":"test"})
         self.assertTrue("a" in m)
         self.assertFalse("b" in m)
-        # TODO GK when did Map not have __init__ ???
         self.assertFalse("__init__" in m)
 
     def test_get_item(self):

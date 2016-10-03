@@ -6,6 +6,7 @@ from malcolm.core.clientcomms import ClientComms  # noqa
 from malcolm.core.clientcontroller import ClientController  # noqa
 from malcolm.core.elementmap import ElementMap  # noqa
 from malcolm.core.hook import Hook  # noqa
+from malcolm.core.loggable import Loggable  # noqa
 from malcolm.core.map import Map  # noqa
 from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, \
     method_only_in, REQUIRED, OPTIONAL  # noqa
@@ -17,8 +18,10 @@ from malcolm.core.response import Response, Return, Error, Delta, Update  # noqa
 from malcolm.core.serializable import Serializable, serialize_object, \
     deserialize_object  # noqa
 from malcolm.core.servercomms import ServerComms  # noqa
+from malcolm.core.spawnable import Spawnable  # noqa
 from malcolm.core.statemachine import RunnableDeviceStateMachine, \
     DefaultStateMachine  # noqa
 from malcolm.core.syncfactory import SyncFactory  # noqa
 from malcolm.core.table import Table  # noqa
+from malcolm.core.tableelementmap import TableElementMap  # noqa
 from malcolm.core.task import Task  # noqa
