@@ -9,7 +9,17 @@ Added:
 
 - Nothing yet
 
-`2-0a4`_ - 2014-09-20
+`2-0a5`_ - 2016-10-03
+---------------------
+Added:
+
+- Support for PandABox
+
+Fixed:
+
+- Extra padding point in turnaround in PMACTrajectoryScan
+
+`2-0a4`_ - 2016-09-20
 ---------------------
 Added:
 
@@ -17,13 +27,13 @@ Added:
 - Pause, Abort and Rewind
 - PVA: Get and Post for client
 
-`2-0a3`_ - 2014-08-31
+`2-0a3`_ - 2016-08-31
 ---------------------
 Added:
 
 - imalcolm client script
 
-`2-0a2`_ - 2014-08-30
+`2-0a2`_ - 2016-08-30
 ---------------------
 Added:
 
@@ -37,7 +47,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a4...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a5...HEAD
+.. _2-0a5: https://github.com/dls-controls/pymalcolm/compare/2.0a4...2-0a5
 .. _2-0a4: https://github.com/dls-controls/pymalcolm/compare/2.0a3...2-0a4
 .. _2-0a3: https://github.com/dls-controls/pymalcolm/compare/2.0a2...2-0a3
 .. _2-0a2: https://github.com/dls-controls/pymalcolm/compare/2.0a1...2-0a2
