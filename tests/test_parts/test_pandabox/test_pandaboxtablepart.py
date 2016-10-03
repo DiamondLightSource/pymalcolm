@@ -33,10 +33,14 @@ class PandABoxTablePartTest(unittest.TestCase):
             "NREPEATS", "INPUT_MASK", "TRIGGER_MASK", "TIME_PH_A"])
         self.assertIsInstance(self.meta.elements.NREPEATS, NumberArrayMeta)
         self.assertEqual(self.meta.elements.NREPEATS.dtype, "uint8")
+        self.assertEqual(self.meta.elements.NREPEATS.tags, ["widget:textinput"])
         self.assertIsInstance(self.meta.elements.INPUT_MASK, BooleanArrayMeta)
+        self.assertEqual(self.meta.elements.INPUT_MASK.tags, ["widget:checkbox"])
         self.assertIsInstance(self.meta.elements.TRIGGER_MASK, BooleanArrayMeta)
+        self.assertEqual(self.meta.elements.TRIGGER_MASK.tags, ["widget:checkbox"])
         self.assertIsInstance(self.meta.elements.TIME_PH_A, NumberArrayMeta)
         self.assertEqual(self.meta.elements.TIME_PH_A.dtype, "uint32")
+        self.assertEqual(self.meta.elements.TIME_PH_A.tags, ["widget:textinput"])
 
     def test_list_from_table(self):
         table = Table(self.meta)
