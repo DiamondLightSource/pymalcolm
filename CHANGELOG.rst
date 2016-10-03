@@ -9,6 +9,13 @@ Added:
 
 - Nothing yet
 
+`2-0a6`_ - 2016-10-03
+---------------------
+Changed:
+
+- Attributes no longer serialize to NTAttribute, they now use NTScalar,
+  NTScalarArray, NTTable or NTUnion
+
 `2-0a5`_ - 2016-10-03
 ---------------------
 Added:
@@ -47,7 +54,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a5...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a6...HEAD
+.. _2-0a6: https://github.com/dls-controls/pymalcolm/compare/2-0a5...2-0a6
 .. _2-0a5: https://github.com/dls-controls/pymalcolm/compare/2-0a4...2-0a5
 .. _2-0a4: https://github.com/dls-controls/pymalcolm/compare/2-0a3...2-0a4
 .. _2-0a3: https://github.com/dls-controls/pymalcolm/compare/2-0a2...2-0a3

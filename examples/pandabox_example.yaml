@@ -1,4 +1,4 @@
-#!/home/tmc43/common/python/pymalcolm/malcolm/imalcolm.py
+#!/bin/env imalcolm
 
 - assemblies.pandabox.PandABox:
     name: P
