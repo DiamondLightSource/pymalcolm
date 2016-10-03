@@ -56,10 +56,11 @@ class ManagerController(DefaultController):
     configure_params = None
 
     def create_attributes(self):
-        self.totalSteps = Attribute(NumberMeta(
-            "int32", "Readback of number of scan steps"), 0)
+        self.totalSteps = NumberMeta(
+            "int32", "Readback of number of scan steps"
+        ).make_attribute(0)
         yield "totalSteps", self.totalSteps, None
-        self.layout = Attribute(layout_table_meta)
+        self.layout = layout_table_meta.make_attribute()
         yield "layout", self.layout, self.set_layout
 
     def do_reset(self):

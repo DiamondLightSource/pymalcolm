@@ -12,7 +12,7 @@ from mock import MagicMock
 
 # module imports
 from malcolm.controllers.defaultcontroller import DefaultController
-from malcolm.core.attribute import Attribute
+from malcolm.core.ntscalar import NTScalar
 from malcolm.core.process import Process
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Post, Subscribe
@@ -75,7 +75,7 @@ class TestCounterDemoSystem(unittest.TestCase):
         process.q.put(sub)
         resp = q.get(timeout=1)
         self.assertIsInstance(resp, Update)
-        attr = Attribute.from_dict(resp.value)
+        attr = NTScalar.from_dict(resp.value)
         self.assertEqual(0, attr.value)
 
         post = Post(response_queue=q, context="ClientConnection",

@@ -133,10 +133,12 @@ class Process(Loggable):
         self.process_block = Block()
         # TODO: add a meta here
         children = OrderedDict()
-        children["blocks"] = Attribute(StringArrayMeta(
-            description="Blocks hosted by this Process"), [])
-        children["remoteBlocks"] = Attribute(StringArrayMeta(
-                description="Blocks reachable via ClientComms"), [])
+        children["blocks"] = StringArrayMeta(
+            description="Blocks hosted by this Process"
+        ).make_attribute([])
+        children["remoteBlocks"] = StringArrayMeta(
+                description="Blocks reachable via ClientComms"
+        ).make_attribute([])
         self.process_block.replace_endpoints(children)
         self.process_block.set_parent(self, self.name)
         self.add_block(self.process_block)

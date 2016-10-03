@@ -19,7 +19,7 @@ class PandABoxFieldPart(Part):
         self.attr = None
 
     def create_attributes(self):
-        self.attr = Attribute(self.meta, self.initial_value)
+        self.attr = self.meta.make_attribute(self.initial_value)
         attr_name = self.field_name.replace(".", "_")
         if self.writeable:
             writeable_func = self.set_field

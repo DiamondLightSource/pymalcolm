@@ -16,6 +16,6 @@ class PandABoxGroupPart(Part):
         meta = ChoiceMeta("All %s attributes" % self.attr_name,
                           choices=["expanded", "collapsed"], tags=tags,
                           label=self.attr_name.title())
-        self.attr = Attribute(meta, "expanded")
+        self.attr = meta.make_attribute("expanded")
         yield self.attr_name, self.attr, self.attr.set_value
 

@@ -1,4 +1,4 @@
-from malcolm.compat import str_
+from malcolm.core.nttable import NTTable
 from malcolm.core.serializable import Serializable, deserialize_object
 from malcolm.core.table import Table
 from malcolm.core.tableelementmap import TableElementMap
@@ -9,6 +9,7 @@ from malcolm.core.vmeta import VMeta
 class TableMeta(VMeta):
 
     endpoints = ["elements", "description", "tags", "writeable", "label"]
+    attribute_class = NTTable
 
     def __init__(self, description="", tags=None, writeable=False, label="",
                  columns=None):

@@ -12,7 +12,6 @@ from malcolm.core.request import Post
 from malcolm.core.statemachine import DefaultStateMachine
 from malcolm.core.task import Task
 from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
-from malcolm.core.varraymeta import VArrayMeta
 
 
 sm = DefaultStateMachine
@@ -139,16 +138,18 @@ class Controller(Loggable):
 
     def _create_default_attributes(self):
         # Add the state, status and busy attributes
-        self.state = Attribute(
-            ChoiceMeta("State of Block", self.stateMachine.possible_states,
-                       label="State"),
-        )
-        yield ("state", self.state, None)
-        self.status = Attribute(StringMeta("Status of Block", label="Status"))
-        yield ("status", self.status, None)
-        self.busy = Attribute(BooleanMeta("Whether Block busy or not",
-                                          label="Busy"))
-        yield ("busy", self.busy, None)
+        self.state = ChoiceMeta(
+            "State of Block", self.stateMachine.possible_states, label="State"
+        ).make_attribute()
+        yield "state", self.state, None
+        self.status = StringMeta(
+            "Status of Block", label="Status"
+        ).make_attribute()
+        yield "status", self.status, None
+        self.busy = BooleanMeta(
+            "Whether Block busy or not", label="Busy"
+        ).make_attribute()
+        yield "busy", self.busy, None
 
     def create_meta(self):
         self.meta = BlockMeta()
