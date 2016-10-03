@@ -1,11 +1,8 @@
 from malcolm.core.monitorable import Monitorable
 from malcolm.core.request import Put
-from malcolm.core.serializable import Serializable, deserialize_object
-from malcolm.core.vmeta import VMeta
+from malcolm.core.serializable import deserialize_object
 
 
-# TODO: use NTScalar, NTScalarArray, NTTable and NTUnion here. Metas can create
-@Serializable.register_subclass("epics:nt/NTAttribute:1.0")
 class Attribute(Monitorable):
     """Represents a value with type information that may be backed elsewhere"""
 
@@ -23,7 +20,13 @@ class Attribute(Monitorable):
 
     def set_meta(self, meta, notify=True):
         """Set the VMeta object"""
-        meta = deserialize_object(meta, VMeta)
+        meta = deserialize_object(meta)
+        # Check that the meta attribute_class is ourself
+        assert hasattr(meta, "attribute_class"), \
+            "Expected meta object, got %r" % meta
+        assert isinstance(self, meta.attribute_class), \
+            "Meta object needs to be attached to %s, we are a %s" % (
+                meta.attribute_class, type(self))
         self.set_endpoint_data("meta", meta, notify)
 
     def set_value(self, value, notify=True):

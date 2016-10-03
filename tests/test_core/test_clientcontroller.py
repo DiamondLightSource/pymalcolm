@@ -88,8 +88,8 @@ class TestClientController(unittest.TestCase):
         m.set_value.assert_called_once_with("change", notify=False)
 
     def test_put_root_update_response(self):
-        attr1 = Attribute(StringMeta("dummy"))
-        attr2 = Attribute(StringMeta("dummy2"))
+        attr1 = StringMeta("dummy").make_attribute()
+        attr2 = StringMeta("dummy2").make_attribute()
         new_block_structure = OrderedDict(typeid='malcolm:core/Block:1.0')
         new_block_structure["attr1"] = attr1.to_dict()
         new_block_structure["attr2"] = attr2.to_dict()

@@ -90,7 +90,6 @@ class PandABoxBlockMaker(Loggable):
             raise ValueError("Unknown type %r subtype %r" % (type, subtyp))
 
     def _make_icon(self):
-        # TODO: fix to be relative when we are hosting web gui
         meta = StringMeta("URL for ICON", tags=["flowgraph:icon"])
         self._make_field_part("ICON", meta, writeable=False)
 

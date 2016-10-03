@@ -35,7 +35,7 @@ class CAPart(Part):
             else:
                 params.rbv = params.pv + params.rbv_suff
         # The attribute we will be publishing
-        self.attr = Attribute(self.create_meta(params.description))
+        self.attr = self.create_meta(params.description).make_attribute()
         if self.params.pv:
             writeable_func = self.caput
         else:

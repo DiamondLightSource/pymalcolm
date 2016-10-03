@@ -9,8 +9,8 @@ class CounterPart(Part):
     counter = None
 
     def create_attributes(self):
-        self.counter = Attribute(NumberMeta("uint32", "A counter"), 0)
-        yield ("counter", self.counter, self.counter.set_value)
+        self.counter = NumberMeta("uint32", "A counter").make_attribute(0)
+        yield "counter", self.counter, self.counter.set_value
 
     @method_takes()
     def zero(self):

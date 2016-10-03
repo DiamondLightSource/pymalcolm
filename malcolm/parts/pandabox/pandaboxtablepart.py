@@ -22,6 +22,7 @@ class PandABoxTablePart(PandABoxFieldPart):
                 raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
             if nbits == 1:
                 column_meta = BooleanArrayMeta(column_name)
+                widget_tag = "widget:checkbox"
             else:
                 if nbits <= 8:
                     dtype = "uint8"
@@ -34,8 +35,10 @@ class PandABoxTablePart(PandABoxFieldPart):
                 else:
                     raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
                 column_meta = NumberArrayMeta(dtype, column_name)
+                widget_tag = "widget:textinput"
             label = column_name.replace(".", " ").replace("_", " ").title()
             column_meta.set_label(label)
+            column_meta.set_tags([widget_tag])
             columns[column_name] = column_meta
         meta.set_elements(TableElementMap(columns))
 

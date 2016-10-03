@@ -8,7 +8,7 @@ from collections import OrderedDict
 import unittest
 from mock import Mock, patch
 
-from malcolm.core.attribute import Attribute
+from malcolm.core.ntscalar import NTScalar
 from malcolm.core.request import Put
 from malcolm.core.serializable import Serializable
 from malcolm.core.vmetas import StringMeta
@@ -20,21 +20,21 @@ class TestAttribute(unittest.TestCase):
         self.meta = StringMeta()
 
     def test_init(self):
-        a = Attribute(self.meta)
+        a = self.meta.make_attribute()
         self.assertIs(self.meta, a.meta)
         self.assertIsNone(a.value)
-        self.assertEquals("epics:nt/NTAttribute:1.0", a.typeid)
+        self.assertEquals("epics:nt/NTScalar:1.0", a.typeid)
 
     def test_set_value(self):
         value = "test_value"
-        a = Attribute(self.meta)
+        a = self.meta.make_attribute()
         a.report_changes = Mock(wrap=a.report_changes)
         a.set_value(value)
         self.assertEquals(a.value, value)
         a.report_changes.assert_called_once_with([['value'], value])
 
     def test_handle_request(self):
-        a = Attribute(self.meta)
+        a = self.meta.make_attribute()
         request = Put(endpoint=["1", "2", "value"], value=Mock())
         put_function = Mock()
         a.handle_request(request, put_function)
@@ -44,17 +44,17 @@ class TestSerialization(unittest.TestCase):
 
     def setUp(self):
         self.serialized = OrderedDict()
-        self.serialized["typeid"] = "epics:nt/NTAttribute:1.0"
+        self.serialized["typeid"] = "epics:nt/NTScalar:1.0"
         self.serialized["meta"] = StringMeta("desc").to_dict()
         self.serialized["value"] = "some string"
 
     def test_to_dict(self):
-        a = Attribute(StringMeta("desc"))
+        a = StringMeta("desc").make_attribute()
         a.set_value("some string")
         self.assertEqual(a.to_dict(), self.serialized)
 
     def test_from_dict(self):
-        a = Attribute.from_dict(self.serialized)
+        a = NTScalar.from_dict(self.serialized)
         self.assertEquals(a.meta._parent, a)
         self.assertEquals(a.meta.to_dict(), StringMeta("desc").to_dict())
         self.assertEquals(a.value, "some string")

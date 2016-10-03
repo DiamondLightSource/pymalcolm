@@ -17,7 +17,7 @@ from malcolm.core.process import \
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Subscribe, Unsubscribe, Post, Get
 from malcolm.core.response import Return, Update, Delta, Error
-from malcolm.core.attribute import Attribute
+from malcolm.core.ntscalararray import NTScalarArray
 from malcolm.core.vmetas import StringArrayMeta
 from malcolm.core.block import Block
 
@@ -121,7 +121,7 @@ class TestProcess(unittest.TestCase):
         p = Process("proc", MagicMock())
         p_block = p.process_block
         self.assertEquals(p_block.path_relative_to(p), ["proc"])
-        self.assertEquals(Attribute, type(p_block["blocks"]))
+        self.assertEquals(NTScalarArray, type(p_block["blocks"]))
         self.assertEquals(StringArrayMeta, type(p_block["blocks"].meta))
         self.assertEquals(["proc"], p_block.blocks)
         self.assertEquals("Blocks hosted by this Process",

@@ -24,7 +24,7 @@ class TestBlock(unittest.TestCase):
 
     def test_getattr(self):
         b = Block()
-        a = Attribute(NumberMeta("int32"))
+        a = NumberMeta("int32").make_attribute()
         b.replace_endpoints(dict(a=a))
         def f(meta, value):
             a.set_value(value)
