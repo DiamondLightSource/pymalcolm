@@ -4,7 +4,7 @@ import numpy as np
 
 from malcolm.controllers.managercontroller import ManagerController, \
     configure_args
-from malcolm.core import method_takes, REQUIRED, Attribute
+from malcolm.core import method_takes, REQUIRED
 from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, NumberMeta, \
     TableMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
@@ -59,8 +59,8 @@ class PMACTrajectoryPart(LayoutPart):
     generator = None
 
     def create_attributes(self):
-        self.completedSteps = Attribute(NumberMeta(
-            "int32", "Readback of number of scan steps"), 0)
+        self.completedSteps = NumberMeta(
+            "int32", "Readback of number of scan steps").make_attribute(0)
         yield "completedSteps", self.completedSteps, None
 
     @ManagerController.Configuring

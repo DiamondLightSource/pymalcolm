@@ -49,7 +49,8 @@ setup(
     license='APACHE',
     install_requires=['numpy', 'scanpointgenerator'],
     extras_require={
-        'websocket':  ['tornado']
+        'websocket':  ['tornado'],
+        'ca': ['cothread']
     },
     include_package_data=True,
     test_suite='nose.collector',

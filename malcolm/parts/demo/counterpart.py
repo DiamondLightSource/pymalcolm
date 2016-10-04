@@ -1,6 +1,5 @@
-from malcolm.core import Attribute, method_takes, Part
+from malcolm.core import method_takes, Part
 from malcolm.core.vmetas import NumberMeta
-from malcolm.controllers.defaultcontroller import DefaultController
 
 
 @method_takes()
