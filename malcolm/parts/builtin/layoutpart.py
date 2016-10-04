@@ -25,8 +25,9 @@ class LayoutPart(Part):
     name = None
 
     def store_params(self, params):
-        self.name = params.name
+        super(LayoutPart, self).store_params(params)
         self.child = self.process.get_block(params.child)
+        self.name = params.name
         self.mri = params.child
         self.part_visible = {}
 
