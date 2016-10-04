@@ -30,6 +30,10 @@ class MalcWebSocketHandler(WebSocketHandler):  # pylint:disable=abstract-method
         request.context = self
         self.servercomms.on_request(request)
 
+    # http://stackoverflow.com/q/24851207
+    def check_origin(self, origin):
+        return True
+
 
 class MalcBlockHandler(RequestHandler):
 
