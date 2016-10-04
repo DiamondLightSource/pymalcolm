@@ -45,16 +45,16 @@ class HDFWriterPart(LayoutPart):
             "Can only do 10 dims, you gave me %s" % num_dims
         attr_dict = dict(numExtraDims=num_dims-1)
         # Fill in dim name and size
-        for i, (dim_name, dim_size) in enumerate(
-                reversed(zip(generator.index_names, generator.index_dims))):
+        for i in range(10):
             suffix = SUFFIXES[i]
-            attr_dict["posNameDim%s" % suffix] = dim_name
-            attr_dict["extraDimSize%s" % suffix] = dim_size
-        # Reset any we aren't using
-        for i in range(num_dims, 10):
-            suffix = SUFFIXES[i]
-            attr_dict["posNameDim%s" % suffix] = ""
-            attr_dict["extraDimSize%s" % suffix] = 1
+            if i < len(generator.index_names):
+                index_name = generator.index_names[-i - 1]
+                index_size = generator.index_dims[-i - 1]
+            else:
+                index_name = ""
+                index_size = 1
+            attr_dict["posNameDim%s" % suffix] = index_name
+            attr_dict["extraDimSize%s" % suffix] = index_size
         # Convert strings to child attributes
         attr_dict = {self.child[k]: v for k, v in attr_dict.items()}
         futures = task.put_async(attr_dict)

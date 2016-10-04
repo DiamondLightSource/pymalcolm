@@ -51,7 +51,7 @@ class PositionLabellerPart(LayoutPart):
             position_el = ET.Element("position", **positions)
             positions_el.append(position_el)
 
-        xml = ET.tostring(root_el)
+        xml = '<?xml version="1.0" ?>' + ET.tostring(root_el)
         xml_length = len(xml)
         assert xml_length < XML_MAX_SIZE, "XML size %d too big" % xml_length
         return xml, end_index

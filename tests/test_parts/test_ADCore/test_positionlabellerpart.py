@@ -47,7 +47,8 @@ class TestPositionLabellerPart(unittest.TestCase):
             self.child["enableCallbacks"]: True,
             self.child["idStart"]: 3
         })
-        expected_xml = """<pos_layout>
+        expected_xml = """<?xml version="1.0" ?>
+<pos_layout>
 <dimensions>
 <dimension name="x" />
 <dimension name="y" />
@@ -80,7 +81,8 @@ class TestPositionLabellerPart(unittest.TestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         self.o.generator = CompoundGenerator([ys, xs], [], [])
         self.o.load_more_positions(current_index, task)
-        expected_xml = """<pos_layout>
+        expected_xml = """<?xml version="1.0" ?>
+<pos_layout>
 <dimensions>
 <dimension name="x" />
 <dimension name="y" />
