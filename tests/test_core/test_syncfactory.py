@@ -15,7 +15,7 @@ class TestBlock(unittest.TestCase):
     @patch("malcolm.core.syncfactory.ThreadPool")
     def setUp(self, mock_pool):
         self.s = SyncFactory("sched")
-        mock_pool.assert_called_once_with()
+        mock_pool.assert_called_once_with(32)
         self.assertEqual(self.s.pool, mock_pool.return_value)
 
     @patch("malcolm.core.syncfactory.queue.Queue")

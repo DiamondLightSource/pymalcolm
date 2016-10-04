@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import RunnableDeviceStateMachine, REQUIRED, method_returns, \
-    method_only_in, method_takes, ElementMap, Attribute, Task, Hook, Table
+    method_only_in, method_takes, ElementMap, Task, Hook, Table
 from malcolm.core.vmetas import PointGeneratorMeta, StringArrayMeta, \
     NumberMeta, NumberArrayMeta, BooleanArrayMeta, TableMeta
 
