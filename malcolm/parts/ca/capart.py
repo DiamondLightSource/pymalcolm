@@ -1,21 +1,22 @@
 import cothread
 from cothread import catools
 
-from malcolm.core import Part, Attribute, method_takes, REQUIRED
+from malcolm.core import Part, method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
 from malcolm.controllers.defaultcontroller import DefaultController
 
 
 def capart_takes(*args):
     args = (
-        "name", StringMeta("name of the created attribute"), REQUIRED,
-        "description", StringMeta("desc of created attribute"), REQUIRED,
-        "pv", StringMeta("full pv of demand and default for rbv"), None,
-        "rbv", StringMeta("override for rbv"), None,
-        "rbv_suff", StringMeta("set rbv ro pv + rbv_suff"), None,
+        "name", StringMeta("Name of the created attribute"), REQUIRED,
+        "description", StringMeta("Desc of created attribute"), REQUIRED,
+        "pv", StringMeta("Full pv of demand and default for rbv"), None,
+        "rbv", StringMeta("Override for rbv"), None,
+        "rbv_suff", StringMeta("Set rbv ro pv + rbv_suff"), None,
+        "widget", StringMeta("Widget, like 'combo' or 'textinput'"), None,
+        "inport_type", StringMeta("ype (like 'CS' or 'NDArray')"), None,
     ) + args
     return method_takes(*args)
-
 
 class CAPart(Part):
     # Camonitor subscription
@@ -27,22 +28,38 @@ class CAPart(Part):
 
     def create_attributes(self):
         params = self.params
-        if params.pv is None and params.rbv is None:
+        if params.rbv is None and params.pv is None:
             raise ValueError('Must pass pv or rbv')
         if params.rbv is None:
             if params.rbv_suff is None:
                 params.rbv = params.pv
             else:
                 params.rbv = params.pv + params.rbv_suff
+        # Find the tags
+        tags = self.create_tags(params)
         # The attribute we will be publishing
-        self.attr = self.create_meta(params.description).make_attribute()
+        self.attr = self.create_meta(params.description, tags).make_attribute()
         if self.params.pv:
             writeable_func = self.caput
         else:
             writeable_func = None
         yield params.name, self.attr, writeable_func
 
-    def create_meta(self, description):
+    def create_tags(self, params):
+        tags = []
+        if params.widget:
+            assert ":" not in params.widget, \
+                "Widget tag %r should not specify 'widget:' prefix" \
+                % params.widget
+            tags.append("widget:%s" % params.widget)
+        if params.inport_type:
+            assert ":" not in params.inport_type, \
+                "Inport tag %r should not specify 'flowgraph:inport:' prefix" \
+                % params.inport_type
+            tags.append("flowgraph:inport:%s" % params.inport_type)
+        return tags
+
+    def create_meta(self, description, tags):
         raise NotImplementedError
 
     def get_datatype(self):

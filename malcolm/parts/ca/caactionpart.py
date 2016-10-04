@@ -20,6 +20,7 @@ class CAActionPart(Part):
     def create_methods(self):
         # MethodMeta instance
         self.method = MethodMeta(self.params.description)
+        # TODO: set widget tag?
         yield self.params.name, self.method, self.caput
 
     @DefaultController.Resetting

@@ -8,8 +8,8 @@ from malcolm.parts.ca.capart import CAPart, capart_takes
 class CAChoicePart(CAPart):
     """Defines a part which connects to a pv via channel access DBR_ENUM"""
 
-    def create_meta(self, description):
-        return ChoiceMeta(description)
+    def create_meta(self, description, tags):
+        return ChoiceMeta(description=description, tags=tags)
 
     def get_datatype(self):
         return catools.DBR_ENUM
