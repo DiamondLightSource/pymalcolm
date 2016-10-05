@@ -1,5 +1,6 @@
 from xml.etree import cElementTree as ET
 
+from malcolm.compat import et_to_string
 from malcolm.core import method_takes, REQUIRED, Task
 from malcolm.core.vmetas import NumberMeta, TableMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
@@ -62,7 +63,7 @@ class PositionLabellerPart(LayoutPart):
             position_el = ET.Element("position", **positions)
             positions_el.append(position_el)
 
-        xml = '<?xml version="1.0" ?>' + str(ET.tostring(root_el))
+        xml = et_to_string(root_el)
         xml_length = len(xml)
         assert xml_length < XML_MAX_SIZE, "XML size %d too big" % xml_length
         return xml, end_index

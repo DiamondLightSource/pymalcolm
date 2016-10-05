@@ -1,6 +1,7 @@
 import os
 from xml.etree import cElementTree as ET
 
+from malcolm.compat import et_to_string
 from malcolm.core import method_takes, REQUIRED, Task
 from malcolm.core.vmetas import NumberMeta, BooleanMeta, StringMeta, TableMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
@@ -113,7 +114,7 @@ class HDFWriterPart(LayoutPart):
                                         ndattr_default="true")
         ET.SubElement(NDAttributes_el, "attribute", name="NX_class",
                       source="constant", value="NXcollection", type="string")
-        xml = '<?xml version="1.0" ?>' + str(ET.tostring(root_el))
+        xml = et_to_string(root_el)
         return xml
 
     @ManagerController.Configuring
