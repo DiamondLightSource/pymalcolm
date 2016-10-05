@@ -74,11 +74,13 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
             hello=HelloPart(self.process, None)))
         DefaultController("counter", self.process, parts=dict(
             counter=CounterPart(self.process, None)))
-        WebsocketServerComms(self.process, dict(port=self.socket))
+        self.process.add_comms(
+            WebsocketServerComms(self.process, dict(port=self.socket)))
         self.process.start()
         self.process2 = Process("proc2", self.sf)
-        WebsocketClientComms(self.process2,
-                             dict(hostname="localhost", port=self.socket))
+        self.process2.add_comms(
+            WebsocketClientComms(self.process2,
+                             dict(hostname="localhost", port=self.socket)))
         self.process2.start()
 
     def tearDown(self):

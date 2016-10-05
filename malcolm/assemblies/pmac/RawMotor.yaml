@@ -11,41 +11,49 @@
     description: set the target position of the motor or get current position
     pv: $(motor_prefix)
     rbv_suff: .RBV
+    widget: textinput
 
 - parts.ca.CALongPart:
     name: done_moving
     description: set to zero when motor is stationary
     rbv: $(motor_prefix).DMOV
+    widget: led
 
 - parts.ca.CADoublePart:
     name: acceleration_time
     description: time taken to accelerate to velocity
-    rbv: $(motor_prefix).ACCL
+    pv: $(motor_prefix).ACCL
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: max_velocity
     description: maximum velocity
-    rbv: $(motor_prefix).VMAX
+    pv: $(motor_prefix).VMAX
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: resolution
     description: Motor resolution
     rbv: $(motor_prefix).ERES
+    widget: textupdate
 
 - parts.ca.CADoublePart:
     name: offset
     description: User offset
-    rbv: $(motor_prefix).OFF
+    pv: $(motor_prefix).OFF
+    widget: textinput
 
 - parts.ca.CAStringPart:
     name: cs_port
     description: CS asyn port name
     pv: $(prefix):CsPort
     rbv_suff: _RBV
+    widget: textinput
+    inport_type: CS
 
 - parts.ca.CAStringPart:
     name: cs_axis
     description: CS axis definition (like X, B, 0 or I)
     pv: $(prefix):CsAxis
     rbv_suff: _RBV
-
+    widget: textinput

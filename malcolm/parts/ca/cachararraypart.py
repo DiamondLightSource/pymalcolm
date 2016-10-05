@@ -8,8 +8,12 @@ from malcolm.parts.ca.capart import CAPart, capart_takes
 class CACharArrayPart(CAPart):
     """Defines a part which connects to a pv via channel access DBR_CHAR_STR"""
 
-    def create_meta(self, description):
-        return StringMeta("meta", description)
+    def create_meta(self, description, tags):
+        return StringMeta(description=description, tags=tags)
 
     def get_datatype(self):
         return catools.DBR_CHAR_STR
+
+    def format_caput_value(self, value):
+        self.log_info("caput -c -w 1000 -S %s %r", self.params.pv, value)
+        return value

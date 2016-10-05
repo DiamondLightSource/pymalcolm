@@ -11,7 +11,6 @@ class ServerComms(Loggable, Spawnable):
         self.q = self.process.create_queue()
         self.add_spawn_function(self.send_loop,
                                 self.make_default_stop_func(self.q))
-        self.process.add_comms(self)
 
     def send_loop(self):
         """Service self.q, sending responses to client"""

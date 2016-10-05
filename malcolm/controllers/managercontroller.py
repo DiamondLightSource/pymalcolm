@@ -4,7 +4,7 @@ from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import RunnableDeviceStateMachine, REQUIRED, method_returns, \
     method_only_in, method_takes, ElementMap, Task, Hook, Table
 from malcolm.core.vmetas import PointGeneratorMeta, StringArrayMeta, \
-    NumberMeta, NumberArrayMeta, BooleanArrayMeta, TableMeta
+    NumberMeta, NumberArrayMeta, BooleanArrayMeta, TableMeta, StringMeta
 
 
 sm = RunnableDeviceStateMachine
@@ -12,8 +12,9 @@ sm = RunnableDeviceStateMachine
 configure_args = [
     "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
     "axes_to_move", StringArrayMeta("Axes that should be moved"), REQUIRED,
-    "exposure", NumberMeta("float64", "How long to remain at each point"),
-    REQUIRED]
+    "exposure", NumberMeta(
+        "float64", "How long to remain at each point"), REQUIRED,
+    "filePath", StringMeta("File path to write data to"), REQUIRED]
 
 
 # Make a table for the layout info we need
@@ -193,10 +194,10 @@ class ManagerController(DefaultController):
             self.transition(sm.FAULT, str(e))
             raise
 
-    def do_abort(self):
+    def do_abort(self, pause=False):
         for task in self.part_tasks.values():
             task.stop()
-        self.run_hook(self.Aborting, self.create_part_tasks())
+        self.run_hook(self.Aborting, self.create_part_tasks(), pause=pause)
         for task in self.part_tasks.values():
             task.wait()
 

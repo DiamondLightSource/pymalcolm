@@ -31,6 +31,7 @@ class PandABoxActionPart(Part):
             self.method = MethodMeta()
             writeable_func = None
         self.method.set_description(self.description)
+        # TODO: set widget tag?
         self.method.set_tags(self.tags)
         label = self.field_name.replace(".", " ").replace("_", " ").title()
         self.method.set_label(label)

@@ -7,6 +7,7 @@
     description: Co-ordinate system name that should be trajectory scanned
     pv: $(prefix):ProfileCsName
     rbv_suff: _RBV
+    widget: combo
 
 - parts.ca.CAActionPart:
     name: build_profile
@@ -19,6 +20,7 @@
     name: build_message
     description: message of last profile build
     rbv: $(prefix):ProfileBuildMessage_RBV
+    widget: textinput
 
 - parts.ca.CAActionPart:
     name: execute_profile
@@ -31,16 +33,19 @@
     name: execute_message
     description: message of last profile execute
     rbv: $(prefix):ProfileExecuteMessage_RBV
+    widget: textinput
 
 - parts.ca.CALongPart:
     name: scan_percentage
     description: percentage complete on current scan
     rbv: $(prefix):TscanPercent_RBV
+    widget: textinput
 
 - parts.ca.CALongPart:
     name: points_scanned
     description: Number of point scanned so far
     rbv: $(prefix):TotalPoints_RBV
+    widget: textinput
 
 - parts.ca.CAActionPart:
     name: abort_profile
@@ -51,217 +56,257 @@
     name: time_array
     description: time slices for each step in the profile in 0.25ms ticks
     pv: $(prefix):ProfileTimeArray
+    widget: table
 
 - parts.ca.CALongArrayPart:
     name: velocity_mode
     description: a list of the velocity mode masks, lower bit is Prev->Current
     pv: $(prefix):VelocityMode
+    widget: table
 
 - parts.ca.CALongArrayPart:
     name: user_programs
     description: a list of the user programs to run at each point
     pv: $(prefix):UserArray
+    widget: table
 
 - parts.ca.CALongPart:
     name: num_points
     description: Number of points in scan
     pv: $(prefix):ProfileNumPoints
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CAChoicePart:
     name: useA
     description: is this axis is used in the trajectory scan? yes/no
     pv: $(prefix):A:UseAxis
+    widget: combo
 
 - parts.ca.CADoubleArrayPart:
     name: positionsA
     description: a list of positions for CoordSys axis A
     pv: $(prefix):A:Positions
+    widget: table
 
 - parts.ca.CADoublePart:
     name: resolutionA
     description: Encoder resolution for CoordSys axis A
     pv: $(prefix):A:Resolution
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: offsetA
     description: User offset for CoordSys axis A
     pv: $(prefix):A:Offset
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CAChoicePart:
     name: useB
     description: is this axis is used in the trajectory scan? yes/no
     pv: $(prefix):B:UseAxis
+    widget: combo
 
 - parts.ca.CADoubleArrayPart:
     name: positionsB
     description: a list of positions for CoordSys axis B
     pv: $(prefix):B:Positions
+    widget: table
 
 - parts.ca.CADoublePart:
     name: resolutionB
     description: Encoder resolution for CoordSys axis B
     pv: $(prefix):B:Resolution
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: offsetB
     description: User offset for CoordSys axis B
     pv: $(prefix):B:Offset
+    widget: textinput
     rbv_suff: _RBV
 
 - parts.ca.CAChoicePart:
     name: useC
     description: is this axis is used in the trajectory scan? yes/no
     pv: $(prefix):C:UseAxis
+    widget: combo
 
 - parts.ca.CADoubleArrayPart:
     name: positionsC
     description: a list of positions for CoordSys axis C
     pv: $(prefix):C:Positions
+    widget: table
 
 - parts.ca.CADoublePart:
     name: resolutionC
     description: Encoder resolution for CoordSys axis C
     pv: $(prefix):C:Resolution
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: offsetC
     description: User offset for CoordSys axis C
     pv: $(prefix):C:Offset
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CAChoicePart:
     name: useU
     description: is this axis is used in the trajectory scan? yes/no
     pv: $(prefix):U:UseAxis
+    widget: combo
 
 - parts.ca.CADoubleArrayPart:
     name: positionsU
     description: a list of positions for CoordSys axis U
     pv: $(prefix):U:Positions
+    widget: table
 
 - parts.ca.CADoublePart:
     name: resolutionU
     description: Encoder resolution for CoordSys axis U
     pv: $(prefix):U:Resolution
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: offsetU
     description: User offset for CoordSys axis U
     pv: $(prefix):U:Offset
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CAChoicePart:
     name: useV
     description: is this axis is used in the trajectory scan? yes/no
     pv: $(prefix):V:UseAxis
+    widget: combo
 
 - parts.ca.CADoubleArrayPart:
     name: positionsV
     description: a list of positions for CoordSys axis V
     pv: $(prefix):V:Positions
+    widget: table
 
 - parts.ca.CADoublePart:
     name: resolutionV
     description: Encoder resolution for CoordSys axis V
     pv: $(prefix):V:Resolution
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: offsetV
     description: User offset for CoordSys axis V
     pv: $(prefix):V:Offset
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CAChoicePart:
     name: useW
     description: is this axis is used in the trajectory scan? yes/no
     pv: $(prefix):W:UseAxis
+    widget: combo
 
 - parts.ca.CADoubleArrayPart:
     name: positionsW
     description: a list of positions for CoordSys axis W
     pv: $(prefix):W:Positions
+    widget: table
 
 - parts.ca.CADoublePart:
     name: resolutionW
     description: Encoder resolution for CoordSys axis W
     pv: $(prefix):W:Resolution
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: offsetW
     description: User offset for CoordSys axis W
     pv: $(prefix):W:Offset
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CAChoicePart:
     name: useX
     description: is this axis is used in the trajectory scan? yes/no
     pv: $(prefix):X:UseAxis
+    widget: combo
 
 - parts.ca.CADoubleArrayPart:
     name: positionsX
     description: a list of positions for CoordSys axis X
     pv: $(prefix):X:Positions
+    widget: table
 
 - parts.ca.CADoublePart:
     name: resolutionX
     description: Encoder resolution for CoordSys axis X
     pv: $(prefix):X:Resolution
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: offsetX
     description: User offset for CoordSys axis X
     pv: $(prefix):X:Offset
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CAChoicePart:
     name: useY
     description: is this axis is used in the trajectory scan? yes/no
     pv: $(prefix):Y:UseAxis
+    widget: combo
 
 - parts.ca.CADoubleArrayPart:
     name: positionsY
     description: a list of positions for CoordSys axis Y
     pv: $(prefix):Y:Positions
+    widget: table
 
 - parts.ca.CADoublePart:
     name: resolutionY
     description: Encoder resolution for CoordSys axis Y
     pv: $(prefix):Y:Resolution
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: offsetY
     description: User offset for CoordSys axis Y
     pv: $(prefix):Y:Offset
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CAChoicePart:
     name: useZ
     description: is this axis is used in the trajectory scan? yes/no
     pv: $(prefix):Z:UseAxis
+    widget: combo
 
 - parts.ca.CADoubleArrayPart:
     name: positionsZ
     description: a list of positions for CoordSys axis Z
     pv: $(prefix):Z:Positions
+    widget: table
 
 - parts.ca.CADoublePart:
     name: resolutionZ
     description: Encoder resolution for CoordSys axis Z
     pv: $(prefix):Z:Resolution
     rbv_suff: _RBV
+    widget: textinput
 
 - parts.ca.CADoublePart:
     name: offsetZ
     description: User offset for CoordSys axis Z
     pv: $(prefix):Z:Offset
     rbv_suff: _RBV
+    widget: textinput

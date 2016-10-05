@@ -106,10 +106,15 @@ class MethodMeta(Meta):
         """
 
         if not hasattr(func, "MethodMeta"):
+            # Make a new one
             description = inspect.getdoc(func) or ""
             method = cls(description)
-            func.MethodMeta = method
-            method.set_logger_name("%s.MethodMeta" % func.__name__)
+        else:
+            # Copy it in case we are subclassing
+            method = MethodMeta.from_dict(func.MethodMeta.to_dict())
+
+        func.MethodMeta = method
+        method.set_logger_name("%s.MethodMeta" % func.__name__)
 
         return func
 
@@ -156,8 +161,7 @@ def method_takes(*args):
 
     def decorator(func):
 
-        if not hasattr(func, "MethodMeta"):
-            MethodMeta.wrap_method(func)
+        MethodMeta.wrap_method(func)
 
         takes_meta, defaults = _prepare_map_meta(args, allow_defaults=True)
 
@@ -184,8 +188,7 @@ def method_returns(*args):
 
     def decorator(func):
 
-        if not hasattr(func, "MethodMeta"):
-            MethodMeta.wrap_method(func)
+        MethodMeta.wrap_method(func)
 
         returns_meta, _ = _prepare_map_meta(args, allow_defaults=False)
 

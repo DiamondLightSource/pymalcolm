@@ -1,3 +1,5 @@
+from xml.etree import cElementTree as ET
+
 try:
     # python 2
     import Queue as queue  # noqa
@@ -18,3 +20,11 @@ try:
 except NameError:
     # python 3
     long_ = int  # pylint:disable=invalid-name
+
+def et_to_string(element):
+    xml = '<?xml version="1.0" ?>'
+    try:
+        xml += ET.tostring(element, encoding="unicode")
+    except LookupError:
+        xml += ET.tostring(element)
+    return xml
