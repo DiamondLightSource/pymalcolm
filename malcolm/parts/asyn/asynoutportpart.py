@@ -10,6 +10,13 @@ from malcolm.core.vmetas import StringMeta
     "outport_type", StringMeta("Type (like 'CS' or 'NDArray')"), REQUIRED,
 )
 class AsynOutportPart(CAStringPart):
+
+    def __init__(self, process, params):
+        params = params.to_dict()
+        self.outport_type = params.pop("outport_type")
+        params = CAStringPart.MethodMeta.prepare_input_map(params)
+        super(AsynOutportPart, self).__init__(process, params)
+
     def create_tags(self, params):
         tags = ["widget:textupdate"]
         return tags
@@ -21,4 +28,4 @@ class AsynOutportPart(CAStringPart):
         tags = [t for t in self.attr.meta.tags
                 if not t.startswith("flowgraph:outport:")]
         tags.append("flowgraph:outport:%s:%s" % (
-            self.params.outport_type, self.attr.value))
+            self.outport_type, self.attr.value))

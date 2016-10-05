@@ -18,3 +18,7 @@ class CAChoicePart(CAPart):
         if hasattr(value, 'enums') and value.ok:
             self.attr.meta.set_choices(value.enums)
         super(CAChoicePart, self).update_value(value)
+
+    def caput(self, value):
+        value = self.attr.meta.choices.index(value)
+        super(CAChoicePart, self).caput(value)

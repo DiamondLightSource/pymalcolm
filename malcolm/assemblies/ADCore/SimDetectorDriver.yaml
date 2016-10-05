@@ -48,7 +48,7 @@
     description: Demand for starting acquisition
     pv: $(prefix):Acquire
     status_pv: $(prefix):DetectorState_RBV
-    good_status: Success
+    good_status: Idle
 
 - parts.ca.CAActionPart:
     name: stop

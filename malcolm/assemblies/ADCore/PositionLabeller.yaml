@@ -32,7 +32,7 @@
 - parts.ca.CACharArrayPart:
     name: xml
     description: Filename of xml or xml text
-    pv: $(prefix):ImageMode
+    pv: $(prefix):Filename
     rbv_suff: _RBV
     widget: textinput
 
@@ -44,9 +44,9 @@
     widget: textinput
 
 - parts.ca.CALongPart:
-    name: index
-    description: Current index
-    rbv: $(prefix):Index_RBV
+    name: qty
+    description: Number of positions left in the buffer
+    rbv: $(prefix):Qty_RBV
     widget: textupdate
 
 - parts.ca.CAActionPart:

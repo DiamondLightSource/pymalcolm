@@ -93,16 +93,12 @@ class CAPart(Part):
             cothread.CallbackResult(self.monitor.close)
             self.monitor = None
 
+    def format_caput_value(self, value):
+        self.log_info("caput -c -w 1000 %s %s", self.params.pv, value)
+        return value
+
     def caput(self, value):
-        try:
-            l = len(value)
-        except TypeError:
-            if isinstance(value, bool):
-                value = int(value)
-            self.log_info("caput -c -w 1000 %s %s", self.params.pv, value)
-        else:
-            v = " ".join(str(x) for x in value)
-            self.log_info("caput -a -w 1000 %s %d %s", self.params.pv, l, v)
+        value = self.format_caput_value(value)
         cothread.CallbackResult(
             catools.caput, self.params.pv, value, wait=True, timeout=None,
             datatype=self.get_datatype())

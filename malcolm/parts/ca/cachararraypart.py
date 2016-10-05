@@ -13,3 +13,7 @@ class CACharArrayPart(CAPart):
 
     def get_datatype(self):
         return catools.DBR_CHAR_STR
+
+    def format_caput_value(self, value):
+        self.log_info("caput -c -w 1000 -S %s %r", self.params.pv, value)
+        return value

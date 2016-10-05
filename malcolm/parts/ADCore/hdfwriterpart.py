@@ -2,7 +2,7 @@ import os
 from xml.etree import cElementTree as ET
 
 from malcolm.core import method_takes, REQUIRED, Task
-from malcolm.core.vmetas import NumberMeta, BooleanMeta, StringMeta
+from malcolm.core.vmetas import NumberMeta, BooleanMeta, StringMeta, TableMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
 from malcolm.controllers.managercontroller import ManagerController, \
     configure_args
@@ -48,7 +48,7 @@ class HDFWriterPart(LayoutPart):
         for i in range(10):
             suffix = SUFFIXES[i]
             if i < len(generator.index_names):
-                index_name = generator.index_names[-i - 1]
+                index_name = generator.index_names[-i - 1] + "_index"
                 index_size = generator.index_dims[-i - 1]
             else:
                 index_name = ""
@@ -113,11 +113,12 @@ class HDFWriterPart(LayoutPart):
                                         ndattr_default="true")
         ET.SubElement(NDAttributes_el, "attribute", name="NX_class",
                       source="constant", value="NXcollection", type="string")
-        xml = '<?xml version="1.0" ?>' + ET.tostring(root_el)
+        xml = '<?xml version="1.0" ?>' + str(ET.tostring(root_el))
         return xml
 
     @ManagerController.Configuring
     @method_takes(
+        "info_table", TableMeta(), REQUIRED,
         "start_step", NumberMeta("uint32", "Step to start at"), REQUIRED,
         *configure_args)
     def configure(self, task, params):

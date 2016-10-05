@@ -6,7 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, MagicMock
 
-from malcolm.parts.ADCore.simdetectordriverpart import SimDetectorDriverPart
+from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
 
 
 class TestSimDetectorDriverPart(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestSimDetectorDriverPart(unittest.TestCase):
 
         self.params = MagicMock()
         self.process.get_block.return_value = self.child
-        self.o = SimDetectorDriverPart(self.process, self.params)
+        self.o = DetectorDriverPart(self.process, self.params)
 
     def test_init(self):
         self.process.get_block.assert_called_once_with(self.params.child)

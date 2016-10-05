@@ -13,3 +13,7 @@ class CABooleanPart(CAPart):
 
     def get_datatype(self):
         return catools.DBR_LONG
+
+    def caput(self, value):
+        value = int(value)
+        super(CABooleanPart, self).caput(value)

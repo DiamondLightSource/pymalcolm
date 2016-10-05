@@ -52,14 +52,15 @@ class TestPositionLabellerPart(unittest.TestCase):
 <dimensions>
 <dimension name="x" />
 <dimension name="y" />
+<dimension name="y_index" />
+<dimension name="x_index" />
 <dimension name="FilePluginClose" />
 </dimensions>
-
 <positions>
-<position FilePluginClose="0" x="0.5" y="0.0" />
-<position FilePluginClose="0" x="0.5" y="0.1" />
-<position FilePluginClose="0" x="0.25" y="0.1" />
-<position FilePluginClose="1" x="0.0" y="0.1" />
+<position FilePluginClose="0" x="0.5" x_index="2" y="0.0" y_index="0" />
+<position FilePluginClose="0" x="0.5" x_index="2" y="0.1" y_index="1" />
+<position FilePluginClose="0" x="0.25" x_index="1" y="0.1" y_index="1" />
+<position FilePluginClose="1" x="0.0" x_index="0" y="0.1" y_index="1" />
 </positions>
 </pos_layout>""".replace("\n", "")
         task.put.assert_called_once_with(self.child["xml"], expected_xml)
@@ -69,7 +70,7 @@ class TestPositionLabellerPart(unittest.TestCase):
         self.o.start_future = MagicMock()
         self.o.run(task)
         task.subscribe.assert_called_once_with(
-            self.child["index"], self.o.load_more_positions, task)
+            self.child["qty"], self.o.load_more_positions, task)
         task.wait_all.assert_called_once_with(self.o.start_future)
 
     def test_load_more_positions(self):
@@ -86,12 +87,13 @@ class TestPositionLabellerPart(unittest.TestCase):
 <dimensions>
 <dimension name="x" />
 <dimension name="y" />
+<dimension name="y_index" />
+<dimension name="x_index" />
 <dimension name="FilePluginClose" />
 </dimensions>
-
 <positions>
-<position FilePluginClose="0" x="0.25" y="0.1" />
-<position FilePluginClose="1" x="0.0" y="0.1" />
+<position FilePluginClose="0" x="0.25" x_index="1" y="0.1" y_index="1" />
+<position FilePluginClose="1" x="0.0" x_index="0" y="0.1" y_index="1" />
 </positions>
 </pos_layout>""".replace("\n", "")
         task.put.assert_called_once_with(self.child["xml"], expected_xml)

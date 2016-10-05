@@ -67,7 +67,7 @@ class Task(Loggable, Spawnable):
 
             Returns:
                  a list of futures to monitor when each put completes"""
-        if value:
+        if value is not None:
             attr_or_items = {attr_or_items: value}
         result_f = []
 

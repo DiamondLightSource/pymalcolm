@@ -13,7 +13,7 @@ from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
 
-class TestPositionLabellerPart(unittest.TestCase):
+class TestHDFWriterPart(unittest.TestCase):
 
     def setUp(self):
         self.process = MagicMock()
@@ -59,9 +59,9 @@ class TestPositionLabellerPart(unittest.TestCase):
                 self.child["fileTemplate"]: "%s%s"}))
         self.assertEqual(task.put_async.call_args_list[2], call({
                 self.child["numExtraDims"]: 1,
-                self.child["posNameDimN"]: "x_y_Spiral",
+                self.child["posNameDimN"]: "x_y_Spiral_index",
                 self.child["extraDimSizeN"]: 19,
-                self.child["posNameDimX"]: "energy",
+                self.child["posNameDimX"]: "energy_index",
                 self.child["extraDimSizeX"]: 2,
                 self.child["posNameDimY"]: "",
                 self.child["extraDimSizeY"]: 1,
