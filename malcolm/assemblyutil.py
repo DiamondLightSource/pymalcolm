@@ -82,7 +82,8 @@ def make_assembly(text):
 
         # If we have any comms things
         for section in ssections["comms"]:
-            section.instantiate(malcolm.comms, process)
+            comms = section.instantiate(malcolm.comms, process)
+            process.add_comms(comms)
 
         # If we have any other assemblies
         for section in ssections["assemblies"]:

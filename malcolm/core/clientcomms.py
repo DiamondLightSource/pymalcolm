@@ -18,7 +18,6 @@ class ClientComms(Loggable, Spawnable):
         self.requests = OrderedDict()
         self.add_spawn_function(self.send_loop,
                                 self.make_default_stop_func(self.q))
-        self.process.add_comms(self)
 
     def send_loop(self):
         """Service self.q, sending requests to server"""

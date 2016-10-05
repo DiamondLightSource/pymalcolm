@@ -20,5 +20,9 @@ class CAChoicePart(CAPart):
         super(CAChoicePart, self).update_value(value)
 
     def caput(self, value):
-        value = self.attr.meta.choices.index(value)
+        try:
+            value = self.attr.meta.choices.index(value)
+        except ValueError:
+            # Already have the index
+            pass
         super(CAChoicePart, self).caput(value)
