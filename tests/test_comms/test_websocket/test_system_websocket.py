@@ -5,8 +5,8 @@ import setup_malcolm_paths
 
 import time
 # logging
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 import unittest
 
@@ -91,7 +91,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.process2.stop()
 
     def test_server_hello_with_malcolm_client(self):
-        block2 = self.process2.get_block("hello")
+        block2 = self.process2.make_client_block("hello")
         task = Task("task", self.process2)
         futures = task.when_matches_async(block2["state"], "Ready")
         task.wait_all(futures, timeout=1)
@@ -99,7 +99,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.assertEqual(ret, dict(greeting="Hello me2"))
 
     def test_server_counter_with_malcolm_client(self):
-        block2 = self.process2.get_block("counter")
+        block2 = self.process2.make_client_block("counter")
         task = Task("task", self.process2)
         futures = task.when_matches_async(block2["state"], "Ready")
         task.wait_all(futures, timeout=1)

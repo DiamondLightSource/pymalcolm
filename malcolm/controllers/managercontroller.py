@@ -139,7 +139,7 @@ class ManagerController(DefaultController):
             layout_name = self.layout_name.value
         structure = self._save_to_structure()
         filename = "/tmp/" + layout_name + ".json"
-        text = json.dumps(structure, indent="  ")
+        text = json.dumps(structure, indent=2)
         open(filename, "w").write(text)
         self.layout_name.set_value(layout_name)
 
@@ -164,6 +164,7 @@ class ManagerController(DefaultController):
         return structure
 
     def _load_from_structure(self, structure):
-        self.set_layout(structure["layout"])
+        table = self.layout.meta.validate(structure["layout"])
+        self.set_layout(table)
         self.run_hook(self.Load, self.create_part_tasks(), structure)
 

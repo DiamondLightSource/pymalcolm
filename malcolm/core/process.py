@@ -246,10 +246,16 @@ class Process(Loggable):
         try:
             return self._blocks[block_name]
         except KeyError:
-            params = ClientController.MethodMeta.prepare_input_map(
-                mri=block_name)
-            controller = ClientController(self, {}, params)
-            return controller.block
+            if block_name in self.process_block.remoteBlocks:
+                return self.make_client_block(block_name)
+            else:
+                raise
+
+    def make_client_block(self, block_name):
+        params = ClientController.MethodMeta.prepare_input_map(
+            mri=block_name)
+        controller = ClientController(self, {}, params)
+        return controller.block
 
     def get_controller(self, block_name):
         return self._controllers[block_name]

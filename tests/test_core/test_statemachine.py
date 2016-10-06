@@ -128,7 +128,7 @@ class TestRunnableDeviceStateMachine(unittest.TestCase):
         default_allowed_transitions['Paused'] = {
             "Seeking", "Running", "Aborting", "Fault", "Disabling"}
         default_allowed_transitions['Seeking'] = {
-            "Paused", "Aborting", "Fault", "Disabling"}
+            "Ready", "Paused", "Aborting", "Fault", "Disabling"}
         default_allowed_transitions['Aborting'] = {
             "Aborted", "Fault", "Disabling"}
         default_allowed_transitions['Aborted'] = {
