@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, MagicMock, call
+from mock import Mock, MagicMock, call, ANY
 import time
 
 from malcolm.core import Task, SyncFactory
@@ -39,9 +39,11 @@ class TestHDFWriterPart(unittest.TestCase):
         energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
         spiral = SpiralGenerator(["x", "y"], "mm", [0., 0.], 5., scale=2.0)
         params.generator = CompoundGenerator([energy, spiral], [], [])
-        params.start_step = 0
         params.filePath = "/path/to/file.h5"
-        self.o.configure(task, params)
+        completed_steps = 0
+        steps_to_do = ANY
+        part_info = ANY
+        self.o.configure(task, completed_steps, steps_to_do, part_info, params)
         self.assertEqual(task.put.call_args_list, [
             call(self.child["positionMode"], True),
             call(self.child["numCapture"], 0)])
@@ -124,12 +126,12 @@ class TestHDFWriterPart(unittest.TestCase):
     def test_run(self):
         list(self.o.create_attributes())
         task = MagicMock()
+        update = MagicMock()
         self.o.start_future = MagicMock()
-        self.o.run(task)
+        self.o.run(task, update)
         task.subscribe.assert_called_once_with(
-            self.child["uniqueId"], self.o.completed_steps.set_value)
+            self.child["uniqueId"], update)
         task.wait_all.assert_called_once_with(self.o.start_future)
-
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ class TestRawMotorPart(unittest.TestCase):
         self.assertEqual(self.c.child, self.child)
 
     def test_report(self):
-        returns = self.c.report_cs_info(None, MagicMock())
+        returns = self.c.report_cs_info(MagicMock())
         self.assertEqual(returns.cs_axis, self.child.cs_axis)
         self.assertEqual(returns.cs_port, self.child.cs_port)
         self.assertEqual(returns.acceleration_time, self.child.acceleration_time)

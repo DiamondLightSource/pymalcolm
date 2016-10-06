@@ -66,6 +66,33 @@ If no state machine is specified, the following will be used:
 Manager State Machine
 ---------------------
 
+Manager blocks are responsible for wiring child blocks. It can be edited, and
+will allow saving and reverting these changes to take it back to a Ready state.
+
+.. uml::
+
+    !include docs/style.iuml
+
+    state BlockStates {
+        state Ready <<Rest>>
+        Ready : Rest state
+
+        Ready -up-> Editing : Edit
+        Editing -down-> Saving : Save
+        Editing -down-> Reverting : Revert
+        Saving -down-> Ready
+        Reverting -down-> Ready
+    }
+
+There are some standard methods that Manager Blocks have:
+
+- edit() - Start editing the child blocks of this block (normally via web gui)
+- save() - Save the edited state and move back to Idle
+- revert() - Discard any edited modifications and take it back to how it was
+
+Runnable State Machine
+----------------------
+
 Mapping devices have a configure() method that allows the batch setting of a
 number of parameters, and can safely be called on a number of devices
 concurrently. Motion may occur during the Configuring state as devices are moved
@@ -129,7 +156,7 @@ become paused.
         Reverting -down-> Idle
     }
 
-There are some standard methods that Runnable Devices have:
+There are some standard methods that Runnable Blocks have:
 
 - validate(params) - Check for a consistent set of parameters, filling in any
   defaults, and adding time and timeout estimates
@@ -142,9 +169,9 @@ There are some standard methods that Runnable Devices have:
 - disable() - Disable device, stopping all activity
 - reset() - Reset the device, moving it back into Idle state after
   error, abort or disable
-- edit() - Start editing the child blocks of this block (normally via web gui)
-- save() - Save the edited state and move back to Idle
-- revert() - Discard any edited modifications and take it back to how it was
+
+Runnable Block Methods
+----------------------
 
 Apart from validate(), all other methods take the block through some state
 transitions. These are listed below for each method.

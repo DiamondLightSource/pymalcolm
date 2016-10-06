@@ -10,7 +10,7 @@
     name: mriprefix
     description: Prefix for malcolm part names
 
-- controllers.ManagerController:
+- controllers.RunnableController:
 
 - parts.ADCore.DetectorDriverPart:
     name: DET

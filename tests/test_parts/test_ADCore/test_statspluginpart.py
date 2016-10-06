@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, MagicMock
+from mock import Mock, MagicMock, ANY
 
 from malcolm.parts.ADCore.statspluginpart import StatsPluginPart
 
@@ -30,8 +30,10 @@ class TestStatsPluginPart(unittest.TestCase):
 
     def test_configure(self):
         task = MagicMock()
-        params = MagicMock()
-        self.o.configure(task, params)
+        completed_steps = ANY
+        steps_to_do = ANY
+        part_info = ANY
+        self.o.configure(task, completed_steps, steps_to_do, part_info)
         task.put.assert_called_once_with({
             self.child["enableCallbacks"]: True,
             self.child["computeStatistics"]: True,

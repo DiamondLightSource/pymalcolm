@@ -25,8 +25,6 @@ class MethodMeta(Meta):
         self.set_takes(MapMeta())
         self.set_returns(MapMeta())
         self.set_defaults(OrderedDict())
-        # List of state names that we are writeable in
-        self.only_in = None
 
     def set_takes(self, takes, notify=True):
         """Set the arguments and default values for the method
@@ -160,11 +158,8 @@ def method_takes(*args):
     """
 
     def decorator(func):
-
         MethodMeta.wrap_method(func)
-
         takes_meta, defaults = _prepare_map_meta(args, allow_defaults=True)
-
         func.MethodMeta.set_takes(takes_meta)
         func.MethodMeta.set_defaults(defaults)
         return func
@@ -187,18 +182,15 @@ def method_returns(*args):
     """
 
     def decorator(func):
-
         MethodMeta.wrap_method(func)
-
         returns_meta, _ = _prepare_map_meta(args, allow_defaults=False)
-
         func.MethodMeta.set_returns(returns_meta)
         return func
 
     return decorator
 
 
-def method_only_in(*states):
+def method_writeable_in(*states):
     """
     Checks if function has a MethodMeta representation, calls wrap_method to
     create one if it doesn't and then adds only_in to it from *states
@@ -210,12 +202,8 @@ def method_only_in(*states):
         function: Updated function
     """
     def decorator(func):
-
-        if not hasattr(func, "MethodMeta"):
-            MethodMeta.wrap_method(func)
-
-        func.MethodMeta.only_in = states
-
+        MethodMeta.wrap_method(func)
+        func.MethodMeta.set_writeable_in(*states)
         return func
     return decorator
 

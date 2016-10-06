@@ -3,10 +3,9 @@ from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
 from malcolm.core import method_takes, REQUIRED, Task
-from malcolm.core.vmetas import NumberMeta, BooleanMeta, StringMeta, TableMeta
+from malcolm.core.vmetas import BooleanMeta, StringMeta, PointGeneratorMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
-from malcolm.controllers.managercontroller import ManagerController, \
-    configure_args
+from malcolm.controllers.runnablecontroller import RunnableController
 
 SUFFIXES = "NXY3456789"
 
@@ -17,16 +16,8 @@ SUFFIXES = "NXY3456789"
         "StatsMean"
 )
 class HDFWriterPart(LayoutPart):
-    # Attribute
-    completed_steps = None
-
     # Future for the start action
     start_future = None
-
-    def create_attributes(self):
-        self.completed_steps = NumberMeta(
-            "int32", "Readback of number of scan steps").make_attribute(0)
-        yield "completedSteps", self.completed_steps, None
 
     def _set_file_path(self, task, file_path):
         # TODO: this should be different for windows detectors
@@ -117,13 +108,12 @@ class HDFWriterPart(LayoutPart):
         xml = et_to_string(root_el)
         return xml
 
-    @ManagerController.Configuring
+    @RunnableController.Configuring
     @method_takes(
-        "info_table", TableMeta(), REQUIRED,
-        "start_step", NumberMeta("uint32", "Step to start at"), REQUIRED,
-        *configure_args)
-    def configure(self, task, params):
-        if params.start_step != 0:
+        "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
+        "filePath", StringMeta("File path to write data to"), REQUIRED)
+    def configure(self, task, completed_steps, steps_to_do, part_info, params):
+        if completed_steps != 0:
             # Can't reopen HDF file, so configure() after pause() does nothing
             return
         # Enable position mode before setting any position related things
@@ -148,16 +138,16 @@ class HDFWriterPart(LayoutPart):
         # Start the plugin
         self.start_future = task.post_async(self.child["start"])
 
-    @ManagerController.Running
-    def run(self, task):
+    @RunnableController.Running
+    def run(self, task, update_completed_steps):
         """Wait for run to finish
         Args:
             task (Task): The task helper
         """
-        task.subscribe(self.child["uniqueId"], self.completed_steps.set_value)
+        task.subscribe(self.child["uniqueId"], update_completed_steps)
         task.wait_all(self.start_future)
 
-    @ManagerController.Aborting
+    @RunnableController.Aborting
     @method_takes(
         "pause", BooleanMeta("Is this an abort for a pause?"), REQUIRED)
     def abort(self, task, params):
