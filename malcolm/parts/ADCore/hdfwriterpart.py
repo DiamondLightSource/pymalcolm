@@ -85,7 +85,6 @@ class HDFWriterPart(LayoutPart):
             # Just reset the array counter
             task.put(self.child["arrayCounter"], 0)
         # Start a future waiting for the first array
-        self.log_info("Configure task %s", task)
         self.array_future = task.when_matches_async(
             self.child["arrayCounter"], 1)
 

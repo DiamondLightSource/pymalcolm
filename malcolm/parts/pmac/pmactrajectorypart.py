@@ -298,10 +298,6 @@ class PMACTrajectoryPart(LayoutPart):
         for axis_name, tail_off in self.run_up_positions(last_point).items():
             positions = trajectory[axis_name]
             positions.append(positions[-1] + tail_off)
-            # Store the last position in axis_mapping so that we can build
-            # generator for next stage if an external axis moved
-            self.axis_mapping[axis_name] = self.axis_mapping[axis_name]\
-                ._replace(current_position=positions[-1])
 
         profile = dict(time_array=time_array, velocity_mode=velocity_mode,
                        trajectory=trajectory, user_programs=user_programs)

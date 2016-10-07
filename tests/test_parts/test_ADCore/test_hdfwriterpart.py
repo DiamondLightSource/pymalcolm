@@ -136,16 +136,15 @@ class TestHDFWriterPart(unittest.TestCase):
         self.o.run(task, update)
         task.subscribe.assert_called_once_with(
             self.child["uniqueId"], update)
-        self.assertEqual(task.when_matches.call_args_list, [
-            call(self.child["arrayCounter"], 1),
-            call(self.child["uniqueId"], 38),
-        ])
+        task.when_matches.assert_called_once_with(
+            self.child["uniqueId"], 38)
+        task.unsubscribe.assert_called_once_with(
+            task.subscribe.return_value)
 
     def test_post_run(self):
         self.o.start_future = MagicMock()
-        completed_steps = ANY
         task = MagicMock()
-        self.o.wait_until_closed(task, completed_steps, steps_to_do=0)
+        self.o.wait_until_closed(task, more_steps=False)
         task.wait_all.assert_called_once_with(self.o.start_future)
 
 

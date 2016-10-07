@@ -74,7 +74,7 @@ class TestCAPart(unittest.TestCase):
             format=catools.FORMAT_CTRL, datatype=p.get_datatype())
         catools.camonitor.assert_called_once_with(
             "pv2", p.on_update, format=catools.FORMAT_CTRL,
-            datatype=p.get_datatype(), notify_disconnect=True)
+            datatype=p.get_datatype(), notify_disconnect=True, all_updates=True)
         self.assertEqual(p.attr.value, 4)
         self.assertEqual(p.monitor, catools.camonitor())
 
