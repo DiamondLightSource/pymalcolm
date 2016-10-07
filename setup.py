@@ -47,7 +47,7 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     license='APACHE',
-    install_requires=['numpy', 'scanpointgenerator'],
+    install_requires=['numpy', 'scanpointgenerator>=1.5'],
     extras_require={
         'websocket':  ['tornado'],
         'ca': ['cothread']

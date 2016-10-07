@@ -1,10 +1,9 @@
 from collections import OrderedDict
 
-from malcolm.core import Part, REQUIRED, method_takes, method_returns, Attribute
-from malcolm.core.vmetas import StringMeta, NumberMeta, BooleanMeta, \
-    StringArrayMeta
+from malcolm.core import Part, REQUIRED, method_takes, Attribute
+from malcolm.core.vmetas import StringMeta
 from malcolm.controllers.managercontroller import ManagerController, \
-    layout_table_meta, outport_table_meta
+    PartLayout, PartOutports
 
 
 @method_takes(
@@ -32,11 +31,7 @@ class LayoutPart(Part):
         self.part_visible = {}
 
     @ManagerController.ListOutports
-    @method_returns(
-        "type", StringArrayMeta("Type of outport (e.g. bit or pos)"), REQUIRED,
-        "value", StringArrayMeta(
-            "Value of outport (e.g. PULSE1.OUT)"), REQUIRED)
-    def list_outports(self, _, returns):
+    def list_outports(self, _):
         outports = self._get_flowgraph_ports("out")
         types = []
         values = []
@@ -44,23 +39,13 @@ class LayoutPart(Part):
             _, _, typ, name = port_tag.split(":", 4)
             types.append(typ)
             values.append(name)
-        returns.type = types
-        returns.value = values
-        return returns
+        ret = PartOutports(types=types, values=values)
+        return ret
 
     @ManagerController.UpdateLayout
-    @method_takes(
-        "layout_table", layout_table_meta, REQUIRED,
-        "outport_table", outport_table_meta, REQUIRED
-    )
-    @method_returns(
-        "mri", StringMeta("Malcolm full name of child block"), REQUIRED,
-        "x", NumberMeta("float64", "X Co-ordinate of child block"), REQUIRED,
-        "y", NumberMeta("float64", "X Co-ordinate of child block"), REQUIRED,
-        "visible", BooleanMeta("Whether child block is visible"), REQUIRED)
-    def update_layout_table(self, task, params, returns):
-        for i, name in enumerate(params.layout_table.name):
-            _, _, x, y, visible = params.layout_table[i]
+    def update_layout_table(self, task, part_outports, layout_table):
+        for i, name in enumerate(layout_table.name):
+            _, _, x, y, visible = layout_table[i]
             if name == self.name:
                 if self.visible and not visible:
                     self.sever_all_inports(task)
@@ -70,14 +55,11 @@ class LayoutPart(Part):
             else:
                 was_visible = self.part_visible.get(name, True)
                 if was_visible and not visible:
-                    outports = self.find_outports(name, params.outport_table)
+                    outports = self.find_outports(name, part_outports)
                     self.sever_inports_connected_to(task, outports)
                 self.part_visible[name] = visible
-        returns.mri = self.mri
-        returns.x = self.x
-        returns.y = self.y
-        returns.visible = self.visible
-        return returns
+        ret = PartLayout(mri=self.mri, x=self.x, y=self.y, visible=self.visible)
+        return ret
 
     def _get_flowgraph_ports(self, direction="out"):
         # {attr_name: port_tag}
@@ -102,20 +84,19 @@ class LayoutPart(Part):
             futures += task.put_async(attr, attr.meta.choices[0])
         task.wait_all(futures)
 
-    def find_outports(self, name, outport_table):
-        """Filter the outport_table with the name of a child part
+    def find_outports(self, name, part_outports):
+        """Filter the part_outports dict with the name of a child part
 
         Args:
             name (str): Name of the Part
-            outport_table (Table): Table of name, value, type
+            part_outports (dict): {name: PartOutports}
 
         Returns:
             dict: {outport_value: outport_type}
         """
-        outports = {}
-        for i, n in enumerate(outport_table.name):
-            if n == name:
-                outports[outport_table.value[i]] = outport_table.type[i]
+        types = part_outports[name].types
+        values = part_outports[name].values
+        outports = dict(zip(values, types))
         return outports
 
     def sever_inports_connected_to(self, task, outports):

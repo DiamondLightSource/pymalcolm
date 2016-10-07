@@ -1,12 +1,10 @@
-from collections import OrderedDict, namedtuple, Counter
+from collections import namedtuple, Counter
 
 import numpy as np
 
-from malcolm.controllers.managercontroller import ManagerController, \
-    configure_args
+from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, NumberMeta, \
-    TableMeta
+from malcolm.core.vmetas import StringArrayMeta, PointGeneratorMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
 
 # Number of seconds that a trajectory tick is
@@ -28,81 +26,61 @@ TRIG_ZERO = 8        # Capture 0, Frame 0, Detector 0
 # All possible PMAC CS axis assignment
 cs_axis_names = list("ABCUVWXYZ")
 
-# Make a table for the raw motor info we need
-columns = OrderedDict()
-columns["name"] = StringArrayMeta("Name of axis")
-columns["cs_axis"] = StringArrayMeta("CS axis (like A, B, I, 0)")
-columns["cs_port"] = StringArrayMeta("CS port name")
-columns["acceleration_time"] = NumberArrayMeta("float64", "Seconds to velocity")
-columns["resolution"] = NumberArrayMeta("float64", "Motor resolution")
-columns["offset"] = NumberArrayMeta("float64", "Motor user offset")
-columns["max_velocity"] = NumberArrayMeta("float64", "Maximum motor velocity")
-columns["current_position"] = NumberArrayMeta(
-    "float64", "Current motor position")
-info_table_meta = TableMeta("Profile time and velocity arrays", columns=columns)
-
 # Class for these motor variables
-MotorInfo = namedtuple("MotorInfo", list(columns))
+MotorInfo = namedtuple(
+    "MotorInfo", "cs_axis,cs_port,acceleration_time,resolution,offset,"
+    "max_velocity,current_position")
 
 
 class PMACTrajectoryPart(LayoutPart):
-
-    # Attribute
-    completedSteps = None
-
     # Stored between functions
-    points_built = 0
     axis_mapping = None
     cs_port = None
     completed_steps_lookup = []
-    exposure = None
     generator = None
 
-    def create_attributes(self):
-        self.completedSteps = NumberMeta(
-            "int32", "Readback of number of scan steps").make_attribute(0)
-        yield "completedSteps", self.completedSteps, None
-
-    @ManagerController.Configuring
+    @RunnableController.Configuring
     @method_takes(
-        "info_table", info_table_meta, REQUIRED,
-        "start_step", NumberMeta("uint32", "Step to start at"), REQUIRED,
-        *configure_args)
-    def configure(self, task, params):
-        self.exposure = params.exposure
+        "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
+        "axesToMove", StringArrayMeta(
+            "List of axes in inner dimension of generator to be moved"),
+        REQUIRED)
+    def configure(self, task, completed_steps, steps_to_do, part_info, params):
         self.generator = params.generator
         self.cs_port, self.axis_mapping = self.get_cs_port(
-            params.info_table, params.axes_to_move)
-        self.build_start_profile(task, params.start_step)
+            part_info, params.axesToMove)
+        futures = self.move_to_start(task, completed_steps)
+        self.completed_steps_lookup, profile = self.build_generator_profile(
+            completed_steps, steps_to_do)
+        task.wait_all(futures)
+        self.build_profile(task, **profile)
+
+    @RunnableController.Running
+    def run(self, task, update_completed_steps):
+        task.subscribe(
+            self.child["points_scanned"], self.update_step,
+            update_completed_steps)
         task.post(self.child["execute_profile"])
-        self.points_built, self.completed_steps_lookup = \
-            self.build_generator_profile(task, params.start_step)
 
-    @ManagerController.Running
-    def run(self, task):
-        task.subscribe(self.child["points_scanned"], self.update_step)
-        task.post(self.child["execute_profile"])
+    @RunnableController.PostRun
+    def build_next_stage(self, task, completed_steps, steps_to_do):
+        if steps_to_do:
+            futures = self.move_to_start(task, completed_steps)
+            self.completed_steps_lookup, profile = self.build_generator_profile(
+                completed_steps, steps_to_do)
+            task.wait_all(futures)
+            self.build_profile(task, **profile)
 
-    @ManagerController.PostRun
-    def build_next_stage(self, task):
-        more_to_do = self.points_built < self.generator.num - 1
-        if more_to_do:
-            self.build_start_profile(task, self.points_built)
-            task.post(self.child["execute_profile"])
-            self.points_built, self.completed_steps_lookup = \
-                self.build_generator_profile(task, self.points_built)
-
-    @ManagerController.Aborting
+    @RunnableController.Aborting
     def stop_execution(self, task):
         task.post(self.child["abort_profile"])
 
-    def get_cs_port(self, info_table, axes_to_move):
+    def get_cs_port(self, part_info, axes_to_move):
         cs_ports = set()
         # dict {name: MotorInfo}
         axis_mapping = {}
-        for i, part_name in enumerate(info_table.name):
+        for part_name, motor_info in part_info.items():
             if part_name in axes_to_move:
-                motor_info = MotorInfo(*info_table[i])
                 assert motor_info.cs_axis in cs_axis_names, \
                     "Can only scan 1-1 mappings, %r is %r" % \
                     (part_name, motor_info.cs_axis)
@@ -135,10 +113,10 @@ class PMACTrajectoryPart(LayoutPart):
             time = accl_time + full_speed_dist / motor_info.max_velocity
         return time
 
-    def update_step(self, scanned):
-        completed_steps = self.completed_steps_lookup[scanned - 1]
-        if completed_steps != self.completedSteps.value:
-            self.completedSteps.set_value(completed_steps)
+    def update_step(self, scanned, update_completed_steps):
+        if scanned > 0:
+            completed_steps = self.completed_steps_lookup[scanned - 1]
+            update_completed_steps(completed_steps)
 
     def run_up_positions(self, point):
         """Generate a dict of axis run up distances given a time
@@ -152,7 +130,7 @@ class PMACTrajectoryPart(LayoutPart):
 
         for axis_name, motor_info in self.axis_mapping.items():
             full_distance = point.upper[axis_name] - point.lower[axis_name]
-            velocity = full_distance / self.exposure
+            velocity = full_distance / point.duration
             # Divide by 2 as we are decelerating to zero
             accl_dist = motor_info.acceleration_time * velocity * 0.5
             positions[axis_name] = accl_dist
@@ -164,7 +142,7 @@ class PMACTrajectoryPart(LayoutPart):
             info.acceleration_time for info in self.axis_mapping.values())
         return acceleration_time
 
-    def build_start_profile(self, task, start_index):
+    def move_to_start(self, task, start_index):
         """Move to the run up position ready to start the scan"""
         acceleration_time = self.calculate_acceleration_time()
         first_point = self.generator.get_point(start_index)
@@ -175,6 +153,10 @@ class PMACTrajectoryPart(LayoutPart):
             start_pos = first_point.lower[axis_name] - run_up
             trajectory[axis_name] = [start_pos]
             move_time = max(move_time, self.get_move_time(axis_name, start_pos))
+
+        if move_time == 0:
+            # Don't have to move anywhere
+            return []
 
         # if we are spending any time at max_velocity, put in points at
         # the acceleration times
@@ -197,6 +179,8 @@ class PMACTrajectoryPart(LayoutPart):
 
         self.build_profile(task, time_array, velocity_mode, trajectory,
                            user_programs)
+        futures = task.post_async(self.child["execute_profile"])
+        return futures
 
     def build_profile(self, task, time_array, velocity_mode, trajectory,
                       user_programs):
@@ -249,21 +233,17 @@ class PMACTrajectoryPart(LayoutPart):
         task.put({self.child[k]: v for k, v in attr_dict.items()})
         task.post(self.child["build_profile"])
 
-    def build_generator_profile(self, part_tasks, start_index=0):
+    def build_generator_profile(self, start_index, steps_to_build):
         acceleration_time = self.calculate_acceleration_time()
         trajectory = {}
         time_array = []
         velocity_mode = []
         user_programs = []
-        completed_steps = []
+        completed_steps_lookup = []
         last_point = None
 
-        for i in range(start_index, self.generator.num):
+        for i in range(start_index, start_index + steps_to_build):
             point = self.generator.get_point(i)
-
-            # Check that none of the external motors need moving
-            if last_point and self.external_axis_has_moved(last_point, point):
-                break
 
             # Check if we need to insert the lower bound point
             if last_point is None:
@@ -283,26 +263,26 @@ class PMACTrajectoryPart(LayoutPart):
                 time_array.append(lower_move_time)
                 velocity_mode.append(PREV_TO_NEXT)
                 user_programs.append(TRIG_ZERO)
-                completed_steps.append(i)
+                completed_steps_lookup.append(i)
 
             if lower_move_time:
                 # Add lower bound
                 time_array.append(lower_move_time)
                 velocity_mode.append(CURRENT_TO_NEXT)
                 user_programs.append(TRIG_LIVE_FRAME)
-                completed_steps.append(i)
+                completed_steps_lookup.append(i)
 
             # Add position
-            time_array.append(self.exposure / 2.0)
+            time_array.append(point.duration / 2.0)
             velocity_mode.append(PREV_TO_NEXT)
             user_programs.append(TRIG_CAPTURE)
-            completed_steps.append(i)
+            completed_steps_lookup.append(i)
 
             # Add upper bound
-            time_array.append(self.exposure / 2.0)
+            time_array.append(point.duration / 2.0)
             velocity_mode.append(PREV_TO_NEXT)
             user_programs.append(TRIG_LIVE_FRAME)
-            completed_steps.append(i + 1)
+            completed_steps_lookup.append(i + 1)
 
             # Add the axis positions
             for axis_name, cs_def in self.axis_mapping.items():
@@ -322,11 +302,7 @@ class PMACTrajectoryPart(LayoutPart):
         velocity_mode.append(ZERO_VELOCITY)
         user_programs[-1] = TRIG_DEAD_FRAME
         user_programs.append(TRIG_ZERO)
-        if i + 1 < self.generator.num:
-            # We broke, so don't add i + 1 to current step
-            completed_steps.append(i)
-        else:
-            completed_steps.append(i + 1)
+        completed_steps_lookup.append(i + 1)
 
         for axis_name, tail_off in self.run_up_positions(last_point).items():
             positions = trajectory[axis_name]
@@ -336,9 +312,9 @@ class PMACTrajectoryPart(LayoutPart):
             self.axis_mapping[axis_name] = self.axis_mapping[axis_name]\
                 ._replace(current_position=positions[-1])
 
-        self.build_profile(part_tasks, time_array, velocity_mode, trajectory,
-                           user_programs)
-        return i, completed_steps
+        profile = dict(time_array=time_array, velocity_mode=velocity_mode,
+                       trajectory=trajectory, user_programs=user_programs)
+        return completed_steps_lookup, profile
 
     def _same_sign(self, a, b):
         return a*b >= 0
@@ -369,12 +345,3 @@ class PMACTrajectoryPart(LayoutPart):
         if lower_move_time == 0:
             turnaround_midpoint = None
         return lower_move_time * 0.5, turnaround_midpoint
-
-    def external_axis_has_moved(self, last_point, point):
-        for axis_name in self.generator.position_units:
-            if axis_name not in self.axis_mapping:
-                # Check it hasn't needed to move
-                if point.positions[axis_name] != \
-                        last_point.positions[axis_name]:
-                    return True
-        return False

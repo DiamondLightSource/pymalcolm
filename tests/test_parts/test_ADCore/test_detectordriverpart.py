@@ -4,8 +4,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, MagicMock
+from mock import Mock, MagicMock, ANY
 
+from scanpointgenerator import LineGenerator, CompoundGenerator
+from scanpointgenerator.fixeddurationmutator import FixedDurationMutator
 from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
 
 
@@ -31,18 +33,25 @@ class TestSimDetectorDriverPart(unittest.TestCase):
     def test_configure(self):
         task = MagicMock()
         params = MagicMock()
-        self.o.configure(task, params)
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        duration = FixedDurationMutator(0.1)
+        params.generator = CompoundGenerator([ys, xs], [], [duration])
+        completed_steps = 0
+        steps_to_do = 6
+        part_info = ANY
+        self.o.configure(task, completed_steps, steps_to_do, part_info, params)
         task.put.assert_called_once_with({
-            self.child["exposure"]: params.exposure,
+            self.child["exposure"]: 0.1,
             self.child["imageMode"]: "Multiple",
-            self.child["numImages"]: params.generator.num,
-            self.child["arrayCounter"]: params.start_step,
+            self.child["numImages"]: steps_to_do,
+            self.child["arrayCounter"]: completed_steps,
             self.child["arrayCallbacks"]: True,
         })
 
     def test_run(self):
         task = MagicMock()
-        self.o.run(task)
+        self.o.run(task, ANY)
         task.post.assert_called_once_with(self.child["start"])
 
     def test_abort(self):

@@ -68,12 +68,5 @@ class TestHook(unittest.TestCase):
                          inst1.do_thing: part_tasks[inst1],
                          inst2.do_all_the_things: part_tasks[inst2]})
 
-    def test_make_return_table(self):
-        inst1 = DummyPart1()
-        inst2 = DummyPart2()
-        part_tasks = {inst1: MagicMock(), inst2: MagicMock()}
-        table_meta = DummyController().Running.make_return_table(part_tasks)
-        self.assertEqual(list(table_meta.endpoints), ["name", "foo", "bar"])
-
 if __name__ == "__main__":
     unittest.main(verbosity=2)

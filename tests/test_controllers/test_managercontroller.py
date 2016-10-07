@@ -12,7 +12,7 @@ from mock import MagicMock, call
 
 # module imports
 from malcolm.controllers.managercontroller import ManagerController
-from malcolm.core import method_only_in, method_takes, DefaultStateMachine
+from malcolm.core import method_writeable_in, method_takes, DefaultStateMachine
 
 
 class TestManagerController(unittest.TestCase):

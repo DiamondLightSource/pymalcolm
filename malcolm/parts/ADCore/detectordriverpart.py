@@ -1,29 +1,35 @@
 from malcolm.core import method_takes, REQUIRED
-from malcolm.core.vmetas import NumberMeta, TableMeta
+from malcolm.core.vmetas import PointGeneratorMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
-from malcolm.controllers.managercontroller import ManagerController, \
-    configure_args
+from malcolm.controllers.runnablecontroller import RunnableController
 
 
 class DetectorDriverPart(LayoutPart):
-    @ManagerController.Configuring
+    @RunnableController.Configuring
     @method_takes(
-        "info_table", TableMeta(), REQUIRED,
-        "start_step", NumberMeta("uint32", "Step to start at"), REQUIRED,
-        *configure_args)
-    def configure(self, task, params):
+        "generator", PointGeneratorMeta("Generator instance"), REQUIRED)
+    def configure(self, task, completed_steps, steps_to_do, part_info, params):
+        exposures = set()
+        for i in range(completed_steps, completed_steps + steps_to_do):
+            point = params.generator.get_point(i)
+            exposures.add(point.duration)
+        assert len(exposures) == 1, \
+            "Expected a fixed duration time, got %s" % list(exposures)
+        exposure = exposures.pop()
+        assert exposure is not None, \
+            "Expected duration to be specified, got None"
         task.put({
-            self.child["exposure"]: params.exposure,
+            self.child["exposure"]: exposure,
             self.child["imageMode"]: "Multiple",
-            self.child["numImages"]: params.generator.num,
-            self.child["arrayCounter"]: params.start_step,
+            self.child["numImages"]: steps_to_do,
+            self.child["arrayCounter"]: completed_steps,
             self.child["arrayCallbacks"]: True,
         })
 
-    @ManagerController.Running
-    def run(self, task):
+    @RunnableController.Running
+    def run(self, task, _):
         task.post(self.child["start"])
 
-    @ManagerController.Aborting
+    @RunnableController.Aborting
     def abort(self, task):
         task.post(self.child["stop"])

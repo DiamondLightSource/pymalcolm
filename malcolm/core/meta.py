@@ -15,6 +15,8 @@ class Meta(Monitorable):
         self.set_tags(tags)
         self.set_writeable(writeable)
         self.set_label(label)
+        # List of state names that we are writeable in
+        self.writeable_in = []
 
     def set_description(self, description, notify=True):
         """Set the description string"""
@@ -35,3 +37,6 @@ class Meta(Monitorable):
         """Set the label string"""
         label = deserialize_object(label, str_)
         self.set_endpoint_data("label", label, notify)
+
+    def set_writeable_in(self, *states):
+        self.writeable_in = states

@@ -12,7 +12,7 @@ from mock import MagicMock, call
 
 # module imports
 from malcolm.controllers import DefaultController
-from malcolm.core import method_only_in, method_takes, DefaultStateMachine
+from malcolm.core import method_writeable_in, method_takes, DefaultStateMachine
 
 
 class DummyController(DefaultController):
@@ -20,7 +20,7 @@ class DummyController(DefaultController):
     def say_hello(self, name):
         print("Hello" + name)
 
-    @method_only_in("Ready")
+    @method_writeable_in("Ready")
     def say_goodbye(self, name):
         print("Goodbye" + name)
 
@@ -48,19 +48,20 @@ class TestDefaultController(unittest.TestCase):
         self.assertEqual(
             self.b["busy"].meta.typeid, "malcolm:core/BooleanMeta:1.0")
         self.assertEqual(self.b.busy, False)
-        disable = self.b["disable"]
-        reset = self.b["reset"]
-        say_hello = self.b["say_hello"]
-        say_goodbye = self.b["say_goodbye"]
         expected = dict(
-            Disabled={disable: False, reset: True, say_hello: False, say_goodbye: False},
-            Disabling={disable: False, reset: False, say_hello: False, say_goodbye: False},
-            Fault={disable: True, reset: True, say_hello: True, say_goodbye: False},
-            Ready={disable: True, reset: False, say_hello: True, say_goodbye: True},
-            Resetting={disable: True, reset: False, say_hello: True, say_goodbye: False},
+            Disabled=dict(
+                disable=False, reset=True, say_hello=False, say_goodbye=False),
+            Disabling=dict(
+                disable=False, reset=False, say_hello=False, say_goodbye=False),
+            Fault=dict(
+                disable=True, reset=True, say_hello=True, say_goodbye=False),
+            Ready=dict(
+                disable=True, reset=False, say_hello=True, say_goodbye=True),
+            Resetting=dict(
+                disable=True, reset=False, say_hello=True, say_goodbye=False),
         )
 
-        self.assertEqual(expected, self.c.methods_writeable)
+        self.assertEqual(expected, self.c.children_writeable)
         self.assertEqual(self.c.hook_names, {
             self.c.Resetting: "Resetting", self.c.Disabling: "Disabling"})
 
@@ -105,10 +106,8 @@ class TestDefaultController(unittest.TestCase):
             [call("Resetting", notify=False), call("boom", notify=False)])
 
     def test_set_writeable_methods(self):
-        m = MagicMock()
-        m.name = "configure"
-        self.c.register_method_writeable(m, "Ready")
-        self.assertEqual(self.c.methods_writeable['Ready'][m], True)
+        self.c.register_child_writeable("configure", "Ready")
+        self.assertEqual(self.c.children_writeable['Ready']["configure"], True)
 
     def test_create_methods_order(self):
         expected = ["disable", "reset", "say_goodbye", "say_hello"]

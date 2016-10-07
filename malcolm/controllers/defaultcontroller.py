@@ -1,5 +1,5 @@
 from malcolm.core import Controller, DefaultStateMachine, Hook, \
-    method_only_in, method_takes
+    method_writeable_in, method_takes
 
 
 sm = DefaultStateMachine
@@ -26,7 +26,7 @@ class DefaultController(Controller):
     def do_disable(self):
         self.run_hook(self.Disabling, self.create_part_tasks())
 
-    @method_only_in(sm.DISABLED, sm.FAULT)
+    @method_writeable_in(sm.DISABLED, sm.FAULT)
     def reset(self):
         try:
             self.transition(sm.RESETTING, "Resetting")

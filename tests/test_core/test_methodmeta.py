@@ -7,7 +7,7 @@ from collections import OrderedDict
 import unittest
 from mock import Mock, patch, MagicMock
 
-from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, method_only_in, OPTIONAL, \
+from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, method_writeable_in, OPTIONAL, \
     REQUIRED
 
 from malcolm.core.vmetas import StringMeta
@@ -93,12 +93,12 @@ class TestDecorators(unittest.TestCase):
                 return ret
 
     def test_only_in(self):
-        @method_only_in("boo", "boo2")
+        @method_writeable_in("boo", "boo2")
         def f():
             pass
 
         self.assertTrue(hasattr(f, "MethodMeta"))
-        self.assertEqual(f.MethodMeta.only_in, ("boo", "boo2"))
+        self.assertEqual(f.MethodMeta.writeable_in, ("boo", "boo2"))
 
 
 class TestSerialization(unittest.TestCase):

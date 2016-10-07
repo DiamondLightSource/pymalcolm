@@ -10,6 +10,7 @@ from malcolm.core.methodmeta import method_takes, MethodMeta, \
     get_method_decorated
 from malcolm.core.request import Post
 from malcolm.core.statemachine import DefaultStateMachine
+from malcolm.core.serializable import deserialize_object
 from malcolm.core.task import Task
 from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
 
@@ -45,8 +46,8 @@ class Controller(Loggable):
         # {part: task}
         self.part_tasks = {}
         # dictionary of dictionaries
-        # {state (str): {MethodMeta: writeable (bool)}
-        self.methods_writeable = {}
+        # {state (str): {Meta/MethodMeta/Attribute: writeable (bool)}
+        self.children_writeable = {}
         # dict {hook: name}
         self.hook_names = self._find_hooks()
         self.parts = self._setup_parts(parts, controller_name)
@@ -91,36 +92,37 @@ class Controller(Loggable):
     def _set_block_children(self):
         # reconfigure block with new children
         child_list = [self.create_meta()]
-        child_list += list(self._create_default_attributes())
         child_list += list(self.create_attributes())
         child_list += list(self.create_methods())
         for part in self.parts.values():
             child_list += list(part.create_attributes())
             child_list += list(part.create_methods())
 
-        self.methods_writeable = {}
+        self.children_writeable = {}
         writeable_functions = {}
         children = OrderedDict()
 
         for name, child, writeable_func in child_list:
+            if isinstance(child, Attribute):
+                states = child.meta.writeable_in
+            else:
+                states = child.writeable_in
             if isinstance(child, MethodMeta):
-                # Set if the method is writeable
-                if child.only_in is None:
-                    states = [
-                        state for state in self.stateMachine.possible_states
-                        if state not in (sm.DISABLING, sm.DISABLED)]
-                else:
-                    states = child.only_in
-                    for state in states:
-                        assert state in self.stateMachine.possible_states, \
-                            "State %s is not one of the valid states %s" % \
-                            (state, self.stateMachine.possible_states)
                 # Make a copy otherwise all instances will own the same one
-                child = MethodMeta.from_dict(child.to_dict())
-                self.register_method_writeable(child, states)
-            elif isinstance(child, Attribute):
-                child.meta.set_writeable(writeable_func is not None)
+                child = deserialize_object(child.to_dict())
             children[name] = child
+            if states:
+                for state in states:
+                    assert state in self.stateMachine.possible_states, \
+                        "State %s is not one of the valid states %s" % \
+                        (state, self.stateMachine.possible_states)
+            elif writeable_func is not None:
+                states = [
+                    state for state in self.stateMachine.possible_states
+                    if state not in (sm.DISABLING, sm.DISABLED)]
+            else:
+                continue
+            self.register_child_writeable(name, states)
             if writeable_func:
                 writeable_functions[name] = functools.partial(
                     self.call_writeable_function, writeable_func)
@@ -136,7 +138,16 @@ class Controller(Loggable):
         result = function(*args)
         return result
 
-    def _create_default_attributes(self):
+    def create_meta(self):
+        self.meta = BlockMeta()
+        return "meta", self.meta, None
+
+    def create_attributes(self):
+        """Method that should provide Attribute instances for Block
+
+        Yields:
+            tuple: (string name, Attribute, callable put_function).
+        """
         # Add the state, status and busy attributes
         self.state = ChoiceMeta(
             "State of Block", self.stateMachine.possible_states, label="State"
@@ -150,18 +161,6 @@ class Controller(Loggable):
             "Whether Block busy or not", label="Busy"
         ).make_attribute()
         yield "busy", self.busy, None
-
-    def create_meta(self):
-        self.meta = BlockMeta()
-        return "meta", self.meta, None
-
-    def create_attributes(self):
-        """Method that should provide Attribute instances for Block
-
-        Yields:
-            tuple: (string name, Attribute, callable put_function).
-        """
-        return iter(())
 
     def create_methods(self):
         """Method that should provide MethodMeta instances for Block
@@ -198,32 +197,36 @@ class Controller(Loggable):
         self.add_change(changes, self.busy, "value",
                         state in self.stateMachine.busy_states)
 
-        # say which methods can now be called
+        # say which children are now writeable
         for name in self.block:
+            try:
+                writeable = self.children_writeable[state][name]
+            except KeyError:
+                continue
             child = self.block[name]
-            if isinstance(child, MethodMeta):
-                method = child
-                writeable = self.methods_writeable[state][method]
-                self.add_change(changes, method, "writeable", writeable)
-                for ename in method.takes.elements:
-                    meta = method.takes.elements[ename]
+            if isinstance(child, Attribute):
+                child = child.meta
+            elif isinstance(child, MethodMeta):
+                for ename in child.takes.elements:
+                    meta = child.takes.elements[ename]
                     self.add_change(changes, meta, "writeable", writeable)
+            self.add_change(changes, child, "writeable", writeable)
 
         self.log_debug("Transitioning to %s", state)
         self.block.apply_changes(*changes)
 
-    def register_method_writeable(self, method, states):
+    def register_child_writeable(self, name, states):
         """
         Set the states that the given method can be called in
 
         Args:
-            method(MethodMeta): Method that will be set writeable or not
-            states(list[str]): List of states where method is writeable
+            name (str): Child name that will be set writeable or not
+            states (list[str]): List of states where method is writeable
         """
         for state in self.stateMachine.possible_states:
-            writeable_dict = self.methods_writeable.setdefault(state, {})
+            writeable_dict = self.children_writeable.setdefault(state, {})
             is_writeable = state in states
-            writeable_dict[method] = is_writeable
+            writeable_dict[name] = is_writeable
 
     def create_part_tasks(self):
         part_tasks = {}
@@ -231,61 +234,34 @@ class Controller(Loggable):
             part_tasks[part] = Task("Task(%s)" % part_name, self.process)
         return part_tasks
 
-    def run_hook(self, hook, part_tasks, **kwargs):
+    def run_hook(self, hook, part_tasks, *args, **params):
         hook_queue, func_tasks, task_part_names = self.start_hook(
-            hook, part_tasks, **kwargs)
-        return_table = hook.make_return_table(part_tasks)
+            hook, part_tasks, *args, **params)
         return_dict = self.wait_hook(hook_queue, func_tasks, task_part_names)
-        for part_name in self.parts:
-            return_map = return_dict.get(part_name, None)
-            if return_map:
-                self.fill_in_table(part_name, return_table, return_map)
-        return return_table
+        return return_dict
 
-    def fill_in_table(self, part_name, table, return_map):
-        # Find all the array columns
-        arrays = {}
-        for column_name in table.meta.elements:
-            meta = table.meta.elements[column_name]
-            if "hook:return_array" in meta.tags:
-                arrays[column_name] = return_map[column_name]
-        # If there are any arrays, make sure they are the right length
-        lengths = set(len(arr) for arr in arrays.values())
-        if len(lengths) == 0:
-            # no arrays
-            iterations = 1
-        else:
-            assert len(lengths) == 1, \
-                "Varying array length %s for rows %s" % (lengths, arrays)
-            iterations = lengths.pop()
-        for i in range(iterations):
-            row = []
-            for k in table.endpoints:
-                if k == "name":
-                    row.append(part_name)
-                elif k in arrays:
-                    row.append(arrays[k][i])
-                else:
-                    row.append(return_map[k])
-            table.append(row)
-
-    def make_task_return_value_function(self, hook_queue, **kwargs):
+    def make_task_return_value_function(self, hook_queue, *args, **params):
 
         def task_return(func, task):
+            filtered_params = {}
+            for k, v in params.items():
+                if k in func.MethodMeta.takes.elements:
+                    filtered_params[k] = v
             try:
-                result = func.MethodMeta.call_post_function(func, kwargs, task)
+                result = func.MethodMeta.call_post_function(
+                    func, filtered_params, task, *args)
             except StopIteration as e:
                 self.log_debug("%s has been aborted", func)
                 result = e
             except Exception as e:  # pylint:disable=broad-except
-                self.log_exception("%s %s raised exception", func, kwargs)
+                self.log_exception("%s %s raised exception", func, params)
                 result = e
             self.log_debug("Putting %r on queue", result)
             hook_queue.put((func, result))
 
         return task_return
 
-    def start_hook(self, hook, part_tasks, **kwargs):
+    def start_hook(self, hook, part_tasks, *args, **params):
         assert hook in self.hook_names, \
             "Hook %s doesn't appear in controller hooks %s" % (
                 hook, self.hook_names)
@@ -296,7 +272,8 @@ class Controller(Loggable):
 
         # now start them off
         hook_queue = self.process.create_queue()
-        task_return = self.make_task_return_value_function(hook_queue, **kwargs)
+        task_return = self.make_task_return_value_function(
+            hook_queue, *args, **params)
 
         for func, task in func_tasks.items():
             task.define_spawn_function(task_return, func, task)

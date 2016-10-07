@@ -126,7 +126,24 @@ class DefaultStateMachine(StateMachine):
         pass
 
 
-class RunnableDeviceStateMachine(StateMachine):
+class ManagerStateMachine(DefaultStateMachine):
+
+    EDITING = "Editing"
+    EDITABLE = "Editable"
+    SAVING = "Saving"
+    REVERTING = "Reverting"
+
+    def create_states(self):
+        super(ManagerStateMachine, self).create_states()
+        self.set_allowed(self.AFTER_RESETTING, self.EDITING)
+        self.set_allowed(self.EDITING, self.EDITABLE)
+        self.set_allowed(self.EDITABLE, self.SAVING)
+        self.set_allowed(self.EDITABLE, self.REVERTING)
+        self.set_allowed(self.SAVING, self.AFTER_RESETTING)
+        self.set_allowed(self.REVERTING, self.AFTER_RESETTING)
+
+
+class RunnableStateMachine(ManagerStateMachine):
 
     READY = "Ready"
     IDLE = "Idle"
@@ -135,28 +152,29 @@ class RunnableDeviceStateMachine(StateMachine):
     RUNNING = "Running"
     POSTRUN = "PostRun"
     PAUSED = "Paused"
-    REWINDING = "Rewinding"
+    SEEKING = "Seeking"
     ABORTING = "Aborting"
     ABORTED = "Aborted"
 
     AFTER_RESETTING = IDLE
 
     def create_states(self):
+        super(RunnableStateMachine, self).create_states()
         # Set transitions for normal states
         self.set_allowed(self.IDLE, self.CONFIGURING)
         self.set_allowed(
-            self.READY, [self.PRERUN, self.REWINDING, self.RESETTING])
+            self.READY, [self.PRERUN, self.SEEKING, self.RESETTING])
         self.set_allowed(self.CONFIGURING, self.READY)
-        self.set_allowed(self.PRERUN, [self.RUNNING, self.REWINDING])
-        self.set_allowed(self.RUNNING, [self.POSTRUN, self.REWINDING])
+        self.set_allowed(self.PRERUN, [self.RUNNING, self.SEEKING])
+        self.set_allowed(self.RUNNING, [self.POSTRUN, self.SEEKING])
         self.set_allowed(self.POSTRUN, [self.IDLE, self.READY])
-        self.set_allowed(self.PAUSED, [self.REWINDING, self.PRERUN])
-        self.set_allowed(self.REWINDING, self.PAUSED)
+        self.set_allowed(self.PAUSED, [self.SEEKING, self.PRERUN])
+        self.set_allowed(self.SEEKING, self.PAUSED)
 
         # Add Aborting to all normal states
         normal_states = [self.IDLE, self.READY, self.CONFIGURING, self.PRERUN,
                          self.RUNNING, self.POSTRUN, self.PAUSED,
-                         self.RESETTING, self.REWINDING]
+                         self.RESETTING, self.SEEKING]
         for state in normal_states:
             self.set_allowed(state, self.ABORTING)
 
