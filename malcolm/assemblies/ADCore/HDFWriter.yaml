@@ -250,6 +250,7 @@
     description: Demand for stopping acquisition
     pv: $(prefix):Capture
     value: 0
+    wait: False
 
 - parts.ca.CABooleanPart:
     name: running
@@ -257,7 +258,14 @@
     rbv: $(prefix):Capture_RBV
     widget: led
 
-- parts.ca.CABooleanPart:
+- parts.ca.CALongPart:
+    name: arrayCounter
+    description: Current unique id number for frame
+    pv: $(prefix):ArrayCounter
+    rbv_suff: _RBV
+    widget: textupdate
+
+- parts.ca.CALongPart:
     name: uniqueId
     description: Current unique id number for frame
     rbv: $(prefix):UniqueId_RBV
