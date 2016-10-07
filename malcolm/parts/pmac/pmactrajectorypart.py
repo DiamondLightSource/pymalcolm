@@ -145,7 +145,7 @@ class PMACTrajectoryPart(LayoutPart):
             trajectory[axis_name] = [start_pos]
             move_time = max(move_time, self.get_move_time(axis_name, start_pos))
 
-        if move_time == 0:
+        if move_time < 0.01:
             # Don't have to move anywhere
             return []
 
