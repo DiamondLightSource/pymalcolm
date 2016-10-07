@@ -185,9 +185,8 @@ class RunnableController(ManagerController):
                 # Wait to be restarted
                 self.log_debug("Waiting for PreRun")
                 task = Task("StateWaiter", self.process)
-                futures = task.when_matches(self.state, sm.PRERUN, [
+                task.when_matches(self.state, sm.PRERUN, [
                     sm.DISABLING, sm.ABORTING, sm.FAULT])
-                task.wait_all(futures)
                 # Restart it
                 self.do_run()
             else:

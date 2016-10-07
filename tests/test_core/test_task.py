@@ -226,7 +226,7 @@ class TestTask(unittest.TestCase):
     def test_when_matches(self):
         t = Task("testTask", self.proc)
 
-        f = t.when_matches(self.attr, "matchTest")
+        f = t.when_matches_async(self.attr, "matchTest")
 
         # match (response goes to the subscription at id 1,
         # not the future at id 0)
@@ -238,7 +238,7 @@ class TestTask(unittest.TestCase):
 
     def test_not_when_matches(self):
         t = Task("testTask", self.proc)
-        f = t.when_matches(self.attr, "matchTest")
+        f = t.when_matches_async(self.attr, "matchTest")
 
         # match (response goes to the subscription at id 1,
         # not the future at id 0)
