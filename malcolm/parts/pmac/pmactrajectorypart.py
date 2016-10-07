@@ -4,7 +4,7 @@ import numpy as np
 
 from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.core.vmetas import NumberMeta, PointGeneratorMeta
+from malcolm.core.vmetas import StringArrayMeta, PointGeneratorMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
 
 # Number of seconds that a trajectory tick is
@@ -42,13 +42,13 @@ class PMACTrajectoryPart(LayoutPart):
     @RunnableController.Configuring
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-        "levels", NumberMeta(
-            "uint32", "Generator levels to move (starting from bottom)"),
+        "axesToMove", StringArrayMeta(
+            "List of axes in inner dimension of generator to be moved"),
         REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         self.generator = params.generator
         self.cs_port, self.axis_mapping = self.get_cs_port(
-            part_info, params.levels)
+            part_info, params.axesToMove)
         futures = self.move_to_start(task, completed_steps)
         self.completed_steps_lookup, profile = self.build_generator_profile(
             completed_steps, steps_to_do)
@@ -75,10 +75,7 @@ class PMACTrajectoryPart(LayoutPart):
     def stop_execution(self, task):
         task.post(self.child["abort_profile"])
 
-    def get_cs_port(self, part_info, levels):
-        axes_to_move = []
-        for i in range(levels):
-            axes_to_move += list(self.generator.generators[-i-1].position_units)
+    def get_cs_port(self, part_info, axes_to_move):
         cs_ports = set()
         # dict {name: MotorInfo}
         axis_mapping = {}

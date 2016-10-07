@@ -55,7 +55,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             })
         self.assertEqual(args, expected)
 
-    def do_configure(self, levels):
+    def do_configure(self, axes_to_scan):
         task = Mock()
         part_info = dict(
             x=MotorInfo(
@@ -76,21 +76,18 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 current_position=0.0)
         )
         completed_steps = 0
-        if levels == 1:
-            steps_to_do = 3
-        else:
-            steps_to_do = 6
+        steps_to_do = 3 * len(axes_to_scan)
         params = Mock()
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         mutator = FixedDurationMutator(1.0)
         params.generator = CompoundGenerator([ys, xs], [], [mutator])
-        params.levels = levels
+        params.axesToMove = axes_to_scan
         self.o.configure(task, completed_steps, steps_to_do, part_info, params)
         return task
 
     def test_configure(self):
-        task = self.do_configure(levels=2)
+        task = self.do_configure(axes_to_scan=["x", "y"])
         self.assertEqual(task.put.call_count, 4)
         self.assertEqual(task.post.call_count, 2)
         self.assertEqual(task.post_async.call_count, 1)
@@ -138,7 +135,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         task.post.assert_called_once_with(self.child["execute_profile"])
 
     def test_build_next_stage(self):
-        task = self.do_configure(levels=1)
+        task = self.do_configure(axes_to_scan=["x"])
         self.assertEqual(self.o.completed_steps_lookup,
                          [0, 0, 1, 1, 2, 2, 3, 3])
         task = Mock()

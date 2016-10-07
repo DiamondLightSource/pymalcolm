@@ -3,19 +3,23 @@ from collections import OrderedDict
 from malcolm.controllers.managercontroller import ManagerController
 from malcolm.core import RunnableStateMachine, REQUIRED, method_returns, \
     method_writeable_in, method_takes, ElementMap, Task, Hook
-from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta
+from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, StringArrayMeta
 
 
 sm = RunnableStateMachine
 
 configure_args = [
     "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-    "levels", NumberMeta(
-        "uint32", "Generator levels to move (starting from bottom)"), REQUIRED]
+    "axesToMove", StringArrayMeta(
+        "List of axes in inner dimension of generator that should be moved"),
+    []]
 
 
 @sm.insert
-@method_takes()
+@method_takes(
+    "axesToMove", StringArrayMeta("Default value for configure() axesToMove"),
+    []
+)
 class RunnableController(ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # Hooks
@@ -30,9 +34,12 @@ class RunnableController(ManagerController):
     # Attributes
     completed_steps = None
     total_steps = None
+    axes_to_move = None
 
     # Params passed to configure()
     configure_params = None
+
+    # Stored for pause
     steps_per_run = 0
     steps_configured = 0
 
@@ -51,8 +58,17 @@ class RunnableController(ManagerController):
             "int32", "Readback of number of scan steps"
         ).make_attribute(0)
         yield "totalSteps", self.total_steps, None
+        self.axes_to_move = StringArrayMeta(
+            "Default axis names to scan for configure()"
+        ).make_attribute(self.params.axesToMove)
+        self.axes_to_move.meta.set_writeable_in(sm.EDITABLE)
+        yield "axesToMove", self.axes_to_move, self.set_axes_to_move
 
-    def create_methods(self):
+    def do_reset(self):
+        super(RunnableController, self).do_reset()
+        self._update_configure_args()
+
+    def _update_configure_args(self):
         # Look for all parts that hook into Configuring
         configure_funcs = self.Configuring.find_hooked_functions(self.parts)
         takes_elements = OrderedDict()
@@ -66,15 +82,18 @@ class RunnableController(ManagerController):
         takes_elements.update(
             RunnableController.configure.MethodMeta.takes.elements.to_dict())
         takes = ElementMap(takes_elements)
+        defaults["axesToMove"] = self.axes_to_move.value
 
         # Decorate validate and configure with the sum of its parts
         # No need to copy as the superclass _set_block_children does this
-        self.validate.MethodMeta.takes.set_elements(takes)
-        self.validate.MethodMeta.set_defaults(defaults)
-        self.configure.MethodMeta.takes.set_elements(takes)
-        self.validate.MethodMeta.set_defaults(defaults)
+        self.block["validate"].takes.set_elements(takes)
+        self.block["validate"].set_defaults(defaults)
+        self.block["configure"].takes.set_elements(takes)
+        self.block["configure"].set_defaults(defaults)
 
-        return super(ManagerController, self).create_methods()
+    def set_axes_to_move(self, value):
+        self.axes_to_move.set_value(value)
+        self._update_configure_args()
 
     @method_takes(*configure_args)
     @method_returns(
@@ -82,11 +101,11 @@ class RunnableController(ManagerController):
         REQUIRED,
         "runTime", NumberMeta("float64", "Estimated run() time"), REQUIRED
     )
-    def validate(self, params, _):
-        self.do_validate(params)
+    def validate(self, params, returns):
+        self.do_validate(params, returns)
         return params
 
-    def do_validate(self, params):
+    def do_validate(self, params, returns):
         raise NotImplementedError()
 
     @method_takes(*configure_args)
@@ -100,7 +119,7 @@ class RunnableController(ManagerController):
             self.configure_params = params
             self.total_steps.set_value(params.generator.num)
             self.steps_per_run = self._get_steps_per_run(
-                params.generator, params.levels)
+                params.generator, params.axesToMove)
 
             # Do the actual configure
             self.do_configure(completed_steps=0, steps_to_do=self.steps_per_run)
@@ -110,10 +129,20 @@ class RunnableController(ManagerController):
             self.transition(sm.FAULT, str(e))
             raise
 
-    def _get_steps_per_run(self, generator, levels):
+    def _get_steps_per_run(self, generator, axes_to_move):
         steps = 1
-        for i in range(levels):
-            for dim in generator.generators[-i-1].index_dims:
+        axes_set = set(axes_to_move)
+        for g in reversed(generator.generators):
+            # If the axes_set is empty then we are done
+            if not axes_set:
+                break
+            # Consume the axes that this generator scans
+            for axis in g.position_units:
+                assert axis in axes_set, \
+                    "Axis %s is not in %s" % (axis, axes_to_move)
+                axes_set.remove(axis)
+            # Now multiply by the dimensions to get the number of steps
+            for dim in g.index_dims:
                 steps *= dim
         return steps
 
