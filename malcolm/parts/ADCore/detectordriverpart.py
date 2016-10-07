@@ -2,9 +2,14 @@ from malcolm.core import method_takes, REQUIRED
 from malcolm.core.vmetas import PointGeneratorMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
 from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.parts.ADCore.hdfwriterpart import DatasetInfo
 
 
 class DetectorDriverPart(LayoutPart):
+    @RunnableController.Report
+    def report_info(self, _):
+        return [DatasetInfo("detector", "primary")]
+
     @RunnableController.Configuring
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED)

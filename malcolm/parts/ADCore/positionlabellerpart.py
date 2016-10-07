@@ -96,8 +96,9 @@ class PositionLabellerPart(LayoutPart):
             task (Task): The task helper
         """
         self.loading = False
-        task.subscribe(self.child["qty"], self.load_more_positions, task)
+        id_ = task.subscribe(self.child["qty"], self.load_more_positions, task)
         task.wait_all(self.start_future)
+        task.unsubscribe(id_)
 
     def load_more_positions(self, number_left, task):
         if not self.loading and number_left < POSITIONS_PER_XML and \
