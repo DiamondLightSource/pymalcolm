@@ -48,4 +48,5 @@ class CAActionPart(Part):
                 catools.caget, self.params.status_pv,
                 datatype=catools.DBR_STRING)
             assert value == self.params.good_status, \
-                "Action failed with status %r" % (value,)
+                "Action '%s %s %s' failed with status %r" % (
+                    cmd, self.params.pv, self.params.value, value)
