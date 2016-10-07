@@ -62,15 +62,6 @@ class PMACTrajectoryPart(LayoutPart):
             update_completed_steps)
         task.post(self.child["execute_profile"])
 
-    @RunnableController.PostRun
-    def build_next_stage(self, task, completed_steps, steps_to_do):
-        if steps_to_do:
-            futures = self.move_to_start(task, completed_steps)
-            self.completed_steps_lookup, profile = self.build_generator_profile(
-                completed_steps, steps_to_do)
-            task.wait_all(futures)
-            self.build_profile(task, **profile)
-
     @RunnableController.Aborting
     def stop_execution(self, task):
         task.post(self.child["abort_profile"])
