@@ -59,6 +59,7 @@
     description: Demand for stopping acquisition
     pv: $(prefix):Running
     value: 0
+    wait: False
 
 - parts.ca.CABooleanPart:
     name: running

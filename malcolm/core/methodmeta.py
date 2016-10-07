@@ -110,6 +110,7 @@ class MethodMeta(Meta):
         else:
             # Copy it in case we are subclassing
             method = MethodMeta.from_dict(func.MethodMeta.to_dict())
+            method.writeable_in = func.MethodMeta.writeable_in
 
         func.MethodMeta = method
         method.set_logger_name("%s.MethodMeta" % func.__name__)

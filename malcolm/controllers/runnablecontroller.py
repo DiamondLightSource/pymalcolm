@@ -33,6 +33,7 @@ class RunnableController(ManagerController):
 
     # Attributes
     completed_steps = None
+    configured_steps = None
     total_steps = None
     axes_to_move = None
 
@@ -41,12 +42,16 @@ class RunnableController(ManagerController):
 
     # Stored for pause
     steps_per_run = 0
-    steps_configured = 0
 
     @method_writeable_in(sm.IDLE)
     def edit(self):
         # Override edit to only work from Idle
         super(RunnableController, self).edit()
+
+    @method_writeable_in(sm.FAULT, sm.DISABLED, sm.ABORTED, sm.READY)
+    def reset(self):
+        # Override reset to work from aborted and ready too
+        super(RunnableController, self).reset()
 
     def create_attributes(self):
         for data in super(RunnableController, self).create_attributes():
@@ -54,6 +59,9 @@ class RunnableController(ManagerController):
         self.completed_steps = NumberMeta(
             "int32", "Readback of number of scan steps").make_attribute(0)
         yield "completedSteps", self.completed_steps, None
+        self.configured_steps = NumberMeta(
+            "int32", "Number of steps currently configured").make_attribute(0)
+        yield "configuredSteps", self.configured_steps, None
         self.total_steps = NumberMeta(
             "int32", "Readback of number of scan steps"
         ).make_attribute(0)
@@ -153,13 +161,13 @@ class RunnableController(ManagerController):
         part_info = self.run_hook(self.Report, self.part_tasks)
         self.run_hook(self.Configuring, self.part_tasks, completed_steps,
                       steps_to_do, part_info, **self.configure_params)
-        self.steps_configured = completed_steps + steps_to_do
+        self.configured_steps.set_value(completed_steps + steps_to_do)
 
     @method_writeable_in(sm.READY)
     def run(self):
         try:
             self.transition(sm.PRERUN, "Preparing for run")
-            if self.steps_configured < self.total_steps.value:
+            if self.configured_steps.value < self.total_steps.value:
                 next_state = sm.READY
             else:
                 next_state = sm.IDLE
@@ -185,9 +193,8 @@ class RunnableController(ManagerController):
                 # Wait to be restarted
                 self.log_debug("Waiting for PreRun")
                 task = Task("StateWaiter", self.process)
-                futures = task.when_matches(self.state, sm.PRERUN, [
+                task.when_matches(self.state, sm.PRERUN, [
                     sm.DISABLING, sm.ABORTING, sm.FAULT])
-                task.wait_all(futures)
                 # Restart it
                 self.do_run()
             else:
@@ -201,13 +208,15 @@ class RunnableController(ManagerController):
         self.run_hook(
             self.Running, self.part_tasks, self.update_completed_steps)
         self.transition(sm.POSTRUN, "Finishing run")
-        completed_steps = self.steps_configured
+        completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             steps_to_do = self.steps_per_run
         else:
             steps_to_do = 0
-        self.run_hook(self.PostRun, self.part_tasks, completed_steps,
-                      steps_to_do)
+        more_steps = steps_to_do > 0
+        self.run_hook(self.PostRun, self.part_tasks, more_steps)
+        if more_steps:
+            self.do_configure(completed_steps, steps_to_do)
 
     def update_completed_steps(self, completed_steps):
         # TODO: this shows the maximum of all completed_steps, should be min

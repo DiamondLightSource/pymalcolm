@@ -55,6 +55,7 @@
     description: Stop acquisition
     pv: $(prefix):Acquire
     value: 0
+    wait: False
 
 - parts.ca.CABooleanPart:
     name: acquiring

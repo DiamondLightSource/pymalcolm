@@ -5,15 +5,14 @@ import setup_malcolm_paths
 
 import unittest
 from mock import Mock, MagicMock, call, ANY
-import time
 
-from malcolm.core import Task, SyncFactory
-from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart
+from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart, DatasetInfo
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
 
 class TestHDFWriterPart(unittest.TestCase):
+    maxDiff = None
 
     def setUp(self):
         self.process = MagicMock()
@@ -28,6 +27,7 @@ class TestHDFWriterPart(unittest.TestCase):
         self.params.merit_attr = "StatsMean"
         self.process.get_block.return_value = self.child
         self.o = HDFWriterPart(self.process, self.params)
+        list(self.o.create_attributes())
 
     def test_init(self):
         self.process.get_block.assert_called_once_with(self.params.child)
@@ -41,8 +41,11 @@ class TestHDFWriterPart(unittest.TestCase):
         params.generator = CompoundGenerator([energy, spiral], [], [])
         params.filePath = "/path/to/file.h5"
         completed_steps = 0
-        steps_to_do = ANY
-        part_info = ANY
+        steps_to_do = 38
+        part_info = {
+            "DET": [DatasetInfo("detector", "primary")],
+            "STAT": [DatasetInfo("StatsTotal", "additional")],
+        }
         self.o.configure(task, completed_steps, steps_to_do, part_info, params)
         self.assertEqual(task.put.call_args_list, [
             call(self.child["positionMode"], True),
@@ -54,7 +57,9 @@ class TestHDFWriterPart(unittest.TestCase):
                 self.child["swmrMode"]: True,
                 self.child["positionMode"]: True,
                 self.child["dimAttDatasets"]: True,
-                self.child["lazyOpen"]: True}))
+                self.child["lazyOpen"]: True,
+                self.child["arrayCounter"]: 0,
+        }))
         self.assertEqual(task.put_async.call_args_list[1], call({
                 self.child["filePath"]: "/path/to/",
                 self.child["fileName"]: "file.h5",
@@ -85,8 +90,8 @@ class TestHDFWriterPart(unittest.TestCase):
 <hdf5_layout>
 <group name="entry">
 <attribute name="NX_class" source="constant" type="string" value="NXentry" />
-<group name="data">
-<attribute name="signal" source="constant" type="string" value="det1" />
+<group name="detector">
+<attribute name="signal" source="constant" type="string" value="detector" />
 <attribute name="axes" source="constant" type="string" value="energy_demand,x_y_Spiral_demand,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_demand_indices" source="constant" type="string" value="0" />
@@ -100,37 +105,46 @@ class TestHDFWriterPart(unittest.TestCase):
 <dataset name="y_demand" ndattribute="y" source="ndattribute">
 <attribute name="units" source="constant" type="string" value="mm" />
 </dataset>
-<dataset det_default="true" name="det1" source="detector">
+<dataset det_default="true" name="detector" source="detector">
 <attribute name="NX_class" source="constant" type="string" value="SDS" />
 </dataset>
 </group>
-<group name="StatsMean">
-<attribute name="signal" source="constant" type="string" value="StatsMean" />
+<group name="StatsTotal">
+<attribute name="signal" source="constant" type="string" value="StatsTotal" />
 <attribute name="axes" source="constant" type="string" value="energy_demand,x_y_Spiral_demand,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_demand_indices" source="constant" type="string" value="0" />
 <attribute name="x_y_Spiral_demand_indices" source="constant" type="string" value="1" />
-<hardlink name="energy_demand" target="/entry/data/energy_demand" />
-<hardlink name="x_demand" target="/entry/data/x_demand" />
-<hardlink name="y_demand" target="/entry/data/y_demand" />
-<dataset name="StatsMean" ndattribute="StatsMean" source="ndattribute" />
+<hardlink name="energy_demand" target="/entry/detector/energy_demand" />
+<hardlink name="x_demand" target="/entry/detector/x_demand" />
+<hardlink name="y_demand" target="/entry/detector/y_demand" />
+<dataset name="StatsTotal" ndattribute="StatsTotal" source="ndattribute" />
 </group>
 <group name="NDAttributes" ndattr_default="true">
 <attribute name="NX_class" source="constant" type="string" value="NXcollection" />
 </group>
 </group>
-</hdf5_layout>""".replace("\n", "")
-        self.assertEqual(task.put_async.call_args_list[3], call(
-               self.child["xml"], expected_xml))
+</hdf5_layout>"""
+        self.assertEqual(
+            task.put_async.call_args_list[3][0][1].replace(">", ">\n").splitlines(),
+            expected_xml.splitlines())
 
     def test_run(self):
-        list(self.o.create_attributes())
         task = MagicMock()
         update = MagicMock()
-        self.o.start_future = MagicMock()
+        self.o.done_when_reaches = 38
         self.o.run(task, update)
         task.subscribe.assert_called_once_with(
             self.child["uniqueId"], update)
+        task.when_matches.assert_called_once_with(
+            self.child["uniqueId"], 38)
+        task.unsubscribe.assert_called_once_with(
+            task.subscribe.return_value)
+
+    def test_post_run(self):
+        self.o.start_future = MagicMock()
+        task = MagicMock()
+        self.o.wait_until_closed(task, more_steps=False)
         task.wait_all.assert_called_once_with(self.o.start_future)
 
 

@@ -85,7 +85,7 @@ class CAPart(Part):
         self.monitor = cothread.CallbackResult(
             catools.camonitor, self.params.rbv, self.on_update,
             format=self.ca_format, datatype=self.get_datatype(),
-            notify_disconnect=True)
+            notify_disconnect=True, all_updates=True)
 
     @DefaultController.Disabling
     def close_monitor(self, _=None):

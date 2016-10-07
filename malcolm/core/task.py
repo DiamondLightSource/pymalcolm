@@ -41,7 +41,7 @@ class Task(Loggable, Spawnable):
         return new_id
 
     def put(self, attr_or_items, value=None, timeout=None):
-        """"puts a value or values into an attribute or attributes and returns
+        """"Puts a value or values into an attribute or attributes and returns
                 once all values have been set
 
             Args:
@@ -50,14 +50,12 @@ class Task(Loggable, Spawnable):
                 value (object): For single attr, the value set
                 timeout (Float) time in seconds to wait for responses, wait
                     forever if None
-
-            Returns:
-                 a list of futures to monitor when each put completes"""
+        """
         f = self.put_async(attr_or_items, value)
         self.wait_all(f, timeout=timeout)
 
     def put_async(self, attr_or_items, value=None):
-        """"puts a value or values into an attribute or attributes and returns
+        """"Puts a value or values into an attribute or attributes and returns
             immediately
 
             Args:
@@ -66,7 +64,8 @@ class Task(Loggable, Spawnable):
                 value (object): For single attr, the value set
 
             Returns:
-                 a list of futures to monitor when each put completes"""
+                 a list of futures to monitor when each put completes
+        """
         if value is not None:
             attr_or_items = {attr_or_items: value}
         result_f = []
@@ -102,7 +101,20 @@ class Task(Loggable, Spawnable):
             ret_val = future
         return ret_val
 
-    def when_matches(self, attr, value, bad_values=None):
+    def when_matches(self, attr, value, bad_values=None, timeout=None):
+        """ Wait for an attribute to become a given value
+
+            Args:
+                attr (Attribute): The attribute to wait for
+                value (object): the value to wait for
+                bad_values (list): values to raise an error on
+                timeout (Float) time in seconds to wait for responses, wait
+                    forever if None
+        """
+        futures = self.when_matches_async(attr, value, bad_values)
+        self.wait_all(futures, timeout)
+
+    def when_matches_async(self, attr, value, bad_values=None):
         """ Wait for an attribute to become a given value
 
             Args:
@@ -111,8 +123,8 @@ class Task(Loggable, Spawnable):
                 bad_values (list): values to raise an error on
 
             Returns: a list of one futures which will complete when
-                all attribute values match the input"""
-
+                all attribute values match the input
+        """
         f = Future(self)
         self._save_future(f)
         subscription_ids = []
@@ -136,7 +148,7 @@ class Task(Loggable, Spawnable):
 
         f = self.post_async(method, params)
         self.wait_all(f, timeout=timeout)
-
+        # TODO: should this be f.get?
         return f
 
     def post_async(self, method, params=None):

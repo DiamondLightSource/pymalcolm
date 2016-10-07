@@ -91,7 +91,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def test_server_hello_with_malcolm_client(self):
         block2 = ClientController('hello', self.process2).block
         task = Task("task", self.process2)
-        futures = task.when_matches(block2["state"], "Ready")
+        futures = task.when_matches_async(block2["state"], "Ready")
         task.wait_all(futures, timeout=1)
         ret = block2.say_hello("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
@@ -99,7 +99,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def test_server_counter_with_malcolm_client(self):
         block2 = ClientController('counter', self.process2).block
         task = Task("task", self.process2)
-        futures = task.when_matches(block2["state"], "Ready")
+        futures = task.when_matches_async(block2["state"], "Ready")
         task.wait_all(futures, timeout=1)
         self.assertEqual(block2.counter, 0)
         block2.increment()

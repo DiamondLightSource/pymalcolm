@@ -62,15 +62,6 @@ class PMACTrajectoryPart(LayoutPart):
             update_completed_steps)
         task.post(self.child["execute_profile"])
 
-    @RunnableController.PostRun
-    def build_next_stage(self, task, completed_steps, steps_to_do):
-        if steps_to_do:
-            futures = self.move_to_start(task, completed_steps)
-            self.completed_steps_lookup, profile = self.build_generator_profile(
-                completed_steps, steps_to_do)
-            task.wait_all(futures)
-            self.build_profile(task, **profile)
-
     @RunnableController.Aborting
     def stop_execution(self, task):
         task.post(self.child["abort_profile"])
@@ -154,7 +145,7 @@ class PMACTrajectoryPart(LayoutPart):
             trajectory[axis_name] = [start_pos]
             move_time = max(move_time, self.get_move_time(axis_name, start_pos))
 
-        if move_time == 0:
+        if move_time < 0.01:
             # Don't have to move anywhere
             return []
 
@@ -307,10 +298,6 @@ class PMACTrajectoryPart(LayoutPart):
         for axis_name, tail_off in self.run_up_positions(last_point).items():
             positions = trajectory[axis_name]
             positions.append(positions[-1] + tail_off)
-            # Store the last position in axis_mapping so that we can build
-            # generator for next stage if an external axis moved
-            self.axis_mapping[axis_name] = self.axis_mapping[axis_name]\
-                ._replace(current_position=positions[-1])
 
         profile = dict(time_array=time_array, velocity_mode=velocity_mode,
                        trajectory=trajectory, user_programs=user_programs)
