@@ -75,7 +75,8 @@ An Attribute looks like this::
 
     Table :=
 
-    malcolm:core/Table:1.0 // Not conformant to NTTable: labels
+    malcolm:core/NTTable:1.0 // Conformant but optional fields -> meta
+        string[]    labels
         TableValue  value
         alarm_t     alarm       :opt
         time_t      timeStamp   :opt
