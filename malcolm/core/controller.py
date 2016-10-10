@@ -107,9 +107,6 @@ class Controller(Loggable):
                 states = child.meta.writeable_in
             else:
                 states = child.writeable_in
-            if isinstance(child, MethodMeta):
-                # Make a copy otherwise all instances will own the same one
-                child = deserialize_object(child.to_dict())
             children[name] = child
             if states:
                 for state in states:

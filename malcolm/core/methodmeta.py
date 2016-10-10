@@ -212,4 +212,7 @@ def method_writeable_in(*states):
 def get_method_decorated(instance):
     for name, member in inspect.getmembers(instance, inspect.ismethod):
         if hasattr(member, "MethodMeta"):
-            yield name, member.MethodMeta, member
+            # Copy it so we get a new one for this instance
+            method = MethodMeta.from_dict(member.MethodMeta.to_dict())
+            method.writeable_in = member.MethodMeta.writeable_in
+            yield name, method, member

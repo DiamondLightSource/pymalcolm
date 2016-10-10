@@ -51,6 +51,7 @@ class Hook(object):
 
         return part_funcs
 
+
 def get_hook_decorated(part):
     for name, member in inspect.getmembers(part, inspect.ismethod):
         if hasattr(member, "Hook"):
