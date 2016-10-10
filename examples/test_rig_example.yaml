@@ -27,4 +27,21 @@
     m2: stage_y
     m3: stage_z
 
+- assemblies.ADCore.SimDetectorDriver:
+    name: MIC:DET
+    prefix: LAB-MO-MAP-02:MIC:DET
+
+- assemblies.ADCore.DetectorManager:
+    name: MIC
+    pvprefix: LAB-MO-MAP-02:MIC
+    mriprefix: MIC
+    mridet: MIC:DET
+
+- assemblies.demo.TestRigManager:
+    name: SCAN
+    mic: MIC
+    brick: brick1
+
 - comms.pva.PvaServerComms:
+
+

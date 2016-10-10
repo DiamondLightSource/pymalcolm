@@ -1,41 +1,20 @@
 - parameters.string:
-    name: mridet
-    description: Malcolm name of the detector object
+    name: mic
+    description: MRI for microscope DetectorManager object
 
 - parameters.string:
-    name: pvprefix
-    description: PV prefix for all the other plugins
-
-- parameters.string:
-    name: mriprefix
-    description: Prefix for malcolm part names
+    name: brick
+    description: MRI for brick DetectorManager object
 
 - controllers.RunnableController:
 
-- parts.ADCore.DetectorDriverPart:
-    name: DET
-    child: $(mridet)
+- parts.ADCore.DatasetTablePart:
+    name: DSET
 
-- assemblies.ADCore.PositionLabeller:
-    name: $(mriprefix):POS
-    prefix: $(pvprefix):POS
+- parts.builtin.RunnablePart:
+    name: mic
+    child: $(mic)
 
-- parts.ADCore.PositionLabellerPart:
-    name: POS
-    child: $(mriprefix):POS
-
-- assemblies.ADCore.StatsPlugin:
-    name: $(mriprefix):STAT
-    prefix: $(pvprefix):STAT
-
-- parts.ADCore.StatsPluginPart:
-    name: STAT
-    child: $(mriprefix):STAT
-
-- assemblies.ADCore.HDFWriter:
-    name: $(mriprefix):HDF
-    prefix: $(pvprefix):HDF5
-
-- parts.ADCore.HDFWriterPart:
-    name: HDF
-    child: $(mriprefix):HDF
+- parts.builtin.RunnablePart:
+    name: brick
+    child: $(brick)

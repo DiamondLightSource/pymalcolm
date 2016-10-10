@@ -1,6 +1,6 @@
 from collections import OrderedDict, namedtuple
 
-from malcolm.core import Part, Table
+from malcolm.core import Part, Table, method_takes
 from malcolm.core.vmetas import StringArrayMeta, ChoiceArrayMeta, TableMeta
 from malcolm.controllers.runnablecontroller import RunnableController
 
@@ -17,6 +17,7 @@ dataset_table_meta = TableMeta("Datsets produced in HDF file", columns=columns)
 DatasetProducedInfo = namedtuple("DatasetProducedInfo", columns)
 
 
+@method_takes()
 class DatasetTablePart(Part):
     # Created attributes
     datasets = None
@@ -32,7 +33,8 @@ class DatasetTablePart(Part):
         # Update the dataset table
         datasets_table = Table(dataset_table_meta)
         for dataset_infos in part_info.values():
-            for dataset_info in dataset_infos:
-                row = list(dataset_info)
-                datasets_table.append(row)
+            if dataset_infos is not None:
+                for dataset_info in dataset_infos:
+                    row = list(dataset_info)
+                    datasets_table.append(row)
         self.datasets.set_value(datasets_table)
