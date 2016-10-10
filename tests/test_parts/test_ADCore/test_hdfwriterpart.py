@@ -6,7 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, MagicMock, call, ANY
 
-from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart, DatasetInfo
+from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart, DatasetSourceInfo
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
@@ -24,7 +24,6 @@ class TestHDFWriterPart(unittest.TestCase):
         self.child.__getitem__.side_effect = getitem
 
         self.params = MagicMock()
-        self.params.merit_attr = "StatsMean"
         self.process.get_block.return_value = self.child
         self.o = HDFWriterPart(self.process, self.params)
         list(self.o.create_attributes())
@@ -43,8 +42,8 @@ class TestHDFWriterPart(unittest.TestCase):
         completed_steps = 0
         steps_to_do = 38
         part_info = {
-            "DET": [DatasetInfo("detector", "primary")],
-            "STAT": [DatasetInfo("StatsTotal", "additional")],
+            "DET": [DatasetSourceInfo("detector", "primary")],
+            "STAT": [DatasetSourceInfo("StatsTotal", "additional")],
         }
         self.o.configure(task, completed_steps, steps_to_do, part_info, params)
         self.assertEqual(task.put.call_args_list, [
