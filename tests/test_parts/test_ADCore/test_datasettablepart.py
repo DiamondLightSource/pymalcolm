@@ -6,7 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import MagicMock
 
-from malcolm.parts.ADCore.datasetreportingpart import DatasetReportingPart, \
+from malcolm.parts.ADCore.datasettablepart import DatasetTablePart, \
     DatasetProducedInfo
 
 
@@ -16,7 +16,7 @@ class TestDatasetReportingPart(unittest.TestCase):
         self.process = MagicMock()
         self.child = MagicMock()
         self.params = MagicMock()
-        self.o = DatasetReportingPart(self.process, self.params)
+        self.o = DatasetTablePart(self.process, self.params)
         list(self.o.create_attributes())
 
     def test_init(self):

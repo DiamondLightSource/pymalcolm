@@ -7,7 +7,7 @@ from malcolm.core import method_takes, REQUIRED, Task
 from malcolm.core.vmetas import BooleanMeta, StringMeta, PointGeneratorMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.ADCore.datasetreportingpart import DatasetProducedInfo
+from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
 
 
 SUFFIXES = "NXY3456789"

@@ -12,9 +12,6 @@
 
 - controllers.RunnableController:
 
-- parts.ADCore.DatasetTablePart:
-    name: DSET
-
 - parts.ADCore.DetectorDriverPart:
     name: DET
     child: $(mridet)

@@ -1,4 +1,0 @@
-- assemblies.demo.DummyPMAC:
-    name: pmac1
-
-- comms.pva.PvaServerComms:

@@ -17,12 +17,12 @@ dataset_table_meta = TableMeta("Datsets produced in HDF file", columns=columns)
 DatasetProducedInfo = namedtuple("DatasetProducedInfo", columns)
 
 
-class DatasetReportingPart(Part):
+class DatasetTablePart(Part):
     # Created attributes
     datasets = None
 
     def create_attributes(self):
-        for data in super(DatasetReportingPart, self).create_attributes():
+        for data in super(DatasetTablePart, self).create_attributes():
             yield data
         self.datasets = dataset_table_meta.make_attribute()
         yield "datasets", self.datasets, None
