@@ -1,0 +1,20 @@
+- parameters.string:
+    name: mic
+    description: MRI for microscope DetectorManager object
+
+- parameters.string:
+    name: brick
+    description: MRI for brick DetectorManager object
+
+- controllers.RunnableController:
+
+- parts.ADCore.DatasetTablePart:
+    name: DSET
+
+- parts.builtin.RunnablePart:
+    name: mic
+    child: $(mic)
+
+- parts.builtin.RunnablePart:
+    name: brick
+    child: $(brick)

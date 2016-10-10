@@ -11,6 +11,7 @@ from mock import MagicMock, call, ANY
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
+from malcolm.core import MethodMeta
 from malcolm.core.controller import Controller
 from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta
 
@@ -42,34 +43,31 @@ class TestController(unittest.TestCase):
         self.c.register_child_writeable(m, "Ready")
         self.assertEqual(self.c.children_writeable['Ready'][m], True)
 
+    def make_part_tasks(self, hook, func):
+        task = MagicMock()
+        part = MagicMock(configure=func)
+        part_tasks = {part: task}
+        hook_queue = self.c.process.create_queue.return_value
+        task_return = self.c.make_task_return_value_function(hook_queue)
+        task_return(func, None, task)
+        hook_queue.get.return_value = hook_queue.put.call_args[0][0]
+        hook.find_hooked_functions.return_value = {"test_part": "configure"}
+        self.c.hook_names = {hook: "test_hook"}
+        self.c.parts = {"test_part": part}
+        return part_tasks
+
     def test_run_hook(self):
         hook = MagicMock()
         func = MagicMock()
         func.return_value = {"foo": "bar"}
-        task = MagicMock()
-        part = MagicMock()
-        part_tasks = {part: task}
-        hook_queue = self.c.process.create_queue.return_value
-        hook_queue.get.return_value = (func, func.return_value)
-        hook.find_func_tasks.return_value = {func: task}
-        self.c.hook_names = {hook: "test_hook"}
-        self.c.parts = {"test_part": part}
+        part_tasks = self.make_part_tasks(hook, func)
         result = self.c.run_hook(hook, part_tasks)
         self.assertEquals(result, dict(test_part=dict(foo="bar")))
 
     def test_run_hook_raises(self):
         hook = MagicMock()
         func = MagicMock(side_effect=Exception("Test Exception"))
-        task = MagicMock()
-        part = MagicMock()
-        hook_tasks = {func:task}
-        part_tasks = {part:task}
-        hook_queue = self.c.process.create_queue.return_value
-        hook_queue.get.return_value = (func, func.side_effect)
-        hook.find_func_tasks.return_value = {func:task}
-        self.c.test_hook = hook
-        self.c.hook_names = {hook:"test_hook"}
-        self.c.parts = {"test_part":part}
+        part_tasks = self.make_part_tasks(hook, func)
 
         with self.assertRaises(Exception) as cm:
             self.c.run_hook(hook, part_tasks)

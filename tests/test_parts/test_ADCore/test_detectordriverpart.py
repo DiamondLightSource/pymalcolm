@@ -25,6 +25,7 @@ class TestSimDetectorDriverPart(unittest.TestCase):
         self.params = MagicMock()
         self.process.get_block.return_value = self.child
         self.o = DetectorDriverPart(self.process, self.params)
+        list(self.o.create_attributes())
 
     def test_init(self):
         self.process.get_block.assert_called_once_with(self.params.child)
@@ -42,12 +43,13 @@ class TestSimDetectorDriverPart(unittest.TestCase):
         part_info = ANY
         self.o.configure(task, completed_steps, steps_to_do, part_info, params)
         task.put.assert_called_once_with({
-            self.child["exposure"]: 0.1,
+            self.child["exposure"]: 0.1 - 0.002,
             self.child["imageMode"]: "Multiple",
             self.child["numImages"]: steps_to_do,
             self.child["arrayCounter"]: completed_steps,
             self.child["arrayCallbacks"]: True,
         })
+        list(self.o.create_attributes())
 
     def test_run(self):
         task = MagicMock()

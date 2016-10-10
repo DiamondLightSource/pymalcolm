@@ -1,27 +1,19 @@
 import os
 from xml.etree import cElementTree as ET
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 
 from malcolm.compat import et_to_string
-from malcolm.core import method_takes, REQUIRED, Task, Table
-from malcolm.core.vmetas import BooleanMeta, StringMeta, PointGeneratorMeta, \
-    StringArrayMeta, ChoiceArrayMeta, TableMeta
+from malcolm.core import method_takes, REQUIRED, Task
+from malcolm.core.vmetas import BooleanMeta, StringMeta, PointGeneratorMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
 from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
+
 
 SUFFIXES = "NXY3456789"
 
-# Make a table for the dataset info we produce
-columns = OrderedDict()
-columns["name"] = StringArrayMeta("Dataset name")
-columns["filename"] = StringArrayMeta("Filename of HDF file")
-columns["type"] = ChoiceArrayMeta("Type of dataset", ["primary", "additional"])
-columns["path"] = StringArrayMeta("Dataset path within HDF file")
-columns["uniqueid"] = StringArrayMeta("UniqueID array path within HDF file")
-dataset_table_meta = TableMeta("Datsets produced in HDF file", columns=columns)
-
 # Produced by plugins in part_info
-DatasetInfo = namedtuple("DatasetInfo", "name,type")
+DatasetSourceInfo = namedtuple("DatasetSourceInfo", "name,type")
 
 
 class HDFWriterPart(LayoutPart):
@@ -33,22 +25,19 @@ class HDFWriterPart(LayoutPart):
     array_future = None
     done_when_reaches = 0
 
-    def create_attributes(self):
-        for data in super(HDFWriterPart, self).create_attributes():
-            yield data
-        self.datasets = dataset_table_meta.make_attribute()
-        yield "datasets", self.datasets, None
-
-    def _update_datasets_table(self, part_info, file_path):
+    def _create_dataset_infos(self, part_info, file_path):
         # Update the dataset table
-        datasets = Table(dataset_table_meta)
+        ret = []
         for dataset_infos in part_info.values():
             for dataset_info in dataset_infos:
-                path = "/entry/%s/%s" % (dataset_info.name, dataset_info.name)
-                datasets.append([
-                    dataset_info.name, file_path, dataset_info.type, path,
-                    "/entry/NDAttributes/NDArrayUniqueId"])
-        self.datasets.set_value(datasets)
+                path = "/entry/%s/%s" % (dataset_info.name, dataset_info.name),
+                ret.append(DatasetProducedInfo(
+                    name=dataset_info.name,
+                    filename=file_path,
+                    type=dataset_info.type,
+                    path=path,
+                    uniqueid="/entry/NDAttributes/NDArrayUniqueId"))
+        return ret
 
     @RunnableController.Configuring
     @method_takes(
@@ -73,7 +62,6 @@ class HDFWriterPart(LayoutPart):
             futures += self._set_file_path(task, params.filePath)
             futures += self._set_dimensions(task, params.generator)
             xml = self._make_layout_xml(params.generator, part_info)
-            self._update_datasets_table(part_info, params.filePath)
             futures += task.put_async(self.child["xml"], xml)
             # Wait for the previous puts to finish
             task.wait_all(futures)
@@ -87,6 +75,9 @@ class HDFWriterPart(LayoutPart):
         # Start a future waiting for the first array
         self.array_future = task.when_matches_async(
             self.child["arrayCounter"], 1)
+        # Return the dataset information
+        dataset_infos = self._create_dataset_infos(part_info, params.filePath)
+        return dataset_infos
 
     @RunnableController.Running
     def run(self, task, update_completed_steps):
@@ -98,6 +89,7 @@ class HDFWriterPart(LayoutPart):
         id_ = task.subscribe(self.child["uniqueId"], update_completed_steps)
         # TODO: what happens if we miss the last frame?
         task.when_matches(self.child["uniqueId"], self.done_when_reaches)
+        # TODO: why do we need this? Tasks should have been recreated...
         task.unsubscribe(id_)
 
     @RunnableController.PostRun

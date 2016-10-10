@@ -34,7 +34,7 @@ class TestPart(unittest.TestCase):
     def test_non_hooked_methods(self):
         p = MyPart(Mock(), Mock())
         methods = list(p.create_methods())
-        self.assertEqual(methods, [("bar", p.bar.MethodMeta, p.bar)])
+        self.assertEqual(methods, [("bar", p.method_metas["bar"], p.bar)])
 
 
 if __name__ == "__main__":

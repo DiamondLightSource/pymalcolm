@@ -4,7 +4,7 @@ from malcolm.parts.pmac.pmactrajectorypart import MotorInfo
 
 
 class RawMotorPart(LayoutPart):
-    @RunnableController.Report
+    @RunnableController.PreConfigure
     def report_cs_info(self, _):
         motor_info = MotorInfo(
             cs_axis=self.child.cs_axis,

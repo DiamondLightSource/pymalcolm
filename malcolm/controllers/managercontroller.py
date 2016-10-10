@@ -10,15 +10,6 @@ from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, \
 
 sm = ManagerStateMachine
 
-# Make a table for the layout info we need
-columns = OrderedDict()
-columns["name"] = StringArrayMeta("Name of layout part")
-columns["mri"] = StringArrayMeta("Malcolm full name of child block")
-columns["x"] = NumberArrayMeta("float64", "X Co-ordinate of child block")
-columns["y"] = NumberArrayMeta("float64", "X Co-ordinate of child block")
-columns["visible"] = BooleanArrayMeta("Whether child block is visible")
-layout_table_meta = TableMeta("Layout of child blocks", columns=columns)
-
 # A class to hold the information about the layout of a part
 PartLayout = namedtuple("PartLayout", "mri,x,y,visible")
 
@@ -46,8 +37,16 @@ class ManagerController(DefaultController):
     def create_attributes(self):
         for data in super(ManagerController, self).create_attributes():
             yield data
+        # Make a table for the layout info we need
+        columns = OrderedDict()
+        columns["name"] = StringArrayMeta("Name of layout part")
+        columns["mri"] = StringArrayMeta("Malcolm full name of child block")
+        columns["x"] = NumberArrayMeta("float64", "X Coordinate of child block")
+        columns["y"] = NumberArrayMeta("float64", "Y Coordinate of child block")
+        columns["visible"] = BooleanArrayMeta("Whether child block is visible")
+        layout_table_meta = TableMeta("Layout of child blocks", columns=columns)
+        layout_table_meta.set_writeable_in(sm.EDITING)
         self.layout = layout_table_meta.make_attribute()
-        self.layout.meta.set_writeable_in(sm.EDITING)
         yield "layout", self.layout, self.set_layout
         self.layout_name = StringMeta(
             "Saved layout name to load").make_attribute()
@@ -56,7 +55,7 @@ class ManagerController(DefaultController):
 
     def do_reset(self):
         super(ManagerController, self).do_reset()
-        self.set_layout(Table(layout_table_meta))
+        self.set_layout(Table(self.layout.meta))
 
     @method_writeable_in(sm.EDITABLE)
     def edit(self):
@@ -133,7 +132,7 @@ class ManagerController(DefaultController):
             self.ListOutports, self.create_part_tasks())
         part_layouts = self.run_hook(
             self.UpdateLayout, self.create_part_tasks(), part_outports, value)
-        layout_table = Table(layout_table_meta)
+        layout_table = Table(self.layout.meta)
         for name, part_layout in part_layouts.items():
             layout_table.append((name,) + part_layout)
         self.layout.set_value(layout_table)

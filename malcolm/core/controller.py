@@ -107,9 +107,6 @@ class Controller(Loggable):
                 states = child.meta.writeable_in
             else:
                 states = child.writeable_in
-            if isinstance(child, MethodMeta):
-                # Make a copy otherwise all instances will own the same one
-                child = deserialize_object(child.to_dict())
             children[name] = child
             if states:
                 for state in states:
@@ -210,7 +207,11 @@ class Controller(Loggable):
                 for ename in child.takes.elements:
                     meta = child.takes.elements[ename]
                     self.add_change(changes, meta, "writeable", writeable)
-            self.add_change(changes, child, "writeable", writeable)
+            try:
+                self.add_change(changes, child, "writeable", writeable)
+            except ValueError:
+                self.log_exception("%s %s", name, child)
+                raise
 
         self.log_debug("Transitioning to %s", state)
         self.block.apply_changes(*changes)
@@ -235,20 +236,23 @@ class Controller(Loggable):
         return part_tasks
 
     def run_hook(self, hook, part_tasks, *args, **params):
-        hook_queue, func_tasks, task_part_names = self.start_hook(
+        hook_queue, task_part_names = self.start_hook(
             hook, part_tasks, *args, **params)
-        return_dict = self.wait_hook(hook_queue, func_tasks, task_part_names)
+        return_dict = self.wait_hook(hook_queue, task_part_names)
         return return_dict
 
     def make_task_return_value_function(self, hook_queue, *args, **params):
 
-        def task_return(func, task):
+        def task_return(func, method_meta, task):
             filtered_params = {}
+            if method_meta is None:
+                method_meta = MethodMeta()
+                method_meta.set_logger_name("MethodMeta")
             for k, v in params.items():
-                if k in func.MethodMeta.takes.elements:
+                if k in method_meta.takes.elements:
                     filtered_params[k] = v
             try:
-                result = func.MethodMeta.call_post_function(
+                result = method_meta.call_post_function(
                     func, filtered_params, task, *args)
             except StopIteration as e:
                 self.log_debug("%s has been aborted", func)
@@ -257,7 +261,7 @@ class Controller(Loggable):
                 self.log_exception("%s %s raised exception", func, params)
                 result = e
             self.log_debug("Putting %r on queue", result)
-            hook_queue.put((func, result))
+            hook_queue.put((task, result))
 
         return task_return
 
@@ -268,40 +272,38 @@ class Controller(Loggable):
         self.log_debug("Running %s hook", self.hook_names[hook])
 
         # ask the hook to find the functions it should run
-        func_tasks = hook.find_func_tasks(part_tasks)
+        part_funcs = hook.find_hooked_functions(self.parts)
 
         # now start them off
+        task_part_names = {}
         hook_queue = self.process.create_queue()
-        task_return = self.make_task_return_value_function(
-            hook_queue, *args, **params)
-
-        for func, task in func_tasks.items():
-            task.define_spawn_function(task_return, func, task)
+        for part_name, func_name in part_funcs.items():
+            part = self.parts[part_name]
+            func = getattr(part, func_name)
+            method_meta = part.method_metas.get(func_name, None)
+            task_return = self.make_task_return_value_function(
+                hook_queue, *args, **params)
+            task = part_tasks[part]
+            task_part_names[task] = part_name
+            task.define_spawn_function(task_return, func, method_meta, task)
             self.log_debug("Starting task %r", task)
             task.start()
 
-        # Create the reverse dictionary so we know where to store the results
-        task_part_names = {}
-        for part_name, part in self.parts.items():
-            if part in part_tasks:
-                task_part_names[part_tasks[part]] = part_name
+        return hook_queue, task_part_names
 
-        return hook_queue, func_tasks, task_part_names
-
-    def wait_hook(self, hook_queue, func_tasks, task_part_names):
+    def wait_hook(self, hook_queue, task_part_names):
         # Wait for them all to finish
         return_dict = {}
-        while func_tasks:
-            func, ret = hook_queue.get()
-            task = func_tasks.pop(func)
-            part_name = task_part_names[task]
+        while task_part_names:
+            task, ret = hook_queue.get()
+            part_name = task_part_names.pop(task)
             return_dict[part_name] = ret
 
             if isinstance(ret, Exception):
                 # Stop all other tasks
-                for task in func_tasks.values():
+                for task in task_part_names:
                     task.stop()
-                for task in func_tasks.values():
+                for task in task_part_names:
                     task.wait()
 
             # If we got a StopIteration, someone asked us to stop, so

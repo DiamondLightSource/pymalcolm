@@ -8,6 +8,7 @@ class Part(Loggable):
 
     def __init__(self, process, params=None):
         self.process = process
+        self.method_metas = {}
         self.store_params(params)
 
     def store_params(self, params):
@@ -16,6 +17,7 @@ class Part(Loggable):
     def create_methods(self):
         hooked = [name for (name, _, _) in get_hook_decorated(self)]
         for name, method_meta, func in get_method_decorated(self):
+            self.method_metas[name] = method_meta
             if name not in hooked:
                 yield name, method_meta, func
 
