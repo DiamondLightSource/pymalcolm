@@ -23,9 +23,10 @@ configure_args = [
 class RunnableController(ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # Hooks
-    Report = Hook()
     Validate = Hook()
+    PreConfigure = Hook()
     Configuring = Hook()
+    PostConfigure = Hook()
     PreRun = Hook()
     Running = Hook()
     PostRun = Hook()
@@ -155,12 +156,17 @@ class RunnableController(ManagerController):
         return steps
 
     def do_configure(self, completed_steps, steps_to_do):
+        # Ask all parts to prepare for configure, and report any relevant
+        # info to other parts
+        part_info = self.run_hook(self.PreConfigure, self.part_tasks)
+        # Run the configure command on all parts, passing them info from
+        # PreConfigure. Parts should return any reporting info for PostConfigure
+        part_info = self.run_hook(self.Configuring, self.part_tasks,
+                                  completed_steps, steps_to_do, part_info,
+                                  **self.configure_params)
+        # Take configuration info and reflect it as attribute updates
+        self.run_hook(self.PostConfigure, self.part_tasks, part_info)
         self.completed_steps.set_value(completed_steps)
-        # Ask all parts to report relevant info and pass results to anyone
-        # who cares
-        part_info = self.run_hook(self.Report, self.part_tasks)
-        self.run_hook(self.Configuring, self.part_tasks, completed_steps,
-                      steps_to_do, part_info, **self.configure_params)
         self.configured_steps.set_value(completed_steps + steps_to_do)
 
     @method_writeable_in(sm.READY)
@@ -196,17 +202,18 @@ class RunnableController(ManagerController):
                 task.when_matches(self.state, sm.PRERUN, [
                     sm.DISABLING, sm.ABORTING, sm.FAULT])
                 # Restart it
-                self.do_run()
+                self.do_run(resume=True)
             else:
                 # just drop out
                 self.log_debug("We were aborted")
                 raise
 
-    def do_run(self):
+    def do_run(self, resume=False):
         self.run_hook(self.PreRun, self.part_tasks)
         self.transition(sm.RUNNING, "Waiting for scan to complete")
         self.run_hook(
-            self.Running, self.part_tasks, self.update_completed_steps)
+            self.Running, self.part_tasks, self.update_completed_steps,
+            resume=resume)
         self.transition(sm.POSTRUN, "Finishing run")
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:

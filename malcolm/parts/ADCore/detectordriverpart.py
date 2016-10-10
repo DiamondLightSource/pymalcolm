@@ -2,13 +2,13 @@ from malcolm.core import method_takes, REQUIRED
 from malcolm.core.vmetas import PointGeneratorMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.ADCore.hdfwriterpart import DatasetInfo
+from malcolm.parts.ADCore.hdfwriterpart import DatasetSourceInfo
 
 
 class DetectorDriverPart(LayoutPart):
-    @RunnableController.Report
+    @RunnableController.PreConfigure
     def report_info(self, _):
-        return [DatasetInfo("detector", "primary")]
+        return [DatasetSourceInfo("detector", "primary")]
 
     @RunnableController.Configuring
     @method_takes(
