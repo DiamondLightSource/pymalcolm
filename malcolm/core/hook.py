@@ -25,29 +25,16 @@ class Hook(object):
         MethodMeta.wrap_method(func)
         return func
 
-    def find_func_tasks(self, part_tasks):
-        # {func: Task}
-        func_tasks = {}
-
-        # Filter part tasks so that we only run the ones hooked to us
-        for part, task in part_tasks.items():
-            for func_name, part_hook, func in get_hook_decorated(part):
-                if part_hook is self:
-                    assert func not in func_tasks, \
-                        "Function %s is second defined for a hook" % func_name
-                    func_tasks[func] = task
-
-        return func_tasks
-
     def find_hooked_functions(self, parts):
-        # Filter part tasks so that we only run the ones hooked to us
-        # {part_name: func}
+        # Filter part dict to find parts that have a function hooked to us
         part_funcs = {}
 
         for part_name, part in parts.items():
             for func_name, part_hook, func in get_hook_decorated(part):
                 if part_hook is self:
-                    part_funcs[part_name] = func
+                    assert part_name not in part_funcs, \
+                        "Function %s is second defined for a hook" % func_name
+                    part_funcs[part_name] = func_name
 
         return part_funcs
 

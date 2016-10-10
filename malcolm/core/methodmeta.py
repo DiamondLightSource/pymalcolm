@@ -113,8 +113,6 @@ class MethodMeta(Meta):
             method.writeable_in = func.MethodMeta.writeable_in
 
         func.MethodMeta = method
-        method.set_logger_name("%s.MethodMeta" % func.__name__)
-
         return func
 
 
@@ -214,5 +212,7 @@ def get_method_decorated(instance):
         if hasattr(member, "MethodMeta"):
             # Copy it so we get a new one for this instance
             method = MethodMeta.from_dict(member.MethodMeta.to_dict())
+            method.set_logger_name("%s.%s.MethodMeta" % (
+                instance.__class__.__name__, name))
             method.writeable_in = member.MethodMeta.writeable_in
             yield name, method, member

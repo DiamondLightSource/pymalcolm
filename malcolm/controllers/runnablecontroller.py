@@ -82,10 +82,12 @@ class RunnableController(ManagerController):
         configure_funcs = self.Configuring.find_hooked_functions(self.parts)
         takes_elements = OrderedDict()
         defaults = OrderedDict()
-        for part_name, func in configure_funcs.items():
-            self.log_debug("Adding validating parameters from %s", part_name)
-            takes_elements.update(func.MethodMeta.takes.elements.to_dict())
-            defaults.update(func.MethodMeta.defaults)
+        for part_name, func_name in configure_funcs.items():
+            self.log_debug("Adding validating parameters from %s.%s",
+                           part_name, func_name)
+            method_meta = self.parts[part_name].method_metas[func_name]
+            takes_elements.update(method_meta.takes.elements.to_dict())
+            defaults.update(method_meta.defaults)
 
         # Update takes with the things we need
         takes_elements.update(
