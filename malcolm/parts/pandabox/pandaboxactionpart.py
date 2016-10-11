@@ -38,10 +38,9 @@ class PandABoxActionPart(Part):
         yield method_name, self.method, writeable_func
 
     def set_field(self, params=None):
-        full_field = "%s.%s" % (self.block_name, self.field_name)
         if params is None:
             value = 0
         else:
             value = params[self.arg_name]
-        self.control.set_field(full_field, value)
+        self.control.set_field(self.block_name, self.field_name, value)
 

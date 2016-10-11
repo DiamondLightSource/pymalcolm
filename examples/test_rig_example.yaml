@@ -42,6 +42,10 @@
     mic: MIC
     brick: brick1
 
+- assemblies.pandabox.PandABox:
+    name: PANDA
+    hostname: 172.23.252.201
+
 - comms.pva.PvaServerComms:
 
 
