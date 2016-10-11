@@ -49,12 +49,13 @@ class TestSimDetectorDriverPart(unittest.TestCase):
             self.child["arrayCounter"]: completed_steps,
             self.child["arrayCallbacks"]: True,
         })
-        list(self.o.create_attributes())
+        task.post_async.assert_called_once_with(self.child["start"])
 
     def test_run(self):
         task = MagicMock()
+        self.o.start_future = MagicMock()
         self.o.run(task, ANY)
-        task.post.assert_called_once_with(self.child["start"])
+        task.wait_all.assert_called_once_with(self.o.start_future)
 
     def test_abort(self):
         task = MagicMock()
