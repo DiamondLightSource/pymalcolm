@@ -48,22 +48,25 @@ class WebsocketClientComms(ClientComms):
             # error messages about 'HTTPRequest' object has no attribute 'path'
             self.log_exception(e)
 
-    def send_to_server(self, request):
+    def send_to_server(self, request, conn=None):
         """Dispatch a request to the server
 
         Args:
-            request(Request): The message to pass to the server
+            request (Request): The message to pass to the server
+            conn (Future): Future that will resolve to the websocket connection
         """
         message = json.dumps(serialize_object(request))
-        self.conn.result().write_message(message)
+        if conn is None:
+            conn = self.conn
+        conn.result().write_message(message)
 
     def stop_recv_loop(self):
         # This is the only thing that is safe to do from outside the IOLoop
         # thread
         self.loop.add_callback(self.loop.stop)
 
-    def subscribe_server_blocks(self, _):
+    def subscribe_server_blocks(self, conn):
         """Subscribe to process blocks"""
         request = Subscribe(None, None, [".", "blocks", "value"])
         request.set_id(self.SERVER_BLOCKS_ID)
-        self.loop.add_callback(self.send_to_server, request)
+        self.loop.add_callback(self.send_to_server, request, conn)
