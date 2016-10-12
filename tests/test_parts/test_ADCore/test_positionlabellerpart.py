@@ -54,15 +54,13 @@ class TestPositionLabellerPart(unittest.TestCase):
 <dimensions>
 <dimension name="x" />
 <dimension name="y" />
-<dimension name="y_index" />
-<dimension name="x_index" />
 <dimension name="FilePluginClose" />
 </dimensions>
 <positions>
-<position FilePluginClose="0" x="0.5" x_index="2" y="0.0" y_index="0" />
-<position FilePluginClose="0" x="0.5" x_index="2" y="0.1" y_index="1" />
-<position FilePluginClose="0" x="0.25" x_index="1" y="0.1" y_index="1" />
-<position FilePluginClose="1" x="0.0" x_index="0" y="0.1" y_index="1" />
+<position FilePluginClose="0" x="2" y="0" />
+<position FilePluginClose="0" x="2" y="1" />
+<position FilePluginClose="0" x="1" y="1" />
+<position FilePluginClose="1" x="0" y="1" />
 </positions>
 </pos_layout>""".replace("\n", "")
         task.put.assert_called_once_with(self.child["xml"], expected_xml)
@@ -91,13 +89,11 @@ class TestPositionLabellerPart(unittest.TestCase):
 <dimensions>
 <dimension name="x" />
 <dimension name="y" />
-<dimension name="y_index" />
-<dimension name="x_index" />
 <dimension name="FilePluginClose" />
 </dimensions>
 <positions>
-<position FilePluginClose="0" x="0.25" x_index="1" y="0.1" y_index="1" />
-<position FilePluginClose="1" x="0.0" x_index="0" y="0.1" y_index="1" />
+<position FilePluginClose="0" x="1" y="1" />
+<position FilePluginClose="1" x="0" y="1" />
 </positions>
 </pos_layout>""".replace("\n", "")
         task.put.assert_called_once_with(self.child["xml"], expected_xml)

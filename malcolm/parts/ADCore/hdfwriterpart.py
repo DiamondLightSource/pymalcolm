@@ -126,7 +126,7 @@ class HDFWriterPart(LayoutPart):
         for i in range(10):
             suffix = SUFFIXES[i]
             if i < len(generator.index_names):
-                index_name = generator.index_names[-i - 1] + "_index"
+                index_name = generator.index_names[-i - 1]
                 index_size = generator.index_dims[-i - 1]
             else:
                 index_name = ""
@@ -138,12 +138,26 @@ class HDFWriterPart(LayoutPart):
         futures = task.put_async(attr_dict)
         return futures
 
+    def _find_generator_index(self, generator, dim):
+        ndims = 0
+        for g in generator.generators:
+            if dim in g.position_units:
+                return ndims, g
+            else:
+                ndims += len(g.index_dims)
+        raise ValueError("Can't find generator for %s" % dim)
+
     def _make_nxdata(self, name, entry_el, generator, link=False):
         # Make a dataset for the data
         data_el = ET.SubElement(entry_el, "group", name=name)
         ET.SubElement(data_el, "attribute", name="signal", source="constant",
                       value=name, type="string")
-        pad_dims = ["%s_demand" % n for n in generator.index_names]
+        pad_dims = []
+        for n in generator.index_names:
+            if n in generator.position_units:
+                pad_dims.append("%s_demand" % n)
+            else:
+                pad_dims.append(".")
         # TODO: assume a 2D detector here
         pad_dims += [".", "."]
         ET.SubElement(data_el, "attribute", name="axes", source="constant",
@@ -151,19 +165,23 @@ class HDFWriterPart(LayoutPart):
         ET.SubElement(data_el, "attribute", name="NX_class", source="constant",
                       value="NXdata", type="string")
         # Add in the indices into the dimensions array that our axes refer to
-        for i, dim in enumerate(generator.index_names):
-            ET.SubElement(data_el, "attribute",
-                          name="{}_demand_indices".format(dim),
-                          source="constant", value=str(i), type="string")
         for dim, units in sorted(generator.position_units.items()):
+            # Find the generator for this dimension
+            ndims, g = self._find_generator_index(generator, dim)
+            ET.SubElement(data_el, "attribute",
+                          name="%s_demand_indices" % dim,
+                          source="constant", value=str(ndims), type="string")
             if link:
                 ET.SubElement(data_el, "hardlink",
-                              name="{}_demand".format(dim),
-                              target="/entry/detector/{}_demand".format(dim))
+                              name="%s_demand" % dim,
+                              target="/entry/detector/%s_demand" % dim)
             else:
+                axes_vals = []
+                for point in g.iterator():
+                    axes_vals.append("%.12g" % point.positions[dim])
                 axis_el = ET.SubElement(
-                    data_el, "dataset", name="{}_demand".format(dim),
-                    source="ndattribute", ndattribute=dim)
+                    data_el, "dataset", name="%s_demand" % dim,
+                    source="constant", type="float", value=",".join(axes_vals))
                 ET.SubElement(axis_el, "attribute", name="units",
                               source="constant", value=units, type="string")
         return data_el

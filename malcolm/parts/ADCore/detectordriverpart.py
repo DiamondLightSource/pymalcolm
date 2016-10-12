@@ -9,6 +9,9 @@ class DetectorDriverPart(LayoutPart):
     # Attributes
     readoutTime = None
 
+    # Stored futures
+    start_future = None
+
     def create_attributes(self):
         for data in super(DetectorDriverPart, self).create_attributes():
             yield data
@@ -41,10 +44,11 @@ class DetectorDriverPart(LayoutPart):
             self.child["arrayCounter"]: completed_steps,
             self.child["arrayCallbacks"]: True,
         })
+        self.start_future = task.post_async(self.child["start"])
 
     @RunnableController.Running
     def run(self, task, _):
-        task.post(self.child["start"])
+        task.wait_all(self.start_future)
 
     @RunnableController.Aborting
     def abort(self, task):

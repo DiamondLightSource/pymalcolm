@@ -78,10 +78,11 @@ class PandABoxTablePart(PandABoxFieldPart):
             for i in range(int(len(int_values) / nconsume)):
                 int_value = 0
                 for c in range(nconsume):
-                    int_value += int_values[i*nconsume+c] << (32 * c)
+                    int_value += int(int_values[i*nconsume+c]) << (32 * c)
                 row = []
                 for name, (bits_hi, bits_lo) in self.fields.items():
-                    field_value = (int_value & (2 ** (bits_hi + 1) - 1)) >> bits_lo
+                    mask = 2 ** (bits_hi + 1) - 1
+                    field_value = (int_value & mask) >> bits_lo
                     row.append(field_value)
                 table.append(row)
         return table

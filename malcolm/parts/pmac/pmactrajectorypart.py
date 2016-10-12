@@ -307,28 +307,39 @@ class PMACTrajectoryPart(LayoutPart):
         return a*b >= 0
 
     def need_lower_move_time(self, last_point, point):
+        gap = False
+        # Check for axes that need to move within the space between points
+        for axis_name, motor_info in self.axis_mapping.items():
+            if last_point.upper[axis_name] != point.lower[axis_name]:
+                gap = True
+                break
+
+        if not gap:
+            # No lower move time
+            return None, None
+
         # First point needs to insert lower bound point
         lower_move_time = 0
-        run_ups = self.run_up_positions(last_point)
         turnaround_midpoint = {}
+        run_ups = self.run_up_positions(point)
 
+        # If an axis needs to move, then blend moves, otherwise do a move
+        # for that axis
         for axis_name, motor_info in self.axis_mapping.items():
             first = last_point.upper[axis_name]
             second = point.lower[axis_name]
-            turnaround_midpoint[axis_name] = (second - first) * 0.5 + first
+            first_distance = last_point.upper[axis_name] - \
+                             last_point.lower[axis_name]
+            second_distance = point.upper[axis_name] - point.lower[axis_name]
+            # If points are different then add in a midpoint
             if first != second:
-                # axis needs to move during turnaround, so insert lower bound
-                move_time = self.get_move_time(axis_name, first, second)
-                lower_move_time = max(lower_move_time, move_time)
-            else:
-                # axis has been moving
-                direction = last_point.upper[axis_name] - \
-                            last_point.lower[axis_name]
-                new_direction = point.upper[axis_name] - point.lower[axis_name]
-                if not self._same_sign(direction, new_direction):
-                    move_time = motor_info.acceleration_time * 2
-                    lower_move_time = max(lower_move_time, move_time)
-                    turnaround_midpoint[axis_name] = first + run_ups[axis_name]
-        if lower_move_time == 0:
-            turnaround_midpoint = None
-        return lower_move_time * 0.5, turnaround_midpoint
+                turnaround_midpoint[axis_name] = (second - first) * 0.5 + first
+                move_time = self.get_move_time(axis_name, second, first)
+                lower_move_time = max(lower_move_time, move_time * 0.5)
+            # If points are same and direction is different then reverse
+            elif not self._same_sign(first_distance, second_distance):
+                turnaround_midpoint[axis_name] = second - run_ups[axis_name]
+                lower_move_time = max(
+                    lower_move_time, motor_info.acceleration_time)
+
+        return lower_move_time, turnaround_midpoint
