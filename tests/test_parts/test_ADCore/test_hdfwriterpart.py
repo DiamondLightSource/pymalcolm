@@ -94,7 +94,7 @@ class TestHDFWriterPart(unittest.TestCase):
 <attribute name="axes" source="constant" type="string" value="energy_demand,.,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_demand_indices" source="constant" type="string" value="0" />
-<dataset name="energy_demand" source="constant" type="float" value="13.0,15.2">
+<dataset name="energy_demand" source="constant" type="float" value="13,15.2">
 <attribute name="units" source="constant" type="string" value="kEv" />
 </dataset>
 <attribute name="x_demand_indices" source="constant" type="string" value="1" />

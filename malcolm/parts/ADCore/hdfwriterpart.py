@@ -178,7 +178,7 @@ class HDFWriterPart(LayoutPart):
             else:
                 axes_vals = []
                 for point in g.iterator():
-                    axes_vals.append(str(point.positions[dim]))
+                    axes_vals.append("%.12g" % point.positions[dim])
                 axis_el = ET.SubElement(
                     data_el, "dataset", name="%s_demand" % dim,
                     source="constant", type="float", value=",".join(axes_vals))
