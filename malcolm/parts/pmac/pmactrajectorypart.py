@@ -8,7 +8,7 @@ from malcolm.core.vmetas import StringArrayMeta, PointGeneratorMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
 
 # Number of seconds that a trajectory tick is
-TICK_S = 0.00025
+TICK_S = 0.000001
 
 # velocity modes
 PREV_TO_NEXT = 0
@@ -181,7 +181,7 @@ class PMACTrajectoryPart(LayoutPart):
             time_array (list): List of times in ms
             velocity_mode (list): List of velocity modes like PREV_TO_NEXT
             trajectory (dict): {axis_name: [positions in EGUs]}
-            task (dict): Task for running
+            task (Task): Task for running
             user_programs (list): List of user programs like TRIG_LIVE_FRAME
         """
         # Work out which axes should be used and set their resolutions and
@@ -198,9 +198,38 @@ class PMACTrajectoryPart(LayoutPart):
             attr_dict["use%s" % cs_axis] = cs_axis in use
         task.put({self.child[k]: v for k, v in attr_dict.items()})
 
+        # Start adding points, padding if the move time exceeds 4s
+        i = 0
+        while i < len(time_array):
+            t = time_array[i]
+            if t > 4:
+                # split
+                nsplit = int(t / 4.0 + 1)
+                new_time_array = time_array[:i]
+                new_velocity_mode = velocity_mode[:i]
+                new_user_programs = user_programs[:i]
+                for _ in range(nsplit):
+                    new_time_array.append(t / nsplit)
+                    new_velocity_mode.append(1)
+                    new_user_programs.append(0)
+                time_array = new_time_array + time_array[i+1:]
+                user_programs = new_user_programs[:-1] + user_programs[i:]
+                velocity_mode = new_velocity_mode[:-1] + velocity_mode[i:]
+
+                for k, traj in trajectory.items():
+                    new_traj = traj[:i]
+                    per_section = float(traj[i] - traj[i-1]) / nsplit
+                    for j in range(1, nsplit+1):
+                        new_traj.append(traj[i-1] + j * per_section)
+                    trajectory[k] = new_traj + traj[i+1:]
+
+                i += nsplit
+            else:
+                i += 1
+
         # Process the time in ticks
-        time_array_ticks = []
         overflow = 0
+        time_array_ticks = []
         for t in time_array:
             ticks = t / TICK_S
             overflow += (ticks % 1)

@@ -92,7 +92,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(task.post_async.call_count, 1)
         self.check_resolutions_and_use(task.put.call_args_list[0][0][0])
         self.assertEqual(task.put.call_args_list[1][0][0], {
-            self.child["time_array"]: [400, 1750, 400],
+            self.child["time_array"]: [100000, 437500, 100000],
             self.child["velocity_mode"]: [2, 1, 3],
             self.child["user_programs"]: [0, 0, 0],
             self.child["num_points"]: 3,
@@ -109,8 +109,8 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.check_resolutions_and_use(task.put.call_args_list[2][0][0])
         self.assertEqual(task.put.call_args_list[3][0][0], {
             self.child["time_array"]: [
-                400, 2000, 2000, 2000, 2000, 2000, 2000, 400,
-                400, 2000, 2000, 2000, 2000, 2000, 2000, 400],
+                100000, 500000, 500000, 500000, 500000, 500000, 500000, 100000,
+                100000, 500000, 500000, 500000, 500000, 500000, 500000, 100000],
             self.child["velocity_mode"]: [
                 2, 0, 0, 0, 0, 0, 1, 0,
                 2, 0, 0, 0, 0, 0, 1, 3],
@@ -145,13 +145,27 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.check_resolutions_and_use(task.put.call_args_list[0][0][0],
                                        useB=False)
         self.assertEqual(task.put.call_args_list[1][0][0], {
-            self.child["time_array"]: [400, 2000, 2000, 2000, 2000, 2000, 2000,
-                                       400],
+            self.child["time_array"]: [
+                100000, 500000, 500000, 500000, 500000, 500000, 500000, 100000],
             self.child["velocity_mode"]: [2, 0, 0, 0, 0, 0, 1, 3],
             self.child["user_programs"]: [3, 4, 3, 4, 3, 4, 2, 8],
             self.child["num_points"]: 8,
             self.child["positionsA"]: [0.625, 0.5, 0.375, 0.25, 0.125, 0.0,
                                        -0.125, -0.1375],
+        })
+
+    def test_long_move(self):
+        task = self.do_configure(axes_to_scan=["x"], x_pos=-10.1375)
+        self.assertEqual(task.put.call_args_list[1][0][0], {
+            self.child["time_array"]: [
+                100000, 3266667, 3266666, 3266667, 100000],
+            self.child["velocity_mode"]: [
+                2, 1, 1, 1, 3],
+            self.child["user_programs"]: [
+                0, 0, 0, 0, 0],
+            self.child["num_points"]: 5,
+            self.child["positionsA"]: [
+                -10.087499999999999, -6.7875, -3.4875, -0.1875, -0.1375],
         })
 
 
