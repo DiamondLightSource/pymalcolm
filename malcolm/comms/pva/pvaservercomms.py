@@ -86,6 +86,7 @@ class PvaServerComms(ServerComms, PvaUtil):
                     if self._monitors[monitor].get_block() == block:
                         self.log_debug("Updating monitor %s", monitor)
                         self._monitors[monitor].update(change)
+                self._monitors[monitor].notify_updates()
 
     def send_to_client(self, response):
         """Abstract method to dispatch response to a client
@@ -499,6 +500,7 @@ class PvaMonitorImplementation(Loggable):
         self.log_debug("_server %s", self._server)
         self._pv_structure = self._server.get_request(block, request)
         self.mu = pvaccess.MonitorServiceUpdater()
+        self._update_required = False
 
     def get_block(self):
         return self._block
@@ -517,4 +519,9 @@ class PvaMonitorImplementation(Loggable):
         path = ".".join(changes[0][1:])
         if self._pv_structure.hasField(path):
             self._pv_structure[path] = changes[1]
+            self._update_required = True
+
+    def notify_updates(self):
+        if self._update_required:
+            self._update_required = False
             self.mu.update()
