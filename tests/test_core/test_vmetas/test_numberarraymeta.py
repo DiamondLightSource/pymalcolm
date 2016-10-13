@@ -84,7 +84,7 @@ class TestValidation(unittest.TestCase):
 
     def test_none_validates(self):
         nm = NumberArrayMeta("int32")
-        self.assertIsNone(nm.validate(None))
+        self.assertEquals(nm.validate(None), [])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

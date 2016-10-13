@@ -18,7 +18,4 @@ class BooleanMeta(VMeta):
             bool: Value as a boolean [If value is not None]
         """
 
-        if value is None:
-            return None
-        else:
-            return bool(value)
+        return bool(value)

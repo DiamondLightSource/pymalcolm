@@ -34,7 +34,7 @@ class TestValidate(unittest.TestCase):
     def test_given_value_None_then_return(self):
         response = self.string_meta.validate(None)
 
-        self.assertEqual(None, response)
+        self.assertEqual("", response)
 
 
 if __name__ == "__main__":

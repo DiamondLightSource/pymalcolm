@@ -17,7 +17,7 @@ class BooleanArrayMeta(VArrayMeta):
             List of Booleans or None if value is None
         """
         if value is None:
-            return None
+            return []
         if not hasattr(value, "__iter__"):
             raise ValueError("%s is not iterable" % value)
         validated = [bool(x) if x is not None else None for x in value]

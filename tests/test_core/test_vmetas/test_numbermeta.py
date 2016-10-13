@@ -42,7 +42,7 @@ class TestValidate(unittest.TestCase):
 
     def test_none_validates(self):
         nm = NumberMeta("int32")
-        self.assertIsNone(nm.validate(None))
+        self.assertEquals(0, nm.validate(None))
 
     def test_unsigned_validates(self):
         nm = NumberMeta("uint32")

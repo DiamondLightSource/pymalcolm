@@ -27,7 +27,7 @@ class NumberMeta(VMeta):
 
     def validate(self, value):
         if value is None:
-            return None
+            value = 0
         cast = getattr(np, self.dtype)(value)
         if not isinstance(value, str_):
             if not np.isclose(cast, value):

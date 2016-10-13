@@ -47,6 +47,8 @@ class PandABoxPollerTest(unittest.TestCase):
         changes["COUNTER.OUT.UNITS"] = ""
         changes["TTLIN.VAL"] = "0"
         self.o.handle_changes(changes)
+        # Once more to let the bit_outs toggle back
+        self.o.handle_changes({})
 
     def test_initial_changes(self):
         pcomp = self.o._blocks["PCOMP"]

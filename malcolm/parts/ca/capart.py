@@ -10,11 +10,11 @@ def capart_takes(*args):
     args = (
         "name", StringMeta("Name of the created attribute"), REQUIRED,
         "description", StringMeta("Desc of created attribute"), REQUIRED,
-        "pv", StringMeta("Full pv of demand and default for rbv"), None,
-        "rbv", StringMeta("Override for rbv"), None,
-        "rbv_suff", StringMeta("Set rbv ro pv + rbv_suff"), None,
-        "widget", StringMeta("Widget, like 'combo' or 'textinput'"), None,
-        "inport_type", StringMeta("ype (like 'CS' or 'NDArray')"), None,
+        "pv", StringMeta("Full pv of demand and default for rbv"), "",
+        "rbv", StringMeta("Override for rbv"), "",
+        "rbv_suff", StringMeta("Set rbv ro pv + rbv_suff"), "",
+        "widget", StringMeta("Widget, like 'combo' or 'textinput'"), "",
+        "inport_type", StringMeta("ype (like 'CS' or 'NDArray')"), "",
     ) + args
     return method_takes(*args)
 
@@ -28,13 +28,13 @@ class CAPart(Part):
 
     def create_attributes(self):
         params = self.params
-        if params.rbv is None and params.pv is None:
+        if not params.rbv and not params.pv:
             raise ValueError('Must pass pv or rbv')
-        if params.rbv is None:
-            if params.rbv_suff is None:
-                params.rbv = params.pv
-            else:
+        if not params.rbv:
+            if params.rbv_suff:
                 params.rbv = params.pv + params.rbv_suff
+            else:
+                params.rbv = params.pv
         # Find the tags
         tags = self.create_tags(params)
         # The attribute we will be publishing

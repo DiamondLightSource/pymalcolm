@@ -13,7 +13,7 @@ class NumberArrayMeta(NumberMeta, VArrayMeta):
     def validate(self, value):
 
         if value is None:
-            return None
+            return []
 
         elif type(value) == list:
             casted_array = np.array(value, dtype=self.dtype)

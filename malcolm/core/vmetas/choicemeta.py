@@ -33,7 +33,12 @@ class ChoiceMeta(VMeta):
         Raises:
             ValueError: If value not valid
         """
-        if value is None or value in self.choices:
+        if value is None:
+            if self.choices:
+                return self.choices[0]
+            else:
+                return ""
+        elif value in self.choices:
             return value
         elif isinstance(value, int) and value < len(self.choices):
             return self.choices[value]

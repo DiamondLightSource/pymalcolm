@@ -10,9 +10,8 @@ from mock import MagicMock, call
 Mock = MagicMock
 
 from malcolm.parts.pmac.pmactrajectorypart import PMACTrajectoryPart, MotorInfo
-from scanpointgenerator import LineGenerator, CompoundGenerator
-from scanpointgenerator.fixeddurationmutator import FixedDurationMutator
-from malcolm.core import Table
+from scanpointgenerator import LineGenerator, CompoundGenerator, \
+    FixedDurationMutator
 
 
 class TestPMACTrajectoryPart(unittest.TestCase):

@@ -115,7 +115,7 @@ class TestCAPart(unittest.TestCase):
         value = caint(44)
         value.ok = False
         p.update_value(value)
-        self.assertEqual(p.attr.value, None)
+        self.assertEqual(p.attr.value, 0)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

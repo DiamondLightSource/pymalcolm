@@ -19,6 +19,6 @@ class StringMeta(VMeta):
         """
 
         if value is None:
-            return None
+            return ""
         else:
             return str(value)

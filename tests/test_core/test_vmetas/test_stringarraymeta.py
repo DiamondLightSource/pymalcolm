@@ -19,7 +19,7 @@ class TestStringArrayMeta(unittest.TestCase):
         self.assertEqual(self.meta.typeid, "malcolm:core/StringArrayMeta:1.0")
 
     def test_validate_none(self):
-        self.assertIsNone(self.meta.validate(None))
+        self.assertEquals(self.meta.validate(None), [])
 
     def test_validate_array(self):
         array = ["test_string", 123, 123.456]
