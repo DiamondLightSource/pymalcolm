@@ -168,6 +168,36 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 -10.087499999999999, -6.7875, -3.4875, -0.1875, -0.1375],
         })
 
+    def future_long_scan(self):
+        task = Mock()
+        part_info = dict(
+            x=MotorInfo(
+                cs_axis="A",
+                cs_port="CS1",
+                acceleration_time=0.1,
+                resolution=0.001,
+                offset=0,
+                max_velocity=1.0,
+                current_position=0.0),
+            y=MotorInfo(
+                cs_axis="B",
+                cs_port="CS1",
+                acceleration_time=0.1,
+                resolution=0.001,
+                offset=0,
+                max_velocity=1.0,
+                current_position=0.0)
+        )
+        steps_to_do = 2000 * 2000
+        params = Mock()
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 2000, alternate_direction=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2000)
+        mutator = FixedDurationMutator(0.005)
+        params.generator = CompoundGenerator([ys, xs], [], [mutator])
+        params.axesToMove = ["x", "y"]
+        completed_steps = 0
+        self.o.configure(task, completed_steps, steps_to_do, part_info, params)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
