@@ -12,9 +12,10 @@ def capart_takes(*args):
         "description", StringMeta("Desc of created attribute"), REQUIRED,
         "pv", StringMeta("Full pv of demand and default for rbv"), "",
         "rbv", StringMeta("Override for rbv"), "",
-        "rbv_suff", StringMeta("Set rbv ro pv + rbv_suff"), "",
+        "rbvSuff", StringMeta("Set rbv ro pv + rbv_suff"), "",
         "widget", StringMeta("Widget, like 'combo' or 'textinput'"), "",
-        "inport_type", StringMeta("ype (like 'CS' or 'NDArray')"), "",
+        "inportType", StringMeta(
+            "Flowgraph port Type if it is one (like 'CS' or 'NDArray')"), "",
     ) + args
     return method_takes(*args)
 
@@ -31,8 +32,8 @@ class CAPart(Part):
         if not params.rbv and not params.pv:
             raise ValueError('Must pass pv or rbv')
         if not params.rbv:
-            if params.rbv_suff:
-                params.rbv = params.pv + params.rbv_suff
+            if params.rbvSuff:
+                params.rbv = params.pv + params.rbvSuff
             else:
                 params.rbv = params.pv
         # Find the tags
@@ -52,11 +53,11 @@ class CAPart(Part):
                 "Widget tag %r should not specify 'widget:' prefix" \
                 % params.widget
             tags.append("widget:%s" % params.widget)
-        if params.inport_type:
-            assert ":" not in params.inport_type, \
+        if params.inportType:
+            assert ":" not in params.inportType, \
                 "Inport tag %r should not specify 'flowgraph:inport:' prefix" \
-                % params.inport_type
-            tags.append("flowgraph:inport:%s" % params.inport_type)
+                % params.inportType
+            tags.append("flowgraph:inport:%s" % params.inportType)
         return tags
 
     def create_meta(self, description, tags):

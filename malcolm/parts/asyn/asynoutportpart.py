@@ -7,13 +7,13 @@ from malcolm.core.vmetas import StringMeta
     "name", StringMeta("Name of the created attribute"), REQUIRED,
     "description", StringMeta("Desc of created attribute"), REQUIRED,
     "rbv", StringMeta("Full pv of demand and default for rbv"), REQUIRED,
-    "outport_type", StringMeta("Type (like 'CS' or 'NDArray')"), REQUIRED,
+    "outportType", StringMeta("Type (like 'CS' or 'NDArray')"), REQUIRED,
 )
 class AsynOutportPart(CAStringPart):
 
     def __init__(self, process, params):
         params = params.to_dict()
-        self.outport_type = params.pop("outport_type")
+        self.outport_type = params.pop("outportType")
         params = CAStringPart.MethodMeta.prepare_input_map(params)
         super(AsynOutportPart, self).__init__(process, params)
 

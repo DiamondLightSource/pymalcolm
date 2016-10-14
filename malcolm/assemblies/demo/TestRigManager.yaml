@@ -12,9 +12,9 @@
     name: DSET
 
 - parts.builtin.RunnablePart:
-    name: mic
+    name: MIC
     child: $(mic)
 
 - parts.builtin.RunnablePart:
-    name: brick
+    name: BRICK
     child: $(brick)

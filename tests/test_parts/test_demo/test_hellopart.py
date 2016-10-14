@@ -21,7 +21,7 @@ class TestHelloPart(unittest.TestCase):
         parameters_mock.name = "test_name"
         parameters_mock.sleep = 0
         returns_mock = Mock()
-        response = self.c.say_hello(parameters_mock, returns_mock)
+        response = self.c.greet(parameters_mock, returns_mock)
         self.assertEquals(expected, response.greeting)
 
 if __name__ == "__main__":

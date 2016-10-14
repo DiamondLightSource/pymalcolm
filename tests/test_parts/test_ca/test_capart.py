@@ -27,7 +27,7 @@ class TestCAPart(unittest.TestCase):
                 name="attrname",
                 description="desc",
                 pv="pv",
-                rbv_suff="2"
+                rbvSuff="2"
             )
 
         @capart_takes()

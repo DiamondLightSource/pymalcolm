@@ -1,13 +1,13 @@
 - parameters.string:
-    name: mridet
+    name: mriDet
     description: Malcolm name of the detector object
 
 - parameters.string:
-    name: pvprefix
+    name: pvPrefix
     description: PV prefix for all the other plugins
 
 - parameters.string:
-    name: mriprefix
+    name: mriPrefix
     description: Prefix for malcolm part names
 
 - controllers.RunnableController:
@@ -17,28 +17,28 @@
 
 - parts.ADCore.DetectorDriverPart:
     name: DET
-    child: $(mridet)
+    child: $(mriDet)
 
 - assemblies.ADCore.PositionLabeller:
-    name: $(mriprefix):POS
-    prefix: $(pvprefix):POS
+    name: $(mriPrefix):POS
+    prefix: $(pvPrefix):POS
 
 - parts.ADCore.PositionLabellerPart:
     name: POS
-    child: $(mriprefix):POS
+    child: $(mriPrefix):POS
 
 - assemblies.ADCore.StatsPlugin:
-    name: $(mriprefix):STAT
-    prefix: $(pvprefix):STAT
+    name: $(mriPrefix):STAT
+    prefix: $(pvPrefix):STAT
 
 - parts.ADCore.StatsPluginPart:
     name: STAT
-    child: $(mriprefix):STAT
+    child: $(mriPrefix):STAT
 
 - assemblies.ADCore.HDFWriter:
-    name: $(mriprefix):HDF
-    prefix: $(pvprefix):HDF5
+    name: $(mriPrefix):HDF
+    prefix: $(pvPrefix):HDF5
 
 - parts.ADCore.HDFWriterPart:
     name: HDF
-    child: $(mriprefix):HDF
+    child: $(mriPrefix):HDF

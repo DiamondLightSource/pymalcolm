@@ -43,7 +43,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         req = dict(
             type="malcolm:core/Post:1.0",
             id=0,
-            endpoint=["hello", "say_hello"],
+            endpoint=["hello", "greet"],
             parameters=dict(
                 name="me"
             )
@@ -93,7 +93,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         task = Task("task", self.process2)
         futures = task.when_matches_async(block2["state"], "Ready")
         task.wait_all(futures, timeout=1)
-        ret = block2.say_hello("me2")
+        ret = block2.greet("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
 
     def test_server_counter_with_malcolm_client(self):

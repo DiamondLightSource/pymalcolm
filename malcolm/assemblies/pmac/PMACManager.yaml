@@ -1,34 +1,34 @@
 - parameters.string:
     name: traj
-    description: name of the pmac_trajectory object
+    description: mri of the pmac_trajectory object
 
 - parameters.string:
     name: m1
-    description: name of the raw motor object 1
+    description: mri of the raw motor object 1
 
 - parameters.string:
     name: m2
-    description: name of the raw motor object 2
+    description: mri of the raw motor object 2
 
 - parameters.string:
     name: m3
-    description: name of the raw motor object 3
+    description: mri of the raw motor object 3
 
 - controllers.RunnableController:
 
 - parts.pmac.PMACTrajectoryPart:
-    name: traj
+    name: TRAJ
     child: $(traj)
 
 - parts.pmac.RawMotorPart:
-    name: $(m1)
+    name: M1
     child: $(m1)
 
 - parts.pmac.RawMotorPart:
-    name: $(m2)
+    name: M2
     child: $(m2)
 
 - parts.pmac.RawMotorPart:
-    name: $(m3)
+    name: M3
     child: $(m3)
 

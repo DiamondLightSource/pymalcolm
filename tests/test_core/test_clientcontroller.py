@@ -60,8 +60,8 @@ class TestClientController(unittest.TestCase):
 
     def test_methods_created(self):
         self.assertEqual(list(self.b), [
-            'meta', 'state', 'status', 'busy', 'disable', 'reset', 'say_hello'])
-        m = self.b["say_hello"]
+            'meta', 'state', 'status', 'busy', 'disable', 'reset', 'greet'])
+        m = self.b["greet"]
         self.assertEqual(list(m.takes.elements), ["name", "sleep"])
         self.assertEqual(type(m.takes.elements["name"]), StringMeta)
         self.assertEqual(type(m.takes.elements["sleep"]), NumberMeta)
@@ -75,7 +75,7 @@ class TestClientController(unittest.TestCase):
             request.respond_with_return(dict(
                 greeting="Hello %s" % request.parameters["name"]))
         self.comms.q.put.side_effect = f
-        ret = self.b.say_hello(name="me")
+        ret = self.b.greet(name="me")
         self.assertEqual(ret.greeting, "Hello me")
 
     def test_put_update_response(self):
