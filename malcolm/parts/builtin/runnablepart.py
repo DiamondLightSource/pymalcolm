@@ -17,7 +17,9 @@ class RunnablePart(LayoutPart):
         # Wait until we are Idle
         if self.child.state == RunnableStateMachine.RESETTING:
             task.when_matches(self.child["state"], RunnableStateMachine.IDLE)
-        elif self.child.state != RunnableStateMachine.IDLE:
+        else:
+            if self.child["abort"].writeable:
+                task.post(self.child["abort"])
             task.post(self.child["reset"])
 
         # Update our configure from our child
@@ -75,6 +77,6 @@ class RunnablePart(LayoutPart):
     def abort(self, task, params):
         if params.pause:
             task.post(self.child["pause"])
-        else:
+        elif self.child.state != RunnableStateMachine.RESETTING:
             task.post(self.child["abort"])
 

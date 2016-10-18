@@ -31,6 +31,7 @@ class MalcWebSocketHandler(WebSocketHandler):  # pylint:disable=abstract-method
         self.servercomms.on_request(request)
 
     # http://stackoverflow.com/q/24851207
+    # TODO: remove this when the web gui is hosted from the box
     def check_origin(self, origin):
         return True
 
