@@ -77,7 +77,7 @@ self.process_block.blocks:
 
 Try:
 hello = self.get_block("hello")
-print hello.say_hello("me")
+print hello.greet("me")
 
 or
 
