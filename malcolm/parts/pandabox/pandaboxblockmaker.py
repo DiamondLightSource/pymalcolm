@@ -91,7 +91,7 @@ class PandABoxBlockMaker(Loggable):
 
     def _make_icon(self):
         meta = StringMeta("URL for ICON", tags=["flowgraph:icon"])
-        self._make_field_part("ICON", meta, writeable=False)
+        self._make_field_part("icon", meta, writeable=False)
 
     def _make_scale_offset(self, field_name):
         group_tag = self._make_group("outputs")
@@ -132,17 +132,14 @@ class PandABoxBlockMaker(Loggable):
         group_tag = self._make_group("actions")
         if field_data.field_subtype == "action":
             # Nothing to send
-            arg_name = None
             arg_meta = None
         else:
-            arg_name = field_name
             arg_meta = make_meta(
                 field_data.field_subtype, field_data.description,
                 tags=[group_tag], writeable=True, labels=field_data.labels)
         part = PandABoxActionPart(
             self.process, self.control, self.block_name, field_name,
-            field_data.description, ["widget:action", group_tag], arg_name,
-            arg_meta)
+            field_data.description, ["widget:action", group_tag], arg_meta)
         self._add_part(field_name, part)
 
     def _make_out(self, field_name, field_data, typ):

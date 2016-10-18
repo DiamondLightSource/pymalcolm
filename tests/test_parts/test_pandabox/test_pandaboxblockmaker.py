@@ -28,7 +28,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         fields["OUT"] = FieldData("pos_out", "", "Output", ["No", "Capture"])
         o = PandABoxBlockMaker(self.process, self.control, "ADDER1", block_data)
         self.assertEqual(list(o.parts), [
-            'ICON',
+            'icon',
             'inputs',
             'INPA',
             'INPA.VAL',
@@ -140,7 +140,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         fields["ERR_PERIOD"] = FieldData("read", "bit", "Error", [])
         o = PandABoxBlockMaker(self.process, self.control, "PULSE2", block_data)
         self.assertEqual(list(o.parts), [
-            'ICON',
+            'icon',
             'parameters',
             'DELAY',
             'DELAY.UNITS',
