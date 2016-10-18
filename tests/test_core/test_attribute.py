@@ -22,7 +22,7 @@ class TestAttribute(unittest.TestCase):
     def test_init(self):
         a = self.meta.make_attribute()
         self.assertIs(self.meta, a.meta)
-        self.assertIsNone(a.value)
+        self.assertEquals(a.value, "")
         self.assertEquals("epics:nt/NTScalar:1.0", a.typeid)
 
     def test_set_value(self):

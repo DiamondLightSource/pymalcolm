@@ -253,9 +253,10 @@ class PvaServerComms(ServerComms, PvaUtil):
                     paths = self.dict_to_path(field_dict)
                     self.log_debug("Paths: %s", paths)
                     pv_object = self.cache_to_pvobject(block, paths)
-        except:
+        except Exception as e:
             # There has been a failure, return an error object
-            err = Error(id_=1, message="Failed to retrieve endpoints")
+            self.log_exception("Failed to respond to %s", request)
+            err = Error(id_=1, message="Failed to retrieve endpoints: %s" % e)
             response_dict = err.to_dict()
             response_dict.pop("id")
             pv_object = self.dict_to_pv_object(response_dict)

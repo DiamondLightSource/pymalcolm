@@ -7,7 +7,8 @@ from malcolm.core.map import Map
 from malcolm.core.mapmeta import MapMeta
 from malcolm.core.meta import Meta
 from malcolm.core.request import Post
-from malcolm.core.serializable import Serializable, deserialize_object
+from malcolm.core.serializable import Serializable, deserialize_object, \
+    check_camel_case
 
 OPTIONAL = object()
 REQUIRED = object()
@@ -124,6 +125,7 @@ def _prepare_map_meta(args, allow_defaults):
     for index in range(0, len(args), 3):
         # pick out 3 arguments
         name = args[index]
+        check_camel_case(name)
         meta = args[index + 1]
         default = args[index + 2]
         # store them in the right structures

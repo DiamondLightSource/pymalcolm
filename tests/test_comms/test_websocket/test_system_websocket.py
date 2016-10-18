@@ -14,6 +14,7 @@ import unittest
 from tornado.websocket import websocket_connect
 from tornado import gen
 import json
+import time
 
 
 # module imports
@@ -43,7 +44,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         req = dict(
             type="malcolm:core/Post:1.0",
             id=0,
-            endpoint=["hello", "say_hello"],
+            endpoint=["hello", "greet"],
             parameters=dict(
                 name="me"
             )
@@ -69,6 +70,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
 
     def setUp(self):
         self.sf = SyncFactory("sync")
+
         self.process = Process("proc", self.sf)
         DefaultController("hello", self.process, parts=dict(
             hello=HelloPart(self.process, None)))
@@ -77,6 +79,9 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.process.add_comms(
             WebsocketServerComms(self.process, dict(port=self.socket)))
         self.process.start()
+        # If we don't wait long enough, sometimes the websocket_connect()
+        # in process2 will hang...
+        time.sleep(0.1)
         self.process2 = Process("proc2", self.sf)
         self.process2.add_comms(
             WebsocketClientComms(self.process2,
@@ -84,16 +89,16 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.process2.start()
 
     def tearDown(self):
+        self.socket += 1
         self.process.stop()
         self.process2.stop()
-        self.socket += 1
 
     def test_server_hello_with_malcolm_client(self):
         block2 = ClientController('hello', self.process2).block
         task = Task("task", self.process2)
         futures = task.when_matches_async(block2["state"], "Ready")
         task.wait_all(futures, timeout=1)
-        ret = block2.say_hello("me2")
+        ret = block2.greet("me2")
         self.assertEqual(ret, dict(greeting="Hello me2"))
 
     def test_server_counter_with_malcolm_client(self):

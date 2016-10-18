@@ -29,7 +29,8 @@ class Map(Serializable):
                    if k not in self.meta.elements and k != "typeid"]
         if invalid:
             raise ValueError(
-                "Keys %s not in %s" % (invalid, list(self.meta.elements)))
+                "Keys %s from %s not in %s" % (
+                    invalid, d, list(self.meta.elements)))
         for k in d:
             if k != "typeid":
                 self[k] = d[k]

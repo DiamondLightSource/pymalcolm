@@ -91,18 +91,18 @@ class TestHDFWriterPart(unittest.TestCase):
 <attribute name="NX_class" source="constant" type="string" value="NXentry" />
 <group name="detector">
 <attribute name="signal" source="constant" type="string" value="detector" />
-<attribute name="axes" source="constant" type="string" value="energy_demand,.,.,." />
+<attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
-<attribute name="energy_demand_indices" source="constant" type="string" value="0" />
-<dataset name="energy_demand" source="constant" type="float" value="13,15.2">
+<attribute name="energy_set_indices" source="constant" type="string" value="0" />
+<dataset name="energy_set" source="constant" type="float" value="13,15.2">
 <attribute name="units" source="constant" type="string" value="kEv" />
 </dataset>
-<attribute name="x_demand_indices" source="constant" type="string" value="1" />
-<dataset name="x_demand" source="constant" type="float" value="0.473264298891,-1.28806365331,-1.11933765723,0.721339144968,2.26130106714,2.3717213098,1.08574712174,-0.863941392256,-2.59791589857,-3.46951769442,-3.22399679412,-1.98374931946,-0.132541097885,1.83482458567,3.45008680308,4.36998121172,4.42670524204,3.63379270355,2.15784413199,0.269311496406">
+<attribute name="x_set_indices" source="constant" type="string" value="1" />
+<dataset name="x_set" source="constant" type="float" value="0.473264298891,-1.28806365331,-1.11933765723,0.721339144968,2.26130106714,2.3717213098,1.08574712174,-0.863941392256,-2.59791589857,-3.46951769442,-3.22399679412,-1.98374931946,-0.132541097885,1.83482458567,3.45008680308,4.36998121172,4.42670524204,3.63379270355,2.15784413199,0.269311496406">
 <attribute name="units" source="constant" type="string" value="mm" />
 </dataset>
-<attribute name="y_demand_indices" source="constant" type="string" value="1" />
-<dataset name="y_demand" source="constant" type="float" value="-0.64237113553,-0.500750778455,1.38930992616,1.98393756064,0.784917470231,-1.17377831157,-2.66405897615,-2.9669684623,-2.01825893141,-0.24129368636,1.72477821509,3.27215424484,3.98722048131,3.71781556747,2.5610299588,0.799047653518,-1.18858453138,-3.01284626565,-4.34725663835,-4.9755042398">
+<attribute name="y_set_indices" source="constant" type="string" value="1" />
+<dataset name="y_set" source="constant" type="float" value="-0.64237113553,-0.500750778455,1.38930992616,1.98393756064,0.784917470231,-1.17377831157,-2.66405897615,-2.9669684623,-2.01825893141,-0.24129368636,1.72477821509,3.27215424484,3.98722048131,3.71781556747,2.5610299588,0.799047653518,-1.18858453138,-3.01284626565,-4.34725663835,-4.9755042398">
 <attribute name="units" source="constant" type="string" value="mm" />
 </dataset>
 <dataset det_default="true" name="detector" source="detector">
@@ -111,14 +111,14 @@ class TestHDFWriterPart(unittest.TestCase):
 </group>
 <group name="StatsTotal">
 <attribute name="signal" source="constant" type="string" value="StatsTotal" />
-<attribute name="axes" source="constant" type="string" value="energy_demand,.,.,." />
+<attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
-<attribute name="energy_demand_indices" source="constant" type="string" value="0" />
-<hardlink name="energy_demand" target="/entry/detector/energy_demand" />
-<attribute name="x_demand_indices" source="constant" type="string" value="1" />
-<hardlink name="x_demand" target="/entry/detector/x_demand" />
-<attribute name="y_demand_indices" source="constant" type="string" value="1" />
-<hardlink name="y_demand" target="/entry/detector/y_demand" />
+<attribute name="energy_set_indices" source="constant" type="string" value="0" />
+<hardlink name="energy_set" target="/entry/detector/energy_set" />
+<attribute name="x_set_indices" source="constant" type="string" value="1" />
+<hardlink name="x_set" target="/entry/detector/x_set" />
+<attribute name="y_set_indices" source="constant" type="string" value="1" />
+<hardlink name="y_set" target="/entry/detector/y_set" />
 <dataset name="StatsTotal" ndattribute="StatsTotal" source="ndattribute" />
 </group>
 <group name="NDAttributes" ndattr_default="true">

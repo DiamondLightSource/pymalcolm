@@ -17,7 +17,7 @@ from malcolm.core.response import Error, Return, Update, Delta
 from malcolm.core.request import Request
 from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.future import Future
-from malcolm.core.vmeta import VMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.core.attribute import Attribute
 from malcolm.core import Process, Block, SyncFactory
 
@@ -33,7 +33,7 @@ class TestTask(unittest.TestCase):
     def setUp(self):
         self.callback_result = 0
         self.callback_value = ''
-        meta = VMeta("meta for unit tests")
+        meta = StringMeta("meta for unit tests")
         self.proc = MagicMock(q=queue.Queue())
         self.proc.create_queue = MagicMock(side_effect=queue.Queue)
         self.block = Block()

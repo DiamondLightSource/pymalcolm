@@ -6,20 +6,24 @@ class PandABoxActionPart(Part):
     in yaml"""
 
     def __init__(self, process, control, block_name, field_name, description,
-                 tags, arg_name=None, arg_meta=None):
+                 tags, arg_meta=None):
         super(PandABoxActionPart, self).__init__(process)
         self.control = control
         self.block_name = block_name
         self.field_name = field_name
         self.description = description
         self.tags = tags
-        self.arg_name = arg_name
+        self.arg_name = None
         self.arg_meta = arg_meta
         self.method = None
 
     def create_methods(self):
-        method_name = self.field_name.replace(".", ":")
+        label = self.field_name.replace(".", " ").replace("_", " ").title()
+        method_name = label.replace(" ", "")
+        method_name = method_name[0].lower() + method_name[1:]
         if self.arg_meta:
+            self.arg_name = method_name
+
             # Decorate set_field with a MethodMeta
             @method_takes(self.arg_name, self.arg_meta, REQUIRED)
             def set_field(params):
@@ -33,7 +37,6 @@ class PandABoxActionPart(Part):
         self.method.set_description(self.description)
         # TODO: set widget tag?
         self.method.set_tags(self.tags)
-        label = self.field_name.replace(".", " ").replace("_", " ").title()
         self.method.set_label(label)
         yield method_name, self.method, writeable_func
 

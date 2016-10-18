@@ -74,6 +74,7 @@ class RunnableController(ManagerController):
         yield "axesToMove", self.axes_to_move, self.set_axes_to_move
 
     def do_reset(self):
+        self.do_abort()
         super(RunnableController, self).do_reset()
         self._update_configure_args()
 

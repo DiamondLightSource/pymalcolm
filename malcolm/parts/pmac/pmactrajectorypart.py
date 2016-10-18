@@ -29,7 +29,7 @@ cs_axis_names = list("ABCUVWXYZ")
 # Class for these motor variables
 MotorInfo = namedtuple(
     "MotorInfo", "cs_axis,cs_port,acceleration_time,resolution,offset,"
-    "max_velocity,current_position")
+    "max_velocity,current_position,scannable")
 
 
 class PMACTrajectoryPart(LayoutPart):
@@ -58,25 +58,25 @@ class PMACTrajectoryPart(LayoutPart):
     @RunnableController.Running
     def run(self, task, update_completed_steps):
         task.subscribe(
-            self.child["points_scanned"], self.update_step,
+            self.child["pointsScanned"], self.update_step,
             update_completed_steps)
-        task.post(self.child["execute_profile"])
+        task.post(self.child["executeProfile"])
 
     @RunnableController.Aborting
     def stop_execution(self, task):
-        task.post(self.child["abort_profile"])
+        task.post(self.child["abortProfile"])
 
     def get_cs_port(self, part_info, axes_to_move):
         cs_ports = set()
         # dict {name: MotorInfo}
         axis_mapping = {}
-        for part_name, motor_info in part_info.items():
-            if part_name in axes_to_move:
+        for motor_info in part_info.values():
+            if motor_info.scannable in axes_to_move:
                 assert motor_info.cs_axis in cs_axis_names, \
                     "Can only scan 1-1 mappings, %r is %r" % \
-                    (part_name, motor_info.cs_axis)
+                    (motor_info.scannable, motor_info.cs_axis)
                 cs_ports.add(motor_info.cs_port)
-                axis_mapping[part_name] = motor_info
+                axis_mapping[motor_info.scannable] = motor_info
         missing = set(axes_to_move) - set(axis_mapping)
         assert not missing, \
             "Some scannables %s are not children of this controller" % missing
@@ -170,7 +170,7 @@ class PMACTrajectoryPart(LayoutPart):
 
         self.build_profile(task, time_array, velocity_mode, trajectory,
                            user_programs)
-        futures = task.post_async(self.child["execute_profile"])
+        futures = task.post_async(self.child["executeProfile"])
         return futures
 
     def build_profile(self, task, time_array, velocity_mode, trajectory,
@@ -241,17 +241,17 @@ class PMACTrajectoryPart(LayoutPart):
 
         # Set the trajectories
         attr_dict = dict(
-            time_array=time_array_ticks,
-            velocity_mode=velocity_mode,
-            user_programs=user_programs,
-            num_points=len(time_array)
+            timeArray=time_array_ticks,
+            velocityMode=velocity_mode,
+            userPrograms=user_programs,
+            numPoints=len(time_array)
         )
         for axis_name in trajectory:
             motor_info = self.axis_mapping[axis_name]
             cs_axis = motor_info.cs_axis
             attr_dict["positions%s" % cs_axis] = trajectory[axis_name]
         task.put({self.child[k]: v for k, v in attr_dict.items()})
-        task.post(self.child["build_profile"])
+        task.post(self.child["buildProfile"])
 
     def build_generator_profile(self, start_index, steps_to_build):
         acceleration_time = self.calculate_acceleration_time()

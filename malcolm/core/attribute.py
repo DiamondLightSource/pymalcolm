@@ -11,11 +11,9 @@ class Attribute(Monitorable):
     def __init__(self, meta=None, value=None):
         if meta is None:
             self.set_endpoint_data("meta", None)
-        else:
-            self.set_meta(meta)
-        if value is None:
             self.set_endpoint_data("value", None)
         else:
+            self.set_meta(meta)
             self.set_value(value)
 
     def set_meta(self, meta, notify=True):

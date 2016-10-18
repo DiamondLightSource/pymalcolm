@@ -10,8 +10,8 @@ class PandABoxFieldPart(Part):
         super(PandABoxFieldPart, self).__init__(process)
         self.control = control
         self.meta = meta
-        label = field_name.replace(".", " ").replace("_", " ").title()
-        self.meta.set_label(label)
+        self.label = field_name.replace(".", " ").replace("_", " ").title()
+        self.meta.set_label(self.label)
         self.block_name = block_name
         self.field_name = field_name
         self.writeable = writeable
@@ -20,7 +20,8 @@ class PandABoxFieldPart(Part):
 
     def create_attributes(self):
         self.attr = self.meta.make_attribute(self.initial_value)
-        attr_name = self.field_name.replace(".", "_")
+        attr_name = self.label.replace(" ", "")
+        attr_name = attr_name[0].lower() + attr_name[1:]
         if self.writeable:
             writeable_func = self.set_field
         else:

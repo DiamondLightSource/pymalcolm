@@ -15,8 +15,9 @@ class PandABoxTablePart(PandABoxFieldPart):
             process, control, meta, block_name, field_name, writeable)
         # Fill in the meta object with the correct headers
         columns = OrderedDict()
-        self.fields = control.get_table_fields(block_name, field_name)
-        for column_name, (bits_hi, bits_lo) in self.fields.items():
+        self.fields = OrderedDict()
+        fields = control.get_table_fields(block_name, field_name)
+        for column_name, (bits_hi, bits_lo) in fields.items():
             nbits = bits_hi - bits_lo + 1
             if nbits < 1:
                 raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
@@ -37,9 +38,12 @@ class PandABoxTablePart(PandABoxFieldPart):
                 column_meta = NumberArrayMeta(dtype, column_name)
                 widget_tag = "widget:textinput"
             label = column_name.replace(".", " ").replace("_", " ").title()
+            column_name = label.replace(" ", "")
+            column_name = column_name[0].lower() + column_name[1:]
             column_meta.set_label(label)
             column_meta.set_tags([widget_tag])
             columns[column_name] = column_meta
+            self.fields[column_name] = (bits_hi, bits_lo)
         meta.set_elements(TableElementMap(columns))
 
     def set_field(self, value):

@@ -61,16 +61,16 @@ class TestCAPart(unittest.TestCase):
     def test_caput_status_pv_ok(self):
         catools.caput.reset_mock()
         p = self.create_part(dict(
-            name="mname", description="desc", pv="pv", status_pv="spv",
-            good_status="All Good"))
+            name="mname", description="desc", pv="pv", statusPv="spv",
+            goodStatus="All Good"))
         catools.caget.return_value = "All Good"
         p.caput()
 
     def test_caput_status_pv_no_good(self):
         catools.caput.reset_mock()
         p = self.create_part(dict(
-            name="mname", description="desc", pv="pv", status_pv="spv",
-            good_status="All Good"))
+            name="mname", description="desc", pv="pv", statusPv="spv",
+            goodStatus="All Good"))
         catools.caget.return_value = "No Good"
         self.assertRaises(AssertionError, p.caput)
 

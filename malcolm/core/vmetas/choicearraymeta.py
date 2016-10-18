@@ -19,7 +19,7 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
         """
 
         if value is None:
-            return None
+            return []
 
         if not isinstance(value, list):
             raise ValueError("%r is not a list" % (value,))

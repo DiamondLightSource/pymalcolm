@@ -1,6 +1,17 @@
 from collections import OrderedDict
+import re
+import logging
 
 import numpy as np
+
+
+camel_re = re.compile("[a-z]([a-z0-9]*)([A-Z]+[a-z0-9]*)*$")
+
+
+def check_camel_case(name):
+    match = camel_re.match(name)
+    if not match:
+        logging.warning("String %r is not camelCase", name)
 
 
 def serialize_object(o):
@@ -93,6 +104,7 @@ class Serializable(object):
         d["typeid"] = self.typeid
 
         for endpoint in self:
+            check_camel_case(endpoint)
             value = self._endpoint_data[endpoint]
             d[endpoint] = serialize_object(value)
 

@@ -24,13 +24,14 @@ class TestRawMotorPart(unittest.TestCase):
 
     def test_report(self):
         returns = self.c.report_cs_info(MagicMock())
-        self.assertEqual(returns.cs_axis, self.child.cs_axis)
-        self.assertEqual(returns.cs_port, self.child.cs_port)
-        self.assertEqual(returns.acceleration_time, self.child.acceleration_time)
+        self.assertEqual(returns.cs_axis, self.child.csAxis)
+        self.assertEqual(returns.cs_port, self.child.csPort)
+        self.assertEqual(returns.acceleration_time, self.child.accelerationTime)
         self.assertEqual(returns.resolution, self.child.resolution)
         self.assertEqual(returns.offset, self.child.offset)
-        self.assertEqual(returns.max_velocity, self.child.max_velocity)
+        self.assertEqual(returns.max_velocity, self.child.maxVelocity)
         self.assertEqual(returns.current_position, self.child.position)
+        self.assertEqual(returns.scannable, self.child.scannable)
 
 
 if __name__ == "__main__":

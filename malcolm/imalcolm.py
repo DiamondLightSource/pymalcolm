@@ -34,13 +34,17 @@ def make_process():
     from malcolm.assemblyutil import make_assembly
     from malcolm.gui.blockgui import BlockGui
 
-    proc = Process("Process", SyncFactory("Sync"))
+    sf = SyncFactory("Sync")
     guis = {}
 
     if args.yaml:
+        proc_name = os.path.basename(args.yaml).split(".")[-2]
+        proc = Process(proc_name, sf)
         with open(args.yaml) as f:
             assembly = make_assembly(f.read())
         assembly(proc, {})
+    else:
+        proc = Process("Process", sf)
 
     def gui(block):
         if block in guis:
@@ -53,7 +57,9 @@ def make_process():
         if args.client.startswith("ws://"):
             from malcolm.comms.websocket import WebsocketClientComms
             hostname, port = args.client[5:].split(":")
-            WebsocketClientComms(proc, dict(hostname=hostname, port=int(port)))
+            comms = WebsocketClientComms(
+                proc, dict(hostname=hostname, port=int(port)))
+            proc.add_comms(comms)
         else:
             raise ValueError(
                 "Don't know how to create client to %s" % args.client)
@@ -71,7 +77,7 @@ self.process_block.blocks:
 
 Try:
 hello = self.get_block("hello")
-print hello.say_hello("me")
+print hello.greet("me")
 
 or
 

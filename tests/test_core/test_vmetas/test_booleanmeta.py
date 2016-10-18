@@ -38,7 +38,7 @@ class TestValidate(unittest.TestCase):
     def test_given_value_None_then_return(self):
         response = self.boolean_meta.validate(None)
 
-        self.assertEqual(None, response)
+        self.assertEqual(False, response)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

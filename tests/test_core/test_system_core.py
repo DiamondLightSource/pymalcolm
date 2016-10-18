@@ -28,7 +28,7 @@ class TestHelloDemoSystem(unittest.TestCase):
         part = HelloPart(p, None)
         block = DefaultController("hello", p, parts={"hello":part}).block
         block.reset()
-        result = block.say_hello(name="me")
+        result = block.greet(name="me")
         self.assertEquals(result.greeting, "Hello me")
 
     def test_hello_with_process(self):
@@ -43,7 +43,7 @@ class TestHelloDemoSystem(unittest.TestCase):
         task.wait_all(futures, timeout=1)
         q = sync_factory.create_queue()
         req = Post(response_queue=q, context="ClientConnection",
-                   endpoint=["hello", "say_hello"],
+                   endpoint=["hello", "greet"],
                    parameters=dict(name="thing"))
         req.set_id(44)
         process.q.put(req)

@@ -3,6 +3,7 @@ import json
 
 from tornado.ioloop import IOLoop
 from tornado.websocket import websocket_connect
+from tornado import gen
 
 from malcolm.core import ClientComms, Request, Subscribe, Response, \
     deserialize_object, serialize_object, method_takes
@@ -25,11 +26,22 @@ class WebsocketClientComms(ClientComms):
         self.url = "ws://%(hostname)s:%(port)d/ws" % params
         self.set_logger_name(self.url)
         # TODO: Are we starting one or more IOLoops here?
+        self.conn = None
         self.loop = IOLoop.current()
-        self.conn = websocket_connect(
-            self.url, callback=self.subscribe_server_blocks,
-            on_message_callback=self.on_message)
+        self.loop.add_callback(self.recv_loop)
         self.add_spawn_function(self.loop.start, self.stop_recv_loop)
+
+    @gen.coroutine
+    def recv_loop(self):
+        message = None
+        while True:
+            if message is None:
+                # TODO: cleanup old subscriptions here
+                self.conn = None
+                self.conn = yield websocket_connect(self.url, self.loop)
+                self.subscribe_server_blocks()
+            message = yield self.conn.read_message()
+            self.on_message(message)
 
     def on_message(self, message):
         """
@@ -48,25 +60,23 @@ class WebsocketClientComms(ClientComms):
             # error messages about 'HTTPRequest' object has no attribute 'path'
             self.log_exception(e)
 
-    def send_to_server(self, request, conn=None):
+    def send_to_server(self, request):
         """Dispatch a request to the server
 
         Args:
             request (Request): The message to pass to the server
-            conn (Future): Future that will resolve to the websocket connection
         """
         message = json.dumps(serialize_object(request))
-        if conn is None:
-            conn = self.conn
-        conn.result().write_message(message)
+        self.log_debug("Sending message %s", message)
+        self.conn.write_message(message)
 
     def stop_recv_loop(self):
         # This is the only thing that is safe to do from outside the IOLoop
         # thread
         self.loop.add_callback(self.loop.stop)
 
-    def subscribe_server_blocks(self, conn):
+    def subscribe_server_blocks(self):
         """Subscribe to process blocks"""
         request = Subscribe(None, None, [".", "blocks", "value"])
         request.set_id(self.SERVER_BLOCKS_ID)
-        self.loop.add_callback(self.send_to_server, request, conn)
+        self.send_to_server(request)

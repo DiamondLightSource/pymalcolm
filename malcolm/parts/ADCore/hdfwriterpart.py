@@ -155,7 +155,7 @@ class HDFWriterPart(LayoutPart):
         pad_dims = []
         for n in generator.index_names:
             if n in generator.position_units:
-                pad_dims.append("%s_demand" % n)
+                pad_dims.append("%s_set" % n)
             else:
                 pad_dims.append(".")
         # TODO: assume a 2D detector here
@@ -169,18 +169,18 @@ class HDFWriterPart(LayoutPart):
             # Find the generator for this dimension
             ndims, g = self._find_generator_index(generator, dim)
             ET.SubElement(data_el, "attribute",
-                          name="%s_demand_indices" % dim,
+                          name="%s_set_indices" % dim,
                           source="constant", value=str(ndims), type="string")
             if link:
                 ET.SubElement(data_el, "hardlink",
-                              name="%s_demand" % dim,
-                              target="/entry/detector/%s_demand" % dim)
+                              name="%s_set" % dim,
+                              target="/entry/detector/%s_set" % dim)
             else:
                 axes_vals = []
                 for point in g.iterator():
                     axes_vals.append("%.12g" % point.positions[dim])
                 axis_el = ET.SubElement(
-                    data_el, "dataset", name="%s_demand" % dim,
+                    data_el, "dataset", name="%s_set" % dim,
                     source="constant", type="float", value=",".join(axes_vals))
                 ET.SubElement(axis_el, "attribute", name="units",
                               source="constant", value=units, type="string")

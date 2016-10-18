@@ -23,7 +23,7 @@ class TestValidate(unittest.TestCase):
         self.meta = ChoiceArrayMeta("test description", ["a", "b"])
 
     def test_validate_none(self):
-        self.assertIsNone(self.meta.validate(None))
+        self.assertEquals(self.meta.validate(None), [])
 
     def test_validate(self):
         response = self.meta.validate(["b", "a"])

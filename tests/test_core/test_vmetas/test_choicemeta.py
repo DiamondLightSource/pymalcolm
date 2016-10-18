@@ -39,7 +39,7 @@ class TestValidate(unittest.TestCase):
 
     def test_None_valid(self):
         response = self.choice_meta.validate(None)
-        self.assertEqual(None, response)
+        self.assertEqual("a", response)
 
     def test_given_invalid_value_then_raises(self):
         with self.assertRaises(ValueError):

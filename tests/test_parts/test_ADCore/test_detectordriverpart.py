@@ -6,8 +6,8 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, MagicMock, ANY
 
-from scanpointgenerator import LineGenerator, CompoundGenerator
-from scanpointgenerator.fixeddurationmutator import FixedDurationMutator
+from scanpointgenerator import LineGenerator, CompoundGenerator, \
+    FixedDurationMutator
 from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
 
 

@@ -9,7 +9,7 @@ class ClientComms(Loggable, Spawnable):
     """Abstract class for dispatching requests to a server and resonses to
     a method"""
     # The id that will be use for subscriptions to the blocks the server has
-    SERVER_BLOCKS_ID=0
+    SERVER_BLOCKS_ID = 0
 
     def __init__(self, process):
         self.process = process

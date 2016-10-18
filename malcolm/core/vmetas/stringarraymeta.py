@@ -17,7 +17,7 @@ class StringArrayMeta(VArrayMeta):
             List of Strings or None if value is None
         """
         if value is None:
-            return None
+            return []
 
         if not isinstance(value, list):
             raise ValueError("%r is not a list" % (value,))

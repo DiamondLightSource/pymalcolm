@@ -20,7 +20,7 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(self.meta.typeid, "malcolm:core/BooleanArrayMeta:1.0")
 
     def test_validate_none(self):
-        self.assertIsNone(self.meta.validate(None))
+        self.assertEquals(self.meta.validate(None), [])
 
     def test_validate_array(self):
         array = ["True", "", True, False, 1, 0]
