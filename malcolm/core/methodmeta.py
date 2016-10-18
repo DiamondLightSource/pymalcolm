@@ -117,11 +117,15 @@ class MethodMeta(Meta):
         return func
 
 
-def _prepare_map_meta(args, allow_defaults):
+def _prepare_map_meta(args, allow_defaults, defaults=None, elements=None,
+                      required=None):
     # prepare some data structures that will be used for the takes MapMeta
-    defaults = OrderedDict()
-    elements = OrderedDict()
-    required = []
+    if defaults is None:
+        defaults = OrderedDict()
+    if elements is None:
+        elements = OrderedDict()
+    if required is None:
+        required = []
     for index in range(0, len(args), 3):
         # pick out 3 arguments
         name = args[index]
@@ -161,6 +165,33 @@ def method_takes(*args):
     def decorator(func):
         MethodMeta.wrap_method(func)
         takes_meta, defaults = _prepare_map_meta(args, allow_defaults=True)
+        func.MethodMeta.set_takes(takes_meta)
+        func.MethodMeta.set_defaults(defaults)
+        return func
+
+    return decorator
+
+
+def method_also_takes(*args):
+    """
+    As method_takes, but updates takes instead of replacing
+
+    Args:
+        *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
+        REQUIRED/OPTIONAL]
+
+    Returns:
+        function: Updated function
+    """
+
+    def decorator(func):
+        MethodMeta.wrap_method(func)
+        takes_meta, defaults = _prepare_map_meta(
+            args, allow_defaults=True,
+            elements=func.MethodMeta.takes.elements.to_dict(),
+            defaults=func.MethodMeta.defaults,
+            required=func.MethodMeta.takes.required
+        )
         func.MethodMeta.set_takes(takes_meta)
         func.MethodMeta.set_defaults(defaults)
         return func

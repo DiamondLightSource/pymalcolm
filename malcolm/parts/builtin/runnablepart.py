@@ -52,7 +52,7 @@ class RunnablePart(LayoutPart):
         ret = []
         for i, dataset_name in enumerate(datasets_table.name):
             row = datasets_table[i]
-            row[0] = "%s.%s" % (self.name, dataset_name)
+            row[0] = self.name
             ret.append(DatasetProducedInfo(*row))
         return ret
 

@@ -8,9 +8,9 @@ import unittest
 from mock import Mock, patch, MagicMock
 
 from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, method_writeable_in, OPTIONAL, \
-    REQUIRED
+    REQUIRED, method_also_takes
 
-from malcolm.core.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta, BooleanMeta
 from malcolm.core.mapmeta import MapMeta
 from malcolm.core.elementmap import ElementMap
 
@@ -99,6 +99,34 @@ class TestDecorators(unittest.TestCase):
 
         self.assertTrue(hasattr(f, "MethodMeta"))
         self.assertEqual(f.MethodMeta.writeable_in, ("boo", "boo2"))
+
+    def test_method_also_takes(self):
+        @method_takes(
+            "hello", StringMeta(), REQUIRED,
+            "hello2", BooleanMeta(), False)
+        class Thing(object):
+            pass
+
+        @method_also_takes(
+            "world", BooleanMeta(), REQUIRED,
+            "default", StringMeta(), "nothing")
+        class Thing2(Thing):
+            pass
+
+        itakes = MapMeta()
+        elements = OrderedDict()
+        elements["hello"] = StringMeta()
+        elements["hello2"] = BooleanMeta()
+        elements["world"] = BooleanMeta()
+        elements["default"] = StringMeta()
+        itakes.set_elements(ElementMap(elements))
+        itakes.set_required(["hello", "world"])
+        defaults = OrderedDict()
+        defaults["hello2"] = False
+        defaults["default"] = "nothing"
+        self.assertEqual(Thing2.MethodMeta.takes.to_dict(), itakes.to_dict())
+        self.assertEqual(Thing2.MethodMeta.returns.to_dict(), MapMeta().to_dict())
+        self.assertEqual(Thing2.MethodMeta.defaults, defaults)
 
 
 class TestSerialization(unittest.TestCase):

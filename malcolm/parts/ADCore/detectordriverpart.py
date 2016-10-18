@@ -1,8 +1,12 @@
-from malcolm.core import method_takes, REQUIRED
+from malcolm.core import method_also_takes, REQUIRED, method_takes
 from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta
 from malcolm.parts.builtin.layoutpart import LayoutPart
 from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.hdfwriterpart import DatasetSourceInfo
+
+
+# Maximum number of points to check for fixed duration
+MAX_CHECK = 5000
 
 
 class DetectorDriverPart(LayoutPart):
@@ -28,7 +32,8 @@ class DetectorDriverPart(LayoutPart):
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         durations = set()
-        for i in range(completed_steps, completed_steps + steps_to_do):
+        max_points = min(MAX_CHECK, completed_steps + steps_to_do)
+        for i in range(completed_steps, max_points):
             point = params.generator.get_point(i)
             durations.add(point.duration)
         assert len(durations) == 1, \
