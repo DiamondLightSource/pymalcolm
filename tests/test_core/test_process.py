@@ -37,6 +37,16 @@ class TestProcess(unittest.TestCase):
         p.add_block(b)
         self.assertEqual(p._blocks["name"], b)
 
+    def test_get_block(self):
+        p = Process("proc", MagicMock())
+        b1 = p.get_block("name1")
+        self.assertEqual(b1.status, "Waiting for connection...")
+        self.assertEqual(p.get_block("name1"), b1)
+        b2 = Block()
+        b2.set_parent(p, "name2")
+        p.add_block(b2)
+        self.assertEqual(p.get_block("name2"), b2)
+
     def test_add_block_calls_handle(self):
         s = SyncFactory("sched")
         p = Process("proc", s)
