@@ -1,6 +1,5 @@
 from collections import OrderedDict
 import json
-import logging
 
 from tornado.websocket import WebSocketHandler
 from tornado.ioloop import IOLoop
@@ -24,7 +23,6 @@ class MalcWebSocketHandler(WebSocketHandler):  # pylint:disable=abstract-method
             message(str): Received message
         """
 
-        logging.debug(message)
         d = json.loads(message, object_pairs_hook=OrderedDict)
         request = deserialize_object(d, Request)
         request.context = self
@@ -85,6 +83,7 @@ class WebsocketServerComms(ServerComms):
     def _send_to_client(self, response):
         if isinstance(response.context, MalcWebSocketHandler):
             message = json.dumps(serialize_object(response))
+            self.log_debug("Sending message %s", message)
             response.context.write_message(message)
         else:
             if isinstance(response, Return):
