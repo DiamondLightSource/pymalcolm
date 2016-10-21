@@ -1,33 +1,80 @@
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict
 import json
 
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import ManagerStateMachine, method_writeable_in, method_takes, \
-    Hook, Table
+    Hook, Table, Info
 from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, \
     BooleanArrayMeta, TableMeta, StringMeta
 
 
+class LayoutInfo(Info):
+    """Info about the position and visibility of a child block in a layout
+
+    Args:
+        mri (str): Malcolm full name of child block
+        x (float): X Coordinate of child block
+        y (float): Y Coordinate of child block
+        visible (bool): Whether child block is visible
+    """
+    def __init__(self, mri, x, y, visible):
+        self.mri = mri
+        self.x = x
+        self.y = y
+        self.visible = visible
+
+
 sm = ManagerStateMachine
 
-# A class to hold the information about the layout of a part
-PartLayout = namedtuple("PartLayout", "mri,x,y,visible")
 
-# Ac class to hold the information about the outports of a part
-PartOutports = namedtuple("PartOutports", "types,values")
-
-
-@sm.insert
 @method_takes()
 class ManagerController(DefaultController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
-    # hooks
-    UpdateLayout = Hook()
-    ListOutports = Hook()
-    LoadLayout = Hook()
-    SaveLayout = Hook()
+    # The stateMachine that this controller implements
+    stateMachine = sm
 
-    # default attributes
+    ReportOutports = Hook()
+    """Called before Layout to get outport info from children
+
+    Args:
+        task (Task): The task used to perform operations on child blocks
+
+    Returns:
+        [OutportInfo]: the type and value of each outport of the child
+    """
+
+    Layout = Hook()
+    """Called when layout table set and at init to update child layout
+
+    Args:
+        task (Task): The task used to perform operations on child blocks
+        part_info (dict): {part_name: [Info]} returned from Layout hook
+        layout_table (Table): A possibly partial set of changes to the layout
+            table that should be acted on
+
+    Returns:
+        [LayoutInfo]: the child layout resulting from this change
+    """
+
+    Load = Hook()
+    """Called at load() or revert() to load child settings from a structure
+
+    Args:
+        task (Task): The task used to perform operations on child blocks
+        structure (dict): {part_name: part_structure} where part_structure is
+            the return from Save hook
+    """
+
+    Save = Hook()
+    """Called at save() to serialize child settings into a dict structure
+
+    Args:
+        task (Task): The task used to perform operations on child blocks
+        structure (dict): {part_name: part_structure} where part_structure is
+            the return from Save hook
+    """
+
+    # attributes
     layout = None
     layout_name = None
 
@@ -45,13 +92,24 @@ class ManagerController(DefaultController):
         columns["y"] = NumberArrayMeta("float64", "Y Coordinate of child block")
         columns["visible"] = BooleanArrayMeta("Whether child block is visible")
         layout_table_meta = TableMeta("Layout of child blocks", columns=columns)
-        layout_table_meta.set_writeable_in(sm.EDITING)
+        layout_table_meta.set_writeable_in(sm.EDITABLE)
         self.layout = layout_table_meta.make_attribute()
         yield "layout", self.layout, self.set_layout
         self.layout_name = StringMeta(
             "Saved layout name to load").make_attribute()
-        self.layout_name.meta.set_writeable_in(sm.EDITING)
+        self.layout_name.meta.set_writeable_in(sm.EDITABLE)
         yield "layoutName", self.layout_name, self.load_layout
+
+    def set_layout(self, value):
+        part_info = self.run_hook(self.ReportOutports, self.create_part_tasks())
+        part_info = self.run_hook(
+            self.Layout, self.create_part_tasks(), part_info, value)
+        layout_table = Table(self.layout.meta)
+        for name, layout_info in LayoutInfo.filter(part_info).items():
+            row = [name, layout_info.mri, layout_info.x, layout_info.y,
+                   layout_info.visible]
+            layout_table.append(row)
+        self.layout.set_value(layout_table)
 
     def do_reset(self):
         super(ManagerController, self).do_reset()
@@ -59,14 +117,7 @@ class ManagerController(DefaultController):
 
     @method_writeable_in(sm.EDITABLE)
     def edit(self):
-        try:
-            self.transition(sm.EDITING, "Editing")
-            self.do_edit()
-            self.transition(sm.EDITABLE, "Now Editable")
-        except Exception as e:  # pylint:disable=broad-except
-            self.log_exception("Fault occurred while Editing")
-            self.transition(sm.FAULT, str(e))
-            raise
+        self.try_stateful_function(sm.EDITING, sm.EDITABLE, self.do_edit)
 
     def do_edit(self):
         self.revert_structure = self._save_to_structure()
@@ -77,14 +128,9 @@ class ManagerController(DefaultController):
             "Name of layout to save to, if different from current layoutName"),
         None)
     def save(self, params):
-        try:
-            self.transition(sm.SAVING, "Saving")
-            self.do_save(params.layoutName)
-            self.transition(self.stateMachine.AFTER_RESETTING, "Done Saving")
-        except Exception as e:  # pylint:disable=broad-except
-            self.log_exception("Fault occurred while Saving")
-            self.transition(sm.FAULT, str(e))
-            raise
+        self.try_stateful_function(
+            sm.SAVING, self.stateMachine.AFTER_RESETTING, self.do_save,
+            params.layoutName)
 
     def do_save(self, layout_name=None):
         if layout_name is None:
@@ -97,14 +143,8 @@ class ManagerController(DefaultController):
 
     @method_writeable_in(sm.EDITABLE)
     def revert(self):
-        try:
-            self.transition(sm.REVERTING, "Reverting")
-            self.do_revert()
-            self.transition(self.stateMachine.AFTER_RESETTING, "Done Reverting")
-        except Exception as e:  # pylint:disable=broad-except
-            self.log_exception("Fault occurred while Reverting")
-            self.transition(sm.FAULT, str(e))
-            raise
+        self.try_stateful_function(
+            sm.REVERTING, self.stateMachine.AFTER_RESETTING, self.do_revert)
 
     def do_revert(self):
         self._load_from_structure(self.revert_structure)
@@ -117,22 +157,11 @@ class ManagerController(DefaultController):
         self.layout_name.set_value(value)
 
     def _save_to_structure(self):
-        structure = self.run_hook(
-            self.SaveLayout, self.create_part_tasks())
-        structure["layout"] = self.layout.value
+        structure = self.run_hook(self.Save, self.create_part_tasks())
+        structure["layout"] = self.layout.value.to_dict()
         return structure
 
     def _load_from_structure(self, structure):
         self.set_layout(structure["layout"])
-        self.run_hook(
-            self.LoadLayout, self.create_part_tasks(), structure)
+        self.run_hook(self.Load, self.create_part_tasks(), structure)
 
-    def set_layout(self, value):
-        part_outports = self.run_hook(
-            self.ListOutports, self.create_part_tasks())
-        part_layouts = self.run_hook(
-            self.UpdateLayout, self.create_part_tasks(), part_outports, value)
-        layout_table = Table(self.layout.meta)
-        for name, part_layout in part_layouts.items():
-            layout_table.append((name,) + part_layout)
-        self.layout.set_value(layout_table)

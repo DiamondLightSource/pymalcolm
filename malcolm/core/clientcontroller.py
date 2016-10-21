@@ -15,7 +15,7 @@ class ClientController(Controller):
     client_comms = None
 
     def do_initial_reset(self):
-        self.state.set_value("Resetting")
+        self.state.set_value("Reset")
         self.status.set_value("Waiting for connection...")
         self.busy.set_value(True)
         request = Subscribe(

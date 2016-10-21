@@ -5,7 +5,7 @@ from malcolm.core.loggable import Loggable
 
 class StateMachine(Loggable):
 
-    RESETTING = "Resetting"
+    RESETTING = "Reset"
     DISABLED = "Disabled"
     DISABLING = "Disabling"
     FAULT = "Fault"
@@ -13,9 +13,8 @@ class StateMachine(Loggable):
     # Subclasses must override this
     AFTER_RESETTING = None
 
-    def __init__(self, name):
-        self.set_logger_name(name)
-        self.name = name
+    def __init__(self):
+        self.set_logger_name(self.__name__)
         self.allowed_transitions = OrderedDict()
         self.busy_states = []
         assert self.AFTER_RESETTING is not None, \
@@ -98,23 +97,6 @@ class StateMachine(Loggable):
         """
         return state in self.busy_states
 
-    @classmethod
-    def insert(cls, controller):
-        """
-        Add a stateMachine to a Controller, overriding any current
-        current StateMachine
-
-        Args:
-            controller(Controller): Controller to add stateMachine to
-
-        Returns:
-            Controller: Controller with stateMachine
-        """
-
-        controller.stateMachine = cls(cls.__name__)
-
-        return controller
-
 
 class DefaultStateMachine(StateMachine):
 
@@ -145,10 +127,9 @@ class ManagerStateMachine(DefaultStateMachine):
 
 class RunnableStateMachine(ManagerStateMachine):
 
-    READY = "Ready"
     IDLE = "Idle"
     CONFIGURING = "Configuring"
-    PRERUN = "PreRun"
+    READY = "Ready"
     RUNNING = "Running"
     POSTRUN = "PostRun"
     PAUSED = "Paused"
@@ -163,18 +144,17 @@ class RunnableStateMachine(ManagerStateMachine):
         # Set transitions for normal states
         self.set_allowed(self.IDLE, self.CONFIGURING)
         self.set_allowed(
-            self.READY, [self.PRERUN, self.SEEKING, self.RESETTING])
+            self.READY, [self.RUNNING, self.SEEKING, self.RESETTING])
         self.set_allowed(self.CONFIGURING, self.READY)
-        self.set_allowed(self.PRERUN, [self.RUNNING, self.SEEKING])
         self.set_allowed(self.RUNNING, [self.POSTRUN, self.SEEKING])
         self.set_allowed(self.POSTRUN, [self.IDLE, self.READY])
-        self.set_allowed(self.PAUSED, [self.SEEKING, self.PRERUN])
+        self.set_allowed(self.PAUSED, [self.SEEKING, self.RUNNING])
         self.set_allowed(self.SEEKING, self.PAUSED)
 
-        # Add Aborting to all normal states
-        normal_states = [self.IDLE, self.READY, self.CONFIGURING, self.PRERUN,
-                         self.RUNNING, self.POSTRUN, self.PAUSED,
-                         self.RESETTING, self.SEEKING]
+        # Add Abort to all normal states
+        normal_states = [
+            self.IDLE, self.READY, self.CONFIGURING, self.RUNNING, self.POSTRUN,
+            self.PAUSED, self.RESETTING, self.SEEKING]
         for state in normal_states:
             self.set_allowed(state, self.ABORTING)
 

@@ -21,7 +21,7 @@ class AsynOutportPart(CAStringPart):
         tags = ["widget:textupdate"]
         return tags
 
-    @DefaultController.Resetting
+    @DefaultController.Reset
     def connect_pvs(self, _=None):
         super(AsynOutportPart, self).connect_pvs()
         # Add the outport tags

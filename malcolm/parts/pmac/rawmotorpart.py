@@ -1,10 +1,10 @@
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.builtin.layoutpart import LayoutPart
+from malcolm.parts.builtin.layoutpart import ChildPart
 from malcolm.parts.pmac.pmactrajectorypart import MotorInfo
 
 
-class RawMotorPart(LayoutPart):
-    @RunnableController.PreConfigure
+class RawMotorPart(ChildPart):
+    @RunnableController.ReportStatus
     def report_cs_info(self, _):
         motor_info = MotorInfo(
             cs_axis=self.child.csAxis,

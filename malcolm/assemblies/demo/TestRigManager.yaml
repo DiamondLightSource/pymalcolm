@@ -11,10 +11,10 @@
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
-- parts.builtin.RunnablePart:
+- parts.builtin.RunnableChildPart:
     name: MIC
     child: $(mic)
 
-- parts.builtin.RunnablePart:
+- parts.builtin.RunnableChildPart:
     name: BRICK
     child: $(brick)

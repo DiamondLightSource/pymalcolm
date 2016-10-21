@@ -3,7 +3,7 @@ from xml.etree import cElementTree as ET
 from malcolm.compat import et_to_string
 from malcolm.core import method_takes, REQUIRED, Task
 from malcolm.core.vmetas import PointGeneratorMeta
-from malcolm.parts.builtin.layoutpart import LayoutPart
+from malcolm.parts.builtin.layoutpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
 
 # How big an XML file can the EPICS waveform receive?
@@ -13,7 +13,7 @@ XML_MAX_SIZE = 1000000 - 2
 POSITIONS_PER_XML = 500
 
 
-class PositionLabellerPart(LayoutPart):
+class PositionLabellerPart(ChildPart):
     # Stored generator for positions
     generator = None
     # Next position we need to generate
@@ -62,7 +62,7 @@ class PositionLabellerPart(LayoutPart):
         assert xml_length < XML_MAX_SIZE, "XML size %d too big" % xml_length
         return xml, end_index
 
-    @RunnableController.Configuring
+    @RunnableController.Configure
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
@@ -82,7 +82,7 @@ class PositionLabellerPart(LayoutPart):
         # Start the plugin
         self.start_future = task.post_async(self.child["start"])
 
-    @RunnableController.Running
+    @RunnableController.Run
     def run(self, task, _):
         """Wait for run to finish
         Args:
@@ -101,6 +101,6 @@ class PositionLabellerPart(LayoutPart):
             task.put(self.child["xml"], xml)
             self.loading = False
 
-    @RunnableController.Aborting
+    @RunnableController.Abort
     def abort(self, task):
         task.post(self.child["stop"])

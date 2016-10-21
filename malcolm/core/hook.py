@@ -21,7 +21,9 @@ class Hook(object):
             Decorated function
         """
 
-        func.Hook = self
+        if not hasattr(func, "Hooked"):
+            func.Hooked = []
+        func.Hooked.append(self)
         MethodMeta.wrap_method(func)
         return func
 
@@ -41,5 +43,6 @@ class Hook(object):
 
 def get_hook_decorated(part):
     for name, member in inspect.getmembers(part, inspect.ismethod):
-        if hasattr(member, "Hook"):
-            yield name, member.Hook, member
+        if hasattr(member, "Hooked"):
+            for hook in member.Hooked:
+                yield name, hook, member

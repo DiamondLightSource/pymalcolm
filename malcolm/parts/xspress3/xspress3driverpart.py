@@ -8,7 +8,7 @@ XSPRESS3_BUFFER = 16384
 
 
 class Xspress3DriverPart(DetectorDriverPart):
-    @RunnableController.Configuring
+    @RunnableController.Configure
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):

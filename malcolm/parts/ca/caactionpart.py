@@ -23,7 +23,7 @@ class CAActionPart(Part):
         # TODO: set widget tag?
         yield self.params.name, self.method, self.caput
 
-    @DefaultController.Resetting
+    @DefaultController.Reset
     def connect_pvs(self, _):
         # make the connection in cothread's thread
         pvs = [self.params.pv]

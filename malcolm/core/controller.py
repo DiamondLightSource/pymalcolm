@@ -167,21 +167,18 @@ class Controller(Loggable):
         """
         return get_method_decorated(self)
 
-    def transition(self, state, message, create_tasks=False):
+    def transition(self, state, message):
         """
         Change to a new state if the transition is allowed
 
         Args:
             state(str): State to transition to
             message(str): Status message
-            create_tasks(bool): If true then make self.part_tasks
         """
         with self.lock:
             if self.stateMachine.is_allowed(
                     initial_state=self.state.value, target_state=state):
                 self._do_transition(state, message)
-                if create_tasks:
-                    self.part_tasks = self.create_part_tasks()
             else:
                 raise TypeError("Cannot transition from %s to %s" %
                                 (self.state.value, state))
@@ -269,7 +266,7 @@ class Controller(Loggable):
         assert hook in self.hook_names, \
             "Hook %s doesn't appear in controller hooks %s" % (
                 hook, self.hook_names)
-        self.log_debug("Running %s hook", self.hook_names[hook])
+        self.log_debug("Run %s hook", self.hook_names[hook])
 
         # ask the hook to find the functions it should run
         part_funcs = hook.find_hooked_functions(self.parts)

@@ -5,7 +5,7 @@ import numpy as np
 from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
 from malcolm.core.vmetas import StringArrayMeta, PointGeneratorMeta
-from malcolm.parts.builtin.layoutpart import LayoutPart
+from malcolm.parts.builtin.layoutpart import ChildPart
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
@@ -32,14 +32,14 @@ MotorInfo = namedtuple(
     "max_velocity,current_position,scannable")
 
 
-class PMACTrajectoryPart(LayoutPart):
+class PMACTrajectoryPart(ChildPart):
     # Stored between functions
     axis_mapping = None
     cs_port = None
     completed_steps_lookup = []
     generator = None
 
-    @RunnableController.Configuring
+    @RunnableController.Configure
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
         "axesToMove", StringArrayMeta(
@@ -55,14 +55,14 @@ class PMACTrajectoryPart(LayoutPart):
         task.wait_all(futures)
         self.build_profile(task, **profile)
 
-    @RunnableController.Running
+    @RunnableController.Run
     def run(self, task, update_completed_steps):
         task.subscribe(
             self.child["pointsScanned"], self.update_step,
             update_completed_steps)
         task.post(self.child["executeProfile"])
 
-    @RunnableController.Aborting
+    @RunnableController.Abort
     def stop_execution(self, task):
         task.post(self.child["abortProfile"])
 

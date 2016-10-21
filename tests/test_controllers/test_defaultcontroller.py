@@ -55,6 +55,8 @@ class TestDefaultController(unittest.TestCase):
                 disable=False, reset=False, say_hello=False, say_goodbye=False),
             Fault=dict(
                 disable=True, reset=True, say_hello=True, say_goodbye=False),
+            Failing=dict(
+                disable=True, reset=False, say_hello=False, say_goodbye=False),
             Ready=dict(
                 disable=True, reset=False, say_hello=True, say_goodbye=True),
             Resetting=dict(
@@ -63,16 +65,16 @@ class TestDefaultController(unittest.TestCase):
 
         self.assertEqual(expected, self.c.children_writeable)
         self.assertEqual(self.c.hook_names, {
-            self.c.Resetting: "Resetting", self.c.Disabling: "Disabling"})
+            self.c.Resetting: "Reset", self.c.Disabling: "Disable"})
 
     def test_transition(self):
         self.c.reset()
         self.b["busy"].set_value.assert_has_calls([
             call(True, notify=False), call(False, notify=False)])
         self.b["status"].set_value.assert_has_calls([
-            call("Resetting", notify=False), call("Done Resetting", notify=False)])
+            call("Reset", notify=False), call("Done Reset", notify=False)])
         self.b["state"].set_value.assert_has_calls([
-            call("Resetting", notify=False), call("Ready", notify=False)])
+            call("Reset", notify=False), call("Ready", notify=False)])
         self.c.disable()
         self.assertEqual(self.c.state.value, "Disabled")
 
@@ -80,7 +82,7 @@ class TestDefaultController(unittest.TestCase):
         self.c.state.set_value("Ready")
 
         with self.assertRaises(TypeError):
-            self.c.transition("Configuring", "Attempting to configure scan...")
+            self.c.transition("Configure", "Attempting to configure scan...")
 
     def test_disable_exception(self):
         self.c.reset()
@@ -90,7 +92,8 @@ class TestDefaultController(unittest.TestCase):
             self.c.disable()
         transition_calls = self.c.transition.call_args_list
         expected_calls = [
-            call(DefaultStateMachine.DISABLING, "Disabling"),
+            call(DefaultStateMachine.DISABLING, "Disable"),
+            call(DefaultStateMachine.FAILING, "test exception"),
             call(DefaultStateMachine.FAULT, "test exception")]
         self.assertEqual(expected_calls, transition_calls)
 
@@ -101,9 +104,9 @@ class TestDefaultController(unittest.TestCase):
         self.b["busy"].set_value.assert_has_calls(
             [call(True, notify=False), call(False, notify=False)])
         self.b["state"].set_value.assert_has_calls(
-            [call("Resetting", notify=False), call("Fault", notify=False)])
+            [call("Reset", notify=False), call("Fault", notify=False)])
         self.b["status"].set_value.assert_has_calls(
-            [call("Resetting", notify=False), call("boom", notify=False)])
+            [call("Reset", notify=False), call("boom", notify=False)])
 
     def test_set_writeable_methods(self):
         self.c.register_child_writeable("configure", "Ready")

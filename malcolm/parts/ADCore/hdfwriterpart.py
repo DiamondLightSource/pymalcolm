@@ -5,7 +5,7 @@ from collections import namedtuple
 from malcolm.compat import et_to_string
 from malcolm.core import method_takes, REQUIRED, Task
 from malcolm.core.vmetas import BooleanMeta, StringMeta, PointGeneratorMeta
-from malcolm.parts.builtin.layoutpart import LayoutPart
+from malcolm.parts.builtin.layoutpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
 
@@ -16,7 +16,7 @@ SUFFIXES = "NXY3456789"
 DatasetSourceInfo = namedtuple("DatasetSourceInfo", "name,type")
 
 
-class HDFWriterPart(LayoutPart):
+class HDFWriterPart(ChildPart):
     # Attributes
     datasets = None
 
@@ -39,7 +39,7 @@ class HDFWriterPart(LayoutPart):
                     uniqueid="/entry/NDAttributes/NDArrayUniqueId"))
         return ret
 
-    @RunnableController.Configuring
+    @RunnableController.Configure
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
         "filePath", StringMeta("File path to write data to"), REQUIRED)
@@ -79,7 +79,7 @@ class HDFWriterPart(LayoutPart):
         dataset_infos = self._create_dataset_infos(part_info, params.filePath)
         return dataset_infos
 
-    @RunnableController.Running
+    @RunnableController.Run
     def run(self, task, update_completed_steps):
         """Wait for run to finish
         Args:
@@ -92,13 +92,13 @@ class HDFWriterPart(LayoutPart):
         # TODO: why do we need this? Tasks should have been recreated...
         task.unsubscribe(id_)
 
-    @RunnableController.PostRun
+    @RunnableController.PostRunReady
     def wait_until_closed(self, task, more_steps):
         if not more_steps:
             # If this is the last one, wait until the file is closed
             task.wait_all(self.start_future)
 
-    @RunnableController.Aborting
+    @RunnableController.Abort
     @method_takes(
         "pause", BooleanMeta("Is this an abort for a pause?"), REQUIRED)
     def abort(self, task, params):

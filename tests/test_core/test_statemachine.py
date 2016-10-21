@@ -27,38 +27,38 @@ class TestDefaultStateMachine(unittest.TestCase):
 
     def test_init(self):
         default_allowed_transitions = OrderedDict()
-        default_allowed_transitions['Resetting'] = {'Ready', 'Fault',
-                                                    'Disabling'}
-        default_allowed_transitions['Ready'] = {"Fault", "Disabling"}
-        default_allowed_transitions['Fault'] = {"Resetting", "Disabling"}
-        default_allowed_transitions['Disabling'] = {"Disabled", "Fault"}
-        default_allowed_transitions['Disabled'] = {"Resetting"}
+        default_allowed_transitions['Reset'] = {'Ready', 'Fault',
+                                                    'Disable'}
+        default_allowed_transitions['Ready'] = {"Fault", "Disable"}
+        default_allowed_transitions['Fault'] = {"Reset", "Disable"}
+        default_allowed_transitions['Disable'] = {"Disabled", "Fault"}
+        default_allowed_transitions['Disabled'] = {"Reset"}
 
         self.assertEqual("test_state_machine", self.SM.name)
         self.assertEqual(default_allowed_transitions,
                          self.SM.allowed_transitions)
-        self.assertEqual(["Resetting"], self.SM.busy_states)
+        self.assertEqual(["Reset"], self.SM.busy_states)
 
     def test_is_allowed(self):
-        self.SM.allowed_transitions.update(dict(Ready={"Resetting",
+        self.SM.allowed_transitions.update(dict(Ready={"Reset",
                                                        "Seeking"}))
 
-        response = self.SM.is_allowed("Ready", "Resetting")
+        response = self.SM.is_allowed("Ready", "Reset")
         self.assertTrue(response)
         response = self.SM.is_allowed("Ready", "Paused")
         self.assertFalse(response)
 
     def test_set_allowed(self):
         self.SM.set_allowed("Ready", "Prerun")
-        self.assertEqual({"Prerun", "Disabling", "Fault"},
+        self.assertEqual({"Prerun", "Disable", "Fault"},
                          self.SM.allowed_transitions['Ready'])
-        self.SM.set_allowed("Ready", "Resetting")
-        self.assertEqual({"Prerun", "Disabling", "Fault", "Resetting"},
+        self.SM.set_allowed("Ready", "Reset")
+        self.assertEqual({"Prerun", "Disable", "Fault", "Reset"},
                          self.SM.allowed_transitions['Ready'])
 
     def test_set_busy(self):
-        self.assertEqual(["Resetting"], self.SM.busy_states)
-        self.SM.set_busy("Resetting", busy=False)
+        self.assertEqual(["Reset"], self.SM.busy_states)
+        self.SM.set_busy("Reset", busy=False)
         self.assertEqual([], self.SM.busy_states)
         self.SM.set_busy("Ready", busy=False)
         self.assertEqual([], self.SM.busy_states)
@@ -68,8 +68,8 @@ class TestDefaultStateMachine(unittest.TestCase):
         self.assertEqual([], self.SM.busy_states)
 
     def test_is_busy(self):
-        self.assertEqual(['Resetting'], self.SM.busy_states)
-        response = self.SM.is_busy("Resetting")
+        self.assertEqual(['Reset'], self.SM.busy_states)
+        response = self.SM.is_busy("Reset")
         self.assertTrue(response)
 
         response = self.SM.is_busy("Ready")
@@ -93,21 +93,21 @@ class TestManagerStateMachine(unittest.TestCase):
 
     def test_init(self):
         default_allowed_transitions = OrderedDict()
-        default_allowed_transitions['Resetting'] = {'Ready', 'Fault',
-                                                    'Disabling'}
+        default_allowed_transitions['Reset'] = {'Ready', 'Fault',
+                                                    'Disable'}
         default_allowed_transitions['Ready'] = {
-            'Editing', "Fault", "Disabling"}
+            'Editing', "Fault", "Disable"}
         default_allowed_transitions['Editing'] = {
-            'Fault', 'Editable', 'Disabling'}
+            'Fault', 'Editable', 'Disable'}
         default_allowed_transitions['Editable'] = {
-            'Fault', 'Saving', 'Disabling', 'Reverting'}
+            'Fault', 'Saving', 'Disable', 'Reverting'}
         default_allowed_transitions['Saving'] = {
-            'Fault', 'Ready', 'Disabling'}
+            'Fault', 'Ready', 'Disable'}
         default_allowed_transitions['Reverting'] = {
-            'Fault', 'Ready', 'Disabling'}
-        default_allowed_transitions['Fault'] = {"Resetting", "Disabling"}
-        default_allowed_transitions['Disabling'] = {"Disabled", "Fault"}
-        default_allowed_transitions['Disabled'] = {"Resetting"}
+            'Fault', 'Ready', 'Disable'}
+        default_allowed_transitions['Fault'] = {"Reset", "Disable"}
+        default_allowed_transitions['Disable'] = {"Disabled", "Fault"}
+        default_allowed_transitions['Disabled'] = {"Reset"}
         self.assertEqual(default_allowed_transitions,
                          self.SM.allowed_transitions)
 
@@ -119,39 +119,39 @@ class TestRunnableDeviceStateMachine(unittest.TestCase):
 
     def test_init(self):
         default_allowed_transitions = OrderedDict()
-        default_allowed_transitions['Resetting'] = {
-            "Idle", "Aborting", "Fault", "Disabling"}
+        default_allowed_transitions['Reset'] = {
+            "Idle", "Abort", "Fault", "Disable"}
         default_allowed_transitions['Idle'] = {
-            "Configuring", "Aborting", 'Editing', "Fault", "Disabling"}
+            "Configure", "Abort", 'Editing', "Fault", "Disable"}
         default_allowed_transitions['Editing'] = {
-            'Fault', 'Editable', 'Disabling'}
+            'Fault', 'Editable', 'Disable'}
         default_allowed_transitions['Editable'] = {
-            'Fault', 'Saving', 'Disabling', 'Reverting'}
+            'Fault', 'Saving', 'Disable', 'Reverting'}
         default_allowed_transitions['Saving'] = {
-            'Fault', 'Idle', 'Disabling'}
+            'Fault', 'Idle', 'Disable'}
         default_allowed_transitions['Reverting'] = {
-            'Fault', 'Idle', 'Disabling'}
+            'Fault', 'Idle', 'Disable'}
         default_allowed_transitions['Ready'] = {
-            "PreRun", "Seeking", "Resetting", "Aborting", "Fault", "Disabling"}
-        default_allowed_transitions['Configuring'] = {
-            "Ready", "Aborting", "Fault", "Disabling"}
+            "PreRun", "Seeking", "Reset", "Abort", "Fault", "Disable"}
+        default_allowed_transitions['Configure'] = {
+            "Ready", "Abort", "Fault", "Disable"}
         default_allowed_transitions['PreRun'] = {
-            "Running", "Seeking", "Aborting", "Fault", "Disabling"}
-        default_allowed_transitions['Running'] = {
-            "PostRun", "Seeking", "Aborting", "Fault", "Disabling"}
-        default_allowed_transitions['PostRun'] = {
-            "Idle", "Ready", "Aborting", "Fault", "Disabling"}
+            "Run", "Seeking", "Abort", "Fault", "Disable"}
+        default_allowed_transitions['Run'] = {
+            "PostRunReady", "Seeking", "Abort", "Fault", "Disable"}
+        default_allowed_transitions['PostRunReady'] = {
+            "Idle", "Ready", "Abort", "Fault", "Disable"}
         default_allowed_transitions['Paused'] = {
-            "Seeking", "PreRun", "Aborting", "Fault", "Disabling"}
+            "Seeking", "PreRun", "Abort", "Fault", "Disable"}
         default_allowed_transitions['Seeking'] = {
-            "Paused", "Aborting", "Fault", "Disabling"}
-        default_allowed_transitions['Aborting'] = {
-            "Aborted", "Fault", "Disabling"}
+            "Paused", "Abort", "Fault", "Disable"}
+        default_allowed_transitions['Abort'] = {
+            "Aborted", "Fault", "Disable"}
         default_allowed_transitions['Aborted'] = {
-            "Resetting", "Fault", "Disabling"}
-        default_allowed_transitions['Fault'] = {"Resetting", "Disabling"}
-        default_allowed_transitions['Disabling'] = {"Disabled", "Fault"}
-        default_allowed_transitions['Disabled'] = {"Resetting"}
+            "Reset", "Fault", "Disable"}
+        default_allowed_transitions['Fault'] = {"Reset", "Disable"}
+        default_allowed_transitions['Disable'] = {"Disabled", "Fault"}
+        default_allowed_transitions['Disabled'] = {"Reset"}
 
         self.assertEqual(default_allowed_transitions,
                          self.SM.allowed_transitions)

@@ -39,13 +39,12 @@ class TestTask(unittest.TestCase):
         self.block = Block()
         self.block.set_parent(self.proc, "testBlock")
         self.attr = meta.make_attribute()
-        self.attr.set_parent(self.block, "testAttr")
         self.attr2 = meta.make_attribute()
-        self.attr2.set_parent(self.block, "testAttr2")
         self.method = MethodMeta("method for unit tests")
-        self.method.set_parent(self.block, "testFunc")
         self.method2 = MethodMeta("method for unit tests")
-        self.method2.set_parent(self.block, "testFunc")
+        self.block.replace_endpoints(
+            dict(testFunc=self.method, testFunc2=self.method2,
+                 testAttr=self.attr, testAttr2=self.attr2))
         self.bad_called_back = False
 
     def test_init(self):
@@ -56,15 +55,15 @@ class TestTask(unittest.TestCase):
 
     def test_put_async(self):
         t = Task("testTask", self.proc)
-        t.put_async(self.attr, "testValue")
+        t.put_async(self.block, "testAttr", "testValue")
         req = self.proc.q.get(timeout=0)
         self.assertIsInstance(req, Request)
         self.assertEqual(req.endpoint,
                          ['testBlock', 'testAttr', 'value'])
         self.assertEqual(len(t._futures), 1)
 
-        d = {self.attr: "testValue", self.attr2: "testValue2"}
-        t.put_async(d)
+        d = dict(testAttr="testValue", testAttr2="testValue2")
+        t.put_async(self.block, d)
         self.proc.q.get(timeout=0)
         req2 = self.proc.q.get(timeout=0)
         self.assertEqual(self.proc.q.qsize(), 0)
@@ -79,7 +78,7 @@ class TestTask(unittest.TestCase):
         # cheat and add the response before the blocking call to put
         t.q.put(resp)
         t.stop()
-        t.put(self.attr, "testValue")
+        t.put(self.block, "testAttr", "testValue")
         self.assertEqual(len(t._futures), 0)
         self.assertEqual(self.proc.q.qsize(), 1)
 

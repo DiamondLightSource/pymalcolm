@@ -40,27 +40,29 @@ class Task(Loggable, Spawnable):
         self._subscriptions[new_id] = (endpoint, function, args)
         return new_id
 
-    def put(self, attr_or_items, value=None, timeout=None):
+    def put(self, block, attr_or_items, value=None, timeout=None):
         """"Puts a value or values into an attribute or attributes and returns
                 once all values have been set
 
             Args:
-                attr_or_items (Attribute or Dict): The attribute or dictionary
-                    of {attributes: values} to set
+                block (Block): The block to put attributes to
+                attr_or_items (str or Dict): The attribute name or dictionary
+                    of {str: value} to set
                 value (object): For single attr, the value set
                 timeout (Float) time in seconds to wait for responses, wait
                     forever if None
         """
-        f = self.put_async(attr_or_items, value)
+        f = self.put_async(block, attr_or_items, value)
         self.wait_all(f, timeout=timeout)
 
-    def put_async(self, attr_or_items, value=None):
+    def put_async(self, block, attr_or_items, value=None):
         """"Puts a value or values into an attribute or attributes and returns
             immediately
 
             Args:
-                attr_or_items (Attribute or Dict): The attribute or dictionary
-                    of {attributes: values} to set
+                block (Block): The block to put attributes to
+                attr_or_items (str or Dict): The attribute name or dictionary
+                    of {str: value} to set
                 value (object): For single attr, the value set
 
             Returns:
@@ -70,7 +72,8 @@ class Task(Loggable, Spawnable):
             attr_or_items = {attr_or_items: value}
         result_f = []
 
-        for attr, value in attr_or_items.items():
+        for attr_name, value in attr_or_items.items():
+            attr = block[attr_name]
             assert isinstance(attr, Attribute), \
                 "Expected Attribute, got %r" % (attr,)
 
