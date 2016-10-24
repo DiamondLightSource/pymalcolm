@@ -49,42 +49,44 @@ class TestHDFWriterPart(unittest.TestCase):
         self.assertEqual(task.put.call_args_list, [
             call(self.child["positionMode"], True),
             call(self.child["numCapture"], 0)])
-        self.assertEqual(task.put_async.call_count, 4)
-        self.assertEqual(task.put_async.call_args_list[0], call({
-                self.child["enableCallbacks"]: True,
-                self.child["fileWriteMode"]: "Stream",
-                self.child["swmrMode"]: True,
-                self.child["positionMode"]: True,
-                self.child["dimAttDatasets"]: True,
-                self.child["lazyOpen"]: True,
-                self.child["arrayCounter"]: 0,
-        }))
-        self.assertEqual(task.put_async.call_args_list[1], call({
-                self.child["filePath"]: "/path/to/",
-                self.child["fileName"]: "file.h5",
-                self.child["fileTemplate"]: "%s%s"}))
-        self.assertEqual(task.put_async.call_args_list[2], call({
-                self.child["numExtraDims"]: 1,
-                self.child["posNameDimN"]: "x_y_Spiral",
-                self.child["extraDimSizeN"]: 19,
-                self.child["posNameDimX"]: "energy",
-                self.child["extraDimSizeX"]: 2,
-                self.child["posNameDimY"]: "",
-                self.child["extraDimSizeY"]: 1,
-                self.child["posNameDim3"]: "",
-                self.child["extraDimSize3"]: 1,
-                self.child["posNameDim4"]: "",
-                self.child["extraDimSize4"]: 1,
-                self.child["posNameDim5"]: "",
-                self.child["extraDimSize5"]: 1,
-                self.child["posNameDim6"]: "",
-                self.child["extraDimSize6"]: 1,
-                self.child["posNameDim7"]: "",
-                self.child["extraDimSize7"]: 1,
-                self.child["posNameDim8"]: "",
-                self.child["extraDimSize8"]: 1,
-                self.child["posNameDim9"]: "",
-                self.child["extraDimSize9"]: 1}))
+        self.assertEqual(task.put_many_async.call_count, 3)
+        self.assertEqual(task.put_many_async.call_args_list[0],
+                         call(self.child, dict(
+                            enableCallbacks=True,
+                            fileWriteMode="Stream",
+                            swmrMode=True,
+                            positionMode=True,
+                            dimAttDatasets=True,
+                            lazyOpen=True,
+                            arrayCounter=0)))
+        self.assertEqual(task.put_many_async.call_args_list[1],
+                         call(self.child, dict(
+                             filePath="/path/to/",
+                             fileName="file.h5",
+                             fileTemplate="%s%s")))
+        self.assertEqual(task.put_many_async.call_args_list[2],
+                         call(self.child, dict(
+                             numExtraDims=1,
+                             posNameDimN="x_y_Spiral",
+                             extraDimSizeN=19,
+                             posNameDimX="energy",
+                             extraDimSizeX=2,
+                             posNameDimY="",
+                             extraDimSizeY=1,
+                             posNameDim3="",
+                             extraDimSize3=1,
+                             posNameDim4="",
+                             extraDimSize4=1,
+                             posNameDim5="",
+                             extraDimSize5=1,
+                             posNameDim6="",
+                             extraDimSize6=1,
+                             posNameDim7="",
+                             extraDimSize7=1,
+                             posNameDim8="",
+                             extraDimSize8=1,
+                             posNameDim9="",
+                             extraDimSize9=1)))
         expected_xml = """<?xml version="1.0" ?>
 <hdf5_layout>
 <group name="entry">
@@ -127,7 +129,7 @@ class TestHDFWriterPart(unittest.TestCase):
 </group>
 </hdf5_layout>"""
         self.assertEqual(
-            task.put_async.call_args_list[3][0][1].replace(">", ">\n").splitlines(),
+            task.put_async.call_args_list[0][0][1].replace(">", ">\n").splitlines(),
             expected_xml.splitlines())
 
     def test_run(self):
@@ -136,7 +138,7 @@ class TestHDFWriterPart(unittest.TestCase):
         self.o.done_when_reaches = 38
         self.o.run(task, update)
         task.subscribe.assert_called_once_with(
-            self.child["uniqueId"], update)
+            self.child["uniqueId"], update, self.o)
         task.when_matches.assert_called_once_with(
             self.child["uniqueId"], 38)
         task.unsubscribe.assert_called_once_with(
@@ -145,7 +147,7 @@ class TestHDFWriterPart(unittest.TestCase):
     def test_post_run(self):
         self.o.start_future = MagicMock()
         task = MagicMock()
-        self.o.wait_until_closed(task, more_steps=False)
+        self.o.post_run_idle(task)
         task.wait_all.assert_called_once_with(self.o.start_future)
 
 

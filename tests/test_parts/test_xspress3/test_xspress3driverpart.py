@@ -23,6 +23,7 @@ class TestXspress3DetectorDriverPart(unittest.TestCase):
         self.child.__getitem__.side_effect = getitem
 
         self.params = MagicMock()
+        self.params.readoutTime = 0.002
         self.process.get_block.return_value = self.child
         self.o = Xspress3DriverPart(self.process, self.params)
         list(self.o.create_attributes())
@@ -38,7 +39,7 @@ class TestXspress3DetectorDriverPart(unittest.TestCase):
         steps_to_do = 2000*3000
         part_info = ANY
         self.o.configure(task, completed_steps, steps_to_do, part_info, params)
-        self.assertEquals(task.put.call_count, 2)
+        self.assertEquals(task.put.call_count, 1)
         self.assertEquals(task.put.call_args_list[0],
                           call(self.child["pointsPerRow"], 15000))
 

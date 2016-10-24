@@ -45,10 +45,9 @@ class TestPositionLabellerPart(unittest.TestCase):
         self.assertEqual(task.post_async.call_args_list, [
                          call(self.child["delete"]),
                          call(self.child["start"])])
-        task.put_async.assert_called_once_with({
-            self.child["enableCallbacks"]: True,
-            self.child["idStart"]: 3
-        })
+        task.put_many_async.assert_called_once_with(self.child, dict(
+            enableCallbacks=True,
+            idStart=3))
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
 <dimensions>

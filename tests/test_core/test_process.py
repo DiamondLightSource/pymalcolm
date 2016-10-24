@@ -86,10 +86,13 @@ class TestProcess(unittest.TestCase):
     def test_spawned_adds_to_other_spawned(self):
         s = MagicMock()
         p = Process("proc", s)
-        spawned = p.spawn(callable, "fred", a=4)
+        f = MagicMock()
+        spawned = p.spawn(f, "fred", a=4)
         self.assertEqual(spawned, s.spawn.return_value)
         self.assertEqual(p._other_spawned, [spawned])
-        s.spawn.assert_called_once_with(callable, "fred", a=4)
+        catching_function = s.spawn.call_args[0][0]
+        catching_function()
+        f.assert_called_once_with("fred", a=4)
 
     def test_get(self):
         p = Process("proc", MagicMock())
