@@ -55,20 +55,26 @@ class TestTask(unittest.TestCase):
 
     def test_put_async(self):
         t = Task("testTask", self.proc)
-        t.put_async(self.block, "testAttr", "testValue")
+        t.put_async(self.attr, "testValue")
         req = self.proc.q.get(timeout=0)
         self.assertIsInstance(req, Request)
         self.assertEqual(req.endpoint,
                          ['testBlock', 'testAttr', 'value'])
+        self.assertEqual(req.value, "testValue")
         self.assertEqual(len(t._futures), 1)
 
-        d = dict(testAttr="testValue", testAttr2="testValue2")
-        t.put_async(self.block, d)
-        self.proc.q.get(timeout=0)
-        req2 = self.proc.q.get(timeout=0)
+    def test_put_many_async(self):
+        t = Task("testTask", self.proc)
+        t.put_many_async(self.block, dict(
+            testAttr="testValue", testAttr2="testValue2"))
+        reqs = [self.proc.q.get(timeout=0), self.proc.q.get(timeout=0)]
         self.assertEqual(self.proc.q.qsize(), 0)
-        self.assertIsInstance(req2, Request)
-        self.assertEqual(len(t._futures), 3)
+        self.assertEqual(len(t._futures), 2)
+        values = list(sorted((req.endpoint, req.value) for req in reqs))
+        self.assertEqual(values[0][0], ['testBlock', 'testAttr', 'value'])
+        self.assertEqual(values[0][1], 'testValue')
+        self.assertEqual(values[1][0], ['testBlock', 'testAttr2', 'value'])
+        self.assertEqual(values[1][1], 'testValue2')
 
     def test_put(self):
         # single attribute
@@ -78,7 +84,7 @@ class TestTask(unittest.TestCase):
         # cheat and add the response before the blocking call to put
         t.q.put(resp)
         t.stop()
-        t.put(self.block, "testAttr", "testValue")
+        t.put(self.attr, "testValue")
         self.assertEqual(len(t._futures), 0)
         self.assertEqual(self.proc.q.qsize(), 1)
 

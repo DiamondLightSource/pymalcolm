@@ -10,7 +10,6 @@ from malcolm.core.methodmeta import method_takes, MethodMeta, \
     get_method_decorated
 from malcolm.core.request import Post
 from malcolm.core.statemachine import DefaultStateMachine
-from malcolm.core.serializable import deserialize_object
 from malcolm.core.task import Task
 from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
 
@@ -18,10 +17,10 @@ from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
 sm = DefaultStateMachine
 
 
-@sm.insert
 @method_takes()
 class Controller(Loggable):
     """Implement the logic that takes a Block through its state machine"""
+    stateMachine = sm()
 
     # Attributes for all controllers
     state = None
@@ -252,7 +251,7 @@ class Controller(Loggable):
                 result = method_meta.call_post_function(
                     func, filtered_params, task, *args)
             except StopIteration as e:
-                self.log_debug("%s has been aborted", func)
+                self.log_error("%s has been aborted", func)
                 result = e
             except Exception as e:  # pylint:disable=broad-except
                 self.log_exception("%s %s raised exception", func, params)
@@ -283,7 +282,7 @@ class Controller(Loggable):
             task = part_tasks[part]
             task_part_names[task] = part_name
             task.define_spawn_function(task_return, func, method_meta, task)
-            self.log_debug("Starting task %r", task)
+            self.log_error("Starting part %s task %r", part_name, task)
             task.start()
 
         return hook_queue, task_part_names
@@ -292,9 +291,12 @@ class Controller(Loggable):
         # Wait for them all to finish
         return_dict = {}
         while task_part_names:
+            self.log_error("Waiting for %s" % (task_part_names,))
             task, ret = hook_queue.get()
+            self.log_error("Got %s %s" % (task, ret))
             part_name = task_part_names.pop(task)
             return_dict[part_name] = ret
+            self.log_error("Part %s returned %s" % (part_name, ret))
 
             if isinstance(ret, Exception):
                 # Stop all other tasks

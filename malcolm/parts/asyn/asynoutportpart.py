@@ -22,8 +22,8 @@ class AsynOutportPart(CAStringPart):
         return tags
 
     @DefaultController.Reset
-    def connect_pvs(self, _=None):
-        super(AsynOutportPart, self).connect_pvs()
+    def reset(self, task=None):
+        super(AsynOutportPart, self).reset(task)
         # Add the outport tags
         tags = [t for t in self.attr.meta.tags
                 if not t.startswith("flowgraph:outport:")]

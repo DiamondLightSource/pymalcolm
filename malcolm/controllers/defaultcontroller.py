@@ -8,7 +8,7 @@ sm = DefaultStateMachine
 @method_takes()
 class DefaultController(Controller):
     # The stateMachine that this controller implements
-    stateMachine = sm
+    stateMachine = sm()
 
     Reset = Hook()
     """Called at reset() to reset all parts to a known good state

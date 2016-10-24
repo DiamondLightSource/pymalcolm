@@ -120,7 +120,14 @@ class Process(Loggable):
 
     def spawn(self, function, *args, **kwargs):
         """Calls SyncFactory.spawn()"""
-        spawned = self.sync_factory.spawn(function, *args, **kwargs)
+        def catching_function():
+            try:
+                function(*args, **kwargs)
+            except Exception:
+                self.log_exception(
+                    "Exception calling %s(*%s, **%s)", function, args, kwargs)
+                raise
+        spawned = self.sync_factory.spawn(catching_function)
         self._other_spawned.append(spawned)
         return spawned
 

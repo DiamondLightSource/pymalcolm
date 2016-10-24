@@ -46,17 +46,13 @@ class ChildPart(Part):
         self.mri = params.child
         self.part_visible = {}
 
-    @ManagerController.Disable
-    def disable(self, task):
-        task.post(self.child["disable"])
-
     @ManagerController.Reset
     def reset(self, task):
         # Wait until we have finished resetting
-        if self.child.state == sm.RESETTING:
-            task.when_matches(self.child["state"], sm.IDLE)
-        else:
-            # If we are in saving or editing then we can't do this, that's fine
+        state = self.child.state
+        if state == sm.RESETTING:
+            task.when_matches(self.child["state"], sm.READY)
+        elif state != sm.READY:
             task.post(self.child["reset"])
 
     @ManagerController.ReportOutports
@@ -85,7 +81,7 @@ class ChildPart(Part):
                     self.sever_inports_connected_to(task, outports)
                 self.part_visible[name] = visible
         ret = LayoutInfo(mri=self.mri, x=self.x, y=self.y, visible=self.visible)
-        return ret
+        return [ret]
 
     def _get_flowgraph_ports(self, direction="out"):
         # {attr_name: port_tag}
@@ -107,7 +103,7 @@ class ChildPart(Part):
         inports = self._get_flowgraph_ports("in")
         futures = []
         for attr in inports:
-            futures += task.put_async(attr, attr.meta.choices[0])
+            futures += task.put_many_async(attr, attr.meta.choices[0])
         task.wait_all(futures)
 
     def find_outports(self, name, part_info):
@@ -133,5 +129,5 @@ class ChildPart(Part):
         for attr, port_tag in inports.items():
             typ = port_tag.split(":")[2]
             if outports.get(attr.value, None) == typ:
-                futures += task.put_async(attr, attr.meta.choices[0])
+                futures += task.put_many_async(attr, attr.meta.choices[0])
         task.wait_all(futures)

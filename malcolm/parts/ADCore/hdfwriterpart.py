@@ -3,9 +3,9 @@ from xml.etree import cElementTree as ET
 from collections import namedtuple
 
 from malcolm.compat import et_to_string
-from malcolm.core import method_takes, REQUIRED, Task
-from malcolm.core.vmetas import BooleanMeta, StringMeta, PointGeneratorMeta
-from malcolm.parts.builtin.layoutpart import ChildPart
+from malcolm.core import method_takes, REQUIRED
+from malcolm.core.vmetas import StringMeta, PointGeneratorMeta
+from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
 
@@ -39,39 +39,39 @@ class HDFWriterPart(ChildPart):
                     uniqueid="/entry/NDAttributes/NDArrayUniqueId"))
         return ret
 
+    @RunnableController.Reset
+    def reset(self, task):
+        super(HDFWriterPart, self).reset(task)
+        self.abort(task)
+
     @RunnableController.Configure
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
         "filePath", StringMeta("File path to write data to"), REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         self.done_when_reaches = completed_steps + steps_to_do
-        if completed_steps == 0:
-            # For first run then open the file
-            # Enable position mode before setting any position related things
-            task.put(self.child["positionMode"], True)
-            # Setup our required settings
-            futures = task.put_async({
-                self.child["enableCallbacks"]: True,
-                self.child["fileWriteMode"]: "Stream",
-                self.child["swmrMode"]: True,
-                self.child["positionMode"]: True,
-                self.child["dimAttDatasets"]: True,
-                self.child["lazyOpen"]: True,
-                self.child["arrayCounter"]: 0,
-            })
-            futures += self._set_file_path(task, params.filePath)
-            futures += self._set_dimensions(task, params.generator)
-            xml = self._make_layout_xml(params.generator, part_info)
-            futures += task.put_async(self.child["xml"], xml)
-            # Wait for the previous puts to finish
-            task.wait_all(futures)
-            # Reset numCapture back to 0
-            task.put(self.child["numCapture"], 0)
-            # Start the plugin
-            self.start_future = task.post_async(self.child["start"])
-        else:
-            # Just reset the array counter
-            task.put(self.child["arrayCounter"], 0)
+        # For first run then open the file
+        # Enable position mode before setting any position related things
+        task.put(self.child["positionMode"], True)
+        # Setup our required settings
+        futures = task.put_many_async(self.child, dict(
+            enableCallbacks=True,
+            fileWriteMode="Stream",
+            swmrMode=True,
+            positionMode=True,
+            dimAttDatasets=True,
+            lazyOpen=True,
+            arrayCounter=0))
+        futures += self._set_file_path(task, params.filePath)
+        futures += self._set_dimensions(task, params.generator)
+        xml = self._make_layout_xml(params.generator, part_info)
+        futures += task.put_async(self.child["xml"], xml)
+        # Wait for the previous puts to finish
+        task.wait_all(futures)
+        # Reset numCapture back to 0
+        task.put(self.child["numCapture"], 0)
+        # Start the plugin
+        self.start_future = task.post_async(self.child["start"])
         # Start a future waiting for the first array
         self.array_future = task.when_matches_async(
             self.child["arrayCounter"], 1)
@@ -79,31 +79,34 @@ class HDFWriterPart(ChildPart):
         dataset_infos = self._create_dataset_infos(part_info, params.filePath)
         return dataset_infos
 
+    @RunnableController.PostRunReady
+    @RunnableController.Seek
+    def seek(self, task, completed_steps, steps_to_do, part_info):
+        self.done_when_reaches = completed_steps + steps_to_do
+        # Just reset the array counter
+        task.put(self.child["arrayCounter"], 0)
+        # Start a future waiting for the first array
+        self.array_future = task.when_matches_async(
+            self.child["arrayCounter"], 1)
+
     @RunnableController.Run
     def run(self, task, update_completed_steps):
-        """Wait for run to finish
-        Args:
-            task (Task): The task helper
-        """
         task.wait_all(self.array_future)
-        id_ = task.subscribe(self.child["uniqueId"], update_completed_steps)
+        id_ = task.subscribe(
+            self.child["uniqueId"], update_completed_steps, self)
         # TODO: what happens if we miss the last frame?
         task.when_matches(self.child["uniqueId"], self.done_when_reaches)
         # TODO: why do we need this? Tasks should have been recreated...
         task.unsubscribe(id_)
 
-    @RunnableController.PostRunReady
-    def wait_until_closed(self, task, more_steps):
-        if not more_steps:
-            # If this is the last one, wait until the file is closed
-            task.wait_all(self.start_future)
+    @RunnableController.PostRunIdle
+    def post_run_idle(self, task):
+        # If this is the last one, wait until the file is closed
+        task.wait_all(self.start_future)
 
     @RunnableController.Abort
-    @method_takes(
-        "pause", BooleanMeta("Is this an abort for a pause?"), REQUIRED)
-    def abort(self, task, params):
-        if not params.pause:
-            task.post(self.child["stop"])
+    def abort(self, task):
+        task.post(self.child["stop"])
 
     def _set_file_path(self, task, file_path):
         # TODO: this should be different for windows detectors
@@ -111,10 +114,10 @@ class HDFWriterPart(ChildPart):
         file_dir, file_name = file_path.rsplit(os.sep, 1)
         assert "." in file_name, \
             "File extension for %r should be supplied" % file_name
-        futures = task.put_async({
-            self.child["filePath"]: file_dir + os.sep,
-            self.child["fileName"]: file_name,
-            self.child["fileTemplate"]: "%s%s"})
+        futures = task.put_many_async(self.child, dict(
+            filePath=file_dir + os.sep,
+            fileName=file_name,
+            fileTemplate="%s%s"))
         return futures
 
     def _set_dimensions(self, task, generator):
@@ -133,9 +136,7 @@ class HDFWriterPart(ChildPart):
                 index_size = 1
             attr_dict["posNameDim%s" % suffix] = index_name
             attr_dict["extraDimSize%s" % suffix] = index_size
-        # Convert strings to child attributes
-        attr_dict = {self.child[k]: v for k, v in attr_dict.items()}
-        futures = task.put_async(attr_dict)
+        futures = task.put_many_async(self.child, attr_dict)
         return futures
 
     def _find_generator_index(self, generator, dim):

@@ -5,7 +5,7 @@ from malcolm.core.loggable import Loggable
 
 class StateMachine(Loggable):
 
-    RESETTING = "Reset"
+    RESETTING = "Resetting"
     DISABLED = "Disabled"
     DISABLING = "Disabling"
     FAULT = "Fault"
@@ -14,7 +14,7 @@ class StateMachine(Loggable):
     AFTER_RESETTING = None
 
     def __init__(self):
-        self.set_logger_name(self.__name__)
+        self.set_logger_name(type(self).__name__)
         self.allowed_transitions = OrderedDict()
         self.busy_states = []
         assert self.AFTER_RESETTING is not None, \

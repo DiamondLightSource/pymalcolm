@@ -1,15 +1,10 @@
 from collections import OrderedDict
 
 from malcolm.controllers.managercontroller import ManagerController
-from malcolm.core import RunnableStateMachine, REQUIRED, method_returns, \
-    method_writeable_in, method_takes, ElementMap, Task, Hook, Info
+from malcolm.core import RunnableStateMachine, REQUIRED, \
+    method_writeable_in, method_takes, ElementMap, Task, Hook
 from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, StringArrayMeta
 
-
-class ProgressReportingInfo(Info):
-    """This part will report progress via the update_completed_steps function
-    passed at the Run hook"""
-    pass
 
 sm = RunnableStateMachine
 
@@ -27,7 +22,7 @@ configure_args = [
 class RunnableController(ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # The stateMachine that this controller implements
-    stateMachine = sm
+    stateMachine = sm()
 
     Validate = Hook()
     """Called at validate() to check parameters are valid
@@ -62,9 +57,8 @@ class RunnableController(ManagerController):
             method_takes() decorator
 
     Returns:
-        [Info]: ProgressReportingInfo if this part will report progress in
-            the Run hook, plus any configuration Info that needs to be passed to
-            other parts for storing in attributes
+        [Info]: Any configuration Info that needs to be passed to other parts
+            for storing in attributes
     """
 
     PostConfigure = Hook()
@@ -81,10 +75,9 @@ class RunnableController(ManagerController):
 
     Args:
         task (Task): The task used to perform operations on child blocks
-        update_completed_steps (func): If ProgressReportingInfo has been
-            returned from Configure hook, then this part should call
-            update_completed_steps(completed_steps) with the integer step
-            value each time progress is updated
+        update_completed_steps (func): If part can report progress, this part
+            should call update_completed_steps(completed_steps, self) with the
+            integer step value each time progress is updated
     """
 
     PostRunReady = Hook()
@@ -131,10 +124,9 @@ class RunnableController(ManagerController):
 
     Args:
         task (Task): The task used to perform operations on child blocks
-        update_completed_steps (func): If ProgressReportingInfo has been
-            returned from Configure hook, then this part should call
-            update_completed_steps(completed_steps) with the integer step
-            value each time progress is updated
+        update_completed_steps (func): If part can report progress, this part
+            should call update_completed_steps(completed_steps, self) with the
+            integer step value each time progress is updated
     """
 
     Abort = Hook()
@@ -156,7 +148,8 @@ class RunnableController(ManagerController):
     # Stored for pause
     steps_per_run = 0
 
-    # Progress reporting parts
+    # Progress reporting dict
+    # {part: completed_steps for that part}
     progress_reporting = None
 
     def go_to_error_state(self, exception):
@@ -261,7 +254,7 @@ class RunnableController(ManagerController):
         # Get any status from all parts
         part_info = self.run_hook(self.ReportStatus, self.part_tasks)
         # Use the ProgressReporting classes for ourselves
-        self.progress_reporting = list(ProgressReportingInfo.filter(part_info))
+        self.progress_reporting = {}
         # Run the configure command on all parts, passing them info from
         # ReportStatus. Parts should return any reporting info for PostConfigure
         completed_steps = 0
@@ -309,12 +302,10 @@ class RunnableController(ManagerController):
             self.log_debug("Do run got StopIteration from %s", state)
             if state in (sm.SEEKING, sm.PAUSED):
                 # Wait to be restarted
-                self.log_debug("Waiting for PreRun")
                 task = Task("StateWaiter", self.process)
                 bad_states = [sm.DISABLING, sm.ABORTING, sm.FAULT]
                 task.when_matches(self.state, sm.RUNNING, bad_states)
                 # Restart it
-
                 self.do_run(resume=True)
             else:
                 # just drop out
@@ -322,24 +313,27 @@ class RunnableController(ManagerController):
                 raise
 
     def do_run(self, resume=False):
-        self.run_hook(self.PreRun, self.part_tasks)
-        self.transition(sm.RUNNING, "Waiting for scan to complete")
-        self.run_hook(
-            self.Run, self.part_tasks, self.update_completed_steps,
-            resume=resume)
+        if resume:
+            hook = self.Resume
+        else:
+            hook = self.Run
+        self.run_hook(hook, self.part_tasks, self.update_completed_steps)
+        self.log_error("Finishing")
         self.transition(sm.POSTRUN, "Finishing run")
+        self.log_error("Blah")
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             steps_to_do = self.steps_per_run
+            part_info = self.run_hook(self.ReportStatus, self.part_tasks)
+            self.run_hook(
+                self.PostRunReady, self.part_tasks, completed_steps,
+                steps_to_do, part_info, self.configure_params)
         else:
-            steps_to_do = 0
-        more_steps = steps_to_do > 0
-        self.run_hook(self.PostRunReady, self.part_tasks, more_steps)
-        if more_steps:
-            self.do_configure(completed_steps, steps_to_do)
+            self.run_hook(self.PostRunIdle, self.part_tasks)
 
-    def update_completed_steps(self, completed_steps):
-        # TODO: this shows the maximum of all completed_steps, should be min
+    def update_completed_steps(self, completed_steps, part):
+        self.progress_reporting[part] = completed_steps
+        completed_steps = min(self.progress_reporting.values())
         if completed_steps > self.completed_steps.value:
             self.completed_steps.set_value(completed_steps)
 
@@ -347,64 +341,49 @@ class RunnableController(ManagerController):
         sm.IDLE, sm.CONFIGURING, sm.READY, sm.RUNNING, sm.POSTRUN, sm.RESETTING,
         sm.PAUSED, sm.SEEKING)
     def abort(self):
-        try:
-            self.transition(sm.ABORTING, "Abort")
-            self.do_abort()
-            self.transition(sm.ABORTED, "Abort finished")
-        except Exception as e:  # pylint:disable=broad-except
-            self.log_exception("Fault occurred while Abort")
-            self.transition(sm.FAULT, str(e))
-            raise
+        self.try_stateful_function(sm.ABORTING, sm.ABORTED, self.do_abort)
 
-    def do_abort(self, pause=False):
+    def do_abort(self):
         for task in self.part_tasks.values():
             task.stop()
-        self.run_hook(self.Abort, self.create_part_tasks(), pause=pause)
+        self.run_hook(self.Abort, self.create_part_tasks())
         for task in self.part_tasks.values():
             task.wait()
 
     @method_writeable_in(sm.RUNNING)
     def pause(self):
-        try:
-            self.transition(sm.SEEKING, "Seeking")
-            self.do_abort(pause=True)
-            self.part_tasks = self.create_part_tasks()
-            self._reconfigure(self.completed_steps.value)
-            self.transition(sm.PAUSED, "Pause finished")
-        except Exception as e:  # pylint:disable=broad-except
-            self.log_exception("Fault occurred while Pausing")
-            self.transition(sm.FAULT, str(e))
-            raise
+        self.try_stateful_function(sm.SEEKING, sm.PAUSED, self.do_pause)
 
-    def _reconfigure(self, completed_steps):
-        steps_to_do = completed_steps % self.steps_per_run
-        if steps_to_do == 0:
-            steps_to_do = self.steps_per_run
-        self.do_configure(completed_steps, steps_to_do)
+    def do_pause(self):
+        for task in self.part_tasks.values():
+            task.stop()
+        self.run_hook(self.Pause, self.create_part_tasks())
+        for task in self.part_tasks.values():
+            task.wait()
+        completed_steps = self.configured_steps.value
+        self.do_seek(completed_steps)
 
     @method_writeable_in(sm.READY, sm.PAUSED)
     @method_takes("completedSteps", NumberMeta(
         "uint32", "Step to mark as the last completed step"), REQUIRED)
     def seek(self, params):
+        current_state = self.state.value
         completed_steps = params.completedSteps
         assert completed_steps >= 0, \
             "Cannot seek to before the start of the scan"
         assert completed_steps < self.total_steps.value, \
             "Cannot seek to after the end of the scan"
-        try:
-            self.transition(sm.SEEKING, "Seeking")
-            self._reconfigure(completed_steps)
-            self.transition(sm.PAUSED, "Seek finished")
-        except Exception as e:  # pylint:disable=broad-except
-            self.log_exception("Fault occurred while Rewinding")
-            self.transition(sm.FAULT, str(e))
-            raise
+        self.try_stateful_function(
+            sm.SEEKING, current_state, self.do_seek, completed_steps)
+
+    def do_seek(self, completed_steps):
+        steps_to_do = completed_steps % self.steps_per_run
+        part_info = self.run_hook(self.ReportStatus, self.part_tasks)
+        self.run_hook(
+            self.Seek, self.part_tasks, completed_steps,
+            steps_to_do, part_info, self.configure_params)
 
     @method_writeable_in(sm.PAUSED)
     def resume(self):
         self.transition(sm.RUNNING, "Resuming run")
-
-
-
-
-
+        # self._call_do_run will now take over

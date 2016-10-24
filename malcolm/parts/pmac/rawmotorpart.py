@@ -1,5 +1,5 @@
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.builtin.layoutpart import ChildPart
+from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.parts.pmac.pmactrajectorypart import MotorInfo
 
 
@@ -16,4 +16,4 @@ class RawMotorPart(ChildPart):
             current_position=self.child.position,
             scannable=self.child.scannable
         )
-        return motor_info
+        return [motor_info]

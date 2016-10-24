@@ -31,7 +31,7 @@ sm = ManagerStateMachine
 class ManagerController(DefaultController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # The stateMachine that this controller implements
-    stateMachine = sm
+    stateMachine = sm()
 
     ReportOutports = Hook()
     """Called before Layout to get outport info from children
@@ -105,7 +105,10 @@ class ManagerController(DefaultController):
         part_info = self.run_hook(
             self.Layout, self.create_part_tasks(), part_info, value)
         layout_table = Table(self.layout.meta)
-        for name, layout_info in LayoutInfo.filter(part_info).items():
+        for name, layout_infos in LayoutInfo.filter(part_info).items():
+            assert len(layout_infos) == 1, \
+                "%s returned more than 1 layout infos" % name
+            layout_info = layout_infos[0]
             row = [name, layout_info.mri, layout_info.x, layout_info.y,
                    layout_info.visible]
             layout_table.append(row)

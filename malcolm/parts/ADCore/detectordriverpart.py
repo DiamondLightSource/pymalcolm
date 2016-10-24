@@ -10,12 +10,11 @@ MAX_CHECK = 5000
 
 # Args for configure() and validate
 configure_args = [
-    "generator", PointGeneratorMeta("Generator instance"), REQUIRED)]
+    "generator", PointGeneratorMeta("Generator instance"), REQUIRED]
 
-method_also_takes(
+@method_also_takes(
     "readoutTime", NumberMeta(
-        "float64", "Default time taken to readout detector"), 0.002
-)
+        "float64", "Default time taken to readout detector"), 0.002)
 class DetectorDriverPart(ChildPart):
     # Attributes
     readoutTime = None
@@ -68,7 +67,7 @@ class DetectorDriverPart(ChildPart):
         exposure = self.validate(
             task, completed_steps, steps_to_do, part_info, params)
         task.wait_all(stop_future)
-        task.put(self.child, dict(
+        task.put_many(self.child, dict(
             exposure=exposure,
             imageMode="Multiple",
             numImages=steps_to_do,
@@ -79,10 +78,11 @@ class DetectorDriverPart(ChildPart):
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, task, update_completed_steps):
-        task.subscribe(self.child["arrayCounter"], update_completed_steps)
+        task.subscribe(self.child["arrayCounter"], update_completed_steps, self)
         task.wait_all(self.start_future)
 
     @RunnableController.Abort
     @RunnableController.Pause
     def abort(self, task):
         task.post(self.child["stop"])
+

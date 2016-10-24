@@ -40,57 +40,76 @@ class Task(Loggable, Spawnable):
         self._subscriptions[new_id] = (endpoint, function, args)
         return new_id
 
-    def put(self, block, attr_or_items, value=None, timeout=None):
-        """"Puts a value or values into an attribute or attributes and returns
-                once all values have been set
+    def put(self, attr, value, timeout=None):
+        """"Puts a value to an attribute and returns when it completes
 
-            Args:
-                block (Block): The block to put attributes to
-                attr_or_items (str or Dict): The attribute name or dictionary
-                    of {str: value} to set
-                value (object): For single attr, the value set
-                timeout (Float) time in seconds to wait for responses, wait
-                    forever if None
+        Args:
+            attr (Attribute): The attribute to set
+            value (object): The value to set
+            timeout (Float) time in seconds to wait for responses, wait forever
+                if None
         """
-        f = self.put_async(block, attr_or_items, value)
+        f = self.put_async(attr, value)
         self.wait_all(f, timeout=timeout)
 
-    def put_async(self, block, attr_or_items, value=None):
-        """"Puts a value or values into an attribute or attributes and returns
-            immediately
+    def put_async(self, attr, value):
+        """"Puts a value to an attribute and returns immediately
 
-            Args:
-                block (Block): The block to put attributes to
-                attr_or_items (str or Dict): The attribute name or dictionary
-                    of {str: value} to set
-                value (object): For single attr, the value set
+        Args:
+            attr (Attribute): The attribute to set
+            value (object): The value to set
 
-            Returns:
-                 a list of futures to monitor when each put completes
+        Returns:
+             a list of one future to monitor the put completes
         """
-        if value is not None:
-            attr_or_items = {attr_or_items: value}
-        result_f = []
+        assert isinstance(attr, Attribute), \
+            "Expected Attribute, got %r" % (attr,)
 
-        for attr_name, value in attr_or_items.items():
+        endpoint = attr.path_relative_to(self.process) + ["value"]
+        request = Put(None, self.q, endpoint, value)
+        f = Future(self)
+        new_id = self._save_future(f)
+        request.set_id(new_id)
+        self.process.q.put(request)
+
+        return [f]
+
+    def put_many(self, block, attr_values, timeout=None):
+        """"Puts a number of attributes to a block at the same time, and
+        returns once all values have been set
+
+        Args:
+            block (Block): The block to put attributes to
+            attr_values (dict): Dictionary of {str: value} to set
+            timeout (float) time in seconds to wait for responses, wait
+                forever if None
+        """
+        f = self.put_many_async(block, attr_values)
+        self.wait_all(f, timeout=timeout)
+
+    def put_many_async(self, block, attr_values):
+        """"Puts a number of attributes to a block at the same time, and
+        returns immediately
+
+        Args:
+            block (Block): The block to put attributes to
+            attr_values (dict): Dictionary of {str: value} to set
+
+        Returns:
+             a list of futures to monitor when each put completes
+        """
+        futures = []
+
+        for attr_name, value in attr_values.items():
             attr = block[attr_name]
-            assert isinstance(attr, Attribute), \
-                "Expected Attribute, got %r" % (attr,)
+            futures += self.put_async(attr, value)
 
-            endpoint = attr.path_relative_to(self.process) + ["value"]
-            request = Put(None, self.q, endpoint, value)
-            f = Future(self)
-            new_id = self._save_future(f)
-            request.set_id(new_id)
-            self.process.q.put(request)
-            result_f.append(f)
-
-        return result_f
+        return futures
 
     def _match_update(self, value, future, required_value, subscription_ids,
                       bad_values=None):
         """a callback for monitoring 'when_matches' requests"""
-        self.log_debug("_match_update callback fired")
+        self.log_debug("_match_update callback fired with %s", value)
         if bad_values is not None:
             assert value not in bad_values, \
                 "Waiting for %r, got %r" % (required_value, value)

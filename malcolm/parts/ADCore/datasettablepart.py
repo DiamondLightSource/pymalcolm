@@ -34,7 +34,7 @@ class DatasetTablePart(Part):
         yield "datasets", self.datasets, None
 
     @RunnableController.PostConfigure
-    def update_datasets_table(self, _, part_info):
+    def update_datasets_table(self, task, part_info):
         # Update the dataset table
         datasets_table = Table(dataset_table_meta)
         for dataset_infos in DatasetProducedInfo.filter(part_info).values():

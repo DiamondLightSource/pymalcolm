@@ -5,7 +5,7 @@ from malcolm.core.vmetas import StringMeta, NumberMeta
 
 from malcolm.parts.pandabox.pandaboxcontrol import PandABoxControl
 from malcolm.parts.pandabox.pandaboxpoller import PandABoxPoller
-from malcolm.parts.builtin.layoutpart import ChildPart
+from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.managercontroller import ManagerController
 
 

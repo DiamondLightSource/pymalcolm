@@ -1,6 +1,7 @@
-from malcolm.parts.builtin.layoutpart import ChildPart
+from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.hdfwriterpart import DatasetSourceInfo
+
 
 class StatsPluginPart(ChildPart):
 
@@ -10,7 +11,6 @@ class StatsPluginPart(ChildPart):
 
     @RunnableController.Configure
     def configure(self, task, completed_steps, steps_to_do, part_info):
-        task.put({
-            self.child["enableCallbacks"]: True,
-            self.child["computeStatistics"]: True,
-        })
+        task.put_many(self.child, dict(
+            enableCallbacks=True,
+            computeStatistics=True))

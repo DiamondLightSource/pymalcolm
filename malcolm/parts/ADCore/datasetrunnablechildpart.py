@@ -1,6 +1,6 @@
 from malcolm.core import method_takes
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.builtin.runnablepart import RunnableChildPart
+from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
 
 
@@ -8,9 +8,9 @@ class DatasetRunnableChildPart(RunnableChildPart):
     # MethodMeta will be filled in by _update_configure_args
     @RunnableController.Configure
     @method_takes()
-    def configure(self, task, part_info, params):
+    def configure(self, task, completed_steps, steps_to_do, part_info, params):
         info_list = super(DatasetRunnableChildPart, self).configure(
-            task, part_info, params)
+            completed_steps, steps_to_do, task, part_info, params)
         datasets_table = self.child.datasets
         for i in range(len(datasets_table.name)):
             info = DatasetProducedInfo(
