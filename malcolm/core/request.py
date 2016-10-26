@@ -1,6 +1,4 @@
-from collections import OrderedDict
-
-from malcolm.compat import str_
+from malcolm.compat import OrderedDict, str_
 from malcolm.core.response import Return, Error, Update, Delta
 from malcolm.core.serializable import Serializable, deserialize_object, \
     serialize_object

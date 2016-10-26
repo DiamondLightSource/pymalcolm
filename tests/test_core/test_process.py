@@ -177,7 +177,7 @@ class TestSubscriptions(unittest.TestCase):
         p._handle_block_add(BlockAdd(block, "block"))
         p.recv_loop()
 
-        self.assertEquals([sub_1, sub_2], p._subscriptions)
+        self.assertEquals([sub_1, sub_2], list(p._subscriptions.values()))
         response_1 = sub_1.response_queue.put.call_args[0][0]
         response_2 = sub_2.response_queue.put.call_args[0][0]
         self.assertEquals({"attr": "value", "inner": {"attr2": "other"}},
@@ -207,7 +207,9 @@ class TestSubscriptions(unittest.TestCase):
         p.q.get = MagicMock(side_effect=[
             request_1, request_2,
             PROCESS_STOP])
-        p._subscriptions = [sub_1, sub_2]
+        p._subscriptions = OrderedDict()
+        p._subscriptions[(None, None, 1)] = sub_1
+        p._subscriptions[(None, None, 2)] = sub_2
 
         p._handle_block_add(BlockAdd(block_1, "block_1"))
         p._handle_block_add(BlockAdd(block_2, "block_2"))
@@ -230,27 +232,29 @@ class TestSubscriptions(unittest.TestCase):
         sub_2 = Subscribe(
             MagicMock(), MagicMock(), ["block"], False)
         sub_1.set_id(1234)
-        sub_2.set_id(4321)
+        sub_2.set_id(1234)
         change_1 = BlockChanges([[["block", "attr"], "1"]])
         change_2 = BlockChanges([[["block", "attr"], "2"]])
-        unsub_1 = Unsubscribe(MagicMock(), MagicMock())
-        unsub_1.set_id(1234)
+        unsub_1 = Unsubscribe(sub_1.context, sub_1.response_queue)
+        unsub_1.set_id(sub_1.id)
 
         p.q.get = MagicMock(side_effect=[sub_1, sub_2, change_1,
                                          unsub_1, change_2, PROCESS_STOP])
         p._handle_block_add(BlockAdd(block, "block"))
         p.recv_loop()
 
-        self.assertEqual([sub_2], p._subscriptions)
-        self.assertEquals(1, len(unsub_1.response_queue.put.call_args_list))
-        response = unsub_1.response_queue.put.call_args_list[0][0][0]
-        self.assertIsNone(response.value)
-        self.assertIs(unsub_1.context, response.context)
+        self.assertEqual([sub_2], list(p._subscriptions.values()))
 
         sub_1_responses = sub_1.response_queue.put.call_args_list
         sub_2_responses = sub_2.response_queue.put.call_args_list
-        self.assertEquals(2, len(sub_1_responses))
+        self.assertEquals(3, len(sub_1_responses))
+        self.assertEquals(sub_1_responses[0][0][0].value["attr"], "0")
+        self.assertEquals(sub_1_responses[1][0][0].value["attr"], "1")
+        self.assertIsInstance(sub_1_responses[2][0][0], Return)
         self.assertEquals(3, len(sub_2_responses))
+        self.assertEquals(sub_2_responses[0][0][0].value["attr"], "0")
+        self.assertEquals(sub_2_responses[1][0][0].value["attr"], "1")
+        self.assertEquals(sub_2_responses[2][0][0].value["attr"], "2")
 
     def test_unsubscribe_error(self):
         p = Process("proc", MagicMock())
@@ -264,8 +268,6 @@ class TestSubscriptions(unittest.TestCase):
         self.assertEquals(1, len(responses))
         response = responses[0][0][0]
         self.assertEquals(Error, type(response))
-        self.assertEquals(
-            "No subscription found for id 1234", response.message)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

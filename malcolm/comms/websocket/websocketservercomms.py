@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import json
 
 from tornado.websocket import WebSocketHandler
@@ -6,6 +5,7 @@ from tornado.ioloop import IOLoop
 from tornado.web import Application, RequestHandler, asynchronous
 from tornado.httpserver import HTTPServer
 
+from malcolm.compat import OrderedDict
 from malcolm.core import ServerComms, deserialize_object, serialize_object, \
     Request, Get, Return, Error, Post, method_takes
 from malcolm.core.vmetas import NumberMeta

@@ -1,6 +1,6 @@
-from collections import OrderedDict
 import json
 
+from malcolm.compat import OrderedDict
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import ManagerStateMachine, method_writeable_in, method_takes, \
     Hook, Table, Info

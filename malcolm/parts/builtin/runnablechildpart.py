@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from malcolm.compat import OrderedDict
 from malcolm.core import method_takes, Task, ElementMap
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
@@ -52,22 +51,17 @@ class RunnableChildPart(ChildPart):
             update_completed_steps (func): The function we should call when
                 completedSteps should be updated
         """
-        self.log_error("Starting run")
         task.subscribe(
             self.child["completedSteps"], update_completed_steps, self)
         self.run_future = task.post_async(self.child["run"])
         bad_states = [sm.DISABLING, sm.ABORTING, sm.FAULT]
-        self.log_error("Waiting for state")
         task.when_matches(self.child["state"], sm.POSTRUN, bad_states)
-        self.log_error("Now in postrun state")
 
     @RunnableController.PostRunIdle
     @RunnableController.PostRunReady
     def post_run(self, task, completed_steps=None, steps_to_do=None,
                  part_info=None, params=None):
-        self.log_error("Waiting for run to complete")
         task.wait_all(self.run_future)
-        self.log_error("done waiting")
 
     @RunnableController.Pause
     def pause(self, task):

@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from malcolm.compat import OrderedDict
 from malcolm.controllers.managercontroller import ManagerController
 from malcolm.core import RunnableStateMachine, REQUIRED, \
     method_writeable_in, method_takes, ElementMap, Task, Hook
@@ -318,9 +317,7 @@ class RunnableController(ManagerController):
         else:
             hook = self.Run
         self.run_hook(hook, self.part_tasks, self.update_completed_steps)
-        self.log_error("Finishing")
         self.transition(sm.POSTRUN, "Finishing run")
-        self.log_error("Blah")
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             steps_to_do = self.steps_per_run
@@ -333,9 +330,9 @@ class RunnableController(ManagerController):
 
     def update_completed_steps(self, completed_steps, part):
         self.progress_reporting[part] = completed_steps
-        completed_steps = min(self.progress_reporting.values())
-        if completed_steps > self.completed_steps.value:
-            self.completed_steps.set_value(completed_steps)
+        min_completed_steps = min(self.progress_reporting.values())
+        if min_completed_steps > self.completed_steps.value:
+            self.completed_steps.set_value(min_completed_steps)
 
     @method_writeable_in(
         sm.IDLE, sm.CONFIGURING, sm.READY, sm.RUNNING, sm.POSTRUN, sm.RESETTING,

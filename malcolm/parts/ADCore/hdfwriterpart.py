@@ -13,6 +13,7 @@ from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
 SUFFIXES = "NXY3456789"
 
 # Produced by plugins in part_info
+# TODO: use Info subclass
 DatasetSourceInfo = namedtuple("DatasetSourceInfo", "name,type")
 
 

@@ -1,6 +1,6 @@
 import functools
-from collections import OrderedDict
 
+from malcolm.compat import OrderedDict
 from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.blockmeta import BlockMeta
@@ -251,7 +251,7 @@ class Controller(Loggable):
                 result = method_meta.call_post_function(
                     func, filtered_params, task, *args)
             except StopIteration as e:
-                self.log_error("%s has been aborted", func)
+                self.log_info("%s has been aborted", func)
                 result = e
             except Exception as e:  # pylint:disable=broad-except
                 self.log_exception("%s %s raised exception", func, params)
@@ -282,7 +282,6 @@ class Controller(Loggable):
             task = part_tasks[part]
             task_part_names[task] = part_name
             task.define_spawn_function(task_return, func, method_meta, task)
-            self.log_error("Starting part %s task %r", part_name, task)
             task.start()
 
         return hook_queue, task_part_names
@@ -291,12 +290,10 @@ class Controller(Loggable):
         # Wait for them all to finish
         return_dict = {}
         while task_part_names:
-            self.log_error("Waiting for %s" % (task_part_names,))
             task, ret = hook_queue.get()
-            self.log_error("Got %s %s" % (task, ret))
             part_name = task_part_names.pop(task)
             return_dict[part_name] = ret
-            self.log_error("Part %s returned %s" % (part_name, ret))
+            self.log_debug("Part %s returned %s" % (part_name, ret))
 
             if isinstance(ret, Exception):
                 # Stop all other tasks

@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from malcolm.compat import OrderedDict
 from malcolm.core.vmetas import NumberArrayMeta, BooleanArrayMeta
 from malcolm.core import TableElementMap, Table
 from malcolm.parts.pandabox.pandaboxfieldpart import PandABoxFieldPart

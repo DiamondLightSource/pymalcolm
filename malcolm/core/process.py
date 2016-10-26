@@ -1,6 +1,6 @@
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 
-from malcolm.core.attribute import Attribute
+from malcolm.compat import OrderedDict
 from malcolm.core.block import Block
 from malcolm.core.cache import Cache
 from malcolm.core.clientcontroller import ClientController

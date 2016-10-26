@@ -1,8 +1,9 @@
-from collections import OrderedDict
 import re
 import logging
 
 import numpy as np
+
+from malcolm.compat import OrderedDict
 
 
 camel_re = re.compile("[a-z]([a-z0-9]*)([A-Z]+[a-z0-9]*)*$")

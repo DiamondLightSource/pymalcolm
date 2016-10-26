@@ -1,8 +1,8 @@
-from collections import OrderedDict
 from threading import Event, Lock, RLock
 
 import pvaccess
 
+from malcolm.compat import OrderedDict
 from malcolm.comms.pva.pvautil import PvaUtil
 from malcolm.core.cache import Cache
 from malcolm.core.loggable import Loggable
@@ -10,7 +10,6 @@ from malcolm.core.servercomms import ServerComms
 from malcolm.core.methodmeta import method_takes
 from malcolm.core.request import Error, Post, Put, Subscribe
 from malcolm.core.response import Return
-from malcolm.compat import long_
 
 
 @method_takes()

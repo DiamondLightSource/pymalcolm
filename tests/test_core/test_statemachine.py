@@ -38,9 +38,7 @@ class TestDefaultStateMachine(unittest.TestCase):
         self.assertEqual(["Resetting"], self.SM.busy_states)
 
     def test_is_allowed(self):
-        self.SM.allowed_transitions.update(dict(Ready={"Resetting",
-                                                       "Seeking"}))
-
+        self.SM.allowed_transitions["Ready"] = {"Resetting", "Seeking"}
         response = self.SM.is_allowed("Ready", "Resetting")
         self.assertTrue(response)
         response = self.SM.is_allowed("Ready", "Paused")

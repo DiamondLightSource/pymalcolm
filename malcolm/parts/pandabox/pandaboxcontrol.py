@@ -1,6 +1,7 @@
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 import socket
 
+from malcolm.compat import OrderedDict
 from malcolm.core import Loggable, Spawnable
 
 

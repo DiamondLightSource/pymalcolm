@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from malcolm.compat import OrderedDict
 
 
 class Info(object):

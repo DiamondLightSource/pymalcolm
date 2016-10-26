@@ -3,11 +3,10 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
-from collections import OrderedDict
-
 import unittest
 from mock import MagicMock, patch, call
 
+from malcolm.compat import OrderedDict
 from malcolm.comms.websocket import WebsocketServerComms
 from malcolm.comms.websocket.websocketservercomms import MalcWebSocketHandler,\
         MalcBlockHandler

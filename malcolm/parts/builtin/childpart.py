@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from malcolm.compat import OrderedDict
 from malcolm.core import Part, REQUIRED, method_takes, Attribute, Info
 from malcolm.core.vmetas import StringMeta
 from malcolm.controllers.managercontroller import ManagerController, \

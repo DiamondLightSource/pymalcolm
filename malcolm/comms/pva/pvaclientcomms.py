@@ -1,10 +1,8 @@
-from collections import OrderedDict
+import pvaccess
 
 from malcolm.comms.pva.pvautil import PvaUtil
-from malcolm.core import ClientComms, Request, Subscribe, Response, \
-    deserialize_object, serialize_object
+from malcolm.core import ClientComms, Request
 from malcolm.core.request import Get, Put, Post, Return, Error
-import pvaccess
 
 
 class PvaClientComms(ClientComms, PvaUtil):
