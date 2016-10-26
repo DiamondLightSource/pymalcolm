@@ -30,7 +30,10 @@ class Process(Loggable):
         self._block_state_cache = Cache()
         self._recv_spawned = None
         self._other_spawned = []
-        self._subscriptions = []
+        # lookup of all Subscribe requests, ordered to guarantee subscription
+        # notification ordering
+        # {Request.generate_key(): Subscribe}
+        self._subscriptions = OrderedDict()
         self.comms = []
         self._client_comms = OrderedDict()  # client comms -> list of blocks
         self._handle_functions = {
@@ -166,7 +169,7 @@ class Process(Loggable):
         # update cached dict
         self._block_state_cache.apply_changes(*request.changes)
 
-        for subscription in self._subscriptions:
+        for subscription in self._subscriptions.values():
             endpoint = subscription.endpoint
             # find stuff that's changed that is relevant to this subscriber
             changes = []
@@ -247,7 +250,10 @@ class Process(Loggable):
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current
         sub-structure state"""
-        self._subscriptions.append(request)
+        key = request.generate_key()
+        assert key not in self._subscriptions, \
+            "Subscription on %s already exists" % (key,)
+        self._subscriptions[key] = request
         d = self._block_state_cache.walk_path(request.endpoint)
         self.log_debug("Initial subscription value %s", d)
         if request.delta:
@@ -257,17 +263,13 @@ class Process(Loggable):
 
     def _handle_unsubscribe(self, request):
         """Remove a subscriber and respond with success or error"""
-        subs = [s for s in self._subscriptions if s.id == request.id]
-        # TODO: currently this will remove all subscriptions with a matching id
-        #       there should only be one, we may want to warn if we see several
-        #       Also, this should only filter by the queue/context, not sure
-        #       which yet...
-        if len(subs) == 0:
+        key = request.generate_key()
+        try:
+            subscription = self._subscriptions.pop(key)
+        except KeyError:
             request.respond_with_error(
-                "No subscription found for id %d" % request.id)
+                "No subscription found for %s" % (key,))
         else:
-            self._subscriptions = \
-                [s for s in self._subscriptions if s.id != request.id]
             request.respond_with_return()
 
     def _handle_get(self, request):

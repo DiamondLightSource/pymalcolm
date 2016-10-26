@@ -55,6 +55,11 @@ class Request(Serializable):
     def __repr__(self):
         return self.to_dict().__repr__()
 
+    def generate_key(self):
+        """A key that will uniquely identify this request, for matching
+        Subscribes up to Unsubscribes"""
+        key = (self.response_queue, self.context, self.id)
+        return key
 
 @Serializable.register_subclass("malcolm:core/Get:1.0")
 class Get(Request):
