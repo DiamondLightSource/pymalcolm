@@ -1,6 +1,6 @@
 import json
 
-from tornado.websocket import WebSocketHandler
+from tornado.websocket import WebSocketHandler, WebSocketError
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RequestHandler, asynchronous
 from tornado.httpserver import HTTPServer
@@ -84,7 +84,11 @@ class WebsocketServerComms(ServerComms):
         if isinstance(response.context, MalcWebSocketHandler):
             message = json.dumps(serialize_object(response))
             self.log_debug("Sending message %s", message)
-            response.context.write_message(message)
+            try:
+                response.context.write_message(message)
+            except WebSocketError:
+                # Just close the connection
+                self.notify_closed_connection(response)
         else:
             if isinstance(response, Return):
                 message = json.dumps(serialize_object(response.value))
