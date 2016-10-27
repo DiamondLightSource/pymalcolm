@@ -141,8 +141,6 @@ class TestHDFWriterPart(unittest.TestCase):
             self.child["uniqueId"], update, self.o)
         task.when_matches.assert_called_once_with(
             self.child["uniqueId"], 38)
-        task.unsubscribe.assert_called_once_with(
-            task.subscribe.return_value)
 
     def test_post_run(self):
         self.o.start_future = MagicMock()

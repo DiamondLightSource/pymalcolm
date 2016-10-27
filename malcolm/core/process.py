@@ -16,6 +16,7 @@ BlockChanges = namedtuple("BlockChanges", "changes")
 BlockRespond = namedtuple("BlockRespond", "response, response_queue")
 BlockAdd = namedtuple("BlockAdd", "block, name")
 BlockList = namedtuple("BlockList", "client_comms, blocks")
+AddSpawned = namedtuple("AddSpawned", "spawned")
 
 
 class Process(Loggable):
@@ -46,6 +47,7 @@ class Process(Loggable):
             BlockRespond: self._handle_block_respond,
             BlockAdd: self._handle_block_add,
             BlockList: self._handle_block_list,
+            AddSpawned: self._add_spawned,
         }
         self.create_process_block()
 
@@ -61,7 +63,10 @@ class Process(Loggable):
                 self._handle_functions[type(request)](request)
             except Exception as e:  # pylint:disable=broad-except
                 self.log_exception("Exception while handling %s", request)
-                request.respond_with_error(str(e))
+                try:
+                    request.respond_with_error(str(e))
+                except Exception:
+                    pass
 
     def add_comms(self, comms):
         assert not self._recv_spawned, \
@@ -131,8 +136,18 @@ class Process(Loggable):
                     "Exception calling %s(*%s, **%s)", function, args, kwargs)
                 raise
         spawned = self.sync_factory.spawn(catching_function)
-        self._other_spawned.append(spawned)
+        request = AddSpawned(spawned)
+        self.q.put(request)
         return spawned
+
+    def _add_spawned(self, request):
+        spawned = self._other_spawned
+        self._other_spawned = []
+        spawned.append(request.spawned)
+        # Filter out the spawned that have completed to stop memory leaks
+        for sp in spawned:
+            if not sp.ready():
+                self._other_spawned.append(sp)
 
     def get_client_comms(self, block_name):
         for client_comms, blocks in list(self._client_comms.items()):

@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
@@ -84,15 +85,18 @@ class TestProcess(unittest.TestCase):
                                                 request)
 
     def test_spawned_adds_to_other_spawned(self):
-        s = MagicMock()
+        s = SyncFactory("sched")
         p = Process("proc", s)
-        f = MagicMock()
-        spawned = p.spawn(f, "fred", a=4)
-        self.assertEqual(spawned, s.spawn.return_value)
+
+        def sleep(n, a=None):
+            time.sleep(a)
+        f = MagicMock(side_effect=sleep)
+
+        spawned = p.spawn(f, "fred", a=0.05)
+        p.start()
+        p.stop()
         self.assertEqual(p._other_spawned, [spawned])
-        catching_function = s.spawn.call_args[0][0]
-        catching_function()
-        f.assert_called_once_with("fred", a=4)
+        f.assert_called_once_with("fred", a=0.05)
 
     def test_get(self):
         p = Process("proc", MagicMock())
