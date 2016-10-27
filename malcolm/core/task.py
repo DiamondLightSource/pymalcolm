@@ -1,3 +1,6 @@
+import weakref
+import time
+
 from malcolm.core.attribute import Attribute
 from malcolm.core.future import Future
 from malcolm.core.loggable import Loggable
@@ -6,6 +9,22 @@ from malcolm.core.request import Subscribe, Unsubscribe, Post, Put
 from malcolm.core.response import Error, Return, Update
 from malcolm.core.spawnable import Spawnable
 from malcolm.compat import queue
+
+
+def match_update(value, task, future, required_value, subscription_ids,
+                 bad_values=None):
+    """a callback for monitoring 'when_matches' requests"""
+    if bad_values is not None:
+        assert value not in bad_values, \
+            "Waiting for %r, got %r" % (required_value, value)
+
+    ret_val = None
+    if value == required_value:
+        future.set_result(value)
+        task.unsubscribe(subscription_ids[0])
+        # future returned to wait_all - to be removed from wait list
+        ret_val = future
+    return ret_val
 
 
 class Task(Loggable, Spawnable):
@@ -106,23 +125,6 @@ class Task(Loggable, Spawnable):
 
         return futures
 
-    def _match_update(self, value, future, required_value, subscription_ids,
-                      bad_values=None):
-        """a callback for monitoring 'when_matches' requests"""
-        self.log_debug("_match_update callback fired with %s", value)
-        if bad_values is not None:
-            assert value not in bad_values, \
-                "Waiting for %r, got %r" % (required_value, value)
-
-        ret_val = None
-        if value == required_value:
-            self.log_debug("_match_update got a match")
-            future.set_result(value)
-            self.unsubscribe(subscription_ids[0])
-            # future returned to wait_all - to be removed from wait list
-            ret_val = future
-        return ret_val
-
     def when_matches(self, attr, value, bad_values=None, timeout=None):
         """ Wait for an attribute to become a given value
 
@@ -150,8 +152,10 @@ class Task(Loggable, Spawnable):
         f = Future(self)
         self._save_future(f)
         subscription_ids = []
+        weak_self = weakref.proxy(self)
         subscription_id = self.subscribe(
-            attr, self._match_update, f, value, subscription_ids, bad_values)
+            attr, match_update, weak_self, f, value, subscription_ids,
+            bad_values)
         subscription_ids.append(subscription_id)
 
         return [f]
@@ -232,30 +236,43 @@ class Task(Loggable, Spawnable):
                     that the caller wants to wait for
                 timeout (Float) time in seconds to wait for responses, wait
                     forever if None"""
+        if timeout is None:
+            until = None
+        else:
+            until = time.time() + timeout
+
         if not isinstance(futures, list):
             futures = [futures]
-
         futures = [f for f in futures if not f.done()]
 
         while futures:
             self.log_debug("wait_all awaiting response ...")
-            response = self.q.get(True, timeout)
-            if response is Spawnable.STOP:
-                self.log_debug("wait_all received Spawnable.STOP")
-                raise StopIteration()
-            self.log_debug("wait_all received response %s", response)
-            if response.id in self._futures:
-                f = self._update_future(response)
-                if f in futures:
-                    futures.remove(f)
-            elif response.id in self._subscriptions:
-                result = self._invoke_callback(response)
-                # Task's _match_update callback returns a future if it has
-                #  filled it (other callbacks not expected to return a val)
-                if result in futures:
-                    futures.remove(result)
-            else:
-                self.log_debug("wait_all received unsolicited response")
+            self._service_futures(futures, until)
+
+    def _service_futures(self, futures, until=None):
+        if until is None:
+            timeout = None
+        else:
+            timeout = until - time.time()
+            if timeout < 0:
+                timeout = 0
+        response = self.q.get(True, timeout)
+        if response is Spawnable.STOP:
+            self.log_debug("wait_all received Spawnable.STOP")
+            raise StopIteration()
+        self.log_debug("wait_all received response %s", response)
+        if response.id in self._futures:
+            f = self._update_future(response)
+            if f in futures:
+                futures.remove(f)
+        elif response.id in self._subscriptions:
+            result = self._invoke_callback(response)
+            # Task's match_update callback returns a future if it has
+            #  filled it (other callbacks not expected to return a val)
+            if result in futures:
+                futures.remove(result)
+        else:
+            self.log_debug("wait_all received unsolicited response")
 
     def sleep(self, seconds):
         """Services all futures while waiting
@@ -263,8 +280,10 @@ class Task(Loggable, Spawnable):
         Args:
             seconds (float): Time to wait
         """
+        until = time.time() + seconds
         try:
-            self.wait_all([Future(task=None)], seconds)
+            while True:
+                self._service_futures([], until)
         except queue.Empty:
             return
 
@@ -289,7 +308,7 @@ class Task(Loggable, Spawnable):
         (endpoint, func, args) = self._subscriptions[response.id]
         if isinstance(response, Update):
             try:
-                if func == self._match_update:
+                if func == match_update:
                     ret_val = func(response.value, *args)
                 else:  # ignore return value from user callback functions
                     func(response.value, *args)
@@ -312,3 +331,10 @@ class Task(Loggable, Spawnable):
         self._spawn_functions = []
         self.add_spawn_function(
             func, self.make_default_stop_func(self.q), *args)
+
+    def __del__(self):
+        # Unsubscribe from anything that is still active
+        ids = list(self._subscriptions)
+        self.log_debug("Unsubscribing from ids %s", ids)
+        for id_ in ids:
+            self.unsubscribe(id_)

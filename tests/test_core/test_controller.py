@@ -45,15 +45,20 @@ class TestController(unittest.TestCase):
 
     def make_part_tasks(self, hook, func):
         task = MagicMock()
-        part = MagicMock(configure=func)
+        part_name = "test_part"
+        func_name = "configure"
+        part = MagicMock()
+        part.method_metas = {}
+        setattr(part, func_name, func)
         part_tasks = {part: task}
+        self.c.parts = {part_name: part}
         hook_queue = self.c.process.create_queue.return_value
-        task_return = self.c.make_task_return_value_function(hook_queue)
-        task_return(func, None, task)
+        task_return = self.c.make_task_return_value_function(
+            task, hook_queue, part_name, func_name)
+        task_return()
         hook_queue.get.return_value = hook_queue.put.call_args[0][0]
-        hook.find_hooked_functions.return_value = {"test_part": "configure"}
+        hook.find_hooked_functions.return_value = {part_name: func_name}
         self.c.hook_names = {hook: "test_hook"}
-        self.c.parts = {"test_part": part}
         return part_tasks
 
     def test_run_hook(self):

@@ -26,10 +26,6 @@ class TestFuture(unittest.TestCase):
         self.proc.create_queue = MagicMock(return_value=queue.Queue())
         self.task = Task("testTask", self.proc)
 
-    def test_init(self):
-        f = Future(self.task)
-        self.assertEqual(f._task, self.task)
-
     def test_set_result(self):
         f = Future(self.task)
         f.set_result("testResult")

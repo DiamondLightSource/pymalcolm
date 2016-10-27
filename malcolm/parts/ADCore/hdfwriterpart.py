@@ -93,12 +93,9 @@ class HDFWriterPart(ChildPart):
     @RunnableController.Run
     def run(self, task, update_completed_steps):
         task.wait_all(self.array_future)
-        id_ = task.subscribe(
-            self.child["uniqueId"], update_completed_steps, self)
+        task.subscribe(self.child["uniqueId"], update_completed_steps, self)
         # TODO: what happens if we miss the last frame?
         task.when_matches(self.child["uniqueId"], self.done_when_reaches)
-        # TODO: why do we need this? Tasks should have been recreated...
-        task.unsubscribe(id_)
 
     @RunnableController.PostRunIdle
     def post_run_idle(self, task):
