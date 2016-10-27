@@ -104,6 +104,7 @@ class TestProcess(unittest.TestCase):
         block.to_dict = MagicMock(
             return_value={"path_1": {"path_2": {"attr": "value"}}})
         request = Get(MagicMock(), MagicMock(), ["myblock", "path_1", "path_2"])
+        request.response_queue.qsize.return_value = 0
         p._handle_block_add(BlockAdd(block, "myblock"))
         p.q.get = MagicMock(side_effect=[request, PROCESS_STOP])
 
@@ -174,8 +175,10 @@ class TestSubscriptions(unittest.TestCase):
         p = Process("proc", MagicMock())
         sub_1 = Subscribe(
             MagicMock(), MagicMock(), ["block"], False)
+        sub_1.response_queue.qsize.return_value = 0
         sub_2 = Subscribe(
             MagicMock(), MagicMock(), ["block", "inner"], True)
+        sub_2.response_queue.qsize.return_value = 0
         p.q.get = MagicMock(side_effect=[sub_1, sub_2, PROCESS_STOP])
 
         p._handle_block_add(BlockAdd(block, "block"))
@@ -233,8 +236,10 @@ class TestSubscriptions(unittest.TestCase):
         p = Process("proc", MagicMock())
         sub_1 = Subscribe(
             MagicMock(), MagicMock(), ["block"], False)
+        sub_1.response_queue.qsize.return_value = 0
         sub_2 = Subscribe(
             MagicMock(), MagicMock(), ["block"], False)
+        sub_2.response_queue.qsize.return_value = 0
         sub_1.set_id(1234)
         sub_2.set_id(1234)
         change_1 = BlockChanges([[["block", "attr"], "1"]])
@@ -264,6 +269,7 @@ class TestSubscriptions(unittest.TestCase):
         p = Process("proc", MagicMock())
         unsub = Unsubscribe(MagicMock(), MagicMock())
         unsub.set_id(1234)
+        unsub.response_queue.qsize.return_value = 0
         p.q.get = MagicMock(side_effect=[unsub, PROCESS_STOP])
 
         p.recv_loop()
