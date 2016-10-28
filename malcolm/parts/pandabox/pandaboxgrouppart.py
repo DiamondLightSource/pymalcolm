@@ -7,7 +7,8 @@ class PandABoxGroupPart(Part):
     in yaml"""
 
     def __init__(self, process, attr_name):
-        super(PandABoxGroupPart, self).__init__(process)
+        params = Part.MethodMeta.prepare_input_map(name=attr_name)
+        super(PandABoxGroupPart, self).__init__(process, params)
         self.attr_name = attr_name
         self.attr = None
 

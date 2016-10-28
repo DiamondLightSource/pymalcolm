@@ -1,7 +1,4 @@
-from cothread import catools
-
-from malcolm.core.vmetas import NumberArrayMeta
-from malcolm.parts.ca.capart import CAPart, capart_takes
+from malcolm.parts.ca.capart import CAPart
 
 
 class CAArrayPart(CAPart):

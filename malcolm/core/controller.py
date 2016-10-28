@@ -7,7 +7,7 @@ from malcolm.core.block import Block
 from malcolm.core.blockmeta import BlockMeta
 from malcolm.core.hook import Hook, get_hook_decorated
 from malcolm.core.loggable import Loggable
-from malcolm.core.methodmeta import method_takes, MethodMeta, \
+from malcolm.core.methodmeta import method_takes, MethodMeta, REQUIRED, \
     get_method_decorated
 from malcolm.core.request import Post
 from malcolm.core.statemachine import DefaultStateMachine
@@ -18,7 +18,8 @@ from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
 sm = DefaultStateMachine
 
 
-@method_takes()
+@method_takes(
+    "mri", StringMeta("Malcolm resource id of created block"), REQUIRED)
 class Controller(Loggable):
     """Implement the logic that takes a Block through its state machine"""
     stateMachine = sm()
@@ -30,18 +31,20 @@ class Controller(Loggable):
     # BlockMeta for descriptions
     meta = None
 
-    def __init__(self, block_name, process, parts=None, params=None):
+    def __init__(self, process, parts, params):
         """
         Args:
             process (Process): The process this should run under
+            params (Map): The parameters specified in method_takes()
+            parts (dict): OrderedDict {part_name: Part}
         """
-        controller_name = "%s(%s)" % (type(self).__name__, block_name)
+        self.process = process
+        self.params = params
+        self.mri = params.mri
+        controller_name = "%s(%s)" % (type(self).__name__, self.mri)
         self.set_logger_name(controller_name)
         self.block = Block()
-        self.log_debug("Creating block %r as %r" % (self.block, block_name))
-        self.block_name = block_name
-        self.params = params
-        self.process = process
+        self.log_debug("Creating block %r as %r", self.block, self.mri)
         self.lock = process.create_lock()
         # {part: task}
         self.part_tasks = {}
@@ -53,7 +56,7 @@ class Controller(Loggable):
         self.parts = self._setup_parts(parts, controller_name)
         self._set_block_children()
         self._do_transition(sm.DISABLED, "Disabled")
-        self.block.set_parent(process, block_name)
+        self.block.set_parent(process, self.mri)
         process.add_block(self.block)
         self.do_initial_reset()
 
@@ -70,7 +73,7 @@ class Controller(Loggable):
 
     def _setup_parts(self, parts, controller_name):
         if parts is None:
-            parts = {}
+            parts = OrderedDict
         for part_name, part in parts.items():
             part.set_logger_name("%s.%s" % (controller_name, part_name))
             # Check part hooks into one of our hooks
@@ -82,7 +85,7 @@ class Controller(Loggable):
 
     def do_initial_reset(self):
         request = Post(
-            None, self.process.create_queue(), [self.block_name, "reset"])
+            None, self.process.create_queue(), [self.mri, "reset"])
         self.process.q.put(request)
 
     def add_change(self, changes, item, attr, value):

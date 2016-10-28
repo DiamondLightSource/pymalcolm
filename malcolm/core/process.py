@@ -259,7 +259,9 @@ class Process(Loggable):
         try:
             return self._blocks[block_name]
         except KeyError:
-            controller = ClientController(block_name, self)
+            params = ClientController.MethodMeta.prepare_input_map(
+                mri=block_name)
+            controller = ClientController(self, {}, params)
             return controller.block
 
     def _handle_subscribe(self, request):

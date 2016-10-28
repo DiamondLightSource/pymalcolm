@@ -12,7 +12,7 @@ from mock import MagicMock, ANY
 
 # module imports
 from malcolm.core.vmetas import NumberMeta
-from malcolm.parts.ca.capart import CAPart, capart_takes, catools
+from malcolm.parts.ca.capart import CAPart, catools
 
 
 class caint(int):
@@ -30,12 +30,11 @@ class TestCAPart(unittest.TestCase):
                 rbvSuff="2"
             )
 
-        @capart_takes()
         class MyCAPart(CAPart):
             create_meta = MagicMock(return_value=NumberMeta("int32"))
             get_datatype = MagicMock()
 
-        params = MyCAPart.MethodMeta.prepare_input_map(params)
+        params = MyCAPart.MethodMeta.prepare_input_map(**params)
 
         p = MyCAPart(MagicMock(), params)
         p.set_logger_name("something")

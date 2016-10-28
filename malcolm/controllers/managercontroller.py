@@ -27,7 +27,6 @@ class LayoutInfo(Info):
 sm = ManagerStateMachine
 
 
-@method_takes()
 class ManagerController(DefaultController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # The stateMachine that this controller implements

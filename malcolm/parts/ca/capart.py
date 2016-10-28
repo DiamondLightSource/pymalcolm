@@ -6,19 +6,15 @@ from malcolm.core.vmetas import StringMeta
 from malcolm.controllers.defaultcontroller import DefaultController
 
 
-def capart_takes(*args):
-    args = (
-        "name", StringMeta("Name of the created attribute"), REQUIRED,
-        "description", StringMeta("Desc of created attribute"), REQUIRED,
-        "pv", StringMeta("Full pv of demand and default for rbv"), "",
-        "rbv", StringMeta("Override for rbv"), "",
-        "rbvSuff", StringMeta("Set rbv ro pv + rbv_suff"), "",
-        "widget", StringMeta("Widget, like 'combo' or 'textinput'"), "",
-        "inportType", StringMeta(
-            "Flowgraph port Type if it is one (like 'CS' or 'NDArray')"), "",
-    ) + args
-    return method_takes(*args)
-
+@method_takes(
+    "name", StringMeta("Name of the created attribute"), REQUIRED,
+    "description", StringMeta("Desc of created attribute"), REQUIRED,
+    "pv", StringMeta("Full pv of demand and default for rbv"), "",
+    "rbv", StringMeta("Override for rbv"), "",
+    "rbvSuff", StringMeta("Set rbv ro pv + rbv_suff"), "",
+    "widget", StringMeta("Widget, like 'combo' or 'textinput'"), "",
+    "inportType", StringMeta(
+        "Flowgraph port Type if it is one (like 'CS' or 'NDArray')"), "")
 class CAPart(Part):
     # Camonitor subscription
     monitor = None

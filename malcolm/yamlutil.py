@@ -70,19 +70,17 @@ def make_assembly(text):
         # If told to make a block instance from controllers and parts
         if ssections["controllers"] or ssections["parts"]:
             ret.append(make_block_instance(
-                params["name"], process,
-                ssections["controllers"], ssections["parts"]))
+                process, ssections["controllers"], ssections["parts"]))
 
         return ret
 
     return collection
 
 
-def make_block_instance(block_name, process, controllers, parts):
+def make_block_instance(process, controllers, parts):
     """Make a block subclass from a series of parts.* and controllers.* dicts
 
     Args:
-        block_name (str): The name of the resulting block instance
         process (Process): The process it should be attached to
         controllers (list): List of controller Section objects. E.g.
             [Section("ManagerController")]
@@ -98,20 +96,13 @@ def make_block_instance(block_name, process, controllers, parts):
 
     parts_d = OrderedDict()
     for section in parts:
-        # Require all parts to have a name
-        # TODO: make sure this is added from gui?
-        part_name = section.param_dict["name"]
-        parts_d[part_name] = section.instantiate(malcolm.parts, process)
-    if controllers:
-        assert len(controllers) == 1, \
-            "Expected maximum of 1 controllers, got %s" % (controllers,)
-        controller = controllers[0].instantiate(
-            malcolm.controllers, block_name, process, parts_d)
-    else:
-        controller = malcolm.controllers.defaultcontroller.DefaultController(
-            block_name, process, parts_d)
+        part = section.instantiate(malcolm.parts, process)
+        parts_d[part.name] = part
+    assert len(controllers) == 1, \
+        "Expected exactly 1 controller, got %s" % (controllers,)
+    controller = controllers[0].instantiate(
+        malcolm.controllers, process, parts_d)
     return controller.block
-
 
 
 class Section(object):
@@ -131,7 +122,7 @@ class Section(object):
             *args: Any other args to pass to the callable
 
         Returns:
-            object: The found object called with (map_from_d, *args)
+            object: The found object called with (*args, map_from_d)
 
         E.g. if ob is malcolm.parts, and name is "ca.CADoublePart", then the
         object will be malcolm.parts.ca.CADoublePart
@@ -144,8 +135,7 @@ class Section(object):
                 logging.error("Can't find %s of %s", n, self.name)
                 raise
         logging.debug("Instantiating %s with %s", base, self.param_dict)
-        args += (
-            base.MethodMeta.prepare_input_map_optional_name(self.param_dict),)
+        args += (base.MethodMeta.prepare_input_map(**self.param_dict),)
         return base(*args)
 
     @classmethod

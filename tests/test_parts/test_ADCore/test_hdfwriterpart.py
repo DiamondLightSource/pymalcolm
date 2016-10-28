@@ -28,10 +28,6 @@ class TestHDFWriterPart(unittest.TestCase):
         self.o = HDFWriterPart(self.process, self.params)
         list(self.o.create_attributes())
 
-    def test_init(self):
-        self.process.get_block.assert_called_once_with(self.params.child)
-        self.assertEqual(self.o.child, self.child)
-
     def test_configure(self):
         task = MagicMock()
         params = MagicMock()

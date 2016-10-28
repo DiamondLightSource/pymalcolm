@@ -109,10 +109,25 @@ class TestDecorators(unittest.TestCase):
 
         @method_also_takes(
             "world", BooleanMeta(), REQUIRED,
+            "hello2", BooleanMeta(), True,
             "default", StringMeta(), "nothing")
         class Thing2(Thing):
             pass
 
+        # Check original hasn't been modified
+        itakes = MapMeta()
+        elements = OrderedDict()
+        elements["hello"] = StringMeta()
+        elements["hello2"] = BooleanMeta()
+        itakes.set_elements(ElementMap(elements))
+        itakes.set_required(["hello"])
+        defaults = OrderedDict()
+        defaults["hello2"] = False
+        self.assertEqual(Thing.MethodMeta.takes.to_dict(), itakes.to_dict())
+        self.assertEqual(Thing.MethodMeta.returns.to_dict(), MapMeta().to_dict())
+        self.assertEqual(Thing.MethodMeta.defaults, defaults)
+
+        # Check new one overrides/improves on original
         itakes = MapMeta()
         elements = OrderedDict()
         elements["hello"] = StringMeta()
@@ -122,7 +137,7 @@ class TestDecorators(unittest.TestCase):
         itakes.set_elements(ElementMap(elements))
         itakes.set_required(["hello", "world"])
         defaults = OrderedDict()
-        defaults["hello2"] = False
+        defaults["hello2"] = True
         defaults["default"] = "nothing"
         self.assertEqual(Thing2.MethodMeta.takes.to_dict(), itakes.to_dict())
         self.assertEqual(Thing2.MethodMeta.returns.to_dict(), MapMeta().to_dict())

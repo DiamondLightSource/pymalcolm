@@ -21,7 +21,7 @@ import time
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import Process, SyncFactory, Task, ClientController
 from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
-from malcolm.parts.demo import HelloPart, CounterPart
+from malcolm.assemblies.demo import Hello, Counter
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):
@@ -30,9 +30,9 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
     def setUp(self):
         self.sf = SyncFactory("sync")
         self.process = Process("proc", self.sf)
-        part = HelloPart(self.process, None)
-        DefaultController("hello", self.process, parts={"hello":part})
-        WebsocketServerComms(self.process, dict(port=self.socket))
+        Hello(self.process, dict(mri="hello"))
+        self.process.add_comms(
+            WebsocketServerComms(self.process, dict(port=self.socket)))
         self.process.start()
 
     def tearDown(self):
@@ -70,12 +70,9 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
 
     def setUp(self):
         self.sf = SyncFactory("sync")
-
         self.process = Process("proc", self.sf)
-        DefaultController("hello", self.process, parts=dict(
-            hello=HelloPart(self.process, None)))
-        DefaultController("counter", self.process, parts=dict(
-            counter=CounterPart(self.process, None)))
+        Hello(self.process, dict(mri="hello"))
+        Counter(self.process, dict(mri="counter"))
         self.process.add_comms(
             WebsocketServerComms(self.process, dict(port=self.socket)))
         self.process.start()
@@ -94,7 +91,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.process2.stop()
 
     def test_server_hello_with_malcolm_client(self):
-        block2 = ClientController('hello', self.process2).block
+        block2 = self.process2.get_block("hello")
         task = Task("task", self.process2)
         futures = task.when_matches_async(block2["state"], "Ready")
         task.wait_all(futures, timeout=1)
@@ -102,7 +99,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.assertEqual(ret, dict(greeting="Hello me2"))
 
     def test_server_counter_with_malcolm_client(self):
-        block2 = ClientController('counter', self.process2).block
+        block2 = self.process2.get_block("counter")
         task = Task("task", self.process2)
         futures = task.when_matches_async(block2["state"], "Ready")
         task.wait_all(futures, timeout=1)

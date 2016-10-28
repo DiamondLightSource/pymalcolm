@@ -1,5 +1,5 @@
 from malcolm.compat import OrderedDict
-from malcolm.core import Part, REQUIRED, method_takes, Attribute, Info
+from malcolm.core import Part, REQUIRED, method_also_takes, Attribute, Info
 from malcolm.core.vmetas import StringMeta
 from malcolm.controllers.managercontroller import ManagerController, \
     LayoutInfo
@@ -21,9 +21,8 @@ class OutportInfo(Info):
 sm = ManagerController.stateMachine
 
 
-@method_takes(
-    "name", StringMeta("Name of the part"), REQUIRED,
-    "child", StringMeta("Name of child object"), REQUIRED)
+@method_also_takes(
+    "child_mri", StringMeta("Malcolm resource id of child object"), REQUIRED)
 class ChildPart(Part):
     # Child block object
     child = None
@@ -35,14 +34,10 @@ class ChildPart(Part):
     x = 0
     y = 0
     visible = False
-    mri = None
-    name = None
 
     def store_params(self, params):
         super(ChildPart, self).store_params(params)
-        self.child = self.process.get_block(params.child)
-        self.name = params.name
-        self.mri = params.child
+        self.child = self.process.get_block(params.child_mri)
         self.part_visible = {}
 
     @ManagerController.Reset
@@ -79,7 +74,8 @@ class ChildPart(Part):
                     outports = self.find_outports(name, part_info)
                     self.sever_inports_connected_to(task, outports)
                 self.part_visible[name] = visible
-        ret = LayoutInfo(mri=self.mri, x=self.x, y=self.y, visible=self.visible)
+        ret = LayoutInfo(
+            mri=self.params.child_mri, x=self.x, y=self.y, visible=self.visible)
         return [ret]
 
     def _get_flowgraph_ports(self, direction="out"):

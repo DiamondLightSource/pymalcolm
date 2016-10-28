@@ -23,7 +23,6 @@ class DatasetProducedInfo(Info):
         self.uniqueid = uniqueid
 
 
-@method_takes()
 class DatasetTablePart(Part):
     # Created attributes
     datasets = None

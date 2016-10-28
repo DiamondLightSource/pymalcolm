@@ -29,7 +29,8 @@ class TestDefaultController(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.c = DummyController('block', MagicMock())
+        params = DummyController.MethodMeta.prepare_input_map(mri="block")
+        self.c = DummyController(MagicMock(), {}, params)
         self.b = self.c.block
         for attr in ["busy", "state", "status"]:
             attr = self.b[attr]

@@ -16,7 +16,7 @@ class TestAssemblies(unittest.TestCase):
     def test_all_yamls(self):
         from malcolm.assemblies.demo import Hello
         process = Mock()
-        blocks = Hello(process, dict(name="boo"))
+        blocks = Hello(process, dict(mri="boo"))
         self.assertEqual(len(blocks), 1)
         process.add_block.assert_called_once_with(blocks[0])
 
@@ -33,9 +33,8 @@ class TestAssemblies(unittest.TestCase):
         collection = make_assembly(yaml)
         process = Mock()
         blocks = collection(process, dict(name="boo", something="mypv"))
-        mock_make.assert_called_once_with(
-            "boo", process, [], [ANY])
-        section = mock_make.call_args[0][3][0]
+        mock_make.assert_called_once_with(process, [], [ANY])
+        section = mock_make.call_args[0][2][0]
         self.assertEqual(section.name, "ca.CADoublePart")
         self.assertEqual(section.param_dict, {"pv": "mypv"})
         self.assertEqual(blocks, [mock_make.return_value])
@@ -80,25 +79,15 @@ class TestAssemblies(unittest.TestCase):
     def test_make_block_instance(self):
         parts = [Section("ca.CADoublePart", {
             "name": "me", "description": "my pv desc", "pv": "MY:PV:STRING"})]
-        controllers = []
-        block_name = "block_name"
+        controllers = [Section("DefaultController", dict(mri="mri1"))]
         process = Mock()
-        inst = make_block_instance(block_name, process, controllers, parts)
+        inst = make_block_instance(process, controllers, parts)
         self.assertIsInstance(inst, Block)
         process.add_block.assert_called_once_with(inst)
-        self.assertEqual(inst.path_relative_to(process), [block_name])
+        self.assertEqual(inst.path_relative_to(process), ["mri1"])
         self.assertEqual(
             list(inst),
             ['meta', 'state', 'status', 'busy', 'disable', 'reset', 'me'])
-
-    def test_make_block_instance_custom_controller(self):
-        parts = []
-        controllers = [Section("ManagerController")]
-        block_name = "block_name"
-        process = Mock()
-        inst = make_block_instance(block_name, process, controllers, parts)
-        self.assertIsInstance(inst, Block)
-        process.add_block.assert_called_once_with(inst)
 
     def test_repr(self):
         s = Section("ca.CADoublePart", {"name": "me"})

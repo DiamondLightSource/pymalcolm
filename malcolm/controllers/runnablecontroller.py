@@ -1,6 +1,6 @@
 from malcolm.compat import OrderedDict
 from malcolm.controllers.managercontroller import ManagerController
-from malcolm.core import RunnableStateMachine, REQUIRED, \
+from malcolm.core import RunnableStateMachine, REQUIRED, method_also_takes, \
     method_writeable_in, method_takes, ElementMap, Task, Hook
 from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, StringArrayMeta
 
@@ -14,7 +14,7 @@ configure_args = [
     []]
 
 
-@method_takes(
+@method_also_takes(
     "axesToMove", StringArrayMeta("Default value for configure() axesToMove"),
     []
 )

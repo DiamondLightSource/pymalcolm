@@ -30,10 +30,6 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.o = PMACTrajectoryPart(self.process, self.params)
         list(self.o.create_attributes())
 
-    def test_init(self):
-        self.process.get_block.assert_called_once_with(self.params.child)
-        self.assertEqual(self.o.child, self.child)
-
     def check_resolutions_and_use(self, args, useB=True):
         expected = dict(
             resolutionA=0.001,

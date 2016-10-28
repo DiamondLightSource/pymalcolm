@@ -54,13 +54,7 @@ class MethodMeta(Meta):
         assert len(request.endpoint) == 2, "Can only Post to MethodMeta root"
         return self.call_post_function(post_function, request.parameters, self)
 
-    def prepare_input_map_optional_name(self, param_dict):
-        if "name" not in self.takes.elements and "name" in param_dict:
-            param_dict = param_dict.copy()
-            param_dict.pop("name")
-        return self.prepare_input_map(param_dict)
-
-    def prepare_input_map(self, param_dict):
+    def prepare_input_map(self, **param_dict):
         params = Map(self.takes, self.defaults)
         if param_dict:
             params.update(param_dict)
@@ -73,7 +67,7 @@ class MethodMeta(Meta):
         args = list(args)
         # Prepare input map
         if need_params:
-            params = self.prepare_input_map(param_dict)
+            params = self.prepare_input_map(**param_dict)
             args.append(params)
 
         # Prepare output map
@@ -188,8 +182,8 @@ def method_also_takes(*args):
         takes_meta, defaults = _prepare_map_meta(
             args, allow_defaults=True,
             elements=func.MethodMeta.takes.elements.to_dict(),
-            defaults=func.MethodMeta.defaults,
-            required=func.MethodMeta.takes.required
+            defaults=func.MethodMeta.defaults.copy(),
+            required=func.MethodMeta.takes.required[:]
         )
         func.MethodMeta.set_takes(takes_meta)
         func.MethodMeta.set_defaults(defaults)

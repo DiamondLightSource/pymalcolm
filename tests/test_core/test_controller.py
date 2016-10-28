@@ -20,7 +20,8 @@ class TestController(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.c = Controller('block', MagicMock())
+        params = Controller.MethodMeta.prepare_input_map(mri="mri1")
+        self.c = Controller(MagicMock(), {}, params)
         self.b = self.c.block
 
     def test_init(self):

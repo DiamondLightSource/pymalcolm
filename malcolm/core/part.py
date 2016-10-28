@@ -1,15 +1,19 @@
-from malcolm.core.methodmeta import get_method_decorated
+from malcolm.core.methodmeta import get_method_decorated, REQUIRED, method_takes
+from malcolm.core.vmetas import StringMeta
 from malcolm.core.loggable import Loggable
 from malcolm.core.hook import get_hook_decorated
 
 
+@method_takes(
+    "name", StringMeta("Name of the part within controller"), REQUIRED)
 class Part(Loggable):
     params = None
 
-    def __init__(self, process, params=None):
+    def __init__(self, process, params):
         self.process = process
-        self.method_metas = {}
+        self.name = params.name
         self.store_params(params)
+        self.method_metas = {}
 
     def store_params(self, params):
         self.params = params

@@ -24,10 +24,6 @@ class TestStatsPluginPart(unittest.TestCase):
         self.process.get_block.return_value = self.child
         self.o = StatsPluginPart(self.process, self.params)
 
-    def test_init(self):
-        self.process.get_block.assert_called_once_with(self.params.child)
-        self.assertEqual(self.o.child, self.child)
-
     def test_configure(self):
         task = MagicMock()
         completed_steps = ANY
