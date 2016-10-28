@@ -289,7 +289,10 @@ class PvaEndpoint(Loggable):
         self.log_debug("Registering PVA Endpoint for block %s", self._block)
         self._endpoint.registerEndpointGet(self.get_callback)
         self._endpoint.registerEndpointPut(self.put_callback)
+        # TODO: There is no way to eliminate dead RPC connections
         self._endpoint.registerEndpointRPC(self.rpc_callback)
+        # TODO: There is no way to eliminate dead monitors
+        # TODO: Monitors do no support deltas
         self._endpoint.registerEndpointMonitor(self.monitor_callback)
         self._pva_server.registerEndpoint(self._block, self._endpoint)
 
