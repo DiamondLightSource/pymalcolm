@@ -44,7 +44,8 @@ class DummyPart2(object):
 class TestHook(unittest.TestCase):
 
     def test_decorator(self):
-        self.assertEqual(type(DummyPart1().do_thing.Hook), Hook)
+        self.assertEqual(
+            DummyPart1().do_thing.Hooked, [DummyController.Configuring])
 
     def setUp(self):
         block_mock = MagicMock()

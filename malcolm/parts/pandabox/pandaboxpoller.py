@@ -1,9 +1,8 @@
 import time
-from collections import OrderedDict
 
 from malcolm.core import Spawnable, Loggable
 from malcolm.core.vmetas import BooleanMeta, TableMeta
-from malcolm.compat import queue
+from malcolm.compat import queue, OrderedDict
 from malcolm.parts.pandabox.pandaboxblockmaker import PandABoxBlockMaker
 from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 
@@ -123,7 +122,8 @@ class PandABoxPoller(Spawnable, Loggable):
                 self.log_exception("Error while getting changes")
 
     def handle_changes(self, changes):
-        self.changes.update(changes)
+        for k, v in changes.items():
+            self.changes[k] = v
         for full_field, val in list(self.changes.items()):
             # If we have a mirrored field then fire off a request
             for dest_field in self._mirrored_fields.get(full_field, []):

@@ -3,7 +3,7 @@ from PyQt4.Qt import QStyle, QApplication
 
 class BaseItem(object):
     IDLE = "Idle"
-    RUNNING = "Running"
+    RUNNING = "Run"
     ERROR = "Error"
     CHANGED = "Changed"
     icons = {

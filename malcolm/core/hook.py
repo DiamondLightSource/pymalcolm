@@ -1,11 +1,6 @@
 import inspect
-from collections import OrderedDict
 
-from malcolm.core.methodmeta import MethodMeta, get_method_decorated
-from malcolm.core.vmetas import StringArrayMeta, TableMeta
-from malcolm.core.serializable import deserialize_object
-from malcolm.core.varraymeta import VArrayMeta
-from malcolm.core.table import Table
+from malcolm.core.methodmeta import MethodMeta
 
 
 class Hook(object):
@@ -21,7 +16,10 @@ class Hook(object):
             Decorated function
         """
 
-        func.Hook = self
+        if not hasattr(func, "Hooked"):
+            func.Hooked = []
+        func.Hooked.append(self)
+        # TODO: is this needed?
         MethodMeta.wrap_method(func)
         return func
 
@@ -41,5 +39,6 @@ class Hook(object):
 
 def get_hook_decorated(part):
     for name, member in inspect.getmembers(part, inspect.ismethod):
-        if hasattr(member, "Hook"):
-            yield name, member.Hook, member
+        if hasattr(member, "Hooked"):
+            for hook in member.Hooked:
+                yield name, hook, member

@@ -66,8 +66,8 @@ class CAPart(Part):
     def get_datatype(self):
         raise NotImplementedError
 
-    @DefaultController.Resetting
-    def connect_pvs(self, _=None):
+    @DefaultController.Reset
+    def reset(self, task=None):
         # release old monitor
         self.close_monitor()
         # make the connection in cothread's thread, use caget for initial value
@@ -88,8 +88,8 @@ class CAPart(Part):
             format=self.ca_format, datatype=self.get_datatype(),
             notify_disconnect=True, all_updates=True)
 
-    @DefaultController.Disabling
-    def close_monitor(self, _=None):
+    @DefaultController.Disable
+    def close_monitor(self, task=None):
         if self.monitor is not None:
             cothread.CallbackResult(self.monitor.close)
             self.monitor = None

@@ -15,6 +15,7 @@ class TestRequest(unittest.TestCase):
     def setUp(self):
         self.context = MagicMock()
         self.response_queue = MagicMock()
+        self.response_queue.qsize.return_value = 0
         self.request = Request(self.context, self.response_queue)
 
     def test_init(self):
@@ -127,6 +128,7 @@ class TestSubscribe(unittest.TestCase):
     def setUp(self):
         self.context = MagicMock()
         self.response_queue = MagicMock()
+        self.response_queue.qsize.return_value = 0
         self.endpoint = ["BL18I:XSPRESS3", "state", "value"]
         self.delta = True
         self.subscribe = Subscribe(

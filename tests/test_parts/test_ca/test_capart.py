@@ -68,7 +68,7 @@ class TestCAPart(unittest.TestCase):
     def test_reset(self):
         p = self.create_part()
         catools.caget.return_value = [caint(4), caint(5)]
-        p.connect_pvs("unused task object")
+        p.reset("unused task object")
         catools.caget.assert_called_with(
             ["pv2", "pv"],
             format=catools.FORMAT_CTRL, datatype=p.get_datatype())

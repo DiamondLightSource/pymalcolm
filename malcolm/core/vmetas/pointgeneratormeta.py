@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core.ntunion import NTUnion
@@ -17,7 +15,7 @@ class PointGeneratorMeta(VMeta):
             return CompoundGenerator()
         elif isinstance(value, CompoundGenerator):
             return value
-        elif isinstance(value, (OrderedDict, dict)):
+        elif isinstance(value, dict):
             return CompoundGenerator.from_dict(value)
         else:
             raise TypeError(

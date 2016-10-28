@@ -14,7 +14,7 @@ from malcolm.core import Part, method_takes
 
 class MyPart(Part):
     @method_takes()
-    @DefaultController.Resetting
+    @DefaultController.Reset
     def foo(self):
         pass
 

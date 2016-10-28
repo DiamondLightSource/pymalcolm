@@ -1,11 +1,10 @@
 import os
-from collections import OrderedDict
 import logging
 
 from ruamel import yaml
 
 from malcolm.packageutil import prepare_globals_for_package
-from malcolm.compat import str_
+from malcolm.compat import str_, OrderedDict
 from malcolm.core import REQUIRED, method_takes
 from malcolm.core.vmetas import StringMeta
 import malcolm.controllers

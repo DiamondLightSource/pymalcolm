@@ -21,9 +21,9 @@ class AsynOutportPart(CAStringPart):
         tags = ["widget:textupdate"]
         return tags
 
-    @DefaultController.Resetting
-    def connect_pvs(self, _=None):
-        super(AsynOutportPart, self).connect_pvs()
+    @DefaultController.Reset
+    def reset(self, task=None):
+        super(AsynOutportPart, self).reset(task)
         # Add the outport tags
         tags = [t for t in self.attr.meta.tags
                 if not t.startswith("flowgraph:outport:")]

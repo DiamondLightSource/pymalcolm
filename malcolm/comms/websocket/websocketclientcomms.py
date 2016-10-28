@@ -1,10 +1,10 @@
-from collections import OrderedDict
 import json
 
 from tornado.ioloop import IOLoop
 from tornado.websocket import websocket_connect
 from tornado import gen
 
+from malcolm.compat import OrderedDict
 from malcolm.core import ClientComms, Request, Subscribe, Response, \
     deserialize_object, serialize_object, method_takes
 from malcolm.core.vmetas import StringMeta, NumberMeta

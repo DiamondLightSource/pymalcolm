@@ -14,7 +14,7 @@ from malcolm.core.statemachine import StateMachine, DefaultStateMachine, \
 class TestStateMachine(unittest.TestCase):
     def test_init_raises_not_implemented(self):
         with self.assertRaises(AssertionError):
-            StateMachine("s")
+            StateMachine()
 
 
 if __name__ == "__main__":
@@ -23,26 +23,22 @@ if __name__ == "__main__":
 
 class TestDefaultStateMachine(unittest.TestCase):
     def setUp(self):
-        self.SM = DefaultStateMachine("test_state_machine")
+        self.SM = DefaultStateMachine()
 
     def test_init(self):
         default_allowed_transitions = OrderedDict()
-        default_allowed_transitions['Resetting'] = {'Ready', 'Fault',
-                                                    'Disabling'}
+        default_allowed_transitions['Resetting'] = {'Ready', 'Fault', 'Disabling'}
         default_allowed_transitions['Ready'] = {"Fault", "Disabling"}
         default_allowed_transitions['Fault'] = {"Resetting", "Disabling"}
         default_allowed_transitions['Disabling'] = {"Disabled", "Fault"}
         default_allowed_transitions['Disabled'] = {"Resetting"}
 
-        self.assertEqual("test_state_machine", self.SM.name)
         self.assertEqual(default_allowed_transitions,
                          self.SM.allowed_transitions)
         self.assertEqual(["Resetting"], self.SM.busy_states)
 
     def test_is_allowed(self):
-        self.SM.allowed_transitions.update(dict(Ready={"Resetting",
-                                                       "Seeking"}))
-
+        self.SM.allowed_transitions["Ready"] = {"Resetting", "Seeking"}
         response = self.SM.is_allowed("Ready", "Resetting")
         self.assertTrue(response)
         response = self.SM.is_allowed("Ready", "Paused")
@@ -75,20 +71,10 @@ class TestDefaultStateMachine(unittest.TestCase):
         response = self.SM.is_busy("Ready")
         self.assertFalse(response)
 
-    def test_insert(self):
-        @DefaultStateMachine.insert
-        class DummyController(object):
-            pass
-
-        d = DummyController()
-
-        self.assertIsInstance(d.stateMachine, DefaultStateMachine)
-        self.assertEqual("DefaultStateMachine", d.stateMachine.name)
-
 
 class TestManagerStateMachine(unittest.TestCase):
     def setUp(self):
-        self.SM = ManagerStateMachine("test_state_machine")
+        self.SM = ManagerStateMachine()
         self.assertEqual(self.SM.AFTER_RESETTING, "Ready")
 
     def test_init(self):
@@ -114,7 +100,7 @@ class TestManagerStateMachine(unittest.TestCase):
 
 class TestRunnableDeviceStateMachine(unittest.TestCase):
     def setUp(self):
-        self.SM = RunnableStateMachine("test_state_machine")
+        self.SM = RunnableStateMachine()
         self.assertEqual(self.SM.AFTER_RESETTING, "Idle")
 
     def test_init(self):
@@ -132,17 +118,15 @@ class TestRunnableDeviceStateMachine(unittest.TestCase):
         default_allowed_transitions['Reverting'] = {
             'Fault', 'Idle', 'Disabling'}
         default_allowed_transitions['Ready'] = {
-            "PreRun", "Seeking", "Resetting", "Aborting", "Fault", "Disabling"}
+            "Seeking", "Resetting", "Aborting", "Running", "Fault", "Disabling"}
         default_allowed_transitions['Configuring'] = {
             "Ready", "Aborting", "Fault", "Disabling"}
-        default_allowed_transitions['PreRun'] = {
-            "Running", "Seeking", "Aborting", "Fault", "Disabling"}
         default_allowed_transitions['Running'] = {
             "PostRun", "Seeking", "Aborting", "Fault", "Disabling"}
         default_allowed_transitions['PostRun'] = {
             "Idle", "Ready", "Aborting", "Fault", "Disabling"}
         default_allowed_transitions['Paused'] = {
-            "Seeking", "PreRun", "Aborting", "Fault", "Disabling"}
+            "Seeking", "Running", "Aborting", "Fault", "Disabling"}
         default_allowed_transitions['Seeking'] = {
             "Paused", "Aborting", "Fault", "Disabling"}
         default_allowed_transitions['Aborting'] = {

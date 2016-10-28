@@ -5,7 +5,7 @@ from malcolm.core.vmetas import StringMeta, NumberMeta
 
 from malcolm.parts.pandabox.pandaboxcontrol import PandABoxControl
 from malcolm.parts.pandabox.pandaboxpoller import PandABoxPoller
-from malcolm.parts.builtin.layoutpart import LayoutPart
+from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.managercontroller import ManagerController
 
 
@@ -38,9 +38,9 @@ def PandABox(process, params):
         for bn in block_names:
             malcolm_name = "%s:%s" % (params.name, bn)
             ret.append(poller.make_panda_block(malcolm_name, bn, block_data))
-            part_params = LayoutPart.MethodMeta.prepare_input_map(
+            part_params = ChildPart.MethodMeta.prepare_input_map(
                 dict(name=bn, child=malcolm_name))
-            parts[bn] = LayoutPart(process, part_params)
+            parts[bn] = ChildPart(process, part_params)
 
     # Make a controller
     controller = ManagerController(params.name, process, parts)

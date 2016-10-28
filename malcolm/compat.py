@@ -21,6 +21,13 @@ except NameError:
     # python 3
     long_ = int  # pylint:disable=invalid-name
 
+try:
+    # ruamel exists
+    from ruamel.ordereddict import ordereddict as OrderedDict
+except ImportError:
+    # fallback to slower collections
+    from collections import OrderedDict
+
 def et_to_string(element):
     xml = '<?xml version="1.0" ?>'
     try:

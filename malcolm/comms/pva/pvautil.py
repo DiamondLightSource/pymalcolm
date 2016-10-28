@@ -1,7 +1,9 @@
-from collections import OrderedDict
-import pvaccess
-from malcolm.compat import long_
 import logging
+
+import pvaccess
+
+from malcolm.compat import long_, OrderedDict
+
 
 class PvaUtil(object):
     """A utility class for PvAccess conversions"""
@@ -45,9 +47,9 @@ class PvaUtil(object):
                             structure[item] = [pvaccess.INT]
                         elif isinstance(dict_in[item][0], long_):
                             structure[item] = [pvaccess.LONG]
-                        elif isinstance(dict_in[item][0], OrderedDict):
+                        elif isinstance(dict_in[item][0], dict):
                             structure[item] = [({},)]
-                elif isinstance(dict_in[item], OrderedDict):
+                elif isinstance(dict_in[item], dict):
                     dict_structure = self.dict_to_pv_object_structure(dict_in[item])
                     if dict_structure:
                         structure[item] = dict_structure
@@ -71,7 +73,7 @@ class PvaUtil(object):
         dict_out = OrderedDict()
         for item in dict_in:
             if item != "typeid":
-                if isinstance(dict_in[item], OrderedDict):
+                if isinstance(dict_in[item], dict):
                     dict_values = self.strip_type_id(dict_in[item])
                     if dict_values:
                         dict_out[item] = dict_values

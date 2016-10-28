@@ -1,9 +1,13 @@
-from collections import OrderedDict
+import logging
 
-from malcolm.compat import str_
+from malcolm.compat import OrderedDict, str_
 from malcolm.core.response import Return, Error, Update, Delta
 from malcolm.core.serializable import Serializable, deserialize_object, \
     serialize_object
+
+
+# If a queue is bigger than this, warn it may be unserviced
+UNSERVICED_QUEUE_SIZE = 1000
 
 
 class Request(Serializable):
@@ -32,6 +36,17 @@ class Request(Serializable):
             id_ = deserialize_object(id_, int)
         self.set_endpoint_data("id", id_)
 
+    def _respond(self, response):
+        try:
+            qsize = self.response_queue.qsize()
+        except AttributeError:
+            qsize = 0
+        if qsize > UNSERVICED_QUEUE_SIZE:
+            logging.warn(
+                "Response queue for %s with %d entries may be unserviced",
+                self, qsize)
+        self.response_queue.put(response)
+
     def respond_with_return(self, value=None):
         """
         Create a Return Response object to handle the request
@@ -39,9 +54,8 @@ class Request(Serializable):
         Args:
             value(): Value to set endpoint to
         """
-
         response = Return(self.id, self.context, value=value)
-        self.response_queue.put(response)
+        self._respond(response)
 
     def respond_with_error(self, message):
         """
@@ -52,11 +66,16 @@ class Request(Serializable):
         """
 
         response = Error(self.id, self.context, message=message)
-        self.response_queue.put(response)
+        self._respond(response)
 
     def __repr__(self):
         return self.to_dict().__repr__()
 
+    def generate_key(self):
+        """A key that will uniquely identify this request, for matching
+        Subscribes up to Unsubscribes"""
+        key = (self.response_queue, self.context, self.id)
+        return key
 
 @Serializable.register_subclass("malcolm:core/Get:1.0")
 class Get(Request):
@@ -172,7 +191,7 @@ class Subscribe(Request):
             value (dict): Dictionary describing the new structure
         """
         response = Update(self.id, self.context, value=value)
-        self.response_queue.put(response)
+        self._respond(response)
 
     def respond_with_delta(self, changes):
         """
@@ -182,7 +201,7 @@ class Subscribe(Request):
             changes (list): list of [[path], value] pairs for changed values
         """
         response = Delta(self.id, self.context, changes=changes)
-        self.response_queue.put(response)
+        self._respond(response)
 
     def set_endpoint(self, endpoint):
         if endpoint is not None:

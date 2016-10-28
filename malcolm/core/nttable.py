@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from malcolm.compat import OrderedDict
 from malcolm.core.attribute import Attribute
 from malcolm.core.serializable import Serializable
 

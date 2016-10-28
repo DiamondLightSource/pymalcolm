@@ -1,5 +1,7 @@
 from malcolm.core.loggable import Loggable
 from malcolm.core.spawnable import Spawnable
+from malcolm.core.response import Delta, Update
+from malcolm.core.request import Unsubscribe
 
 
 class ServerComms(Loggable, Spawnable):
@@ -36,3 +38,12 @@ class ServerComms(Loggable, Spawnable):
     def send_to_process(self, request):
         """Send request to process"""
         self.process.q.put(request)
+
+    def notify_closed_connection(self, response):
+        """Let the process know not to send any more updates or deltas"""
+        self.log_warning(
+            "Response %s cannot be sent as connection closed", response)
+        if isinstance(response, (Delta, Update)):
+            request = Unsubscribe(response.context, self.q)
+            request.set_id(response.id)
+            self.send_to_process(request)

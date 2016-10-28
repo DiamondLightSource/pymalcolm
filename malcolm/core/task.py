@@ -1,3 +1,6 @@
+import weakref
+import time
+
 from malcolm.core.attribute import Attribute
 from malcolm.core.future import Future
 from malcolm.core.loggable import Loggable
@@ -6,6 +9,22 @@ from malcolm.core.request import Subscribe, Unsubscribe, Post, Put
 from malcolm.core.response import Error, Return, Update
 from malcolm.core.spawnable import Spawnable
 from malcolm.compat import queue
+
+
+def match_update(value, task, future, required_value, subscription_ids,
+                 bad_values=None):
+    """a callback for monitoring 'when_matches' requests"""
+    if bad_values is not None:
+        assert value not in bad_values, \
+            "Waiting for %r, got %r" % (required_value, value)
+
+    ret_val = None
+    if value == required_value:
+        future.set_result(value)
+        task.unsubscribe(subscription_ids[0])
+        # future returned to wait_all - to be removed from wait list
+        ret_val = future
+    return ret_val
 
 
 class Task(Loggable, Spawnable):
@@ -40,66 +59,71 @@ class Task(Loggable, Spawnable):
         self._subscriptions[new_id] = (endpoint, function, args)
         return new_id
 
-    def put(self, attr_or_items, value=None, timeout=None):
-        """"Puts a value or values into an attribute or attributes and returns
-                once all values have been set
+    def put(self, attr, value, timeout=None):
+        """"Puts a value to an attribute and returns when it completes
 
-            Args:
-                attr_or_items (Attribute or Dict): The attribute or dictionary
-                    of {attributes: values} to set
-                value (object): For single attr, the value set
-                timeout (Float) time in seconds to wait for responses, wait
-                    forever if None
+        Args:
+            attr (Attribute): The attribute to set
+            value (object): The value to set
+            timeout (Float) time in seconds to wait for responses, wait forever
+                if None
         """
-        f = self.put_async(attr_or_items, value)
+        f = self.put_async(attr, value)
         self.wait_all(f, timeout=timeout)
 
-    def put_async(self, attr_or_items, value=None):
-        """"Puts a value or values into an attribute or attributes and returns
-            immediately
+    def put_async(self, attr, value):
+        """"Puts a value to an attribute and returns immediately
 
-            Args:
-                attr_or_items (Attribute or Dict): The attribute or dictionary
-                    of {attributes: values} to set
-                value (object): For single attr, the value set
+        Args:
+            attr (Attribute): The attribute to set
+            value (object): The value to set
 
-            Returns:
-                 a list of futures to monitor when each put completes
+        Returns:
+             a list of one future to monitor the put completes
         """
-        if value is not None:
-            attr_or_items = {attr_or_items: value}
-        result_f = []
+        assert isinstance(attr, Attribute), \
+            "Expected Attribute, got %r" % (attr,)
 
-        for attr, value in attr_or_items.items():
-            assert isinstance(attr, Attribute), \
-                "Expected Attribute, got %r" % (attr,)
+        endpoint = attr.path_relative_to(self.process) + ["value"]
+        request = Put(None, self.q, endpoint, value)
+        f = Future(self)
+        new_id = self._save_future(f)
+        request.set_id(new_id)
+        self.process.q.put(request)
 
-            endpoint = attr.path_relative_to(self.process) + ["value"]
-            request = Put(None, self.q, endpoint, value)
-            f = Future(self)
-            new_id = self._save_future(f)
-            request.set_id(new_id)
-            self.process.q.put(request)
-            result_f.append(f)
+        return [f]
 
-        return result_f
+    def put_many(self, block, attr_values, timeout=None):
+        """"Puts a number of attributes to a block at the same time, and
+        returns once all values have been set
 
-    def _match_update(self, value, future, required_value, subscription_ids,
-                      bad_values=None):
-        """a callback for monitoring 'when_matches' requests"""
-        self.log_debug("_match_update callback fired")
-        if bad_values is not None:
-            assert value not in bad_values, \
-                "Waiting for %r, got %r" % (required_value, value)
+        Args:
+            block (Block): The block to put attributes to
+            attr_values (dict): Dictionary of {str: value} to set
+            timeout (float) time in seconds to wait for responses, wait
+                forever if None
+        """
+        f = self.put_many_async(block, attr_values)
+        self.wait_all(f, timeout=timeout)
 
-        ret_val = None
-        if value == required_value:
-            self.log_debug("_match_update got a match")
-            future.set_result(value)
-            self.unsubscribe(subscription_ids[0])
-            # future returned to wait_all - to be removed from wait list
-            ret_val = future
-        return ret_val
+    def put_many_async(self, block, attr_values):
+        """"Puts a number of attributes to a block at the same time, and
+        returns immediately
+
+        Args:
+            block (Block): The block to put attributes to
+            attr_values (dict): Dictionary of {str: value} to set
+
+        Returns:
+             a list of futures to monitor when each put completes
+        """
+        futures = []
+
+        for attr_name, value in attr_values.items():
+            attr = block[attr_name]
+            futures += self.put_async(attr, value)
+
+        return futures
 
     def when_matches(self, attr, value, bad_values=None, timeout=None):
         """ Wait for an attribute to become a given value
@@ -128,8 +152,10 @@ class Task(Loggable, Spawnable):
         f = Future(self)
         self._save_future(f)
         subscription_ids = []
+        weak_self = weakref.proxy(self)
         subscription_id = self.subscribe(
-            attr, self._match_update, f, value, subscription_ids, bad_values)
+            attr, match_update, weak_self, f, value, subscription_ids,
+            bad_values)
         subscription_ids.append(subscription_id)
 
         return [f]
@@ -210,30 +236,43 @@ class Task(Loggable, Spawnable):
                     that the caller wants to wait for
                 timeout (Float) time in seconds to wait for responses, wait
                     forever if None"""
+        if timeout is None:
+            until = None
+        else:
+            until = time.time() + timeout
+
         if not isinstance(futures, list):
             futures = [futures]
-
         futures = [f for f in futures if not f.done()]
 
         while futures:
             self.log_debug("wait_all awaiting response ...")
-            response = self.q.get(True, timeout)
-            if response is Spawnable.STOP:
-                self.log_debug("wait_all received Spawnable.STOP")
-                raise StopIteration()
-            self.log_debug("wait_all received response %s", response)
-            if response.id in self._futures:
-                f = self._update_future(response)
-                if f in futures:
-                    futures.remove(f)
-            elif response.id in self._subscriptions:
-                result = self._invoke_callback(response)
-                # Task's _match_update callback returns a future if it has
-                #  filled it (other callbacks not expected to return a val)
-                if result in futures:
-                    futures.remove(result)
-            else:
-                self.log_debug("wait_all received unsolicited response")
+            self._service_futures(futures, until)
+
+    def _service_futures(self, futures, until=None):
+        if until is None:
+            timeout = None
+        else:
+            timeout = until - time.time()
+            if timeout < 0:
+                timeout = 0
+        response = self.q.get(True, timeout)
+        if response is Spawnable.STOP:
+            self.log_debug("wait_all received Spawnable.STOP")
+            raise StopIteration()
+        self.log_debug("wait_all received response %s", response)
+        if response.id in self._futures:
+            f = self._update_future(response)
+            if f in futures:
+                futures.remove(f)
+        elif response.id in self._subscriptions:
+            result = self._invoke_callback(response)
+            # Task's match_update callback returns a future if it has
+            #  filled it (other callbacks not expected to return a val)
+            if result in futures:
+                futures.remove(result)
+        else:
+            self.log_debug("wait_all received unsolicited response")
 
     def sleep(self, seconds):
         """Services all futures while waiting
@@ -241,8 +280,10 @@ class Task(Loggable, Spawnable):
         Args:
             seconds (float): Time to wait
         """
+        until = time.time() + seconds
         try:
-            self.wait_all([Future(task=None)], seconds)
+            while True:
+                self._service_futures([], until)
         except queue.Empty:
             return
 
@@ -267,7 +308,7 @@ class Task(Loggable, Spawnable):
         (endpoint, func, args) = self._subscriptions[response.id]
         if isinstance(response, Update):
             try:
-                if func == self._match_update:
+                if func == match_update:
                     ret_val = func(response.value, *args)
                 else:  # ignore return value from user callback functions
                     func(response.value, *args)
@@ -290,3 +331,10 @@ class Task(Loggable, Spawnable):
         self._spawn_functions = []
         self.add_spawn_function(
             func, self.make_default_stop_func(self.q), *args)
+
+    def __del__(self):
+        # Unsubscribe from anything that is still active
+        ids = list(self._subscriptions)
+        self.log_debug("Unsubscribing from ids %s", ids)
+        for id_ in ids:
+            self.unsubscribe(id_)

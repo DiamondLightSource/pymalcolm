@@ -63,14 +63,14 @@ class TestDefaultController(unittest.TestCase):
 
         self.assertEqual(expected, self.c.children_writeable)
         self.assertEqual(self.c.hook_names, {
-            self.c.Resetting: "Resetting", self.c.Disabling: "Disabling"})
+            self.c.Reset: "Reset", self.c.Disable: "Disable"})
 
     def test_transition(self):
         self.c.reset()
         self.b["busy"].set_value.assert_has_calls([
             call(True, notify=False), call(False, notify=False)])
         self.b["status"].set_value.assert_has_calls([
-            call("Resetting", notify=False), call("Done Resetting", notify=False)])
+            call("Resetting", notify=False), call("Ready", notify=False)])
         self.b["state"].set_value.assert_has_calls([
             call("Resetting", notify=False), call("Ready", notify=False)])
         self.c.disable()
@@ -80,7 +80,7 @@ class TestDefaultController(unittest.TestCase):
         self.c.state.set_value("Ready")
 
         with self.assertRaises(TypeError):
-            self.c.transition("Configuring", "Attempting to configure scan...")
+            self.c.transition("Configure", "Attempting to configure scan...")
 
     def test_disable_exception(self):
         self.c.reset()
@@ -95,7 +95,7 @@ class TestDefaultController(unittest.TestCase):
         self.assertEqual(expected_calls, transition_calls)
 
     def test_reset_fault(self):
-        self.c.run_hook = MagicMock(side_effect = ValueError("boom"))
+        self.c.run_hook = MagicMock(side_effect=ValueError("boom"))
         with self.assertRaises(ValueError):
             self.c.reset()
         self.b["busy"].set_value.assert_has_calls(

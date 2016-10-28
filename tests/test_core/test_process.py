@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
@@ -84,12 +85,18 @@ class TestProcess(unittest.TestCase):
                                                 request)
 
     def test_spawned_adds_to_other_spawned(self):
-        s = MagicMock()
+        s = SyncFactory("sched")
         p = Process("proc", s)
-        spawned = p.spawn(callable, "fred", a=4)
-        self.assertEqual(spawned, s.spawn.return_value)
+
+        def sleep(n, a=None):
+            time.sleep(a)
+        f = MagicMock(side_effect=sleep)
+
+        spawned = p.spawn(f, "fred", a=0.05)
+        p.start()
+        p.stop()
         self.assertEqual(p._other_spawned, [spawned])
-        s.spawn.assert_called_once_with(callable, "fred", a=4)
+        f.assert_called_once_with("fred", a=0.05)
 
     def test_get(self):
         p = Process("proc", MagicMock())
@@ -97,6 +104,7 @@ class TestProcess(unittest.TestCase):
         block.to_dict = MagicMock(
             return_value={"path_1": {"path_2": {"attr": "value"}}})
         request = Get(MagicMock(), MagicMock(), ["myblock", "path_1", "path_2"])
+        request.response_queue.qsize.return_value = 0
         p._handle_block_add(BlockAdd(block, "myblock"))
         p.q.get = MagicMock(side_effect=[request, PROCESS_STOP])
 
@@ -167,14 +175,16 @@ class TestSubscriptions(unittest.TestCase):
         p = Process("proc", MagicMock())
         sub_1 = Subscribe(
             MagicMock(), MagicMock(), ["block"], False)
+        sub_1.response_queue.qsize.return_value = 0
         sub_2 = Subscribe(
             MagicMock(), MagicMock(), ["block", "inner"], True)
+        sub_2.response_queue.qsize.return_value = 0
         p.q.get = MagicMock(side_effect=[sub_1, sub_2, PROCESS_STOP])
 
         p._handle_block_add(BlockAdd(block, "block"))
         p.recv_loop()
 
-        self.assertEquals([sub_1, sub_2], p._subscriptions)
+        self.assertEquals([sub_1, sub_2], list(p._subscriptions.values()))
         response_1 = sub_1.response_queue.put.call_args[0][0]
         response_2 = sub_2.response_queue.put.call_args[0][0]
         self.assertEquals({"attr": "value", "inner": {"attr2": "other"}},
@@ -204,7 +214,9 @@ class TestSubscriptions(unittest.TestCase):
         p.q.get = MagicMock(side_effect=[
             request_1, request_2,
             PROCESS_STOP])
-        p._subscriptions = [sub_1, sub_2]
+        p._subscriptions = OrderedDict()
+        p._subscriptions[(None, None, 1)] = sub_1
+        p._subscriptions[(None, None, 2)] = sub_2
 
         p._handle_block_add(BlockAdd(block_1, "block_1"))
         p._handle_block_add(BlockAdd(block_2, "block_2"))
@@ -224,35 +236,40 @@ class TestSubscriptions(unittest.TestCase):
         p = Process("proc", MagicMock())
         sub_1 = Subscribe(
             MagicMock(), MagicMock(), ["block"], False)
+        sub_1.response_queue.qsize.return_value = 0
         sub_2 = Subscribe(
             MagicMock(), MagicMock(), ["block"], False)
+        sub_2.response_queue.qsize.return_value = 0
         sub_1.set_id(1234)
-        sub_2.set_id(4321)
+        sub_2.set_id(1234)
         change_1 = BlockChanges([[["block", "attr"], "1"]])
         change_2 = BlockChanges([[["block", "attr"], "2"]])
-        unsub_1 = Unsubscribe(MagicMock(), MagicMock())
-        unsub_1.set_id(1234)
+        unsub_1 = Unsubscribe(sub_1.context, sub_1.response_queue)
+        unsub_1.set_id(sub_1.id)
 
         p.q.get = MagicMock(side_effect=[sub_1, sub_2, change_1,
                                          unsub_1, change_2, PROCESS_STOP])
         p._handle_block_add(BlockAdd(block, "block"))
         p.recv_loop()
 
-        self.assertEqual([sub_2], p._subscriptions)
-        self.assertEquals(1, len(unsub_1.response_queue.put.call_args_list))
-        response = unsub_1.response_queue.put.call_args_list[0][0][0]
-        self.assertIsNone(response.value)
-        self.assertIs(unsub_1.context, response.context)
+        self.assertEqual([sub_2], list(p._subscriptions.values()))
 
         sub_1_responses = sub_1.response_queue.put.call_args_list
         sub_2_responses = sub_2.response_queue.put.call_args_list
-        self.assertEquals(2, len(sub_1_responses))
+        self.assertEquals(3, len(sub_1_responses))
+        self.assertEquals(sub_1_responses[0][0][0].value["attr"], "0")
+        self.assertEquals(sub_1_responses[1][0][0].value["attr"], "1")
+        self.assertIsInstance(sub_1_responses[2][0][0], Return)
         self.assertEquals(3, len(sub_2_responses))
+        self.assertEquals(sub_2_responses[0][0][0].value["attr"], "0")
+        self.assertEquals(sub_2_responses[1][0][0].value["attr"], "1")
+        self.assertEquals(sub_2_responses[2][0][0].value["attr"], "2")
 
     def test_unsubscribe_error(self):
         p = Process("proc", MagicMock())
         unsub = Unsubscribe(MagicMock(), MagicMock())
         unsub.set_id(1234)
+        unsub.response_queue.qsize.return_value = 0
         p.q.get = MagicMock(side_effect=[unsub, PROCESS_STOP])
 
         p.recv_loop()
@@ -261,8 +278,6 @@ class TestSubscriptions(unittest.TestCase):
         self.assertEquals(1, len(responses))
         response = responses[0][0][0]
         self.assertEquals(Error, type(response))
-        self.assertEquals(
-            "No subscription found for id 1234", response.message)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

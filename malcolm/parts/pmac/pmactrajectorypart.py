@@ -1,11 +1,11 @@
-from collections import namedtuple, Counter
+from collections import Counter
 
 import numpy as np
 
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.core import method_takes, REQUIRED
+from malcolm.core import method_takes, REQUIRED, Info
 from malcolm.core.vmetas import StringArrayMeta, PointGeneratorMeta
-from malcolm.parts.builtin.layoutpart import LayoutPart
+from malcolm.parts.builtin.childpart import ChildPart
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
@@ -26,51 +26,50 @@ TRIG_ZERO = 8        # Capture 0, Frame 0, Detector 0
 # All possible PMAC CS axis assignment
 cs_axis_names = list("ABCUVWXYZ")
 
+# Args for configure and validate
+configure_args = [
+    "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
+    "axesToMove", StringArrayMeta(
+        "List of axes in inner dimension of generator that should be moved"),
+    []]
+
 # Class for these motor variables
-MotorInfo = namedtuple(
-    "MotorInfo", "cs_axis,cs_port,acceleration_time,resolution,offset,"
-    "max_velocity,current_position,scannable")
+class MotorInfo(Info):
+    def __init__(self, cs_axis, cs_port, acceleration_time, resolution, offset,
+                 max_velocity, current_position, scannable):
+        self.cs_axis = cs_axis
+        self.cs_port = cs_port
+        self.acceleration_time = acceleration_time
+        self.resolution = resolution
+        self.offset = offset
+        self.max_velocity = max_velocity
+        self.current_position = current_position
+        self.scannable = scannable
 
 
-class PMACTrajectoryPart(LayoutPart):
+class PMACTrajectoryPart(ChildPart):
     # Stored between functions
     axis_mapping = None
     cs_port = None
     completed_steps_lookup = []
     generator = None
 
-    @RunnableController.Configuring
-    @method_takes(
-        "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-        "axesToMove", StringArrayMeta(
-            "List of axes in inner dimension of generator to be moved"),
-        REQUIRED)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
-        self.generator = params.generator
-        self.cs_port, self.axis_mapping = self.get_cs_port(
-            part_info, params.axesToMove)
-        futures = self.move_to_start(task, completed_steps)
-        self.completed_steps_lookup, profile = self.build_generator_profile(
-            completed_steps, steps_to_do)
-        task.wait_all(futures)
-        self.build_profile(task, **profile)
+    @RunnableController.Reset
+    def reset(self, task):
+        super(PMACTrajectoryPart, self).reset(task)
+        self.abort(task)
 
-    @RunnableController.Running
-    def run(self, task, update_completed_steps):
-        task.subscribe(
-            self.child["pointsScanned"], self.update_step,
-            update_completed_steps)
-        task.post(self.child["executeProfile"])
-
-    @RunnableController.Aborting
-    def stop_execution(self, task):
-        task.post(self.child["abortProfile"])
-
-    def get_cs_port(self, part_info, axes_to_move):
+    @RunnableController.Validate
+    @method_takes(*configure_args)
+    def validate(self, task, completed_steps, steps_to_do, part_info, params):
+        axes_to_move = params.axesToMove
         cs_ports = set()
         # dict {name: MotorInfo}
         axis_mapping = {}
-        for motor_info in part_info.values():
+        for motor_infos in MotorInfo.filter(part_info).values():
+            assert len(motor_infos) == 1, \
+                "Expected only 1 motor info"
+            motor_info = motor_infos[0]
             if motor_info.scannable in axes_to_move:
                 assert motor_info.cs_axis in cs_axis_names, \
                     "Can only scan 1-1 mappings, %r is %r" % \
@@ -90,6 +89,33 @@ class PMACTrajectoryPart(LayoutPart):
             "CS axis defs %s have more that one raw motor attached" % overlap
         return cs_ports.pop(), axis_mapping
 
+    @RunnableController.Configure
+    @RunnableController.PostRunReady
+    @RunnableController.Seek
+    @method_takes(*configure_args)
+    def configure(self, task, completed_steps, steps_to_do, part_info, params):
+        self.generator = params.generator
+        self.cs_port, self.axis_mapping = self.validate(
+            task, completed_steps, steps_to_do, part_info, params)
+        futures = self.move_to_start(task, completed_steps)
+        self.completed_steps_lookup, profile = self.build_generator_profile(
+            completed_steps, steps_to_do)
+        task.wait_all(futures)
+        self.build_profile(task, **profile)
+
+    @RunnableController.Run
+    @RunnableController.Resume
+    def run(self, task, update_completed_steps):
+        task.subscribe(
+            self.child["pointsScanned"], self.update_step,
+            update_completed_steps)
+        task.post(self.child["executeProfile"])
+
+    @RunnableController.Abort
+    @RunnableController.Pause
+    def abort(self, task):
+        task.post(self.child["abortProfile"])
+
     def get_move_time(self, axis_name, demand, current=None):
         motor_info = self.axis_mapping[axis_name]
         if current is None:
@@ -107,7 +133,7 @@ class PMACTrajectoryPart(LayoutPart):
     def update_step(self, scanned, update_completed_steps):
         if scanned > 0:
             completed_steps = self.completed_steps_lookup[scanned - 1]
-            update_completed_steps(completed_steps)
+            update_completed_steps(completed_steps, self)
 
     def run_up_positions(self, point):
         """Generate a dict of axis run up distances given a time
@@ -196,7 +222,7 @@ class PMACTrajectoryPart(LayoutPart):
             attr_dict["offset%s" % cs_axis] = motor_info.offset
         for cs_axis in cs_axis_names:
             attr_dict["use%s" % cs_axis] = cs_axis in use
-        task.put({self.child[k]: v for k, v in attr_dict.items()})
+        task.put_many(self.child, attr_dict)
 
         # Start adding points, padding if the move time exceeds 4s
         i = 0
@@ -250,7 +276,7 @@ class PMACTrajectoryPart(LayoutPart):
             motor_info = self.axis_mapping[axis_name]
             cs_axis = motor_info.cs_axis
             attr_dict["positions%s" % cs_axis] = trajectory[axis_name]
-        task.put({self.child[k]: v for k, v in attr_dict.items()})
+        task.put_many(self.child, attr_dict)
         task.post(self.child["buildProfile"])
 
     def build_generator_profile(self, start_index, steps_to_build):

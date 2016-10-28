@@ -35,29 +35,28 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(self.o.child, self.child)
 
     def check_resolutions_and_use(self, args, useB=True):
-        expected = {
-            self.child["resolutionA"]: 0.001,
-            self.child["offsetA"]: 0.0,
-            self.child["useA"]: True,
-            self.child["useB"]: useB,
-            self.child["useC"]: False,
-            self.child["useU"]: False,
-            self.child["useV"]: False,
-            self.child["useW"]: False,
-            self.child["useX"]: False,
-            self.child["useY"]: False,
-            self.child["useZ"]: False}
+        expected = dict(
+            resolutionA=0.001,
+            offsetA=0.0,
+            useA=True,
+            useB=useB,
+            useC=False,
+            useU=False,
+            useV=False,
+            useW=False,
+            useX=False,
+            useY=False,
+            useZ=False)
         if useB:
-            expected.update({
-                self.child["resolutionB"]: 0.001,
-                self.child["offsetB"]: 0.0,
-            })
+            expected.update(dict(
+                resolutionB=0.001,
+                offsetB=0.0))
         self.assertEqual(args, expected)
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5):
         task = Mock()
         part_info = dict(
-            xpart=MotorInfo(
+            xpart=[MotorInfo(
                 cs_axis="A",
                 cs_port="CS1",
                 acceleration_time=0.1,
@@ -66,8 +65,8 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 max_velocity=1.0,
                 current_position=x_pos,
                 scannable="x",
-            ),
-            ypart=MotorInfo(
+            )],
+            ypart=[MotorInfo(
                 cs_axis="B",
                 cs_port="CS1",
                 acceleration_time=0.1,
@@ -76,7 +75,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 max_velocity=1.0,
                 current_position=0.0,
                 scannable="y"
-            )
+            )]
         )
         steps_to_do = 3 * len(axes_to_scan)
         params = Mock()
@@ -90,43 +89,41 @@ class TestPMACTrajectoryPart(unittest.TestCase):
 
     def test_configure(self):
         task = self.do_configure(axes_to_scan=["x", "y"])
-        self.assertEqual(task.put.call_count, 4)
+        self.assertEqual(task.put_many.call_count, 4)
         self.assertEqual(task.post.call_count, 2)
         self.assertEqual(task.post_async.call_count, 1)
-        self.check_resolutions_and_use(task.put.call_args_list[0][0][0])
-        self.assertEqual(task.put.call_args_list[1][0][0], {
-            self.child["timeArray"]: [100000, 437500, 100000],
-            self.child["velocityMode"]: [2, 1, 3],
-            self.child["userPrograms"]: [0, 0, 0],
-            self.child["numPoints"]: 3,
-            self.child["positionsA"]: [0.45,
-                                       -0.087500000000000008,
-                                       -0.1375],
-            self.child["positionsB"]: [0.0, 0.0, 0.0]})
+        self.check_resolutions_and_use(task.put_many.call_args_list[0][0][1])
+        self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
+            timeArray=[100000, 437500, 100000],
+            velocityMode=[2, 1, 3],
+            userPrograms=[0, 0, 0],
+            numPoints=3,
+            positionsA=[0.45, -0.087500000000000008, -0.1375],
+            positionsB=[0.0, 0.0, 0.0]))
         self.assertEqual(task.post.call_args_list[0],
                          call(self.child["buildProfile"]))
         self.assertEqual(task.post_async.call_args_list[0],
                          call(self.child["executeProfile"]))
         self.assertEqual(task.post.call_args_list[1],
                          call(self.child["buildProfile"]))
-        self.check_resolutions_and_use(task.put.call_args_list[2][0][0])
-        self.assertEqual(task.put.call_args_list[3][0][0], {
-            self.child["timeArray"]: [
+        self.check_resolutions_and_use(task.put_many.call_args_list[2][0][1])
+        self.assertEqual(task.put_many.call_args_list[3][0][1], dict(
+            timeArray=[
                 100000, 500000, 500000, 500000, 500000, 500000, 500000, 100000,
                 100000, 500000, 500000, 500000, 500000, 500000, 500000, 100000],
-            self.child["velocityMode"]: [
+            velocityMode=[
                 2, 0, 0, 0, 0, 0, 1, 0,
                 2, 0, 0, 0, 0, 0, 1, 3],
-            self.child["userPrograms"]: [
+            userPrograms=[
                 3, 4, 3, 4, 3, 4, 2, 8,
                 3, 4, 3, 4, 3, 4, 2, 8],
-            self.child["numPoints"]: 16,
-            self.child["positionsA"]: [
+            numPoints=16,
+            positionsA=[
                 -0.125, 0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
                 0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375],
-            self.child["positionsB"]: [
+            positionsB=[
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
-                0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]})
+                0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]))
 
     def test_run(self):
         task = Mock()
@@ -143,33 +140,32 @@ class TestPMACTrajectoryPart(unittest.TestCase):
 
         task = self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.6375)
-        self.assertEqual(task.put.call_count, 2)
+        self.assertEqual(task.put_many.call_count, 2)
         self.assertEqual(task.post.call_count, 1)
-        self.check_resolutions_and_use(task.put.call_args_list[0][0][0],
+        self.check_resolutions_and_use(task.put_many.call_args_list[0][0][1],
                                        useB=False)
-        self.assertEqual(task.put.call_args_list[1][0][0], {
-            self.child["timeArray"]: [
-                100000, 500000, 500000, 500000, 500000, 500000, 500000, 100000],
-            self.child["velocityMode"]: [2, 0, 0, 0, 0, 0, 1, 3],
-            self.child["userPrograms"]: [3, 4, 3, 4, 3, 4, 2, 8],
-            self.child["numPoints"]: 8,
-            self.child["positionsA"]: [0.625, 0.5, 0.375, 0.25, 0.125, 0.0,
+        self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
+            timeArray=[100000, 500000, 500000, 500000, 500000, 500000, 500000, 100000],
+            velocityMode=[2, 0, 0, 0, 0, 0, 1, 3],
+            userPrograms=[3, 4, 3, 4, 3, 4, 2, 8],
+            numPoints=8,
+            positionsA=[0.625, 0.5, 0.375, 0.25, 0.125, 0.0,
                                        -0.125, -0.1375],
-        })
+        ))
 
     def test_long_move(self):
         task = self.do_configure(axes_to_scan=["x"], x_pos=-10.1375)
-        self.assertEqual(task.put.call_args_list[1][0][0], {
-            self.child["timeArray"]: [
+        self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
+            timeArray=[
                 100000, 3266667, 3266666, 3266667, 100000],
-            self.child["velocityMode"]: [
+            velocityMode=[
                 2, 1, 1, 1, 3],
-            self.child["userPrograms"]: [
+            userPrograms=[
                 0, 0, 0, 0, 0],
-            self.child["numPoints"]: 5,
-            self.child["positionsA"]: [
+            numPoints=5,
+            positionsA=[
                 -10.087499999999999, -6.7875, -3.4875, -0.1875, -0.1375],
-        })
+        ))
 
     def future_long_scan(self):
         task = Mock()

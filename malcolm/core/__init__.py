@@ -6,6 +6,7 @@ from malcolm.core.clientcomms import ClientComms
 from malcolm.core.clientcontroller import ClientController
 from malcolm.core.elementmap import ElementMap
 from malcolm.core.hook import Hook
+from malcolm.core.info import Info
 from malcolm.core.loggable import Loggable
 from malcolm.core.map import Map
 from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, \

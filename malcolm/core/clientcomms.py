@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from malcolm.compat import OrderedDict
 from malcolm.core.loggable import Loggable
 from malcolm.core.response import Update
 from malcolm.core.spawnable import Spawnable

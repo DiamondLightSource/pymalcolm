@@ -34,10 +34,9 @@ class TestStatsPluginPart(unittest.TestCase):
         steps_to_do = ANY
         part_info = ANY
         self.o.configure(task, completed_steps, steps_to_do, part_info)
-        task.put.assert_called_once_with({
-            self.child["enableCallbacks"]: True,
-            self.child["computeStatistics"]: True,
-        })
+        task.put_many.assert_called_once_with(self.child, dict(
+            enableCallbacks=True,
+            computeStatistics=True))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from malcolm.compat import OrderedDict
 from malcolm.core import Loggable
 from malcolm.core.vmetas import BooleanMeta, NumberMeta, StringMeta, \
     ChoiceMeta, TableMeta

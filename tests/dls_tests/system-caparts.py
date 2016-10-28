@@ -35,7 +35,7 @@ class CAPartsTest(unittest.TestCase):
         p = cls(self.process, params)
         p.set_logger_name(cls.__name__)
         list(p.create_attributes())
-        p.connect_pvs()
+        p.reset()
         return p
 
     def test_double(self):

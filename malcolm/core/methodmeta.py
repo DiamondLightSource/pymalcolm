@@ -1,7 +1,6 @@
-from collections import OrderedDict
 import inspect
 
-from malcolm.compat import str_
+from malcolm.compat import str_, OrderedDict
 from malcolm.core.elementmap import ElementMap
 from malcolm.core.map import Map
 from malcolm.core.mapmeta import MapMeta

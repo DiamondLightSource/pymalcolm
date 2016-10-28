@@ -3,7 +3,7 @@ from xml.etree import cElementTree as ET
 from malcolm.compat import et_to_string
 from malcolm.core import method_takes, REQUIRED, Task
 from malcolm.core.vmetas import PointGeneratorMeta
-from malcolm.parts.builtin.layoutpart import LayoutPart
+from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
 
 # How big an XML file can the EPICS waveform receive?
@@ -13,7 +13,7 @@ XML_MAX_SIZE = 1000000 - 2
 POSITIONS_PER_XML = 500
 
 
-class PositionLabellerPart(LayoutPart):
+class PositionLabellerPart(ChildPart):
     # Stored generator for positions
     generator = None
     # Next position we need to generate
@@ -62,17 +62,23 @@ class PositionLabellerPart(LayoutPart):
         assert xml_length < XML_MAX_SIZE, "XML size %d too big" % xml_length
         return xml, end_index
 
-    @RunnableController.Configuring
+    @RunnableController.Reset
+    def reset(self, task):
+        super(PositionLabellerPart, self).reset(task)
+        self.abort(task)
+
+    @RunnableController.Configure
+    @RunnableController.PostRunReady
+    @RunnableController.Seek
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         self.generator = params.generator
         # Delete any remaining old positions
         futures = task.post_async(self.child["delete"])
-        futures += task.put_async({
-            self.child["enableCallbacks"]: True,
-            self.child["idStart"]: completed_steps + 1
-        })
+        futures += task.put_many_async(self.child, dict(
+            enableCallbacks=True,
+            idStart=completed_steps + 1))
         self.steps_up_to = completed_steps + steps_to_do
         xml, self.end_index = self._make_xml(completed_steps)
         # Wait for the previous puts to finish
@@ -82,12 +88,9 @@ class PositionLabellerPart(LayoutPart):
         # Start the plugin
         self.start_future = task.post_async(self.child["start"])
 
-    @RunnableController.Running
-    def run(self, task, _):
-        """Wait for run to finish
-        Args:
-            task (Task): The task helper
-        """
+    @RunnableController.Run
+    @RunnableController.Resume
+    def run(self, task, update_completed_steps):
         self.loading = False
         id_ = task.subscribe(self.child["qty"], self.load_more_positions, task)
         task.wait_all(self.start_future)
@@ -101,6 +104,7 @@ class PositionLabellerPart(LayoutPart):
             task.put(self.child["xml"], xml)
             self.loading = False
 
-    @RunnableController.Aborting
+    @RunnableController.Abort
+    @RunnableController.Pause
     def abort(self, task):
         task.post(self.child["stop"])

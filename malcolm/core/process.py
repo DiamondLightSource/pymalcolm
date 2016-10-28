@@ -1,6 +1,6 @@
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 
-from malcolm.core.attribute import Attribute
+from malcolm.compat import OrderedDict
 from malcolm.core.block import Block
 from malcolm.core.cache import Cache
 from malcolm.core.clientcontroller import ClientController
@@ -16,6 +16,7 @@ BlockChanges = namedtuple("BlockChanges", "changes")
 BlockRespond = namedtuple("BlockRespond", "response, response_queue")
 BlockAdd = namedtuple("BlockAdd", "block, name")
 BlockList = namedtuple("BlockList", "client_comms, blocks")
+AddSpawned = namedtuple("AddSpawned", "spawned")
 
 
 class Process(Loggable):
@@ -30,7 +31,10 @@ class Process(Loggable):
         self._block_state_cache = Cache()
         self._recv_spawned = None
         self._other_spawned = []
-        self._subscriptions = []
+        # lookup of all Subscribe requests, ordered to guarantee subscription
+        # notification ordering
+        # {Request.generate_key(): Subscribe}
+        self._subscriptions = OrderedDict()
         self.comms = []
         self._client_comms = OrderedDict()  # client comms -> list of blocks
         self._handle_functions = {
@@ -43,6 +47,7 @@ class Process(Loggable):
             BlockRespond: self._handle_block_respond,
             BlockAdd: self._handle_block_add,
             BlockList: self._handle_block_list,
+            AddSpawned: self._add_spawned,
         }
         self.create_process_block()
 
@@ -58,7 +63,10 @@ class Process(Loggable):
                 self._handle_functions[type(request)](request)
             except Exception as e:  # pylint:disable=broad-except
                 self.log_exception("Exception while handling %s", request)
-                request.respond_with_error(str(e))
+                try:
+                    request.respond_with_error(str(e))
+                except Exception:
+                    pass
 
     def add_comms(self, comms):
         assert not self._recv_spawned, \
@@ -120,9 +128,26 @@ class Process(Loggable):
 
     def spawn(self, function, *args, **kwargs):
         """Calls SyncFactory.spawn()"""
-        spawned = self.sync_factory.spawn(function, *args, **kwargs)
-        self._other_spawned.append(spawned)
+        def catching_function():
+            try:
+                function(*args, **kwargs)
+            except Exception:
+                self.log_exception(
+                    "Exception calling %s(*%s, **%s)", function, args, kwargs)
+                raise
+        spawned = self.sync_factory.spawn(catching_function)
+        request = AddSpawned(spawned)
+        self.q.put(request)
         return spawned
+
+    def _add_spawned(self, request):
+        spawned = self._other_spawned
+        self._other_spawned = []
+        spawned.append(request.spawned)
+        # Filter out the spawned that have completed to stop memory leaks
+        for sp in spawned:
+            if not sp.ready():
+                self._other_spawned.append(sp)
 
     def get_client_comms(self, block_name):
         for client_comms, blocks in list(self._client_comms.items()):
@@ -159,7 +184,7 @@ class Process(Loggable):
         # update cached dict
         self._block_state_cache.apply_changes(*request.changes)
 
-        for subscription in self._subscriptions:
+        for subscription in self._subscriptions.values():
             endpoint = subscription.endpoint
             # find stuff that's changed that is relevant to this subscriber
             changes = []
@@ -240,7 +265,10 @@ class Process(Loggable):
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current
         sub-structure state"""
-        self._subscriptions.append(request)
+        key = request.generate_key()
+        assert key not in self._subscriptions, \
+            "Subscription on %s already exists" % (key,)
+        self._subscriptions[key] = request
         d = self._block_state_cache.walk_path(request.endpoint)
         self.log_debug("Initial subscription value %s", d)
         if request.delta:
@@ -250,17 +278,13 @@ class Process(Loggable):
 
     def _handle_unsubscribe(self, request):
         """Remove a subscriber and respond with success or error"""
-        subs = [s for s in self._subscriptions if s.id == request.id]
-        # TODO: currently this will remove all subscriptions with a matching id
-        #       there should only be one, we may want to warn if we see several
-        #       Also, this should only filter by the queue/context, not sure
-        #       which yet...
-        if len(subs) == 0:
+        key = request.generate_key()
+        try:
+            subscription = self._subscriptions.pop(key)
+        except KeyError:
             request.respond_with_error(
-                "No subscription found for id %d" % request.id)
+                "No subscription found for %s" % (key,))
         else:
-            self._subscriptions = \
-                [s for s in self._subscriptions if s.id != request.id]
             request.respond_with_return()
 
     def _handle_get(self, request):
