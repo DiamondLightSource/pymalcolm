@@ -1,6 +1,6 @@
-# make assemblies from all YAML files
-from malcolm.assemblyutil import make_all_assemblies
+# Find all subpackages, MethodMeta decorated callables, and YAML files
+from malcolm.packageutil import prepare_package
 
-__all__ = make_all_assemblies(globals(), __name__)
+__all__ = prepare_package(globals(), __name__)
 
-del make_all_assemblies
+del prepare_package

@@ -4,7 +4,6 @@ from malcolm.core import Spawnable, Loggable
 from malcolm.core.vmetas import BooleanMeta, TableMeta
 from malcolm.compat import queue, OrderedDict
 from malcolm.parts.pandabox.pandaboxblockmaker import PandABoxBlockMaker
-from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 
 from malcolm.controllers.defaultcontroller import DefaultController
 

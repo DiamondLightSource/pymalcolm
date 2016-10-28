@@ -1,33 +1,10 @@
-import os
 import logging
 
 from ruamel import yaml
 
-from malcolm.packageutil import prepare_globals_for_package
 from malcolm.compat import str_, OrderedDict
 from malcolm.core import REQUIRED, method_takes
 from malcolm.core.vmetas import StringMeta
-import malcolm.controllers
-import malcolm.parameters
-import malcolm.parts
-import malcolm.comms
-
-
-def make_all_assemblies(globals_d, package_name):
-    def finder(package_fs_path, fname):
-        split = fname.split(".")
-        if split[-1] == "yaml":
-            assert len(split) == 2, \
-                "Expected <something_without_dots>.yaml, got %r" % fname
-            yaml_path = os.path.join(package_fs_path, fname)
-            logging.debug("Parsing %s", yaml_path)
-            with open(yaml_path) as f:
-                text = f.read()
-                func = make_assembly(text)
-                yield split[0], func
-
-    __all__ = prepare_globals_for_package(globals_d, package_name, finder)
-    return __all__
 
 
 def make_assembly(text):
@@ -46,6 +23,8 @@ def make_assembly(text):
             by this or any sub collection will be returned
     """
     import malcolm.assemblies
+    import malcolm.comms
+    import malcolm.parameters
 
     ds = yaml.load(text, Loader=yaml.RoundTripLoader)
 
@@ -114,6 +93,9 @@ def make_block_instance(block_name, process, controllers, parts):
         Block: The created block instance as managed by the controller with
             all the parts attached
     """
+    import malcolm.parts
+    import malcolm.controllers
+
     parts_d = OrderedDict()
     for section in parts:
         # Require all parts to have a name
@@ -126,7 +108,7 @@ def make_block_instance(block_name, process, controllers, parts):
         controller = controllers[0].instantiate(
             malcolm.controllers, block_name, process, parts_d)
     else:
-        controller = malcolm.controllers.DefaultController(
+        controller = malcolm.controllers.defaultcontroller.DefaultController(
             block_name, process, parts_d)
     return controller.block
 

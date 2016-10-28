@@ -1,6 +1,6 @@
 # import subpackages
-from malcolm.packageutil import import_sub_packages
+from malcolm.packageutil import prepare_package
 
-__all__ = import_sub_packages(globals(), __name__)
+__all__ = prepare_package(globals(), __name__)
 
-del import_sub_packages
+del prepare_package

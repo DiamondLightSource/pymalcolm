@@ -8,7 +8,7 @@ from mock import Mock, patch, ANY
 
 from malcolm.core import method_takes, REQUIRED, Block
 from malcolm.core.vmetas import StringMeta
-from malcolm.assemblyutil import make_assembly, Section, make_block_instance
+from malcolm.yamlutil import make_assembly, Section, make_block_instance
 
 
 class TestAssemblies(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestAssemblies(unittest.TestCase):
         self.assertEqual(len(blocks), 1)
         process.add_block.assert_called_once_with(blocks[0])
 
-    @patch("malcolm.assemblyutil.make_block_instance")
+    @patch("malcolm.yamlutil.make_block_instance")
     def test_make_assembly(self, mock_make):
         yaml = """
 - parameters.string:

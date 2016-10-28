@@ -1,4 +1,4 @@
-from malcolm.core import Part, Attribute
+from malcolm.core import Part
 
 
 class PandABoxFieldPart(Part):
