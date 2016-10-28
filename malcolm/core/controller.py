@@ -236,14 +236,13 @@ class Controller(Loggable):
         return part_tasks
 
     def run_hook(self, hook, part_tasks, *args, **params):
-        hook_queue, task_lookup = self.start_hook(
+        hook_queue, filtered_part_tasks = self.start_hook(
             hook, part_tasks, *args, **params)
-        return_dict = self.wait_hook(hook_queue, task_lookup)
+        return_dict = self.wait_hook(hook_queue, filtered_part_tasks)
         return return_dict
 
-    def make_task_return_value_function(self, weak_task, hook_queue, part_name,
+    def make_task_return_value_function(self, weak_task, hook_queue, part,
                                         func_name, *args, **params):
-        part = self.parts[part_name]
         func = getattr(part, func_name)
         method_meta = part.method_metas.get(func_name, None)
         filtered_params = {}
@@ -265,7 +264,7 @@ class Controller(Loggable):
                 self.log_exception("%s %s raised exception", func, params)
                 result = e
             self.log_debug("Putting %r on queue", result)
-            hook_queue.put((part_name, result))
+            hook_queue.put((part, result))
 
         return task_return
 
@@ -278,35 +277,35 @@ class Controller(Loggable):
         # ask the hook to find the functions it should run
         part_funcs = hook.find_hooked_functions(self.parts)
 
+        filtered_part_tasks = {}
+
         # now start them off
-        task_lookup = {}
         hook_queue = self.process.create_queue()
-        for part_name, func_name in part_funcs.items():
-            part = self.parts[part_name]
+        for part, func_name in part_funcs.items():
             task = part_tasks[part]
-            task_lookup[part_name] = task
+            filtered_part_tasks[part] = task
             weak_task = weakref.proxy(task)
             task_return = self.make_task_return_value_function(
-                weak_task, hook_queue, part_name, func_name, *args, **params)
+                weak_task, hook_queue, part, func_name, *args, **params)
             task.define_spawn_function(task_return)
             task.start()
 
-        return hook_queue, task_lookup
+        return hook_queue, filtered_part_tasks
 
-    def wait_hook(self, hook_queue, task_lookup):
+    def wait_hook(self, hook_queue, filtered_part_tasks):
         # Wait for them all to finish
         return_dict = {}
-        while task_lookup:
-            part_name, ret = hook_queue.get()
-            task = task_lookup.pop(part_name)
-            return_dict[part_name] = ret
-            self.log_debug("Part %s returned %s" % (part_name, ret))
+        while filtered_part_tasks:
+            part, ret = hook_queue.get()
+            task = filtered_part_tasks.pop(part)
+            return_dict[part.name] = ret
+            self.log_debug("Part %s returned %s" % (part.name, ret))
 
             if isinstance(ret, Exception):
                 # Stop all other tasks
-                for task in task_lookup.values():
+                for task in filtered_part_tasks.values():
                     task.stop()
-                for task in task_lookup.values():
+                for task in filtered_part_tasks.values():
                     task.wait()
 
             # If we got a StopIteration, someone asked us to stop, so
