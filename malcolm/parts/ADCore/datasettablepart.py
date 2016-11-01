@@ -1,5 +1,5 @@
 from malcolm.compat import OrderedDict
-from malcolm.core import Part, Table, method_takes, Info
+from malcolm.core import Part, Table, Info
 from malcolm.core.vmetas import StringArrayMeta, ChoiceArrayMeta, TableMeta
 from malcolm.controllers.runnablecontroller import RunnableController
 

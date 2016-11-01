@@ -1,4 +1,5 @@
-from malcolm.core.methodmeta import get_method_decorated, REQUIRED, method_takes
+from malcolm.core.methodmeta import get_method_decorated, REQUIRED, \
+    method_takes
 from malcolm.core.vmetas import StringMeta
 from malcolm.core.loggable import Loggable
 from malcolm.core.hook import get_hook_decorated

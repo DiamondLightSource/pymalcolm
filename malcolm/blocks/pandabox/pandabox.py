@@ -34,7 +34,7 @@ def PandABox(process, params):
             block_names.append(block_name)
         else:
             for i in range(block_data.number):
-                block_names.append("%s%d" % (block_name, i+1))
+                block_names.append("%s%d" % (block_name, i + 1))
         for bn in block_names:
             malcolm_name = "%s:%s" % (params.name, bn)
             ret.append(poller.make_panda_block(malcolm_name, bn, block_data))
@@ -50,7 +50,3 @@ def PandABox(process, params):
     poller.start()
 
     return ret
-
-
-
-

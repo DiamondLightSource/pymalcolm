@@ -1,7 +1,7 @@
 from malcolm.core.attribute import Attribute
 from malcolm.core.controller import Controller
 from malcolm.core.map import Map
-from malcolm.core.methodmeta import MethodMeta, method_takes
+from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.request import Post, Subscribe, Return, Put
 from malcolm.core.response import Error
 

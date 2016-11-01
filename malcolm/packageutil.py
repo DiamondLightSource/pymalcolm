@@ -19,14 +19,14 @@ def find_package_contents(package_name, package_fs_path, fname):
     if fname.endswith(".py") and fname != "__init__.py":
         # import it and see what it produces
         import_name = "%s.%s" % (package_name, fname[:-3])
-        logging.debug("Importing %s" % import_name)
+        logging.debug("Importing %s", import_name)
         module = importlib.import_module(import_name)
         for n in dir(module):
             cls = getattr(module, n)
             module_name = module.__name__.split(".")[-1]
             if n.lower() == module_name:
                 if hasattr(cls, "MethodMeta"):
-                    logging.debug("Found child class %s" % cls)
+                    logging.debug("Found child class %s", cls)
                     yield cls.__name__, cls
     elif os.path.isdir(os.path.join(package_fs_path, fname)):
         # import it and add it to the list
