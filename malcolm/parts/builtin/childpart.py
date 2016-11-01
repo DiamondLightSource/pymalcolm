@@ -22,7 +22,7 @@ sm = ManagerController.stateMachine
 
 
 @method_also_takes(
-    "child_mri", StringMeta("Malcolm resource id of child object"), REQUIRED)
+    "mri", StringMeta("Malcolm resource id of child object"), REQUIRED)
 class ChildPart(Part):
     # Child block object
     child = None
@@ -37,7 +37,7 @@ class ChildPart(Part):
 
     def store_params(self, params):
         super(ChildPart, self).store_params(params)
-        self.child = self.process.get_block(params.child_mri)
+        self.child = self.process.get_block(params.mri)
         self.part_visible = {}
 
     @ManagerController.Reset
@@ -75,7 +75,7 @@ class ChildPart(Part):
                     self.sever_inports_connected_to(task, outports)
                 self.part_visible[name] = visible
         ret = LayoutInfo(
-            mri=self.params.child_mri, x=self.x, y=self.y, visible=self.visible)
+            mri=self.params.mri, x=self.x, y=self.y, visible=self.visible)
         return [ret]
 
     def _get_flowgraph_ports(self, direction="out"):

@@ -1,20 +1,26 @@
 - parameters.string:
+    name: mri
+    description: MRI for created block
+
+- parameters.string:
     name: mic
     description: MRI for microscope DetectorManager object
 
 - parameters.string:
     name: brick
-    description: MRI for brick DetectorManager object
+    description: MRI for brick PMACManager object
 
 - controllers.RunnableController:
+    mri: $(mri)
+    axesToMove: [stagex, stagey]
 
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
 - parts.builtin.RunnableChildPart:
     name: MIC
-    child: $(mic)
+    mri: $(mic)
 
 - parts.builtin.RunnableChildPart:
     name: BRICK
-    child: $(brick)
+    mri: $(brick)

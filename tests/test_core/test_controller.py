@@ -25,7 +25,7 @@ class TestController(unittest.TestCase):
         self.b = self.c.block
 
     def test_init(self):
-        self.c.process.add_block.assert_called_once_with(self.b)
+        self.c.process.add_block.assert_called_once_with(self.b, self.c)
         self.assertEqual({}, self.c.parts)
 
         self.assertEqual(

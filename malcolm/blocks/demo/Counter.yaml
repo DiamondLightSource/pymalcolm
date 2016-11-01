@@ -1,6 +1,6 @@
 - parameters.string:
     name: mri
-    description: Malcolm resource id of the Counter Block
+    description: Malcolm resource id of the Block
 
 - controllers.DefaultController:
     mri: $(mri)

@@ -39,7 +39,7 @@ def PandABox(process, params):
             malcolm_name = "%s:%s" % (params.name, bn)
             ret.append(poller.make_panda_block(malcolm_name, bn, block_data))
             part_params = ChildPart.MethodMeta.prepare_input_map(
-                dict(name=bn, child=malcolm_name))
+                dict(name=bn, mri=malcolm_name))
             parts[bn] = ChildPart(process, part_params)
 
     # Make a controller

@@ -36,9 +36,10 @@ class Map(Serializable):
                 self[k] = d[k]
 
     def check_valid(self):
-        for e in self.meta.required:
-            if e not in self.endpoints:
-                raise KeyError(e)
+        invalid = [k for k in self.meta.required if k not in self.endpoints]
+        if invalid:
+            raise ValueError(
+                "Keys %s from %s not set" % (invalid, self.meta.required))
 
     def __repr__(self):
         elements = ", ".join("%r: %r" % kv for kv in self.items())

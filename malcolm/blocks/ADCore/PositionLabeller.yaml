@@ -1,27 +1,21 @@
 - parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- parameters.string:
     name: prefix
     description: The root PV for the all records
 
-- parts.asyn.AsynOutportPart:
-    name: out
-    description: Array outport name
-    rbv: $(prefix):PortName_RBV
-    outportType: NDArray
+- controllers.DefaultController:
+    mri: $(mri)
 
-- parts.ca.CAStringPart:
-    name: inp
-    description: Array inport name
-    pv: $(prefix):NDArrayPort
-    rbvSuff: _RBV
-    widget: textinput
-    inportType: NDArray
+# This includes the output port
+- includes.ADCore.ndarray_parts:
+    prefix: $(prefix)
 
-- parts.ca.CABooleanPart:
-    name: enableCallbacks
-    description: Enable plugin to run when we get a new frame
-    pv: $(prefix):EnableCallbacks
-    rbvSuff: _RBV
-    widget: checkbox
+# This includes the input port
+- includes.ADCore.ndpluginbase_parts:
+    prefix: $(prefix)
 
 - parts.ca.CAActionPart:
     name: delete

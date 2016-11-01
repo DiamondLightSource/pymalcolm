@@ -11,7 +11,7 @@ from mock import MagicMock
 # module imports
 from malcolm.gui.blockmodel import BlockModel, BlockItem
 from malcolm.controllers.defaultcontroller import DefaultController
-from malcolm.assemblies.demo import Hello
+from malcolm.blocks.demo import Hello
 
 
 class TestBlockModel(unittest.TestCase):

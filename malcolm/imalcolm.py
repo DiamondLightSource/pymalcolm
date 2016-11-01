@@ -19,7 +19,7 @@ def make_process():
         "Default is INFO")
     parser.add_argument(
         'yaml', nargs="?",
-        help="The YAML file containing the assemblies to be loaded"
+        help="The YAML file containing the blocks to be loaded"
     )
     args = parser.parse_args()
     # assuming loglevel is bound to the string value obtained from the

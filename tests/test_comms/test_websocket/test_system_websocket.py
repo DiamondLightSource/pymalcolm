@@ -21,7 +21,7 @@ import time
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import Process, SyncFactory, Task, ClientController
 from malcolm.comms.websocket import WebsocketServerComms, WebsocketClientComms
-from malcolm.assemblies.demo import Hello, Counter
+from malcolm.blocks.demo import Hello, Counter
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):

@@ -14,7 +14,7 @@ PROCESS_STOP = object()
 # Internal update messages
 BlockChanges = namedtuple("BlockChanges", "changes")
 BlockRespond = namedtuple("BlockRespond", "response, response_queue")
-BlockAdd = namedtuple("BlockAdd", "block, name")
+BlockAdd = namedtuple("BlockAdd", "block, name, controller")
 BlockList = namedtuple("BlockList", "client_comms, blocks")
 AddSpawned = namedtuple("AddSpawned", "spawned")
 
@@ -27,7 +27,8 @@ class Process(Loggable):
         self.name = name
         self.sync_factory = sync_factory
         self.q = self.create_queue()
-        self._blocks = OrderedDict()  # block name -> block
+        self._blocks = OrderedDict()  # block_name -> Block
+        self._controllers = OrderedDict()  # block_name -> Controller
         self._block_state_cache = Cache()
         self._recv_spawned = None
         self._other_spawned = []
@@ -166,7 +167,7 @@ class Process(Loggable):
         ).make_attribute([])
         self.process_block.replace_endpoints(children)
         self.process_block.set_parent(self, self.name)
-        self.add_block(self.process_block)
+        self.add_block(self.process_block, self)
 
     def update_block_list(self, client_comms, blocks):
         self.q.put(BlockList(client_comms=client_comms, blocks=blocks))
@@ -223,11 +224,12 @@ class Process(Loggable):
         """Push the response to the required queue"""
         request.response_queue.put(request.response)
 
-    def add_block(self, block):
+    def add_block(self, block, controller):
         """Add a block to be hosted by this process
 
         Args:
             block (Block): The block to be added
+            controller (Controller): Its controller
         """
         path = block.path_relative_to(self)
         assert len(path) == 1, \
@@ -236,7 +238,7 @@ class Process(Loggable):
         name = path[0]
         assert name not in self._blocks, \
             "There is already a block called %r" % name
-        request = BlockAdd(block=block, name=name)
+        request = BlockAdd(block=block, controller=controller, name=name)
         if self._recv_spawned:
             # Started, so call in Process thread
             self.q.put(request)
@@ -246,11 +248,12 @@ class Process(Loggable):
 
     def _handle_block_add(self, request):
         """Add a block to be hosted by this process"""
-        block = request.block
         assert request.name not in self._blocks, \
             "There is already a block called %r" % request.name
-        self._blocks[request.name] = block
-        change_request = BlockChanges([[[request.name], block.to_dict()]])
+        self._blocks[request.name] = request.block
+        self._controllers[request.name] = request.controller
+        serialized = request.block.to_dict()
+        change_request = BlockChanges([[[request.name], serialized]])
         self._handle_block_changes(change_request)
         # Regenerate list of blocks
         self.process_block["blocks"].set_value(list(self._blocks))
@@ -263,6 +266,9 @@ class Process(Loggable):
                 mri=block_name)
             controller = ClientController(self, {}, params)
             return controller.block
+
+    def get_controller(self, block_name):
+        return self._controllers[block_name]
 
     def _handle_subscribe(self, request):
         """Add a new subscriber and respond with the current

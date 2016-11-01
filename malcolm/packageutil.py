@@ -3,10 +3,16 @@ import importlib
 import logging
 
 
-#try:
-from malcolm.yamlutil import make_assembly
-#except ImportError:
-#    make_assembly = None
+try:
+    from malcolm.yamlutil import make_block_creator, make_include_creator
+except ImportError:
+    make_creator = None
+else:
+    def make_creator(package_name):
+        if package_name.startswith("malcolm.blocks."):
+            return make_block_creator
+        elif package_name.startswith("malcolm.includes."):
+            return make_include_creator
 
 
 def find_package_contents(package_name, package_fs_path, fname):
@@ -32,17 +38,24 @@ def find_package_contents(package_name, package_fs_path, fname):
             logging.exception("Importing %s failed", import_name)
         else:
             yield fname, module
-    elif make_assembly and fname.endswith(".yaml"):
-        # load the yaml file and make an assembly out of it
-        split = fname.split(".")
-        assert len(split) == 2, \
-            "Expected <something_without_dots>.yaml, got %r" % fname
-        yaml_path = os.path.join(package_fs_path, fname)
-        logging.debug("Parsing %s", yaml_path)
-        with open(yaml_path) as f:
-            text = f.read()
-            func = make_assembly(text)
-            yield split[0], func
+    elif fname.endswith(".yaml"):
+        # check we need to do something with it
+        creator = make_creator(package_name)
+        if creator:
+            # load the yaml file and make an assembly out of it
+            split = fname.split(".")
+            assert len(split) == 2, \
+                "Expected <something_without_dots>.yaml, got %r" % fname
+            yaml_path = os.path.join(package_fs_path, fname)
+            logging.debug("Parsing %s", yaml_path)
+            with open(yaml_path) as f:
+                text = f.read()
+                try:
+                    func = creator(text)
+                except Exception:
+                    logging.exception("Creating object from %s failed", fname)
+                else:
+                    yield split[0], func
 
 
 def prepare_package(globals_d, package_name):

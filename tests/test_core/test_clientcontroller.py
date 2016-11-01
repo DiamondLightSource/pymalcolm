@@ -17,7 +17,7 @@ from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import Attribute, ClientController
 from malcolm.core.vmetas import StringMeta, NumberMeta
 from malcolm.compat import queue
-from malcolm.assemblies.demo import Hello
+from malcolm.blocks.demo import Hello
 
 
 class TestClientController(unittest.TestCase):

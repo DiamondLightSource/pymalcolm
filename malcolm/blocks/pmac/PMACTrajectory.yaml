@@ -1,6 +1,13 @@
 - parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- parameters.string:
     name: prefix
     description: the root PV for the pmac motor (hardware) controller
+
+- controllers.DefaultController:
+    mri: $(mri)
 
 - parts.ca.CAChoicePart:
     name: cs

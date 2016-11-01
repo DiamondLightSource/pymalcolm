@@ -18,7 +18,7 @@ from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Post, Subscribe
 from malcolm.core.response import Return, Update
 from malcolm.core.task import Task
-from malcolm.assemblies.demo import Hello, Counter
+from malcolm.blocks.demo import Hello, Counter
 
 
 class TestHelloDemoSystem(unittest.TestCase):

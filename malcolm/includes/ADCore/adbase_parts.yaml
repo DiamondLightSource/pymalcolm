@@ -2,20 +2,8 @@
     name: prefix
     description: The root PV for the all records
 
-# TODO: most of this should inherit from a suitable set of Parts
-
-- parts.asyn.AsynOutportPart:
-    name: out
-    description: Array outport name
-    rbv: $(prefix):PortName_RBV
-    outportType: NDArray
-
-- parts.ca.CABooleanPart:
-    name: arrayCallbacks
-    description: Whether to produce images or not
-    pv: $(prefix):ArrayCallbacks
-    rbvSuff: _RBV
-    widget: checkbox
+- includes.ADCore.ndarray_parts:
+    prefix: prefix
 
 - parts.ca.CADoublePart:
     name: exposure
@@ -38,13 +26,6 @@
     rbvSuff: _RBV
     widget: textinput
 
-- parts.ca.CALongPart:
-    name: arrayCounter
-    description: Current unique id number for frame
-    pv: $(prefix):ArrayCounter
-    rbvSuff: _RBV
-    widget: textinput
-
 - parts.ca.CAActionPart:
     name: start
     description: Demand for starting acquisition
@@ -64,10 +45,3 @@
     description: If detector is currently acquiring
     rbv: $(prefix):Acquire
     widget: led
-
-- parts.ca.CADoublePart:
-    name: pointsPerRow
-    description: Number of points before xspress3 will reset buffers
-    pv: $(prefix):PointsPerRow
-    rbvSuff: _RBV
-    widget: textinput

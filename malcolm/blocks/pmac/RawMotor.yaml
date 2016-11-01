@@ -1,14 +1,21 @@
 - parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- parameters.string:
     name: prefix
-    description: the root PV for the motor record
+    description: The root PV for the all records
 
 - parameters.string:
     name: motorPrefix
-    description: the root PV for the motor record (will eventuallu be prefix)
+    description: the root PV for the motor record (will eventually be prefix)
 
 - parameters.string:
     name: scannable
     description: The scannable name for GDA of this motor
+
+- controllers.DefaultController:
+    mri: $(mri)
 
 - parts.ca.CADoublePart:
     name: position

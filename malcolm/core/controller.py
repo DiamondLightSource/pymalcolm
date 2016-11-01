@@ -57,7 +57,7 @@ class Controller(Loggable):
         self._set_block_children()
         self._do_transition(sm.DISABLED, "Disabled")
         self.block.set_parent(process, self.mri)
-        process.add_block(self.block)
+        process.add_block(self.block, self)
         self.do_initial_reset()
 
     def _find_hooks(self):
