@@ -9,10 +9,6 @@
 - controllers.DefaultController:
     mri: $(mri)
 
-# This includes the output port
-- includes.ADCore.ndarray_parts:
-    prefix: $(prefix)
-
 # This includes the input port
 - includes.ADCore.ndpluginbase_parts:
     prefix: $(prefix)

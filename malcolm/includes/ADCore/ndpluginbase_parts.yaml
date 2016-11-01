@@ -2,6 +2,9 @@
     name: prefix
     description: The root PV for the all records
 
+- includes.ADCore.ndarray_parts:
+    prefix: $(prefix)
+
 - parts.ca.CAStringPart:
     name: inp
     description: Array inport name
