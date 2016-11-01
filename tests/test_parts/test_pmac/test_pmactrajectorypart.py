@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import MagicMock, call
+from mock import MagicMock, call, patch
 
 Mock = MagicMock
 
@@ -93,7 +93,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             timeArray=[100000, 437500, 100000],
             velocityMode=[2, 1, 3],
             userPrograms=[0, 0, 0],
-            numPoints=3,
+            pointsToBuild=3,
             positionsA=[0.45, -0.087500000000000008, -0.1375],
             positionsB=[0.0, 0.0, 0.0]))
         self.assertEqual(task.post.call_args_list[0],
@@ -113,20 +113,52 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             userPrograms=[
                 3, 4, 3, 4, 3, 4, 2, 8,
                 3, 4, 3, 4, 3, 4, 2, 8],
-            numPoints=16,
+            pointsToBuild=16,
             positionsA=[
                 -0.125, 0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
                 0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375],
             positionsB=[
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]))
+        task.put.assert_called_once_with(self.child["numPoints"], 18)
+
+    @patch("malcolm.parts.pmac.pmactrajectorypart.POINTS_PER_BUILD", 4)
+    def test_update_step(self):
+        task = self.do_configure(axes_to_scan=["x", "y"])
+        positionsA = task.put_many.call_args_list[3][0][1]["positionsA"]
+        self.assertEqual(len(positionsA), 11)
+        self.assertEqual(positionsA[-1], 0.375)
+        self.assertEqual(self.o.end_index, 4)
+        self.assertEqual(len(self.o.completed_steps_lookup), 11)
+        update_completed_steps = MagicMock()
+        task = MagicMock()
+        self.o.update_step(3, update_completed_steps, task)
+        update_completed_steps.assert_called_once_with(1, self.o)
+        self.assertEqual(self.o.loading, False)
+        self.assertEqual(task.put_many.call_count, 2)
+        self.assertEqual(task.post.call_count, 1)
+        self.check_resolutions_and_use(task.put_many.call_args_list[0][0][1])
+        self.assertEqual(task.post.call_args_list[0],
+                         call(self.child["appendProfile"]))
+        self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
+            timeArray=[
+                500000, 500000, 500000, 500000, 100000],
+            velocityMode=[
+                0, 0, 0, 1, 3],
+            userPrograms=[
+                4, 3, 4, 2, 8],
+            pointsToBuild=5,
+            positionsA=[
+                0.25, 0.125, 0.0, -0.125, -0.1375],
+            positionsB=[
+                0.1, 0.1, 0.1, 0.1, 0.1]))
 
     def test_run(self):
         task = Mock()
         update = Mock()
         self.o.run(task, update)
         task.subscribe.assert_called_once_with(
-            self.child["pointsScanned"], self.o.update_step, update)
+            self.child["pointsScanned"], self.o.update_step, update, task)
         task.post.assert_called_once_with(self.child["executeProfile"])
 
     def test_multi_run(self):
@@ -144,7 +176,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             timeArray=[100000, 500000, 500000, 500000, 500000, 500000, 500000, 100000],
             velocityMode=[2, 0, 0, 0, 0, 0, 1, 3],
             userPrograms=[3, 4, 3, 4, 3, 4, 2, 8],
-            numPoints=8,
+            pointsToBuild=8,
             positionsA=[0.625, 0.5, 0.375, 0.25, 0.125, 0.0,
                                        -0.125, -0.1375],
         ))
@@ -158,7 +190,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 2, 1, 1, 1, 3],
             userPrograms=[
                 0, 0, 0, 0, 0],
-            numPoints=5,
+            pointsToBuild=5,
             positionsA=[
                 -10.087499999999999, -6.7875, -3.4875, -0.1875, -0.1375],
         ))

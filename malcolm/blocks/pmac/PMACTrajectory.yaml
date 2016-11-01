@@ -42,6 +42,19 @@
     rbv: $(prefix):ProfileExecuteMessage_RBV
     widget: textinput
 
+- parts.ca.CAActionPart:
+    name: appendProfile
+    description: command to append the profile once built
+    pv: $(prefix):ProfileAppend
+    statusPv: $(prefix):ProfileAppendStatus_RBV
+    goodStatus: Success
+
+- parts.ca.CAStringPart:
+    name: appendMessage
+    description: message of last profile append
+    rbv: $(prefix):ProfileAppendMessage_RBV
+    widget: textinput
+
 - parts.ca.CALongPart:
     name: scanPercentage
     description: percentage complete on current scan
@@ -81,6 +94,13 @@
     name: numPoints
     description: Number of points in scan
     pv: $(prefix):ProfileNumPoints
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: pointsToBuild
+    description: Number of points to build or append
+    pv: $(prefix):ProfilePointsToBuild
     rbvSuff: _RBV
     widget: textinput
 

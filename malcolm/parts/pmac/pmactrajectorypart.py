@@ -23,6 +23,9 @@ TRIG_DEAD_FRAME = 2  # Capture 0, Frame 1, Detector 0
 TRIG_LIVE_FRAME = 3  # Capture 0, Frame 1, Detector 1
 TRIG_ZERO = 8        # Capture 0, Frame 0, Detector 0
 
+# How many generator points to load each time
+POINTS_PER_BUILD = 1000
+
 # All possible PMAC CS axis assignment
 cs_axis_names = list("ABCUVWXYZ")
 
@@ -48,10 +51,20 @@ class MotorInfo(Info):
 
 
 class PMACTrajectoryPart(ChildPart):
-    # Stored between functions
+    # Axis information stored from validate
+    # {scannable_name: MotorInfo}
     axis_mapping = None
+    # CS asyn port name to do trajectory on
     cs_port = None
+    # Lookup of the completed_step value for each point
     completed_steps_lookup = []
+    # If we are currently loading then block loading more points
+    loading = False
+    # The last index we have loaded
+    end_index = 0
+    # Where we should stop loading points
+    steps_up_to = 0
+    # Stored generator for positions
     generator = None
 
     @RunnableController.Reset
@@ -98,17 +111,21 @@ class PMACTrajectoryPart(ChildPart):
         self.cs_port, self.axis_mapping = self.validate(
             task, completed_steps, steps_to_do, part_info, params)
         futures = self.move_to_start(task, completed_steps)
-        self.completed_steps_lookup, profile = self.build_generator_profile(
-            completed_steps, steps_to_do)
+        self.steps_up_to = completed_steps + steps_to_do
+        self.completed_steps_lookup = []
+        profile = self.build_generator_profile(completed_steps)
         task.wait_all(futures)
-        self.build_profile(task, **profile)
+        self.write_profile_points(task, **profile)
+        # Max size of array
+        task.put(self.child["numPoints"], self.generator.num * 3)
+        task.post(self.child["buildProfile"])
 
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, task, update_completed_steps):
-        task.subscribe(
-            self.child["pointsScanned"], self.update_step,
-            update_completed_steps)
+        self.loading = False
+        task.subscribe(self.child["pointsScanned"], self.update_step,
+                       update_completed_steps, task)
         task.post(self.child["executeProfile"])
 
     @RunnableController.Abort
@@ -130,10 +147,18 @@ class PMACTrajectoryPart(ChildPart):
             time = accl_time + full_speed_dist / motor_info.max_velocity
         return time
 
-    def update_step(self, scanned, update_completed_steps):
+    def update_step(self, scanned, update_completed_steps, task):
         if scanned > 0:
             completed_steps = self.completed_steps_lookup[scanned - 1]
             update_completed_steps(completed_steps, self)
+            if not self.loading and self.end_index < self.steps_up_to and \
+                    self.end_index - completed_steps < POINTS_PER_BUILD:
+                self.loading = True
+                profile = self.build_generator_profile(
+                    self.end_index, do_run_up=False)
+                self.write_profile_points(task, **profile)
+                task.post(self.child["appendProfile"])
+                self.loading = False
 
     def run_up_positions(self, point):
         """Generate a dict of axis run up distances given a time
@@ -194,13 +219,14 @@ class PMACTrajectoryPart(ChildPart):
             velocity_mode = [ZERO_VELOCITY]
             user_programs = [NO_PROGRAM]
 
-        self.build_profile(task, time_array, velocity_mode, trajectory,
-                           user_programs)
+        self.write_profile_points(task, time_array, velocity_mode, trajectory,
+                                  user_programs)
+        task.post(self.child["buildProfile"])
         futures = task.post_async(self.child["executeProfile"])
         return futures
 
-    def build_profile(self, task, time_array, velocity_mode, trajectory,
-                      user_programs):
+    def write_profile_points(self, task, time_array, velocity_mode, trajectory,
+                             user_programs):
         """Build profile using part_tasks
 
         Args:
@@ -270,25 +296,34 @@ class PMACTrajectoryPart(ChildPart):
             timeArray=time_array_ticks,
             velocityMode=velocity_mode,
             userPrograms=user_programs,
-            numPoints=len(time_array)
+            pointsToBuild=len(time_array)
         )
         for axis_name in trajectory:
             motor_info = self.axis_mapping[axis_name]
             cs_axis = motor_info.cs_axis
             attr_dict["positions%s" % cs_axis] = trajectory[axis_name]
         task.put_many(self.child, attr_dict)
-        task.post(self.child["buildProfile"])
 
-    def build_generator_profile(self, start_index, steps_to_build):
+    def build_generator_profile(self, start_index, do_run_up=True):
         acceleration_time = self.calculate_acceleration_time()
         trajectory = {}
         time_array = []
         velocity_mode = []
         user_programs = []
-        completed_steps_lookup = []
-        last_point = None
 
-        for i in range(start_index, start_index + steps_to_build):
+        # Cap last point to steps_up_to
+        self.end_index = start_index + POINTS_PER_BUILD
+        if self.end_index > self.steps_up_to:
+            self.end_index = self.steps_up_to
+
+        # If we are doing the first build, do_run_up will be called so flag
+        # that we need a runup, else just continue from the previous point
+        if do_run_up:
+            last_point = None
+        else:
+            last_point = self.generator.get_point(start_index - 1)
+
+        for i in range(start_index, self.end_index):
             point = self.generator.get_point(i)
 
             # Check if we need to insert the lower bound point
@@ -309,26 +344,26 @@ class PMACTrajectoryPart(ChildPart):
                 time_array.append(lower_move_time)
                 velocity_mode.append(PREV_TO_NEXT)
                 user_programs.append(TRIG_ZERO)
-                completed_steps_lookup.append(i)
+                self.completed_steps_lookup.append(i)
 
             if lower_move_time:
                 # Add lower bound
                 time_array.append(lower_move_time)
                 velocity_mode.append(CURRENT_TO_NEXT)
                 user_programs.append(TRIG_LIVE_FRAME)
-                completed_steps_lookup.append(i)
+                self.completed_steps_lookup.append(i)
 
             # Add position
             time_array.append(point.duration / 2.0)
             velocity_mode.append(PREV_TO_NEXT)
             user_programs.append(TRIG_CAPTURE)
-            completed_steps_lookup.append(i)
+            self.completed_steps_lookup.append(i)
 
             # Add upper bound
             time_array.append(point.duration / 2.0)
             velocity_mode.append(PREV_TO_NEXT)
             user_programs.append(TRIG_LIVE_FRAME)
-            completed_steps_lookup.append(i + 1)
+            self.completed_steps_lookup.append(i + 1)
 
             # Add the axis positions
             for axis_name, cs_def in self.axis_mapping.items():
@@ -343,20 +378,21 @@ class PMACTrajectoryPart(ChildPart):
             last_point = point
 
         # Add the last tail off point
-        time_array.append(acceleration_time)
-        velocity_mode[-1] = PREV_TO_CURRENT
-        velocity_mode.append(ZERO_VELOCITY)
-        user_programs[-1] = TRIG_DEAD_FRAME
-        user_programs.append(TRIG_ZERO)
-        completed_steps_lookup.append(i + 1)
+        if self.end_index == self.steps_up_to:
+            time_array.append(acceleration_time)
+            velocity_mode[-1] = PREV_TO_CURRENT
+            velocity_mode.append(ZERO_VELOCITY)
+            user_programs[-1] = TRIG_DEAD_FRAME
+            user_programs.append(TRIG_ZERO)
+            self.completed_steps_lookup.append(i + 1)
 
-        for axis_name, tail_off in self.run_up_positions(last_point).items():
-            positions = trajectory[axis_name]
-            positions.append(positions[-1] + tail_off)
+            for axis_name, tail_off in self.run_up_positions(last_point).items():
+                positions = trajectory[axis_name]
+                positions.append(positions[-1] + tail_off)
 
         profile = dict(time_array=time_array, velocity_mode=velocity_mode,
                        trajectory=trajectory, user_programs=user_programs)
-        return completed_steps_lookup, profile
+        return profile
 
     def _same_sign(self, a, b):
         return a*b >= 0
