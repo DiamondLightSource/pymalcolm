@@ -1,6 +1,6 @@
-# make the import path nice
-from malcolm.packageutil import import_methodmeta_decorated_classes
+# Find all subpackages, MethodMeta decorated callables, and YAML files
+from malcolm.packageutil import prepare_package
 
-__all__ = import_methodmeta_decorated_classes(globals(), __name__)
+__all__ = prepare_package(globals(), __name__)
 
-del import_methodmeta_decorated_classes
+del prepare_package

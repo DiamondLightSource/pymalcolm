@@ -17,23 +17,22 @@ from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import Attribute, ClientController
 from malcolm.core.vmetas import StringMeta, NumberMeta
 from malcolm.compat import queue
-from malcolm.parts.demo import HelloPart
+from malcolm.blocks.demo import Hello
 
 
 class TestClientController(unittest.TestCase):
 
     def setUp(self):
         p = MagicMock()
-        part = HelloPart(p, None)
         # Serialized version of the block we want
-        source = DefaultController(
-            "blockname", p, parts={"hello":part}).block
+        source = Hello(p, dict(mri="blockname"))[0]
         self.serialized = source.to_dict()
         # Setup client controller prerequisites
         self.p = MagicMock()
         self.p.name = "process"
         self.comms = MagicMock()
-        self.cc = ClientController("blockname", self.p)
+        params = ClientController.MethodMeta.prepare_input_map(mri="blockname")
+        self.cc = ClientController(self.p, {}, params)
         self.b = self.cc.block
         # get process to give us comms
         self.p.get_client_comms.return_value = self.comms

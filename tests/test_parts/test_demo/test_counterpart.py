@@ -17,7 +17,7 @@ from malcolm.core.block import Block
 class TestCounterPart(unittest.TestCase):
 
     def setUp(self):
-        self.c = CounterPart(Mock(), None)
+        self.c = CounterPart(Mock(), Mock())
         list(self.c.create_attributes())
 
     def test_increment_increments(self):

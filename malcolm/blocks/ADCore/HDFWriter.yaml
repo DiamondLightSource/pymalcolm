@@ -1,0 +1,261 @@
+- parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- controllers.DefaultController:
+    mri: $(mri)
+
+# This includes the input port
+- includes.ADCore.ndpluginbase_parts:
+    prefix: $(prefix)
+
+- parts.ca.CAChoicePart:
+    name: fileWriteMode
+    description: Write single, capture then write, or stream as captured
+    pv: $(prefix):FileWriteMode
+    rbvSuff: _RBV
+    widget: combo
+
+- parts.ca.CABooleanPart:
+    name: swmrMode
+    description: Whether to write single writer multiple reader files
+    pv: $(prefix):SWMRMode
+    rbvSuff: _RBV
+    widget: checkbox
+
+- parts.ca.CABooleanPart:
+    name: positionMode
+    description: Whether to write in block got from attributes PosName<dim>
+    pv: $(prefix):PositionMode
+    rbvSuff: _RBV
+    widget: checkbox
+
+- parts.ca.CABooleanPart:
+    name: dimAttDatasets
+    description: Whether to write attributes in same dimensionality as data
+    pv: $(prefix):DimAttDatasets
+    rbvSuff: _RBV
+    widget: checkbox
+
+- parts.ca.CABooleanPart:
+    name: lazyOpen
+    description: If true then don't require a dummy frame to get dims
+    pv: $(prefix):LazyOpen
+    rbvSuff: _RBV
+    widget: checkbox
+
+- parts.ca.CALongPart:
+    name: numCapture
+    description: Number of frames to capture
+    pv: $(prefix):NumCapture
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CACharArrayPart:
+    name: xml
+    description: XML for layout
+    pv: $(prefix):XMLFileName
+    rbvSuff: _RBV
+    widget: textinput
+
+# Filename
+- parts.ca.CACharArrayPart:
+    name: filePath
+    description: Directory to write files into
+    pv: $(prefix):FilePath
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CACharArrayPart:
+    name: fileName
+    description: Filename within directory
+    pv: $(prefix):FileName
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CACharArrayPart:
+    name: fileTemplate
+    description: File template of full file path
+    pv: $(prefix):FileTemplate
+    rbvSuff: _RBV
+    widget: textinput
+
+# Dimensionality
+- parts.ca.CALongPart:
+    name: numExtraDims
+    description: How many extra dimensions. 0=(N,..), 1=(X,N,..), 2=(Y,X,N,..)
+    pv: $(prefix):NumExtraDims
+    rbvSuff: _RBV
+    widget: textinput
+
+# Where to get dimensional indexes
+- parts.ca.CAStringPart:
+    name: posNameDimN
+    description: NDAttribute that position labeller will write DimN index into
+    pv: $(prefix):PosNameDimN
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAStringPart:
+    name: posNameDimX
+    description: NDAttribute that position labeller will write DimX index into
+    pv: $(prefix):PosNameDimX
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAStringPart:
+    name: posNameDimY
+    description: NDAttribute that position labeller will write DimY index into
+    pv: $(prefix):PosNameDimY
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAStringPart:
+    name: posNameDim3
+    description: NDAttribute that position labeller will write Dim3 index into
+    pv: $(prefix):PosNameDim3
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAStringPart:
+    name: posNameDim4
+    description: NDAttribute that position labeller will write Dim4 index into
+    pv: $(prefix):PosNameDim4
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAStringPart:
+    name: posNameDim5
+    description: NDAttribute that position labeller will write Dim5 index into
+    pv: $(prefix):PosNameDim5
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAStringPart:
+    name: posNameDim6
+    description: NDAttribute that position labeller will write Dim6 index into
+    pv: $(prefix):PosNameDim6
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAStringPart:
+    name: posNameDim7
+    description: NDAttribute that position labeller will write Dim7 index into
+    pv: $(prefix):PosNameDim7
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAStringPart:
+    name: posNameDim8
+    description: NDAttribute that position labeller will write Dim8 index into
+    pv: $(prefix):PosNameDim8
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAStringPart:
+    name: posNameDim9
+    description: NDAttribute that position labeller will write Dim9 index into
+    pv: $(prefix):PosNameDim9
+    rbvSuff: _RBV
+    widget: textinput
+
+# Size of dimension
+- parts.ca.CALongPart:
+    name: extraDimSizeN
+    description: Size of HDF extra dimension N
+    pv: $(prefix):ExtraDimSizeN
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: extraDimSizeX
+    description: Size of HDF extra dimension X
+    pv: $(prefix):ExtraDimSizeX
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: extraDimSizeY
+    description: Size of HDF extra dimension Y
+    pv: $(prefix):ExtraDimSizeY
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: extraDimSize3
+    description: Size of HDF extra dimension 3
+    pv: $(prefix):ExtraDimSize3
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: extraDimSize4
+    description: Size of HDF extra dimension 4
+    pv: $(prefix):ExtraDimSize4
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: extraDimSize5
+    description: Size of HDF extra dimension 5
+    pv: $(prefix):ExtraDimSize5
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: extraDimSize6
+    description: Size of HDF extra dimension 6
+    pv: $(prefix):ExtraDimSize6
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: extraDimSize7
+    description: Size of HDF extra dimension 7
+    pv: $(prefix):ExtraDimSize7
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: extraDimSize8
+    description: Size of HDF extra dimension 8
+    pv: $(prefix):ExtraDimSize8
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: extraDimSize9
+    description: Size of HDF extra dimension 9
+    pv: $(prefix):ExtraDimSize9
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CAActionPart:
+    name: start
+    description: Demand for starting acquisition
+    pv: $(prefix):Capture
+    statusPv: $(prefix):WriteStatus
+    goodStatus: Write OK
+
+- parts.ca.CAActionPart:
+    name: stop
+    description: Demand for stopping acquisition
+    pv: $(prefix):Capture
+    value: 0
+    wait: False
+
+- parts.ca.CABooleanPart:
+    name: running
+    description: If detector is currently acquiring
+    rbv: $(prefix):Capture_RBV
+    widget: led
+
+- parts.ca.CACharArrayPart:
+    name: writeMessage
+    description: Error message if in error
+    rbv: $(prefix):WriteMessage
+    widget: textupdate

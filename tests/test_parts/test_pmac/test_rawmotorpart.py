@@ -18,10 +18,6 @@ class TestRawMotorPart(unittest.TestCase):
         self.process.get_block.return_value = self.child
         self.c = RawMotorPart(self.process, self.params)
 
-    def test_init(self):
-        self.process.get_block.assert_called_once_with(self.params.child)
-        self.assertEqual(self.c.child, self.child)
-
     def test_report(self):
         returns = self.c.report_cs_info(MagicMock())[0]
         self.assertEqual(returns.cs_axis, self.child.csAxis)

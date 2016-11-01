@@ -18,15 +18,14 @@ from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.request import Post, Subscribe
 from malcolm.core.response import Return, Update
 from malcolm.core.task import Task
-from malcolm.parts.demo import HelloPart, CounterPart
+from malcolm.blocks.demo import Hello, Counter
 
 
 class TestHelloDemoSystem(unittest.TestCase):
 
     def test_hello_good_input(self):
         p = MagicMock()
-        part = HelloPart(p, None)
-        block = DefaultController("hello", p, parts={"hello":part}).block
+        block = Hello(p, dict(mri="hello"))[0]
         block.reset()
         result = block.greet(name="me")
         self.assertEquals(result.greeting, "Hello me")
@@ -34,8 +33,7 @@ class TestHelloDemoSystem(unittest.TestCase):
     def test_hello_with_process(self):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
-        part = HelloPart(process, None)
-        b = DefaultController("hello", process, parts={"hello":part}).block
+        b = Hello(process, dict(mri="hello"))[0]
         process.start()
         # wait until block is Ready
         task = Task("hello_ready_task", process)
@@ -60,13 +58,11 @@ class TestCounterDemoSystem(unittest.TestCase):
     def test_counter_subscribe(self):
         sync_factory = SyncFactory("sched")
         process = Process("proc", sync_factory)
-        part = CounterPart(process, None)
-        b = DefaultController("counting", process, parts={"counter":part}).block
+        b = Counter(process, dict(mri="counting"))[0]
         process.start()
         # wait until block is Ready
         task = Task("counter_ready_task", process)
-        futures = task.when_matches_async(b["state"], "Ready")
-        task.wait_all(futures, timeout=1)
+        task.when_matches(b["state"], "Ready", timeout=1)
         q = sync_factory.create_queue()
 
         sub = Subscribe(response_queue=q, context="ClientConnection",

@@ -20,11 +20,12 @@ class TestController(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.c = Controller('block', MagicMock())
+        params = Controller.MethodMeta.prepare_input_map(mri="mri1")
+        self.c = Controller(MagicMock(), {}, params)
         self.b = self.c.block
 
     def test_init(self):
-        self.c.process.add_block.assert_called_once_with(self.b)
+        self.c.process.add_block.assert_called_once_with(self.b, self.c)
         self.assertEqual({}, self.c.parts)
 
         self.assertEqual(
@@ -45,19 +46,18 @@ class TestController(unittest.TestCase):
 
     def make_part_tasks(self, hook, func):
         task = MagicMock()
-        part_name = "test_part"
         func_name = "configure"
         part = MagicMock()
+        part.name = "test_part"
         part.method_metas = {}
         setattr(part, func_name, func)
         part_tasks = {part: task}
-        self.c.parts = {part_name: part}
         hook_queue = self.c.process.create_queue.return_value
         task_return = self.c.make_task_return_value_function(
-            task, hook_queue, part_name, func_name)
+            task, hook_queue, part, func_name)
         task_return()
         hook_queue.get.return_value = hook_queue.put.call_args[0][0]
-        hook.find_hooked_functions.return_value = {part_name: func_name}
+        hook.find_hooked_functions.return_value = {part: func_name}
         self.c.hook_names = {hook: "test_hook"}
         return part_tasks
 

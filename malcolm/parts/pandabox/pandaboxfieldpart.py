@@ -1,4 +1,4 @@
-from malcolm.core import Part, Attribute
+from malcolm.core import Part
 
 
 class PandABoxFieldPart(Part):
@@ -7,7 +7,8 @@ class PandABoxFieldPart(Part):
 
     def __init__(self, process, control, meta, block_name, field_name,
                  writeable, initial_value=None):
-        super(PandABoxFieldPart, self).__init__(process)
+        params = Part.MethodMeta.prepare_input_map(name=field_name)
+        super(PandABoxFieldPart, self).__init__(process, params)
         self.control = control
         self.meta = meta
         self.label = field_name.replace(".", " ").replace("_", " ").title()

@@ -1,12 +1,11 @@
 from malcolm.core.attribute import Attribute
 from malcolm.core.controller import Controller
 from malcolm.core.map import Map
-from malcolm.core.methodmeta import MethodMeta, method_takes
+from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.request import Post, Subscribe, Return, Put
 from malcolm.core.response import Error
 
 
-@method_takes()
 class ClientController(Controller):
     """Sync a local block with a given remote block"""
     REMOTE_BLOCKS_ID = 0
@@ -26,9 +25,9 @@ class ClientController(Controller):
     def put(self, response):
         """We don't have a queue as no thread to service, but act like one"""
         if response.id == self.REMOTE_BLOCKS_ID and self.client_comms is None:
-            if response.value and self.block_name in response.value:
+            if response.value and self.mri in response.value:
                 # process knows how to get to a block
-                self._subscribe_to_block(self.block_name)
+                self._subscribe_to_block(self.mri)
         elif response.id == self.BLOCK_ID:
             self.log_debug(response)
             # find all the regenerate block changesets

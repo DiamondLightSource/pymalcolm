@@ -12,9 +12,9 @@ from malcolm.core.vmetas import StringMeta
 class AsynOutportPart(CAStringPart):
 
     def __init__(self, process, params):
-        params = params.to_dict()
-        self.outport_type = params.pop("outportType")
-        params = CAStringPart.MethodMeta.prepare_input_map(params)
+        self.outport_type = params.outportType
+        params = CAStringPart.MethodMeta.prepare_input_map(
+            name=params.name, description=params.description, rbv=params.rbv)
         super(AsynOutportPart, self).__init__(process, params)
 
     def create_tags(self, params):

@@ -7,7 +7,7 @@ from malcolm.core.block import Block
 from malcolm.core.blockmeta import BlockMeta
 from malcolm.core.hook import Hook, get_hook_decorated
 from malcolm.core.loggable import Loggable
-from malcolm.core.methodmeta import method_takes, MethodMeta, \
+from malcolm.core.methodmeta import method_takes, MethodMeta, REQUIRED, \
     get_method_decorated
 from malcolm.core.request import Post
 from malcolm.core.statemachine import DefaultStateMachine
@@ -18,7 +18,8 @@ from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, StringMeta
 sm = DefaultStateMachine
 
 
-@method_takes()
+@method_takes(
+    "mri", StringMeta("Malcolm resource id of created block"), REQUIRED)
 class Controller(Loggable):
     """Implement the logic that takes a Block through its state machine"""
     stateMachine = sm()
@@ -30,18 +31,20 @@ class Controller(Loggable):
     # BlockMeta for descriptions
     meta = None
 
-    def __init__(self, block_name, process, parts=None, params=None):
+    def __init__(self, process, parts, params):
         """
         Args:
             process (Process): The process this should run under
+            params (Map): The parameters specified in method_takes()
+            parts (dict): OrderedDict {part_name: Part}
         """
-        controller_name = "%s(%s)" % (type(self).__name__, block_name)
+        self.process = process
+        self.params = params
+        self.mri = params.mri
+        controller_name = "%s(%s)" % (type(self).__name__, self.mri)
         self.set_logger_name(controller_name)
         self.block = Block()
-        self.log_debug("Creating block %r as %r" % (self.block, block_name))
-        self.block_name = block_name
-        self.params = params
-        self.process = process
+        self.log_debug("Creating block %r as %r", self.block, self.mri)
         self.lock = process.create_lock()
         # {part: task}
         self.part_tasks = {}
@@ -53,8 +56,8 @@ class Controller(Loggable):
         self.parts = self._setup_parts(parts, controller_name)
         self._set_block_children()
         self._do_transition(sm.DISABLED, "Disabled")
-        self.block.set_parent(process, block_name)
-        process.add_block(self.block)
+        self.block.set_parent(process, self.mri)
+        process.add_block(self.block, self)
         self.do_initial_reset()
 
     def _find_hooks(self):
@@ -70,7 +73,7 @@ class Controller(Loggable):
 
     def _setup_parts(self, parts, controller_name):
         if parts is None:
-            parts = {}
+            parts = OrderedDict
         for part_name, part in parts.items():
             part.set_logger_name("%s.%s" % (controller_name, part_name))
             # Check part hooks into one of our hooks
@@ -82,7 +85,7 @@ class Controller(Loggable):
 
     def do_initial_reset(self):
         request = Post(
-            None, self.process.create_queue(), [self.block_name, "reset"])
+            None, self.process.create_queue(), [self.mri, "reset"])
         self.process.q.put(request)
 
     def add_change(self, changes, item, attr, value):
@@ -233,14 +236,13 @@ class Controller(Loggable):
         return part_tasks
 
     def run_hook(self, hook, part_tasks, *args, **params):
-        hook_queue, task_lookup = self.start_hook(
+        hook_queue, filtered_part_tasks = self.start_hook(
             hook, part_tasks, *args, **params)
-        return_dict = self.wait_hook(hook_queue, task_lookup)
+        return_dict = self.wait_hook(hook_queue, filtered_part_tasks)
         return return_dict
 
-    def make_task_return_value_function(self, weak_task, hook_queue, part_name,
+    def make_task_return_value_function(self, weak_task, hook_queue, part,
                                         func_name, *args, **params):
-        part = self.parts[part_name]
         func = getattr(part, func_name)
         method_meta = part.method_metas.get(func_name, None)
         filtered_params = {}
@@ -262,7 +264,7 @@ class Controller(Loggable):
                 self.log_exception("%s %s raised exception", func, params)
                 result = e
             self.log_debug("Putting %r on queue", result)
-            hook_queue.put((part_name, result))
+            hook_queue.put((part, result))
 
         return task_return
 
@@ -275,35 +277,35 @@ class Controller(Loggable):
         # ask the hook to find the functions it should run
         part_funcs = hook.find_hooked_functions(self.parts)
 
+        filtered_part_tasks = {}
+
         # now start them off
-        task_lookup = {}
         hook_queue = self.process.create_queue()
-        for part_name, func_name in part_funcs.items():
-            part = self.parts[part_name]
+        for part, func_name in part_funcs.items():
             task = part_tasks[part]
-            task_lookup[part_name] = task
+            filtered_part_tasks[part] = task
             weak_task = weakref.proxy(task)
             task_return = self.make_task_return_value_function(
-                weak_task, hook_queue, part_name, func_name, *args, **params)
+                weak_task, hook_queue, part, func_name, *args, **params)
             task.define_spawn_function(task_return)
             task.start()
 
-        return hook_queue, task_lookup
+        return hook_queue, filtered_part_tasks
 
-    def wait_hook(self, hook_queue, task_lookup):
+    def wait_hook(self, hook_queue, filtered_part_tasks):
         # Wait for them all to finish
         return_dict = {}
-        while task_lookup:
-            part_name, ret = hook_queue.get()
-            task = task_lookup.pop(part_name)
-            return_dict[part_name] = ret
-            self.log_debug("Part %s returned %s" % (part_name, ret))
+        while filtered_part_tasks:
+            part, ret = hook_queue.get()
+            task = filtered_part_tasks.pop(part)
+            return_dict[part.name] = ret
+            self.log_debug("Part %s returned %s" % (part.name, ret))
 
             if isinstance(ret, Exception):
                 # Stop all other tasks
-                for task in task_lookup.values():
+                for task in filtered_part_tasks.values():
                     task.stop()
-                for task in task_lookup.values():
+                for task in filtered_part_tasks.values():
                     task.wait()
 
             # If we got a StopIteration, someone asked us to stop, so

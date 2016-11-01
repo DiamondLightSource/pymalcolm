@@ -9,6 +9,7 @@ BlockData = namedtuple("BlockData", "number,description,fields")
 FieldData = namedtuple("FieldData",
                        "field_type,field_subtype,description,labels")
 
+
 class PandABoxControl(Loggable, Spawnable):
 
     def __init__(self, process, hostname, port):

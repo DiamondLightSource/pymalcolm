@@ -12,6 +12,7 @@ MAX_CHECK = 5000
 configure_args = [
     "generator", PointGeneratorMeta("Generator instance"), REQUIRED]
 
+
 @method_also_takes(
     "readoutTime", NumberMeta(
         "float64", "Default time taken to readout detector"), 0.002)

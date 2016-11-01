@@ -30,7 +30,7 @@ class TestCAPart(unittest.TestCase):
                 pv="pv",
             )
 
-        params = CAActionPart.MethodMeta.prepare_input_map(params)
+        params = CAActionPart.MethodMeta.prepare_input_map(**params)
         p = CAActionPart(MagicMock(), params)
         p.set_logger_name("something")
         self.yielded = list(p.create_methods())

@@ -4,7 +4,6 @@ from malcolm.core import Spawnable, Loggable
 from malcolm.core.vmetas import BooleanMeta, TableMeta
 from malcolm.compat import queue, OrderedDict
 from malcolm.parts.pandabox.pandaboxblockmaker import PandABoxBlockMaker
-from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 
 from malcolm.controllers.defaultcontroller import DefaultController
 
@@ -35,7 +34,7 @@ class PandABoxPoller(Spawnable, Loggable):
         self.add_spawn_function(self.poll_loop,
                                 self.make_default_stop_func(self.q))
 
-    def make_panda_block(self, malcolm_name, block_name, block_data):
+    def make_panda_block(self, mri, block_name, block_data):
         # Validate and store block_data
         self._store_block_data(block_name, block_data)
 
@@ -44,7 +43,8 @@ class PandABoxPoller(Spawnable, Loggable):
                                    block_data)
 
         # Make a controller
-        controller = DefaultController(malcolm_name, self.process, maker.parts)
+        params = DefaultController.MethodMeta.prepare_input_map(mri=mri)
+        controller = DefaultController(self.process, maker.parts, params)
         block = controller.block
 
         self._blocks[block_name] = block

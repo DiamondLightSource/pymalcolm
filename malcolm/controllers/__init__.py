@@ -1,6 +1,3 @@
-# make the import path nice
-from malcolm.packageutil import import_methodmeta_decorated_classes
-
-__all__ = import_methodmeta_decorated_classes(globals(), __name__)
-
-del import_methodmeta_decorated_classes
+from malcolm.controllers.defaultcontroller import DefaultController
+from malcolm.controllers.managercontroller import ManagerController
+from malcolm.controllers.runnablecontroller import RunnableController

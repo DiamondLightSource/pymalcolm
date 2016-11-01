@@ -19,7 +19,7 @@ def make_process():
         "Default is INFO")
     parser.add_argument(
         'yaml', nargs="?",
-        help="The YAML file containing the assemblies to be loaded"
+        help="The YAML file containing the blocks to be loaded"
     )
     args = parser.parse_args()
     # assuming loglevel is bound to the string value obtained from the
@@ -31,7 +31,7 @@ def make_process():
     logging.basicConfig(level=numeric_level)
 
     from malcolm.core import SyncFactory, Process
-    from malcolm.assemblyutil import make_assembly
+    from malcolm.yamlutil import make_include_creator
     from malcolm.gui.blockgui import BlockGui
 
     sf = SyncFactory("Sync")
@@ -41,7 +41,7 @@ def make_process():
         proc_name = os.path.basename(args.yaml).split(".")[-2]
         proc = Process(proc_name, sf)
         with open(args.yaml) as f:
-            assembly = make_assembly(f.read())
+            assembly = make_include_creator(f.read())
         assembly(proc, {})
     else:
         proc = Process("Process", sf)

@@ -65,9 +65,9 @@ class TestHook(unittest.TestCase):
         inst2 = DummyPart2()
         parts = dict(inst1=inst1, inst2=inst2)
         func_tasks = DummyController().Configuring.find_hooked_functions(parts)
-        self.assertEqual(func_tasks, dict(
-            inst1="do_thing",
-            inst2="do_all_the_things"))
+        self.assertEqual(func_tasks, {
+            inst1: "do_thing",
+            inst2: "do_all_the_things"})
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

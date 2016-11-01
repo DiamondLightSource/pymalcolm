@@ -2,7 +2,6 @@ from malcolm.core import method_takes, Part
 from malcolm.core.vmetas import NumberMeta
 
 
-@method_takes()
 class CounterPart(Part):
     # Attribute for the counter value
     counter = None

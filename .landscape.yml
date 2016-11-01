@@ -1,9 +1,16 @@
 strictness: veryhigh
+
 ignore-paths:
   - docs
   - tests
+  - malcolm/controllers/__init__.py
   - malcolm/core/__init__.py
   - malcolm/core/vmetas/__init__.py
+
 python-targets:
   - 2
   - 3
+
+pylint:
+  disable:
+    - invalid-name

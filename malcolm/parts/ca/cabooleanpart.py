@@ -1,10 +1,9 @@
 from cothread import catools
 
 from malcolm.core.vmetas import BooleanMeta
-from malcolm.parts.ca.capart import CAPart, capart_takes
+from malcolm.parts.ca.capart import CAPart
 
 
-@capart_takes()
 class CABooleanPart(CAPart):
     """ Defines a part which connects to a pv via channel access DBR_LONG"""
 

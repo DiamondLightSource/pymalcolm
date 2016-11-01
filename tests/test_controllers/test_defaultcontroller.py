@@ -29,14 +29,15 @@ class TestDefaultController(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.c = DummyController('block', MagicMock())
+        params = DummyController.MethodMeta.prepare_input_map(mri="block")
+        self.c = DummyController(MagicMock(), {}, params)
         self.b = self.c.block
         for attr in ["busy", "state", "status"]:
             attr = self.b[attr]
             attr.set_value = MagicMock(side_effect=attr.set_value)
 
     def test_init(self):
-        self.c.process.add_block.assert_called_once_with(self.b)
+        self.c.process.add_block.assert_called_once_with(self.b, self.c)
         self.assertEqual({}, self.c.parts)
 
         self.assertEqual(

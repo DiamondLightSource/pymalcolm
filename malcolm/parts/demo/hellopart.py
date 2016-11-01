@@ -4,7 +4,6 @@ from malcolm.core import Part, method_takes, method_returns, REQUIRED
 from malcolm.core.vmetas import StringMeta, NumberMeta
 
 
-@method_takes()
 class HelloPart(Part):
     @method_takes(
         "name", StringMeta("a name"), REQUIRED,
@@ -16,3 +15,4 @@ class HelloPart(Part):
         return_map.greeting = "Hello %s" % parameters.name
         time.sleep(parameters.sleep)
         return return_map
+

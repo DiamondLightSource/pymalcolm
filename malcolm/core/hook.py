@@ -25,14 +25,15 @@ class Hook(object):
 
     def find_hooked_functions(self, parts):
         # Filter part dict to find parts that have a function hooked to us
+        # {Part: func_name}
         part_funcs = {}
 
-        for part_name, part in parts.items():
+        for part in parts.values():
             for func_name, part_hook, func in get_hook_decorated(part):
                 if part_hook is self:
-                    assert part_name not in part_funcs, \
+                    assert part not in part_funcs, \
                         "Function %s is second defined for a hook" % func_name
-                    part_funcs[part_name] = func_name
+                    part_funcs[part] = func_name
 
         return part_funcs
 

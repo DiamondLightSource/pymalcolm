@@ -4,41 +4,66 @@ sys.path.append(os.path.dirname(__file__))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, patch, ANY
+from mock import Mock, ANY
 
-from malcolm.core import method_takes, REQUIRED, Block
+from malcolm.core import method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
-from malcolm.assemblyutil import make_assembly, Section, make_block_instance
+from malcolm.parts.ca.cadoublepart import CADoublePart
+from malcolm.yamlutil import make_block_creator, Section, make_include_creator
 
 
 class TestAssemblies(unittest.TestCase):
 
     def test_all_yamls(self):
-        from malcolm.assemblies.demo import Hello
+        from malcolm.blocks.demo import Hello
         process = Mock()
-        blocks = Hello(process, dict(name="boo"))
+        blocks = Hello(process, dict(mri="boo"))
         self.assertEqual(len(blocks), 1)
-        process.add_block.assert_called_once_with(blocks[0])
+        process.add_block.assert_called_once_with(blocks[0], ANY)
 
-    @patch("malcolm.assemblyutil.make_block_instance")
-    def test_make_assembly(self, mock_make):
+    def test_make_include(self):
         yaml = """
 - parameters.string:
     name: something
     description: my description
 
 - parts.ca.CADoublePart:
+    name: double
+    description: the pv object
     pv: $(something)
 """
-        collection = make_assembly(yaml)
+        include_creator = make_include_creator(yaml)
         process = Mock()
-        blocks = collection(process, dict(name="boo", something="mypv"))
-        mock_make.assert_called_once_with(
-            "boo", process, [], [ANY])
-        section = mock_make.call_args[0][3][0]
-        self.assertEqual(section.name, "ca.CADoublePart")
-        self.assertEqual(section.param_dict, {"pv": "mypv"})
-        self.assertEqual(blocks, [mock_make.return_value])
+        blocks, parts = include_creator(process, dict(something="mypv"))
+        self.assertEquals(len(blocks), 0)
+        self.assertEquals(len(parts), 1)
+        part = parts[0]
+        self.assertIsInstance(part, CADoublePart)
+        self.assertEqual(part.name, "double")
+        self.assertEqual(part.params.pv, "mypv")
+
+    def test_make_block(self):
+        yaml = """
+- parameters.string:
+    name: something
+    description: my description
+
+- controllers.DefaultController:
+    mri: boo
+
+- parts.ca.CADoublePart:
+    name: double
+    description: the pv object
+    pv: $(something)
+"""
+        block_creator = make_block_creator(yaml)
+        process = Mock()
+        blocks = block_creator(process, dict(something="mypv"))
+        self.assertEquals(len(blocks), 1)
+        block, controller = process.add_block.call_args[0]
+        self.assertEquals(len(controller.parts), 1)
+        self.assertIsInstance(controller.parts["double"], CADoublePart)
+        self.assertEqual(controller.parts["double"].params.pv, "mypv")
 
     def test_instantiate(self):
         @method_takes(
@@ -51,18 +76,22 @@ class TestAssemblies(unittest.TestCase):
         ca = Mock(CAPart=f)
         parts = Mock(ca=ca)
         section = Section("ca.CAPart", dict(desc="my name"))
-        result = section.instantiate(parts, "extra")
+        result = section.instantiate({}, parts, "extra")
         self.assertEqual(result, ("extra", 2, "my name", "thing"))
 
     def test_split_into_sections(self):
-        ds = [{"parameters.string": {"name": "something"}},
-              {"controllers.ManagerController": None}]
-        sections = Section.split_into_sections(ds)
+        text = """
+- parameters.string:
+    name: something
+- controllers.ManagerController:
+"""
+        sections = Section.from_yaml(text)
         self.assertEqual(sections, dict(
+            blocks=[],
             parameters=[ANY],
             controllers=[ANY],
             parts=[],
-            assemblies=[],
+            includes=[],
             comms=[]))
         self.assertEqual(sections["parameters"][0].name, "string")
         self.assertEqual(sections["parameters"][0].param_dict,
@@ -73,32 +102,10 @@ class TestAssemblies(unittest.TestCase):
     def test_substitute_params(self):
         section = Section("name", {"name": "$(name):pos", "exposure": 1.0})
         params = {"name": "me"}
-        section.substitute_params(params)
+        param_dict = section.substitute_params(params)
         expected = {"name": "me:pos", "exposure": 1.0}
-        self.assertEqual(section.param_dict, expected)
+        self.assertEqual(param_dict, expected)
 
-    def test_make_block_instance(self):
-        parts = [Section("ca.CADoublePart", {
-            "name": "me", "description": "my pv desc", "pv": "MY:PV:STRING"})]
-        controllers = []
-        block_name = "block_name"
-        process = Mock()
-        inst = make_block_instance(block_name, process, controllers, parts)
-        self.assertIsInstance(inst, Block)
-        process.add_block.assert_called_once_with(inst)
-        self.assertEqual(inst.path_relative_to(process), [block_name])
-        self.assertEqual(
-            list(inst),
-            ['meta', 'state', 'status', 'busy', 'disable', 'reset', 'me'])
-
-    def test_make_block_instance_custom_controller(self):
-        parts = []
-        controllers = [Section("ManagerController")]
-        block_name = "block_name"
-        process = Mock()
-        inst = make_block_instance(block_name, process, controllers, parts)
-        self.assertIsInstance(inst, Block)
-        process.add_block.assert_called_once_with(inst)
 
     def test_repr(self):
         s = Section("ca.CADoublePart", {"name": "me"})

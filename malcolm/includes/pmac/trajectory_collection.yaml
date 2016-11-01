@@ -1,0 +1,15 @@
+- parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- parameters.string:
+    name: prefix
+    description: the root PV for the pmac motor (hardware) controller
+
+- blocks.pmac.PMACTrajectory:
+    mri: $(mri)
+    prefix: $(prefix)
+
+- parts.pmac.PMACTrajectoryPart:
+    name: $(mri)
+    mri: $(mri)

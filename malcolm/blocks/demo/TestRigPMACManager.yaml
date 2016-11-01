@@ -1,0 +1,24 @@
+- controllers.RunnableController:
+    mri: P45-BRICK01
+
+- includes.pmac.rawmotor_collection:
+    mri: P45-STAGE-X
+    motorPrefix: LAB-MO-MAP-01:STAGE:X
+    prefix: LAB-MO-MAP-01:STAGEGB1:M1
+    scannable: stagex
+
+- includes.pmac.rawmotor_collection:
+    mri: P45-STAGE-Y
+    motorPrefix: LAB-MO-MAP-01:STAGE:Y
+    prefix: LAB-MO-MAP-01:STAGEGB1:M2
+    scannable: stagey
+
+- includes.pmac.rawmotor_collection:
+    mri: P45-STAGE-Z
+    motorPrefix: LAB-MO-MAP-01:STAGE:Z
+    prefix: LAB-MO-MAP-01:STAGEGB1:M3
+    scannable: stagez
+
+- includes.pmac.trajectory_collection:
+    mri: P45-BRICK01-TRAJ
+    prefix: LAB-MO-MAP-01:STAGEGB1

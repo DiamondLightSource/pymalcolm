@@ -5,7 +5,6 @@ from malcolm.core import Controller, DefaultStateMachine, Hook, \
 sm = DefaultStateMachine
 
 
-@method_takes()
 class DefaultController(Controller):
     # The stateMachine that this controller implements
     stateMachine = sm()
