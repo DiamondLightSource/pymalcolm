@@ -23,7 +23,7 @@
 
 - parts.ADCore.StatsPluginPart:
     name: STAT
-    mri: $(mriPrefix):STAT
+    mri: $(mriPrefix)-STAT
 
 - blocks.ADCore.HDFWriter:
     mri: $(mriPrefix)-HDF5

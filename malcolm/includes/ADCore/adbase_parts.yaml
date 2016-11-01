@@ -3,7 +3,7 @@
     description: The root PV for the all records
 
 - includes.ADCore.ndarray_parts:
-    prefix: prefix
+    prefix: $(prefix)
 
 - parts.ca.CADoublePart:
     name: exposure
@@ -19,7 +19,7 @@
     rbvSuff: _RBV
     widget: combo
 
-- parts.ca.CADoublePart:
+- parts.ca.CALongPart:
     name: numImages
     description: Number of images to take if imageMode=Multiple
     pv: $(prefix):NumImages
