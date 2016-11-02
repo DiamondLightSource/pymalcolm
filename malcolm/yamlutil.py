@@ -97,11 +97,8 @@ def make_block_creator(text):
         blocks, parts = _create_blocks_and_parts(process, sections, params)
 
         # Make the controller
-        parts_dict = OrderedDict()
-        for part in parts:
-            parts_dict[part.name] = part
         controller = controller_section.instantiate(
-            params, controllers_base, process, parts_dict)
+            params, controllers_base, process, parts)
         blocks.append(controller.block)
 
         return blocks

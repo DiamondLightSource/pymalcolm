@@ -15,28 +15,39 @@ else:
             return make_include_creator
 
 
+def try_import_module(import_name):
+    logging.debug("Importing %s", import_name)
+    try:
+        return importlib.import_module(import_name)
+    except Exception:
+        logging.debug("Importing %s failed", import_name, exc_info=True)
+
+
+def find_method_meta_decorated(module):
+    for n in dir(module):
+        cls = getattr(module, n)
+        module_name = module.__name__.split(".")[-1]
+        if n.lower() == module_name:
+            if hasattr(cls, "MethodMeta"):
+                logging.debug("Found child class %s", cls)
+                yield cls.__name__, cls
+
+
 def find_package_contents(package_name, package_fs_path, fname):
     if fname.endswith(".py") and fname != "__init__.py":
         # import it and see what it produces
         import_name = "%s.%s" % (package_name, fname[:-3])
         logging.debug("Importing %s", import_name)
-        module = importlib.import_module(import_name)
-        for n in dir(module):
-            cls = getattr(module, n)
-            module_name = module.__name__.split(".")[-1]
-            if n.lower() == module_name:
-                if hasattr(cls, "MethodMeta"):
-                    logging.debug("Found child class %s", cls)
-                    yield cls.__name__, cls
+        module = try_import_module(import_name)
+        if module:
+            for cls_name, cls in find_method_meta_decorated(module):
+                yield cls_name, cls
+
     elif os.path.isdir(os.path.join(package_fs_path, fname)):
         # import it and add it to the list
         import_name = "%s.%s" % (package_name, fname)
-        logging.debug("Importing %s", import_name)
-        try:
-            module = importlib.import_module(import_name)
-        except Exception:
-            logging.exception("Importing %s failed", import_name)
-        else:
+        module = try_import_module(import_name)
+        if module:
             yield fname, module
     elif fname.endswith(".yaml"):
         # check we need to do something with it

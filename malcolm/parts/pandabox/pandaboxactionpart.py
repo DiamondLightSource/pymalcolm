@@ -7,7 +7,8 @@ class PandABoxActionPart(Part):
 
     def __init__(self, process, control, block_name, field_name, description,
                  tags, arg_meta=None):
-        super(PandABoxActionPart, self).__init__(process)
+        params = Part.MethodMeta.prepare_input_map(name=field_name)
+        super(PandABoxActionPart, self).__init__(process, params)
         self.control = control
         self.block_name = block_name
         self.field_name = field_name

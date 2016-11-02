@@ -1,7 +1,0 @@
-#!/bin/env imalcolm
-
-- assemblies.pandabox.PandABox:
-    name: P
-
-- comms.websocket.WebsocketServerComms:
-    port: 8080
