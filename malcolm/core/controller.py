@@ -36,7 +36,7 @@ class Controller(Loggable):
         Args:
             process (Process): The process this should run under
             params (Map): The parameters specified in method_takes()
-            parts (dict): OrderedDict {part_name: Part}
+            parts (list): [Part]
         """
         self.process = process
         self.params = params
@@ -72,16 +72,16 @@ class Controller(Loggable):
         return hook_names
 
     def _setup_parts(self, parts, controller_name):
-        if parts is None:
-            parts = OrderedDict
-        for part_name, part in parts.items():
-            part.set_logger_name("%s.%s" % (controller_name, part_name))
+        parts_dict = OrderedDict()
+        for part in parts:
+            part.set_logger_name("%s.%s" % (controller_name, part.name))
             # Check part hooks into one of our hooks
             for func_name, part_hook, _ in get_hook_decorated(part):
                 assert part_hook in self.hook_names, \
                     "Part %s func %s not hooked into %s" % (
-                        part, func_name, self)
-        return parts
+                        part.name, func_name, self)
+            parts_dict[part.name] = part
+        return parts_dict
 
     def do_initial_reset(self):
         request = Post(

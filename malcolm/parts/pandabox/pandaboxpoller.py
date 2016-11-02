@@ -15,10 +15,8 @@ class PandABoxPoller(Spawnable, Loggable):
         self.control = control
         # block_name -> BlockData
         self._block_data = {}
-        # block_name -> Block
-        self._blocks = {}
         # block_name -> {field_name: Part}
-        self._parts = {}
+        self._parts = OrderedDict()
         # src_attr -> [dest_attr]
         self._listening_attrs = {}
         # (block_name, src_field_name) -> [dest_field_name]
@@ -34,7 +32,7 @@ class PandABoxPoller(Spawnable, Loggable):
         self.add_spawn_function(self.poll_loop,
                                 self.make_default_stop_func(self.q))
 
-    def make_panda_block(self, mri, block_name, block_data):
+    def make_panda_block(self, mri, block_name, block_data, parts=None):
         # Validate and store block_data
         self._store_block_data(block_name, block_data)
 
@@ -42,12 +40,17 @@ class PandABoxPoller(Spawnable, Loggable):
         maker = PandABoxBlockMaker(self.process, self.control, block_name,
                                    block_data)
 
+        # Add in any extras we are passed
+        if parts:
+            for part in parts:
+                maker.parts[part.name] = part
+
         # Make a controller
         params = DefaultController.MethodMeta.prepare_input_map(mri=mri)
-        controller = DefaultController(self.process, maker.parts, params)
+        controller = DefaultController(
+            self.process, maker.parts.values(), params)
         block = controller.block
 
-        self._blocks[block_name] = block
         self._parts[block_name] = maker.parts
 
         # Set the initial block_url
@@ -56,7 +59,7 @@ class PandABoxPoller(Spawnable, Loggable):
         return block
 
     def _set_icon_url(self, block_name):
-        icon_attr = self._blocks[block_name]["icon"]
+        icon_attr = self._parts[block_name]["icon"].attr
         fname = block_name.rstrip("0123456789")
         if fname == "LUT":
             # TODO: Get fname from func

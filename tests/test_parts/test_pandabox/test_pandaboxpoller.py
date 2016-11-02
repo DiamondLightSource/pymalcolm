@@ -22,15 +22,18 @@ class PandABoxPollerTest(unittest.TestCase):
         fields["START"] = FieldData("param", "pos", "Start position", [])
         fields["STEP"] = FieldData("param", "relative_pos", "Step position", [])
         fields["OUT"] = FieldData("bit_out", "", "Output", [])
-        self.o.make_panda_block("P:PCOMP", "PCOMP", BlockData(1, "", fields))
+        self.pcomp = self.o.make_panda_block(
+            "P:PCOMP", "PCOMP", BlockData(1, "", fields))
         fields = OrderedDict()
         fields["INP"] = FieldData("bit_mux", "", "Input", ["ZERO", "TTLIN.VAL"])
         fields["START"] = FieldData("param", "pos", "Start position", [])
         fields["OUT"] = FieldData("pos_out", "", "Output", ["No", "Capture"])
-        self.o.make_panda_block("P:COUNTER", "COUNTER", BlockData(1, "", fields))
+        self.counter = self.o.make_panda_block(
+            "P:COUNTER", "COUNTER", BlockData(1, "", fields))
         fields = OrderedDict()
         fields["VAL"] = FieldData("bit_out", "", "Output", [])
-        self.o.make_panda_block("P:TTLIN", "TTLIN", BlockData(1, "", fields))
+        self.ttlin = self.o.make_panda_block(
+            "P:TTLIN", "TTLIN", BlockData(1, "", fields))
         changes = OrderedDict()
         changes["PCOMP.INP"] = "ZERO"
         for field_name in ("START", "STEP"):
@@ -51,13 +54,13 @@ class PandABoxPollerTest(unittest.TestCase):
         self.o.handle_changes({})
 
     def test_initial_changes(self):
-        pcomp = self.o._blocks["PCOMP"]
+        pcomp = self.pcomp
         self.assertEqual(pcomp.inp, "ZERO")
         self.assertEqual(pcomp.inpVal, 0.0)
         self.assertEqual(pcomp.start, 0.0)
         self.assertEqual(pcomp.step, 0.0)
         self.assertEqual(pcomp.out, False)
-        counter = self.o._blocks["COUNTER"]
+        counter = self.counter
         self.assertEqual(counter.inp, "ZERO")
         self.assertEqual(counter.inpDelay, 0)
         self.assertEqual(counter.inpVal, False)
@@ -65,12 +68,12 @@ class PandABoxPollerTest(unittest.TestCase):
         self.assertEqual(counter.outScale, 1.0)
         self.assertEqual(counter.outOffset, 0.0)
         self.assertEqual(counter.outUnits, "")
-        ttlin = self.o._blocks["TTLIN"]
+        ttlin = self.ttlin
         self.assertEqual(ttlin.val, False)
 
     def test_rewiring(self):
-        counter = self.o._blocks["COUNTER"]
-        pcomp = self.o._blocks["PCOMP"]
+        pcomp = self.pcomp
+        counter = self.counter
         self.o.handle_changes({"COUNTER.OUT": 32.0})
         self.assertEqual(counter.out, 32.0)
         self.o.handle_changes({"PCOMP.INP": "COUNTER.OUT"})
@@ -81,7 +84,7 @@ class PandABoxPollerTest(unittest.TestCase):
         self.assertEqual(pcomp.inpVal, 0.0)
 
     def test_scale_offset_following(self):
-        pcomp = self.o._blocks["PCOMP"]
+        pcomp = self.pcomp
         self.assertEqual(self.control.send.call_args_list, [
             call('PCOMP.START.SCALE=1\n'),
             call('PCOMP.START.OFFSET=0\n'),
