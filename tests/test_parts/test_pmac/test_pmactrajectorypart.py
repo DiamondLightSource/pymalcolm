@@ -92,7 +92,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
             timeArray=[100000, 437500, 100000],
             velocityMode=[2, 1, 3],
-            userPrograms=[0, 0, 0],
+            userPrograms=[0, 0, 8],
             pointsToBuild=3,
             positionsA=[0.45, -0.087500000000000008, -0.1375],
             positionsB=[0.0, 0.0, 0.0]))
@@ -189,7 +189,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             velocityMode=[
                 2, 1, 1, 1, 3],
             userPrograms=[
-                0, 0, 0, 0, 0],
+                0, 0, 0, 0, 8],
             pointsToBuild=5,
             positionsA=[
                 -10.087499999999999, -6.7875, -3.4875, -0.1875, -0.1375],
