@@ -38,10 +38,26 @@ class TestHDFWriterPart(unittest.TestCase):
         completed_steps = 0
         steps_to_do = 38
         part_info = {
-            "DET": [DatasetSourceInfo("detector", "primary")],
-            "STAT": [DatasetSourceInfo("StatsTotal", "additional")],
+            "DET": [DatasetSourceInfo("xspress3", "primary", 2)],
+            "STAT": [DatasetSourceInfo("sum", "secondary", 0, "StatsTotal")],
         }
-        self.o.configure(task, completed_steps, steps_to_do, part_info, params)
+        infos = self.o.configure(
+            task, completed_steps, steps_to_do, part_info, params)
+        self.assertEqual(len(infos), 2)
+        self.assertEquals(infos[0].name, "xspress3.data")
+        self.assertEquals(infos[0].filename, params.filePath)
+        self.assertEquals(infos[0].type, "primary")
+        self.assertEquals(infos[0].rank, 2)
+        self.assertEquals(infos[0].path, "/entry/xspress3/xspress3")
+        self.assertEquals(infos[0].uniqueid,
+                          "/entry/NDAttributes/NDArrayUniqueId")
+        self.assertEquals(infos[1].name, "xspress3.sum")
+        self.assertEquals(infos[1].filename, params.filePath)
+        self.assertEquals(infos[1].type, "secondary")
+        self.assertEquals(infos[1].rank, 0)
+        self.assertEquals(infos[1].path, "/entry/sum/sum")
+        self.assertEquals(infos[1].uniqueid,
+                          "/entry/NDAttributes/NDArrayUniqueId")
         self.assertEqual(task.put.call_args_list, [
             call(self.child["positionMode"], True),
             call(self.child["numCapture"], 0)])
@@ -87,8 +103,8 @@ class TestHDFWriterPart(unittest.TestCase):
 <hdf5_layout>
 <group name="entry">
 <attribute name="NX_class" source="constant" type="string" value="NXentry" />
-<group name="detector">
-<attribute name="signal" source="constant" type="string" value="detector" />
+<group name="xspress3">
+<attribute name="signal" source="constant" type="string" value="xspress3" />
 <attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_set_indices" source="constant" type="string" value="0" />
@@ -103,13 +119,13 @@ class TestHDFWriterPart(unittest.TestCase):
 <dataset name="y_set" source="constant" type="float" value="-0.64237113553,-0.500750778455,1.38930992616,1.98393756064,0.784917470231,-1.17377831157,-2.66405897615,-2.9669684623,-2.01825893141,-0.24129368636,1.72477821509,3.27215424484,3.98722048131,3.71781556747,2.5610299588,0.799047653518,-1.18858453138,-3.01284626565,-4.34725663835,-4.9755042398">
 <attribute name="units" source="constant" type="string" value="mm" />
 </dataset>
-<dataset det_default="true" name="detector" source="detector">
+<dataset det_default="true" name="xspress3" source="detector">
 <attribute name="NX_class" source="constant" type="string" value="SDS" />
 </dataset>
 </group>
-<group name="StatsTotal">
-<attribute name="signal" source="constant" type="string" value="StatsTotal" />
-<attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
+<group name="sum">
+<attribute name="signal" source="constant" type="string" value="sum" />
+<attribute name="axes" source="constant" type="string" value="energy_set,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_set_indices" source="constant" type="string" value="0" />
 <hardlink name="energy_set" target="/entry/detector/energy_set" />
@@ -117,7 +133,7 @@ class TestHDFWriterPart(unittest.TestCase):
 <hardlink name="x_set" target="/entry/detector/x_set" />
 <attribute name="y_set_indices" source="constant" type="string" value="1" />
 <hardlink name="y_set" target="/entry/detector/y_set" />
-<dataset name="StatsTotal" ndattribute="StatsTotal" source="ndattribute" />
+<dataset name="sum" ndattribute="StatsTotal" source="ndattribute" />
 </group>
 <group name="NDAttributes" ndattr_default="true">
 <attribute name="NX_class" source="constant" type="string" value="NXcollection" />

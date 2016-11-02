@@ -7,7 +7,8 @@ class StatsPluginPart(ChildPart):
 
     @RunnableController.ReportStatus
     def report_info(self, _):
-        return [DatasetSourceInfo("StatsTotal", "additional")]
+        return [DatasetSourceInfo(
+            name="sum", type="secondary", rank=0, attr="StatsTotal")]
 
     @RunnableController.Configure
     def configure(self, task, completed_steps, steps_to_do, part_info):

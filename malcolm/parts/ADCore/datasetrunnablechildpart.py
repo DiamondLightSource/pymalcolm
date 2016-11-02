@@ -17,6 +17,7 @@ class DatasetRunnableChildPart(RunnableChildPart):
                 name=datasets_table.name[i],
                 filename=datasets_table.filename[i],
                 type=datasets_table.type[i],
+                rank=datasets_table.rank[i],
                 path=datasets_table.path[i],
                 uniqueid=datasets_table.uniqueid[i])
             info_list.append(info)

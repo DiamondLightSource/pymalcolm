@@ -37,7 +37,7 @@ class DetectorDriverPart(ChildPart):
 
     @RunnableController.ReportStatus
     def report_configuration(self, _):
-        return [DatasetSourceInfo("detector", "primary")]
+        return [DatasetSourceInfo(name=self.name, type="primary", rank=2)]
 
     @RunnableController.Validate
     @method_takes(*configure_args)
