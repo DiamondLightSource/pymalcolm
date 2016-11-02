@@ -16,13 +16,13 @@ POSITIONS_PER_XML = 500
 class PositionLabellerPart(ChildPart):
     # Stored generator for positions
     generator = None
-    # Next position we need to generate
+    # The last index we have loaded
     end_index = 0
     # Where we should stop loading points
     steps_up_to = 0
     # Future for plugin run
     start_future = None
-    # If we are currently loading
+    # If we are currently loading then block loading more points
     loading = False
 
     def _make_xml(self, start_index):
@@ -98,7 +98,7 @@ class PositionLabellerPart(ChildPart):
 
     def load_more_positions(self, number_left, task):
         if not self.loading and number_left < POSITIONS_PER_XML and \
-                        self.end_index < self.steps_up_to:
+                self.end_index < self.steps_up_to:
             self.loading = True
             xml, self.end_index = self._make_xml(self.end_index)
             task.put(self.child["xml"], xml)
