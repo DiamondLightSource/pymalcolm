@@ -120,13 +120,17 @@ class MethodMeta(Meta):
         for method_meta in method_metas:
             for element in method_meta.takes.elements:
                 if element not in without:
-                    elements[element] = method_meta.takes.elements[element
-                    ].to_dict()
+                    # Serialize it to copy it
+                    serialized = method_meta.takes.elements[element].to_dict()
+                    elements[element] = serialized
                     if element in method_meta.takes.required:
                         required.append(element)
                     if element in method_meta.defaults:
                         defaults[element] = method_meta.defaults[element]
                     # TODO: what about returns?
+
+        # remove required args that are now defaulted
+        required = [r for r in required if r not in defaults]
 
         # Update ourself from these structures
         takes = MapMeta()
