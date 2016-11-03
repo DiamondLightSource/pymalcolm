@@ -8,10 +8,10 @@ from mock import Mock, MagicMock, ANY, call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, \
     FixedDurationMutator
-from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
+from malcolm.parts.pandabox.pandaboxdriverpart import PandABoxDriverPart
 
 
-class TestSimDetectorDriverPart(unittest.TestCase):
+class TestPandaABoxDriverPart(unittest.TestCase):
 
     def setUp(self):
         self.process = MagicMock()
@@ -25,22 +25,16 @@ class TestSimDetectorDriverPart(unittest.TestCase):
         self.params = MagicMock()
         self.params.readoutTime = 0.002
         self.process.get_block.return_value = self.child
-        self.o = DetectorDriverPart(self.process, self.params)
+        self.o = PandABoxDriverPart(self.process, self.params)
         list(self.o.create_attributes())
 
     def test_configure(self):
         task = MagicMock()
-        params = MagicMock()
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
-        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        duration = FixedDurationMutator(0.1)
-        params.generator = CompoundGenerator([ys, xs], [], [duration])
         completed_steps = 0
         steps_to_do = 6
         part_info = ANY
-        self.o.configure(task, completed_steps, steps_to_do, part_info, params)
+        self.o.configure(task, completed_steps, steps_to_do, part_info)
         task.put_many.assert_called_once_with(self.child, dict(
-            exposure=0.1 - 0.002,
             imageMode="Multiple",
             numImages=steps_to_do,
             arrayCounter=completed_steps,

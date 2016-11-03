@@ -1,4 +1,5 @@
 from malcolm.core import Part
+from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
 
 
 class PandABoxFieldPart(Part):
@@ -11,8 +12,6 @@ class PandABoxFieldPart(Part):
         super(PandABoxFieldPart, self).__init__(process, params)
         self.control = control
         self.meta = meta
-        self.label = field_name.replace(".", " ").replace("_", " ").title()
-        self.meta.set_label(self.label)
         self.block_name = block_name
         self.field_name = field_name
         self.writeable = writeable
@@ -20,9 +19,9 @@ class PandABoxFieldPart(Part):
         self.attr = None
 
     def create_attributes(self):
+        label, attr_name = make_label_attr_name(self.field_name)
+        self.meta.set_label(label)
         self.attr = self.meta.make_attribute(self.initial_value)
-        attr_name = self.label.replace(" ", "")
-        attr_name = attr_name[0].lower() + attr_name[1:]
         if self.writeable:
             writeable_func = self.set_field
         else:

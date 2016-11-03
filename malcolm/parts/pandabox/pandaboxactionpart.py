@@ -1,4 +1,5 @@
 from malcolm.core import Part, method_takes, REQUIRED, MethodMeta
+from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
 
 
 class PandABoxActionPart(Part):
@@ -19,9 +20,7 @@ class PandABoxActionPart(Part):
         self.method = None
 
     def create_methods(self):
-        label = self.field_name.replace(".", " ").replace("_", " ").title()
-        method_name = label.replace(" ", "")
-        method_name = method_name[0].lower() + method_name[1:]
+        label, method_name = make_label_attr_name(self.field_name)
         if self.arg_meta:
             self.arg_name = method_name
 

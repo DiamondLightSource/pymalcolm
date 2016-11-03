@@ -6,6 +6,8 @@ from malcolm.parts.pandabox.pandaboxfieldpart import PandABoxFieldPart
 from malcolm.parts.pandabox.pandaboxgrouppart import PandABoxGroupPart
 from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 from malcolm.parts.pandabox.pandaboxactionpart import PandABoxActionPart
+from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
+from malcolm.parts.builtin.stringpart import StringPart
 
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
@@ -37,12 +39,14 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
 
 
 class PandABoxBlockMaker(Loggable):
-    def __init__(self, process, control, block_name, block_data):
+    def __init__(self, process, control, block_name, block_data,
+                 area_detector=False):
         self.set_logger_name("PandABoxBlockMaker")
         self.process = process
         self.control = control
         self.block_name = block_name
         self.block_data = block_data
+        self.area_detector = area_detector
         self.parts = OrderedDict()
         # Make an icon
         self._make_icon()
@@ -158,6 +162,16 @@ class PandABoxBlockMaker(Loggable):
             "uint8", "How many FPGA ticks to delay data capture",
             tags=[group_tag, "widget:textinput"])
         self._make_field_part(field_name + ".DATA_DELAY", meta, writeable=True)
+        if self.area_detector:
+            # Make a string part to hold the name of the dataset
+            field_name += ".DATASET_NAME"
+            label, attr_name = make_label_attr_name(field_name)
+            params = StringPart.MethodMeta.prepare_input_map(
+                name=attr_name, widget="textinput",
+                description="Name of the captured dataset in HDF file",
+                writeable=True)
+            part = StringPart(self.process, params)
+            self._add_part(field_name, part)
 
     def _make_mux(self, field_name, field_data, typ):
         group_tag = self._make_group("inputs")
