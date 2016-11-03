@@ -3,7 +3,7 @@ from mock import Mock, MagicMock, patch, call
 from collections import OrderedDict
 
 from malcolm.core.response import Error, Return, Delta
-from malcolm.core.request import Post, Get, Put
+from malcolm.core.request import Post, Get, Put, Subscribe
 import pvaccess
 pvaccess.Channel = MagicMock()
 pvaccess.RpcClient = MagicMock()
@@ -18,6 +18,8 @@ class TestPVAClientComms(unittest.TestCase):
         self.ch = MagicMock()
         self.ret_val = MagicMock()
         self.ch.get = MagicMock(return_value = self.ret_val)
+        self.ch.subscribe = MagicMock()
+        self.ch.startMonitor = MagicMock()
         pvaccess.Channel = MagicMock(return_value = self.ch)
         self.rpc = MagicMock()
         self.rpc.invoke = MagicMock(return_value = self.ret_val)
@@ -72,4 +74,25 @@ class TestPVAClientComms(unittest.TestCase):
         self.ret_val.toDict = MagicMock(return_value={'typeid': 'malcolm:core/Error:1.0'})
         self.PVA.send_to_server(request)
         self.assertIsInstance(self.PVA.send_to_caller.call_args[0][0], Error)
+
+    def test_send_subscribe_to_server(self):
+        self.PVA = PvaClientComms(self.p)
+        self.PVA.send_to_caller = MagicMock()
+        request = Subscribe(endpoint=["ep1", "ep2"])
+        request.set_id(1)
+        self.PVA.send_to_server(request)
+        pvaccess.Channel.assert_called_once()
+        self.ch.subscribe.assert_called_once()
+        self.ch.startMonitor.assert_called_once()
+        mon = self.PVA._monitors[1]
+        mon_val = MagicMock()
+        mon_val.toDict = MagicMock(return_value={'typeid': 'malcolm:core/Error:1.0', 'message': 'test error'})
+        self.PVA.send_to_caller.reset_mock()
+        mon.monitor_update(mon_val)
+        self.PVA.send_to_caller.assert_called_once()
+        self.PVA.send_to_caller.reset_mock()
+        mon_val = MagicMock()
+        mon_val.toDict = MagicMock(return_value={'typeid': 'malcolm:core/Update:1.0'})
+        mon.monitor_update(mon_val)
+        self.PVA.send_to_caller.assert_called_once()
 
