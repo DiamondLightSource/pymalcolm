@@ -1,7 +1,6 @@
-from malcolm.compat import OrderedDict
 from malcolm.controllers.managercontroller import ManagerController
 from malcolm.core import RunnableStateMachine, REQUIRED, method_also_takes, \
-    method_writeable_in, method_takes, ElementMap, Task, Hook
+    method_writeable_in, method_takes, MethodMeta, Task, Hook
 from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, StringArrayMeta
 
 
@@ -194,27 +193,19 @@ class RunnableController(ManagerController):
     def _update_configure_args(self):
         # Look for all parts that hook into Configure
         configure_funcs = self.Configure.find_hooked_functions(self.parts)
-        takes_elements = OrderedDict()
-        defaults = OrderedDict()
+        method_metas = []
         for part, func_name in configure_funcs.items():
-            self.log_debug("Adding validating parameters from %s.%s",
-                           part.name, func_name)
-            method_meta = part.method_metas[func_name]
-            takes_elements.update(method_meta.takes.elements.to_dict())
-            defaults.update(method_meta.defaults)
+            method_metas.append(part.method_metas[func_name])
 
         # Update takes with the things we need
-        takes_elements.update(
-            RunnableController.configure.MethodMeta.takes.elements.to_dict())
-        takes = ElementMap(takes_elements)
-        defaults["axesToMove"] = self.axes_to_move.value
+        default_configure = MethodMeta.from_dict(
+            RunnableController.configure.MethodMeta.to_dict())
+        default_configure.defaults["axesToMove"] = self.axes_to_move.value
+        method_metas.append(default_configure)
 
         # Decorate validate and configure with the sum of its parts
-        # No need to copy as the superclass create_methods() does this
-        self.block["validate"].takes.set_elements(takes)
-        self.block["validate"].set_defaults(defaults)
-        self.block["configure"].takes.set_elements(takes)
-        self.block["configure"].set_defaults(defaults)
+        self.block["validate"].recreate_from_others(method_metas)
+        self.block["configure"].recreate_from_others(method_metas)
 
     def set_axes_to_move(self, value):
         self.axes_to_move.set_value(value)

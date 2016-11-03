@@ -109,6 +109,32 @@ class MethodMeta(Meta):
         func.MethodMeta = method
         return func
 
+    def recreate_from_others(self, method_metas, without=None):
+        if without is None:
+            without = []
+        defaults = OrderedDict()
+        elements = OrderedDict()
+        required = []
+
+        # Populate the intermediate data structures
+        for method_meta in method_metas:
+            for element in method_meta.takes.elements:
+                if element not in without:
+                    elements[element] = method_meta.takes.elements[element
+                    ].to_dict()
+                    if element in method_meta.takes.required:
+                        required.append(element)
+                    if element in method_meta.defaults:
+                        defaults[element] = method_meta.defaults[element]
+                    # TODO: what about returns?
+
+        # Update ourself from these structures
+        takes = MapMeta()
+        takes.set_elements(ElementMap(elements))
+        takes.set_required(required)
+        self.set_takes(takes)
+        self.set_defaults(defaults)
+
 
 def _prepare_map_meta(args, allow_defaults, defaults=None, elements=None,
                       required=None):
