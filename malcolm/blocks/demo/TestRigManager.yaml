@@ -17,7 +17,7 @@
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
-- parts.builtin.RunnableChildPart:
+- parts.ADCore.DatasetRunnableChildPart:
     name: MIC
     mri: $(mic)
 
