@@ -1,9 +1,7 @@
-import cothread
-from cothread import catools
-
 from malcolm.core import Part, method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
 from malcolm.controllers.defaultcontroller import DefaultController
+from malcolm.parts.ca.cothreadimporter import CothreadImporter
 
 
 @method_takes(
@@ -18,10 +16,14 @@ from malcolm.controllers.defaultcontroller import DefaultController
 class CAPart(Part):
     # Camonitor subscription
     monitor = None
-    # Format for all caputs
-    ca_format = catools.FORMAT_CTRL
     # Attribute instance
     attr = None
+
+    def __init__(self, process, params):
+        self.cothread, self.catools = CothreadImporter.get_cothread(process)
+        # Format for all caputs
+        self.ca_format = self.catools.FORMAT_CTRL
+        super(CAPart, self).__init__(process, params)
 
     def create_attributes(self):
         params = self.params
@@ -70,8 +72,8 @@ class CAPart(Part):
         pvs = [self.params.rbv]
         if self.params.pv:
             pvs.append(self.params.pv)
-        ca_values = cothread.CallbackResult(
-            catools.caget, pvs,
+        ca_values = self.cothread.CallbackResult(
+            self.catools.caget, pvs,
             format=self.ca_format, datatype=self.get_datatype())
         # check connection is ok
         for i, v in enumerate(ca_values):
@@ -79,15 +81,15 @@ class CAPart(Part):
         self.update_value(ca_values[0])
         self.log_debug("ca values connected %s", ca_values)
         # now setup monitor on rbv
-        self.monitor = cothread.CallbackResult(
-            catools.camonitor, self.params.rbv, self.on_update,
+        self.monitor = self.cothread.CallbackResult(
+            self.catools.camonitor, self.params.rbv, self.update_value,
             format=self.ca_format, datatype=self.get_datatype(),
             notify_disconnect=True, all_updates=True)
 
     @DefaultController.Disable
     def close_monitor(self, task=None):
         if self.monitor is not None:
-            cothread.CallbackResult(self.monitor.close)
+            self.cothread.CallbackResult(self.monitor.close)
             self.monitor = None
 
     def format_caput_value(self, value):
@@ -96,18 +98,14 @@ class CAPart(Part):
 
     def caput(self, value):
         value = self.format_caput_value(value)
-        cothread.CallbackResult(
-            catools.caput, self.params.pv, value, wait=True, timeout=None,
+        self.cothread.CallbackResult(
+            self.catools.caput, self.params.pv, value, wait=True, timeout=None,
             datatype=self.get_datatype())
         # now do a caget
-        value = cothread.CallbackResult(
-            catools.caget, self.params.rbv,
+        value = self.cothread.CallbackResult(
+            self.catools.caget, self.params.rbv,
             format=self.ca_format, datatype=self.get_datatype())
         self.update_value(value)
-
-    def on_update(self, value):
-        # Called on cothread's queue, so don't block
-        self.process.spawn(self.update_value, value)
 
     def update_value(self, value):
         self.log_debug("Camonitor update %r", value)

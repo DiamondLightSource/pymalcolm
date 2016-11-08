@@ -11,8 +11,9 @@ from mock import MagicMock, ANY
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
+from malcolm.core import Process, SyncFactory
 from malcolm.core.vmetas import NumberMeta
-from malcolm.parts.ca.capart import CAPart, catools
+from malcolm.parts.ca.capart import CAPart
 
 
 class caint(int):
@@ -36,7 +37,9 @@ class TestCAPart(unittest.TestCase):
 
         params = MyCAPart.MethodMeta.prepare_input_map(**params)
 
-        p = MyCAPart(MagicMock(), params)
+        sf = SyncFactory("sf")
+        process = Process("process", sf)
+        p = MyCAPart(process,  params)
         p.set_logger_name("something")
         list(p.create_attributes())
         return p
@@ -66,34 +69,29 @@ class TestCAPart(unittest.TestCase):
 
     def test_reset(self):
         p = self.create_part()
-        catools.caget.return_value = [caint(4), caint(5)]
+        p.catools.caget.return_value = [caint(4), caint(5)]
         p.reset("unused task object")
-        catools.caget.assert_called_with(
+        p.catools.caget.assert_called_with(
             ["pv2", "pv"],
-            format=catools.FORMAT_CTRL, datatype=p.get_datatype())
-        catools.camonitor.assert_called_once_with(
-            "pv2", p.on_update, format=catools.FORMAT_CTRL,
+            format=p.catools.FORMAT_CTRL, datatype=p.get_datatype())
+        p.catools.camonitor.assert_called_once_with(
+            "pv2", p.update_value, format=p.catools.FORMAT_CTRL,
             datatype=p.get_datatype(), notify_disconnect=True, all_updates=True)
         self.assertEqual(p.attr.value, 4)
-        self.assertEqual(p.monitor, catools.camonitor())
+        self.assertEqual(p.monitor, p.catools.camonitor())
 
     def test_caput(self):
-        catools.caput.reset_mock()
-        catools.caget.reset_mock()
-        catools.caget.return_value = caint(3)
         p = self.create_part()
+        p.catools.caput.reset_mock()
+        p.catools.caget.reset_mock()
+        p.catools.caget.return_value = caint(3)
         p.caput(32)
         datatype = p.get_datatype.return_value
-        catools.caput.assert_called_once_with(
+        p.catools.caput.assert_called_once_with(
             "pv", 32, wait=True, timeout=None, datatype=datatype)
-        catools.caget.assert_called_once_with(
-            "pv2", format=catools.FORMAT_CTRL, datatype=datatype)
+        p.catools.caget.assert_called_once_with(
+            "pv2", format=p.catools.FORMAT_CTRL, datatype=datatype)
         self.assertEqual(p.attr.value, 3)
-
-    def test_monitor_update(self):
-        p = self.create_part()
-        p.on_update("value")
-        p.process.spawn.assert_called_once_with(p.update_value, "value")
 
     def test_close_monitor(self):
         p = self.create_part()

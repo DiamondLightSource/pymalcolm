@@ -1,5 +1,3 @@
-from cothread import catools
-
 from malcolm.core.vmetas import NumberArrayMeta
 from malcolm.parts.ca.caarraypart import CAArrayPart
 
@@ -11,4 +9,4 @@ class CADoubleArrayPart(CAArrayPart):
         return NumberArrayMeta("float64", description=description, tags=tags)
 
     def get_datatype(self):
-        return catools.DBR_DOUBLE
+        return self.catools.DBR_DOUBLE

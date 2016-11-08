@@ -11,8 +11,8 @@ from mock import MagicMock, ANY
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.core.vmetas import NumberMeta
-from malcolm.parts.ca.caactionpart import CAActionPart, catools
+from malcolm.core import Process, SyncFactory
+from malcolm.parts.ca.caactionpart import CAActionPart
 
 
 
@@ -20,7 +20,7 @@ class caint(int):
     ok = True
 
 
-class TestCAPart(unittest.TestCase):
+class TestCAActionPart(unittest.TestCase):
 
     def create_part(self, params=None):
         if params is None:
@@ -31,7 +31,9 @@ class TestCAPart(unittest.TestCase):
             )
 
         params = CAActionPart.MethodMeta.prepare_input_map(**params)
-        p = CAActionPart(MagicMock(), params)
+        sf = SyncFactory("sf")
+        process = Process("process", sf)
+        p = CAActionPart(process, params)
         p.set_logger_name("something")
         self.yielded = list(p.create_methods())
         return p
@@ -45,33 +47,33 @@ class TestCAPart(unittest.TestCase):
         self.assertEqual(self.yielded, [("mname", ANY, p.caput)])
 
     def test_reset(self):
-        catools.caget.reset_mock()
         p = self.create_part()
-        catools.caget.return_value = [caint(4)]
+        p.catools.caget.reset_mock()
+        p.catools.caget.return_value = [caint(4)]
         p.connect_pvs("unused task object")
-        catools.caget.assert_called_with(["pv"])
+        p.catools.caget.assert_called_with(["pv"])
 
     def test_caput(self):
-        catools.caput.reset_mock()
         p = self.create_part()
+        p.catools.caput.reset_mock()
         p.caput()
-        catools.caput.assert_called_once_with(
+        p.catools.caput.assert_called_once_with(
             "pv", 1, wait=True, timeout=None)
 
     def test_caput_status_pv_ok(self):
-        catools.caput.reset_mock()
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", statusPv="spv",
             goodStatus="All Good"))
-        catools.caget.return_value = "All Good"
+        p.catools.caput.reset_mock()
+        p.catools.caget.return_value = "All Good"
         p.caput()
 
     def test_caput_status_pv_no_good(self):
-        catools.caput.reset_mock()
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", statusPv="spv",
             goodStatus="All Good"))
-        catools.caget.return_value = "No Good"
+        p.catools.caput.reset_mock()
+        p.catools.caget.return_value = "No Good"
         self.assertRaises(AssertionError, p.caput)
 
 
