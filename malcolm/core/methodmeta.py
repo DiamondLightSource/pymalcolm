@@ -126,6 +126,7 @@ class MethodMeta(Meta):
                     if element in method_meta.takes.required:
                         required.append(element)
                     if element in method_meta.defaults:
+                        defaults.pop(element, None)
                         defaults[element] = method_meta.defaults[element]
                     # TODO: what about returns?
 

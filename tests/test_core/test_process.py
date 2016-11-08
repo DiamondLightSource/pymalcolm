@@ -203,13 +203,16 @@ class TestSubscriptions(unittest.TestCase):
 
         sub_1 = Subscribe(None, MagicMock(), ["block_1", "inner"], delta=False)
         sub_1.set_id(1)
+        sub_1.response_queue.qsize.return_value = 0
 
         sub_2 = Subscribe(None, MagicMock(), ["block_1"], delta=True)
         sub_2.set_id(2)
+        sub_2.response_queue.qsize.return_value = 0
 
         sub_3 = Subscribe(None, MagicMock(), ["block_1", "inner", "attr2"],
                           delta=False)
         sub_3.set_id(3)
+        sub_3.response_queue.qsize.return_value = 0
 
         changes_1 = [[["block_1", "inner", "attr2"], "new_value"],
                      [["block_1", "attr"], "new_value"]]
