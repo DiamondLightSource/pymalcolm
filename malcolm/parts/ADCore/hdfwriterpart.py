@@ -44,7 +44,7 @@ class HDFWriterPart(ChildPart):
                 "More than one primary datasets defined %s" % filtered_datasets
         return filtered_datasets
 
-    def _create_dataset_infos(self, part_info, file_path):
+    def _create_dataset_infos(self, part_info, filename):
         # Update the dataset table
         uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
         ret = []
@@ -56,9 +56,9 @@ class HDFWriterPart(ChildPart):
         if primary_infos:
             dataset_info = primary_infos[0]
             ret.append(DatasetProducedInfo(
-                name="%s.data" % dataset_info.name, filename=file_path,
+                name="%s.data" % dataset_info.name, filename=filename,
                 type=dataset_info.type, rank=dataset_info.rank,
-                path="/entry/%s/%s" % (dataset_info.name, dataset_info.name),
+                path="/entry/detector/detector",
                 uniqueid=uniqueid))
 
         # Add all the other datasources
@@ -73,7 +73,7 @@ class HDFWriterPart(ChildPart):
                 # something like x.value or izero
                 name = dataset_info.name
             ret.append(DatasetProducedInfo(
-                name=name, filename=file_path, type=dataset_info.type,
+                name=name, filename=filename, type=dataset_info.type,
                 rank=dataset_info.rank, path=path, uniqueid=uniqueid))
         return ret
 
@@ -92,6 +92,11 @@ class HDFWriterPart(ChildPart):
         # Enable position mode before setting any position related things
         task.put(self.child["positionMode"], True)
         # Setup our required settings
+        # TODO: this should be different for windows detectors
+        file_path = params.filePath.rstrip(os.sep)
+        file_dir, filename = file_path.rsplit(os.sep, 1)
+        assert "." in filename, \
+            "File extension for %r should be supplied" % filename
         futures = task.put_many_async(self.child, dict(
             enableCallbacks=True,
             fileWriteMode="Stream",
@@ -99,8 +104,10 @@ class HDFWriterPart(ChildPart):
             positionMode=True,
             dimAttDatasets=True,
             lazyOpen=True,
-            arrayCounter=0))
-        futures += self._set_file_path(task, params.filePath)
+            arrayCounter=0,
+            filePath=file_dir + os.sep,
+            fileName=filename,
+            fileTemplate="%s%s"))
         futures += self._set_dimensions(task, params.generator)
         xml = self._make_layout_xml(params.generator, part_info)
         futures += task.put_async(self.child["xml"], xml)
@@ -114,7 +121,7 @@ class HDFWriterPart(ChildPart):
         self.array_future = task.when_matches_async(
             self.child["arrayCounter"], 1)
         # Return the dataset information
-        dataset_infos = self._create_dataset_infos(part_info, params.filePath)
+        dataset_infos = self._create_dataset_infos(part_info, filename)
         return dataset_infos
 
     @RunnableController.PostRunReady
@@ -142,18 +149,6 @@ class HDFWriterPart(ChildPart):
     @RunnableController.Abort
     def abort(self, task):
         task.post(self.child["stop"])
-
-    def _set_file_path(self, task, file_path):
-        # TODO: this should be different for windows detectors
-        file_path = file_path.rstrip(os.sep)
-        file_dir, file_name = file_path.rsplit(os.sep, 1)
-        assert "." in file_name, \
-            "File extension for %r should be supplied" % file_name
-        futures = task.put_many_async(self.child, dict(
-            filePath=file_dir + os.sep,
-            fileName=file_name,
-            fileTemplate="%s%s"))
-        return futures
 
     def _set_dimensions(self, task, generator):
         num_dims = len(generator.index_dims)
@@ -226,10 +221,12 @@ class HDFWriterPart(ChildPart):
         primary_infos = self._get_dataset_infos(part_info, primary=True)
         if not primary_infos:
             # Still need to put the data in the file, so manufacture something
-            primary_info = DatasetSourceInfo(
-                name="detector", type="primary", rank=1)
+            primary_rank = 1
         else:
-            primary_info = primary_infos[0]
+            primary_rank = primary_infos[0].rank
+        # Always put it in /entry/detector/detector
+        primary_info = DatasetSourceInfo(
+            name="detector", type="primary", rank=primary_rank)
         root_el = ET.Element("hdf5_layout")
         entry_el = ET.SubElement(root_el, "group", name="entry")
         ET.SubElement(entry_el, "attribute", name="NX_class",

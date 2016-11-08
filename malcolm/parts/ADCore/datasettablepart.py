@@ -8,7 +8,8 @@ from malcolm.controllers.runnablecontroller import RunnableController
 dataset_types = ["primary", "secondary", "monitor", "positioner"]
 columns = OrderedDict()
 columns["name"] = StringArrayMeta("Dataset name")
-columns["filename"] = StringArrayMeta("Filename of HDF file")
+columns["filename"] = StringArrayMeta(
+    "Filename of HDF file relative to fileDir")
 columns["type"] = ChoiceArrayMeta("Type of dataset", dataset_types)
 columns["rank"] = NumberArrayMeta("uint8", "Rank (number of dimensions)")
 columns["path"] = StringArrayMeta("Dataset path within HDF file")

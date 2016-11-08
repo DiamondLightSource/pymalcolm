@@ -45,14 +45,14 @@ class TestHDFWriterPart(unittest.TestCase):
             task, completed_steps, steps_to_do, part_info, params)
         self.assertEqual(len(infos), 2)
         self.assertEquals(infos[0].name, "xspress3.data")
-        self.assertEquals(infos[0].filename, params.filePath)
+        self.assertEquals(infos[0].filename, "file.h5")
         self.assertEquals(infos[0].type, "primary")
         self.assertEquals(infos[0].rank, 2)
-        self.assertEquals(infos[0].path, "/entry/xspress3/xspress3")
+        self.assertEquals(infos[0].path, "/entry/detector/detector")
         self.assertEquals(infos[0].uniqueid,
                           "/entry/NDAttributes/NDArrayUniqueId")
         self.assertEquals(infos[1].name, "xspress3.sum")
-        self.assertEquals(infos[1].filename, params.filePath)
+        self.assertEquals(infos[1].filename, "file.h5")
         self.assertEquals(infos[1].type, "secondary")
         self.assertEquals(infos[1].rank, 0)
         self.assertEquals(infos[1].path, "/entry/sum/sum")
@@ -61,22 +61,20 @@ class TestHDFWriterPart(unittest.TestCase):
         self.assertEqual(task.put.call_args_list, [
             call(self.child["positionMode"], True),
             call(self.child["numCapture"], 0)])
-        self.assertEqual(task.put_many_async.call_count, 3)
+        self.assertEqual(task.put_many_async.call_count, 2)
         self.assertEqual(task.put_many_async.call_args_list[0],
                          call(self.child, dict(
-                            enableCallbacks=True,
-                            fileWriteMode="Stream",
-                            swmrMode=True,
-                            positionMode=True,
-                            dimAttDatasets=True,
-                            lazyOpen=True,
-                            arrayCounter=0)))
-        self.assertEqual(task.put_many_async.call_args_list[1],
-                         call(self.child, dict(
+                             enableCallbacks=True,
+                             fileWriteMode="Stream",
+                             swmrMode=True,
+                             positionMode=True,
+                             dimAttDatasets=True,
+                             lazyOpen=True,
+                             arrayCounter=0,
                              filePath="/path/to/",
                              fileName="file.h5",
                              fileTemplate="%s%s")))
-        self.assertEqual(task.put_many_async.call_args_list[2],
+        self.assertEqual(task.put_many_async.call_args_list[1],
                          call(self.child, dict(
                              numExtraDims=1,
                              posNameDimN="x_y_Spiral",
@@ -103,8 +101,8 @@ class TestHDFWriterPart(unittest.TestCase):
 <hdf5_layout>
 <group name="entry">
 <attribute name="NX_class" source="constant" type="string" value="NXentry" />
-<group name="xspress3">
-<attribute name="signal" source="constant" type="string" value="xspress3" />
+<group name="detector">
+<attribute name="signal" source="constant" type="string" value="detector" />
 <attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_set_indices" source="constant" type="string" value="0" />
@@ -119,7 +117,7 @@ class TestHDFWriterPart(unittest.TestCase):
 <dataset name="y_set" source="constant" type="float" value="-0.64237113553,-0.500750778455,1.38930992616,1.98393756064,0.784917470231,-1.17377831157,-2.66405897615,-2.9669684623,-2.01825893141,-0.24129368636,1.72477821509,3.27215424484,3.98722048131,3.71781556747,2.5610299588,0.799047653518,-1.18858453138,-3.01284626565,-4.34725663835,-4.9755042398">
 <attribute name="units" source="constant" type="string" value="mm" />
 </dataset>
-<dataset det_default="true" name="xspress3" source="detector">
+<dataset det_default="true" name="detector" source="detector">
 <attribute name="NX_class" source="constant" type="string" value="SDS" />
 </dataset>
 </group>
