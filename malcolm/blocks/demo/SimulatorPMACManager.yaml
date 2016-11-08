@@ -4,25 +4,20 @@
 
 - controllers.RunnableController:
     mri: $(mriPrefix)
+    axesToMove: [m1, m2]
 
 - includes.pmac.rawmotor_collection:
-    mri: P45-STAGE-X
-    motorPrefix: LAB-MO-MAP-01:STAGE:X
-    prefix: LAB-MO-MAP-01:STAGEGB1:M1
-    scannable: stagex
+    mri: TST-M1
+    motorPrefix: S_T:M1
+    prefix: S_T:GB1:M1
+    scannable: m1
 
 - includes.pmac.rawmotor_collection:
-    mri: P45-STAGE-Y
-    motorPrefix: LAB-MO-MAP-01:STAGE:Y
-    prefix: LAB-MO-MAP-01:STAGEGB1:M2
-    scannable: stagey
-
-- includes.pmac.rawmotor_collection:
-    mri: P45-STAGE-Z
-    motorPrefix: LAB-MO-MAP-01:STAGE:Z
-    prefix: LAB-MO-MAP-01:STAGEGB1:M3
-    scannable: stagez
+    mri: TST-M2
+    motorPrefix: S_T:M2
+    prefix: S_T:GB1:M2
+    scannable: m2
 
 - includes.pmac.trajectory_collection:
     mri: $(mriPrefix)-TRAJ
-    prefix: LAB-MO-MAP-01:STAGEGB1
+    prefix: S_T:GB1
