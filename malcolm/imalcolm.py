@@ -1,23 +1,8 @@
 #!/bin/env dls-python
 
-import collections
-import signal
-import sys
-import os
-import threading
-
-# Start qt
-def start_qt():
-    from PyQt4.Qt import QApplication
-    app = QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(False)
-    app.exec_()
-
-qt_thread = threading.Thread(target=start_qt)
-qt_thread.start()
-
 
 def make_process():
+    import threading
     import argparse
     import logging
 
@@ -45,19 +30,22 @@ def make_process():
 
     from malcolm.core import SyncFactory, Process
     from malcolm.yamlutil import make_include_creator
+    from PyQt4.Qt import QApplication
+
+    # Start qt
+    def start_qt():
+        global app
+        app = QApplication(sys.argv)
+        app.setQuitOnLastWindowClosed(False)
+        from malcolm.gui.guiopener import GuiOpener
+        global opener
+        opener = GuiOpener()
+        app.exec_()
+
+    qt_thread = threading.Thread(target=start_qt)
+    qt_thread.start()
 
     sf = SyncFactory("Sync")
-
-    from malcolm.gui.blockgui import BlockGui
-
-    guis = {}
-
-    def gui(block):
-        if block in guis:
-            guis[block].show()
-        else:
-            guis[block] = BlockGui(proc, block)
-        return guis[block]
 
     if args.yaml:
         proc_name = os.path.basename(args.yaml).split(".")[-2]
@@ -83,12 +71,18 @@ def make_process():
             raise ValueError(
                 "Don't know how to create client to %s" % args.client)
 
+    def gui(block):
+        global opener
+        opener.open_gui(block, proc)
+
     return proc, gui
 
 
 def main():
+    from malcolm.core.profilingsampler import ProfilingSampler
+    sampler = ProfilingSampler()
+
     self, gui = make_process()
-    sampler = Sampler()
 
     header = """Welcome to iMalcolm.
 
@@ -116,38 +110,22 @@ self.process_block.blocks
         code.interact(header, local=locals())
     else:
         IPython.embed(header=header)
+    global app
+    app.quit()
 
-
-class Sampler(object):
-    def __init__(self, interval=0.1):
-        self.stack_counts = collections.defaultdict(int)
-        self.interval = interval
-
-    def _sample(self, signum, frame):
-        for frame in sys._current_frames().values():
-            stack = []
-            while frame is not None:
-                formatted_frame = '{}({})'.format(
-                    frame.f_code.co_name, frame.f_globals.get('__name__'))
-                stack.append(formatted_frame)
-                frame = frame.f_back
-
-            formatted_stack = ';'.join(reversed(stack))
-            self.stack_counts[formatted_stack] += 1
-        signal.setitimer(signal.ITIMER_VIRTUAL, self.interval, 0)
-
-    def start(self):
-        signal.signal(signal.SIGVTALRM, self._sample)
-        signal.setitimer(signal.ITIMER_VIRTUAL, self.interval, 0)
 
 if __name__ == "__main__":
-    # Test
+    import os
+    import sys
+
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
     from pkg_resources import require
 
     require("tornado", "numpy", "cothread", "ruamel.yaml",
             "scanpointgenerator")
-    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "scanpointgenerator"))
     sys.path.append(
         "/dls_sw/work/R3.14.12.3/support/pvaPy/lib/python/2.7/linux-x86_64")
+
     main()
