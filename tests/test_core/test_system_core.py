@@ -37,8 +37,7 @@ class TestHelloDemoSystem(unittest.TestCase):
         process.start()
         # wait until block is Ready
         task = Task("hello_ready_task", process)
-        futures = task.when_matches_async(b["state"], "Ready")
-        task.wait_all(futures, timeout=1)
+        task.when_matches(b["state"], "Ready", timeout=1)
         q = sync_factory.create_queue()
         req = Post(response_queue=q, context="ClientConnection",
                    endpoint=["hello", "greet"],

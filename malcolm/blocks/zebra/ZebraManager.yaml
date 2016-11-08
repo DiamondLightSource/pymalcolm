@@ -9,21 +9,13 @@
 - controllers.RunnableController:
     mri: $(mriPrefix)
 
-- blocks.xspress3.Xspress3DetectorDriver:
-    mri: $(mriPrefix)-DRV
-    prefix: $(pvPrefix)
-
-- parts.xspress3.Xspress3DriverPart:
+- parts.pandabox.PandABoxDriverPart:
     name: DRV
     mri: $(mriPrefix)-DRV
 
-- blocks.ADCore.StatsPlugin:
-    mri: $(mriPrefix)-STAT
-    prefix: $(pvPrefix):STAT
-
-- parts.ADCore.StatsPluginPart:
-    name: STAT
-    mri: $(mriPrefix)-STAT
+- blocks.zebra.ZebraDriver:
+    mri: $(mriPrefix)-DRV
+    prefix: $(pvPrefix)
 
 - includes.ADCore.filewriting_collection:
     pvPrefix: $(pvPrefix)

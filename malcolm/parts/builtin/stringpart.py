@@ -6,7 +6,7 @@ from malcolm.core.vmetas import StringMeta, BooleanMeta
     "name", StringMeta("Name of the created attribute"), REQUIRED,
     "description", StringMeta("Desc of created attribute"), REQUIRED,
     "widget", StringMeta("Widget, like 'combo' or 'textinput'"), "",
-    "writeable", BooleanMeta("Is the attribute writeable?"), "",
+    "writeable", BooleanMeta("Is the attribute writeable?"), False,
     "initialValue", StringMeta("Initial value of attribute"), "",
 )
 class StringPart(Part):

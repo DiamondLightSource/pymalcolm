@@ -1,5 +1,3 @@
-from cothread import catools
-
 from malcolm.core.vmetas import NumberArrayMeta
 from malcolm.parts.ca.caarraypart import CAArrayPart
 
@@ -11,4 +9,4 @@ class CALongArrayPart(CAArrayPart):
         return NumberArrayMeta("int32", description=description, tags=tags)
 
     def get_datatype(self):
-        return catools.DBR_LONG
+        return self.catools.DBR_LONG

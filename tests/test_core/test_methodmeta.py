@@ -30,6 +30,48 @@ class TestMethodMeta(unittest.TestCase):
         self.assertEquals("new_label", m.label)
         m.report_changes.assert_called_once_with([["label"], "new_label"])
 
+    def test_recreate(self):
+        @method_takes(
+            "arg1", StringMeta("Arg1"), REQUIRED,
+            "extra", StringMeta(), REQUIRED,
+        )
+        def method1():
+            pass
+
+        @method_takes(
+            "arg8", StringMeta("Arg8"), REQUIRED,
+            "arg3", StringMeta("Arg3"), "32",
+            "arg4", StringMeta("Arg4"), OPTIONAL,
+        )
+        def method2():
+            pass
+
+        @method_takes(
+            "arg8", StringMeta("Arg8"), "2",
+            "arg3", StringMeta("Arg3"), "33",
+        )
+        def method3():
+            pass
+
+        m = MethodMeta("Test")
+        m.recreate_from_others([
+            method1.MethodMeta, method2.MethodMeta, method3.MethodMeta],
+            without=["extra"])
+
+        itakes = MapMeta()
+        elements = OrderedDict()
+        elements["arg1"] = StringMeta("Arg1")
+        elements["arg8"] = StringMeta("Arg8")
+        elements["arg3"] = StringMeta("Arg3")
+        elements["arg4"] = StringMeta("Arg4")
+        itakes.set_elements(ElementMap(elements))
+        itakes.set_required(["arg1"])
+        defaults = OrderedDict()
+        defaults["arg8"] = "2"
+        defaults["arg3"] = "33"
+        self.assertEqual(m.takes.to_dict(), itakes.to_dict())
+        self.assertEqual(m.returns.to_dict(), MapMeta().to_dict())
+        self.assertEqual(m.defaults, defaults)
 
 
 class TestDecorators(unittest.TestCase):

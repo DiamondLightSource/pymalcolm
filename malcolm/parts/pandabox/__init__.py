@@ -1,2 +1,5 @@
 # Don't import all the parts as they need to be created from
-# lists.pandabox.pandabox_pairs()
+# includes.pandabox.hardware_collection()
+from malcolm.parts.pandabox.pandaboxdriverpart import PandABoxDriverPart
+
+

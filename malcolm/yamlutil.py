@@ -201,7 +201,8 @@ class Section(object):
         for k, v in self.param_dict.items():
             for s in substitutions:
                 if isinstance(v, str_):
-                    v = v.replace("$(%s)" % s, substitutions[s])
+                    # TODO: handle int etc here
+                    v = v.replace("$(%s)" % s, str(substitutions[s]))
             param_dict[k] = v
         return param_dict
 

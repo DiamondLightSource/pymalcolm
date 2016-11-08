@@ -3,7 +3,6 @@ from malcolm.core.vmetas import StringMeta, NumberMeta
 
 from malcolm.parts.pandabox.pandaboxcontrol import PandABoxControl
 from malcolm.parts.pandabox.pandaboxpoller import PandABoxPoller
-from malcolm.parts.builtin.childpart import ChildPart
 
 
 @method_takes(
@@ -34,25 +33,42 @@ def hardware_collection(process, params):
             for i in range(block_data.number):
                 block_names.append("%s%d" % (block_name, i + 1))
         for bn in block_names:
-            mri = "%s:%s" % (params.mriPrefix, bn)
+            mri = "%s-%s" % (params.mriPrefix, bn)
             if block_name == "PCAP" and params.areaDetectorPrefix:
-                # Include areaDetector parts
-                from malcolm.includes.ADCore import adbase_parts
-                params = adbase_parts.MethodMeta.prepare_input_map(
-                    prefix=params.areaDetectorPrefix)
-                _, ad_parts = adbase_parts(process, params)
+                extra_parts = make_pcap_ad_parts(
+                    process, params.areaDetectorPrefix)
             else:
-                ad_parts = []
+                extra_parts = []
             # Make a block
-            block = poller.make_panda_block(mri, bn, block_data, ad_parts)
+            block = poller.make_panda_block(mri, bn, block_data, extra_parts)
             blocks.append(block)
             # Make it's corresponding part
-            part_params = ChildPart.MethodMeta.prepare_input_map(
-                name=bn, mri=mri)
-            part = ChildPart(process, part_params)
+            part = make_child_part(process, bn, mri, params.areaDetectorPrefix)
             parts.append(part)
 
     # Start polling
     poller.start()
 
     return blocks, parts
+
+
+def make_pcap_ad_parts(process, prefix):
+    from malcolm.includes.ADCore import adbase_parts
+    params = adbase_parts.MethodMeta.prepare_input_map(prefix=prefix)
+    _, ad_parts = adbase_parts(process, params)
+    return ad_parts
+
+
+def make_child_part(process, block_name, mri, prefix):
+    if block_name == "PCAP" and prefix:
+        from malcolm.parts.pandabox.pandaboxdriverpart import \
+            PandABoxDriverPart as ChildPart
+    elif prefix:
+        from malcolm.parts.pandabox.pandaboxchildpart import \
+            PandABoxChildPart as ChildPart
+    else:
+        from malcolm.parts.builtin.childpart import ChildPart
+
+    params = ChildPart.MethodMeta.prepare_input_map(name=block_name, mri=mri)
+    part = ChildPart(process, params)
+    return part

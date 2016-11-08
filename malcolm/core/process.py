@@ -183,36 +183,20 @@ class Process(Loggable):
         """Update subscribers with changes and applies stored changes to the
         cached structure"""
         # update cached dict
-        self._block_state_cache.apply_changes(*request.changes)
+        subscription_changes = self._block_state_cache.apply_changes(
+            *request.changes)
 
-        for subscription in self._subscriptions.values():
-            endpoint = subscription.endpoint
-            # find stuff that's changed that is relevant to this subscriber
-            changes = []
-            for change in request.changes:
-                change_path = change[0]
-                # look for a change_path where the beginning matches the
-                # endpoint path, then strip away the matching part and add
-                # to the change set
-                i = 0
-                for (cp_element, ep_element) in zip(change_path, endpoint):
-                    if cp_element != ep_element:
-                        break
-                    i += 1
-                else:
-                    # change has matching path, so keep it
-                    # but strip off the end point path
-                    filtered_change = [change_path[i:]] + change[1:]
-                    changes.append(filtered_change)
-            if len(changes) > 0:
-                if subscription.delta:
-                    # respond with the filtered changes
-                    subscription.respond_with_delta(changes)
-                else:
-                    # respond with the structure of everything
-                    # below the endpoint
-                    d = self._block_state_cache.walk_path(endpoint)
-                    subscription.respond_with_update(d)
+        # Send out the changes
+        self.log_debug("Changes %s are %s", request.changes, subscription_changes)
+        for subscription, changes in subscription_changes.items():
+            if subscription.delta:
+                # respond with the filtered changes
+                subscription.respond_with_delta(changes)
+            else:
+                # respond with the structure of everything
+                # below the endpoint
+                d = self._block_state_cache.walk_path(subscription.endpoint)
+                subscription.respond_with_update(d)
 
     def report_changes(self, *changes):
         self.q.put(BlockChanges(changes=list(changes)))
@@ -277,6 +261,7 @@ class Process(Loggable):
         assert key not in self._subscriptions, \
             "Subscription on %s already exists" % (key,)
         self._subscriptions[key] = request
+        self._block_state_cache.add_subscriber(request, request.endpoint)
         d = self._block_state_cache.walk_path(request.endpoint)
         self.log_debug("Initial subscription value %s", d)
         if request.delta:
@@ -293,6 +278,8 @@ class Process(Loggable):
             request.respond_with_error(
                 "No subscription found for %s" % (key,))
         else:
+            self._block_state_cache.remove_subscriber(
+                subscription, subscription.endpoint)
             request.respond_with_return()
 
     def _handle_get(self, request):

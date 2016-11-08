@@ -21,25 +21,26 @@ class TestDatasetReportingPart(unittest.TestCase):
 
     def test_init(self):
         self.assertEqual(self.o.datasets.meta.elements.endpoints,
-                         ["name", "filename", "type", "path", "uniqueid"])
+                         ["name", "filename", "type", "rank", "path", "uniqueid"])
 
     def test_post_configure(self):
         task = MagicMock()
         part_info = dict(
             HDF=[
                 DatasetProducedInfo(
-                    "det", "fn1", "primary", "/p/det", "/p/uid"),
+                    "det.data", "fn1", "primary", 2, "/p/det", "/p/uid"),
                 DatasetProducedInfo(
-                    "stat", "fn1", "additional", "/p/s1", "/p/uid"),
+                    "det.sum", "fn1", "secondary", 0, "/p/s1", "/p/uid"),
                 DatasetProducedInfo(
-                    "stat", "fn1", "additional", "/p/s2", "/p/uid"),
+                    "det.min", "fn1", "secondary", 0, "/p/s2", "/p/uid"),
             ]
         )
         self.o.update_datasets_table(task, part_info)
         v = self.o.datasets.value
-        self.assertEqual(v.name, ["det", "stat", "stat"])
+        self.assertEqual(v.name, ["det.data", "det.sum", "det.min"])
         self.assertEqual(v.filename, ["fn1", "fn1", "fn1"])
-        self.assertEqual(v.type, ["primary", "additional", "additional"])
+        self.assertEqual(v.type, ["primary", "secondary", "secondary"])
+        self.assertEqual(list(v.rank), [2, 0, 0])
         self.assertEqual(v.path, ["/p/det", "/p/s1", "/p/s2"])
         self.assertEqual(v.uniqueid, ["/p/uid", "/p/uid", "/p/uid"])
 

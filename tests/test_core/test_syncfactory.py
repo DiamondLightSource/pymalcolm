@@ -15,10 +15,10 @@ class TestBlock(unittest.TestCase):
     @patch("malcolm.core.syncfactory.ThreadPool")
     def setUp(self, mock_pool):
         self.s = SyncFactory("sched")
-        mock_pool.assert_called_once_with(32)
+        mock_pool.assert_called_once_with(64)
         self.assertEqual(self.s.pool, mock_pool.return_value)
 
-    @patch("malcolm.core.syncfactory.queue.Queue")
+    @patch("malcolm.core.syncfactory.InterruptableQueue")
     def test_queue_creation(self, mock_queue):
         q = self.s.create_queue()
         mock_queue.assert_called_once_with()

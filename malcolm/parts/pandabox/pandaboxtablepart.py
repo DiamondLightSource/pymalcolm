@@ -2,6 +2,7 @@ from malcolm.compat import OrderedDict
 from malcolm.core.vmetas import NumberArrayMeta, BooleanArrayMeta
 from malcolm.core import TableElementMap, Table
 from malcolm.parts.pandabox.pandaboxfieldpart import PandABoxFieldPart
+from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
 
 
 class PandABoxTablePart(PandABoxFieldPart):
@@ -16,12 +17,12 @@ class PandABoxTablePart(PandABoxFieldPart):
         columns = OrderedDict()
         self.fields = OrderedDict()
         fields = control.get_table_fields(block_name, field_name)
-        for column_name, (bits_hi, bits_lo) in fields.items():
+        for field_name, (bits_hi, bits_lo) in fields.items():
             nbits = bits_hi - bits_lo + 1
             if nbits < 1:
                 raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
             if nbits == 1:
-                column_meta = BooleanArrayMeta(column_name)
+                column_meta = BooleanArrayMeta(field_name)
                 widget_tag = "widget:checkbox"
             else:
                 if nbits <= 8:
@@ -34,11 +35,9 @@ class PandABoxTablePart(PandABoxFieldPart):
                     dtype = "uint64"
                 else:
                     raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
-                column_meta = NumberArrayMeta(dtype, column_name)
+                column_meta = NumberArrayMeta(dtype, field_name)
                 widget_tag = "widget:textinput"
-            label = column_name.replace(".", " ").replace("_", " ").title()
-            column_name = label.replace(" ", "")
-            column_name = column_name[0].lower() + column_name[1:]
+            label, column_name = make_label_attr_name(field_name)
             column_meta.set_label(label)
             column_meta.set_tags([widget_tag])
             columns[column_name] = column_meta

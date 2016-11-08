@@ -38,29 +38,43 @@ class TestHDFWriterPart(unittest.TestCase):
         completed_steps = 0
         steps_to_do = 38
         part_info = {
-            "DET": [DatasetSourceInfo("detector", "primary")],
-            "STAT": [DatasetSourceInfo("StatsTotal", "additional")],
+            "DET": [DatasetSourceInfo("xspress3", "primary", 2)],
+            "STAT": [DatasetSourceInfo("sum", "secondary", 0, "StatsTotal")],
         }
-        self.o.configure(task, completed_steps, steps_to_do, part_info, params)
+        infos = self.o.configure(
+            task, completed_steps, steps_to_do, part_info, params)
+        self.assertEqual(len(infos), 2)
+        self.assertEquals(infos[0].name, "xspress3.data")
+        self.assertEquals(infos[0].filename, "file.h5")
+        self.assertEquals(infos[0].type, "primary")
+        self.assertEquals(infos[0].rank, 2)
+        self.assertEquals(infos[0].path, "/entry/detector/detector")
+        self.assertEquals(infos[0].uniqueid,
+                          "/entry/NDAttributes/NDArrayUniqueId")
+        self.assertEquals(infos[1].name, "xspress3.sum")
+        self.assertEquals(infos[1].filename, "file.h5")
+        self.assertEquals(infos[1].type, "secondary")
+        self.assertEquals(infos[1].rank, 0)
+        self.assertEquals(infos[1].path, "/entry/sum/sum")
+        self.assertEquals(infos[1].uniqueid,
+                          "/entry/NDAttributes/NDArrayUniqueId")
         self.assertEqual(task.put.call_args_list, [
             call(self.child["positionMode"], True),
             call(self.child["numCapture"], 0)])
-        self.assertEqual(task.put_many_async.call_count, 3)
+        self.assertEqual(task.put_many_async.call_count, 2)
         self.assertEqual(task.put_many_async.call_args_list[0],
                          call(self.child, dict(
-                            enableCallbacks=True,
-                            fileWriteMode="Stream",
-                            swmrMode=True,
-                            positionMode=True,
-                            dimAttDatasets=True,
-                            lazyOpen=True,
-                            arrayCounter=0)))
-        self.assertEqual(task.put_many_async.call_args_list[1],
-                         call(self.child, dict(
+                             enableCallbacks=True,
+                             fileWriteMode="Stream",
+                             swmrMode=True,
+                             positionMode=True,
+                             dimAttDatasets=True,
+                             lazyOpen=True,
+                             arrayCounter=0,
                              filePath="/path/to/",
                              fileName="file.h5",
                              fileTemplate="%s%s")))
-        self.assertEqual(task.put_many_async.call_args_list[2],
+        self.assertEqual(task.put_many_async.call_args_list[1],
                          call(self.child, dict(
                              numExtraDims=1,
                              posNameDimN="x_y_Spiral",
@@ -107,9 +121,9 @@ class TestHDFWriterPart(unittest.TestCase):
 <attribute name="NX_class" source="constant" type="string" value="SDS" />
 </dataset>
 </group>
-<group name="StatsTotal">
-<attribute name="signal" source="constant" type="string" value="StatsTotal" />
-<attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
+<group name="sum">
+<attribute name="signal" source="constant" type="string" value="sum" />
+<attribute name="axes" source="constant" type="string" value="energy_set,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_set_indices" source="constant" type="string" value="0" />
 <hardlink name="energy_set" target="/entry/detector/energy_set" />
@@ -117,7 +131,7 @@ class TestHDFWriterPart(unittest.TestCase):
 <hardlink name="x_set" target="/entry/detector/x_set" />
 <attribute name="y_set_indices" source="constant" type="string" value="1" />
 <hardlink name="y_set" target="/entry/detector/y_set" />
-<dataset name="StatsTotal" ndattribute="StatsTotal" source="ndattribute" />
+<dataset name="sum" ndattribute="StatsTotal" source="ndattribute" />
 </group>
 <group name="NDAttributes" ndattr_default="true">
 <attribute name="NX_class" source="constant" type="string" value="NXcollection" />

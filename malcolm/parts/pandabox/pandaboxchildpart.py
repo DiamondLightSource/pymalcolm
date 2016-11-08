@@ -1,0 +1,46 @@
+import re
+
+from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.parts.ADCore.hdfwriterpart import DatasetSourceInfo
+
+
+class PandABoxChildPart(ChildPart):
+    # Stored futures
+    start_future = None
+
+    def _is_capture_field(self, attr_name):
+        if attr_name.endswith("Capture"):
+            attr = self.child[attr_name]
+            if attr.value.lower() != "no":
+                return True
+
+    def _dataset_info(self, attr_name):
+        dataset_attr_name = attr_name + "DatasetName"
+        if dataset_attr_name in self.child:
+            dataset_name = self.child[dataset_attr_name].value
+            if dataset_name == "":
+                return
+            elif "." in dataset_name:
+                assert dataset_name.endswith(".value"), \
+                    "Positioner %r should end in '.value'" % dataset_name
+                dataset_type = "positioner"
+            else:
+                dataset_type = "monitor"
+
+            uppercase_attr = re.sub("([A-Z])", r"_\1", attr_name).upper()
+            return DatasetSourceInfo(
+                name=dataset_name,
+                type=dataset_type,
+                rank=0,
+                attr=uppercase_attr)
+
+    @RunnableController.ReportStatus
+    def report_configuration(self, _):
+        ret = []
+        for attr_name in self.child:
+            if self._is_capture_field(attr_name):
+                dataset_info = self._dataset_info(attr_name[:-len("Capture")])
+                if dataset_info:
+                    ret.append(dataset_info)
+        return ret

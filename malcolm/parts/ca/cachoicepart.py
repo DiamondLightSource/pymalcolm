@@ -1,5 +1,3 @@
-from cothread import catools
-
 from malcolm.core.vmetas import ChoiceMeta
 from malcolm.parts.ca.capart import CAPart
 
@@ -11,7 +9,7 @@ class CAChoicePart(CAPart):
         return ChoiceMeta(description=description, tags=tags)
 
     def get_datatype(self):
-        return catools.DBR_ENUM
+        return self.catools.DBR_ENUM
 
     def update_value(self, value):
         if hasattr(value, 'enums') and value.ok:

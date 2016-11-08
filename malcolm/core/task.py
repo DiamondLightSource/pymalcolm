@@ -32,7 +32,6 @@ class Task(Loggable, Spawnable):
         attributes on blocks. Note that queue handling is executed in the
         caller's thread (by calling wait_all). Hence this module is not
         thread safe"""
-    # TODO: when Task object is destroyed  we need to cancel all subscriptions
 
     def __init__(self, name, process):
         self.set_logger_name(name)
@@ -152,10 +151,8 @@ class Task(Loggable, Spawnable):
         f = Future(self)
         self._save_future(f)
         subscription_ids = []
-        weak_self = weakref.proxy(self)
         subscription_id = self.subscribe(
-            attr, match_update, weak_self, f, value, subscription_ids,
-            bad_values)
+            attr, match_update, self, f, value, subscription_ids, bad_values)
         subscription_ids.append(subscription_id)
 
         return [f]
@@ -208,7 +205,14 @@ class Task(Loggable, Spawnable):
         endpoint = attr.path_relative_to(self.process) + ["value"]
         self.log_debug("Subscribing to %s", endpoint)
         request = Subscribe(None, self.q, endpoint, False)
-        new_id = self._save_subscription(endpoint, callback, *args)
+        # If self is in args, then make weak version of it
+        saved_args = []
+        for arg in args:
+            if arg is self:
+                saved_args.append(weakref.proxy(self))
+            else:
+                saved_args.append(arg)
+        new_id = self._save_subscription(endpoint, callback, *saved_args)
         request.set_id(new_id)
         self.process.q.put(request)
 

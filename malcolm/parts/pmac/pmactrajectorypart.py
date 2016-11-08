@@ -306,7 +306,7 @@ class PMACTrajectoryPart(ChildPart):
 
     def build_generator_profile(self, start_index, do_run_up=True):
         acceleration_time = self.calculate_acceleration_time()
-        trajectory = {}
+        trajectory = {axis_name: [] for axis_name in self.axis_mapping}
         time_array = []
         velocity_mode = []
         user_programs = []
@@ -319,74 +319,74 @@ class PMACTrajectoryPart(ChildPart):
         # If we are doing the first build, do_run_up will be called so flag
         # that we need a runup, else just continue from the previous point
         if do_run_up:
-            last_point = None
-        else:
-            last_point = self.generator.get_point(start_index - 1)
+            point = self.generator.get_point(start_index)
+            # Add lower bound
+            time_array.append(acceleration_time)
+            velocity_mode.append(CURRENT_TO_NEXT)
+            user_programs.append(TRIG_LIVE_FRAME)
+            self.completed_steps_lookup.append(0)
+            for axis_name, positions in trajectory.items():
+                positions.append(point.lower[axis_name])
 
         for i in range(start_index, self.end_index):
             point = self.generator.get_point(i)
-
-            # Check if we need to insert the lower bound point
-            if last_point is None:
-                lower_move_time, turnaround_midpoint = acceleration_time, None
-            else:
-                lower_move_time, turnaround_midpoint = \
-                    self.need_lower_move_time(last_point, point)
-
-            # Check if we need a turnaround midpoint
-            if turnaround_midpoint:
-                # set the previous point to not take this point into account
-                velocity_mode[-1] = PREV_TO_CURRENT
-                # and tell it that this was an empty frame
-                user_programs[-1] = TRIG_DEAD_FRAME
-
-                # Add a padding point
-                time_array.append(lower_move_time)
-                velocity_mode.append(PREV_TO_NEXT)
-                user_programs.append(TRIG_ZERO)
-                self.completed_steps_lookup.append(i)
-
-            if lower_move_time:
-                # Add lower bound
-                time_array.append(lower_move_time)
-                velocity_mode.append(CURRENT_TO_NEXT)
-                user_programs.append(TRIG_LIVE_FRAME)
-                self.completed_steps_lookup.append(i)
 
             # Add position
             time_array.append(point.duration / 2.0)
             velocity_mode.append(PREV_TO_NEXT)
             user_programs.append(TRIG_CAPTURE)
             self.completed_steps_lookup.append(i)
+            for axis_name, positions in trajectory.items():
+                positions.append(point.positions[axis_name])
 
             # Add upper bound
             time_array.append(point.duration / 2.0)
             velocity_mode.append(PREV_TO_NEXT)
             user_programs.append(TRIG_LIVE_FRAME)
             self.completed_steps_lookup.append(i + 1)
-
-            # Add the axis positions
-            for axis_name, cs_def in self.axis_mapping.items():
-                positions = trajectory.setdefault(axis_name, [])
-                # Add padding and lower bound axis positions
-                if turnaround_midpoint:
-                    positions.append(turnaround_midpoint[axis_name])
-                if lower_move_time:
-                    positions.append(point.lower[axis_name])
-                positions.append(point.positions[axis_name])
+            for axis_name, positions in trajectory.items():
                 positions.append(point.upper[axis_name])
-            last_point = point
+
+            # Check if we need to insert the upper bound point
+            if i + 1 < self.end_index:
+                next_point = self.generator.get_point(i + 1)
+                lower_move_time, turnaround_midpoint = \
+                    self.need_lower_move_time(point, next_point)
+
+                # Check if we need a turnaround midpoint
+                if lower_move_time:
+                    # Change last point to be dead frame
+                    velocity_mode[-1] = PREV_TO_CURRENT
+                    user_programs[-1] = TRIG_DEAD_FRAME
+
+                    # Add a padding point
+                    time_array.append(lower_move_time)
+                    velocity_mode.append(PREV_TO_NEXT)
+                    user_programs.append(TRIG_ZERO)
+                    self.completed_steps_lookup.append(i + 1)
+                    for axis_name, positions in trajectory.items():
+                        positions.append(turnaround_midpoint[axis_name])
+
+                    # Add lower bound
+                    time_array.append(lower_move_time)
+                    velocity_mode.append(CURRENT_TO_NEXT)
+                    user_programs.append(TRIG_LIVE_FRAME)
+                    self.completed_steps_lookup.append(i + 1)
+                    for axis_name, positions in trajectory.items():
+                        positions.append(next_point.lower[axis_name])
 
         # Add the last tail off point
         if self.end_index == self.steps_up_to:
+            point = self.generator.get_point(self.end_index - 1)
+
             time_array.append(acceleration_time)
             velocity_mode[-1] = PREV_TO_CURRENT
             velocity_mode.append(ZERO_VELOCITY)
             user_programs[-1] = TRIG_DEAD_FRAME
             user_programs.append(TRIG_ZERO)
-            self.completed_steps_lookup.append(i + 1)
+            self.completed_steps_lookup.append(self.end_index)
 
-            for axis_name, tail_off in self.run_up_positions(last_point).items():
+            for axis_name, tail_off in self.run_up_positions(point).items():
                 positions = trajectory[axis_name]
                 positions.append(positions[-1] + tail_off)
 

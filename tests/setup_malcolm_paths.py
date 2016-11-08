@@ -19,6 +19,9 @@ except:
         return f(*args, **kwargs)
     cothread.CallbackResult.side_effect = callback_result
     sys.modules["cothread"] = cothread
+    input_hook = MagicMock()
+    sys.modules["cothread.input_hook"] = input_hook
+    del input_hook.MethodMeta
 catools = MagicMock()
 # Tell Mock not to have a MethodMeta, otherwise we will be decorated
 del catools.MethodMeta

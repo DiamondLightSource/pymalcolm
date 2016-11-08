@@ -201,12 +201,18 @@ class TestSubscriptions(unittest.TestCase):
         block_2 = MagicMock(
             to_dict=MagicMock(return_value={"attr": "value"}))
 
-        sub_1 = MagicMock()
-        sub_1.endpoint = ["block_1", "inner"]
-        sub_1.delta = False
-        sub_2 = MagicMock()
-        sub_2.endpoint = ["block_1", "inner"]
-        sub_2.delta = True
+        sub_1 = Subscribe(None, MagicMock(), ["block_1", "inner"], delta=False)
+        sub_1.set_id(1)
+        sub_1.response_queue.qsize.return_value = 0
+
+        sub_2 = Subscribe(None, MagicMock(), ["block_1"], delta=True)
+        sub_2.set_id(2)
+        sub_2.response_queue.qsize.return_value = 0
+
+        sub_3 = Subscribe(None, MagicMock(), ["block_1", "inner", "attr2"],
+                          delta=False)
+        sub_3.set_id(3)
+        sub_3.response_queue.qsize.return_value = 0
 
         changes_1 = [[["block_1", "inner", "attr2"], "new_value"],
                      [["block_1", "attr"], "new_value"]]
@@ -215,20 +221,22 @@ class TestSubscriptions(unittest.TestCase):
         request_2 = BlockChanges(changes_2)
         p = Process("proc", MagicMock())
         p.q.get = MagicMock(side_effect=[
-            request_1, request_2,
+            sub_1, sub_2, sub_3, request_1, request_2,
             PROCESS_STOP])
-        p._subscriptions = OrderedDict()
-        p._subscriptions[(None, None, 1)] = sub_1
-        p._subscriptions[(None, None, 2)] = sub_2
 
         p._handle_block_add(BlockAdd(block_1, "block_1", None))
         p._handle_block_add(BlockAdd(block_2, "block_2", None))
         p.recv_loop()
 
-        response_1 = sub_1.respond_with_update.call_args[0][0]
-        response_2 = sub_2.respond_with_delta.call_args[0][0]
+        response_1 = sub_1.response_queue.put.call_args_list[1][0][0]["value"]
         self.assertEquals({"attr2": "new_value"}, response_1)
-        self.assertEquals([[["attr2"], "new_value"]], response_2)
+
+        response_2 = sub_2.response_queue.put.call_args_list[1][0][0]["changes"]
+        self.assertEquals([[["inner", "attr2"], "new_value"],
+                           [["attr"], "new_value"]], response_2)
+
+        response_3 = sub_3.response_queue.put.call_args_list[1][0][0]["value"]
+        self.assertEquals("new_value", response_3)
 
     def test_unsubscribe(self):
         # Test that we remove the relevant subscription only and that

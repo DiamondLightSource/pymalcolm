@@ -14,8 +14,8 @@ class SyncFactory(Loggable):
             name(str): Logger name e.g. "Sync"
         """
         self.set_logger_name(name)
-        # 32 threads should be enought for anyone!
-        self.pool = ThreadPool(32)
+        # 32 threads should be enough for anyone!
+        self.pool = ThreadPool(64)
 
     def spawn(self, function, *args, **kwargs):
         """Runs the function in a worker thread, returning a Result object
@@ -33,8 +33,22 @@ class SyncFactory(Loggable):
 
     def create_queue(self):
         """Creates a new Queue object"""
-        return queue.Queue()
+        return InterruptableQueue()
 
     def create_lock(self):
         """Creates a new simple Lock object"""
         return Lock()
+
+
+class InterruptableQueue(queue.Queue):
+    # horrible horrible
+    # http://stackoverflow.com/a/212975
+    def get(self, block=True, timeout=None):
+        if timeout is None:
+            while True:
+                try:
+                    return queue.Queue.get(self, block=block, timeout=1000)
+                except queue.Empty:
+                    pass
+        else:
+            return queue.Queue.get(self, block=block, timeout=timeout)

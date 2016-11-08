@@ -17,14 +17,6 @@
     name: POS
     mri: $(mriPrefix)-POS
 
-- blocks.ADCore.StatsPlugin:
-    mri: $(mriPrefix)-STAT
-    prefix: $(pvPrefix):STAT
-
-- parts.ADCore.StatsPluginPart:
-    name: STAT
-    mri: $(mriPrefix)-STAT
-
 - blocks.ADCore.HDFWriter:
     mri: $(mriPrefix)-HDF5
     prefix: $(pvPrefix):HDF5

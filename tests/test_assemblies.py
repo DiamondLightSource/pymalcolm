@@ -8,7 +8,7 @@ from mock import Mock, ANY
 
 from malcolm.core import method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta
-from malcolm.parts.ca.cadoublepart import CADoublePart
+from malcolm.parts.builtin.stringpart import StringPart
 from malcolm.yamlutil import make_block_creator, Section, make_include_creator
 
 
@@ -27,20 +27,20 @@ class TestAssemblies(unittest.TestCase):
     name: something
     description: my description
 
-- parts.ca.CADoublePart:
-    name: double
-    description: the pv object
-    pv: $(something)
+- parts.builtin.StringPart:
+    name: scannable
+    description: Scannable name for motor
+    initialValue: $(something)
 """
         include_creator = make_include_creator(yaml)
         process = Mock()
-        blocks, parts = include_creator(process, dict(something="mypv"))
+        blocks, parts = include_creator(process, dict(something="blah"))
         self.assertEquals(len(blocks), 0)
         self.assertEquals(len(parts), 1)
         part = parts[0]
-        self.assertIsInstance(part, CADoublePart)
-        self.assertEqual(part.name, "double")
-        self.assertEqual(part.params.pv, "mypv")
+        self.assertIsInstance(part, StringPart)
+        self.assertEqual(part.name, "scannable")
+        self.assertEqual(part.params.initialValue, "blah")
 
     def test_make_block(self):
         yaml = """
@@ -51,19 +51,20 @@ class TestAssemblies(unittest.TestCase):
 - controllers.DefaultController:
     mri: boo
 
-- parts.ca.CADoublePart:
-    name: double
-    description: the pv object
-    pv: $(something)
+- parts.builtin.StringPart:
+    name: scannable
+    description: Scannable name for motor
+    initialValue: $(something)
 """
         block_creator = make_block_creator(yaml)
         process = Mock()
-        blocks = block_creator(process, dict(something="mypv"))
+        blocks = block_creator(process, dict(something="blah"))
         self.assertEquals(len(blocks), 1)
         block, controller = process.add_block.call_args[0]
         self.assertEquals(len(controller.parts), 1)
-        self.assertIsInstance(controller.parts["double"], CADoublePart)
-        self.assertEqual(controller.parts["double"].params.pv, "mypv")
+        self.assertIsInstance(controller.parts["scannable"], StringPart)
+        self.assertEqual(controller.parts["scannable"].params.initialValue,
+                         "blah")
 
     def test_instantiate(self):
         @method_takes(
