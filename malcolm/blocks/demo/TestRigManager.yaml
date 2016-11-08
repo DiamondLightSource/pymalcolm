@@ -10,6 +10,14 @@
     name: brick
     description: MRI for brick PMACManager object
 
+- parameters.string:
+    name: pandabox
+    description: MRI for PandABoxManager object
+
+- parameters.string:
+    name: zebra
+    description: MRI for ZebraManager object
+
 - controllers.RunnableController:
     mri: $(mri)
     axesToMove: [stagex, stagey]
@@ -17,10 +25,18 @@
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
+- parts.builtin.RunnableChildPart:
+    name: BRICK
+    mri: $(brick)
+
 - parts.ADCore.DatasetRunnableChildPart:
     name: MIC
     mri: $(mic)
 
-- parts.builtin.RunnableChildPart:
-    name: BRICK
-    mri: $(brick)
+- parts.ADCore.DatasetRunnableChildPart:
+    name: PANDABOX
+    mri: $(pandabox)
+
+- parts.ADCore.DatasetRunnableChildPart:
+    name: ZEBRA
+    mri: $(zebra)

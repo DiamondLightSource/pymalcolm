@@ -17,6 +17,14 @@
     name: DRV
     mri: $(mriPrefix)-DRV
 
+- blocks.ADCore.StatsPlugin:
+    mri: $(mriPrefix)-STAT
+    prefix: $(pvPrefix):STAT
+
+- parts.ADCore.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix)-STAT
+
 - includes.ADCore.filewriting_collection:
     pvPrefix: $(pvPrefix)
     mriPrefix: $(mriPrefix)

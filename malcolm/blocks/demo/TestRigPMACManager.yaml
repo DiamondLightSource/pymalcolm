@@ -1,5 +1,9 @@
+- parameters.string:
+    name: mriPrefix
+    description: MRI for created block
+
 - controllers.RunnableController:
-    mri: P45-BRICK01
+    mri: $(mriPrefix)
 
 - includes.pmac.rawmotor_collection:
     mri: P45-STAGE-X
@@ -20,5 +24,5 @@
     scannable: stagez
 
 - includes.pmac.trajectory_collection:
-    mri: P45-BRICK01-TRAJ
+    mri: $(mriPrefix)-TRAJ
     prefix: LAB-MO-MAP-01:STAGEGB1

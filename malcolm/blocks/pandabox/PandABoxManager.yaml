@@ -22,7 +22,7 @@
 - includes.pandabox.hardware_collection:
     hostname: $(hostname)
     port: $(port)
-    areaDetectorPrefix: $(pvprefix)
+    areaDetectorPrefix: $(pvPrefix):DRV
     mriPrefix: $(mriPrefix)
 
 - parts.pandabox.PandABoxDriverPart:

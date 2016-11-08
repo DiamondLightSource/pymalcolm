@@ -61,11 +61,11 @@ def make_pcap_ad_parts(process, prefix):
 
 def make_child_part(process, block_name, mri, prefix):
     if block_name == "PCAP" and prefix:
-        from malcolm.parts.pandabox.pandaboxchildpart import \
-            PandABoxChildPart as ChildPart
-    elif prefix:
         from malcolm.parts.pandabox.pandaboxdriverpart import \
             PandABoxDriverPart as ChildPart
+    elif prefix:
+        from malcolm.parts.pandabox.pandaboxchildpart import \
+            PandABoxChildPart as ChildPart
     else:
         from malcolm.parts.builtin.childpart import ChildPart
 

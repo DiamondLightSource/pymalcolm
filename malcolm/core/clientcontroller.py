@@ -29,7 +29,7 @@ class ClientController(Controller):
                 # process knows how to get to a block
                 self._subscribe_to_block(self.mri)
         elif response.id == self.BLOCK_ID:
-            self.log_debug(response)
+            self.log_debug("Got response %s", response)
             # find all the regenerate block changesets
             regenerate = [c for c in response.changes if c[0] == []]
             if regenerate:
