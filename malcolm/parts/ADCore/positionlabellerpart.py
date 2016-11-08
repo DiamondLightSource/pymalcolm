@@ -10,7 +10,7 @@ from malcolm.controllers.runnablecontroller import RunnableController
 XML_MAX_SIZE = 1000000 - 2
 
 # How many to load each time
-POSITIONS_PER_XML = 500
+POSITIONS_PER_XML = 1000
 
 
 class PositionLabellerPart(ChildPart):
