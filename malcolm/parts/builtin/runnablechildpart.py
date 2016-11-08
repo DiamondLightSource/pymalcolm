@@ -63,8 +63,10 @@ class RunnableChildPart(ChildPart):
         task.post(self.child["pause"])
 
     @RunnableController.Seek
-    def seek(self, task, completed_steps, steps_to_do, part_info, params):
-        task.post(self.child["seek"])
+    def seek(self, task, completed_steps, steps_to_do, part_info):
+        params = self.child["seek"].prepare_input_map(
+            completedSteps=completed_steps)
+        task.post(self.child["seek"], params)
 
     @RunnableController.Resume
     def resume(self, task, update_completed_steps):

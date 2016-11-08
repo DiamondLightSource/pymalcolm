@@ -39,6 +39,11 @@ class SyncFactory(Loggable):
         """Creates a new simple Lock object"""
         return Lock()
 
+    def __del__(self):
+        """When we get garbage collected, clean up the threads we created"""
+        self.pool.close()
+        self.pool.join()
+
 
 class InterruptableQueue(queue.Queue):
     # horrible horrible

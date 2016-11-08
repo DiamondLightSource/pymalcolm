@@ -78,8 +78,9 @@ will allow saving and reverting these changes to take it back to a Ready state.
         Ready : Rest state
 
         Ready -up-> Editing : Edit
-        Editing -down-> Saving : Save
-        Editing -down-> Reverting : Revert
+        Editing -up-> Editable
+        Editable -down-> Saving : Save
+        Editable -down-> Reverting : Revert
         Saving -down-> Ready
         Reverting -down-> Ready
     }
@@ -150,8 +151,9 @@ become paused.
         Aborted -up-> Resetting : Reset
 
         Idle -up-> Editing : Edit
-        Editing -down-> Saving : Save
-        Editing -down-> Reverting : Revert
+        Editing -up-> Editable
+        Editable -down-> Saving : Save
+        Editable -down-> Reverting : Revert
         Saving -down-> Idle
         Reverting -down-> Idle
     }

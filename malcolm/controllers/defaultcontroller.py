@@ -39,8 +39,9 @@ class DefaultController(Controller):
         self.run_hook(self.Reset, self.create_part_tasks())
 
     def go_to_error_state(self, exception):
-        self.log_exception("Fault occurred while running stateful function")
-        self.transition(sm.FAULT, str(exception))
+        if self.state.value != sm.FAULT:
+            self.log_exception("Fault occurred while running stateful function")
+            self.transition(sm.FAULT, str(exception))
 
     def try_stateful_function(self, start_state, end_state, func, *args,
                               **kwargs):

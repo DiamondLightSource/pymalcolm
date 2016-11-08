@@ -42,6 +42,7 @@ class TestProcess(unittest.TestCase):
 
     def test_get_block(self):
         p = Process("proc", MagicMock())
+        p.process_block["remoteBlocks"].set_value(['name1'])
         b1 = p.get_block("name1")
         self.assertEqual(b1.status, "Waiting for connection...")
         self.assertEqual(p.get_block("name1"), b1)

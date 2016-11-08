@@ -150,13 +150,6 @@ class RunnableController(ManagerController):
     # {part: completed_steps for that part}
     progress_reporting = None
 
-    def go_to_error_state(self, exception):
-        if isinstance(exception, StopIteration):
-            # Don't need to transition to aborted, we're already there
-            self.log_warning("Abort occurred while running stateful function")
-        else:
-            super(RunnableController, self).go_to_error_state(exception)
-
     @method_writeable_in(sm.IDLE)
     def edit(self):
         # Override edit to only work from Idle
@@ -221,7 +214,7 @@ class RunnableController(ManagerController):
         # Get any status from all parts
         part_info = self.run_hook(self.ReportStatus, part_tasks)
         # Validate the params with all the parts
-        self.run_hook(self.Validate, part_tasks, part_info, params)
+        self.run_hook(self.Validate, part_tasks, part_info, **params)
 
     @method_takes(*configure_args)
     @method_writeable_in(sm.IDLE)
@@ -299,8 +292,10 @@ class RunnableController(ManagerController):
                 self.do_run(resume=True)
             else:
                 # just drop out
-                self.log_debug("We were aborted")
-                raise
+                self.log_debug("We were aborted by unexpected StopIteration")
+                e = ValueError("unexpected StopIteration")
+                self.go_to_error_state(e)
+                raise e
 
     def do_run(self, resume=False):
         if resume:
@@ -313,13 +308,16 @@ class RunnableController(ManagerController):
         if completed_steps < self.total_steps.value:
             steps_to_do = self.steps_per_run
             part_info = self.run_hook(self.ReportStatus, self.part_tasks)
+            self.completed_steps.set_value(completed_steps)
             self.run_hook(
                 self.PostRunReady, self.part_tasks, completed_steps,
                 steps_to_do, part_info, self.configure_params)
+            self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
             self.run_hook(self.PostRunIdle, self.part_tasks)
 
     def update_completed_steps(self, completed_steps, part):
+        # This is run in the child thread, so make sure it is thread safe
         self.progress_reporting[part] = completed_steps
         min_completed_steps = min(self.progress_reporting.values())
         if min_completed_steps > self.completed_steps.value:
@@ -367,9 +365,11 @@ class RunnableController(ManagerController):
     def do_seek(self, completed_steps):
         steps_to_do = completed_steps % self.steps_per_run
         part_info = self.run_hook(self.ReportStatus, self.part_tasks)
+        self.completed_steps.set_value(completed_steps)
         self.run_hook(
             self.Seek, self.part_tasks, completed_steps,
-            steps_to_do, part_info, self.configure_params)
+            steps_to_do, part_info, **self.configure_params)
+        self.configured_steps.set_value(completed_steps + steps_to_do)
 
     @method_writeable_in(sm.PAUSED)
     def resume(self):
