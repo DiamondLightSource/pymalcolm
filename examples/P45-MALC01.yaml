@@ -1,0 +1,32 @@
+#!/home/tmc43/common/python/pymalcolm/malcolm/imalcolm.py
+#/dls_sw/prod/common/python/RHEL6-x86_64/pymalcolm/2-0a6/malcolm/imalcolm.py
+# This sample is intended for use with the test lab setup LAB-MO-IOC-01
+
+- blocks.ADCore.SimDetectorManager:
+    pvPrefix: LAB-MO-MAP-01:MIC
+    mriPrefix: P45-MIC
+
+- blocks.demo.TestRigPMACManager:
+    mriPrefix: P45-BRICK01
+
+- blocks.pandabox.PandABoxManager:
+    pvPrefix: LAB-MO-PANDA-01
+    mriPrefix: P45-PANDA01
+    hostname: 172.23.252.201
+
+- blocks.zebra.ZebraManager:
+    pvPrefix: LAB-MO-MAP-01:ZEBRA
+    mriPrefix: P45-ZEBRA01
+
+- blocks.demo.TestRigManager:
+    mri: P45-SCAN01
+    mic: P45-MIC
+    brick: P45-BRICK01
+    pandabox: P45-PANDA01
+    zebra: P45-ZEBRA01
+
+#- comms.pva.PvaServerComms:
+
+- comms.websocket.WebsocketServerComms:
+    port: 8080
+
