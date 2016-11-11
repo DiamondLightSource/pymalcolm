@@ -109,16 +109,20 @@ class TestManagerController(unittest.TestCase):
         self.c.save(params)
         self.checkState(self.sm.AFTER_RESETTING, child=False)
         self.assertEqual(self.c.layout_name.value, 'testSaveLayout')
+        self.c.edit()
+        params = {'layoutName': None}
+        params = ManagerController.save.MethodMeta.prepare_input_map(**params)
+        self.c.save(params)
 
     def test_revert(self):
         self.c.edit()
         self.c.revert()
         self.checkState(self.sm.AFTER_RESETTING, child=False)
 
-    def test_load_layout(self):
+    def test_set_and_load_layout(self):
         self.c.edit()
         self.checkState(self.sm.EDITABLE, child=False)
-        # self.b.layoutName = 'testSaveLayout'
+
         new_layout = Table(self.c.layout.meta)
         new_layout.name = ["part2"]
         new_layout.mri = ["P45-MRI"]
@@ -129,6 +133,18 @@ class TestManagerController(unittest.TestCase):
         self.assertEqual(self.c.parts['part2'].x, 10)
         self.assertEqual(self.c.parts['part2'].y, 20)
         self.assertEqual(self.c.parts['part2'].visible, True)
+
+        # save the layout, modify and restore it
+        params = {'layoutName': 'testSaveLayout'}
+        params = ManagerController.save.MethodMeta.prepare_input_map(**params)
+        self.c.save(params)
+
+        self.c.edit()
+        new_layout.x = [30]
+        self.b.layout = new_layout
+        self.assertEqual(self.c.parts['part2'].x, 30)
+        self.b.layoutName = 'testSaveLayout'
+        self.assertEqual(self.c.parts['part2'].x, 10)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -8,8 +8,8 @@ from mock import Mock, call
 from time import sleep
 
 # logging
-import logging
-logging.basicConfig(level=logging.DEBUG)
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
 
 # module imports
 from malcolm.core import method_writeable_in, method_takes, \
@@ -22,20 +22,6 @@ from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
 
 class TestRunnableController(unittest.TestCase):
-
-    class RunnableTestPart(RunnableChildPart):
-        if True:
-            @RunnableController.Run
-            def run(self, task, update_completed_steps, params):
-                if params.resume:
-                    task.post(self.child["resume"])
-                else:
-                    task.subscribe(self.child["completedSteps"],
-                                   update_completed_steps)
-                    # pretend that the above subscription has time to fire
-                    update_completed_steps(1)
-                    self.run_future = task.post_async(self.child["run"])
-                task.wait_all(self.run_future)
 
     def checkState(self, state, child=True, parent=True):
         if child:

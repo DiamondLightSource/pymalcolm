@@ -135,7 +135,7 @@ class ManagerController(DefaultController):
             params.layoutName)
 
     def do_save(self, layout_name=None):
-        if layout_name is None:
+        if layout_name is None or layout_name == '':
             layout_name = self.layout_name.value
         structure = self._save_to_structure()
         filename = "/tmp/" + layout_name + ".json"
@@ -154,7 +154,8 @@ class ManagerController(DefaultController):
     def load_layout(self, value):
         # TODO: Look for value in our save file location
         filename = "/tmp/" + value + ".json"
-        structure = json.loads(filename)
+        text = open(filename, "r").read()
+        structure = json.loads(text)
         self._load_from_structure(structure)
         self.layout_name.set_value(value)
 
