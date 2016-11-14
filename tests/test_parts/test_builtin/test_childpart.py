@@ -13,8 +13,7 @@ from time import sleep
 
 # module imports
 from malcolm.core.part import Part
-from malcolm.parts.builtin.childpart import ChildPart, OutportInfo
-from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
+from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core import Process, Table, Task
 from malcolm.controllers.runnablecontroller import RunnableController
@@ -22,6 +21,7 @@ from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core.vmetas.stringmeta import StringMeta
 
 sm = RunnableController.stateMachine
+
 
 class PortsPart(Part):
     in_port = ''
@@ -71,8 +71,7 @@ class TestChildPart(unittest.TestCase):
         return part, controller
 
     def setUp(self):
-        self.s = SyncFactory('threading')
-        self.p = Process('process1', self.s)
+        self.p = Process('process1', SyncFactory('threading'))
 
         self.p1, self.c1 = self.makeChildBlock('child1')
         self.p2, self.c2 = self.makeChildBlock('child2')
@@ -93,11 +92,14 @@ class TestChildPart(unittest.TestCase):
         self.checkState(sm.DISABLED)
         self.p.start()
 
-        retry = 0
-        while retry < 20 and self.c.state.value != sm.IDLE:
-            sleep(.5)
-            retry += 1
+        # wait until block is Ready
+        task = Task("block_ready_task", self.p)
+        task.when_matches(self.c.block["state"], sm.IDLE, timeout=1)
+
         self.checkState(sm.IDLE)
+
+    def tearDown(self):
+        self.p.stop()
 
     def test_init(self):
         # check instantiation of object tree via logger names

@@ -42,12 +42,14 @@ class ChildPart(Part):
 
     @ManagerController.Reset
     def reset(self, task):
-        # Wait until we have finished resetting
-        state = self.child.state
-        if state == sm.RESETTING:
-            task.when_matches(self.child["state"], sm.READY)
-        elif state != sm.READY:
+        try:
             task.post(self.child["reset"])
+        except ValueError:
+            # We get a "ValueError: child is not writeable" if we can't run
+            # reset, probably because the child is already resetting,
+            # so just wait for it to be idle
+            task.when_matches(
+                self.child["state"], sm.READY, bad_values=[sm.FAULT])
 
     @ManagerController.ReportOutports
     def pre_layout(self, _):
