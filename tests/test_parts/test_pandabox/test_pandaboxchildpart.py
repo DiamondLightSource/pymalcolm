@@ -22,13 +22,11 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.child["encoderValue1Capture"] = Mock(value="capture")
         self.child["encoderValue1DatasetName"] = Mock(value="")
         self.child["encoderValue2Capture"] = Mock(value="no")
-        self.child["encoderValue2DatasetName"] = Mock(value="x1.value")
+        self.child["encoderValue2DatasetName"] = Mock(value="x1")
         self.child["encoderValue3Capture"] = Mock(value="capture")
-        self.child["encoderValue3DatasetName"] = Mock(value="x2.value")
-        self.child["counterCapture"] = Mock(value="capture")
-        self.child["counterDatasetName"] = Mock(value="izero")
+        self.child["encoderValue3DatasetName"] = Mock(value="x2")
 
-        self.params = MagicMock()
+        self.params = MagicMock(mri="P:INENC1")
         self.process.get_block.return_value = self.child
         self.o = PandABoxChildPart(self.process, self.params)
         list(self.o.create_attributes())
@@ -38,15 +36,20 @@ class PandABoxChildPartTest(unittest.TestCase):
 
     def test_report_configuration(self):
         dataset_infos = self.o.report_configuration(None)
-        self.assertEqual(len(dataset_infos), 2)
+        self.assertEqual(len(dataset_infos), 1)
         self.assertEqual(dataset_infos[0].name, "x2.value")
-        self.assertEqual(dataset_infos[0].type, "positioner")
+        self.assertEqual(dataset_infos[0].type, "position_value")
         self.assertEqual(dataset_infos[0].rank, 0)
         self.assertEqual(dataset_infos[0].attr, "ENCODER_VALUE3")
-        self.assertEqual(dataset_infos[1].name, "izero")
-        self.assertEqual(dataset_infos[1].type, "monitor")
-        self.assertEqual(dataset_infos[1].rank, 0)
-        self.assertEqual(dataset_infos[1].attr, "COUNTER")
+
+    def test_counter_configuration(self):
+        self.o.params.mri = "P:COUNTER1"
+        dataset_infos = self.o.report_configuration(None)
+        self.assertEqual(len(dataset_infos), 1)
+        self.assertEqual(dataset_infos[0].name, "x2.value")
+        self.assertEqual(dataset_infos[0].type, "monitor")
+        self.assertEqual(dataset_infos[0].rank, 0)
+        self.assertEqual(dataset_infos[0].attr, "ENCODER_VALUE3")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

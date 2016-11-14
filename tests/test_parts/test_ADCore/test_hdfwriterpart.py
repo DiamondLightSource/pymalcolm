@@ -43,7 +43,7 @@ class TestHDFWriterPart(unittest.TestCase):
         }
         infos = self.o.configure(
             task, completed_steps, steps_to_do, part_info, params)
-        self.assertEqual(len(infos), 2)
+        self.assertEqual(len(infos), 5)
         self.assertEquals(infos[0].name, "xspress3.data")
         self.assertEquals(infos[0].filename, "file.h5")
         self.assertEquals(infos[0].type, "primary")
@@ -58,6 +58,24 @@ class TestHDFWriterPart(unittest.TestCase):
         self.assertEquals(infos[1].path, "/entry/sum/sum")
         self.assertEquals(infos[1].uniqueid,
                           "/entry/NDAttributes/NDArrayUniqueId")
+        self.assertEquals(infos[2].name, "energy.value_set")
+        self.assertEquals(infos[2].filename, "file.h5")
+        self.assertEquals(infos[2].type, "position_set")
+        self.assertEquals(infos[2].rank, 0)
+        self.assertEquals(infos[2].path, "/entry/detector/energy_set")
+        self.assertEquals(infos[2].uniqueid, "")
+        self.assertEquals(infos[3].name, "x.value_set")
+        self.assertEquals(infos[3].filename, "file.h5")
+        self.assertEquals(infos[3].type, "position_set")
+        self.assertEquals(infos[3].rank, 0)
+        self.assertEquals(infos[3].path, "/entry/detector/x_set")
+        self.assertEquals(infos[3].uniqueid, "")
+        self.assertEquals(infos[4].name, "y.value_set")
+        self.assertEquals(infos[4].filename, "file.h5")
+        self.assertEquals(infos[4].type, "position_set")
+        self.assertEquals(infos[4].rank, 0)
+        self.assertEquals(infos[4].path, "/entry/detector/y_set")
+        self.assertEquals(infos[4].uniqueid, "")
         self.assertEqual(task.put.call_args_list, [
             call(self.child["positionMode"], True),
             call(self.child["numCapture"], 0)])

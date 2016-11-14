@@ -44,7 +44,7 @@ class HDFWriterPart(ChildPart):
                 "More than one primary datasets defined %s" % filtered_datasets
         return filtered_datasets
 
-    def _create_dataset_infos(self, part_info, filename):
+    def _create_dataset_infos(self, part_info, generator, filename):
         # Update the dataset table
         uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
         ret = []
@@ -75,6 +75,13 @@ class HDFWriterPart(ChildPart):
             ret.append(DatasetProducedInfo(
                 name=name, filename=filename, type=dataset_info.type,
                 rank=dataset_info.rank, path=path, uniqueid=uniqueid))
+
+        # Add any setpoint dimensions
+        for dim in generator.axes:
+            ret.append(DatasetProducedInfo(
+                name="%s.value_set" % dim, filename=filename,
+                type="position_set", rank=0,
+                path="/entry/detector/%s_set" % dim, uniqueid=""))
         return ret
 
     @RunnableController.Reset
@@ -121,7 +128,8 @@ class HDFWriterPart(ChildPart):
         self.array_future = task.when_matches_async(
             self.child["arrayCounter"], 1)
         # Return the dataset information
-        dataset_infos = self._create_dataset_infos(part_info, filename)
+        dataset_infos = self._create_dataset_infos(
+            part_info, params.generator, filename)
         return dataset_infos
 
     @RunnableController.PostRunReady
