@@ -4,7 +4,7 @@ from malcolm.parts.pmac.pmactrajectorypart import MotorInfo, cs_axis_names
 
 
 class CompoundMotorPart(ChildPart):
-    @RunnableController.PreConfigure
+    @RunnableController.ReportStatus
     def report_cs_info(self, _):
         # Split "@asyn(PORT,num)" into ["PORT", "num"]
         split = self.child.outLink.split("(")[1].rstrip(")").split(",")
@@ -21,4 +21,4 @@ class CompoundMotorPart(ChildPart):
             current_position=self.child.position,
             scannable=self.child.scannable
         )
-        return motor_info
+        return [motor_info]

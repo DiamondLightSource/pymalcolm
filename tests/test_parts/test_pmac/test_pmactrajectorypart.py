@@ -90,11 +90,11 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(task.post_async.call_count, 1)
         self.check_resolutions_and_use(task.put_many.call_args_list[0][0][1])
         self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
-            timeArray=[100000, 437500, 100000],
+            timeArray=[100000, 537500, 100000],
             velocityMode=[2, 1, 3],
             userPrograms=[0, 0, 8],
             pointsToBuild=3,
-            positionsA=[0.45, -0.087500000000000008, -0.1375],
+            positionsA=[0.45, -0.08750000000000002, -0.1375],
             positionsB=[0.0, 0.0, 0.0]))
         self.assertEqual(task.post.call_args_list[0],
                          call(self.child["buildProfile"]))
@@ -185,9 +185,9 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         task = self.do_configure(axes_to_scan=["x"], x_pos=-10.1375)
         self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
             timeArray=[
-                100000, 3266667, 3266666, 3266667, 100000],
+                100000, 3300000, 3300000, 3300000, 100000],
             velocityMode=[
-                2, 1, 1, 1, 3],
+                2, 0, 0, 1, 3],
             userPrograms=[
                 0, 0, 0, 0, 8],
             pointsToBuild=5,

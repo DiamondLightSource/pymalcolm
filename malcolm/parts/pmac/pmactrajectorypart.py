@@ -144,7 +144,7 @@ class PMACTrajectoryPart(ChildPart):
             time = np.sqrt(accl_time * dist / motor_info.max_velocity)
         else:
             full_speed_dist = dist - accl_dist
-            time = accl_time + full_speed_dist / motor_info.max_velocity
+            time = accl_time * 2 + full_speed_dist / motor_info.max_velocity
         return time
 
     def update_step(self, scanned, update_completed_steps, task):
@@ -210,7 +210,8 @@ class PMACTrajectoryPart(ChildPart):
             for axis_name, positions in trajectory.items():
                 motor_info = self.axis_mapping[axis_name]
                 start_pos = positions[0]
-                velocity = (start_pos - motor_info.current_position) / move_time
+                dist = start_pos - motor_info.current_position
+                velocity = dist / (move_time - motor_info.acceleration_time)
                 accl_dist = acceleration_time * velocity / 2
                 positions.insert(0, motor_info.current_position + accl_dist)
                 positions.insert(1, start_pos - accl_dist)
@@ -262,8 +263,8 @@ class PMACTrajectoryPart(ChildPart):
                 new_user_programs = user_programs[:i]
                 for _ in range(nsplit):
                     new_time_array.append(t / nsplit)
-                    new_velocity_mode.append(1)
-                    new_user_programs.append(0)
+                    new_velocity_mode.append(PREV_TO_NEXT)
+                    new_user_programs.append(NO_PROGRAM)
                 time_array = new_time_array + time_array[i+1:]
                 user_programs = new_user_programs[:-1] + user_programs[i:]
                 velocity_mode = new_velocity_mode[:-1] + velocity_mode[i:]
