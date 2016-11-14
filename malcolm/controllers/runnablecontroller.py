@@ -324,8 +324,8 @@ class RunnableController(ManagerController):
             self.completed_steps.set_value(min_completed_steps)
 
     @method_writeable_in(
-        sm.IDLE, sm.CONFIGURING, sm.READY, sm.RUNNING, sm.POSTRUN, sm.RESETTING,
-        sm.PAUSED, sm.SEEKING)
+        sm.IDLE, sm.CONFIGURING, sm.READY, sm.RUNNING, sm.POSTRUN, sm.PAUSED,
+        sm.SEEKING)
     def abort(self):
         self.try_stateful_function(sm.ABORTING, sm.ABORTED, self.do_abort)
 

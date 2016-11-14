@@ -19,12 +19,16 @@ class RunnableChildPart(ChildPart):
     @RunnableController.Reset
     def reset(self, task):
         # Wait until we are Idle
-        if self.child.state == sm.RESETTING:
-            task.when_matches(self.child["state"], sm.IDLE)
-        else:
-            if self.child["abort"].writeable:
-                task.post(self.child["abort"])
+        if self.child["abort"].writeable:
+            task.post(self.child["abort"])
+        try:
             task.post(self.child["reset"])
+        except ValueError:
+            # We get a "ValueError: child is not writeable" if we can't run
+            # reset, probably because the child is already resetting,
+            # so just wait for it to be idle
+            task.when_matches(
+                self.child["state"], sm.IDLE, bad_values=[sm.FAULT])
         self.update_configure_validate_args()
 
     @RunnableController.Validate

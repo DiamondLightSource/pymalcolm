@@ -42,12 +42,14 @@ class ChildPart(Part):
 
     @ManagerController.Reset
     def reset(self, task):
-        # Wait until we have finished resetting
-        state = self.child.state
-        if state == sm.RESETTING:
-            task.when_matches(self.child["state"], sm.READY)
-        elif state != sm.READY:
+        try:
             task.post(self.child["reset"])
+        except ValueError:
+            # We get a "ValueError: child is not writeable" if we can't run
+            # reset, probably because the child is already resetting,
+            # so just wait for it to be idle
+            task.when_matches(
+                self.child["state"], sm.READY, bad_values=[sm.FAULT])
 
     @ManagerController.ReportOutports
     def pre_layout(self, _):
@@ -97,8 +99,9 @@ class ChildPart(Part):
         """
         inports = self._get_flowgraph_ports("in")
         futures = []
-        for attr in inports:
-            futures += task.put_many_async(attr, attr.meta.choices[0])
+        for attr, port_tag in inports.items():
+            _, _, type, disconnected_value = port_tag.split(":", 4)
+            futures += task.put_async(attr, disconnected_value)
         task.wait_all(futures)
 
     def find_outports(self, name, part_info):
@@ -122,7 +125,7 @@ class ChildPart(Part):
         inports = self._get_flowgraph_ports("in")
         futures = []
         for attr, port_tag in inports.items():
-            typ = port_tag.split(":")[2]
-            if outports.get(attr.value, None) == typ:
-                futures += task.put_many_async(attr, attr.meta.choices[0])
+            _, _, type, disconnected_value = port_tag.split(":", 4)
+            if outports.get(attr.value, None) == type:
+                futures += task.put_async(attr, disconnected_value)
         task.wait_all(futures)

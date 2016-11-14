@@ -153,7 +153,7 @@ class RunnableStateMachine(ManagerStateMachine):
         # Add Abort to all normal states
         normal_states = [
             self.IDLE, self.READY, self.CONFIGURING, self.RUNNING, self.POSTRUN,
-            self.PAUSED, self.RESETTING, self.SEEKING]
+            self.PAUSED, self.SEEKING]
         for state in normal_states:
             self.set_allowed(state, self.ABORTING)
 

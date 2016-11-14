@@ -55,7 +55,7 @@ class CAPart(Part):
             assert ":" not in params.inportType, \
                 "Inport tag %r should not specify 'flowgraph:inport:' prefix" \
                 % params.inportType
-            tags.append("flowgraph:inport:%s" % params.inportType)
+            tags.append("flowgraph:inport:%s:" % params.inportType)
         return tags
 
     def create_meta(self, description, tags):

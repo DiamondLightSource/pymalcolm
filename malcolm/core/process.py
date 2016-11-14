@@ -96,6 +96,8 @@ class Process(Loggable):
         # Now wait for anything it spawned to complete
         for s in self._other_spawned:
             s.wait(timeout=timeout)
+        # Garbage collect the syncfactory
+        del self.sync_factory
 
     def _forward_block_request(self, request):
         """Lookup target Block and spawn block.handle_request(request)

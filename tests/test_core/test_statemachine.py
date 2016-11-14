@@ -106,7 +106,7 @@ class TestRunnableDeviceStateMachine(unittest.TestCase):
     def test_init(self):
         default_allowed_transitions = OrderedDict()
         default_allowed_transitions['Resetting'] = {
-            "Idle", "Aborting", "Fault", "Disabling"}
+            "Idle", "Fault", "Disabling"}
         default_allowed_transitions['Idle'] = {
             "Configuring", "Aborting", 'Editing', "Fault", "Disabling"}
         default_allowed_transitions['Editing'] = {

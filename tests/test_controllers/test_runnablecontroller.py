@@ -8,34 +8,20 @@ from mock import Mock, call
 from time import sleep
 
 # logging
-import logging
-logging.basicConfig(level=logging.DEBUG)
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
 
 # module imports
 from malcolm.core import method_writeable_in, method_takes, \
         DefaultStateMachine, Block, Controller, REQUIRED
 from malcolm.core.vmetas import BooleanMeta
-from malcolm.core import Process, Part, RunnableStateMachine
+from malcolm.core import Process, Part, RunnableStateMachine, Task
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.controllers.runnablecontroller import RunnableController
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
 
 class TestRunnableController(unittest.TestCase):
-
-    class RunnableTestPart(RunnableChildPart):
-        if True:
-            @RunnableController.Run
-            def run(self, task, update_completed_steps, params):
-                if params.resume:
-                    task.post(self.child["resume"])
-                else:
-                    task.subscribe(self.child["completedSteps"],
-                                   update_completed_steps)
-                    # pretend that the above subscription has time to fire
-                    update_completed_steps(1)
-                    self.run_future = task.post_async(self.child["run"])
-                task.wait_all(self.run_future)
 
     def checkState(self, state, child=True, parent=True):
         if child:
@@ -54,8 +40,7 @@ class TestRunnableController(unittest.TestCase):
     def setUp(self):
         self.maxDiff = 5000
 
-        self.s = SyncFactory('threading')
-        self.p = Process('process1', self.s)
+        self.p = Process('process1', SyncFactory('threading'))
 
         # create a child RunnableController block
         params = RunnableController.MethodMeta.prepare_input_map(
@@ -82,13 +67,14 @@ class TestRunnableController(unittest.TestCase):
         self.checkState(self.sm.DISABLED)
         self.p.start()
 
-        retry = 0
-        while  retry < 20 and self.c.state.value != self.sm.IDLE:
-            sleep(.5)
-            retry += 1
+        # wait until block is Ready
+        task = Task("block_ready_task", self.p)
+        task.when_matches(self.b["state"], self.sm.IDLE, timeout=1)
+
         self.checkState(self.sm.IDLE)
 
-
+    def tearDown(self):
+        self.p.stop()
 
     def test_init(self):
         # the following block attributes should be created by a call to

@@ -28,8 +28,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
     socket = 8881
 
     def setUp(self):
-        self.sf = SyncFactory("sync")
-        self.process = Process("proc", self.sf)
+        self.process = Process("proc", SyncFactory("sync"))
         Hello(self.process, dict(mri="hello"))
         self.process.add_comms(
             WebsocketServerComms(self.process, dict(port=self.socket)))
@@ -69,8 +68,8 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     socket = 8882
 
     def setUp(self):
-        self.sf = SyncFactory("sync")
-        self.process = Process("proc", self.sf)
+        sf = SyncFactory("sync")
+        self.process = Process("proc", sf)
         Hello(self.process, dict(mri="hello"))
         Counter(self.process, dict(mri="counter"))
         self.process.add_comms(
@@ -79,7 +78,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         # If we don't wait long enough, sometimes the websocket_connect()
         # in process2 will hang...
         time.sleep(0.1)
-        self.process2 = Process("proc2", self.sf)
+        self.process2 = Process("proc2", sf)
         self.process2.add_comms(
             WebsocketClientComms(self.process2,
                              dict(hostname="localhost", port=self.socket)))
@@ -88,7 +87,9 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def tearDown(self):
         self.socket += 1
         self.process.stop()
+        del self.process
         self.process2.stop()
+        del self.process2
 
     def test_server_hello_with_malcolm_client(self):
         block2 = self.process2.make_client_block("hello")
