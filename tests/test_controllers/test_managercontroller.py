@@ -14,7 +14,7 @@ from time import sleep
 # module imports
 from malcolm.controllers.managercontroller import ManagerController
 from malcolm.core import method_writeable_in, method_takes, DefaultStateMachine
-from malcolm.core import Process, Part, Table
+from malcolm.core import Process, Part, Table, Task
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.parts.builtin.childpart import ChildPart
 
@@ -28,8 +28,7 @@ class TestManagerController(unittest.TestCase):
             self.assertEqual(self.c.state.value, state)
 
     def setUp(self):
-        self.s = SyncFactory('threading')
-        self.p = Process('process1', self.s)
+        self.p = Process('process1', SyncFactory('threading'))
 
         # create a child ManagerController block
         params = ManagerController.MethodMeta.\
@@ -56,11 +55,14 @@ class TestManagerController(unittest.TestCase):
         self.checkState(self.sm.DISABLED)
         self.p.start()
 
-        retry = 0
-        while retry < 20 and self.c.state.value != self.sm.READY:
-            sleep(.1)
-            retry += 1
+        # wait until block is Ready
+        task = Task("block_ready_task", self.p)
+        task.when_matches(self.b["state"], self.sm.READY, timeout=1)
+
         self.checkState(self.sm.READY)
+
+    def tearDown(self):
+        self.p.stop()
 
     def test_init(self):
 
