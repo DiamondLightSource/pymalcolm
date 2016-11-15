@@ -3,8 +3,8 @@ import pvaccess
 from malcolm.core.loggable import Loggable
 from malcolm.comms.pva.pvautil import PvaUtil
 from malcolm.core import ClientComms, Request
-from malcolm.core.request import Get, Put, Post, Subscribe, Update, Return, Error
-import pvaccess
+from malcolm.core.request import Get, Put, Post, Subscribe
+from malcolm.core.response import Update, Return, Error
 
 
 class PvaClientComms(ClientComms, PvaUtil):
@@ -56,7 +56,8 @@ class PvaClientComms(ClientComms, PvaUtil):
             return_object = Error(id_=request["id"], message="PvAccess error")
 
         self.log_debug("Return object: %s", return_object)
-        self.send_to_caller(return_object)
+        if return_object:
+            self.send_to_caller(return_object)
 
     def execute_get(self, request):
         # Connect to the channel
@@ -126,19 +127,7 @@ class PvaClientComms(ClientComms, PvaUtil):
         self.log_debug("Created subscription")
         c.startMonitor(path)
         self.log_debug("Started monitor")
-        # TODO: This get should not be needed but the initial monitor value does not appear to be returned
-        # Perform a get and record the response
-        response = c.get(path)
-        # Now create the Return object and populate it with the response
-        value = response.toDict(True)
-        if 'typeid' in value:
-            if value['typeid'] == 'malcolm:core/Error:1.0':
-                return_object = Error(id_=request["id"], message=value['message'])
-            else:
-                return_object = Update(id_=request["id"], value=value)
-        else:
-            return_object = Error(id_=request["id"], message="No valid return typeid")
-        return return_object
+        return None
 
 class MonitorHandler(Loggable):
     def __init__(self, id, channel, client):
