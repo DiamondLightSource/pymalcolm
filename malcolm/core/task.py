@@ -46,7 +46,7 @@ class Task(Loggable, Spawnable):
 
     def _save_future(self):
         """ stores the future with unique id"""
-        future = Future(None)
+        future = Future(weakref.proxy(self))
         new_id = self._next_id
         self._next_id += 1
         self._futures[new_id] = future

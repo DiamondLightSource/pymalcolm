@@ -54,7 +54,7 @@ class TestController(unittest.TestCase):
         part_tasks = {part: task}
         hook_queue = self.c.process.create_queue.return_value
         task_return = self.c.make_task_return_value_function(
-            task, hook_queue, part, func_name)
+            hook_queue, part, func_name)
         task_return()
         hook_queue.get.return_value = hook_queue.put.call_args[0][0]
         hook.find_hooked_functions.return_value = {part: func_name}

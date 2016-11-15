@@ -133,7 +133,7 @@ class Controller(Loggable):
     def call_writeable_function(self, function, child, *args):
         with self.lock:
             if not child.writeable:
-                child.log_error("I'm not writeable")
+                child.log_info("I'm not writeable")
                 raise ValueError("Child %r is not writeable" % (child,))
         result = function(*args)
         return result
@@ -241,8 +241,8 @@ class Controller(Loggable):
         return_dict = self.wait_hook(hook_queue, filtered_part_tasks)
         return return_dict
 
-    def make_task_return_value_function(self, weak_task, hook_queue, part,
-                                        func_name, *args, **params):
+    def make_task_return_value_function(self, hook_queue, part, func_name,
+                                        *args, **params):
         func = getattr(part, func_name)
         method_meta = part.method_metas.get(func_name, None)
         filtered_params = {}
@@ -256,7 +256,7 @@ class Controller(Loggable):
         def task_return():
             try:
                 result = method_meta.call_post_function(
-                    func, filtered_params, weak_task, *args)
+                    func, filtered_params, part.task, *args)
             except StopIteration as e:
                 self.log_info("%s has been aborted", func)
                 result = e
@@ -284,9 +284,10 @@ class Controller(Loggable):
         for part, func_name in part_funcs.items():
             task = part_tasks[part]
             filtered_part_tasks[part] = task
-            weak_task = weakref.proxy(task)
+            # TODO: Hacky hacky, make an intermediate object
+            part.task = weakref.proxy(task)
             task_return = self.make_task_return_value_function(
-                weak_task, hook_queue, part, func_name, *args, **params)
+                hook_queue, part, func_name, *args, **params)
             task.define_spawn_function(task_return)
             task.start()
 

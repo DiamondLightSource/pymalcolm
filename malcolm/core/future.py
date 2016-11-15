@@ -32,8 +32,7 @@ class Future(object):
 
     def __init__(self, task):
         """Initializes the future """
-        #self._task = task
-        self._task = None
+        self._task = task
         self._state = RUNNING
         self._result = None
         self._exception = None
