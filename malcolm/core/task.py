@@ -44,12 +44,13 @@ class Task(Loggable, Spawnable):
         # For testing, make it so start() will raise, but stop() works
         self.define_spawn_function(None)
 
-    def _save_future(self, future):
+    def _save_future(self):
         """ stores the future with unique id"""
+        future = Future(None)
         new_id = self._next_id
         self._next_id += 1
         self._futures[new_id] = future
-        return new_id
+        return new_id, future
 
     def _save_subscription(self, endpoint, function, *args):
         """ stores a subscription with unique id"""
@@ -85,8 +86,7 @@ class Task(Loggable, Spawnable):
 
         endpoint = attr.path_relative_to(self.process) + ["value"]
         request = Put(None, self.q, endpoint, value)
-        f = Future(self)
-        new_id = self._save_future(f)
+        new_id, f = self._save_future()
         request.set_id(new_id)
         self.process.q.put(request)
 
@@ -148,8 +148,7 @@ class Task(Loggable, Spawnable):
             Returns: a list of one futures which will complete when
                 all attribute values match the input
         """
-        f = Future(self)
-        self._save_future(f)
+        _, f = self._save_future()
         subscription_ids = []
         subscription_id = self.subscribe(
             attr, match_update, self, f, value, subscription_ids, bad_values)
@@ -185,8 +184,7 @@ class Task(Loggable, Spawnable):
         endpoint = method.path_relative_to(self.process)
 
         request = Post(None, self.q, endpoint, params)
-        f = Future(self)
-        new_id = self._save_future(f)
+        new_id, f = self._save_future()
         request.set_id(new_id)
         self.process.q.put(request)
 
