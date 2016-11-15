@@ -129,7 +129,6 @@ class TestRunnableController(unittest.TestCase):
 
     def test_reset(self):
         self.c.disable()
-        self.c_child.disable()
         self.checkState(self.sm.DISABLED)
         self.c.reset()
         self.checkState(self.sm.IDLE)
