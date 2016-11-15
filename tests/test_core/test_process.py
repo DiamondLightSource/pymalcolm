@@ -99,7 +99,7 @@ class TestProcess(unittest.TestCase):
         spawned = p.spawn(f, "fred", a=0.05)
         p.start()
         p.stop()
-        self.assertEqual(p._other_spawned, [spawned])
+        self.assertEqual(p._other_spawned, [(spawned, f)])
         f.assert_called_once_with("fred", a=0.05)
 
     def test_get(self):
