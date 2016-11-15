@@ -12,11 +12,11 @@ class BlockGui(QTreeView):
     def __init__(self, process, block):
         QTreeView.__init__(self)
         model = BlockModel(process, block)
+        self.setModel(model)
         self.setWindowTitle("%s: imalcolm" % model.block_path[0])
         root = os.path.join(os.path.dirname(__file__), "..", "..")
         icon_path = os.path.join(root, "docs", "malcolm-logo.svg")
         self.setWindowIcon(QIcon(icon_path))
-        self.setModel(model)
         self.setColumnWidth(0, 160)
         self.setColumnWidth(1, 180)
         self.setColumnWidth(2, 25)
@@ -25,7 +25,6 @@ class BlockGui(QTreeView):
         self.setEditTriggers(self.AllEditTriggers)
         self.expanded.connect(self.write_expanded)
         self.collapsed.connect(self.write_collapsed)
-        self.show()
 
     def write_expanded(self, index):
         self._write_group(index, "expanded")

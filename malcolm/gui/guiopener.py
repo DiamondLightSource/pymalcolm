@@ -15,7 +15,6 @@ class GuiOpener(QObject):
         self.open_gui_signal.emit(block, process)
 
     def _open_gui(self, block, process):
-        if block in self.guis:
-            self.guis[block].show()
-        else:
+        if block not in self.guis:
             self.guis[block] = BlockGui(process, block)
+        self.guis[block].show()
