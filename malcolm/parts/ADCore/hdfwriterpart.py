@@ -53,11 +53,12 @@ class HDFWriterPart(ChildPart):
         primary_infos = self._get_dataset_infos(part_info, primary=True)
 
         # Add the primary datasource
+        generator_rank = len(generator.index_dims)
         if primary_infos:
             dataset_info = primary_infos[0]
             ret.append(DatasetProducedInfo(
                 name="%s.data" % dataset_info.name, filename=filename,
-                type=dataset_info.type, rank=dataset_info.rank,
+                type=dataset_info.type, rank=dataset_info.rank + generator_rank,
                 path="/entry/detector/detector",
                 uniqueid=uniqueid))
 
@@ -69,18 +70,20 @@ class HDFWriterPart(ChildPart):
                 assert primary_infos, \
                     "Needed a primary dataset for secondary"
                 name = "%s.%s" % (primary_infos[0].name, dataset_info.name)
+                rank = primary_infos[0].rank + generator_rank
             else:
                 # something like x.value or izero
                 name = dataset_info.name
+                rank = dataset_info.rank + generator_rank
             ret.append(DatasetProducedInfo(
                 name=name, filename=filename, type=dataset_info.type,
-                rank=dataset_info.rank, path=path, uniqueid=uniqueid))
+                rank=rank, path=path, uniqueid=uniqueid))
 
         # Add any setpoint dimensions
         for dim in generator.axes:
             ret.append(DatasetProducedInfo(
                 name="%s.value_set" % dim, filename=filename,
-                type="position_set", rank=0,
+                type="position_set", rank=1,
                 path="/entry/detector/%s_set" % dim, uniqueid=""))
         return ret
 
@@ -247,6 +250,9 @@ class HDFWriterPart(ChildPart):
                       source="constant", value="SDS", type="string")
         # Now add some additional sources of data
         for dataset_info in self._get_dataset_infos(part_info, primary=False):
+            # if we are a secondary source, use the same rank as the det
+            if dataset_info.type == "secondary":
+                dataset_info.rank = primary_rank
             attr_el = self._make_nxdata(
                 dataset_info, entry_el, generator, link=True)
             ET.SubElement(attr_el, "dataset", name=dataset_info.name,

@@ -47,33 +47,33 @@ class TestHDFWriterPart(unittest.TestCase):
         self.assertEquals(infos[0].name, "xspress3.data")
         self.assertEquals(infos[0].filename, "file.h5")
         self.assertEquals(infos[0].type, "primary")
-        self.assertEquals(infos[0].rank, 2)
+        self.assertEquals(infos[0].rank, 4)
         self.assertEquals(infos[0].path, "/entry/detector/detector")
         self.assertEquals(infos[0].uniqueid,
                           "/entry/NDAttributes/NDArrayUniqueId")
         self.assertEquals(infos[1].name, "xspress3.sum")
         self.assertEquals(infos[1].filename, "file.h5")
         self.assertEquals(infos[1].type, "secondary")
-        self.assertEquals(infos[1].rank, 0)
+        self.assertEquals(infos[1].rank, 4)
         self.assertEquals(infos[1].path, "/entry/sum/sum")
         self.assertEquals(infos[1].uniqueid,
                           "/entry/NDAttributes/NDArrayUniqueId")
         self.assertEquals(infos[2].name, "energy.value_set")
         self.assertEquals(infos[2].filename, "file.h5")
         self.assertEquals(infos[2].type, "position_set")
-        self.assertEquals(infos[2].rank, 0)
+        self.assertEquals(infos[2].rank, 1)
         self.assertEquals(infos[2].path, "/entry/detector/energy_set")
         self.assertEquals(infos[2].uniqueid, "")
         self.assertEquals(infos[3].name, "x.value_set")
         self.assertEquals(infos[3].filename, "file.h5")
         self.assertEquals(infos[3].type, "position_set")
-        self.assertEquals(infos[3].rank, 0)
+        self.assertEquals(infos[3].rank, 1)
         self.assertEquals(infos[3].path, "/entry/detector/x_set")
         self.assertEquals(infos[3].uniqueid, "")
         self.assertEquals(infos[4].name, "y.value_set")
         self.assertEquals(infos[4].filename, "file.h5")
         self.assertEquals(infos[4].type, "position_set")
-        self.assertEquals(infos[4].rank, 0)
+        self.assertEquals(infos[4].rank, 1)
         self.assertEquals(infos[4].path, "/entry/detector/y_set")
         self.assertEquals(infos[4].uniqueid, "")
         self.assertEqual(task.put.call_args_list, [
@@ -141,7 +141,7 @@ class TestHDFWriterPart(unittest.TestCase):
 </group>
 <group name="sum">
 <attribute name="signal" source="constant" type="string" value="sum" />
-<attribute name="axes" source="constant" type="string" value="energy_set,." />
+<attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_set_indices" source="constant" type="string" value="0" />
 <hardlink name="energy_set" target="/entry/detector/energy_set" />
