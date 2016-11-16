@@ -6,6 +6,7 @@ from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.blockmeta import BlockMeta
 from malcolm.core.hook import Hook, get_hook_decorated
+from malcolm.core.hookrunner import HookRunner
 from malcolm.core.loggable import Loggable
 from malcolm.core.methodmeta import method_takes, MethodMeta, REQUIRED, \
     get_method_decorated
@@ -236,37 +237,10 @@ class Controller(Loggable):
         return part_tasks
 
     def run_hook(self, hook, part_tasks, *args, **params):
-        hook_queue, filtered_part_tasks = self.start_hook(
+        hook_queue, hook_runners = self.start_hook(
             hook, part_tasks, *args, **params)
-        return_dict = self.wait_hook(hook_queue, filtered_part_tasks)
+        return_dict = self.wait_hook(hook_queue, hook_runners)
         return return_dict
-
-    def make_task_return_value_function(self, hook_queue, part, func_name,
-                                        *args, **params):
-        func = getattr(part, func_name)
-        method_meta = part.method_metas.get(func_name, None)
-        filtered_params = {}
-        if method_meta is None:
-            method_meta = MethodMeta()
-            method_meta.set_logger_name("MethodMeta")
-        for k, v in params.items():
-            if k in method_meta.takes.elements:
-                filtered_params[k] = v
-
-        def task_return():
-            try:
-                result = method_meta.call_post_function(
-                    func, filtered_params, part.task, *args)
-            except StopIteration as e:
-                self.log_info("%s has been aborted", func)
-                result = e
-            except Exception as e:  # pylint:disable=broad-except
-                self.log_exception("%s %s raised exception", func, params)
-                result = e
-            self.log_debug("Putting %r on queue", result)
-            hook_queue.put((part, result))
-
-        return task_return
 
     def start_hook(self, hook, part_tasks, *args, **params):
         assert hook in self.hook_names, \
@@ -276,43 +250,39 @@ class Controller(Loggable):
 
         # ask the hook to find the functions it should run
         part_funcs = hook.find_hooked_functions(self.parts)
-
-        filtered_part_tasks = {}
+        hook_runners = {}
 
         # now start them off
         hook_queue = self.process.create_queue()
         for part, func_name in part_funcs.items():
-            task = part_tasks[part]
-            filtered_part_tasks[part] = task
-            # TODO: Hacky hacky, make an intermediate object
-            part.task = weakref.proxy(task)
-            task_return = self.make_task_return_value_function(
-                hook_queue, part, func_name, *args, **params)
-            task.define_spawn_function(task_return)
-            task.start()
+            task = weakref.proxy(part_tasks[part])
+            hook_runner = HookRunner(
+                hook_queue, part, func_name, task, *args, **params)
+            hook_runner.start()
+            hook_runners[part] = hook_runner
 
-        return hook_queue, filtered_part_tasks
+        return hook_queue, hook_runners
 
-    def wait_hook(self, hook_queue, filtered_part_tasks):
+    def wait_hook(self, hook_queue, hook_runners):
         # Wait for them all to finish
         return_dict = {}
-        while filtered_part_tasks:
+        while hook_runners:
             part, ret = hook_queue.get()
-            task = filtered_part_tasks.pop(part)
+            hook_runner = hook_runners.pop(part)
             return_dict[part.name] = ret
             self.log_debug("Part %s returned %s" % (part.name, ret))
 
             if isinstance(ret, Exception):
                 # Stop all other tasks
-                for task in filtered_part_tasks.values():
-                    task.stop()
-                for task in filtered_part_tasks.values():
-                    task.wait()
+                for h in hook_runners.values():
+                    h.stop()
+                for h in hook_runners.values():
+                    h.wait()
 
             # If we got a StopIteration, someone asked us to stop, so
             # don't wait, otherwise make sure we finished
             if not isinstance(ret, StopIteration):
-                task.wait()
+                hook_runner.wait()
 
             if isinstance(ret, Exception):
                 raise ret

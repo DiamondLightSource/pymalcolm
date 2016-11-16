@@ -11,9 +11,7 @@ from mock import MagicMock, call, ANY
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.core import MethodMeta
 from malcolm.core.controller import Controller
-from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta
 
 
 class TestController(unittest.TestCase):
@@ -53,10 +51,14 @@ class TestController(unittest.TestCase):
         setattr(part, func_name, func)
         part_tasks = {part: task}
         hook_queue = self.c.process.create_queue.return_value
-        task_return = self.c.make_task_return_value_function(
-            hook_queue, part, func_name)
-        task_return()
-        hook_queue.get.return_value = hook_queue.put.call_args[0][0]
+
+        def side_effect():
+            task_return = task.define_spawn_function.call_args[0][0]
+            task_return()
+            return hook_queue.put.call_args[0][0]
+
+        hook_queue.get.side_effect = side_effect
+
         hook.find_hooked_functions.return_value = {part: func_name}
         self.c.hook_names = {hook: "test_hook"}
         return part_tasks
