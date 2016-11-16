@@ -16,7 +16,7 @@ BlockChanges = namedtuple("BlockChanges", "changes")
 BlockRespond = namedtuple("BlockRespond", "response, response_queue")
 BlockAdd = namedtuple("BlockAdd", "block, name, controller")
 BlockList = namedtuple("BlockList", "client_comms, blocks")
-AddSpawned = namedtuple("AddSpawned", "spawned")
+AddSpawned = namedtuple("AddSpawned", "spawned, function")
 
 
 class Process(Loggable):
@@ -94,7 +94,7 @@ class Process(Loggable):
         # Wait for recv_loop to complete first
         self._recv_spawned.wait(timeout=timeout)
         # Now wait for anything it spawned to complete
-        for s in self._other_spawned:
+        for s, _ in self._other_spawned:
             s.wait(timeout=timeout)
         # Garbage collect the syncfactory
         del self.sync_factory
@@ -107,8 +107,8 @@ class Process(Loggable):
         """
         block_name = request.endpoint[0]
         block = self._blocks[block_name]
-        self._other_spawned.append(
-            self.sync_factory.spawn(block.handle_request, request))
+        spawned = self.sync_factory.spawn(block.handle_request, request)
+        self._add_spawned(AddSpawned(spawned, block.handle_request))
 
     def create_queue(self):
         """
@@ -139,18 +139,18 @@ class Process(Loggable):
                     "Exception calling %s(*%s, **%s)", function, args, kwargs)
                 raise
         spawned = self.sync_factory.spawn(catching_function)
-        request = AddSpawned(spawned)
+        request = AddSpawned(spawned, function)
         self.q.put(request)
         return spawned
 
     def _add_spawned(self, request):
         spawned = self._other_spawned
         self._other_spawned = []
-        spawned.append(request.spawned)
+        spawned.append((request.spawned, request.function))
         # Filter out the spawned that have completed to stop memory leaks
-        for sp in spawned:
+        for sp, f in spawned:
             if not sp.ready():
-                self._other_spawned.append(sp)
+                self._other_spawned.append((sp, f))
 
     def get_client_comms(self, block_name):
         for client_comms, blocks in list(self._client_comms.items()):
@@ -189,7 +189,6 @@ class Process(Loggable):
             *request.changes)
 
         # Send out the changes
-        self.log_debug("Changes %s are %s", request.changes, subscription_changes)
         for subscription, changes in subscription_changes.items():
             if subscription.delta:
                 # respond with the filtered changes

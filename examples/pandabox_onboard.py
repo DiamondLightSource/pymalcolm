@@ -14,7 +14,7 @@ from malcolm.includes.pandabox.hardware_collection import hardware_collection
 # Input params
 HOSTNAME = "localhost"
 PORT = 8888
-WSPORT = 8081
+WSPORT = 8080
 
 # Make the top level objects
 sf = SyncFactory("Sync")

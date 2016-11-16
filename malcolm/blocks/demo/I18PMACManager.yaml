@@ -1,0 +1,32 @@
+- parameters.string:
+    name: mriPrefix
+    description: MRI for created block
+
+- controllers.RunnableController:
+    mri: $(mriPrefix)
+
+#- includes.pmac.compoundmotor_collection:
+#    mri: I18-T1-X
+#    prefix: BL18I-MO-TABLE-01:CSX
+#    scannable: t1x
+
+- includes.pmac.compoundmotor_collection:
+    mri: I18-T1-Y
+    prefix: BL18I-MO-TABLE-01:HEIGHT
+    scannable: t1y
+
+- includes.pmac.rawmotor_collection:
+    mri: I18-T1-X
+    prefix: BL18I-MO-STEP-06:GB:M1
+    motorPrefix: BL18I-MO-TABLE-01:X
+    scannable: t1x
+
+#- includes.pmac.rawmotor_collection:
+#   mri: I18-T1-Y
+#    prefix: BL18I-MO-STEP-06:GB:M3
+#    motorPrefix: BL18I-MO-TABLE-01:Y1
+#    scannable: t1y
+
+- includes.pmac.trajectory_collection:
+    mri: $(mriPrefix)-TRAJ
+    prefix: BL18I-MO-STEP-06:GB

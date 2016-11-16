@@ -5,7 +5,8 @@ from malcolm.core.vmetas import StringArrayMeta, ChoiceArrayMeta, TableMeta, \
 from malcolm.controllers.runnablecontroller import RunnableController
 
 # Make a table for the dataset info we produce
-dataset_types = ["primary", "secondary", "monitor", "positioner"]
+dataset_types = [
+    "primary", "secondary", "monitor", "position_set", "position_value"]
 columns = OrderedDict()
 columns["name"] = StringArrayMeta("Dataset name")
 columns["filename"] = StringArrayMeta(

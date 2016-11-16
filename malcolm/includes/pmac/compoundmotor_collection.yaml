@@ -1,0 +1,20 @@
+- parameters.string:
+    name: mri
+    description: Malcolm resource id of the RawMotor Block
+
+- parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- parameters.string:
+    name: scannable
+    description: The scannable name for GDA of this motor
+
+- blocks.pmac.CompoundMotor:
+    mri: $(mri)
+    prefix: $(prefix)
+    scannable: $(scannable)
+
+- parts.pmac.CompoundMotorPart:
+    name: $(mri)
+    mri: $(mri)

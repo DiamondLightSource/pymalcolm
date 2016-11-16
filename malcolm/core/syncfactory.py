@@ -14,8 +14,8 @@ class SyncFactory(Loggable):
             name(str): Logger name e.g. "Sync"
         """
         self.set_logger_name(name)
-        # 32 threads should be enough for anyone!
-        self.pool = ThreadPool(64)
+        # Need at least as many threads as concurrent blocks...
+        self.pool = ThreadPool(128)
 
     def spawn(self, function, *args, **kwargs):
         """Runs the function in a worker thread, returning a Result object

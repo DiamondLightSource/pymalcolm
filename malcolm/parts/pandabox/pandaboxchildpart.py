@@ -21,16 +21,16 @@ class PandABoxChildPart(ChildPart):
             dataset_name = self.child[dataset_attr_name].value
             if dataset_name == "":
                 return
-            elif "." in dataset_name:
-                assert dataset_name.endswith(".value"), \
-                    "Positioner %r should end in '.value'" % dataset_name
-                dataset_type = "positioner"
+            elif "INENC" in self.params.mri:
+                dataset_type = "position_value"
             else:
                 dataset_type = "monitor"
+            assert "." not in dataset_name, \
+                "Dataset name should not contain '.'"
 
             uppercase_attr = re.sub("([A-Z])", r"_\1", attr_name).upper()
             return DatasetSourceInfo(
-                name=dataset_name,
+                name="%s.value" % dataset_name,
                 type=dataset_type,
                 rank=0,
                 attr=uppercase_attr)

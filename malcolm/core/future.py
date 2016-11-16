@@ -1,5 +1,3 @@
-import weakref
-
 # Possible future states (for internal use).
 RUNNING = 'RUNNING'
 #  Task has set the return or exception and this future is filled
@@ -34,7 +32,7 @@ class Future(object):
 
     def __init__(self, task):
         """Initializes the future """
-        self._task = weakref.proxy(task)
+        self._task = task
         self._state = RUNNING
         self._result = None
         self._exception = None

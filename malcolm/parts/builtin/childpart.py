@@ -40,6 +40,11 @@ class ChildPart(Part):
         self.child = self.process.get_block(params.mri)
         self.part_visible = {}
 
+    @ManagerController.Disable
+    def disable(self, task):
+        if self.child["disable"].writeable:
+            task.post(self.child["disable"])
+
     @ManagerController.Reset
     def reset(self, task):
         try:
