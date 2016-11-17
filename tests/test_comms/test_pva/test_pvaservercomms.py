@@ -1,8 +1,9 @@
 import unittest
 from mock import Mock, MagicMock, patch, call
 from collections import OrderedDict
+import threading
 
-from malcolm.core.response import Error, Return, Delta
+from malcolm.core.response import Error, Return, Delta, Update
 from malcolm.core.request import Post
 import pvaccess
 pvaccess.PvaServer = MagicMock()
@@ -51,124 +52,173 @@ class TestPVAServerComms(unittest.TestCase):
         pvaccess.Endpoint = MagicMock()
         pvaccess.PvObject = PvTempObject
         self.p = MagicMock()
+        self.p.name = "ProcessName"
 
     @patch('malcolm.comms.pva.pvaservercomms.PvaRpcImplementation')
     def test_pva_endpoint(self, mock_rpc):
         pva_server_mock = MagicMock()
         server_mock = MagicMock()
+        server_mock._get_unique_id = MagicMock(return_value=1)
         pvaccess.Endpoint.registerEndpointGet = MagicMock()
         pvaccess.Endpoint.registerEndpointPut = MagicMock()
         pvaccess.Endpoint.registerEndpointRPC = MagicMock()
         pvaccess.Endpoint.registerEndpointMonitor = MagicMock()
         endpoint = PvaEndpoint("test.name", "test.block", pva_server_mock, server_mock)
+        # Test calling of get
         request = MagicMock()
+        request.toDict = MagicMock(return_value = {"name1": "val1"})
         endpoint.get_callback(request)
-        server_mock.get_request.assert_has_calls([call("test.block", request)])
-        request = MagicMock()
-        endpoint.rpc_callback(request)
         server_mock._get_unique_id.assert_called_once()
-        server_mock.register_rpc.assert_called_once()
+        server_mock.register_get.assert_called_once()
+        server_mock.remove_get.assert_called_once()
         server_mock.reset_mock()
+        # Test calling of put
+        request = MagicMock()
+        request.toDict = MagicMock(return_value={"name1": "val1"})
         endpoint.put_callback(request)
         server_mock._get_unique_id.assert_called_once()
-        server_mock.register_put.assert_called_once()
-        server_mock.get_request.assert_has_calls([call("test.block", request)])
+        server_mock.register_get.assert_called_once()
+        server_mock.remove_get.assert_called_once()
         server_mock.reset_mock()
+        # Test calling of monitor
         request = MagicMock()
+        request.toDict = MagicMock(return_value={"name1": "val1"})
         endpoint.monitor_callback(request)
         server_mock._get_unique_id.assert_called_once()
-        server_mock.register_monitor.assert_called_once()
-        server_mock.get_request.assert_has_calls([call("test.block", request)])
+        server_mock.register_get.assert_called_once()
+        server_mock.remove_get.assert_called_once()
+        server_mock.reset_mock()
+#        request = MagicMock()
+#        endpoint.rpc_callback(request)
+#        server_mock._get_unique_id.assert_called_once()
+#        server_mock.register_rpc.assert_called_once()
+#        server_mock.reset_mock()
+#        endpoint.put_callback(request)
+#        server_mock._get_unique_id.assert_called_once()
+#        server_mock.register_put.assert_called_once()
+#        server_mock.get_request.assert_has_calls([call("test.block", request)])
+#        server_mock.reset_mock()
+#        request = MagicMock()
+#        endpoint.monitor_callback(request)
+#        server_mock._get_unique_id.assert_called_once()
+#        server_mock.register_monitor.assert_called_once()
+#        server_mock.get_request.assert_has_calls([call("test.block", request)])
 
     def test_pva_get_implementation(self):
         server = MagicMock()
         server.get_request = MagicMock(return_value="test_return_1")
         request = MagicMock()
-        pva = PvaGetImplementation("test.name", request, "test.block", server)
-        server.get_request.assert_called_with("test.block", request)
-        self.assertEqual(pva.getPVStructure(), "test_return_1")
-        server.get_request = MagicMock(return_value="test_return_2")
+        pva = PvaGetImplementation(1, request, "test.block", server)
+        self.assertEqual(pva._id, 1)
+        self.assertEqual(pva._block, "test.block")
+        self.assertEqual(pva._request, request)
+        self.assertEqual(pva._server, server)
+        pva._pv_structure = "structure"
+        self.assertEqual(pva.getPVStructure(), "structure")
         pva.get()
-        server.get_request.assert_called_with("test.block", request)
-        self.assertEqual(pva.getPVStructure(), "test_return_2")
-        self.assertEqual(pva._name, "test.name")
+        #server.get_request.assert_called_with("test.block", request)
+        #self.assertEqual(pva.getPVStructure(), "test_return_1")
+        #server.get_request = MagicMock(return_value="test_return_2")
+        #pva.get()
+        #server.get_request.assert_called_with("test.block", request)
+        #self.assertEqual(pva.getPVStructure(), "test_return_2")
+        #self.assertEqual(pva._name, "test.name")
 
     def test_pva_put_implementation(self):
         server = MagicMock()
         server.get_request = MagicMock(return_value="test_return_1")
         request = MagicMock()
-        pva = PvaPutImplementation(1, "test.name", request, "test.block", server)
-        self.assertEqual(pva._name, "test.name")
-        server.get_request.assert_called_with("test.block", request)
-        self.assertEqual(pva.getPVStructure(), "test_return_1")
-        path = pva.dict_to_path({'p1': {'p2': {'p3': 'v3'}}})
-        self.assertEqual(path, ['p1', 'p2', 'p3'])
-        value = pva.dict_to_value({'p1': {'p2': {'p3': 'v3'}}})
-        self.assertEqual(value, 'v3')
-        pva._lock = MagicMock()
-        pva._event = MagicMock()
-        pva.check_lock()
-        pva._lock.acquire.assert_has_calls([call(False)])
-        pva.wait_for_reply()
-        pva._event.wait.assert_called_once()
-        response = MagicMock()
-        pva.notify_reply(response)
-        pva._event.set.assert_called_once()
-        self.assertEqual(pva._response, response)
-        server.get_request = MagicMock(return_value="test_return_2")
-        pva.get()
-        server.get_request.assert_called_with("test.block", request)
-        self.assertEqual(pva.getPVStructure(), "test_return_2")
-        pva.dict_to_path = MagicMock()
-        pva.dict_to_value = MagicMock()
-        pv = MagicMock()
-        pva.put(pv)
-        pva.dict_to_path.assert_called_once()
-        pva.dict_to_value.assert_called_once()
-        server.send_to_process.assert_called_once()
-        server.remove_put.assert_called_once()
-
-    def test_pva_rpc_implementation(self):
-        self.p = MagicMock()
-        pva = PvaRpcImplementation(1, self.p, "test.block", "test.method")
+        pva = PvaPutImplementation(1, request, "test.block", server)
         self.assertEqual(pva._id, 1)
         self.assertEqual(pva._block, "test.block")
-        self.assertEqual(pva._method, "test.method")
-        self.assertEqual(pva._server, self.p)
+        self.assertEqual(pva._request, request)
+        self.assertEqual(pva._server, server)
+        pva._pv_structure = "structure"
+        self.assertEqual(pva.getPVStructure(), "structure")
+        pv = MagicMock()
+        pv.toDict =MagicMock(return_value={"item1": {"item2": {}}})
+        pva.put(pv)
+        server.register_put.assert_called_once()
+        pv.toDict.assert_called_once()
+        server.send_to_process.assert_called_once()
 
+        #server.get_request.assert_called_with("test.block", request)
+        #self.assertEqual(pva.getPVStructure(), "test_return_1")
+        #path = pva.dict_to_path({'p1': {'p2': {'p3': 'v3'}}})
+        #self.assertEqual(path, ['p1', 'p2', 'p3'])
+        #value = pva.dict_to_value({'p1': {'p2': {'p3': 'v3'}}})
+        #self.assertEqual(value, 'v3')
+        #pva._lock = MagicMock()
+        #pva._event = MagicMock()
+        #pva.check_lock()
+        #pva._lock.acquire.assert_has_calls([call(False)])
+        #pva.wait_for_reply()
+        #pva._event.wait.assert_called_once()
+        #response = MagicMock()
+        #pva.notify_reply(response)
+        #pva._event.set.assert_called_once()
+        #self.assertEqual(pva._response, response)
+        #server.get_request = MagicMock(return_value="test_return_2")
+        #pva.get()
+        #server.get_request.assert_called_with("test.block", request)
+        #self.assertEqual(pva.getPVStructure(), "test_return_2")
+        #pva.dict_to_path = MagicMock()
+        #pva.dict_to_value = MagicMock()
+        #pv = MagicMock()
+        #pva.put(pv)
+        #pva.dict_to_path.assert_called_once()
+        #pva.dict_to_value.assert_called_once()
+        #server.send_to_process.assert_called_once()
+        #server.remove_put.assert_called_once()
+
+    def test_pva_rpc_implementation(self):
+        server = MagicMock()
+        request = {"method": "test_method"}
+        pva = PvaRpcImplementation(1, request, "test.block", server)
+        self.assertEqual(pva._id, 1)
+        self.assertEqual(pva._block, "test.block")
+        self.assertEqual(pva._request, request)
+        self.assertEqual(pva._server, server)
+        self.assertEqual(pva._method, "test_method")
+        pre_parse = {"dict1": {"item1", 1}, "list1": [1, 2, 3], "tuple1": ({"item2": 2, "item3": 3}, 2)}
+        post_parse = {"dict1": {"item1", 1}, "list1": [1, 2, 3], "tuple1": {"item2": 2, "item3": 3}}
+        self.assertEqual(pva.parse_variants(pre_parse), post_parse)
         response = Return(id_=2, value="test.value")
         pva.notify_reply(response)
-        self.pv = MagicMock()
-        pva.execute(self.pv)
-        self.p.process.q.put.assert_called_once()
-        self.pv.toDict.assert_called_once()
-
+        pv = MagicMock()
+        pva.execute(pv)
+        server.process.q.put.assert_called_once()
+        pv.toDict.assert_called_once()
         pva._lock = MagicMock()
         pva.check_lock()
         pva._lock.acquire.assert_has_calls([call(False)])
-
         pva._event = MagicMock()
         pva.wait_for_reply()
         pva._event.wait.assert_called_once()
 
     def test_pva_monitor_implementation(self):
         request = MagicMock()
+        request.toDict = MagicMock(return_value={"item1": {"item2": {}}})
         server = MagicMock()
         structure = MagicMock()
-        server.get_request = MagicMock(return_value=structure)
         pva = PvaMonitorImplementation(1, request, "test.block", server)
         self.assertEqual(pva._id, 1)
         self.assertEqual(pva._block, "test.block")
-        self.assertEqual(pva._server, server)
         self.assertEqual(pva._request, request)
+        self.assertEqual(pva._server, server)
         self.assertEqual(pva.get_block(), "test.block")
-        server.get_request.assert_called_with("test.block", request)
+        pva._pv_structure = structure
         self.assertEqual(pva.getPVStructure(), structure)
         pva.mu = MagicMock()
         pva.mu.update = MagicMock()
         self.assertEqual(pva.getUpdater(), pva.mu)
-        pva.update([["a", "b", "c"], ["d", "e", "f"]])
-        pva.notify_updates()
+        pva.send_subscription()
+        server.send_to_process.assert_called_once()
+        pva.update([[["a", "b", "c"], "val1"], [["d", "e", "f"], "val2"]])
+        #pva.notify_updates()
+        pva.mu.update.assert_not_called()
+        pva._pv_structure.hasField = MagicMock(return_value=True)
+        pva.update([[["a", "b", "c"], "val3"], [["d", "e", "f"], "val4"]])
         pva.mu.update.assert_called_once()
 
     def test_init(self):
@@ -180,38 +230,39 @@ class TestPVAServerComms(unittest.TestCase):
     def test_unique_id(self):
         self.PVA = PvaServerComms(self.p)
 
-        self.assertEqual(self.PVA._get_unique_id(), 2)
-        self.assertEqual(self.PVA._get_unique_id(), 3)
-        self.assertEqual(self.PVA._get_unique_id(), 4)
-        self.assertEqual(self.PVA._get_unique_id(), 5)
+        starting_id = self.PVA._current_id
+        self.assertEqual(self.PVA._get_unique_id(), starting_id+1)
+        self.assertEqual(self.PVA._get_unique_id(), starting_id+2)
+        self.assertEqual(self.PVA._get_unique_id(), starting_id+3)
+        self.assertEqual(self.PVA._get_unique_id(), starting_id+4)
 
-    def test_update_block_list(self):
+    def test_update_local_block_list(self):
         self.PVA = PvaServerComms(self.p)
         self.PVA._add_new_pva_channel = MagicMock()
 
-        self.PVA._cache = {"block1": 1, "block2": 2, "block3": 3}
-        self.PVA._update_block_list()
+        self.PVA._update_local_block_list({"block1": 1, "block2": 2, "block3": 3})
 
         calls = [call("block3"), call("block2"), call("block1")]
         self.PVA._add_new_pva_channel.assert_has_calls(calls, any_order=True)
 
         self.PVA._add_new_pva_channel.reset_mock()
-        self.PVA._cache = {"block1": 1, "block2": 2, "block3": 3, "block4": 4}
-        self.PVA._update_block_list()
+        self.PVA._update_local_block_list({"block1": 1, "block2": 2, "block3": 3, "block4": 4})
         calls = [call("block4")]
         self.PVA._add_new_pva_channel.assert_has_calls(calls, any_order=True)
 
-    def test_update_cache(self):
+    def test_update_remote_block_list(self):
         self.PVA = PvaServerComms(self.p)
         self.PVA._add_new_pva_channel = MagicMock()
 
-        request = Delta(id_=1, changes=[[["block1"], 1], [["block2"], 2], [["block3"], 3]])
-        self.PVA._update_cache(request)
+        self.PVA._update_local_block_list({"block1": 1, "block2": 2, "block3": 3})
 
-        calls = [call("block1"), call("block2"), call("block3")]
+        calls = [call("block3"), call("block2"), call("block1")]
         self.PVA._add_new_pva_channel.assert_has_calls(calls, any_order=True)
 
-        self.assertEqual(self.PVA._cache, {"block1": 1, "block2": 2, "block3": 3})
+        self.PVA._add_new_pva_channel.reset_mock()
+        self.PVA._update_local_block_list({"block1": 1, "block2": 2, "block3": 3, "block4": 4})
+        calls = [call("block4")]
+        self.PVA._add_new_pva_channel.assert_has_calls(calls, any_order=True)
 
     def test_send_to_client(self):
         self.PVA = PvaServerComms(self.p)
@@ -226,9 +277,70 @@ class TestPVAServerComms(unittest.TestCase):
         response2 = Error(id_=2)
         self.PVA.send_to_client(response2)
         rpc_mock2.notify_reply.assert_has_calls([call(response2)])
-        response3 = Delta(id_=3)
+        response3 = Return(id_=3)
         self.PVA.send_to_client(response3)
-        self.PVA._update_cache.assert_has_calls([call(response3)])
+        rpc_mock1.notify_reply.assert_has_calls([call(response1)])
+        rpc_mock2.notify_reply.assert_has_calls([call(response2)])
+        # Gets
+        get_mock1 = MagicMock()
+        get_mock2 = MagicMock()
+        self.PVA._gets[3] = get_mock1
+        self.PVA._gets[4] = get_mock2
+        response1 = Return(id_=3)
+        self.PVA.send_to_client(response1)
+        get_mock1.notify_reply.assert_has_calls([call(response1)])
+        response2 = Error(id_=4)
+        self.PVA.send_to_client(response2)
+        get_mock2.notify_reply.assert_has_calls([call(response2)])
+        response3 = Return(id_=5)
+        self.PVA.send_to_client(response3)
+        get_mock1.notify_reply.assert_has_calls([call(response1)])
+        get_mock2.notify_reply.assert_has_calls([call(response2)])
+        # Puts
+        put_mock1 = MagicMock()
+        put_mock2 = MagicMock()
+        self.PVA._puts[5] = put_mock1
+        self.PVA._puts[6] = put_mock2
+        response1 = Return(id_=5)
+        self.PVA.send_to_client(response1)
+        put_mock1.notify_reply.assert_has_calls([call(response1)])
+        response2 = Error(id_=6)
+        self.PVA.send_to_client(response2)
+        put_mock2.notify_reply.assert_has_calls([call(response2)])
+        response3 = Return(id_=7)
+        self.PVA.send_to_client(response3)
+        put_mock1.notify_reply.assert_has_calls([call(response1)])
+        put_mock2.notify_reply.assert_has_calls([call(response2)])
+        # Monitors
+        mon_mock1 = MagicMock()
+        mon_mock2 = MagicMock()
+        self.PVA._monitors[7] = mon_mock1
+        self.PVA._monitors[8] = mon_mock2
+        response1 = Return(id_=7)
+        self.PVA.send_to_client(response1)
+        mon_mock1.notify_reply.assert_has_calls([call(response1)])
+        response2 = Error(id_=8)
+        self.PVA.send_to_client(response2)
+        mon_mock2.notify_reply.assert_has_calls([call(response2)])
+        response3 = Return(id_=9)
+        self.PVA.send_to_client(response3)
+        mon_mock1.notify_reply.assert_has_calls([call(response1)])
+        mon_mock2.notify_reply.assert_has_calls([call(response2)])
+        # Delta
+        mon_mock3 = MagicMock()
+        self.PVA._monitors[9] = mon_mock3
+        response3 = Delta(id_=9)
+        self.PVA.send_to_client(response3)
+        mon_mock3.update.assert_has_calls([call(response3["changes"])])
+        # Updates
+        self.PVA._update_local_block_list = MagicMock()
+        self.PVA._update_remote_block_list = MagicMock()
+        response4 = Update(id_=self.PVA._local_block_id)
+        response5 = Update(id_=self.PVA._remote_block_id)
+        self.PVA.send_to_client(response4)
+        self.PVA._update_local_block_list.assert_called_once()
+        self.PVA.send_to_client(response5)
+        self.PVA._update_remote_block_list.assert_called_once()
 
     def test_create_pva_server(self):
         self.PVA = PvaServerComms(self.p)
@@ -260,6 +372,40 @@ class TestPVAServerComms(unittest.TestCase):
         self.PVA.register_rpc(1, self.rpc)
         self.assertEqual(self.PVA._rpcs, {1: self.rpc})
 
+    def test_register_monitor(self):
+        self.PVA = PvaServerComms(self.p)
+        self.mon = MagicMock()
+        self.PVA.register_monitor(1, self.mon)
+        self.assertEqual(self.PVA._monitors, {1: self.mon})
+
+    def test_register_get(self):
+        self.PVA = PvaServerComms(self.p)
+        self.get = MagicMock()
+        self.PVA.register_get(1, self.get)
+        self.assertEqual(self.PVA._gets, {1: self.get})
+
+    def test_remove_get(self):
+        self.PVA = PvaServerComms(self.p)
+        get1 = MagicMock()
+        get2 = MagicMock()
+        self.PVA._gets = {1: get1, 2: get2}
+        self.PVA.remove_get(1)
+        self.assertEqual(self.PVA._gets, {2: get2})
+
+    def test_register_put(self):
+        self.PVA = PvaServerComms(self.p)
+        self.put = MagicMock()
+        self.PVA.register_put(1, self.put)
+        self.assertEqual(self.PVA._puts, {1: self.put})
+
+    def test_remove_put(self):
+        self.PVA = PvaServerComms(self.p)
+        put1 = MagicMock()
+        put2 = MagicMock()
+        self.PVA._puts = {1: put1, 2: put2}
+        self.PVA.remove_put(1)
+        self.assertEqual(self.PVA._puts, {2: put2})
+
     def test_register_dead_rpc(self):
         self.PVA = PvaServerComms(self.p)
         self.PVA.register_dead_rpc(1)
@@ -279,19 +425,19 @@ class TestPVAServerComms(unittest.TestCase):
         self.assertEqual(self.PVA._rpcs, {2: self.rpc2})
         self.assertEqual(self.PVA._dead_rpcs, [])
 
-    def test_cache_to_pvobject(self):
-        self.PVA = PvaServerComms(self.p)
-        self.PVA._cache["test.block"] = OrderedDict({"p1": OrderedDict({"p2": "val2", "typeid": "type2"}), "typeid": "type1"})
-        object = self.PVA.cache_to_pvobject("test.block", [["p1", "p2"]])
-        self.assertEqual(object, PvTempObject(OrderedDict({"p1": OrderedDict({"p2": "val2"})}), "type1"))
-
-        self.PVA._cache["test.block"] = OrderedDict({"p1": [OrderedDict({"p2": 2, "typeid": "type2"}),
-                                                            OrderedDict({"p3": "val3", "typeid": "type3"})],
-                                                     "typeid": "type1"})
-        object = self.PVA.cache_to_pvobject("test.block", [["p1"]])
-        self.assertEqual(object, PvTempObject(OrderedDict({"p1": [OrderedDict({"p2": 2, "typeid": "type2"}),
-                                                                  OrderedDict({"p3": "val3", "typeid": "type3"})]}),
-                                                           "type1"))
+#    def test_cache_to_pvobject(self):
+#        self.PVA = PvaServerComms(self.p)
+#        self.PVA._cache["test.block"] = OrderedDict({"p1": OrderedDict({"p2": "val2", "typeid": "type2"}), "typeid": "type1"})
+#        object = self.PVA.cache_to_pvobject("test.block", [["p1", "p2"]])
+#        self.assertEqual(object, PvTempObject(OrderedDict({"p1": OrderedDict({"p2": "val2"})}), "type1"))
+#
+#        self.PVA._cache["test.block"] = OrderedDict({"p1": [OrderedDict({"p2": 2, "typeid": "type2"}),
+#                                                            OrderedDict({"p3": "val3", "typeid": "type3"})],
+#                                                     "typeid": "type1"})
+#        object = self.PVA.cache_to_pvobject("test.block", [["p1"]])
+#        self.assertEqual(object, PvTempObject(OrderedDict({"p1": [OrderedDict({"p2": 2, "typeid": "type2"}),
+#                                                                  OrderedDict({"p3": "val3", "typeid": "type3"})]}),
+#                                                           "type1"))
 
     def test_dict_to_stucture(self):
         self.PVA = PvaServerComms(self.p)
