@@ -2,7 +2,7 @@
     mri: hello3
 
 - blocks.demo.Hello:
-    mri: hello4
+    mri: hello-block
 
 - blocks.demo.Counter:
     mri: counter2
