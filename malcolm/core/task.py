@@ -7,6 +7,7 @@ from malcolm.core.loggable import Loggable
 from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.request import Subscribe, Unsubscribe, Post, Put
 from malcolm.core.response import Error, Return, Update
+from malcolm.core.map import Map
 from malcolm.core.spawnable import Spawnable
 from malcolm.compat import queue
 
@@ -40,6 +41,7 @@ class Task(Loggable, Spawnable):
         self.q = self.process.create_queue()
         self._next_id = 0
         self._futures = {}  # dict {int id: Future}
+        self._methods = {}  # dict {int id: MethodMeta}
         self._subscriptions = {}  # dict  {int id: (endpoint, func, args)}
         # For testing, make it so start() will raise, but stop() works
         self.define_spawn_function(None)
@@ -166,12 +168,12 @@ class Task(Loggable, Spawnable):
                     forever if None
 
             Returns:
-                the result from 'method'"""
+                the result from 'method'
+        """
 
         f = self.post_async(method, params)
         self.wait_all(f, timeout=timeout)
-        # TODO: should this be f.get?
-        return f
+        return f[0].result()
 
     def post_async(self, method, params=None):
         """Asynchronously calls a function on a child block
@@ -186,6 +188,7 @@ class Task(Loggable, Spawnable):
         request = Post(None, self.q, endpoint, params)
         new_id, f = self._save_future()
         request.set_id(new_id)
+        self._methods[new_id] = method
         self.process.q.put(request)
 
         return [f]
@@ -294,11 +297,15 @@ class Task(Loggable, Spawnable):
             removes it from the futures list"""
         self.log_debug("future %d filled", response.id)
         f = self._futures.pop(response.id)
+        method = self._methods.pop(response.id, None)
         if isinstance(response, Error):
             f.set_exception(response.message)
             raise ValueError(response.message)
         elif isinstance(response, Return):
-            f.set_result(response.value)
+            result = response.value
+            if method and result:
+                result = Map(method.returns, result)
+            f.set_result(result)
         else:
             raise ValueError(
                 "Future received unexpected response: %s" % response)
