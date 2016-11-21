@@ -19,15 +19,27 @@ class DatasetRunnableChildPart(RunnableChildPart):
         self.method_metas["configure"].recreate_from_others(
             method_metas, without)
 
+    def _params_with_file_path(self, params):
+        file_path = os.path.join(params.fileDir, self.name + ".h5")
+        filtered_params = {k: v for k, v in params.items() if k != "fileDir"}
+        params = self.child["configure"].prepare_input_map(
+            filePath=file_path, **filtered_params)
+        return params
+
+    # MethodMeta will be filled in by _update_configure_args
+    @RunnableController.Validate
+    @method_takes()
+    def validate(self, task, part_info, params):
+        params = self._params_with_file_path(params)
+        return super(DatasetRunnableChildPart, self).validate(
+            task, part_info, params)
+
     # MethodMeta will be filled in at reset()
     @RunnableController.Configure
     @method_takes(
         "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
-        file_path = os.path.join(params.fileDir, self.name + ".h5")
-        filtered_params = {k: v for k, v in params.items() if k != "fileDir"}
-        params = self.child["configure"].prepare_input_map(
-            filePath=file_path, **filtered_params)
+        params = self._params_with_file_path(params)
         task.post(self.child["configure"], params)
         datasets_table = self.child.datasets
         info_list = []
