@@ -1,7 +1,14 @@
 from malcolm.controllers.managercontroller import ManagerController
 from malcolm.core import RunnableStateMachine, REQUIRED, method_also_takes, \
-    method_writeable_in, method_takes, MethodMeta, Task, Hook
+    method_writeable_in, method_takes, MethodMeta, Task, Hook, method_returns, \
+    Info
 from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, StringArrayMeta
+
+
+class ParameterTweakInfo(Info):
+    def __init__(self, parameter, value):
+        self.parameter = parameter
+        self.value = value
 
 
 sm = RunnableStateMachine
@@ -30,6 +37,11 @@ class RunnableController(ManagerController):
         part_info (dict): {part_name: [Info]} returned from ReportStatus
         params (Map): Any configuration parameters asked for by part validate()
             method_takes() decorator
+
+    Returns:
+        [ParameterTweakInfo]: any parameters tweaks that have occurred to make
+            them compatible with this part. If any are returned, Validate will
+            be re-run with the modified parameters.
     """
 
     ReportStatus = Hook()
@@ -198,6 +210,7 @@ class RunnableController(ManagerController):
 
         # Decorate validate and configure with the sum of its parts
         self.block["validate"].recreate_from_others(method_metas)
+        self.block["validate"].set_returns(self.block["validate"].takes)
         self.block["configure"].recreate_from_others(method_metas)
 
     def set_axes_to_move(self, value):
@@ -205,20 +218,33 @@ class RunnableController(ManagerController):
         self._update_configure_args()
 
     @method_takes(*configure_args)
-    def validate(self, params):
-        self.do_validate(params)
-
-    def do_validate(self, params):
+    def validate(self, params, returns):
+        iterations = 10
         # Make some tasks just for validate
         part_tasks = self.create_part_tasks()
         # Get any status from all parts
-        part_info = self.run_hook(self.ReportStatus, part_tasks)
-        # Validate the params with all the parts
-        self.run_hook(self.Validate, part_tasks, part_info, **params)
+        status_part_info = self.run_hook(self.ReportStatus, part_tasks)
+        while iterations > 0:
+            # Try up to 10 times to get a valid set of parameters
+            iterations -= 1
+            # Validate the params with all the parts
+            validate_part_info = self.run_hook(
+                self.Validate, part_tasks, status_part_info, **params)
+            tweaks = ParameterTweakInfo.filter_values(validate_part_info)
+            if tweaks:
+                for tweak in tweaks:
+                    params[tweak.parameter] = tweak.value
+                    self.log_debug(
+                        "Tweaking %s to %s", tweak.parameter, tweak.value)
+            else:
+                # Consistent set, just return the params
+                return params
+        raise ValueError("Could not get a consistent set of parameters")
 
     @method_takes(*configure_args)
     @method_writeable_in(sm.IDLE)
     def configure(self, params):
+        self.validate(params, params)
         self.try_stateful_function(
             sm.CONFIGURING, sm.READY, self.do_configure, params)
 

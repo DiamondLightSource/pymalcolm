@@ -18,7 +18,7 @@ from malcolm.core.request import Request
 from malcolm.core.methodmeta import MethodMeta
 from malcolm.core.future import Future
 from malcolm.core.vmetas import StringMeta
-from malcolm.core.attribute import Attribute
+from malcolm.core.elementmap import ElementMap
 from malcolm.core import Process, Block, SyncFactory
 
 
@@ -41,6 +41,7 @@ class TestTask(unittest.TestCase):
         self.attr = meta.make_attribute()
         self.attr2 = meta.make_attribute()
         self.method = MethodMeta("method for unit tests")
+        self.method.returns.set_elements(ElementMap(dict(ret=StringMeta())))
         self.method2 = MethodMeta("method for unit tests")
         self.block.replace_endpoints(
             dict(testFunc=self.method, testFunc2=self.method2,
@@ -91,7 +92,7 @@ class TestTask(unittest.TestCase):
     def test_post(self):
         t = Task("testTask", self.proc)
         resp1 = Return(0, None, None)
-        resp1.set_value('testVal')
+        resp1.set_value(dict(ret='testVal'))
         resp2 = Error(1, None, None)
         # cheat and add the responses before the blocking call to put
         t.q.put(resp1)

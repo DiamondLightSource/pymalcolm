@@ -43,8 +43,7 @@ class DatasetTablePart(Part):
     def update_datasets_table(self, task, part_info):
         # Update the dataset table
         datasets_table = Table(dataset_table_meta)
-        for dataset_infos in DatasetProducedInfo.filter(part_info).values():
-            for i in dataset_infos:
-                row = [i.name, i.filename, i.type, i.rank, i.path, i.uniqueid]
-                datasets_table.append(row)
+        for i in DatasetProducedInfo.filter_values(part_info):
+            row = [i.name, i.filename, i.type, i.rank, i.path, i.uniqueid]
+            datasets_table.append(row)
         self.datasets.set_value(datasets_table)

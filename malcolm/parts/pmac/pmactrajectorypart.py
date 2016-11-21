@@ -1,8 +1,10 @@
 from collections import Counter
 
 import numpy as np
+from scanpointgenerator import FixedDurationMutator, CompoundGenerator
 
-from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.controllers.runnablecontroller import RunnableController, \
+    ParameterTweakInfo
 from malcolm.core import method_takes, REQUIRED, Info
 from malcolm.core.vmetas import StringArrayMeta, PointGeneratorMeta
 from malcolm.parts.builtin.childpart import ChildPart
@@ -24,10 +26,14 @@ TRIG_LIVE_FRAME = 3  # Capture 0, Frame 1, Detector 1
 TRIG_ZERO = 8        # Capture 0, Frame 0, Detector 0
 
 # How many generator points to load each time
-POINTS_PER_BUILD = 2000
+POINTS_PER_BUILD = 4000
 
 # All possible PMAC CS axis assignment
 cs_axis_names = list("ABCUVWXYZ")
+
+# Servo frequency
+I10 = 1705244
+SERVO_FREQ = 8388608000. / I10
 
 # Args for configure and validate
 configure_args = [
@@ -74,15 +80,34 @@ class PMACTrajectoryPart(ChildPart):
 
     @RunnableController.Validate
     @method_takes(*configure_args)
-    def validate(self, task, completed_steps, steps_to_do, part_info, params):
-        axes_to_move = params.axesToMove
+    def validate(self, task, part_info, params):
+        self._make_axis_mapping(part_info, params.axesToMove)
+        # Find the last FixedDurationMutator
+        mutators = []
+        fdm = None
+        for mutator in params.generator.mutators:
+            if isinstance(mutator, FixedDurationMutator):
+                fdm = mutator
+            else:
+                mutators.append(mutator)
+        # convert to multiple of servo ticks, rounding down
+        ticks = np.floor(SERVO_FREQ * fdm.duration)
+        # convert to integer number of microseconds, rounding up
+        micros = np.ceil(ticks / SERVO_FREQ * 1e6)
+        # back to duration
+        duration = float(micros) / 1e6
+        if duration != fdm.duration:
+            new_generator = CompoundGenerator(
+                generators=params.generator.generators,
+                excluders=params.generator.excluders,
+                mutators=mutators + [FixedDurationMutator(duration)])
+            return [ParameterTweakInfo("generator", new_generator)]
+
+    def _make_axis_mapping(self, part_info, axes_to_move):
         cs_ports = set()
         # dict {name: MotorInfo}
         axis_mapping = {}
-        for motor_infos in MotorInfo.filter(part_info).values():
-            assert len(motor_infos) == 1, \
-                "Expected only 1 motor info"
-            motor_info = motor_infos[0]
+        for motor_info in MotorInfo.filter_values(part_info):
             if motor_info.scannable in axes_to_move:
                 assert motor_info.cs_axis in cs_axis_names, \
                     "Can only scan 1-1 mappings, %r is %r" % \
@@ -108,8 +133,8 @@ class PMACTrajectoryPart(ChildPart):
     @method_takes(*configure_args)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         self.generator = params.generator
-        self.cs_port, self.axis_mapping = self.validate(
-            task, completed_steps, steps_to_do, part_info, params)
+        self.cs_port, self.axis_mapping = self._make_axis_mapping(
+            part_info, params.axesToMove)
         futures = self.move_to_start(task, completed_steps)
         self.steps_up_to = completed_steps + steps_to_do
         self.completed_steps_lookup = []

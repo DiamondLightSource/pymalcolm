@@ -1,6 +1,7 @@
-from malcolm.core import method_takes, Task
+from malcolm.core import method_takes, Task, serialize_object
 from malcolm.parts.builtin.childpart import ChildPart
-from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.controllers.runnablecontroller import RunnableController, \
+    ParameterTweakInfo
 
 
 sm = RunnableController.stateMachine
@@ -31,10 +32,16 @@ class RunnableChildPart(ChildPart):
                 self.child["state"], sm.IDLE, bad_values=[sm.FAULT])
         self.update_configure_validate_args()
 
+    # MethodMeta will be filled in by _update_configure_args
     @RunnableController.Validate
-    def validate(self, task, params, returns):
-        returns.update(task.post(self.child["validate"], params))
-        return returns
+    @method_takes()
+    def validate(self, task, part_info, params):
+        returns = task.post(self.child["validate"], params)
+        ret = []
+        for k, v in returns.items():
+            if serialize_object(params[k]) != serialize_object(v):
+                ret.append(ParameterTweakInfo(k, v))
+        return ret
 
     # MethodMeta will be filled in by _update_configure_args
     @RunnableController.Configure

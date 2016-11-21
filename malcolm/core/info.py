@@ -6,8 +6,8 @@ class Info(object):
     something from a hooked function"""
 
     @classmethod
-    def filter(cls, part_info):
-        """Filter the part_info dict looking for instances of ourself
+    def filter_parts(cls, part_info):
+        """Filter the part_info dict looking for instances of our class
 
         Args:
             part_info (dict): {part_name: [Info] or None} as returned from
@@ -23,4 +23,20 @@ class Info(object):
             info_list = [i for i in info_list if isinstance(i, cls)]
             if info_list:
                 filtered[part_name] = info_list
+        return filtered
+
+    @classmethod
+    def filter_values(cls, part_info):
+        """Filter the part_info dict list looking for instances of our class
+
+        Args:
+            part_info (dict): {part_name: [Info] or None} as returned from
+                Controller.run_hook()
+
+        Returns:
+            list: [info] where info is a subclass of cls
+        """
+        filtered = []
+        for info_list in cls.filter_parts(part_info).values():
+            filtered += info_list
         return filtered

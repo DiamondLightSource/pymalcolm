@@ -6,7 +6,7 @@ from malcolm.parts.ADCore.hdfwriterpart import DatasetSourceInfo
 
 
 # Maximum number of points to check for fixed duration
-MAX_CHECK = 5000
+MAX_CHECK = 100
 
 # Args for configure() and validate
 configure_args = [
@@ -15,7 +15,7 @@ configure_args = [
 
 @method_also_takes(
     "readoutTime", NumberMeta(
-        "float64", "Default time taken to readout detector"), 0.002)
+        "float64", "Default time taken to readout detector"), 8e-6)
 class DetectorDriverPart(ChildPart):
     # Attributes
     readoutTime = None
@@ -41,10 +41,10 @@ class DetectorDriverPart(ChildPart):
 
     @RunnableController.Validate
     @method_takes(*configure_args)
-    def validate(self, task, completed_steps, steps_to_do, part_info, params):
+    def validate(self, task, part_info, params):
         durations = set()
-        max_points = min(MAX_CHECK, completed_steps + steps_to_do)
-        for i in range(completed_steps, max_points):
+        max_points = min(MAX_CHECK, params.generator.num)
+        for i in range(max_points):
             point = params.generator.get_point(i)
             durations.add(point.duration)
         assert len(durations) == 1, \
@@ -56,7 +56,6 @@ class DetectorDriverPart(ChildPart):
         assert exposure > 0.0, \
             "Exposure time %s too small when readoutTime taken into account" % (
                 exposure)
-        return exposure
 
     @RunnableController.Configure
     @RunnableController.PostRunReady
@@ -65,8 +64,7 @@ class DetectorDriverPart(ChildPart):
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         # Stop in case we are already running
         stop_future = task.post_async(self.child["stop"])
-        exposure = self.validate(
-            task, completed_steps, steps_to_do, part_info, params)
+        exposure = params.generator.get_point(0).duration - self.readoutTime.value
         task.wait_all(stop_future)
         task.put_many(self.child, dict(
             exposure=exposure,

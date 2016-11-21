@@ -49,8 +49,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 offsetB=0.0))
         self.assertEqual(args, expected)
 
-    def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5):
-        task = Mock()
+    def make_part_info(self, x_pos=0.5):
         part_info = dict(
             xpart=[MotorInfo(
                 cs_axis="A",
@@ -73,6 +72,11 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 scannable="y"
             )]
         )
+        return part_info
+
+    def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5):
+        part_info = self.make_part_info(x_pos)
+        task = Mock()
         steps_to_do = 3 * len(axes_to_scan)
         params = Mock()
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
@@ -82,6 +86,16 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         params.axesToMove = axes_to_scan
         self.o.configure(task, completed_steps, steps_to_do, part_info, params)
         return task
+
+    def test_validate(self):
+        params = Mock()
+        mutator = FixedDurationMutator(0.0102)
+        params.generator = CompoundGenerator([], [], [mutator])
+        params.axesToMove = ["x"]
+        part_info = self.make_part_info()
+        ret = self.o.validate(None, part_info, params)
+        expected = 0.010165
+        self.assertEqual(ret[0].value.mutators[0].duration, expected)
 
     def test_configure(self):
         task = self.do_configure(axes_to_scan=["x", "y"])

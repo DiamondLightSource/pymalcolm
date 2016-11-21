@@ -12,14 +12,21 @@ from time import sleep
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.core import method_writeable_in, method_takes, \
-        DefaultStateMachine, Block, Controller, REQUIRED
-from malcolm.core.vmetas import BooleanMeta
-from malcolm.core import Process, Part, RunnableStateMachine, Task
+from malcolm.core import Process, Part, Task, Map
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.controllers.runnablecontroller import RunnableController
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
+
+
+class DummyPart(Part):
+    exception = None
+
+    @RunnableController.Configure
+    def configure(self, task, completed_steps, steps_to_do, part_info):
+        if self.exception:
+            raise self.exception
+
 
 class TestRunnableController(unittest.TestCase):
 
@@ -42,10 +49,14 @@ class TestRunnableController(unittest.TestCase):
 
         self.p = Process('process1', SyncFactory('threading'))
 
+        # Make a dummy part so we can inject errors
+        params = DummyPart.MethodMeta.prepare_input_map(name='dpart')
+        self.d_part = DummyPart(self.p, params)
+
         # create a child RunnableController block
         params = RunnableController.MethodMeta.prepare_input_map(
             mri='childBlock')
-        self.c_child = RunnableController(self.p, {}, params)
+        self.c_child = RunnableController(self.p, [self.d_part], params)
         self.b_child = self.c_child.block
 
         self.sm = self.c_child.stateMachine
@@ -138,27 +149,21 @@ class TestRunnableController(unittest.TestCase):
         self.assertEqual(self.c.axes_to_move.value, ['axisOne'])
 
     def test_validate(self):
-        # todo validate currently broken
-        return
         line1 = LineGenerator('AxisOne', 'mm', 0, 2, 3)
         line2 = LineGenerator('AxisTwo', 'mm', 0, 2, 2)
         compound = CompoundGenerator([line1, line2], [], [])
         params = {'generator': compound, 'axesToMove': ['AxisTwo']}
         params = \
             RunnableController.validate.MethodMeta.prepare_input_map(**params)
-        self.c.configure(params)
-        self.c.validate(params)
-
-        # self.c.do_validate = lambda p, r: None
-        # self.c.validate(None)
+        returns = Map(RunnableController.validate.MethodMeta.returns)
+        self.c.validate(params, returns)
 
     def prepare_half_run(self):
         line1 = LineGenerator('AxisOne', 'mm', 0, 2, 3)
         line2 = LineGenerator('AxisTwo', 'mm', 0, 2, 2)
         compound = CompoundGenerator([line1, line2], [], [])
-        params = {'generator': compound, 'axesToMove': ['AxisTwo']}
-        params = \
-            RunnableController.configure.MethodMeta.prepare_input_map(**params)
+        params = RunnableController.configure.MethodMeta.prepare_input_map(
+            generator=compound, axesToMove=['AxisTwo'])
         self.c.configure(params)
 
     def test_configure_run(self):
@@ -204,16 +209,6 @@ class TestRunnableController(unittest.TestCase):
         self.c.run()
         self.checkState(self.sm.IDLE)
 
-    def dummy_run_hook(self, hook, part_tasks, *args, **params):
-        hook_queue, task_part_names = self.c_child.start_hook(
-            hook, part_tasks, *args, **params)
-        if hook == self.c.Run:
-            # restore normal run hook function
-            self.c_child.run_hook = self.child_hook
-            self.p.spawn(self.c.pause())
-        return_dict = self.c_child.wait_hook(hook_queue, task_part_names)
-        return return_dict
-
     def test_resume_in_run(self):
         # TODO: this not yet working
         return
@@ -245,17 +240,10 @@ class TestRunnableController(unittest.TestCase):
         self.checkState(self.sm.READY)
 
     def test_configure_exception(self):
-        self.c_child.run_hook = Mock(side_effect=Exception("test exception"))
+        self.d_part.exception = Exception("test exception")
         with self.assertRaises(Exception):
             self.prepare_half_run()
         self.checkState(self.sm.FAULT)
-
-    def test_configure_exception_parent(self):
-        self.c.run_hook = Mock(side_effect=Exception("test exception"))
-        with self.assertRaises(Exception):
-            self.prepare_half_run()
-        self.checkState(self.sm.FAULT, child=False)
-        self.checkState(self.sm.IDLE, parent=False)
 
     def test_run_exception(self):
         self.prepare_half_run()

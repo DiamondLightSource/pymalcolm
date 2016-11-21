@@ -291,8 +291,7 @@ class PvaImplementation(Loggable):
         self.log_debug("send_get_request called with request: %s", self._request)
         try:
             self._server.register_get(self._id, self)
-            endpoints = [self._block]
-            endpoints = endpoints + self.dict_to_path(self._request.toDict())
+            endpoints = [self._block] + self.dict_to_path(self._request.toDict())
             msg = Get(response_queue=self._server.q, endpoint=endpoints)
             msg.set_id(self._id)
             with self._lock:
@@ -300,12 +299,9 @@ class PvaImplementation(Loggable):
                 self.wait_for_reply()
             self.log_debug("send_get_request received the following response: %s", self._response)
             # Create the reply structure
-            response_dict = {}
-            dict_ptr = response_dict
-            for ep in endpoints[1:-1]:
-                dict_ptr[ep] = {}
-                dict_ptr = dict_ptr[ep]
-            dict_ptr[endpoints[-1]] = self._response["value"]
+            response_dict = self._response["value"]
+            for ep in reversed(endpoints[1:]):
+                response_dict = {ep: response_dict}
             self.log_debug("response_dict: %s", response_dict)
             self._pv_structure = self._server.dict_to_pv_object(response_dict)
         except Exception as ex:
