@@ -1,10 +1,10 @@
-- assemblies.demo.Hello:
-    name: hello
+- blocks.demo.Hello:
+    mri: hello3
 
-- assemblies.demo.Hello:
-    name: hello2
+- blocks.demo.Hello:
+    mri: hello4
 
-- assemblies.demo.Counter:
-    name: counter
+- blocks.demo.Counter:
+    mri: counter2
 
 - comms.pva.PvaServerComms:
