@@ -35,10 +35,9 @@ class HDFWriterPart(ChildPart):
 
     def _get_dataset_infos(self, part_info, primary=True):
         filtered_datasets = []
-        for dataset_infos in DatasetSourceInfo.filter(part_info).values():
-            for dataset_info in dataset_infos:
-                if primary == (dataset_info.type == "primary"):
-                    filtered_datasets.append(dataset_info)
+        for dataset_info in DatasetSourceInfo.filter_values(part_info):
+            if primary == (dataset_info.type == "primary"):
+                filtered_datasets.append(dataset_info)
         if primary:
             assert len(filtered_datasets) in (0, 1), \
                 "More than one primary datasets defined %s" % filtered_datasets

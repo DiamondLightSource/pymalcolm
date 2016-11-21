@@ -79,10 +79,7 @@ class PMACTrajectoryPart(ChildPart):
         cs_ports = set()
         # dict {name: MotorInfo}
         axis_mapping = {}
-        for motor_infos in MotorInfo.filter(part_info).values():
-            assert len(motor_infos) == 1, \
-                "Expected only 1 motor info"
-            motor_info = motor_infos[0]
+        for motor_info in MotorInfo.filter_values(part_info):
             if motor_info.scannable in axes_to_move:
                 assert motor_info.cs_axis in cs_axis_names, \
                     "Can only scan 1-1 mappings, %r is %r" % \
