@@ -1,19 +1,19 @@
-#- blocks.xspress3.Xspress3DetectorManager:
-#   pvPrefix: BL18I-EA-XSP3-01
-#    mriPrefix: I18-XSP3
+- blocks.xspress3.Xspress3DetectorManager:
+   pvPrefix: BL18I-EA-XSP3-01
+   mriPrefix: I18-XSP3
 
 - blocks.demo.I18PMACManager:
     mriPrefix: I18-BRICK06
 
-#- blocks.pandabox.PandABoxManager:
-#    pvPrefix: BL18I-MO-PANDA-01
-#    mriPrefix: I18-PANDA01
-#    hostname: 172.23.118.201
+- blocks.pandabox.PandABoxManager:
+    pvPrefix: BL18I-MO-PANDA-01
+    mriPrefix: I18-PANDA01
+    hostname: bl18i-mo-pandabox-01
 
-#- blocks.demo.I18Manager:
-#    mri: I18-SCAN01
-#    det: I18-XSP3
-#    brick: I18-BRICK06
-#    pandabox: I18-PANDA01
+- blocks.demo.I18Manager:
+    mri: I18-SCAN01
+    det: I18-XSP3
+    brick: I18-BRICK06
+    pandabox: I18-PANDA01
 
 - comms.pva.PvaServerComms:
