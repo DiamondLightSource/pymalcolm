@@ -22,6 +22,13 @@ class caint(int):
 
 class TestCAPart(unittest.TestCase):
 
+    def setUp(self):
+        sf = SyncFactory("sf")
+        self.process = Process("process", sf)
+
+    def tearDown(self):
+        del self.process.sync_factory
+
     def create_part(self, params=None):
         if params is None:
             params = dict(
@@ -37,9 +44,7 @@ class TestCAPart(unittest.TestCase):
 
         params = MyCAPart.MethodMeta.prepare_input_map(**params)
 
-        sf = SyncFactory("sf")
-        process = Process("process", sf)
-        p = MyCAPart(process,  params)
+        p = MyCAPart(self.process,  params)
         p.set_logger_name("something")
         list(p.create_attributes())
         return p

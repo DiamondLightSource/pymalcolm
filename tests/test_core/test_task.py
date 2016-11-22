@@ -280,6 +280,7 @@ class TestTask(unittest.TestCase):
         end = time.time()
         self.assertAlmostEqual(end-start, 0.05, delta=0.005)
         t.define_spawn_function(None)
+        del proc.sync_factory
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

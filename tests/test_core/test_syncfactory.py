@@ -18,6 +18,9 @@ class TestBlock(unittest.TestCase):
         mock_pool.assert_called_once_with(128)
         self.assertEqual(self.s.pool, mock_pool.return_value)
 
+    def tearDown(self):
+        del self.s
+
     @patch("malcolm.core.syncfactory.InterruptableQueue")
     def test_queue_creation(self, mock_queue):
         q = self.s.create_queue()
