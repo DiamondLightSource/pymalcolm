@@ -29,8 +29,8 @@ class NumberMeta(VMeta):
         if value is None:
             value = 0
         cast = getattr(np, self.dtype)(value)
-        if not isinstance(value, str_):
-            if not np.isclose(cast, value):
-                raise ValueError("Lost information converting %s to %s"
-                                 % (value, cast))
+        #if not isinstance(value, str_):
+        #    if not np.isclose(cast, value):
+        #        raise ValueError("Lost information converting %s to %s"
+        #                         % (value, cast))
         return cast

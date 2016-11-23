@@ -124,9 +124,10 @@ class Serializable(object):
         # Called by subclass to set endpoint data
         assert name in self, \
             "Endpoint %r not defined for %r" % (name, self)
-        if self._endpoint_data is None:
-            self._endpoint_data = {}
-        self._endpoint_data[name] = value
+        try:
+            self._endpoint_data[name] = value
+        except TypeError:
+            self._endpoint_data = {name: value}
 
     def replace_endpoints(self, d):
         # Update the instance with any values in the dictionary that are known

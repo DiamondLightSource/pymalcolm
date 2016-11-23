@@ -9,9 +9,6 @@ class Leaf(object):
         self.parent = parent
 
 
-EmptyLeaf = Leaf()
-
-
 class Cache(OrderedDict):
     """OrderedDict subclass that supports delta changeset updates"""
     _subscription_tree = None
@@ -62,24 +59,28 @@ class Cache(OrderedDict):
             d = d[p]
         return d
 
-    def _add_changes(self, subscription_changes, leaf, change, i=0):
-        if leaf.subscriptions:
-            if i:
-                change = [change[0][i:]] + change[1:]
-            for subscription in leaf.subscriptions:
-                subscription_changes.setdefault(subscription, []).append(change)
+    def _add_changes(self, subscription_changes, leaf, change):
+        for subscription in leaf.subscriptions:
+            subscription_changes.setdefault(subscription, []).append(change)
 
     def _notify_change(self, subscription_changes, change):
         if self._subscription_tree is None:
             return
         leaf = self._subscription_tree
         self._add_changes(subscription_changes, leaf, change)
-        for i, node in enumerate(change[0]):
-            leaf = leaf.children.get(node, EmptyLeaf)
-            self._add_changes(subscription_changes, leaf, change, i + 1)
+        path = change[0]
+        value = change[1]
+        for node in path:
+            try:
+                leaf = leaf.children[node]
+            except KeyError:
+                return
+            else:
+                path = path[1:]
+                self._add_changes(subscription_changes, leaf, [path, value])
 
         # Anyone downstream of this leaf needs notifying
-        self._notify_sub_leaves(subscription_changes, leaf, change[1])
+        self._notify_sub_leaves(subscription_changes, leaf, value)
 
     def _notify_sub_leaves(self, subscription_changes, leaf, d):
         for node, leaf in leaf.children.items():
