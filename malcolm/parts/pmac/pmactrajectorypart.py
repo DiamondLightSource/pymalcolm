@@ -158,12 +158,13 @@ class PMACTrajectoryPart(ChildPart):
     def abort(self, task):
         task.post(self.child["abortProfile"])
 
-    def get_move_time(self, axis_name, demand, current=None):
+    def get_move_time(self, axis_name, demand, current=None, accl_time=None):
         motor_info = self.axis_mapping[axis_name]
         if current is None:
             current = motor_info.current_position
         dist = float(abs(demand - current))
-        accl_time = float(motor_info.acceleration_time)
+        if accl_time is None:
+            accl_time = float(motor_info.acceleration_time)
         accl_dist = accl_time * motor_info.max_velocity
         if dist < accl_dist:
             time = np.sqrt(accl_time * dist / motor_info.max_velocity)
@@ -219,7 +220,8 @@ class PMACTrajectoryPart(ChildPart):
         for axis_name, run_up in self.run_up_positions(first_point).items():
             start_pos = first_point.lower[axis_name] - run_up
             trajectory[axis_name] = [start_pos]
-            move_time = max(move_time, self.get_move_time(axis_name, start_pos))
+            move_time = max(move_time, self.get_move_time(
+                axis_name, start_pos, accl_time=acceleration_time))
 
         if move_time < 0.01:
             # Don't have to move anywhere
@@ -236,7 +238,7 @@ class PMACTrajectoryPart(ChildPart):
                 motor_info = self.axis_mapping[axis_name]
                 start_pos = positions[0]
                 dist = start_pos - motor_info.current_position
-                velocity = dist / (move_time - motor_info.acceleration_time)
+                velocity = dist / (move_time - acceleration_time)
                 accl_dist = acceleration_time * velocity / 2
                 positions.insert(0, motor_info.current_position + accl_dist)
                 positions.insert(1, start_pos - accl_dist)
