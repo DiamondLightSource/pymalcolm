@@ -74,8 +74,8 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         )
         return part_info
 
-    def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5):
-        part_info = self.make_part_info(x_pos)
+    def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5, y_pos=0.0):
+        part_info = self.make_part_info(x_pos, y_pos)
         task = Mock()
         steps_to_do = 3 * len(axes_to_scan)
         params = Mock()
@@ -102,6 +102,9 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(task.put_many.call_count, 4)
         self.assertEqual(task.post.call_count, 2)
         self.assertEqual(task.post_async.call_count, 1)
+        self.assertEqual(task.put.call_count, 2)
+        self.assertEqual(task.put.call_args_list[0],
+                         call(self.child["cs"], "CS1"))
         self.check_resolutions_and_use(task.put_many.call_args_list[0][0][1])
         self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
             timeArray=[100000, 537500, 100000],
@@ -134,7 +137,8 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             positionsB=[
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]))
-        task.put.assert_called_once_with(self.child["numPoints"], 18)
+        self.assertEqual(task.put.call_args_list[1],
+                         call(self.child["numPoints"], 18))
 
     @patch("malcolm.parts.pmac.pmactrajectorypart.POINTS_PER_BUILD", 4)
     def test_update_step(self):
