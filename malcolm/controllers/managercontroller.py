@@ -1,9 +1,7 @@
-import json
-
 from malcolm.compat import OrderedDict
 from malcolm.controllers.defaultcontroller import DefaultController
-from malcolm.core import ManagerStateMachine, method_writeable_in, method_takes, \
-    Hook, Table, Info
+from malcolm.core import ManagerStateMachine, method_writeable_in, \
+    method_takes, Hook, Table, Info, json_encode, json_decode
 from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, \
     BooleanArrayMeta, TableMeta, StringMeta
 
@@ -139,7 +137,7 @@ class ManagerController(DefaultController):
             layout_name = self.layout_name.value
         structure = self._save_to_structure()
         filename = "/tmp/" + layout_name + ".json"
-        text = json.dumps(structure, indent=2)
+        text = json_encode(structure, indent=2)
         open(filename, "w").write(text)
         self.layout_name.set_value(layout_name)
 
@@ -155,7 +153,7 @@ class ManagerController(DefaultController):
         # TODO: Look for value in our save file location
         filename = "/tmp/" + value + ".json"
         text = open(filename, "r").read()
-        structure = json.loads(text)
+        structure = json_decode(text)
         self._load_from_structure(structure)
         self.layout_name.set_value(value)
 

@@ -25,12 +25,6 @@ def serialize_object(o):
         for k, v in o.items():
             d[k] = serialize_object(v)
         return d
-    elif isinstance(o, np.number):
-        return o.tolist()
-    elif isinstance(o, np.ndarray):
-        assert len(o.shape) == 1, \
-            "Expected 1d array, got {}".format(o.shape)
-        return o.tolist()
     else:
         # Hope it's serializable!
         return o

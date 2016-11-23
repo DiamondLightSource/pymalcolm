@@ -6,9 +6,9 @@ import setup_malcolm_paths
 import unittest
 from mock import MagicMock, patch, call
 
-from malcolm.compat import OrderedDict
 from malcolm.comms.websocket import WebsocketClientComms
-from malcolm.core.response import Response
+from malcolm.core.response import Return
+from malcolm.core.request import Get
 
 params = dict(hostname="test", port=1)
 
@@ -39,55 +39,39 @@ class TestWSClientComms(unittest.TestCase):
         self.assertEqual(request.endpoint, [".", "blocks", "value"])
         self.assertEqual(request.delta, False)
 
-    @patch('malcolm.comms.websocket.websocketclientcomms.deserialize_object')
-    @patch('malcolm.comms.websocket.websocketclientcomms.json')
     @patch('malcolm.comms.websocket.websocketclientcomms.IOLoop')
-    def test_on_message(self, _, json_mock, deserialize_mock):
+    def test_on_message(self, _):
         self.WS = WebsocketClientComms(self.p, params)
+        request = MagicMock()
+        self.WS.requests[11] = request
+        response = Return(11, MagicMock(), "me")
+        message = """{
+        "typeid": "malcolm:core/Return:1.0",
+        "id": 11,
+        "value": "me"
+        }"""
+        self.WS.on_message(message)
+        self.assertEquals(request.response_queue.put.call_count, 1)
+        actual = request.response_queue.put.call_args[0][0]
+        self.assertEquals(actual.to_dict(), response.to_dict())
 
-        message_dict = dict(name="TestMessage")
-        json_mock.loads.return_value = message_dict
-
-        response = MagicMock()
-        response.id = 1
-        deserialize_mock.return_value = response
-        request_mock = MagicMock()
-        self.WS.requests[1] = request_mock
-
-        self.WS.on_message("TestMessage")
-
-        json_mock.loads.assert_called_once_with("TestMessage",
-                                                object_pairs_hook=OrderedDict)
-        deserialize_mock.assert_called_once_with(message_dict, Response)
-        request_mock.response_queue.put.assert_called_once_with(response)
-
-    @patch('malcolm.comms.websocket.websocketclientcomms.json')
     @patch('malcolm.comms.websocket.websocketclientcomms.IOLoop')
-    def test_on_message_logs_exception(self, _, json_mock):
+    def test_on_message_logs_exception(self, _):
         self.WS = WebsocketClientComms(self.p, params)
         self.WS.log_exception = MagicMock()
-        exception = Exception()
-        json_mock.loads.side_effect = exception
-
         self.WS.on_message("test")
+        self.WS.log_exception.assert_called_once_with(
+            'on_message(%r) failed', "test")
 
-        self.WS.log_exception.assert_called_once_with(exception)
-
-    @patch('malcolm.comms.websocket.websocketclientcomms.json')
     @patch('malcolm.comms.websocket.websocketclientcomms.IOLoop')
-    def test_send_to_server(self, _, json_mock):
+    def test_send_to_server(self, _):
         self.WS = WebsocketClientComms(self.p, params)
-        json_mock.reset_mock()
-        result_mock = MagicMock()
         self.WS.conn = MagicMock()
-        dumps_mock = MagicMock()
-        json_mock.dumps.return_value = dumps_mock
-
-        request_mock = MagicMock()
-        self.WS.send_to_server(request_mock)
-
-        json_mock.dumps.assert_called_once_with(request_mock.to_dict())
-        self.WS.conn.write_message.assert_called_once_with(dumps_mock)
+        request = Get(None, None, ["block", "attr"])
+        request.set_id(54)
+        self.WS.send_to_server(request)
+        self.WS.conn.write_message.assert_called_once_with(
+            '{"typeid": "malcolm:core/Get:1.0", "id": 54, "endpoint": ["block", "attr"]}')
 
     @patch('malcolm.comms.websocket.websocketclientcomms.IOLoop')
     def test_start(self, ioloop_mock):

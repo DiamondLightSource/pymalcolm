@@ -4,7 +4,6 @@ import pvaccess
 
 from malcolm.compat import OrderedDict
 from malcolm.comms.pva.pvautil import PvaUtil
-from malcolm.core.cache import Cache
 from malcolm.core.loggable import Loggable
 from malcolm.core.servercomms import ServerComms
 from malcolm.core.methodmeta import method_takes
@@ -304,8 +303,8 @@ class PvaImplementation(Loggable):
                 response_dict = {ep: response_dict}
             self.log_debug("response_dict: %s", response_dict)
             self._pv_structure = self._server.dict_to_pv_object(response_dict)
-        except Exception as ex:
-            self.log_debug("Unable to complete send_get_request: %s", ex)
+        except Exception:
+            self.log_exception("Unable to complete send_get_request: %s", self._request)
         self._server.remove_get(self._id)
 
     def dict_to_path(self, dict_in):
@@ -475,6 +474,8 @@ class PvaMonitorImplementation(PvaImplementation):
                 new_value = change[1]
                 if isinstance(new_value, OrderedDict):
                     new_value = self._server.strip_type_id(new_value)
+                else:
+                    new_value = self._server.normalize(new_value)
                 self._pv_structure[path] = new_value
                 self.log_debug("PV updated structure: %s", self._pv_structure)
                 self._update_required = True

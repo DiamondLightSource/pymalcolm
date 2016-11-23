@@ -1,12 +1,10 @@
-import json
-
+from tornado import gen
 from tornado.ioloop import IOLoop
 from tornado.websocket import websocket_connect
-from tornado import gen
 
-from malcolm.compat import OrderedDict
 from malcolm.core import ClientComms, Request, Subscribe, Response, \
-    deserialize_object, serialize_object, method_takes
+    deserialize_object, method_takes
+from malcolm.core.jsonutils import json_decode, json_encode
 from malcolm.core.vmetas import StringMeta, NumberMeta
 
 
@@ -52,13 +50,13 @@ class WebsocketClientComms(ClientComms):
         """
         try:
             self.log_debug("Got message %s", message)
-            d = json.loads(message, object_pairs_hook=OrderedDict)
+            d = json_decode(message)
             response = deserialize_object(d, Response)
             self.send_to_caller(response)
         except Exception as e:
             # If we don't catch the exception here, tornado will spew odd
             # error messages about 'HTTPRequest' object has no attribute 'path'
-            self.log_exception(e)
+            self.log_exception("on_message(%r) failed", message)
 
     def send_to_server(self, request):
         """Dispatch a request to the server
@@ -66,7 +64,7 @@ class WebsocketClientComms(ClientComms):
         Args:
             request (Request): The message to pass to the server
         """
-        message = json.dumps(serialize_object(request))
+        message = json_encode(request)
         self.log_debug("Sending message %s", message)
         self.conn.write_message(message)
 

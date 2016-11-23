@@ -1,13 +1,15 @@
-import unittest
-from mock import Mock, MagicMock, patch, call
-from collections import OrderedDict
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+import setup_malcolm_paths
 
-from malcolm.core.response import Error, Return, Delta
+import unittest
+from mock import MagicMock
+
+from malcolm.core.response import Error, Return
 from malcolm.core.request import Post, Get, Put, Subscribe
 import pvaccess
-pvaccess.Channel = MagicMock()
-pvaccess.RpcClient = MagicMock()
-pvaccess.PvObject = MagicMock()
+import numpy as np
 
 from malcolm.comms.pva.pvaclientcomms import PvaClientComms
 
@@ -61,7 +63,7 @@ class TestPVAClientComms(unittest.TestCase):
     def test_send_post_to_server(self):
         self.PVA = PvaClientComms(self.p)
         self.PVA.send_to_caller = MagicMock()
-        request = Post(endpoint=["ep1", "method1"], parameters={'arg1': 1})
+        request = Post(endpoint=["ep1", "method1"], parameters={'arg1': np.int32(1)})
         self.PVA.send_to_server(request)
         pvaccess.RpcClient.assert_called_once()
         self.rpc.invoke.assert_called_once()
