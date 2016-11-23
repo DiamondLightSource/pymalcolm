@@ -1,7 +1,7 @@
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
-from malcolm.core import method_takes, REQUIRED, Task
+from malcolm.core import method_takes, REQUIRED
 from malcolm.core.vmetas import PointGeneratorMeta
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
@@ -11,6 +11,9 @@ XML_MAX_SIZE = 1000000 - 2
 
 # How many to load each time
 POSITIONS_PER_XML = 1000
+
+# How far to load ahead
+N_LOAD_AHEAD = 4
 
 
 class PositionLabellerPart(ChildPart):
@@ -97,8 +100,8 @@ class PositionLabellerPart(ChildPart):
         task.unsubscribe(id_)
 
     def load_more_positions(self, number_left, task):
-        if not self.loading and number_left < POSITIONS_PER_XML and \
-                self.end_index < self.steps_up_to:
+        if not self.loading and self.end_index < self.steps_up_to and \
+                        number_left < POSITIONS_PER_XML * N_LOAD_AHEAD:
             self.loading = True
             xml, self.end_index = self._make_xml(self.end_index)
             task.put(self.child["xml"], xml)
