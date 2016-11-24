@@ -44,6 +44,7 @@ class DatasetTablePart(Part):
         # Update the dataset table
         datasets_table = Table(dataset_table_meta)
         for i in DatasetProducedInfo.filter_values(part_info):
-            row = [i.name, i.filename, i.type, i.rank, i.path, i.uniqueid]
-            datasets_table.append(row)
+            if i.name not in datasets_table.name:
+                row = [i.name, i.filename, i.type, i.rank, i.path, i.uniqueid]
+                datasets_table.append(row)
         self.datasets.set_value(datasets_table)
