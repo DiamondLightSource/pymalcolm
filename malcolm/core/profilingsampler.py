@@ -25,7 +25,6 @@ class ProfilingSampler(object):
         return ';'.join(formatted)
 
     def _sample(self, _, _2):
-        print "sample"
         for frame in sys._current_frames().values():
             formatted_stack = self._format_stack(frame)
             if formatted_stack:

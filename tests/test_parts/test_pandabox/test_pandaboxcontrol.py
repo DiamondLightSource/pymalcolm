@@ -19,6 +19,9 @@ class PandABoxControlTest(unittest.TestCase):
         self.p = Process("process", SyncFactory("sf"))
         self.c = PandABoxControl(self.p, "h", "p")
 
+    def tearDown(self):
+        del self.p.sync_factory
+
     def test_multiline_response_good(self):
         messages = ["!TTLIN 6\n", "!OUTENC 4\n!CAL", "C 2\n.\nblah"]
         self.c.socket.recv.side_effect = messages
@@ -35,6 +38,8 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.start()
         self.assertEqual(self.c.send_recv(""), "OK =mm")
         self.assertEqual(self.c.send_recv(""), "OK =232")
+        self.c.stop()
+        self.c.wait()
 
     def test_bad_good(self):
         messages = ["ERR Invalid bit value\n", "OK =232\n"]
@@ -42,6 +47,8 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.start()
         self.assertRaises(ValueError, self.c.send_recv, "")
         self.assertEqual(self.c.send_recv(""), "OK =232")
+        self.c.stop()
+        self.c.wait()
 
     def test_block_data(self):
         self.c.socket.recv.side_effect = [

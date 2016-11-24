@@ -33,9 +33,9 @@
     name: MIC
     mri: $(mic)
 
-- parts.ADCore.DatasetRunnableChildPart:
-    name: PANDABOX
-    mri: $(pandabox)
+#- parts.ADCore.DatasetRunnableChildPart:
+#    name: PANDABOX
+#    mri: $(pandabox)
 
 - parts.ADCore.DatasetRunnableChildPart:
     name: ZEBRA

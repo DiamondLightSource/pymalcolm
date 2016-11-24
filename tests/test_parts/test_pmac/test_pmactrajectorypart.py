@@ -49,7 +49,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 offsetB=0.0))
         self.assertEqual(args, expected)
 
-    def make_part_info(self, x_pos=0.5):
+    def make_part_info(self, x_pos=0.5, y_pos=0.0):
         part_info = dict(
             xpart=[MotorInfo(
                 cs_axis="A",
@@ -64,18 +64,18 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             ypart=[MotorInfo(
                 cs_axis="B",
                 cs_port="CS1",
-                acceleration_time=0.1,
+                acceleration_time=0.05,
                 resolution=0.001,
                 offset=0,
                 max_velocity=1.0,
-                current_position=0.0,
+                current_position=y_pos,
                 scannable="y"
             )]
         )
         return part_info
 
-    def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5):
-        part_info = self.make_part_info(x_pos)
+    def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5, y_pos=0.0):
+        part_info = self.make_part_info(x_pos, y_pos)
         task = Mock()
         steps_to_do = 3 * len(axes_to_scan)
         params = Mock()
@@ -102,6 +102,9 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(task.put_many.call_count, 4)
         self.assertEqual(task.post.call_count, 2)
         self.assertEqual(task.post_async.call_count, 1)
+        self.assertEqual(task.put.call_count, 2)
+        self.assertEqual(task.put.call_args_list[0],
+                         call(self.child["cs"], "CS1"))
         self.check_resolutions_and_use(task.put_many.call_args_list[0][0][1])
         self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
             timeArray=[100000, 537500, 100000],
@@ -134,7 +137,22 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             positionsB=[
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]))
-        task.put.assert_called_once_with(self.child["numPoints"], 18)
+        self.assertEqual(task.put.call_args_list[1],
+                         call(self.child["numPoints"], 18))
+
+    def test_2_axis_move_to_start(self):
+        task = self.do_configure(axes_to_scan=["x", "y"], x_pos=0.0, y_pos=0.2)
+        self.assertEqual(task.put_many.call_count, 4)
+        self.assertEqual(task.post.call_count, 2)
+        self.assertEqual(task.post_async.call_count, 1)
+        self.check_resolutions_and_use(task.put_many.call_args_list[0][0][1])
+        self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
+            timeArray=[100000, 100000, 100000],
+            velocityMode=[2, 1, 3],
+            userPrograms=[0, 0, 8],
+            pointsToBuild=3,
+            positionsA=[-0.034374999999999996, -0.10312500000000002, -0.1375],
+            positionsB=[0.15000000000000002, 0.049999999999999996, 0.0]))
 
     @patch("malcolm.parts.pmac.pmactrajectorypart.POINTS_PER_BUILD", 4)
     def test_update_step(self):

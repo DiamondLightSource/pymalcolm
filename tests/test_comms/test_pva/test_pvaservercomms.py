@@ -1,18 +1,16 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+import setup_malcolm_paths
+
 import unittest
 from mock import Mock, MagicMock, patch, call
 from collections import OrderedDict
-import threading
 
 from malcolm.core.response import Error, Return, Delta, Update
-from malcolm.core.request import Post
+
 import pvaccess
-pvaccess.PvaServer = MagicMock()
-pvaccess.Endpoint = MagicMock()
-pvaccess.STRING = "STRING"
-pvaccess.BOOLEAN = "BOOLEAN"
-pvaccess.FLOAT = "FLOAT"
-pvaccess.INT = "INT"
-pvaccess.LONG = "LONG"
+import numpy as np
 
 class PvTempObject(object):
     def __init__(self, dict_in, type):
@@ -41,9 +39,8 @@ class PvTempObject(object):
     def set(self, dict_in):
         self._dict = dict_in
 
-pvaccess.PvObject = PvTempObject
-
 from malcolm.comms.pva.pvaservercomms import PvaServerComms, PvaGetImplementation, PvaPutImplementation, PvaRpcImplementation, PvaEndpoint, PvaMonitorImplementation
+
 
 class TestPVAServerComms(unittest.TestCase):
 
@@ -425,72 +422,34 @@ class TestPVAServerComms(unittest.TestCase):
         self.assertEqual(self.PVA._rpcs, {2: self.rpc2})
         self.assertEqual(self.PVA._dead_rpcs, [])
 
-#    def test_cache_to_pvobject(self):
-#        self.PVA = PvaServerComms(self.p)
-#        self.PVA._cache["test.block"] = OrderedDict({"p1": OrderedDict({"p2": "val2", "typeid": "type2"}), "typeid": "type1"})
-#        object = self.PVA.cache_to_pvobject("test.block", [["p1", "p2"]])
-#        self.assertEqual(object, PvTempObject(OrderedDict({"p1": OrderedDict({"p2": "val2"})}), "type1"))
-#
-#        self.PVA._cache["test.block"] = OrderedDict({"p1": [OrderedDict({"p2": 2, "typeid": "type2"}),
-#                                                            OrderedDict({"p3": "val3", "typeid": "type3"})],
-#                                                     "typeid": "type1"})
-#        object = self.PVA.cache_to_pvobject("test.block", [["p1"]])
-#        self.assertEqual(object, PvTempObject(OrderedDict({"p1": [OrderedDict({"p2": 2, "typeid": "type2"}),
-#                                                                  OrderedDict({"p3": "val3", "typeid": "type3"})]}),
-#                                                           "type1"))
-
     def test_dict_to_stucture(self):
         self.PVA = PvaServerComms(self.p)
-        #val = self.PVA.dict_to_structure({"typeid": "type1", "level1": {"typeid": "type2", "level2": {"typeid": "type3", "item1": 1, "item2": "2", "item3": True}}})
-        import sys
-        if sys.version_info[0] < 3:
-            val = self.PVA.dict_to_pv_object_structure(OrderedDict({"typeid": "type1",
-                                                                    "val1": "1",
-                                                                    "val2": 2,
-                                                                    "val3": True,
-                                                                    "val4": long(0),
-                                                                    "val5": 0.5,
-                                                                    "val6": ['', ''],
-                                                                    "val7": [5, 1],
-                                                                    "val8": [True, False],
-                                                                    "val9": [long(0), long(1)],
-                                                                    "val10": [0.2, 0.3],
-                                                                    }))
-            test_dict = OrderedDict()
-            test_dict["val1"] = pvaccess.STRING
-            test_dict["val2"] = pvaccess.INT
-            test_dict["val3"] = pvaccess.BOOLEAN
-            test_dict["val4"] = pvaccess.LONG
-            test_dict["val5"] = pvaccess.FLOAT
-            test_dict["val6"] = [pvaccess.STRING]
-            test_dict["val7"] = [pvaccess.INT]
-            test_dict["val8"] = [pvaccess.BOOLEAN]
-            test_dict["val9"] = [pvaccess.LONG]
-            test_dict["val10"] = [pvaccess.FLOAT]
-            test_val = pvaccess.PvObject(test_dict, "type1")
-            self.assertEquals(val, test_val)
-        else:
-            val = self.PVA.dict_to_pv_object_structure(OrderedDict({"typeid": "type1",
-                                                                    "val1": "1",
-                                                                    "val2": 2,
-                                                                    "val3": True,
-                                                                    "val5": 0.5,
-                                                                    "val6": ['', ''],
-                                                                    "val7": [5, 1],
-                                                                    "val8": [True, False],
-                                                                    "val10": [0.2, 0.3],
-                                                                    }))
-            test_dict = OrderedDict()
-            test_dict["val1"] = pvaccess.STRING
-            test_dict["val2"] = pvaccess.INT
-            test_dict["val3"] = pvaccess.BOOLEAN
-            test_dict["val5"] = pvaccess.FLOAT
-            test_dict["val6"] = [pvaccess.STRING]
-            test_dict["val7"] = [pvaccess.INT]
-            test_dict["val8"] = [pvaccess.BOOLEAN]
-            test_dict["val10"] = [pvaccess.FLOAT]
-            test_val = pvaccess.PvObject(test_dict, "type1")
-            self.assertEquals(val, test_val)
+        val_dict = OrderedDict()
+        val_dict["typeid"] = "type1"
+        val_dict["val1"] = "1"
+        val_dict["val2"] = np.int32(2)
+        val_dict["val3"] = True
+        val_dict["val4"] = np.int64(0)
+        val_dict["val5"] = np.float64(0.5)
+        val_dict["val6"] = ['', '']
+        val_dict["val7"] = np.array([5, 1], dtype=np.int32)
+        val_dict["val8"] = [True, False]
+        val_dict["val9"] = np.array([0, 1], dtype=np.int64)
+        val_dict["val10"] = np.array([0.2, 0.6], dtype=np.float64)
+        val = self.PVA.dict_to_pv_object_structure(val_dict)
+        test_dict = OrderedDict()
+        test_dict["val1"] = pvaccess.STRING
+        test_dict["val2"] = pvaccess.INT
+        test_dict["val3"] = pvaccess.BOOLEAN
+        test_dict["val4"] = pvaccess.LONG
+        test_dict["val5"] = pvaccess.DOUBLE
+        test_dict["val6"] = [pvaccess.STRING]
+        test_dict["val7"] = [pvaccess.INT]
+        test_dict["val8"] = [pvaccess.BOOLEAN]
+        test_dict["val9"] = [pvaccess.LONG]
+        test_dict["val10"] = [pvaccess.DOUBLE]
+        test_val = pvaccess.PvObject(test_dict, "type1")
+        self.assertEquals(val, test_val)
 
         # Test the variant union array type
         val = self.PVA.dict_to_pv_object_structure(OrderedDict({"union_array": [OrderedDict({"val1": 1}), OrderedDict({"val2": "2"})]}))

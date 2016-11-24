@@ -1,13 +1,11 @@
-import json
-
-from tornado.websocket import WebSocketHandler, WebSocketError
+from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RequestHandler, asynchronous
-from tornado.httpserver import HTTPServer
+from tornado.websocket import WebSocketHandler, WebSocketError
 
-from malcolm.compat import OrderedDict
-from malcolm.core import ServerComms, deserialize_object, serialize_object, \
+from malcolm.core import ServerComms, deserialize_object, \
     Request, Get, Return, Error, Post, method_takes
+from malcolm.core.jsonutils import json_decode, json_encode
 from malcolm.core.vmetas import NumberMeta
 
 
@@ -23,7 +21,7 @@ class MalcWebSocketHandler(WebSocketHandler):  # pylint:disable=abstract-method
             message(str): Received message
         """
 
-        d = json.loads(message, object_pairs_hook=OrderedDict)
+        d = json_decode(message)
         request = deserialize_object(d, Request)
         request.context = self
         self.servercomms.on_request(request)
@@ -48,7 +46,7 @@ class MalcBlockHandler(RequestHandler):
     @asynchronous
     def post(self, endpoint_str):
         endpoint = endpoint_str.split("/")
-        parameters = json.loads(self.get_body_argument("parameters"))
+        parameters = json_decode(self.get_body_argument("parameters"))
         request = Post(self, None, endpoint, parameters)
         self.servercomms.on_request(request)
 
@@ -82,7 +80,7 @@ class WebsocketServerComms(ServerComms):
 
     def _send_to_client(self, response):
         if isinstance(response.context, MalcWebSocketHandler):
-            message = json.dumps(serialize_object(response))
+            message = json_encode(response)
             self.log_debug("Sending message %s", message)
             try:
                 response.context.write_message(message)
@@ -91,7 +89,7 @@ class WebsocketServerComms(ServerComms):
                 self.notify_closed_connection(response)
         else:
             if isinstance(response, Return):
-                message = json.dumps(serialize_object(response.value))
+                message = json_encode(response.value)
                 response.context.finish(message + "\n")
             else:
                 if isinstance(response, Error):

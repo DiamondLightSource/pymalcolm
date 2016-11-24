@@ -108,7 +108,6 @@ class CAPart(Part):
         self.update_value(value)
 
     def update_value(self, value):
-        self.log_debug("Camonitor update %r", value)
         # TODO: make Alarm from value.status and value.severity
         # TODO: make Timestamp from value.timestamp
         if not value.ok:

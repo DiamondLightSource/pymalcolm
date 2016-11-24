@@ -37,14 +37,14 @@ class Request(Serializable):
         self.set_endpoint_data("id", id_)
 
     def _respond(self, response):
-        try:
-            qsize = self.response_queue.qsize()
-        except AttributeError:
-            qsize = 0
-        if qsize > UNSERVICED_QUEUE_SIZE:
-            logging.warn(
-                "Response queue for %s with %d entries may be unserviced",
-                self, qsize)
+        #try:
+        #    qsize = self.response_queue.qsize()
+        #except AttributeError:
+        #    qsize = 0
+        #if qsize > UNSERVICED_QUEUE_SIZE:
+        #    logging.warn(
+        #        "Response queue for %s with %d entries may be unserviced",
+        #        self, qsize)
         self.response_queue.put(response)
 
     def respond_with_return(self, value=None):

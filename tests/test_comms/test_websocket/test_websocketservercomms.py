@@ -12,6 +12,7 @@ from malcolm.comms.websocket.websocketservercomms import MalcWebSocketHandler,\
         MalcBlockHandler
 from malcolm.core.request import Request, Get, Post
 from malcolm.core.response import Return, Error
+from malcolm.core import json_encode, json_decode
 
 
 class TestWSServerComms(unittest.TestCase):
@@ -75,85 +76,63 @@ class TestWSServerComms(unittest.TestCase):
         spawnable_mocks[0].wait.assert_called_once_with(timeout=timeout)
         spawnable_mocks[1].wait.assert_called_once_with(timeout=timeout)
 
-    @patch('malcolm.comms.websocket.websocketservercomms.deserialize_object')
-    @patch('malcolm.comms.websocket.websocketservercomms.json')
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
-    def test_MWSH_on_message(self, _, _1, json_mock, deserialize_mock):
-        self.WS = WebsocketServerComms(self.p, dict(port=1))
-
-        message_dict = dict(name="TestMessage")
-        json_mock.loads.return_value = message_dict
-
-        request = MagicMock()
-        request.context = self.WS.server.request_callback.handlers[0][1][1].handler_class
-        deserialize_mock.return_value = request
-
-        m = MagicMock()
-        MWSH = MalcWebSocketHandler(m, m)
-        self.WS.server.request_callback.handlers[0][1][1].handler_class.on_message(
-            MWSH, "TestMessage")
-
-        json_mock.loads.assert_called_once_with("TestMessage",
-                                                object_pairs_hook=OrderedDict)
-        deserialize_mock.assert_called_once_with(message_dict, Request)
-        self.p.q.put.assert_called_once_with(request)
+    def test_MWSH_on_message(self, ioloop_mock, server_mock):
+        MWSH = MalcWebSocketHandler(MagicMock(), MagicMock())
+        MWSH.servercomms = MagicMock()
+        request = Get(None, None, ["block", "attr"])
+        request.set_id(54)
+        message = """{
+        "typeid": "malcolm:core/Get:1.0",
+        "id": 54,
+        "endpoint": ["block", "attr"]
+        }"""
+        MWSH.on_message(message)
+        self.assertEquals(MWSH.servercomms.on_request.call_count, 1)
+        actual = MWSH.servercomms.on_request.call_args[0][0]
+        self.assertEquals(actual.to_dict(), request.to_dict())
 
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
     def test_on_request_with_process_name(self, _, _2):
-        self.WS = WebsocketServerComms(self.p, dict(port=1))
+        ws = WebsocketServerComms(self.p, dict(port=1))
         request = MagicMock(fields=dict(endpoint="anything"), endpoint=[".", "blocks"])
-        self.WS.on_request(request)
+        ws.on_request(request)
         self.p.q.put.assert_called_once_with(request)
         self.assertEqual(request.endpoint, [self.p.name, "blocks"])
 
-    @patch('malcolm.comms.websocket.websocketservercomms.json')
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
-    def test_send_to_client(self, _, _2, json_mock):
-        self.WS = WebsocketServerComms(self.p, dict(port=1))
-
-        response_mock = MagicMock()
-        response_mock.context = MagicMock(spec=MalcWebSocketHandler)
-        self.WS._send_to_client(response_mock)
-
-        json_mock.dumps.assert_called_once_with(response_mock.to_dict())
-        response_mock.context.write_message.assert_called_once_with(
-            json_mock.dumps())
-
-    @patch('malcolm.comms.websocket.websocketservercomms.json')
-    @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
-    @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
-    def test_send_to_client_return(self, _, _2, json_mock):
+    def test_send_to_client(self, _, _2):
         ws = WebsocketServerComms(self.p, dict(port=1))
-        response = MagicMock(spec=Return)
-        response.value = MagicMock()
-        response.context = MagicMock()
+        response = Return(11, MagicMock(spec=MalcWebSocketHandler), "me")
         ws._send_to_client(response)
+        response.context.write_message.assert_called_once_with(
+            '{"typeid": "malcolm:core/Return:1.0", "id": 11, "value": "me"}')
 
-        json_mock.dumps.assert_called_once_with(response.value.to_dict())
+    @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
+    @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
+    def test_send_to_client_return(self, _, _2):
+        ws = WebsocketServerComms(self.p, dict(port=1))
+        response = Return(11, MagicMock(), "me")
+        ws._send_to_client(response)
         response.context.finish.assert_called_once_with(
-            json_mock.dumps.return_value + "\n")
+            '"me"\n')
 
-    @patch('malcolm.comms.websocket.websocketservercomms.json')
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
-    def test_send_to_client_error(self, _, _2, json_mock):
+    def test_send_to_client_error(self, _, _2):
         ws = WebsocketServerComms(self.p, dict(port=1))
-        response = MagicMock(spec=Error)
-        response.context = MagicMock()
-        response.message = MagicMock()
+        response = Error(11, MagicMock(), "bad")
         ws._send_to_client(response)
 
-        response.context.set_status.assert_called_once_with(
-            500, response.message)
+        response.context.set_status.assert_called_once_with(500, "bad")
         response.context.write_error.assert_called_once_with(500)
 
-    @patch('malcolm.comms.websocket.websocketservercomms.json')
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
-    def test_send_to_client_unknown(self, _, _2, json_mock):
+    def test_send_to_client_unknown(self, _, _2):
         ws = WebsocketServerComms(self.p, dict(port=1))
         response = MagicMock()
         ws._send_to_client(response)

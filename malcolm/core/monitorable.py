@@ -41,8 +41,7 @@ class Monitorable(Loggable, Serializable):
         if self._parent is None:
             return
         for change in changes:
-            path = change[0]
-            path.insert(0, self._name)
+            change[0].insert(0, self._name)
         self._parent.report_changes(*changes)
 
     def set_endpoint_data(self, name, value, notify=True):

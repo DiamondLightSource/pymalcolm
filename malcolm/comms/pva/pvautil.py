@@ -1,12 +1,25 @@
 import logging
 
+import numpy as np
 import pvaccess
 
-from malcolm.compat import long_, OrderedDict
+from malcolm.compat import str_, OrderedDict
 
 
 class PvaUtil(object):
     """A utility class for PvAccess conversions"""
+    pva_dtypes = {
+        np.int8: pvaccess.BYTE,
+        np.uint8: pvaccess.UBYTE,
+        np.int16: pvaccess.SHORT,
+        np.uint16: pvaccess.USHORT,
+        np.int32: pvaccess.INT,
+        np.uint32: pvaccess.UINT,
+        np.int64: pvaccess.LONG,
+        np.uint64: pvaccess.ULONG,
+        np.float32: pvaccess.FLOAT,
+        np.float64: pvaccess.DOUBLE
+    }
 
     def dict_to_pv_object(self, dict_in):
         pv_object = self.dict_to_pv_object_structure(dict_in)
@@ -15,68 +28,60 @@ class PvaUtil(object):
         pv_object.set(self.strip_type_id(dict_in))
         return pv_object
 
+    def pva_type_from_value(self, value):
+        if isinstance(value, str_):
+            return pvaccess.STRING
+        elif isinstance(value, bool):
+            return pvaccess.BOOLEAN
+        elif isinstance(value, np.number):
+            return self.pva_dtypes[value.dtype.type]
+        elif isinstance(value, np.ndarray):
+            assert len(value.shape) == 1, \
+                "Expected 1d array, got {}".format(value.shape)
+            return [self.pva_dtypes[value.dtype.type]]
+        elif isinstance(value, list):
+            if len(value) == 0 or isinstance(value[0], str_):
+                return [pvaccess.STRING]
+            elif isinstance(value[0], bool):
+                return [pvaccess.BOOLEAN]
+            elif isinstance(value[0], dict):
+                # variant union
+                return [({},)]
+        raise ValueError(
+            "Cannot get pva type from %s %r" % (type(value), value))
+
     def dict_to_pv_object_structure(self, dict_in):
         structure = OrderedDict()
-        typeid = None
-        for item in dict_in:
-            if item == "typeid":
-                typeid = dict_in[item]
+        typeid = ""
+        for key, value in dict_in.items():
+            if key == "typeid":
+                typeid = value
+                value = None
+            elif isinstance(value, dict):
+                value = self.dict_to_pv_object_structure(value)
             else:
-                if isinstance(dict_in[item], str):
-                    structure[item] = pvaccess.STRING
-                elif isinstance(dict_in[item], bool):
-                    structure[item] = pvaccess.BOOLEAN
-                elif isinstance(dict_in[item], float):
-                    structure[item] = pvaccess.FLOAT
-                elif isinstance(dict_in[item], int):
-                    structure[item] = pvaccess.INT
-                elif isinstance(dict_in[item], long_):
-                    structure[item] = pvaccess.LONG
-                elif isinstance(dict_in[item], list):
-                    # self.log_debug("List found: %s", item)
-                    if not dict_in[item]:
-                        structure[item] = [pvaccess.STRING]
-                    else:
-                        if isinstance(dict_in[item][0], str):
-                            structure[item] = [pvaccess.STRING]
-                        elif isinstance(dict_in[item][0], bool):
-                            structure[item] = [pvaccess.BOOLEAN]
-                        elif isinstance(dict_in[item][0], float):
-                            structure[item] = [pvaccess.FLOAT]
-                        elif isinstance(dict_in[item][0], int):
-                            structure[item] = [pvaccess.INT]
-                        elif isinstance(dict_in[item][0], long_):
-                            structure[item] = [pvaccess.LONG]
-                        elif isinstance(dict_in[item][0], dict):
-                            structure[item] = [({},)]
-                elif isinstance(dict_in[item], dict):
-                    dict_structure = self.dict_to_pv_object_structure(dict_in[item])
-                    if dict_structure:
-                        structure[item] = dict_structure
+                value = self.pva_type_from_value(value)
+            if value is not None:
+                structure[key] = value
 
-        try:
-            if not structure:
-                return None
+        if structure:
+            pv_object = pvaccess.PvObject(structure, typeid)
+            return pv_object
 
-            if not typeid:
-                pv_object = pvaccess.PvObject(structure, "")
-            else:
-
-                pv_object = pvaccess.PvObject(structure, typeid)
-        except Exception:
-            logging.exception("Unable to create PvObject structure from OrderedDict")
-            raise
-
-        return pv_object
+    def normalize(self, value):
+        # TODO: should be in pvaccess
+        if isinstance(value, (np.number, np.ndarray)):
+            value = value.tolist()
+        return value
 
     def strip_type_id(self, dict_in):
         dict_out = OrderedDict()
-        for item in dict_in:
-            if item != "typeid":
-                if isinstance(dict_in[item], dict):
-                    dict_values = self.strip_type_id(dict_in[item])
-                    if dict_values:
-                        dict_out[item] = dict_values
-                else:
-                    dict_out[item] = dict_in[item]
-        return dict_out
+        for key, value in dict_in.items():
+            if key != "typeid":
+                if isinstance(value, dict):
+                    value = self.strip_type_id(value)
+                value = self.normalize(value)
+                if value is not None:
+                    dict_out[key] = value
+        if dict_out:
+            return dict_out

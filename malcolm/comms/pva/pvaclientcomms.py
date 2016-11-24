@@ -27,8 +27,6 @@ class PvaClientComms(ClientComms, PvaUtil):
         Args:
             request(Request): The message to pass to the server
         """
-        self.log_debug("Request: %s", request)
-
         try:
 
             if isinstance(request, Get):
@@ -53,9 +51,9 @@ class PvaClientComms(ClientComms, PvaUtil):
 
         except:
             # PvAccess error, create the Error message
+            self.log_exception("Error processing request %s", request)
             return_object = Error(id_=request["id"], message="PvAccess error")
 
-        self.log_debug("Return object: %s", return_object)
         if return_object:
             self.send_to_caller(return_object)
 
@@ -128,6 +126,7 @@ class PvaClientComms(ClientComms, PvaUtil):
         c.startMonitor(path)
         self.log_debug("Started monitor")
         return None
+
 
 class MonitorHandler(Loggable):
     def __init__(self, id, channel, client):

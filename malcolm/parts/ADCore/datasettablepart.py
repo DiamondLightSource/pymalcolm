@@ -12,7 +12,7 @@ columns["name"] = StringArrayMeta("Dataset name")
 columns["filename"] = StringArrayMeta(
     "Filename of HDF file relative to fileDir")
 columns["type"] = ChoiceArrayMeta("Type of dataset", dataset_types)
-columns["rank"] = NumberArrayMeta("uint8", "Rank (number of dimensions)")
+columns["rank"] = NumberArrayMeta("int32", "Rank (number of dimensions)")
 columns["path"] = StringArrayMeta("Dataset path within HDF file")
 columns["uniqueid"] = StringArrayMeta("UniqueID array path within HDF file")
 dataset_table_meta = TableMeta("Datsets produced in HDF file", columns=columns)
@@ -44,6 +44,7 @@ class DatasetTablePart(Part):
         # Update the dataset table
         datasets_table = Table(dataset_table_meta)
         for i in DatasetProducedInfo.filter_values(part_info):
-            row = [i.name, i.filename, i.type, i.rank, i.path, i.uniqueid]
-            datasets_table.append(row)
+            if i.name not in datasets_table.name:
+                row = [i.name, i.filename, i.type, i.rank, i.path, i.uniqueid]
+                datasets_table.append(row)
         self.datasets.set_value(datasets_table)

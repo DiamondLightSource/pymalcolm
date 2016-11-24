@@ -36,9 +36,9 @@ class TestValidate(unittest.TestCase):
         nm = NumberMeta("int32")
         self.assertEqual(123, nm.validate(123))
 
-    def test_float_fails_against_int(self):
+    def test_float_to_int_truncates(self):
         nm = NumberMeta("int32")
-        self.assertRaises(ValueError, nm.validate, 123.456)
+        self.assertEquals(nm.validate(123.6), 123)
 
     def test_none_validates(self):
         nm = NumberMeta("int32")
@@ -47,7 +47,7 @@ class TestValidate(unittest.TestCase):
     def test_unsigned_validates(self):
         nm = NumberMeta("uint32")
         self.assertEqual(nm.validate("22"), 22)
-        self.assertRaises(ValueError, nm.validate, -22)
+        self.assertEqual(nm.validate(-22), 2**32-22)
 
 
 class TestSerialization(unittest.TestCase):

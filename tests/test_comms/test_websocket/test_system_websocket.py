@@ -87,9 +87,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def tearDown(self):
         self.socket += 1
         self.process.stop()
-        del self.process
         self.process2.stop()
-        del self.process2
 
     def test_server_hello_with_malcolm_client(self):
         block2 = self.process2.make_client_block("hello")
