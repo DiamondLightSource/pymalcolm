@@ -25,9 +25,9 @@
     name: BRICK
     mri: $(brick)
 
-#- parts.ADCore.DatasetRunnableChildPart:
-#    name: DET
-#    mri: $(det)
+- parts.ADCore.DatasetRunnableChildPart:
+    name: DET
+    mri: $(det)
 
 - parts.ADCore.DatasetRunnableChildPart:
     name: PANDABOX
