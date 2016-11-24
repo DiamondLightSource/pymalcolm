@@ -12,7 +12,7 @@ columns["name"] = StringArrayMeta("Dataset name")
 columns["filename"] = StringArrayMeta(
     "Filename of HDF file relative to fileDir")
 columns["type"] = ChoiceArrayMeta("Type of dataset", dataset_types)
-columns["rank"] = NumberArrayMeta("uint8", "Rank (number of dimensions)")
+columns["rank"] = NumberArrayMeta("int32", "Rank (number of dimensions)")
 columns["path"] = StringArrayMeta("Dataset path within HDF file")
 columns["uniqueid"] = StringArrayMeta("UniqueID array path within HDF file")
 dataset_table_meta = TableMeta("Datsets produced in HDF file", columns=columns)
