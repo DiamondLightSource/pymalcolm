@@ -16,7 +16,7 @@
 
 - controllers.RunnableController:
     mri: $(mri)
-    axesToMove: [t1x, t1y]
+    axesToMove: [sc_MicroFocusSampleX, sc_MicroFocusSampleY]
 
 - parts.ADCore.DatasetTablePart:
     name: DSET
@@ -25,9 +25,9 @@
     name: BRICK
     mri: $(brick)
 
-- parts.ADCore.DatasetRunnableChildPart:
-    name: DET
-    mri: $(det)
+#- parts.ADCore.DatasetRunnableChildPart:
+#    name: DET
+#    mri: $(det)
 
 - parts.ADCore.DatasetRunnableChildPart:
     name: PANDABOX

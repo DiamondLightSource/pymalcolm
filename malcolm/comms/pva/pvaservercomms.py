@@ -415,11 +415,15 @@ class PvaRpcImplementation(PvaImplementation):
             # Now wait for the Post reply
             self.log_debug("Waiting for reply")
             self.wait_for_reply(timeout=None)
-            self.log_debug("Reply received")
+            self.log_debug("Reply received %s %s", type(self._response), self._response)
             response_dict = OrderedDict()
             if isinstance(self._response, Return):
+                if self._response["value"] is None:
+                    self._response["value"] = 32
                 response_dict = self._response["value"]
                 self.log_debug("Response value : %s", self._response["value"])
+                import time
+                time.sleep(1)
             elif isinstance(self._response, Error):
                 response_dict = self._response.to_dict()
                 response_dict.pop("id")
