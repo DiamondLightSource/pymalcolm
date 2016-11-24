@@ -123,7 +123,8 @@ class MethodMeta(Meta):
                     # Serialize it to copy it
                     serialized = method_meta.takes.elements[element].to_dict()
                     elements[element] = serialized
-                    if element in method_meta.takes.required:
+                    if element in method_meta.takes.required and \
+                                    element not in required:
                         required.append(element)
                     if element in method_meta.defaults:
                         defaults.pop(element, None)
