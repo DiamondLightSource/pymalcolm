@@ -406,40 +406,39 @@ class PvaRpcImplementation(PvaImplementation):
         self.log_debug("Structure: %s", args.getStructureDict())
         # Acquire the lock
         with self._lock:
-            # We now need to create the Post message and execute it
-            endpoint = [self._block, self._method]
-            request = Post(None, self._server.q, endpoint, self.parse_variants(args.toDict(True)))
-            request.set_id(self._id)
-            self._server.process.q.put(request)
+            try:
+                # We now need to create the Post message and execute it
+                endpoint = [self._block, self._method]
+                request = Post(None, self._server.q, endpoint, self.parse_variants(args.toDict(True)))
+                request.set_id(self._id)
+                self._server.process.q.put(request)
 
-            # Now wait for the Post reply
-            self.log_debug("Waiting for reply")
-            self.wait_for_reply(timeout=None)
-            self.log_debug("Reply received %s %s", type(self._response), self._response)
-            response_dict = OrderedDict()
-            if isinstance(self._response, Return):
-                if self._response["value"] is None:
-                    self._response["value"] = 32
-                response_dict = self._response["value"]
-                self.log_debug("Response value : %s", self._response["value"])
-                import time
-                time.sleep(1)
-            elif isinstance(self._response, Error):
-                response_dict = self._response.to_dict()
-                response_dict.pop("id")
+                # Now wait for the Post reply
+                self.log_debug("Waiting for reply")
+                self.wait_for_reply(timeout=None)
+                self.log_debug("Reply received %s %s", type(self._response), self._response)
+                response_dict = OrderedDict()
+                if isinstance(self._response, Return):
+                    response_dict = self._response["value"]
+                    self.log_debug("Response value : %s", response_dict)
+                elif isinstance(self._response, Error):
+                    response_dict = self._response.to_dict()
+                    response_dict.pop("id")
 
-            if not response_dict:
-                pv_object = pvaccess.PvObject(OrderedDict({}), 'malcolm:core/Map:1.0')
-            else:
-                #pv_object = self._server.dict_to_structure(response_dict)
-                #self.log_debug("Pv Object structure created")
-                #self.log_debug("%s", self._server.strip_type_id(response_dict))
-                #pv_object.set(self._server.strip_type_id(response_dict))
-                pv_object = self._server.dict_to_pv_object(response_dict)
-            self.log_debug("Pv Object value set: %s", pv_object)
-            # Add this RPC to the purge list
-            #self._server.register_dead_rpc(self._id)
-            return pv_object
+                if not response_dict:
+                    pv_object = pvaccess.PvObject(OrderedDict(), 'malcolm:core/Map:1.0')
+                else:
+                    #pv_object = self._server.dict_to_structure(response_dict)
+                    #self.log_debug("Pv Object structure created")
+                    #self.log_debug("%s", self._server.strip_type_id(response_dict))
+                    #pv_object.set(self._server.strip_type_id(response_dict))
+                    pv_object = self._server.dict_to_pv_object(response_dict)
+                self.log_debug("Pv Object value set: %s", pv_object)
+                # Add this RPC to the purge list
+                #self._server.register_dead_rpc(self._id)
+                return pv_object
+            except Exception:
+                self.log_exception("Request %s failed", self._request)
 
 
 class PvaMonitorImplementation(PvaImplementation):
@@ -474,7 +473,9 @@ class PvaMonitorImplementation(PvaImplementation):
         for change in changes:
             endpoints = self.dict_to_path(self._request.toDict()) + change[0]
             path = ".".join(endpoints)
-            if self._pv_structure.hasField(path):
+            # TODO: hasField() shouldn't be called if not path, but
+            # the code below might still need to be executed...
+            if path and self._pv_structure.hasField(path):
                 new_value = change[1]
                 if isinstance(new_value, OrderedDict):
                     new_value = self._server.strip_type_id(new_value)
