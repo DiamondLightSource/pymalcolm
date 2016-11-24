@@ -107,7 +107,7 @@ class PandABoxPoller(Spawnable, Loggable):
     def poll_loop(self):
         """At 10Hz poll for changes"""
         next_poll = time.time()
-        while False:
+        while True:
             next_poll += 0.1
             timeout = next_poll - time.time()
             if timeout < 0:
