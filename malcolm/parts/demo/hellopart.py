@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 
 from malcolm.core import Part, method_takes, method_returns, REQUIRED
@@ -12,7 +13,8 @@ class HelloPart(Part):
     @method_returns("greeting", StringMeta(description="a greeting"), REQUIRED)
     def greet(self, parameters, return_map):
         """Optionally sleep <sleep> seconds, then return a greeting to <name>"""
-        return_map.greeting = "Hello %s" % parameters.name
+        print("Manufacturing greeting...")
         time.sleep(parameters.sleep)
+        return_map.greeting = "Hello %s" % parameters.name
         return return_map
 

@@ -2,6 +2,7 @@
 
 
 def make_process():
+    import sys
     import threading
     import argparse
     import logging
@@ -90,12 +91,12 @@ self.process_block.blocks:
     %s
 
 Try:
-hello = self.get_block("hello")
+hello = self.get_block("HELLO")
 print hello.greet("me")
 
 or
 
-gui(self.get_block("counter"))
+gui(self.get_block("COUNTER"))
 
 or
 

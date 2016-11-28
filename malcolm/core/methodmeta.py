@@ -9,8 +9,8 @@ from malcolm.core.request import Post
 from malcolm.core.serializable import Serializable, deserialize_object, \
     check_camel_case
 
-OPTIONAL = object()
 REQUIRED = object()
+OPTIONAL = object()
 
 
 @Serializable.register_subclass("malcolm:core/MethodMeta:1.0")

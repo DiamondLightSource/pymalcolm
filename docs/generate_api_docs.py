@@ -17,11 +17,12 @@ def generate_docs():
         api_docs.write('Malcolm API\n===========\n\n')
 
         modules_root = os.path.join(repo_root, 'malcolm')
-        # create entries in the .rst file for each module
 
         excluded_files = ['__init__.py']
 
+        # create entries in the .rst file for each module
         for root, _, modules in os.walk(modules_root, topdown=True):
+
             modules.sort()
             if '__' not in root and len(root.split("/malcolm/")) > 1:
                 modules[:] = [m for m in modules if m.split('.')[-1] == 'py']
@@ -40,7 +41,7 @@ def add_module_entry(module, _root, modules_list):
     module.write('\n..  toctree::\n')
 
     for file_ in modules_list:
-        file_path = os.path.join("..", "dev", "api", pkg_path, file_)
+        file_path = os.path.join("..", "developer_docs", "api", pkg_path, file_)
         module.write(' ' * 4 + file_path.split('.py')[0] + '\n')
     module.write('\n\n')
 

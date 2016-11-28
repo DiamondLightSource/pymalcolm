@@ -55,6 +55,7 @@ extensions = [
     'sphinxcontrib.plantuml',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'IPython.sphinxext.ipython_console_highlighting',
 ]
 
 # http://twistedmatrix.com/trac/browser/tags/releases/twisted-8.2.0/twisted/python/procutils.py?format=txt
