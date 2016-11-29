@@ -6,10 +6,14 @@ You should already know how to run up a Malcolm :ref:`Process` with some
 seen a Part that exposes a :ref:`Method`. Now we will look at a Part that
 exposes an :ref:`Attribute` as well.
 
-Let's take the example of a Counter. It contains a writeable Attribute called
-``counter`` which will keep the current counter value. It contains a Method
-zero() which will set ``counter = 0``, and a Method increment() which will
-set ``counter = counter + 1``. The block definition in
+
+Let's take the example of a Counter. It contains:
+
+- a writeable Attribute called ``counter`` which will keep the current counter value. 
+- a Method zero() which will set ``counter = 0``.
+- a Method increment() which will set ``counter = counter + 1``. 
+
+The block definition in
 ``./malcolm/blocks/demo/Counter.yaml`` looks very similar to the Hello
 example in the previous tutorial:
 
@@ -29,7 +33,7 @@ Let's take a look at the ``./malcolm/parts/demo/counterpart.py`` now:
 Again, we start by subclassing :class:`Part`, and we have decorated a couple
 of functions with :meth:`method_takes`, but this time they don't take or
 return any arguments, so the functions don't have a ``parameters`` argument.
-The main difference is that we have implemented
+The main difference to the Hello example is that we have implemented
 :meth:`~Part.create_attributes` which expects us to create and yield any
 Attributes we expect the Block to have. In our example we yield:
 
@@ -38,17 +42,17 @@ Attributes we expect the Block to have. In our example we yield:
 - self.counter.set_value: the function that will be called when someone tries
   to "Put" to the Attribute, or None if it isn't writeable
 
-To make the Attribute, we need to first make a meta object. In our example we
+To make the Attribute we first need to make a meta object. In our example we
 want a ``float64`` :class:`~vmetas.NumberMeta` as we want to demonstrate
-floating point numbers later. If our counter was an integer we could choose
+floating point numbers. If our counter was an integer we could choose
 ``int32`` or ``int64``. The actual Attribute is returned by the
 :meth:`~VMeta.make_attribute` method of this meta.
 
-In the two methods, we make use of this Attribute. We can get its value by
-using the :attr:`~Attribute.value` attr, and set its value by calling
-:meth:`~Attribute.set_value`. This function will validate the new value using
-the :class:`VMeta` object we passed in :meth:`~Part.create_attributes`, and
-notify the Process that the Block is attached to that something has chnaged
+In the two methods (zero and increment), we make use of the ``counter`` Attribute. 
+We can get its value by using the :attr:`~Attribute.value` attribute and set its value by calling
+the :meth:`~Attribute.set_value` method. This method will validate the new value using
+the :class:`VMeta` object we passed in :meth:`~Part.create_attributes` and
+notify the Process, that the Block is attached to, that something has changed
 and subscribers need to be updated.
 
 Visualising the Block with the GUI
@@ -95,7 +99,7 @@ This will launch a GUI that lets us see what's going on:
 .. image:: counter_1.png
 
 If you try clicking the increment button a few times you should see the value
-increase, the reset button should zero it, and clicking on the counter value
+increase, the reset button should zero it and clicking on the counter value
 should let you enter a number yourself. Notice that this value will also be
 validated by the meta object we created, so you can enter ``34.5`` into the
 counter value, but if you entered ``foo``, you will get a GUI that looks like
@@ -111,7 +115,7 @@ And a message on the console::
 Conclusion
 ----------
 
-This second tutorial has taken us through creating Attributes in Blocks, and
+This second tutorial has taken us through creating Attributes in Blocks and
 showed us a little bit of the error checking that :class:`VMeta` instances
 give us. Now we have a CounterPart, we could combine it with the HelloPart
 from the previous tutorial, creating a Controller with 2 Parts that has
