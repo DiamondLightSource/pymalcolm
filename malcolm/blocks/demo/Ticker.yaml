@@ -1,0 +1,24 @@
+# Define the parameters this Block will take
+- parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- controllers.RunnableController:
+    mri: $(mri)
+
+# Add the Counter blocks
+- blocks.demo.Counter:
+    mri: COUNTERX
+
+- blocks.demo.Counter:
+    mri: COUNTERY
+
+# Add Parts to use the Counter blocks within Ticker block
+- parts.demo.ScanTickerPart:
+    name: x
+    mri: COUNTERX
+
+- parts.demo.ScanTickerPart:
+    name: y
+    mri: COUNTERY
+
