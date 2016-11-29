@@ -17,5 +17,10 @@ class VMeta(Meta):
             "Abstract validate function must be implemented in child classes")
 
     def make_attribute(self, initial_value=None):
+        """Make an Attribute instance of the correct type for this Meta
+
+        Args:
+            initial_value: The initial value the Attribute should take
+        """
         attr = self.attribute_class(self, initial_value)
         return attr

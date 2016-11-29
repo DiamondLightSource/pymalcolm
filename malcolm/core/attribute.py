@@ -4,7 +4,12 @@ from malcolm.core.serializable import deserialize_object
 
 
 class Attribute(Monitorable):
-    """Represents a value with type information that may be backed elsewhere"""
+    """Represents a value with type information that may be backed elsewhere
+
+    Attributes:
+        meta (VMeta): The meta object that will validate any set_value()
+        value: The current value of the object
+    """
 
     endpoints = ["meta", "value"]
 

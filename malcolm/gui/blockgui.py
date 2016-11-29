@@ -20,7 +20,7 @@ class BlockGui(QTreeView):
         self.setColumnWidth(0, 160)
         self.setColumnWidth(1, 180)
         self.setColumnWidth(2, 25)
-        self.resize(QSize(370, 800))
+        self.resize(QSize(370, 500))
         self.setItemDelegateForColumn(1, Delegate())
         self.setEditTriggers(self.AllEditTriggers)
         self.expanded.connect(self.write_expanded)

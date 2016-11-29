@@ -28,6 +28,7 @@ file.
 Let's look at a ``./examples/DEMO-HELLO.yaml`` now:
 
 .. literalinclude:: ../../examples/DEMO-HELLO.yaml
+    :language: yaml
 
 You will see 4 entries in the file. The first 3 entries are instantiating Blocks
 that have already been defined. These Blocks each take a single mri
@@ -184,9 +185,8 @@ We've found out how to create Blocks that have already been defined, so lets
 have a look at how we define a Block. The Hello Block of the last example is
 a good example, it is defined in the ``./malcolm/blocks/demo/Hello.yaml`` file:
 
-.. highlight:: yaml
-
 .. literalinclude:: ../../malcolm/blocks/demo/Hello.yaml
+    :language: yaml
 
 The first item in the YAML file is a :ref:`parameter`. This defines a parameter
 that must be defined when instantiating the Block. It's value is then available
@@ -255,9 +255,8 @@ We will normally use one of the builtin Controllers, so the only place we
 write code is when we define a Part. Let's take a look at our
 ``./malcolm/parts/demo/hellopart.py`` now:
 
-.. highlight:: python
-
 .. literalinclude:: ../../malcolm/parts/demo/hellopart.py
+    :language: python
 
 .. module:: malcolm.core
 
@@ -296,7 +295,7 @@ placing them within a Controller. The HelloPart we have seen encapsulates the
 functionality required to add a ``greet()`` function to a Block. It means
 that we could now add "greeting" functionality to another Block just by
 adding it to the instantiated parts. In the next tutorial we will read more
-about this.
+about adding functionality using Parts.
 
 .. _YAML:
     https://en.wikipedia.org/wiki/YAML
