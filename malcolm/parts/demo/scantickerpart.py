@@ -6,14 +6,6 @@ from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
 
 
-# Args for configure() and validate
-configure_args = [
-    "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-    "axesToMove", StringArrayMeta(
-        "List of axes in inner dimension of generator that should be moved"),
-    REQUIRED]
-
-
 class ScanTickerPart(ChildPart):
     # Generator instance
     generator = None
@@ -25,7 +17,12 @@ class ScanTickerPart(ChildPart):
     @RunnableController.Configure
     @RunnableController.PostRunReady
     @RunnableController.Seek
-    @method_takes(*configure_args)
+    @method_takes(
+        "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
+        "axesToMove", StringArrayMeta(
+            "List of axes in inner dimension of generator that should be moved"
+        ), REQUIRED
+    )
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         # If we are being asked to move
         if self.name in params.axesToMove:

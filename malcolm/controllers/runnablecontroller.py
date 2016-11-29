@@ -302,10 +302,10 @@ class RunnableController(ManagerController):
         self.try_stateful_function(sm.RUNNING, next_state, self._call_do_run)
 
     def _call_do_run(self):
-        resume = False
+        hook = self.Run
         while True:
             try:
-                self.do_run(resume)
+                self.do_run(hook)
             except StopIteration:
                 # Work out if it was an abort or pause
                 with self.lock:
@@ -313,24 +313,18 @@ class RunnableController(ManagerController):
                 self.log_debug("Do run got StopIteration from %s", state)
                 if state in (sm.SEEKING, sm.PAUSED):
                     # Wait to be restarted
-                    self.log_error("Waiting for RUNNING")
                     task = Task("StateWaiter", self.process)
                     bad_states = [sm.DISABLING, sm.ABORTING, sm.FAULT]
                     task.when_matches(self.state, sm.RUNNING, bad_states)
                     # Restart it
-                    self.log_error("Start RUNNING")
-                    resume = True
+                    hook = self.Resume
                 else:
                     # just drop out
                     raise
             else:
                 return
 
-    def do_run(self, resume=False):
-        if resume:
-            hook = self.Resume
-        else:
-            hook = self.Run
+    def do_run(self, hook):
         self.run_hook(hook, self.part_tasks, self.update_completed_steps)
         self.transition(sm.POSTRUN, "Finishing run")
         completed_steps = self.configured_steps.value
