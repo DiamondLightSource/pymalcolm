@@ -3,10 +3,10 @@ Malcolm
 
 |build_status| |coverage| |health| |pypi_version| |readthedocs|
 
-Malcolm is a middlelayer service that allows high level configure/run control
-of control system components generally involved in continuous scans. This
-module contains a python implementation allowing the creation of Malcolm
-servers and clients.
+Malcolm is a middlelayer framework that implements high level configure/run
+behaviour of control system components like those used in continuous scans. 
+This repository contains a Python implementation allowing the creation of 
+Malcolm servers and clients. 
 
 Documentation
 -------------

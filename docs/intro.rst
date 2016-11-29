@@ -1,13 +1,15 @@
-Malcolm is a middlelayer service that allows high level configure/run control
-of control system components generally involved in continuous scans. This
-module contains a python implementation allowing the creation of Malcolm
-servers and clients.
+Malcolm is a middlelayer framework that implements high level configure/run behaviour
+of control system components like those used in continuous scans. 
+This `repository`_ contains a Python implementation (pymalcolm) allowing the creation of Malcolm
+servers and clients. There is also a `malcolmjs`_ JavaScript client and a `jmalcolm`_ Java client.
+
+Malcolm was created as part of the `Mapping project`_ at `Diamond Light Source`_
+in order to improve the performance of continuous scanning.
 
 What can Malcolm do?
 --------------------
 
-Malcolm was created as part of the `Mapping project`_ at `Diamond Light Source`_
-to make continuous scanning faster. It provides a layer on top of `EPICS`_
+Malcolm provides a layer on top of `EPICS`_
 that wraps up groups of `PVs`_ and presents a higher level scanning interface to
 `GDA`_ via `pvAccess`_.
 
@@ -21,7 +23,7 @@ that wraps up groups of `PVs`_ and presents a higher level scanning interface to
     [EPICS] -right-> [HDF File] : frame data
     [EPICS] -down-> [Motor Controller]: motion trajectory
 
-Malcolm was created to do continuous scanning, and the diagram above shows
+Malcolm was developed for continuous scanning and the diagram above shows
 how Diamond uses it, but it can also be used in other ways:
 
 * As a library that can be used in continuous scanning scripts without acting
@@ -34,7 +36,8 @@ how Diamond uses it, but it can also be used in other ways:
 How is the documentation structured?
 ------------------------------------
 
-This documentation is broken into two sections:
+The aim of this documentation is to educate and enlighten users of Malcolm at all levels of expertise.
+To achieve this the documentation is broken into two sections:
 
 * :ref:`user-docs` - How to run a Malcolm server that talks to supported
   hardware and write Malcolm support for a new piece of hardware
@@ -63,5 +66,14 @@ This documentation is broken into two sections:
 
 .. _JSON:
     http://www.json.org/
+
+.. _repository:
+    https://github.com/dls-controls/pymalcolm
+
+.. _malcolmjs:
+    https://github.com/dls-controls/malcolmjs
+
+.. _jmalcolm:
+    https://github.com/openGDA
 
 

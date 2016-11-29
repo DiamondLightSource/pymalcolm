@@ -10,7 +10,9 @@ class HelloPart(Part):
         "name", StringMeta("a name"), REQUIRED,
         "sleep", NumberMeta("float64", "Time to wait before returning"), 0,
     )
-    @method_returns("greeting", StringMeta(description="a greeting"), REQUIRED)
+    @method_returns(
+        "greeting", StringMeta(description="a greeting"), REQUIRED
+    )
     def greet(self, parameters, return_map):
         """Optionally sleep <sleep> seconds, then return a greeting to <name>"""
         print("Manufacturing greeting...")
