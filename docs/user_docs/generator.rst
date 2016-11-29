@@ -1,8 +1,113 @@
 Generator Tutorial
 ==================
 
+You should already know how to create a :ref:`Part` that attaches
+:ref:`Attribute` and :ref:`Method` instances to a :ref:`Block`.
+The Blocks we have made in previous tutorials are quite simple and low level,
+and might correspond to the interface provided by EPICS devices, a collection
+of Attributes that we can set and simple Methods we can call that cause the
+device to operate in a particular way. What is missing is the logic of "do
+this, then that, then these 3 things at the same time". To do this, we will
+create a higher level Block that will control a number of child Blocks to
+synchronise them and use them for a particular application.
+
+These higher level Blocks have two main methods:
+
+- configure(params): Take a set of parameters, and configure all child Blocks
+  according to these parameters. This operation should include as much as
+  possible of the setup of the device, without actually starting a scan.
+- run(): When all devices taking part in the scan have configured themselves,
+  this method with start the scan going. It supervises the actions of the
+  scan, providing status monitoring and any periodic actions that need to
+  happen.
+
+The application we have chosen for this tutorial is a ScanTicker. It will take
+the specification for a scan, then use a number of Counter blocks that we saw in
+the last tutorial, setting them to the demand positions of the axes in the
+scan. This will look a little like a Motor Controller performing a continuous
+scan:
+
+.. uml::
+
+    !include docs/style.iuml
+
+    package "TICKER" <<Frame>> {
+        object Block1 {
+            mri: "TICKER"
+        }
+        object Method1 {
+            name: "configure"
+        }
+        object Method2 {
+            name: "run"
+        }
+        object RunnableController
+        object ScanTickerPart1 {
+            child: COUNTERX
+        }
+        object ScanTickerPart2 {
+            child: COUNTERY
+        }
+        Block1 o-- Method1
+        Block1 o-- Method2
+        RunnableController *-left- Block1
+        RunnableController *-- Method1
+        RunnableController *-- Method2
+        RunnableController *-- ScanTickerPart1
+        RunnableController *-- ScanTickerPart2
+    }
+
+    package "COUNTERX" <<Frame>> {
+        object Block2 {
+            mri: "COUNTERX"
+        }
+        object Attribute1 {
+            name: "counter"
+        }
+        object DefaultController1
+        object CounterPart1 {
+            counter: Attribute1
+        }
+        Block2 o-- Attribute1
+        DefaultController1 *-left- Block2
+        DefaultController1 *-- CounterPart1
+        CounterPart1 *-left- Attribute1
+    }
+
+    package "COUNTERY" <<Frame>> {
+        object Block3 {
+            mri: "COUNTERY"
+        }
+        object Attribute2 {
+            name: "counter"
+        }
+        object DefaultController2
+        object CounterPart2 {
+            counter: Attribute2
+        }
+        Block3 o-- Attribute2
+        DefaultController2 *-left- Block3
+        DefaultController2 *-- CounterPart2
+        CounterPart2 *-left- Attribute2
+    }
+
+    ScanTickerPart1 o-- Block2
+    ScanTickerPart2 o-- Block3
+
+.. currentmodule:: malcolm.controllers
+
+Our "TICKER" block consists of a :class:`RunnableController` which implements
+a :meth:`~RunnableController.configure`/:meth:`~RunnableController.run`
+interface, and two ScanTickerParts. These two Parts do not contribute
+Attributes and Methods, but instead register functions with :class:`Hook`
+instances on the Controller to get code to run during the correct phase of
+:meth:`~RunnableController.configure` or :meth:`~RunnableController.run`.
+
+Specifying Scan Points
+----------------------
+
 There are a number of pieces of information about each point in a scan that are
-needed by parts of Malcolm and GDA:
+needed by parts of Malcolm:
 
 - The demand positions of a number of actuators representing where they should
   be at the  mid-point of a detector frame. This is needed for step scans and
@@ -15,17 +120,27 @@ needed by parts of Malcolm and GDA:
   scan (like a snake scan), these will have the same dimensions as the demand
   positions. For non grid based scans (like a spiral scan), these will have
   less dimensions because the datapoints do not fit onto a regular grid.
+- The duration of the frame. This is needed for continuous scans and is the
+  time taken to get from the lower to the upper bound
 
-The size of each index dimension, the name of each index dimension, and units
-for each actuator are also provided for the scan.
+The size of each index dimension and units for each actuator are also
+needed for file writing.
 
-A separate project called `Scan Point Generator`_ has been setup to create
-these definitions.
+Rather than passing all this information in one large structure, a separate
+project called `Scan Point Generator`_ has been setup to create parameterized
+generators which work together to generate multi-dimensional scan paths. We
+will make our ScanTicker Block understand these generators.
 
-These generators will be used by the Position Labeller to stamp the positions
-in the HDF file, the HDF writer for the dimensions of the file, and the Motor
-Trajectory for the positions to move the motors to.
 
+Hooking into configure() and run()
+----------------------------------
+
+We mentioned earlier that a Part can register functions to run the correct
+phase of Methods provided by the Controller. Lets take a look at
+``parts.demo.scantickerpart.py`` to see how this works:
+
+.. literalinclude:: ../../malcolm/parts/demo/scantickerpart.py
+    :language: python
 
 .. _Scan Point Generator:
     http://scanpointgenerator.readthedocs.org/en/latest/writing.html
