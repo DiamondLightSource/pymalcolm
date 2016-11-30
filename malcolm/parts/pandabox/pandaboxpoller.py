@@ -32,13 +32,14 @@ class PandABoxPoller(Spawnable, Loggable):
         self.add_spawn_function(self.poll_loop,
                                 self.make_default_stop_func(self.q))
 
-    def make_panda_block(self, mri, block_name, block_data, parts=None):
+    def make_panda_block(self, mri, block_name, block_data, parts=None,
+                         area_detector=False):
         # Validate and store block_data
         self._store_block_data(block_name, block_data)
 
         # Defer creation of parts to a block maker
         maker = PandABoxBlockMaker(self.process, self.control, block_name,
-                                   block_data)
+                                   block_data, area_detector)
 
         # Add in any extras we are passed
         if parts:

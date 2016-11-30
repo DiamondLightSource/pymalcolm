@@ -40,7 +40,8 @@ def hardware_collection(process, params):
             else:
                 extra_parts = []
             # Make a block
-            block = poller.make_panda_block(mri, bn, block_data, extra_parts)
+            block = poller.make_panda_block(
+                mri, bn, block_data, extra_parts, params.areaDetectorPrefix)
             blocks.append(block)
             # Make it's corresponding part
             part = make_child_part(process, bn, mri, params.areaDetectorPrefix)
