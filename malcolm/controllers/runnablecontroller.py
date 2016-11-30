@@ -39,7 +39,7 @@ class RunnableController(ManagerController):
             method_takes() decorator
 
     Returns:
-        [ParameterTweakInfo]: any parameters tweaks that have occurred to make
+        ParameterTweakInfo list: any parameters tweaks that have occurred to make
             them compatible with this part. If any are returned, Validate will
             be re-run with the modified parameters.
     """
@@ -244,6 +244,7 @@ class RunnableController(ManagerController):
     @method_takes(*configure_args)
     @method_writeable_in(sm.IDLE)
     def configure(self, params):
+        """Configure for a scan"""
         self.validate(params, params)
         self.try_stateful_function(
             sm.CONFIGURING, sm.READY, self.do_configure, params)
@@ -295,6 +296,7 @@ class RunnableController(ManagerController):
 
     @method_writeable_in(sm.READY)
     def run(self):
+        """Run an already configured scan"""
         if self.configured_steps.value < self.total_steps.value:
             next_state = sm.READY
         else:

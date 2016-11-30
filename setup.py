@@ -47,6 +47,7 @@ def add_multiversion_require(module):
 add_multiversion_require("tornado")
 add_multiversion_require("ruamel.yaml")
 
+packages = [x for x in find_packages() if x.startswith("malcolm")]
 setup(
     name=module_name,
     version=get_version(),
@@ -56,7 +57,7 @@ setup(
     author='Tom Cobb',
     author_email='tom.cobb@diamond.ac.uk',
     keywords='',
-    packages=find_packages(),
+    packages=packages,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

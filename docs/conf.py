@@ -132,6 +132,9 @@ autoclass_content = "both"
 
 autodoc_member_order = 'bysource'
 
+# If true, Sphinx will warn about all references where the target cannot be found
+nitpicky = True
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

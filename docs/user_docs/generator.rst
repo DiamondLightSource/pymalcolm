@@ -25,7 +25,25 @@ The application we have chosen for this tutorial is a ScanTicker. It will take
 the specification for a scan, then use a number of Counter blocks that we saw in
 the last tutorial, setting them to the demand positions of the axes in the
 scan. This will look a little like a Motor Controller performing a continuous
-scan:
+scan.
+
+Let's take a look at the Process definition ``./examples/DEMO-TICKER.yaml``:
+
+.. literalinclude:: ../../examples/DEMO-TICKER.yaml
+    :language: yaml
+
+That's not very exciting, we just load a single Ticker Block and a Comms
+object. Let's look at ``./malcolm/blocks/demo/Ticker.yaml`` to see what one
+of those does:
+
+.. literalinclude:: ../../malcolm/blocks/demo/Ticker.yaml
+    :language: yaml
+
+.. currentmodule:: malcolm.controllers
+
+We instantiate two Counter blocks, and instantiate two ScanTickerParts that
+will connect to them. We then use a :class:`RunnableController` to construct
+our Block. This is probably better viewed as a diagram:
 
 .. uml::
 
@@ -94,20 +112,19 @@ scan:
     ScanTickerPart1 o-- Block2
     ScanTickerPart2 o-- Block3
 
-.. currentmodule:: malcolm.controllers
-
-Our "TICKER" block consists of a :class:`RunnableController` which implements
-a :meth:`~RunnableController.configure`/:meth:`~RunnableController.run`
-interface, and two ScanTickerParts. These two Parts do not contribute
-Attributes and Methods, but instead register functions with :class:`Hook`
-instances on the Controller to get code to run during the correct phase of
+The :class:`RunnableController` contributes the ``configure`` and ``run``
+Methods in a similar way to previous examples, but the two ScanTickerParts do
+not contribute any Attributes or Methods to the Block. Instead, these register
+functions with :class:`~malcolm.core.Hook` instances on the Controller to
+make their child Block behave in a particular way during the correct phase of
 :meth:`~RunnableController.configure` or :meth:`~RunnableController.run`.
 
 Specifying Scan Points
 ----------------------
 
-There are a number of pieces of information about each point in a scan that are
-needed by parts of Malcolm:
+If this ScanTicker Block is going to simulate running a scan, we better learn
+how to specify a scan. There are a number of pieces of information about each
+point in a scan that are needed by parts of Malcolm:
 
 - The demand positions of a number of actuators representing where they should
   be at the  mid-point of a detector frame. This is needed for step scans and
@@ -141,6 +158,26 @@ phase of Methods provided by the Controller. Lets take a look at
 
 .. literalinclude:: ../../malcolm/parts/demo/scantickerpart.py
     :language: python
+
+.. py:currentmodule:: malcolm
+
+
+You'll notice rather a lot of decorators on those functions. The
+``@RunnableController.*`` lines register a function with a :class:`~core.Hook`.
+A :ref:`Controller` defines a a number of Hooks that define what methods
+of a :ref:`Part` will be run during a particular :ref:`Method`. For
+example, we are hooking our ``configure()`` method to the
+:attr:`~controllers.RunnableController.Configure` Hook. Let's take a
+look at its documentation:
+
+.. py:currentmodule:: malcolm.controllers
+
+.. autoattribute:: RunnableController.Configure
+    :noindex:
+
+
+
+
 
 .. _Scan Point Generator:
     http://scanpointgenerator.readthedocs.org/en/latest/writing.html
