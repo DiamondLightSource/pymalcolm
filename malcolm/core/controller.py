@@ -273,16 +273,15 @@ class Controller(Loggable):
             self.log_debug("Part %s returned %s" % (part.name, ret))
 
             if isinstance(ret, Exception):
-                # Stop all other tasks
-                for h in hook_runners.values():
-                    h.stop()
+                if not isinstance(ret, StopIteration):
+                    # If StopIteration, all tasks have already been stopped.
+                    for h in hook_runners.values():
+                        h.stop()
+                # Wait for them to finish
                 for h in hook_runners.values():
                     h.wait()
 
-            # If we got a StopIteration, someone asked us to stop, so
-            # don't wait, otherwise make sure we finished
-            if not isinstance(ret, StopIteration):
-                hook_runner.wait()
+            hook_runner.wait()
 
             if isinstance(ret, Exception):
                 raise ret

@@ -1,12 +1,12 @@
 Malcolm
 =======
 
-|build-status| |coverage| |health| |pypi-version| |readthedocs|
+|build_status| |coverage| |health| |pypi_version| |readthedocs|
 
-Malcolm is a middlelayer service that allows high level configure/run control
-of control system components generally involved in continuous scans. This
-module contains a python implementation allowing the creation of Malcolm
-servers and clients.
+Malcolm is a middlelayer framework that implements high level configure/run
+behaviour of control system components like those used in continuous scans. 
+This repository contains a Python implementation allowing the creation of 
+Malcolm servers and clients. 
 
 Documentation
 -------------
@@ -43,7 +43,8 @@ License
 APACHE License. (see `LICENSE`_)
 
 
-.. |build-status| image:: https://travis-ci.org/dls-controls/pymalcolm.svg?style=flat
+.. |build_status| image:: https://travis-ci.org/dls-controls/pymalcolm
+.svg?style=flat
     :target: https://travis-ci.org/dls-controls/pymalcolm
     :alt: Build Status
 
@@ -51,7 +52,7 @@ APACHE License. (see `LICENSE`_)
     :target: https://coveralls.io/github/dls-controls/pymalcolm?branch=master
     :alt: Test coverage
 
-.. |pypi-version| image:: https://img.shields.io/pypi/v/malcolm.svg
+.. |pypi_version| image:: https://img.shields.io/pypi/v/malcolm.svg
     :target: https://pypi.python.org/pypi/malcolm/
     :alt: Latest PyPI version
 

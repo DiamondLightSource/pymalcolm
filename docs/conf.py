@@ -55,6 +55,7 @@ extensions = [
     'sphinxcontrib.plantuml',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'IPython.sphinxext.ipython_console_highlighting',
 ]
 
 # http://twistedmatrix.com/trac/browser/tags/releases/twisted-8.2.0/twisted/python/procutils.py?format=txt
@@ -130,6 +131,9 @@ napoleon_use_ivar = True
 autoclass_content = "both"
 
 autodoc_member_order = 'bysource'
+
+# If true, Sphinx will warn about all references where the target cannot be found
+nitpicky = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

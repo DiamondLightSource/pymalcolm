@@ -1,0 +1,13 @@
+# Create some Blocks
+- blocks.demo.Hello:
+    mri: HELLO
+
+- blocks.demo.Hello:
+    mri: HELLO2
+
+- blocks.demo.Counter:
+    mri: COUNTER
+
+# Add a webserver
+- comms.websocket.WebsocketServerComms:
+    port: 8080

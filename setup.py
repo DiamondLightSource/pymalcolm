@@ -26,6 +26,28 @@ def get_version():
         raise RuntimeError('Unable to find version string in {0}.'
                            .format(VERSION_FILE))
 
+install_requires = ['numpy', 'scanpointgenerator>=1.5']
+
+def add_multiversion_require(module):
+    try:
+        # Can we import it?
+        __import__(module)
+    except ImportError:
+        try:
+            # What about if we require?
+            from pkg_resources import require
+            require(module)
+        except Exception:
+            pass
+        else:
+            # So it is there if we require, lets use it
+            global install_requires
+            install_requires.append(module)
+
+add_multiversion_require("tornado")
+add_multiversion_require("ruamel.yaml")
+
+packages = [x for x in find_packages() if x.startswith("malcolm")]
 setup(
     name=module_name,
     version=get_version(),
@@ -35,7 +57,7 @@ setup(
     author='Tom Cobb',
     author_email='tom.cobb@diamond.ac.uk',
     keywords='',
-    packages=find_packages(),
+    packages=packages,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -47,7 +69,7 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     license='APACHE',
-    install_requires=['numpy', 'scanpointgenerator>=1.5'],
+    install_requires=install_requires,
     extras_require={
         'websocket':  ['tornado'],
         'ca': ['cothread']

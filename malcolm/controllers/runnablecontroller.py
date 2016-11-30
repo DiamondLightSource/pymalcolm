@@ -39,7 +39,7 @@ class RunnableController(ManagerController):
             method_takes() decorator
 
     Returns:
-        [ParameterTweakInfo]: any parameters tweaks that have occurred to make
+        ParameterTweakInfo list: any parameters tweaks that have occurred to make
             them compatible with this part. If any are returned, Validate will
             be re-run with the modified parameters.
     """
@@ -244,6 +244,7 @@ class RunnableController(ManagerController):
     @method_takes(*configure_args)
     @method_writeable_in(sm.IDLE)
     def configure(self, params):
+        """Configure for a scan"""
         self.validate(params, params)
         self.try_stateful_function(
             sm.CONFIGURING, sm.READY, self.do_configure, params)
@@ -295,6 +296,7 @@ class RunnableController(ManagerController):
 
     @method_writeable_in(sm.READY)
     def run(self):
+        """Run an already configured scan"""
         if self.configured_steps.value < self.total_steps.value:
             next_state = sm.READY
         else:
@@ -302,32 +304,29 @@ class RunnableController(ManagerController):
         self.try_stateful_function(sm.RUNNING, next_state, self._call_do_run)
 
     def _call_do_run(self):
-        try:
-            self.do_run()
-        except StopIteration:
-            # Work out if it was an abort or pause
-            with self.lock:
-                state = self.state.value
-            self.log_debug("Do run got StopIteration from %s", state)
-            if state in (sm.SEEKING, sm.PAUSED):
-                # Wait to be restarted
-                task = Task("StateWaiter", self.process)
-                bad_states = [sm.DISABLING, sm.ABORTING, sm.FAULT]
-                task.when_matches(self.state, sm.RUNNING, bad_states)
-                # Restart it
-                self.do_run(resume=True)
+        hook = self.Run
+        while True:
+            try:
+                self.do_run(hook)
+            except StopIteration:
+                # Work out if it was an abort or pause
+                with self.lock:
+                    state = self.state.value
+                self.log_debug("Do run got StopIteration from %s", state)
+                if state in (sm.SEEKING, sm.PAUSED):
+                    # Wait to be restarted
+                    task = Task("StateWaiter", self.process)
+                    bad_states = [sm.DISABLING, sm.ABORTING, sm.FAULT]
+                    task.when_matches(self.state, sm.RUNNING, bad_states)
+                    # Restart it
+                    hook = self.Resume
+                else:
+                    # just drop out
+                    raise
             else:
-                # just drop out
-                self.log_debug("We were aborted by unexpected StopIteration")
-                e = ValueError("unexpected StopIteration")
-                self.go_to_error_state(e)
-                raise e
+                return
 
-    def do_run(self, resume=False):
-        if resume:
-            hook = self.Resume
-        else:
-            hook = self.Run
+    def do_run(self, hook):
         self.run_hook(hook, self.part_tasks, self.update_completed_steps)
         self.transition(sm.POSTRUN, "Finishing run")
         completed_steps = self.configured_steps.value
@@ -337,7 +336,7 @@ class RunnableController(ManagerController):
             self.completed_steps.set_value(completed_steps)
             self.run_hook(
                 self.PostRunReady, self.part_tasks, completed_steps,
-                steps_to_do, part_info, self.configure_params)
+                steps_to_do, part_info, **self.configure_params)
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
             self.run_hook(self.PostRunIdle, self.part_tasks)
@@ -372,7 +371,7 @@ class RunnableController(ManagerController):
         self.run_hook(self.Pause, self.create_part_tasks())
         for task in self.part_tasks.values():
             task.wait()
-        completed_steps = self.configured_steps.value
+        completed_steps = self.completed_steps.value
         self.do_seek(completed_steps)
 
     @method_writeable_in(sm.READY, sm.PAUSED)
@@ -389,7 +388,8 @@ class RunnableController(ManagerController):
             sm.SEEKING, current_state, self.do_seek, completed_steps)
 
     def do_seek(self, completed_steps):
-        steps_to_do = completed_steps % self.steps_per_run
+        in_run_steps = completed_steps % self.steps_per_run
+        steps_to_do = self.steps_per_run - in_run_steps
         part_info = self.run_hook(self.ReportStatus, self.part_tasks)
         self.completed_steps.set_value(completed_steps)
         self.run_hook(

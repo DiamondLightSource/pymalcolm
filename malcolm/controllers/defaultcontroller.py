@@ -49,6 +49,8 @@ class DefaultController(Controller):
             self.transition(start_state, start_state)
             func(*args, **kwargs)
             self.transition(end_state, end_state)
+        except StopIteration:
+            raise
         except Exception as e:  # pylint:disable=broad-except
             self.go_to_error_state(e)
             raise

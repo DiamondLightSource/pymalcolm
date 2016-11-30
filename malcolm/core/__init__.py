@@ -31,3 +31,5 @@ from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.table import Table
 from malcolm.core.tableelementmap import TableElementMap
 from malcolm.core.task import Task
+from malcolm.core.vmeta import VMeta
+

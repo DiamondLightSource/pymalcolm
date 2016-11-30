@@ -27,4 +27,15 @@ class Part(Loggable):
                 yield name, method_meta, func
 
     def create_attributes(self):
+        """Should be implemented in subclasses to yield any Attributes that
+        should be attached to the Block
+
+        Yields:
+            tuple: (attribute_name, attribute, set_function), where:
+
+                - attribute_name is the name of the Attribute within the Block
+                - attribute is the Attribute to be attached
+                - set_function is a callable if the Attribute should be
+                  writeable, or None if not
+        """
         return iter(())

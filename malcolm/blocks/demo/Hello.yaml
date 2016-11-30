@@ -1,9 +1,12 @@
+# Define the parameters this Block will take
 - parameters.string:
     name: mri
     description: Malcolm resource id of the Block
 
+# The Controller will create the Block for us
 - controllers.DefaultController:
     mri: $(mri)
 
+# The Part will add a Method to the Block
 - parts.demo.HelloPart:
     name: hello

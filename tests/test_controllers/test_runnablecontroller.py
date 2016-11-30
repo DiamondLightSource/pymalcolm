@@ -255,9 +255,9 @@ class TestRunnableController(unittest.TestCase):
     def test_run_stop(self):
         self.prepare_half_run()
         self.c_child.run_hook = Mock(side_effect=StopIteration("test exception"))
-        with self.assertRaises(ValueError):
+        with self.assertRaises(StopIteration):
             self.c_child.run()
-        self.checkState(self.sm.FAULT, parent=False)
+        self.checkState(self.sm.RUNNING, parent=False)
 
     def test_abort_exception(self):
         self.prepare_half_run()
