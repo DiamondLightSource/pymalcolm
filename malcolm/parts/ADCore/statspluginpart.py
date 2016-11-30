@@ -14,4 +14,5 @@ class StatsPluginPart(ChildPart):
     def configure(self, task, completed_steps, steps_to_do, part_info):
         task.put_many(self.child, dict(
             enableCallbacks=True,
-            computeStatistics=True))
+            computeStatistics=True,
+            inp="XSP3.POS"))
