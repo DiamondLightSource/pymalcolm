@@ -1,3 +1,5 @@
+.. _statemachine_diagrams:
+
 State Machine
 =============
 

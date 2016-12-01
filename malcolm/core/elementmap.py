@@ -36,4 +36,6 @@ class ElementMap(Monitorable):
         for k, v in children.items():
             self.set_endpoint_data(k, v, notify=False)
 
-        self.report_changes([[], serialize_object(self)])
+        if self.process:
+            self.process.report_changes(
+                [self.process_path, serialize_object(self)])

@@ -94,7 +94,7 @@ class MethodMeta(Meta):
             func: Function to wrap
 
         Returns:
-            function: Function with MethodMeta instance of itself as an attribute
+            callable: Function with MethodMeta instance of itself as an attribute
         """
 
         if not hasattr(func, "MethodMeta"):
@@ -174,17 +174,16 @@ def _prepare_map_meta(args, allow_defaults, defaults=None, elements=None,
 
 
 def method_takes(*args):
-    """
-    Checks if function has a MethodMeta representation, calls wrap_method to
+    """Checks if function has a MethodMeta representation, calls wrap_method to
     create one if it doesn't and then adds the takes attribute to it
-    from *args
+    from \*args
 
     Args:
-        *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
-        REQUIRED/OPTIONAL]
+        \*args(list): List of of length nparams*3. List of form:
+            [name, `VMeta`, `REQUIRED`/`OPTIONAL`/default, ...]
 
     Returns:
-        function: Updated function
+        callable: Updated function
     """
 
     def decorator(func):
@@ -198,15 +197,7 @@ def method_takes(*args):
 
 
 def method_also_takes(*args):
-    """
-    As method_takes, but updates takes instead of replacing
-
-    Args:
-        *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
-        REQUIRED/OPTIONAL]
-
-    Returns:
-        function: Updated function
+    """As `method_takes`, but adds \*args to method takes instead of replacing
     """
 
     def decorator(func):
@@ -225,17 +216,16 @@ def method_also_takes(*args):
 
 
 def method_returns(*args):
-    """
-    Checks if function has a MethodMeta representation, calls wrap_method to
+    """Checks if function has a MethodMeta representation, calls wrap_method to
     create one if it doesn't and then adds the returns attribute to it
-    from *args
+    from \*args
 
     Args:
-        *args(list): List of form: [*Meta, REQUIRED/OPTIONAL, *Meta,
-        REQUIRED/OPTIONAL]
+        \*args(list): List of of length nparams*3. List of form:
+            [name, `VMeta`, `REQUIRED`/`OPTIONAL`/default, ...]
 
     Returns:
-        function: Updated function
+        callable: Updated function
     """
 
     def decorator(func):
@@ -248,15 +238,14 @@ def method_returns(*args):
 
 
 def method_writeable_in(*states):
-    """
-    Checks if function has a MethodMeta representation, calls wrap_method to
-    create one if it doesn't and then adds only_in to it from *states
+    """Checks if function has a MethodMeta representation, calls wrap_method to
+    create one if it doesn't and then adds only_in to it from \*states
 
     Args:
-        *args(list): List of state names, like DefaultStateMachine.RESETTING
+        \*states(list): List of state names, like DefaultStateMachine.RESETTING
 
     Returns:
-        function: Updated function
+        callable: Updated function
     """
     def decorator(func):
         MethodMeta.wrap_method(func)

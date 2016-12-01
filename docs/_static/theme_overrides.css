@@ -44,3 +44,6 @@
     content: "▼ ";
 }
 
+.rst-content code.xref {
+    color: #236E9E;
+}

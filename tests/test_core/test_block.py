@@ -43,7 +43,7 @@ class TestBlock(unittest.TestCase):
         b = Block()
         b.replace_endpoints({"child":child})
         b.set_writeable_functions({"child":func})
-        b.set_parent(parent, "name")
+        b.set_process_path(parent, ("name",))
         request = MagicMock(
             spec=Put, id=12345, response_queue=MagicMock(),
             context=MagicMock(), endpoint=["name", "child", "irrelevant"])
@@ -65,7 +65,7 @@ class TestBlock(unittest.TestCase):
         b = Block()
         b.replace_endpoints({"child":child})
         b.set_writeable_functions({"child":func})
-        b.set_parent(parent, "name")
+        b.set_process_path(parent, ("name",))
         request = MagicMock(
             spec=Post, id=12345, response_queue=MagicMock(),
             context=MagicMock(), endpoint=["name", "child", "irrelevant"])
@@ -88,7 +88,7 @@ class TestBlock(unittest.TestCase):
         b = Block()
         b.replace_endpoints({"child":child})
         b.set_writeable_functions({"child":func})
-        b.set_parent(parent, "name")
+        b.set_process_path(parent, ("name",))
         request = MagicMock(
             spec=Put, id=12345, response_queue=MagicMock(),
             context=MagicMock(), endpoint=["name", "child", "irrelevant"])

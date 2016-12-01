@@ -59,7 +59,7 @@ class Spawnable(object):
         a Spawnable.STOP object onto the provided queue
 
         Args:
-            q (queue): queue to put the stop sentinel on
+            q (Queue): queue to put the stop sentinel on
         """
         def stop_func():
             q.put(Spawnable.STOP)

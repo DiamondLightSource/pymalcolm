@@ -7,8 +7,9 @@ class Attribute(Monitorable):
     """Represents a value with type information that may be backed elsewhere
 
     Attributes:
-        meta (VMeta): The meta object that will validate any set_value()
-        value: The current value of the object
+        meta (`VMeta`): The meta object that will validate any set_value()
+        value: The current value of the object. It's type will depend on the
+            what meta.validate() produces
     """
 
     endpoints = ["meta", "value"]
@@ -33,6 +34,7 @@ class Attribute(Monitorable):
         self.set_endpoint_data("meta", meta, notify)
 
     def set_value(self, value, notify=True):
+        """Set the value"""
         value = self.meta.validate(value)
         self.set_endpoint_data("value", value, notify)
 

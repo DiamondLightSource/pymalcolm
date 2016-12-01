@@ -84,8 +84,7 @@ class ClientController(Controller):
             attribute (Attribute): Attribute object to put a value to
             value (object: Value to put
         """
-        self._send_request(
-            Put, attribute.path_relative_to(self.process) + ["value"], value)
+        self._send_request(Put, attribute.process_path + ["value"], value)
 
     def call_server_method(self, methodmeta, parameters=None, returns=None):
         """Call method_name on the server
@@ -95,8 +94,7 @@ class ClientController(Controller):
             parameters (Map): Map of arguments to be called with
             returns (Map): Returns map to fill and return
         """
-        ret = self._send_request(
-            Post, methodmeta.path_relative_to(self.process), parameters)
+        ret = self._send_request(Post, methodmeta.process_path, parameters)
         if ret is None:
             return None
         else:

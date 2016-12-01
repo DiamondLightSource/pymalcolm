@@ -85,7 +85,7 @@ class Process(Loggable):
 
         Args:
             timeout (float): Maximum amount of time to wait for each spawned
-            process. None means forever
+                process. None means forever
         """
         assert self._recv_spawned, "Process not started"
         self.q.put(PROCESS_STOP)
@@ -125,7 +125,7 @@ class Process(Loggable):
         Create a lock using sync_factory object
 
         Returns:
-            Lock: New lock
+            New lock object
         """
         return self.sync_factory.create_lock()
 
@@ -168,7 +168,7 @@ class Process(Loggable):
                 description="Blocks reachable via ClientComms"
         ).make_attribute([])
         self.process_block.replace_endpoints(children)
-        self.process_block.set_parent(self, self.name)
+        self.process_block.set_process_path(self, [self.name])
         self.add_block(self.process_block, self)
 
     def update_block_list(self, client_comms, blocks):
@@ -216,7 +216,7 @@ class Process(Loggable):
             block (Block): The block to be added
             controller (Controller): Its controller
         """
-        path = block.path_relative_to(self)
+        path = block.process_path
         assert len(path) == 1, \
             "Expected block %r to have %r as parent, got path %r" % \
             (block, self, path)

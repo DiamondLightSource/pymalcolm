@@ -25,10 +25,10 @@ class TestMethodMeta(unittest.TestCase):
 
     def test_set_label(self):
         m = MethodMeta("test_description")
-        m.report_changes = Mock(wrap=m.report_changes)
+        m.process = Mock()
         m.set_label("new_label")
         self.assertEquals("new_label", m.label)
-        m.report_changes.assert_called_once_with([["label"], "new_label"])
+        m.process.report_changes.assert_called_once_with([["label"], "new_label"])
 
     def test_recreate(self):
         @method_takes(
