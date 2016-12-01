@@ -37,7 +37,7 @@ class TestTask(unittest.TestCase):
         self.proc = MagicMock(q=queue.Queue())
         self.proc.create_queue = MagicMock(side_effect=queue.Queue)
         self.block = Block()
-        self.block.set_parent(self.proc, "testBlock")
+        self.block.set_process_path(self.proc, ("testBlock",))
         self.attr = meta.make_attribute()
         self.attr2 = meta.make_attribute()
         self.method = MethodMeta("method for unit tests")

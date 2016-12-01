@@ -57,7 +57,7 @@ class Controller(Loggable):
         self.parts = self._setup_parts(parts, controller_name)
         self._set_block_children()
         self._do_transition(sm.DISABLED, "Disabled")
-        self.block.set_parent(process, self.mri)
+        self.block.set_process_path(process, [self.mri])
         process.add_block(self.block, self)
         self.do_initial_reset()
 
@@ -88,10 +88,6 @@ class Controller(Loggable):
         request = Post(
             None, self.process.create_queue(), [self.mri, "reset"])
         self.process.q.put(request)
-
-    def add_change(self, changes, item, attr, value):
-        path = item.path_relative_to(self.block) + [attr]
-        changes.append([path, value])
 
     def _set_block_children(self):
         # reconfigure block with new children
@@ -190,10 +186,10 @@ class Controller(Loggable):
     def _do_transition(self, state, message):
         # transition is allowed, so set attributes
         changes = []
-        self.add_change(changes, self.state, "value", state)
-        self.add_change(changes, self.status, "value", message)
-        self.add_change(changes, self.busy, "value",
-                        state in self.stateMachine.busy_states)
+        changes.append([["state", "value"], state])
+        changes.append([["status", "value"], message])
+        changes.append([["busy", "value"],
+                        state in self.stateMachine.busy_states])
 
         # say which children are now writeable
         for name in self.block:
@@ -203,16 +199,12 @@ class Controller(Loggable):
                 continue
             child = self.block[name]
             if isinstance(child, Attribute):
-                child = child.meta
+                changes.append([[name, "meta", "writeable"], writeable])
             elif isinstance(child, MethodMeta):
+                changes.append([[name, "writeable"], writeable])
                 for ename in child.takes.elements:
-                    meta = child.takes.elements[ename]
-                    self.add_change(changes, meta, "writeable", writeable)
-            try:
-                self.add_change(changes, child, "writeable", writeable)
-            except ValueError:
-                self.log_exception("%s %s", name, child)
-                raise
+                    path = [name, "takes", "elements", ename, "writeable"]
+                    changes.append([path, writeable])
 
         self.log_debug("Transitioning to %s", state)
         self.block.apply_changes(*changes)

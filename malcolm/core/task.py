@@ -86,7 +86,7 @@ class Task(Loggable, Spawnable):
         assert isinstance(attr, Attribute), \
             "Expected Attribute, got %r" % (attr,)
 
-        endpoint = attr.path_relative_to(self.process) + ["value"]
+        endpoint = attr.process_path + ["value"]
         request = Put(None, self.q, endpoint, value)
         new_id, f = self._save_future()
         request.set_id(new_id)
@@ -184,7 +184,7 @@ class Task(Loggable, Spawnable):
         assert isinstance(method, MethodMeta), \
             "Expected MethodMeta, got %r" % (method,)
 
-        endpoint = method.path_relative_to(self.process)
+        endpoint = method.process_path
 
         request = Post(None, self.q, endpoint, params)
         new_id, f = self._save_future()
@@ -204,7 +204,7 @@ class Task(Loggable, Spawnable):
         assert isinstance(attr, Attribute), \
             "Expected Attribute, got %r" % (attr,)
 
-        endpoint = attr.path_relative_to(self.process) + ["value"]
+        endpoint = attr.process_path + ["value"]
         self.log_debug("Subscribing to %s", endpoint)
         request = Subscribe(None, self.q, endpoint, False)
         # If self is in args, then make weak version of it
