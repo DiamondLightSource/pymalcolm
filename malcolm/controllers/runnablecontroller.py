@@ -6,6 +6,7 @@ from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, StringArrayMeta
 
 
 class ParameterTweakInfo(Info):
+    """Tweaks"""
     def __init__(self, parameter, value):
         self.parameter = parameter
         self.value = value
@@ -39,9 +40,9 @@ class RunnableController(ManagerController):
             method_takes() decorator
 
     Returns:
-        ParameterTweakInfo list: any parameters tweaks that have occurred to make
-            them compatible with this part. If any are returned, Validate will
-            be re-run with the modified parameters.
+        [`ParameterTweakInfo`] - any parameters tweaks that have occurred
+            to make them compatible with this part. If any are returned,
+            Validate will be re-run with the modified parameters.
     """
 
     ReportStatus = Hook()
@@ -52,7 +53,7 @@ class RunnableController(ManagerController):
         task (Task): The task used to perform operations on child blocks
 
     Returns:
-        [Info]: any configuration Info relevant to other parts
+        [`Info`] - any configuration Info objects relevant to other parts
     """
 
     Configure = Hook()
@@ -67,8 +68,8 @@ class RunnableController(ManagerController):
             method_takes() decorator
 
     Returns:
-        [Info]: Any configuration Info that needs to be passed to other parts
-            for storing in attributes
+        [`Info`] - any Info objects that need to be passed to other parts for
+            storing in attributes
     """
 
     PostConfigure = Hook()
@@ -85,9 +86,9 @@ class RunnableController(ManagerController):
 
     Args:
         task (Task): The task used to perform operations on child blocks
-        update_completed_steps (func): If part can report progress, this part
-            should call update_completed_steps(completed_steps, self) with the
-            integer step value each time progress is updated
+        update_completed_steps (callable): If part can report progress, this
+            part should call update_completed_steps(completed_steps, self) with
+            the integer step value each time progress is updated
     """
 
     PostRunReady = Hook()
@@ -134,9 +135,9 @@ class RunnableController(ManagerController):
 
     Args:
         task (Task): The task used to perform operations on child blocks
-        update_completed_steps (func): If part can report progress, this part
-            should call update_completed_steps(completed_steps, self) with the
-            integer step value each time progress is updated
+        update_completed_steps (callable): If part can report progress, this
+            part should call update_completed_steps(completed_steps, self) with
+            the integer step value each time progress is updated
     """
 
     Abort = Hook()

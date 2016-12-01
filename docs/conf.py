@@ -126,14 +126,18 @@ if not which("plantuml"):
     # install it
     subprocess.call(["fc-cache", "-vf", fontdir])
 
-napoleon_use_ivar = True
+#napoleon_use_ivar = True
 
 autoclass_content = "both"
 
 autodoc_member_order = 'bysource'
 
-# If true, Sphinx will warn about all references where the target cannot be found
+# If true, Sphinx will warn about all references where the target can't be found
 nitpicky = True
+
+#The name of a reST role (builtin or Sphinx extension) to use as the default
+# role, that is, for text marked up `like this`
+default_role = "any"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -159,9 +163,10 @@ exclude_patterns = ['_build']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-intersphinx_mapping = {
-    'python': ('http://docs.python.org/2.7/', None),
-}
+intersphinx_mapping = dict(
+    python=('http://docs.python.org/2.7/', None),
+    scanpointgenerator=('http://scanpointgenerator.readthedocs.io/en/latest/',
+                        None))
 
 # -- Options for HTML output ----------------------------------------------
 

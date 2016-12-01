@@ -22,6 +22,20 @@ class LayoutInfo(Info):
         self.visible = visible
 
 
+class OutportInfo(Info):
+    """Info about an outport and its value in a class
+
+    Args:
+        type (str): Type of the port, e.g. bit or NDArray
+        value (str): Value that will be set when port is selected, e.g.
+            PCOMP1.OUT or DET.STATS
+    """
+    def __init__(self, type, value):
+        self.type = type
+        self.value = value
+
+
+
 sm = ManagerStateMachine
 
 
@@ -37,7 +51,7 @@ class ManagerController(DefaultController):
         task (Task): The task used to perform operations on child blocks
 
     Returns:
-        [OutportInfo]: the type and value of each outport of the child
+        [`OutportInfo`] - the type and value of each outport of the child
     """
 
     Layout = Hook()
@@ -50,7 +64,7 @@ class ManagerController(DefaultController):
             table that should be acted on
 
     Returns:
-        [LayoutInfo]: the child layout resulting from this change
+        [`LayoutInfo`] - the child layout resulting from this change
     """
 
     Load = Hook()

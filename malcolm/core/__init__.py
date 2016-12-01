@@ -25,7 +25,7 @@ from malcolm.core.serializable import Serializable, serialize_object, \
     deserialize_object
 from malcolm.core.servercomms import ServerComms
 from malcolm.core.spawnable import Spawnable
-from malcolm.core.statemachine import DefaultStateMachine, \
+from malcolm.core.statemachine import StateMachine, DefaultStateMachine, \
     ManagerStateMachine, RunnableStateMachine
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.table import Table

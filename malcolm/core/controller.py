@@ -223,7 +223,7 @@ class Controller(Loggable):
 
         Args:
             name (str): Child name that will be set writeable or not
-            states (list[str]): List of states where method is writeable
+            states (list[str]): states where method is writeable
         """
         for state in self.stateMachine.possible_states:
             writeable_dict = self.children_writeable.setdefault(state, {})

@@ -85,7 +85,7 @@ class Process(Loggable):
 
         Args:
             timeout (float): Maximum amount of time to wait for each spawned
-            process. None means forever
+                process. None means forever
         """
         assert self._recv_spawned, "Process not started"
         self.q.put(PROCESS_STOP)
@@ -125,7 +125,7 @@ class Process(Loggable):
         Create a lock using sync_factory object
 
         Returns:
-            Lock: New lock
+            New lock object
         """
         return self.sync_factory.create_lock()
 
