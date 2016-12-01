@@ -1,4 +1,4 @@
-#!/bin/env dls-python
+#!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
 
 
 def make_process():
@@ -127,6 +127,8 @@ self.process_block.blocks
 if __name__ == "__main__":
     import os
     import sys
+
+    os.environ["EPICS_CA_MAX_ARRAY_BYTES"] = "6000000"
 
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
