@@ -48,8 +48,10 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(p.get_block("name1"), b1)
         b2 = Block()
         b2.set_process_path(p, ("name2",))
-        p.add_block(b2, None)
+        c = MagicMock()
+        p.add_block(b2, c)
         self.assertEqual(p.get_block("name2"), b2)
+        self.assertEqual(p.get_controller("name2"), c)
 
     def test_add_block_calls_handle(self):
         s = SyncFactory("sched")

@@ -89,6 +89,22 @@ class TestTask(unittest.TestCase):
         self.assertEqual(len(t._futures), 0)
         self.assertEqual(self.proc.q.qsize(), 1)
 
+    def test_put_many(self):
+        # many attributes
+        t = Task("testTask", self.proc)
+        resp1 = Return(0, None, None)
+        resp1.set_value('testVal1')
+        resp2 = Return(1, None, None)
+        resp2.set_value('testVal2')
+        # cheat and add the response before the blocking call to put
+        t.q.put(resp1)
+        t.q.put(resp2)
+        t.stop()
+        t.put_many(self.block, dict(
+            testAttr="testValue", testAttr2="testValue2"))
+        self.assertEqual(len(t._futures), 0)
+        self.assertEqual(self.proc.q.qsize(), 2)
+
     def test_post(self):
         t = Task("testTask", self.proc)
         resp1 = Return(0, None, None)
