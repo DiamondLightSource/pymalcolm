@@ -14,7 +14,7 @@
     prefix: $(pvPrefix)
 
 - parts.xspress3.Xspress3DriverPart:
-    name: DRV
+    name: Xspress3A
     mri: $(mriPrefix)-DRV
 
 - blocks.ADCore.StatsPlugin:
