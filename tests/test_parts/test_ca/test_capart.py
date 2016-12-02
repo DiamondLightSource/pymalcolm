@@ -80,7 +80,7 @@ class TestCAPart(unittest.TestCase):
             ["pv2", "pv"],
             format=p.catools.FORMAT_CTRL, datatype=p.get_datatype())
         p.catools.camonitor.assert_called_once_with(
-            "pv2", p.update_value, format=p.catools.FORMAT_CTRL,
+            "pv2", p.update_value, format=p.catools.FORMAT_TIME,
             datatype=p.get_datatype(), notify_disconnect=True, all_updates=True)
         self.assertEqual(p.attr.value, 4)
         self.assertEqual(p.monitor, p.catools.camonitor())
@@ -95,7 +95,7 @@ class TestCAPart(unittest.TestCase):
         p.catools.caput.assert_called_once_with(
             "pv", 32, wait=True, timeout=None, datatype=datatype)
         p.catools.caget.assert_called_once_with(
-            "pv2", format=p.catools.FORMAT_CTRL, datatype=datatype)
+            "pv2", format=p.catools.FORMAT_TIME, datatype=datatype)
         self.assertEqual(p.attr.value, 3)
 
     def test_close_monitor(self):
