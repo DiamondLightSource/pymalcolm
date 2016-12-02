@@ -11,10 +11,9 @@ class CAChoicePart(CAPart):
     def get_datatype(self):
         return self.catools.DBR_ENUM
 
-    def update_value(self, value):
-        if hasattr(value, 'enums') and value.ok:
-            self.attr.meta.set_choices(value.enums)
-        super(CAChoicePart, self).update_value(value)
+    def set_initial_value(self, value):
+        self.attr.meta.set_choices(value.enums)
+        super(CAChoicePart, self).set_initial_value(value)
 
     def caput(self, value):
         try:
