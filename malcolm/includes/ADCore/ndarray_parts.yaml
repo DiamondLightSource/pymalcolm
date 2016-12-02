@@ -6,7 +6,7 @@
     name: out
     description: Array outport name
     rbv: $(prefix):PortName_RBV
-    outportType: NDArray
+    outport: NDArray
 
 - parts.ca.CABooleanPart:
     name: arrayCallbacks

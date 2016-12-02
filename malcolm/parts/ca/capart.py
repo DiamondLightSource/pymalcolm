@@ -1,7 +1,8 @@
 from malcolm.core import Part, method_takes, REQUIRED
-from malcolm.core.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta, ChoiceMeta
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.parts.ca.cothreadimporter import CothreadImporter
+from malcolm.tags import widget, widget_types, inport, port_types
 
 
 @method_takes(
@@ -10,9 +11,8 @@ from malcolm.parts.ca.cothreadimporter import CothreadImporter
     "pv", StringMeta("Full pv of demand and default for rbv"), "",
     "rbv", StringMeta("Override for rbv"), "",
     "rbvSuff", StringMeta("Set rbv ro pv + rbv_suff"), "",
-    "widget", StringMeta("Widget, like 'combo' or 'textinput'"), "",
-    "inportType", StringMeta(
-        "Flowgraph port Type if it is one (like 'CS' or 'NDArray')"), "")
+    "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
+    "inport", ChoiceMeta("Inport type", [""] + port_types), "")
 class CAPart(Part):
     # Camonitor subscription
     monitor = None
@@ -47,15 +47,9 @@ class CAPart(Part):
     def create_tags(self, params):
         tags = []
         if params.widget:
-            assert ":" not in params.widget, \
-                "Widget tag %r should not specify 'widget:' prefix" \
-                % params.widget
-            tags.append("widget:%s" % params.widget)
-        if params.inportType:
-            assert ":" not in params.inportType, \
-                "Inport tag %r should not specify 'flowgraph:inport:' prefix" \
-                % params.inportType
-            tags.append("flowgraph:inport:%s:" % params.inportType)
+            tags.append(widget(params.widget))
+        if params.inport:
+            tags.append(inport(params.inport))
         return tags
 
     def create_meta(self, description, tags):

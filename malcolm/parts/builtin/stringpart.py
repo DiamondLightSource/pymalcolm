@@ -1,11 +1,12 @@
 from malcolm.core import Part, method_takes, REQUIRED
-from malcolm.core.vmetas import StringMeta, BooleanMeta
+from malcolm.core.vmetas import StringMeta, BooleanMeta, ChoiceMeta
+from malcolm.tags import widget_types, widget
 
 
 @method_takes(
     "name", StringMeta("Name of the created attribute"), REQUIRED,
     "description", StringMeta("Desc of created attribute"), REQUIRED,
-    "widget", StringMeta("Widget, like 'combo' or 'textinput'"), "",
+    "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "writeable", BooleanMeta("Is the attribute writeable?"), False,
     "initialValue", StringMeta("Initial value of attribute"), "",
 )
@@ -25,10 +26,7 @@ class StringPart(Part):
     def create_tags(self):
         tags = []
         if self.params.widget:
-            assert ":" not in self.params.widget, \
-                "Widget tag %r should not specify 'widget:' prefix" \
-                % self.params.widget
-            tags.append("widget:%s" % self.params.widget)
+            tags.append(widget(self.params.widget))
         return tags
 
     def create_meta(self):
