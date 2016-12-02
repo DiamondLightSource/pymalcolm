@@ -1,3 +1,5 @@
+#!/home/ecw19626/pymalcolm/malcolm/imalcolm.py
+
 - blocks.xspress3.Xspress3DetectorManager:
    pvPrefix: BL18I-EA-XSP3-01
    mriPrefix: I18-XSP3
