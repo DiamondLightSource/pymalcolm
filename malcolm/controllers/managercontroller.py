@@ -26,7 +26,7 @@ class OutportInfo(Info):
     """Info about an outport and its value in a class
 
     Args:
-        type (str): Type of the port, e.g. bit or NDArray
+        type (str): Type of the port, e.g. bool or NDArray
         value (str): Value that will be set when port is selected, e.g.
             PCOMP1.OUT or DET.STATS
     """

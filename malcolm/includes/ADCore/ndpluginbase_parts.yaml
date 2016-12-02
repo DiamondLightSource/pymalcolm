@@ -11,7 +11,7 @@
     pv: $(prefix):NDArrayPort
     rbvSuff: _RBV
     widget: textinput
-    inportType: NDArray
+    inport: NDArray
 
 - parts.ca.CABooleanPart:
     name: enableCallbacks

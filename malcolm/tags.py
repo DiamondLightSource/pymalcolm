@@ -24,7 +24,7 @@ port_types = [
     "bool",  # Boolean
     "int32",  # 32-bit signed integer
     "NDArray",  # areaDetector NDArray port
-    "Motor",  # Motor controller axis
+    "CS",  # Motor co-ordinate system
 ]
 
 

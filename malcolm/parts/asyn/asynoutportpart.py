@@ -12,7 +12,7 @@ from malcolm.tags import port_types, outport, widget
 class AsynOutportPart(CAStringPart):
 
     def __init__(self, process, params):
-        self.outport_type = params.outportType
+        self.outport_type = params.outport
         params = CAStringPart.MethodMeta.prepare_input_map(
             name=params.name, description=params.description, rbv=params.rbv)
         super(AsynOutportPart, self).__init__(process, params)

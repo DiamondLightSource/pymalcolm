@@ -60,7 +60,7 @@
     pv: $(prefix):CsPort
     rbvSuff: _RBV
     widget: textinput
-    inportType: CS
+    inport: CS
 
 - parts.ca.CAStringPart:
     name: csAxis
