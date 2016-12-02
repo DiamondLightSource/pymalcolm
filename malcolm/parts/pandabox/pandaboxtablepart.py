@@ -3,6 +3,7 @@ from malcolm.core.vmetas import NumberArrayMeta, BooleanArrayMeta
 from malcolm.core import TableElementMap, Table
 from malcolm.parts.pandabox.pandaboxfieldpart import PandABoxFieldPart
 from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
+from malcolm.tags import widget
 
 
 class PandABoxTablePart(PandABoxFieldPart):
@@ -23,7 +24,7 @@ class PandABoxTablePart(PandABoxFieldPart):
                 raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
             if nbits == 1:
                 column_meta = BooleanArrayMeta(field_name)
-                widget_tag = "widget:checkbox"
+                widget_tag = widget("checkbox")
             else:
                 if nbits <= 8:
                     dtype = "uint8"
@@ -36,7 +37,7 @@ class PandABoxTablePart(PandABoxFieldPart):
                 else:
                     raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
                 column_meta = NumberArrayMeta(dtype, field_name)
-                widget_tag = "widget:textinput"
+                widget_tag = widget("textinput")
             label, column_name = make_label_attr_name(field_name)
             column_meta.set_label(label)
             column_meta.set_tags([widget_tag])

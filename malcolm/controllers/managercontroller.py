@@ -35,7 +35,6 @@ class OutportInfo(Info):
         self.value = value
 
 
-
 sm = ManagerStateMachine
 
 

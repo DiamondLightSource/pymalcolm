@@ -38,14 +38,14 @@ class PortsPart(Part):
             yield data
         # note 4th part of inport tag is its disconnected value
         # TODO this is yet to be documented
-        in_tag = "flowgraph:inport:pos:"
+        in_tag = "inport:pos:"
         in_name = "inport%s" % self.name
         in_port = StringMeta(in_name, [in_tag]).make_attribute()
         in_port.meta.set_writeable_in(sm.READY)
         yield in_name, in_port, in_port.set_value
 
         out_name = "outport%s" % self.name
-        out_tag = "flowgraph:outport:pos:%s" %self.name
+        out_tag = "outport:pos:%s" %self.name
         out_port = StringMeta(in_name, [out_tag]).make_attribute()
         out_port.meta.set_writeable_in(sm.READY)
         yield out_name, out_port, out_port.set_value

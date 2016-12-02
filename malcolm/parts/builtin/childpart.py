@@ -48,7 +48,7 @@ class ChildPart(Part):
         outports = self._get_flowgraph_ports("out")
         ret = []
         for port_tag in outports.values():
-            _, _, type, value = port_tag.split(":", 4)
+            _, type, value = port_tag.split(":", 3)
             ret.append(OutportInfo(type=type, value=value))
         return ret
 
@@ -79,7 +79,7 @@ class ChildPart(Part):
             attr = self.child[attr_name]
             if isinstance(attr, Attribute):
                 for tag in attr.meta.tags:
-                    if tag.startswith("flowgraph:%sport" % direction):
+                    if tag.startswith("%sport" % direction):
                         ports[attr] = tag
         return ports
 
@@ -92,7 +92,7 @@ class ChildPart(Part):
         inports = self._get_flowgraph_ports("in")
         futures = []
         for attr, port_tag in inports.items():
-            _, _, type, disconnected_value = port_tag.split(":", 4)
+            _, type, disconnected_value = port_tag.split(":", 3)
             futures += task.put_async(attr, disconnected_value)
         task.wait_all(futures)
 
@@ -117,7 +117,7 @@ class ChildPart(Part):
         inports = self._get_flowgraph_ports("in")
         futures = []
         for attr, port_tag in inports.items():
-            _, _, type, disconnected_value = port_tag.split(":", 4)
+            _, type, disconnected_value = port_tag.split(":", 3)
             if outports.get(attr.value, None) == type:
                 futures += task.put_async(attr, disconnected_value)
         task.wait_all(futures)
