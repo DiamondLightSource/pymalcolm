@@ -1,5 +1,5 @@
 from malcolm.core import method_also_takes, REQUIRED, method_takes
-from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta
+from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, ChoiceMeta
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.hdfwriterpart import DatasetSourceInfo
@@ -18,17 +18,22 @@ configure_args = [
         "float64", "Default time taken to readout detector"), 8e-6)
 class DetectorDriverPart(ChildPart):
     # Attributes
-    readoutTime = None
+    readout_time = None
+    trigger_mode = None
 
-    # Stored futures
+    # Store future for waiting for completion
     start_future = None
 
     def create_attributes(self):
         for data in super(DetectorDriverPart, self).create_attributes():
             yield data
         meta = NumberMeta("float64", "Time taken to readout detector")
-        self.readoutTime = meta.make_attribute(self.params.readoutTime)
-        yield "readoutTime", self.readoutTime, self.readoutTime.set_value
+        self.readout_time = meta.make_attribute(self.params.readoutTime)
+        yield "readoutTime", self.readout_time, self.readout_time.set_value
+        meta = ChoiceMeta("Whether detector is software or hardware triggered",
+                          ["Software", "Hardware"])
+        self.trigger_mode = meta.make_attribute("Hardware")
+        yield "triggerMode", self.trigger_mode, None
 
     @RunnableController.Reset
     def reset(self, task):
@@ -52,7 +57,8 @@ class DetectorDriverPart(ChildPart):
         exposure = durations.pop()
         assert exposure is not None, \
             "Expected duration to be specified, got None"
-        exposure -= self.readoutTime.value
+        # TODO: should really get this from an Info from pmac trajectory part...
+        exposure -= self.readout_time.value
         assert exposure > 0.0, \
             "Exposure time %s too small when readoutTime taken into account" % (
                 exposure)
@@ -64,7 +70,8 @@ class DetectorDriverPart(ChildPart):
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         # Stop in case we are already running
         stop_future = task.post_async(self.child["stop"])
-        exposure = params.generator.get_point(0).duration - self.readoutTime.value
+        exposure = params.generator.get_point(0).duration
+        exposure -= self.readout_time.value
         task.wait_all(stop_future)
         task.put_many(self.child, dict(
             exposure=exposure,
@@ -72,12 +79,17 @@ class DetectorDriverPart(ChildPart):
             numImages=steps_to_do,
             arrayCounter=completed_steps,
             arrayCallbacks=True))
-        self.start_future = task.post_async(self.child["start"])
+        if self.trigger_mode.value == "Hardware":
+            # Start now
+            self.start_future = task.post_async(self.child["start"])
 
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, task, update_completed_steps):
         task.subscribe(self.child["arrayCounter"], update_completed_steps, self)
+        if self.trigger_mode.value != "Hardware":
+            # Start now
+            self.start_future = task.post_async(self.child["start"])
         task.wait_all(self.start_future)
 
     @RunnableController.Abort

@@ -1,4 +1,4 @@
-#!/home/tmc43/common/python/pymalcolm/malcolm/imalcolm.py
+#!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python /home/tmc43/common/python/pymalcolm/malcolm/imalcolm.py
 #/dls_sw/prod/common/python/RHEL6-x86_64/pymalcolm/2-0a6/malcolm/imalcolm.py
 # This sample is intended for use with the test lab setup LAB-MO-IOC-01
 

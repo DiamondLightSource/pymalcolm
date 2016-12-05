@@ -128,6 +128,8 @@ if __name__ == "__main__":
     import os
     import sys
 
+    os.environ["EPICS_CA_MAX_ARRAY_BYTES"] = "6000000"
+
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
     from pkg_resources import require
