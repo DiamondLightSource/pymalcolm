@@ -37,7 +37,7 @@ class PandABoxChildPartTest(unittest.TestCase):
     def test_report_configuration(self):
         dataset_infos = self.o.report_configuration(None)
         self.assertEqual(len(dataset_infos), 1)
-        self.assertEqual(dataset_infos[0].name, "x2.value")
+        self.assertEqual(dataset_infos[0].name, "x2")
         self.assertEqual(dataset_infos[0].type, "position_value")
         self.assertEqual(dataset_infos[0].rank, 0)
         self.assertEqual(dataset_infos[0].attr, "ENCODER_VALUE3")
@@ -46,7 +46,7 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.o.params.mri = "P:COUNTER1"
         dataset_infos = self.o.report_configuration(None)
         self.assertEqual(len(dataset_infos), 1)
-        self.assertEqual(dataset_infos[0].name, "x2.value")
+        self.assertEqual(dataset_infos[0].name, "x2")
         self.assertEqual(dataset_infos[0].type, "monitor")
         self.assertEqual(dataset_infos[0].rank, 0)
         self.assertEqual(dataset_infos[0].attr, "ENCODER_VALUE3")
