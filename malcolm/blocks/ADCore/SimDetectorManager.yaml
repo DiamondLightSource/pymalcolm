@@ -13,7 +13,7 @@
     mri: $(mriPrefix)-DRV
     prefix: $(pvPrefix):DET
 
-- parts.ADCore.DetectorDriverPart:
+- parts.ADCore.SimDetectorDriverPart:
     name: DRV
     mri: $(mriPrefix)-DRV
     readoutTime: 40e-6

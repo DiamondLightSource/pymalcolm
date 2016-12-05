@@ -49,7 +49,7 @@ class CAPart(Part):
         if params.widget:
             tags.append(widget(params.widget))
         if params.inport:
-            tags.append(inport(params.inport))
+            tags.append(inport(params.inport, ""))
         return tags
 
     def create_meta(self, description, tags):
