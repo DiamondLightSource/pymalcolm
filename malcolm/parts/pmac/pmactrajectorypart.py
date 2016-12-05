@@ -88,12 +88,12 @@ class PMACTrajectoryPart(ChildPart):
                 fdm = mutator
             else:
                 mutators.append(mutator)
-        # convert to multiple of servo ticks, rounding down
-        ticks = np.floor(SERVO_FREQ * fdm.duration)
+        # convert half an exposure to multiple of servo ticks, rounding down
+        ticks = np.floor(SERVO_FREQ * 0.5 * fdm.duration)
         # convert to integer number of microseconds, rounding up
         micros = np.ceil(ticks / SERVO_FREQ * 1e6)
         # back to duration
-        duration = float(micros) / 1e6
+        duration = 2 * float(micros) / 1e6
         if duration != fdm.duration:
             new_generator = CompoundGenerator(
                 generators=params.generator.generators,

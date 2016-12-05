@@ -1,5 +1,6 @@
-# Don't import all the parts as they need to be created from
-# includes.pandabox.hardware_collection()
-from malcolm.parts.pandabox.pandaboxdriverpart import PandABoxDriverPart
+# Find all subpackages, MethodMeta decorated callables, and YAML files
+from malcolm.packageutil import prepare_package
 
+__all__ = prepare_package(globals(), __name__)
 
+del prepare_package

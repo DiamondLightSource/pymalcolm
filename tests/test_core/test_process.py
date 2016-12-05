@@ -34,7 +34,7 @@ class TestProcess(unittest.TestCase):
     def test_add_block(self):
         p = Process("proc", MagicMock())
         b = Block()
-        b.set_parent(p, "name")
+        b.set_process_path(p, ("name",))
         c = MagicMock()
         p.add_block(b, c)
         self.assertEqual(p._blocks["name"], b)
@@ -47,16 +47,18 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(b1.status, "Waiting for connection...")
         self.assertEqual(p.get_block("name1"), b1)
         b2 = Block()
-        b2.set_parent(p, "name2")
-        p.add_block(b2, None)
+        b2.set_process_path(p, ("name2",))
+        c = MagicMock()
+        p.add_block(b2, c)
         self.assertEqual(p.get_block("name2"), b2)
+        self.assertEqual(p.get_controller("name2"), c)
 
     def test_add_block_calls_handle(self):
         s = SyncFactory("sched")
         p = Process("proc", s)
         b = Block()
         c = MagicMock()
-        b.set_parent(p, "myblock")
+        b.set_process_path(p, ("myblock",))
         p.add_block(b, c)
         p.start()
         p.stop()
@@ -142,7 +144,7 @@ class TestProcess(unittest.TestCase):
     def test_make_process_block(self):
         p = Process("proc", MagicMock())
         p_block = p.process_block
-        self.assertEquals(p_block.path_relative_to(p), ["proc"])
+        self.assertEquals(p_block.process_path, ["proc"])
         self.assertEquals(NTScalarArray, type(p_block["blocks"]))
         self.assertEquals(StringArrayMeta, type(p_block["blocks"].meta))
         self.assertEquals(["proc"], p_block.blocks)

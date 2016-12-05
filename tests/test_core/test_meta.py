@@ -20,7 +20,7 @@ class TestInit(unittest.TestCase):
 class TestSetters(unittest.TestCase):
     def setUp(self):
         m = Meta("desc")
-        m.report_changes = Mock(wrap=m.report_changes)
+        m.process = Mock()
         self.m = m
 
     def test_set_description(self):
@@ -28,7 +28,7 @@ class TestSetters(unittest.TestCase):
         description = "desc2"
         m.set_description(description)
         self.assertEqual(m.description, description)
-        m.report_changes.assert_called_once_with(
+        m.process.report_changes.assert_called_once_with(
             [["description"], description])
 
     def test_set_tags(self):
@@ -36,14 +36,14 @@ class TestSetters(unittest.TestCase):
         tags = ["widget:textinput"]
         m.set_tags(tags)
         self.assertEquals(tags, m.tags)
-        m.report_changes.assert_called_once_with([["tags"], tags])
+        m.process.report_changes.assert_called_once_with([["tags"], tags])
 
     def test_set_writeable(self):
         meta = self.m
         writeable = True
         meta.set_writeable(writeable)
         self.assertEquals(meta.writeable, writeable)
-        meta.report_changes.assert_called_once_with(
+        meta.process.report_changes.assert_called_once_with(
             [["writeable"], writeable])
 
     def test_set_label(self):
@@ -51,7 +51,7 @@ class TestSetters(unittest.TestCase):
         label = "my label"
         meta.set_label(label)
         self.assertEquals(meta.label, label)
-        meta.report_changes.assert_called_once_with(
+        meta.process.report_changes.assert_called_once_with(
             [["label"], label])
 
 

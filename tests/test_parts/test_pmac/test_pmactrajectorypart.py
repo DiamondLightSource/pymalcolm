@@ -94,7 +94,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         params.axesToMove = ["x"]
         part_info = self.make_part_info()
         ret = self.o.validate(None, part_info, params)
-        expected = 0.010165
+        expected = 0.010166
         self.assertEqual(ret[0].value.mutators[0].duration, expected)
 
     def test_configure(self):

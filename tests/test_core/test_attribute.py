@@ -28,10 +28,10 @@ class TestAttribute(unittest.TestCase):
     def test_set_value(self):
         value = "test_value"
         a = self.meta.make_attribute()
-        a.report_changes = Mock(wrap=a.report_changes)
+        a.process = Mock()
         a.set_value(value)
         self.assertEquals(a.value, value)
-        a.report_changes.assert_called_once_with([['value'], value])
+        a.process.report_changes.assert_called_once_with([['value'], value])
 
     def test_handle_request(self):
         a = self.meta.make_attribute()
@@ -55,7 +55,6 @@ class TestSerialization(unittest.TestCase):
 
     def test_from_dict(self):
         a = NTScalar.from_dict(self.serialized)
-        self.assertEquals(a.meta._parent, a)
         self.assertEquals(a.meta.to_dict(), StringMeta("desc").to_dict())
         self.assertEquals(a.value, "some string")
 

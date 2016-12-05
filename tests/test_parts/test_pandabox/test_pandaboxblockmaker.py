@@ -54,7 +54,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(inpa.writeable, True)
         self.assertIsInstance(inpa.meta, ChoiceMeta)
         self.assertEqual(inpa.meta.tags, [
-            "group:inputs", "flowgraph:inport:pos", "widget:combo"])
+            "group:inputs", "inport:int32:ZERO", "widget:combo"])
         self.assertEqual(inpa.meta.choices, ["A.OUT", "B.OUT"])
 
         val = o.parts["INPA.VAL"]
@@ -84,7 +84,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(out.meta, NumberMeta)
         self.assertEqual(out.meta.dtype, "float64")
         self.assertEqual(out.meta.tags, [
-            "group:outputs", "flowgraph:outport:pos:ADDER1.OUT",
+            "group:outputs", "outport:int32:ADDER1.OUT",
             "widget:textupdate"])
 
         units = o.parts["OUT.UNITS"]
@@ -177,7 +177,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(inp.writeable, True)
         self.assertIsInstance(inp.meta, ChoiceMeta)
         self.assertEqual(inp.meta.tags, [
-            "group:inputs", "flowgraph:inport:bit", "widget:combo"])
+            "group:inputs", "inport:bool:ZERO", "widget:combo"])
         self.assertEqual(inp.meta.choices, ["X.OUT", "Y.OUT"])
 
         val = o.parts["INP.VAL"]
@@ -202,7 +202,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(out.writeable, False)
         self.assertIsInstance(out.meta, BooleanMeta)
         self.assertEqual(out.meta.tags, [
-            "group:outputs", "flowgraph:outport:bit:PULSE2.OUT", "widget:led"])
+            "group:outputs", "outport:bool:PULSE2.OUT", "widget:led"])
 
         err = o.parts["ERR_PERIOD"]
         self.assertEqual(err.block_name, "PULSE2")

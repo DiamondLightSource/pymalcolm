@@ -79,5 +79,5 @@ class Block(ElementMap):
         except Exception as e:  # pylint:disable=broad-except
             self.log_info("Exception while handling %s" % request)
             response = Error(request.id, request.context, str(e))
-        self._parent.block_respond(response, request.response_queue)
-
+        self.log_debug("Responding with %s", response)
+        self.process.block_respond(response, request.response_queue)

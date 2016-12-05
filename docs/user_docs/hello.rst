@@ -7,11 +7,11 @@ copy of pymalcolm which includes some example code.
 So now would be a good time for a "Hello World" tutorial.
 
 Let's start with some terminology.   A Malcolm application consists of a
-:ref:`Process` which hosts a number of :ref:`Block` instances. Each Block has
-a number of :ref:`Attribute` and :ref:`Method` instances that can be used to
-interact with it. The Process may also contain :ref:`ServerComms` that allow
+`Process` which hosts a number of `Block` instances. Each Block has
+a number of `Attribute` and `Method` instances that can be used to
+interact with it. The Process may also contain `ServerComms` that allow
 it to expose its Blocks to the outside world, and it may also contain
-:ref:`ClientComms` that link it to another Malcolm Process and allow access
+`ClientComms` that link it to another Malcolm Process and allow access
 to its Blocks.
 
 Launching a Malcolm Process
@@ -87,7 +87,7 @@ Process and call a Method on it::
 So what happened there? 
 
 Well we called a Method on a Block, which printed
-"Manufacturing greeting..." to stdout, then returned a :ref:`Map` containing
+"Manufacturing greeting..." to stdout, then returned a `Map` containing
 the promised greeting. You can also specify an optional argument "sleep" to
 make it sleep for a bit before returning the greeting::
 
@@ -188,15 +188,15 @@ a good example, it is defined in the ``./malcolm/blocks/demo/Hello.yaml`` file:
 .. literalinclude:: ../../malcolm/blocks/demo/Hello.yaml
     :language: yaml
 
-The first item in the YAML file is a :ref:`parameter`. This defines a parameter
+The first item in the YAML file is a `parameter`. This defines a parameter
 that must be defined when instantiating the Block. It's value is then available
 throughout the YAML file by using the ``$(<name>)`` syntax.
 
-The second item is a :ref:`Controller`. This is responsible for creating the
+The second item is a `Controller`. This is responsible for creating the
 Block, populating it with Methods and Attributes, and managing state
-according to the :ref:`StateMachine` it implements.
+according to the `StateMachine` it implements.
 
-The third item is a :ref:`Part`. A Controller can own many parts, and these
+The third item is a `Part`. A Controller can own many parts, and these
 Parts can contribute Methods and Attributes, as well as being called at
 specific times during Controller methods.
 
@@ -258,27 +258,29 @@ write code is when we define a Part. Let's take a look at our
 .. literalinclude:: ../../malcolm/parts/demo/hellopart.py
     :language: python
 
-.. module:: malcolm.core
+.. py:currentmodule:: malcolm.core
 
 The class we define is called ``HelloPart`` and it subclasses from
-:class:`Part`. It has a single method called ``greet`` that has some
-`decorators`_ on it and contains the actual business logic.
+`Part`. It has a single method called ``greet`` that has some
+`decorators`_ on it and contains the actual business logic. In Python,
+decorators can be stacked many deep and can modify the function or class they
+are attached to.
 
 Let's take a closer look at those decorators. 
 
-1. :meth:`method_takes` defines the arguments that the ``greet`` method will take and
+1. `method_takes` defines the arguments that the ``greet`` method will take and
    hence the contents of the  ``parameters`` argument. Malcolm will take any input arguments,
-   validate them, and create a :class:`Map` instance with the :meth:`method_takes` arguments
+   validate them, and create a `Map` instance with the `method_takes` arguments
 
-2. :meth:`method_returns` defines the values that the method will return. Malcolm will create
-   an empty :class:`Map` configured to validate the items specified in :meth:`method_returns`
+2. `method_returns` defines the values that the method will return. Malcolm will create
+   an empty `Map` configured to validate the items specified in `method_returns`
    and pass it as ``return_map``, the final argument to ``greet``.
 
 Both of these decorators consumes their arguments in groups of 3:
 
 - name (str): The name of the argument
-- meta (:class:`VMeta`): A Meta object that will validate that argument
-- :const:`OPTIONAL`/:const:`REQUIRED`/default_value: If REQUIRED then the argument
+- meta (`VMeta`): A Meta object that will validate that argument
+- `OPTIONAL`/`REQUIRED`/default_value: If REQUIRED then the argument
   must be specified, if OPTIONAL then it may be specified, otherwise the value
   is used as a default value for the argument
 

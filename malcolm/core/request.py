@@ -88,7 +88,7 @@ class Get(Request):
         Args:
             context(): Context of Get
             response_queue(Queue): Queue to return to
-            endpoint(list[str]): Path to target Block substructure
+            endpoint(list): [`str`] Path to target Block substructure
         """
 
         super(Get, self).__init__(context, response_queue)
@@ -112,7 +112,7 @@ class Put(Request):
         Args:
             context(): Context of Put
             response_queue(Queue): Queue to return to
-            endpoint(list[str]): Path to target Block substructure
+            endpoint(list): [`str`] Path to target Block substructure
             value(): Value to put to endpoint e.g. String, dict
         """
 
@@ -141,7 +141,7 @@ class Post(Request):
         Args:
             context(): Context of Post
             response_queue(Queue): Queue to return to
-            endpoint(list[str]): Path to target Block substructure
+            endpoint(list): [`str`] Path to target Block substructure
             parameters(dict): List of parameters to post to an endpoint
                 e.g. arguments for a MethodMeta
         """
@@ -175,7 +175,7 @@ class Subscribe(Request):
         Args:
             context: Context of Subscribe
             response_queue (Queue): Queue to return to
-            endpoint (list[str]): Path to target
+            endpoint (list): [`str`] Path to target
             delta (bool): Notify of differences only (default False)
         """
 

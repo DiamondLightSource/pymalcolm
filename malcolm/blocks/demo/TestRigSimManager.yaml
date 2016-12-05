@@ -1,0 +1,18 @@
+- parameters.string:
+    name: mri
+    description: MRI for created block
+
+- parameters.string:
+    name: sim
+    description: MRI for sim object
+
+- controllers.RunnableController:
+    mri: $(mri)
+    axesToMove: [stagex, stagey]
+
+- parts.ADCore.DatasetTablePart:
+    name: DSET
+
+- parts.ADCore.DatasetRunnableChildPart:
+    name: SIM
+    mri: $(sim)

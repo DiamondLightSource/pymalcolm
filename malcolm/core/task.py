@@ -67,7 +67,7 @@ class Task(Loggable, Spawnable):
         Args:
             attr (Attribute): The attribute to set
             value (object): The value to set
-            timeout (Float) time in seconds to wait for responses, wait forever
+            timeout (float): time in seconds to wait for responses, wait forever
                 if None
         """
         f = self.put_async(attr, value)
@@ -86,7 +86,7 @@ class Task(Loggable, Spawnable):
         assert isinstance(attr, Attribute), \
             "Expected Attribute, got %r" % (attr,)
 
-        endpoint = attr.path_relative_to(self.process) + ["value"]
+        endpoint = attr.process_path + ["value"]
         request = Put(None, self.q, endpoint, value)
         new_id, f = self._save_future()
         request.set_id(new_id)
@@ -101,7 +101,7 @@ class Task(Loggable, Spawnable):
         Args:
             block (Block): The block to put attributes to
             attr_values (dict): Dictionary of {str: value} to set
-            timeout (float) time in seconds to wait for responses, wait
+            timeout (float): time in seconds to wait for responses, wait
                 forever if None
         """
         f = self.put_many_async(block, attr_values)
@@ -133,7 +133,7 @@ class Task(Loggable, Spawnable):
                 attr (Attribute): The attribute to wait for
                 value (object): the value to wait for
                 bad_values (list): values to raise an error on
-                timeout (Float) time in seconds to wait for responses, wait
+                timeout (float): time in seconds to wait for responses, wait
                     forever if None
         """
         futures = self.when_matches_async(attr, value, bad_values)
@@ -161,14 +161,14 @@ class Task(Loggable, Spawnable):
     def post(self, method, params=None, timeout=None):
         """Synchronously calls a block method
 
-            Args:
-                method (MethodMeta): the method to call
-                params (dict): parameters for the call
-                timeout (Float) time in seconds to wait for responses, wait
-                    forever if None
+        Args:
+            method (MethodMeta): the method to call
+            params (dict): parameters for the call
+            timeout (float): time in seconds to wait for responses, wait
+                forever if None
 
-            Returns:
-                the result from 'method'
+        Returns:
+            the result from 'method'
         """
 
         f = self.post_async(method, params)
@@ -178,12 +178,13 @@ class Task(Loggable, Spawnable):
     def post_async(self, method, params=None):
         """Asynchronously calls a function on a child block
 
-            Returns a list of one future which will proved the return value
-            on completion"""
+        Returns a list of one future which will proved the return value
+        on completion
+        """
         assert isinstance(method, MethodMeta), \
             "Expected MethodMeta, got %r" % (method,)
 
-        endpoint = method.path_relative_to(self.process)
+        endpoint = method.process_path
 
         request = Post(None, self.q, endpoint, params)
         new_id, f = self._save_future()
@@ -203,7 +204,7 @@ class Task(Loggable, Spawnable):
         assert isinstance(attr, Attribute), \
             "Expected Attribute, got %r" % (attr,)
 
-        endpoint = attr.path_relative_to(self.process) + ["value"]
+        endpoint = attr.process_path + ["value"]
         self.log_debug("Subscribing to %s", endpoint)
         request = Subscribe(None, self.q, endpoint, False)
         # If self is in args, then make weak version of it
@@ -222,8 +223,9 @@ class Task(Loggable, Spawnable):
     def unsubscribe(self, id_):
         """Terminates the subscription to an attribute
 
-            Args:
-                id_ (Int): the identifier of the subscription to halt"""
+        Args:
+            id_ (int): the identifier of the subscription to halt
+        """
 
         self._subscriptions.pop(id_)
 
@@ -232,15 +234,16 @@ class Task(Loggable, Spawnable):
         self.process.q.put(request)
 
     def wait_all(self, futures, timeout=None):
-        """services all futures until the list 'futures' are all done
-            then returns. Calls relevant subscription callbacks as they
-            come off the queue and raises an exception on abort
+        """Services all futures until the list 'futures' are all done
+        then returns. Calls relevant subscription callbacks as they
+        come off the queue and raises an exception on abort
 
-            Args:
-                futures ([Future] or Future): a future or list of all futures
-                    that the caller wants to wait for
-                timeout (Float) time in seconds to wait for responses, wait
-                    forever if None"""
+        Args:
+            futures (Union[list, Future]): a future or list of all futures
+                that the caller wants to wait for
+            timeout (float): time in seconds to wait for responses, wait
+                forever if None
+        """
         if timeout is None:
             until = None
         else:
@@ -293,8 +296,9 @@ class Task(Loggable, Spawnable):
             return
 
     def _update_future(self, response):
-        """called when a future is filled. Updates the future accordingly and
-            removes it from the futures list"""
+        """Called when a future is filled. Updates the future accordingly and
+        removes it from the futures list
+        """
         self.log_debug("future %d filled", response.id)
         f = self._futures.pop(response.id)
         method = self._methods.pop(response.id, None)

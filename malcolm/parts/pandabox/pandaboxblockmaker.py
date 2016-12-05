@@ -8,33 +8,42 @@ from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 from malcolm.parts.pandabox.pandaboxactionpart import PandABoxActionPart
 from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
 from malcolm.parts.builtin.stringpart import StringPart
+from malcolm.tags import widget, group, inport, outport
 
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
-    if writeable:
-        widget = "widget:textinput"
-    else:
-        widget = "widget:textupdate"
-    if subtyp == "uint":
-        meta = NumberMeta("uint32", description, tags + [widget])
-    elif subtyp == "int":
-        meta = NumberMeta("int32", description, tags + [widget])
-    elif subtyp == "scalar":
-        meta = NumberMeta("float64", description, tags + [widget])
+    if subtyp == "enum":
+        if writeable:
+            widget_type = "combo"
+        else:
+            widget_type = "textupdate"
+        tags.append(widget(widget_type))
+        meta = ChoiceMeta(description, labels, tags)
     elif subtyp == "bit":
         if writeable:
-            widget = "widget:toggle"
+            widget_type = "checkbox"
         else:
-            widget = "widget:led"
-        meta = BooleanMeta(description, tags + [widget])
-    elif subtyp == "lut":
-        meta = StringMeta(description, tags + [widget])
-    elif subtyp == "enum":
-        meta = ChoiceMeta(description, labels, tags + ["widget:combo"])
-    elif subtyp in ("pos", "relative_pos"):
-        meta = NumberMeta("float64", description, tags + [widget])
+            widget_type = "led"
+        tags.append(widget(widget_type))
+        meta = BooleanMeta(description, tags)
     else:
-        raise ValueError("Unknown subtype %r" % subtyp)
+        if writeable:
+            widget_type = "textinput"
+        else:
+            widget_type = "textupdate"
+        tags.append(widget(widget_type))
+        if subtyp == "uint":
+            meta = NumberMeta("uint32", description, tags)
+        elif subtyp == "int":
+            meta = NumberMeta("int32", description, tags)
+        elif subtyp == "scalar":
+            meta = NumberMeta("float64", description, tags)
+        elif subtyp == "lut":
+            meta = StringMeta(description, tags)
+        elif subtyp in ("pos", "relative_pos"):
+            meta = NumberMeta("float64", description, tags)
+        else:
+            raise ValueError("Unknown subtype %r" % subtyp)
     return meta
 
 
@@ -93,33 +102,33 @@ class PandABoxBlockMaker(Loggable):
             raise ValueError("Unknown type %r subtype %r" % (type, subtyp))
 
     def _make_icon(self):
-        meta = StringMeta("URL for ICON", tags=["flowgraph:icon"])
+        meta = StringMeta("URL for ICON", tags=[widget("icon")])
         self._make_field_part("icon", meta, writeable=False)
 
     def _make_scale_offset(self, field_name):
         group_tag = self._make_group("outputs")
         meta = StringMeta("Units for position fields on this block",
-                          tags=[group_tag, "widget:textinput"])
+                          tags=[group_tag, widget("textinput")])
         self._make_field_part(field_name + ".UNITS", meta, writeable=True)
         meta = NumberMeta("float64", "Scale for block position fields",
-                          tags=[group_tag, "widget:textinput"])
+                          tags=[group_tag, widget("textinput")])
         self._make_field_part(field_name + ".SCALE", meta, writeable=True)
         meta = NumberMeta("float64", "Offset for block position fields",
-                          tags=[group_tag, "widget:textinput"])
+                          tags=[group_tag, widget("textinput")])
         self._make_field_part(field_name + ".OFFSET", meta, writeable=True)
 
     def _make_time_parts(self, field_name, field_data, writeable):
         description = field_data.description
         if writeable:
-            widget_tag = "widget:textupdate"
+            widget_tag = widget("textupdate")
             group_tag = self._make_group("parameters")
         else:
-            widget_tag = "widget:textinput"
+            widget_tag = widget("textinput")
             group_tag = self._make_group("readbacks")
         meta = NumberMeta("float64", description, [group_tag, widget_tag])
         self._make_field_part(field_name, meta, writeable)
         meta = ChoiceMeta(description + " time units", ["s", "ms", "us"],
-                          tags=[group_tag, "widget:combo"])
+                          tags=[group_tag, widget("combo")])
         self._make_field_part(field_name + ".UNITS", meta, writeable=True)
 
     def _make_param_part(self, field_name, field_data, writeable):
@@ -142,13 +151,17 @@ class PandABoxBlockMaker(Loggable):
                 tags=[group_tag], writeable=True, labels=field_data.labels)
         part = PandABoxActionPart(
             self.process, self.control, self.block_name, field_name,
-            field_data.description, ["widget:action", group_tag], arg_meta)
+            field_data.description, [widget("action"), group_tag], arg_meta)
         self._add_part(field_name, part)
 
     def _make_out(self, field_name, field_data, typ):
         group_tag = self._make_group("outputs")
-        flow_tag = "flowgraph:outport:%s:%s.%s" % (
-            typ, self.block_name, field_name)
+        if typ == "bit":
+            outport_type = "bool"
+        else:
+            outport_type = "int32"
+        flow_tag = outport(
+            outport_type, "%s.%s" % (self.block_name, field_name))
         meta = make_meta(typ, field_data.description,
                          tags=[group_tag, flow_tag], writeable=False)
         self._make_field_part(field_name, meta, writeable=False)
@@ -156,11 +169,11 @@ class PandABoxBlockMaker(Loggable):
     def _make_out_capture(self, field_name, field_data):
         group_tag = self._make_group("outputs")
         meta = ChoiceMeta("Capture %s in PCAP?" % field_name,
-                          field_data.labels, tags=[group_tag, "widget:combo"])
+                          field_data.labels, tags=[group_tag, widget("combo")])
         self._make_field_part(field_name + ".CAPTURE", meta, writeable=True)
         meta = NumberMeta(
             "uint8", "How many FPGA ticks to delay data capture",
-            tags=[group_tag, "widget:textinput"])
+            tags=[group_tag, widget("textinput")])
         self._make_field_part(field_name + ".DATA_DELAY", meta, writeable=True)
         if self.area_detector:
             # Make a string part to hold the name of the dataset
@@ -175,9 +188,12 @@ class PandABoxBlockMaker(Loggable):
 
     def _make_mux(self, field_name, field_data, typ):
         group_tag = self._make_group("inputs")
-        meta = ChoiceMeta(field_data.description, field_data.labels,
-                          tags=[group_tag, "flowgraph:inport:%s" % typ,
-                                "widget:combo"])
+        if typ == "bit":
+            inport_type = "bool"
+        else:
+            inport_type = "int32"
+        meta = ChoiceMeta(field_data.description, field_data.labels, tags=[
+            group_tag, inport(inport_type, "ZERO"), widget("combo")])
         self._make_field_part(field_name, meta, writeable=True)
         meta = make_meta(typ, "%s current value" % field_name,
                          tags=[group_tag], writeable=False)
@@ -187,11 +203,11 @@ class PandABoxBlockMaker(Loggable):
         group_tag = self._make_group("inputs")
         meta = NumberMeta(
             "uint8", "How many FPGA ticks to delay input",
-            tags=[group_tag, "widget:textinput"])
+            tags=[group_tag, widget("textinput")])
         self._make_field_part(field_name + ".DELAY", meta, writeable=True)
 
     def _make_table(self, field_name, field_data):
-        widget_tag = "widget:table"
+        widget_tag = widget("table")
         group_tag = self._make_group("parameters")
         meta = TableMeta(field_data.description, [widget_tag, group_tag])
         part = PandABoxTablePart(self.process, self.control, meta,
@@ -213,5 +229,5 @@ class PandABoxBlockMaker(Loggable):
         if attr_name not in self.parts:
             part = PandABoxGroupPart(self.process, attr_name)
             self._add_part(attr_name, part)
-        group_tag = "group:%s" % attr_name
+        group_tag = group(attr_name)
         return group_tag

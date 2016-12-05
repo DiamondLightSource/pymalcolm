@@ -15,9 +15,8 @@ class TestInit(unittest.TestCase):
     def test_init(self):
         p = Mock()
         n = Monitorable()
-        self.assertIsNone(n._parent)
-        n.set_parent(p, "notifier")
-        self.assertEqual("notifier", n._name)
+        n.set_process_path(p, ["notifier"])
+        self.assertEqual(["notifier"], n.process_path)
 
 
 class TestUpdates(unittest.TestCase):
@@ -29,27 +28,28 @@ class TestUpdates(unittest.TestCase):
         parent = Mock()
         n = MyMonitorable()
         n.set_endpoint_data("child", Mock())
-        n.set_parent(parent, "serialize")
-        self.assertIs(parent, n._parent)
+        n.set_process_path(parent, ["serialize"])
+        self.assertIs(parent, n.process)
         self.assertEquals("serialize", n._logger.name)
-        n.child.set_logger_name.assert_called_once_with("serialize.child")
+        n.child.set_process_path.assert_called_once_with(
+            parent, ["serialize", "child"])
 
-    def test_report_changed(self):
-        change = [["test_attr", "test_value"], 12]
-        parent = Mock()
-        n = Monitorable()
-        n.set_parent(parent,"test_n")
-        notify = Mock()
-        n.report_changes(change)
+    def test_apply_changes(self):
+        class MyMonitorable(Monitorable):
+            endpoints = ["test_value"]
+            def set_test_value(self, value, notify=False):
+                self.set_endpoint_data("test_value", value, notify)
+
+        change = [["test_value"], 12]
+        n = MyMonitorable()
+        n.set_endpoint_data("test_value", 10)
+        n.set_test_value = Mock(wraps=n.set_test_value)
+        process = Mock()
+        n.set_process_path(process, ["test_n", "test_attr"])
+        n.apply_changes(change)
         expected = [["test_n", "test_attr", "test_value"], 12]
-        parent.report_changes.assert_called_once_with(expected)
-
-    def test_nop_with_no_parent(self):
-        change = [["test"], 123]
-        n = Monitorable()
-        self.assertIsNone(n._parent)
-        n.report_changes(change)
-        self.assertEquals([["test"], 123], change)
+        n.set_test_value.assert_called_once_with(12, notify=False)
+        process.report_changes.assert_called_once_with(expected)
 
     def test_set_endpoint(self):
         n = Monitorable()
@@ -57,13 +57,12 @@ class TestUpdates(unittest.TestCase):
         endpoint = Mock()
         # Check that the mock looks like it is serializable
         self.assertTrue(hasattr(endpoint, "to_dict"))
-        n.set_parent(parent,"test_n")
+        n.set_process_path(parent, ["test_n"])
         n.endpoints = ["end"]
         n.set_endpoint_data("end", endpoint, notify=True)
         self.assertEqual(n.end, endpoint)
         parent.report_changes.assert_called_once_with(
             [["test_n", "end"], endpoint.to_dict()])
-
 
     def test_set_endpoint_no_notify(self):
         n = Monitorable()
@@ -71,7 +70,7 @@ class TestUpdates(unittest.TestCase):
         endpoint = Mock()
         # Check that the mock looks like it is serializable
         self.assertTrue(hasattr(endpoint, "to_dict"))
-        n.set_parent(parent, "test_n")
+        n.set_process_path(parent, ("test_n",))
         n.endpoints = ["end"]
         n.set_endpoint_data("end", endpoint, notify=False)
         self.assertEqual(n.end, endpoint)

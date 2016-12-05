@@ -38,3 +38,10 @@
     description: If detector is currently acquiring
     rbv: $(prefix):Acquire
     widget: led
+
+- parts.ca.CAChoicePart:
+    name: triggerMode
+    description: What is triggering the detector to take frames
+    pv: $(prefix):TriggerMode
+    rbvSuff: _RBV
+    widget: combo

@@ -14,7 +14,7 @@ class BlockModel(QAbstractItemModel):
         self.process = process
         self.block = block
         self.id_ = 1
-        self.block_path = tuple(block.path_relative_to(process))
+        self.block_path = tuple(block.process_path)
         self.root_item = BlockItem(self.block_path, block)
         # map id -> request
         self.requests = {}

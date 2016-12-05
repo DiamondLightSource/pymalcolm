@@ -1,11 +1,12 @@
 Counter Tutorial
 ================
 
-You should already know how to run up a Malcolm :ref:`Process` with some
-:ref:`Block` instances that are composed of :ref:`Part` instances, and have
-seen a Part that exposes a :ref:`Method`. Now we will look at a Part that
-exposes an :ref:`Attribute` as well.
+.. py:currentmodule:: malcolm.core
 
+You should already know how to run up a Malcolm `Process` with some
+`Block` instances that are composed of `Part` instances, and have
+seen a Part that exposes a `Method`. Now we will look at a Part that
+exposes an `Attribute` as well.
 
 Let's take the example of a Counter. It contains:
 
@@ -28,10 +29,8 @@ Let's take a look at the ``./malcolm/parts/demo/counterpart.py`` now:
 .. literalinclude:: ../../malcolm/parts/demo/counterpart.py
     :language: python
 
-.. currentmodule:: malcolm.core
-
-Again, we start by subclassing :class:`Part`, and we have decorated a couple
-of functions with :meth:`method_takes`, but this time they don't take or
+Again, we start by subclassing `Part`, and we have decorated a couple
+of functions with `method_takes`, but this time they don't take or
 return any arguments, so the functions don't have a ``parameters`` argument.
 The main difference to the Hello example is that we have implemented
 :meth:`~Part.create_attributes` which expects us to create and yield any
@@ -43,7 +42,7 @@ Attributes we expect the Block to have. In our example we yield:
   to "Put" to the Attribute, or None if it isn't writeable
 
 To make the Attribute we first need to make a meta object. In our example we
-want a ``float64`` :class:`~vmetas.NumberMeta` as we want to demonstrate
+want a ``float64`` `NumberMeta` as we want to demonstrate
 floating point numbers. If our counter was an integer we could choose
 ``int32`` or ``int64``. The actual Attribute is returned by the
 :meth:`~VMeta.make_attribute` method of this meta.
@@ -51,7 +50,7 @@ floating point numbers. If our counter was an integer we could choose
 In the two methods (zero and increment), we make use of the ``counter`` Attribute. 
 We can get its value by using the :attr:`~Attribute.value` attribute and set its value by calling
 the :meth:`~Attribute.set_value` method. This method will validate the new value using
-the :class:`VMeta` object we passed in :meth:`~Part.create_attributes` and
+the `VMeta` object we passed in :meth:`~Part.create_attributes` and
 notify the Process, that the Block is attached to, that something has changed
 and subscribers need to be updated.
 
@@ -116,7 +115,7 @@ Conclusion
 ----------
 
 This second tutorial has taken us through creating Attributes in Blocks and
-showed us a little bit of the error checking that :class:`VMeta` instances
+showed us a little bit of the error checking that `VMeta` instances
 give us. Now we have a CounterPart, we could combine it with the HelloPart
 from the previous tutorial, creating a Controller with 2 Parts that has
 counter and ``greet()`` functionality. In the next tutorial we will see how

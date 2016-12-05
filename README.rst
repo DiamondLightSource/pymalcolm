@@ -43,8 +43,7 @@ License
 APACHE License. (see `LICENSE`_)
 
 
-.. |build_status| image:: https://travis-ci.org/dls-controls/pymalcolm
-.svg?style=flat
+.. |build_status| image:: https://travis-ci.org/dls-controls/pymalcolm.svg?style=flat
     :target: https://travis-ci.org/dls-controls/pymalcolm
     :alt: Build Status
 

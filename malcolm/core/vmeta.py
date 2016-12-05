@@ -7,11 +7,10 @@ class VMeta(Meta):
     attribute_class = NTScalar
 
     def validate(self, value):
-        """
-        Abstract function to validate a given value
+        """Abstract function to validate a given value
 
         Args:
-            value(abstract): Value to validate
+            value: Value to validate
         """
         raise NotImplementedError(
             "Abstract validate function must be implemented in child classes")

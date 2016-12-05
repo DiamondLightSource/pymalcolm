@@ -26,7 +26,7 @@ class TestTableMetaInit(unittest.TestCase):
 class TestTableMetaSetters(unittest.TestCase):
     def setUp(self):
         tm = TableMeta("desc")
-        tm.report_changes = Mock(wrap=tm.report_changes)
+        tm.process = Mock()
         self.tm = tm
 
     def test_set_elements(self):
@@ -37,7 +37,7 @@ class TestTableMetaSetters(unittest.TestCase):
         elements = TableElementMap(elements)
         tm.set_elements(elements)
         self.assertEqual(elements, tm.elements)
-        tm.report_changes.assert_called_once_with(
+        tm.process.report_changes.assert_called_once_with(
             [["elements"], elements.to_dict()])
 
     def test_set_elements_from_serialized(self):
