@@ -377,7 +377,7 @@ class PMACTrajectoryPart(ChildPart):
                 positions.append(point.upper[axis_name])
 
             # Check if we need to insert the upper bound point
-            if i + 1 < self.end_index:
+            if i + 1 < self.steps_up_to:
                 next_point = self.generator.get_point(i + 1)
                 lower_move_time, turnaround_midpoint = \
                     self.need_lower_move_time(point, next_point)
