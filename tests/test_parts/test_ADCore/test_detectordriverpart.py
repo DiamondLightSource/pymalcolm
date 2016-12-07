@@ -46,7 +46,7 @@ class TestSimDetectorDriverPart(unittest.TestCase):
             arrayCounter=completed_steps,
             arrayCallbacks=True))
         task.post_async.assert_has_calls([
-            call(self.child["stop"]),
+
             call(self.child["start"])])
 
     def test_run(self):

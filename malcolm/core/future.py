@@ -9,26 +9,10 @@ _FUTURE_STATES = [
 ]
 
 
-class Error(Exception):
-    """Base class for all future-related exceptions."""
-    # TODO: for review - user-defined exceptions - should we use them?
-    pass
-
-
-class TimeoutError(Error):
-    """The operation exceeded the given deadline."""
-    pass
-
-
-class RemoteError(Error):
-    """The remote operation generated an error."""
-    pass
-
-
 class Future(object):
     """Represents the result of an asynchronous computation.
-       This class has a similar API to concurrent.futures.Future but this
-       simpler version is not thread safe"""
+   This class has a similar API to concurrent.futures.Future but this
+   simpler version is not thread safe"""
 
     def __init__(self, task):
         """Initializes the future """
@@ -43,7 +27,7 @@ class Future(object):
 
     def __get_result(self):
         if self._exception:
-            raise RemoteError(self._exception)
+            raise self._exception
         else:
             return self._result
 
@@ -62,11 +46,8 @@ class Future(object):
                 timeout.
             Exception: If the call raised then that exception will be raised.
         """
-        if self._state == FINISHED:
-            return self.__get_result()
-
-        self._task.wait_all(self, timeout)
-
+        if self._state == RUNNING:
+            self._task.wait_all([self], timeout)
         return self.__get_result()
 
     def exception(self, timeout=None):
@@ -85,12 +66,8 @@ class Future(object):
             TimeoutError: If the future didn't finish executing before the given
                 timeout.
         """
-
-        if self._state == FINISHED:
-            return self._exception
-
-        self._task.wait_all(self, timeout)
-
+        if self._state == RUNNING:
+            self._task.wait_all([self], timeout)
         return self._exception
 
     # The following methods should only be used by Task and in unit tests.

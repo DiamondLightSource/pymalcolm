@@ -5,6 +5,7 @@ from malcolm.compat import OrderedDict
 from malcolm.core.attribute import Attribute
 from malcolm.core.block import Block
 from malcolm.core.blockmeta import BlockMeta
+from malcolm.core.errors import AbortedError
 from malcolm.core.hook import Hook, get_hook_decorated
 from malcolm.core.hookrunner import HookRunner
 from malcolm.core.loggable import Loggable
@@ -85,9 +86,7 @@ class Controller(Loggable):
         return parts_dict
 
     def do_initial_reset(self):
-        request = Post(
-            None, self.process.create_queue(), [self.mri, "reset"])
-        self.process.q.put(request)
+        pass
 
     def _set_block_children(self):
         # reconfigure block with new children
@@ -238,11 +237,12 @@ class Controller(Loggable):
         assert hook in self.hook_names, \
             "Hook %s doesn't appear in controller hooks %s" % (
                 hook, self.hook_names)
-        self.log_debug("Run %s hook", self.hook_names[hook])
 
         # ask the hook to find the functions it should run
         part_funcs = hook.find_hooked_functions(self.parts)
         hook_runners = {}
+        self.log_debug("Run %s hook on %s",
+                       self.hook_names[hook], [p.name for p in part_funcs])
 
         # now start them off
         hook_queue = self.process.create_queue()
@@ -261,21 +261,26 @@ class Controller(Loggable):
         while hook_runners:
             part, ret = hook_queue.get()
             hook_runner = hook_runners.pop(part)
+
+            if isinstance(ret, AbortedError):
+                # If AbortedError, all tasks have already been stopped.
+                self.log_debug("Part %s Aborted", part.name)
+                # Do not wait on them otherwise we might get a deadlock...
+                raise ret
+
+            # Wait for the process to terminate
+            hook_runner.wait()
             return_dict[part.name] = ret
-            self.log_debug("Part %s returned %s" % (part.name, ret))
+            self.log_debug("Part %s returned %r. Still waiting for %s",
+                           part.name, ret, [p.name for p in hook_runners])
 
             if isinstance(ret, Exception):
-                if not isinstance(ret, StopIteration):
-                    # If StopIteration, all tasks have already been stopped.
-                    for h in hook_runners.values():
-                        h.stop()
+                # Got an error, so stop and wait all hook runners
+                for h in hook_runners.values():
+                    h.stop()
                 # Wait for them to finish
                 for h in hook_runners.values():
                     h.wait()
-
-            hook_runner.wait()
-
-            if isinstance(ret, Exception):
                 raise ret
 
         return return_dict

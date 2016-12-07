@@ -1,7 +1,7 @@
 import time
 
 from malcolm.core import REQUIRED, method_takes
-from malcolm.core.vmetas import PointGeneratorMeta, StringArrayMeta
+from malcolm.core.vmetas import PointGeneratorMeta, StringArrayMeta, NumberMeta
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
 
@@ -13,6 +13,8 @@ class ScanTickerPart(ChildPart):
     completed_steps = None
     # How many steps to do
     steps_to_do = None
+    # When to blow up
+    exception_step = None
 
     @RunnableController.Configure
     @RunnableController.PostRunReady
@@ -21,8 +23,9 @@ class ScanTickerPart(ChildPart):
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
         "axesToMove", StringArrayMeta(
             "List of axes in inner dimension of generator that should be moved"
-        ), REQUIRED
-    )
+        ), REQUIRED,
+        "exceptionStep", NumberMeta(
+            "int32", "If >0, raise an exception at the end of this step"), 0)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         # If we are being asked to move
         if self.name in params.axesToMove:
@@ -30,6 +33,7 @@ class ScanTickerPart(ChildPart):
             self.generator = params.generator
             self.completed_steps = completed_steps
             self.steps_to_do = steps_to_do
+            self.exception_step = params.exceptionStep
         else:
             # Flag nothing to do
             self.generator = None
@@ -53,3 +57,6 @@ class ScanTickerPart(ChildPart):
                 task.sleep(wait_time)
                 # Update the point as being complete
                 update_completed_steps(i + 1, self)
+                # If this is the exception step then blow up
+                assert i +1 != self.exception_step, \
+                    "Raising exception at step %s" % self.exception_step

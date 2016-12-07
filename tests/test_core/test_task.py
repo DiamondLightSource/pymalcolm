@@ -12,6 +12,7 @@ import time
 #module imports
 from malcolm.compat import queue
 from malcolm.core.task import Task
+from malcolm.core import AbortedError, ResponseError, UnexpectedError
 from malcolm.core.spawnable import Spawnable
 from malcolm.core.response import Error, Return, Update, Delta
 from malcolm.core.request import Request
@@ -80,7 +81,7 @@ class TestTask(unittest.TestCase):
     def test_put(self):
         # single attribute
         t = Task("testTask", self.proc)
-        resp = Return(0, None, None)
+        resp = Return(1, None, None)
         resp.set_value('testVal')
         # cheat and add the response before the blocking call to put
         t.q.put(resp)
@@ -92,9 +93,9 @@ class TestTask(unittest.TestCase):
     def test_put_many(self):
         # many attributes
         t = Task("testTask", self.proc)
-        resp1 = Return(0, None, None)
+        resp1 = Return(1, None, None)
         resp1.set_value('testVal1')
-        resp2 = Return(1, None, None)
+        resp2 = Return(2, None, None)
         resp2.set_value('testVal2')
         # cheat and add the response before the blocking call to put
         t.q.put(resp1)
@@ -107,15 +108,15 @@ class TestTask(unittest.TestCase):
 
     def test_post(self):
         t = Task("testTask", self.proc)
-        resp1 = Return(0, None, None)
+        resp1 = Return(1, None, None)
         resp1.set_value(dict(ret='testVal'))
-        resp2 = Error(1, None, None)
+        resp2 = Error(2, None, "")
         # cheat and add the responses before the blocking call to put
         t.q.put(resp1)
         t.q.put(resp2)
         t.stop()
         t.post(self.method, {"a": "testParm"})
-        self.assertRaises(ValueError, t.post, self.method, {"a": "testParm2"})
+        self.assertRaises(ResponseError, t.post, self.method, {"a": "testParm2"})
         self.assertEqual(len(t._futures), 0)
         self.assertEqual(self.proc.q.qsize(), 2)
 
@@ -131,10 +132,10 @@ class TestTask(unittest.TestCase):
 
         resp0 = Return(0, None, None)
         resp0.set_value('testVal')
-        resp2 = Error(2, None, None)
+        resp2 = Error(2, None, "")
         t.q.put(resp0)
         t.q.put(resp2)
-        self.assertRaises(ValueError, t.wait_all, f_wait1, 0)
+        self.assertRaises(ResponseError, t.wait_all, f_wait1, 0)
         self.assertEqual(t._futures, {1: f1, 3: f3})
         self.assertEqual(f0.done(), True)
         self.assertEqual(f1.done(), False)
@@ -145,9 +146,9 @@ class TestTask(unittest.TestCase):
         resp3 = Delta(3, None, None)
         t.q.put(resp3)
         f_wait1 = [f3]
-        self.assertRaises(ValueError, t.wait_all, f_wait1, 0.01)
+        self.assertRaises(UnexpectedError, t.wait_all, f_wait1, 0.01)
         t.stop()
-        self.assertRaises(StopIteration, t.wait_all, f_wait1, 0.01)
+        self.assertRaises(AbortedError, t.wait_all, f_wait1, 0.01)
 
         resp1 = Return(1, None, None)
         resp1.set_value('testVal')
@@ -167,7 +168,7 @@ class TestTask(unittest.TestCase):
         resp10 = Return(10, None, None)
         t.q.put(resp10)
         t.q.put(Spawnable.STOP)
-        self.assertRaises(StopIteration, t.wait_all, f1, 0)
+        self.assertRaises(AbortedError, t.wait_all, f1, 0)
 
         # same future twice
         f2 = Future(t)
@@ -185,7 +186,7 @@ class TestTask(unittest.TestCase):
 
     def test_subscribe(self):
         t = Task("testTask", self.proc)
-        resp = Update(0, None, None)
+        resp = Update(1, None, None)
         resp.set_value('changedVal')
         t.q.put(resp)
         t.stop()
@@ -194,14 +195,14 @@ class TestTask(unittest.TestCase):
         f1 = Future(t)
         t._futures = {1: f1}
 
-        self.assertRaises(StopIteration, t.wait_all, f1, 0)
+        self.assertRaises(AbortedError, t.wait_all, f1, 0)
         self.assertEqual(self.callback_value, 'changedVal')
         self.assertEqual(self.callback_result, 8)
         t.unsubscribe(new_id)
 
     def test_callback_error(self):
         t = Task("testTask", self.proc)
-        resp = Error(0, None, None)
+        resp = Error(1, None, None)
         resp.set_message('error')
         t.q.put(resp)
         t.stop()
@@ -209,17 +210,17 @@ class TestTask(unittest.TestCase):
         t.subscribe(self.attr, self._callback, 3, 5)
         f1 = Future(t)
         t._futures = {1: f1}
-        self.assertRaises(RuntimeError, t.wait_all, f1, 0)
+        self.assertRaises(ResponseError, t.wait_all, f1, 0)
 
     def test_callback_unexpected(self):
         t = Task("testTask", self.proc)
-        resp = Delta(0, None, None)
+        resp = Delta(1, None, None)
         t.q.put(resp)
         t.stop()
         t.subscribe(self.attr, self._callback, 3, 5)
         f1 = Future(t)
         t._futures = {1: f1}
-        self.assertRaises(ValueError, t.wait_all, f1, 0)
+        self.assertRaises(UnexpectedError, t.wait_all, f1, 0)
 
     def _bad_callback(self, value):
         self.bad_called_back = True
@@ -227,7 +228,7 @@ class TestTask(unittest.TestCase):
 
     def test_callback_crash(self):
         t = Task("testTask", self.proc)
-        resp = Update(0, None, None)
+        resp = Update(1, None, None)
         resp.set_value('changedVal')
         t.q.put(resp)
         t.stop()
@@ -235,7 +236,7 @@ class TestTask(unittest.TestCase):
         t.subscribe(self.attr, self._bad_callback)
         f1 = Future(t)
         t._futures = {1: f1}
-        self.assertRaises(StopIteration, t.wait_all, f1, 0)
+        self.assertRaises(TestWarning, t.wait_all, f1, 0)
         self.assertEquals(self.bad_called_back, True)
 
     def test_sleep(self):
@@ -249,14 +250,11 @@ class TestTask(unittest.TestCase):
         t = Task("testTask", self.proc)
 
         f = t.when_matches_async(self.attr, "matchTest")
-
-        # match (response goes to the subscription at id 1,
-        # not the future at id 0)
         resp = Update(1, None, None)
         resp.set_value('matchTest')
         t.q.put(resp)
+        self.assertEqual(f[0].result(0), 'matchTest')
         t.stop()
-        self.assertEqual(f[0].result(0),'matchTest')
 
     def test_not_when_matches(self):
         t = Task("testTask", self.proc)
@@ -270,7 +268,7 @@ class TestTask(unittest.TestCase):
         t.stop()
 
         # this will abort the task because f[0] never gets filled
-        self.assertRaises(StopIteration, f[0].result)
+        self.assertRaises(AbortedError, f[0].result)
 
     def test_start_default_raises(self):
         t = Task("t", self.proc)
@@ -291,7 +289,7 @@ class TestTask(unittest.TestCase):
         t.define_spawn_function(f)
         start = time.time()
         t.start()
-        self.assertRaises(AssertionError, t.define_spawn_function, None)
+        self.assertRaises(UnexpectedError, t.define_spawn_function, None)
         t.wait()
         end = time.time()
         self.assertAlmostEqual(end-start, 0.05, delta=0.005)

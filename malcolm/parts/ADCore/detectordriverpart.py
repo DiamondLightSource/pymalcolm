@@ -68,11 +68,9 @@ class DetectorDriverPart(ChildPart):
     @RunnableController.Seek
     @method_takes(*configure_args)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
-        # Stop in case we are already running
-        stop_future = task.post_async(self.child["stop"])
+        task.unsubscribe_all()
         exposure = params.generator.get_point(0).duration
         exposure -= self.readout_time.value
-        task.wait_all(stop_future)
         task.put_many(self.child, dict(
             exposure=exposure,
             imageMode="Multiple",

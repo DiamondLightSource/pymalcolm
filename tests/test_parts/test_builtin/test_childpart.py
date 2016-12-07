@@ -89,7 +89,6 @@ class TestChildPart(unittest.TestCase):
         self.part = ChildPart(self.p, params)
 
         # Get the parent block into idle state
-        self.checkState(sm.DISABLED)
         self.p.start()
 
         # wait until block is Ready

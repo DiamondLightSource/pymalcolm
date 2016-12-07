@@ -1,5 +1,6 @@
 from malcolm.core.loggable import Loggable
 from malcolm.core.methodmeta import MethodMeta
+from malcolm.core.errors import AbortedError
 
 
 class HookRunner(Loggable):
@@ -23,7 +24,7 @@ class HookRunner(Loggable):
         try:
             result = self.method_meta.call_post_function(
                 self.func, self.filtered_params, self.task, *self.args)
-        except StopIteration as e:
+        except AbortedError as e:
             self.log_info("%s has been aborted", self.func)
             result = e
         except Exception as e:  # pylint:disable=broad-except
@@ -35,6 +36,10 @@ class HookRunner(Loggable):
 
     def start(self):
         self.task.define_spawn_function(self.task_return)
+        sentinel_stop = object()
+        self.task.sentinel_stop = sentinel_stop
+        # Say that we should only listen to stops after this point
+        self.task.q.put(sentinel_stop)
         self.task.start()
 
     def stop(self):

@@ -130,6 +130,7 @@ class PMACTrajectoryPart(ChildPart):
     @RunnableController.Seek
     @method_takes(*configure_args)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
+        task.unsubscribe_all()
         self.generator = params.generator
         cs_port, self.axis_mapping = self._make_axis_mapping(
             part_info, params.axesToMove)
