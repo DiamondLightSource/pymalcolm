@@ -1,5 +1,6 @@
 from malcolm.compat import OrderedDict
-from malcolm.core import Part, REQUIRED, method_also_takes, Attribute
+from malcolm.core import Part, REQUIRED, method_also_takes, Attribute, \
+    ResponseError
 from malcolm.core.vmetas import StringMeta
 from malcolm.controllers.managercontroller import ManagerController, \
     LayoutInfo, OutportInfo
@@ -36,7 +37,7 @@ class ChildPart(Part):
     def reset(self, task):
         try:
             task.post(self.child["reset"])
-        except ValueError:
+        except ResponseError:
             # We get a "ValueError: child is not writeable" if we can't run
             # reset, probably because the child is already resetting,
             # so just wait for it to be idle

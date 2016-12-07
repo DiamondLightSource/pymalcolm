@@ -145,8 +145,10 @@ class HDFWriterPart(ChildPart):
             self.child["arrayCounter"], 1)
 
     @RunnableController.Run
+    @RunnableController.Resume
     def run(self, task, update_completed_steps):
         task.wait_all(self.array_future)
+        task.unsubscribe_all()
         task.subscribe(self.child["uniqueId"], update_completed_steps, self)
         # TODO: what happens if we miss the last frame?
         task.when_matches(self.child["uniqueId"], self.done_when_reaches)

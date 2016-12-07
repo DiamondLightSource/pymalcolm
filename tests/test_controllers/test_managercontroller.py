@@ -52,7 +52,6 @@ class TestManagerController(unittest.TestCase):
         self.b = self.c.block
 
         # check that do_initial_reset works asynchronously
-        self.checkState(self.sm.DISABLED)
         self.p.start()
 
         # wait until block is Ready

@@ -1,4 +1,5 @@
 from malcolm.core import method_takes, Task, serialize_object
+from malcolm.core import ResponseError, BadValueError
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController, \
     ParameterTweakInfo
@@ -24,8 +25,8 @@ class RunnableChildPart(ChildPart):
             task.post(self.child["abort"])
         try:
             task.post(self.child["reset"])
-        except ValueError:
-            # We get a "ValueError: child is not writeable" if we can't run
+        except ResponseError:
+            # We get a "ResponseError: child is not writeable" if we can't run
             # reset, probably because the child is already resetting,
             # so just wait for it to be idle
             task.when_matches(
@@ -59,9 +60,16 @@ class RunnableChildPart(ChildPart):
         """
         task.subscribe(
             self.child["completedSteps"], update_completed_steps, self)
+        match_future = self._wait_for_postrun(task)
         self.run_future = task.post_async(self.child["run"])
-        bad_states = [sm.DISABLING, sm.ABORTING, sm.FAULT]
-        task.when_matches(self.child["state"], sm.POSTRUN, bad_states)
+        try:
+            task.wait_all(match_future)
+        except BadValueError:
+            # If child went into Fault state, raise the friendlier run_future
+            # exception
+            if self.child.state == sm.FAULT:
+                raise self.run_future[0].exception()
+            raise
 
     @RunnableController.PostRunIdle
     @RunnableController.PostRunReady
@@ -69,19 +77,24 @@ class RunnableChildPart(ChildPart):
                  part_info=None, params=None):
         task.wait_all(self.run_future)
 
-    @RunnableController.Pause
-    def pause(self, task):
-        task.post(self.child["pause"])
-
     @RunnableController.Seek
     def seek(self, task, completed_steps, steps_to_do, part_info):
-        params = self.child["seek"].prepare_input_map(
+        params = self.child["pause"].prepare_input_map(
             completedSteps=completed_steps)
-        task.post(self.child["seek"], params)
+        task.post(self.child["pause"], params)
 
     @RunnableController.Resume
     def resume(self, task, update_completed_steps):
+        # The update_completed_steps subscription from run() is still valid here
+        match_future = self._wait_for_postrun(task)
         task.post(self.child["resume"])
+        task.wait_all(match_future)
+
+    def _wait_for_postrun(self, task):
+        bad_states = [sm.DISABLING, sm.ABORTING, sm.FAULT]
+        match_future = task.when_matches_async(
+            self.child["state"], sm.POSTRUN, bad_states)
+        return match_future
 
     @RunnableController.Abort
     def abort(self, task):

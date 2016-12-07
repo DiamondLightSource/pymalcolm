@@ -39,9 +39,7 @@ class TestPandaABoxDriverPart(unittest.TestCase):
             numImages=steps_to_do,
             arrayCounter=completed_steps,
             arrayCallbacks=True))
-        task.post_async.assert_has_calls([
-            call(self.child["stop"]),
-            call(self.child["start"])])
+        task.post_async.assert_called_once_with(self.child["start"])
 
     def test_run(self):
         task = MagicMock()

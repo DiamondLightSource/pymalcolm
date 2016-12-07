@@ -5,77 +5,64 @@ import setup_malcolm_paths
 
 import unittest
 from mock import Mock, call
-from time import sleep
+import time
 
 # logging
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.core import Process, Part, Task, Map
+from malcolm.core import Process, Part, Task, Map, AbortedError, ResponseError
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.controllers.runnablecontroller import RunnableController
-from scanpointgenerator import LineGenerator, CompoundGenerator
+from scanpointgenerator import LineGenerator, CompoundGenerator, \
+    FixedDurationMutator
 from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
-
-
-class DummyPart(Part):
-    exception = None
-
-    @RunnableController.Configure
-    def configure(self, task, completed_steps, steps_to_do, part_info):
-        if self.exception:
-            raise self.exception
+from malcolm.blocks.demo import Ticker
 
 
 class TestRunnableController(unittest.TestCase):
 
     def checkState(self, state, child=True, parent=True):
         if child:
-            self.assertEqual(self.c_child.state.value, state)
+            self.assertEqual(self.b_child.state, state)
         if parent:
-            self.assertEqual(self.c.state.value, state)
+            self.assertEqual(self.b.state, state)
 
     def checkSteps(self, configured, completed, total):
-        self.assertEqual(self.c.configured_steps.value, configured)
-        self.assertEqual(self.c.completed_steps.value, completed)
-        self.assertEqual(self.c.total_steps.value, total)
-        self.assertEqual(self.c_child.configured_steps.value, configured)
-        self.assertEqual(self.c_child.completed_steps.value, completed)
-        self.assertEqual(self.c_child.total_steps.value, total)
+        self.assertEqual(self.b.configuredSteps, configured)
+        self.assertEqual(self.b.completedSteps, completed)
+        self.assertEqual(self.b.totalSteps, total)
+        self.assertEqual(self.b_child.configuredSteps, configured)
+        self.assertEqual(self.b_child.completedSteps, completed)
+        self.assertEqual(self.b_child.totalSteps, total)
 
     def setUp(self):
         self.maxDiff = 5000
 
         self.p = Process('process1', SyncFactory('threading'))
 
-        # Make a dummy part so we can inject errors
-        params = DummyPart.MethodMeta.prepare_input_map(name='dpart')
-        self.d_part = DummyPart(self.p, params)
+        # Make a ticker block to act as our child
+        params = Ticker.MethodMeta.prepare_input_map(mri="childBlock")
+        self.b_child = Ticker(self.p, params)[-1]
 
-        # create a child RunnableController block
-        params = RunnableController.MethodMeta.prepare_input_map(
-            mri='childBlock')
-        self.c_child = RunnableController(self.p, [self.d_part], params)
-        self.b_child = self.c_child.block
-
-        self.sm = self.c_child.stateMachine
-
+        # Make an empty part for our parent
         params = Part.MethodMeta.prepare_input_map(name='part1')
         part1 = Part(self.p, params)
-        params = {'mri': 'childBlock', 'name': 'part2'}
-        params = RunnableChildPart.MethodMeta.prepare_input_map(**params)
+
+        # Make a RunnableChildPart to control the ticker
+        params = RunnableChildPart.MethodMeta.prepare_input_map(
+            mri='childBlock', name='part2')
         part2 = RunnableChildPart(self.p, params)
 
         # create a root block for the RunnableController block to reside in
-        parts = [part1, part2]
-        params = {'mri': 'mainBlock'}
-        params = RunnableController.MethodMeta.prepare_input_map(**params)
-        self.c = RunnableController(self.p, parts, params)
+        params = RunnableController.MethodMeta.prepare_input_map(
+            mri='mainBlock')
+        self.c = RunnableController(self.p, [part1, part2], params)
         self.b = self.c.block
+        self.sm = self.c.stateMachine
 
-        # check that do_initial_reset works asynchronously
-        self.checkState(self.sm.DISABLED)
+        # start the process off
         self.p.start()
 
         # wait until block is Ready
@@ -131,61 +118,57 @@ class TestRunnableController(unittest.TestCase):
                          'RunnableController(mainBlock).part1')
         self.assertEqual(self.c.parts['part2']._logger.name,
                          'RunnableController(mainBlock).part2')
-        self.assertEqual(self.c_child._logger.name,
-                         'RunnableController(childBlock)')
 
     def test_edit(self):
-        self.c.edit()
+        self.b.edit()
         self.checkState(self.sm.EDITABLE, child=False)
 
     def test_reset(self):
-        self.c.disable()
+        self.b.disable()
         self.checkState(self.sm.DISABLED)
-        self.c.reset()
+        self.b.reset()
         self.checkState(self.sm.IDLE)
 
     def test_set_axes_to_move(self):
-        self.c.set_axes_to_move(['axisOne'])
-        self.assertEqual(self.c.axes_to_move.value, ['axisOne'])
+        self.c.set_axes_to_move(['y'])
+        self.assertEqual(self.c.axes_to_move.value, ['y'])
 
     def test_validate(self):
-        line1 = LineGenerator('AxisOne', 'mm', 0, 2, 3)
-        line2 = LineGenerator('AxisTwo', 'mm', 0, 2, 2)
+        line1 = LineGenerator('y', 'mm', 0, 2, 3)
+        line2 = LineGenerator('x', 'mm', 0, 2, 2)
         compound = CompoundGenerator([line1, line2], [], [])
-        params = {'generator': compound, 'axesToMove': ['AxisTwo']}
-        params = \
-            RunnableController.validate.MethodMeta.prepare_input_map(**params)
-        returns = Map(RunnableController.validate.MethodMeta.returns)
-        self.c.validate(params, returns)
+        actual = self.b.validate(generator=compound, axesToMove=['x'])
+        self.assertEqual(actual["generator"], compound)
+        self.assertEqual(actual["axesToMove"], ['x'])
 
-    def prepare_half_run(self):
-        line1 = LineGenerator('AxisOne', 'mm', 0, 2, 3)
-        line2 = LineGenerator('AxisTwo', 'mm', 0, 2, 2)
-        compound = CompoundGenerator([line1, line2], [], [])
-        params = RunnableController.configure.MethodMeta.prepare_input_map(
-            generator=compound, axesToMove=['AxisTwo'])
-        self.c.configure(params)
+    def prepare_half_run(self, duration=0.01, exception=0):
+        line1 = LineGenerator('y', 'mm', 0, 2, 3)
+        line2 = LineGenerator('x', 'mm', 0, 2, 2)
+        duration = FixedDurationMutator(duration)
+        compound = CompoundGenerator([line1, line2], [], [duration])
+        self.b.configure(
+            generator=compound, axesToMove=['x'], exceptionStep=exception)
 
     def test_configure_run(self):
         self.prepare_half_run()
         self.checkSteps(2, 0, 6)
         self.checkState(self.sm.READY)
 
-        self.c.run()
+        self.b.run()
         self.checkState(self.sm.READY)
         self.checkSteps(4, 2, 6)
 
-        self.c.run()
+        self.b.run()
         self.checkState(self.sm.READY)
         self.checkSteps(6, 4, 6)
 
-        self.c.run()
+        self.b.run()
         self.checkState(self.sm.IDLE)
 
     def test_abort(self):
         self.prepare_half_run()
-        self.c.run()
-        self.c.abort()
+        self.b.run()
+        self.b.abort()
         self.checkState(self.sm.ABORTED)
 
     def test_pause_seek_resume(self):
@@ -194,98 +177,45 @@ class TestRunnableController(unittest.TestCase):
         self.b.run()
         self.checkState(self.sm.READY)
         self.checkSteps(4, 2, 6)
-
-        params = {'completedSteps': 1}
-        params = RunnableController.seek.MethodMeta.prepare_input_map(**params)
-        self.c.seek(params)
+        self.b.pause(completedSteps=1)
         self.checkState(self.sm.READY)
         self.checkSteps(2, 1, 6)
-        self.c.run()
+        self.b.run()
         self.checkSteps(4, 2, 6)
-        params = {'completedSteps': 5}
-        params = RunnableController.seek.MethodMeta.prepare_input_map(**params)
-        self.c.seek(params)
+        self.b.completedSteps = 5
         self.checkSteps(6, 5, 6)
-        self.c.run()
+        self.b.run()
         self.checkState(self.sm.IDLE)
 
     def test_resume_in_run(self):
-        # TODO: this not yet working
-        return
-
-        class MyPart(Part):
-            @RunnableController.Run
-            def wait_a_bit(self, task, params):
-                task.sleep(10)
-
-        params = Part.MethodMeta.prepare_input_map(name='part1')
-        self.c.parts["part1"] = MyPart(self.p, params)
-
-        self.prepare_half_run()
-        self.child_hook = self.c_child.run_hook
-        self.c_child.run_hook = self.dummy_run_hook
-        self.p.spawn(self.c.run)
-        retry = 0
-        while  retry < 20 and self.c.state.value != self.sm.PAUSED:
-            sleep(.1)
-            retry += 1
+        self.prepare_half_run(duration=0.5)
+        w = self.p.spawn(self.b.run)
+        time.sleep(0.85)
+        self.b.pause()
         self.checkState(self.sm.PAUSED)
-        self.c.transition(self.sm.PRERUN, 'un-pausing')
+        self.checkSteps(2, 1, 6)
+        self.b.resume()
         # return to PRERUN should continue original run to completion and
         # READY state
-        retry = 0
-        while  retry < 20 and self.c_child.state.value != self.sm.READY:
-            sleep(.1)
-            retry += 1
+        then = time.time()
+        w.wait()
+        self.assertAlmostEqual(time.time() - then, 0.5, delta=0.4)
         self.checkState(self.sm.READY)
 
-    def test_configure_exception(self):
-        self.d_part.exception = Exception("test exception")
-        with self.assertRaises(Exception):
-            self.prepare_half_run()
-        self.checkState(self.sm.FAULT)
-
     def test_run_exception(self):
-        self.prepare_half_run()
-        self.c_child.run_hook = Mock(side_effect=Exception("test exception"))
-        with self.assertRaises(Exception):
-            self.c.run()
+        self.prepare_half_run(exception=1)
+        with self.assertRaises(ResponseError):
+            self.b.run()
         self.checkState(self.sm.FAULT)
 
     def test_run_stop(self):
-        self.prepare_half_run()
-        self.c_child.run_hook = Mock(side_effect=StopIteration("test exception"))
-        with self.assertRaises(StopIteration):
-            self.c_child.run()
-        self.checkState(self.sm.RUNNING, parent=False)
-
-    def test_abort_exception(self):
-        self.prepare_half_run()
-        self.c.run()
-        self.c_child.run_hook = Mock(side_effect=Exception("test exception"))
-        with self.assertRaises(Exception):
-            self.c.abort()
-        self.checkState(self.sm.FAULT)
-
-    def test_pause_exception(self):
-        self.prepare_half_run()
-        self.c.run()
-        with self.assertRaises(Exception):
-            self.c.pause()
-        # the exception here is 'pause not writable' so does not affect child
-        # state - it does however code cover the exception handler in pause
-        self.checkState(self.sm.FAULT, child=False)
-
-    def test_seek_exception(self):
-        self.prepare_half_run()
-        self.c.run()
-        self.c_child.run_hook = Mock(side_effect=Exception("test exception"))
-        with self.assertRaises(Exception):
-            params = {'completedSteps': 4}
-            params = RunnableController.seek.MethodMeta.prepare_input_map(**params)
-            self.c.seek(params)
-        self.checkState(self.sm.FAULT)
-
+        self.prepare_half_run(duration=0.5)
+        w = self.p.spawn(self.b.run)
+        time.sleep(0.5)
+        self.b.abort()
+        with self.assertRaises(AbortedError):
+            w.get()
+        self.checkState(self.sm.ABORTED)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

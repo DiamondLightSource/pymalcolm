@@ -2,6 +2,8 @@ import weakref
 import time
 
 from malcolm.core.attribute import Attribute
+from malcolm.core.errors import AbortedError, ResponseError, \
+    UnexpectedError, BadValueError
 from malcolm.core.future import Future
 from malcolm.core.loggable import Loggable
 from malcolm.core.methodmeta import MethodMeta
@@ -12,20 +14,16 @@ from malcolm.core.spawnable import Spawnable
 from malcolm.compat import queue
 
 
-def match_update(value, task, future, required_value, subscription_ids,
-                 bad_values=None):
+def match_update(value, future, required_value, bad_values=None):
     """a callback for monitoring 'when_matches' requests"""
-    if bad_values is not None:
-        assert value not in bad_values, \
-            "Waiting for %r, got %r" % (required_value, value)
+    if bad_values is not None and value in bad_values:
+        raise BadValueError(
+            "Waiting for %r, got %r" % (required_value, value))
 
-    ret_val = None
     if value == required_value:
         future.set_result(value)
-        task.unsubscribe(subscription_ids[0])
         # future returned to wait_all - to be removed from wait list
-        ret_val = future
-    return ret_val
+        return future
 
 
 class Task(Loggable, Spawnable):
@@ -39,27 +37,31 @@ class Task(Loggable, Spawnable):
         self.name = name
         self.process = process
         self.q = self.process.create_queue()
-        self._next_id = 0
+        # If not None, wait for this before listening to STOPs
+        self.sentinel_stop = None
+        self._next_id = 1
         self._futures = {}  # dict {int id: Future}
         self._methods = {}  # dict {int id: MethodMeta}
         self._subscriptions = {}  # dict  {int id: (endpoint, func, args)}
         # For testing, make it so start() will raise, but stop() works
         self.define_spawn_function(None)
 
-    def _save_future(self):
-        """ stores the future with unique id"""
+    def _create_future(self):
         future = Future(weakref.proxy(self))
-        new_id = self._next_id
-        self._next_id += 1
-        self._futures[new_id] = future
-        return new_id, future
+        return future
 
-    def _save_subscription(self, endpoint, function, *args):
-        """ stores a subscription with unique id"""
+    def _get_next_id(self):
         new_id = self._next_id
         self._next_id += 1
-        self._subscriptions[new_id] = (endpoint, function, args)
         return new_id
+
+    def _dispatch_request(self, request):
+        future = self._create_future()
+        new_id = self._get_next_id()
+        self._futures[new_id] = future
+        request.set_id(new_id)
+        self.process.q.put(request)
+        return future
 
     def put(self, attr, value, timeout=None):
         """"Puts a value to an attribute and returns when it completes
@@ -70,8 +72,8 @@ class Task(Loggable, Spawnable):
             timeout (float): time in seconds to wait for responses, wait forever
                 if None
         """
-        f = self.put_async(attr, value)
-        self.wait_all(f, timeout=timeout)
+        futures = self.put_async(attr, value)
+        self.wait_all(futures, timeout=timeout)
 
     def put_async(self, attr, value):
         """"Puts a value to an attribute and returns immediately
@@ -88,11 +90,8 @@ class Task(Loggable, Spawnable):
 
         endpoint = attr.process_path + ["value"]
         request = Put(None, self.q, endpoint, value)
-        new_id, f = self._save_future()
-        request.set_id(new_id)
-        self.process.q.put(request)
-
-        return [f]
+        future = self._dispatch_request(request)
+        return [future]
 
     def put_many(self, block, attr_values, timeout=None):
         """"Puts a number of attributes to a block at the same time, and
@@ -104,8 +103,8 @@ class Task(Loggable, Spawnable):
             timeout (float): time in seconds to wait for responses, wait
                 forever if None
         """
-        f = self.put_many_async(block, attr_values)
-        self.wait_all(f, timeout=timeout)
+        futures = self.put_many_async(block, attr_values)
+        self.wait_all(futures, timeout=timeout)
 
     def put_many_async(self, block, attr_values):
         """"Puts a number of attributes to a block at the same time, and
@@ -150,13 +149,9 @@ class Task(Loggable, Spawnable):
             Returns: a list of one futures which will complete when
                 all attribute values match the input
         """
-        _, f = self._save_future()
-        subscription_ids = []
-        subscription_id = self.subscribe(
-            attr, match_update, self, f, value, subscription_ids, bad_values)
-        subscription_ids.append(subscription_id)
-
-        return [f]
+        future = self._create_future()
+        self.subscribe(attr, match_update, future, value, bad_values)
+        return [future]
 
     def post(self, method, params=None, timeout=None):
         """Synchronously calls a block method
@@ -171,9 +166,9 @@ class Task(Loggable, Spawnable):
             the result from 'method'
         """
 
-        f = self.post_async(method, params)
-        self.wait_all(f, timeout=timeout)
-        return f[0].result()
+        futures = self.post_async(method, params)
+        self.wait_all(futures, timeout=timeout)
+        return futures[0].result()
 
     def post_async(self, method, params=None):
         """Asynchronously calls a function on a child block
@@ -187,12 +182,9 @@ class Task(Loggable, Spawnable):
         endpoint = method.process_path
 
         request = Post(None, self.q, endpoint, params)
-        new_id, f = self._save_future()
-        request.set_id(new_id)
-        self._methods[new_id] = method
-        self.process.q.put(request)
-
-        return [f]
+        future = self._dispatch_request(request)
+        self._methods[request.id] = method
+        return [future]
 
     def subscribe(self, attr, callback, *args):
         """Subscribe to changes in a given attribute and call
@@ -214,7 +206,8 @@ class Task(Loggable, Spawnable):
                 saved_args.append(weakref.proxy(self))
             else:
                 saved_args.append(arg)
-        new_id = self._save_subscription(endpoint, callback, *saved_args)
+        new_id = self._get_next_id()
+        self._subscriptions[new_id] = (endpoint, callback, args)
         request.set_id(new_id)
         self.process.q.put(request)
 
@@ -254,7 +247,6 @@ class Task(Loggable, Spawnable):
         futures = [f for f in futures if not f.done()]
 
         while futures:
-            self.log_debug("wait_all awaiting response ...")
             self._service_futures(futures, until)
 
     def _service_futures(self, futures, until=None):
@@ -265,22 +257,24 @@ class Task(Loggable, Spawnable):
             if timeout < 0:
                 timeout = 0
         response = self.q.get(True, timeout)
-        if response is Spawnable.STOP:
-            self.log_debug("wait_all received Spawnable.STOP")
-            raise StopIteration()
-        self.log_debug("wait_all received response %s", response)
-        if response.id in self._futures:
+        if response is self.sentinel_stop:
+            self.sentinel_stop = None
+        elif response is Spawnable.STOP:
+            if self.sentinel_stop is None:
+                # This is a stop we should listen to...
+                self.log_debug("wait_all received Spawnable.STOP")
+                raise AbortedError()
+        elif hasattr(response, "id") and response.id in self._subscriptions:
+            self._invoke_callback(response, futures)
+        elif hasattr(response, "id") and response.id in self._futures:
             f = self._update_future(response)
             if f in futures:
                 futures.remove(f)
-        elif response.id in self._subscriptions:
-            result = self._invoke_callback(response)
-            # Task's match_update callback returns a future if it has
-            #  filled it (other callbacks not expected to return a val)
-            if result in futures:
-                futures.remove(result)
+                if f.exception():
+                    raise f.exception()
         else:
-            self.log_debug("wait_all received unsolicited response")
+            # This might be a Return from Unsubscribe, or something else
+            self.log_debug("Discarded response %s", response)
 
     def sleep(self, seconds):
         """Services all futures while waiting
@@ -303,51 +297,51 @@ class Task(Loggable, Spawnable):
         f = self._futures.pop(response.id)
         method = self._methods.pop(response.id, None)
         if isinstance(response, Error):
-            f.set_exception(response.message)
-            raise ValueError(response.message)
+            f.set_exception(ResponseError(response.message))
         elif isinstance(response, Return):
             result = response.value
             if method and result:
                 result = Map(method.returns, result)
             f.set_result(result)
         else:
-            raise ValueError(
-                "Future received unexpected response: %s" % response)
+            raise UnexpectedError(
+                "Future received unexpected response: %r" % response)
         return f
 
-    def _invoke_callback(self, response):
+    def _invoke_callback(self, response, futures):
         self.log_debug("subscription %d callback", response.id)
-        ret_val = None
         (endpoint, func, args) = self._subscriptions[response.id]
         if isinstance(response, Update):
-            try:
-                if func == match_update:
-                    ret_val = func(response.value, *args)
-                else:  # ignore return value from user callback functions
-                    func(response.value, *args)
-            except Exception as e:  # pylint:disable=broad-except
-                # TODO: should we raise here?
-                self.log_exception("Exception %s in callback %s" %
-                                   (e, (endpoint, func, args)))
+            result = func(response.value, *args)
+            if func == match_update and result is not None:
+                # Task's match_update callback returns a future if it has
+                # filled it (other callbacks not expected to return a val)
+                if result in futures:
+                    futures.remove(result)
+                self.unsubscribe(response.id)
         elif isinstance(response, Error):
-            raise RuntimeError(
-                "Subscription received ERROR response: %s" % response)
+            raise ResponseError(
+                "Subscription received Error: %r" % response.message)
         else:
-            raise ValueError(
-                "Subscription received unexpected response: %s" % response)
-        return ret_val
+            raise UnexpectedError(
+                "Subscription received unexpected response: %r" % response)
 
     def define_spawn_function(self, func, *args):
         self._initialize()
         for spawned in self._spawned:
-            assert spawned.ready(), "Spawned %r still running" % spawned
+            if not spawned.ready():
+                raise UnexpectedError("Spawned %r still running" % spawned)
         self._spawn_functions = []
         self.add_spawn_function(
             func, self.make_default_stop_func(self.q), *args)
 
+    def unsubscribe_all(self):
+        ids = list(self._subscriptions)
+        if ids:
+            self.log_debug("Unsubscribing from ids %s", ids)
+            for id_ in ids:
+                self.unsubscribe(id_)
+
     def __del__(self):
         # Unsubscribe from anything that is still active
-        ids = list(self._subscriptions)
-        self.log_debug("Unsubscribing from ids %s", ids)
-        for id_ in ids:
-            self.unsubscribe(id_)
+        self.unsubscribe_all()

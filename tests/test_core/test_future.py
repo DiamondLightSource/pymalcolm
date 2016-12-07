@@ -13,8 +13,9 @@ from mock import MagicMock, call, ANY
 #module imports
 from malcolm.compat import queue
 from malcolm.core.task import Task
-from malcolm.core.future import Future, TimeoutError, RemoteError
-from malcolm.core.response import Response, Return, Update, Error
+from malcolm.core.future import Future
+from malcolm.core import ResponseError
+from malcolm.core.response import Return, Error
 
 #import logging
 #logging.basicConfig(level=logging.DEBUG)
@@ -34,10 +35,11 @@ class TestFuture(unittest.TestCase):
 
     def test_set_exception(self):
         f = Future(self.task)
-        f.set_exception("test Error")
+        e = ValueError("test Error")
+        f.set_exception(e)
         self.assertTrue(f.done())
-        self.assertRaises(RemoteError, f.result, 0)
-        self.assertEqual(f.exception(),'test Error')
+        self.assertRaises(ValueError, f.result, 0)
+        self.assertEqual(f.exception(), e)
 
     def test_result(self):
         # timeout due to no response arriving
@@ -67,6 +69,6 @@ class TestFuture(unittest.TestCase):
         resp1.set_message('test Error')
         self.task.q.put(resp0)
         self.task.q.put(resp1)
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ResponseError) as cm:
             f1.exception()
         self.assertEqual(str(cm.exception), 'test Error')

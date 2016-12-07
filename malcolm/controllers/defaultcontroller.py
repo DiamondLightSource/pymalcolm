@@ -23,6 +23,9 @@ class DefaultController(Controller):
         task (Task): The task used to perform operations on child blocks
     """
 
+    def do_initial_reset(self):
+        self.process.spawn(self.reset)
+
     @method_takes()
     def disable(self):
         self.try_stateful_function(sm.DISABLING, sm.DISABLED, self.do_disable)
@@ -49,8 +52,6 @@ class DefaultController(Controller):
             self.transition(start_state, start_state)
             func(*args, **kwargs)
             self.transition(end_state, end_state)
-        except StopIteration:
-            raise
         except Exception as e:  # pylint:disable=broad-except
             self.go_to_error_state(e)
             raise

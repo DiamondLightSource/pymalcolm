@@ -76,6 +76,8 @@ class PositionLabellerPart(ChildPart):
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
+        # clear out old subscriptions
+        task.unsubscribe_all()
         self.generator = params.generator
         # Delete any remaining old positions
         futures = task.post_async(self.child["delete"])
@@ -95,9 +97,8 @@ class PositionLabellerPart(ChildPart):
     @RunnableController.Resume
     def run(self, task, update_completed_steps):
         self.loading = False
-        id_ = task.subscribe(self.child["qty"], self.load_more_positions, task)
+        task.subscribe(self.child["qty"], self.load_more_positions, task)
         task.wait_all(self.start_future)
-        task.unsubscribe(id_)
 
     def load_more_positions(self, number_left, task):
         if not self.loading and self.end_index < self.steps_up_to and \
