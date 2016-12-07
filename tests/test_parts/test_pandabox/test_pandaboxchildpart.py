@@ -26,7 +26,8 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.child["encoderValue3Capture"] = Mock(value="capture")
         self.child["encoderValue3DatasetName"] = Mock(value="x2")
 
-        self.params = MagicMock(mri="P:INENC1", name="INENC1")
+        self.params = MagicMock(mri="P:INENC1")
+        self.params.name="INENC1"
         self.process.get_block.return_value = self.child
         self.o = PandABoxChildPart(self.process, self.params)
         list(self.o.create_attributes())
