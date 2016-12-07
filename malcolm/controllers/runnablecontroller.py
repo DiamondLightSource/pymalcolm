@@ -1,7 +1,7 @@
 from malcolm.controllers.managercontroller import ManagerController
 from malcolm.core import RunnableStateMachine, REQUIRED, method_also_takes, \
     method_writeable_in, method_takes, MethodMeta, Task, Hook, method_returns, \
-    Info
+    Info, AbortedError
 from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, StringArrayMeta
 
 
@@ -178,7 +178,8 @@ class RunnableController(ManagerController):
             yield data
         self.completed_steps = NumberMeta(
             "int32", "Readback of number of scan steps").make_attribute(0)
-        yield "completedSteps", self.completed_steps, None
+        self.completed_steps.meta.set_writeable_in(sm.PAUSED, sm.READY)
+        yield "completedSteps", self.completed_steps, self.set_completed_steps
         self.configured_steps = NumberMeta(
             "int32", "Number of steps currently configured").make_attribute(0)
         yield "configuredSteps", self.configured_steps, None
@@ -195,6 +196,15 @@ class RunnableController(ManagerController):
     def do_reset(self):
         super(RunnableController, self).do_reset()
         self._update_configure_args()
+        self.configured_steps.set_value(0)
+        self.completed_steps.set_value(0)
+        self.total_steps.set_value(0)
+
+    def go_to_error_state(self, exception):
+        if isinstance(exception, AbortedError):
+            self.log_info("Got StopIteration in %s" % self.state.value)
+        else:
+            super(RunnableController, self).go_to_error_state(exception)
 
     def _update_configure_args(self):
         # Look for all parts that hook into Configure
@@ -309,11 +319,10 @@ class RunnableController(ManagerController):
         while True:
             try:
                 self.do_run(hook)
-            except StopIteration:
+            except AbortedError:
                 # Work out if it was an abort or pause
-                with self.lock:
-                    state = self.state.value
-                self.log_debug("Do run got StopIteration from %s", state)
+                state = self.state.value
+                self.log_error("Do run got AbortedError from %s", state)
                 if state in (sm.SEEKING, sm.PAUSED):
                     # Wait to be restarted
                     task = Task("StateWaiter", self.process)
@@ -321,6 +330,7 @@ class RunnableController(ManagerController):
                     task.when_matches(self.state, sm.RUNNING, bad_states)
                     # Restart it
                     hook = self.Resume
+                    self.status.set_value("Run resumed")
                 else:
                     # just drop out
                     raise
@@ -353,42 +363,45 @@ class RunnableController(ManagerController):
         sm.IDLE, sm.CONFIGURING, sm.READY, sm.RUNNING, sm.POSTRUN, sm.PAUSED,
         sm.SEEKING)
     def abort(self):
-        self.try_stateful_function(sm.ABORTING, sm.ABORTED, self.do_abort)
+        self.try_stateful_function(
+            sm.ABORTING, sm.ABORTED, self.do_abort, self.Abort)
 
-    def do_abort(self):
+    def do_abort(self, hook):
+        self.log_warning("Stopping tasks")
         for task in self.part_tasks.values():
             task.stop()
-        self.run_hook(self.Abort, self.create_part_tasks())
+        self.log_warning("Running hook")
+        self.run_hook(hook, self.create_part_tasks())
+        self.log_warning("Waiting on tasks")
         for task in self.part_tasks.values():
             task.wait()
+        self.log_warning("do_abort done")
 
-    @method_writeable_in(sm.RUNNING)
-    def pause(self):
-        self.try_stateful_function(sm.SEEKING, sm.PAUSED, self.do_pause)
+    def set_completed_steps(self, completed_steps):
+        params = self.pause.MethodMeta.prepare_input_map(
+            completedSteps=completed_steps)
+        self.pause(params)
 
-    def do_pause(self):
-        for task in self.part_tasks.values():
-            task.stop()
-        self.run_hook(self.Pause, self.create_part_tasks())
-        for task in self.part_tasks.values():
-            task.wait()
-        completed_steps = self.completed_steps.value
-        self.do_seek(completed_steps)
-
-    @method_writeable_in(sm.READY, sm.PAUSED)
+    @method_writeable_in(sm.READY, sm.PAUSED, sm.RUNNING)
     @method_takes("completedSteps", NumberMeta(
-        "uint32", "Step to mark as the last completed step"), REQUIRED)
-    def seek(self, params):
+        "int32", "Step to mark as the last completed step, -1 for current"), -1)
+    def pause(self, params):
         current_state = self.state.value
-        completed_steps = params.completedSteps
-        assert completed_steps >= 0, \
-            "Cannot seek to before the start of the scan"
+        if params.completedSteps < 0:
+            completed_steps = self.completed_steps.value
+        else:
+            completed_steps = params.completedSteps
+        if current_state == sm.RUNNING:
+            next_state = sm.PAUSED
+        else:
+            next_state = current_state
         assert completed_steps < self.total_steps.value, \
             "Cannot seek to after the end of the scan"
         self.try_stateful_function(
-            sm.SEEKING, current_state, self.do_seek, completed_steps)
+            sm.SEEKING, next_state, self.do_pause, completed_steps)
 
-    def do_seek(self, completed_steps):
+    def do_pause(self, completed_steps):
+        self.do_abort(self.Pause)
         in_run_steps = completed_steps % self.steps_per_run
         steps_to_do = self.steps_per_run - in_run_steps
         part_info = self.run_hook(self.ReportStatus, self.part_tasks)

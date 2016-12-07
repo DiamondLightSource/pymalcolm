@@ -17,9 +17,7 @@ class PandABoxDriverPart(PandABoxChildPart):
     @RunnableController.Seek
     @method_takes()
     def configure(self, task, completed_steps, steps_to_do, part_info):
-        # Stop in case we are already running
-        stop_future = task.post_async(self.child["stop"])
-        task.wait_all(stop_future)
+        task.unsubscribe_all()
         task.put_many(self.child, dict(
             imageMode="Multiple",
             numImages=steps_to_do,

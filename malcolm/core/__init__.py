@@ -5,6 +5,8 @@ from malcolm.core.controller import Controller
 from malcolm.core.clientcomms import ClientComms
 from malcolm.core.clientcontroller import ClientController
 from malcolm.core.elementmap import ElementMap
+from malcolm.core.errors import Error, TimeoutError, AbortedError, \
+    ResponseError, UnexpectedError, BadValueError
 from malcolm.core.hook import Hook
 from malcolm.core.info import Info
 from malcolm.core.jsonutils import json_decode, json_encode
