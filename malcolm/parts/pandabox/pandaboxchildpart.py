@@ -33,7 +33,7 @@ class PandABoxChildPart(ChildPart):
                 name=dataset_name,
                 type=dataset_type,
                 rank=0,
-                attr=uppercase_attr)
+                attr="%s.%s" % (self.name, uppercase_attr))
 
     @RunnableController.ReportStatus
     def report_configuration(self, _):

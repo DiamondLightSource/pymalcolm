@@ -27,6 +27,7 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.child["encoderValue3DatasetName"] = Mock(value="x2")
 
         self.params = MagicMock(mri="P:INENC1")
+        self.params.name="INENC1"
         self.process.get_block.return_value = self.child
         self.o = PandABoxChildPart(self.process, self.params)
         list(self.o.create_attributes())
@@ -40,7 +41,7 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.assertEqual(dataset_infos[0].name, "x2")
         self.assertEqual(dataset_infos[0].type, "position_value")
         self.assertEqual(dataset_infos[0].rank, 0)
-        self.assertEqual(dataset_infos[0].attr, "ENCODER_VALUE3")
+        self.assertEqual(dataset_infos[0].attr, "INENC1.ENCODER_VALUE3")
 
     def test_counter_configuration(self):
         self.o.params.mri = "P:COUNTER1"
@@ -49,7 +50,7 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.assertEqual(dataset_infos[0].name, "x2")
         self.assertEqual(dataset_infos[0].type, "monitor")
         self.assertEqual(dataset_infos[0].rank, 0)
-        self.assertEqual(dataset_infos[0].attr, "ENCODER_VALUE3")
+        self.assertEqual(dataset_infos[0].attr, "INENC1.ENCODER_VALUE3")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
