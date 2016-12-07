@@ -71,8 +71,8 @@ class HDFWriterPart(ChildPart):
                 name = "%s.%s" % (primary_infos[0].name, dataset_info.name)
                 rank = primary_infos[0].rank + generator_rank
             else:
-                # something like x.value or izero
-                name = dataset_info.name
+                # something like x.value or izero.value
+                name = "%s.value" % dataset_info.name
                 rank = dataset_info.rank + generator_rank
             ret.append(DatasetProducedInfo(
                 name=name, filename=filename, type=dataset_info.type,
