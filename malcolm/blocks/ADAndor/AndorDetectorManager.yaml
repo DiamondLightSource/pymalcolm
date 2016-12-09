@@ -13,7 +13,7 @@
     mri: $(mriPrefix)-DRV
     prefix: $(pvPrefix):CAM
 
-- parts.ADCore.DetectorDriverPart:
+- parts.ADAndor.AndorDriverPart:
     name: DRV
     mri: $(mriPrefix)-DRV
     readoutTime: 12e-3

@@ -18,3 +18,11 @@
     pv: $(prefix):AcquireTime
     rbvSuff: _RBV
     widget: textinput
+
+- parts.ca.CADoublePart:
+    name: acquirePeriod
+    description: Duration of each frame including readout
+    pv: $(prefix):AcquirePeriod
+    rbvSuff: _RBV
+    widget: textinput
+
