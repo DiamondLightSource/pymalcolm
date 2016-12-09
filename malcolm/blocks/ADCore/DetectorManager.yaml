@@ -1,0 +1,31 @@
+- parameters.string:
+    name: mriPrefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- parameters.string:
+    name: pvPrefix
+    description: PV prefix for driver and all plugins
+
+- controllers.RunnableController:
+    mri: $(mriPrefix)
+
+- blocks.ADCore.SimDetectorDriver:
+    mri: $(mriPrefix)-DRV
+    prefix: $(pvPrefix):DET
+
+- parts.ADCore.DetectorDriverPart:
+    name: DRV
+    mri: $(mriPrefix)-DRV
+    readoutTime: 40e-6
+
+- blocks.ADCore.StatsPlugin:
+    mri: $(mriPrefix)-STAT
+    prefix: $(pvPrefix):STAT
+
+- parts.ADCore.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix)-STAT
+
+- includes.ADCore.filewriting_collection:
+    pvPrefix: $(pvPrefix)
+    mriPrefix: $(mriPrefix)
