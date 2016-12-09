@@ -77,7 +77,7 @@ class DetectorDriverPart(ChildPart):
             numImages=steps_to_do,
             arrayCounter=completed_steps,
             arrayCallbacks=True))
-	self.post_configure(task, params)
+        self.post_configure(task, params)
 
     def post_configure(self, task, params):
         if self.trigger_mode.value == "Hardware":
