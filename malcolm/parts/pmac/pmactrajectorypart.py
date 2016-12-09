@@ -235,7 +235,7 @@ class PMACTrajectoryPart(ChildPart):
             time_array = [acceleration_time, move_time - 2 * acceleration_time,
                           acceleration_time]
             velocity_mode = [CURRENT_TO_NEXT, PREV_TO_CURRENT, ZERO_VELOCITY]
-            user_programs = [NO_PROGRAM, NO_PROGRAM, TRIG_ZERO]
+            user_programs = [NO_PROGRAM, NO_PROGRAM, NO_PROGRAM]
             for axis_name, positions in trajectory.items():
                 motor_info = self.axis_mapping[axis_name]
                 start_pos = positions[0]
@@ -247,7 +247,7 @@ class PMACTrajectoryPart(ChildPart):
         else:
             time_array = [move_time]
             velocity_mode = [ZERO_VELOCITY]
-            user_programs = [TRIG_ZERO]
+            user_programs = [NO_PROGRAM]
 
         self.write_profile_points(task, time_array, velocity_mode, trajectory,
                                   user_programs)
