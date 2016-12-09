@@ -1,5 +1,5 @@
-#!/bin/env dls-python
-
+#!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
+#  !/bin/env dls-python
 
 def make_process():
     import sys
@@ -113,6 +113,9 @@ self.process_block.blocks
 """ % self.process_block.blocks
 
     self.start()
+    # TODO Remove this when Toms fixed the config elsewhere
+    self.get_block("I08-PANDA01-COUNTER1").outDatasetName = "I0"
+    
     try:
         import IPython
     except ImportError:
