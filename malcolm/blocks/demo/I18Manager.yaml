@@ -16,7 +16,7 @@
 
 - controllers.RunnableController:
     mri: $(mri)
-    axesToMove: [sc_MicroFocusSampleX, sc_MicroFocusSampleY]
+    axesToMove: [table_x, table_y]
 
 - parts.ADCore.DatasetTablePart:
     name: DSET
