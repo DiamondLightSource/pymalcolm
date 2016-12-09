@@ -129,8 +129,8 @@ class Controller(Loggable):
     def call_writeable_function(self, function, child, *args):
         with self.lock:
             if not child.writeable:
-                child.log_info("I'm not writeable")
-                raise ValueError("Child %r is not writeable" % (child,))
+                raise ValueError(
+                    "Child %r is not writeable" % (child.process_path,))
         result = function(*args)
         return result
 
