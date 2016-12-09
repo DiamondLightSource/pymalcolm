@@ -1,7 +1,7 @@
 from malcolm.controllers.managercontroller import ManagerController
 from malcolm.core import RunnableStateMachine, REQUIRED, method_also_takes, \
     method_writeable_in, method_takes, MethodMeta, Task, Hook, method_returns, \
-    Info, AbortedError
+    Info, AbortedError, BadValueError
 from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, StringArrayMeta
 
 
@@ -202,7 +202,7 @@ class RunnableController(ManagerController):
 
     def go_to_error_state(self, exception):
         if isinstance(exception, AbortedError):
-            self.log_info("Got StopIteration in %s" % self.state.value)
+            self.log_info("Got AbortedError in %s" % self.state.value)
         else:
             super(RunnableController, self).go_to_error_state(exception)
 
@@ -322,12 +322,16 @@ class RunnableController(ManagerController):
             except AbortedError:
                 # Work out if it was an abort or pause
                 state = self.state.value
-                self.log_error("Do run got AbortedError from %s", state)
+                self.log_debug("Do run got AbortedError from %s", state)
                 if state in (sm.SEEKING, sm.PAUSED):
                     # Wait to be restarted
                     task = Task("StateWaiter", self.process)
                     bad_states = [sm.DISABLING, sm.ABORTING, sm.FAULT]
-                    task.when_matches(self.state, sm.RUNNING, bad_states)
+                    try:
+                        task.when_matches(self.state, sm.RUNNING, bad_states)
+                    except BadValueError:
+                        # raise AbortedError so we don't try to transition
+                        raise AbortedError()
                     # Restart it
                     hook = self.Resume
                     self.status.set_value("Run resumed")
@@ -367,15 +371,11 @@ class RunnableController(ManagerController):
             sm.ABORTING, sm.ABORTED, self.do_abort, self.Abort)
 
     def do_abort(self, hook):
-        self.log_warning("Stopping tasks")
         for task in self.part_tasks.values():
             task.stop()
-        self.log_warning("Running hook")
         self.run_hook(hook, self.create_part_tasks())
-        self.log_warning("Waiting on tasks")
         for task in self.part_tasks.values():
             task.wait()
-        self.log_warning("do_abort done")
 
     def set_completed_steps(self, completed_steps):
         params = self.pause.MethodMeta.prepare_input_map(

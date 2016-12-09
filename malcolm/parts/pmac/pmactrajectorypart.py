@@ -75,6 +75,7 @@ class PMACTrajectoryPart(ChildPart):
     def reset(self, task):
         super(PMACTrajectoryPart, self).reset(task)
         self.abort(task)
+        self.reset_triggers(task)
 
     @RunnableController.Validate
     @method_takes(*configure_args)
@@ -332,6 +333,18 @@ class PMACTrajectoryPart(ChildPart):
             cs_axis = motor_info.cs_axis
             attr_dict["positions%s" % cs_axis] = trajectory[axis_name]
         task.put_many(self.child, attr_dict)
+
+    def reset_triggers(self, task):
+        """Just call a Move to the run up position ready to start the scan"""
+        task.put(self.child["numPoints"], 10)
+        time_array = [0.1]
+        velocity_mode = [ZERO_VELOCITY]
+        user_programs = [TRIG_ZERO]
+        trajectory = {}
+        self.write_profile_points(task, time_array, velocity_mode, trajectory,
+                                  user_programs)
+        task.post(self.child["buildProfile"])
+        task.post(self.child["executeProfile"])
 
     def build_generator_profile(self, start_index, do_run_up=True):
         acceleration_time = self.calculate_acceleration_time()

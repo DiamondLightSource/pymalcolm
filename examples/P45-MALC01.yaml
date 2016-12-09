@@ -2,7 +2,7 @@
 #/dls_sw/prod/common/python/RHEL6-x86_64/pymalcolm/2-0a6/malcolm/imalcolm.py
 # This sample is intended for use with the test lab setup LAB-MO-IOC-01
 
-- blocks.ADCore.SimDetectorManager:
+- blocks.ADCore.DetectorManager:
     pvPrefix: BL45P-EA-MAP-01:MIC
     mriPrefix: P45-MIC
 

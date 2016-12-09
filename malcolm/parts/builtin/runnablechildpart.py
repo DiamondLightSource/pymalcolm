@@ -79,13 +79,16 @@ class RunnableChildPart(ChildPart):
 
     @RunnableController.Seek
     def seek(self, task, completed_steps, steps_to_do, part_info):
+        # Clear out the update_completed_steps and match_future subscriptions
+        task.unsubscribe_all()
         params = self.child["pause"].prepare_input_map(
             completedSteps=completed_steps)
         task.post(self.child["pause"], params)
 
     @RunnableController.Resume
     def resume(self, task, update_completed_steps):
-        # The update_completed_steps subscription from run() is still valid here
+        task.subscribe(
+            self.child["completedSteps"], update_completed_steps, self)
         match_future = self._wait_for_postrun(task)
         task.post(self.child["resume"])
         task.wait_all(match_future)

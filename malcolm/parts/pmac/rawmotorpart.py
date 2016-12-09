@@ -17,3 +17,10 @@ class RawMotorPart(ChildPart):
             scannable=self.child.scannable
         )
         return [motor_info]
+
+    @RunnableController.Abort
+    @RunnableController.Pause
+    def abort(self, task):
+        self.log_warning("Waiting for motor to stop moving")
+        # Wait for the motor to stop moving
+        task.when_matches(self.child["doneMoving"], 1)
