@@ -32,7 +32,7 @@ class PandABoxChildPart(ChildPart):
             return DatasetSourceInfo(
                 name=dataset_name,
                 type=dataset_type,
-                rank=0,
+                rank=2,
                 attr="%s.%s" % (self.name, uppercase_attr))
 
     @RunnableController.ReportStatus
