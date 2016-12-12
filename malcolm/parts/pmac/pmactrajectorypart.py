@@ -90,7 +90,8 @@ class PMACTrajectoryPart(ChildPart):
             else:
                 mutators.append(mutator)
         # convert half an exposure to multiple of servo ticks, rounding down
-        ticks = np.floor(SERVO_FREQ * 0.5 * fdm.duration)
+        # + 0.002 for some observed jitter in the servo frequency (I18)
+        ticks = np.floor(SERVO_FREQ * 0.5 * fdm.duration) + 0.002
         # convert to integer number of microseconds, rounding up
         micros = np.ceil(ticks / SERVO_FREQ * 1e6)
         # back to duration
@@ -156,9 +157,14 @@ class PMACTrajectoryPart(ChildPart):
         task.post(self.child["executeProfile"])
 
     @RunnableController.Abort
-    @RunnableController.Pause
     def abort(self, task):
         task.post(self.child["abortProfile"])
+
+    @RunnableController.Pause
+    def pause(self, task):
+        self.abort(task)
+        task.sleep(0.5)
+        self.reset_triggers(task)
 
     def get_move_time(self, axis_name, demand, current=None, accl_time=None):
         motor_info = self.axis_mapping[axis_name]
