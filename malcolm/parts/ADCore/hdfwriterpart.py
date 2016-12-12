@@ -70,6 +70,9 @@ class HDFWriterPart(ChildPart):
                     "Needed a primary dataset for secondary"
                 name = "%s.%s" % (primary_infos[0].name, dataset_info.name)
                 rank = primary_infos[0].rank + generator_rank
+            elif dataset_info.type == "monitor":
+                name = "%s.data" % dataset_info.name
+                rank = dataset_info.rank + generator_rank
             else:
                 # something like x.value or izero.value
                 name = "%s.value" % dataset_info.name
