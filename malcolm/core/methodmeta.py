@@ -67,6 +67,8 @@ class MethodMeta(Meta):
         args = list(args)
         # Prepare input map
         if need_params:
+            if param_dict is None:
+                param_dict = {}
             params = self.prepare_input_map(**param_dict)
             args.append(params)
 
