@@ -21,7 +21,7 @@
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
-- parts.builtin.RunnableChildPart:
+- parts.pmac.PmacRunnableChildPart:
     name: BRICK
     mri: $(brick)
 

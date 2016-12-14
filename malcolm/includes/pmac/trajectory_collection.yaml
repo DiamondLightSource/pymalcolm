@@ -6,6 +6,11 @@
     name: prefix
     description: the root PV for the pmac motor (hardware) controller
 
+- parameters.float64:
+    name: minTurnaround
+    description: Minimum turnaround time
+    default: 0.0
+
 - blocks.pmac.PMACTrajectory:
     mri: $(mri)
     prefix: $(prefix)
@@ -13,3 +18,4 @@
 - parts.pmac.PMACTrajectoryPart:
     name: $(mri)
     mri: $(mri)
+    minTurnaround: $(minTurnaround)
