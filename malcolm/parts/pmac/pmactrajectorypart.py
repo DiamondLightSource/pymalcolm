@@ -5,8 +5,8 @@ from scanpointgenerator import FixedDurationMutator, CompoundGenerator
 
 from malcolm.controllers.runnablecontroller import RunnableController, \
     ParameterTweakInfo
-from malcolm.core import method_takes, REQUIRED, Info
-from malcolm.core.vmetas import StringArrayMeta, PointGeneratorMeta
+from malcolm.core import method_takes, REQUIRED, Info, method_also_takes
+from malcolm.core.vmetas import StringArrayMeta, PointGeneratorMeta, NumberMeta
 from malcolm.parts.builtin.childpart import ChildPart
 
 # Number of seconds that a trajectory tick is
@@ -56,6 +56,7 @@ class MotorInfo(Info):
         self.scannable = scannable
 
 
+@method_also_takes("minTurnaround", NumberMeta("float64", "Min time for any gaps between frames"), 0.0)
 class PMACTrajectoryPart(ChildPart):
     # Axis information stored from validate
     # {scannable_name: MotorInfo}
@@ -70,6 +71,14 @@ class PMACTrajectoryPart(ChildPart):
     steps_up_to = 0
     # Stored generator for positions
     generator = None
+    # Min turnaround time
+    min_turnaround = None
+
+    def create_attributes(self):
+        for data in super(PMACTrajectoryPart, self).create_attributes():
+            yield data
+        self.min_turnaround = NumberMeta("float64", "Min time for any gaps between frames").make_attribute(self.params.minTurnaround)
+        yield "minTurnaround", self.min_turnaround, self.min_turnaround.set_value 
 
     @RunnableController.Reset
     def reset(self, task):
@@ -480,5 +489,7 @@ class PMACTrajectoryPart(ChildPart):
                 turnaround_midpoint[axis_name] = second - run_ups[axis_name]
                 lower_move_time = max(
                     lower_move_time, motor_info.acceleration_time)
+
+        lower_move_time = max(self.min_turnaround.value * 0.5, lower_move_time)
 
         return lower_move_time, turnaround_midpoint
