@@ -55,6 +55,13 @@
     rbvSuff: _RBV
     widget: textinput
 
+- parts.ca.CALongPart:
+    name: flushPerNFrames
+    description: Number of frames to capture between HDF flushes
+    pv: $(prefix):NumFramesFlush
+    rbvSuff: _RBV
+    widget: textinput
+
 - parts.ca.CACharArrayPart:
     name: xml
     description: XML for layout
