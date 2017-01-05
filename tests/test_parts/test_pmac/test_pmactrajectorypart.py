@@ -25,7 +25,9 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             return name
 
         self.child.__getitem__.side_effect = getitem
-        self.params = Mock()
+        self.params = PMACTrajectoryPart.MethodMeta.prepare_input_map(
+            name="pmac", mri="TST-PMAC"
+        )
         self.process.get_block.return_value = self.child
         self.o = PMACTrajectoryPart(self.process, self.params)
         list(self.o.create_attributes())

@@ -9,6 +9,7 @@
 - parameters.float64:
     name: minTurnaround
     description: Minimum turnaround time
+    default: 0.0
 
 - blocks.pmac.PMACTrajectory:
     mri: $(mri)
