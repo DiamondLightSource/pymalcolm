@@ -4,10 +4,10 @@
    pvPrefix: BL18I-EA-XSP3-01
    mriPrefix: I18-XSP3
 
-- blocks.demo.I18Table01Manager:
+- blocks.demo.I18Table01PMACManager:
     mriPrefix: I18-TABLE01
 
-- blocks.demo.I18Table03Manager:
+- blocks.demo.I18Table03PMACManager:
     mriPrefix: I18-TABLE03
 
 - blocks.pandabox.PandABoxManager:
