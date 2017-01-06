@@ -143,7 +143,8 @@ class HDFWriterPart(ChildPart):
         # Now do some maths and set the relevant PV. (Xspress3 does not seem to
         # support flushing more often than once per 2 frames.)
         n_frames_between_flushes = max(2, round(flush_time/exposure_time))
-        task.put(self.child["flushPerNFrames"], n_frames_between_flushes)
+        task.put(self.child["flushDataPerNFrames"], n_frames_between_flushes)
+        task.put(self.child["flushAttrPerNFrames"], n_frames_between_flushes)
 
         # Start the plugin
         self.start_future = task.post_async(self.child["start"])
