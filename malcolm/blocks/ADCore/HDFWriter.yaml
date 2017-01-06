@@ -56,9 +56,16 @@
     widget: textinput
 
 - parts.ca.CALongPart:
-    name: flushPerNFrames
-    description: Number of frames to capture between HDF flushes
+    name: flushDataPerNFrames
+    description: Number of frames to capture between HDF dataset flushes
     pv: $(prefix):NumFramesFlush
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: flushAttrPerNFrames
+    description: Number of frames to capture between HDF attribute flushes
+    pv: $(prefix):NDAttributeChunk
     rbvSuff: _RBV
     widget: textinput
 
