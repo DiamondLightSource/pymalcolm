@@ -137,6 +137,8 @@ class HDFWriterPart(ChildPart):
         # write between each flush. Thus we need to know the exposure time. Get
         # it from the last FDM. (There's probably only one, and we don't care
         # about other cases.)
+        # Choose a default exposure time in case there is no FDM.
+        exposure_time = 0.1  # seconds
         for mutator in params.generator.mutators:
             if isinstance(mutator, FixedDurationMutator):
                 exposure_time = mutator.duration
