@@ -9,10 +9,10 @@
 - blocks.demo.TestRigPMACManager:
     mriPrefix: P45-BRICK01
 
-#- blocks.pandabox.PandABoxManager:
-#    pvPrefix: BL45P-EA-PANDA-01
-#    mriPrefix: P45-PANDA01
-#    hostname: 172.23.252.201
+- blocks.pandabox.PandABoxManager:
+    pvPrefix: BL45P-EA-PANDA-01
+    mriPrefix: P45-PANDA01
+    hostname: 172.23.252.201
 
 - blocks.zebra.ZebraManager:
     pvPrefix: BL45P-EA-MAP-01:ZEBRA
