@@ -4,11 +4,8 @@
    pvPrefix: BL18I-EA-XSP3-01
    mriPrefix: I18-XSP3
 
-- blocks.demo.I18Table01PMACManager:
-    mriPrefix: I18-TABLE01
-
-- blocks.demo.I18Table03PMACManager:
-    mriPrefix: I18-TABLE03
+- blocks.demo.I18PMACManager:
+    mriPrefix: I18-BRICK06
 
 - blocks.pandabox.PandABoxManager:
     pvPrefix: BL18I-MO-PANDA-01
@@ -18,13 +15,13 @@
 - blocks.demo.I18Table01Manager:
     mri: I18-SCAN01
     det: I18-XSP3
-    brick: I18-TABLE01
+    brick: I18-BRICK06
     pandabox: I18-PANDA01
 
 - blocks.demo.I18Table03Manager:
     mri: I18-SCAN03
     det: I18-XSP3
-    brick: I18-TABLE03
+    brick: I18-BRICK06
     pandabox: I18-PANDA01
 
 - comms.pva.PvaServerComms:
