@@ -31,10 +31,6 @@ POINTS_PER_BUILD = 4000
 # All possible PMAC CS axis assignment
 cs_axis_names = list("ABCUVWXYZ")
 
-# Servo frequency
-I10 = 1705244
-SERVO_FREQ = 8388608000. / I10
-
 # Args for configure and validate
 configure_args = [
     "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
@@ -98,11 +94,12 @@ class PMACTrajectoryPart(ChildPart):
                 fdm = mutator
             else:
                 mutators.append(mutator)
+        servo_freq = 8388608000. / self.child.i10
         # convert half an exposure to multiple of servo ticks, rounding down
         # + 0.002 for some observed jitter in the servo frequency (I18)
-        ticks = np.floor(SERVO_FREQ * 0.5 * fdm.duration) + 0.002
+        ticks = np.floor(servo_freq * 0.5 * fdm.duration) + 0.002
         # convert to integer number of microseconds, rounding up
-        micros = np.ceil(ticks / SERVO_FREQ * 1e6)
+        micros = np.ceil(ticks / servo_freq * 1e6)
         # back to duration
         duration = 2 * float(micros) / 1e6
         if duration != fdm.duration:

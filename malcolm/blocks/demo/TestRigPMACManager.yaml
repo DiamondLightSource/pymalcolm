@@ -26,3 +26,4 @@
 - includes.pmac.trajectory_collection:
     mri: $(mriPrefix)-TRAJ
     prefix: BL45P-MO-MAP-01:STAGEGB1
+    statPrefix: BL45P-MO-STEP-02:STAGE

@@ -4,10 +4,20 @@
 
 - parameters.string:
     name: prefix
-    description: the root PV for the pmac motor (hardware) controller
+    description: the root PV for the trajectory scan template
+
+- parameters.string:
+    name: statPrefix
+    description: the root PV for the pmacStatus template
 
 - controllers.DefaultController:
     mri: $(mri)
+
+- parts.ca.CALongPart:
+    name: i10
+    description: Value of i10 (servo ticks)
+    rbv: $(statPrefix):I10
+    widget: textupdate
 
 - parts.ca.CAChoicePart:
     name: cs
