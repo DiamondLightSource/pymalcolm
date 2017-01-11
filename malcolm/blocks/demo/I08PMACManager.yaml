@@ -56,3 +56,4 @@
 - includes.pmac.trajectory_collection:
     mri: $(mriPrefix)-TRAJ
     prefix: BL08I-MO-STEP-10
+    statPrefix: BL08I-MO-STEP-10
