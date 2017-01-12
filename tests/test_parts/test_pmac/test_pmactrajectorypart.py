@@ -14,6 +14,161 @@ from scanpointgenerator import LineGenerator, CompoundGenerator, \
     FixedDurationMutator
 
 
+class TestMotorPVT(unittest.TestCase):
+    def setUp(self):
+        self.o = MotorInfo(
+            cs_axis="X",
+            cs_port="BRICK1CS2",
+            acceleration_time=0.5,
+            resolution=0.001,
+            offset=0.0,
+            max_velocity=1,
+            current_position=32.0,
+            scannable="t1x",
+            velocity_settle=0.0
+        )
+
+    def test_turnaround(self):
+        # 0_| \
+        #   |  \
+        v1 = 0.1
+        v2 = -0.1
+        distance = 0.0
+        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        self.assertEqual(time_array, [0.05, 0.05])
+        self.assertEqual(velocity_array, [0, v2])
+
+    def test_turnaround_invert(self):
+        # 0_|  /
+        #   | /
+        v1 = -0.1
+        v2 = 0.1
+        distance = 0.0
+        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        self.assertEqual(time_array, [0.05, 0.05])
+        self.assertEqual(velocity_array, [0, v2])
+
+    def test_turnaround_with_min_time(self):
+        # 0_| \___
+        #   |     \
+        v1 = 0.1
+        v2 = -0.1
+        distance = 0
+        min_time = 1
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.05, 0.8999999999999999, 0.05])
+        self.assertEqual(velocity_array, [0, 0, v2])
+
+    def test_step_move_no_vmax(self):
+        # 0_| /\
+        v1 = 0
+        v2 = 0
+        distance = 0.5
+        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        self.assertEqual(time_array, [0.5, 0.5])
+        self.assertEqual(velocity_array, [1, 0])
+
+    def test_step_move_at_vmax(self):
+        #   |  __
+        # 0_| /  \
+        v1 = 0
+        v2 = 0
+        distance = 1.0
+        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        self.assertEqual(time_array, [0.5, 0.5, 0.5])
+        self.assertEqual(velocity_array, [1, 1, 0])
+
+    def test_step_move_at_vmax_invert(self):
+        # 0_|
+        #   | \__/
+        v1 = 0
+        v2 = 0
+        distance = -1.0
+        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        self.assertEqual(time_array, [0.5, 0.5, 0.5])
+        self.assertEqual(velocity_array, [-1, -1, 0])
+
+    def test_interrupted_move(self):
+        #   |  /\
+        # 0_|
+        v1 = 0.5
+        v2 = 0.5
+        distance = 0.375
+        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        self.assertEqual(time_array, [0.25, 0.25])
+        self.assertEqual(velocity_array, [1, v2])
+
+    def test_interrupted_move_min_time(self):
+        # 0_| \/
+        v1 = 0.5
+        v2 = 0.5
+        distance = 0.125
+        min_time = 0.5
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.25, 0.25])
+        self.assertEqual(velocity_array, [0, v2])
+
+    def test_interrupted_move_min_time_at_zero(self):
+        # 0_| \__/
+        v1 = 0.5
+        v2 = 0.5
+        distance = 0.125
+        min_time = 1.0
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.25, 0.5, 0.25])
+        self.assertEqual(velocity_array, [0, 0, v2])
+
+    def test_interrupted_move_retracing_vmax(self):
+        # 0_| \  /
+        #   |  \/
+        v1 = 0.5
+        v2 = 0.5
+        distance = 0
+        min_time = 1.0
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.25, 0.25, 0.25, 0.25])
+        self.assertEqual(velocity_array, [0, -0.5, 0, v2])
+
+    def test_interrupted_move_retracing_further_limited(self):
+        # 0_| \    /
+        #   |  \__/
+        v1 = 0.5
+        v2 = 0.5
+        distance = -0.25
+        min_time = 1.5
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.25, 0.25, 0.5, 0.25, 0.25])
+        self.assertEqual(velocity_array, [0, -0.5, -0.5, 0, v2])
+
+    def test_interrupted_move_retracing_further_at_vmax(self):
+        # 0_| \    /
+        #   |  \__/
+        v1 = 0.5
+        v2 = 0.5
+        distance = -0.5
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance)
+        self.assertEqual(time_array, [0.25, 0.5, 0.125, 0.5, 0.25])
+        self.assertEqual(velocity_array, [0, -1, -1, 0, v2])
+
+    def test_interrupted_move_retracing_further_at_vmax_invert(self):
+        #   |   __
+        # 0_|  /  \
+        #   | /    \
+        v1 = -0.5
+        v2 = -0.5
+        distance = 0.5
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance)
+        self.assertEqual(time_array, [0.25, 0.5, 0.125, 0.5, 0.25])
+        self.assertEqual(velocity_array, [0, 1, 1, 0, v2])
+
+
 class TestPMACTrajectoryPart(unittest.TestCase):
     maxDiff = None
 
@@ -62,6 +217,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 max_velocity=1.0,
                 current_position=x_pos,
                 scannable="x",
+                velocity_settle=0.0,
             )],
             ypart=[MotorInfo(
                 cs_axis="B",
@@ -71,7 +227,8 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 offset=0,
                 max_velocity=1.0,
                 current_position=y_pos,
-                scannable="y"
+                scannable="y",
+                velocity_settle=0.0,
             )]
         )
         return part_info
