@@ -11,9 +11,8 @@ class CAChoicePart(CAPart):
     def get_datatype(self):
         return self.catools.DBR_ENUM
 
-    def set_initial_value(self, value):
+    def set_initial_metadata(self, value):
         self.attr.meta.set_choices(value.enums)
-        super(CAChoicePart, self).set_initial_value(value)
 
     def caput(self, value):
         try:

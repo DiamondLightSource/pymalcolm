@@ -14,7 +14,7 @@ def takes_with_default_meta(meta_cls, *meta_args):
 
 
 def args_for_takes(params, meta_cls, *meta_args):
-    meta_args = meta_args + (params.description,)
+    meta_args += (params.description,)
     meta = meta_cls(*meta_args)
     if hasattr(params, "default"):
         return [params.name, meta, params.default]
