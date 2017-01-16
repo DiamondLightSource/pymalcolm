@@ -6,6 +6,8 @@ from malcolm.parts.pmac.pmactrajectorypart import MotorInfo, cs_axis_names
 class CompoundMotorPart(ChildPart):
     @RunnableController.ReportStatus
     def report_cs_info(self, _):
+        acceleration = float(
+            self.child.maxVelocity) / self.child.accelerationTime
         # Split "@asyn(PORT,num)" into ["PORT", "num"]
         split = self.child.outLink.split("(")[1].rstrip(")").split(",")
         cs_port = split[0].strip()
@@ -14,7 +16,7 @@ class CompoundMotorPart(ChildPart):
         motor_info = MotorInfo(
             cs_axis=cs_axis,
             cs_port=cs_port,
-            acceleration_time=self.child.accelerationTime,
+            acceleration=acceleration,
             resolution=1.0,
             offset=self.child.offset,
             max_velocity=self.child.maxVelocity,

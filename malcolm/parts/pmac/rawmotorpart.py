@@ -6,10 +6,12 @@ from malcolm.parts.pmac.pmactrajectorypart import MotorInfo
 class RawMotorPart(ChildPart):
     @RunnableController.ReportStatus
     def report_cs_info(self, _):
+        acceleration = float(
+            self.child.maxVelocity) / self.child.accelerationTime
         motor_info = MotorInfo(
             cs_axis=self.child.csAxis,
             cs_port=self.child.csPort,
-            acceleration_time=self.child.accelerationTime,
+            acceleration=acceleration,
             resolution=self.child.resolution,
             offset=self.child.offset,
             max_velocity=self.child.maxVelocity,
