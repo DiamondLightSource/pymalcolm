@@ -3,6 +3,10 @@
     description: MRI for created block
 
 - parameters.string:
+    name: det
+    description: MRI for detector DetectorManager object
+
+- parameters.string:
     name: brick
     description: MRI for brick PMACManager object
 
@@ -12,14 +16,18 @@
 
 - controllers.RunnableController:
     mri: $(mri)
-    axesToMove: [T1XC, T1YC]
+    axesToMove: [T1X, T1Y]
 
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
-- parts.builtin.RunnableChildPart:
+- parts.demo.I08ScanCombinedPart:
     name: BRICK
     mri: $(brick)
+
+#- parts.ADCore.DatasetRunnableChildPart:
+#    name: DET
+#    mri: $(det)
 
 - parts.ADCore.DatasetRunnableChildPart:
     name: PANDABOX

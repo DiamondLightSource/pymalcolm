@@ -5,39 +5,39 @@
 - controllers.RunnableController:
     mri: $(mriPrefix)
 
-- includes.pmac.rawmotor_collection:
-    mri: I08-T1-XC
-    prefix: BL08I-MO-STEP-10:M1
-    motorPrefix: BL08I-EA-TABLE-01:XC
-    scannable: T1XC
+#- includes.pmac.rawmotor_collection:
+#    mri: I08-T1-XC
+#    prefix: BL08I-MO-STEP-10:M1
+#    motorPrefix: BL08I-EA-TABLE-01:XC
+#    scannable: T1XC
+
+#- includes.pmac.rawmotor_collection:
+#    mri: I08-T1-YC
+#    prefix: BL08I-MO-STEP-10:M2
+#    motorPrefix: BL08I-EA-TABLE-01:YC
+#    scannable: T1YC
+
+#- includes.pmac.rawmotor_collection:
+#    mri: I08-T1-XF
+#    prefix: BL08I-MO-STEP-10:M9
+#    motorPrefix: BL08I-EA-TABLE-01:XF
+#    scannable: T1XF
 
 - includes.pmac.rawmotor_collection:
-    mri: I08-T1-YC
-    prefix: BL08I-MO-STEP-10:M2
-    motorPrefix: BL08I-EA-TABLE-01:YC
-    scannable: T1YC
+    mri: I08-ZP-Z
+    prefix: BL08I-MO-STEP-10:M6
+    motorPrefix: BL08I-EA-ZP-01:Z
+    scannable: ZPZ
 
-- includes.pmac.rawmotor_collection:
-    mri: I08-T1-XF
-    prefix: BL08I-MO-STEP-10:M9
-    motorPrefix: BL08I-EA-TABLE-01:XF
-    scannable: T1XF
+- includes.pmac.compoundmotor_collection:
+    mri: I08-T1-X
+    prefix: BL08I-EA-TABLE-01:X
+    scannable: T1X
 
-- includes.pmac.rawmotor_collection:
-    mri: I08-T1-YF
-    prefix: BL08I-MO-STEP-10:M10
-    motorPrefix: BL08I-EA-TABLE-01:YF
-    scannable: T1YF
-
-#- includes.pmac.compoundmotor_collection:
-#    mri: I08-T1-X
-#    prefix: BL08I-EA-TABLE-01:X
-#    scannable: T1X
-
-#- includes.pmac.compoundmotor_collection:
-#    mri: I08-T1-Y
-#    prefix: BL08I-EA-TABLE-01:Y
-#    scannable: T1Y
+- includes.pmac.compoundmotor_collection:
+    mri: I08-T1-Y
+    prefix: BL08I-EA-TABLE-01:Y
+    scannable: T1Y
 
 - parts.ca.CADoublePart:
     name: positionT1XC
@@ -51,6 +51,12 @@
     description: set the target position of the motor or get current position
     pv: BL08I-EA-TABLE-01:YC
     rbvSuff: .RBV
+    widget: textinput
+
+- parts.ca.CALongPart:
+    name: fineMode
+    description: if 1, set the CS to only move piezos, not coarse motors
+    pv: BL08I-EA-TABLE-01:FINEMODE
     widget: textinput
 
 - includes.pmac.trajectory_collection:

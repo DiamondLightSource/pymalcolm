@@ -16,12 +16,12 @@
 
 - controllers.RunnableController:
     mri: $(mri)
-    axesToMove: [T1XF, T1YF]
+    axesToMove: [T1X, ZPZ]
 
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
-- parts.demo.I08ScanFinePart:
+- parts.demo.I08ScanCombinedPart:
     name: BRICK
     mri: $(brick)
 
