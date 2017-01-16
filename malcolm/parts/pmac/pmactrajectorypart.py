@@ -14,8 +14,11 @@ from malcolm.parts.builtin.childpart import ChildPart
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
 
+# Minimum move time for any move
+MIN_TIME = 0.002
+
 # Interval for interpolating velocity curves
-INTERPOLATE_INTERVAL = 0.01
+INTERPOLATE_INTERVAL = 0.02
 
 # velocity modes
 PREV_TO_NEXT = 0
@@ -104,7 +107,7 @@ class MotorInfo(Info):
         tm = dm / vm
         return t1, tm, t2, vm
 
-    def _make_hat(self, v1, v2, acceleration, distance, min_time=0.0):
+    def _make_hat(self, v1, v2, acceleration, distance, min_time=MIN_TIME):
         """Make a hat that looks like this:
 
             ______ vm
@@ -126,8 +129,8 @@ class MotorInfo(Info):
                 # Might have a negative number as rounding error...
                 op = 0
             elif op < 0:
-                # Can't do this
-                raise ValueError(op)
+                # Can't do this, set something massive to fail vm check...
+                op = 10000000000
 
             def get_times(vm):
                 t1 = (vm - v1) / acceleration
@@ -172,7 +175,7 @@ class MotorInfo(Info):
         yield tm, vm
         yield t2, v2
 
-    def make_velocity_profile(self, v1, v2, distance, min_time=0.0):
+    def make_velocity_profile(self, v1, v2, distance, min_time=MIN_TIME):
         """Calculate PVT points that will perform the move within motor params
 
         Args:
@@ -332,6 +335,7 @@ class PMACTrajectoryPart(ChildPart):
     @method_takes(*configure_args)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         task.unsubscribe_all()
+        task.put(self.child["numPoints"], 4000000)
         self.generator = params.generator
         cs_port, self.axis_mapping = self._make_axis_mapping(
             part_info, params.axesToMove)
@@ -344,7 +348,6 @@ class PMACTrajectoryPart(ChildPart):
         task.wait_all(futures)
         self.write_profile_points(task, **profile)
         # Max size of array
-        task.put(self.child["numPoints"], self.generator.num * 3)
         task.post(self.child["buildProfile"])
 
     @RunnableController.Run
@@ -392,13 +395,18 @@ class PMACTrajectoryPart(ChildPart):
         time_arrays = {}
         velocity_arrays = {}
         iterations = 5
-        min_time = 0.0
+        min_time = MIN_TIME
         while iterations > 0:
             for axis_name, motor_info in self.axis_mapping.items():
                 time_arrays[axis_name], velocity_arrays[axis_name] = \
                     motor_info.make_velocity_profile(
                         v1s[axis_name], v2s[axis_name], distances[axis_name],
                         min_time)
+                assert time_arrays[axis_name][-1] >= min_time or np.isclose(
+                        time_arrays[axis_name][-1], min_time), \
+                    "Time %s velocity %s for %s takes less time than %s" % (
+                        time_arrays[axis_name], velocity_arrays[axis_name],
+                        axis_name, min_time)
             new_min_time = max(t[-1] for t in time_arrays.values())
             if np.isclose(new_min_time, min_time):
                 # We've got our consistent set
@@ -554,11 +562,13 @@ class PMACTrajectoryPart(ChildPart):
                 time = interval * (i + 1)
                 # If we have exceeded the current segment, pop it and add it's
                 # position in
-                if time > ts[1]:
+                if time > ts[1] and not np.isclose(time, ts[1]):
                     position += motor_info.ramp_distance(
                         vs[0], vs[1], ts[1] - ts[0])
                     vs = vs[1:]
                     ts = ts[1:]
+                assert len(ts) > 1, \
+                   "Bad %s time %s velocity %s" % (time, ts, vs)
                 fraction = (time - ts[0]) / (ts[1] - ts[0])
                 velocity = fraction * (vs[1] - vs[0]) + vs[0]
                 part_position = motor_info.ramp_distance(
@@ -585,8 +595,8 @@ class PMACTrajectoryPart(ChildPart):
         if do_run_up:
             point = self.generator.get_point(start_index)
 
-            # Calculate how long to leave for the run-up
-            run_up_time = 0
+            # Calculate how long to leave for the run-up (at least MIN_TIME)
+            run_up_time = MIN_TIME
             for axis_name, velocity in self.point_velocities(point).items():
                 trajectory[axis_name].append(point.lower[axis_name])
                 motor_info = self.axis_mapping[axis_name]
@@ -666,8 +676,8 @@ class PMACTrajectoryPart(ChildPart):
             velocity_mode[-1] = PREV_TO_CURRENT
             user_programs[-1] = TRIG_DEAD_FRAME
 
-            # Calculate how long to leave for the tail-off
-            tail_off_time = 0
+            # Calculate how long to leave for the tail-off (at least MIN_TIME)
+            tail_off_time = MIN_TIME
             for axis_name, velocity in self.point_velocities(point).items():
                 motor_info = self.axis_mapping[axis_name]
                 tail_off_time = max(tail_off_time,
