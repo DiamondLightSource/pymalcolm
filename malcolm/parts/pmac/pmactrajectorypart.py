@@ -128,7 +128,10 @@ class MotorInfo(Info):
             elif op < 0:
                 # Can't do this
                 raise ValueError(op)
-            vm = (b + np.sqrt(op)) / 2
+            vm = (b - np.sqrt(op)) / 2
+            if vm > self.max_velocity or vm < -self.max_velocity:
+                # Try the other root of the quadratic
+                vm = (b + np.sqrt(op)) / 2
             t1 = (vm - v1) / acceleration
             t2 = (vm - v2) / acceleration
             tm = min_time - t1 - t2
