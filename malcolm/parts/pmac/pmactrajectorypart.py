@@ -128,19 +128,29 @@ class MotorInfo(Info):
             elif op < 0:
                 # Can't do this
                 raise ValueError(op)
-            vm = (b - np.sqrt(op)) / 2
-            if vm > self.max_velocity or vm < -self.max_velocity:
-                # Try the other root of the quadratic
-                vm = (b + np.sqrt(op)) / 2
-            t1 = (vm - v1) / acceleration
-            t2 = (vm - v2) / acceleration
-            tm = min_time - t1 - t2
-            if vm > self.max_velocity or vm < -self.max_velocity or \
-                    t1 < 0 or t2 < 0 or tm < 0:
-                # If vm is out of range or any segment takes negative time,
-                # we can't do it in min_time, so act as if unconstrained
-                t1, tm, t2, vm = self._calculate_hat_params(
-                    v1, v2, acceleration, distance)
+
+            def get_times(vm):
+                t1 = (vm - v1) / acceleration
+                t2 = (vm - v2) / acceleration
+                tm = min_time - t1 - t2
+                assert -self.max_velocity <= vm <= self.max_velocity
+                assert t1 >= 0 and t2 >= 0 and tm >= 0
+                return t1, tm, t2
+
+            try:
+                # Try negative root
+                vm = (b - np.sqrt(op)) / 2
+                t1, tm, t2 = get_times(vm)
+            except AssertionError:
+                try:
+                    # Try positive root
+                    vm = (b + np.sqrt(op)) / 2
+                    t1, tm, t2 = get_times(vm)
+                except AssertionError:
+                    # If vm is out of range or any segment takes negative time,
+                    # we can't do it in min_time, so act as if unconstrained
+                    t1, tm, t2, vm = self._calculate_hat_params(
+                        v1, v2, acceleration, distance)
         else:
             t1, tm, t2, vm = self._calculate_hat_params(
                 v1, v2, acceleration, distance)

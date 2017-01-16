@@ -69,6 +69,28 @@ class TestMotorPVT(unittest.TestCase):
         self.assertEqual(time_array, [0.0, 0.5, 1.0])
         self.assertEqual(velocity_array, [v1, 1, 0])
 
+    def test_step_move_no_vmax_min_time(self):
+        #   |  _
+        # 0_| / \
+        v1 = 0
+        v2 = 0
+        distance = 0.125
+        min_time = 0.5004166666666666
+        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.0, 0.24000000000000069, 0.26041666666666596, 0.50041666666666662])
+        self.assertEqual(velocity_array, [v1, 0.48000000000000137, 0.48000000000000137, v2])
+
+    def test_step_move_no_vmax_min_time_invert(self):
+        # 0_|
+        #   | \_/
+        v1 = 0
+        v2 = 0
+        distance = -0.125
+        min_time = 0.5004166666666666
+        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.0, 0.24000000000000069, 0.26041666666666596, 0.50041666666666662])
+        self.assertEqual(velocity_array, [v1, -0.48000000000000137, -0.48000000000000137, v2])
+
     def test_step_move_at_vmax(self):
         #   |  __
         # 0_| /  \
@@ -78,6 +100,30 @@ class TestMotorPVT(unittest.TestCase):
         time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
         self.assertEqual(time_array, [0.0, 0.5, 1.0, 1.5])
         self.assertEqual(velocity_array, [v1, 1, 1, 0])
+
+    def test_step_move_restricted(self):
+        #   |  __
+        # 0_| /  \
+        v1 = 0
+        v2 = 0
+        distance = 1.02
+        min_time = 5.2
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.0, 0.10000000000000009, 5.0999999999999996, 5.1999999999999993])
+        self.assertEqual(velocity_array, [v1, 0.20000000000000018, 0.20000000000000018, v2])
+
+    def test_step_move_restricted_invert(self):
+        # 0_|
+        #   | \__/
+        v1 = 0
+        v2 = 0
+        distance = -1.02
+        min_time = 5.2
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.0, 0.10000000000000009, 5.0999999999999996, 5.1999999999999993])
+        self.assertEqual(velocity_array, [v1, -0.20000000000000018, -0.20000000000000018, v2])
 
     def test_step_move_at_vmax_invert(self):
         # 0_|
