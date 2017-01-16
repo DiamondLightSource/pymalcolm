@@ -60,6 +60,18 @@ class TestMotorPVT(unittest.TestCase):
         self.assertEqual(time_array, [0.0, 0.05, 1.95, 2.0])
         self.assertEqual(velocity_array, [v1, 0, 0, v2])
 
+    def test_turnaround_with_min_time_invert(self):
+        # 0_|  ___/
+        #   | /
+        v1 = -0.1
+        v2 = 0.1
+        distance = 0
+        min_time = 2
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
+        self.assertEqual(time_array, [0.0, 0.05, 1.95, 2.0])
+        self.assertEqual(velocity_array, [v1, 0, 0, v2])
+
     def test_step_move_no_vmax(self):
         # 0_| /\
         v1 = 0

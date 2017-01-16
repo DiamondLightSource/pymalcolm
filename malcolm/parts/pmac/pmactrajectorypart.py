@@ -203,7 +203,7 @@ class MotorInfo(Info):
                 # Can't just pad the ramp, make a hat pointing up
                 it = self._make_hat(
                     v1, v2, self.acceleration, distance, min_time)
-            elif pad_velocity < min(v2, v2):
+            elif pad_velocity < min(v1, v2):
                 # Can't just pad the ramp, make a hat pointing down
                 it = self._make_hat(
                     v1, v2, -self.acceleration, distance, min_time)
