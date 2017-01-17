@@ -10,39 +10,16 @@
     name: scannable
     description: The scannable name for GDA of this motor
 
+- parameters.float64:
+    name: velocitySettle
+    description: Time in seconds for motor to settle at constant velocity
+    default: 0.0
+
 - controllers.DefaultController:
     mri: $(mri)
 
-- parts.ca.CADoublePart:
-    name: position
-    description: set the target position of the motor or get current position
-    pv: $(prefix)
-    rbvSuff: .RBV
-    widget: textinput
-
-- parts.ca.CALongPart:
-    name: doneMoving
-    description: set to zero when motor is stationary
-    rbv: $(prefix).DMOV
-    widget: led
-
-- parts.ca.CADoublePart:
-    name: accelerationTime
-    description: time taken to accelerate to velocity
-    pv: $(prefix).ACCL
-    widget: textinput
-
-- parts.ca.CADoublePart:
-    name: maxVelocity
-    description: maximum velocity
-    pv: $(prefix).VMAX
-    widget: textinput
-
-- parts.ca.CADoublePart:
-    name: offset
-    description: User offset
-    pv: $(prefix).OFF
-    widget: textinput
+- includes.pmac.motor_records:
+    prefix: $(prefix)
 
 # TODO: this should be an outlink, but has wrong type, maybe push down?
 - parts.ca.CAStringPart:
@@ -57,3 +34,10 @@
     widget: textinput
     writeable: True
     initialValue: $(scannable)
+
+- parts.builtin.Float64Part:
+    name: velocitySettle
+    description: Time in seconds for motor to settle at constant velocity
+    widget: textinput
+    writeable: True
+    initialValue: $(velocitySettle)
