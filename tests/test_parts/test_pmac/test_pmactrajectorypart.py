@@ -323,6 +323,8 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(task.post_async.call_count, 1)
         self.assertEqual(task.put.call_count, 2)
         self.assertEqual(task.put.call_args_list[0],
+                         call(self.child["numPoints"], 4000000))
+        self.assertEqual(task.put.call_args_list[1],
                          call(self.child["cs"], "CS1"))
         self.check_resolutions_and_use(task.put_many.call_args_list[0][0][1])
         self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
@@ -360,8 +362,6 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             positionsB=[
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]))
-        self.assertEqual(task.put.call_args_list[1],
-                         call(self.child["numPoints"], 18))
 
     @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 0.2)
     def test_2_axis_move_to_start(self):
