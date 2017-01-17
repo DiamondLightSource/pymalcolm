@@ -6,7 +6,7 @@ from malcolm.core.vmetas import NumberMeta
 @method_also_takes(
     "initialValue", NumberMeta("float64", "Initial value of attribute"), 0.0,
 )
-class StringPart(AttributePart):
+class Float64Part(AttributePart):
     def get_initial_value(self):
         return self.params.initialValue
 
