@@ -45,7 +45,7 @@ configure_args = [
 # Class for these motor variables
 class MotorInfo(Info):
     def __init__(self, cs_axis, cs_port, acceleration_time, resolution, offset,
-                 max_velocity, current_position, scannable):
+                 max_velocity, current_position, scannable, velocity_settle):
         self.cs_axis = cs_axis
         self.cs_port = cs_port
         self.acceleration_time = acceleration_time
@@ -54,6 +54,7 @@ class MotorInfo(Info):
         self.max_velocity = max_velocity
         self.current_position = current_position
         self.scannable = scannable
+        self.velocity_settle = velocity_settle
 
 
 @method_also_takes("minTurnaround", NumberMeta("float64", "Min time for any gaps between frames"), 0.0)
