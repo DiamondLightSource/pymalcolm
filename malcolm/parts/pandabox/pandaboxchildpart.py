@@ -16,18 +16,15 @@ class PandABoxChildPart(ChildPart):
                 return True
 
     def _dataset_info(self, attr_name):
-        dataset_attr_name = attr_name + "DatasetName"
-        if dataset_attr_name in self.child:
-            dataset_name = self.child[dataset_attr_name].value
+        dataset_name_attr = attr_name + "DatasetName"
+        dataset_type_attr = attr_name + "DatasetType"
+        if dataset_name_attr in self.child and dataset_type_attr in self.child:
+            dataset_name = self.child[dataset_name_attr].value
             if dataset_name == "":
                 return
-            elif "INENC" in self.params.mri:
-                dataset_type = "position_value"
-            else:
-                dataset_type = "monitor"
             assert "." not in dataset_name, \
                 "Dataset name should not contain '.'"
-
+            dataset_type = self.child[dataset_type_attr].value
             uppercase_attr = re.sub("([A-Z])", r"_\1", attr_name).upper()
             return DatasetSourceInfo(
                 name=dataset_name,
