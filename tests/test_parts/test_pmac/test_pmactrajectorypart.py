@@ -62,6 +62,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 max_velocity=1.0,
                 current_position=x_pos,
                 scannable="x",
+                velocity_settle=0.0
             )],
             ypart=[MotorInfo(
                 cs_axis="B",
@@ -71,7 +72,8 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 offset=0,
                 max_velocity=1.0,
                 current_position=y_pos,
-                scannable="y"
+                scannable="y",
+                velocity_settle=0.0
             )]
         )
         return part_info

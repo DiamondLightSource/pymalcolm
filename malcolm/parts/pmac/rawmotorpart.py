@@ -14,13 +14,7 @@ class RawMotorPart(ChildPart):
             offset=self.child.offset,
             max_velocity=self.child.maxVelocity,
             current_position=self.child.position,
-            scannable=self.child.scannable
+            scannable=self.child.scannable,
+            velocity_settle=self.child.velocitySettle
         )
         return [motor_info]
-
-    @RunnableController.Abort
-    @RunnableController.Pause
-    def abort(self, task):
-        self.log_warning("Waiting for motor to stop moving")
-        # Wait for the motor to stop moving
-        task.when_matches(self.child["doneMoving"], 1)

@@ -19,6 +19,7 @@ class CompoundMotorPart(ChildPart):
             offset=self.child.offset,
             max_velocity=self.child.maxVelocity,
             current_position=self.child.position,
-            scannable=self.child.scannable
+            scannable=self.child.scannable,
+            velocity_settle=self.child.velocitySettle
         )
         return [motor_info]

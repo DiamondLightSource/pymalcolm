@@ -1,4 +1,5 @@
-from malcolm.core import Part, method_takes, REQUIRED
+from malcolm.core import method_takes, REQUIRED
+from malcolm.parts.builtin.attributepart import AttributePart
 from malcolm.core.vmetas import StringMeta, ChoiceMeta
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.parts.ca.cothreadimporter import CothreadImporter
@@ -13,11 +14,9 @@ from malcolm.tags import widget, widget_types, inport, port_types
     "rbvSuff", StringMeta("Set rbv ro pv + rbv_suff"), "",
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "inport", ChoiceMeta("Inport type", [""] + port_types), "")
-class CAPart(Part):
+class CAPart(AttributePart):
     # Camonitor subscription
     monitor = None
-    # Attribute instance
-    attr = None
 
     def __init__(self, process, params):
         self.cothread, self.catools = CothreadImporter.get_cothread(process)
@@ -25,8 +24,7 @@ class CAPart(Part):
         self.ca_format = self.catools.FORMAT_TIME
         super(CAPart, self).__init__(process, params)
 
-    def create_attributes(self):
-        params = self.params
+    def store_params(self, params):
         if not params.rbv and not params.pv:
             raise ValueError('Must pass pv or rbv')
         if not params.rbv:
@@ -34,32 +32,28 @@ class CAPart(Part):
                 params.rbv = params.pv + params.rbvSuff
             else:
                 params.rbv = params.pv
-        # Find the tags
-        tags = self.create_tags(params)
-        # The attribute we will be publishing
-        self.attr = self.create_meta(params.description, tags).make_attribute()
+        super(CAPart, self).store_params(params)
+
+    def get_writeable_func(self):
         if self.params.pv:
             writeable_func = self.caput
         else:
             writeable_func = None
-        yield params.name, self.attr, writeable_func
+        return writeable_func
 
-    def create_tags(self, params):
-        tags = []
-        if params.widget:
-            tags.append(widget(params.widget))
-        if params.inport:
-            tags.append(inport(params.inport, ""))
+    def create_tags(self):
+        tags = super(CAPart, self).create_tags()
+        if self.params.inport:
+            tags.append(inport(self.params.inport, ""))
         return tags
-
-    def create_meta(self, description, tags):
-        raise NotImplementedError
 
     def get_datatype(self):
         raise NotImplementedError
 
-    def set_initial_value(self, value):
-        self.update_value(value)
+    def set_initial_metadata(self, value):
+        """Implement this to set some metadata on the attribute from the initial
+        CA connect before the first update_value()"""
+        pass
 
     @DefaultController.Reset
     def reset(self, task=None):
@@ -75,7 +69,8 @@ class CAPart(Part):
         # check connection is ok
         for i, v in enumerate(ca_values):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
-        self.set_initial_value(ca_values[0])
+        self.set_initial_metadata(ca_values[0])
+        self.update_value(ca_values[0])
         self.log_debug("ca values connected %s", ca_values)
         # now setup monitor on rbv
         self.monitor = self.cothread.CallbackResult(

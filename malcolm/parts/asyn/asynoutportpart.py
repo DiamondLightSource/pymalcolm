@@ -17,8 +17,9 @@ class AsynOutportPart(CAStringPart):
             name=params.name, description=params.description, rbv=params.rbv)
         super(AsynOutportPart, self).__init__(process, params)
 
-    def create_tags(self, params):
-        tags = [widget("textupdate")]
+    def create_tags(self):
+        tags = super(AsynOutportPart, self).create_tags()
+        tags.append(widget("textupdate"))
         return tags
 
     @DefaultController.Reset
