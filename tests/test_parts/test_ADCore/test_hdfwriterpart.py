@@ -6,7 +6,8 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, MagicMock, call, ANY
 
-from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart, DatasetSourceInfo
+from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart, \
+    NDArrayDatasetInfo, CalculatedNDAttributeDatasetInfo
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
@@ -38,8 +39,8 @@ class TestHDFWriterPart(unittest.TestCase):
         completed_steps = 0
         steps_to_do = 38
         part_info = {
-            "DET": [DatasetSourceInfo("xspress3", "primary", 2)],
-            "STAT": [DatasetSourceInfo("sum", "secondary", 0, "StatsTotal")],
+            "DET": [NDArrayDatasetInfo("xspress3", 2)],
+            "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
         }
         infos = self.o.configure(
             task, completed_steps, steps_to_do, part_info, params)

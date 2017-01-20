@@ -2,7 +2,7 @@ import re
 
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.ADCore.hdfwriterpart import DatasetSourceInfo
+from malcolm.parts.ADCore.hdfwriterpart import NDAttributeDatasetInfo
 
 
 class PandABoxChildPart(ChildPart):
@@ -26,7 +26,7 @@ class PandABoxChildPart(ChildPart):
                 "Dataset name should not contain '.'"
             dataset_type = self.child[dataset_type_attr].value
             uppercase_attr = re.sub("([A-Z])", r"_\1", attr_name).upper()
-            return DatasetSourceInfo(
+            return NDAttributeDatasetInfo(
                 name=dataset_name,
                 type=dataset_type,
                 rank=2,

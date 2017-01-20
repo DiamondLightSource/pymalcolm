@@ -27,7 +27,7 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.child["encoderValue2DatasetType"] = Mock(value="anything")
         self.child["encoderValue3Capture"] = Mock(value="capture")
         self.child["encoderValue3DatasetName"] = Mock(value="x2")
-        self.child["encoderValue3DatasetType"] = Mock(value="position_value")
+        self.child["encoderValue3DatasetType"] = Mock(value="position")
 
         self.params = MagicMock(mri="P:INENC1")
         self.params.name="INENC1"
@@ -42,7 +42,7 @@ class PandABoxChildPartTest(unittest.TestCase):
         dataset_infos = self.o.report_configuration(None)
         self.assertEqual(len(dataset_infos), 1)
         self.assertEqual(dataset_infos[0].name, "x2")
-        self.assertEqual(dataset_infos[0].type, "position_value")
+        self.assertEqual(dataset_infos[0].type, "position")
         self.assertEqual(dataset_infos[0].rank, 2)
         self.assertEqual(dataset_infos[0].attr, "INENC1.ENCODER_VALUE3")
 
@@ -52,6 +52,15 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.assertEqual(len(dataset_infos), 1)
         self.assertEqual(dataset_infos[0].name, "x2")
         self.assertEqual(dataset_infos[0].type, "monitor")
+        self.assertEqual(dataset_infos[0].rank, 2)
+        self.assertEqual(dataset_infos[0].attr, "INENC1.ENCODER_VALUE3")
+
+    def test_counter_configuration_detector(self):
+        self.child["encoderValue3DatasetType"] = Mock(value="detector")
+        dataset_infos = self.o.report_configuration(None)
+        self.assertEqual(len(dataset_infos), 1)
+        self.assertEqual(dataset_infos[0].name, "x2")
+        self.assertEqual(dataset_infos[0].type, "detector")
         self.assertEqual(dataset_infos[0].rank, 2)
         self.assertEqual(dataset_infos[0].attr, "INENC1.ENCODER_VALUE3")
 
