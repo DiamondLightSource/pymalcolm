@@ -18,10 +18,10 @@
     brick: I18-BRICK06
     pandabox: I18-PANDA01
 
-- blocks.demo.I18Table03Manager:
-    mri: I18-SCAN03
-    det: I18-XSP3
-    brick: I18-BRICK06
-    pandabox: I18-PANDA01
+# - blocks.demo.I18Table03Manager:
+#     mri: I18-SCAN03
+#     det: I18-XSP3
+#     brick: I18-BRICK06
+#     pandabox: I18-PANDA01
 
 - comms.pva.PvaServerComms:
