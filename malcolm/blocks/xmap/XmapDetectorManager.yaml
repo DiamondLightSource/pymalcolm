@@ -1,0 +1,30 @@
+- parameters.string:
+    name: mriPrefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- parameters.string:
+    name: pvPrefix
+    description: PV prefix for driver and all plugins
+
+- controllers.RunnableController:
+    mri: $(mriPrefix)
+
+- blocks.xmap.XmapDetectorDriver:
+    mri: $(mriPrefix)-DRV
+    prefix: $(pvPrefix)
+
+- parts.xmap.XmapDriverPart:
+    name: DRV
+    mri: $(mriPrefix)-DRV
+
+- blocks.ADCore.StatsPlugin:
+    mri: $(mriPrefix)-STAT
+    prefix: $(pvPrefix):STAT1
+
+- parts.ADCore.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix)-STAT
+
+- includes.ADCore.filewriting_collection:
+    pvPrefix: $(pvPrefix)
+    mriPrefix: $(mriPrefix)
