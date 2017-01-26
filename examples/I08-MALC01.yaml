@@ -3,6 +3,10 @@
    pvPrefix: BL08I-EA-DET-01
    mriPrefix: I08-ANDOR01
 
+- blocks.xmap.XmapDetectorManager:
+   pvPrefix: BL08I-EA-DET-02
+   mriPrefix: I08-XMAP01
+
 - blocks.demo.I08PMACManager:
     mriPrefix: I08-BRICK10
 
@@ -23,8 +27,20 @@
     brick: I08-BRICK10
     pandabox: I08-PANDA01
 
+- blocks.demo.I08DetScanCombined:
+    mri: I08-SCAN03-XMAP
+    det: I08-XMAP01
+    brick: I08-BRICK10
+    pandabox: I08-PANDA01
+
+- blocks.demo.I08DetScanCombined:
+    mri: I08-SCAN04-ANDOR
+    det: I08-ANDOR01
+    brick: I08-BRICK10
+    pandabox: I08-PANDA01
+
 - comms.pva.PvaServerComms:
 
 # Add a webserver
-- comms.websocket.WebsocketServerComms:
-    port: 8080
+#- comms.websocket.WebsocketServerComms:
+#    port: 8080

@@ -27,17 +27,17 @@
     mri: I08-ZP-Z
     prefix: BL08I-MO-STEP-10:M6
     motorPrefix: BL08I-EA-ZP-01:Z
-    scannable: ZPZ
+    scannable: ZonePlateZ
 
 - includes.pmac.compoundmotor_collection:
     mri: I08-T1-X
     prefix: BL08I-EA-TABLE-01:X
-    scannable: T1X
+    scannable: SampleX
 
 - includes.pmac.compoundmotor_collection:
     mri: I08-T1-Y
     prefix: BL08I-EA-TABLE-01:Y
-    scannable: T1Y
+    scannable: SampleY
 
 - parts.ca.CADoublePart:
     name: positionT1XC

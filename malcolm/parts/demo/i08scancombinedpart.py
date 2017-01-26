@@ -7,7 +7,7 @@ class I08ScanCombinedPart(RunnableChildPart):
     def _get_range(self, params, name="X"):
         # Make some very specific assumptions about the generator
 	generators = params.generator.generators
-        g = [g for g in generators if g.name[0] == "T1%s" % name]
+        g = [g for g in generators if g.name[0] == "Sample%s" % name]
         if g:
             return g[0].start[0], g[0].stop[0]
         else:
