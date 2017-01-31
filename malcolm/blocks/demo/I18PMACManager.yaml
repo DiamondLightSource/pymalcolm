@@ -15,6 +15,11 @@
     prefix: BL18I-MO-TABLE-01:CSX
     scannable: sc_MicroFocusSampleX
 
+- includes.pmac.compoundmotor_collection:
+    mri: I18-T1-FROT
+    prefix: BL18I-MO-TABLE-01:CSFROT
+    scannable: sc_sample_thetafine
+
 # - includes.pmac.rawmotor_collection:
 #     mri: I18-T3-Y
 #     prefix: BL18I-MO-STEP-06:GB:M8
