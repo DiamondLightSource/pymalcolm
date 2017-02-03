@@ -43,7 +43,10 @@ class TestRunnableController(unittest.TestCase):
         self.p = Process('process1', SyncFactory('threading'))
 
         # Make a ticker block to act as our child
-        params = Ticker.MethodMeta.prepare_input_map(mri="childBlock")
+        params = Ticker.MethodMeta.prepare_input_map(
+            mri="childBlock",
+            configDir="/tmp"
+        )
         self.b_child = Ticker(self.p, params)[-1]
 
         # Make an empty part for our parent
@@ -57,7 +60,7 @@ class TestRunnableController(unittest.TestCase):
 
         # create a root block for the RunnableController block to reside in
         params = RunnableController.MethodMeta.prepare_input_map(
-            mri='mainBlock')
+            mri='mainBlock', configDir="/tmp")
         self.c = RunnableController(self.p, [part1, part2], params)
         self.b = self.c.block
         self.sm = self.c.stateMachine
@@ -79,16 +82,12 @@ class TestRunnableController(unittest.TestCase):
         # set_attributes via _set_block_children in __init__
         self.assertEqual(self.b['totalSteps'].meta.typeid,
                          'malcolm:core/NumberMeta:1.0')
-        self.assertEqual(self.b['layout'].meta.typeid,
-                         'malcolm:core/TableMeta:1.0')
         self.assertEqual(self.b['completedSteps'].meta.typeid,
                          'malcolm:core/NumberMeta:1.0')
         self.assertEqual(self.b['configuredSteps'].meta.typeid,
                          'malcolm:core/NumberMeta:1.0')
         self.assertEqual(self.b['axesToMove'].meta.typeid,
                          'malcolm:core/StringArrayMeta:1.0')
-        self.assertEqual(self.b['layoutName'].meta.typeid,
-                         'malcolm:core/StringMeta:1.0')
 
         # the following hooks should be created via _find_hooks in __init__
         self.assertEqual(self.c.hook_names, {

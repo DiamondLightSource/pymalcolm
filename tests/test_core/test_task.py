@@ -292,7 +292,7 @@ class TestTask(unittest.TestCase):
         self.assertRaises(UnexpectedError, t.define_spawn_function, None)
         t.wait()
         end = time.time()
-        self.assertAlmostEqual(end-start, 0.05, delta=0.005)
+        self.assertAlmostEqual(end-start, 0.05, delta=0.03)
         t.define_spawn_function(None)
         del proc.sync_factory
 

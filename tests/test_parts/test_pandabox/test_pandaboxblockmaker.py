@@ -47,6 +47,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         group = o.parts["inputs"]
         self.assertEqual(group.attr_name, "inputs")
         self.assertEqual(group.process, self.process)
+        self.assertEqual(group.meta.tags, ("widget:group", "config"))
 
         inpa = o.parts["INPA"]
         self.assertEqual(inpa.block_name, "ADDER1")
@@ -54,7 +55,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(inpa.writeable, True)
         self.assertIsInstance(inpa.meta, ChoiceMeta)
         self.assertEqual(inpa.meta.tags, (
-            "group:inputs", "inport:int32:ZERO", "widget:combo"))
+            "group:inputs", "inport:int32:ZERO", "widget:combo", "config"))
         self.assertEqual(inpa.meta.choices, ("A.OUT", "B.OUT"))
 
         val = o.parts["INPA.VAL"]
@@ -74,7 +75,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(divide.writeable, True)
         self.assertIsInstance(divide.meta, ChoiceMeta)
         self.assertEqual(divide.meta.tags, (
-            "group:parameters", "widget:combo"))
+            "group:parameters", "widget:combo", "config"))
         self.assertEqual(divide.meta.choices, ("/1", "/2", "/4"))
 
         out = o.parts["OUT"]
@@ -93,7 +94,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(units.writeable, True)
         self.assertIsInstance(units.meta, StringMeta)
         self.assertEqual(units.meta.tags, (
-            "group:outputs", "widget:textinput"))
+            "group:outputs", "widget:textinput", "config"))
 
         scale = o.parts["OUT.SCALE"]
         self.assertEqual(scale.block_name, "ADDER1")
@@ -102,7 +103,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(scale.meta, NumberMeta)
         self.assertEqual(scale.meta.dtype, "float64")
         self.assertEqual(scale.meta.tags, (
-            "group:outputs", "widget:textinput"))
+            "group:outputs", "widget:textinput", "config"))
 
         offset = o.parts["OUT.OFFSET"]
         self.assertEqual(offset.block_name, "ADDER1")
@@ -111,7 +112,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(offset.meta, NumberMeta)
         self.assertEqual(offset.meta.dtype, "float64")
         self.assertEqual(offset.meta.tags, (
-            "group:outputs", "widget:textinput"))
+            "group:outputs", "widget:textinput", "config"))
 
         capture = o.parts["OUT.CAPTURE"]
         self.assertEqual(capture.block_name, "ADDER1")
@@ -119,7 +120,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(capture.writeable, True)
         self.assertIsInstance(capture.meta, ChoiceMeta)
         self.assertEqual(capture.meta.tags, (
-            "group:outputs", "widget:combo"))
+            "group:outputs", "widget:combo", "config"))
         self.assertEqual(capture.meta.choices, ("No", "Capture"))
 
         data_delay = o.parts["OUT.DATA_DELAY"]
@@ -129,7 +130,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(data_delay.meta, NumberMeta)
         self.assertEqual(data_delay.meta.dtype, "uint8")
         self.assertEqual(data_delay.meta.tags, (
-            "group:outputs", "widget:textinput"))
+            "group:outputs", "widget:textinput", "config"))
 
     def test_block_fields_pulse(self):
         fields = OrderedDict()
@@ -160,7 +161,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(delay.meta, NumberMeta)
         self.assertEqual(delay.meta.dtype, "float64")
         self.assertEqual(delay.meta.tags, (
-            "group:parameters", "widget:textupdate"))
+            "group:parameters", "widget:textupdate", "config"))
 
         units = o.parts["DELAY.UNITS"]
         self.assertEqual(units.block_name, "PULSE2")
@@ -168,7 +169,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(units.writeable, True)
         self.assertIsInstance(units.meta, ChoiceMeta)
         self.assertEqual(units.meta.tags, (
-            "group:parameters", "widget:combo"))
+            "group:parameters", "widget:combo", "config"))
         self.assertEqual(units.meta.choices, ("s", "ms", "us"))
 
         inp = o.parts["INP"]
@@ -177,7 +178,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertEqual(inp.writeable, True)
         self.assertIsInstance(inp.meta, ChoiceMeta)
         self.assertEqual(inp.meta.tags, (
-            "group:inputs", "inport:bool:ZERO", "widget:combo"))
+            "group:inputs", "inport:bool:ZERO", "widget:combo", "config"))
         self.assertEqual(inp.meta.choices, ("X.OUT", "Y.OUT"))
 
         val = o.parts["INP.VAL"]
@@ -194,8 +195,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(delay.meta, NumberMeta)
         self.assertEqual(delay.meta.dtype, "uint8")
         self.assertEqual(delay.meta.tags, (
-            "group:inputs", "widget:textinput"))
-
+            "group:inputs", "widget:textinput", "config"))
 
         out = o.parts["OUT"]
         self.assertEqual(out.block_name, "PULSE2")

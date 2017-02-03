@@ -80,7 +80,7 @@ class TestChildPart(unittest.TestCase):
         # create a root block for the child blocks to reside in
         parts = [self.p1, self.p2, self.p3]
         params = RunnableController.MethodMeta.prepare_input_map(
-            mri='mainBlock')
+            mri='mainBlock', configDir="/tmp")
         self.c = RunnableController(self.p, parts, params)
         self.b = self.c.block
 

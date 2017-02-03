@@ -109,15 +109,13 @@ class DefaultStateMachine(StateMachine):
 
 class ManagerStateMachine(DefaultStateMachine):
 
-    EDITING = "Editing"
     EDITABLE = "Editable"
     SAVING = "Saving"
     REVERTING = "Reverting"
 
     def create_states(self):
         super(ManagerStateMachine, self).create_states()
-        self.set_allowed(self.AFTER_RESETTING, self.EDITING)
-        self.set_allowed(self.EDITING, self.EDITABLE)
+        self.set_allowed(self.AFTER_RESETTING, self.EDITABLE)
         self.set_allowed(self.EDITABLE, self.SAVING)
         self.set_allowed(self.EDITABLE, self.REVERTING)
         self.set_allowed(self.SAVING, self.AFTER_RESETTING)

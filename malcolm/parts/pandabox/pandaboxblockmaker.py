@@ -10,7 +10,7 @@ from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
 from malcolm.parts.ADCore.hdfwriterpart import attribute_dataset_types
 from malcolm.parts.builtin.stringpart import StringPart
 from malcolm.parts.builtin.choicepart import ChoicePart
-from malcolm.tags import widget, group, inport, outport
+from malcolm.tags import widget, group, inport, outport, config
 
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
@@ -184,7 +184,7 @@ class PandABoxBlockMaker(Loggable):
             params = StringPart.MethodMeta.prepare_input_map(
                 name=attr_name, widget="textinput",
                 description="Name of the captured dataset in HDF file",
-                writeable=True)
+                writeable=True, config=True)
             part = StringPart(self.process, params)
             self._add_part(part_name, part)
             # Make a choice part to hold the type of the dataset
@@ -223,9 +223,9 @@ class PandABoxBlockMaker(Loggable):
         self._make_field_part(field_name + ".DELAY", meta, writeable=True)
 
     def _make_table(self, field_name, field_data):
-        widget_tag = widget("table")
         group_tag = self._make_group("parameters")
-        meta = TableMeta(field_data.description, [widget_tag, group_tag])
+        tags = [widget("table"), group_tag, config()]
+        meta = TableMeta(field_data.description, tags)
         part = PandABoxTablePart(self.process, self.control, meta,
                                  self.block_name, field_name, writeable=True)
         self._add_part(field_name, part)
@@ -236,6 +236,8 @@ class PandABoxBlockMaker(Loggable):
         self.parts[field_name] = part
 
     def _make_field_part(self, field_name, meta, writeable, initial_value=None):
+        if writeable:
+            meta.set_tags(meta.tags + (config(),))
         part = PandABoxFieldPart(self.process, self.control, meta,
                                  self.block_name, field_name, writeable,
                                  initial_value)
