@@ -1,5 +1,6 @@
 import os
 from xml.etree import cElementTree as ET
+from scanpointgenerator import FixedDurationMutator
 
 from malcolm.compat import et_to_string
 from malcolm.core import method_takes, REQUIRED, Info
@@ -127,6 +128,26 @@ class HDFWriterPart(ChildPart):
         task.wait_all(futures)
         # Reset numCapture back to 0
         task.put(self.child["numCapture"], 0)
+
+        # We want the HDF writer to flush this often:
+        flush_time = 1  # seconds
+        # (In particular this means that HDF files can be read cleanly by
+        # SciSoft at the start of a scan.)
+        # To achieve this we'll tell the HDF writer how many frames it should
+        # write between each flush. Thus we need to know the exposure time. Get
+        # it from the last FDM. (There's probably only one, and we don't care
+        # about other cases.)
+        # Choose a default exposure time in case there is no FDM.
+        exposure_time = 0.1  # seconds
+        for mutator in params.generator.mutators:
+            if isinstance(mutator, FixedDurationMutator):
+                exposure_time = mutator.duration
+        # Now do some maths and set the relevant PV. (Xspress3 does not seem to
+        # support flushing more often than once per 2 frames.)
+        n_frames_between_flushes = max(2, round(flush_time/exposure_time))
+        task.put(self.child["flushDataPerNFrames"], n_frames_between_flushes)
+        task.put(self.child["flushAttrPerNFrames"], n_frames_between_flushes)
+
         # Start the plugin
         self.start_future = task.post_async(self.child["start"])
         # Start a future waiting for the first array

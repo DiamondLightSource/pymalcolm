@@ -78,7 +78,9 @@ class TestHDFWriterPart(unittest.TestCase):
         self.assertEquals(infos[4].uniqueid, "")
         self.assertEqual(task.put.call_args_list, [
             call(self.child["positionMode"], True),
-            call(self.child["numCapture"], 0)])
+            call(self.child["numCapture"], 0),
+            call('flushDataPerNFrames', 10.0),
+            call('flushAttrPerNFrames', 10.0)])
         self.assertEqual(task.put_many_async.call_count, 2)
         self.assertEqual(task.put_many_async.call_args_list[0],
                          call(self.child, dict(
