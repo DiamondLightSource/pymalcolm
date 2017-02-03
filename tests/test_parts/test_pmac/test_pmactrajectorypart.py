@@ -34,7 +34,8 @@ class TestMotorPVT(unittest.TestCase):
         v1 = 0.1
         v2 = -0.1
         distance = 0.0
-        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, 0.0)
         self.assertEqual(time_array, [0.0, 0.05, 0.1])
         self.assertEqual(velocity_array, [v1, 0, v2])
 
@@ -44,7 +45,8 @@ class TestMotorPVT(unittest.TestCase):
         v1 = -0.1
         v2 = 0.1
         distance = 0.0
-        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, 0.0)
         self.assertEqual(time_array, [0.0, 0.05, 0.1])
         self.assertEqual(velocity_array, [v1, 0, v2])
 
@@ -77,7 +79,8 @@ class TestMotorPVT(unittest.TestCase):
         v1 = 0
         v2 = 0
         distance = 0.5
-        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, 0.0)
         self.assertEqual(time_array, [0.0, 0.5, 1.0])
         self.assertEqual(velocity_array, [v1, 1, 0])
 
@@ -88,7 +91,8 @@ class TestMotorPVT(unittest.TestCase):
         v2 = 0
         distance = 0.125
         min_time = 0.5004166666666666
-        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance, min_time)
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
         self.assertEqual(time_array, [0.0, 0.24000000000000069, 0.26041666666666596, 0.50041666666666662])
         self.assertEqual(velocity_array, [v1, 0.48000000000000137, 0.48000000000000137, v2])
 
@@ -99,7 +103,8 @@ class TestMotorPVT(unittest.TestCase):
         v2 = 0
         distance = -0.125
         min_time = 0.5004166666666666
-        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance, min_time)
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
         self.assertEqual(time_array, [0.0, 0.24000000000000069, 0.26041666666666596, 0.50041666666666662])
         self.assertEqual(velocity_array, [v1, -0.48000000000000137, -0.48000000000000137, v2])
 
@@ -109,7 +114,8 @@ class TestMotorPVT(unittest.TestCase):
         v1 = 0
         v2 = 0
         distance = 1.0
-        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, 0.0)
         self.assertEqual(time_array, [0.0, 0.5, 1.0, 1.5])
         self.assertEqual(velocity_array, [v1, 1, 1, 0])
 
@@ -143,7 +149,8 @@ class TestMotorPVT(unittest.TestCase):
         v1 = 0
         v2 = 0
         distance = -1.0
-        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, 0.0)
         self.assertEqual(time_array, [0.0, 0.5, 1.0, 1.5])
         self.assertEqual(velocity_array, [v1, -1, -1, 0])
 
@@ -153,7 +160,8 @@ class TestMotorPVT(unittest.TestCase):
         v1 = 0.5
         v2 = 0.5
         distance = 0.375
-        time_array, velocity_array = self.o.make_velocity_profile(v1, v2, distance)
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, 0.0)
         self.assertEqual(time_array, [0.0, 0.25, 0.5])
         self.assertEqual(velocity_array, [v1, 1, v2])
 
@@ -210,7 +218,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = 0.5
         distance = -0.5
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance)
+            v1, v2, distance, 0.0)
         self.assertEqual(time_array, [0.0, 0.25, 0.75, 0.875, 1.375, 1.625])
         self.assertEqual(velocity_array, [v1, 0, -1, -1, 0, v2])
 
@@ -222,7 +230,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = -0.5
         distance = 0.5
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance)
+            v1, v2, distance, 0.0)
         self.assertEqual(time_array, [0.0, 0.25, 0.75, 0.875, 1.375, 1.625])
         self.assertEqual(velocity_array, [v1, 0, 1, 1, 0, v2])
 

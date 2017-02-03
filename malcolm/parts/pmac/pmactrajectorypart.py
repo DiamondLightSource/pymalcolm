@@ -107,7 +107,7 @@ class MotorInfo(Info):
         tm = dm / vm
         return t1, tm, t2, vm
 
-    def _make_hat(self, v1, v2, acceleration, distance, min_time=MIN_TIME):
+    def _make_hat(self, v1, v2, acceleration, distance, min_time):
         """Make a hat that looks like this:
 
             ______ vm
@@ -175,7 +175,7 @@ class MotorInfo(Info):
         yield tm, vm
         yield t2, v2
 
-    def make_velocity_profile(self, v1, v2, distance, min_time=MIN_TIME):
+    def make_velocity_profile(self, v1, v2, distance, min_time):
         """Calculate PVT points that will perform the move within motor params
 
         Args:
@@ -215,10 +215,10 @@ class MotorInfo(Info):
                 it = self._make_padded_ramp(v1, v2, pad_velocity, min_time)
         elif remaining_distance < 0:
             # Make a hat pointing down
-            it = self._make_hat(v1, v2, -self.acceleration, distance)
+            it = self._make_hat(v1, v2, -self.acceleration, distance, min_time)
         else:
             # Make a hat pointing up
-            it = self._make_hat(v1, v2, self.acceleration, distance)
+            it = self._make_hat(v1, v2, self.acceleration, distance, min_time)
         # Create the time and velocity arrays
         time_array = [0.0]
         velocity_array = [v1]
