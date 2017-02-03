@@ -58,6 +58,7 @@ class RunnableChildPart(ChildPart):
             update_completed_steps (func): The function we should call when
                 completedSteps should be updated
         """
+        task.unsubscribe_all()
         task.subscribe(
             self.child["completedSteps"], update_completed_steps, self)
         match_future = self._wait_for_postrun(task)
