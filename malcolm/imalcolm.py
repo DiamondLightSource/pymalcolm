@@ -33,28 +33,6 @@ def make_process():
     from malcolm.core import SyncFactory, Process
     from malcolm.yamlutil import make_include_creator
 
-    try:
-        environ['DISPLAY']
-        # If this environment variable doesn't exist then there is probably no
-        # X server for us to talk to.
-    except KeyError:
-        pass
-    else:
-        from PyQt4.Qt import QApplication
-
-        # Start qt
-        def start_qt():
-            global app
-            app = QApplication(sys.argv)
-            app.setQuitOnLastWindowClosed(False)
-            from malcolm.gui.guiopener import GuiOpener
-            global opener
-            opener = GuiOpener()
-            app.exec_()
-
-        qt_thread = threading.Thread(target=start_qt)
-        qt_thread.start()
-
     sf = SyncFactory("Sync")
 
     if args.yaml:
@@ -84,6 +62,28 @@ def make_process():
     def gui(block):
         global opener
         opener.open_gui(block, proc)
+
+    try:
+        environ['DISPLAY']
+        # If this environment variable doesn't exist then there is probably no
+        # X server for us to talk to.
+    except KeyError:
+        pass
+    else:
+        from PyQt4.Qt import QApplication
+
+        # Start qt
+        def start_qt():
+            global app
+            app = QApplication(sys.argv)
+            app.setQuitOnLastWindowClosed(False)
+            from malcolm.gui.guiopener import GuiOpener
+            global opener
+            opener = GuiOpener()
+            app.exec_()
+
+        qt_thread = threading.Thread(target=start_qt)
+        qt_thread.start()
 
     return proc, gui
 
