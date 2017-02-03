@@ -94,7 +94,7 @@ class ChildPart(Part):
         for k in self.child:
             attr = self.child[k]
             if isinstance(attr, Attribute) and "config" in attr.meta.tags:
-                part_structure[k] = serialize_object(attr)
+                part_structure[k] = serialize_object(attr.value)
         return part_structure
 
     def _get_flowgraph_ports(self, direction="out"):

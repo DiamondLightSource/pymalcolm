@@ -180,14 +180,17 @@ class ManagerController(DefaultController):
         filename = os.path.join(self.params.configDir, layout_name + ".json")
         text = json_encode(structure, indent=2)
         open(filename, "w").write(text)
+        self._set_layout_names(layout_name)
         self.layout_name.set_value(layout_name)
-        self._set_layout_names()
         self.load_structure = structure
 
-    def _set_layout_names(self):
+    def _set_layout_names(self, extra_name=None):
         names = []
+        if extra_name:
+            names.append(extra_name)
         for f in os.listdir(self.params.configDir):
-            if os.path.isfile(os.path.join(self.params.configDir, f)):
+            if os.path.isfile(os.path.join(self.params.configDir, f)) and \
+                    f.endswith(".json"):
                 names.append(f.split(".json")[0])
         self.layout_name.meta.set_choices(names)
 
