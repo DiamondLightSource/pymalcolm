@@ -13,16 +13,30 @@ from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo, \
 
 SUFFIXES = "NXY3456789"
 
+attribute_dataset_types = ["detector", "monitor", "position"]
+
 
 # Produced by plugins in part_info
-class DatasetSourceInfo(Info):
-    def __init__(self, name, type, rank, attr=None):
+class NDAttributeDatasetInfo(Info):
+    def __init__(self, name, type, attr, rank):
         self.name = name
-        assert type in dataset_types, \
+        assert type in attribute_dataset_types, \
             "Dataset type %s not in %s" % (type, dataset_types)
         self.type = type
-        self.rank = rank
         self.attr = attr
+        self.rank = rank
+
+
+class CalculatedNDAttributeDatasetInfo(Info):
+    def __init__(self, name, attr):
+        self.name = name
+        self.attr = attr
+
+
+class NDArrayDatasetInfo(Info):
+    def __init__(self, name, rank):
+        self.name = name
+        self.rank = rank
 
 
 class HDFWriterPart(ChildPart):
@@ -34,61 +48,65 @@ class HDFWriterPart(ChildPart):
     array_future = None
     done_when_reaches = 0
 
-    def _get_dataset_infos(self, part_info, primary=True):
-        filtered_datasets = []
-        for dataset_info in DatasetSourceInfo.filter_values(part_info):
-            if primary == (dataset_info.type == "primary"):
-                filtered_datasets.append(dataset_info)
-        if primary:
-            assert len(filtered_datasets) in (0, 1), \
-                "More than one primary datasets defined %s" % filtered_datasets
-        return filtered_datasets
-
     def _create_dataset_infos(self, part_info, generator, filename):
         # Update the dataset table
         uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
-        ret = []
+        generator_rank = len(generator.index_dims)
 
         # Get the detector name from the primary source
-        primary_infos = self._get_dataset_infos(part_info, primary=True)
+        ndarray_infos = NDArrayDatasetInfo.filter_values(part_info)
+        assert len(ndarray_infos) in (0, 1), \
+            "More than one NDArrayDatasetInfo defined %s" % ndarray_infos
 
         # Add the primary datasource
-        generator_rank = len(generator.index_dims)
-        if primary_infos:
-            dataset_info = primary_infos[0]
-            ret.append(DatasetProducedInfo(
-                name="%s.data" % dataset_info.name, filename=filename,
-                type=dataset_info.type, rank=dataset_info.rank + generator_rank,
+        if ndarray_infos:
+            ndarray_info = ndarray_infos[0]
+            yield DatasetProducedInfo(
+                name="%s.data" % ndarray_info.name, filename=filename,
+                type="primary", rank=ndarray_info.rank + generator_rank,
                 path="/entry/detector/detector",
-                uniqueid=uniqueid))
+                uniqueid=uniqueid)
+
+            # Add any secondary datasources
+            for calculated_info in \
+                    CalculatedNDAttributeDatasetInfo.filter_values(part_info):
+                yield DatasetProducedInfo(
+                    name="%s.%s" % (ndarray_info.name, calculated_info.name),
+                    filename=filename, type="secondary",
+                    rank=ndarray_info.rank + generator_rank,
+                    path="/entry/%s/%s" % (
+                        calculated_info.name, calculated_info.name),
+                    uniqueid=uniqueid)
 
         # Add all the other datasources
-        for dataset_info in self._get_dataset_infos(part_info, primary=False):
-            path = "/entry/%s/%s" % (dataset_info.name, dataset_info.name)
-            if dataset_info.type == "secondary":
-                # something like xspress3.sum
-                assert primary_infos, \
-                    "Needed a primary dataset for secondary"
-                name = "%s.%s" % (primary_infos[0].name, dataset_info.name)
-                rank = primary_infos[0].rank + generator_rank
-            elif dataset_info.type == "monitor":
+        for dataset_info in NDAttributeDatasetInfo.filter_values(part_info):
+            if dataset_info.type == "detector":
+                # Something like I0
                 name = "%s.data" % dataset_info.name
-                rank = dataset_info.rank + generator_rank
-            else:
-                # something like x.value or izero.value
+                type = "primary"
+            elif dataset_info.type == "monitor":
+                # Something like Iref
+                name = "%s.data" % dataset_info.name
+                type = "monitor"
+            elif dataset_info.type == "position":
+                # Something like x
                 name = "%s.value" % dataset_info.name
-                rank = dataset_info.rank + generator_rank
-            ret.append(DatasetProducedInfo(
-                name=name, filename=filename, type=dataset_info.type,
-                rank=rank, path=path, uniqueid=uniqueid))
+                type = "position_value"
+            else:
+                raise AttributeError("Bad dataset type %r, should be in %s" % (
+                    dataset_info.type, attribute_dataset_types))
+            yield DatasetProducedInfo(
+                name=name, filename=filename, type=type,
+                rank=dataset_info.rank + generator_rank,
+                path= "/entry/%s/%s" % (dataset_info.name, dataset_info.name),
+                uniqueid=uniqueid)
 
         # Add any setpoint dimensions
         for dim in generator.axes:
-            ret.append(DatasetProducedInfo(
+            yield DatasetProducedInfo(
                 name="%s.value_set" % dim, filename=filename,
                 type="position_set", rank=1,
-                path="/entry/detector/%s_set" % dim, uniqueid=""))
-        return ret
+                path="/entry/detector/%s_set" % dim, uniqueid="")
 
     @RunnableController.Reset
     def reset(self, task):
@@ -154,8 +172,8 @@ class HDFWriterPart(ChildPart):
         self.array_future = task.when_matches_async(
             self.child["arrayCounter"], 1)
         # Return the dataset information
-        dataset_infos = self._create_dataset_infos(
-            part_info, params.generator, filename)
+        dataset_infos = list(self._create_dataset_infos(
+            part_info, params.generator, filename))
         return dataset_infos
 
     @RunnableController.PostRunReady
@@ -214,18 +232,18 @@ class HDFWriterPart(ChildPart):
                 ndims += len(g.index_dims)
         raise ValueError("Can't find generator for %s" % dim)
 
-    def _make_nxdata(self, dataset_info, entry_el, generator, link=False):
+    def _make_nxdata(self, name, rank, entry_el, generator, link=False):
         # Make a dataset for the data
-        data_el = ET.SubElement(entry_el, "group", name=dataset_info.name)
+        data_el = ET.SubElement(entry_el, "group", name=name)
         ET.SubElement(data_el, "attribute", name="signal", source="constant",
-                      value=dataset_info.name, type="string")
+                      value=name, type="string")
         pad_dims = []
         for n in generator.index_names:
             if n in generator.position_units:
                 pad_dims.append("%s_set" % n)
             else:
                 pad_dims.append(".")
-        pad_dims += ["."] * dataset_info.rank
+        pad_dims += ["."] * rank
         ET.SubElement(data_el, "attribute", name="axes", source="constant",
                       value=",".join(pad_dims), type="string")
         ET.SubElement(data_el, "attribute", name="NX_class", source="constant",
@@ -253,35 +271,46 @@ class HDFWriterPart(ChildPart):
         return data_el
 
     def _make_layout_xml(self, generator, part_info):
-        # Check that there is only one primary source of detector data
-        primary_infos = self._get_dataset_infos(part_info, primary=True)
-        if not primary_infos:
-            # Still need to put the data in the file, so manufacture something
-            primary_rank = 1
-        else:
-            primary_rank = primary_infos[0].rank
-        # Always put it in /entry/detector/detector
-        primary_info = DatasetSourceInfo(
-            name="detector", type="primary", rank=primary_rank)
+        # Make a root element with an NXEntry
         root_el = ET.Element("hdf5_layout")
         entry_el = ET.SubElement(root_el, "group", name="entry")
         ET.SubElement(entry_el, "attribute", name="NX_class",
                       source="constant", value="NXentry", type="string")
-        # Make an nxdata element with the detector data in it
-        data_el = self._make_nxdata(primary_info, entry_el, generator)
-        det_el = ET.SubElement(data_el, "dataset", name=primary_info.name,
+
+        # Check that there is only one primary source of detector data
+        ndarray_infos = NDArrayDatasetInfo.filter_values(part_info)
+        if not ndarray_infos:
+            # Still need to put the data in the file, so manufacture something
+            primary_rank = 1
+        else:
+            primary_rank = ndarray_infos[0].rank
+
+        # Make an NXData element with the detector data in it in
+        # /entry/detector/detector
+        data_el = self._make_nxdata(
+            "detector", primary_rank, entry_el, generator)
+        det_el = ET.SubElement(data_el, "dataset", name="detector",
                                source="detector", det_default="true")
         ET.SubElement(det_el, "attribute", name="NX_class",
                       source="constant", value="SDS", type="string")
-        # Now add some additional sources of data
-        for dataset_info in self._get_dataset_infos(part_info, primary=False):
+
+        # Now add any calculated sources of data
+        for dataset_info in \
+                CalculatedNDAttributeDatasetInfo.filter_values(part_info):
             # if we are a secondary source, use the same rank as the det
-            if dataset_info.type == "secondary":
-                dataset_info.rank = primary_rank
             attr_el = self._make_nxdata(
-                dataset_info, entry_el, generator, link=True)
+                dataset_info.name, primary_rank, entry_el, generator, link=True)
             ET.SubElement(attr_el, "dataset", name=dataset_info.name,
                           source="ndattribute", ndattribute=dataset_info.attr)
+
+        # And then any other attribute sources of data
+        for dataset_info in NDAttributeDatasetInfo.filter_values(part_info):
+            # if we are a secondary source, use the same rank as the det
+            attr_el = self._make_nxdata(dataset_info.name, dataset_info.rank,
+                                        entry_el, generator, link=True)
+            ET.SubElement(attr_el, "dataset", name=dataset_info.name,
+                          source="ndattribute", ndattribute=dataset_info.attr)
+
         # Add a group for attributes
         NDAttributes_el = ET.SubElement(entry_el, "group", name="NDAttributes",
                                         ndattr_default="true")

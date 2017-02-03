@@ -7,7 +7,9 @@ from malcolm.parts.pandabox.pandaboxgrouppart import PandABoxGroupPart
 from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 from malcolm.parts.pandabox.pandaboxactionpart import PandABoxActionPart
 from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
+from malcolm.parts.ADCore.hdfwriterpart import attribute_dataset_types
 from malcolm.parts.builtin.stringpart import StringPart
+from malcolm.parts.builtin.choicepart import ChoicePart
 from malcolm.tags import widget, group, inport, outport
 
 
@@ -177,14 +179,28 @@ class PandABoxBlockMaker(Loggable):
         self._make_field_part(field_name + ".DATA_DELAY", meta, writeable=True)
         if self.area_detector:
             # Make a string part to hold the name of the dataset
-            field_name += ".DATASET_NAME"
-            label, attr_name = make_label_attr_name(field_name)
+            part_name = field_name + ".DATASET_NAME"
+            label, attr_name = make_label_attr_name(part_name)
             params = StringPart.MethodMeta.prepare_input_map(
                 name=attr_name, widget="textinput",
                 description="Name of the captured dataset in HDF file",
                 writeable=True)
             part = StringPart(self.process, params)
-            self._add_part(field_name, part)
+            self._add_part(part_name, part)
+            # Make a choice part to hold the type of the dataset
+            part_name = field_name + ".DATASET_TYPE"
+            label, attr_name = make_label_attr_name(part_name)
+            if "INENC" in self.block_name:
+                initial = "position"
+            else:
+                initial = "monitor"
+            params = ChoicePart.MethodMeta.prepare_input_map(
+                name=attr_name, widget="textinput",
+                description="Type of the captured dataset in HDF file",
+                writeable=True, choices=attribute_dataset_types,
+                initialValue=initial)
+            part = StringPart(self.process, params)
+            self._add_part(part_name, part)
 
     def _make_mux(self, field_name, field_data, typ):
         group_tag = self._make_group("inputs")

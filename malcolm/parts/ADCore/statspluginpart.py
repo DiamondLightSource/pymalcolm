@@ -1,14 +1,13 @@
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.ADCore.hdfwriterpart import DatasetSourceInfo
+from malcolm.parts.ADCore.hdfwriterpart import CalculatedNDAttributeDatasetInfo
 
 
 class StatsPluginPart(ChildPart):
 
     @RunnableController.ReportStatus
     def report_info(self, _):
-        return [DatasetSourceInfo(
-            name="sum", type="secondary", rank=0, attr="StatsTotal")]
+        return [CalculatedNDAttributeDatasetInfo(name="sum", attr="StatsTotal")]
 
     @RunnableController.Configure
     def configure(self, task, completed_steps, steps_to_do, part_info):
