@@ -1,3 +1,5 @@
+from scanpointgenerator import LineGenerator, SpiralGenerator
+
 from malcolm.core import method_takes
 from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
@@ -6,13 +8,18 @@ from malcolm.controllers.runnablecontroller import RunnableController
 class I08ScanCombinedPart(RunnableChildPart):
     def _get_range(self, params, name="X"):
         # Make some very specific assumptions about the generator
-	generators = params.generator.generators
-        g = [g for g in generators if g.name[0] == "Sample%s" % name]
-        if g:
-            return g[0].start[0], g[0].stop[0]
-        else:
-	    current = self.child["positionT1%sC" % name].value
-            return current, current
+        search_name = "Sample%s" % name
+        for g in params.generator.generators:
+            if isinstance(g, LineGenerator):
+                if search_name in g.name:
+                    i = g.name.index(search_name)
+                    return g.start[i], g.stop[i]
+            elif isinstance(g, SpiralGenerator):
+                if search_name in g.names:
+                    i = g.names.index(search_name)
+                    return g.centre[i] - g.radius, g.centre[i] + g.radius
+        current = self.child["positionT1%sC" % name].value
+        return current, current
 
     # MethodMeta will be filled in by _update_configure_args
     @RunnableController.Configure
