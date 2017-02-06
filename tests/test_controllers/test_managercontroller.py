@@ -128,8 +128,8 @@ class TestManagerController(unittest.TestCase):
           },
           "part2": {}
         }""" % (x, y, visible)).splitlines()]
-        actual = [x.strip()
-                  for x in open("/tmp/testSaveLayout.json").readlines()]
+        actual = [x.strip() for x in open(
+            "/tmp/mainBlock/testSaveLayout.json").readlines()]
         self.assertEqual(actual, expected)
 
     def test_save(self):

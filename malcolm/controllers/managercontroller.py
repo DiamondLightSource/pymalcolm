@@ -177,8 +177,8 @@ class ManagerController(DefaultController):
         if not layout_name:
             layout_name = self.layout_name.value
         structure = self._save_to_structure()
-        filename = os.path.join(self.params.configDir, layout_name + ".json")
         text = json_encode(structure, indent=2)
+        filename = self._validated_config_filename(layout_name)
         open(filename, "w").write(text)
         self._set_layout_names(layout_name)
         self.layout_name.set_value(layout_name)
@@ -202,10 +202,32 @@ class ManagerController(DefaultController):
     def do_revert(self):
         self._load_from_structure(self.load_structure)
 
+    def _validated_config_filename(self, name):
+        """Make config dir and return full file path and extension
+
+        Args:
+            name (str): Filename without dir or extension
+
+        Returns:
+            str: Full path including extensio
+        """
+        dir_name = self._make_config_dir()
+        filename = os.path.join(dir_name, name.split(".json")[0] + ".json")
+        return filename
+
+    def _make_config_dir(self):
+        dir_name = os.path.join(self.params.configDir, self.mri)
+        try:
+            os.mkdir(dir_name)
+        except OSError:
+            # OK if already exists, if not then it will fail on write anyway
+            pass
+        return dir_name
+
     def load_layout(self, value):
         # TODO: race condition if we get 2 loads at once...
         # Do we need a Loading state?
-        filename = os.path.join(self.params.configDir, value + ".json")
+        filename = self._validated_config_filename(value)
         text = open(filename, "r").read()
         structure = json_decode(text)
         self._load_from_structure(structure)
