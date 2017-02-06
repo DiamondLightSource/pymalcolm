@@ -109,22 +109,11 @@ class TestManagerController(unittest.TestCase):
     def check_expected_save(self, x=0.0, y=0.0, visible="false"):
         expected = [x.strip() for x in ("""{
           "layout": {
-            "typeid": "malcolm:core/Table:1.0",
-            "name": [
-              "part2"
-            ],
-            "mri": [
-              "childBlock"
-            ],
-            "x": [
-              %s
-            ],
-            "y": [
-              %s
-            ],
-            "visible": [
-              %s
-            ]
+            "part2": {
+              "x": %s,
+              "y": %s,
+              "visible": %s
+            }
           },
           "part2": {}
         }""" % (x, y, visible)).splitlines()]
@@ -140,7 +129,7 @@ class TestManagerController(unittest.TestCase):
         self.check_expected_save()
         self.checkState(self.sm.AFTER_RESETTING, child=False)
         self.assertEqual(self.c.layout_name.value, 'testSaveLayout')
-        os.remove("/tmp/testSaveLayout.json")
+        os.remove("/tmp/mainBlock/testSaveLayout.json")
         self.c.edit()
         params = {'layoutName': None}
         params = ManagerController.save.MethodMeta.prepare_input_map(**params)

@@ -235,14 +235,23 @@ class ManagerController(DefaultController):
 
     def _save_to_structure(self):
         structure = OrderedDict()
-        structure["layout"] = self.layout.value.to_dict()
+        structure["layout"] = OrderedDict()
+        for i, name in enumerate(self.layout.value.name):
+            layout_structure = OrderedDict()
+            layout_structure["x"] = self.layout.value.x[i]
+            layout_structure["y"] = self.layout.value.y[i]
+            layout_structure["visible"] = self.layout.value.visible[i]
+            structure["layout"][name] = layout_structure
         for part_name, part_structure in sorted(self.run_hook(
                 self.Save, self.create_part_tasks()).items()):
             structure[part_name] = part_structure
         return structure
 
     def _load_from_structure(self, structure):
-        table = self.layout.meta.validate(structure["layout"])
+        table = Table(self.layout.meta)
+        for part_name, part_structure in structure["layout"].items():
+            table.append([part_name, "", part_structure["x"],
+                          part_structure["y"], part_structure["visible"]])
         self.set_layout(table)
         self.run_hook(self.Load, self.create_part_tasks(), structure)
 
