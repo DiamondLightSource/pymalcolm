@@ -2,8 +2,13 @@
     name: mriPrefix
     description: MRI for created block
 
+- parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
 - controllers.RunnableController:
     mri: $(mriPrefix)
+    configDir: $(configDir)
 
 - includes.pmac.rawmotor_collection:
     mri: P45-STAGE-X

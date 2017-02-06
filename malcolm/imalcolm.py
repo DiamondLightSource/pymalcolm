@@ -40,7 +40,8 @@ def make_process():
         proc = Process(proc_name, sf)
         with open(args.yaml) as f:
             assembly = make_include_creator(f.read())
-        assembly(proc, {})
+        params = assembly.MethodMeta.prepare_input_map()
+        assembly(proc, params)
         proc_name = "%s - imalcolm" % proc_name
     else:
         proc = Process("Process", sf)

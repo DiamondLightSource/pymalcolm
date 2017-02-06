@@ -6,8 +6,13 @@
     name: sim
     description: MRI for sim object
 
+- parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
 - controllers.RunnableController:
     mri: $(mri)
+    configDir: $(configDir)
     axesToMove: [stagex, stagey]
 
 - parts.ADCore.DatasetTablePart:

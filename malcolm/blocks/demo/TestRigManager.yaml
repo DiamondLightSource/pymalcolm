@@ -18,8 +18,13 @@
     name: zebra
     description: MRI for ZebraManager object
 
+- parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
 - controllers.RunnableController:
     mri: $(mri)
+    configDir: $(configDir)
     axesToMove: [stagex, stagey]
 
 - parts.ADCore.DatasetTablePart:
