@@ -108,7 +108,6 @@ class TestManagerController(unittest.TestCase):
 
     def check_expected_save(self, x=0.0, y=0.0, visible="false"):
         expected = [x.strip() for x in ("""{
-          "part2": {},
           "layout": {
             "typeid": "malcolm:core/Table:1.0",
             "name": [
@@ -126,7 +125,8 @@ class TestManagerController(unittest.TestCase):
             "visible": [
               %s
             ]
-          }
+          },
+          "part2": {}
         }""" % (x, y, visible)).splitlines()]
         actual = [x.strip()
                   for x in open("/tmp/testSaveLayout.json").readlines()]

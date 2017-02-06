@@ -212,8 +212,11 @@ class ManagerController(DefaultController):
         self.layout_name.set_value(value)
 
     def _save_to_structure(self):
-        structure = self.run_hook(self.Save, self.create_part_tasks())
+        structure = OrderedDict()
         structure["layout"] = self.layout.value.to_dict()
+        for part_name, part_structure in sorted(self.run_hook(
+                self.Save, self.create_part_tasks()).items()):
+            structure[part_name] = part_structure
         return structure
 
     def _load_from_structure(self, structure):
