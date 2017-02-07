@@ -91,6 +91,7 @@ class PandABoxBlockMaker(Loggable):
             self._make_out(field_name, field_data, "pos")
             self._make_scale_offset(field_name)
             self._make_out_capture(field_name, field_data)
+            self._make_data_delay(field_name)
         elif typ == "ext_out":
             self._make_out_capture(field_name, field_data)
         elif typ == "bit_mux":
@@ -168,15 +169,18 @@ class PandABoxBlockMaker(Loggable):
                          tags=[group_tag, flow_tag], writeable=False)
         self._make_field_part(field_name, meta, writeable=False)
 
+    def _make_data_delay(self, field_name):
+        group_tag = self._make_group("outputs")
+        meta = NumberMeta(
+            "uint8", "How many FPGA ticks to delay data capture",
+            tags=[group_tag, widget("textinput")])
+        self._make_field_part(field_name + ".DATA_DELAY", meta, writeable=True)
+
     def _make_out_capture(self, field_name, field_data):
         group_tag = self._make_group("outputs")
         meta = ChoiceMeta("Capture %s in PCAP?" % field_name,
                           field_data.labels, tags=[group_tag, widget("combo")])
         self._make_field_part(field_name + ".CAPTURE", meta, writeable=True)
-        meta = NumberMeta(
-            "uint8", "How many FPGA ticks to delay data capture",
-            tags=[group_tag, widget("textinput")])
-        self._make_field_part(field_name + ".DATA_DELAY", meta, writeable=True)
         if self.area_detector:
             # Make a string part to hold the name of the dataset
             part_name = field_name + ".DATASET_NAME"
