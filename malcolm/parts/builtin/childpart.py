@@ -132,7 +132,7 @@ class ChildPart(Part):
             dict: {outport_value: outport_type}
         """
         outports = {}
-        for outport_info in OutportInfo.filter_parts(part_info)[name]:
+        for outport_info in OutportInfo.filter_parts(part_info).get(name, []):
             outports[outport_info.value] = outport_info.type
         return outports
 

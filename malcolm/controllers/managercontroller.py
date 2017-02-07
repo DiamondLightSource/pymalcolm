@@ -115,7 +115,8 @@ class ManagerController(DefaultController):
         yield "layout", self.layout, self.set_layout
         self.layout_name = ChoiceMeta(
             "Saved layout name to load", []).make_attribute()
-        self.layout_name.meta.set_writeable_in(sm.AFTER_RESETTING)
+        self.layout_name.meta.set_writeable_in(
+            self.stateMachine.AFTER_RESETTING)
         yield "layoutName", self.layout_name, self.load_layout
         assert os.path.isdir(self.params.configDir), \
             "%s is not a directory" % self.params.configDir
@@ -188,9 +189,10 @@ class ManagerController(DefaultController):
         names = []
         if extra_name:
             names.append(extra_name)
-        for f in os.listdir(self.params.configDir):
-            if os.path.isfile(os.path.join(self.params.configDir, f)) and \
-                    f.endswith(".json"):
+        dir_name = self._make_config_dir()
+        for f in os.listdir(dir_name):
+            if os.path.isfile(
+                    os.path.join(dir_name, f)) and f.endswith(".json"):
                 names.append(f.split(".json")[0])
         self.layout_name.meta.set_choices(names)
 
@@ -236,11 +238,13 @@ class ManagerController(DefaultController):
     def _save_to_structure(self):
         structure = OrderedDict()
         structure["layout"] = OrderedDict()
-        for i, name in enumerate(self.layout.value.name):
+        for name, x, y, visible in sorted(
+                zip(self.layout.value.name, self.layout.value.x,
+                    self.layout.value.y, self.layout.value.visible)):
             layout_structure = OrderedDict()
-            layout_structure["x"] = self.layout.value.x[i]
-            layout_structure["y"] = self.layout.value.y[i]
-            layout_structure["visible"] = self.layout.value.visible[i]
+            layout_structure["x"] = x
+            layout_structure["y"] = y
+            layout_structure["visible"] = visible
             structure["layout"][name] = layout_structure
         for part_name, part_structure in sorted(self.run_hook(
                 self.Save, self.create_part_tasks()).items()):
