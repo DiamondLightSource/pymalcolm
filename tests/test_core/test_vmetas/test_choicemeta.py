@@ -20,7 +20,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual(
             self.choice_meta.label, "")
         self.assertEqual(
-            self.choice_meta.choices, ["a", "b"])
+            self.choice_meta.choices, ("a", "b"))
 
 
 class TestValidate(unittest.TestCase):
@@ -48,7 +48,7 @@ class TestValidate(unittest.TestCase):
     def test_set_choices(self):
         self.choice_meta.set_choices(["4"])
 
-        self.assertEqual(["4"], self.choice_meta.choices)
+        self.assertEqual(("4",), self.choice_meta.choices)
 
 
 class TestSerialization(unittest.TestCase):
@@ -57,8 +57,8 @@ class TestSerialization(unittest.TestCase):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/ChoiceMeta:1.0"
         self.serialized["description"] = "desc"
-        self.serialized["choices"] = ["a", "b"]
-        self.serialized["tags"] = []
+        self.serialized["choices"] = ("a", "b")
+        self.serialized["tags"] = ()
         self.serialized["writeable"] = False
         self.serialized["label"] = "name"
 
@@ -70,8 +70,8 @@ class TestSerialization(unittest.TestCase):
         bm = ChoiceMeta.from_dict(self.serialized)
         self.assertEqual(type(bm), ChoiceMeta)
         self.assertEquals(bm.description, "desc")
-        self.assertEquals(bm.choices, ["a", "b"])
-        self.assertEqual(bm.tags, [])
+        self.assertEquals(bm.choices, ("a", "b"))
+        self.assertEqual(bm.tags, ())
         self.assertFalse(bm.writeable)
         self.assertEqual(bm.label, "name")
 

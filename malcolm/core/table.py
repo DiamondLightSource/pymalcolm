@@ -1,6 +1,7 @@
 import numpy as np
 
 from malcolm.core.serializable import Serializable
+from malcolm.core.stringarray import StringArray
 
 
 @Serializable.register_subclass("malcolm:core/Table:1.0")
@@ -26,6 +27,7 @@ class Table(Serializable):
         lengths = [len(getattr(self, e)) for e in self.meta.elements]
         assert len(set(lengths)) == 1, \
             "Column lengths %s don't match" % lengths
+        return lengths[0]
 
     def __getitem__(self, idx):
         """Get row"""
@@ -42,15 +44,25 @@ class Table(Serializable):
     def __setitem__(self, idx, row):
         """Set row for int, column for string"""
         if isinstance(idx, int):
-            # set row
-            self.verify_column_lengths()
+            # set row from index
+            length = self.verify_column_lengths()
+            # Check length in range
+            if idx >= length:
+                raise IndexError("Index %s >= table length %s" % (idx, length))
             if len(row) != len(self.meta.elements):
                 raise ValueError(
                     "Row %s does not specify correct number of values" % row)
             for e, v in zip(self.meta.elements, row):
                 column = getattr(self, e)
-                column[idx] = v
-                setattr(self, e, column)
+                if isinstance(column, StringArray):
+                    new_column = StringArray(
+                        column[:idx] + (v,) + column[idx+1:])
+                else:
+                    # numpy array
+                    v = self.meta.elements[e].validate([v])
+                    new_column = np.concatenate(
+                        (column[:idx], v, column[idx+1:]))
+                setattr(self, e, new_column)
         else:
             setattr(self, idx, row)
 
@@ -70,12 +82,10 @@ class Table(Serializable):
                 "Row %s does not specify correct number of values" % row)
         for e, v in zip(self.meta.elements, row):
             column = getattr(self, e)
-            try:
-                column.append(v)
-            except AttributeError:
-                # numpy arrays have no append, so make an array of the right
-                # validated type, and use np.append
+            if isinstance(column, StringArray):
+                new_column = StringArray(column + (v,))
+            else:
                 v = self.meta.elements[e].validate([v])
-                column = np.append(column, v)
-            setattr(self, e, column)
+                new_column = np.concatenate((column, v))
+            setattr(self, e, new_column)
 

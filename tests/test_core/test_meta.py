@@ -33,7 +33,7 @@ class TestSetters(unittest.TestCase):
 
     def test_set_tags(self):
         m = self.m
-        tags = ["widget:textinput"]
+        tags = ("widget:textinput",)
         m.set_tags(tags)
         self.assertEquals(tags, m.tags)
         m.process.report_changes.assert_called_once_with([["tags"], tags])
@@ -61,7 +61,7 @@ class TestSerialization(unittest.TestCase):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "filled_in_by_subclass"
         self.serialized["description"] = "desc"
-        self.serialized["tags"] = []
+        self.serialized["tags"] = ()
         self.serialized["writeable"] = False
         self.serialized["label"] = ""
 

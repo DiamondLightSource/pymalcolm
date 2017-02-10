@@ -26,11 +26,14 @@ class TableMeta(VMeta):
     def validate(self, value):
         if value is None:
             value = {}
-        if not isinstance(value, Table) or self != value.meta:
-            if isinstance(value, Table):
+        if isinstance(value, Table):
+            if self != value.meta:
+                # Make a table using ourself as the meta
                 value = value.to_dict()
-            # Make a table using ourself as the meta
-            value.pop("typeid", None)
+                value.pop("typeid", None)
+                value = Table(self, value)
+        else:
+            # Should be a dict
             value = Table(self, value)
         # Check column lengths
         value.verify_column_lengths()

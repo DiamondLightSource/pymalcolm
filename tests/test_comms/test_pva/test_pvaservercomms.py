@@ -439,7 +439,7 @@ class TestPVAServerComms(unittest.TestCase):
         val_dict["val8"] = [True, False]
         val_dict["val9"] = np.array([0, 1], dtype=np.int64)
         val_dict["val10"] = np.array([0.2, 0.6], dtype=np.float64)
-        val = self.PVA.dict_to_pv_object_structure(val_dict)
+        val = self.PVA.pva_structure_from_value(val_dict)
         test_dict = OrderedDict()
         test_dict["val1"] = pvaccess.STRING
         test_dict["val2"] = pvaccess.INT
@@ -455,18 +455,11 @@ class TestPVAServerComms(unittest.TestCase):
         self.assertEquals(val, test_val)
 
         # Test the variant union array type
-        val = self.PVA.dict_to_pv_object_structure(OrderedDict({"union_array": [OrderedDict({"val1": 1}), OrderedDict({"val2": "2"})]}))
+        val = self.PVA.pva_structure_from_value(OrderedDict({"union_array": [OrderedDict({"val1": 1}), OrderedDict({"val2": "2"})]}))
         test_dict = OrderedDict()
-        test_dict["union_array"] = [({},)]
+        test_dict["union_array"] = [()]
         test_val = pvaccess.PvObject(test_dict, "")
         self.assertEquals(val, test_val)
-
-    def test_strip_type_id(self):
-        self.PVA = PvaServerComms(self.p)
-        #val = self.PVA.dict_to_structure({"typeid": "type1", "level1": {"typeid": "type2", "level2": {"typeid": "type3", "item1": 1, "item2": "2", "item3": True}}})
-        val = self.PVA.strip_type_id(OrderedDict({"typeid": "type1", "val1": "1"}))
-        self.assertEquals(val, OrderedDict({"val1": "1"}))
-
 
 #    def test_start(self):
 #        self.PVA = PvaServerComms("TestPva", self.p)

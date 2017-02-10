@@ -29,6 +29,7 @@ from malcolm.core.servercomms import ServerComms
 from malcolm.core.spawnable import Spawnable
 from malcolm.core.statemachine import StateMachine, DefaultStateMachine, \
     ManagerStateMachine, RunnableStateMachine
+from malcolm.core.stringarray import StringArray
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core.table import Table
 from malcolm.core.tableelementmap import TableElementMap

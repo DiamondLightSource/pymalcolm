@@ -1,3 +1,4 @@
+from malcolm.core.stringarray import StringArray
 from malcolm.core.serializable import Serializable
 from malcolm.core.varraymeta import VArrayMeta
 
@@ -17,14 +18,6 @@ class StringArrayMeta(VArrayMeta):
             List of Strings or None if value is None
         """
         if value is None:
-            return []
-
-        if not isinstance(value, list):
-            raise ValueError("%r is not a list" % (value,))
-
-        validated = [str(x) if x is not None else None for x in value]
-
-        if None in validated:
-            raise ValueError("Array elements can not be null")
-
-        return validated
+            return StringArray()
+        else:
+            return StringArray(value)

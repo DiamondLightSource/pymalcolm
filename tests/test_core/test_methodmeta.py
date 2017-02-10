@@ -196,7 +196,7 @@ class TestSerialization(unittest.TestCase):
         self.serialized["takes"] = self.takes.to_dict()
         self.serialized["defaults"] = OrderedDict({"in_attr": "default"})
         self.serialized["description"] = "test_description"
-        self.serialized["tags"] = []
+        self.serialized["tags"] = ()
         self.serialized["writeable"] = True
         self.serialized["label"] = ""
         self.serialized["returns"] = MapMeta().to_dict()
@@ -211,7 +211,7 @@ class TestSerialization(unittest.TestCase):
         m = MethodMeta.from_dict(self.serialized.copy())
         self.assertEqual(m.takes.to_dict(), self.takes.to_dict())
         self.assertEqual(m.defaults, self.serialized["defaults"])
-        self.assertEqual(m.tags, [])
+        self.assertEqual(m.tags, ())
         self.assertEqual(m.writeable, True)
         self.assertEqual(m.label, "")
         self.assertEqual(m.returns.to_dict(), MapMeta().to_dict())

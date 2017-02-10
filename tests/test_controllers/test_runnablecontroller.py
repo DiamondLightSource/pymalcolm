@@ -131,7 +131,7 @@ class TestRunnableController(unittest.TestCase):
 
     def test_set_axes_to_move(self):
         self.c.set_axes_to_move(['y'])
-        self.assertEqual(self.c.axes_to_move.value, ['y'])
+        self.assertEqual(self.c.axes_to_move.value, ('y',))
 
     def test_validate(self):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
@@ -139,7 +139,7 @@ class TestRunnableController(unittest.TestCase):
         compound = CompoundGenerator([line1, line2], [], [])
         actual = self.b.validate(generator=compound, axesToMove=['x'])
         self.assertEqual(actual["generator"], compound)
-        self.assertEqual(actual["axesToMove"], ['x'])
+        self.assertEqual(actual["axesToMove"], ('x',))
 
     def prepare_half_run(self, duration=0.01, exception=0):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)

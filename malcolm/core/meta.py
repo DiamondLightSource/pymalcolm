@@ -1,6 +1,7 @@
 from malcolm.compat import str_
 from malcolm.core.monitorable import Monitorable
 from malcolm.core.serializable import deserialize_object
+from malcolm.core.stringarray import StringArray
 
 
 class Meta(Monitorable):
@@ -25,7 +26,7 @@ class Meta(Monitorable):
 
     def set_tags(self, tags, notify=True):
         """Set the tags list"""
-        tags = [deserialize_object(t, str_) for t in tags]
+        tags = StringArray(deserialize_object(t, str_) for t in tags)
         self.set_endpoint_data("tags", tags, notify)
 
     def set_writeable(self, writeable, notify=True):

@@ -20,21 +20,22 @@ class TestValidate(unittest.TestCase):
         self.assertEqual(self.meta.typeid, "malcolm:core/BooleanArrayMeta:1.0")
 
     def test_validate_none(self):
-        self.assertEquals(self.meta.validate(None), [])
+        self.assertEquals(list(self.meta.validate(None)), [])
 
     def test_validate_array(self):
         array = ["True", "", True, False, 1, 0]
         self.assertEquals(
             [True, False, True, False, True, False],
-            self.meta.validate(array))
+            list(self.meta.validate(array)))
 
     def test_not_iterable_raises(self):
         value = True
-        self.assertRaises(ValueError, self.meta.validate, value)
+        self.assertRaises(TypeError, self.meta.validate, value)
 
     def test_null_element_raises(self):
         array = ["test", None]
-        self.assertRaises(ValueError, self.meta.validate, array)
+        self.assertEquals(
+            [True, False], list(self.meta.validate(array)))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

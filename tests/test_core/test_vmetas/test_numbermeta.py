@@ -57,7 +57,7 @@ class TestSerialization(unittest.TestCase):
         self.serialized["typeid"] = "malcolm:core/NumberMeta:1.0"
         self.serialized["dtype"] = "float64"
         self.serialized["description"] = "desc"
-        self.serialized["tags"] = []
+        self.serialized["tags"] = ()
         self.serialized["writeable"] = False
         self.serialized["label"] = "name"
 
@@ -70,7 +70,7 @@ class TestSerialization(unittest.TestCase):
         self.assertEqual(type(nm), NumberMeta)
         self.assertEquals(nm.description, "desc")
         self.assertEquals(nm.dtype, "float64")
-        self.assertEqual(nm.tags, [])
+        self.assertEqual(nm.tags, ())
         self.assertFalse(nm.writeable)
         self.assertEqual(nm.label, "name")
 
