@@ -455,7 +455,11 @@ class TestPVAServerComms(unittest.TestCase):
         self.assertEquals(val, test_val)
 
         # Test the variant union array type
-        val = self.PVA.pva_structure_from_value(OrderedDict({"union_array": [OrderedDict({"val1": 1}), OrderedDict({"val2": "2"})]}))
+        val = self.PVA.pva_structure_from_value(
+            {"union_array": [
+                {"val1": 1},
+                {"val2": "2"}
+            ]})
         test_dict = OrderedDict()
         test_dict["union_array"] = [()]
         test_val = pvaccess.PvObject(test_dict, "")

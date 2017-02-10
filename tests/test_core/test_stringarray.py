@@ -39,7 +39,7 @@ class TestStringArray(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             StringArray(1, 2, 3)
         self.assertEqual(
-            cm.exception.message,
+            str(cm.exception),
             'Expected StringArray(s1, s2, ...) or StringArray(seq). '
             'Got StringArray(1, 2, 3)')
 

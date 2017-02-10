@@ -72,10 +72,16 @@ class PvaUtil(object):
             structure = [pvaccess.STRING]
         elif isinstance(value, list):
             # if not empty then determine its type
-            structure = list(set(
-                self.pva_structure_from_value(v) for v in value if value))
-            if len(structure) == 0 or len(structure) > 1 or \
-                    isinstance(structure[0], pvaccess.PvObject):
+            structures = set()
+            for v in value:
+                v_structure = self.pva_structure_from_value(v)
+                if isinstance(v_structure, pvaccess.PvObject):
+                    # variant union
+                    structures.add(())
+                else:
+                    structures.add(v_structure)
+            structure = list(structures)
+            if len(structure) == 0 or len(structure) > 1:
                 # variant union
                 structure = [()]
         elif isinstance(value, dict):
