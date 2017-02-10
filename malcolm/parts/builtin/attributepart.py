@@ -1,6 +1,6 @@
 from malcolm.core import Part, method_takes, REQUIRED
 from malcolm.core.vmetas import StringMeta, BooleanMeta, ChoiceMeta
-from malcolm.tags import widget_types, widget
+from malcolm.tags import widget_types, widget, config
 
 
 @method_takes(
@@ -8,7 +8,7 @@ from malcolm.tags import widget_types, widget
     "description", StringMeta("Desc of created attribute"), REQUIRED,
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "writeable", BooleanMeta("Is the attribute writeable?"), False,
-)
+    "config", BooleanMeta("Should this field be loaded/saved?"), False)
 class AttributePart(Part):
     # Attribute instance
     attr = None
@@ -38,6 +38,8 @@ class AttributePart(Part):
         tags = []
         if self.params.widget:
             tags.append(widget(self.params.widget))
+        if self.params.config:
+            tags.append(config())
         return tags
 
     def get_initial_value(self):

@@ -1,4 +1,5 @@
 from malcolm.core import Part
+from malcolm.core.vmetas import BooleanMeta
 from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
 
 
@@ -39,5 +40,7 @@ class PandABoxFieldPart(Part):
                     value = "BITS.ZERO"
                 elif value == "ONE":
                     value = "BITS.ONE"
+        elif isinstance(self.meta, BooleanMeta):
+            value = int(value)
         self.control.set_field(self.block_name, self.field_name, value)
 

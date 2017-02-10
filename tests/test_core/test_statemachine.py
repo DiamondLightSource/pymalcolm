@@ -82,9 +82,7 @@ class TestManagerStateMachine(unittest.TestCase):
         default_allowed_transitions['Resetting'] = {'Ready', 'Fault',
                                                     'Disabling'}
         default_allowed_transitions['Ready'] = {
-            'Editing', "Fault", "Disabling"}
-        default_allowed_transitions['Editing'] = {
-            'Fault', 'Editable', 'Disabling'}
+            'Editable', "Fault", "Disabling"}
         default_allowed_transitions['Editable'] = {
             'Fault', 'Saving', 'Disabling', 'Reverting'}
         default_allowed_transitions['Saving'] = {
@@ -108,9 +106,7 @@ class TestRunnableDeviceStateMachine(unittest.TestCase):
         default_allowed_transitions['Resetting'] = {
             "Idle", "Fault", "Disabling"}
         default_allowed_transitions['Idle'] = {
-            "Configuring", "Aborting", 'Editing', "Fault", "Disabling"}
-        default_allowed_transitions['Editing'] = {
-            'Fault', 'Editable', 'Disabling'}
+            "Configuring", "Aborting", 'Editable', "Fault", "Disabling"}
         default_allowed_transitions['Editable'] = {
             'Fault', 'Saving', 'Disabling', 'Reverting'}
         default_allowed_transitions['Saving'] = {

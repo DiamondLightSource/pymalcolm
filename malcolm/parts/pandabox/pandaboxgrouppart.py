@@ -1,6 +1,6 @@
 from malcolm.core import Part
 from malcolm.core.vmetas import ChoiceMeta
-from malcolm.tags import widget
+from malcolm.tags import widget, config
 
 
 class PandABoxGroupPart(Part):
@@ -11,13 +11,13 @@ class PandABoxGroupPart(Part):
         params = Part.MethodMeta.prepare_input_map(name=attr_name)
         super(PandABoxGroupPart, self).__init__(process, params)
         self.attr_name = attr_name
-        self.attr = None
+        tags = [widget("group"), config()]
+        self.meta = ChoiceMeta(
+            "All %s attributes" % self.attr_name,
+            choices=["expanded", "collapsed"], tags=tags,
+            label=self.attr_name.title())
 
     def create_attributes(self):
-        tags = [widget("group")]
-        meta = ChoiceMeta("All %s attributes" % self.attr_name,
-                          choices=["expanded", "collapsed"], tags=tags,
-                          label=self.attr_name.title())
-        self.attr = meta.make_attribute("expanded")
-        yield self.attr_name, self.attr, self.attr.set_value
+        attr = self.meta.make_attribute("expanded")
+        yield self.attr_name, attr, attr.set_value
 

@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, call
+from mock import Mock, call, ANY
 from time import sleep
 
 # logging
@@ -19,6 +19,7 @@ from malcolm.core import Process, Table, Task
 from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core.vmetas.stringmeta import StringMeta
+from malcolm.compat import OrderedDict
 
 sm = RunnableController.stateMachine
 
@@ -40,7 +41,7 @@ class PortsPart(Part):
         # TODO this is yet to be documented
         in_tag = "inport:pos:"
         in_name = "inport%s" % self.name
-        in_port = StringMeta(in_name, [in_tag]).make_attribute()
+        in_port = StringMeta(in_name, [in_tag, "config"]).make_attribute()
         in_port.meta.set_writeable_in(sm.READY)
         yield in_name, in_port, in_port.set_value
 
@@ -80,7 +81,7 @@ class TestChildPart(unittest.TestCase):
         # create a root block for the child blocks to reside in
         parts = [self.p1, self.p2, self.p3]
         params = RunnableController.MethodMeta.prepare_input_map(
-            mri='mainBlock')
+            mri='mainBlock', configDir="/tmp")
         self.c = RunnableController(self.p, parts, params)
         self.b = self.c.block
 
@@ -186,6 +187,22 @@ class TestChildPart(unittest.TestCase):
         self.assertEqual(count, 1)
         count = len(self.p1._get_flowgraph_ports('in'))
         self.assertEqual(count, 1)
+
+    def test_load_save(self):
+        structure1 = self.p1.save(ANY)
+        expected = dict(inportConnector="")
+        self.assertEqual(structure1, expected)
+        self.p1.child.inportConnector = "blah"
+        structure2 = self.p1.save(ANY)
+        expected = dict(inportConnector="blah")
+        self.assertEqual(structure2, expected)
+        task = Mock()
+        task.put_async.return_value = ["future"]
+        self.p1.load(task, dict(partchild1=dict(inportConnector="blah_again")))
+        task.put_async.assert_called_once_with(
+            self.p1.child["inportConnector"], "blah_again")
+        task.wait_all.assert_called_once_with(["future"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

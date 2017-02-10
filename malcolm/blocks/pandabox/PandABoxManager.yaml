@@ -16,8 +16,13 @@
     description: Port number of the server control
     default: 8888
 
+- parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
 - controllers.RunnableController:
     mri: $(mriPrefix)
+    configDir: $(configDir)
 
 - includes.pandabox.hardware_collection:
     hostname: $(hostname)

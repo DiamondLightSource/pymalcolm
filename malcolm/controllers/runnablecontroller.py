@@ -263,6 +263,8 @@ class RunnableController(ManagerController):
     def do_configure(self, params):
         # These are the part tasks that abort() and pause() will operate on
         self.part_tasks = self.create_part_tasks()
+        # Load the saved settings first
+        self.run_hook(self.Load, self.part_tasks, self.load_structure)
         # Store the params for use in seek()
         self.configure_params = params
         # Set the steps attributes that we will do across many run() calls
