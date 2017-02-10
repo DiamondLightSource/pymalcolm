@@ -1,6 +1,7 @@
 from malcolm.compat import str_
 from malcolm.core.serializable import Serializable, deserialize_object
 from malcolm.core.vmeta import VMeta
+from malcolm.core.stringarray import StringArray
 
 
 @Serializable.register_subclass("malcolm:core/ChoiceMeta:1.0")
@@ -18,7 +19,7 @@ class ChoiceMeta(VMeta):
 
     def set_choices(self, choices, notify=True):
         """Set the choices list"""
-        choices = [deserialize_object(c, str_) for c in choices]
+        choices = StringArray(deserialize_object(c, str_) for c in choices)
         self.set_endpoint_data("choices", choices, notify)
 
     def validate(self, value):

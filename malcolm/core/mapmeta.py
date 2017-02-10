@@ -1,6 +1,8 @@
+from malcolm.compat import str_
 from malcolm.core.elementmap import ElementMap
 from malcolm.core.meta import Meta
 from malcolm.core.serializable import Serializable, deserialize_object
+from malcolm.core.stringarray import StringArray
 
 
 @Serializable.register_subclass("malcolm:core/MapMeta:1.0")
@@ -25,5 +27,6 @@ class MapMeta(Meta):
         for r in required:
             assert r in self.elements, \
                 "Expected one of %r, got %r" % (list(self.elements), r)
+        required = StringArray(deserialize_object(t, str_) for t in required)
         self.set_endpoint_data("required", required, notify)
 

@@ -45,7 +45,7 @@ class TestSerialization(unittest.TestCase):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "filled_in_by_subclass"
         self.serialized["description"] = "desc"
-        self.serialized["tags"] = []
+        self.serialized["tags"] = ()
         self.serialized["writeable"] = True
         self.serialized["label"] = "my label"
 
@@ -60,7 +60,7 @@ class TestSerialization(unittest.TestCase):
             pass
         m = MyVMeta.from_dict(self.serialized)
         self.assertEquals(m.description, "desc")
-        self.assertEquals(m.tags, [])
+        self.assertEquals(m.tags, ())
         self.assertEquals(m.writeable, True)
         self.assertEquals(m.label, "my label")
 

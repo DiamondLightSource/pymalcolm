@@ -24,13 +24,13 @@ class TestSerialization(unittest.TestCase):
         meta["typeid"] = "malcolm:core/TableMeta:1.0"
         meta["elements"] = elements
         meta["description"] = "desc"
-        meta["tags"] = []
+        meta["tags"] = ()
         meta["writeable"] = True
         meta["label"] = "my label"
         value = OrderedDict()
         value["typeid"] = "malcolm:core/Table:1.0"
-        value["foo"] = ["foo1", "foo2"]
-        value["bar"] = ["bar1", "bar2"]
+        value["foo"] = ("foo1", "foo2")
+        value["bar"] = ("bar1", "bar2")
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "epics:nt/NTTable:1.0"
         self.serialized["labels"] = ["Foo", "bar"]
@@ -55,11 +55,11 @@ class TestSerialization(unittest.TestCase):
         self.assertEquals(o.meta.elements.foo.label, "Foo")
         self.assertEquals(o.meta.elements.bar.label, "")
         self.assertEquals(o.meta.description, "desc")
-        self.assertEquals(o.meta.tags, [])
+        self.assertEquals(o.meta.tags, ())
         self.assertEquals(o.meta.writeable, True)
         self.assertEquals(o.meta.label, "my label")
-        self.assertEquals(o.value.foo, ["foo1", "foo2"])
-        self.assertEquals(o.value.bar, ["bar1", "bar2"])
+        self.assertEquals(o.value.foo, ("foo1", "foo2"))
+        self.assertEquals(o.value.bar, ("bar1", "bar2"))
 
 
 if __name__ == "__main__":

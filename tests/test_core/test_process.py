@@ -147,7 +147,7 @@ class TestProcess(unittest.TestCase):
         self.assertEquals(p_block.process_path, ["proc"])
         self.assertEquals(NTScalarArray, type(p_block["blocks"]))
         self.assertEquals(StringArrayMeta, type(p_block["blocks"].meta))
-        self.assertEquals(["proc"], p_block.blocks)
+        self.assertEquals(("proc",), p_block.blocks)
         self.assertEquals("Blocks hosted by this Process",
                           p_block["blocks"].meta.description)
 
@@ -160,7 +160,7 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(p._client_comms, {})
         p._handle_block_list(request)
         self.assertEqual(p._client_comms, dict(cc=["myblock"]))
-        self.assertEqual(p.process_block.remoteBlocks, ["myblock"])
+        self.assertEqual(p.process_block.remoteBlocks, ("myblock",))
         self.assertEqual(p.get_client_comms("myblock"), "cc")
 
 

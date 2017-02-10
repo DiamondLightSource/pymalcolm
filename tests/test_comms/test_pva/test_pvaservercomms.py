@@ -8,6 +8,7 @@ from mock import Mock, MagicMock, patch, call
 from collections import OrderedDict
 
 from malcolm.core.response import Error, Return, Delta, Update
+from malcolm.core import StringArray
 
 import pvaccess
 import numpy as np
@@ -434,12 +435,12 @@ class TestPVAServerComms(unittest.TestCase):
         val_dict["val3"] = True
         val_dict["val4"] = np.int64(0)
         val_dict["val5"] = np.float64(0.5)
-        val_dict["val6"] = ['', '']
+        val_dict["val6"] = StringArray('', '')
         val_dict["val7"] = np.array([5, 1], dtype=np.int32)
         val_dict["val8"] = [True, False]
         val_dict["val9"] = np.array([0, 1], dtype=np.int64)
         val_dict["val10"] = np.array([0.2, 0.6], dtype=np.float64)
-        val = self.PVA.dict_to_pv_object_structure(val_dict)
+        val = self.PVA.pva_structure_from_value(val_dict)
         test_dict = OrderedDict()
         test_dict["val1"] = pvaccess.STRING
         test_dict["val2"] = pvaccess.INT
@@ -455,98 +456,45 @@ class TestPVAServerComms(unittest.TestCase):
         self.assertEquals(val, test_val)
 
         # Test the variant union array type
-        val = self.PVA.dict_to_pv_object_structure(OrderedDict({"union_array": [OrderedDict({"val1": 1}), OrderedDict({"val2": "2"})]}))
+        val = self.PVA.pva_structure_from_value(
+            {"union_array": [
+                {"val1": 1},
+                {"val2": "2"}
+            ]})
         test_dict = OrderedDict()
-        test_dict["union_array"] = [({},)]
+        test_dict["union_array"] = [()]
+        test_val = pvaccess.PvObject(test_dict, "")
+        self.assertEquals(val, test_val)
+        val = self.PVA.pva_structure_from_value(
+            {"union_array": []})
+        test_dict = OrderedDict()
+        test_dict["union_array"] = [()]
         test_val = pvaccess.PvObject(test_dict, "")
         self.assertEquals(val, test_val)
 
-    def test_strip_type_id(self):
+    def test_dict_to_pv(self):
         self.PVA = PvaServerComms(self.p)
-        #val = self.PVA.dict_to_structure({"typeid": "type1", "level1": {"typeid": "type2", "level2": {"typeid": "type3", "item1": 1, "item2": "2", "item3": True}}})
-        val = self.PVA.strip_type_id(OrderedDict({"typeid": "type1", "val1": "1"}))
-        self.assertEquals(val, OrderedDict({"val1": "1"}))
+        val_dict = OrderedDict()
+        val_dict["typeid"] = "type1"
+        val_dict["val1"] = StringArray('', '')
+        val_dict["val2"] = np.array((1, 2))
+        val_dict["val3"] = dict(a=43)
+        val_dict["val4"] = [True, False]
+        val_dict["val5"] = [dict(a=43), dict(b=44)]
+        val_dict["val6"] = "s"
+        actual = self.PVA.dict_to_pv_object(val_dict)
+        self.assertEqual(actual._type, "type1")
+        self.assertEqual(actual._dict["val1"], ["", ""])
+        self.assertEqual(actual._dict["val2"], [1, 2])
+        self.assertEqual(actual._dict["val3"], dict(a=43))
+        self.assertEqual(actual._dict["val4"], [True, False])
+        self.assertEqual(len(actual._dict["val5"]), 2)
+        self.assertEqual(actual._dict["val5"][0]._dict, dict(a=43))
+        self.assertEqual(actual._dict["val5"][1]._dict, dict(b=44))
+        self.assertEqual(actual._dict["val6"], "s")
 
 
-#    def test_start(self):
-#        self.PVA = PvaServerComms("TestPva", self.p)
-#        self.PVA.start()
-#
-#        self.assertEqual([call(self.PVA.send_loop), call(self.PVA.start)],
-#                         self.p.spawn.call_args_list)
 
-#    @patch('malcolm.comms.pva.pvaservercomms.IOLoop')
-#    def test_stop(self, ioloop_mock):
-#        loop_mock = MagicMock()
-#        ioloop_mock.current.return_value = loop_mock
-#        self.p.spawn = MagicMock()
-#
-#        self.PVA = PvaServerComms("TestPva", self.p)
-#        self.PVA.start()
-#        self.PVA.stop()
-#
-#        self.assertEqual([call(self.PVA.loop.stop)],
-#                loop_mock.add_callback.call_args_list)
-#        self.p.spawn.return_value.wait.assert_not_called()
-
-#    @patch('malcolm.comms.pva.pvaservercomms.IOLoop')
-#    def test_wait(self, ioloop_mock):
-#        spawnable_mocks = [MagicMock(), MagicMock()]
-#        timeout = MagicMock()
-#        self.p.spawn = MagicMock(side_effect=spawnable_mocks)
-#
-#        self.PVA = PvaServerComms("TestPva", self.p)
-#        self.PVA.start()
-#        self.PVA.wait(timeout)
-#
-#        spawnable_mocks[0].wait.assert_called_once_with(timeout=timeout)
-#        spawnable_mocks[1].wait.assert_called_once_with(timeout=timeout)
-
-#    @patch('malcolm.comms.websocket.websocketservercomms.Serializable')
-#    @patch('malcolm.comms.websocket.websocketservercomms.json')
-#    @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
-#    @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
-#    def test_MWSH_on_message(self, _, _1, json_mock, serializable_mock):
-#        self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
-#
-#        message_dict = dict(name="TestMessage")
-#        json_mock.loads.return_value = message_dict
-#
-#        request = MagicMock()
-#        request.context = self.WS.server.request_callback.handlers[0][1][0].handler_class
-#        serializable_mock.from_dict.return_value = request
-#
-#        m = MagicMock()
-#        MWSH = MalcolmWebSocketHandler(m, m)
-#        self.WS.server.request_callback.handlers[0][1][0].handler_class.on_message(
-#            MWSH, "TestMessage")
-#
-#        json_mock.loads.assert_called_once_with("TestMessage",
-#                                                object_pairs_hook=OrderedDict)
-#        serializable_mock.from_dict.assert_called_once_with(message_dict)
-#        self.p.q.put.assert_called_once_with(request)
-
-#    @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer')
-#    @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
-#    def test_on_request_with_process_name(self, _, _2):
-#        self.WS = WebsocketServerComms("ws", self.p, 1)
-#        request = MagicMock(fields=dict(endpoint="anything"), endpoint=[".", "blocks"])
-#        self.WS.on_request(request)
-#        self.p.q.put.assert_called_once_with(request)
-#        self.assertEqual(request.endpoint, [self.p.name, "blocks"])
-
-#    @patch('malcolm.comms.websocket.websocketservercomms.json')
-#    @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
-#    @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
-#    def test_send_to_client(self, _, _2, json_mock):
-#        self.WS = WebsocketServerComms("TestWebSocket", self.p, 1)
-#
-#        response_mock = MagicMock()
-#        self.WS.send_to_client(response_mock)
-#
-#        json_mock.dumps.assert_called_once_with(response_mock.to_dict())
-#        response_mock.context.write_message.assert_called_once_with(
-#            json_mock.dumps())
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

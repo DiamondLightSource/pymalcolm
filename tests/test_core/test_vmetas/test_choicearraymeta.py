@@ -15,7 +15,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual("test description", self.meta.description)
         self.assertEqual(self.meta.label, "")
         self.assertEqual(self.meta.typeid, "malcolm:core/ChoiceArrayMeta:1.0")
-        self.assertEqual(self.meta.choices, ["a", "b"])
+        self.assertEqual(self.meta.choices, ("a", "b"))
 
 
 class TestValidate(unittest.TestCase):
@@ -23,11 +23,11 @@ class TestValidate(unittest.TestCase):
         self.meta = ChoiceArrayMeta("test description", ["a", "b"])
 
     def test_validate_none(self):
-        self.assertEquals(self.meta.validate(None), [])
+        self.assertEquals(self.meta.validate(None), ())
 
     def test_validate(self):
         response = self.meta.validate(["b", "a"])
-        self.assertEqual(["b", "a"], response)
+        self.assertEqual(("b", "a"), response)
 
     def test_not_iterable_raises(self):
         value = "abb"

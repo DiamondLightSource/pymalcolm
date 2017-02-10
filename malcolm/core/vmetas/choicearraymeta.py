@@ -1,3 +1,5 @@
+from malcolm.compat import str_
+from malcolm.core.stringarray import StringArray
 from malcolm.core.serializable import Serializable
 from malcolm.core.varraymeta import VArrayMeta
 from malcolm.core.vmetas.choicemeta import ChoiceMeta
@@ -19,16 +21,12 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
         """
 
         if value is None:
-            return []
-
-        if not isinstance(value, list):
-            raise ValueError("%r is not a list" % (value,))
-
-        for i, choice in enumerate(value):
-            if choice is None:
-                raise ValueError("Array elements can not be null")
-            if choice not in self.choices:
-                raise ValueError("%s is not a valid value for element %s" %
-                                 (choice, i))
-
-        return value
+            return StringArray()
+        elif isinstance(value, str_):
+            raise ValueError("Expected iterable of strings, got %r" % value)
+        else:
+            for i, choice in enumerate(value):
+                if choice not in self.choices:
+                    raise ValueError("%s is not a valid value for element %s" %
+                                     (choice, i))
+            return StringArray(value)

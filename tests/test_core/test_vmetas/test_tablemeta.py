@@ -18,7 +18,7 @@ class TestTableMetaInit(unittest.TestCase):
         tm = TableMeta("desc")
         self.assertEquals("desc", tm.description)
         self.assertEquals("malcolm:core/TableMeta:1.0", tm.typeid)
-        self.assertEquals([], tm.tags)
+        self.assertEquals((), tm.tags)
         self.assertEquals(False, tm.writeable)
         self.assertEquals("", tm.label)
 
@@ -60,7 +60,7 @@ class TestTableMetaSerialization(unittest.TestCase):
         self.serialized["elements"] = TableElementMap(
             dict(c1=self.sam)).to_dict()
         self.serialized["description"] = "desc"
-        self.serialized["tags"] = []
+        self.serialized["tags"] = ()
         self.serialized["writeable"] = True
         self.serialized["label"] = "Name"
 
@@ -76,7 +76,7 @@ class TestTableMetaSerialization(unittest.TestCase):
         self.assertEquals(tm.description, "desc")
         self.assertEquals(len(tm.elements), 1)
         self.assertEquals(tm.elements["c1"].to_dict(), self.sam.to_dict())
-        self.assertEquals(tm.tags, [])
+        self.assertEquals(tm.tags, ())
         self.assertEquals(tm.writeable, True)
         self.assertEquals(tm.label, "Name")
 
@@ -98,7 +98,7 @@ class TestTableMetaValidation(unittest.TestCase):
         tm = self.tm
         serialized = dict(
             typeid="anything",
-            c1=["me", "me3"]
+            c1=("me", "me3")
         )
         t = tm.validate(serialized)
         self.assertEqual(t.endpoints, ["c1"])
