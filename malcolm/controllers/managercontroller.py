@@ -121,16 +121,6 @@ class ManagerController(DefaultController):
         assert os.path.isdir(self.params.configDir), \
             "%s is not a directory" % self.params.configDir
 
-    def do_initial_reset(self):
-        self.process.spawn(self._initial_reset)
-
-    def _initial_reset(self):
-        self.reset()
-        if self.params.defaultConfig:
-            self.load_layout(self.params.defaultConfig)
-        else:
-            self.load_structure = self._save_to_structure()
-
     def set_layout(self, value):
         part_info = self.run_hook(self.ReportOutports, self.create_part_tasks())
         part_info = self.run_hook(
@@ -152,6 +142,12 @@ class ManagerController(DefaultController):
         self.set_layout(Table(self.layout.meta))
         # List the configDir and add to choices
         self._set_layout_names()
+        # If we have no load_structure (initial reset) define one
+        if self.load_structure is None:
+            if self.params.defaultConfig:
+                self.load_layout(self.params.defaultConfig)
+            else:
+                self.load_structure = self._save_to_structure()
 
     @method_writeable_in(sm.READY)
     def edit(self):
