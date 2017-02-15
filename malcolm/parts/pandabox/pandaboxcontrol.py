@@ -241,8 +241,11 @@ class PandABoxControl(Loggable, Spawnable):
                 field = line.rstrip("<")
                 val = None
                 table_queues[field] = self.send("%s?\n" % field)
-            else:
+            elif "=" in line:
                 field, val = line.split("=", 1)
+            else:
+                self.log_warning("Can't parse line %r of changes", line)
+                continue
             # TODO: Goes in server
             if val in ("POSITIONS.ZERO", "BITS.ZERO"):
                 val = "ZERO"
