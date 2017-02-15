@@ -111,7 +111,7 @@ gui(self.get_block("COUNTER"))
 or
 
 self.process_block.blocks
-""" % self.process_block.blocks
+""" % (self.process_block.blocks,)
 
     self.start()
     try:
