@@ -25,6 +25,7 @@ class TestHDFWriterPart(unittest.TestCase):
         self.child.__getitem__.side_effect = getitem
 
         self.params = MagicMock()
+        self.params.mri = "BLOCK-HDF5"
         self.process.get_block.return_value = self.child
         self.o = HDFWriterPart(self.process, self.params)
         list(self.o.create_attributes())
@@ -35,7 +36,7 @@ class TestHDFWriterPart(unittest.TestCase):
         energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
         spiral = SpiralGenerator(["x", "y"], "mm", [0., 0.], 5., scale=2.0)
         params.generator = CompoundGenerator([energy, spiral], [], [])
-        params.filePath = "/path/to/file.h5"
+        params.filePath = "/tmp/file.h5"
         completed_steps = 0
         steps_to_do = 38
         part_info = {
@@ -92,7 +93,7 @@ class TestHDFWriterPart(unittest.TestCase):
                              dimAttDatasets=True,
                              lazyOpen=True,
                              arrayCounter=0,
-                             filePath="/path/to/",
+                             filePath="/tmp/",
                              fileName="file.h5",
                              fileTemplate="%s%s")))
         self.assertEqual(task.put_many_async.call_args_list[1],
@@ -159,9 +160,11 @@ class TestHDFWriterPart(unittest.TestCase):
 </group>
 </group>
 </hdf5_layout>"""
+        expected_filename = "/tmp/BLOCK-HDF5-layout.xml"
         self.assertEqual(
-            task.put_async.call_args_list[0][0][1].replace(">", ">\n").splitlines(),
-            expected_xml.splitlines())
+            task.put_async.call_args_list[0][0][1], expected_filename)
+        actual_xml = open(expected_filename).read().replace(">", ">\n")
+        self.assertEqual(actual_xml.splitlines(), expected_xml.splitlines())
 
     def test_run(self):
         task = MagicMock()

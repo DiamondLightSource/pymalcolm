@@ -98,7 +98,7 @@ class HDFWriterPart(ChildPart):
             yield DatasetProducedInfo(
                 name=name, filename=filename, type=type,
                 rank=dataset_info.rank + generator_rank,
-                path= "/entry/%s/%s" % (dataset_info.name, dataset_info.name),
+                path="/entry/%s/%s" % (dataset_info.name, dataset_info.name),
                 uniqueid=uniqueid)
 
         # Add any setpoint dimensions
@@ -141,7 +141,10 @@ class HDFWriterPart(ChildPart):
             fileTemplate="%s%s"))
         futures += self._set_dimensions(task, params.generator)
         xml = self._make_layout_xml(params.generator, part_info)
-        futures += task.put_async(self.child["xml"], xml)
+        layout_filename = os.path.join(
+            file_dir, "%s-layout.xml" % self.params.mri)
+        open(layout_filename, "w").write(xml)
+        futures += task.put_async(self.child["xml"], layout_filename)
         # Wait for the previous puts to finish
         task.wait_all(futures)
         # Reset numCapture back to 0
