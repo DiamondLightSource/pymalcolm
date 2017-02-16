@@ -7,7 +7,6 @@ from malcolm.parts.pandabox.pandaboxgrouppart import PandABoxGroupPart
 from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 from malcolm.parts.pandabox.pandaboxactionpart import PandABoxActionPart
 from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
-from malcolm.parts.ADCore.hdfwriterpart import attribute_dataset_types
 from malcolm.parts.builtin.stringpart import StringPart
 from malcolm.parts.builtin.choicepart import ChoicePart
 from malcolm.tags import widget, group, inport, outport, config
@@ -91,7 +90,8 @@ class PandABoxBlockMaker(Loggable):
             self._make_out(field_name, field_data, "pos")
             self._make_scale_offset(field_name)
             self._make_out_capture(field_name, field_data)
-            self._make_data_delay(field_name)
+            if subtyp != "adc":
+                self._make_data_delay(field_name)
         elif typ == "ext_out":
             self._make_out_capture(field_name, field_data)
         elif typ == "bit_mux":
@@ -182,6 +182,8 @@ class PandABoxBlockMaker(Loggable):
                           field_data.labels, tags=[group_tag, widget("combo")])
         self._make_field_part(field_name + ".CAPTURE", meta, writeable=True)
         if self.area_detector:
+            from malcolm.parts.ADCore.hdfwriterpart import \
+                attribute_dataset_types
             # Make a string part to hold the name of the dataset
             part_name = field_name + ".DATASET_NAME"
             label, attr_name = make_label_attr_name(part_name)

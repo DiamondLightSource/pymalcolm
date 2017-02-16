@@ -40,7 +40,8 @@ params = hardware_collection.MethodMeta.prepare_input_map(
 _, parts = hardware_collection(process, params)
 
 # Make a controller for the top level
-params = ManagerController.MethodMeta.prepare_input_map(mri="P")
+params = ManagerController.MethodMeta.prepare_input_map(
+    mri="P", configDir="/tmp")
 controller = ManagerController(process, parts, params)
 
 # Start the server
