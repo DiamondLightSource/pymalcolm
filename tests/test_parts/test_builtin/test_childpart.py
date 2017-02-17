@@ -37,16 +37,15 @@ class PortsPart(Part):
     def create_attributes(self):
         for data in super(PortsPart, self).create_attributes():
             yield data
-        # note 4th part of inport tag is its disconnected value
-        # TODO this is yet to be documented
-        in_tag = "inport:pos:"
+        # note 3rd part of inport tag is its disconnected value
+        in_tag = "inport:int32:"
         in_name = "inport%s" % self.name
         in_port = StringMeta(in_name, [in_tag, "config"]).make_attribute()
         in_port.meta.set_writeable_in(sm.READY)
         yield in_name, in_port, in_port.set_value
 
         out_name = "outport%s" % self.name
-        out_tag = "outport:pos:%s" %self.name
+        out_tag = "outport:int32:%s" %self.name
         out_port = StringMeta(in_name, [out_tag]).make_attribute()
         out_port.meta.set_writeable_in(sm.READY)
         yield out_name, out_port, out_port.set_value
@@ -122,6 +121,29 @@ class TestChildPart(unittest.TestCase):
         self.assertEqual(self.c1.block.inportConnector, '')
         self.assertEqual(self.c1.block.outportConnector, '')
 
+        self.assertEqual(self.c.exports.meta.elements.name.choices, (
+            'partchild1.busy',
+            'partchild1.disable',
+            'partchild1.inportConnector',
+            'partchild1.outportConnector',
+            'partchild1.reset',
+            'partchild1.state',
+            'partchild1.status',
+            'partchild2.busy',
+            'partchild2.disable',
+            'partchild2.inportConnector',
+            'partchild2.outportConnector',
+            'partchild2.reset',
+            'partchild2.state',
+            'partchild2.status',
+            'partchild3.busy',
+            'partchild3.disable',
+            'partchild3.inportConnector',
+            'partchild3.outportConnector',
+            'partchild3.reset',
+            'partchild3.state',
+            'partchild3.status'))
+
     def test_reset(self):
         # TODO cover the clause 'state == RESETTING'
         self.c.disable()
@@ -129,9 +151,17 @@ class TestChildPart(unittest.TestCase):
         self.c.reset()
         self.checkState(sm.IDLE)
 
-    def test_pre_layout(self):
-        outports = self.p1.pre_layout(None)
-        self.assertEqual(len(outports), 1)
+    def test_report_ports(self):
+        ports = self.p1.report_ports(None)
+        self.assertEqual(len(ports), 2)
+        self.assertEqual(ports[0].direction, "in")
+        self.assertEqual(ports[0].type, "int32")
+        self.assertEqual(ports[0].value, "")
+        self.assertEqual(ports[0].extra, "")
+        self.assertEqual(ports[1].direction, "out")
+        self.assertEqual(ports[1].type, "int32")
+        self.assertEqual(ports[1].value, "")
+        self.assertEqual(ports[1].extra, "Connector")
 
     def test_layout(self):
         self.c.edit()
@@ -166,8 +196,8 @@ class TestChildPart(unittest.TestCase):
         self.c3.block.inportConnector = 'Connector3'
 
         task = Task("Task1" , self.p)
-        self.p1.sever_all_inports(task)
-        task.wait_all([],5)
+        self.p1.sever_inports(task)
+        task.wait_all([], 5)
         self.assertEqual(self.c1.block.inportConnector, '')
         self.assertEqual(self.c2.block.inportConnector, 'Connector')
         self.assertEqual(self.c3.block.inportConnector, 'Connector3')
@@ -178,8 +208,8 @@ class TestChildPart(unittest.TestCase):
         self.assertEqual(self.c1.block.inportConnector, 'Connector')
 
         task = Task("Task1" , self.p)
-        out_port = {'Connector': 'pos'}
-        self.p1.sever_inports_connected_to(task, out_port)
+        out_port = {'Connector': 'int32'}
+        self.p1.sever_inports(task, out_port)
         self.assertEqual(self.c1.block.inportConnector, '')
 
     def test_get_flowgraph_ports(self):

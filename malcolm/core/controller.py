@@ -56,6 +56,8 @@ class Controller(Loggable):
         # dict {hook: name}
         self.hook_names = self._find_hooks()
         self.parts = self._setup_parts(parts, controller_name)
+        self.static_fields = [self.create_meta()] + list(
+            self.create_attributes()) + list(self.create_methods())
         self._set_block_children()
         self._do_transition(sm.DISABLED, "Disabled")
         self.block.set_process_path(process, [self.mri])
@@ -88,14 +90,16 @@ class Controller(Loggable):
     def do_initial_reset(self):
         pass
 
+    def create_part_fields(self):
+        for part in self.parts.values():
+            for data in part.create_attributes():
+                yield data
+            for data in part.create_methods():
+                yield data
+
     def _set_block_children(self):
         # reconfigure block with new children
-        child_list = [self.create_meta()]
-        child_list += list(self.create_attributes())
-        child_list += list(self.create_methods())
-        for part in self.parts.values():
-            child_list += list(part.create_attributes())
-            child_list += list(part.create_methods())
+        child_list = self.static_fields[:] + list(self.create_part_fields())
 
         self.children_writeable = {}
         writeable_functions = {}

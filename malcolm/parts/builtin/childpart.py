@@ -1,9 +1,9 @@
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, REQUIRED, method_also_takes, Attribute, \
-    ResponseError, serialize_object
+    ResponseError, serialize_object, Task
 from malcolm.core.vmetas import StringMeta
 from malcolm.controllers.managercontroller import ManagerController, \
-    LayoutInfo, OutportInfo
+    LayoutInfo, PortInfo, ExportableInfo
 
 
 sm = ManagerController.stateMachine
@@ -21,7 +21,7 @@ class ChildPart(Part):
     # Layout options
     x = 0
     y = 0
-    visible = False
+    visible = None
 
     def store_params(self, params):
         super(ChildPart, self).store_params(params)
@@ -44,30 +44,35 @@ class ChildPart(Part):
             task.when_matches(
                 self.child["state"], sm.READY, bad_values=[sm.FAULT])
 
-    @ManagerController.ReportOutports
-    def pre_layout(self, _):
-        outports = self._get_flowgraph_ports("out")
-        ret = []
-        for port_tag in outports.values():
-            _, type, value = port_tag.split(":", 3)
-            ret.append(OutportInfo(type=type, value=value))
-        return ret
+    @ManagerController.ReportPorts
+    def report_ports(self, _):
+        port_infos = self._get_flowgraph_ports("in").values()
+        port_infos += self._get_flowgraph_ports("out").values()
+        return port_infos
 
     @ManagerController.Layout
     def layout(self, task, part_info, layout_table):
+        # if this is the first call, we need to calculate if we are visible
+        # or not
+        if self.visible is None:
+            self.visible = self.child_connected(part_info)
         for i, name in enumerate(layout_table.name):
             _, _, x, y, visible = layout_table[i]
             if name == self.name:
                 if self.visible and not visible:
-                    self.sever_all_inports(task)
+                    self.sever_inports(task)
                 self.x = x
                 self.y = y
                 self.visible = visible
             else:
                 was_visible = self.part_visible.get(name, True)
                 if was_visible and not visible:
-                    outports = self.find_outports(name, part_info)
-                    self.sever_inports_connected_to(task, outports)
+                    outport_lookup = {}
+                    for outport_info in part_info.get(name, []):
+                        if outport_info.direction == "out":
+                            outport_lookup[outport_info.value] = \
+                                outport_info.type
+                    self.sever_inports(task, outport_lookup)
                 self.part_visible[name] = visible
         ret = LayoutInfo(
             mri=self.params.mri, x=self.x, y=self.y, visible=self.visible)
@@ -97,52 +102,99 @@ class ChildPart(Part):
                 part_structure[k] = serialize_object(attr.value)
         return part_structure
 
-    def _get_flowgraph_ports(self, direction="out"):
-        # {attr_name: port_tag}
+    @ManagerController.ReportExportable
+    def report_exportable(self, task):
+        ret = []
+        for k in self.child:
+            if k != "meta":
+                attr = self.child[k]
+                setter = self._make_setter(attr)
+                ret.append(ExportableInfo(name=k, value=attr, setter=setter))
+        return ret
+
+    def _make_setter(self, attr):
+        if isinstance(attr, Attribute):
+            def setter(value):
+                task = Task("ExportPutTask", self.process)
+                task.put(attr, value)
+        else:
+            def setter(params=None):
+                task = Task("ExportPostTask", self.process)
+                task.post(attr, params)
+        return setter
+
+    def _get_flowgraph_ports(self, direction):
+        """Get a PortInfo for each flowgraph of the child matching a direction
+
+        Args:
+            direction (str): Which direction to get, "in" or "out"
+
+        Returns:
+            dict: {Attribute: PortInfo}: PortInfo for the requested Attributes
+        """
         ports = OrderedDict()
         for attr_name in self.child.endpoints:
             attr = self.child[attr_name]
             if isinstance(attr, Attribute):
                 for tag in attr.meta.tags:
                     if tag.startswith("%sport" % direction):
-                        ports[attr] = tag
+                        direction, type, extra = tag.split(":", 3)
+                        # Strip of the "port" suffix
+                        direction = direction[:-4]
+                        ports[attr] = PortInfo(direction=direction, type=type,
+                                               value=attr.value, extra=extra)
         return ports
 
-    def sever_all_inports(self, task):
-        """Find all the inports of self.child, and disconnect them
+    def sever_inports(self, task, outport_lookup=None):
+        """Conditionally sever inport of the child. If outports is then None
+        then sever all, otherwise restrict to the listed outports
 
         Args:
             task (Task): The task to use to do the put()
+            outport_lookup (dict): {outport_value: outport_type} for each
+                outport or None for all inports
         """
-        inports = self._get_flowgraph_ports("in")
         futures = []
-        for attr, port_tag in inports.items():
-            _, type, disconnected_value = port_tag.split(":", 3)
-            futures += task.put_async(attr, disconnected_value)
-        task.wait_all(futures)
-
-    def find_outports(self, name, part_info):
-        """Filter the part_outports dict with the name of a child part
-
-        Args:
-            name (str): Name of the Part
-            part_info (dict): {name: [Info]}
-
-        Returns:
-            dict: {outport_value: outport_type}
-        """
-        outports = {}
-        for outport_info in OutportInfo.filter_parts(part_info).get(name, []):
-            outports[outport_info.value] = outport_info.type
-        return outports
-
-    def sever_inports_connected_to(self, task, outports):
-        # Find the outports of this part
-        # {outport_value: type} e.g. "PCOMP.OUT" -> "bit"
-        inports = self._get_flowgraph_ports("in")
-        futures = []
-        for attr, port_tag in inports.items():
-            _, type, disconnected_value = port_tag.split(":", 3)
-            if outports.get(attr.value, None) == type:
+        for attr, port_info in self._get_flowgraph_ports("in").items():
+            if outport_lookup is None or outport_lookup.get(
+                    port_info.value, None) == port_info.type:
+                disconnected_value = port_info.extra
                 futures += task.put_async(attr, disconnected_value)
         task.wait_all(futures)
+
+    def child_connected(self, part_info):
+        """Calculate if anything is connected to us or we are connected to
+        anything else
+
+        Args:
+            part_info (dict): {part_name: [PortInfo]} from other ports
+
+        Returns:
+            bool: True if we are connected or have nothing to connect
+        """
+        has_ports = False
+        # See if our inports are connected to anything
+        for inport_info in self._get_flowgraph_ports("in").values():
+            disconnected_value = inport_info.extra
+            has_ports = True
+            if inport_info.value != disconnected_value:
+                return True
+        # Calculate a lookup of outport values to their types
+        # {outport_value: outport_type}
+        outport_lookup = {}
+        for outport_info in self._get_flowgraph_ports("out").values():
+            has_ports = True
+            outport_lookup[outport_info.value] = outport_info.type
+        # See if anything is connected to one of our outports
+        for inport_info in PortInfo.filter_values(part_info):
+            if outport_lookup.get(inport_info.value, None) == inport_info.type:
+                return True
+        # If we have ports and they haven't been connected to anything then
+        # we are disconnected
+        if has_ports:
+            return False
+        # otherwise, treat a block with no ports as connected
+        else:
+            return True
+
+

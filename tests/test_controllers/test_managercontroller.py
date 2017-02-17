@@ -79,9 +79,10 @@ class TestManagerController(unittest.TestCase):
             self.c.Reset: "Reset",
             self.c.Disable: "Disable",
             self.c.Layout: "Layout",
-            self.c.ReportOutports: "ReportOutports",
+            self.c.ReportPorts: "ReportPorts",
             self.c.Load: "Load",
             self.c.Save: "Save",
+            self.c.ReportExportable: "ReportExportable",
         })
 
         # check instantiation of object tree via logger names
@@ -107,7 +108,7 @@ class TestManagerController(unittest.TestCase):
         with self.assertRaises(Exception):
             self.c.edit()
 
-    def check_expected_save(self, x=0.0, y=0.0, visible="false"):
+    def check_expected_save(self, x=0.0, y=0.0, visible="true"):
         expected = [x.strip() for x in ("""{
           "layout": {
             "part2": {
@@ -116,6 +117,7 @@ class TestManagerController(unittest.TestCase):
               "visible": %s
             }
           },
+          "exports": {},
           "part2": {}
         }""" % (x, y, visible)).splitlines()]
         actual = [x.strip() for x in open(
@@ -178,21 +180,75 @@ class TestManagerController(unittest.TestCase):
         new_layout.mri = ["P45-MRI"]
         new_layout.x = [10]
         new_layout.y = [20]
-        new_layout.visible = [True]
+        new_layout.visible = [False]
         self.b.layout = new_layout
         self.assertEqual(self.c.parts['part2'].x, 10)
         self.assertEqual(self.c.parts['part2'].y, 20)
-        self.assertEqual(self.c.parts['part2'].visible, True)
+        self.assertEqual(self.c.parts['part2'].visible, False)
 
         # save the layout, modify and restore it
         params = {'layoutName': 'testSaveLayout'}
         params = ManagerController.save.MethodMeta.prepare_input_map(**params)
         self.c.save(params)
-        self.check_expected_save(10.0, 20.0, "true")
+        self.check_expected_save(10.0, 20.0, "false")
 
         self.c.parts['part2'].x = 30
         self.b.layoutName = 'testSaveLayout'
         self.assertEqual(self.c.parts['part2'].x, 10)
+
+    def test_set_export_parts(self):
+        self.assertEqual(list(self.b), [
+            'meta',
+            'state',
+            'status',
+            'busy',
+            'layout',
+            'layoutName',
+            'exports',
+            'disable',
+            'edit',
+            'reset',
+            'revert',
+            'save'])
+        self.assertEqual(self.c.exports.meta.elements.name.choices, (
+            'part2.busy',
+            'part2.disable',
+            'part2.edit',
+            'part2.exports',
+            'part2.layout',
+            'part2.layoutName',
+            'part2.reset',
+            'part2.revert',
+            'part2.save',
+            'part2.state',
+            'part2.status'))
+        self.c.edit()
+        new_exports = Table(self.c.exports.meta)
+        new_exports.append(('part2.state', 'childState'))
+        new_exports.append(('part2.edit', 'childEdit'))
+        self.b.exports = new_exports
+        params = {'layoutName': 'testSaveLayout'}
+        params = ManagerController.save.MethodMeta.prepare_input_map(**params)
+        self.c.save(params)
+        self.assertEqual(list(self.b), [
+            'meta',
+            'state',
+            'status',
+            'busy',
+            'layout',
+            'layoutName',
+            'exports',
+            'disable',
+            'edit',
+            'reset',
+            'revert',
+            'save',
+            'childState',
+            'childEdit'])
+        self.assertEqual(self.b.childState, self.sm.READY)
+        #self.b.childEdit()
+        #self.assertEqual(self.b.childState, self.sm.EDITABLE)
+
 
 
 if __name__ == "__main__":
