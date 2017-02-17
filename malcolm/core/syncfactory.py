@@ -1,4 +1,4 @@
-from threading import Lock
+from threading import RLock
 from multiprocessing.pool import ThreadPool
 
 from malcolm.compat import queue
@@ -36,8 +36,8 @@ class SyncFactory(Loggable):
         return InterruptableQueue()
 
     def create_lock(self):
-        """Creates a new simple Lock object"""
-        return Lock()
+        """Creates a new recursive Lock object"""
+        return RLock()
 
     def __del__(self):
         """When we get garbage collected, clean up the threads we created"""

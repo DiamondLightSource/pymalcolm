@@ -27,7 +27,7 @@ class TestBlock(unittest.TestCase):
         mock_queue.assert_called_once_with()
         self.assertEqual(q, mock_queue.return_value)
 
-    @patch("malcolm.core.syncfactory.Lock")
+    @patch("malcolm.core.syncfactory.RLock")
     def test_lock_creation(self, mock_lock):
         l = self.s.create_lock()
         mock_lock.assert_called_once_with()
