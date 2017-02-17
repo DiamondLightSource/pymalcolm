@@ -14,6 +14,7 @@ from malcolm.core.loggable import Loggable
 from malcolm.core.map import Map
 from malcolm.core.methodmeta import MethodMeta, method_takes, method_returns, \
     method_writeable_in, REQUIRED, OPTIONAL, method_also_takes
+from malcolm.core.notifier import Notifier
 from malcolm.core.ntscalar import NTScalar
 from malcolm.core.ntscalararray import NTScalarArray
 from malcolm.core.nttable import NTTable
