@@ -81,49 +81,49 @@ class Request(Serializable):
 class Get(Request):
     """Create a Get Request object"""
 
-    endpoints = ["id", "endpoint"]
+    endpoints = ["id", "path"]
 
-    def __init__(self, context=None, response_queue=None, endpoint=None):
+    def __init__(self, context=None, response_queue=None, path=None):
         """
         Args:
             context(): Context of Get
             response_queue(Queue): Queue to return to
-            endpoint(list): [`str`] Path to target Block substructure
+            path(list): (`str`) Path to target Block substructure
         """
 
         super(Get, self).__init__(context, response_queue)
-        self.set_endpoint(endpoint)
+        self.set_path(path)
 
-    def set_endpoint(self, endpoint):
-        if endpoint is not None:
-            endpoint = [deserialize_object(e, str_) for e in endpoint]
-        self.set_endpoint_data("endpoint", endpoint)
+    def set_path(self, path):
+        if path is not None:
+            path = [deserialize_object(e, str_) for e in path]
+        self.set_endpoint_data("path", path)
 
 
 @Serializable.register_subclass("malcolm:core/Put:1.0")
 class Put(Request):
     """Create a Put Request object"""
 
-    endpoints = ["id", "endpoint", "value"]
+    endpoints = ["id", "path", "value"]
 
     def __init__(self, context=None, response_queue=None,
-                 endpoint=None, value=None):
+                 path=None, value=None):
         """
         Args:
             context(): Context of Put
             response_queue(Queue): Queue to return to
-            endpoint(list): [`str`] Path to target Block substructure
-            value(): Value to put to endpoint e.g. String, dict
+            path(list): (`str`) Path to target Block substructure
+            value(): Value to put to path e.g. String, dict
         """
 
         super(Put, self).__init__(context, response_queue)
-        self.set_endpoint(endpoint)
+        self.set_path(path)
         self.set_value(value)
 
-    def set_endpoint(self, endpoint):
-        if endpoint is not None:
-            endpoint = [deserialize_object(e, str_) for e in endpoint]
-        self.set_endpoint_data("endpoint", endpoint)
+    def set_path(self, path):
+        if path is not None:
+            path = [deserialize_object(e, str_) for e in path]
+        self.set_endpoint_data("path", path)
 
     def set_value(self, value):
         self.set_endpoint_data("value", serialize_object(value))
@@ -133,27 +133,27 @@ class Put(Request):
 class Post(Request):
     """Create a Post Request object"""
 
-    endpoints = ["id", "endpoint", "parameters"]
+    endpoints = ["id", "path", "parameters"]
 
     def __init__(self, context=None, response_queue=None,
-                 endpoint=None, parameters=None):
+                 path=None, parameters=None):
         """
         Args:
             context(): Context of Post
             response_queue(Queue): Queue to return to
-            endpoint(list): [`str`] Path to target Block substructure
-            parameters(dict): List of parameters to post to an endpoint
+            path(list): (`str`) Path to target Block substructure
+            parameters(dict): List of parameters to post to path
                 e.g. arguments for a MethodMeta
         """
 
         super(Post, self).__init__(context, response_queue)
-        self.set_endpoint(endpoint)
+        self.set_path(path)
         self.set_parameters(parameters)
 
-    def set_endpoint(self, endpoint):
-        if endpoint is not None:
-            endpoint = [deserialize_object(e, str_) for e in endpoint]
-        self.set_endpoint_data("endpoint", endpoint)
+    def set_path(self, path):
+        if path is not None:
+            path = [deserialize_object(e, str_) for e in path]
+        self.set_endpoint_data("path", path)
 
     def set_parameters(self, parameters):
         if parameters is not None:
@@ -167,20 +167,20 @@ class Post(Request):
 class Subscribe(Request):
     """Create a Subscribe Request object"""
 
-    endpoints = ["id", "endpoint", "delta"]
+    endpoints = ["id", "path", "delta"]
 
-    def __init__(self, context=None, response_queue=None, endpoint=None,
+    def __init__(self, context=None, response_queue=None, path=None,
                  delta=False):
         """
         Args:
             context: Context of Subscribe
             response_queue (Queue): Queue to return to
-            endpoint (list): [`str`] Path to target
+            path (list): (`str`) Path to target
             delta (bool): Notify of differences only (default False)
         """
 
         super(Subscribe, self).__init__(context, response_queue)
-        self.set_endpoint(endpoint)
+        self.set_path(path)
         self.set_delta(delta)
 
     def respond_with_update(self, value):
@@ -203,10 +203,10 @@ class Subscribe(Request):
         response = Delta(self.id, self.context, changes=changes)
         self._respond(response)
 
-    def set_endpoint(self, endpoint):
-        if endpoint is not None:
-            endpoint = [deserialize_object(e, str_) for e in endpoint]
-        self.set_endpoint_data("endpoint", endpoint)
+    def set_path(self, path):
+        if path is not None:
+            path = [deserialize_object(e, str_) for e in path]
+        self.set_endpoint_data("path", path)
 
     def set_delta(self, delta):
         delta = deserialize_object(delta, bool)

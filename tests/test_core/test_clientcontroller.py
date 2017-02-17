@@ -47,7 +47,7 @@ class TestClientController(unittest.TestCase):
         self.assertEqual(self.p.q.put.call_count, 1)
         req = self.p.q.put.call_args[0][0]
         self.assertEqual(req.typeid, "malcolm:core/Subscribe:1.0")
-        self.assertEqual(req.endpoint, [self.p.name, "remoteBlocks", "value"])
+        self.assertEqual(req.path, [self.p.name, "remoteBlocks", "value"])
         self.assertEqual(req.response_queue, self.cc)
         self.p.get_client_comms.assert_called_with("blockname")
         self.assertEqual(self.comms.q.put.call_count, 1)
@@ -55,7 +55,7 @@ class TestClientController(unittest.TestCase):
         self.assertEqual(req.typeid, "malcolm:core/Subscribe:1.0")
         self.assertEqual(req.delta, True)
         self.assertEqual(req.response_queue, self.cc)
-        self.assertEqual(req.endpoint, ["blockname"])
+        self.assertEqual(req.path, ["blockname"])
 
     def test_methods_created(self):
         self.assertEqual(list(self.b), [

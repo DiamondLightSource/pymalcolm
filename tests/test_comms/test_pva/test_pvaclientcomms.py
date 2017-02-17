@@ -37,7 +37,7 @@ class TestPVAClientComms(unittest.TestCase):
     def test_send_get_to_server(self):
         self.PVA = PvaClientComms(self.p)
         self.PVA.send_to_caller = MagicMock()
-        request = Get(endpoint=["ep1", "ep2"])
+        request = Get(path=["ep1", "ep2"])
         self.PVA.send_to_server(request)
         pvaccess.Channel.assert_called_once()
         self.ch.get.assert_called_once()
@@ -54,7 +54,7 @@ class TestPVAClientComms(unittest.TestCase):
     def test_send_put_to_server(self):
         self.PVA = PvaClientComms(self.p)
         self.PVA.send_to_caller = MagicMock()
-        request = Put(endpoint=["ep1", "ep2"], value="val1")
+        request = Put(path=["ep1", "ep2"], value="val1")
         self.PVA.send_to_server(request)
         pvaccess.Channel.assert_called_once()
         self.ch.put.assert_called_once()
@@ -63,7 +63,7 @@ class TestPVAClientComms(unittest.TestCase):
     def test_send_post_to_server(self):
         self.PVA = PvaClientComms(self.p)
         self.PVA.send_to_caller = MagicMock()
-        request = Post(endpoint=["ep1", "method1"], parameters={'arg1': np.int32(1)})
+        request = Post(path=["ep1", "method1"], parameters={'arg1': np.int32(1)})
         self.PVA.send_to_server(request)
         pvaccess.RpcClient.assert_called_once()
         self.rpc.invoke.assert_called_once()
@@ -80,7 +80,7 @@ class TestPVAClientComms(unittest.TestCase):
     def test_send_subscribe_to_server(self):
         self.PVA = PvaClientComms(self.p)
         self.PVA.send_to_caller = MagicMock()
-        request = Subscribe(endpoint=["ep1", "ep2"])
+        request = Subscribe(path=["ep1", "ep2"])
         request.set_id(1)
         self.PVA.send_to_server(request)
         pvaccess.Channel.assert_called_once()

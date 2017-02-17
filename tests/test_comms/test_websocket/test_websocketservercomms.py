@@ -86,7 +86,7 @@ class TestWSServerComms(unittest.TestCase):
         message = """{
         "typeid": "malcolm:core/Get:1.0",
         "id": 54,
-        "endpoint": ["block", "attr"]
+        "path": ["block", "attr"]
         }"""
         MWSH.on_message(message)
         self.assertEquals(MWSH.servercomms.on_request.call_count, 1)
@@ -97,10 +97,10 @@ class TestWSServerComms(unittest.TestCase):
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
     def test_on_request_with_process_name(self, _, _2):
         ws = WebsocketServerComms(self.p, dict(port=1))
-        request = MagicMock(fields=dict(endpoint="anything"), endpoint=[".", "blocks"])
+        request = MagicMock(fields=dict(endpoint="anything"), path=[".", "blocks"])
         ws.on_request(request)
         self.p.q.put.assert_called_once_with(request)
-        self.assertEqual(request.endpoint, [self.p.name, "blocks"])
+        self.assertEqual(request.path, [self.p.name, "blocks"])
 
     @patch('malcolm.comms.websocket.websocketservercomms.HTTPServer.listen')
     @patch('malcolm.comms.websocket.websocketservercomms.IOLoop')
@@ -149,7 +149,7 @@ class TestMalcolmBlockHandler(unittest.TestCase):
         mbh.get("test/endpoint/string")
         request = mbh.servercomms.on_request.call_args[0][0]
         self.assertIsInstance(request, Get)
-        self.assertEqual(["test", "endpoint", "string"], request.endpoint)
+        self.assertEqual(["test", "endpoint", "string"], request.path)
         self.assertIsNone(request.response_queue)
 
     def test_post(self):
@@ -159,7 +159,7 @@ class TestMalcolmBlockHandler(unittest.TestCase):
         mbh.post("test/endpoint/string")
         request = mbh.servercomms.on_request.call_args[0][0]
         self.assertIsInstance(request, Post)
-        self.assertEqual(["test", "endpoint", "string"], request.endpoint)
+        self.assertEqual(["test", "endpoint", "string"], request.path)
         self.assertEqual({"test_json":12345}, request.parameters)
         self.assertIsNone(request.response_queue)
 

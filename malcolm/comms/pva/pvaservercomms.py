@@ -354,7 +354,7 @@ class PvaPutImplementation(PvaImplementation):
         endpoints = endpoints + self.dict_to_path(put_dict)
         self.log_debug("Endpoints: %s", endpoints)
         values = self.dict_to_value(put_dict)
-        msg = Put(response_queue=self._server.q, endpoint=endpoints, value=values)
+        msg = Put(response_queue=self._server.q, path=endpoints, value=values)
         msg.set_id(self._id)
         with self._lock:
             self._server.send_to_process(msg)
@@ -408,8 +408,8 @@ class PvaRpcImplementation(PvaImplementation):
         with self._lock:
             try:
                 # We now need to create the Post message and execute it
-                endpoint = [self._block, self._method]
-                request = Post(None, self._server.q, endpoint, self.parse_variants(args.toDict(True)))
+                path = [self._block, self._method]
+                request = Post(None, self._server.q, path, self.parse_variants(args.toDict(True)))
                 request.set_id(self._id)
                 self._server.process.q.put(request)
 
@@ -453,7 +453,7 @@ class PvaMonitorImplementation(PvaImplementation):
         endpoints = [self._block]
         endpoints = endpoints + self.dict_to_path(self._request.toDict())
         self.log_debug("Endpoints: %s", endpoints)
-        msg = Subscribe(response_queue=self._server.q, endpoint=endpoints, delta=True)
+        msg = Subscribe(response_queue=self._server.q, path=endpoints, delta=True)
         msg.set_id(self._id)
         self._server.send_to_process(msg)
 

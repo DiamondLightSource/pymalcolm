@@ -42,7 +42,7 @@ class Task(Loggable, Spawnable):
         self._next_id = 1
         self._futures = {}  # dict {int id: Future}
         self._methods = {}  # dict {int id: MethodMeta}
-        self._subscriptions = {}  # dict  {int id: (endpoint, func, args)}
+        self._subscriptions = {}  # dict  {int id: (path, func, args)}
         # For testing, make it so start() will raise, but stop() works
         self.define_spawn_function(None)
 
@@ -88,8 +88,8 @@ class Task(Loggable, Spawnable):
         assert isinstance(attr, Attribute), \
             "Expected Attribute, got %r" % (attr,)
 
-        endpoint = attr.process_path + ["value"]
-        request = Put(None, self.q, endpoint, value)
+        path = attr.process_path + ["value"]
+        request = Put(None, self.q, path, value)
         future = self._dispatch_request(request)
         return [future]
 
@@ -179,9 +179,9 @@ class Task(Loggable, Spawnable):
         assert isinstance(method, MethodMeta), \
             "Expected MethodMeta, got %r" % (method,)
 
-        endpoint = method.process_path
+        path = method.process_path
 
-        request = Post(None, self.q, endpoint, params)
+        request = Post(None, self.q, path, params)
         future = self._dispatch_request(request)
         self._methods[request.id] = method
         return [future]
@@ -196,9 +196,9 @@ class Task(Loggable, Spawnable):
         assert isinstance(attr, Attribute), \
             "Expected Attribute, got %r" % (attr,)
 
-        endpoint = attr.process_path + ["value"]
-        self.log_debug("Subscribing to %s", endpoint)
-        request = Subscribe(None, self.q, endpoint, False)
+        path = attr.process_path + ["value"]
+        self.log_debug("Subscribing to %s", path)
+        request = Subscribe(None, self.q, path, False)
         # If self is in args, then make weak version of it
         saved_args = []
         for arg in args:
@@ -207,7 +207,7 @@ class Task(Loggable, Spawnable):
             else:
                 saved_args.append(arg)
         new_id = self._get_next_id()
-        self._subscriptions[new_id] = (endpoint, callback, args)
+        self._subscriptions[new_id] = (path, callback, args)
         request.set_id(new_id)
         self.process.q.put(request)
 
@@ -310,7 +310,7 @@ class Task(Loggable, Spawnable):
 
     def _invoke_callback(self, response, futures):
         self.log_debug("subscription %d callback", response.id)
-        (endpoint, func, args) = self._subscriptions[response.id]
+        (path, func, args) = self._subscriptions[response.id]
         if isinstance(response, Update):
             result = func(response.value, *args)
             if func == match_update and result is not None:

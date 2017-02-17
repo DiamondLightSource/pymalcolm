@@ -43,10 +43,10 @@ class TestBlock(unittest.TestCase):
         b = Block()
         b.replace_endpoints({"child":child})
         b.set_writeable_functions({"child":func})
-        b.set_process_path(parent, ("name",))
+        b.set_process_path(parent, ["name"])
         request = MagicMock(
             spec=Put, id=12345, response_queue=MagicMock(),
-            context=MagicMock(), endpoint=["name", "child", "irrelevant"])
+            context=MagicMock(), path=["name", "child", "irrelevant"])
         b.handle_request(request)
         calls = parent.block_respond.call_args_list
         self.assertEquals(1, len(calls))
@@ -65,10 +65,10 @@ class TestBlock(unittest.TestCase):
         b = Block()
         b.replace_endpoints({"child":child})
         b.set_writeable_functions({"child":func})
-        b.set_process_path(parent, ("name",))
+        b.set_process_path(parent, ["name"])
         request = MagicMock(
             spec=Post, id=12345, response_queue=MagicMock(),
-            context=MagicMock(), endpoint=["name", "child", "irrelevant"])
+            context=MagicMock(), path=["name", "child", "irrelevant"])
         b.handle_request(request)
         calls = parent.block_respond.call_args_list
         self.assertEquals(1, len(calls))
@@ -91,7 +91,7 @@ class TestBlock(unittest.TestCase):
         b.set_process_path(parent, ("name",))
         request = MagicMock(
             spec=Put, id=12345, response_queue=MagicMock(),
-            context=MagicMock(), endpoint=["name", "child", "irrelevant"])
+            context=MagicMock(), path=["name", "child", "irrelevant"])
         b.handle_request(request)
         calls = parent.block_respond.call_args_list
         self.assertEquals(1, len(calls))

@@ -29,7 +29,7 @@ class TestAttributeItem(unittest.TestCase):
         request = self.item.set_value(value)
         self.assertEqual(AttributeItem.RUNNING, self.item.get_state())
         self.assertEqual(
-            list(self.item.endpoint + ("value",)), request.endpoint)
+            list(self.item.endpoint + ("value",)), request.path)
         self.assertEqual(value.__str__.return_value, request.value)
         self.assertIsNone(request.response_queue)
 

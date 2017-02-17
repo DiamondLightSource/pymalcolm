@@ -51,7 +51,7 @@ class MethodMeta(Meta):
     def handle_request(self, request, post_function):
         self.log_debug("Received request %s", request)
         assert isinstance(request, Post), "Expected Post, got %r" % (request,)
-        assert len(request.endpoint) == 2, "Can only Post to MethodMeta root"
+        assert len(request.path) == 2, "Can only Post to MethodMeta root"
         return self.call_post_function(post_function, request.parameters, self)
 
     def prepare_input_map(self, **param_dict):

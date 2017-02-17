@@ -40,7 +40,7 @@ class TestHelloDemoSystem(unittest.TestCase):
         task.when_matches(b["state"], "Ready", timeout=1)
         q = sync_factory.create_queue()
         req = Post(response_queue=q, context="ClientConnection",
-                   endpoint=["hello", "greet"],
+                   path=["hello", "greet"],
                    parameters=dict(name="thing"))
         req.set_id(44)
         process.q.put(req)
@@ -65,7 +65,7 @@ class TestCounterDemoSystem(unittest.TestCase):
         q = sync_factory.create_queue()
 
         sub = Subscribe(response_queue=q, context="ClientConnection",
-                        endpoint=["counting", "counter"],
+                        path=["counting", "counter"],
                         delta=False)
         process.q.put(sub)
         resp = q.get(timeout=1)
@@ -74,7 +74,7 @@ class TestCounterDemoSystem(unittest.TestCase):
         self.assertEqual(0, attr.value)
 
         post = Post(response_queue=q, context="ClientConnection",
-                    endpoint=["counting", "increment"])
+                    path=["counting", "increment"])
         process.q.put(post)
 
         resp = q.get(timeout=1)

@@ -108,10 +108,10 @@ class WebsocketServerComms(ServerComms):
         """
 
         request.response_queue = self.q
-        if hasattr(request, "endpoint") and len(request.endpoint) > 0 and \
-                request.endpoint[0] == ".":
+        if hasattr(request, "path") and len(request.path) > 0 and \
+                request.path[0] == ".":
             # We're talking about the process block, so fill in the right name
-            request.endpoint[0] = self.process.name
+            request.path[0] = self.process.name
         self.process.q.put(request)
 
     def stop_recv_loop(self):

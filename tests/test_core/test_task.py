@@ -60,7 +60,7 @@ class TestTask(unittest.TestCase):
         t.put_async(self.attr, "testValue")
         req = self.proc.q.get(timeout=0)
         self.assertIsInstance(req, Request)
-        self.assertEqual(req.endpoint,
+        self.assertEqual(req.path,
                          ['testBlock', 'testAttr', 'value'])
         self.assertEqual(req.value, "testValue")
         self.assertEqual(len(t._futures), 1)
@@ -72,7 +72,7 @@ class TestTask(unittest.TestCase):
         reqs = [self.proc.q.get(timeout=0), self.proc.q.get(timeout=0)]
         self.assertEqual(self.proc.q.qsize(), 0)
         self.assertEqual(len(t._futures), 2)
-        values = list(sorted((req.endpoint, req.value) for req in reqs))
+        values = list(sorted((req.path, req.value) for req in reqs))
         self.assertEqual(values[0][0], ['testBlock', 'testAttr', 'value'])
         self.assertEqual(values[0][1], 'testValue')
         self.assertEqual(values[1][0], ['testBlock', 'testAttr2', 'value'])

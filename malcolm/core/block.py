@@ -71,7 +71,7 @@ class Block(ElementMap):
         try:
             assert isinstance(request, Post) or isinstance(request, Put), \
                 "Expected Post or Put request, received %s" % request.typeid
-            child_name = request.endpoint[1]
+            child_name = request.path[1]
             child = self[child_name]
             writeable_function = self._writeable_functions[child_name]
             result = child.handle_request(request, writeable_function)

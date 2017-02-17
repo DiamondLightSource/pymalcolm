@@ -36,7 +36,7 @@ class TestWSClientComms(unittest.TestCase):
         request = self.WS.send_to_server.call_args[0][0]
         self.assertEqual(request.id, 0)
         self.assertEqual(request.typeid, "malcolm:core/Subscribe:1.0")
-        self.assertEqual(request.endpoint, [".", "blocks", "value"])
+        self.assertEqual(request.path, [".", "blocks", "value"])
         self.assertEqual(request.delta, False)
 
     @patch('malcolm.comms.websocket.websocketclientcomms.IOLoop')
@@ -71,7 +71,7 @@ class TestWSClientComms(unittest.TestCase):
         request.set_id(54)
         self.WS.send_to_server(request)
         self.WS.conn.write_message.assert_called_once_with(
-            '{"typeid": "malcolm:core/Get:1.0", "id": 54, "endpoint": ["block", "attr"]}')
+            '{"typeid": "malcolm:core/Get:1.0", "id": 54, "path": ["block", "attr"]}')
 
     @patch('malcolm.comms.websocket.websocketclientcomms.IOLoop')
     def test_start(self, ioloop_mock):

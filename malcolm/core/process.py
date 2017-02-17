@@ -105,7 +105,7 @@ class Process(Loggable):
         Args:
             request (Request): The message that should be passed to the Block
         """
-        block_name = request.endpoint[0]
+        block_name = request.path[0]
         block = self._blocks[block_name]
         spawned = self.sync_factory.spawn(block.handle_request, request)
         self._add_spawned(AddSpawned(spawned, block.handle_request))
@@ -195,8 +195,8 @@ class Process(Loggable):
                 subscription.respond_with_delta(changes)
             else:
                 # respond with the structure of everything
-                # below the endpoint
-                d = self._block_state_cache.walk_path(subscription.endpoint)
+                # below the path
+                d = self._block_state_cache.walk_path(subscription.path)
                 subscription.respond_with_update(d)
 
     def report_changes(self, *changes):
@@ -268,8 +268,8 @@ class Process(Loggable):
         assert key not in self._subscriptions, \
             "Subscription on %s already exists" % (key,)
         self._subscriptions[key] = request
-        self._block_state_cache.add_subscriber(request, request.endpoint)
-        d = self._block_state_cache.walk_path(request.endpoint)
+        self._block_state_cache.add_subscriber(request, request.path)
+        d = self._block_state_cache.walk_path(request.path)
         self.log_debug("Initial subscription value %s", d)
         if request.delta:
             request.respond_with_delta([[[], d]])
@@ -286,9 +286,9 @@ class Process(Loggable):
                 "No subscription found for %s" % (key,))
         else:
             self._block_state_cache.remove_subscriber(
-                subscription, subscription.endpoint)
+                subscription, subscription.path)
             request.respond_with_return()
 
     def _handle_get(self, request):
-        d = self._block_state_cache.walk_path(request.endpoint)
+        d = self._block_state_cache.walk_path(request.path)
         request.respond_with_return(d)

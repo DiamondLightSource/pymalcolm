@@ -65,12 +65,12 @@ class TestGet(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.context, self.get.context)
         self.assertEqual(self.response_queue, self.get.response_queue)
-        self.assertEqual(self.endpoint, self.get.endpoint)
+        self.assertEqual(self.endpoint, self.get.path)
         self.assertEqual("malcolm:core/Get:1.0", self.get.typeid)
 
     def test_setters(self):
-        self.get.set_endpoint(["BL18I:XSPRESS3", "state", "value2"])
-        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.get.endpoint)
+        self.get.set_path(["BL18I:XSPRESS3", "state", "value2"])
+        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.get.path)
 
 
 class TestPut(unittest.TestCase):
@@ -86,13 +86,13 @@ class TestPut(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.context, self.put.context)
         self.assertEqual(self.response_queue, self.put.response_queue)
-        self.assertEqual(self.endpoint, self.put.endpoint)
+        self.assertEqual(self.endpoint, self.put.path)
         self.assertEqual(self.value, self.put.value)
         self.assertEqual("malcolm:core/Put:1.0", self.put.typeid)
 
     def test_setters(self):
-        self.put.set_endpoint(["BL18I:XSPRESS3", "state", "value2"])
-        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.put.endpoint)
+        self.put.set_path(["BL18I:XSPRESS3", "state", "value2"])
+        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.put.path)
 
         self.put.set_value("7")
         self.assertEquals("7", self.put.value)
@@ -111,13 +111,13 @@ class TestPost(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.context, self.post.context)
         self.assertEqual(self.response_queue, self.post.response_queue)
-        self.assertEqual(self.endpoint, self.post.endpoint)
+        self.assertEqual(self.endpoint, self.post.path)
         self.assertEqual(self.parameters, self.post.parameters)
         self.assertEqual("malcolm:core/Post:1.0", self.post.typeid)
 
     def test_setters(self):
-        self.post.set_endpoint(["BL18I:XSPRESS3", "state", "value2"])
-        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.post.endpoint)
+        self.post.set_path(["BL18I:XSPRESS3", "state", "value2"])
+        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.post.path)
 
         self.post.set_parameters(dict(arg1=2, arg2=False))
         self.assertEquals(dict(arg1=2, arg2=False), self.post.parameters)
@@ -137,7 +137,7 @@ class TestSubscribe(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.context, self.subscribe.context)
         self.assertEqual(self.response_queue, self.subscribe.response_queue)
-        self.assertEqual(self.endpoint, self.subscribe.endpoint)
+        self.assertEqual(self.endpoint, self.subscribe.path)
         self.assertEqual(self.delta, self.subscribe.delta)
         self.assertEqual("malcolm:core/Subscribe:1.0", self.subscribe.typeid)
 
@@ -164,8 +164,8 @@ class TestSubscribe(unittest.TestCase):
         self.assertEqual(call_arg, expected_response)
 
     def test_setters(self):
-        self.subscribe.set_endpoint(["BL18I:XSPRESS3", "state", "value2"])
-        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.subscribe.endpoint)
+        self.subscribe.set_path(["BL18I:XSPRESS3", "state", "value2"])
+        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.subscribe.path)
 
         self.subscribe.set_delta(False)
         self.assertFalse(self.subscribe.delta)

@@ -40,6 +40,6 @@ class Attribute(Monitorable):
 
     def handle_request(self, request, put_function):
         assert isinstance(request, Put), "Expected Put, got %r" % (request,)
-        assert len(request.endpoint) == 3 and request.endpoint[-1] == "value", \
-            "Can only Put to Attribute value, not %s" % (request.endpoint,)
+        assert len(request.path) == 3 and request.path[-1] == "value", \
+            "Can only Put to Attribute value, not %s" % (request.path,)
         put_function(self.meta, request.value)

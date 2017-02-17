@@ -47,7 +47,7 @@ class ClientComms(Loggable, Spawnable):
     def send_to_caller(self, response):
         if response.id == self.SERVER_BLOCKS_ID:
             assert isinstance(response, Update), \
-                "Expected server blocks Update, got %s" % response.type_
+                "Expected server blocks Update, got %s" % response.typeid
             self.process.update_block_list(self, response.value)
         else:
             request = self.requests[response.id]

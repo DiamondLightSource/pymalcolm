@@ -30,21 +30,21 @@ class PvaClientComms(ClientComms, PvaUtil):
         try:
 
             if isinstance(request, Get):
-                self.log_debug("Get message with endpoint: %s", request["endpoint"])
+                self.log_debug("Get message with path: %s", request["path"])
                 return_object = self.execute_get(request)
 
             elif isinstance(request, Put):
-                self.log_debug("Put message with endpoint: %s", request["endpoint"])
+                self.log_debug("Put message with path: %s", request["path"])
                 self.log_debug("Put message with value: %s", request["value"])
                 return_object = self.execute_put(request)
 
             elif isinstance(request, Post):
-                self.log_debug("Post message with endpoint: %s", request["endpoint"])
+                self.log_debug("Post message with path: %s", request["path"])
                 self.log_debug("Parameters: %s", request["parameters"])
                 return_object = self.execute_rpc(request)
 
             elif isinstance(request, Subscribe):
-                self.log_debug("Subscribe message with endpoint: %s", request["endpoint"])
+                self.log_debug("Subscribe message with path: %s", request["path"])
                 return_object = self.execute_monitor(request)
             # TODO: Implement unsubscribe
             # TODO: Currently monitors always return updates, deltas are not available
@@ -59,9 +59,9 @@ class PvaClientComms(ClientComms, PvaUtil):
 
     def execute_get(self, request):
         # Connect to the channel
-        c = pvaccess.Channel(request["endpoint"][0])
-        # Create the path request from the endpoints (not including the block name endpoint)
-        path = ".".join(request["endpoint"][1:])
+        c = pvaccess.Channel(request["path"][0])
+        # Create the path request from the endpoints (not including the block name path)
+        path = ".".join(request["path"][1:])
         self.log_debug("path: %s", path)
         # Perform a get and record the response
         response = c.get(path)
@@ -79,9 +79,9 @@ class PvaClientComms(ClientComms, PvaUtil):
 
     def execute_put(self, request):
         # Connect to the channel
-        c = pvaccess.Channel(request["endpoint"][0])
-        # Create the path request from the endpoints (not including the block name endpoint)
-        path = ".".join(request["endpoint"][1:])
+        c = pvaccess.Channel(request["path"][0])
+        # Create the path request from the endpoints (not including the block name path)
+        path = ".".join(request["path"][1:])
         self.log_debug("path: %s", path)
         # Perform a put, but there is no response available
         c.put(request["value"], path)
@@ -91,9 +91,9 @@ class PvaClientComms(ClientComms, PvaUtil):
 
     def execute_rpc(self, request):
         method = pvaccess.PvObject({'method': pvaccess.STRING})
-        method.set({'method': request["endpoint"][1]})
+        method.set({'method': request["path"][1]})
         # Connect to the channel and create the RPC client
-        rpc = pvaccess.RpcClient(request["endpoint"][0], method)
+        rpc = pvaccess.RpcClient(request["path"][0], method)
         # Construct the pv object from the parameters
         params = self.dict_to_pv_object(request["parameters"])
         self.log_debug("PvObject parameters: %s", params)
@@ -113,12 +113,12 @@ class PvaClientComms(ClientComms, PvaUtil):
 
     def execute_monitor(self, request):
         # Connect to the channel
-        c = pvaccess.Channel(request["endpoint"][0])
+        c = pvaccess.Channel(request["path"][0])
         # Store the connection within the monitor set
         mon = MonitorHandler(request["id"], c, self)
         self._monitors[request["id"]] = mon
-        # Create the path request from the endpoints (not including the block name endpoint)
-        path = ".".join(request["endpoint"][1:])
+        # Create the path request from the endpoints (not including the block name path)
+        path = ".".join(request["path"][1:])
         self.log_debug("Monitor path: %s", path)
         # Perform a put, but there is no response available
         c.subscribe(path, mon.monitor_update)

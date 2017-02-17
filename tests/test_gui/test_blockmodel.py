@@ -23,7 +23,7 @@ class TestBlockModel(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.process.q.put.call_count, 1)
         req = self.process.q.put.call_args_list[0][0][0]
-        self.assertEqual(req.endpoint, ['hello'])
+        self.assertEqual(req.path, ['hello'])
         self.assertEqual(self.m.root_item.endpoint, ('hello',))
         self.assertEqual(len(self.m.root_item.children), 0)
 

@@ -35,7 +35,7 @@ class TestAttribute(unittest.TestCase):
 
     def test_handle_request(self):
         a = self.meta.make_attribute()
-        request = Put(endpoint=["1", "2", "value"], value=Mock())
+        request = Put(path=["1", "2", "value"], value=Mock())
         put_function = Mock()
         a.handle_request(request, put_function)
         put_function.assert_called_once_with(self.meta, request.value)
