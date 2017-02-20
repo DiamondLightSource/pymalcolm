@@ -46,8 +46,8 @@ class ChildPart(Part):
 
     @ManagerController.ReportPorts
     def report_ports(self, _):
-        port_infos = self._get_flowgraph_ports("in").values()
-        port_infos += self._get_flowgraph_ports("out").values()
+        port_infos = list(self._get_flowgraph_ports("in").values())
+        port_infos += list(self._get_flowgraph_ports("out").values())
         return port_infos
 
     @ManagerController.Layout
