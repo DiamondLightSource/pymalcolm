@@ -122,6 +122,9 @@ class ManagerController(DefaultController):
             "%s is not a directory" % self.params.configDir
 
     def set_layout(self, value):
+        # If it isn't a table, make it one
+        if not isinstance(value, Table):
+            value = Table(self.layout.meta, value)
         part_info = self.run_hook(self.ReportOutports, self.create_part_tasks())
         part_info = self.run_hook(
             self.Layout, self.create_part_tasks(), part_info, value)

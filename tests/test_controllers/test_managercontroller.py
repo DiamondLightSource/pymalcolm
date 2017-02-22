@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
@@ -20,7 +21,7 @@ from malcolm.parts.builtin.childpart import ChildPart
 
 
 class TestManagerController(unittest.TestCase):
-    maxDiff=None
+    maxDiff = None
 
     def checkState(self, state, child=True, parent=True):
         if child:
@@ -32,7 +33,7 @@ class TestManagerController(unittest.TestCase):
         self.p = Process('process1', SyncFactory('threading'))
 
         # create a child ManagerController block
-        params = ManagerController.MethodMeta.\
+        params = ManagerController.MethodMeta. \
             prepare_input_map(mri='childBlock', configDir="/tmp")
         self.c_child = ManagerController(self.p, [], params)
         self.b_child = self.c_child.block
@@ -138,6 +139,7 @@ class TestManagerController(unittest.TestCase):
         self.assertEqual(self.c.layout_name.value, 'testSaveLayout')
 
     def move_child_block(self):
+        self.assertEqual(self.b.layout.x, [0])
         new_layout = Table(self.c.layout.meta)
         new_layout.name = ["part2"]
         new_layout.mri = ["P45-MRI"]
@@ -145,6 +147,19 @@ class TestManagerController(unittest.TestCase):
         new_layout.y = [20]
         new_layout.visible = [True]
         self.b.layout = new_layout
+        self.assertEqual(self.b.layout.x, [10])
+
+    def test_move_child_block_dict(self):
+        self.b.edit()
+        self.assertEqual(self.b.layout.x, [0])
+        new_layout = dict(
+            name=["part2"],
+            mri=[""],
+            x=[10],
+            y=[20],
+            visible=[True])
+        self.b.layout = new_layout
+        self.assertEqual(self.b.layout.x, [10])
 
     def test_revert(self):
         self.c.edit()
@@ -178,6 +193,7 @@ class TestManagerController(unittest.TestCase):
         self.c.parts['part2'].x = 30
         self.b.layoutName = 'testSaveLayout'
         self.assertEqual(self.c.parts['part2'].x, 10)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
