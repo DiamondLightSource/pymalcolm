@@ -292,14 +292,15 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         )
         return part_info
 
-    def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5, y_pos=0.0):
+    def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
+                     y_pos=0.0, duration=1.0):
         part_info = self.make_part_info(x_pos, y_pos)
         task = Mock()
         steps_to_do = 3 * len(axes_to_scan)
         params = Mock()
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        mutator = FixedDurationMutator(1.0)
+        mutator = FixedDurationMutator(duration)
         params.generator = CompoundGenerator([ys, xs], [], [mutator])
         params.axesToMove = axes_to_scan
         self.o.configure(task, completed_steps, steps_to_do, part_info, params)
@@ -323,6 +324,8 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(task.post_async.call_count, 1)
         self.assertEqual(task.put.call_count, 2)
         self.assertEqual(task.put.call_args_list[0],
+                         call(self.child["numPoints"], 4000000))
+        self.assertEqual(task.put.call_args_list[1],
                          call(self.child["cs"], "CS1"))
         self.check_resolutions_and_use(task.put_many.call_args_list[0][0][1])
         self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
@@ -360,8 +363,6 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             positionsB=[
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]))
-        self.assertEqual(task.put.call_args_list[1],
-                         call(self.child["numPoints"], 18))
 
     @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 0.2)
     def test_2_axis_move_to_start(self):
@@ -437,6 +438,40 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             positionsA=[0.625, 0.5, 0.375, 0.25, 0.125, 0.0,
                                        -0.125, -0.1375],
         ))
+
+    @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 0.2)
+    def test_long_steps_lookup(self):
+        task = self.do_configure(
+            axes_to_scan=["x"], completed_steps=3, x_pos=0.62506, duration=14.0)
+        self.assertEqual(task.put_many.call_args_list[1][0][1], dict(
+            timeArray=[7143, 3500000,
+                       3500000, 3500000,
+                       3500000, 3500000,
+                       3500000, 3500000,
+                       3500000, 3500000,
+                       3500000, 3500000,
+                       3500000, 7143],
+            velocityMode=[2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3],
+            userPrograms=[3, 0, 4, 0, 3, 0, 4, 0, 3, 0, 4, 0, 2, 8],
+            pointsToBuild=14,
+            positionsA=[0.625,
+                        0.5625,
+                        0.5,
+                        0.4375,
+                        0.375,
+                        0.3125,
+                        0.25,
+                        0.1875,
+                        0.125,
+                        0.0625,
+                        0.0,
+                        -0.0625,
+                        -0.125,
+                        -0.1250637755102041],
+        ))
+        self.assertEqual(self.o.completed_steps_lookup,
+                         [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
+
 
     @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 2.0)
     def test_long_move(self):
