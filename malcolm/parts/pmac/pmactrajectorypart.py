@@ -343,6 +343,7 @@ class PMACTrajectoryPart(ChildPart):
         task.put(self.child["cs"], cs_port)
         futures = self.move_to_start(task, completed_steps)
         self.steps_up_to = completed_steps + steps_to_do
+        self.completed_steps_lookup = []
         profile = self.build_generator_profile(completed_steps, do_run_up=True)
         task.wait_all(futures)
         self.write_profile_points(task, **profile)
@@ -460,10 +461,6 @@ class PMACTrajectoryPart(ChildPart):
             completed_steps_lookup (list): If given, when we get to this index,
                 how many completed steps have we done?
         """
-        # If not given, make a completed_steps_lookup
-        if completed_steps_lookup is None:
-            completed_steps_lookup = [0] * len(time_array)
-
         # Work out which axes should be used and set their resolutions and
         # offsets
         use = []
@@ -488,18 +485,21 @@ class PMACTrajectoryPart(ChildPart):
                 new_time_array = time_array[:i]
                 new_velocity_mode = velocity_mode[:i]
                 new_user_programs = user_programs[:i]
-                new_completed_steps_lookup = completed_steps_lookup[:i]
+                if completed_steps_lookup is not None:
+                    new_completed_steps_lookup = completed_steps_lookup[:i]
                 for _ in range(nsplit):
                     new_time_array.append(t / nsplit)
                     new_velocity_mode.append(PREV_TO_NEXT)
                     new_user_programs.append(NO_PROGRAM)
-                    new_completed_steps_lookup.append(
-                        new_completed_steps_lookup[-1])
+                    if completed_steps_lookup is not None:
+                        new_completed_steps_lookup.append(
+                            new_completed_steps_lookup[-1])
                 time_array = new_time_array + time_array[i+1:]
                 user_programs = new_user_programs[:-1] + user_programs[i:]
                 velocity_mode = new_velocity_mode[:-1] + velocity_mode[i:]
-                completed_steps_lookup = new_completed_steps_lookup[:-1] + \
-                                         completed_steps_lookup[i:]
+                if completed_steps_lookup is not None:
+                    completed_steps_lookup = new_completed_steps_lookup[:-1] + \
+                                             completed_steps_lookup[i:]
 
                 for k, traj in trajectory.items():
                     new_traj = traj[:i]
@@ -538,7 +538,8 @@ class PMACTrajectoryPart(ChildPart):
         task.put_many(self.child, attr_dict)
 
         # Set completed_steps
-        self.completed_steps_lookup = completed_steps_lookup
+        if completed_steps_lookup is not None:
+            self.completed_steps_lookup += completed_steps_lookup
 
     def reset_triggers(self, task):
         """Just call a Move to the run up position ready to start the scan"""
