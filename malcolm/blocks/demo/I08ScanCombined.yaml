@@ -2,9 +2,9 @@
     name: mri
     description: MRI for created block
 
-- parameters.string:
-    name: det
-    description: MRI for detector DetectorManager object
+#- parameters.string:
+#    name: det
+#    description: MRI for detector DetectorManager object
 
 - parameters.string:
     name: brick

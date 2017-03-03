@@ -17,13 +17,11 @@
 
 - blocks.demo.I08ScanCombined:
     mri: I08-SCAN01
-    det: I08-ANDOR01
     brick: I08-BRICK10
     pandabox: I08-PANDA01
 
 - blocks.demo.I08ScanButterfly:
     mri: I08-SCAN02
-    det: I08-ANDOR01
     brick: I08-BRICK10
     pandabox: I08-PANDA01
 
@@ -36,6 +34,13 @@
 - blocks.demo.I08DetScanCombined:
     mri: I08-SCAN04-ANDOR
     det: I08-ANDOR01
+    brick: I08-BRICK10
+    pandabox: I08-PANDA01
+
+- blocks.demo.I08TwoDetScanCombined:
+    mri: I08-SCAN05-ANDOR-XMAP
+    det1: I08-ANDOR01
+    det2: I08-XMAP01
     brick: I08-BRICK10
     pandabox: I08-PANDA01
 
