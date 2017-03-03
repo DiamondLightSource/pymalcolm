@@ -449,7 +449,7 @@ class PMACTrajectoryPart(ChildPart):
         return futures
 
     def write_profile_points(self, task, time_array, velocity_mode, trajectory,
-                             user_programs):
+                             user_programs, completed_steps_lookup=None):
         """Build profile using part_tasks
 
         Args:
@@ -458,6 +458,8 @@ class PMACTrajectoryPart(ChildPart):
             trajectory (dict): {axis_name: [positions in EGUs]}
             task (Task): Task for running
             user_programs (list): List of user programs like TRIG_LIVE_FRAME
+            completed_steps_lookup (list): If given, when we get to this index,
+                how many completed steps have we done?
         """
         # Work out which axes should be used and set their resolutions and
         # offsets
@@ -483,13 +485,21 @@ class PMACTrajectoryPart(ChildPart):
                 new_time_array = time_array[:i]
                 new_velocity_mode = velocity_mode[:i]
                 new_user_programs = user_programs[:i]
+                if completed_steps_lookup is not None:
+                    new_completed_steps_lookup = completed_steps_lookup[:i]
                 for _ in range(nsplit):
                     new_time_array.append(t / nsplit)
                     new_velocity_mode.append(PREV_TO_NEXT)
                     new_user_programs.append(NO_PROGRAM)
+                    if completed_steps_lookup is not None:
+                        new_completed_steps_lookup.append(
+                            new_completed_steps_lookup[-1])
                 time_array = new_time_array + time_array[i+1:]
                 user_programs = new_user_programs[:-1] + user_programs[i:]
                 velocity_mode = new_velocity_mode[:-1] + velocity_mode[i:]
+                if completed_steps_lookup is not None:
+                    completed_steps_lookup = new_completed_steps_lookup[:-1] + \
+                                             completed_steps_lookup[i:]
 
                 for k, traj in trajectory.items():
                     new_traj = traj[:i]
@@ -526,6 +536,10 @@ class PMACTrajectoryPart(ChildPart):
             cs_axis = motor_info.cs_axis
             attr_dict["positions%s" % cs_axis] = trajectory[axis_name]
         task.put_many(self.child, attr_dict)
+
+        # Set completed_steps
+        if completed_steps_lookup is not None:
+            self.completed_steps_lookup += completed_steps_lookup
 
     def reset_triggers(self, task):
         """Just call a Move to the run up position ready to start the scan"""
@@ -584,6 +598,7 @@ class PMACTrajectoryPart(ChildPart):
         time_array = []
         velocity_mode = []
         user_programs = []
+        completed_steps_lookup = []
 
         # Cap last point to steps_up_to
         self.end_index = start_index + POINTS_PER_BUILD
@@ -607,7 +622,7 @@ class PMACTrajectoryPart(ChildPart):
             time_array.append(run_up_time)
             velocity_mode.append(CURRENT_TO_NEXT)
             user_programs.append(TRIG_LIVE_FRAME)
-            self.completed_steps_lookup.append(0)
+            completed_steps_lookup.append(start_index)
 
         for i in range(start_index, self.end_index):
             point = self.generator.get_point(i)
@@ -616,7 +631,7 @@ class PMACTrajectoryPart(ChildPart):
             time_array.append(point.duration / 2.0)
             velocity_mode.append(PREV_TO_NEXT)
             user_programs.append(TRIG_CAPTURE)
-            self.completed_steps_lookup.append(i)
+            completed_steps_lookup.append(i)
             for axis_name, positions in trajectory.items():
                 positions.append(point.positions[axis_name])
 
@@ -624,7 +639,7 @@ class PMACTrajectoryPart(ChildPart):
             time_array.append(point.duration / 2.0)
             velocity_mode.append(PREV_TO_NEXT)
             user_programs.append(TRIG_LIVE_FRAME)
-            self.completed_steps_lookup.append(i + 1)
+            completed_steps_lookup.append(i + 1)
             for axis_name, positions in trajectory.items():
                 positions.append(point.upper[axis_name])
 
@@ -665,7 +680,7 @@ class PMACTrajectoryPart(ChildPart):
                     for axis_name in trajectory:
                         trajectory[axis_name] += \
                             profile["trajectory"][axis_name]
-                    self.completed_steps_lookup += [i + 1] * len(
+                    completed_steps_lookup += [i + 1] * len(
                         profile["time_array"])
 
         # Add the last tail off point
@@ -689,10 +704,11 @@ class PMACTrajectoryPart(ChildPart):
             time_array.append(tail_off_time)
             velocity_mode.append(ZERO_VELOCITY)
             user_programs.append(TRIG_ZERO)
-            self.completed_steps_lookup.append(self.end_index)
+            completed_steps_lookup.append(self.end_index)
 
         profile = dict(time_array=time_array, velocity_mode=velocity_mode,
-                       trajectory=trajectory, user_programs=user_programs)
+                       trajectory=trajectory, user_programs=user_programs,
+                       completed_steps_lookup=completed_steps_lookup)
         return profile
 
     def points_joined(self, last_point, point):
