@@ -1,6 +1,6 @@
 from malcolm.parts.builtin.attributepart import AttributePart
 from malcolm.core import method_also_takes
-from malcolm.core.vmetas import StringMeta
+from malcolm.vmetas.builtin import StringMeta
 
 
 @method_also_takes(

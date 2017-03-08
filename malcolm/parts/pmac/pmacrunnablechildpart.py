@@ -1,4 +1,4 @@
-from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.controllers.builtin.runnablecontroller import RunnableController
 from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
 
 

@@ -1,4 +1,4 @@
-from malcolm.core.vmetas import StringMeta
+from malcolm.vmetas.builtin import StringMeta
 from malcolm.parts.ca.capart import CAPart
 
 

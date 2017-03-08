@@ -1,9 +1,8 @@
+from malcolm.controllers.builtin.runnablecontroller import RunnableController
 from malcolm.core import method_also_takes, REQUIRED, method_takes
-from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, ChoiceMeta
-from malcolm.parts.builtin.childpart import ChildPart
-from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.hdfwriterpart import NDArrayDatasetInfo
-
+from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.vmetas.builtin import PointGeneratorMeta, NumberMeta, ChoiceMeta
 
 # Maximum number of points to check for fixed duration
 MAX_CHECK = 100

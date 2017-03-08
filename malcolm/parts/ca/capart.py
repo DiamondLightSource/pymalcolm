@@ -1,9 +1,9 @@
+from malcolm.controllers.builtin.defaultcontroller import DefaultController
 from malcolm.core import method_takes, REQUIRED
 from malcolm.parts.builtin.attributepart import AttributePart
-from malcolm.core.vmetas import StringMeta, ChoiceMeta, BooleanMeta
-from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.parts.ca.cothreadimporter import CothreadImporter
 from malcolm.tags import widget_types, inport, port_types
+from malcolm.vmetas.builtin import StringMeta, ChoiceMeta, BooleanMeta
 
 
 @method_takes(

@@ -1,5 +1,5 @@
-from malcolm.core.vmetas import NumberMeta
 from malcolm.parts.ca.capart import CAPart
+from malcolm.vmetas.builtin import NumberMeta
 
 
 class CALongPart(CAPart):

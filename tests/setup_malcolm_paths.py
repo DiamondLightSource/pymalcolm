@@ -13,7 +13,7 @@ try:
 except:
     # cothread doesn't work on python3 at the moment
     cothread = MagicMock()
-    # Tell Mock not to have a MethodMeta, otherwise we will be decorated
+    # Tell Mock not to have a Method, otherwise we will be decorated
     del cothread.MethodMeta
     def callback_result(f, *args, **kwargs):
         return f(*args, **kwargs)
@@ -23,12 +23,12 @@ except:
     sys.modules["cothread.input_hook"] = input_hook
     del input_hook.MethodMeta
 catools = MagicMock()
-# Tell Mock not to have a MethodMeta, otherwise we will be decorated
+# Tell Mock not to have a Method, otherwise we will be decorated
 del catools.MethodMeta
 cothread.catools = catools
 
 # Mock out pvaccess
 sys.modules['pvaccess'] = MagicMock()
-# Tell Mock not to have a MethodMeta, otherwise we will be decorated
+# Tell Mock not to have a Method, otherwise we will be decorated
 import pvaccess
 del pvaccess.MethodMeta

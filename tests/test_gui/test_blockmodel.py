@@ -2,7 +2,6 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
 
 import unittest
 
@@ -10,7 +9,6 @@ from mock import MagicMock
 
 # module imports
 from malcolm.gui.blockmodel import BlockModel, BlockItem
-from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.blocks.demo import Hello
 
 

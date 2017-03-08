@@ -5,7 +5,6 @@ import setup_malcolm_paths
 
 from collections import OrderedDict
 import unittest
-from mock import Mock
 
 from malcolm.core.serializable import Serializable
 
@@ -18,11 +17,13 @@ class TestSerialization(unittest.TestCase):
         class DummySerializable(Serializable):
             endpoints = ["boo"]
 
-            def set_boo(self, boo):
-                self.set_endpoint_data("boo", boo)
+            def __init__(self, boo):
+                self.boo = self.set_boo(boo)
 
-        s = DummySerializable()
-        s.set_boo(3)
+            def set_boo(self, boo):
+                return self.set_endpoint_data("boo", boo)
+
+        s = DummySerializable(3)
         expected = OrderedDict(typeid="foo:1.0")
         expected["boo"] = 3
         self.assertEquals(expected, s.to_dict())

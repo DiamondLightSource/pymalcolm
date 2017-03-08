@@ -24,7 +24,7 @@ class PandABoxActionPart(Part):
         if self.arg_meta:
             self.arg_name = method_name
 
-            # Decorate set_field with a MethodMeta
+            # Decorate set_field with a Method
             @method_takes(self.arg_name, self.arg_meta, REQUIRED)
             def set_field(params):
                 self.set_field(params)

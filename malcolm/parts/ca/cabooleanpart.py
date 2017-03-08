@@ -1,4 +1,4 @@
-from malcolm.core.vmetas import BooleanMeta
+from malcolm.vmetas.builtin import BooleanMeta
 from malcolm.parts.ca.capart import CAPart
 
 

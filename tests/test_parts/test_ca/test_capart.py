@@ -12,7 +12,7 @@ from mock import MagicMock, ANY
 
 # module imports
 from malcolm.core import Process, SyncFactory
-from malcolm.core.vmetas import NumberMeta
+from malcolm.vmetas.builtin import NumberMeta
 from malcolm.parts.ca.capart import CAPart
 
 
@@ -75,7 +75,7 @@ class TestCAPart(unittest.TestCase):
     def test_reset(self):
         p = self.create_part()
         p.catools.caget.return_value = [caint(4), caint(5)]
-        p.reset("unused task object")
+        p.reset("unused context object")
         p.catools.caget.assert_called_with(
             ["pv2", "pv"],
             format=p.catools.FORMAT_CTRL, datatype=p.get_datatype())

@@ -4,16 +4,11 @@ import unittest
 from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from mock import Mock
-
 from malcolm.core.serializable import Serializable
 from malcolm.core.vmeta import VMeta
 
-# Register ScalarMeta as a sublcass of itself so we
-# can instantiate it for testing purposes.
-VMeta.register_subclass("scalarmeta:test")(VMeta)
 
-class TestInit(unittest.TestCase):
+class TestVMeta(unittest.TestCase):
 
     def setUp(self):
         self.meta = VMeta("test description")
@@ -21,12 +16,6 @@ class TestInit(unittest.TestCase):
     def test_values_after_init(self):
         self.assertEqual("test description", self.meta.description)
         self.assertFalse(self.meta.writeable)
-
-
-class TestValidate(unittest.TestCase):
-
-    def setUp(self):
-        self.meta = VMeta("test_description")
 
     def test_given_validate_called_then_raise_error(self):
 

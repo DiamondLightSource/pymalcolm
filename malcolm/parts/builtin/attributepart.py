@@ -1,6 +1,6 @@
 from malcolm.core import Part, method_takes, REQUIRED
-from malcolm.core.vmetas import StringMeta, BooleanMeta, ChoiceMeta
 from malcolm.tags import widget_types, widget, config
+from malcolm.vmetas.builtin import StringMeta, BooleanMeta, ChoiceMeta
 
 
 @method_takes(

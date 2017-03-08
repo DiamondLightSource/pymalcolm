@@ -1,45 +1,18 @@
-from malcolm.core.monitorable import Monitorable
-from malcolm.core.request import Put
-from malcolm.core.serializable import deserialize_object
+from .view import View
 
 
-class Attribute(Monitorable):
-    """Represents a value with type information that may be backed elsewhere
+class Attribute(View):
+    """Represents a value with type information that may be backed elsewhere"""
 
-    Attributes:
-        meta (`VMeta`): The meta object that will validate any set_value()
-        value: The current value of the object. It's type will depend on the
-            what meta.validate() produces
-    """
+    def put_value(self, value):
+        self._context.put(self._data.path + ["value"], value)
 
-    endpoints = ["meta", "value"]
+    def put_value_async(self, value):
+        fs = self._context.put_async(self._data.path + ["value"], value)
+        return fs
 
-    def __init__(self, meta=None, value=None):
-        if meta is None:
-            self.set_endpoint_data("meta", None)
-            self.set_endpoint_data("value", None)
+    def __setattr__(self, name, value):
+        if name == "value":
+            self.put_value(value)
         else:
-            self.set_meta(meta)
-            self.set_value(value)
-
-    def set_meta(self, meta, notify=True):
-        """Set the VMeta object"""
-        meta = deserialize_object(meta)
-        # Check that the meta attribute_class is ourself
-        assert hasattr(meta, "attribute_class"), \
-            "Expected meta object, got %r" % meta
-        assert isinstance(self, meta.attribute_class), \
-            "Meta object needs to be attached to %s, we are a %s" % (
-                meta.attribute_class, type(self))
-        self.set_endpoint_data("meta", meta, notify)
-
-    def set_value(self, value, notify=True):
-        """Set the value"""
-        value = self.meta.validate(value)
-        self.set_endpoint_data("value", value, notify)
-
-    def handle_request(self, request, put_function):
-        assert isinstance(request, Put), "Expected Put, got %r" % (request,)
-        assert len(request.path) == 3 and request.path[-1] == "value", \
-            "Can only Put to Attribute value, not %s" % (request.path,)
-        put_function(self.meta, request.value)
+            super(Attribute, self).__setattr__(name, value)

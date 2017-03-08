@@ -1,28 +1,38 @@
-class Error(Exception):
+class MalcolmException(Exception):
     """Base class for all Malcolm exceptions"""
     pass
 
 
-class TimeoutError(Error):
+class TimeoutError(MalcolmException):
     """The operation exceeded the given deadline"""
     pass
 
 
-class AbortedError(Error):
+class AbortedError(MalcolmException):
     """The operation was aborted"""
     pass
 
 
-class ResponseError(Error):
+class ResponseError(MalcolmException):
     """A Put or Post raised an Error"""
     pass
 
 
-class UnexpectedError(Error):
+class UnexpectedError(MalcolmException):
     """We received an object we weren't expecting"""
     pass
 
 
-class BadValueError(Error):
+class BadValueError(MalcolmException):
     """match_update() received one of the specified bad values"""
+    pass
+
+
+class TimeoutError(MalcolmException):
+    """An operation timed out"""
+    pass
+
+
+class WrongThreadError(MalcolmException):
+    """When you have called something outside of cothread's thread"""
     pass

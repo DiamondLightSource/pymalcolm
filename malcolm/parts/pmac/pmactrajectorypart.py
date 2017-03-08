@@ -1,15 +1,16 @@
 # Treat all division as float division even in python2
 from __future__ import division
+
 from collections import Counter
 
 import numpy as np
 from scanpointgenerator import FixedDurationMutator, CompoundGenerator
 
-from malcolm.controllers.runnablecontroller import RunnableController, \
+from malcolm.controllers.builtin.runnablecontroller import RunnableController, \
     ParameterTweakInfo
 from malcolm.core import method_takes, REQUIRED, Info, method_also_takes
-from malcolm.core.vmetas import StringArrayMeta, PointGeneratorMeta, NumberMeta
 from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.vmetas.builtin import StringArrayMeta, PointGeneratorMeta, NumberMeta
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001

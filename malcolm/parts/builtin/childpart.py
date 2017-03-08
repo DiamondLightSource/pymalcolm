@@ -1,10 +1,9 @@
 from malcolm.compat import OrderedDict
+from malcolm.controllers.builtin.managercontroller import ManagerController, \
+    LayoutInfo, PortInfo, ExportableInfo
 from malcolm.core import Part, REQUIRED, method_also_takes, Attribute, \
     ResponseError, serialize_object, Task
-from malcolm.core.vmetas import StringMeta
-from malcolm.controllers.managercontroller import ManagerController, \
-    LayoutInfo, PortInfo, ExportableInfo
-
+from malcolm.vmetas.builtin import StringMeta
 
 sm = ManagerController.stateMachine
 
@@ -150,7 +149,7 @@ class ChildPart(Part):
         then sever all, otherwise restrict to the listed outports
 
         Args:
-            task (Task): The task to use to do the put()
+            task (Task): The context to use to do the put()
             outport_lookup (dict): {outport_value: outport_type} for each
                 outport or None for all inports
         """

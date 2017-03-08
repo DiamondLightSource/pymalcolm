@@ -10,49 +10,48 @@ from mock import Mock
 from malcolm.core.meta import Meta
 
 
-class TestInit(unittest.TestCase):
+class TestMeta(unittest.TestCase):
+
+    def setUp(self):
+        self.o = Meta("desc")
+        self.notifier = Mock()
+
+        def make_endpoint_change(setter, path, data=None):
+            return setter(path[-1], data)
+
+        self.notifier.make_endpoint_change.side_effect = make_endpoint_change
+        self.o.set_notifier_path(self.notifier, ["path"])
 
     def test_init(self):
-        m = Meta("desc")
-        self.assertEquals("desc", m.description)
-
-
-class TestSetters(unittest.TestCase):
-    def setUp(self):
-        m = Meta("desc")
-        m.process = Mock()
-        self.m = m
+        self.assertEqual(self.o.writeable_in, [])
 
     def test_set_description(self):
-        m = self.m
         description = "desc2"
-        m.set_description(description)
-        self.assertEqual(m.description, description)
-        m.process.report_changes.assert_called_once_with(
-            [["description"], description])
+        self.assertEqual(self.o.set_description(description), description)
+        self.assertEqual(self.o.description, description)
+        self.notifier.make_endpoint_change.assert_called_once_with(
+            self.o.set_endpoint_data_locked, ["path", "description"], description)
 
     def test_set_tags(self):
-        m = self.m
         tags = ("widget:textinput",)
-        m.set_tags(tags)
-        self.assertEquals(tags, m.tags)
-        m.process.report_changes.assert_called_once_with([["tags"], tags])
+        self.assertEqual(self.o.set_tags(tags), tags)
+        self.assertEqual(self.o.tags, tags)
+        self.notifier.make_endpoint_change.assert_called_once_with(
+            self.o.set_endpoint_data_locked, ["path", "tags"], tags)
 
     def test_set_writeable(self):
-        meta = self.m
         writeable = True
-        meta.set_writeable(writeable)
-        self.assertEquals(meta.writeable, writeable)
-        meta.process.report_changes.assert_called_once_with(
-            [["writeable"], writeable])
+        self.assertEqual(self.o.set_writeable(writeable), writeable)
+        self.assertEqual(self.o.writeable, writeable)
+        self.notifier.make_endpoint_change.assert_called_once_with(
+            self.o.set_endpoint_data_locked, ["path", "writeable"], writeable)
 
     def test_set_label(self):
-        meta = self.m
         label = "my label"
-        meta.set_label(label)
-        self.assertEquals(meta.label, label)
-        meta.process.report_changes.assert_called_once_with(
-            [["label"], label])
+        self.assertEqual(self.o.set_label(label), label)
+        self.assertEqual(self.o.label, label)
+        self.notifier.make_endpoint_change.assert_called_once_with(
+            self.o.set_endpoint_data_locked, ["path", "label"], label)
 
 
 class TestSerialization(unittest.TestCase):

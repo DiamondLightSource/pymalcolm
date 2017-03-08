@@ -1,48 +1,44 @@
 from contextlib import contextmanager
 
-from malcolm.core.serializable import serialize_object
-from malcolm.core.loggable import Loggable
-from malcolm.core.request import Subscribe, Unsubscribe, Get, Request
+from .serializable import serialize_object
+from .loggable import Loggable
+from .request import Subscribe, Unsubscribe
 
 
 class Notifier(Loggable):
     """Object that can service callbacks on given endpoints"""
 
-    def __init__(self, name, process, block):
+    def __init__(self, name, lock, block):
         self.set_logger_name(name)
-        self._process = process
         self._tree = NotifierNode(block)
-        self._lock = process.create_lock()
-        self._squashed_changes = None
+        self._lock = lock
+        # Incremented every time we do with changes_squashed
+        self._squashed_count = 0
+        self._squashed_changes = []
         # {Subscribe.generator_key(): Subscribe}
         self._subscription_keys = {}
 
-    def handle_request(self, request):
-        """Handle a request from outside
+    def handle_subscribe(self, request):
+        """Handle a Subscribe request from outside
 
         Args:
-            request (Request): Request to respond to
+            request (Subscribe): Request to respond to
         """
         with self._lock:
-            try:
-                if isinstance(request, Subscribe):
-                    self._tree.handle_subscribe(request, request.path[1:])
-                    self._subscription_keys[request.generate_key()] = request
-                elif isinstance(request, Unsubscribe):
-                    subscribe = self._subscription_keys[request.generate_key()]
-                    self._tree.handle_unsubscribe(subscribe, subscribe.path[1:])
-                elif isinstance(request, Get):
-                    data = self._tree.data
-                    for p in request.path:
-                        data = getattr(data, p)
-                    serialized = serialize_object(data)
-                    request.respond_with_return(serialized)
-                else:
-                    request.respond_with_error("Bad request %s" % request)
-            except Exception as e:
-                self.log_exception("Exception when handling %s", request)
-                request.respond_with_error(e)
+            self._tree.handle_subscribe(request, request.path[1:])
+            self._subscription_keys[request.generate_key()] = request
 
+    def handle_unsubscribe(self, request):
+        """Handle a Unsubscribe request from outside
+
+        Args:
+            request (Unsubscribe): Request to respond to
+        """
+        with self._lock:
+            subscribe = self._subscription_keys.pop(request.generate_key())
+            self._tree.handle_unsubscribe(subscribe, subscribe.path[1:])
+
+    @property
     @contextmanager
     def changes_squashed(self):
         """Context manager to allow multiple calls to notify_change() to be
@@ -53,29 +49,37 @@ class Notifier(Loggable):
             attr.set_alarm(MINOR)
         """
         with self._lock:
-            assert self._squashed_changes is None, "Already squashing changes"
-            self._squashed_changes = []
+            self._squashed_count += 1
             yield
-            changes = self._squashed_changes
-            self._squashed_changes = None
-            self._tree.notify_changes(changes)
+            self._squashed_count -= 1
+            if self._squashed_count == 0:
+                changes = self._squashed_changes
+                self._squashed_changes = []
+                self._tree.notify_changes(changes)
 
-    def notify_change(self, path, data=None):
-        """Notify of a single change made
+    def make_endpoint_change(self, setter, path, data=None):
+        """Call setter, then notify subscribers of change, all with lock taken
 
         Args:
-            path (list): The path of what has changed
+            setter (function): Call setter(path[-1], data) first
+            path (list): The path of what has changed, relative from Block
             data (object): The new data, None for deletion
+
+        Returns:
+            The return value from setter()
         """
         with self._lock:
+            ret = setter(path[-1], data)
             if data is None:
                 change = [path]
             else:
                 change = [path, data]
-            if self._squashed_changes is None:
-                self._tree.notify_changes([change])
-            else:
+            # If we are squashing changes, defer notification
+            if self._squashed_count:
                 self._squashed_changes.append(change)
+            else:
+                self._tree.notify_changes([change])
+        return ret
 
 
 class NotifierNode(object):

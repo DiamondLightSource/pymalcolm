@@ -1,15 +1,15 @@
 from malcolm.compat import OrderedDict
 from malcolm.core import Loggable
-from malcolm.core.vmetas import BooleanMeta, NumberMeta, StringMeta, \
-    ChoiceMeta, TableMeta
+from malcolm.parts.builtin.choicepart import ChoicePart
+from malcolm.parts.builtin.stringpart import StringPart
+from malcolm.parts.pandabox.pandaboxactionpart import PandABoxActionPart
 from malcolm.parts.pandabox.pandaboxfieldpart import PandABoxFieldPart
 from malcolm.parts.pandabox.pandaboxgrouppart import PandABoxGroupPart
 from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
-from malcolm.parts.pandabox.pandaboxactionpart import PandABoxActionPart
 from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
-from malcolm.parts.builtin.stringpart import StringPart
-from malcolm.parts.builtin.choicepart import ChoicePart
 from malcolm.tags import widget, group, inport, outport, config
+from malcolm.vmetas.builtin import BooleanMeta, NumberMeta, StringMeta, \
+    ChoiceMeta, TableMeta
 
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):

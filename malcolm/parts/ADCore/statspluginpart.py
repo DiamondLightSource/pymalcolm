@@ -1,6 +1,6 @@
-from malcolm.parts.builtin.childpart import ChildPart
-from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.controllers.builtin.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.hdfwriterpart import CalculatedNDAttributeDatasetInfo
+from malcolm.parts.builtin.childpart import ChildPart
 
 
 class StatsPluginPart(ChildPart):

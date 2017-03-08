@@ -1,9 +1,9 @@
 from malcolm.compat import OrderedDict
-from malcolm.core.vmetas import NumberArrayMeta, BooleanArrayMeta
 from malcolm.core import TableElementMap, Table
 from malcolm.parts.pandabox.pandaboxfieldpart import PandABoxFieldPart
 from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
 from malcolm.tags import widget
+from malcolm.vmetas.builtin import NumberArrayMeta, BooleanArrayMeta
 
 
 class PandABoxTablePart(PandABoxFieldPart):

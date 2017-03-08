@@ -71,9 +71,7 @@ class Table(Serializable):
         if hasattr(self, "meta") and attr in self.meta.elements:
             column_meta = self.meta.elements[attr]
             value = column_meta.validate(value)
-            self.set_endpoint_data(attr, value)
-        else:
-            object.__setattr__(self, attr, value)
+        object.__setattr__(self, attr, value)
 
     def append(self, row):
         self.verify_column_lengths()

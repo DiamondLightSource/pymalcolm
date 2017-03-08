@@ -1,11 +1,9 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
 
 import unittest
-from mock import Mock, call, ANY
-from time import sleep
+from mock import Mock, ANY
 
 # logging
 # import logging
@@ -16,10 +14,9 @@ from malcolm.core.part import Part
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core import Process, Table, Task
-from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.controllers.defaultcontroller import DefaultController
-from malcolm.core.vmetas.stringmeta import StringMeta
-from malcolm.compat import OrderedDict
+from malcolm.controllers.builtin.runnablecontroller import RunnableController
+from malcolm.controllers.builtin.defaultcontroller import DefaultController
+from malcolm.vmetas.builtin.stringmeta import StringMeta
 
 sm = RunnableController.stateMachine
 

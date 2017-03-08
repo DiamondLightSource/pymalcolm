@@ -1,10 +1,10 @@
 import os
 
+from malcolm.controllers.builtin.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.core.vmetas import StringMeta
-from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
+from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
+from malcolm.vmetas.builtin import StringMeta
 
 
 class DatasetRunnableChildPart(RunnableChildPart):
@@ -26,7 +26,7 @@ class DatasetRunnableChildPart(RunnableChildPart):
             filePath=file_path, **filtered_params)
         return params
 
-    # MethodMeta will be filled in by _update_configure_args
+    # Method will be filled in by _update_configure_args
     @RunnableController.Validate
     @method_takes()
     def validate(self, task, part_info, params):
@@ -34,7 +34,7 @@ class DatasetRunnableChildPart(RunnableChildPart):
         return super(DatasetRunnableChildPart, self).validate(
             task, part_info, params)
 
-    # MethodMeta will be filled in at reset()
+    # Method will be filled in at reset()
     @RunnableController.Configure
     @method_takes(
         "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED)

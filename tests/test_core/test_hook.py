@@ -8,7 +8,7 @@ from mock import MagicMock, patch, call
 from collections import OrderedDict
 
 from malcolm.core.hook import Hook, get_hook_decorated
-from malcolm.core.vmetas import StringMeta, StringArrayMeta
+from malcolm.vmetas.builtin import StringMeta, StringArrayMeta
 from malcolm.core import method_returns, REQUIRED
 
 
@@ -64,7 +64,8 @@ class TestHook(unittest.TestCase):
         inst1 = DummyPart1()
         inst2 = DummyPart2()
         parts = dict(inst1=inst1, inst2=inst2)
-        func_tasks = DummyController().Configuring.find_hooked_functions(parts)
+        func_tasks = DummyController().Configuring.find_hooked_functions(
+            parts.values())
         self.assertEqual(func_tasks, {
             inst1: "do_thing",
             inst2: "do_all_the_things"})

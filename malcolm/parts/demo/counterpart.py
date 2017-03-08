@@ -1,5 +1,5 @@
 from malcolm.core import method_takes, Part
-from malcolm.core.vmetas import NumberMeta
+from malcolm.vmetas.builtin import NumberMeta
 
 
 class CounterPart(Part):

@@ -1,6 +1,6 @@
 from malcolm.parts.builtin.attributepart import AttributePart
 from malcolm.core import method_also_takes, REQUIRED
-from malcolm.core.vmetas import ChoiceMeta, StringMeta, StringArrayMeta
+from malcolm.vmetas.builtin import ChoiceMeta, StringMeta, StringArrayMeta
 
 
 @method_also_takes(

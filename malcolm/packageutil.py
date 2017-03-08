@@ -28,7 +28,7 @@ def find_method_meta_decorated(module):
         cls = getattr(module, n)
         module_name = module.__name__.split(".")[-1]
         if n.lower() == module_name:
-            if hasattr(cls, "MethodMeta"):
+            if hasattr(cls, "Method"):
                 logging.debug("Found child class %s", cls)
                 yield cls.__name__, cls
 

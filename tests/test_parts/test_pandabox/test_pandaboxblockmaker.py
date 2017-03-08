@@ -8,7 +8,7 @@ import setup_malcolm_paths
 import unittest
 from mock import call, Mock
 
-from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, NumberMeta, StringMeta
+from malcolm.vmetas.builtin import BooleanMeta, ChoiceMeta, NumberMeta, StringMeta
 from malcolm.parts.pandabox.pandaboxblockmaker import PandABoxBlockMaker
 from malcolm.parts.pandabox.pandaboxcontrol import BlockData, FieldData
 

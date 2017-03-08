@@ -1,13 +1,12 @@
 import os
 import sys
 sys.path.append(os.path.dirname(__file__))
-import setup_malcolm_paths
 
 import unittest
 from mock import Mock, ANY
 
 from malcolm.core import method_takes, REQUIRED
-from malcolm.core.vmetas import StringMeta
+from malcolm.vmetas.builtin import StringMeta
 from malcolm.parts.builtin.stringpart import StringPart
 from malcolm.yamlutil import make_block_creator, Section, make_include_creator
 

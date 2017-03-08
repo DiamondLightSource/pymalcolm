@@ -1,6 +1,6 @@
 from malcolm.core import Part
-from malcolm.core.vmetas import BooleanMeta
 from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
+from malcolm.vmetas.builtin import BooleanMeta
 
 
 class PandABoxFieldPart(Part):

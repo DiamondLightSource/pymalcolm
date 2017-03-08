@@ -1,5 +1,5 @@
 from malcolm.core import Part
-from malcolm.core.vmetas import ChoiceMeta
+from malcolm.vmetas.builtin import ChoiceMeta
 from malcolm.tags import widget, config
 
 

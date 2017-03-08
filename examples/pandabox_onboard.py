@@ -3,12 +3,13 @@ import os
 import sys
 
 from pkg_resources import require
+
 require("tornado", "numpy")
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from malcolm.core import SyncFactory, Process
 from malcolm.controllers import ManagerController
-from malcolm.comms.websocket.websocketservercomms import WebsocketServerComms
+from malcolm.controllers.websocket.websocketservercomms import WebsocketServerComms
 from malcolm.includes.pandabox.hardware_collection import hardware_collection
 
 # Input params

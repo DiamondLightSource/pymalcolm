@@ -1,9 +1,8 @@
-from malcolm.core import method_takes, Task, serialize_object
-from malcolm.core import ResponseError, BadValueError
-from malcolm.parts.builtin.childpart import ChildPart
-from malcolm.controllers.runnablecontroller import RunnableController, \
+from malcolm.controllers.builtin.runnablecontroller import RunnableController, \
     ParameterTweakInfo
-
+from malcolm.core import ResponseError, BadValueError
+from malcolm.core import method_takes, Task, serialize_object
+from malcolm.parts.builtin.childpart import ChildPart
 
 sm = RunnableController.stateMachine
 
@@ -54,7 +53,7 @@ class RunnableChildPart(ChildPart):
     def run(self, task, update_completed_steps):
         """Wait for run to finish
         Args:
-            task (Task): The task helper
+            task (Task): The context helper
             update_completed_steps (func): The function we should call when
                 completedSteps should be updated
         """

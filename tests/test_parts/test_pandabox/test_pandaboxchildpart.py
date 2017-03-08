@@ -6,10 +6,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import call, MagicMock, Mock
+from mock import MagicMock, Mock
 
 from malcolm.core import Table
-from malcolm.core.vmetas import TableMeta, BooleanArrayMeta, NumberArrayMeta
 from malcolm.parts.pandabox.pandaboxchildpart import PandABoxChildPart
 
 

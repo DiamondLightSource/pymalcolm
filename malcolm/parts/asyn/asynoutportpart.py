@@ -1,8 +1,9 @@
-from malcolm.parts.ca.castringpart import CAStringPart
-from malcolm.controllers.defaultcontroller import DefaultController
+from malcolm.controllers.builtin.defaultcontroller import DefaultController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.core.vmetas import StringMeta, ChoiceMeta
+from malcolm.parts.ca.castringpart import CAStringPart
 from malcolm.tags import port_types, outport, widget
+from malcolm.vmetas.builtin import StringMeta, ChoiceMeta
+
 
 @method_takes(
     "name", StringMeta("Name of the created attribute"), REQUIRED,

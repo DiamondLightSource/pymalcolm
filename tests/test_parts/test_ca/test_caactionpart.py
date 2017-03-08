@@ -55,7 +55,7 @@ class TestCAActionPart(unittest.TestCase):
         p = self.create_part()
         p.catools.caget.reset_mock()
         p.catools.caget.return_value = [caint(4)]
-        p.connect_pvs("unused task object")
+        p.connect_pvs("unused context object")
         p.catools.caget.assert_called_with(["pv"])
 
     def test_caput(self):

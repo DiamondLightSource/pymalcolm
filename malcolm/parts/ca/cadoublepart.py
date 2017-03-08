@@ -1,4 +1,4 @@
-from malcolm.core.vmetas import NumberMeta
+from malcolm.vmetas.builtin import NumberMeta
 from malcolm.parts.ca.capart import CAPart
 
 

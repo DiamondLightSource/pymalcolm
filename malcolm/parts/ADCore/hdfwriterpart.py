@@ -1,15 +1,15 @@
 import os
 from xml.etree import cElementTree as ET
+
 from scanpointgenerator import FixedDurationMutator
 
 from malcolm.compat import et_to_string
+from malcolm.controllers.builtin.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED, Info
-from malcolm.core.vmetas import StringMeta, PointGeneratorMeta
-from malcolm.parts.builtin.childpart import ChildPart
-from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo, \
     dataset_types
-
+from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.vmetas.builtin import StringMeta, PointGeneratorMeta
 
 SUFFIXES = "NXY3456789"
 

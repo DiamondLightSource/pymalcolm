@@ -1,9 +1,9 @@
-from malcolm.core.meta import Meta
-from malcolm.core.ntscalar import NTScalar
+from .meta import Meta
+from .ntscalar import NTScalar
 
 
 class VMeta(Meta):
-    """Abstract base class for Validating Meta objects"""
+    """Abstract base class for validating the values of Attributes"""
     attribute_class = NTScalar
 
     def validate(self, value):

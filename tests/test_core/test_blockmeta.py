@@ -9,12 +9,6 @@ from collections import OrderedDict
 from malcolm.core.blockmeta import BlockMeta
 
 
-class TestInit(unittest.TestCase):
-    def test_init(self):
-        block_meta = BlockMeta("desc")
-        self.assertEqual("malcolm:core/BlockMeta:1.0", block_meta.typeid)
-
-
 class TestSerialization(unittest.TestCase):
 
     def setUp(self):

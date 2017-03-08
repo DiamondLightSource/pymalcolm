@@ -7,8 +7,7 @@ from collections import OrderedDict
 
 import unittest
 
-from malcolm.core.elementmap import ElementMap
-from malcolm.core.vmetas import StringArrayMeta
+from malcolm.vmetas.builtin import StringArrayMeta
 from malcolm.core.mapmeta import MapMeta
 
 
@@ -18,13 +17,13 @@ class TestSetters(unittest.TestCase):
         self.mm = MapMeta("description")
 
     def test_values_set(self):
-        self.assertIsInstance(self.mm.elements, ElementMap)
+        self.assertIsInstance(self.mm.elements, dict)
         self.assertEqual(len(self.mm.elements), 0)
         self.assertEqual(self.mm.typeid, "malcolm:core/MapMeta:1.0")
         self.assertEqual(self.mm.description, "description")
 
     def test_set_elements(self):
-        els = ElementMap(dict(sam=StringArrayMeta()))
+        els = dict(sam=StringArrayMeta())
         self.mm.set_elements(els)
         self.assertEqual(self.mm.elements, els)
 
@@ -41,7 +40,7 @@ class TestSerialization(unittest.TestCase):
         self.sam = StringArrayMeta()
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/MapMeta:1.0"
-        self.serialized["elements"] = ElementMap(dict(c1=self.sam)).to_dict()
+        self.serialized["elements"] = dict(c1=self.sam.to_dict())
         self.serialized["description"] = "desc"
         self.serialized["tags"] = ()
         self.serialized["writeable"] = False
@@ -50,7 +49,7 @@ class TestSerialization(unittest.TestCase):
 
     def test_to_dict(self):
         tm = MapMeta("desc")
-        tm.set_elements(ElementMap(dict(c1=self.sam)))
+        tm.set_elements(dict(c1=self.sam))
         tm.set_required(["c1"])
         self.assertEqual(tm.to_dict(), self.serialized)
 

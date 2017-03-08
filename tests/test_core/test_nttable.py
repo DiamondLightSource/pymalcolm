@@ -8,16 +8,14 @@ from collections import OrderedDict
 import unittest
 from mock import Mock, patch
 
-from malcolm.core.vmetas import TableMeta, StringArrayMeta
-from malcolm.core import Table
-from malcolm.core import NTTable
+from malcolm.vmetas.builtin import TableMeta, StringArrayMeta
+from malcolm.core import Table, NTTable, Alarm, TimeStamp
 
 
 class TestSerialization(unittest.TestCase):
 
     def setUp(self):
         elements = OrderedDict()
-        elements["typeid"] = "malcolm:core/TableElementMap:1.0"
         elements["foo"] = StringArrayMeta(label="Foo").to_dict()
         elements["bar"] = StringArrayMeta().to_dict()
         meta = OrderedDict()
@@ -36,24 +34,27 @@ class TestSerialization(unittest.TestCase):
         self.serialized["labels"] = ["Foo", "bar"]
         self.serialized["meta"] = meta
         self.serialized["value"] = value
+        self.serialized["alarm"] = Alarm().to_dict()
+        self.serialized["timeStamp"] = TimeStamp().to_dict()
 
     def test_to_dict(self):
-        columns = OrderedDict()
-        columns["foo"] = StringArrayMeta(label="Foo")
-        columns["bar"] = StringArrayMeta()
+        elements = OrderedDict()
+        elements["foo"] = StringArrayMeta(label="Foo")
+        elements["bar"] = StringArrayMeta()
         meta = TableMeta(description="desc", tags=[], writeable=True,
-                         label="my label", columns=columns)
+                         label="my label", elements=elements)
         value = Table(meta)
         value.foo = ["foo1", "foo2"]
         value.bar = ["bar1", "bar2"]
         o = meta.make_attribute(value)
+        o.set_timeStamp(self.serialized["timeStamp"])
         self.assertEqual(o.to_dict(), self.serialized)
 
     def test_from_dict(self):
         o = NTTable.from_dict(self.serialized)
         self.assertEquals(list(o.meta.elements), ["foo", "bar"])
-        self.assertEquals(o.meta.elements.foo.label, "Foo")
-        self.assertEquals(o.meta.elements.bar.label, "")
+        self.assertEquals(o.meta.elements["foo"].label, "Foo")
+        self.assertEquals(o.meta.elements["bar"].label, "")
         self.assertEquals(o.meta.description, "desc")
         self.assertEquals(o.meta.tags, ())
         self.assertEquals(o.meta.writeable, True)

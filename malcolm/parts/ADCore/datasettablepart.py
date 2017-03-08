@@ -1,8 +1,8 @@
 from malcolm.compat import OrderedDict
+from malcolm.controllers.builtin.runnablecontroller import RunnableController
 from malcolm.core import Part, Table, Info
-from malcolm.core.vmetas import StringArrayMeta, ChoiceArrayMeta, TableMeta, \
+from malcolm.vmetas.builtin import StringArrayMeta, ChoiceArrayMeta, TableMeta, \
     NumberArrayMeta
-from malcolm.controllers.runnablecontroller import RunnableController
 
 # Make a table for the dataset info we produce
 dataset_types = [

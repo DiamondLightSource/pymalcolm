@@ -121,12 +121,12 @@ Dictionary with members:
 - endpoint
     List of strings specifying the path to the substructure
     of the Block that should be posted to. The first element will be the name of
-    the Block, and the second will be the MethodMeta name. See :ref:`structure` for
+    the Block, and the second will be the Method name. See :ref:`structure` for
     more details.
 - parameters
     Dictionary of parameters that should be Posted. The keys of the dictionary
     are string parameter names, and the types of the values should match those
-    described in the ``takes`` element of the MethodMeta. See :ref:`structure` for
+    described in the ``takes`` element of the Method. See :ref:`structure` for
     details.
 
 .. container:: toggle
@@ -214,7 +214,7 @@ This message is sent to signify completion of an operation:
 - In response to a `Get`_ to return the serialized version of an endpoint
 - In response to a `Put`_ or `Unsubscribe`_ with no value to indicate successful
   completion
-- In response to a `Post`_ with the return value of that MethodMeta call, or no
+- In response to a `Post`_ with the return value of that Method call, or no
   value if nothing is returned
 
 Dictionary with members:
@@ -226,7 +226,7 @@ Dictionary with members:
 - value (optional)
     Object return value if it exists. For `Get`_ this will be the structure of
     the endpoint. For `Post`_ this will be described by the ``returns`` element
-    of the MethodMeta. See :ref:`structure` for more details.
+    of the Method. See :ref:`structure` for more details.
 
 .. container:: toggle
 

@@ -1,6 +1,3 @@
-from malcolm.core import method_takes, REQUIRED
-from malcolm.core.vmetas import PointGeneratorMeta
-from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
 
 

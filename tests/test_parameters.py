@@ -8,7 +8,7 @@ from mock import Mock, patch, call, MagicMock
 
 from malcolm import parameters
 from malcolm.core import REQUIRED
-from malcolm.core.vmetas import NumberMeta, StringMeta
+from malcolm.vmetas.builtin import NumberMeta, StringMeta
 
 
 class TestParameters(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestParameters(unittest.TestCase):
         decorated = {}
         for k in dir(parameters):
             v = getattr(parameters, k)
-            if hasattr(v, "MethodMeta"):
+            if hasattr(v, "Method"):
                 decorated[k] = v
         self.assertEqual(decorated, dict(
             string=parameters.string,

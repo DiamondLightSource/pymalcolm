@@ -1,7 +1,7 @@
+from malcolm.controllers.builtin.defaultcontroller import DefaultController
 from malcolm.core import Part, method_takes, REQUIRED, MethodMeta
-from malcolm.core.vmetas import StringMeta, NumberMeta, BooleanMeta
-from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.parts.ca.cothreadimporter import CothreadImporter
+from malcolm.vmetas.builtin import StringMeta, NumberMeta, BooleanMeta
 
 
 @method_takes(
@@ -20,7 +20,7 @@ class CAActionPart(Part):
         super(CAActionPart, self).__init__(process, params)
 
     def create_methods(self):
-        # MethodMeta instance
+        # Method instance
         self.method = MethodMeta(self.params.description)
         # TODO: set widget tag?
         yield self.params.name, self.method, self.caput

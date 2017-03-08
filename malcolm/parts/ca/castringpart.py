@@ -1,5 +1,5 @@
-from malcolm.core.vmetas import StringMeta
 from malcolm.parts.ca.capart import CAPart
+from malcolm.vmetas.builtin import StringMeta
 
 
 class CAStringPart(CAPart):

@@ -4,6 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 import unittest
+import gc
 from mock import MagicMock, call, ANY
 
 # logging
@@ -12,74 +13,65 @@ from mock import MagicMock, call, ANY
 
 # module imports
 from malcolm.core.controller import Controller
+from malcolm.core.process import Process
+from malcolm.core.hook import Hook
+from malcolm.core.part import Part
+
+
+class MyController(Controller):
+    TestHook = Hook()
+
+
+class MyPart(Part):
+    context = None
+    exception = None
+
+    @MyController.TestHook
+    def func(self, context):
+        if self.exception:
+            raise self.exception
+        self.context = context
+        return dict(foo="bar")
 
 
 class TestController(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        params = Controller.MethodMeta.prepare_input_map(mri="mri1")
-        self.c = Controller(MagicMock(), {}, params)
-        self.b = self.c.block
+        self.process = Process("proc")
+        self.part = MyPart(self.process, "test_part")
+        self.o = MyController(self.process, "mri", [self.part])
+        self.process.start()
+
+    def tearDown(self):
+        self.process.stop()
 
     def test_init(self):
-        self.c.process.add_block.assert_called_once_with(self.b, self.c)
-        self.assertEqual({}, self.c.parts)
-
-        self.assertEqual(
-            self.b["state"].meta.typeid, "malcolm:core/ChoiceMeta:1.0")
-        self.assertEqual(self.b.state, "Disabled")
-        self.assertEqual(
-            self.b["status"].meta.typeid, "malcolm:core/StringMeta:1.0")
-        self.assertEqual(self.b.status, "Disabled")
-        self.assertEqual(
-            self.b["busy"].meta.typeid, "malcolm:core/BooleanMeta:1.0")
-        self.assertEqual(self.b.busy, False)
-
-    def test_set_writeable_methods(self):
-        m = MagicMock()
-        m.name = "configure"
-        self.c.register_child_writeable(m, "Ready")
-        self.assertEqual(self.c.children_writeable['Ready'][m], True)
-
-    def make_part_tasks(self, hook, func):
-        task = MagicMock()
-        func_name = "configure"
-        part = MagicMock()
-        part.name = "test_part"
-        part.method_metas = {}
-        setattr(part, func_name, func)
-        part_tasks = {part: task}
-        hook_queue = self.c.process.create_queue.return_value
-
-        def side_effect():
-            task_return = task.define_spawn_function.call_args[0][0]
-            task_return()
-            return hook_queue.put.call_args[0][0]
-
-        hook_queue.get.side_effect = side_effect
-
-        hook.find_hooked_functions.return_value = {part: func_name}
-        self.c.hook_names = {hook: "test_hook"}
-        return part_tasks
+        self.assertEqual(self.o.mri, "mri")
+        self.assertEqual(self.o.process, self.process)
 
     def test_run_hook(self):
-        hook = MagicMock()
-        func = MagicMock()
-        func.return_value = {"foo": "bar"}
-        part_tasks = self.make_part_tasks(hook, func)
-        result = self.c.run_hook(hook, part_tasks)
+        context = MagicMock()
+        part_contexts = {self.part: context}
+        result = self.o.run_hook(self.o.TestHook, part_contexts)
         self.assertEquals(result, dict(test_part=dict(foo="bar")))
+        self.assertIs(self.part.context.anything, context.anything)
+        del context
+        del part_contexts
+        gc.collect()
+        with self.assertRaises(ReferenceError):
+            self.part.context.anything
 
     def test_run_hook_raises(self):
-        hook = MagicMock()
-        func = MagicMock(side_effect=Exception("Test Exception"))
-        part_tasks = self.make_part_tasks(hook, func)
-
+        class MyException(Exception):
+            pass
+        context = MagicMock()
+        self.part.exception = MyException()
+        part_contexts = {self.part: context}
         with self.assertRaises(Exception) as cm:
-            self.c.run_hook(hook, part_tasks)
-        self.assertIs(func.side_effect, cm.exception)
-        #TODO: test hook_queue.put/get mechanism
+            self.o.run_hook(self.o.TestHook, part_contexts)
+        self.assertIs(self.part.context, None)
+        self.assertIs(cm.exception, self.part.exception)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

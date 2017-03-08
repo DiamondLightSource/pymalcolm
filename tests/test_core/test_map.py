@@ -1,17 +1,15 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
 
 import unittest
 from collections import OrderedDict
 from mock import MagicMock, Mock
 
-from malcolm.core import Map, Serializable
-from malcolm.core.vmetas import NumberMeta, StringMeta
+from malcolm.core import Map
+from malcolm.vmetas.builtin import NumberMeta, StringMeta
 from malcolm.core.meta import Meta
 from malcolm.core.mapmeta import MapMeta
-from malcolm.core.elementmap import ElementMap
 
 
 class TestMap(unittest.TestCase):
@@ -20,10 +18,10 @@ class TestMap(unittest.TestCase):
         n = NumberMeta(description='a number')
         s = StringMeta(description="a string")
         self.meta = MapMeta()
-        self.meta.set_elements(ElementMap({"a": s, "b": s}))
+        self.meta.set_elements({"a": s, "b": s})
         self.meta.set_required(["a"])
         self.nmeta = MapMeta()
-        self.nmeta.set_elements(ElementMap({"a": n, "b": n}))
+        self.nmeta.set_elements({"a": n, "b": n})
         self.nmeta.set_required(["a"])
 
     def test_init(self):

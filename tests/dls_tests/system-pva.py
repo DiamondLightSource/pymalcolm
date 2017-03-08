@@ -8,7 +8,7 @@ from pkg_resources import require
 
 require("numpy", "scanpointgenerator")
 
-from malcolm.comms.pva.pvautil import PvaUtil
+from malcolm.controllers.pva.pvautil import PvaUtil
 from malcolm.core import StringArray
 from malcolm.compat import OrderedDict
 

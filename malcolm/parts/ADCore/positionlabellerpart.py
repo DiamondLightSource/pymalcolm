@@ -1,10 +1,10 @@
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
+from malcolm.controllers.builtin.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.core.vmetas import PointGeneratorMeta
 from malcolm.parts.builtin.childpart import ChildPart
-from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.vmetas.builtin import PointGeneratorMeta
 
 # How big an XML file can the EPICS waveform receive?
 XML_MAX_SIZE = 1000000 - 2

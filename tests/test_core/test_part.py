@@ -2,19 +2,19 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
 
 import unittest
 
 from mock import Mock
 
-from malcolm.controllers.defaultcontroller import DefaultController
-from malcolm.core import Part, method_takes
+from malcolm.core import Part, method_takes, Hook
 
+
+Reset = Hook()
 
 class MyPart(Part):
     @method_takes()
-    @DefaultController.Reset
+    @Reset
     def foo(self):
         pass
 
@@ -26,15 +26,13 @@ class MyPart(Part):
 class TestPart(unittest.TestCase):
     def test_init(self):
         process = Mock()
-        params = Mock()
-        p = Part(process, params)
-        self.assertEqual(p.params, params)
+        p = Part(process, "name")
         self.assertEqual(p.process, process)
 
     def test_non_hooked_methods(self):
-        p = MyPart(Mock(), Mock())
+        p = MyPart(Mock(), "")
         methods = list(p.create_methods())
-        self.assertEqual(methods, [("bar", p.method_metas["bar"], p.bar)])
+        self.assertEqual(methods, [("bar", p._method_models["bar"], p.bar)])
 
 
 if __name__ == "__main__":

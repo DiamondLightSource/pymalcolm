@@ -9,7 +9,7 @@ import unittest
 from mock import call, Mock
 
 from malcolm.core import Table
-from malcolm.core.vmetas import TableMeta, BooleanArrayMeta, NumberArrayMeta
+from malcolm.vmetas.builtin import TableMeta, BooleanArrayMeta, NumberArrayMeta
 from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
 
 

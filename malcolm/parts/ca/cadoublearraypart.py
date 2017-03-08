@@ -1,4 +1,4 @@
-from malcolm.core.vmetas import NumberArrayMeta
+from malcolm.vmetas.builtin import NumberArrayMeta
 from malcolm.parts.ca.caarraypart import CAArrayPart
 
 

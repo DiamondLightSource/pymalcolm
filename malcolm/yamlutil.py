@@ -41,8 +41,6 @@ def _create_blocks_and_parts(process, sections, params):
 
 
 def make_include_creator(text):
-    import malcolm.comms as comms_base
-
     sections = Section.from_yaml(text)
 
     # Check we don't have any controllers
@@ -52,14 +50,7 @@ def make_include_creator(text):
     # Add any parameters to the takes arguments
     @method_takes(*_create_takes_arguments(sections))
     def include_creator(process, params):
-        blocks, parts = _create_blocks_and_parts(process, sections, params)
-
-        # Make the comms
-        for section in sections["comms"]:
-            comms = section.instantiate(params, comms_base, process)
-            process.add_comms(comms)
-
-        return blocks, parts
+        return _create_blocks_and_parts(process, sections, params)
 
     return include_creator
 
@@ -87,9 +78,6 @@ def make_block_creator(text):
     assert len(sections["controllers"]) == 1, \
         "Expected exactly 1 controller, got %s" % (sections["controllers"],)
     controller_section = sections["controllers"][0]
-
-    # Check we have no comms
-    assert len(sections["comms"]) == 0, "Can't define comms in a block"
 
     # Add any parameters to the takes arguments
     @method_takes(*_create_takes_arguments(sections))
@@ -139,7 +127,7 @@ class Section(object):
                 logging.error("Can't find %s of %s", n, self.name)
                 raise
         logging.debug("Instantiating %s with %s", base, param_dict)
-        args += (base.MethodMeta.prepare_input_map(**param_dict),)
+        args += base.MethodModel.prepare_call_args(**param_dict)
         return base(*args)
 
     @classmethod
@@ -168,8 +156,7 @@ class Section(object):
         # First separate them into their relevant sections
         ds = yaml.load(text, Loader=yaml.RoundTripLoader)
         sections = dict(
-            parameters=[], controllers=[], parts=[], blocks=[], comms=[],
-            includes=[])
+            parameters=[], controllers=[], parts=[], blocks=[], includes=[])
         for d in ds:
             assert len(d) == 1, \
                 "Expected section length 1, got %d" % len(d)

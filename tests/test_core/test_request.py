@@ -13,175 +13,134 @@ from mock import MagicMock, patch
 class TestRequest(unittest.TestCase):
 
     def setUp(self):
-        self.context = MagicMock()
-        self.response_queue = MagicMock()
-        self.response_queue.qsize.return_value = 0
-        self.request = Request(self.context, self.response_queue)
+        self.callback = MagicMock()
+        self.o = Request(32, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.context, self.request.context)
-        self.assertEqual(self.response_queue, self.request.response_queue)
-
-    def test_repr(self):
-        r = Request(MagicMock(), MagicMock())
-        s = r.__repr__()
-        self.assertTrue(isinstance(s, str))
-        self.assertIn('id', s)
+        self.assertEqual(self.o.id, 32)
+        self.assertEqual(self.o.callback, self.callback)
 
     def test_respond_with_return(self):
-
-        self.request.respond_with_return(value=5)
-
-        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
-
-        expected_response = Return(self.request.id, self.request.context, value=5).to_dict()
-
-        self.assertEqual(call_arg, expected_response)
+        self.o.respond_with_return(value=5)
+        self.callback.assert_called_once_with(
+            Return(id=32, value=5))
 
     def test_respond_with_error(self):
-
-        self.request.respond_with_error(message="Test Error")
-
-        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
-
-        expected_response = Error(self.request.id, self.request.context,
-                                  message="Test Error").to_dict()
-
-        self.assertEqual(call_arg, expected_response)
+        self.o.respond_with_error(message="Test Error")
+        self.callback.assert_called_once_with(
+            Error(id=32, message="Test Error"))
 
     def test_setters(self):
-        self.request.set_id(123)
-        self.assertEquals(123, self.request.id)
+        self.o.set_id(123)
+        self.assertEquals(123, self.o.id)
+        self.o.set_callback(None)
+        self.o.callback(888)
+        self.callback.assert_not_called()
 
 
 class TestGet(unittest.TestCase):
 
     def setUp(self):
-        self.context = MagicMock()
-        self.response_queue = MagicMock()
-        self.endpoint = ["BL18I:XSPRESS3", "state", "value"]
-        self.get = Get(self.context, self.response_queue, self.endpoint)
+        self.callback = MagicMock()
+        self.path = ["BL18I:XSPRESS3", "state", "value"]
+        self.o = Get(32, self.path, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.context, self.get.context)
-        self.assertEqual(self.response_queue, self.get.response_queue)
-        self.assertEqual(self.endpoint, self.get.path)
-        self.assertEqual("malcolm:core/Get:1.0", self.get.typeid)
+        self.assertEqual(self.o.typeid, "malcolm:core/Get:1.0")
+        self.assertEqual(self.o.id, 32)
+        self.assertEqual(self.o.callback, self.callback)
+        self.assertEqual(self.path, self.o.path)
 
     def test_setters(self):
-        self.get.set_path(["BL18I:XSPRESS3", "state", "value2"])
-        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.get.path)
+        self.o.set_path(["BL18I:XSPRESS3", "state"])
+        self.assertEquals(self.o.path, ["BL18I:XSPRESS3", "state"])
 
 
 class TestPut(unittest.TestCase):
 
     def setUp(self):
-        self.context = MagicMock()
-        self.response_queue = MagicMock()
-        self.endpoint = ["BL18I:XSPRESS3", "state", "value"]
+        self.callback = MagicMock()
+        self.path = ["BL18I:XSPRESS3", "state", "value"]
         self.value = "5"
-
-        self.put = Put(self.context, self.response_queue, self.endpoint, self.value)
+        self.o = Put(32, self.path, self.value, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.context, self.put.context)
-        self.assertEqual(self.response_queue, self.put.response_queue)
-        self.assertEqual(self.endpoint, self.put.path)
-        self.assertEqual(self.value, self.put.value)
-        self.assertEqual("malcolm:core/Put:1.0", self.put.typeid)
+        self.assertEqual(self.o.typeid, "malcolm:core/Put:1.0")
+        self.assertEqual(self.o.id, 32)
+        self.assertEqual(self.o.callback, self.callback)
+        self.assertEqual(self.path, self.o.path)
+        self.assertEqual(self.value, self.o.value)
 
     def test_setters(self):
-        self.put.set_path(["BL18I:XSPRESS3", "state", "value2"])
-        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.put.path)
-
-        self.put.set_value("7")
-        self.assertEquals("7", self.put.value)
+        self.o.set_value("7")
+        self.assertEquals(self.o.value, "7")
 
 
 class TestPost(unittest.TestCase):
 
     def setUp(self):
-        self.context = MagicMock()
-        self.response_queue = MagicMock()
-        self.endpoint = ["BL18I:XSPRESS3", "state", "value"]
-        self.parameters = dict(arg1=5, arg2=True)
-
-        self.post = Post(self.context, self.response_queue, self.endpoint, self.parameters)
+        self.callback = MagicMock()
+        self.path = ["BL18I:XSPRESS3", "state", "value"]
+        self.parameters = dict(arg1=2, arg2=True)
+        self.o = Post(32, self.path, self.parameters, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.context, self.post.context)
-        self.assertEqual(self.response_queue, self.post.response_queue)
-        self.assertEqual(self.endpoint, self.post.path)
-        self.assertEqual(self.parameters, self.post.parameters)
-        self.assertEqual("malcolm:core/Post:1.0", self.post.typeid)
+        self.assertEqual(self.o.typeid, "malcolm:core/Post:1.0")
+        self.assertEqual(self.o.id, 32)
+        self.assertEqual(self.o.callback, self.callback)
+        self.assertEqual(self.path, self.o.path)
+        self.assertEqual(self.parameters, self.o.parameters)
 
     def test_setters(self):
-        self.post.set_path(["BL18I:XSPRESS3", "state", "value2"])
-        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.post.path)
-
-        self.post.set_parameters(dict(arg1=2, arg2=False))
-        self.assertEquals(dict(arg1=2, arg2=False), self.post.parameters)
+        self.o.set_parameters(dict(arg1=2, arg2=False))
+        self.assertEquals(self.o.parameters, dict(arg1=2, arg2=False))
 
 
 class TestSubscribe(unittest.TestCase):
 
     def setUp(self):
-        self.context = MagicMock()
-        self.response_queue = MagicMock()
-        self.response_queue.qsize.return_value = 0
-        self.endpoint = ["BL18I:XSPRESS3", "state", "value"]
+        self.callback = MagicMock()
+        self.path = ["BL18I:XSPRESS3", "state", "value"]
         self.delta = True
-        self.subscribe = Subscribe(
-            self.context, self.response_queue, self.endpoint, delta=self.delta)
+        self.o = Subscribe(32, self.path, self.delta, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.context, self.subscribe.context)
-        self.assertEqual(self.response_queue, self.subscribe.response_queue)
-        self.assertEqual(self.endpoint, self.subscribe.path)
-        self.assertEqual(self.delta, self.subscribe.delta)
-        self.assertEqual("malcolm:core/Subscribe:1.0", self.subscribe.typeid)
+        self.assertEqual(self.o.typeid, "malcolm:core/Subscribe:1.0")
+        self.assertEqual(self.o.id, 32)
+        self.assertEqual(self.o.callback, self.callback)
+        self.assertEqual(self.path, self.o.path)
+        self.assertEqual(self.delta, self.o.delta)
 
     def test_respond_with_update(self):
-        value = MagicMock()
-
-        self.subscribe.respond_with_update(value)
-
-        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
-
-        expected_response = Update(self.subscribe.id, self.subscribe.context, value=value).to_dict()
-
-        self.assertEqual(call_arg, expected_response)
+        self.o.respond_with_update(value=5)
+        self.callback.assert_called_once_with(
+            Update(id=32, value=5))
 
     def test_respond_with_delta(self):
         changes = [[["path"], "value"]]
-
-        self.subscribe.respond_with_delta(changes)
-
-        call_arg = self.response_queue.put.call_args_list[0][0][0].to_dict()
-
-        expected_response = Delta(self.subscribe.id, self.subscribe.context, changes=changes).to_dict()
-
-        self.assertEqual(call_arg, expected_response)
+        self.o.respond_with_delta(changes)
+        self.callback.assert_called_once_with(
+            Delta(id=32, changes=changes))
 
     def test_setters(self):
-        self.subscribe.set_path(["BL18I:XSPRESS3", "state", "value2"])
-        self.assertEquals(["BL18I:XSPRESS3", "state", "value2"], self.subscribe.path)
-
-        self.subscribe.set_delta(False)
-        self.assertFalse(self.subscribe.delta)
+        self.o.set_delta(False)
+        self.assertFalse(self.o.delta)
 
 
 class TestUnsubscribe(unittest.TestCase):
 
     def setUp(self):
-        self.context = MagicMock()
-        self.response_queue = MagicMock()
-        self.unsubscribe = Unsubscribe(self.context, self.response_queue)
+        self.callback = MagicMock()
+        self.subscribe = Subscribe(32, callback=self.callback)
+        self.subscribes = {self.subscribe.generate_key(): self.subscribe}
+        self.o = Unsubscribe(32, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.context, self.unsubscribe.context)
-        self.assertEqual(self.response_queue, self.unsubscribe.response_queue)
-        self.assertEqual("malcolm:core/Unsubscribe:1.0", self.unsubscribe.typeid)
+        self.assertEqual(self.o.typeid, "malcolm:core/Unsubscribe:1.0")
+        self.assertEqual(self.o.id, 32)
+
+    def test_keys_same(self):
+        self.assertEqual(self.subscribes[self.o.generate_key()], self.subscribe)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

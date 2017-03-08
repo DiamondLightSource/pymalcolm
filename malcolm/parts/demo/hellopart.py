@@ -1,8 +1,9 @@
 from __future__ import print_function
+
 import time
 
 from malcolm.core import Part, method_takes, method_returns, REQUIRED
-from malcolm.core.vmetas import StringMeta, NumberMeta
+from malcolm.vmetas.builtin import StringMeta, NumberMeta
 
 
 class HelloPart(Part):

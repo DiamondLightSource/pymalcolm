@@ -1,4 +1,4 @@
-from malcolm.core.vmetas import ChoiceMeta
+from malcolm.vmetas.builtin import ChoiceMeta
 from malcolm.parts.ca.capart import CAPart
 
 

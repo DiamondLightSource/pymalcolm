@@ -1,13 +1,9 @@
 import inspect
 
-from malcolm.core.methodmeta import MethodMeta
-
 
 class Hook(object):
-
     def __call__(self, func):
-        """
-        Decorator function to add a Hook to a Part's function
+        """Decorator function to add a Hook to a Part's function
 
         Args:
             func: Function to decorate with Hook
@@ -19,16 +15,18 @@ class Hook(object):
         if not hasattr(func, "Hooked"):
             func.Hooked = []
         func.Hooked.append(self)
-        # TODO: is this needed?
-        MethodMeta.wrap_method(func)
         return func
 
-    def find_hooked_functions(self, parts):
+    @classmethod
+    def isinstance(cls, o):
+        return isinstance(o, cls)
+
+    def find_hooked_functions(self, part_list):
         # Filter part dict to find parts that have a function hooked to us
         # {Part: func_name}
         part_funcs = {}
 
-        for part in parts.values():
+        for part in part_list:
             for func_name, part_hook, func in get_hook_decorated(part):
                 if part_hook is self:
                     assert part not in part_funcs, \
