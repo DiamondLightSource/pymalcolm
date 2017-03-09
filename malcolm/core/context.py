@@ -47,7 +47,7 @@ class Context(Loggable):
 
     def block_view(self, mri):
         controller = self._process.get_controller(mri)
-        block = controller.make_view(self)
+        block = controller.make_view(weakref.proxy(self))
         return block
 
     def _get_next_id(self):
