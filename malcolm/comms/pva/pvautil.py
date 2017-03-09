@@ -26,31 +26,32 @@ class PvaUtil(object):
     def dict_to_pv_object(self, dict_in, empty_allowed=True):
         structure = self.pva_structure_from_value(dict_in, empty_allowed)
         if structure:
-            set_value = self.prepare_dict_set(dict_in)
+            set_value = self.value_for_pva_set(dict_in)
             logging.debug("Set %s to %r", structure, set_value)
             structure.set(set_value)
             return structure
 
-    def prepare_dict_set(self, dict_in):
-        set_value = OrderedDict()
-        for key, value in dict_in.items():
-            # Turn it into something that pvaccess can just set
-            if isinstance(value, StringArray):
-                set_value[key] = list(value)
-            elif isinstance(value, (np.number, np.ndarray)):
-                set_value[key] = value.tolist()
-            elif isinstance(value, dict):
-                dict_set = self.prepare_dict_set(value)
-                if dict_set:
-                    set_value[key] = dict_set
-            elif isinstance(value, list):
-                if [x for x in value if isinstance(x, dict)]:
-                    set_value[key] = [self.dict_to_pv_object(v) for v in value]
-                else:
-                    set_value[key] = value
-            elif key != "typeid":
-                set_value[key] = value
-        return set_value
+    def value_for_pva_set(self, value):
+        # Turn it into something that pvaccess can just set
+        if isinstance(value, StringArray):
+            value = list(value)
+        elif isinstance(value, (np.number, np.ndarray)):
+            value = value.tolist()
+        elif isinstance(value, dict):
+            dict_set = OrderedDict()
+            for k, v in value.items():
+                if k != "typeid":
+                    v = self.value_for_pva_set(v)
+                    if v is not None:
+                        dict_set[k] = v
+            if dict_set:
+                value = dict_set
+            else:
+                value = None
+        elif isinstance(value, list):
+            if [x for x in value if isinstance(x, dict)]:
+                value = [self.dict_to_pv_object(v) for v in value]
+        return value
 
     def pva_structure_from_value(self, value, empty_allowed=False):
         # Create pv structure
