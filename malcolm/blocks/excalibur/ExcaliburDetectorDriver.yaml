@@ -1,0 +1,28 @@
+- parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- controllers.DefaultController:
+    mri: $(mri)
+
+- includes.ADCore.adbase_parts:
+    prefix: $(prefix)
+
+- parts.ca.CADoublePart:
+    name: exposure
+    description: Exposure time for each frame
+    pv: $(prefix):AcquireTime
+    rbvSuff: _RBV
+    widget: textinput
+
+- parts.ca.CADoublePart:
+    name: acquirePeriod
+    description: Duration of each frame including readout
+    pv: $(prefix):AcquirePeriod
+    rbvSuff: _RBV
+    widget: textinput
+
