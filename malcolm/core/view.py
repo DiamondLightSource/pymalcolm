@@ -41,7 +41,7 @@ def make_get_property(cls, endpoint):
     def make_child_view(self):
         # Get the child of self._data. Needs to be done by the controller to
         # make sure lock is taken and we get consistent data
-        child = self._controller.make_view(self._data, self._context, endpoint)
+        child = self._controller.make_view(self._context, self._data, endpoint)
         return child
 
     setattr(cls, endpoint, make_child_view)
