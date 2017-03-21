@@ -19,7 +19,6 @@ from malcolm.core.part import Part
 from malcolm.core.alarm import Alarm, AlarmSeverity
 from malcolm.core.context import Context
 from malcolm.core.model import Model
-from malcolm.core.attributemodel import AttributeModel
 from malcolm.core.blockmodel import BlockModel
 from malcolm.core.queue import Queue
 from malcolm.core.request import Post, Subscribe, Put, Get, Unsubscribe
@@ -28,8 +27,9 @@ from malcolm.core.errors import UnexpectedError, AbortedError
 
 from malcolm.vmetas.builtin import StringMeta
 from malcolm.core.mapmeta import MapMeta
-from malcolm.core.methodmodel import MethodModel, OPTIONAL
+from malcolm.core.methodmodel import MethodModel, OPTIONAL, REQUIRED
 from malcolm.core import method_takes, method_returns
+
 
 class MyController(Controller):
     TestHook = Hook()
@@ -46,24 +46,17 @@ class MyPart(Part):
         self.context = context
         return dict(foo="bar")
 
-    def my_method(self):
-        return 'world'
-
-    def setAttr(self, val):
-        self.myAttribute = val
-        return val
+    @method_takes()
+    @method_returns('ret', StringMeta(), OPTIONAL)
+    def my_method(self, returns=MapMeta()):
+        returns.ret = 'world'
+        return returns
 
     def create_attributes(self):
         meta = StringMeta(description="MyString")
         self.myAttribute = meta.make_attribute(initial_value='hello')
-        yield "myAttribute", self.myAttribute, self.setAttr
+        yield "myAttribute", self.myAttribute, self.myAttribute.set_value
 
-    def create_methods(self):
-        # todo giles - still trying to get controller.validate_result
-        # if method.returns.elements clause to execute
-        ret = MapMeta(description='return val')
-        self.methodModel = MethodModel("myMethod", returns=ret)
-        yield "myMethod", self.methodModel, self.my_method
 
 class TestController(unittest.TestCase):
     maxDiff = None
@@ -138,12 +131,12 @@ class TestController(unittest.TestCase):
         assert self.o.health.value == "OK"
 
     def test_make_view(self):
-        method_view = self.o._make_view(self.context, self.part.methodModel)
+        method_view = self.o._make_view(self.context, self.part.my_method)
         attribute_view = self.o._make_view(self.context, self.part.myAttribute)
         dict_view = self.o._make_view(self.context,
-                {'a': self.part.myAttribute, 'm':self.part.methodModel})
+                {'a': self.part.myAttribute, 'm':self.part.my_method})
         list_view = self.o._make_view(self.context,
-                [self.part.myAttribute, self.part.methodModel])
+                [self.part.myAttribute, self.part.my_method])
 
         model = Model()
         model_view = self.o._make_view(self.context, model)
@@ -159,10 +152,11 @@ class TestController(unittest.TestCase):
         # Todo check create_part_contexts worked
         self.o.create_part_contexts()
 
-        assert method_view.description == "myMethod"
+        # using __call__
+        assert method_view().ret == 'world'
         assert attribute_view.value == "hello"
-        assert dict_view['m'].description == "myMethod"
-        assert list_view[1].description == "myMethod"
+        assert dict_view['a'].value == "hello"
+        assert list_view[0].value == "hello"
 
     def test_handle_request(self):
         q = Queue()
@@ -189,22 +183,22 @@ class TestController(unittest.TestCase):
         self.assertEqual(response.id, 42)
         self.assertEqual(response.value, "hello")
 
-        request = Post(id=43, path=["mri", "myMethod"],
+        request = Post(id=43, path=["mri", "my_method"],
                       callback=q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
         self.assertEqual(response.id, 43)
-        self.assertEqual(response.value, "world")
+        self.assertEqual(response.value['ret'], "world")
 
         # cover the controller._handle_post path for parameters
-        request = Post(id=43, path=["mri", "myMethod"],
+        request = Post(id=43, path=["mri", "my_method"],
                       parameters={'dummy': 1}, callback=q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
         self.assertEqual(response.id, 43)
-        self.assertEqual(response.value, "world")
+        self.assertEqual(response.value['ret'], "world")
 
         request = Subscribe(id=44, path=["mri", "myAttribute"],
                             delta=False, callback=q.put)
@@ -220,9 +214,6 @@ class TestController(unittest.TestCase):
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
         self.assertEqual(response.id, 44)
-
-        with self.assertRaises(UnexpectedError):
-            self.o.handle_request("Bad Request")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

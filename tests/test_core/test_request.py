@@ -21,14 +21,14 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(self.o.callback, self.callback)
 
     def test_respond_with_return(self):
-        self.o.respond_with_return(value=5)
-        self.callback.assert_called_once_with(
-            Return(id=32, value=5))
+        cb, response = self.o.return_response(value=5)
+        assert cb == self.callback
+        assert response == Return(id=32, value=5)
 
     def test_respond_with_error(self):
-        self.o.respond_with_error(message="Test Error")
-        self.callback.assert_called_once_with(
-            Error(id=32, message="Test Error"))
+        cb, response = self.o.error_response(exception=ValueError("Test Error"))
+        assert cb == self.callback
+        assert response == Error(id=32, message="Test Error")
 
     def test_setters(self):
         self.o.set_id(123)
@@ -112,15 +112,15 @@ class TestSubscribe(unittest.TestCase):
         self.assertEqual(self.delta, self.o.delta)
 
     def test_respond_with_update(self):
-        self.o.respond_with_update(value=5)
-        self.callback.assert_called_once_with(
-            Update(id=32, value=5))
+        cb, response = self.o.update_response(value=5)
+        assert cb == self.callback
+        assert response == Update(id=32, value=5)
 
     def test_respond_with_delta(self):
         changes = [[["path"], "value"]]
-        self.o.respond_with_delta(changes)
-        self.callback.assert_called_once_with(
-            Delta(id=32, changes=changes))
+        cb, response = self.o.delta_response(changes)
+        assert cb == self.callback
+        assert response == Delta(id=32, changes=changes)
 
     def test_setters(self):
         self.o.set_delta(False)

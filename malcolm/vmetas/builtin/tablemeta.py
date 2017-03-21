@@ -1,4 +1,4 @@
-from malcolm.compat import str_
+from malcolm.compat import str_, OrderedDict
 from malcolm.core import NTTable, Serializable, deserialize_object, Table, \
     VMeta, VArrayMeta
 
@@ -9,7 +9,7 @@ class TableMeta(VMeta):
     endpoints = ["elements", "description", "tags", "writeable", "label"]
     attribute_class = NTTable
 
-    def __init__(self, description="", tags=None, writeable=False, label="",
+    def __init__(self, description="", tags=(), writeable=False, label="",
                  elements=None):
         super(TableMeta, self).__init__(description, tags, writeable, label)
         if elements is None:
@@ -18,10 +18,11 @@ class TableMeta(VMeta):
 
     def set_elements(self, elements):
         """Set the elements dict from a serialized dict"""
+        deserialized = OrderedDict()
         for k, v in elements.items():
             k = deserialize_object(k, str_)
-            elements[k] = deserialize_object(v, VArrayMeta)
-        return self.set_endpoint_data("elements", elements)
+            deserialized[k] = deserialize_object(v, VArrayMeta)
+        return self.set_endpoint_data("elements", deserialized)
 
     def validate(self, value):
         if value is None:

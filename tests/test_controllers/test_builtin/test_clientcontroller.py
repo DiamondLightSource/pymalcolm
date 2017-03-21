@@ -69,7 +69,7 @@ class TestClientController(unittest.TestCase):
     def test_call_method(self):
         self.p.create_queue.return_value = queue.Queue()
         def f(request):
-            request.respond_with_return(dict(
+            request.return_response(dict(
                 greeting="Hello %s" % request.parameters["name"]))
         self.comms.q.put.side_effect = f
         ret = self.b.greet(name="me")

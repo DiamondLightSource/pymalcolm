@@ -9,7 +9,6 @@ from mock import Mock
 
 from malcolm.vmetas.builtin import StringArrayMeta, TableMeta
 from malcolm.core import Table
-from malcolm.core.tableelementmap import TableElementMap
 
 
 class TestTableMetaInit(unittest.TestCase):
@@ -34,21 +33,17 @@ class TestTableMetaSetters(unittest.TestCase):
         elements = OrderedDict()
         elements["col1"]=StringArrayMeta()
         elements["col2"]=StringArrayMeta()
-        elements = TableElementMap(elements)
         tm.set_elements(elements)
         self.assertEqual(elements, tm.elements)
-        tm.process.report_changes.assert_called_once_with(
-            [["elements"], elements.to_dict()])
 
     def test_set_elements_from_serialized(self):
         tm = self.tm
         elements = OrderedDict()
-        elements["col1"]=StringArrayMeta()
-        elements["col2"]=StringArrayMeta()
-        elements = TableElementMap(elements)
-        serialized = elements.to_dict()
-        tm.set_elements(serialized)
-        self.assertEqual(serialized, tm.elements.to_dict())
+        elements["col1"]=StringArrayMeta().to_dict()
+        elements["col2"]=StringArrayMeta().to_dict()
+        tm.set_elements(elements)
+        assert isinstance(tm.elements["col1"], StringArrayMeta)
+        assert tm.elements["col1"].to_dict() == elements["col1"]
 
 
 class TestTableMetaSerialization(unittest.TestCase):
@@ -57,8 +52,7 @@ class TestTableMetaSerialization(unittest.TestCase):
         self.sam = StringArrayMeta()
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/TableMeta:1.0"
-        self.serialized["elements"] = TableElementMap(
-            dict(c1=self.sam)).to_dict()
+        self.serialized["elements"] = dict(c1=self.sam.to_dict())
         self.serialized["description"] = "desc"
         self.serialized["tags"] = ()
         self.serialized["writeable"] = True
@@ -67,7 +61,7 @@ class TestTableMetaSerialization(unittest.TestCase):
     def test_to_dict(self):
         tm = TableMeta("desc")
         tm.set_label("Name")
-        tm.set_elements(TableElementMap(dict(c1=self.sam)))
+        tm.set_elements(dict(c1=self.sam))
         tm.set_writeable(True)
         self.assertEqual(tm.to_dict(), self.serialized)
 
@@ -84,7 +78,7 @@ class TestTableMetaSerialization(unittest.TestCase):
 class TestTableMetaValidation(unittest.TestCase):
     def setUp(self):
         self.tm = TableMeta("desc")
-        self.tm.set_elements(TableElementMap(dict(c1=StringArrayMeta())))
+        self.tm.set_elements(dict(c1=StringArrayMeta()))
 
     def test_validate_from_good_table(self):
         tm = self.tm

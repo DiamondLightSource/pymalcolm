@@ -1,3 +1,5 @@
+import logging
+
 from malcolm.compat import OrderedDict, str_
 from .response import Return, Error, Update, Delta
 from .serializable import Serializable, deserialize_object, serialize_object
@@ -37,24 +39,25 @@ class Request(Serializable):
                 pass
         self.callback = callback
 
-    def respond_with_return(self, value=None):
+    def return_response(self, value=None):
         """Create a Return Response object to signal a return value
 
         Args:
             value (object): Return value
         """
         response = Return(id=self.id, value=value)
-        self.callback(response)
+        return self.callback, response
 
-    def respond_with_error(self, message):
+    def error_response(self, exception):
         """Create an Error Response object to signal an error
 
         Args:
-            message (str): Message explaining error
+            exception (Exception): Message explaining error
         """
 
-        response = Error(id=self.id, message=message)
-        self.callback(response)
+        response = Error(id=self.id, message=str(exception))
+        logging.exception("Exception raised for request %s", self)
+        return self.callback, response
 
     def generate_key(self):
         """A key that will uniquely identify this request, for matching
@@ -176,7 +179,7 @@ class Subscribe(PathRequest):
         delta = deserialize_object(delta, bool)
         return self.set_endpoint_data("delta", delta)
 
-    def respond_with_update(self, value):
+    def update_response(self, value):
         """
         Create an Update Response object to handle the request
 
@@ -184,9 +187,9 @@ class Subscribe(PathRequest):
             value: Serialized new value
         """
         response = Update(id=self.id, value=value)
-        self.callback(response)
+        return self.callback, response
 
-    def respond_with_delta(self, changes):
+    def delta_response(self, changes):
         """
         Create a Delta Response object to handle the request
 
@@ -194,7 +197,7 @@ class Subscribe(PathRequest):
             changes (list): list of [[path], value] pairs for changed values
         """
         response = Delta(id=self.id, changes=changes)
-        self.callback(response)
+        return self.callback, response
 
 
 @Serializable.register_subclass("malcolm:core/Unsubscribe:1.0")

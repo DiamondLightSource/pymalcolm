@@ -19,24 +19,30 @@ class Notifier(Loggable):
         self._subscription_keys = {}
 
     def handle_subscribe(self, request):
-        """Handle a Subscribe request from outside
+        """Handle a Subscribe request from outside. Called with lock taken
 
         Args:
             request (Subscribe): Request to respond to
+
+        Returns:
+            list: [(callback, Response)] that need to be called
         """
-        with self._lock:
-            self._tree.handle_subscribe(request, request.path[1:])
-            self._subscription_keys[request.generate_key()] = request
+        ret = self._tree.handle_subscribe(request, request.path[1:])
+        self._subscription_keys[request.generate_key()] = request
+        return ret
 
     def handle_unsubscribe(self, request):
-        """Handle a Unsubscribe request from outside
+        """Handle a Unsubscribe request from outside. Called with lock taken
 
         Args:
             request (Unsubscribe): Request to respond to
+
+        Returns:
+            list: [(callback, Response)] that need to be called
         """
-        with self._lock:
-            subscribe = self._subscription_keys.pop(request.generate_key())
-            self._tree.handle_unsubscribe(subscribe, subscribe.path[1:])
+        subscribe = self._subscription_keys.pop(request.generate_key())
+        ret = self._tree.handle_unsubscribe(subscribe, subscribe.path[1:])
+        return ret
 
     @property
     @contextmanager
@@ -48,14 +54,28 @@ class Notifier(Loggable):
             attr.set_value(1)
             attr.set_alarm(MINOR)
         """
-        with self._lock:
-            self._squashed_count += 1
+        responses = []
+        self._lock.acquire()
+        self._squashed_count += 1
+        try:
             yield
-            self._squashed_count -= 1
-            if self._squashed_count == 0:
-                changes = self._squashed_changes
-                self._squashed_changes = []
-                self._tree.notify_changes(changes)
+        finally:
+            try:
+                self._squashed_count -= 1
+                if self._squashed_count == 0:
+                    changes = self._squashed_changes
+                    self._squashed_changes = []
+                    responses += self._tree.notify_changes(changes)
+            finally:
+                self._lock.release()
+                self.callback_responses(responses)
+
+    def callback_responses(self, responses):
+        for cb, response in responses:
+            try:
+                cb(response)
+            except Exception as e:
+                self.log_exception("Exception notifying %s", response)
 
     def make_endpoint_change(self, setter, path, data=None):
         """Call setter, then notify subscribers of change, all with lock taken
@@ -68,17 +88,19 @@ class Notifier(Loggable):
         Returns:
             The return value from setter()
         """
+        responses = []
         with self._lock:
             ret = setter(path[-1], data)
             if data is None:
-                change = [path]
+                change = [path[1:]]
             else:
-                change = [path, data]
+                change = [path[1:], data]
             # If we are squashing changes, defer notification
             if self._squashed_count:
                 self._squashed_changes.append(change)
             else:
-                self._tree.notify_changes([change])
+                responses += self._tree.notify_changes([change])
+        self.callback_responses(responses)
         return ret
 
 
@@ -104,7 +126,11 @@ class NotifierNode(object):
             changes (list): [[path, optional data]] where path is the path to
                 what has changed, and data is the unserialized object that has
                 changed
+
+        Returns:
+            list: [(callback, Response)] that need to be called
         """
+        ret = []
         child_changes = {}
         for change in changes:
             path = change[0]
@@ -131,12 +157,14 @@ class NotifierNode(object):
                 if request.delta:
                     for change in changes:
                         change[-1] = serialize_object(change[-1])
-                    request.respond_with_delta(changes)
+                    ret.append(request.delta_response(changes))
                 else:
-                    request.respond_with_update(serialize_object(self.data))
+                    ret.append(
+                        request.update_response(serialize_object(self.data)))
         # Now notify our children
         for name, child_changes in child_changes.items():
-            self.children[name].notify_changes(child_changes)
+            ret += self.children[name].notify_changes(child_changes)
+        return ret
 
     def _update_data(self, data):
         """Set our data and notify any subscribers of children what has changed
@@ -168,22 +196,27 @@ class NotifierNode(object):
         Args:
             request (Subscribe): The subscribe request
             path (list): The relative path from ourself
+
+        Returns:
+            list: [(callback, Response)] that need to be called
         """
+        ret = []
         if path:
             # Recurse down
             name = path[0]
             if name not in self.children:
                 self.children[name] = NotifierNode(
                     getattr(self.data, name, None), self)
-            self.children[name].handle_subscribe(request, path[1:])
+            ret += self.children[name].handle_subscribe(request, path[1:])
         else:
             # This is for us
             self.requests.append(request)
             serialized = serialize_object(self.data)
             if request.delta:
-                request.respond_with_delta([[[], serialized]])
+                ret.append(request.delta_response([[[], serialized]]))
             else:
-                request.respond_with_update(serialized)
+                ret.append(request.update_response(serialized))
+        return ret
 
     def handle_unsubscribe(self, request, path):
         """Remove from the notifier list and send a return
@@ -192,20 +225,18 @@ class NotifierNode(object):
             request (Subscribe): The original subscribe request
 
         Returns:
-            bool: True if we are ampty and should be deleted from parent
+            list: [(callback, Response)] that need to be called
         """
+        ret = []
         if path:
             # Recurse down
             name = path[0]
-            delete = self.children[name].handle_unsubscribe(request, path[1:])
-            if delete:
+            child = self.children[name]
+            ret += child.handle_unsubscribe(request, path[1:])
+            if not child.children and not child.requests:
                 del self.children[name]
         else:
             # This is for us
             self.requests.remove(request)
-            request.respond_with_return()
-        if self.children or self.requests:
-            should_delete = False
-        else:
-            should_delete = True
-        return should_delete
+            ret.append(request.return_response())
+        return ret

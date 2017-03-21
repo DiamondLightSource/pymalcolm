@@ -14,7 +14,8 @@ class Method(View):
 
     def post(self, *args, **kwargs):
         kwargs = self._add_positional_args(args, kwargs)
-        self._context.post(self._data.path, kwargs)
+        result = self._context.post(self._data.path, kwargs)
+        return result
 
     __call__ = post
 

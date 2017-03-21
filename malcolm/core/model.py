@@ -32,7 +32,7 @@ class Model(Loggable, Serializable):
 
         Args:
             notifier (Notifier): The Notifier to tell when endpoint data changes
-            path (list): The path to get to this object from block
+            path (list): The absolute path to get to this object
         """
         self.notifier = notifier
         self.path = list(path)

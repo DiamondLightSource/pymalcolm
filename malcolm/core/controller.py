@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import inspect
 import weakref
 
@@ -34,6 +35,7 @@ class Controller(Loggable):
         self.set_logger_name("%s(%s)" % (type(self).__name__, mri))
         self.process = process
         self.mri = mri
+        self._request_queue = Queue()
         # {Part: fault string}
         self._faults = {}
         # {Hook: name}
@@ -43,7 +45,7 @@ class Controller(Loggable):
         self._lock = RLock()
         self._block = BlockModel()
         self._notifier = Notifier(mri, self._lock, self._block)
-        self._block.set_notifier_path(self._notifier, [])
+        self._block.set_notifier_path(self._notifier, [mri])
         self._write_functions = {}
         self._add_block_fields([self.create_meta()])
         self._add_block_fields(self.create_attributes())
@@ -110,6 +112,15 @@ class Controller(Loggable):
         return spawned
 
     @property
+    @contextmanager
+    def lock_released(self):
+        self._lock.release()
+        try:
+            yield
+        finally:
+            self._lock.acquire()
+
+    @property
     def changes_squashed(self):
         return self._notifier.changes_squashed
 
@@ -169,64 +180,79 @@ class Controller(Loggable):
 
     def handle_request(self, request):
         """Spawn a new thread that handles Request"""
-        if isinstance(request, Get):
-            handler = self._handle_get
-        elif isinstance(request, Put):
-            handler = self._handle_put
-        elif isinstance(request, Post):
-            handler = self._handle_post
-        elif isinstance(request, Subscribe):
-            handler = self._notifier.handle_subscribe
-        elif isinstance(request, Unsubscribe):
-            handler = self._notifier.handle_unsubscribe
-        else:
-            raise UnexpectedError("Unexpected request %s", request)
-        return self.spawn(self._run_handler, handler, request)
+        self._request_queue.put(request)
+        return self.spawn(self._handle_request)
 
-    def _run_handler(self, handler, request):
-        try:
-            handler(request)
-        except Exception as e:
-            self.log_exception("Exception when handling %s", request)
-            request.respond_with_error(str(e))
+    def _handle_request(self):
+        responses = []
+        with self._lock:
+            request = self._request_queue.get(timeout=0)
+            if isinstance(request, Get):
+                handler = self._handle_get
+            elif isinstance(request, Put):
+                handler = self._handle_put
+            elif isinstance(request, Post):
+                handler = self._handle_post
+            elif isinstance(request, Subscribe):
+                handler = self._notifier.handle_subscribe
+            elif isinstance(request, Unsubscribe):
+                handler = self._notifier.handle_unsubscribe
+            else:
+                raise UnexpectedError("Unexpected request %s", request)
+            try:
+                responses += handler(request)
+            except Exception as e:
+                responses.append(request.error_response(e))
+        for cb, response in responses:
+            try:
+                cb(response)
+            except Exception as e:
+                self.log_exception("Exception notifying %s", response)
 
     def _handle_get(self, request):
-        with self._lock:
-            data = self._block
-            for endpoint in request.path[1:]:
-                data = data[endpoint]
-            serialized = serialize_object(data)
-        request.respond_with_return(serialized)
+        """Called with the lock taken"""
+        data = self._block
+        for endpoint in request.path[1:]:
+            data = data[endpoint]
+        serialized = serialize_object(data)
+        ret = [request.return_response(serialized)]
+        return ret
 
     def _handle_put(self, request):
+        """Called with the lock taken"""
         attribute_name = request.path[1]
 
-        with self._lock:
-            attribute = self._block[attribute_name]
-            assert attribute.meta.writeable, \
-                "Attribute %s is not writeable" % attribute_name
-            put_function = self._write_functions[attribute_name]
+        attribute = self._block[attribute_name]
+        assert attribute.meta.writeable, \
+            "Attribute %s is not writeable" % attribute_name
+        put_function = self._write_functions[attribute_name]
 
-        result = put_function(request.value)
-        request.respond_with_return(result)
+        with self.lock_released:
+            result = put_function(request.value)
+
+        ret = [request.return_response(result)]
+        return ret
 
     def _handle_post(self, request):
+        """Called with the lock taken"""
         method_name = request.path[1]
         if request.parameters:
             param_dict = request.parameters
         else:
             param_dict = {}
 
-        with self._lock:
-            method = self._block[method_name]
-            assert method.writeable, \
-                "Method %s is not writeable" % method_name
-            args = method.prepare_call_args(**param_dict)
-            post_function = self._write_functions[method_name]
+        method = self._block[method_name]
+        assert method.writeable, \
+            "Method %s is not writeable" % method_name
+        args = method.prepare_call_args(**param_dict)
+        post_function = self._write_functions[method_name]
 
-        result = post_function(*args)
+        with self.lock_released:
+            result = post_function(*args)
+
         result = self.validate_result(method_name, result)
-        request.respond_with_return(result)
+        ret = [request.return_response(result)]
+        return ret
 
     def validate_result(self, method_name, result):
         with self._lock:

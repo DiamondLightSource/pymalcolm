@@ -47,7 +47,7 @@ class TestNotifier(unittest.TestCase):
         # subscribe
         request = Subscribe(
             path=["b", "attr", "value"], delta=False, callback=Mock())
-        self.o.handle_subscribe(request)
+        self.handle_subscribe(request)
         self.assertEqual(
             self.o._tree.children["attr"].children["value"].requests, [request])
         request.callback.assert_called_once_with(Update(value=None))
@@ -55,19 +55,29 @@ class TestNotifier(unittest.TestCase):
         # set data and check response
         self.block["attr"] = Dummy()
         self.o.make_endpoint_change(
-            self.block.attr.__setitem__, ["attr", "value"], 32)
+            self.block.attr.__setitem__, ["b", "attr", "value"], 32)
         self.assertEqual(self.block.attr.value, 32)
         request.callback.assert_called_once_with(Update(value=32))
         request.callback.reset_mock()
         # unsubscribe
-        self.o.handle_unsubscribe(Unsubscribe(callback=request.callback))
+        self.handle_unsubscribe(Unsubscribe(callback=request.callback))
         request.callback.assert_called_once_with(Return(value=None))
         request.callback.reset_mock()
         # notify and check no longer responding
         self.o.make_endpoint_change(
-            self.block.attr.__setitem__, ["attr", "value"], 33)
+            self.block.attr.__setitem__, ["b", "attr", "value"], 33)
         self.assertEqual(self.block.attr.value, 33)
         request.callback.assert_not_called()
+
+    def handle_unsubscribe(self, request):
+        responses = self.o.handle_unsubscribe(request)
+        for cb, response in responses:
+            cb(response)
+
+    def handle_subscribe(self, request):
+        responses = self.o.handle_subscribe(request)
+        for cb, response in responses:
+            cb(response)
 
     def test_2_subscribes(self):
         # set some data
@@ -76,26 +86,26 @@ class TestNotifier(unittest.TestCase):
         # subscribe once and check initial response
         r1 = Subscribe(
             path=["b", "attr", "value"], delta=False, callback=Mock())
-        self.o.handle_subscribe(r1)
+        self.handle_subscribe(r1)
         r1.callback.assert_called_once_with(Update(value=32))
         r1.callback.reset_mock()
         # subscribe again and check initial response
         r2 = Subscribe(path=["b"], delta=True, callback=Mock())
-        self.o.handle_subscribe(r2)
+        self.handle_subscribe(r2)
         r2.callback.assert_called_once_with(Delta(
             changes=[[[], dict(attr=dict(value=32))]]))
         r2.callback.reset_mock()
         # set some data and check only second got called
         self.block["attr2"] = Dummy()
         self.block.attr2["value"] = "st"
-        self.o.make_endpoint_change(Mock(), ["attr2"], self.block.attr2)
+        self.o.make_endpoint_change(Mock(), ["b", "attr2"], self.block.attr2)
         r1.callback.assert_not_called()
         r2.callback.assert_called_once_with(Delta(
             changes=[[["attr2"], dict(value="st")]]))
         r2.callback.reset_mock()
         # delete the first and check calls
         self.block.data.pop("attr")
-        self.o.make_endpoint_change(Mock(), ["attr"])
+        self.o.make_endpoint_change(Mock(), ["b", "attr"])
         r1.callback.assert_called_once_with(Update(value=None))
         r1.callback.reset_mock()
         r2.callback.assert_called_once_with(Delta(
@@ -104,7 +114,7 @@ class TestNotifier(unittest.TestCase):
         # add it again and check updates
         self.block["attr"] = Dummy()
         self.block.attr["value"] = 22
-        self.o.make_endpoint_change(Mock(), ["attr"], self.block.attr)
+        self.o.make_endpoint_change(Mock(), ["b", "attr"], self.block.attr)
         r1.callback.assert_called_once_with(Update(value=22))
         r2.callback.assert_called_once_with(Delta(
             changes=[[["attr"], dict(value=22)]]))
@@ -117,7 +127,7 @@ class TestNotifier(unittest.TestCase):
         self.block.attr2["value"] = "st"
         # subscribe once and check initial response
         r1 = Subscribe(path=["b"], delta=True, callback=Mock())
-        self.o.handle_subscribe(r1)
+        self.handle_subscribe(r1)
         expected = OrderedDict()
         expected["attr"] = dict(value=32)
         expected["attr2"] = dict(value="st")
@@ -126,10 +136,10 @@ class TestNotifier(unittest.TestCase):
         # squash two changes together
         with self.o.changes_squashed:
             self.o.make_endpoint_change(
-                self.block.attr.__setitem__, ["attr", "value"], 33)
+                self.block.attr.__setitem__, ["b", "attr", "value"], 33)
             self.assertEqual(self.block.attr.value, 33)
             self.o.make_endpoint_change(
-                self.block.attr2.__setitem__, ["attr2", "value"], "tr")
+                self.block.attr2.__setitem__, ["b", "attr2", "value"], "tr")
             self.assertEqual(self.block.attr2.value, "tr")
         r1.callback.assert_called_once_with(Delta(
             changes=[[["attr", "value"], 33], [["attr2", "value"], "tr"]]))

@@ -1,4 +1,4 @@
-from malcolm.compat import str_
+from malcolm.compat import str_, OrderedDict
 from .meta import Meta
 from .serializable import Serializable, deserialize_object
 from .stringarray import StringArray
@@ -22,10 +22,11 @@ class MapMeta(Meta):
 
     def set_elements(self, elements):
         """Set the elements dict from a serialized dict"""
+        deserialized = OrderedDict()
         for k, v in elements.items():
             k = deserialize_object(k, str_)
-            elements[k] = deserialize_object(v, VMeta)
-        return self.set_endpoint_data("elements", elements)
+            deserialized[k] = deserialize_object(v, VMeta)
+        return self.set_endpoint_data("elements", deserialized)
 
     def set_required(self, required):
         """Set the required string list"""

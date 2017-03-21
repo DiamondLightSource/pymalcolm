@@ -2,13 +2,13 @@ import os
 import sys
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import setup_malcolm_paths
 
 from mock import MagicMock, patch
 
-from malcolm.vmetas.builtin import PointGeneratorMeta
+from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
 from scanpointgenerator import CompoundGenerator
 
 

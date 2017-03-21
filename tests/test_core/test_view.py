@@ -31,7 +31,7 @@ class TestView(unittest.TestCase):
     def test_get_view(self):
         v = self.o.description
         self.controller.make_view.assert_called_once_with(
-            self.data, self.context, "description")
+            self.context, self.data, "description")
         self.assertEqual(v, self.controller.make_view.return_value)
 
     def test_second_subclass(self):
