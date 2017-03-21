@@ -34,9 +34,11 @@ class TestHDFWriterPart(unittest.TestCase):
         task = MagicMock()
         params = MagicMock()
         energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
-        spiral = SpiralGenerator(["x", "y"], "mm", [0., 0.], 5., scale=2.0)
-        params.generator = CompoundGenerator([energy, spiral], [], [])
+        spiral = SpiralGenerator(
+            ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
+        params.generator = CompoundGenerator([energy, spiral], [], [], 0.1)
         params.filePath = "/tmp/file.h5"
+        params.generator.prepare()
         completed_steps = 0
         steps_to_do = 38
         part_info = {
@@ -99,9 +101,9 @@ class TestHDFWriterPart(unittest.TestCase):
         self.assertEqual(task.put_many_async.call_args_list[1],
                          call(self.child, dict(
                              numExtraDims=1,
-                             posNameDimN="x_y_Spiral",
-                             extraDimSizeN=19,
-                             posNameDimX="energy",
+                             posNameDimN="d1",
+                             extraDimSizeN=20,
+                             posNameDimX="d0",
                              extraDimSizeX=2,
                              posNameDimY="",
                              extraDimSizeY=1,

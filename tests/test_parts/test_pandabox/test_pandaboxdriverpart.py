@@ -6,8 +6,6 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, MagicMock, ANY, call
 
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    FixedDurationMutator
 from malcolm.parts.pandabox.pandaboxdriverpart import PandABoxDriverPart
 
 

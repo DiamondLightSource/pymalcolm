@@ -6,8 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, MagicMock, ANY, call
 
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    FixedDurationMutator
+from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.parts.xspress3.xspress3driverpart import Xspress3DriverPart
 
 
@@ -31,10 +30,10 @@ class TestXspress3DetectorDriverPart(unittest.TestCase):
     def test_configure(self):
         task = MagicMock()
         params = MagicMock()
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3000, alternate_direction=True)
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3000, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2000)
-        duration = FixedDurationMutator(0.1)
-        params.generator = CompoundGenerator([ys, xs], [], [duration])
+        params.generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        params.generator.prepare()
         completed_steps = 0
         steps_to_do = 2000*3000
         part_info = ANY

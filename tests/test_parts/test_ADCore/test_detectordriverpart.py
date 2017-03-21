@@ -6,8 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, MagicMock, ANY, call
 
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    FixedDurationMutator
+from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
 
 
@@ -31,10 +30,9 @@ class TestSimDetectorDriverPart(unittest.TestCase):
     def test_configure(self):
         task = MagicMock()
         params = MagicMock()
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        duration = FixedDurationMutator(0.1)
-        params.generator = CompoundGenerator([ys, xs], [], [duration])
+        params.generator = CompoundGenerator([ys, xs], [], [], 0.1)
         completed_steps = 0
         steps_to_do = 6
         part_info = ANY
