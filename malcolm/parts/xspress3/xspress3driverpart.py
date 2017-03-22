@@ -14,8 +14,8 @@ class Xspress3DriverPart(DetectorDriverPart):
     @method_takes(*configure_args)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         if steps_to_do > XSPRESS3_BUFFER:
-            # Set the PointsPerRow from the innermost generator
-            gen_num = params.generator.generators[-1].num
+            # Set the PointsPerRow from the innermost dimension
+            gen_num = params.generator.dimensions[-1].size
             steps_per_row = XSPRESS3_BUFFER // gen_num * gen_num
         else:
             steps_per_row = steps_to_do

@@ -10,8 +10,7 @@ from mock import MagicMock, call, patch
 Mock = MagicMock
 
 from malcolm.parts.pmac.pmactrajectorypart import PMACTrajectoryPart, MotorInfo
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    FixedDurationMutator
+from scanpointgenerator import LineGenerator, CompoundGenerator
 
 
 class TestMotorPVT(unittest.TestCase):
@@ -306,23 +305,22 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         task = Mock()
         steps_to_do = 3 * len(axes_to_scan)
         params = Mock()
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        mutator = FixedDurationMutator(duration)
-        params.generator = CompoundGenerator([ys, xs], [], [mutator])
+        params.generator = CompoundGenerator([ys, xs], [], [], duration)
+        params.generator.prepare()
         params.axesToMove = axes_to_scan
         self.o.configure(task, completed_steps, steps_to_do, part_info, params)
         return task
 
     def test_validate(self):
         params = Mock()
-        mutator = FixedDurationMutator(0.0102)
-        params.generator = CompoundGenerator([], [], [mutator])
+        params.generator = CompoundGenerator([], [], [], 0.0102)
         params.axesToMove = ["x"]
         part_info = self.make_part_info()
         ret = self.o.validate(None, part_info, params)
         expected = 0.010166
-        self.assertEqual(ret[0].value.mutators[0].duration, expected)
+        self.assertEqual(ret[0].value.duration, expected)
 
     @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 0.2)
     def test_configure(self):

@@ -15,8 +15,7 @@ import time
 from malcolm.core import Process, Part, Task, Map, AbortedError, ResponseError
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.controllers.runnablecontroller import RunnableController
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    FixedDurationMutator
+from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
 from malcolm.blocks.demo import Ticker
 
@@ -143,8 +142,7 @@ class TestRunnableController(unittest.TestCase):
     def prepare_half_run(self, duration=0.01, exception=0):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
         line2 = LineGenerator('x', 'mm', 0, 2, 2)
-        duration = FixedDurationMutator(duration)
-        compound = CompoundGenerator([line1, line2], [], [duration])
+        compound = CompoundGenerator([line1, line2], [], [], duration)
         self.b.configure(
             generator=compound, axesToMove=['x'], exceptionStep=exception)
 
