@@ -116,7 +116,10 @@ class Serializable(object):
         return json_encode(self.to_dict())
 
     def __eq__(self, other):
-        return self.to_dict() == other.to_dict()
+        if hasattr(other, "to_dict"):
+            return self.to_dict() == other.to_dict()
+        else:
+            return self.to_dict() == other
 
     @classmethod
     def from_dict(cls, d, ignore=()):

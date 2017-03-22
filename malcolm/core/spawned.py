@@ -16,6 +16,8 @@ class Spawned(object):
 
         if use_cothread:
             self.cothread = maybe_import_cothread()
+        else:
+            self.cothread = None
         if self.cothread:
             self._spawn = self.cothread.Spawn(catching_function)
             self._spawn_ready = False
