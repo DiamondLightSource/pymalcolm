@@ -27,3 +27,9 @@
     description: Current unique id number for frame
     rbv: $(prefix):UniqueId_RBV
     widget: textupdate
+
+- parts.ca.CACharArrayPart:
+    name: attributesFile
+    description: Filename for NDAttributes
+    pv: $(prefix):NDAttributesFile
+    widget: textinput

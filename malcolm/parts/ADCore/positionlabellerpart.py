@@ -35,8 +35,8 @@ class PositionLabellerPart(ChildPart):
         dimensions_el = ET.SubElement(root_el, "dimensions")
 
         # Make an index for every hdf index
-        for index_name in sorted(self.generator.index_names):
-            ET.SubElement(dimensions_el, "dimension", name=index_name)
+        for i in range(len(self.generator.dimensions)):
+            ET.SubElement(dimensions_el, "dimension", name="d%d" % i)
 
         # Add the a file close command for the HDF writer
         ET.SubElement(dimensions_el, "dimension", name="FilePluginClose")
@@ -50,13 +50,13 @@ class PositionLabellerPart(ChildPart):
 
         for i in range(start_index, end_index):
             point = self.generator.get_point(i)
-            if i == self.generator.num - 1:
+            if i == self.generator.size - 1:
                 do_close = True
             else:
                 do_close = False
             positions = dict(FilePluginClose="%d" % do_close)
-            for name, value in zip(self.generator.index_names, point.indexes):
-                positions[name] = str(value)
+            for j, value in enumerate(point.indexes):
+                positions["d%d" % j] = str(value)
             position_el = ET.Element("position", **positions)
             positions_el.append(position_el)
 

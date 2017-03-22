@@ -4,7 +4,7 @@ from __future__ import division
 from collections import Counter
 
 import numpy as np
-from scanpointgenerator import FixedDurationMutator, CompoundGenerator
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.controllers.builtin.runnablecontroller import RunnableController, \
     ParameterTweakInfo
@@ -283,27 +283,23 @@ class PMACTrajectoryPart(ChildPart):
     @method_takes(*configure_args)
     def validate(self, task, part_info, params):
         self._make_axis_mapping(part_info, params.axesToMove)
-        # Find the last FixedDurationMutator
-        mutators = []
-        fdm = None
-        for mutator in params.generator.mutators:
-            if isinstance(mutator, FixedDurationMutator):
-                fdm = mutator
-            else:
-                mutators.append(mutator)
+        # Find the duration
+        assert params.generator.duration > 0, \
+            "Can only do fixed duration at the moment"
         servo_freq = 8388608000. / self.child.i10
         # convert half an exposure to multiple of servo ticks, rounding down
         # + 0.002 for some observed jitter in the servo frequency (I18)
-        ticks = np.floor(servo_freq * 0.5 * fdm.duration) + 0.002
+        ticks = np.floor(servo_freq * 0.5 * params.generator.duration) + 0.002
         # convert to integer number of microseconds, rounding up
         micros = np.ceil(ticks / servo_freq * 1e6)
         # back to duration
         duration = 2 * float(micros) / 1e6
-        if duration != fdm.duration:
+        if duration != params.generator.duration:
             new_generator = CompoundGenerator(
                 generators=params.generator.generators,
                 excluders=params.generator.excluders,
-                mutators=mutators + [FixedDurationMutator(duration)])
+                mutators=params.generator.mutators,
+                duration=duration)
             return [ParameterTweakInfo("generator", new_generator)]
 
     def _make_axis_mapping(self, part_info, axes_to_move):

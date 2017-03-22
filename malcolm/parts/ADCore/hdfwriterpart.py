@@ -1,8 +1,6 @@
 import os
 from xml.etree import cElementTree as ET
 
-from scanpointgenerator import FixedDurationMutator
-
 from malcolm.compat import et_to_string
 from malcolm.controllers.builtin.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED, Info
@@ -51,7 +49,7 @@ class HDFWriterPart(ChildPart):
     def _create_dataset_infos(self, part_info, generator, filename):
         # Update the dataset table
         uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
-        generator_rank = len(generator.index_dims)
+        generator_rank = len(generator.dimensions)
 
         # Get the detector name from the primary source
         ndarray_infos = NDArrayDatasetInfo.filter_values(part_info)
@@ -149,23 +147,15 @@ class HDFWriterPart(ChildPart):
         task.wait_all(futures)
         # Reset numCapture back to 0
         task.put(self.child["numCapture"], 0)
-
         # We want the HDF writer to flush this often:
         flush_time = 1  # seconds
         # (In particular this means that HDF files can be read cleanly by
         # SciSoft at the start of a scan.)
-        # To achieve this we'll tell the HDF writer how many frames it should
-        # write between each flush. Thus we need to know the exposure time. Get
-        # it from the last FDM. (There's probably only one, and we don't care
-        # about other cases.)
-        # Choose a default exposure time in case there is no FDM.
-        exposure_time = 0.1  # seconds
-        for mutator in params.generator.mutators:
-            if isinstance(mutator, FixedDurationMutator):
-                exposure_time = mutator.duration
-        # Now do some maths and set the relevant PV. (Xspress3 does not seem to
-        # support flushing more often than once per 2 frames.)
-        n_frames_between_flushes = max(2, round(flush_time/exposure_time))
+        assert params.generator.duration > 0, \
+            "Duration %s for generator must be >0 to signify constant exposure"\
+            % params.generator.duration
+        n_frames_between_flushes = max(2, round(
+            flush_time/params.generator.duration))
         task.put(self.child["flushDataPerNFrames"], n_frames_between_flushes)
         task.put(self.child["flushAttrPerNFrames"], n_frames_between_flushes)
 
@@ -208,16 +198,19 @@ class HDFWriterPart(ChildPart):
         task.post(self.child["stop"])
 
     def _set_dimensions(self, task, generator):
-        num_dims = len(generator.index_dims)
+        num_dims = len(generator.dimensions)
         assert num_dims <= 10, \
             "Can only do 10 dims, you gave me %s" % num_dims
         attr_dict = dict(numExtraDims=num_dims-1)
         # Fill in dim name and size
+        # NOTE: HDF writer has these filled with fastest moving first
+        # while dimensions is slowest moving first
         for i in range(10):
             suffix = SUFFIXES[i]
-            if i < len(generator.index_names):
-                index_name = generator.index_names[-i - 1]
-                index_size = generator.index_dims[-i - 1]
+            if i < num_dims:
+                forward_i = num_dims - i - 1
+                index_name = "d%d" % forward_i
+                index_size = generator.dimensions[forward_i].size
             else:
                 index_name = ""
                 index_size = 1
@@ -226,52 +219,45 @@ class HDFWriterPart(ChildPart):
         futures = task.put_many_async(self.child, attr_dict)
         return futures
 
-    def _find_generator_index(self, generator, dim):
-        ndims = 0
-        for g in generator.generators:
-            if dim in g.position_units:
-                return ndims, g
-            else:
-                ndims += len(g.index_dims)
-        raise ValueError("Can't find generator for %s" % dim)
-
     def _make_nxdata(self, name, rank, entry_el, generator, link=False):
         # Make a dataset for the data
         data_el = ET.SubElement(entry_el, "group", name=name)
         ET.SubElement(data_el, "attribute", name="signal", source="constant",
                       value=name, type="string")
         pad_dims = []
-        for n in generator.index_names:
-            if n in generator.position_units:
-                pad_dims.append("%s_set" % n)
+        for d in generator.dimensions:
+            if len(d.axes) == 1:
+                pad_dims.append("%s_set" % d.axes[0])
             else:
                 pad_dims.append(".")
+
         pad_dims += ["."] * rank
         ET.SubElement(data_el, "attribute", name="axes", source="constant",
                       value=",".join(pad_dims), type="string")
         ET.SubElement(data_el, "attribute", name="NX_class", source="constant",
                       value="NXdata", type="string")
         # Add in the indices into the dimensions array that our axes refer to
-        for dim, units in sorted(generator.position_units.items()):
-            # Find the generator for this dimension
-            ndims, g = self._find_generator_index(generator, dim)
-            ET.SubElement(data_el, "attribute",
-                          name="%s_set_indices" % dim,
-                          source="constant", value=str(ndims), type="string")
-            if link:
-                ET.SubElement(data_el, "hardlink",
-                              name="%s_set" % dim,
-                              target="/entry/detector/%s_set" % dim)
-            else:
-                axes_vals = []
-                for point in g.iterator():
-                    axes_vals.append("%.12g" % point.positions[dim])
-                axis_el = ET.SubElement(
-                    data_el, "dataset", name="%s_set" % dim,
-                    source="constant", type="float", value=",".join(axes_vals))
-                ET.SubElement(axis_el, "attribute", name="units",
-                              source="constant", value=units, type="string")
+        for i, d in enumerate(generator.dimensions):
+            for axis in d.axes:
+                ET.SubElement(data_el, "attribute",
+                              name="%s_set_indices" % axis,
+                              source="constant", value=str(i), type="string")
+                if link:
+                    ET.SubElement(data_el, "hardlink",
+                                  name="%s_set" % axis,
+                                  target="/entry/detector/%s_set" % axis)
+                else:
+                    self._make_set_points(
+                        d, axis, data_el, generator.units[axis])
         return data_el
+
+    def _make_set_points(self, dimension, axis, data_el, units):
+        axis_vals = ["%.12g" % p for p in dimension.get_positions(axis)]
+        axis_el = ET.SubElement(
+            data_el, "dataset", name="%s_set" % axis, source="constant",
+            type="float", value=",".join(axis_vals))
+        ET.SubElement(axis_el, "attribute", name="units", source="constant",
+                      value=units, type="string")
 
     def _make_layout_xml(self, generator, part_info):
         # Make a root element with an NXEntry

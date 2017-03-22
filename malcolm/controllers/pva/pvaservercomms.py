@@ -476,11 +476,7 @@ class PvaMonitorImplementation(PvaImplementation):
             # TODO: hasField() shouldn't be called if not path, but
             # the code below might still need to be executed...
             if path and self._pv_structure.hasField(path):
-                new_value = change[1]
-                if isinstance(new_value, OrderedDict):
-                    new_value = self._server.strip_type_id(new_value)
-                else:
-                    new_value = self._server.normalize(new_value)
+                new_value = self._server.value_for_pva_set(change[1])
                 self._pv_structure[path] = new_value
                 self.log_debug("PV updated structure: %s", self._pv_structure)
                 self._update_required = True
