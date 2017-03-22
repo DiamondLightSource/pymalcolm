@@ -68,7 +68,7 @@ def make_child_part(process, block_name, mri, prefix):
         from malcolm.parts.pandabox.pandaboxchildpart import \
             PandABoxChildPart as ChildPart
     else:
-        from malcolm.parts.builtin.childpart import ChildPart
+        from malcolm.parts.builtin.childpart import StatefulChildPart
 
     params = ChildPart.MethodMeta.prepare_input_map(name=block_name, mri=mri)
     part = ChildPart(process, params)

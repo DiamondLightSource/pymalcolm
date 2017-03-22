@@ -1,12 +1,12 @@
 import time
 
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.core import REQUIRED, method_takes
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.parts.builtin.childpart import StatefulChildPart
 from malcolm.vmetas.builtin import PointGeneratorMeta, StringArrayMeta, NumberMeta
 
 
-class ScanTickerPart(ChildPart):
+class ScanTickerPart(StatefulChildPart):
     # Generator instance
     generator = None
     # Where to start

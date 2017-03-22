@@ -1,13 +1,13 @@
-from malcolm.controllers.builtin.runnablecontroller import RunnableController, \
-    ParameterTweakInfo
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.core import ResponseError, BadValueError
-from malcolm.core import method_takes, Task, serialize_object
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.core import method_takes, serialize_object
+from malcolm.infos.builtin.parametertweakinfo import ParameterTweakInfo
+from malcolm.parts.builtin.childpart import StatefulChildPart
 
 sm = RunnableController.stateMachine
 
 
-class RunnableChildPart(ChildPart):
+class RunnableChildPart(StatefulChildPart):
     # stored between runs
     run_future = None
 

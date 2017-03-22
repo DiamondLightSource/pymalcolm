@@ -1,9 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
-
 import unittest
 from mock import MagicMock
 
@@ -37,6 +31,7 @@ class TestProcess(unittest.TestCase):
                 self.init = True
 
         c = InitController(self.o, "mri", [])
+        self.o.add_controller("mri", c)
         self.assertEqual(c.init, True)
 
     def test_publish_controller(self):
@@ -47,6 +42,7 @@ class TestProcess(unittest.TestCase):
                 self.published = published
 
         c = PublishController(self.o, "mri", [])
+        self.o.add_controller("mri", c)
         self.assertEqual(c.published, ["mri"])
         self.o.add_controller("mri2", MagicMock())
         self.assertEqual(c.published, ["mri", "mri2"])

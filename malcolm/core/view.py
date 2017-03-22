@@ -4,6 +4,7 @@ class View(object):
     _controller = None
     _context = None
     _data = None
+    _endpoints = ()
 
     def __init__(self):
         raise NotImplementedError("View must be instantiated with make_view()")
@@ -17,9 +18,13 @@ class View(object):
         self._lock_set_attr = True
 
     def _prepare_endpoints(self, data):
-        for endpoint in data:
+        self._endpoints = tuple(data)
+        for endpoint in self._endpoints:
             # Add _subscribe methods for each endpoint
             self._make_subscribe_method(endpoint)
+
+    def __iter__(self):
+        return iter(self._endpoints)
 
     def __setattr__(self, name, value):
         if self._lock_set_attr:

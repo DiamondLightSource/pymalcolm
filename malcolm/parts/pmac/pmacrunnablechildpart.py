@@ -1,5 +1,5 @@
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
-from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.parts.scanpointgenerator.runnablechildpart import RunnableChildPart
 
 
 class PmacRunnableChildPart(RunnableChildPart):

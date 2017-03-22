@@ -1,0 +1,208 @@
+from malcolm.compat import OrderedDict
+from malcolm.core import Hook, method_writeable_in, method_takes, Loggable, \
+    Alarm, MethodModel, AttributeModel, Process
+from malcolm.vmetas.builtin import ChoiceMeta
+from .basecontroller import BaseController
+
+
+class States(Loggable):
+
+    RESETTING = "Resetting"
+    DISABLED = "Disabled"
+    DISABLING = "Disabling"
+    FAULT = "Fault"
+    READY = "Ready"
+
+    def __init__(self):
+        self.set_logger_name(type(self).__name__)
+        self._allowed = OrderedDict()
+        # These are all the states we can possibly be in
+        self.possible_states = []
+        self.create_block_transitions()
+        self.create_error_disable_transitions()
+
+    def create_block_transitions(self):
+        self.set_allowed(self.RESETTING, self.READY)
+
+    def create_error_disable_transitions(self):
+        block_states = self.possible_states[:]
+
+        # Set transitions for standard states
+        for state in block_states:
+            self.set_allowed(state, self.FAULT)
+            self.set_allowed(state, self.DISABLING)
+        self.set_allowed(self.FAULT, [self.RESETTING, self.DISABLING])
+        self.set_allowed(self.DISABLING, [self.FAULT, self.DISABLED])
+        self.set_allowed(self.DISABLED, self.RESETTING)
+
+    def transition_allowed(self, initial_state, target_state):
+        """
+        Check if a transition between two states is allowed
+
+        Args:
+            initial_state(str): Initial state
+            target_state(str): Target state
+
+        Returns:
+            bool: True if allowed, False if not
+        """
+        assert initial_state in self._allowed, \
+            "%s is not in %s" % (initial_state, list(self._allowed))
+        return target_state in self._allowed[initial_state]
+
+    def set_allowed(self, initial_state, allowed_states):
+        """Add an allowed transition state
+
+        Args:
+            initial_state(str): Initial state
+            allowed_states(list(str) / str): States that initial_state can
+                transition to
+        """
+        if not isinstance(allowed_states, list):
+            allowed_states = [allowed_states]
+
+        self._allowed.setdefault(initial_state, set()).update(allowed_states)
+        for state in allowed_states + [initial_state]:
+            if state not in self.possible_states:
+                self.possible_states.append(state)
+
+
+class StatefulController(BaseController):
+    # The stateSet that this controller implements
+    stateSet = States()
+    # {state (str): {Meta/MethodMeta/Attribute: writeable (bool)}
+    _children_writeable = None
+    # Attributes
+    state = None
+
+    Reset = Hook()
+    """Called at reset() to reset all parts to a known good state
+
+    Args:
+        context (Context): The context that should be used to perform operations
+            on child blocks
+    """
+
+    Disable = Hook()
+    """Called at disable() to stop all parts updating their attributes
+
+    Args:
+        context (Context): The context that should be used to perform operations
+            on child blocks
+    """
+
+    def __init__(self, process, parts, params):
+        self._children_writeable = {}
+        super(StatefulController, self).__init__(process, parts, params)
+        self.transition(States.DISABLED)
+
+    def create_attributes(self):
+        """MethodModel that should provide Attribute instances for Block
+
+        Yields:
+            tuple: (string name, Attribute, callable put_function).
+        """
+        for y in super(StatefulController, self).create_attributes():
+            yield y
+        # Add the state attribute
+        self.state = ChoiceMeta(
+            "State of Block", self.stateSet.possible_states, label="State"
+        ).make_attribute(States.DISABLING)
+        yield "state", self.state, None
+
+    @Process.Init
+    def init(self):
+        self.try_stateful_function(States.RESETTING, States.READY, self.do_init)
+
+    def do_init(self):
+        super(StatefulController, self).init()
+
+    @method_takes()
+    def disable(self):
+        self.try_stateful_function(
+            States.DISABLING, States.DISABLED, self.do_disable)
+
+    def do_disable(self):
+        self.run_hook(self.Disable, self.create_part_contexts())
+
+    @method_writeable_in(States.DISABLED, States.FAULT)
+    def reset(self):
+        self.try_stateful_function(
+            States.RESETTING, States.READY, self.do_reset)
+
+    def do_reset(self):
+        self.run_hook(self.Reset, self.create_part_contexts())
+
+    def go_to_error_state(self, exception):
+        if self.state.value != States.FAULT:
+            self.log_exception("Fault occurred while running stateful function")
+            self.transition(States.FAULT, str(exception))
+
+    def transition(self, state, message=""):
+        """Change to a new state if the transition is allowed
+
+        Args:
+            state (str): State to transition to
+            message (str): Message if the transition is to a fault state
+        """
+        with self.changes_squashed:
+            if self.stateSet.transition_allowed(
+                    initial_state=self.state.value, target_state=state):
+                self.log_debug("Transitioning to %s", state)
+                if state == States.DISABLED:
+                    alarm = Alarm.invalid("Disabled")
+                elif state == States.FAULT:
+                    alarm = Alarm.major(message)
+                else:
+                    alarm = Alarm()
+                self.set_health(self, alarm)
+                self.state.set_value(state)
+                self.state.set_alarm(alarm)
+                for child, writeable in self._children_writeable[state].items():
+                    if isinstance(child, AttributeModel):
+                        child.meta.set_writeable(writeable)
+                    elif isinstance(child, MethodModel):
+                        child.set_writeable(writeable)
+                        for element in child.takes.elements.values():
+                            element.set_writeable(writeable)
+            else:
+                raise TypeError("Cannot transition from %s to %s" %
+                                (self.state.value, state))
+
+    def try_stateful_function(self, start_state, end_state, func, *args,
+                              **kwargs):
+        try:
+            self.transition(start_state)
+            func(*args, **kwargs)
+            self.transition(end_state)
+        except Exception as e:  # pylint:disable=broad-except
+            self.go_to_error_state(e)
+            raise
+
+    def add_block_field(self, name, child, writeable_func):
+        super(StatefulController, self).add_block_field(
+            name, child, writeable_func)
+        # Set children_writeable dict
+        if isinstance(child, AttributeModel):
+            states = child.meta.writeable_in
+        else:
+            states = child.writeable_in
+        if states:
+            # Field has defined when it should be writeable, just check that
+            # this is valid for this stateSet
+            for state in states:
+                assert state in self.stateSet.possible_states, \
+                    "State %s is not one of the valid states %s" % \
+                    (state, self.stateSet.possible_states)
+        elif writeable_func is not None:
+            # Field is writeable but has not defined when it should be
+            # writeable, so calculate it from the possible states
+            states = [
+                state for state in self.stateSet.possible_states
+                if state not in (States.DISABLING, States.DISABLED)]
+        else:
+            # Field is never writeable, so will never need to change state
+            return
+        for state in self.stateSet.possible_states:
+            state_writeable = self._children_writeable.setdefault(state, {})
+            state_writeable[child] = state in states

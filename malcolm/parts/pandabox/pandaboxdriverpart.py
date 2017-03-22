@@ -1,4 +1,4 @@
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.core import method_takes
 from malcolm.parts.pandabox.pandaboxchildpart import PandABoxChildPart
 

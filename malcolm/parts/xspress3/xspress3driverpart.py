@@ -1,4 +1,4 @@
-from malcolm.controllers.builtin.runnablecontroller import RunnableController, configure_args
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController, configure_args
 from malcolm.core import method_takes
 from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
 

@@ -33,3 +33,13 @@ class Alarm(Serializable):
             "Expected AlarmStatus.*_STATUS, got %r" % status
         self.status = status
         self.message = deserialize_object(message, str_)
+
+    @classmethod
+    def major(cls, message):
+        return cls(
+            AlarmSeverity.MAJOR_ALARM, AlarmStatus.DEVICE_STATUS, message)
+
+    @classmethod
+    def invalid(cls, message):
+        return cls(
+            AlarmSeverity.INVALID_ALARM, AlarmStatus.DEVICE_STATUS, message)

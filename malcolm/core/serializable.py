@@ -2,6 +2,8 @@ import re
 import logging
 import json
 
+import numpy as np
+
 from malcolm.compat import OrderedDict
 
 

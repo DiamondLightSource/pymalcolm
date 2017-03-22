@@ -30,7 +30,7 @@ class Process(Loggable):
         self._cothread = maybe_import_cothread()
         self._controllers = OrderedDict()  # mri -> Controller
         self._published = []  # [mri] for publishable controllers
-        self._started = False
+        self.started = False
         self._spawned = []
         self._thread_pool = None
         self._lock = RLock()
@@ -42,9 +42,9 @@ class Process(Loggable):
             timeout (float): Maximum amount of time to wait for each spawned
                 process. None means forever
         """
-        assert not self._started, "Process already started"
+        assert not self.started, "Process already started"
         self._thread_pool = ThreadPool(32)
-        self._started = True
+        self.started = True
         self._run_hook(
             self.Publish, args=(self._published,), timeout=timeout)
         self._run_hook(self.Init, timeout=timeout)
@@ -69,7 +69,7 @@ class Process(Loggable):
             timeout (float): Maximum amount of time to wait for each spawned
                 object. None means forever
         """
-        assert self._started, "Process not started"
+        assert self.started, "Process not started"
         # Allow every controller a chance to clean up
         self._run_hook(self.Halt, timeout=timeout)
         for s in self._spawned:
@@ -77,7 +77,7 @@ class Process(Loggable):
         self._spawned = []
         self._controllers = OrderedDict()
         self._published = []
-        self._started = False
+        self.started = False
         self._thread_pool.close()
         self._thread_pool.join()
         self._thread_pool = None
@@ -107,7 +107,7 @@ class Process(Loggable):
 
     def _spawn(self, function, args, kwargs, use_cothread):
         with self._lock:
-            assert self._started, "Can't spawn before process started"
+            assert self.started, "Can't spawn before process started"
             spawned = Spawned(
                 function, args, kwargs, use_cothread, self._thread_pool)
             self._spawned.append(spawned)
@@ -136,10 +136,10 @@ class Process(Loggable):
             self._controllers[mri] = controller
             if publish:
                 self._published.append(mri)
-                if self._started:
+                if self.started:
                     self._run_hook(self.Publish, args=(self._published,),
                                    timeout=timeout)
-        if self._started:
+        if self.started:
             self._run_hook(self.Init, [controller], timeout=timeout)
 
     def remove_controller(self, mri, timeout=None):
@@ -157,10 +157,10 @@ class Process(Loggable):
             controller = self._controllers.pop(mri)
             if mri in self._published:
                 self._published.remove(mri)
-                if self._started:
+                if self.started:
                     self._run_hook(self.Publish, args=(self._published,),
                                    timeout=timeout)
-        if self._started:
+        if self.started:
             self._run_hook(self.Halt, [controller], timeout=timeout)
 
     def get_controller(self, mri):

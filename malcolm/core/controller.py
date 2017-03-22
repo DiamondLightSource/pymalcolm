@@ -31,7 +31,7 @@ class Controller(Loggable):
     # Attributes
     health = None
 
-    def __init__(self, process, mri, parts, publish=True):
+    def __init__(self, process, mri, parts):
         self.set_logger_name("%s(%s)" % (type(self).__name__, mri))
         self.process = process
         self.mri = mri
@@ -47,11 +47,7 @@ class Controller(Loggable):
         self._notifier = Notifier(mri, self._lock, self._block)
         self._block.set_notifier_path(self._notifier, [mri])
         self._write_functions = {}
-        self._add_block_fields([self.create_meta()])
-        self._add_block_fields(self.create_attributes())
-        self._add_block_fields(self.create_methods())
-        self._add_block_fields(self.create_part_fields())
-        process.add_controller(mri, self, publish)
+        self.part_fields = self._add_block_fields()
 
     def _setup_parts(self, parts):
         parts_dict = OrderedDict()
@@ -73,10 +69,17 @@ class Controller(Loggable):
             hook_names[member] = name
         return hook_names
 
-    def _add_block_fields(self, fields):
-        for name, child, writeable_func in fields:
-            self._block.set_endpoint_data(name, child)
-            self._write_functions[name] = writeable_func
+    def _add_block_fields(self):
+        part_fields = list(self.create_part_fields())
+        for iterable in ([self.create_meta()], self.create_attributes(),
+                         self.create_methods(), part_fields):
+            for name, child, writeable_func in iterable:
+                self.add_block_field(name, child, writeable_func)
+        return part_fields
+
+    def add_block_field(self, name, child, writeable_func):
+        self._block.set_endpoint_data(name, child)
+        self._write_functions[name] = writeable_func
 
     def create_methods(self):
         """Method that should provide Method instances for Block

@@ -6,10 +6,10 @@ from collections import Counter
 import numpy as np
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.controllers.builtin.runnablecontroller import RunnableController, \
-    ParameterTweakInfo
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED, Info, method_also_takes
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.infos.builtin.parametertweakinfo import ParameterTweakInfo
+from malcolm.parts.builtin.childpart import StatefulChildPart
 from malcolm.vmetas.builtin import StringArrayMeta, PointGeneratorMeta, NumberMeta
 
 # Number of seconds that a trajectory tick is
@@ -247,7 +247,7 @@ class MotorInfo(Info):
 @method_also_takes(
     "minTurnaround", NumberMeta(
         "float64", "Min time for any gaps between frames"), 0.0)
-class PMACTrajectoryPart(ChildPart):
+class PMACTrajectoryPart(StatefulChildPart):
     # Axis information stored from validate
     # {scannable_name: MotorInfo}
     axis_mapping = None
@@ -447,7 +447,7 @@ class PMACTrajectoryPart(ChildPart):
 
     def write_profile_points(self, task, time_array, velocity_mode, trajectory,
                              user_programs, completed_steps_lookup=None):
-        """Build profile using part_tasks
+        """Build profile using part_contexts
 
         Args:
             time_array (list): List of times in ms

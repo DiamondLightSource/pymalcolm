@@ -1,21 +1,55 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
 import time
-
-# logging
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+import setup_malcolm_paths
 
 # module imports
-from malcolm.core import Process, Part, Task, AbortedError, ResponseError
-from malcolm.core.syncfactory import SyncFactory
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
-from scanpointgenerator import LineGenerator, CompoundGenerator
-from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
-from malcolm.blocks.demo import Ticker
+#from malcolm.core import Process, Part, Task, AbortedError, ResponseError
+#from malcolm.core.syncfactory import SyncFactory
+
+#from scanpointgenerator import LineGenerator, CompoundGenerator
+#from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
+#from malcolm.blocks.demo import Ticker
+
+from malcolm.compat import OrderedDict
+from malcolm.controllers.scanpointgenerator.runnablecontroller import \
+    RunnableController, RunnableStates
+
+
+class TestRunnableStates(unittest.TestCase):
+
+    def setUp(self):
+        self.o = RunnableStates()
+
+    def test_init(self):
+        expected = OrderedDict()
+        expected['Resetting'] = {"Ready", "Fault", "Disabling"}
+        expected['Ready'] = {"Configuring", "Aborting", 'Editing', "Fault",
+                             "Disabling", "Loading"}
+        expected['Editing'] = {'Disabling', 'Editable', 'Fault'}
+        expected['Editable'] = {'Fault', 'Saving', 'Disabling', 'Reverting'}
+        expected['Saving'] = {'Fault', 'Ready', 'Disabling'}
+        expected['Reverting'] = {'Fault', 'Ready', 'Disabling'}
+        expected['Loading'] = {'Disabling', 'Fault', 'Ready'}
+        expected['Configuring'] = {"Armed", "Aborting", "Fault", "Disabling"}
+        expected['Armed'] = {"Seeking", "Resetting", "Aborting", "Running",
+                             "Fault", "Disabling"}
+        expected['Running'] = {"PostRun", "Seeking", "Aborting", "Fault",
+                               "Disabling"}
+        expected['PostRun'] = {"Ready", "Armed", "Aborting", "Fault",
+                               "Disabling"}
+        expected['Paused'] = {"Seeking", "Running", "Aborting", "Fault",
+                              "Disabling"}
+        expected['Seeking'] = {"Armed", "Paused", "Aborting", "Fault",
+                               "Disabling"}
+        expected['Aborting'] = {"Aborted", "Fault", "Disabling"}
+        expected['Aborted'] = {"Resetting", "Fault", "Disabling"}
+        expected['Fault'] = {"Resetting", "Disabling"}
+        expected['Disabling'] = {"Disabled", "Fault"}
+        expected['Disabled'] = {"Resetting"}
+        assert self.o._allowed == expected
 
 
 class TestRunnableController(unittest.TestCase):
@@ -65,7 +99,7 @@ class TestRunnableController(unittest.TestCase):
         # start the process off
         self.p.start()
 
-        # wait until block is Ready
+        # wait until block is Armed
         task = Task("block_ready_task", self.p)
         task.when_matches(self.b["state"], self.sm.IDLE, timeout=1)
 
@@ -100,8 +134,8 @@ class TestRunnableController(unittest.TestCase):
             self.c.Configure: "Configure",
             self.c.PostConfigure: "PostConfigure",
             self.c.Run: "Run",
+            self.c.PostRunArmed: "PostRunArmed",
             self.c.PostRunReady: "PostRunReady",
-            self.c.PostRunIdle: "PostRunIdle",
             self.c.Seek: "Seek",
             self.c.Pause: "Pause",
             self.c.Resume: "Resume",

@@ -1,20 +1,32 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
 from mock import MagicMock
 
-# logging
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-
 # module imports
-from malcolm.controllers.builtin.managercontroller import ManagerController
-from malcolm.core import Process, Part, Table, Task
-from malcolm.core.syncfactory import SyncFactory
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.compat import OrderedDict
+from malcolm.controllers.builtin.managercontroller import ManagerController, \
+    ManagerStates
+from malcolm.core import Process, Part, Table
+#from malcolm.parts.builtin.childpart import StatefulChildPart
+
+
+class TestManagerStates(unittest.TestCase):
+
+    def setUp(self):
+        self.o = ManagerStates()
+
+    def test_init(self):
+        expected = OrderedDict()
+        expected['Resetting'] = {'Ready', 'Fault', 'Disabling'}
+        expected['Ready'] = {'Editing', "Fault", "Disabling", "Loading"}
+        expected['Editing'] = {'Disabling', 'Editable', 'Fault'}
+        expected['Editable'] = {'Fault', 'Saving', 'Disabling', 'Reverting'}
+        expected['Saving'] = {'Fault', 'Ready', 'Disabling'}
+        expected['Reverting'] = {'Fault', 'Ready', 'Disabling'}
+        expected['Loading'] = {'Disabling', 'Fault', 'Ready'}
+        expected['Fault'] = {"Resetting", "Disabling"}
+        expected['Disabling'] = {"Disabled", "Fault"}
+        expected['Disabled'] = {"Resetting"}
+        assert self.o._allowed == expected
 
 
 class TestManagerController(unittest.TestCase):
@@ -35,7 +47,7 @@ class TestManagerController(unittest.TestCase):
         self.c_child = ManagerController(self.p, [], params)
         self.b_child = self.c_child.block
 
-        self.sm = self.c_child.stateMachine
+        self.sm = self.c_child.stateSet
 
         params = Part.MethodMeta.prepare_input_map(name='part1')
         part1 = Part(self.p, params)
@@ -244,7 +256,7 @@ class TestManagerController(unittest.TestCase):
             'childEdit'])
         self.assertEqual(self.b.childState, self.sm.READY)
         #self.b.childEdit()
-        #self.assertEqual(self.b.childState, self.sm.EDITABLE)
+        #self.assertEqual(self.b.childState, self.ManagerStates.EDITABLE)
 
 
 

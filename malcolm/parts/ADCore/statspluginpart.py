@@ -2,14 +2,14 @@ import os
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.core import REQUIRED, method_takes
-from malcolm.vmetas.builtin import StringMeta
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.hdfwriterpart import CalculatedNDAttributeDatasetInfo
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.parts.builtin.childpart import StatefulChildPart
+from malcolm.vmetas.builtin import StringMeta
 
 
-class StatsPluginPart(ChildPart):
+class StatsPluginPart(StatefulChildPart):
 
     @RunnableController.ReportStatus
     def report_info(self, _):

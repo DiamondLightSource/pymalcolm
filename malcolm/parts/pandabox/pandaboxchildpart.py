@@ -1,11 +1,11 @@
 import re
 
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.hdfwriterpart import NDAttributeDatasetInfo
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.parts.builtin.childpart import StatefulChildPart
 
 
-class PandABoxChildPart(ChildPart):
+class PandABoxChildPart(StatefulChildPart):
     # Stored futures
     start_future = None
 

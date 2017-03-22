@@ -1,9 +1,9 @@
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.parts.builtin.childpart import StatefulChildPart
 from malcolm.parts.pmac.pmactrajectorypart import MotorInfo, cs_axis_names
 
 
-class CompoundMotorPart(ChildPart):
+class CompoundMotorPart(StatefulChildPart):
     @RunnableController.ReportStatus
     def report_cs_info(self, _):
         acceleration = float(

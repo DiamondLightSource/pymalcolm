@@ -11,10 +11,10 @@ from mock import Mock, ANY
 
 # module imports
 from malcolm.core.part import Part
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.parts.builtin.childpart import StatefulChildPart
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core import Process, Table, Task
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.controllers.builtin.defaultcontroller import DefaultController
 from malcolm.vmetas.builtin.stringmeta import StringMeta
 
@@ -61,9 +61,9 @@ class TestChildPart(unittest.TestCase):
         params = DefaultController.MethodMeta.prepare_input_map(mri=blockMri)
         controller = DefaultController(self.p, [port_part], params)
 
-        params = ChildPart.MethodMeta.prepare_input_map(
+        params = StatefulChildPart.MethodMeta.prepare_input_map(
             mri=blockMri, name=partName)
-        part = ChildPart(self.p, params)
+        part = StatefulChildPart(self.p, params)
 
         return part, controller
 
@@ -81,9 +81,9 @@ class TestChildPart(unittest.TestCase):
         self.c = RunnableController(self.p, parts, params)
         self.b = self.c.block
 
-        params = ChildPart.MethodMeta.prepare_input_map(
+        params = StatefulChildPart.MethodMeta.prepare_input_map(
             mri='mainBlock', name='mainPart')
-        self.part = ChildPart(self.p, params)
+        self.part = StatefulChildPart(self.p, params)
 
         # Get the parent block into idle state
         self.p.start()

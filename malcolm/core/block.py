@@ -10,7 +10,7 @@ class Block(View):
             if isinstance(data[endpoint], MethodModel):
                 # Add _async versions of method
                 self._make_async_method(endpoint)
-        super(Block, self)._prepare_endpoints(data)
+        return super(Block, self)._prepare_endpoints(data)
 
     def _make_async_method(self, endpoint):
         def post_async(*args, **kwargs):

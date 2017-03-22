@@ -1,9 +1,9 @@
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.parts.builtin.childpart import StatefulChildPart
 from malcolm.vmetas.builtin import PointGeneratorMeta
 
 # How big an XML file can the EPICS waveform receive?
@@ -16,7 +16,7 @@ POSITIONS_PER_XML = 1000
 N_LOAD_AHEAD = 4
 
 
-class PositionLabellerPart(ChildPart):
+class PositionLabellerPart(StatefulChildPart):
     # Stored generator for positions
     generator = None
     # The last index we have loaded

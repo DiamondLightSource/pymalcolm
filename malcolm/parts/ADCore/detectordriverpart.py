@@ -1,7 +1,7 @@
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.core import method_also_takes, REQUIRED, method_takes
 from malcolm.parts.ADCore.hdfwriterpart import NDArrayDatasetInfo
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.parts.builtin.childpart import StatefulChildPart
 from malcolm.vmetas.builtin import PointGeneratorMeta, NumberMeta, ChoiceMeta
 
 # Args for configure() and validate
@@ -12,7 +12,7 @@ configure_args = [
 @method_also_takes(
     "readoutTime", NumberMeta(
         "float64", "Default time taken to readout detector"), 8e-6)
-class DetectorDriverPart(ChildPart):
+class DetectorDriverPart(StatefulChildPart):
     # Attributes
     readout_time = None
     trigger_mode = None

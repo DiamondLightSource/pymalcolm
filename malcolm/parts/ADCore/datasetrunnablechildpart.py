@@ -1,9 +1,9 @@
 import os
 
-from malcolm.controllers.builtin.runnablecontroller import RunnableController
+from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
-from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
+from malcolm.parts.scanpointgenerator.runnablechildpart import RunnableChildPart
 from malcolm.vmetas.builtin import StringMeta
 
 
