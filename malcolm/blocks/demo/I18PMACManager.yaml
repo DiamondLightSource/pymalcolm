@@ -35,4 +35,4 @@
 - includes.pmac.trajectory_collection:
     mri: $(mriPrefix)-TRAJ
     prefix: BL18I-MO-STEP-06:GB
-    minTurnaround: 1.4
+    minTurnaround: 2
