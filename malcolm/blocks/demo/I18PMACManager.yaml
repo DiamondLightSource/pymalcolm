@@ -20,17 +20,17 @@
     prefix: BL18I-MO-TABLE-01:CSFROT
     scannable: sc_sample_thetafine
 
-# - includes.pmac.rawmotor_collection:
-#     mri: I18-T3-Y
-#     prefix: BL18I-MO-STEP-06:GB:M8
-#     motorPrefix: BL18I-MO-TABLE-03:Y
-#     scannable: table_y
-
 - includes.pmac.rawmotor_collection:
     mri: I18-T3-X
-    prefix: BL18I-MO-STEP-06:GB:M6
-    motorPrefix: BL18I-MO-TABLE-03:X
+    prefix: BL18I-MO-STEP-06:GB:M7
+    motorPrefix: BL18I-MO-TABLE-03:Z
     scannable: table_x
+
+- includes.pmac.rawmotor_collection:
+    mri: I18-T3-Y
+    prefix: BL18I-MO-STEP-06:GB:M8
+    motorPrefix: BL18I-MO-TABLE-03:Y
+    scannable: table_y
 
 - includes.pmac.trajectory_collection:
     mri: $(mriPrefix)-TRAJ
