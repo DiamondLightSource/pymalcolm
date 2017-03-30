@@ -31,9 +31,10 @@ class TestPositionLabellerPart(unittest.TestCase):
     def test_configure(self):
         task = MagicMock()
         params = MagicMock()
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         params.generator = CompoundGenerator([ys, xs], [], [])
+        params.generator.prepare()
         completed_steps = 2
         steps_to_do = 4
         part_info = ANY
@@ -47,15 +48,15 @@ class TestPositionLabellerPart(unittest.TestCase):
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
 <dimensions>
-<dimension name="x" />
-<dimension name="y" />
+<dimension name="d0" />
+<dimension name="d1" />
 <dimension name="FilePluginClose" />
 </dimensions>
 <positions>
-<position FilePluginClose="0" x="2" y="0" />
-<position FilePluginClose="0" x="2" y="1" />
-<position FilePluginClose="0" x="1" y="1" />
-<position FilePluginClose="1" x="0" y="1" />
+<position FilePluginClose="0" d0="0" d1="2" />
+<position FilePluginClose="0" d0="1" d1="2" />
+<position FilePluginClose="0" d0="1" d1="1" />
+<position FilePluginClose="1" d0="1" d1="0" />
 </positions>
 </pos_layout>""".replace("\n", "")
         task.put.assert_called_once_with(self.child["xml"], expected_xml)
@@ -75,20 +76,21 @@ class TestPositionLabellerPart(unittest.TestCase):
         # Haven't done point 4 or 5 yet
         self.o.end_index = 4
         self.o.steps_up_to = 6
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate_direction=True)
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         self.o.generator = CompoundGenerator([ys, xs], [], [])
+        self.o.generator.prepare()
         self.o.load_more_positions(current_index, task)
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
 <dimensions>
-<dimension name="x" />
-<dimension name="y" />
+<dimension name="d0" />
+<dimension name="d1" />
 <dimension name="FilePluginClose" />
 </dimensions>
 <positions>
-<position FilePluginClose="0" x="1" y="1" />
-<position FilePluginClose="1" x="0" y="1" />
+<position FilePluginClose="0" d0="1" d1="1" />
+<position FilePluginClose="1" d0="1" d1="0" />
 </positions>
 </pos_layout>""".replace("\n", "")
         task.put.assert_called_once_with(self.child["xml"], expected_xml)

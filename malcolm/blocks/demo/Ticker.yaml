@@ -3,8 +3,13 @@
     name: mri
     description: Malcolm resource id of the Block
 
+- parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
 - controllers.RunnableController:
     mri: $(mri)
+    configDir: $(configDir)
 
 # Add the Counter blocks
 - blocks.demo.Counter:

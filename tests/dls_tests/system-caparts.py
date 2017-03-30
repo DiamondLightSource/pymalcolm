@@ -1,12 +1,11 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "scanpointgenerator"))
 import socket
 
 from pkg_resources import require
 
-require("numpy", "tornado", "cothread")
+require("numpy", "tornado", "cothread", "scanpointgenerator")
 
 from malcolm.parts.ca import CADoublePart, CAChoicePart, CALongPart, \
     CAStringPart, CADoubleArrayPart, CACharArrayPart

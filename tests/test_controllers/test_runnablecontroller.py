@@ -15,8 +15,7 @@ import time
 from malcolm.core import Process, Part, Task, Map, AbortedError, ResponseError
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.controllers.runnablecontroller import RunnableController
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    FixedDurationMutator
+from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
 from malcolm.blocks.demo import Ticker
 
@@ -43,7 +42,10 @@ class TestRunnableController(unittest.TestCase):
         self.p = Process('process1', SyncFactory('threading'))
 
         # Make a ticker block to act as our child
-        params = Ticker.MethodMeta.prepare_input_map(mri="childBlock")
+        params = Ticker.MethodMeta.prepare_input_map(
+            mri="childBlock",
+            configDir="/tmp"
+        )
         self.b_child = Ticker(self.p, params)[-1]
 
         # Make an empty part for our parent
@@ -57,7 +59,7 @@ class TestRunnableController(unittest.TestCase):
 
         # create a root block for the RunnableController block to reside in
         params = RunnableController.MethodMeta.prepare_input_map(
-            mri='mainBlock')
+            mri='mainBlock', configDir="/tmp")
         self.c = RunnableController(self.p, [part1, part2], params)
         self.b = self.c.block
         self.sm = self.c.stateMachine
@@ -79,16 +81,12 @@ class TestRunnableController(unittest.TestCase):
         # set_attributes via _set_block_children in __init__
         self.assertEqual(self.b['totalSteps'].meta.typeid,
                          'malcolm:core/NumberMeta:1.0')
-        self.assertEqual(self.b['layout'].meta.typeid,
-                         'malcolm:core/TableMeta:1.0')
         self.assertEqual(self.b['completedSteps'].meta.typeid,
                          'malcolm:core/NumberMeta:1.0')
         self.assertEqual(self.b['configuredSteps'].meta.typeid,
                          'malcolm:core/NumberMeta:1.0')
         self.assertEqual(self.b['axesToMove'].meta.typeid,
                          'malcolm:core/StringArrayMeta:1.0')
-        self.assertEqual(self.b['layoutName'].meta.typeid,
-                         'malcolm:core/StringMeta:1.0')
 
         # the following hooks should be created via _find_hooks in __init__
         self.assertEqual(self.c.hook_names, {
@@ -131,7 +129,7 @@ class TestRunnableController(unittest.TestCase):
 
     def test_set_axes_to_move(self):
         self.c.set_axes_to_move(['y'])
-        self.assertEqual(self.c.axes_to_move.value, ['y'])
+        self.assertEqual(self.c.axes_to_move.value, ('y',))
 
     def test_validate(self):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
@@ -139,13 +137,12 @@ class TestRunnableController(unittest.TestCase):
         compound = CompoundGenerator([line1, line2], [], [])
         actual = self.b.validate(generator=compound, axesToMove=['x'])
         self.assertEqual(actual["generator"], compound)
-        self.assertEqual(actual["axesToMove"], ['x'])
+        self.assertEqual(actual["axesToMove"], ('x',))
 
     def prepare_half_run(self, duration=0.01, exception=0):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
         line2 = LineGenerator('x', 'mm', 0, 2, 2)
-        duration = FixedDurationMutator(duration)
-        compound = CompoundGenerator([line1, line2], [], [duration])
+        compound = CompoundGenerator([line1, line2], [], [], duration)
         self.b.configure(
             generator=compound, axesToMove=['x'], exceptionStep=exception)
 

@@ -5,10 +5,12 @@
 - blocks.ADCore.SimDetectorManager:
     pvPrefix: BL45P-EA-XSP-01
     mriPrefix: P45-XSP01
+    configDir: /tmp
 
 - blocks.demo.TestRigSimManager:
     mri: P45-SCAN02
     sim: P45-XSP01
+    configDir: /tmp
 
 - comms.pva.PvaServerComms:
 

@@ -263,13 +263,19 @@ class RunnableController(ManagerController):
     def do_configure(self, params):
         # These are the part tasks that abort() and pause() will operate on
         self.part_tasks = self.create_part_tasks()
+        # Load the saved settings first
+        self.run_hook(self.Load, self.part_tasks, self.load_structure)
         # Store the params for use in seek()
         self.configure_params = params
+        # This will calculate what we need from the generator, possibly a long
+        # call
+        params.generator.prepare()
         # Set the steps attributes that we will do across many run() calls
-        self.total_steps.set_value(params.generator.num)
+        self.total_steps.set_value(params.generator.size)
         self.completed_steps.set_value(0)
         self.configured_steps.set_value(0)
-        # TODO: this should come from tne generator
+        # TODO: We can be cleverer about this and support a different number
+        # of steps per run for each run by examining the generator structure
         self.steps_per_run = self._get_steps_per_run(
             params.generator, params.axesToMove)
         # Get any status from all parts
@@ -291,18 +297,17 @@ class RunnableController(ManagerController):
     def _get_steps_per_run(self, generator, axes_to_move):
         steps = 1
         axes_set = set(axes_to_move)
-        for g in reversed(generator.generators):
+        for dim in reversed(generator.dimensions):
             # If the axes_set is empty then we are done
             if not axes_set:
                 break
             # Consume the axes that this generator scans
-            for axis in g.position_units:
+            for axis in dim.axes:
                 assert axis in axes_set, \
                     "Axis %s is not in %s" % (axis, axes_to_move)
                 axes_set.remove(axis)
             # Now multiply by the dimensions to get the number of steps
-            for dim in g.index_dims:
-                steps *= dim
+            steps *= dim.size
         return steps
 
     @method_writeable_in(sm.READY)

@@ -1,9 +1,12 @@
+import os
+
 from malcolm.compat import OrderedDict
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.core import ManagerStateMachine, method_writeable_in, \
-    method_takes, Hook, Table, Info, json_encode, json_decode
+    method_takes, Hook, Table, Info, json_encode, json_decode, \
+    method_also_takes, REQUIRED
 from malcolm.core.vmetas import StringArrayMeta, NumberArrayMeta, \
-    BooleanArrayMeta, TableMeta, StringMeta
+    BooleanArrayMeta, TableMeta, StringMeta, ChoiceMeta
 
 
 class LayoutInfo(Info):
@@ -38,6 +41,10 @@ class OutportInfo(Info):
 sm = ManagerStateMachine
 
 
+@method_also_takes(
+    "configDir", StringMeta("Directory to write save/load config to"), REQUIRED,
+    "defaultConfig", StringMeta("Default config to load"), "",
+)
 class ManagerController(DefaultController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # The stateMachine that this controller implements
@@ -80,16 +87,17 @@ class ManagerController(DefaultController):
 
     Args:
         task (Task): The task used to perform operations on child blocks
-        structure (dict): {part_name: part_structure} where part_structure is
-            the return from Save hook
+
+    Returns:
+        dict: serialized version of the child that could be loaded from
     """
 
     # attributes
     layout = None
     layout_name = None
 
-    # state to revert to
-    revert_structure = None
+    # {part_name: part_structure} of currently loaded settings
+    load_structure = None
 
     def create_attributes(self):
         for data in super(ManagerController, self).create_attributes():
@@ -105,12 +113,18 @@ class ManagerController(DefaultController):
         layout_table_meta.set_writeable_in(sm.EDITABLE)
         self.layout = layout_table_meta.make_attribute()
         yield "layout", self.layout, self.set_layout
-        self.layout_name = StringMeta(
-            "Saved layout name to load").make_attribute()
-        self.layout_name.meta.set_writeable_in(sm.EDITABLE)
+        self.layout_name = ChoiceMeta(
+            "Saved layout name to load", []).make_attribute()
+        self.layout_name.meta.set_writeable_in(
+            self.stateMachine.AFTER_RESETTING)
         yield "layoutName", self.layout_name, self.load_layout
+        assert os.path.isdir(self.params.configDir), \
+            "%s is not a directory" % self.params.configDir
 
     def set_layout(self, value):
+        # If it isn't a table, make it one
+        if not isinstance(value, Table):
+            value = Table(self.layout.meta, value)
         part_info = self.run_hook(self.ReportOutports, self.create_part_tasks())
         part_info = self.run_hook(
             self.Layout, self.create_part_tasks(), part_info, value)
@@ -126,14 +140,28 @@ class ManagerController(DefaultController):
 
     def do_reset(self):
         super(ManagerController, self).do_reset()
+        # This will trigger all parts to report their layout, making sure the
+        # layout table has a valid value
         self.set_layout(Table(self.layout.meta))
+        # List the configDir and add to choices
+        self._set_layout_names()
+        # If we have no load_structure (initial reset) define one
+        if self.load_structure is None:
+            if self.params.defaultConfig:
+                self.load_layout(self.params.defaultConfig)
+            else:
+                self.load_structure = self._save_to_structure()
 
-    @method_writeable_in(sm.EDITABLE)
+    @method_writeable_in(sm.READY)
     def edit(self):
-        self.try_stateful_function(sm.EDITING, sm.EDITABLE, self.do_edit)
+        self.transition(sm.EDITABLE, "Layout editable")
 
-    def do_edit(self):
-        self.revert_structure = self._save_to_structure()
+    def go_to_error_state(self, exception):
+        if self.state.value == sm.EDITABLE:
+            # If we got a save or revert exception, don't go to fault
+            self.log_exception("Fault occurred while trying to save/revert")
+        else:
+            super(ManagerController, self).go_to_error_state(exception)
 
     @method_writeable_in(sm.EDITABLE)
     @method_takes(
@@ -146,13 +174,26 @@ class ManagerController(DefaultController):
             params.layoutName)
 
     def do_save(self, layout_name=None):
-        if layout_name is None or layout_name == '':
+        if not layout_name:
             layout_name = self.layout_name.value
         structure = self._save_to_structure()
-        filename = "/tmp/" + layout_name + ".json"
         text = json_encode(structure, indent=2)
+        filename = self._validated_config_filename(layout_name)
         open(filename, "w").write(text)
+        self._set_layout_names(layout_name)
         self.layout_name.set_value(layout_name)
+        self.load_structure = structure
+
+    def _set_layout_names(self, extra_name=None):
+        names = []
+        if extra_name:
+            names.append(extra_name)
+        dir_name = self._make_config_dir()
+        for f in os.listdir(dir_name):
+            if os.path.isfile(
+                    os.path.join(dir_name, f)) and f.endswith(".json"):
+                names.append(f.split(".json")[0])
+        self.layout_name.meta.set_choices(names)
 
     @method_writeable_in(sm.EDITABLE)
     def revert(self):
@@ -160,23 +201,60 @@ class ManagerController(DefaultController):
             sm.REVERTING, self.stateMachine.AFTER_RESETTING, self.do_revert)
 
     def do_revert(self):
-        self._load_from_structure(self.revert_structure)
+        self._load_from_structure(self.load_structure)
+
+    def _validated_config_filename(self, name):
+        """Make config dir and return full file path and extension
+
+        Args:
+            name (str): Filename without dir or extension
+
+        Returns:
+            str: Full path including extensio
+        """
+        dir_name = self._make_config_dir()
+        filename = os.path.join(dir_name, name.split(".json")[0] + ".json")
+        return filename
+
+    def _make_config_dir(self):
+        dir_name = os.path.join(self.params.configDir, self.mri)
+        try:
+            os.mkdir(dir_name)
+        except OSError:
+            # OK if already exists, if not then it will fail on write anyway
+            pass
+        return dir_name
 
     def load_layout(self, value):
-        # TODO: Look for value in our save file location
-        filename = "/tmp/" + value + ".json"
+        # TODO: race condition if we get 2 loads at once...
+        # Do we need a Loading state?
+        filename = self._validated_config_filename(value)
         text = open(filename, "r").read()
         structure = json_decode(text)
         self._load_from_structure(structure)
         self.layout_name.set_value(value)
 
     def _save_to_structure(self):
-        structure = self.run_hook(self.Save, self.create_part_tasks())
-        structure["layout"] = self.layout.value.to_dict()
+        structure = OrderedDict()
+        structure["layout"] = OrderedDict()
+        for name, x, y, visible in sorted(
+                zip(self.layout.value.name, self.layout.value.x,
+                    self.layout.value.y, self.layout.value.visible)):
+            layout_structure = OrderedDict()
+            layout_structure["x"] = x
+            layout_structure["y"] = y
+            layout_structure["visible"] = visible
+            structure["layout"][name] = layout_structure
+        for part_name, part_structure in sorted(self.run_hook(
+                self.Save, self.create_part_tasks()).items()):
+            structure[part_name] = part_structure
         return structure
 
     def _load_from_structure(self, structure):
-        table = self.layout.meta.validate(structure["layout"])
+        table = Table(self.layout.meta)
+        for part_name, part_structure in structure["layout"].items():
+            table.append([part_name, "", part_structure["x"],
+                          part_structure["y"], part_structure["visible"]])
         self.set_layout(table)
         self.run_hook(self.Load, self.create_part_tasks(), structure)
 

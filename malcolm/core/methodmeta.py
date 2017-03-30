@@ -208,7 +208,7 @@ def method_also_takes(*args):
             args, allow_defaults=True,
             elements=func.MethodMeta.takes.elements.to_dict(),
             defaults=func.MethodMeta.defaults.copy(),
-            required=func.MethodMeta.takes.required[:]
+            required=list(func.MethodMeta.takes.required)
         )
         func.MethodMeta.set_takes(takes_meta)
         func.MethodMeta.set_defaults(defaults)

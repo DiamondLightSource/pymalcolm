@@ -6,8 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, MagicMock, call, ANY
 
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    FixedDurationMutator
+from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.parts.demo.scantickerpart import ScanTickerPart
 
@@ -39,10 +38,10 @@ class TestScanTickerPart(unittest.TestCase):
     def prepare_half_run(self):
         line1 = LineGenerator('AxisOne', 'mm', 0, 2, 3)
         line2 = LineGenerator('AxisTwo', 'mm', 0, 2, 2)
-        dur = FixedDurationMutator(1.0)
-        compound = CompoundGenerator([line1, line2], [], [dur])
+        compound = CompoundGenerator([line1, line2], [], [], 1.0)
         params = ScanTickerPart.configure.MethodMeta.prepare_input_map(
             generator=compound, axesToMove=['AxisTwo'])
+        params.generator.prepare()
         self.o.configure(MagicMock(), 0, 2, MagicMock(), params)
 
     def test_configure(self):

@@ -12,3 +12,4 @@ class StringPart(AttributePart):
 
     def create_meta(self, description, tags):
         return StringMeta(description=description, tags=tags)
+

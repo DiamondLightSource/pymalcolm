@@ -2,11 +2,8 @@ from malcolm.core import method_also_takes, REQUIRED, method_takes
 from malcolm.core.vmetas import PointGeneratorMeta, NumberMeta, ChoiceMeta
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.ADCore.hdfwriterpart import DatasetSourceInfo
+from malcolm.parts.ADCore.hdfwriterpart import NDArrayDatasetInfo
 
-
-# Maximum number of points to check for fixed duration
-MAX_CHECK = 100
 
 # Args for configure() and validate
 configure_args = [
@@ -42,21 +39,15 @@ class DetectorDriverPart(ChildPart):
 
     @RunnableController.ReportStatus
     def report_configuration(self, _):
-        return [DatasetSourceInfo(name=self.name, type="primary", rank=2)]
+        return [NDArrayDatasetInfo(name=self.name, rank=2)]
 
     @RunnableController.Validate
     @method_takes(*configure_args)
     def validate(self, task, part_info, params):
-        durations = set()
-        max_points = min(MAX_CHECK, params.generator.num)
-        for i in range(max_points):
-            point = params.generator.get_point(i)
-            durations.add(point.duration)
-        assert len(durations) == 1, \
-            "Expected a fixed duration time, got %s" % list(durations)
-        exposure = durations.pop()
-        assert exposure is not None, \
-            "Expected duration to be specified, got None"
+        exposure = params.generator.duration
+        assert exposure > 0, \
+            "Duration %s for generator must be >0 to signify constant exposure"\
+            % exposure
         # TODO: should really get this from an Info from pmac trajectory part...
         exposure -= self.readout_time.value
         assert exposure > 0.0, \
@@ -69,8 +60,7 @@ class DetectorDriverPart(ChildPart):
     @method_takes(*configure_args)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         task.unsubscribe_all()
-        exposure = params.generator.get_point(0).duration
-        exposure -= self.readout_time.value
+        exposure = params.generator.duration - self.readout_time.value
         task.put_many(self.child, dict(
             exposure=exposure,
             imageMode="Multiple",

@@ -1,6 +1,6 @@
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, REQUIRED, method_also_takes, Attribute, \
-    ResponseError
+    ResponseError, serialize_object
 from malcolm.core.vmetas import StringMeta
 from malcolm.controllers.managercontroller import ManagerController, \
     LayoutInfo, OutportInfo
@@ -73,6 +73,30 @@ class ChildPart(Part):
             mri=self.params.mri, x=self.x, y=self.y, visible=self.visible)
         return [ret]
 
+    @ManagerController.Load
+    def load(self, task, structure):
+        part_structure = structure.get(self.name, {})
+        futures = []
+        for k, v in part_structure.items():
+            try:
+                attr = self.child[k]
+            except KeyError:
+                self.log_warning("Cannot restore non-existant attr %s" % k)
+            else:
+                if "config" not in attr.meta.tags:
+                    raise ValueError("Attr %s doesn't have config tag" % k)
+                futures += task.put_async(attr, v)
+        task.wait_all(futures)
+
+    @ManagerController.Save
+    def save(self, task):
+        part_structure = OrderedDict()
+        for k in self.child:
+            attr = self.child[k]
+            if isinstance(attr, Attribute) and "config" in attr.meta.tags:
+                part_structure[k] = serialize_object(attr.value)
+        return part_structure
+
     def _get_flowgraph_ports(self, direction="out"):
         # {attr_name: port_tag}
         ports = OrderedDict()
@@ -108,7 +132,7 @@ class ChildPart(Part):
             dict: {outport_value: outport_type}
         """
         outports = {}
-        for outport_info in OutportInfo.filter_parts(part_info)[name]:
+        for outport_info in OutportInfo.filter_parts(part_info).get(name, []):
             outports[outport_info.value] = outport_info.type
         return outports
 

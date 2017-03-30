@@ -30,7 +30,7 @@ class TestSetters(unittest.TestCase):
 
     def test_set_required(self):
         self.test_set_elements()
-        req = ["sam"]
+        req = ("sam",)
         self.mm.set_required(req)
         self.assertEqual(self.mm.required, req)
 
@@ -43,10 +43,10 @@ class TestSerialization(unittest.TestCase):
         self.serialized["typeid"] = "malcolm:core/MapMeta:1.0"
         self.serialized["elements"] = ElementMap(dict(c1=self.sam)).to_dict()
         self.serialized["description"] = "desc"
-        self.serialized["tags"] = []
+        self.serialized["tags"] = ()
         self.serialized["writeable"] = False
         self.serialized["label"] = ""
-        self.serialized["required"] = ["c1"]
+        self.serialized["required"] = ("c1",)
 
     def test_to_dict(self):
         tm = MapMeta("desc")
@@ -59,8 +59,8 @@ class TestSerialization(unittest.TestCase):
         self.assertEquals(tm.description, "desc")
         self.assertEquals(len(tm.elements), 1)
         self.assertEquals(tm.elements["c1"].to_dict(), self.sam.to_dict())
-        self.assertEquals(tm.tags, [])
-        self.assertEquals(tm.required, ["c1"])
+        self.assertEquals(tm.tags, ())
+        self.assertEquals(tm.required, ("c1",))
 
 
 if __name__ == "__main__":

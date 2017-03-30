@@ -17,9 +17,9 @@ class TestTableInit(unittest.TestCase):
         s = StringArrayMeta()
         meta.elements = {"e1":s, "e2":s, "e3":s}
         t = Table(meta)
-        self.assertEquals([], t.e1)
-        self.assertEquals([], t.e2)
-        self.assertEquals([], t.e3)
+        self.assertEquals((), t.e1)
+        self.assertEquals((), t.e2)
+        self.assertEquals((), t.e3)
         self.assertEquals("malcolm:core/Table:1.0", t.typeid)
 
     def test_init_with_dict(self):
@@ -30,15 +30,15 @@ class TestTableInit(unittest.TestCase):
         d = {"e1":[0, 1], "e3":["value"]}
         t = Table(meta, d)
         self.assertEquals([0, 1], list(t.e1))
-        self.assertEquals([], t.e2)
-        self.assertEquals(["value"], t.e3)
+        self.assertEquals((), t.e2)
+        self.assertEquals(("value",), t.e3)
         self.assertEquals("malcolm:core/Table:1.0", t.typeid)
 
     def test_init_with_none(self):
         meta = Mock()
         meta.elements = {"e1": StringArrayMeta()}
         t = Table(meta, None)
-        self.assertEquals([], t.e1)
+        self.assertEquals((), t.e1)
         self.assertEquals("malcolm:core/Table:1.0", t.typeid)
 
 
@@ -146,7 +146,7 @@ class TestTableMetaSerialization(unittest.TestCase):
         t = Table(self.meta, d)
         self.assertEqual(self.meta, t.meta)
         self.assertEqual([0, 1, 2], list(t.e2))
-        self.assertEqual(["value"], t.e1)
+        self.assertEqual(("value",), t.e1)
         self.assertEqual([6, 7], list(t.e3))
 
     def test_dict_roundtrip(self):

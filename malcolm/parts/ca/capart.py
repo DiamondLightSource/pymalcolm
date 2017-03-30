@@ -1,9 +1,9 @@
 from malcolm.core import method_takes, REQUIRED
 from malcolm.parts.builtin.attributepart import AttributePart
-from malcolm.core.vmetas import StringMeta, ChoiceMeta
+from malcolm.core.vmetas import StringMeta, ChoiceMeta, BooleanMeta
 from malcolm.controllers.defaultcontroller import DefaultController
 from malcolm.parts.ca.cothreadimporter import CothreadImporter
-from malcolm.tags import widget, widget_types, inport, port_types
+from malcolm.tags import widget_types, inport, port_types
 
 
 @method_takes(
@@ -13,7 +13,8 @@ from malcolm.tags import widget, widget_types, inport, port_types
     "rbv", StringMeta("Override for rbv"), "",
     "rbvSuff", StringMeta("Set rbv ro pv + rbv_suff"), "",
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
-    "inport", ChoiceMeta("Inport type", [""] + port_types), "")
+    "inport", ChoiceMeta("Inport type", [""] + port_types), "",
+    "config", BooleanMeta("Should this field be loaded/saved?"), False)
 class CAPart(AttributePart):
     # Camonitor subscription
     monitor = None

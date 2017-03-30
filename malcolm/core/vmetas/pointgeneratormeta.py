@@ -12,7 +12,7 @@ class PointGeneratorMeta(VMeta):
 
     def validate(self, value):
         if value is None:
-            return CompoundGenerator()
+            return CompoundGenerator([], [], [])
         elif isinstance(value, CompoundGenerator):
             return value
         elif isinstance(value, dict):

@@ -14,6 +14,8 @@ class TestRawMotorPart(unittest.TestCase):
     def setUp(self):
         self.process = MagicMock()
         self.child = MagicMock()
+        self.child.maxVelocity = 5.0
+        self.child.accelerationTime = 0.5
         self.params = MagicMock()
         self.process.get_block.return_value = self.child
         self.c = RawMotorPart(self.process, self.params)
@@ -22,7 +24,7 @@ class TestRawMotorPart(unittest.TestCase):
         returns = self.c.report_cs_info(MagicMock())[0]
         self.assertEqual(returns.cs_axis, self.child.csAxis)
         self.assertEqual(returns.cs_port, self.child.csPort)
-        self.assertEqual(returns.acceleration_time, self.child.accelerationTime)
+        self.assertEqual(returns.acceleration, 10.0)
         self.assertEqual(returns.resolution, self.child.resolution)
         self.assertEqual(returns.offset, self.child.offset)
         self.assertEqual(returns.max_velocity, self.child.maxVelocity)

@@ -2,7 +2,7 @@ import os
 import sys
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import setup_malcolm_paths
 
@@ -74,17 +74,22 @@ class TestValidation(unittest.TestCase):
         for i, value in enumerate(response):
             self.assertEqual(values[i], value)
 
-    def test_float_against_int_raises(self):
+    def test_float_against_int_floors(self):
         nm = NumberArrayMeta("int32")
-        self.assertRaises(ValueError, nm.validate, [1.2, 34, 56])
+        actual = list(nm.validate([1.2, 34, 56]))
+        expected = [1, 34, 56]
+        self.assertEqual(actual, expected)
 
-    def test_null_element_raises(self):
-        nm = NumberArrayMeta("float32")
-        self.assertRaises(ValueError, nm.validate, [1.2, None, 5.6])
+    def test_null_element_zero(self):
+        nm = NumberArrayMeta("float64")
+        actual = nm.validate([1.2, None, 1.3])
+        self.assertEqual(actual[0], 1.2)
+        self.assertTrue(np.isnan(actual[1]))
+        self.assertEqual(actual[2], 1.3)
 
     def test_none_validates(self):
         nm = NumberArrayMeta("int32")
-        self.assertEquals(nm.validate(None), [])
+        self.assertEquals(list(nm.validate(None)), [])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

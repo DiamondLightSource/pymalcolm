@@ -9,7 +9,7 @@ from malcolm.parts.pandabox.pandaboxactionpart import PandABoxActionPart
 from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
 from malcolm.parts.builtin.stringpart import StringPart
 from malcolm.parts.builtin.choicepart import ChoicePart
-from malcolm.tags import widget, group, inport, outport
+from malcolm.tags import widget, group, inport, outport, config
 
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
@@ -90,6 +90,8 @@ class PandABoxBlockMaker(Loggable):
             self._make_out(field_name, field_data, "pos")
             self._make_scale_offset(field_name)
             self._make_out_capture(field_name, field_data)
+            if subtyp != "adc":
+                self._make_data_delay(field_name)
         elif typ == "ext_out":
             self._make_out_capture(field_name, field_data)
         elif typ == "bit_mux":
@@ -167,37 +169,42 @@ class PandABoxBlockMaker(Loggable):
                          tags=[group_tag, flow_tag], writeable=False)
         self._make_field_part(field_name, meta, writeable=False)
 
+    def _make_data_delay(self, field_name):
+        group_tag = self._make_group("outputs")
+        meta = NumberMeta(
+            "uint8", "How many FPGA ticks to delay data capture",
+            tags=[group_tag, widget("textinput")])
+        self._make_field_part(field_name + ".DATA_DELAY", meta, writeable=True)
+
     def _make_out_capture(self, field_name, field_data):
         group_tag = self._make_group("outputs")
         meta = ChoiceMeta("Capture %s in PCAP?" % field_name,
                           field_data.labels, tags=[group_tag, widget("combo")])
         self._make_field_part(field_name + ".CAPTURE", meta, writeable=True)
-        meta = NumberMeta(
-            "uint8", "How many FPGA ticks to delay data capture",
-            tags=[group_tag, widget("textinput")])
-        self._make_field_part(field_name + ".DATA_DELAY", meta, writeable=True)
         if self.area_detector:
+            from malcolm.parts.ADCore.hdfwriterpart import \
+                attribute_dataset_types
             # Make a string part to hold the name of the dataset
             part_name = field_name + ".DATASET_NAME"
             label, attr_name = make_label_attr_name(part_name)
             params = StringPart.MethodMeta.prepare_input_map(
                 name=attr_name, widget="textinput",
                 description="Name of the captured dataset in HDF file",
-                writeable=True)
+                writeable=True, config=True)
             part = StringPart(self.process, params)
             self._add_part(part_name, part)
             # Make a choice part to hold the type of the dataset
             part_name = field_name + ".DATASET_TYPE"
             label, attr_name = make_label_attr_name(part_name)
             if "INENC" in self.block_name:
-                initial = "position_value"
+                initial = "position"
             else:
                 initial = "monitor"
-            choices = ["position_value", "monitor", "detector"]
             params = ChoicePart.MethodMeta.prepare_input_map(
                 name=attr_name, widget="textinput",
                 description="Type of the captured dataset in HDF file",
-                writeable=True, choices=choices, initialValue=initial)
+                writeable=True, choices=attribute_dataset_types,
+                initialValue=initial)
             part = StringPart(self.process, params)
             self._add_part(part_name, part)
 
@@ -222,9 +229,9 @@ class PandABoxBlockMaker(Loggable):
         self._make_field_part(field_name + ".DELAY", meta, writeable=True)
 
     def _make_table(self, field_name, field_data):
-        widget_tag = widget("table")
         group_tag = self._make_group("parameters")
-        meta = TableMeta(field_data.description, [widget_tag, group_tag])
+        tags = [widget("table"), group_tag, config()]
+        meta = TableMeta(field_data.description, tags)
         part = PandABoxTablePart(self.process, self.control, meta,
                                  self.block_name, field_name, writeable=True)
         self._add_part(field_name, part)
@@ -235,6 +242,8 @@ class PandABoxBlockMaker(Loggable):
         self.parts[field_name] = part
 
     def _make_field_part(self, field_name, meta, writeable, initial_value=None):
+        if writeable:
+            meta.set_tags(meta.tags + (config(),))
         part = PandABoxFieldPart(self.process, self.control, meta,
                                  self.block_name, field_name, writeable,
                                  initial_value)

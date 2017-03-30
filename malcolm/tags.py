@@ -48,3 +48,9 @@ def group(group_name):
     """Marks this field as belonging to a group"""
     tag = "group:%s" % group_name
     return tag
+
+
+def config():
+    """Marks this field as a value that should be saved and loaded at config"""
+    tag = "config"
+    return tag

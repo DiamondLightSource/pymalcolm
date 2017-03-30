@@ -4,7 +4,11 @@
 
 - parameters.string:
     name: prefix
-    description: the root PV for the pmac motor (hardware) controller
+    description: the root PV for the trajectory scan template
+
+- parameters.string:
+    name: statPrefix
+    description: the root PV for the pmacStatus template
 
 - parameters.float64:
     name: minTurnaround
@@ -14,6 +18,7 @@
 - blocks.pmac.PMACTrajectory:
     mri: $(mri)
     prefix: $(prefix)
+    statPrefix: $(statPrefix)
 
 - parts.pmac.PMACTrajectoryPart:
     name: $(mri)

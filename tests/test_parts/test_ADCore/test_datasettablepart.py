@@ -37,12 +37,12 @@ class TestDatasetReportingPart(unittest.TestCase):
         )
         self.o.update_datasets_table(task, part_info)
         v = self.o.datasets.value
-        self.assertEqual(v.name, ["det.data", "det.sum", "det.min"])
-        self.assertEqual(v.filename, ["fn1", "fn1", "fn1"])
-        self.assertEqual(v.type, ["primary", "secondary", "secondary"])
+        self.assertEqual(v.name, ("det.data", "det.sum", "det.min"))
+        self.assertEqual(v.filename, ("fn1", "fn1", "fn1"))
+        self.assertEqual(v.type, ("primary", "secondary", "secondary"))
         self.assertEqual(list(v.rank), [2, 0, 0])
-        self.assertEqual(v.path, ["/p/det", "/p/s1", "/p/s2"])
-        self.assertEqual(v.uniqueid, ["/p/uid", "/p/uid", "/p/uid"])
+        self.assertEqual(v.path, ("/p/det", "/p/s1", "/p/s2"))
+        self.assertEqual(v.uniqueid, ("/p/uid", "/p/uid", "/p/uid"))
 
 
 if __name__ == "__main__":
