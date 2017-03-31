@@ -25,14 +25,13 @@ class MyPart(Part):
 
 class TestPart(unittest.TestCase):
     def test_init(self):
-        process = Mock()
-        p = Part(process, "name")
-        self.assertEqual(p.process, process)
+        p = Part("name")
+        self.assertEqual(p.name, "name")
 
     def test_non_hooked_methods(self):
-        p = MyPart(Mock(), "")
+        p = MyPart("")
         methods = list(p.create_methods())
-        self.assertEqual(methods, [("bar", p._method_models["bar"], p.bar)])
+        self.assertEqual(methods, [("bar", p.method_models["bar"], p.bar)])
 
 
 if __name__ == "__main__":

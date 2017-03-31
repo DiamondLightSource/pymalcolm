@@ -15,6 +15,7 @@ class HookRunner(Loggable):
         # to ignore stops
         context.ignore_stops_before_now()
         self.context = context
+        self.context.runner = self
         self.args = args
         self.spawned = self.part.spawn(self.func_result_on_queue)
 
@@ -27,8 +28,9 @@ class HookRunner(Loggable):
         except Exception as e:  # pylint:disable=broad-except
             self.log_exception("%s%s raised exception", self.func, self.args)
             result = e
-        self.log_debug("Putting %r on queue", result)
         self.hook_queue.put((self.part, result))
+        # TODO: this is a bit ugly
+        self.context.runner = None
 
     def stop(self):
         self.context.stop()

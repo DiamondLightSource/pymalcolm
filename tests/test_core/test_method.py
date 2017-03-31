@@ -31,7 +31,7 @@ class TestMethod(unittest.TestCase):
 
     def setUp(self):
         self.process = Process("proc")
-        self.part = MyPart(self.process, "test_part")
+        self.part = MyPart("test_part")
         self.controller = MyController(self.process, "mri", [self.part])
         self.process.add_controller("mri", self.controller)
         self.context = Context("Context", self.process)

@@ -1,3 +1,4 @@
+from malcolm.compat import str_
 from .hook import get_hook_decorated
 from .hookrunner import HookRunner
 from .loggable import Loggable
@@ -5,12 +6,14 @@ from .methodmodel import get_method_decorated, MethodModel
 
 
 class Part(Loggable):
-    def __init__(self, process, name):
+    def __init__(self, name):
+        assert isinstance(name, str_), \
+            "Expected name to be a string, got %s. Did you forget to " \
+            "subclass __init__ in %s?" % (name, self)
         self.controller = None
-        self.process = process
         self.name = name
         self.set_logger_name(name)
-        self._method_models = {}
+        self.method_models = {}
 
     def attach_to_controller(self, controller):
         self.set_logger_name("%s(%s.%s)" % (
@@ -28,15 +31,9 @@ class Part(Loggable):
 
     def make_hook_runner(self, hook_queue, func_name, context, *args, **params):
         func = getattr(self, func_name)
-        if func_name in self._method_models:
-            method_model = self._method_models[func_name]
-        else:
-            method_model = MethodModel()
-            method_model.set_logger_name("MethodModel")
-        filtered_params = {}
-        for k, v in params.items():
-            if k in method_model.takes.elements:
-                filtered_params[k] = v
+        method_model = self.method_models.get(func_name, MethodModel())
+        filtered_params = {k: v for k, v in params.items()
+                           if k in method_model.takes.elements}
         args += method_model.prepare_call_args(**filtered_params)
         runner = HookRunner(hook_queue, self, func, context, args)
         return runner
@@ -44,7 +41,7 @@ class Part(Loggable):
     def create_methods(self):
         hooked = [name for (name, _, _) in get_hook_decorated(self)]
         for name, method_model, func in get_method_decorated(self):
-            self._method_models[name] = method_model
+            self.method_models[name] = method_model
             if name not in hooked:
                 yield name, method_model, func
 
@@ -61,3 +58,6 @@ class Part(Loggable):
                   writeable, or None if not
         """
         return iter(())
+
+    def get_controller(self, mri):
+        return self.controller.get_controller(mri)

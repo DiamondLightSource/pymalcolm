@@ -5,3 +5,5 @@ tornado>=4.1
 scanpointgenerator>=2.0.0
 cothread
 ruamel.yaml
+pytest
+pytest-capturelog

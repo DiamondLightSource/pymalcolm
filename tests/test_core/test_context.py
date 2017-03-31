@@ -170,13 +170,7 @@ class TestContext(unittest.TestCase):
         fs.append(self.o.put_async(["block", "attr", "value"], 32))
         self.o.stop()
         with self.assertRaises(AbortedError):
-            self.o.wait_all_futures(fs, -1000)
-
-        with patch.object(self.o._q, 'get',
-                          return_value='Unexpected Response'):
-            with self.assertRaises(UnexpectedError):
-                self.o.wait_all_futures(fs, 0)
-
+            self.o.wait_all_futures(fs, 0)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

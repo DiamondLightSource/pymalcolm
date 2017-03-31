@@ -3,6 +3,7 @@ import inspect
 import weakref
 
 from malcolm.compat import OrderedDict
+from .alarm import Alarm
 from .attribute import Attribute
 from .attributemodel import AttributeModel
 from .block import Block
@@ -21,7 +22,7 @@ from .notifier import Notifier
 from .request import Get, Subscribe, Unsubscribe, Put, Post
 from .queue import Queue
 from .rlock import RLock
-from .serializable import serialize_object
+from .serializable import serialize_object, deserialize_object
 from .view import make_view
 
 
@@ -41,13 +42,15 @@ class Controller(Loggable):
         # {Hook: name}
         self._hook_names = self._find_hooks()
         # {name: Part}
-        self._parts = self._setup_parts(parts)
-        self._lock = RLock()
+        self.parts = self._setup_parts(parts)
+        # {part_name: (field_name, Model, setter)
+        self.part_fields = {}
+        self._lock = RLock(self.use_cothread)
         self._block = BlockModel()
         self._notifier = Notifier(mri, self._lock, self._block)
         self._block.set_notifier_path(self._notifier, [mri])
         self._write_functions = {}
-        self.part_fields = self._add_block_fields()
+        self._add_block_fields()
 
     def _setup_parts(self, parts):
         parts_dict = OrderedDict()
@@ -70,16 +73,21 @@ class Controller(Loggable):
         return hook_names
 
     def _add_block_fields(self):
-        part_fields = list(self.create_part_fields())
         for iterable in ([self.create_meta()], self.create_attributes(),
-                         self.create_methods(), part_fields):
+                         self.create_methods(), self.create_part_fields()):
             for name, child, writeable_func in iterable:
                 self.add_block_field(name, child, writeable_func)
-        return part_fields
 
     def add_block_field(self, name, child, writeable_func):
         self._block.set_endpoint_data(name, child)
-        self._write_functions[name] = writeable_func
+        if writeable_func:
+            self._write_functions[name] = writeable_func
+            if isinstance(child, AttributeModel):
+                child.meta.set_writeable(True)
+            elif isinstance(child, MethodModel):
+                child.set_writeable(True)
+                for k, v in child.takes.elements.items():
+                    v.set_writeable(True)
 
     def create_methods(self):
         """Method that should provide Method instances for Block
@@ -95,7 +103,7 @@ class Controller(Loggable):
         Yields:
             tuple: (string name, Attribute, callable put_function).
         """
-        self.health = HealthMeta().make_attribute()
+        self.health = HealthMeta().create_attribute()
         yield "health", self.health, None
 
     def create_meta(self):
@@ -103,11 +111,15 @@ class Controller(Loggable):
         return "meta", BlockMeta(), None
 
     def create_part_fields(self):
-        for part in self._parts.values():
-            for data in part.create_attributes():
+        for name, part in self.parts.items():
+            part_fields = list(part.create_attributes()) + \
+                          list(part.create_methods())
+            self.part_fields[name] = part_fields
+            for data in part_fields:
                 yield data
-            for data in part.create_methods():
-                yield data
+
+    def get_controller(self, mri):
+        return self.process.get_controller(mri)
 
     def spawn(self, func, *args, **kwargs):
         """Spawn a function in the right thread"""
@@ -129,6 +141,8 @@ class Controller(Loggable):
 
     def set_health(self, part, alarm=None):
         """Set the health attribute"""
+        if alarm is not None:
+            alarm = deserialize_object(alarm, Alarm)
         with self.changes_squashed:
             if alarm is None:
                 self._faults.pop(part, None)
@@ -268,7 +282,7 @@ class Controller(Loggable):
 
     def create_part_contexts(self):
         part_contexts = {}
-        for part_name, part in self._parts.items():
+        for part_name, part in self.parts.items():
             part_contexts[part] = Context(
                 "Context(%s)" % part_name, self.process)
         return part_contexts
@@ -288,7 +302,7 @@ class Controller(Loggable):
         hook_queue = Queue()
 
         # ask the hook to find the functions it should run
-        part_funcs = hook.find_hooked_functions(self._parts.values())
+        part_funcs = hook.find_hooked_functions(self.parts.values())
         hook_runners = {}
 
         # now start them off

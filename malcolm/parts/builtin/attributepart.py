@@ -20,7 +20,7 @@ class AttributePart(Part):
         meta = self.create_meta(self.params.description, tags)
         # The attribute we will be publishing
         initial_value = self.get_initial_value()
-        self.attr = meta.make_attribute(initial_value)
+        self.attr = meta.create_attribute(initial_value)
         writeable_func = self.get_writeable_func()
         yield self.params.name, self.attr, writeable_func
 

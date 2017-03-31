@@ -33,6 +33,7 @@ class When(object):
 
 class Context(Loggable):
     STOP = object()
+    runner = None
 
     def __init__(self, name, process):
         self.set_logger_name(name)
@@ -45,8 +46,12 @@ class Context(Loggable):
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
 
-    def block_view(self, mri):
+    def get_controller(self, mri):
         controller = self._process.get_controller(mri)
+        return controller
+
+    def block_view(self, mri):
+        controller = self.get_controller(mri)
         block = controller.make_view(weakref.proxy(self))
         return block
 
@@ -59,7 +64,7 @@ class Context(Loggable):
         future = Future(weakref.proxy(self))
         self._futures[request.id] = future
         self._requests[future] = request
-        controller = self._process.get_controller(request.path[0])
+        controller = self.get_controller(request.path[0])
         controller.handle_request(request)
         return future
 
@@ -154,8 +159,8 @@ class Context(Loggable):
             future (Future): The future of the original subscription
         """
         subscribe = self._requests[future]
-        request = Unsubscribe(subscribe.id)
-        controller = self._process.get_controller(subscribe.path[0])
+        request = Unsubscribe(subscribe.id, self._q.put)
+        controller = self.get_controller(subscribe.path[0])
         controller.handle_request(request)
 
     def unsubscribe_all(self):
@@ -182,7 +187,9 @@ class Context(Loggable):
                 forever if None
         """
         future = self.when_matches_async(path, good_value, bad_values)
+        self.log_debug("Before")
         self.wait_all_futures(future, timeout)
+        self.log_debug("After")
 
     def when_matches_async(self, path, good_value, bad_values=None):
         """Wait for an attribute to become a given value
@@ -275,7 +282,7 @@ class Context(Loggable):
             result = response.value
             # Deserialize if this was a method
             if isinstance(request, Post) and result is not None:
-                controller = self._process.get_controller(request.path[0])
+                controller = self.get_controller(request.path[0])
                 result = controller.validate_result(request.path[1], result)
             future.set_result(result)
             if future in futures:
@@ -287,6 +294,3 @@ class Context(Loggable):
             if future in futures:
                 futures.remove(future)
                 raise future.exception()
-        else:
-            raise UnexpectedError("Unexpected response %s", response)
-

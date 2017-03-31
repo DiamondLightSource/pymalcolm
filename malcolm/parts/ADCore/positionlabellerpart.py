@@ -1,7 +1,7 @@
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
 from malcolm.parts.builtin.childpart import StatefulChildPart
 from malcolm.vmetas.builtin import PointGeneratorMeta

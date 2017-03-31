@@ -1,6 +1,6 @@
 import re
 
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.hdfwriterpart import NDAttributeDatasetInfo
 from malcolm.parts.builtin.childpart import StatefulChildPart
 

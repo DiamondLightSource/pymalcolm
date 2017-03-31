@@ -18,6 +18,6 @@ class PandABoxGroupPart(Part):
             label=self.attr_name.title())
 
     def create_attributes(self):
-        attr = self.meta.make_attribute("expanded")
+        attr = self.meta.create_attribute("expanded")
         yield self.attr_name, attr, attr.set_value
 

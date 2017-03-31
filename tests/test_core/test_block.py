@@ -18,7 +18,7 @@ from malcolm.vmetas.builtin import StringMeta
 class TestBlock(unittest.TestCase):
     def setUp(self):
         self.data = BlockModel()
-        self.data.set_endpoint_data("attr", StringMeta().make_attribute())
+        self.data.set_endpoint_data("attr", StringMeta().create_attribute())
         self.data.set_endpoint_data("method", MethodModel())
         self.data.set_notifier_path(Mock(), ["block"])
         self.controller = Mock()

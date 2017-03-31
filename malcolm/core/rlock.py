@@ -7,13 +7,18 @@ from .errors import WrongThreadError
 
 class RLock(object):
     """A recursive lock object that works in threads and cothreads"""
-    def __init__(self):
-        self.cothread = maybe_import_cothread()
-        if self.cothread is None or \
-                self.cothread.scheduler_thread_id != thread.get_ident():
-            self._lock = threading.RLock()
+    def __init__(self, use_cothread=True):
+        if use_cothread:
+            self.cothread = maybe_import_cothread()
         else:
-            self._lock = self.cothread.RLock()
+            self.cothread = None
+        if self.cothread:
+            if self.cothread.scheduler_thread_id == thread.get_ident():
+                self._lock = self.cothread.RLock()
+            else:
+                self._lock = self.cothread.CallbackResult(self.cothread.RLock)
+        else:
+            self._lock = threading.RLock()
 
     def _check_cothread_lock(self):
         if self.cothread and isinstance(self._lock, self.cothread.RLock):

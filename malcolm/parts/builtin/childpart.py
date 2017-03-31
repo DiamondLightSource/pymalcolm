@@ -3,15 +3,16 @@ from malcolm.controllers.builtin import ManagerController
 from malcolm.infos.builtin.exportableinfo import ExportableInfo
 from malcolm.infos.builtin.portinfo import PortInfo
 from malcolm.infos.builtin.layoutinfo import LayoutInfo
-from malcolm.core import Part, REQUIRED, method_also_takes, serialize_object, \
+from malcolm.core import Part, REQUIRED, method_takes, serialize_object, \
     Attribute
 from malcolm.vmetas.builtin import StringMeta
 
 
-@method_also_takes(
+@method_takes(
+    "name", StringMeta("Name of the Part within the controller"), REQUIRED,
     "mri", StringMeta("Malcolm resource id of child object"), REQUIRED)
 class ChildPart(Part):
-    def __init__(self, process, name, params):
+    def __init__(self, params):
         # Layout options
         self.x = 0
         self.y = 0
@@ -20,7 +21,7 @@ class ChildPart(Part):
         self.part_visible = {}
         # Store params
         self.params = params
-        super(ChildPart, self).__init__(process, name)
+        super(ChildPart, self).__init__(params.name)
         
     @ManagerController.ReportPorts
     def report_ports(self, context):
@@ -84,7 +85,7 @@ class ChildPart(Part):
     def load(self, context, structure):
         child = context.block_view(self.params.mri)
         part_structure = structure.get(self.name, {})
-        futures = []
+        params = {}
         for k, v in part_structure.items():
             try:
                 attr = getattr(child, k)
@@ -93,8 +94,8 @@ class ChildPart(Part):
             else:
                 if "config" not in attr.meta.tags:
                     raise ValueError("Attr %s doesn't have config tag" % k)
-                futures += context.put_async(attr, v)
-        context.wait_all(futures)
+                params[k] = v
+        child.put_attribute_values(params)
 
     @ManagerController.Save
     def save(self, context):
@@ -110,14 +111,9 @@ class ChildPart(Part):
     def report_exportable(self, context):
         child = context.block_view(self.params.mri)
         ret = []
-        for k in child:
-            if k != "meta":
-                field = getattr(child, k)
-                if isinstance(field, Attribute):
-                    setter = field.put_value
-                else:
-                    setter = field.post
-                ret.append(ExportableInfo(name=k, value=field, setter=setter))
+        for name in child:
+            if name != "meta":
+                ret.append(ExportableInfo(name=name, mri=self.params.mri))
         return ret
 
     def sever_inports(self, child, outport_lookup=None):

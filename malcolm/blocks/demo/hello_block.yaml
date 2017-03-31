@@ -4,7 +4,7 @@
     description: Malcolm resource id of the Block
 
 # The Controller will create the Block for us
-- controllers.DefaultController:
+- controllers.builtin.BaseController:
     mri: $(mri)
 
 # The Part will add a Method to the Block

@@ -5,17 +5,12 @@ from malcolm.vmetas.builtin import StringMeta
 @method_takes(
     "mri", StringMeta("Malcolm resource id of created block"), REQUIRED)
 class BaseController(Controller):
-    # Params we were instantiated with
-    params = None
-
     Init = Hook()
     """Called when this controller is told to start by the process
 
     Args:
         context (Context): The context that should be used to perform operations
             on child blocks
-        hup (callable): A function to call with no arguments when child state
-            has changed
     """
 
     Halt = Hook()
@@ -32,10 +27,7 @@ class BaseController(Controller):
 
     @Process.Init
     def init(self):
-        self.run_hook(self.Init, self.create_part_contexts(), self.hup)
-
-    def hup(self):
-        pass
+        self.run_hook(self.Init, self.create_part_contexts())
 
     @Process.Halt
     def halt(self):

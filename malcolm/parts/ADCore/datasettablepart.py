@@ -1,5 +1,5 @@
 from malcolm.compat import OrderedDict
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import Part, Table, Info
 from malcolm.vmetas.builtin import StringArrayMeta, ChoiceArrayMeta, TableMeta, \
     NumberArrayMeta
@@ -36,7 +36,7 @@ class DatasetTablePart(Part):
     datasets = None
 
     def create_attributes(self):
-        self.datasets = dataset_table_meta.make_attribute()
+        self.datasets = dataset_table_meta.create_attribute()
         yield "datasets", self.datasets, None
 
     @RunnableController.PostConfigure

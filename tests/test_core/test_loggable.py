@@ -28,8 +28,8 @@ class TestLoggable(unittest.TestCase):
         l.set_logger_name("bar")
         for n in "debug info warning error exception".split():
             m = getattr(l, "log_%s" % n)
-            m("hello", n)
-            getattr(l._logger, n).assert_called_once_with("hello", n)
+            m("hello_block", n)
+            getattr(l._logger, n).assert_called_once_with("hello_block", n)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

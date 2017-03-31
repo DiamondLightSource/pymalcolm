@@ -1,1 +1,1 @@
-from childpart import StatefulChildPart
+from .childpart import ChildPart

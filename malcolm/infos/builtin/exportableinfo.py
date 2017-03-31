@@ -6,11 +6,8 @@ class ExportableInfo(Info):
 
     Args:
         name (str): Field name, e.g. "completedSteps"
-        value (object): Object, e.g. Attribute() or Method()
-        setter (function): The setter for an Attribute, or post function for
-            a method
+        mri (str): Block MRI, e.g. "BL18I-ML-STEP-06"
     """
-    def __init__(self, name, value, setter):
+    def __init__(self, name, mri):
         self.name = name
-        self.value = value
-        self.setter = setter
+        self.mri = mri

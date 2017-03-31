@@ -22,7 +22,7 @@ class PandABoxFieldPart(Part):
     def create_attributes(self):
         label, attr_name = make_label_attr_name(self.field_name)
         self.meta.set_label(label)
-        self.attr = self.meta.make_attribute(self.initial_value)
+        self.attr = self.meta.create_attribute(self.initial_value)
         if self.writeable:
             writeable_func = self.set_field
         else:

@@ -7,10 +7,13 @@ from .errors import TimeoutError
 class Queue(object):
     """Threadsafe and cothreadsafe queue with gets in calling thread"""
 
-    def __init__(self, use_cothread=True):
-        self.cothread = maybe_import_cothread() if use_cothread else None
+    def __init__(self, from_thread=None):
+        if from_thread is None:
+            from_thread = thread.get_ident()
+        self.cothread = maybe_import_cothread()
         if self.cothread:
-            if self.cothread.scheduler_thread_id == thread.get_ident():
+            # Cothread available, check if we are in its thread
+            if self.cothread.scheduler_thread_id == from_thread:
                 # In cothread's thread
                 self._event_queue = self.cothread.EventQueue()
             else:

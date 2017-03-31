@@ -5,7 +5,7 @@ from malcolm.vmetas.builtin import ChoiceMeta
 from .basecontroller import BaseController
 
 
-class States(Loggable):
+class StatefulStates(Loggable):
 
     RESETTING = "Resetting"
     DISABLED = "Disabled"
@@ -55,7 +55,7 @@ class States(Loggable):
 
         Args:
             initial_state(str): Initial state
-            allowed_states(list(str) / str): States that initial_state can
+            allowed_states(list(str) / str): ss that initial_state can
                 transition to
         """
         if not isinstance(allowed_states, list):
@@ -67,9 +67,12 @@ class States(Loggable):
                 self.possible_states.append(state)
 
 
+ss = StatefulStates
+
+
 class StatefulController(BaseController):
     # The stateSet that this controller implements
-    stateSet = States()
+    stateSet = ss()
     # {state (str): {Meta/MethodMeta/Attribute: writeable (bool)}
     _children_writeable = None
     # Attributes
@@ -94,7 +97,7 @@ class StatefulController(BaseController):
     def __init__(self, process, parts, params):
         self._children_writeable = {}
         super(StatefulController, self).__init__(process, parts, params)
-        self.transition(States.DISABLED)
+        self.transition(ss.DISABLED)
 
     def create_attributes(self):
         """MethodModel that should provide Attribute instances for Block
@@ -107,36 +110,39 @@ class StatefulController(BaseController):
         # Add the state attribute
         self.state = ChoiceMeta(
             "State of Block", self.stateSet.possible_states, label="State"
-        ).make_attribute(States.DISABLING)
+        ).create_attribute(ss.DISABLING)
         yield "state", self.state, None
 
     @Process.Init
     def init(self):
-        self.try_stateful_function(States.RESETTING, States.READY, self.do_init)
+        self.try_stateful_function(ss.RESETTING, ss.READY, self.do_init)
 
     def do_init(self):
         super(StatefulController, self).init()
 
+    @Process.Halt
+    def halt(self):
+        super(StatefulController, self).halt()
+        self.disable()
+
     @method_takes()
     def disable(self):
-        self.try_stateful_function(
-            States.DISABLING, States.DISABLED, self.do_disable)
+        self.try_stateful_function(ss.DISABLING, ss.DISABLED, self.do_disable)
 
     def do_disable(self):
         self.run_hook(self.Disable, self.create_part_contexts())
 
-    @method_writeable_in(States.DISABLED, States.FAULT)
+    @method_writeable_in(ss.DISABLED, ss.FAULT)
     def reset(self):
-        self.try_stateful_function(
-            States.RESETTING, States.READY, self.do_reset)
+        self.try_stateful_function(ss.RESETTING, ss.READY, self.do_reset)
 
     def do_reset(self):
         self.run_hook(self.Reset, self.create_part_contexts())
 
     def go_to_error_state(self, exception):
-        if self.state.value != States.FAULT:
+        if self.state.value != ss.FAULT:
             self.log_exception("Fault occurred while running stateful function")
-            self.transition(States.FAULT, str(exception))
+            self.transition(ss.FAULT, str(exception))
 
     def transition(self, state, message=""):
         """Change to a new state if the transition is allowed
@@ -149,9 +155,9 @@ class StatefulController(BaseController):
             if self.stateSet.transition_allowed(
                     initial_state=self.state.value, target_state=state):
                 self.log_debug("Transitioning to %s", state)
-                if state == States.DISABLED:
+                if state == ss.DISABLED:
                     alarm = Alarm.invalid("Disabled")
-                elif state == States.FAULT:
+                elif state == ss.FAULT:
                     alarm = Alarm.major(message)
                 else:
                     alarm = Alarm()
@@ -199,7 +205,7 @@ class StatefulController(BaseController):
             # writeable, so calculate it from the possible states
             states = [
                 state for state in self.stateSet.possible_states
-                if state not in (States.DISABLING, States.DISABLED)]
+                if state not in (ss.DISABLING, ss.DISABLED)]
         else:
             # Field is never writeable, so will never need to change state
             return

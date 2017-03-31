@@ -1,3 +1,5 @@
+import numpy as np
+
 from malcolm.compat import str_
 from .serializable import Serializable, deserialize_object
 
@@ -26,12 +28,12 @@ class Alarm(Serializable):
     def __init__(self, severity=AlarmSeverity.NO_ALARM,
                  status=AlarmStatus.NO_STATUS, message=""):
         # Set initial values
-        assert severity in range(len(AlarmSeverity.names)), \
+        assert int(severity) in range(len(AlarmSeverity.names)), \
             "Expected AlarmSeverity.*_ALARM, got %r" % severity
-        self.severity = severity
-        assert status in range(len(AlarmStatus.names)), \
+        self.severity = np.int32(severity)
+        assert int(status) in range(len(AlarmStatus.names)), \
             "Expected AlarmStatus.*_STATUS, got %r" % status
-        self.status = status
+        self.status = np.int32(status)
         self.message = deserialize_object(message, str_)
 
     @classmethod

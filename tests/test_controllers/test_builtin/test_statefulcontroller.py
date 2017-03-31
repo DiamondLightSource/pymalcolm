@@ -5,13 +5,13 @@ from mock import Mock
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, Process
 from malcolm.controllers.builtin.statefulcontroller import StatefulController, \
-    States
+    StatefulStates
 
 
 class TestStates(unittest.TestCase):
 
     def setUp(self):
-        self.o = States()
+        self.o = StatefulStates()
 
     def test_init(self):
         expected = OrderedDict()
@@ -47,7 +47,7 @@ class TestStatefulController(unittest.TestCase):
         self.process = Process("proc")
         self.params = Mock()
         self.params.mri = "MyMRI"
-        self.part = MyPart(self.process, "testpart")
+        self.part = MyPart("testpart")
         self.o = StatefulController(self.process, [self.part], self.params)
         self.process.add_controller(self.params.mri, self.o)
 

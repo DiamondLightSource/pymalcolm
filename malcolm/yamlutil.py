@@ -1,9 +1,10 @@
 import logging
+import os
 
 from ruamel import yaml
 
-from malcolm.compat import str_, OrderedDict
-from malcolm.core import method_takes
+from malcolm.compat import str_
+from malcolm.core import method_takes, call_with_params
 
 
 def _create_takes_arguments(sections):
@@ -20,27 +21,32 @@ def _create_blocks_and_parts(process, sections, params):
     import malcolm.blocks as blocks_base
 
     parts = []
-    blocks = []
 
     # Any child blocks
     for section in sections["blocks"]:
-        blocks += section.instantiate(params, blocks_base, process)
+        section.instantiate(params, blocks_base, process)
 
     # Do the includes first
     for section in sections["includes"]:
-        include_blocks, include_parts = section.instantiate(
-            params, includes_base, process)
-        blocks += include_blocks
-        parts += include_parts
+        parts += section.instantiate(params, includes_base, process)
 
     # Add any parts in
     for section in sections["parts"]:
-        parts.append(section.instantiate(params, parts_base, process))
+        parts.append(section.instantiate(params, parts_base))
 
-    return blocks, parts
+    return parts
 
 
-def make_include_creator(text):
+def _get_yaml_text(init_path, filename):
+    yaml_path = os.path.join(os.path.dirname(init_path), filename)
+    logging.debug("Parsing %s", yaml_path)
+    with open(yaml_path) as f:
+        text = f.read()
+    return text
+
+
+def make_include_creator(init_path, filename):
+    text = _get_yaml_text(init_path, filename)
     sections = Section.from_yaml(text)
 
     # Check we don't have any controllers
@@ -55,7 +61,7 @@ def make_include_creator(text):
     return include_creator
 
 
-def make_block_creator(text):
+def make_block_creator(init_path, filename):
     """Make a collection function that will create a list of blocks
 
     Args:
@@ -72,6 +78,7 @@ def make_block_creator(text):
     """
     import malcolm.controllers as controllers_base
 
+    text = _get_yaml_text(init_path, filename)
     sections = Section.from_yaml(text)
 
     # Check we have only one controller
@@ -82,14 +89,14 @@ def make_block_creator(text):
     # Add any parameters to the takes arguments
     @method_takes(*_create_takes_arguments(sections))
     def block_creator(process, params):
-        blocks, parts = _create_blocks_and_parts(process, sections, params)
+        parts = _create_blocks_and_parts(process, sections, params)
 
         # Make the controller
         controller = controller_section.instantiate(
             params, controllers_base, process, parts)
-        blocks.append(controller.block)
+        process.add_controller(controller.mri, controller)
 
-        return blocks
+        return controller
 
     return block_creator
 
@@ -127,8 +134,7 @@ class Section(object):
                 logging.error("Can't find %s of %s", n, self.name)
                 raise
         logging.debug("Instantiating %s with %s", base, param_dict)
-        args += base.MethodModel.prepare_call_args(**param_dict)
-        return base(*args)
+        return call_with_params(base, *args, **param_dict)
 
     @classmethod
     def from_yaml(cls, text):

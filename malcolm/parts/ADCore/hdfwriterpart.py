@@ -2,7 +2,7 @@ import os
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED, Info
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo, \
     dataset_types
@@ -173,7 +173,7 @@ class HDFWriterPart(StatefulChildPart):
     @RunnableController.Seek
     def seek(self, task, completed_steps, steps_to_do, part_info):
         self.done_when_reaches = completed_steps + steps_to_do
-        # Just reset the array counter
+        # Just reset the array counter_block
         task.put(self.child["arrayCounter"], 0)
         # Start a future waiting for the first array
         self.array_future = task.when_matches_async(

@@ -1,4 +1,4 @@
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.parts.builtin.childpart import StatefulChildPart
 from malcolm.parts.pmac.pmactrajectorypart import MotorInfo, cs_axis_names
 

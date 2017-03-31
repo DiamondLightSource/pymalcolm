@@ -90,10 +90,11 @@ class Notifier(Loggable):
         """
         responses = []
         with self._lock:
-            ret = setter(path[-1], data)
             if data is None:
+                ret = setter(path[-1])
                 change = [path[1:]]
             else:
+                ret = setter(path[-1], data)
                 change = [path[1:], data]
             # If we are squashing changes, defer notification
             if self._squashed_count:

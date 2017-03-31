@@ -1,6 +1,6 @@
 import os
 
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
 from malcolm.parts.scanpointgenerator.runnablechildpart import RunnableChildPart
@@ -14,10 +14,11 @@ class DatasetRunnableChildPart(RunnableChildPart):
         method_metas = [self.child["configure"],
                         DatasetRunnableChildPart.configure.MethodMeta]
         without = ["filePath"]
-        self.method_metas["validate"].recreate_from_others(
+        self.method_models["validate"].recreate_from_others(
             method_metas, without)
-        self.method_metas["configure"].recreate_from_others(
+        self.method_models["configure"].recreate_from_others(
             method_metas, without)
+        self.controller.update_configure_args()
 
     def _params_with_file_path(self, params):
         file_path = os.path.join(params.fileDir, self.name + ".h5")

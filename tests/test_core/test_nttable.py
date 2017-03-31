@@ -46,7 +46,7 @@ class TestSerialization(unittest.TestCase):
         value = Table(meta)
         value.foo = ["foo1", "foo2"]
         value.bar = ["bar1", "bar2"]
-        o = meta.make_attribute(value)
+        o = meta.create_attribute(value)
         o.set_timeStamp(self.serialized["timeStamp"])
         self.assertEqual(o.to_dict(), self.serialized)
 

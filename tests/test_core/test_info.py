@@ -4,43 +4,43 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock
-from collections import OrderedDict
 
+from malcolm.compat import OrderedDict
 from malcolm.core.info import Info
-from malcolm.core import Part, method_takes
 
 
-class MyPart(Part, Info):
-    @method_takes()
-    def foo(self):
-        pass
+class MyInfo(Info):
+    def __init__(self, val):
+        self.val = val
 
 
 class TestInit(unittest.TestCase):
 
     def setUp(self):
-        process = Mock()
-        self.d1 = {'a': 'xyzzy', 'b': None}
-        self.d2 = {'a': 'xyzzy',
-                   'b': [ MyPart(process, 'name1') ],
-                   'c': [ MyPart(process, 'name2') ],
-                   'd': 'x'}
-        pass
+        self.d1 = dict(parta=[], partb=None)
+        self.d2 = OrderedDict()
+        self.d2["parta"] = []
+        self.d2["partb"] = [MyInfo("v1")]
+        self.d2["partc"] = [MyInfo("v2"), MyInfo("v3")]
+        self.d2["partd"] = None
 
     def test_filter_parts(self):
-        filtered = MyPart.filter_parts(self.d1)
-        self.assertEqual(len(filtered), 0)
-        filtered = MyPart.filter_parts(self.d2)
-        self.assertEqual(len(filtered), 2)
-
-        self.assertEqual(filtered['c'][0].name, 'name2')
+        filtered = MyInfo.filter_parts(self.d1)
+        assert len(filtered) == 0
+        filtered = MyInfo.filter_parts(self.d2)
+        assert len(filtered) == 2
+        assert len(filtered["partb"]) == 1
+        assert filtered["partb"][0].val == "v1"
+        assert len(filtered["partc"]) == 2
+        assert filtered["partc"][0].val == "v2"
+        assert filtered["partc"][1].val == "v3"
 
     def test_filer_values(self):
-        filtered = MyPart.filter_values(self.d1)
-        self.assertEqual(len(filtered), 0)
-        filtered = MyPart.filter_values(self.d2)
-        self.assertEqual(len(filtered), 2)
-
-        self.assertEqual(filtered[0].name, 'name2')
+        filtered = MyInfo.filter_values(self.d1)
+        assert len(filtered) == 0
+        filtered = MyInfo.filter_values(self.d2)
+        assert len(filtered) == 3
+        assert filtered[0].val == "v1"
+        assert filtered[1].val == "v2"
+        assert filtered[2].val == "v3"
 

@@ -2,7 +2,7 @@ import os
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import REQUIRED, method_takes
 from malcolm.parts.ADCore.hdfwriterpart import CalculatedNDAttributeDatasetInfo
 from malcolm.parts.builtin.childpart import StatefulChildPart

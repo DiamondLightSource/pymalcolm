@@ -2,14 +2,15 @@ import os
 
 from malcolm.compat import OrderedDict
 from malcolm.core import method_writeable_in, method_takes, Hook, Table, \
-    json_encode, json_decode, method_also_takes, REQUIRED
+    json_encode, json_decode, method_also_takes, REQUIRED, Unsubscribe, \
+    Subscribe, deserialize_object, Delta, Context, AttributeModel
 from malcolm.infos.builtin import ExportableInfo, LayoutInfo, PortInfo
 from malcolm.vmetas.builtin import StringArrayMeta, NumberArrayMeta, \
     BooleanArrayMeta, TableMeta, StringMeta, ChoiceMeta, ChoiceArrayMeta
-from .statefulcontroller import StatefulController, States
+from .statefulcontroller import StatefulController, StatefulStates
 
 
-class ManagerStates(States):
+class ManagerStates(StatefulStates):
     EDITING = "Editing"
     EDITABLE = "Editable"
     SAVING = "Saving"
@@ -28,13 +29,16 @@ class ManagerStates(States):
         self.set_allowed(self.LOADING, self.READY)
 
 
+ss = ManagerStates
+
+
 @method_also_takes(
     "configDir", StringMeta("Directory to write save/load config to"), REQUIRED,
     "defaultConfig", StringMeta("Default config to load"), "",
 )
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
-    stateSet = ManagerStates()
+    stateSet = ss()
 
     ReportExportable = Hook()
     """Called to work out what field names the export table can contain and
@@ -103,6 +107,12 @@ class ManagerController(StatefulController):
     # {part_name: part_structure} of currently loaded settings
     load_structure = None
 
+    # ((name, AttributeModel/MethodModel, setter))
+    current_part_fields = ()
+
+    # (Subscribe)
+    subscriptions = ()
+
     def create_attributes(self):
         for data in super(ManagerController, self).create_attributes():
             yield data
@@ -117,14 +127,14 @@ class ManagerController(StatefulController):
         elements["visible"] = BooleanArrayMeta("Whether child block is visible")
         layout_table_meta = TableMeta(
             "Layout of child blocks", elements=elements)
-        layout_table_meta.set_writeable_in(ManagerStates.EDITABLE)
-        self.layout = layout_table_meta.make_attribute()
+        layout_table_meta.set_writeable_in(ss.EDITABLE)
+        self.layout = layout_table_meta.create_attribute()
         yield "layout", self.layout, self.set_layout
         # Make a choice attribute for loading an existing layout
         self.layout_name = ChoiceMeta(
-            "Saved layout name to load").make_attribute("unsaved")
-        self.layout_name.meta.set_writeable_in(ManagerStates.READY)
-        yield "layoutName", self.layout_name, self.load_layout
+            "Saved layout name to load").create_attribute()
+        self.layout_name.meta.set_writeable_in(ss.READY)
+        yield "layoutName", self.layout_name, self.load
         # Make a table for the exported fields
         elements = OrderedDict()
         elements["name"] = ChoiceArrayMeta("Name of exported block.field")
@@ -132,8 +142,8 @@ class ManagerController(StatefulController):
             "Name of the field within current block")
         exports_table_meta = TableMeta(
             "Exported fields of child blocks", elements=elements)
-        exports_table_meta.set_writeable_in(ManagerStates.EDITABLE)
-        self.exports = exports_table_meta.make_attribute()
+        exports_table_meta.set_writeable_in(ss.EDITABLE)
+        self.exports = exports_table_meta.create_attribute()
         yield "exports", self.exports, self.exports.set_value
 
     def set_layout(self, value):
@@ -156,39 +166,90 @@ class ManagerController(StatefulController):
         self.layout.set_value(layout_table)
 
     def create_part_fields(self):
+        # Create the fields, but don't add them to the block
+        # These will be added on load()
+        list(super(ManagerController, self).create_part_fields())
+        return iter(())
+
+    def get_current_part_fields(self):
+        # Clear out the current subscriptions
+        for subscription in self.subscriptions:
+            controller = self.process.get_controller(subscription.path[0])
+            unsubscribe = Unsubscribe(subscription.id, subscription.callback)
+            controller.handle_request(unsubscribe)
+        self.subscriptions = ()
+
         # Find the invisible parts
         invisible = []
         for name, visible in zip(
                 self.layout.value.name, self.layout.value.visible):
             if not visible:
                 invisible.append(name)
+
+        # Add fields from parts that aren't invisible
+        for part_name in self.parts:
+            if part_name not in invisible:
+                for data in self.part_fields[part_name]:
+                    yield data
+
         # Find the exportable fields for each part
         part_info = self.run_hook(self.ReportExportable,
                                   self.create_part_contexts(only_visible=False))
         # {part_name: [ExportableInfo()]
         exportable = ExportableInfo.filter_parts(part_info)
-        # {part_name: [(field_name, export_name)]}
-        exported = {}
+
+        # Add exported fields from visible parts
+        subscriptions = []
         for name, export_name in zip(
                 self.exports.value.name, self.exports.value.exportName):
             part_name, field_name = name.rsplit(".", 1)
-            if export_name == "":
-                export_name = field_name
-            exported.setdefault(part_name, []).append((field_name, export_name))
-        # Add fields from parts that aren't invisible
-        for part_name, part in self.parts.items():
+            # If part is invisible, don't report it
             if part_name in invisible:
                 continue
-            for data in part.create_attributes():
-                yield data
-            for data in part.create_methods():
-                yield data
-            # Add fields in the export table
-            for field_name, export_name in exported.get(part_name, []):
-                for exportable_info in exportable.get(part_name, []):
-                    if field_name == exportable_info.name:
-                        yield export_name, exportable_info.value, \
-                              exportable_info.setter
+            if export_name == "":
+                export_name = field_name
+            exportable_infos = [x for x in exportable.get(part_name, [])
+                                if field_name == x.name]
+            assert len(exportable_infos), \
+                "No (or multiple) ExportableInfo for %s" % name
+            export, setter = self._make_export_field(
+                exportable_infos[0], subscriptions)
+            yield export_name, export, setter
+        self.subscriptions = tuple(subscriptions)
+
+    def _make_export_field(self, exportable_info, subscriptions):
+        controller = self.process.get_controller(exportable_info.mri)
+        path = [exportable_info.mri, exportable_info.name]
+        ret = {}
+
+        def update_field(response):
+            response = deserialize_object(response, Delta)
+            if not ret:
+                # First call, create the initial object
+                ret["export"] = deserialize_object(response.changes[0][1])
+                context = Context("ExportContext", self.process)
+                if isinstance(ret["export"], AttributeModel):
+                    def setter(value):
+                        context.put(path, value)
+                else:
+                    def setter(*args):
+                        context.post(path, *args)
+                ret["setter"] = setter
+            else:
+                # Subsequent calls, update it
+                with self.changes_squashed:
+                    for cp, value in response.changes:
+                        ob = ret["export"]
+                        for p in cp[:-1]:
+                            ob = ob[p]
+                        getattr(ob, "set_%s" % cp[-1])(value)
+
+        subscription = Subscribe(path=path, delta=True, callback=update_field)
+        subscriptions.append(subscription)
+        # When we have waited for the subscription, the first update_field
+        # will have been called
+        controller.handle_request(subscription).wait()
+        return ret["export"], ret["setter"]
 
     def create_part_contexts(self, only_visible=True):
         part_contexts = super(ManagerController, self).create_part_contexts()
@@ -201,49 +262,52 @@ class ManagerController(StatefulController):
 
     def do_init(self):
         super(ManagerController, self).do_init()
-        # This will trigger all parts to report their layout, making sure the
-        # layout table has a valid value
-        self.set_layout(Table(self.layout.meta))
         # List the configDir and add to choices
         self._set_layout_names()
-        # If given a default config, load this, otherwise use the current
-        # part settings
+        # This will trigger all parts to report their layout, making sure
+        # the layout table has a valid value
+        self.set_layout(Table(self.layout.meta))
+        # Save the current part structure in case the default load fails
+        self.load_structure = self._save_to_structure()
+        # And setup the block to have the right fields
+        self._set_block_children()
+        # If given a default config, load this
         if self.params.defaultConfig:
-            self.load_layout(self.params.defaultConfig)
-        else:
-            self.load_structure = self._save_to_structure()
+            self.do_load(self.params.defaultConfig)
 
-    @method_writeable_in(ManagerStates.READY)
+    @method_writeable_in(ss.READY)
     def edit(self):
         self.try_stateful_function(
-            ManagerStates.EDITING, ManagerStates.EDITABLE, self.do_edit)
+            ss.EDITING, ss.EDITABLE, self.do_edit)
 
     def do_edit(self):
-        for name, _, _ in self.part_fields:
+        for name, _, _ in self.current_part_fields:
             self._block.remove_endpoint(name)
         # List the fields of every part
         self._set_exports_fields()
 
     def go_to_error_state(self, exception):
-        if self.state.value == ManagerStates.EDITABLE:
+        if self.state.value == ss.EDITABLE:
             # If we got a save or revert exception, don't go to fault
             self.log_exception("Fault occurred while trying to save/revert")
         else:
             super(ManagerController, self).go_to_error_state(exception)
 
-    @method_writeable_in(ManagerStates.EDITABLE)
+    @method_writeable_in(ss.EDITABLE)
     @method_takes(
         "layoutName", StringMeta(
             "Name of layout to save to, if different from current layoutName"),
         "")
     def save(self, params):
         self.try_stateful_function(
-            ManagerStates.SAVING, ManagerStates.READY, self.do_save,
+            ss.SAVING, ss.READY, self.do_save,
             params.layoutName)
 
     def do_save(self, layout_name=""):
         if not layout_name:
             layout_name = self.layout_name.value
+        if not layout_name:
+            layout_name = "default"
         structure = self._save_to_structure()
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(layout_name)
@@ -252,6 +316,11 @@ class ManagerController(StatefulController):
         self.layout_name.set_value(layout_name)
         self.load_structure = structure
         self._set_block_children()
+
+    def _set_block_children(self):
+        self.current_part_fields = tuple(self.get_current_part_fields())
+        for name, child, writeable_func in self.current_part_fields:
+            self.add_block_field(name, child, writeable_func)
 
     def _set_layout_names(self, extra_name=None):
         names = []
@@ -271,15 +340,15 @@ class ManagerController(StatefulController):
         names = []
         # {part_name: [ExportableInfo()]
         exportable = ExportableInfo.filter_parts(part_info)
-        for part_name, part_exportables in exportable.items():
+        for part_name, part_exportables in sorted(exportable.items()):
             for part_exportable in part_exportables:
                 names.append("%s.%s" % (part_name, part_exportable.name))
-        self.exports.meta.elements.name.set_choices(sorted(names))
+        self.exports.meta.elements["name"].set_choices(names)
 
-    @method_writeable_in(ManagerStates.EDITABLE)
+    @method_writeable_in(ss.EDITABLE)
     def revert(self):
         self.try_stateful_function(
-            ManagerStates.REVERTING, ManagerStates.READY, self.do_revert)
+            ss.REVERTING, ss.READY, self.do_revert)
 
     def do_revert(self):
         self._load_from_structure(self.load_structure)
@@ -306,12 +375,11 @@ class ManagerController(StatefulController):
             pass
         return dir_name
 
-    def load_layout(self, value):
+    def load(self, value):
         self.try_stateful_function(
-            ManagerStates.LOADING, ManagerStates.READY, self.do_load_layout,
-            value)
+            ss.LOADING, ss.READY, self.do_load, value)
 
-    def do_load_layout(self, value):
+    def do_load(self, value):
         filename = self._validated_config_filename(value)
         text = open(filename, "r").read()
         structure = json_decode(text)
@@ -336,8 +404,9 @@ class ManagerController(StatefulController):
                 zip(self.exports.value.name, self.exports.value.exportName)):
             structure["exports"][name] = export_name
         # Add any structure that a child part wants to save
-        for part_name, part_structure in sorted(self.run_hook(
-                self.Save, self.create_part_contexts(only_visible=False)).items()):
+        part_structures = self.run_hook(
+            self.Save, self.create_part_contexts(only_visible=False))
+        for part_name, part_structure in sorted(part_structures.items()):
             structure[part_name] = part_structure
         return structure
 

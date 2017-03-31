@@ -54,7 +54,7 @@ class MyPart(Part):
 
     def create_attributes(self):
         meta = StringMeta(description="MyString")
-        self.myAttribute = meta.make_attribute(initial_value='hello')
+        self.myAttribute = meta.create_attribute(initial_value='hello_block')
         yield "myAttribute", self.myAttribute, self.myAttribute.set_value
 
 
@@ -63,10 +63,9 @@ class TestController(unittest.TestCase):
 
     def setUp(self):
         self.process = Process("proc")
-        self.part = MyPart(self.process, "test_part")
-        self.part2 = MyPart(self.process, "test_part2")
-        self.o = MyController(self.process, "mri",
-                              [self.part, self.part2])
+        self.part = MyPart("test_part")
+        self.part2 = MyPart("test_part2")
+        self.o = MyController(self.process, "mri", [self.part, self.part2])
         self.context = Context("Context", self.process)
         self.process.start()
 
@@ -84,7 +83,7 @@ class TestController(unittest.TestCase):
         result = self.o.run_hook(self.o.TestHook, part_contexts)
         self.assertEquals(result,
                           dict(test_part=dict(foo="bar"),
-                            test_part2=dict(foo="bar")))
+                               test_part2=dict(foo="bar")))
         self.assertIs(self.part.context.anything, context.anything)
         del context
         del part_contexts
@@ -144,7 +143,7 @@ class TestController(unittest.TestCase):
         none_view = self.o._make_view(self.context, None)
 
         block_data = BlockModel()
-        block_data.set_endpoint_data("attr", StringMeta().make_attribute())
+        block_data.set_endpoint_data("attr", StringMeta().create_attribute())
         block_data.set_endpoint_data("method", MethodModel())
         block_data.set_notifier_path(MagicMock(), ["block"])
         block_view = self.o._make_view(self.context, block_data)
@@ -154,9 +153,9 @@ class TestController(unittest.TestCase):
 
         # using __call__
         assert method_view().ret == 'world'
-        assert attribute_view.value == "hello"
-        assert dict_view['a'].value == "hello"
-        assert list_view[0].value == "hello"
+        assert attribute_view.value == "hello_block"
+        assert dict_view['a'].value == "hello_block"
+        assert list_view[0].value == "hello_block"
 
     def test_handle_request(self):
         q = Queue()
@@ -167,10 +166,11 @@ class TestController(unittest.TestCase):
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
         self.assertEqual(response.id, 41)
-        self.assertEqual(response.value["value"], "hello")
+        self.assertEqual(response.value["value"], "hello_block")
 
+        self.part2.myAttribute.meta.writeable = False
         request = Put(id=42, path=["mri", "myAttribute"],
-                      value='hello', callback=q.put)
+                      value='hello_block', callback=q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Error)  # not writeable
@@ -181,7 +181,7 @@ class TestController(unittest.TestCase):
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
         self.assertEqual(response.id, 42)
-        self.assertEqual(response.value, "hello")
+        self.assertEqual(response.value, "hello_block")
 
         request = Post(id=43, path=["mri", "my_method"],
                       callback=q.put)
@@ -207,7 +207,7 @@ class TestController(unittest.TestCase):
         self.assertIsInstance(response, Update)
         self.assertEqual(response.id, 44)
         self.assertEqual(response.value["typeid"], "epics:nt/NTScalar:1.0")
-        self.assertEqual(response.value["value"], "hello")
+        self.assertEqual(response.value["value"], "hello_block")
 
         request = Unsubscribe(id=44, callback=q.put)
         self.o.handle_request(request)

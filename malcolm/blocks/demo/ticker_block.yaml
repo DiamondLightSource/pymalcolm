@@ -7,15 +7,15 @@
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- controllers.scanning.RunnableController:
     mri: $(mri)
     configDir: $(configDir)
 
 # Add the Counter blocks
-- blocks.demo.Counter:
+- blocks.demo.counter_block:
     mri: COUNTERX
 
-- blocks.demo.Counter:
+- blocks.demo.counter_block:
     mri: COUNTERY
 
 # Add Parts to use the Counter blocks within Ticker block

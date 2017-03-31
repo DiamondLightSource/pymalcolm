@@ -40,4 +40,5 @@ class Meta(Model):
 
     def set_writeable_in(self, *states):
         """Set the states that the object is writeable in"""
+        states = tuple(deserialize_object(state, str_) for state in states)
         self.writeable_in = states

@@ -26,6 +26,9 @@ class View(object):
     def __iter__(self):
         return iter(self._endpoints)
 
+    def to_dict(self):
+        return self._data.to_dict()
+
     def __setattr__(self, name, value):
         if self._lock_set_attr:
             raise NameError("Cannot set attribute %s on view" % name)

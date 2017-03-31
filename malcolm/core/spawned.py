@@ -1,42 +1,51 @@
 import logging
+import thread
 
 from malcolm.compat import maybe_import_cothread
+from .queue import Queue
 
 
 class Spawned(object):
-    def __init__(self, function, args, kwargs, use_cothread, thread_pool=None):
+    NO_RESULT = object()
+
+    def __init__(self, function, args, kwargs, from_thread,
+                 use_cothread=True, thread_pool=None):
+        self.cothread = maybe_import_cothread()
+        if use_cothread and not self.cothread:
+            use_cothread = False
+        self._result_queue = Queue(from_thread)
+        self._result = self.NO_RESULT
+        self._function = function
+
         def catching_function():
             try:
-                function(*args, **kwargs)
-            except Exception:
+                result = function(*args, **kwargs)
+            except Exception as result:
                 # Should only get this far in badly written code. What should
                 # actually happen is that function should have the try catch
                 logging.exception(
                     "Exception calling %s(*%s, **%s)", function, args, kwargs)
+            self._result_queue.put(result)
 
         if use_cothread:
-            self.cothread = maybe_import_cothread()
+            if self.cothread.scheduler_thread_id != thread.get_ident():
+                # Spawning cothread from real thread
+                self.cothread.Callback(self.cothread.Spawn, catching_function)
+            else:
+                # Spawning cothread from cothread
+                self.cothread.Spawn(catching_function)
         else:
-            self.cothread = None
-        if self.cothread:
-            self._spawn = self.cothread.Spawn(catching_function)
-            self._spawn_ready = False
-        else:
-            self._apply_result = thread_pool.apply_async(catching_function)
+            # Spawning real thread
+            thread_pool.apply_async(catching_function)
 
     def wait(self, timeout=None):
-        if self.cothread:
-            if not self._spawn_ready:
-                self._spawn.Wait(timeout)
-                self._spawn_ready = True
-        else:
-            self._apply_result.wait(timeout)
+        if not self.ready():
+            self._result = self._result_queue.get(timeout)
 
     def ready(self):
-        if self.cothread:
-            if self._spawn_ready:
-                return True
-            else:
-                return bool(self._spawn)
-        else:
-            return self._apply_result.ready()
+        return self._result != self.NO_RESULT
+
+    def get(self, timeout=None):
+        if not self.ready():
+            self.wait(timeout)
+        return self._result

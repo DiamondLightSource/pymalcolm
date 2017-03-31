@@ -1,25 +1,22 @@
 import pvaccess
 
-from malcolm.controllers.pva.pvautil import PvaUtil
-from malcolm.core import ClientComms, Request
-from malcolm.core.loggable import Loggable
-from malcolm.core.request import Get, Put, Post, Subscribe
-from malcolm.core.response import Update, Return, Error
+from malcolm.controllers.builtin import ClientComms
+from malcolm.core import Request, Get, Put, Post, Subscribe, Update, Return, \
+    Error, Queue, deserialize_object, UnexpectedError, Unsubscribe, Delta
+from .pvautil import dict_to_pv_object
 
 
-class PvaClientComms(ClientComms, PvaUtil):
+class PvaClientComms(ClientComms):
     """A class for a client to communicate with the server"""
 
-    def __init__(self, process, _=None):
-        """
-        Args:
-            name (str): Name for logging
-            process (Process): Process for primitive creation
-        """
-        super(PvaClientComms, self).__init__(process)
-        self.name = "PvaClientComms"
-        self.set_logger_name(self.name)
+    use_cothread = False
+    _monitors = None
+    _send_queue = None
+
+    def do_init(self):
+        super(PvaClientComms, self).do_init()
         self._monitors = {}
+        self._send_queue = Queue()
 
     def send_to_server(self, request):
         """Dispatch a request to the server
@@ -27,123 +24,98 @@ class PvaClientComms(ClientComms, PvaUtil):
         Args:
             request(Request): The message to pass to the server
         """
+        self._send_queue.put(request)
+        self.spawn(self._send_to_server)
+
+    def _send_to_server(self):
+        request = self._send_queue.get(timeout=0)
         try:
-
+            request = deserialize_object(request, Request)
+            response = None
             if isinstance(request, Get):
-                self.log_debug("Get message with path: %s", request["path"])
-                return_object = self.execute_get(request)
-
+                response = self._execute_get(request)
             elif isinstance(request, Put):
-                self.log_debug("Put message with path: %s", request["path"])
-                self.log_debug("Put message with value: %s", request["value"])
-                return_object = self.execute_put(request)
-
+                response = self._execute_put(request)
             elif isinstance(request, Post):
-                self.log_debug("Post message with path: %s", request["path"])
-                self.log_debug("Parameters: %s", request["parameters"])
-                return_object = self.execute_rpc(request)
-
+                response = self._execute_rpc(request)
             elif isinstance(request, Subscribe):
-                self.log_debug("Subscribe message with path: %s", request["path"])
-                return_object = self.execute_monitor(request)
-            # TODO: Implement unsubscribe
-            # TODO: Currently monitors always return updates, deltas are not available
-
-        except:
-            # PvAccess error, create the Error message
-            self.log_exception("Error processing request %s", request)
-            return_object = Error(id_=request["id"], message="PvAccess error")
-
-        if return_object:
-            self.send_to_caller(return_object)
-
-    def execute_get(self, request):
-        # Connect to the channel
-        c = pvaccess.Channel(request["path"][0])
-        # Create the path request from the endpoints (not including the block name path)
-        path = ".".join(request["path"][1:])
-        self.log_debug("path: %s", path)
-        # Perform a get and record the response
-        response = c.get(path)
-        self.log_debug("Response: %s", response)
-        # Now create the Return object and populate it with the response
-        value = response.toDict(True)
-        if 'typeid' in value:
-            if value['typeid'] == 'malcolm:core/Error:1.0':
-                return_object = Error(id_=request["id"], message=value['message'])
+                self._execute_monitor(request)
+            elif isinstance(request, Unsubscribe):
+                response = self._execute_unsubscribe(request)
             else:
-                return_object = Return(id_=request["id"], value=value)
+                raise UnexpectedError("Unexpected request %s", request)
+        except Exception as e:
+            _, response = request.error_response(e)
+        if response:
+            request.callback(response)
+
+    def _response_from_dict(self, request, d):
+        if d.get("typeid", "") == Error.typeid:
+            response = Error(request.id, d["message"])
         else:
-            return_object = Error(id_=request["id"], message="No valid return typeid")
-        return return_object
+            response = Return(request.id, d)
+        return response
 
-    def execute_put(self, request):
+    def _execute_get(self, request):
+        path = ".".join(request.path[1:])
+        channel = pvaccess.Channel(request.path[0])
+        d = channel.get(path).toDict()
+        response = self._response_from_dict(request, d)
+        return response
+
+    def _execute_put(self, request):
+        path = ".".join(request.path[1:])
+        channel = pvaccess.Channel(request.path[0])
+        channel.put(request.value, path)
+        response = Return(request.id)
+        return response
+
+    def _execute_monitor(self, request):
         # Connect to the channel
-        c = pvaccess.Channel(request["path"][0])
-        # Create the path request from the endpoints (not including the block name path)
-        path = ".".join(request["path"][1:])
-        self.log_debug("path: %s", path)
-        # Perform a put, but there is no response available
-        c.put(request["value"], path)
-        # Now create the Return object and populate it with the response
-        return_object = Return(id_=request["id"], value="No return value from put")
-        return return_object
+        path = ".".join(request.path[1:])
+        self.log_debug("%r %r", request.path[0], path)
+        channel = pvaccess.Channel(request.path[0])
+        self._monitors[request.generate_key()] = channel
 
-    def execute_rpc(self, request):
-        method = pvaccess.PvObject({'method': pvaccess.STRING})
-        method.set({'method': request["path"][1]})
-        # Connect to the channel and create the RPC client
-        rpc = pvaccess.RpcClient(request["path"][0], method)
-        # Construct the pv object from the parameters
-        params = self.dict_to_pv_object(request["parameters"])
-        self.log_debug("PvObject parameters: %s", params)
-        # Call the method on the RPC object
-        response = rpc.invoke(params)
-        self.log_debug("Response: %s", response)
-        # Now create the Return object and populate it with the response
-        value = response.toDict(True)
-        if 'typeid' in value:
-            if value['typeid'] == 'malcolm:core/Error:1.0':
-                return_object = Error(id_=request["id"], message=value['message'])
-            else:
-                return_object = Return(id_=request["id"], value=value)
-        else:
-            return_object = Error(id_=request["id"], message="No valid return typeid")
-        return return_object
-
-    def execute_monitor(self, request):
-        # Connect to the channel
-        c = pvaccess.Channel(request["path"][0])
         # Store the connection within the monitor set
-        mon = MonitorHandler(request["id"], c, self)
-        self._monitors[request["id"]] = mon
-        # Create the path request from the endpoints (not including the block name path)
-        path = ".".join(request["path"][1:])
-        self.log_debug("Monitor path: %s", path)
-        # Perform a put, but there is no response available
-        c.subscribe(path, mon.monitor_update)
-        self.log_debug("Created subscription")
-        c.startMonitor(path)
-        self.log_debug("Started monitor")
-        return None
-
-
-class MonitorHandler(Loggable):
-    def __init__(self, id, channel, client):
-        self.set_logger_name("MonitorHandler")
-        self._id = id
-        self._channel = channel
-        self._client = client
-
-    def monitor_update(self, response):
-        self.log_debug("Monitor Update called: %s", response)
-        # Create the Update object and populate it with the response
-        value = response.toDict(True)
-        if 'typeid' in value:
-            if value['typeid'] == 'malcolm:core/Error:1.0':
-                return_object = Error(id_=self._id, message=value['message'])
+        def callback(value=None):
+            self.log_debug("Callback %r", value)
+            # TODO: ordering is not maintained here...
+            d = value.toDict(True)
+            if d.get("typeid", "") == Error.typeid:
+                response = Error(request.id, d["message"])
+                self._monitors.pop(request.generate_key())
+                channel.unsubscribe("")
             else:
-                return_object = Update(id_=self._id, value=value)
-        else:
-            return_object = Error(id_=self._id, message="No valid return typeid")
-        self._client.send_to_caller(return_object)
+                # TODO: support Deltas properly
+                if request.delta:
+                    response = Delta(request.id, [[[], d]])
+                else:
+                    response = Update(request.id, d)
+            request.callback(response)
+
+        # Perform a subscribe, but it returns nothing
+        channel.subscribe("sub", callback)
+        channel.startMonitor(path)
+        a = None
+        return a
+
+    def _execute_unsubscribe(self, request):
+        channel = self._monitors.pop(request.generate_key())
+        channel.unsubscribe("sub")
+        response = Return(request.id)
+        return response
+
+    def _execute_rpc(self, request):
+        method = pvaccess.PvObject({'method': pvaccess.STRING})
+        method.set({'method': request.path[1]})
+        # Connect to the channel and create the RPC client
+        rpc = pvaccess.RpcClient(request.path[0], method)
+        # Construct the pv object from the parameters
+        params = dict_to_pv_object(request.parameters)
+        # Call the method on the RPC object
+        value = rpc.invoke(params)
+        # Now create the Return object and populate it with the response
+        d = value.toDict(True)
+        response = self._response_from_dict(request, d)
+        return response

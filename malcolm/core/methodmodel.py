@@ -38,8 +38,9 @@ class MethodModel(Meta):
         if defaults is None:
             defaults = {}
         for k, v in defaults.items():
-            k = deserialize_object(k, str_)
-            defaults[k] = self.takes.elements[k].validate(v)
+            if k != "typeid":
+                k = deserialize_object(k, str_)
+                defaults[k] = self.takes.elements[k].validate(v)
         return self.set_endpoint_data("defaults", defaults)
 
     def set_returns(self, returns):
@@ -84,7 +85,7 @@ class MethodModel(Meta):
         else:
             # Copy it in case we are subclassing
             method = cls.from_dict(func.MethodModel.to_dict())
-            method.set_writeable_in(func.MethodModel.writeable_in)
+            method.set_writeable_in(*func.MethodModel.writeable_in)
 
         func.MethodModel = method
         return func
@@ -243,3 +244,9 @@ def get_method_decorated(instance):
                 instance.__class__.__name__, name))
             method_model.writeable_in = member.MethodModel.writeable_in
             yield name, method_model, member
+
+
+def call_with_params(func, *args, **params):
+    method_model = func.MethodModel
+    args += method_model.prepare_call_args(**params)
+    return func(*args)

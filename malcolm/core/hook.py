@@ -1,5 +1,7 @@
 import inspect
 
+from malcolm.compat import str_
+
 
 class Hook(object):
     def __call__(self, func):
@@ -27,6 +29,8 @@ class Hook(object):
         part_funcs = {}
 
         for part in part_list:
+            assert not isinstance(part, str_), \
+                "Needed Part, got %r" % part
             for func_name, part_hook, func in get_hook_decorated(part):
                 if part_hook is self:
                     assert part not in part_funcs, \

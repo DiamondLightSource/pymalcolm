@@ -20,8 +20,9 @@ class TableMeta(VMeta):
         """Set the elements dict from a serialized dict"""
         deserialized = OrderedDict()
         for k, v in elements.items():
-            k = deserialize_object(k, str_)
-            deserialized[k] = deserialize_object(v, VArrayMeta)
+            if k != "typeid":
+                k = deserialize_object(k, str_)
+                deserialized[k] = deserialize_object(v, VArrayMeta)
         return self.set_endpoint_data("elements", deserialized)
 
     def validate(self, value):

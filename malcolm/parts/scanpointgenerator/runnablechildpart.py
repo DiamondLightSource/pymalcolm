@@ -1,104 +1,113 @@
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
-from malcolm.core import ResponseError, BadValueError
-from malcolm.core import method_takes, serialize_object
+from malcolm.controllers.scanning.runnablecontroller import \
+    RunnableController
+from malcolm.core import BadValueError, method_takes, serialize_object, \
+    Update, deserialize_object, Subscribe, MethodModel
 from malcolm.infos.builtin.parametertweakinfo import ParameterTweakInfo
-from malcolm.parts.builtin.childpart import StatefulChildPart
+from malcolm.parts.builtin.statefulchildpart import StatefulChildPart
 
-sm = RunnableController.stateMachine
+
+ss = RunnableController.stateSet
 
 
 class RunnableChildPart(StatefulChildPart):
     # stored between runs
     run_future = None
 
-    def update_configure_validate_args(self):
+    # For child controller
+    child_controller = None
+
+    def update_configure_args(self, response):
         # Decorate validate and configure with the sum of its parts
-        method_metas = [self.child["configure"]]
-        self.method_metas["validate"].recreate_from_others(method_metas)
-        self.method_metas["configure"].recreate_from_others(method_metas)
+        response = deserialize_object(response, Update)
+        configure_meta = deserialize_object(response.value, MethodModel)
+        self.method_models["validate"].recreate_from_others([configure_meta])
+        self.method_models["configure"].recreate_from_others([configure_meta])
+        self.controller.update_configure_args()
+
+    @RunnableController.Init
+    def init(self, context):
+        # Monitor the child configure for changes
+        self.child_controller = context.get_controller(self.params.mri)
+        # TODO: unsubscribe on halt
+        # TODO: this happens every time writeable changes, is this really good?
+        subscription = Subscribe(
+            path=[self.params.mri, "configure"],
+            callback=self.update_configure_args)
+        # Wait for the first update to come in
+        self.child_controller.handle_request(subscription).wait()
 
     @RunnableController.Reset
-    def reset(self, task):
-        # Wait until we are Idle
-        if self.child["abort"].writeable:
-            task.post(self.child["abort"])
-        try:
-            task.post(self.child["reset"])
-        except ResponseError:
-            # We get a "ResponseError: child is not writeable" if we can't run
-            # reset, probably because the child is already resetting,
-            # so just wait for it to be idle
-            task.when_matches(
-                self.child["state"], sm.IDLE, bad_values=[sm.FAULT])
-        self.update_configure_validate_args()
+    def reset(self, context):
+        child = context.block_view(self.params.mri)
+        if child.abort.writeable:
+            child.abort()
+        if child.reset.writeable:
+            child.reset()
 
-    # MethodMeta will be filled in by _update_configure_args
+    # MethodMeta will be filled in by update_configure_args
     @RunnableController.Validate
     @method_takes()
-    def validate(self, task, part_info, params):
-        returns = task.post(self.child["validate"], params)
+    def validate(self, context, part_info, params):
+        child = context.block_view(self.params.mri)
+        returns = child.validate(**params)
         ret = []
         for k, v in returns.items():
             if serialize_object(params[k]) != serialize_object(v):
                 ret.append(ParameterTweakInfo(k, v))
         return ret
 
-    # MethodMeta will be filled in by _update_configure_args
+    # MethodMeta will be filled in by update_configure_args
     @RunnableController.Configure
     @method_takes()
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
-        task.post(self.child["configure"], params)
+    def configure(self, context, completed_steps, steps_to_do, part_info,
+                  params):
+        child = context.block_view(self.params.mri)
+        child.configure(**params)
 
     @RunnableController.Run
-    def run(self, task, update_completed_steps):
-        """Wait for run to finish
-        Args:
-            task (Task): The context helper
-            update_completed_steps (func): The function we should call when
-                completedSteps should be updated
-        """
-        task.unsubscribe_all()
-        task.subscribe(
-            self.child["completedSteps"], update_completed_steps, self)
-        match_future = self._wait_for_postrun(task)
-        self.run_future = task.post_async(self.child["run"])
+    def run(self, context, update_completed_steps):
+        context.unsubscribe_all()
+        child = context.block_view(self.params.mri)
+        child.completedSteps.subscribe_value(update_completed_steps, self)
+        match_future = self._wait_for_postrun(context)
+        self.run_future = child.run_async()
         try:
-            task.wait_all(match_future)
+            context.wait_all_futures(match_future)
         except BadValueError:
             # If child went into Fault state, raise the friendlier run_future
             # exception
-            if self.child.state == sm.FAULT:
-                raise self.run_future[0].exception()
+            if child.state.value == ss.FAULT:
+                raise self.run_future.exception()
             raise
 
     @RunnableController.PostRunIdle
     @RunnableController.PostRunReady
-    def post_run(self, task, completed_steps=None, steps_to_do=None,
+    def post_run(self, context, completed_steps=None, steps_to_do=None,
                  part_info=None, params=None):
-        task.wait_all(self.run_future)
+        context.wait_all_futures(self.run_future)
 
     @RunnableController.Seek
-    def seek(self, task, completed_steps, steps_to_do, part_info):
+    def seek(self, context, completed_steps, steps_to_do, part_info):
         # Clear out the update_completed_steps and match_future subscriptions
-        task.unsubscribe_all()
-        params = self.child["pause"].prepare_input_map(
-            completedSteps=completed_steps)
-        task.post(self.child["pause"], params)
+        context.unsubscribe_all()
+        child = context.block_view(self.params.mri)
+        child.pause(completedSteps=completed_steps)
 
     @RunnableController.Resume
-    def resume(self, task, update_completed_steps):
-        task.subscribe(
-            self.child["completedSteps"], update_completed_steps, self)
-        match_future = self._wait_for_postrun(task)
-        task.post(self.child["resume"])
-        task.wait_all(match_future)
+    def resume(self, context, update_completed_steps):
+        child = context.block_view(self.params.mri)
+        child.completedSteps.subscribe_value(update_completed_steps, self)
+        match_future = self._wait_for_postrun(context)
+        child.resume()
+        context.wait_all_futures(match_future)
 
-    def _wait_for_postrun(self, task):
-        bad_states = [sm.DISABLING, sm.ABORTING, sm.FAULT]
-        match_future = task.when_matches_async(
-            self.child["state"], sm.POSTRUN, bad_states)
+    def _wait_for_postrun(self, context):
+        bad_states = [ss.DISABLING, ss.ABORTING, ss.FAULT]
+        match_future = context.when_matches_async(
+            (self.params.mri, "state", "value"), ss.POSTRUN, bad_states)
         return match_future
 
     @RunnableController.Abort
-    def abort(self, task):
-        task.post(self.child["abort"])
+    def abort(self, context):
+        child = context.block_view(self.params.mri)
+        child.abort()

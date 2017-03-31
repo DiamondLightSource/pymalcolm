@@ -6,7 +6,16 @@ from malcolm.core import Part, method_takes, method_returns, REQUIRED
 from malcolm.vmetas.builtin import StringMeta, NumberMeta
 
 
+@method_takes(
+    "name", StringMeta("Name of the Part within the controller"), REQUIRED)
 class HelloPart(Part):
+    def __init__(self, params):
+        super(HelloPart, self).__init__(params.name)
+
+    def create_attributes(self):
+        self.counter = NumberMeta("float64", "A counter").create_attribute()
+        yield "counter", self.counter, self.counter.set_value
+
     @method_takes(
         "name", StringMeta("a name"), REQUIRED,
         "sleep", NumberMeta("float64", "Time to wait before returning"), 0,
@@ -21,3 +30,6 @@ class HelloPart(Part):
         return_map.greeting = "Hello %s" % parameters.name
         return return_map
 
+    @method_takes()
+    def error(self):
+        raise RuntimeError("You called method bad()")

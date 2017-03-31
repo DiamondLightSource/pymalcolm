@@ -7,9 +7,8 @@ from malcolm.controllers.builtin.basecontroller import BaseController
 
 class MyPart(Part):
     @BaseController.Init
-    def init(self, context, hup):
-        self.context = context
-        self.hup = hup
+    def init(self, context):
+        self.started = True
 
     @BaseController.Halt
     def halt(self, context):
@@ -32,7 +31,7 @@ class TestBaseController(unittest.TestCase):
         self.process = Process("proc")
         self.params = Mock()
         self.params.mri = "MyMRI"
-        self.part = MyPart(self.process, "testpart")
+        self.part = MyPart("testpart")
         self.o = BaseController(self.process, [self.part], self.params)
 
     def start_process(self):
@@ -45,18 +44,13 @@ class TestBaseController(unittest.TestCase):
             self.process.stop()
 
     def test_process_init(self,):
-        assert not hasattr(self.part, "context")
+        assert not hasattr(self.part, "started")
         self.start_process()
-        assert self.part.hup == self.o.hup
+        assert self.part.started
 
     def test_process_stop(self):
         self.start_process()
         assert not hasattr(self.part, "halted")
         self.process.stop()
-        assert self.part.halted is True
+        assert self.part.halted
 
-    def test_hup(self):
-        self.o.hup = Mock(wraps=self.o.hup)
-        self.start_process()
-        self.part.hup()
-        self.o.hup.assert_called_once()

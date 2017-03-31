@@ -1,6 +1,8 @@
 from multiprocessing.pool import ThreadPool
+import thread
 
 from malcolm.compat import OrderedDict, maybe_import_cothread
+from .context import Context
 from .hook import Hook
 from .loggable import Loggable
 from .spawned import Spawned
@@ -43,11 +45,11 @@ class Process(Loggable):
                 process. None means forever
         """
         assert not self.started, "Process already started"
-        self._thread_pool = ThreadPool(32)
+        self._thread_pool = ThreadPool(8)
         self.started = True
+        self._run_hook(self.Init, timeout=timeout)
         self._run_hook(
             self.Publish, args=(self._published,), timeout=timeout)
-        self._run_hook(self.Init, timeout=timeout)
 
     def _run_hook(self, hook, controller_list=None, args=(), timeout=None):
         # Run the given hook waiting til all hooked functions are complete
@@ -95,8 +97,9 @@ class Process(Loggable):
             Spawned: Something you can call wait(timeout) on to see when it's
                 finished executing
         """
+        from_thread = thread.get_ident()
         return self._call_in_right_thread(
-            self._spawn, function, args, kwargs, use_cothread)
+            self._spawn, function, args, kwargs, from_thread, use_cothread)
 
     def _call_in_right_thread(self, func, *args):
         try:
@@ -105,11 +108,11 @@ class Process(Loggable):
             # called from outside cothread's thread, spawn it again
             return self._cothread.CallbackResult(func, *args)
 
-    def _spawn(self, function, args, kwargs, use_cothread):
+    def _spawn(self, function, args, kwargs, from_thread, use_cothread):
         with self._lock:
             assert self.started, "Can't spawn before process started"
-            spawned = Spawned(
-                function, args, kwargs, use_cothread, self._thread_pool)
+            spawned = Spawned(function, args, kwargs, from_thread,
+                              use_cothread, self._thread_pool)
             self._spawned.append(spawned)
             # Filter out things that are ready to avoid memory leaks
             self._spawned = [s for s in self._spawned if not s.ready()]
@@ -136,11 +139,10 @@ class Process(Loggable):
             self._controllers[mri] = controller
             if publish:
                 self._published.append(mri)
-                if self.started:
-                    self._run_hook(self.Publish, args=(self._published,),
-                                   timeout=timeout)
         if self.started:
             self._run_hook(self.Init, [controller], timeout=timeout)
+            self._run_hook(self.Publish, args=(self._published,),
+                           timeout=timeout)
 
     def remove_controller(self, mri, timeout=None):
         """Remove a controller that is hosted by this process
@@ -157,10 +159,9 @@ class Process(Loggable):
             controller = self._controllers.pop(mri)
             if mri in self._published:
                 self._published.remove(mri)
-                if self.started:
-                    self._run_hook(self.Publish, args=(self._published,),
-                                   timeout=timeout)
         if self.started:
+            self._run_hook(self.Publish, args=(self._published,),
+                           timeout=timeout)
             self._run_hook(self.Halt, [controller], timeout=timeout)
 
     def get_controller(self, mri):
@@ -172,4 +173,21 @@ class Process(Loggable):
         Returns:
             Controller: the controller
         """
-        return self._controllers[mri]
+        try:
+            return self._controllers[mri]
+        except KeyError:
+            raise ValueError("No controller registered for mri %r" % mri)
+
+    def block_view(self, mri):
+        """Get a Block view from a controller
+
+        Args:
+            mri (str): The malcolm resource id for the block
+
+        Returns:
+            Block: the block view
+        """
+        controller = self.get_controller(mri)
+        context = Context("Context(%s)" % mri, self)
+        block = controller.make_view(context)
+        return block

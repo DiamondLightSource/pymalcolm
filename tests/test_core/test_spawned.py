@@ -25,7 +25,7 @@ class TestSpawned(unittest.TestCase):
         pass
 
     def do_all(self, use_cothread, pool=None):
-        q = Queue(use_cothread=use_cothread)
+        q = Queue()
         s1 = Spawned(self.do_div, [40, 2, q, None],
                      {}, use_cothread, pool)
         assert s1.ready() is False

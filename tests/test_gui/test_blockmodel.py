@@ -15,14 +15,14 @@ from malcolm.blocks.demo import Hello
 class TestBlockModel(unittest.TestCase):
     def setUp(self):
         self.process = MagicMock()
-        self.block = Hello(self.process, dict(mri="hello"))[0]
+        self.block = Hello(self.process, dict(mri="hello_block"))[0]
         self.m = BlockModel(self.process, self.block)
 
     def test_init(self):
         self.assertEqual(self.process.q.put.call_count, 1)
         req = self.process.q.put.call_args_list[0][0][0]
-        self.assertEqual(req.path, ['hello'])
-        self.assertEqual(self.m.root_item.endpoint, ('hello',))
+        self.assertEqual(req.path, ['hello_block'])
+        self.assertEqual(self.m.root_item.endpoint, ('hello_block',))
         self.assertEqual(len(self.m.root_item.children), 0)
 
     def test_find_item(self):
@@ -39,15 +39,15 @@ class TestBlockModel(unittest.TestCase):
         b_item = self.m.root_item
         self.assertEqual(len(b_item.children), 6)
         m_item = b_item.children[5]
-        self.assertEqual(m_item.endpoint, ('hello', 'greet'))
+        self.assertEqual(m_item.endpoint, ('hello_block', 'greet'))
         self.assertEqual(len(m_item.children), 2)
         n_item = m_item.children[0]
         self.assertEqual(n_item.endpoint,
-                         ('hello', 'greet', 'takes', 'elements', 'name'))
+                         ('hello_block', 'greet', 'takes', 'elements', 'name'))
         self.assertEqual(n_item.children, [])
         n_item = m_item.children[1]
         self.assertEqual(n_item.endpoint,
-                         ('hello', 'greet', 'takes', 'elements', 'sleep'))
+                         ('hello_block', 'greet', 'takes', 'elements', 'sleep'))
         self.assertEqual(n_item.children, [])
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
-# Find all subpackages, MethodMeta decorated callables, and YAML files
-from malcolm.packageutil import prepare_package
+from malcolm.yamlutil import make_block_creator
 
-__all__ = prepare_package(globals(), __name__)
+counter_block = make_block_creator(__file__, "counter_block.yaml")
+hello_block = make_block_creator(__file__, "hello_block.yaml")
+ticker_block = make_block_creator(__file__, "ticker_block.yaml")
 
-del prepare_package
+del make_block_creator

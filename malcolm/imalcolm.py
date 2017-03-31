@@ -51,7 +51,7 @@ def make_process():
 
     if args.client:
         if args.client.startswith("ws://"):
-            from malcolm.controllers.websocket import WebsocketClientComms
+            from malcolm.controllers.web import WebsocketClientComms
             hostname, port = args.client[5:].split(":")
             comms = WebsocketClientComms(
                 proc, dict(hostname=hostname, port=int(port)))
@@ -101,8 +101,8 @@ self.process_block.blocks:
     %s
 
 Try:
-hello = self.get_block("HELLO")
-print hello.greet("me")
+hello_block = self.get_block("HELLO")
+print hello_block.greet("me")
 
 or
 

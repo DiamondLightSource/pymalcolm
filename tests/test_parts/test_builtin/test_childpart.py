@@ -14,7 +14,7 @@ from malcolm.core.part import Part
 from malcolm.parts.builtin.childpart import StatefulChildPart
 from malcolm.core.syncfactory import SyncFactory
 from malcolm.core import Process, Table, Task
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.controllers.builtin.defaultcontroller import DefaultController
 from malcolm.vmetas.builtin.stringmeta import StringMeta
 
@@ -37,13 +37,13 @@ class PortsPart(Part):
         # note 3rd part of inport tag is its disconnected value
         in_tag = "inport:int32:"
         in_name = "inport%s" % self.name
-        in_port = StringMeta(in_name, [in_tag, "config"]).make_attribute()
+        in_port = StringMeta(in_name, [in_tag, "config"]).create_attribute()
         in_port.meta.set_writeable_in(sm.READY)
         yield in_name, in_port, in_port.set_value
 
         out_name = "outport%s" % self.name
         out_tag = "outport:int32:%s" %self.name
-        out_port = StringMeta(in_name, [out_tag]).make_attribute()
+        out_port = StringMeta(in_name, [out_tag]).create_attribute()
         out_port.meta.set_writeable_in(sm.READY)
         yield out_name, out_port, out_port.set_value
 

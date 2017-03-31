@@ -1,4 +1,4 @@
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_also_takes, REQUIRED, method_takes
 from malcolm.parts.ADCore.hdfwriterpart import NDArrayDatasetInfo
 from malcolm.parts.builtin.childpart import StatefulChildPart
@@ -24,11 +24,11 @@ class DetectorDriverPart(StatefulChildPart):
         for data in super(DetectorDriverPart, self).create_attributes():
             yield data
         meta = NumberMeta("float64", "Time taken to readout detector")
-        self.readout_time = meta.make_attribute(self.params.readoutTime)
+        self.readout_time = meta.create_attribute(self.params.readoutTime)
         yield "readoutTime", self.readout_time, self.readout_time.set_value
         meta = ChoiceMeta("Whether detector is software or hardware triggered",
                           ["Software", "Hardware"])
-        self.trigger_mode = meta.make_attribute("Hardware")
+        self.trigger_mode = meta.create_attribute("Hardware")
         yield "triggerMode", self.trigger_mode, None
 
     @RunnableController.Reset

@@ -2,8 +2,8 @@
     name: mri
     description: Malcolm resource id of the Block
 
-- controllers.DefaultController:
+- controllers.builtin.BaseController:
     mri: $(mri)
 
 - parts.demo.CounterPart:
-    name: counter
+    name: counter_block

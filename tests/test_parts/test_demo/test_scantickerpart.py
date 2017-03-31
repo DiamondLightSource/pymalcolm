@@ -55,9 +55,9 @@ class TestScanTickerPart(unittest.TestCase):
         update_completed_steps = MagicMock()
         self.o.run(task, update_completed_steps)
         self.assertEqual(task.mock_calls, [
-            call.put(self.child['counter'], 0),
+            call.put(self.child['counter_block'], 0),
             call.sleep(AlmostFloat(1.0, delta=0.05)),
-            call.put(self.child['counter'], 2),
+            call.put(self.child['counter_block'], 2),
             call.sleep(AlmostFloat(2.0, delta=0.1))])
 
 

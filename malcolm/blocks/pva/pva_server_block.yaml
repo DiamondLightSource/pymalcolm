@@ -1,0 +1,6 @@
+- parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- controllers.pva.PvaServerComms:
+    mri: $(mri)

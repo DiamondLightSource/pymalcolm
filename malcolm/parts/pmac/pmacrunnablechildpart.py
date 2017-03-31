@@ -1,4 +1,4 @@
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.parts.scanpointgenerator.runnablechildpart import RunnableChildPart
 
 

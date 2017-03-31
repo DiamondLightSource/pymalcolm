@@ -28,11 +28,6 @@ class BadValueError(MalcolmException):
     pass
 
 
-class TimeoutError(MalcolmException):
-    """An operation timed out"""
-    pass
-
-
 class WrongThreadError(MalcolmException):
     """When you have called something outside of cothread's thread"""
     pass

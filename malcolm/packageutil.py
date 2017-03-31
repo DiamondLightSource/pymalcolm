@@ -16,11 +16,12 @@ else:
 
 
 def try_import_module(import_name):
-    logging.debug("Importing %s", import_name)
+    #logging.debug("Importing %s", import_name)
     try:
         return importlib.import_module(import_name)
     except Exception:
-        logging.info("Importing %s failed", import_name, exc_info=True)
+        pass
+        #logging.info("Importing %s failed", import_name, exc_info=True)
 
 
 def find_method_meta_decorated(module):
@@ -29,7 +30,7 @@ def find_method_meta_decorated(module):
         module_name = module.__name__.split(".")[-1]
         if n.lower() == module_name:
             if hasattr(cls, "Method"):
-                logging.debug("Found child class %s", cls)
+                #logging.debug("Found child class %s", cls)
                 yield cls.__name__, cls
 
 
@@ -37,7 +38,7 @@ def find_package_contents(package_name, package_fs_path, fname):
     if fname.endswith(".py") and fname != "__init__.py":
         # import it and see what it produces
         import_name = "%s.%s" % (package_name, fname[:-3])
-        logging.debug("Importing %s", import_name)
+        #logging.debug("Importing %s", import_name)
         module = try_import_module(import_name)
         if module:
             for cls_name, cls in find_method_meta_decorated(module):
@@ -58,15 +59,12 @@ def find_package_contents(package_name, package_fs_path, fname):
             assert len(split) == 2, \
                 "Expected <something_without_dots>.yaml, got %r" % fname
             yaml_path = os.path.join(package_fs_path, fname)
-            logging.debug("Parsing %s", yaml_path)
-            with open(yaml_path) as f:
-                text = f.read()
-                try:
-                    func = creator(text)
-                except Exception:
-                    logging.exception("Creating object from %s failed", fname)
-                else:
-                    yield split[0], func
+            try:
+                func = creator(yaml_path, fname)
+            except Exception:
+                logging.exception("Creating object from %s failed", fname)
+            else:
+                yield split[0], func
 
 
 def prepare_package(globals_d, package_name):

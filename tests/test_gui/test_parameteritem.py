@@ -34,7 +34,7 @@ class TestParameterItem(unittest.TestCase):
 
     def test_bad_value(self):
         self.item.ref.validate.side_effect = int
-        self.item.set_value("hello")
+        self.item.set_value("hello_block")
         self.assertEqual(self.item.get_state(), self.item.ERROR)
         self.assertEqual(self.item.get_value(), 42)
 

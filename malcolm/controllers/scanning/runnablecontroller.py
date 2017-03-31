@@ -42,12 +42,14 @@ class RunnableStates(ManagerStates):
         self.set_allowed(self.ABORTED, self.RESETTING)
 
 
+ss = RunnableStates
+
+
 configure_args = [
     "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
     "axesToMove", StringArrayMeta(
         "List of axes in inner dimension of generator that should be moved"),
     []]
-
 
 @method_also_takes(
     "axesToMove", StringArrayMeta("Default value for configure() axesToMove"),
@@ -56,7 +58,7 @@ configure_args = [
 class RunnableController(ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # The stateSet that this controller implements
-    stateSet = RunnableStates()
+    stateSet = ss()
 
     Validate = Hook()
     """Called at validate() to check parameters are valid
@@ -208,9 +210,7 @@ class RunnableController(ManagerController):
     # needed
     resume_queue = None
 
-    @method_writeable_in(
-        RunnableStates.FAULT, RunnableStates.DISABLED, RunnableStates.ABORTED,
-        RunnableStates.ARMED)
+    @method_writeable_in(ss.FAULT, ss.DISABLED, ss.ABORTED, ss.ARMED)
     def reset(self):
         # Override reset to work from aborted and ready too
         super(RunnableController, self).reset()
@@ -219,22 +219,26 @@ class RunnableController(ManagerController):
         for data in super(RunnableController, self).create_attributes():
             yield data
         self.completed_steps = NumberMeta(
-            "int32", "Readback of number of scan steps").make_attribute(0)
+            "int32", "Readback of number of scan steps").create_attribute(0)
         self.completed_steps.meta.set_writeable_in(
-            RunnableStates.PAUSED, RunnableStates.ARMED)
+            ss.PAUSED, ss.ARMED)
         yield "completedSteps", self.completed_steps, self.set_completed_steps
         self.configured_steps = NumberMeta(
-            "int32", "Number of steps currently configured").make_attribute(0)
+            "int32", "Number of steps currently configured").create_attribute(0)
         yield "configuredSteps", self.configured_steps, None
         self.total_steps = NumberMeta(
             "int32", "Readback of number of scan steps"
-        ).make_attribute(0)
+        ).create_attribute(0)
         yield "totalSteps", self.total_steps, None
         self.axes_to_move = StringArrayMeta(
             "Default axis names to scan for configure()"
-        ).make_attribute(self.params.axesToMove)
-        self.axes_to_move.meta.set_writeable_in(RunnableStates.EDITABLE)
+        ).create_attribute(self.params.axesToMove)
+        self.axes_to_move.meta.set_writeable_in(ss.EDITABLE)
         yield "axesToMove", self.axes_to_move, self.set_axes_to_move
+
+    def do_init(self):
+        super(RunnableController, self).do_init()
+        self.update_configure_args()
 
     def do_reset(self):
         super(RunnableController, self).do_reset()
@@ -248,28 +252,28 @@ class RunnableController(ManagerController):
         else:
             super(RunnableController, self).go_to_error_state(exception)
 
-    def hup(self):
-        super(RunnableController, self).hup()
+    def update_configure_args(self):
         # Look for all parts that hook into Configure
-        configure_funcs = self.Configure.find_hooked_functions(self.parts)
-        method_metas = []
+        configure_funcs = self.Configure.find_hooked_functions(
+            self.parts.values())
+        method_models = []
         for part, func_name in configure_funcs.items():
-            method_metas.append(part.method_metas[func_name])
+            method_models.append(part.method_models[func_name])
 
         # Update takes with the things we need
         default_configure = MethodModel.from_dict(
-            RunnableController.configure.MethodMeta.to_dict())
+            RunnableController.configure.MethodModel.to_dict())
         default_configure.defaults["axesToMove"] = self.axes_to_move.value
-        method_metas.append(default_configure)
+        method_models.append(default_configure)
 
         # Decorate validate and configure with the sum of its parts
-        self.block["validate"].recreate_from_others(method_metas)
-        self.block["validate"].set_returns(self.block["validate"].takes)
-        self.block["configure"].recreate_from_others(method_metas)
+        self._block.validate.recreate_from_others(method_models)
+        self._block.validate.set_returns(self._block.validate.takes)
+        self._block.configure.recreate_from_others(method_models)
 
     def set_axes_to_move(self, value):
         self.axes_to_move.set_value(value)
-        self.hup()
+        self.update_configure_args()
 
     @method_takes(*configure_args)
     def validate(self, params, returns):
@@ -296,12 +300,12 @@ class RunnableController(ManagerController):
         raise ValueError("Could not get a consistent set of parameters")
 
     @method_takes(*configure_args)
-    @method_writeable_in(RunnableStates.READY)
+    @method_writeable_in(ss.READY)
     def configure(self, params):
         """Configure for a scan"""
         self.validate(params, params)
         self.try_stateful_function(
-            RunnableStates.CONFIGURING, RunnableStates.ARMED, self.do_configure,
+            ss.CONFIGURING, ss.ARMED, self.do_configure,
             params)
 
     def do_configure(self, params):
@@ -354,34 +358,36 @@ class RunnableController(ManagerController):
             steps *= dim.size
         return steps
 
-    @method_writeable_in(RunnableStates.ARMED)
+    @method_writeable_in(ss.ARMED)
     def run(self):
         """Run an already configured scan"""
         if self.configured_steps.value < self.total_steps.value:
-            next_state = RunnableStates.ARMED
+            next_state = ss.ARMED
         else:
-            next_state = RunnableStates.READY
+            next_state = ss.READY
         self.try_stateful_function(
-            RunnableStates.RUNNING, next_state, self._call_do_run)
+            ss.RUNNING, next_state, self._call_do_run)
 
     def _call_do_run(self):
         hook = self.Run
         self.resume_queue = Queue()
         while True:
             try:
-                self.do_run(hook)
+                return self.do_run(hook)
             except AbortedError:
                 # Wait for a response on the resume_queue
-                if self.resume_queue.get():
+                should_resume = self.resume_queue.get()
+                if should_resume:
                     # we need to resume
                     hook = self.Resume
+                    self.log_debug("Resuming run")
                 else:
                     # we don't need to resume, just drop out
                     raise
 
     def do_run(self, hook):
         self.run_hook(hook, self.part_contexts, self.update_completed_steps)
-        self.transition(RunnableStates.POSTRUN)
+        self.transition(ss.POSTRUN)
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             steps_to_do = self.steps_per_run
@@ -402,29 +408,30 @@ class RunnableController(ManagerController):
             self.completed_steps.set_value(min_completed_steps)
 
     @method_writeable_in(
-        RunnableStates.READY, RunnableStates.CONFIGURING, RunnableStates.ARMED,
-        RunnableStates.RUNNING, RunnableStates.POSTRUN, RunnableStates.PAUSED,
-        RunnableStates.SEEKING)
+        ss.READY, ss.CONFIGURING, ss.ARMED, ss.RUNNING, ss.POSTRUN, ss.PAUSED,
+        ss.SEEKING)
     def abort(self):
         self.try_stateful_function(
-            RunnableStates.ABORTING, RunnableStates.ABORTED, self.do_abort, self.Abort)
+            ss.ABORTING, ss.ABORTED, self.do_abort,
+            self.Abort)
 
     def do_abort(self, hook):
-        for task in self.part_contexts.values():
-            task.stop()
+        for context in self.part_contexts.values():
+            context.stop()
+        for context in self.part_contexts.values():
+            if context.runner:
+                context.runner.wait()
         self.run_hook(hook, self.create_part_contexts())
-        for task in self.part_contexts.values():
-            task.wait()
-        # Tell _call_do_run not to resume
-        self.resume_queue.put(False)
+        # Tell _call_do_run not to resume if we are aborting
+        if hook is self.Abort:
+            self.resume_queue.put(False)
 
     def set_completed_steps(self, completed_steps):
-        params = self.pause.MethodMeta.prepare_input_map(
+        args = self.pause.MethodModel.prepare_call_args(
             completedSteps=completed_steps)
-        self.pause(params)
+        self.pause(*args)
 
-    @method_writeable_in(
-        RunnableStates.ARMED, RunnableStates.PAUSED, RunnableStates.RUNNING)
+    @method_writeable_in(ss.ARMED, ss.PAUSED, ss.RUNNING)
     @method_takes("completedSteps", NumberMeta(
         "int32", "Step to mark as the last completed step, -1 for current"), -1)
     def pause(self, params):
@@ -433,14 +440,14 @@ class RunnableController(ManagerController):
             completed_steps = self.completed_steps.value
         else:
             completed_steps = params.completedSteps
-        if current_state == RunnableStates.RUNNING:
-            next_state = RunnableStates.PAUSED
+        if current_state == ss.RUNNING:
+            next_state = ss.PAUSED
         else:
             next_state = current_state
         assert completed_steps < self.total_steps.value, \
             "Cannot seek to after the end of the scan"
         self.try_stateful_function(
-            RunnableStates.SEEKING, next_state, self.do_pause, completed_steps)
+            ss.SEEKING, next_state, self.do_pause, completed_steps)
 
     def do_pause(self, completed_steps):
         self.do_abort(self.Pause)
@@ -453,8 +460,8 @@ class RunnableController(ManagerController):
             steps_to_do, part_info, **self.configure_params)
         self.configured_steps.set_value(completed_steps + steps_to_do)
 
-    @method_writeable_in(RunnableStates.PAUSED)
+    @method_writeable_in(ss.PAUSED)
     def resume(self):
-        self.transition(RunnableStates.RUNNING)
+        self.transition(ss.RUNNING)
         self.resume_queue.put(True)
         # self._call_do_run will now take over

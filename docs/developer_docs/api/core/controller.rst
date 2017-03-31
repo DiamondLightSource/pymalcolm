@@ -7,7 +7,7 @@ Controller
     :members:
 
     Controller: A State Machine just exposes the list of allowed transitions
-    between States. The Controller provides the logic that goes behind those
+    between StatefulStates. The Controller provides the logic that goes behind those
     transitions. It creates a number of Methods fixing the external interface of
     how to control the blocks, creates some Attributes for monitoring
     configuration and runtime variables, and then exposes a number of hooks that

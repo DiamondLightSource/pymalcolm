@@ -1,12 +1,14 @@
 import time
 
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import \
+    RunnableController
 from malcolm.core import REQUIRED, method_takes
-from malcolm.parts.builtin.childpart import StatefulChildPart
-from malcolm.vmetas.builtin import PointGeneratorMeta, StringArrayMeta, NumberMeta
+from malcolm.parts.builtin import ChildPart
+from malcolm.vmetas.builtin import StringArrayMeta, NumberMeta
+from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
 
 
-class ScanTickerPart(StatefulChildPart):
+class ScanTickerPart(ChildPart):
     # Generator instance
     generator = None
     # Where to start
@@ -26,7 +28,8 @@ class ScanTickerPart(StatefulChildPart):
         ), REQUIRED,
         "exceptionStep", NumberMeta(
             "int32", "If >0, raise an exception at the end of this step"), 0)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
+    def configure(self, context, completed_steps, steps_to_do, part_info,
+                  params):
         # If we are being asked to move
         if self.name in params.axesToMove:
             # Just store the generator and place we need to start
@@ -40,23 +43,26 @@ class ScanTickerPart(StatefulChildPart):
 
     @RunnableController.Run
     @RunnableController.Resume
-    def run(self, task, update_completed_steps):
+    def run(self, context, update_completed_steps):
         # Start time so everything is relative
         point_time = time.time()
         if self.generator:
+            child = context.block_view(self.params.mri)
             for i in range(self.completed_steps,
                            self.completed_steps + self.steps_to_do):
+                self.log_debug("Starting point %s", i)
                 # Get the point we are meant to be scanning
                 point = self.generator.get_point(i)
-                # Update the child counter to be the demand position
+                # Update the child counter_block to be the demand position
                 position = point.positions[self.name]
-                task.put(self.child["counter"], position)
+                child.counter.put_value(position)
                 # Wait until the next point is due
                 point_time += point.duration
                 wait_time = point_time - time.time()
-                task.sleep(wait_time)
+                self.log_debug("%s Sleeping %s", self.name, wait_time)
+                context.sleep(wait_time)
                 # Update the point as being complete
                 update_completed_steps(i + 1, self)
                 # If this is the exception step then blow up
-                assert i +1 != self.exception_step, \
+                assert i + 1 != self.exception_step, \
                     "Raising exception at step %s" % self.exception_step

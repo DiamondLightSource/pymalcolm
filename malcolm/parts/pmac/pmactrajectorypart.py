@@ -6,7 +6,7 @@ from collections import Counter
 import numpy as np
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.controllers.scanpointgenerator.runnablecontroller import RunnableController
+from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED, Info, method_also_takes
 from malcolm.infos.builtin.parametertweakinfo import ParameterTweakInfo
 from malcolm.parts.builtin.childpart import StatefulChildPart
@@ -268,7 +268,7 @@ class PMACTrajectoryPart(StatefulChildPart):
         for data in super(PMACTrajectoryPart, self).create_attributes():
             yield data
         self.min_turnaround = NumberMeta(
-            "float64", "Min time for any gaps between frames").make_attribute(
+            "float64", "Min time for any gaps between frames").create_attribute(
             self.params.minTurnaround)
         yield "minTurnaround", self.min_turnaround, \
               self.min_turnaround.set_value
