@@ -23,8 +23,8 @@
 
 - includes.pmac.rawmotor_collection:
     mri: I18-T3-X
-    prefix: BL18I-MO-STEP-06:GB:M7
-    motorPrefix: BL18I-MO-TABLE-03:Z
+    prefix: BL18I-MO-STEP-06:GB:M6
+    motorPrefix: BL18I-MO-TABLE-03:X
     scannable: table_x
 
 - includes.pmac.rawmotor_collection:
