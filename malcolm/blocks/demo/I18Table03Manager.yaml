@@ -17,6 +17,7 @@
 - controllers.RunnableController:
     mri: $(mri)
     axesToMove: [table_x, table_y]
+    configDir: /tmp/malcolm
 
 - parts.ADCore.DatasetTablePart:
     name: DSET

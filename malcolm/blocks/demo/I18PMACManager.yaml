@@ -4,6 +4,7 @@
 
 - controllers.RunnableController:
     mri: $(mriPrefix)
+    configDir: /tmp/malcolm
 
 - includes.pmac.compoundmotor_collection:
     mri: I18-T1-Y
@@ -35,4 +36,5 @@
 - includes.pmac.trajectory_collection:
     mri: $(mriPrefix)-TRAJ
     prefix: BL18I-MO-STEP-06:GB
+    statPrefix: BL18I-MO-STEP-06
     minTurnaround: 2
