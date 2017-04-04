@@ -1,0 +1,6 @@
+- blocks.excalibur.ExcaliburDetectorManager:
+   pvPrefix: BL14I-EA-EXCBR-01
+   mriPrefix: BL14I-ML-EXCBR-01
+   configDir: /tmp
+
+- comms.pva.PvaServerComms:

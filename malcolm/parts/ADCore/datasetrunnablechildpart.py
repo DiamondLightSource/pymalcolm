@@ -40,7 +40,8 @@ class DatasetRunnableChildPart(RunnableChildPart):
     @method_takes(
         "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
-        params = self._params_with_file_path(params)
+        if "filePath" in self.child["configure"].takes.elements:
+            params = self._params_with_file_path(params)
         task.post(self.child["configure"], params)
         datasets_table = self.child.datasets
         info_list = []
