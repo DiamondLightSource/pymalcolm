@@ -32,7 +32,8 @@ class StatsPluginPart(StatefulChildPart):
         file_dir, filename = params.filePath.rsplit(os.sep, 1)
         fs = task.put_many_async(self.child, dict(
             enableCallbacks=True,
-            computeStatistics=True))
+            computeStatistics=True,
+            inp="XSP3.POS"))
         xml = self._make_attributes_xml()
         attributes_filename = os.path.join(
             file_dir, "%s-attributes.xml" % self.params.mri)

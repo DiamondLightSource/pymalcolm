@@ -18,5 +18,6 @@ class Xspress3DriverPart(DetectorDriverPart):
         else:
             steps_per_row = steps_to_do
         task.put(self.child["pointsPerRow"], steps_per_row)
+        task.put(self.child["triggerMode"], "Hardware")
         super(Xspress3DriverPart, self).configure(
             task, completed_steps, steps_to_do, part_info, params)

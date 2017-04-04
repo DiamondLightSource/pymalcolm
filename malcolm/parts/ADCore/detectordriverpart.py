@@ -11,7 +11,7 @@ configure_args = [
 
 @method_also_takes(
     "readoutTime", NumberMeta(
-        "float64", "Default time taken to readout detector"), 8e-6)
+        "float64", "Default time taken to readout detector"), 5e-5)
 class DetectorDriverPart(StatefulChildPart):
     # Attributes
     readout_time = None
