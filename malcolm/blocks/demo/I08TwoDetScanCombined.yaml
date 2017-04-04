@@ -1,0 +1,42 @@
+- parameters.string:
+    name: mri
+    description: MRI for created block
+
+- parameters.string:
+    name: det1
+    description: MRI for detector 1 DetectorManager object
+
+- parameters.string:
+    name: det2
+    description: MRI for detector 2 DetectorManager object
+
+- parameters.string:
+    name: brick
+    description: MRI for brick PMACManager object
+
+- parameters.string:
+    name: pandabox
+    description: MRI for PandABoxManager object
+
+- controllers.RunnableController:
+    mri: $(mri)
+    axesToMove: [SampleX, SampleY]
+
+- parts.ADCore.DatasetTablePart:
+    name: DSET
+
+- parts.demo.I08ScanCombinedPart:
+    name: BRICK
+    mri: $(brick)
+
+- parts.ADCore.DatasetRunnableChildPart:
+    name: DET
+    mri: $(det1)
+
+- parts.ADCore.DatasetRunnableChildPart:
+    name: DET
+    mri: $(det2)
+
+- parts.ADCore.DatasetRunnableChildPart:
+    name: PANDABOX
+    mri: $(pandabox)

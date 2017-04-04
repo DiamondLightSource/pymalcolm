@@ -1,6 +1,5 @@
 #!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
 
-
 def make_process():
     import sys
     import threading
@@ -114,12 +113,6 @@ self.process_block.blocks
 """ % (self.process_block.blocks,)
 
     self.start()
-
-    # Temporary hack for I18 (should be handled by save/restore).
-    self.get_block("I18-PANDA01-COUNTER1").outDatasetName = "Iref"
-    self.get_block("I18-PANDA01-COUNTER2").outDatasetName = "I0"
-    self.get_block("I18-PANDA01-COUNTER3").outDatasetName = "It"
-
     try:
         import IPython
     except ImportError:

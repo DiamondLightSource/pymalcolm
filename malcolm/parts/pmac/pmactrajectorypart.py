@@ -108,7 +108,7 @@ class MotorInfo(Info):
         tm = dm / vm
         return t1, tm, t2, vm
 
-    def _make_hat(self, v1, v2, acceleration, distance, min_time):
+    def _make_hat(self, v1, v2, acceleration, distance, min_time=MIN_TIME):
         """Make a hat that looks like this:
 
             ______ vm
@@ -176,7 +176,7 @@ class MotorInfo(Info):
         yield tm, vm
         yield t2, v2
 
-    def make_velocity_profile(self, v1, v2, distance, min_time):
+    def make_velocity_profile(self, v1, v2, distance, min_time=MIN_TIME):
         """Calculate PVT points that will perform the move within motor params
 
         Args:

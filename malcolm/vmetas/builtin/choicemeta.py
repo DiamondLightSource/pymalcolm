@@ -41,7 +41,5 @@ class ChoiceMeta(VMeta):
         elif isinstance(value, int) and value < len(self.choices):
             return self.choices[value]
         else:
-            # Hack for PANDA as we get STATUS overriding status
-            return value
             raise ValueError(
                 "%s is not a valid value in %s" % (value, self.choices))

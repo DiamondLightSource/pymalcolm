@@ -21,7 +21,7 @@
 - parts.ADAndor.AndorDriverPart:
     name: DRV
     mri: $(mriPrefix)-DRV
-    readoutTime: 12e-3
+    readoutTime: 13e-3
 
 - blocks.ADCore.StatsPlugin:
     mri: $(mriPrefix)-STAT
