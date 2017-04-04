@@ -1,3 +1,5 @@
+from cothread import catools
+
 from malcolm.parts.ca.capart import CAPart
 from malcolm.vmetas.builtin import StringMeta
 
@@ -9,4 +11,4 @@ class CAStringPart(CAPart):
         return StringMeta(description=description, tags=tags)
 
     def get_datatype(self):
-        return self.catools.DBR_STRING
+        return catools.DBR_STRING

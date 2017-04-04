@@ -35,7 +35,7 @@ class AttributeModel(Model):
                 meta.attribute_class, type(self))
         return self.set_endpoint_data("meta", meta)
 
-    def set_value(self, value, set_alarm_ts=True):
+    def set_value(self, value, set_alarm_ts=True, alarm=None, ts=None):
         """Set the value"""
         value = self.meta.validate(value)
         if self.notifier:
@@ -45,8 +45,8 @@ class AttributeModel(Model):
         with notifier.changes_squashed:
             self.set_endpoint_data("value", value)
             if set_alarm_ts:
-                self.set_alarm()
-                self.set_timeStamp()
+                self.set_alarm(alarm)
+                self.set_timeStamp(ts)
         return value
 
     def set_alarm(self, alarm=None):

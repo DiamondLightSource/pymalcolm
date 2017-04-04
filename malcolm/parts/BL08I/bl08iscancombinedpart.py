@@ -1,11 +1,11 @@
 from scanpointgenerator import LineGenerator, SpiralGenerator
 
 from malcolm.core import method_takes
-from malcolm.parts.builtin.runnablechildpart import RunnableChildPart
-from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.parts.scanning import RunnableChildPart
+from malcolm.controllers.scanning import RunnableController
 
 
-class I08ScanCombinedPart(RunnableChildPart):
+class BL08IScanCombinedPart(RunnableChildPart):
     def _get_range(self, params, name="X"):
         # Make some very specific assumptions about the generator
         search_name = "Sample%s" % name
@@ -38,9 +38,9 @@ class I08ScanCombinedPart(RunnableChildPart):
             yp = (ystop + ystart) / 2.0
             xp += 0.0075 * yp
             yp += 0.0075 * xp
-	    fs = task.put_async(self.child["positionT1XC"], xp)
-	    fs += task.put_async(self.child["positionT1YC"], yp)
-	    task.wait_all(fs)
-        super(I08ScanCombinedPart, self).configure(
+        fs = task.put_async(self.child["positionT1XC"], xp)
+        fs += task.put_async(self.child["positionT1YC"], yp)
+        task.wait_all(fs)
+        super(BL08IScanCombinedPart, self).configure(
             task, completed_steps, steps_to_do, part_info, params)
 

@@ -1,22 +1,23 @@
 from malcolm.controllers.scanning.runnablecontroller import RunnableController
-from malcolm.parts.builtin.childpart import StatefulChildPart
-from malcolm.parts.pmac.pmactrajectorypart import MotorInfo
+from malcolm.parts.builtin import StatefulChildPart
+from malcolm.infos.pmac.motorinfo import MotorInfo
 
 
 class RawMotorPart(StatefulChildPart):
     @RunnableController.ReportStatus
-    def report_cs_info(self, _):
+    def report_cs_info(self, context):
+        child = context.block_view(self.params.mri)
         acceleration = float(
-            self.child.maxVelocity) / self.child.accelerationTime
+            child.maxVelocity) / child.accelerationTime
         motor_info = MotorInfo(
-            cs_axis=self.child.csAxis,
-            cs_port=self.child.csPort,
+            cs_axis=child.csAxis,
+            cs_port=child.csPort,
             acceleration=acceleration,
-            resolution=self.child.resolution,
-            offset=self.child.offset,
-            max_velocity=self.child.maxVelocity,
-            current_position=self.child.position,
-            scannable=self.child.scannable,
-            velocity_settle=self.child.velocitySettle
+            resolution=child.resolution,
+            offset=child.offset,
+            max_velocity=child.maxVelocity,
+            current_position=child.position,
+            scannable=child.scannable,
+            velocity_settle=child.velocitySettle
         )
         return [motor_info]

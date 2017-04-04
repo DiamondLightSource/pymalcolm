@@ -10,8 +10,12 @@ from malcolm.vmetas.builtin import StringMeta, BooleanMeta, ChoiceMeta
     "writeable", BooleanMeta("Is the attribute writeable?"), False,
     "config", BooleanMeta("Should this field be loaded/saved?"), False)
 class AttributePart(Part):
-    # Attribute instance
-    attr = None
+    def __init__(self, params):
+        # The created attribute
+        self.attr = None
+        # Store params
+        self.params = params
+        super(AttributePart, self).__init__(params.name)
 
     def create_attributes(self):
         # Find the tags

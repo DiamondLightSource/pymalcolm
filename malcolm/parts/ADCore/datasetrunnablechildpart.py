@@ -3,7 +3,7 @@ import os
 from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
-from malcolm.parts.scanpointgenerator.runnablechildpart import RunnableChildPart
+from malcolm.parts.scanning.runnablechildpart import RunnableChildPart
 from malcolm.vmetas.builtin import StringMeta
 
 

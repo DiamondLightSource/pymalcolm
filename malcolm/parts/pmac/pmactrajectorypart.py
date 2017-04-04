@@ -7,10 +7,12 @@ import numpy as np
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.controllers.scanning.runnablecontroller import RunnableController
-from malcolm.core import method_takes, REQUIRED, Info, method_also_takes
-from malcolm.infos.builtin.parametertweakinfo import ParameterTweakInfo
-from malcolm.parts.builtin.childpart import StatefulChildPart
-from malcolm.vmetas.builtin import StringArrayMeta, PointGeneratorMeta, NumberMeta
+from malcolm.core import method_takes, REQUIRED, method_also_takes
+from malcolm.infos.builtin import ParameterTweakInfo
+from malcolm.infos.pmac import MotorInfo
+from malcolm.parts.builtin import StatefulChildPart
+from malcolm.vmetas.builtin import StringArrayMeta, NumberMeta
+from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
@@ -48,202 +50,6 @@ configure_args = [
     []]
 
 
-# Class for these motor variables
-class MotorInfo(Info):
-    def __init__(self, cs_axis, cs_port, acceleration, resolution, offset,
-                 max_velocity, current_position, scannable, velocity_settle):
-        self.cs_axis = cs_axis
-        self.cs_port = cs_port
-        self.acceleration = acceleration
-        self.resolution = resolution
-        self.offset = offset
-        self.max_velocity = max_velocity
-        self.current_position = current_position
-        self.scannable = scannable
-        self.velocity_settle = velocity_settle
-
-    def acceleration_time(self, v1, v2):
-        # The time taken to ramp from v1 to pad_velocity
-        ramp_time = abs(v2 - v1) / self.acceleration
-        return ramp_time
-
-    def ramp_distance(self, v1, v2, ramp_time=None):
-        # The distance moved in the first part of the ramp
-        if ramp_time is None:
-            ramp_time = self.acceleration_time(v1, v2)
-        ramp_distance = (v1 + v2) * ramp_time / 2
-        return ramp_distance
-
-    def _make_padded_ramp(self, v1, v2, pad_velocity, total_time):
-        """Makes a ramp that looks like this:
-
-        v1 \______ pad_velocity
-           |      |\
-           |      | \v2
-         t1   tp   t2
-        Such that whole section takes total_time
-        """
-        # The time taken to ramp from v1 to pad_velocity
-        t1 = self.acceleration_time(v1, pad_velocity)
-        # Then on to v2
-        t2 = self.acceleration_time(pad_velocity, v2)
-        # The distance during the pad
-        tp = total_time - t1 - t2
-        # Yield the points
-        yield t1, pad_velocity
-        yield tp, pad_velocity
-        yield t2, v2
-
-    def _calculate_hat_params(self, v1, v2, acceleration, distance):
-        # Calculate how long to spend at max velocity
-        if acceleration > 0:
-            vm = self.max_velocity
-        else:
-            vm = -self.max_velocity
-        t1 = self.acceleration_time(v1, vm)
-        d1 = self.ramp_distance(v1, vm, t1)
-        t2 = self.acceleration_time(vm, v2)
-        d2 = self.ramp_distance(v1, vm, t1)
-        dm = distance - d1 - d2
-        tm = dm / vm
-        return t1, tm, t2, vm
-
-    def _make_hat(self, v1, v2, acceleration, distance, min_time=MIN_TIME):
-        """Make a hat that looks like this:
-
-            ______ vm
-        v1 /|   | \
-          d1| dm|d2\ v2
-            |   |
-          t1  tm t2
-
-        Such that the area under the graph (d1+d2+d3) is distance and
-        t1+t2+t3 >= min_time
-        """
-        if min_time > 0:
-            # We are trying to meet time constraints
-            # Solve quadratic to give vm
-            b = v1 + v2 + min_time * acceleration
-            c = distance * acceleration + (v1*v1 + v2*v2) / 2
-            op = b*b - 4 * c
-            if np.isclose(op, 0):
-                # Might have a negative number as rounding error...
-                op = 0
-            elif op < 0:
-                # Can't do this, set something massive to fail vm check...
-                op = 10000000000
-
-            def get_times(vm):
-                t1 = (vm - v1) / acceleration
-                t2 = (vm - v2) / acceleration
-                tm = min_time - t1 - t2
-                assert -self.max_velocity <= vm <= self.max_velocity
-                assert t1 >= 0 and t2 >= 0 and tm >= 0
-                return t1, tm, t2
-
-            try:
-                # Try negative root
-                vm = (b - np.sqrt(op)) / 2
-                t1, tm, t2 = get_times(vm)
-            except AssertionError:
-                try:
-                    # Try positive root
-                    vm = (b + np.sqrt(op)) / 2
-                    t1, tm, t2 = get_times(vm)
-                except AssertionError:
-                    # If vm is out of range or any segment takes negative time,
-                    # we can't do it in min_time, so act as if unconstrained
-                    t1, tm, t2, vm = self._calculate_hat_params(
-                        v1, v2, acceleration, distance)
-        else:
-            t1, tm, t2, vm = self._calculate_hat_params(
-                v1, v2, acceleration, distance)
-
-        # If middle segment needs to be negative time then we need to cap
-        # vm and spend no time at vm
-        if tm <= 0:
-            # Solve the quadratic to work out how long to spend accelerating
-            vm = np.sqrt(
-                (2 * acceleration * distance + v1 * v1 + v2 * v2) / 2)
-            if acceleration < 0:
-                vm = -vm
-            t1 = self.acceleration_time(v1, vm)
-            t2 = self.acceleration_time(vm, v2)
-            tm = 0
-
-        # Yield the result
-        yield t1, vm
-        yield tm, vm
-        yield t2, v2
-
-    def make_velocity_profile(self, v1, v2, distance, min_time=MIN_TIME):
-        """Calculate PVT points that will perform the move within motor params
-
-        Args:
-            v1 (float): Starting velocity in EGUs/s
-            v2 (float): Ending velocity in EGUs/s
-            distance (float): Relative distance to travel in EGUs
-            min_time (float): The minimum time the move should take
-
-        Returns:
-            tuple: (time_list, position_list) where time_list is a list of
-                relative time points in seconds, and position_list is the
-                position in EGUs that the motor should be
-        """
-        # Take off the settle time and distance
-        if min_time > 0:
-            min_time -= self.velocity_settle
-        distance -= self.velocity_settle * v2
-        # The ramp time and distance of a continuous ramp from v1 to v2
-        ramp_time = self.acceleration_time(v1, v2)
-        ramp_distance = self.ramp_distance(v1, v2, ramp_time)
-        remaining_distance = distance - ramp_distance
-        # Check if we need to stretch in time
-        if min_time > ramp_time:
-            # Check how fast we would need to be going so that the total move
-            # completes in min_time
-            pad_velocity = remaining_distance / (min_time - ramp_time)
-            if pad_velocity > max(v1, v2):
-                # Can't just pad the ramp, make a hat pointing up
-                it = self._make_hat(
-                    v1, v2, self.acceleration, distance, min_time)
-            elif pad_velocity < min(v1, v2):
-                # Can't just pad the ramp, make a hat pointing down
-                it = self._make_hat(
-                    v1, v2, -self.acceleration, distance, min_time)
-            else:
-                # Make a padded ramp
-                it = self._make_padded_ramp(v1, v2, pad_velocity, min_time)
-        elif remaining_distance < 0:
-            # Make a hat pointing down
-            it = self._make_hat(v1, v2, -self.acceleration, distance, min_time)
-        else:
-            # Make a hat pointing up
-            it = self._make_hat(v1, v2, self.acceleration, distance, min_time)
-        # Create the time and velocity arrays
-        time_array = [0.0]
-        velocity_array = [v1]
-        for t, v in it:
-            assert t >= 0, "Got negative t %s" % t
-            if t == 0:
-                assert v == velocity_array[-1], \
-                    "Can't move velocity in zero time"
-                continue
-            if v * velocity_array[-1] < 0:
-                # Crossed zero, put in an explicit zero velocity
-                fraction = velocity_array[-1] / (velocity_array[-1] - v)
-                time_array.append(time_array[-1] + fraction * t)
-                velocity_array.append(0)
-                t -= fraction * t
-            time_array.append(time_array[-1] + t)
-            velocity_array.append(v)
-        # Add on the settle time
-        if self.velocity_settle > 0:
-            time_array.append(time_array[-1] + self.velocity_settle)
-            velocity_array.append(v2)
-        return time_array, velocity_array
-
-
 @method_also_takes(
     "minTurnaround", NumberMeta(
         "float64", "Min time for any gaps between frames"), 0.0)
@@ -274,19 +80,20 @@ class PMACTrajectoryPart(StatefulChildPart):
               self.min_turnaround.set_value
 
     @RunnableController.Reset
-    def reset(self, task):
-        super(PMACTrajectoryPart, self).reset(task)
-        self.abort(task)
-        self.reset_triggers(task)
+    def reset(self, context):
+        super(PMACTrajectoryPart, self).reset(context)
+        self.abort(context)
+        self.reset_triggers(context)
 
     @RunnableController.Validate
     @method_takes(*configure_args)
-    def validate(self, task, part_info, params):
+    def validate(self, context, part_info, params):
         self._make_axis_mapping(part_info, params.axesToMove)
         # Find the duration
+        child = context.block_view(self.params.mri)
         assert params.generator.duration > 0, \
             "Can only do fixed duration at the moment"
-        servo_freq = 8388608000. / self.child.i10
+        servo_freq = 8388608000. / child.i10
         # convert half an exposure to multiple of servo ticks, rounding down
         # + 0.002 for some observed jitter in the servo frequency (I18)
         ticks = np.floor(servo_freq * 0.5 * params.generator.duration) + 0.002
@@ -330,42 +137,45 @@ class PMACTrajectoryPart(StatefulChildPart):
     @RunnableController.PostRunReady
     @RunnableController.Seek
     @method_takes(*configure_args)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
-        task.unsubscribe_all()
-        task.put(self.child["numPoints"], 4000000)
+    def configure(self, context, completed_steps, steps_to_do, part_info, params):
+        context.unsubscribe_all()
+        child = context.block_view(self.params.mri)
+        child.numPoints.put_value(4000000)
         self.generator = params.generator
         cs_port, self.axis_mapping = self._make_axis_mapping(
             part_info, params.axesToMove)
         # Set the right CS to move
-        task.put(self.child["cs"], cs_port)
-        futures = self.move_to_start(task, completed_steps)
+        child.cs.put_value(cs_port)
+        future = self.move_to_start(child, completed_steps)
         self.steps_up_to = completed_steps + steps_to_do
         self.completed_steps_lookup = []
         profile = self.build_generator_profile(completed_steps, do_run_up=True)
-        task.wait_all(futures)
-        self.write_profile_points(task, **profile)
+        context.wait_all(future)
+        self.write_profile_points(child, **profile)
         # Max size of array
-        task.post(self.child["buildProfile"])
+        child.buildProfile()
 
     @RunnableController.Run
     @RunnableController.Resume
-    def run(self, task, update_completed_steps):
+    def run(self, context, update_completed_steps):
         self.loading = False
-        task.subscribe(self.child["pointsScanned"], self.update_step,
-                       update_completed_steps, task)
-        task.post(self.child["executeProfile"])
+        child = context.block_view(self.params.mri)
+        child.pointsScanned.subscribe_value(
+            self.update_step, update_completed_steps, child)
+        child.executeProfile()
 
     @RunnableController.Abort
-    def abort(self, task):
-        task.post(self.child["abortProfile"])
+    def abort(self, context):
+        child = context.block_view(self.params.mri)
+        child.abortProfile()
 
     @RunnableController.Pause
-    def pause(self, task):
-        self.abort(task)
-        task.sleep(0.5)
-        self.reset_triggers(task)
+    def pause(self, context):
+        self.abort(context)
+        context.sleep(0.5)
+        self.reset_triggers(context)
 
-    def update_step(self, scanned, update_completed_steps, task):
+    def update_step(self, scanned, update_completed_steps, child):
         if scanned > 0:
             completed_steps = self.completed_steps_lookup[scanned - 1]
             update_completed_steps(completed_steps, self)
@@ -373,8 +183,8 @@ class PMACTrajectoryPart(StatefulChildPart):
                     self.end_index - completed_steps < POINTS_PER_BUILD:
                 self.loading = True
                 profile = self.build_generator_profile(self.end_index)
-                self.write_profile_points(task, **profile)
-                task.post(self.child["appendProfile"])
+                self.write_profile_points(child, **profile)
+                child.appendProfile()
                 self.loading = False
 
     def point_velocities(self, point):
@@ -413,7 +223,7 @@ class PMACTrajectoryPart(StatefulChildPart):
                 iterations -= 1
         raise ValueError("Can't get a consistent time in 5 iterations")
 
-    def move_to_start(self, task, start_index):
+    def move_to_start(self, child, start_index):
         """Move to the run up position ready to start the scan"""
         first_point = self.generator.get_point(start_index)
         zero_velocities = {}
@@ -440,12 +250,12 @@ class PMACTrajectoryPart(StatefulChildPart):
         profile = self.build_profile_from_velocities(
             time_arrays, velocity_arrays, current_positions)
 
-        self.write_profile_points(task, **profile)
-        task.post(self.child["buildProfile"])
-        futures = task.post_async(self.child["executeProfile"])
-        return futures
+        self.write_profile_points(child, **profile)
+        child.buildProfile()
+        future = child.executeProfile_async()
+        return future
 
-    def write_profile_points(self, task, time_array, velocity_mode, trajectory,
+    def write_profile_points(self, child, time_array, velocity_mode, trajectory,
                              user_programs, completed_steps_lookup=None):
         """Build profile using part_contexts
 
@@ -453,7 +263,7 @@ class PMACTrajectoryPart(StatefulChildPart):
             time_array (list): List of times in ms
             velocity_mode (list): List of velocity modes like PREV_TO_NEXT
             trajectory (dict): {axis_name: [positions in EGUs]}
-            task (Task): Task for running
+            child (Block): Child block for running
             user_programs (list): List of user programs like TRIG_LIVE_FRAME
             completed_steps_lookup (list): If given, when we get to this index,
                 how many completed steps have we done?
@@ -470,7 +280,7 @@ class PMACTrajectoryPart(StatefulChildPart):
             attr_dict["offset%s" % cs_axis] = motor_info.offset
         for cs_axis in cs_axis_names:
             attr_dict["use%s" % cs_axis] = cs_axis in use
-        task.put_many(self.child, attr_dict)
+        child.put_attribute_values(attr_dict)
 
         # Start adding points, padding if the move time exceeds 4s
         i = 0
@@ -532,23 +342,24 @@ class PMACTrajectoryPart(StatefulChildPart):
             motor_info = self.axis_mapping[axis_name]
             cs_axis = motor_info.cs_axis
             attr_dict["positions%s" % cs_axis] = trajectory[axis_name]
-        task.put_many(self.child, attr_dict)
+        child.put_attribute_values(attr_dict)
 
         # Set completed_steps
         if completed_steps_lookup is not None:
             self.completed_steps_lookup += completed_steps_lookup
 
-    def reset_triggers(self, task):
+    def reset_triggers(self, context):
         """Just call a Move to the run up position ready to start the scan"""
-        task.put(self.child["numPoints"], 10)
+        child = context.block_view(self.params.mri)
+        child.numPoints.put_value(10)
         time_array = [0.1]
         velocity_mode = [ZERO_VELOCITY]
         user_programs = [TRIG_ZERO]
         trajectory = {}
-        self.write_profile_points(task, time_array, velocity_mode, trajectory,
+        self.write_profile_points(child, time_array, velocity_mode, trajectory,
                                   user_programs)
-        task.post(self.child["buildProfile"])
-        task.post(self.child["executeProfile"])
+        child.buildProfile()
+        child.executeProfile()
 
     def build_profile_from_velocities(self, time_arrays, velocity_arrays,
                                       current_positions):

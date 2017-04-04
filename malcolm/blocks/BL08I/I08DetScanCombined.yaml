@@ -3,12 +3,8 @@
     description: MRI for created block
 
 - parameters.string:
-    name: det1
-    description: MRI for detector 1 DetectorManager object
-
-- parameters.string:
-    name: det2
-    description: MRI for detector 2 DetectorManager object
+    name: det
+    description: MRI for detector DetectorManager object
 
 - parameters.string:
     name: brick
@@ -25,17 +21,13 @@
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
-- parts.demo.I08ScanCombinedPart:
+- parts.demo.BL08IScanCombinedPart:
     name: BRICK
     mri: $(brick)
 
 - parts.ADCore.DatasetRunnableChildPart:
     name: DET
-    mri: $(det1)
-
-- parts.ADCore.DatasetRunnableChildPart:
-    name: DET
-    mri: $(det2)
+    mri: $(det)
 
 - parts.ADCore.DatasetRunnableChildPart:
     name: PANDABOX

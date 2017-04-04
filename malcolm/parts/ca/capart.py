@@ -1,7 +1,8 @@
-from malcolm.controllers.builtin.defaultcontroller import DefaultController
-from malcolm.core import method_takes, REQUIRED
+from cothread import catools
+
+from malcolm.controllers.builtin import StatefulController
+from malcolm.core import method_takes, REQUIRED, Alarm, AlarmStatus, TimeStamp
 from malcolm.parts.builtin.attributepart import AttributePart
-from malcolm.parts.ca.cothreadimporter import CothreadImporter
 from malcolm.tags import widget_types, inport, port_types
 from malcolm.vmetas.builtin import StringMeta, ChoiceMeta, BooleanMeta
 
@@ -15,17 +16,8 @@ from malcolm.vmetas.builtin import StringMeta, ChoiceMeta, BooleanMeta
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "inport", ChoiceMeta("Inport type", [""] + port_types), "",
     "config", BooleanMeta("Should this field be loaded/saved?"), False)
-class CAPart(AttributePart):
-    # Camonitor subscription
-    monitor = None
-
-    def __init__(self, process, params):
-        self.cothread, self.catools = CothreadImporter.get_cothread(process)
-        # Format for all caputs
-        self.ca_format = self.catools.FORMAT_TIME
-        super(CAPart, self).__init__(process, params)
-
-    def store_params(self, params):
+class CAPart(AttributePart):    
+    def __init__(self, params):
         if not params.rbv and not params.pv:
             raise ValueError('Must pass pv or rbv')
         if not params.rbv:
@@ -33,7 +25,9 @@ class CAPart(AttributePart):
                 params.rbv = params.pv + params.rbvSuff
             else:
                 params.rbv = params.pv
-        super(CAPart, self).store_params(params)
+        # Camonitor subscription
+        self.monitor = None
+        super(CAPart, self).__init__(params)
 
     def get_writeable_func(self):
         if self.params.pv:
@@ -56,17 +50,16 @@ class CAPart(AttributePart):
         CA connect before the first update_value()"""
         pass
 
-    @DefaultController.Reset
-    def reset(self, task=None):
+    @StatefulController.Reset
+    def reset(self, context=None):
         # release old monitor
         self.close_monitor()
         # make the connection in cothread's thread, use caget for initial value
         pvs = [self.params.rbv]
         if self.params.pv:
             pvs.append(self.params.pv)
-        ca_values = self.cothread.CallbackResult(
-            self.catools.caget, pvs,
-            format=self.catools.FORMAT_CTRL, datatype=self.get_datatype())
+        ca_values = catools.caget(
+            pvs, format=catools.FORMAT_CTRL, datatype=self.get_datatype())
         # check connection is ok
         for i, v in enumerate(ca_values):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
@@ -74,38 +67,43 @@ class CAPart(AttributePart):
         self.update_value(ca_values[0])
         self.log_debug("ca values connected %s", ca_values)
         # now setup monitor on rbv
-        self.monitor = self.cothread.CallbackResult(
-            self.catools.camonitor, self.params.rbv, self.update_value,
-            format=self.catools.FORMAT_TIME, datatype=self.get_datatype(),
+        self.monitor = catools.camonitor(
+            self.params.rbv, self.update_value,
+            format=catools.FORMAT_TIME, datatype=self.get_datatype(),
             notify_disconnect=True, all_updates=True)
 
-    @DefaultController.Disable
-    def close_monitor(self, task=None):
+    @StatefulController.Disable
+    def close_monitor(self, context=None):
         if self.monitor is not None:
-            self.cothread.CallbackResult(self.monitor.close)
+            self.monitor.close()
             self.monitor = None
 
     def format_caput_value(self, value):
-        self.log_info("caput -c -w 1000 %s %s", self.params.pv, value)
+        self.log_debug("caput -c -w 1000 %s %s", self.params.pv, value)
         return value
 
     def caput(self, value):
         value = self.format_caput_value(value)
-        self.cothread.CallbackResult(
-            self.catools.caput, self.params.pv, value, wait=True, timeout=None,
+        catools.caput(
+            self.params.pv, value, wait=True, timeout=None,
             datatype=self.get_datatype())
         # now do a caget
-        value = self.cothread.CallbackResult(
-            self.catools.caget, self.params.rbv,
-            format=self.catools.FORMAT_TIME, datatype=self.get_datatype())
+        value = catools.caget(
+            self.params.rbv,
+            format=catools.FORMAT_TIME, datatype=self.get_datatype())
         self.update_value(value)
 
     def update_value(self, value):
-        # TODO: make Alarm from value.status and value.severity
-        # TODO: make Timestamp from value.timestamp
         if not value.ok:
-            # TODO: set disconnect
-            self.attr.set_value(None)
+            alarm = Alarm.invalid("PV disconnected")
+            ts = TimeStamp()
+            value = None
         else:
-            # update value
-            self.attr.set_value(value)
+            if value.severity:
+                alarm = Alarm(severity=value.severity,
+                              status=AlarmStatus.RECORD_STATUS,
+                              message="PV in alarm state")
+            else:
+                alarm = Alarm()
+            ts = TimeStamp(*value.raw_stamp)
+        self.attr.set_value(value, set_alarm_ts=True, alarm=alarm, ts=ts)

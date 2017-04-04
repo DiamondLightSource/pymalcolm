@@ -1,3 +1,5 @@
+from cothread import catools
+
 from malcolm.vmetas.builtin import NumberMeta
 from malcolm.parts.ca.capart import CAPart
 
@@ -9,4 +11,4 @@ class CADoublePart(CAPart):
         return NumberMeta("float64", description=description, tags=tags)
 
     def get_datatype(self):
-        return self.catools.DBR_DOUBLE
+        return catools.DBR_DOUBLE

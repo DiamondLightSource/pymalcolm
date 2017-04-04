@@ -37,7 +37,7 @@ class ChildPart(Part):
             direction (str): Which direction to get, "in" or "out"
 
         Returns:
-            dict: {Attribute: PortInfo}: PortInfo for the requested Attributes
+            dict: {attr_name: PortInfo}: PortInfo for the requested Attributes
         """
         ports = OrderedDict()
         for attr_name in child:
@@ -48,8 +48,9 @@ class ChildPart(Part):
                         direction, type, extra = tag.split(":", 3)
                         # Strip of the "port" suffix
                         direction = direction[:-4]
-                        ports[attr] = PortInfo(direction=direction, type=type,
-                                               value=attr.value, extra=extra)
+                        ports[attr_name] = PortInfo(
+                            direction=direction, type=type, value=attr.value,
+                            extra=extra)
         return ports
 
     @ManagerController.Layout
@@ -126,10 +127,10 @@ class ChildPart(Part):
                 outport or None for all inports
         """
         attribute_values = {}
-        for attr, port_info in self._get_flowgraph_ports(child, "in").items():
+        for name, port_info in self._get_flowgraph_ports(child, "in").items():
             if outport_lookup is None or outport_lookup.get(
                     port_info.value, None) == port_info.type:
-                attribute_values[attr] = port_info.extra
+                attribute_values[name] = port_info.extra
         child.put_attribute_values(attribute_values)
 
     def child_connected(self, child, part_info):

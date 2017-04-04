@@ -1,5 +1,3 @@
-import weakref
-
 from malcolm.core.loggable import Loggable
 from malcolm.core.errors import AbortedError
 

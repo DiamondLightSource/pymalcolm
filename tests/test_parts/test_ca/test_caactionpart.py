@@ -4,30 +4,23 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import MagicMock, ANY
+from mock import patch, ANY
 
 # logging
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.core import Process, SyncFactory
+from malcolm.core import call_with_params
 from malcolm.parts.ca.caactionpart import CAActionPart
-
 
 
 class caint(int):
     ok = True
+    
 
-
+@patch("malcolm.parts.ca.caactionpart.catools")
 class TestCAActionPart(unittest.TestCase):
-
-    def setUp(self):
-        sf = SyncFactory("sf")
-        self.process = Process("process", sf)
-
-    def tearDown(self):
-        del self.process.sync_factory
 
     def create_part(self, params=None):
         if params is None:
@@ -37,13 +30,11 @@ class TestCAActionPart(unittest.TestCase):
                 pv="pv",
             )
 
-        params = CAActionPart.MethodMeta.prepare_input_map(**params)
-        p = CAActionPart(self.process, params)
-        p.set_logger_name("something")
+        p = call_with_params(CAActionPart, **params)
         self.yielded = list(p.create_methods())
         return p
 
-    def test_init(self):
+    def test_init(self, catools):
         p = self.create_part()
         self.assertEqual(p.params.pv, "pv")
         self.assertEqual(p.params.value, 1)
@@ -51,34 +42,34 @@ class TestCAActionPart(unittest.TestCase):
         self.assertEqual(p.method.description, "desc")
         self.assertEqual(self.yielded, [("mname", ANY, p.caput)])
 
-    def test_reset(self):
+    def test_reset(self, catools):
         p = self.create_part()
-        p.catools.caget.reset_mock()
-        p.catools.caget.return_value = [caint(4)]
+        catools.caget.reset_mock()
+        catools.caget.return_value = [caint(4)]
         p.connect_pvs("unused context object")
-        p.catools.caget.assert_called_with(["pv"])
+        catools.caget.assert_called_with(["pv"])
 
-    def test_caput(self):
+    def test_caput(self, catools):
         p = self.create_part()
-        p.catools.caput.reset_mock()
+        catools.caput.reset_mock()
         p.caput()
-        p.catools.caput.assert_called_once_with(
+        catools.caput.assert_called_once_with(
             "pv", 1, wait=True, timeout=None)
 
-    def test_caput_status_pv_ok(self):
+    def test_caput_status_pv_ok(self, catools):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", statusPv="spv",
             goodStatus="All Good"))
-        p.catools.caput.reset_mock()
-        p.catools.caget.return_value = "All Good"
+        catools.caput.reset_mock()
+        catools.caget.return_value = "All Good"
         p.caput()
 
-    def test_caput_status_pv_no_good(self):
+    def test_caput_status_pv_no_good(self, catools):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", statusPv="spv",
             goodStatus="All Good"))
-        p.catools.caput.reset_mock()
-        p.catools.caget.return_value = "No Good"
+        catools.caput.reset_mock()
+        catools.caget.return_value = "No Good"
         self.assertRaises(AssertionError, p.caput)
 
 

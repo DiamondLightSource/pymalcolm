@@ -1,3 +1,5 @@
+from cothread import catools
+
 from malcolm.parts.ca.capart import CAPart
 from malcolm.vmetas.builtin import NumberMeta
 
@@ -9,4 +11,4 @@ class CALongPart(CAPart):
         return NumberMeta("int32", description=description, tags=tags)
 
     def get_datatype(self):
-        return self.catools.DBR_LONG
+        return catools.DBR_LONG

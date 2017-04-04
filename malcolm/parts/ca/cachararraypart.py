@@ -1,3 +1,5 @@
+from cothread import catools
+
 from malcolm.vmetas.builtin import StringMeta
 from malcolm.parts.ca.capart import CAPart
 
@@ -9,8 +11,8 @@ class CACharArrayPart(CAPart):
         return StringMeta(description=description, tags=tags)
 
     def get_datatype(self):
-        return self.catools.DBR_CHAR_STR
+        return catools.DBR_CHAR_STR
 
     def format_caput_value(self, value):
-        self.log_info("caput -c -w 1000 -S %s %r", self.params.pv, value)
+        self.log_debug("caput -c -w 1000 -S %s %r", self.params.pv, value)
         return value

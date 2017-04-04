@@ -1,0 +1,1 @@
+from .motorinfo import MotorInfo

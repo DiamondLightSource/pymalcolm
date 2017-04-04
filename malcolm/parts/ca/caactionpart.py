@@ -1,6 +1,7 @@
-from malcolm.controllers.builtin.defaultcontroller import DefaultController
-from malcolm.core import Part, method_takes, REQUIRED, MethodMeta
-from malcolm.parts.ca.cothreadimporter import CothreadImporter
+from cothread import catools
+
+from malcolm.controllers.builtin import StatefulController
+from malcolm.core import Part, method_takes, REQUIRED, MethodModel
 from malcolm.vmetas.builtin import StringMeta, NumberMeta, BooleanMeta
 
 
@@ -13,25 +14,23 @@ from malcolm.vmetas.builtin import StringMeta, NumberMeta, BooleanMeta
     "value", NumberMeta("int32", "value to write to pv when method called"), 1,
     "wait", BooleanMeta("Wait for caput callback?"), True)
 class CAActionPart(Part):
-    method = None
-
-    def __init__(self, process, params):
-        self.cothread, self.catools = CothreadImporter.get_cothread(process)
-        super(CAActionPart, self).__init__(process, params)
+    def __init__(self, params):
+        self.method = None
+        self.params = params
+        super(CAActionPart, self).__init__(params.name)
 
     def create_methods(self):
         # Method instance
-        self.method = MethodMeta(self.params.description)
+        self.method = MethodModel(self.params.description)
         # TODO: set widget tag?
         yield self.params.name, self.method, self.caput
 
-    @DefaultController.Reset
+    @StatefulController.Reset
     def connect_pvs(self, _):
-        # make the connection in cothread's thread
         pvs = [self.params.pv]
         if self.params.statusPv:
             pvs.append(self.params.statusPv)
-        ca_values = self.cothread.CallbackResult(self.catools.caget, pvs)
+        ca_values = catools.caget(pvs)
         # check connection is ok
         for i, v in enumerate(ca_values):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
@@ -41,14 +40,14 @@ class CAActionPart(Part):
             cmd = "caput -c -w 1000"
         else:
             cmd = "caput"
-        self.log_info("%s %s %s", cmd, self.params.pv, self.params.value)
-        self.cothread.CallbackResult(
-            self.catools.caput, self.params.pv, self.params.value,
+        self.log_debug("%s %s %s", cmd, self.params.pv, self.params.value)
+        catools.caput(
+            self.params.pv, self.params.value,
             wait=self.params.wait, timeout=None)
         if self.params.statusPv:
-            value = self.cothread.CallbackResult(
-                self.catools.caget, self.params.statusPv,
-                datatype=self.catools.DBR_STRING)
+            value = catools.caget(
+                self.params.statusPv,
+                datatype=catools.DBR_STRING)
             assert value == self.params.goodStatus, \
                 "Action '%s %s %s' failed with status %r" % (
                     cmd, self.params.pv, self.params.value, value)

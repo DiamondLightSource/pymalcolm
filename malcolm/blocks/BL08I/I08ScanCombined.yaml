@@ -21,7 +21,7 @@
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
-- parts.demo.I08ScanCombinedPart:
+- parts.demo.BL08IScanCombinedPart:
     name: BRICK
     mri: $(brick)
 

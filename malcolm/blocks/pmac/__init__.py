@@ -1,6 +1,8 @@
-# Find all subpackages, MethodMeta decorated callables, and YAML files
-from malcolm.packageutil import prepare_package
+from malcolm.yamlutil import make_block_creator
 
-__all__ = prepare_package(globals(), __name__)
+compound_motor_block = make_block_creator(__file__, "compound_motor_block.yaml")
+pmac_trajectory_block = make_block_creator(
+    __file__, "pmac_trajectory_block.yaml")
+raw_motor_block = make_block_creator(__file__, "raw_motor_block.yaml")
 
-del prepare_package
+del make_block_creator

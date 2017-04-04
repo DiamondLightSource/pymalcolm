@@ -8,16 +8,15 @@ import setup_malcolm_paths
 # logging.basicConfig(level=logging.DEBUG)
 
 import unittest
-from mock import Mock, ANY
 
 from malcolm.parts.demo import CounterPart
-from malcolm.core.block import Block
+from malcolm.core import call_with_params
 
 
 class TestCounterPart(unittest.TestCase):
 
     def setUp(self):
-        self.c = CounterPart(Mock(), Mock())
+        self.c = call_with_params(CounterPart, name="counting")
         list(self.c.create_attributes())
 
     def test_increment_increments(self):
@@ -28,7 +27,7 @@ class TestCounterPart(unittest.TestCase):
         self.assertEquals(2, self.c.counter.value)
 
     def test_reset_sets_zero(self):
-        self.c.counter.set_endpoint_data("value", 1234, notify=False)
+        self.c.counter.set_value(1234)
         self.c.zero()
         self.assertEquals(0, self.c.counter.value)
 

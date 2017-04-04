@@ -4,15 +4,16 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, MagicMock
+from mock import Mock
 
 from malcolm.parts.demo.hellopart import HelloPart
+from malcolm.core import call_with_params
 
 
 class TestHelloPart(unittest.TestCase):
 
     def setUp(self):
-        self.c = HelloPart('block', MagicMock())
+        self.c = call_with_params(HelloPart, name='block')
 
     def test_say_hello(self):
         expected = "Hello test_name"

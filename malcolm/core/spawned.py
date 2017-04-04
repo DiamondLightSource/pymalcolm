@@ -48,4 +48,6 @@ class Spawned(object):
     def get(self, timeout=None):
         if not self.ready():
             self.wait(timeout)
+        if isinstance(self._result, Exception):
+            raise self._result
         return self._result

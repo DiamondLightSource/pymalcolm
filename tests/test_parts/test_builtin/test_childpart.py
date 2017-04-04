@@ -10,15 +10,12 @@ from mock import Mock, ANY
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.core.part import Part
-from malcolm.parts.builtin.childpart import StatefulChildPart
-from malcolm.core.syncfactory import SyncFactory
-from malcolm.core import Process, Table, Task
-from malcolm.controllers.scanning.runnablecontroller import RunnableController
-from malcolm.controllers.builtin.defaultcontroller import DefaultController
+from malcolm.controllers.builtin import BaseController, ManagerController
+from malcolm.core import Part, Process, Table, call_with_params, Context
+from malcolm.parts.builtin import ChildPart
 from malcolm.vmetas.builtin.stringmeta import StringMeta
 
-sm = RunnableController.stateMachine
+sm = ManagerController.stateSet
 
 
 class PortsPart(Part):
@@ -54,21 +51,15 @@ class TestChildPart(unittest.TestCase):
         self.assertEqual(self.c.state.value, state)
 
     def makeChildBlock(self, blockMri):
-        params = PortsPart.MethodMeta.prepare_input_map(name='Connector')
-        port_part = PortsPart(self.p, params)
-
-        partName = 'part%s' % blockMri
-        params = DefaultController.MethodMeta.prepare_input_map(mri=blockMri)
-        controller = DefaultController(self.p, [port_part], params)
-
-        params = StatefulChildPart.MethodMeta.prepare_input_map(
-            mri=blockMri, name=partName)
-        part = StatefulChildPart(self.p, params)
-
+        controller = call_with_params(
+            BaseController, self.p, [PortsPart(name='Connector')], mri=blockMri)
+        part = call_with_params(
+            ChildPart, mri=blockMri, name='part%s' % blockMri)
+        self.p.add_controller(blockMri, controller)
         return part, controller
 
     def setUp(self):
-        self.p = Process('process1', SyncFactory('threading'))
+        self.p = Process('process1')
 
         self.p1, self.c1 = self.makeChildBlock('child1')
         self.p2, self.c2 = self.makeChildBlock('child2')
@@ -76,80 +67,41 @@ class TestChildPart(unittest.TestCase):
 
         # create a root block for the child blocks to reside in
         parts = [self.p1, self.p2, self.p3]
-        params = RunnableController.MethodMeta.prepare_input_map(
-            mri='mainBlock', configDir="/tmp")
-        self.c = RunnableController(self.p, parts, params)
-        self.b = self.c.block
+        self.c = call_with_params(
+            ManagerController, self.p, parts, mri='mainBlock', configDir="/tmp")
+        self.p.add_controller('mainBlock', self.c)
 
-        params = StatefulChildPart.MethodMeta.prepare_input_map(
-            mri='mainBlock', name='mainPart')
-        self.part = StatefulChildPart(self.p, params)
-
-        # Get the parent block into idle state
+        # Start the process
+        # check that do_initial_reset works asynchronously
+        assert self.c.state.value == sm.DISABLED
         self.p.start()
-
-        # wait until block is Ready
-        task = Task("block_ready_task", self.p)
-        task.when_matches(self.c.block["state"], sm.IDLE, timeout=1)
-
-        self.checkState(sm.IDLE)
+        assert self.c.state.value == sm.READY
 
     def tearDown(self):
         self.p.stop()
 
     def test_init(self):
-        # check instantiation of object tree via logger names
-        self.assertEqual(self.c._logger.name,
-                         'RunnableController(mainBlock)')
-        self.assertEqual(self.c.parts['partchild1']._logger.name,
-                         'RunnableController(mainBlock).partchild1')
-        self.assertEqual(self.c.parts['partchild2']._logger.name,
-                         'RunnableController(mainBlock).partchild2')
-        self.assertEqual(self.c.parts['partchild3']._logger.name,
-                         'RunnableController(mainBlock).partchild3')
+        for controller in (self.c1, self.c2, self.c3):
+            b = self.p.block_view(controller.mri)
+            assert b.inportConnector.value == ''
+            assert b.outportConnector.value == ''
 
-        self.assertEqual(self.c1.parts['Connector']._logger.name,
-                         'DefaultController(child1).Connector')
-        self.assertEqual(self.c2.parts['Connector']._logger.name,
-                         'DefaultController(child2).Connector')
-        self.assertEqual(self.c3.parts['Connector']._logger.name,
-                         'DefaultController(child3).Connector')
-
-        self.assertEqual(self.c1.block.inportConnector, '')
-        self.assertEqual(self.c1.block.outportConnector, '')
-
-        self.assertEqual(self.c.exports.meta.elements.name.choices, (
-            'partchild1.busy',
-            'partchild1.disable',
+    def test_edit_export_choices(self):
+        self.c.edit()
+        self.assertEqual(self.c.exports.meta.elements["name"].choices, (
+            'partchild1.health',
             'partchild1.inportConnector',
             'partchild1.outportConnector',
-            'partchild1.reset',
-            'partchild1.state',
-            'partchild1.status',
-            'partchild2.busy',
-            'partchild2.disable',
+            'partchild2.health',
             'partchild2.inportConnector',
             'partchild2.outportConnector',
-            'partchild2.reset',
-            'partchild2.state',
-            'partchild2.status',
-            'partchild3.busy',
-            'partchild3.disable',
+            'partchild3.health',
             'partchild3.inportConnector',
-            'partchild3.outportConnector',
-            'partchild3.reset',
-            'partchild3.state',
-            'partchild3.status'))
-
-    def test_reset(self):
-        # TODO cover the clause 'state == RESETTING'
-        self.c.disable()
-        self.checkState(sm.DISABLED)
-        self.c.reset()
-        self.checkState(sm.IDLE)
+            'partchild3.outportConnector'))
 
     def test_report_ports(self):
-        ports = self.p1.report_ports(None)
+        context = Context("c", self.p)
+        ports = self.p1.report_ports(context)
         self.assertEqual(len(ports), 2)
         self.assertEqual(ports[0].direction, "in")
         self.assertEqual(ports[0].type, "int32")
@@ -161,6 +113,7 @@ class TestChildPart(unittest.TestCase):
         self.assertEqual(ports[1].extra, "Connector")
 
     def test_layout(self):
+        b = self.p.block_view("mainBlock")
         self.c.edit()
         self.checkState(sm.EDITABLE)
 
@@ -170,7 +123,7 @@ class TestChildPart(unittest.TestCase):
         new_layout.x = [10, 11, 12]
         new_layout.y = [20, 21, 22]
         new_layout.visible = [True, True, True]
-        self.b.layout = new_layout
+        b.layout.value = new_layout
         self.assertEqual(self.c.parts['partchild1'].x, 10)
         self.assertEqual(self.c.parts['partchild1'].y, 20)
         self.assertEqual(self.c.parts['partchild1'].visible, True)
@@ -182,54 +135,46 @@ class TestChildPart(unittest.TestCase):
         self.assertEqual(self.c.parts['partchild3'].visible, True)
 
         new_layout.visible = [True, False, True]
-        self.b.layout= new_layout
+        b.layout.value = new_layout
         self.assertEqual(self.c.parts['partchild1'].visible, True)
         self.assertEqual(self.c.parts['partchild2'].visible, False)
         self.assertEqual(self.c.parts['partchild3'].visible, True)
 
     def test_sever_all_inports(self):
-        self.c1.block.inportConnector = 'Connector'
-        self.c2.block.inportConnector = 'Connector'
-        self.c3.block.inportConnector = 'Connector3'
+        b1, b2, b3 = (self.c1.block_view(), self.c2.block_view(),
+                      self.c3.block_view())
+        b1.inportConnector.value = 'Connector'
+        b2.inportConnector.value = 'Connector'
+        b3.inportConnector.value = 'Connector3'
 
-        task = Task("Task1" , self.p)
-        self.p1.sever_inports(task)
-        task.wait_all([], 5)
-        self.assertEqual(self.c1.block.inportConnector, '')
-        self.assertEqual(self.c2.block.inportConnector, 'Connector')
-        self.assertEqual(self.c3.block.inportConnector, 'Connector3')
+        self.p1.sever_inports(b1)
+        assert b1.inportConnector.value == ''
+        assert b2.inportConnector.value == 'Connector'
+        assert b3.inportConnector.value == 'Connector3'
 
     def test_sever_inports_connected_to(self):
-        self.c1.block.inportConnector = 'Connector'
+        b1 = self.c1.block_view()
 
-        self.assertEqual(self.c1.block.inportConnector, 'Connector')
+        b1.inportConnector.value = 'Connector'
+        assert b1.inportConnector.value == 'Connector'
 
-        task = Task("Task1" , self.p)
-        out_port = {'Connector': 'int32'}
-        self.p1.sever_inports(task, out_port)
-        self.assertEqual(self.c1.block.inportConnector, '')
-
-    def test_get_flowgraph_ports(self):
-        count = len(self.p1._get_flowgraph_ports('out'))
-        self.assertEqual(count, 1)
-        count = len(self.p1._get_flowgraph_ports('in'))
-        self.assertEqual(count, 1)
+        lookup = {'Connector': 'int32'}
+        self.p1.sever_inports(b1, lookup)
+        assert b1.inportConnector.value == ''
 
     def test_load_save(self):
-        structure1 = self.p1.save(ANY)
+        b1 = self.c1.block_view()
+        context = Context("c", self.p)
+        structure1 = self.p1.save(context)
         expected = dict(inportConnector="")
-        self.assertEqual(structure1, expected)
-        self.p1.child.inportConnector = "blah"
-        structure2 = self.p1.save(ANY)
+        assert structure1 == expected
+        b1.inportConnector.value = "blah"
+        structure2 = self.p1.save(context)
         expected = dict(inportConnector="blah")
-        self.assertEqual(structure2, expected)
-        task = Mock()
-        task.put_async.return_value = ["future"]
-        self.p1.load(task, dict(partchild1=dict(inportConnector="blah_again")))
-        task.put_async.assert_called_once_with(
-            self.p1.child["inportConnector"], "blah_again")
-        task.wait_all.assert_called_once_with(["future"])
-
+        assert structure2 == expected
+        self.p1.load(context, dict(
+            partchild1=dict(inportConnector="blah_again")))
+        assert b1.inportConnector.value == "blah_again"
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

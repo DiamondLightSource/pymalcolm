@@ -160,6 +160,10 @@ class Controller(Loggable):
             self.health.set_alarm(alarm)
             self.health.set_timeStamp()
 
+    def block_view(self):
+        context = Context("Context", self.process)
+        return self.make_view(context)
+
     def make_view(self, context, data=None, child_name=None):
         """Make a child View of data[child_name]"""
         with self._lock:

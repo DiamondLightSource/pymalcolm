@@ -9,6 +9,7 @@ from mock import Mock, MagicMock, call, ANY
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.parts.demo.scantickerpart import ScanTickerPart
+from malcolm.core import call_with_params
 
 
 class AlmostFloat:
@@ -23,26 +24,15 @@ class AlmostFloat:
 class TestScanTickerPart(unittest.TestCase):
 
     def setUp(self):
-        self.process = Mock()
-        self.child = MagicMock()
-
-        def getitem(name):
-            return name
-
-        self.child.__getitem__.side_effect = getitem
-        self.params = ScanTickerPart.MethodMeta.prepare_input_map(
-            name="AxisTwo", mri="mri")
-        self.process.get_block.return_value = self.child
-        self.o = ScanTickerPart(self.process, self.params)
+        self.o = call_with_params(ScanTickerPart, name="AxisTwo", mri="mri")
 
     def prepare_half_run(self):
         line1 = LineGenerator('AxisOne', 'mm', 0, 2, 3)
         line2 = LineGenerator('AxisTwo', 'mm', 0, 2, 2)
         compound = CompoundGenerator([line1, line2], [], [], 1.0)
-        params = ScanTickerPart.configure.MethodMeta.prepare_input_map(
-            generator=compound, axesToMove=['AxisTwo'])
-        params.generator.prepare()
-        self.o.configure(MagicMock(), 0, 2, MagicMock(), params)
+        compound.prepare()
+        call_with_params(self.o.configure, MagicMock(), 0, 2, MagicMock(),
+                         generator=compound, axesToMove=['AxisTwo'])
 
     def test_configure(self):
         self.prepare_half_run()
@@ -51,13 +41,14 @@ class TestScanTickerPart(unittest.TestCase):
 
     def test_run(self):
         self.prepare_half_run()
-        task = MagicMock()
+        context = MagicMock()
         update_completed_steps = MagicMock()
-        self.o.run(task, update_completed_steps)
-        self.assertEqual(task.mock_calls, [
-            call.put(self.child['counter_block'], 0),
+        self.o.run(context, update_completed_steps)
+        self.assertEqual(context.mock_calls, [
+            call.block_view("mri"),
+            call.block_view().counter.put_value(0),
             call.sleep(AlmostFloat(1.0, delta=0.05)),
-            call.put(self.child['counter_block'], 2),
+            call.block_view().counter.put_value(2),
             call.sleep(AlmostFloat(2.0, delta=0.1))])
 
 
