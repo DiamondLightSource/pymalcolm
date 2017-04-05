@@ -10,7 +10,7 @@
     name: statPrefix
     description: the root PV for the pmacStatus template
 
-- controllers.DefaultController:
+- controllers.builtin.StatefulController:
     mri: $(mri)
 
 - parts.ca.CALongPart:

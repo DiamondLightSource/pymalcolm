@@ -60,17 +60,17 @@ class TestMethodItem(unittest.TestCase):
         self.assertIsInstance(request, Post)
 
     def test_handle_response_error(self):
-        response = Error(None, None, "bad")
+        response = Error(message="bad")
         self.item.handle_response(response)
         self.assertEqual(self.item.get_state(), self.item.ERROR)
 
     def test_handle_response_return(self):
-        response = Return(None, None, "yay")
+        response = Return(value="yay")
         self.item.handle_response(response)
         self.assertEqual(self.item.get_state(), self.item.IDLE)
 
     def test_handle_response_unknown(self):
-        response = Delta(None, None, [])
+        response = Delta(changes=[])
         self.assertRaises(TypeError, self.item.handle_response, response)
 
 if __name__ == "__main__":

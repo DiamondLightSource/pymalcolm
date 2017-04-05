@@ -26,9 +26,3 @@ catools = MagicMock()
 # Tell Mock not to have a Method, otherwise we will be decorated
 del catools.MethodMeta
 cothread.catools = catools
-
-# Mock out pvaccess
-sys.modules['pvaccess'] = MagicMock()
-# Tell Mock not to have a Method, otherwise we will be decorated
-import pvaccess
-del pvaccess.MethodMeta

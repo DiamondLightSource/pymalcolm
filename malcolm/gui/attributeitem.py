@@ -12,7 +12,7 @@ class AttributeItem(BaseItem):
 
     def set_value(self, value):
         self._state = self.RUNNING
-        request = Put(self, None, self.endpoint + ("value",), str(value))
+        request = Put(path=self.endpoint + ("value",), value=str(value))
         return request
 
     def handle_response(self, response):

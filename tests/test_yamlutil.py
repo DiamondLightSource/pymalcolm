@@ -3,25 +3,15 @@ import sys
 sys.path.append(os.path.dirname(__file__))
 
 import unittest
-from mock import Mock, ANY
+from mock import Mock, ANY, patch, mock_open
 
 from malcolm.core import method_takes, REQUIRED
+from malcolm.controllers.builtin import BaseController
 from malcolm.vmetas.builtin import StringMeta
 from malcolm.parts.builtin.stringpart import StringPart
 from malcolm.yamlutil import make_block_creator, Section, make_include_creator
 
-
-class TestAssemblies(unittest.TestCase):
-
-    def test_all_yamls(self):
-        from malcolm.blocks.demo import Hello
-        process = Mock()
-        blocks = Hello(process, dict(mri="boo"))
-        self.assertEqual(len(blocks), 1)
-        process.add_block.assert_called_once_with(blocks[0], ANY)
-
-    def test_make_include(self):
-        yaml = """
+include_yaml = """
 - parameters.string:
     name: something
     description: my description
@@ -31,10 +21,39 @@ class TestAssemblies(unittest.TestCase):
     description: Scannable name for motor
     initialValue: $(something)
 """
-        include_creator = make_include_creator(yaml)
+
+block_yaml = """
+- parameters.string:
+    name: something
+    description: my description
+
+- controllers.builtin.BaseController:
+    mri: some_mri
+
+- parts.builtin.StringPart:
+    name: scannable
+    description: Scannable name for motor
+    initialValue: $(something)
+"""
+
+
+class TestYamlUtil(unittest.TestCase):
+
+    def test_all_yamls(self):
+        from malcolm.blocks.demo import hello_block
         process = Mock()
-        blocks, parts = include_creator(process, dict(something="blah"))
-        self.assertEquals(len(blocks), 0)
+        controller = hello_block(process, dict(mri="h"))
+        assert isinstance(controller, BaseController)
+        process.add_controller.assert_called_once_with("h", controller)
+
+    def test_make_include(self):
+        with patch("malcolm.yamlutil.open",
+                   mock_open(read_data=include_yaml), create=True) as m:
+            include_creator = make_include_creator(
+                "/tmp/__init__.py", "include.yaml")
+        m.assert_called_once_with("/tmp/include.yaml")
+        process = Mock()
+        parts = include_creator(process, dict(something="blah"))
         self.assertEquals(len(parts), 1)
         part = parts[0]
         self.assertIsInstance(part, StringPart)
@@ -42,24 +61,14 @@ class TestAssemblies(unittest.TestCase):
         self.assertEqual(part.params.initialValue, "blah")
 
     def test_make_block(self):
-        yaml = """
-- parameters.string:
-    name: something
-    description: my description
-
-- controllers.DefaultController:
-    mri: boo
-
-- parts.builtin.StringPart:
-    name: scannable
-    description: Scannable name for motor
-    initialValue: $(something)
-"""
-        block_creator = make_block_creator(yaml)
+        with patch("malcolm.yamlutil.open",
+                   mock_open(read_data=block_yaml), create=True) as m:
+            block_creator = make_block_creator(
+                "/tmp/__init__.py", "block.yaml")
+        m.assert_called_once_with("/tmp/block.yaml")
         process = Mock()
-        blocks = block_creator(process, dict(something="blah"))
-        self.assertEquals(len(blocks), 1)
-        block, controller = process.add_block.call_args[0]
+        controller = block_creator(process, dict(something="blah"))
+        process.add_controller.assert_called_once_with("some_mri", controller)
         self.assertEquals(len(controller.parts), 1)
         self.assertIsInstance(controller.parts["scannable"], StringPart)
         self.assertEqual(controller.parts["scannable"].params.initialValue,
@@ -83,21 +92,21 @@ class TestAssemblies(unittest.TestCase):
         text = """
 - parameters.string:
     name: something
-- controllers.ManagerController:
+
+- controllers.builtin.ManagerController:
+    mri: m
 """
         sections = Section.from_yaml(text)
-        self.assertEqual(sections, dict(
+        assert sections == dict(
             blocks=[],
             parameters=[ANY],
             controllers=[ANY],
             parts=[],
-            includes=[],
-            comms=[]))
-        self.assertEqual(sections["parameters"][0].name, "string")
-        self.assertEqual(sections["parameters"][0].param_dict,
-                         {"name": "something"})
-        self.assertEqual(sections["controllers"][0].name, "ManagerController")
-        self.assertEqual(sections["controllers"][0].param_dict, {})
+            includes=[])
+        assert sections["parameters"][0].name == "string"
+        assert sections["parameters"][0].param_dict == dict(name="something")
+        assert sections["controllers"][0].name == "builtin.ManagerController"
+        assert sections["controllers"][0].param_dict == dict(mri="m")
 
     def test_substitute_params(self):
         section = Section("name", {"name": "$(name):pos", "exposure": 1.0})
@@ -105,7 +114,6 @@ class TestAssemblies(unittest.TestCase):
         param_dict = section.substitute_params(params)
         expected = {"name": "me:pos", "exposure": 1.0}
         self.assertEqual(param_dict, expected)
-
 
     def test_repr(self):
         s = Section("ca.CADoublePart", {"name": "me"})

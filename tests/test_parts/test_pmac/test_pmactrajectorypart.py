@@ -10,7 +10,7 @@ from mock import MagicMock, call, patch, ANY
 Mock = MagicMock
 
 from malcolm.core import call_with_params
-from malcolm.parts.pmac import PMACTrajectoryPart
+from malcolm.parts.pmac import PmacTrajectoryPart
 from malcolm.infos.pmac import MotorInfo
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
@@ -20,7 +20,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
 
     def setUp(self):
         self.o = call_with_params(
-            PMACTrajectoryPart, name="pmac", mri="TST-PMAC")
+            PmacTrajectoryPart, name="pmac", mri="TST-PMAC")
         list(self.o.create_attributes())
         self.context = MagicMock()
         self.child = self.context.block_view.return_value

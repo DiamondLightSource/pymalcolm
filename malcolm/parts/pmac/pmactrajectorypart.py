@@ -53,7 +53,7 @@ configure_args = [
 @method_also_takes(
     "minTurnaround", NumberMeta(
         "float64", "Min time for any gaps between frames"), 0.0)
-class PMACTrajectoryPart(StatefulChildPart):
+class PmacTrajectoryPart(StatefulChildPart):
     # Axis information stored from validate
     # {scannable_name: MotorInfo}
     axis_mapping = None
@@ -71,7 +71,7 @@ class PMACTrajectoryPart(StatefulChildPart):
     min_turnaround = None
 
     def create_attributes(self):
-        for data in super(PMACTrajectoryPart, self).create_attributes():
+        for data in super(PmacTrajectoryPart, self).create_attributes():
             yield data
         self.min_turnaround = NumberMeta(
             "float64", "Min time for any gaps between frames").create_attribute(
@@ -81,7 +81,7 @@ class PMACTrajectoryPart(StatefulChildPart):
 
     @RunnableController.Reset
     def reset(self, context):
-        super(PMACTrajectoryPart, self).reset(context)
+        super(PmacTrajectoryPart, self).reset(context)
         self.abort(context)
         self.reset_triggers(context)
 

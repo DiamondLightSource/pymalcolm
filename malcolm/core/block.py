@@ -4,6 +4,9 @@ from .view import View
 
 class Block(View):
     """Object consisting of a number of Attributes and Methods"""
+    @property
+    def mri(self):
+        return self._data.path[0]
 
     def _prepare_endpoints(self, data):
         for endpoint in data:

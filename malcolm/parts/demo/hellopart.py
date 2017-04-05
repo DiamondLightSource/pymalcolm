@@ -12,10 +12,6 @@ class HelloPart(Part):
     def __init__(self, params):
         super(HelloPart, self).__init__(params.name)
 
-    def create_attributes(self):
-        self.counter = NumberMeta("float64", "A counter").create_attribute()
-        yield "counter", self.counter, self.counter.set_value
-
     @method_takes(
         "name", StringMeta("a name"), REQUIRED,
         "sleep", NumberMeta("float64", "Time to wait before returning"), 0,

@@ -15,12 +15,12 @@
     description: Minimum turnaround time
     default: 0.0
 
-- blocks.pmac.PMACTrajectory:
+- blocks.pmac.pmac_trajectory_block:
     mri: $(mri)
     prefix: $(prefix)
     statPrefix: $(statPrefix)
 
-- parts.pmac.PMACTrajectoryPart:
+- parts.pmac.PmacTrajectoryPart:
     name: $(mri)
     mri: $(mri)
     minTurnaround: $(minTurnaround)

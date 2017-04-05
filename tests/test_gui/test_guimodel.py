@@ -8,22 +8,25 @@ import unittest
 from mock import MagicMock
 
 # module imports
-from malcolm.gui.blockmodel import BlockModel, BlockItem
-from malcolm.blocks.demo import Hello
+from malcolm.gui.guimodel import GuiModel, BlockItem
+from malcolm.core import Process, call_with_params
+from malcolm.blocks.demo import hello_block
 
 
 class TestBlockModel(unittest.TestCase):
     def setUp(self):
-        self.process = MagicMock()
-        self.block = Hello(self.process, dict(mri="hello_block"))[0]
-        self.m = BlockModel(self.process, self.block)
+        self.process = Process("proc")
+        self.controller = call_with_params(
+            hello_block, self.process, mri="hello_block")
+        self.process.start()
+        self.m = GuiModel(self.process, self.controller.block_view())
+
+    def tearDown(self):
+        self.process.stop()
 
     def test_init(self):
-        self.assertEqual(self.process.q.put.call_count, 1)
-        req = self.process.q.put.call_args_list[0][0][0]
-        self.assertEqual(req.path, ['hello_block'])
         self.assertEqual(self.m.root_item.endpoint, ('hello_block',))
-        self.assertEqual(len(self.m.root_item.children), 0)
+        self.assertEqual(len(self.m.root_item.children), 3)
 
     def test_find_item(self):
         m1, m2 = MagicMock(), MagicMock()
@@ -34,11 +37,10 @@ class TestBlockModel(unittest.TestCase):
         self.assertEqual(path, ['bat'])
 
     def test_update_root(self):
-        d = self.block.to_dict()
-        self.m.handle_changes([[[], d]])
         b_item = self.m.root_item
-        self.assertEqual(len(b_item.children), 6)
-        m_item = b_item.children[5]
+        self.assertEqual([x.endpoint[-1] for x in b_item.children],
+                         ["health", "error", "greet"])
+        m_item = b_item.children[2]
         self.assertEqual(m_item.endpoint, ('hello_block', 'greet'))
         self.assertEqual(len(m_item.children), 2)
         n_item = m_item.children[0]

@@ -1,6 +1,10 @@
-# Find all subpackages, MethodMeta decorated callables, and YAML files
-from malcolm.packageutil import prepare_package
+from malcolm.yamlutil import make_include_creator
 
-__all__ = prepare_package(globals(), __name__)
+compoundmotor_collection = make_include_creator(
+    __file__, "compoundmotor_collection.yaml")
+motor_records = make_include_creator(__file__, "motor_records.yaml")
+rawmotor_collection = make_include_creator(__file__, "rawmotor_collection.yaml")
+trajectory_collection = make_include_creator(
+    __file__, "trajectory_collection.yaml")
 
-del prepare_package
+del make_include_creator

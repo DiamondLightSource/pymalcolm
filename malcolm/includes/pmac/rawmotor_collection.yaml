@@ -14,7 +14,7 @@
     name: scannable
     description: The scannable name for GDA of this motor
 
-- blocks.pmac.RawMotor:
+- blocks.pmac.raw_motor_block:
     mri: $(mri)
     prefix: $(prefix)
     motorPrefix: $(motorPrefix)

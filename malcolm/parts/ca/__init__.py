@@ -1,6 +1,9 @@
-# Find all subpackages, MethodMeta decorated callables, and YAML files
-from malcolm.packageutil import prepare_package
-
-__all__ = prepare_package(globals(), __name__)
-
-del prepare_package
+from .caactionpart import CAActionPart
+from .cabooleanpart import CABooleanPart
+from .cachararraypart import CACharArrayPart
+from .cachoicepart import CAChoicePart
+from .cadoublearraypart import CADoubleArrayPart
+from .cadoublepart import CADoublePart
+from .calongarraypart import CALongArrayPart
+from .calongpart import CALongPart
+from .castringpart import CAStringPart

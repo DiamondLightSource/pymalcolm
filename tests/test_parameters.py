@@ -17,7 +17,7 @@ class TestParameters(unittest.TestCase):
         decorated = {}
         for k in dir(parameters):
             v = getattr(parameters, k)
-            if hasattr(v, "Method"):
+            if hasattr(v, "MethodModel"):
                 decorated[k] = v
         self.assertEqual(decorated, dict(
             string=parameters.string,
@@ -29,9 +29,9 @@ class TestParameters(unittest.TestCase):
         params.name = "me"
         params.description = "desc"
         del params.default
-        self.assertEqual(list(parameters.string.MethodMeta.takes.elements),
+        self.assertEqual(list(parameters.string.MethodModel.takes.elements),
                          ["name", "description", "default"])
-        default_meta = parameters.string.MethodMeta.takes.elements["default"]
+        default_meta = parameters.string.MethodModel.takes.elements["default"]
         self.assertIsInstance(default_meta, StringMeta)
         name, meta, default = parameters.string(params)
         self.assertEqual(default, REQUIRED)
@@ -44,7 +44,7 @@ class TestParameters(unittest.TestCase):
         params.name = "me"
         params.description = "desc"
         params.default = 32
-        default_meta = parameters.int32.MethodMeta.takes.elements["default"]
+        default_meta = parameters.int32.MethodModel.takes.elements["default"]
         self.assertIsInstance(default_meta, NumberMeta)
         self.assertEqual(default_meta.dtype, "int32")
         name, meta, default = parameters.int32(params)

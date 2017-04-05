@@ -27,7 +27,7 @@ class MethodItem(BaseItem):
             args[item.endpoint[-1]] = item.get_value()
             item.reset_value()
         self._state = self.RUNNING
-        request = Post(self, None, self.endpoint, args)
+        request = Post(path=self.endpoint, parameters=args)
         return request
 
     def handle_response(self, response):

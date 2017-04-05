@@ -5,35 +5,28 @@ from malcolm.core import Subscribe, Delta
 from malcolm.gui.blockitem import BlockItem
 
 
-class BlockModel(QAbstractItemModel):
+class GuiModel(QAbstractItemModel):
 
     response_received = pyqtSignal(object)
 
     def __init__(self, process, block):
         QAbstractItemModel.__init__(self)
-        self.process = process
+        self.controller = process.get_controller(block.mri)
         self.block = block
         self.id_ = 1
-        self.block_path = tuple(block.process_path)
-        self.root_item = BlockItem(self.block_path, block)
+        self.root_item = BlockItem((self.block.mri,), block)
         # map id -> request
         self.requests = {}
         # TODO: unsubscribe when done
         self.response_received.connect(self.handle_response)
-        request = Subscribe(None, None, self.block_path, delta=True)
-        self.send_request(request)
-
-    def put(self, response):
-        """Act like a queue.put(). This will be called from a different thread
-        so use signals to emit the results which will end up in the main loop"""
-        self.response_received.emit(response)
+        self.send_request(Subscribe(path=[self.block.mri], delta=True)).wait()
 
     def send_request(self, request):
         request.set_id(self.id_)
-        request.response_queue = self
+        request.set_callback(self.response_received.emit)
         self.requests[self.id_] = request
         self.id_ += 1
-        self.process.q.put(request)
+        return self.controller.handle_request(request)
 
     def get_index(self, item, column):
         return self.createIndex(item.parent_row(), column, item)
@@ -65,7 +58,7 @@ class BlockModel(QAbstractItemModel):
     def handle_changes(self, changes):
         # create and update children where necessary
         for change in changes:
-            path = list(self.block_path) + change[0]
+            path = [self.block.mri] + change[0]
             # See if we can find an item to update
             item, path = self.find_item(path)
             # this path is the biggest thing that has to change, so delete

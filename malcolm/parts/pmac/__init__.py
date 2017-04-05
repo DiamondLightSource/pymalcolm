@@ -1,3 +1,3 @@
 from .compoundmotorpart import CompoundMotorPart
-from .pmactrajectorypart import PMACTrajectoryPart
+from .pmactrajectorypart import PmacTrajectoryPart
 from .rawmotorpart import RawMotorPart

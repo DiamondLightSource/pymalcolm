@@ -9,7 +9,7 @@ from mock import MagicMock, patch
 
 # module imports
 from malcolm.gui.blockitem import BlockItem
-from malcolm.core import MethodMeta, Attribute
+from malcolm.core import Method, Attribute
 
 
 class TestBlockItem(unittest.TestCase):
@@ -21,12 +21,13 @@ class TestBlockItem(unittest.TestCase):
 
     def test_ref_children(self):
         self.item.ref = dict(
-            a=MethodMeta(), b=MethodMeta(), c=Attribute())
+            a=MagicMock(spec=Method), b=MagicMock(spec=Method),
+            c=MagicMock(spec=Attribute))
         self.assertEqual(self.item.ref_children(), 3)
 
     def make_grouped_attr(self):
-        attr = Attribute()
-        attr.set_endpoint_data("meta", MagicMock())
+        attr = MagicMock(spec=Attribute)
+        attr.meta = MagicMock()
         attr.meta.tags = ["group:foo"]
         return attr
 
@@ -36,7 +37,7 @@ class TestBlockItem(unittest.TestCase):
 
     def test_grouped_children(self):
         attr = self.make_grouped_attr()
-        self.item.ref = dict(c=attr, d=Attribute())
+        self.item.ref = dict(c=attr, d=MagicMock(spec=Attribute))
         self.assertEqual(self.item.ref_children(), 1)
 
     @patch("malcolm.gui.blockitem.MethodItem")
@@ -48,10 +49,10 @@ class TestBlockItem(unittest.TestCase):
         ai1, ai2 = MagicMock(), MagicMock()
         attribute_mock.side_effect = [ai1, ai2]
         # Load up refs to get
-        group_attr = Attribute()
+        group_attr = MagicMock(spec=Attribute)
         child_attr = self.make_grouped_attr()
-        m1 = MethodMeta()
-        m2 = MethodMeta()
+        m1 = MagicMock(spec=Method)
+        m2 = MagicMock(spec=Method)
         BlockItem.items[("endpoint", "foo")] = ai1
         self.item.ref = OrderedDict((
             ("foo", group_attr), ("c", child_attr), ("a", m1), ("b", m2)))

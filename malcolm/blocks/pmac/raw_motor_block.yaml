@@ -19,7 +19,7 @@
     description: Time in seconds for motor to settle at constant velocity
     default: 0.0
 
-- controllers.DefaultController:
+- controllers.builtin.StatefulController:
     mri: $(mri)
 
 - includes.pmac.motor_records:

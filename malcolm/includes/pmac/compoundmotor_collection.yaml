@@ -10,7 +10,7 @@
     name: scannable
     description: The scannable name for GDA of this motor
 
-- blocks.pmac.CompoundMotor:
+- blocks.pmac.compound_motor_block:
     mri: $(mri)
     prefix: $(prefix)
     scannable: $(scannable)
