@@ -32,8 +32,7 @@ class PandABoxControl(Loggable, Spawnable):
 
     def send(self, message):
         response_queue = self.process.create_queue()
-        self.response_queues.put(response_queue)
-        self.q.put(message)
+        self.q.put((message, response_queue))
         return response_queue
 
     def recv(self, response_queue, timeout=1.0):
@@ -60,11 +59,12 @@ class PandABoxControl(Loggable, Spawnable):
     def send_loop(self):
         """Service self.q, sending requests to server"""
         while True:
-            message = self.q.get()
+            message, response_queue = self.q.get()
             if message is Spawnable.STOP:
                 break
             try:
                 self.log_debug("Sending %r", message)
+                self.response_queues.put(response_queue)
                 self.socket.send(message)
             except Exception:  # pylint:disable=broad-except
                 self.log_exception(
