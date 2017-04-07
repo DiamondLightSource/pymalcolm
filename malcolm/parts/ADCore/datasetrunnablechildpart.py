@@ -2,7 +2,7 @@ import os
 
 from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
+from malcolm.infos.ADCore.datasetproducedinfo import DatasetProducedInfo
 from malcolm.parts.scanning.runnablechildpart import RunnableChildPart
 from malcolm.vmetas.builtin import StringMeta
 
@@ -18,7 +18,7 @@ class DatasetRunnableChildPart(RunnableChildPart):
             method_metas, without)
         self.method_models["configure"].recreate_from_others(
             method_metas, without)
-        self.controller.update_configure_args()
+        self._controller.update_configure_args()
 
     def _params_with_file_path(self, params):
         file_path = os.path.join(params.fileDir, self.name + ".h5")

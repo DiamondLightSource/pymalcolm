@@ -6,7 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import MagicMock
 
-from malcolm.core import call_with_params
+from malcolm.core import call_with_params, Context
 from malcolm.parts.pmac import CompoundMotorPart
 
 
@@ -14,7 +14,7 @@ class TestRawMotorPart(unittest.TestCase):
 
     def setUp(self):
         self.o = call_with_params(CompoundMotorPart, name="part", mri="mri")
-        self.context = MagicMock()
+        self.context = MagicMock(spec=Context)
         self.child = self.context.block_view.return_value
         self.child.maxVelocity = 5.0
         self.child.accelerationTime = 0.5

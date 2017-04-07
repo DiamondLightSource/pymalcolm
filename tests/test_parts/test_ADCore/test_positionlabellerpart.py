@@ -7,7 +7,7 @@ import unittest
 from mock import Mock, MagicMock, call, ANY
 import time
 
-from malcolm.core import Task, SyncFactory
+from malcolm.core import Context, call_with_params
 from malcolm.parts.ADCore.positionlabellerpart import PositionLabellerPart
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
@@ -16,20 +16,11 @@ from scanpointgenerator import LineGenerator, CompoundGenerator
 class TestPositionLabellerPart(unittest.TestCase):
 
     def setUp(self):
-        self.process = MagicMock()
-        self.child = MagicMock()
-
-        def getitem(name):
-            return name
-
-        self.child.__getitem__.side_effect = getitem
-
-        self.params = MagicMock()
-        self.process.get_block.return_value = self.child
-        self.o = PositionLabellerPart(self.process, self.params)
+        self.context = MagicMock(spec=Context)
+        self.o = call_with_params(
+            PositionLabellerPart, name="pos", mri="BLOCK-POS")
 
     def test_configure(self):
-        task = MagicMock()
         params = MagicMock()
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
@@ -38,13 +29,8 @@ class TestPositionLabellerPart(unittest.TestCase):
         completed_steps = 2
         steps_to_do = 4
         part_info = ANY
-        self.o.configure(task, completed_steps, steps_to_do, part_info, params)
-        self.assertEqual(task.post_async.call_args_list, [
-                         call(self.child["delete"]),
-                         call(self.child["start"])])
-        task.put_many_async.assert_called_once_with(self.child, dict(
-            enableCallbacks=True,
-            idStart=3))
+        self.o.configure(
+            self.context, completed_steps, steps_to_do, part_info, params)
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
 <dimensions>
@@ -59,19 +45,30 @@ class TestPositionLabellerPart(unittest.TestCase):
 <position FilePluginClose="1" d0="1" d1="0" />
 </positions>
 </pos_layout>""".replace("\n", "")
-        task.put.assert_called_once_with(self.child["xml"], expected_xml)
+        assert self.context.mock_calls == [
+            call.unsubscribe_all(),
+            call.block_view('BLOCK-POS'),
+            call.block_view().delete_async(),
+            call.block_view().put_attribute_values_async(dict(
+                enableCallbacks=True,
+                idStart=3)),
+            call.block_view().put_attribute_values_async().__radd__([ANY]),
+            call.wait_all_futures(ANY),
+            call.block_view().xml.put_value(expected_xml),
+            call.block_view().start_async()]
 
     def test_run(self):
-        task = MagicMock()
         update = MagicMock()
         self.o.start_future = MagicMock()
-        self.o.run(task, update)
-        task.subscribe.assert_called_once_with(
-            self.child["qty"], self.o.load_more_positions, task)
-        task.wait_all.assert_called_once_with(self.o.start_future)
+        self.o.run(self.context, update)
+        assert self.context.mock_calls == [
+            call.block_view('BLOCK-POS'),
+            call.block_view().qty.subscribe_value(
+                self.o.load_more_positions, ANY),
+            call.wait_all_futures(self.o.start_future)]
 
     def test_load_more_positions(self):
-        task = MagicMock()
+        child = MagicMock()
         current_index = 1
         # Haven't done point 4 or 5 yet
         self.o.end_index = 4
@@ -80,7 +77,7 @@ class TestPositionLabellerPart(unittest.TestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         self.o.generator = CompoundGenerator([ys, xs], [], [])
         self.o.generator.prepare()
-        self.o.load_more_positions(current_index, task)
+        self.o.load_more_positions(current_index, child)
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
 <dimensions>
@@ -93,8 +90,8 @@ class TestPositionLabellerPart(unittest.TestCase):
 <position FilePluginClose="1" d0="1" d1="0" />
 </positions>
 </pos_layout>""".replace("\n", "")
-        task.put.assert_called_once_with(self.child["xml"], expected_xml)
-        self.assertEqual(self.o.end_index, 6)
+        assert child.mock_calls == [call.xml.put_value(expected_xml)]
+        assert self.o.end_index == 6
 
 
 if __name__ == "__main__":

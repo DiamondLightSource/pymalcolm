@@ -1,23 +1,22 @@
 from malcolm.compat import OrderedDict
-from malcolm.core import TableElementMap, Table
-from malcolm.parts.pandabox.pandaboxfieldpart import PandABoxFieldPart
-from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
+from malcolm.core import Table
 from malcolm.tags import widget
 from malcolm.vmetas.builtin import NumberArrayMeta, BooleanArrayMeta
+from .pandablocksfieldpart import PandABlocksFieldPart
+from .pandablocksutil import make_label_attr_name
 
 
-class PandABoxTablePart(PandABoxFieldPart):
+class PandABlocksTablePart(PandABlocksFieldPart):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, process, control, meta, block_name, field_name,
-                 writeable):
-        super(PandABoxTablePart, self).__init__(
-            process, control, meta, block_name, field_name, writeable)
+    def __init__(self, client, meta, block_name, field_name, writeable):
+        super(PandABlocksTablePart, self).__init__(
+            client, meta, block_name, field_name, writeable)
         # Fill in the meta object with the correct headers
         columns = OrderedDict()
         self.fields = OrderedDict()
-        fields = control.get_table_fields(block_name, field_name)
+        fields = client.get_table_fields(block_name, field_name)
         for field_name, (bits_hi, bits_lo) in fields.items():
             nbits = bits_hi - bits_lo + 1
             if nbits < 1:
@@ -43,7 +42,7 @@ class PandABoxTablePart(PandABoxFieldPart):
             column_meta.set_tags([widget_tag])
             columns[column_name] = column_meta
             self.fields[column_name] = (bits_hi, bits_lo)
-        meta.set_elements(TableElementMap(columns))
+        meta.set_elements(columns)
 
     def set_field(self, value):
         int_values = self.list_from_table(value)

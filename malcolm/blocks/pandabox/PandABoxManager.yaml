@@ -30,7 +30,7 @@
     areaDetectorPrefix: $(pvPrefix):DRV
     mriPrefix: $(mriPrefix)
 
-- parts.pandabox.PandABoxDriverPart:
+- parts.pandabox.PandABlocksDriverPart:
     name: PCAP
     mri: $(mriPrefix)-PCAP
 

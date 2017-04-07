@@ -36,3 +36,12 @@ class Block(View):
         futures = self.put_attribute_values_async(params)
         self._context.wait_all_futures(futures, timeout=timeout)
 
+    def when_value_matches(self, attr, good_value, bad_values=None,
+                           timeout=None):
+        future = self.when_value_matches_async(attr, good_value, bad_values)
+        self._context.wait_all_futures(future, timeout)
+
+    def when_value_matches_async(self, attr, good_value, bad_values=None):
+        path = self._data.path + [attr, "value"]
+        future = self._context.when_matches_async(path, good_value, bad_values)
+        return future

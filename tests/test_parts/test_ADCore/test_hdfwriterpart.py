@@ -6,8 +6,11 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock, MagicMock, call, ANY
 
-from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart, \
-    NDArrayDatasetInfo, CalculatedNDAttributeDatasetInfo
+from malcolm.core import Context, call_with_params
+from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart
+from malcolm.infos.ADCore.ndarraydatasetinfo import NDArrayDatasetInfo
+from malcolm.infos.ADCore.calculatedndattributedatasetinfo import \
+    CalculatedNDAttributeDatasetInfo
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
@@ -16,22 +19,10 @@ class TestHDFWriterPart(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.process = MagicMock()
-        self.child = MagicMock()
-
-        def getitem(name):
-            return name
-
-        self.child.__getitem__.side_effect = getitem
-
-        self.params = MagicMock()
-        self.params.mri = "BLOCK-HDF5"
-        self.process.get_block.return_value = self.child
-        self.o = HDFWriterPart(self.process, self.params)
-        list(self.o.create_attributes())
+        self.context = MagicMock(spec=Context)
+        self.o = call_with_params(HDFWriterPart, name="hdf", mri="BLOCK-HDF5")
 
     def test_configure(self):
-        task = MagicMock()
         params = MagicMock()
         energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
         spiral = SpiralGenerator(
@@ -46,7 +37,7 @@ class TestHDFWriterPart(unittest.TestCase):
             "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
         }
         infos = self.o.configure(
-            task, completed_steps, steps_to_do, part_info, params)
+            self.context, completed_steps, steps_to_do, part_info, params)
         self.assertEqual(len(infos), 5)
         self.assertEquals(infos[0].name, "xspress3.data")
         self.assertEquals(infos[0].filename, "file.h5")
@@ -80,47 +71,54 @@ class TestHDFWriterPart(unittest.TestCase):
         self.assertEquals(infos[4].rank, 1)
         self.assertEquals(infos[4].path, "/entry/detector/y_set")
         self.assertEquals(infos[4].uniqueid, "")
-        self.assertEqual(task.put.call_args_list, [
-            call(self.child["positionMode"], True),
-            call(self.child["numCapture"], 0),
-            call('flushDataPerNFrames', 10.0),
-            call('flushAttrPerNFrames', 10.0)])
-        self.assertEqual(task.put_many_async.call_count, 2)
-        self.assertEqual(task.put_many_async.call_args_list[0],
-                         call(self.child, dict(
-                             enableCallbacks=True,
-                             fileWriteMode="Stream",
-                             swmrMode=True,
-                             positionMode=True,
-                             dimAttDatasets=True,
-                             lazyOpen=True,
-                             arrayCounter=0,
-                             filePath="/tmp/",
-                             fileName="file.h5",
-                             fileTemplate="%s%s")))
-        self.assertEqual(task.put_many_async.call_args_list[1],
-                         call(self.child, dict(
-                             numExtraDims=1,
-                             posNameDimN="d1",
-                             extraDimSizeN=20,
-                             posNameDimX="d0",
-                             extraDimSizeX=2,
-                             posNameDimY="",
-                             extraDimSizeY=1,
-                             posNameDim3="",
-                             extraDimSize3=1,
-                             posNameDim4="",
-                             extraDimSize4=1,
-                             posNameDim5="",
-                             extraDimSize5=1,
-                             posNameDim6="",
-                             extraDimSize6=1,
-                             posNameDim7="",
-                             extraDimSize7=1,
-                             posNameDim8="",
-                             extraDimSize8=1,
-                             posNameDim9="",
-                             extraDimSize9=1)))
+        expected_xml_filename = "/tmp/BLOCK-HDF5-layout.xml"
+        assert self.context.mock_calls == [
+            call.block_view('BLOCK-HDF5'),
+            call.block_view().positionMode.put_value(True),
+            call.block_view().put_attribute_values_async(dict(
+                enableCallbacks=True,
+                fileWriteMode="Stream",
+                swmrMode=True,
+                positionMode=True,
+                dimAttDatasets=True,
+                lazyOpen=True,
+                arrayCounter=0,
+                filePath="/tmp/",
+                fileName="file.h5",
+                fileTemplate="%s%s")),
+            call.block_view().put_attribute_values_async(dict(
+                numExtraDims=1,
+                posNameDimN="d1",
+                extraDimSizeN=20,
+                posNameDimX="d0",
+                extraDimSizeX=2,
+                posNameDimY="",
+                extraDimSizeY=1,
+                posNameDim3="",
+                extraDimSize3=1,
+                posNameDim4="",
+                extraDimSize4=1,
+                posNameDim5="",
+                extraDimSize5=1,
+                posNameDim6="",
+                extraDimSize6=1,
+                posNameDim7="",
+                extraDimSize7=1,
+                posNameDim8="",
+                extraDimSize8=1,
+                posNameDim9="",
+                extraDimSize9=1)),
+            call.block_view().put_attribute_values_async().__iadd__(ANY),
+            call.block_view().put_attribute_values_async(dict(
+                xml=expected_xml_filename,
+                flushDataPerNFrames=10.0,
+                flushAttrPerNFrames=10.0)),
+            call.block_view().put_attribute_values_async(
+                ).__iadd__().__iadd__(ANY),
+            call.wait_all_futures(ANY),
+            call.block_view().numCapture.put_value(0),
+            call.block_view().start_async(),
+            call.block_view().when_value_matches_async('arrayCounter', 1)]
         expected_xml = """<?xml version="1.0" ?>
 <hdf5_layout>
 <group name="entry">
@@ -162,27 +160,26 @@ class TestHDFWriterPart(unittest.TestCase):
 </group>
 </group>
 </hdf5_layout>"""
-        expected_filename = "/tmp/BLOCK-HDF5-layout.xml"
-        self.assertEqual(
-            task.put_async.call_args_list[0][0][1], expected_filename)
-        actual_xml = open(expected_filename).read().replace(">", ">\n")
+        actual_xml = open(expected_xml_filename).read().replace(">", ">\n")
         self.assertEqual(actual_xml.splitlines(), expected_xml.splitlines())
 
     def test_run(self):
-        task = MagicMock()
         update = MagicMock()
         self.o.done_when_reaches = 38
-        self.o.run(task, update)
-        task.subscribe.assert_called_once_with(
-            self.child["uniqueId"], update, self.o)
-        task.when_matches.assert_called_once_with(
-            self.child["uniqueId"], 38)
+        self.o.array_future = MagicMock()
+        self.o.run(self.context, update)
+        assert self.context.mock_calls == [
+            call.wait_all_futures(self.o.array_future),
+            call.unsubscribe_all(),
+            call.block_view('BLOCK-HDF5'),
+            call.block_view().uniqueId.subscribe_value(update, self.o),
+            call.block_view().when_value_matches('uniqueId', 38)]
 
     def test_post_run(self):
         self.o.start_future = MagicMock()
-        task = MagicMock()
-        self.o.post_run_idle(task)
-        task.wait_all.assert_called_once_with(self.o.start_future)
+        self.o.post_run_idle(self.context)
+        assert self.context.mock_calls == [
+            call.wait_all_futures(self.o.start_future)]
 
 
 if __name__ == "__main__":

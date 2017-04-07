@@ -3,37 +3,41 @@ import sys
 from collections import OrderedDict
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
 
 import unittest
-from mock import call, Mock
+from mock import call, Mock, patch, ANY
 
-from malcolm.parts.pandabox.pandaboxpoller import PandABoxPoller
-from malcolm.parts.pandabox.pandaboxcontrol import BlockData, FieldData
+from malcolm.core import call_with_params
+from malcolm.controllers.pandablocks.pandablockscontroller import \
+    PandABlocksController
+from malcolm.controllers.pandablocks.pandablocksclient import FieldData, \
+    BlockData
 
 
-class PandABoxPollerTest(unittest.TestCase):
-    def setUp(self):
+class PandABlocksControllerTest(unittest.TestCase):
+    @patch("malcolm.controllers.pandablocks.pandablockscontroller.PandABlocksClient")
+    def setUp(self, mock_client):
         self.process = Mock()
-        self.control = Mock()
-        self.o = PandABoxPoller(self.process, self.control)
+        self.o = call_with_params(
+            PandABlocksController, self.process, [], mri="P", configDir="/tmp")
+        blocks_data = OrderedDict()
         fields = OrderedDict()
         fields["INP"] = FieldData("pos_mux", "", "Input A", ["ZERO", "COUNTER.OUT"])
         fields["START"] = FieldData("param", "pos", "Start position", [])
         fields["STEP"] = FieldData("param", "relative_pos", "Step position", [])
         fields["OUT"] = FieldData("bit_out", "", "Output", [])
-        self.pcomp = self.o.make_panda_block(
-            "P:PCOMP", "PCOMP", BlockData(1, "", fields))
+        blocks_data["PCOMP"] = BlockData(1, "", fields)
         fields = OrderedDict()
         fields["INP"] = FieldData("bit_mux", "", "Input", ["ZERO", "TTLIN.VAL"])
         fields["START"] = FieldData("param", "pos", "Start position", [])
         fields["OUT"] = FieldData("pos_out", "", "Output", ["No", "Capture"])
-        self.counter = self.o.make_panda_block(
-            "P:COUNTER", "COUNTER", BlockData(1, "", fields))
+        blocks_data["COUNTER"] = BlockData(1, "", fields)
         fields = OrderedDict()
         fields["VAL"] = FieldData("bit_out", "", "Output", [])
-        self.ttlin = self.o.make_panda_block(
-            "P:TTLIN", "TTLIN", BlockData(1, "", fields))
+        blocks_data["TTLIN"] = BlockData(1, "", fields)
+        self.client = self.o.client
+        self.client.get_blocks_data.return_value = blocks_data
+        self.o._make_blocks_parts()
         changes = OrderedDict()
         changes["PCOMP.INP"] = "ZERO"
         for field_name in ("START", "STEP"):
@@ -53,39 +57,47 @@ class PandABoxPollerTest(unittest.TestCase):
         # Once more to let the bit_outs toggle back
         self.o.handle_changes({})
 
+    def _blocks(self):
+        pcomp = self.process.add_controller.call_args_list[0][0][1].block_view()
+        counter = self.process.add_controller.call_args_list[1][0][
+            1].block_view()
+        ttlin = self.process.add_controller.call_args_list[2][0][1].block_view()
+        return pcomp, counter, ttlin
+
     def test_initial_changes(self):
-        pcomp = self.pcomp
-        self.assertEqual(pcomp.inp, "ZERO")
-        self.assertEqual(pcomp.inpVal, 0.0)
-        self.assertEqual(pcomp.start, 0.0)
-        self.assertEqual(pcomp.step, 0.0)
-        self.assertEqual(pcomp.out, False)
-        counter = self.counter
-        self.assertEqual(counter.inp, "ZERO")
-        self.assertEqual(counter.inpDelay, 0)
-        self.assertEqual(counter.inpVal, False)
-        self.assertEqual(counter.out, 0.0)
-        self.assertEqual(counter.outScale, 1.0)
-        self.assertEqual(counter.outOffset, 0.0)
-        self.assertEqual(counter.outUnits, "")
-        ttlin = self.ttlin
-        self.assertEqual(ttlin.val, False)
+        assert self.process.mock_calls == [
+            call.add_controller('P:PCOMP', ANY),
+            call.add_controller('P:COUNTER', ANY),
+            call.add_controller('P:TTLIN', ANY)]
+        pcomp, counter, ttlin = self._blocks()
+        assert pcomp.inp.value == "ZERO"
+        assert pcomp.inpVal.value == 0.0
+        assert pcomp.start.value == 0.0
+        assert pcomp.step.value == 0.0
+        assert pcomp.out.value is False
+        assert counter.inp.value == "ZERO"
+        assert counter.inpDelay.value == 0
+        assert counter.inpVal.value is False
+        assert counter.out.value == 0.0
+        assert counter.outScale.value == 1.0
+        assert counter.outOffset.value == 0.0
+        assert counter.outUnits.value == ""
+        assert ttlin.val.value is False
 
     def test_rewiring(self):
-        pcomp = self.pcomp
-        counter = self.counter
+        pcomp, counter, ttlin = self._blocks()
         self.o.handle_changes({"COUNTER.OUT": 32.0})
-        self.assertEqual(counter.out, 32.0)
+        assert counter.out.value== 32.0
         self.o.handle_changes({"PCOMP.INP": "COUNTER.OUT"})
-        self.assertEqual(pcomp.inp, "COUNTER.OUT")
-        self.assertEqual(pcomp.inpVal, 32.0)
+        assert pcomp.inp.value == "COUNTER.OUT"
+        assert pcomp.inpVal.value == 32.0
         self.o.handle_changes({"PCOMP.INP": "ZERO"})
-        self.assertEqual(pcomp.inp, "ZERO")
-        self.assertEqual(pcomp.inpVal, 0.0)
+        assert pcomp.inp.value == "ZERO"
+        assert pcomp.inpVal.value == 0.0
 
     def test_scale_offset_following(self):
-        pcomp = self.pcomp
-        self.assertEqual(self.control.send.call_args_list, [
+        pcomp, counter, ttlin = self._blocks()
+        assert self.client.send.call_args_list == [
             call('PCOMP.START.SCALE=1\n'),
             call('PCOMP.START.OFFSET=0\n'),
             call('PCOMP.START.UNITS=\n'),
@@ -94,41 +106,40 @@ class PandABoxPollerTest(unittest.TestCase):
             call('COUNTER.START.SCALE=1\n'),
             call('COUNTER.START.OFFSET=0\n'),
             call('COUNTER.START.UNITS=\n'),
-        ])
-        self.control.send.reset_mock()
+        ]
+        self.client.send.reset_mock()
         self.o.handle_changes({"PCOMP.INP": "COUNTER.OUT"})
-        self.assertEqual(pcomp.inp, "COUNTER.OUT")
-        self.assertEqual(pcomp.inpVal, 0.0)
-        self.assertEqual(self.control.send.call_args_list, [
+        assert pcomp.inp.value == "COUNTER.OUT"
+        assert pcomp.inpVal.value == 0.0
+        assert self.client.send.call_args_list == [
             call('PCOMP.START.SCALE=1.0\n'),
             call('PCOMP.START.OFFSET=0.0\n'),
             call('PCOMP.START.UNITS=\n'),
             call('PCOMP.STEP.SCALE=1.0\n'),
             call('PCOMP.STEP.UNITS=\n')
-        ])
-        self.control.send.reset_mock()
+        ]
+        self.client.send.reset_mock()
         self.o.handle_changes({"COUNTER.OUT.OFFSET": "5.2"})
-        self.assertEqual(self.control.send.call_args_list, [
+        assert self.client.send.call_args_list == [
             call('COUNTER.START.OFFSET=5.2\n'),
             call('PCOMP.START.OFFSET=5.2\n')
-        ])
-        self.control.send.reset_mock()
+        ]
+        self.client.send.reset_mock()
         self.o.handle_changes({"COUNTER.OUT.SCALE": "0.2"})
-        self.assertEqual(self.control.send.call_args_list, [
+        assert self.client.send.call_args_list == [
             call('COUNTER.START.SCALE=0.2\n'),
             call('PCOMP.START.SCALE=0.2\n'),
             call('PCOMP.STEP.SCALE=0.2\n'),
-        ])
-        self.control.send.reset_mock()
+        ]
+        self.client.send.reset_mock()
         self.o.handle_changes({"PCOMP.INP": "ZERO"})
-        self.assertEqual(self.control.send.call_args_list, [
+        assert self.client.send.call_args_list == [
             call('PCOMP.START.SCALE=1\n'),
             call('PCOMP.START.OFFSET=0\n'),
             call('PCOMP.START.UNITS=\n'),
             call('PCOMP.STEP.SCALE=1\n'),
             call('PCOMP.STEP.UNITS=\n')
-        ])
-
+        ]
 
 
 if __name__ == "__main__":

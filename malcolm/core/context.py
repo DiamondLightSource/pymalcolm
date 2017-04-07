@@ -51,6 +51,14 @@ class Context(Loggable):
         return controller
 
     def block_view(self, mri):
+        """Get a view of a block
+
+        Args:
+            mri (str): The mri of the controller hosting the block
+
+        Returns:
+            Block: The block we control
+        """
         controller = self.get_controller(mri)
         block = controller.make_view(weakref.proxy(self))
         return block

@@ -4,12 +4,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, MagicMock, call, ANY
+from mock import MagicMock, call, ANY
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.parts.demo.scantickerpart import ScanTickerPart
-from malcolm.core import call_with_params
+from malcolm.core import call_with_params, Context
 
 
 class AlmostFloat:
@@ -24,6 +24,7 @@ class AlmostFloat:
 class TestScanTickerPart(unittest.TestCase):
 
     def setUp(self):
+        self.context = MagicMock(spec=Context)
         self.o = call_with_params(ScanTickerPart, name="AxisTwo", mri="mri")
 
     def prepare_half_run(self):
@@ -31,7 +32,7 @@ class TestScanTickerPart(unittest.TestCase):
         line2 = LineGenerator('AxisTwo', 'mm', 0, 2, 2)
         compound = CompoundGenerator([line1, line2], [], [], 1.0)
         compound.prepare()
-        call_with_params(self.o.configure, MagicMock(), 0, 2, MagicMock(),
+        call_with_params(self.o.configure, ANY, 0, 2, MagicMock(),
                          generator=compound, axesToMove=['AxisTwo'])
 
     def test_configure(self):
@@ -41,10 +42,9 @@ class TestScanTickerPart(unittest.TestCase):
 
     def test_run(self):
         self.prepare_half_run()
-        context = MagicMock()
         update_completed_steps = MagicMock()
-        self.o.run(context, update_completed_steps)
-        self.assertEqual(context.mock_calls, [
+        self.o.run(self.context, update_completed_steps)
+        self.assertEqual(self.context.mock_calls, [
             call.block_view("mri"),
             call.block_view().counter.put_value(0),
             call.sleep(AlmostFloat(1.0, delta=0.05)),

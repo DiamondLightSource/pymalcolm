@@ -3,20 +3,19 @@ import sys
 from collections import OrderedDict
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
 
 import unittest
-from mock import call, Mock
+from mock import Mock
 
 from malcolm.vmetas.builtin import BooleanMeta, ChoiceMeta, NumberMeta, StringMeta
-from malcolm.parts.pandabox.pandaboxblockmaker import PandABoxBlockMaker
-from malcolm.parts.pandabox.pandaboxcontrol import BlockData, FieldData
+from malcolm.controllers.pandablocks.pandablocksclient import BlockData, \
+    FieldData
+from malcolm.parts.pandablocks.pandablocksmaker import PandABlocksMaker
 
 
 class PandABoxBlockMakerTest(unittest.TestCase):
     def setUp(self):
-        self.process = Mock()
-        self.control = Mock()
+        self.client = Mock()
 
     def test_block_fields_adder(self):
         fields = OrderedDict()
@@ -26,7 +25,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         fields["DIVIDE"] = FieldData("param", "enum", "Divide output",
                                      ["/1", "/2", "/4"])
         fields["OUT"] = FieldData("pos_out", "", "Output", ["No", "Capture"])
-        o = PandABoxBlockMaker(self.process, self.control, "ADDER1", block_data)
+        o = PandABlocksMaker(self.client, "ADDER1", block_data)
         self.assertEqual(list(o.parts), [
             'icon',
             'inputs',
@@ -45,9 +44,8 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             'OUT.DATA_DELAY'])
 
         group = o.parts["inputs"]
-        self.assertEqual(group.attr_name, "inputs")
-        self.assertEqual(group.process, self.process)
-        self.assertEqual(group.meta.tags, ("widget:group", "config"))
+        self.assertEqual(group.params.name, "inputs")
+        self.assertEqual(group.create_tags(), ["widget:group", "config"])
 
         inpa = o.parts["INPA"]
         self.assertEqual(inpa.block_name, "ADDER1")
@@ -139,7 +137,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         fields["INP"] = FieldData("bit_mux", "", "Input", ["X.OUT", "Y.OUT"])
         fields["OUT"] = FieldData("bit_out", "", "Output", [])
         fields["ERR_PERIOD"] = FieldData("read", "bit", "Error", [])
-        o = PandABoxBlockMaker(self.process, self.control, "PULSE2", block_data)
+        o = PandABlocksMaker(self.client, "PULSE2", block_data)
         self.assertEqual(list(o.parts), [
             'icon',
             'parameters',

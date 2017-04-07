@@ -10,13 +10,7 @@ import setup_malcolm_paths
 import unittest
 from mock import MagicMock, call, ANY
 
-#module imports
-from malcolm.compat import queue
-from malcolm.core.context import Context
 from malcolm.core.future import Future
-from malcolm.core.errors import ResponseError, TimeoutError
-from malcolm.core.process import Process
-from malcolm.core.response import Return, Error
 
 #import logging
 #logging.basicConfig(level=logging.DEBUG)

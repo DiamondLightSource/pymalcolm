@@ -1,8 +1,5 @@
-from collections import namedtuple
-import socket
-
-from malcolm.compat import OrderedDict
-from malcolm.core import Loggable, Spawnable
+from collections import namedtuple, OrderedDict
+import logging
 
 
 BlockData = namedtuple("BlockData", "number,description,fields")
@@ -10,29 +7,70 @@ FieldData = namedtuple("FieldData",
                        "field_type,field_subtype,description,labels")
 
 
-class PandABoxControl(Loggable, Spawnable):
-
-    def __init__(self, process, hostname, port):
-        self.set_logger_name("PandABoxControl(%s:%s)" % (hostname, port))
-        self.process = process
+class PandABlocksClient(object):
+    # Sentinel that tells the send_loop and recv_loop to stop
+    STOP = object()
+    
+    def __init__(self, hostname="localhost", port=8888, queue_cls=None):
+        if queue_cls is None:
+            try:
+                # Python 2
+                from Queue import Queue as queue_cls
+            except ImportError:
+                # Python 3
+                from queue import Queue as queue_cls
+        self.queue_cls = queue_cls
         self.hostname = hostname
         self.port = port
         # Completed lines for a response in progress
         self._completed_response_lines = []
         # True if the current response is multiline
         self._is_multiline = None
-        # This queue holds send messages
-        self.q = process.create_queue()
-        self.response_queues = process.create_queue()
-        self.socket = socket.socket()
-        self.socket.connect((hostname, port))
-        self.add_spawn_function(self.send_loop,
-                                self.make_default_stop_func(self.q))
-        self.add_spawn_function(self.recv_loop, self.socket.close)
+        # True when we have been started
+        self.started = False
+        # Filled in on start
+        self._socket = None
+        self._send_spawned = None
+        self._send_queue = None
+        self._recv_spawned = None
+        self._response_queues = None
+        self._thread_pool = None
 
+    def start(self, spawn=None, socket_cls=None):
+        if spawn is None:
+            from multiprocessing.pool import ThreadPool
+            self._thread_pool = ThreadPool(2)
+            spawn = self._thread_pool.apply_async
+        if socket_cls is None:
+            from socket import socket as socket_cls
+        assert not self.started, "Send and recv threads already started"
+        # Holds (message, response_queue) to send next
+        self._send_queue = self.queue_cls()
+        # Holds response_queue to send next
+        self._response_queues = self.queue_cls()
+        self._socket = socket_cls()
+        self._socket.connect((self.hostname, self.port))
+        self._send_spawned = spawn(self._send_loop)
+        self._recv_spawned = spawn(self._recv_loop)
+        self.started = True
+        
+    def stop(self):
+        assert self.started, "Send and recv threads not started"
+        self._send_queue.put((self.STOP, None))    
+        self._send_spawned.wait()
+        self._socket.shutdown()
+        self._recv_spawned.wait()
+        self._socket.close()
+        self._socket = None
+        self.started = False
+        if self._thread_pool is not None:
+            self._thread_pool.close()
+            self._thread_pool.join()
+            self._thread_pool = None
+        
     def send(self, message):
-        response_queue = self.process.create_queue()
-        self.q.put((message, response_queue))
+        response_queue = self.queue_cls()
+        self._send_queue.put((message, response_queue))
         return response_queue
 
     def recv(self, response_queue, timeout=1.0):
@@ -56,46 +94,43 @@ class PandABoxControl(Loggable, Spawnable):
         response = self.recv(response_queue, timeout)
         return response
 
-    def send_loop(self):
-        """Service self.q, sending requests to server"""
+    def _send_loop(self):
+        """Service self._send_queue, sending requests to server"""
         while True:
-            message, response_queue = self.q.get()
-            if message is Spawnable.STOP:
+            message, response_queue = self._send_queue.get()
+            if message is self.STOP:
                 break
             try:
-                self.log_debug("Sending %r", message)
-                self.response_queues.put(response_queue)
-                self.socket.send(message)
+                self._response_queues.put(response_queue)
+                self._socket.send(message)
             except Exception:  # pylint:disable=broad-except
-                self.log_exception(
-                    "Exception sending message %s", message)
+                logging.exception("Exception sending message %s", message)
 
-    def get_lines(self):
+    def _get_lines(self):
         buf = ""
         while True:
             lines = buf.split("\n")
             for line in lines[:-1]:
-                # print "Yield", repr(line)
                 yield line
             buf = lines[-1]
             # Get something new from the socket
-            rx = self.socket.recv(4096)
+            rx = self._socket.recv(4096)
             if rx:
                 buf += rx
 
     def _respond(self, resp):
         """Respond to the person waiting"""
-        self.log_debug("Response %r", resp)
-        response_queue = self.response_queues.get(timeout=0.1)
+        logging.debug("Response %r", resp)
+        response_queue = self._response_queues.get(timeout=0.1)
         response_queue.put(resp)
         self._completed_response_lines = []
         self._is_multiline = None
 
-    def recv_loop(self):
+    def _recv_loop(self):
         """Service socket recv, returning responses to the correct queue"""
         self._completed_response_lines = []
         self._is_multiline = None
-        lines_iterator = self.get_lines()
+        lines_iterator = self._get_lines()
         while True:
             try:
                 line = next(lines_iterator)
@@ -114,8 +149,7 @@ class PandABoxControl(Loggable, Spawnable):
                 else:
                     self._respond(line)
             except Exception:
-                self.log_exception(
-                    "Exception receiving message")
+                logging.exception("Exception receiving message")
                 raise
 
     def _get_block_numbers(self):
@@ -244,7 +278,7 @@ class PandABoxControl(Loggable, Spawnable):
             elif "=" in line:
                 field, val = line.split("=", 1)
             else:
-                self.log_warning("Can't parse line %r of changes", line)
+                logging.warning("Can't parse line %r of changes", line)
                 continue
             # TODO: Goes in server
             if val in ("POSITIONS.ZERO", "BITS.ZERO"):
@@ -272,13 +306,11 @@ class PandABoxControl(Loggable, Spawnable):
             raise ValueError("Error setting %s.%s to %r: %s" % (
                 block, field, value, e))
         else:
-            assert resp == "OK", \
-                "Expected OK, got %r" % resp
+            assert resp == "OK", "Expected OK, got %r" % resp
 
     def set_table(self, block, field, int_values):
         lines = ["%s.%s<\n" % (block, field)]
         lines += ["%s\n" % int_value for int_value in int_values]
         lines += ["\n"]
         resp = self.send_recv("".join(lines))
-        assert resp == "OK", \
-            "Expected OK, got %r" % resp
+        assert resp == "OK", "Expected OK, got %r" % resp

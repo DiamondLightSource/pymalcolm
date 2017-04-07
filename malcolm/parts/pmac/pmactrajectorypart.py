@@ -122,7 +122,7 @@ class PmacTrajectoryPart(StatefulChildPart):
                 axis_mapping[motor_info.scannable] = motor_info
         missing = set(axes_to_move) - set(axis_mapping)
         assert not missing, \
-            "Some scannables %s are not children of this controller" % missing
+            "Some scannables %s are not children of this _controller" % missing
         assert len(cs_ports) == 1, \
             "Requested axes %s are in multiple CS numbers %s" % (
                 axes_to_move, list(cs_ports))
@@ -150,7 +150,7 @@ class PmacTrajectoryPart(StatefulChildPart):
         self.steps_up_to = completed_steps + steps_to_do
         self.completed_steps_lookup = []
         profile = self.build_generator_profile(completed_steps, do_run_up=True)
-        context.wait_all(future)
+        context.wait_all_futures(future)
         self.write_profile_points(child, **profile)
         # Max size of array
         child.buildProfile()

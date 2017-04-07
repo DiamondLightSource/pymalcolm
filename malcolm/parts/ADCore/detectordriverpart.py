@@ -1,8 +1,9 @@
 from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_also_takes, REQUIRED, method_takes
-from malcolm.parts.ADCore.hdfwriterpart import NDArrayDatasetInfo
-from malcolm.parts.builtin.childpart import StatefulChildPart
-from malcolm.vmetas.builtin import PointGeneratorMeta, NumberMeta, ChoiceMeta
+from malcolm.infos.ADCore.ndarraydatasetinfo import NDArrayDatasetInfo
+from malcolm.parts.builtin import StatefulChildPart
+from malcolm.vmetas.builtin import NumberMeta, ChoiceMeta
+from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
 
 # Args for configure() and validate
 configure_args = [
@@ -32,9 +33,9 @@ class DetectorDriverPart(StatefulChildPart):
         yield "triggerMode", self.trigger_mode, None
 
     @RunnableController.Reset
-    def reset(self, task):
-        super(DetectorDriverPart, self).reset(task)
-        self.abort(task)
+    def reset(self, context):
+        super(DetectorDriverPart, self).reset(context)
+        self.abort(context)
 
     @RunnableController.ReportStatus
     def report_configuration(self, _):
@@ -42,7 +43,7 @@ class DetectorDriverPart(StatefulChildPart):
 
     @RunnableController.Validate
     @method_takes(*configure_args)
-    def validate(self, task, part_info, params):
+    def validate(self, context, part_info, params):
         exposure = params.generator.duration
         assert exposure > 0, \
             "Duration %s for generator must be >0 to signify constant exposure"\
@@ -57,33 +58,36 @@ class DetectorDriverPart(StatefulChildPart):
     @RunnableController.PostRunReady
     @RunnableController.Seek
     @method_takes(*configure_args)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
-        task.unsubscribe_all()
+    def configure(self, context, completed_steps, steps_to_do, part_info, params):
+        context.unsubscribe_all()
+        child = context.block_view(self.params.mri)
         exposure = params.generator.duration - self.readout_time.value
-        task.put_many(self.child, dict(
+        child.put_attribute_values(dict(
             exposure=exposure,
             imageMode="Multiple",
             numImages=steps_to_do,
             arrayCounter=completed_steps,
             arrayCallbacks=True))
-        self.post_configure(task, params)
+        self.post_configure(child, params)
 
-    def post_configure(self, task, params):
+    def post_configure(self, child, params):
         if self.trigger_mode.value == "Hardware":
             # Start now
-            self.start_future = task.post_async(self.child["start"])
+            self.start_future = child.start_async()
 
     @RunnableController.Run
     @RunnableController.Resume
-    def run(self, task, update_completed_steps):
-        task.subscribe(self.child["arrayCounter"], update_completed_steps, self)
+    def run(self, context, update_completed_steps):
+        child = context.block_view(self.params.mri)
+        child.arrayCounter.subscribe_value(update_completed_steps, self)
         if self.trigger_mode.value != "Hardware":
             # Start now
-            self.start_future = task.post_async(self.child["start"])
-        task.wait_all(self.start_future)
+            self.start_future = child.start_async()
+        context.wait_all_futures(self.start_future)
 
     @RunnableController.Abort
     @RunnableController.Pause
-    def abort(self, task):
-        task.post(self.child["stop"])
+    def abort(self, context):
+        child = context.block_view(self.params.mri)
+        child.stop()
 

@@ -1,75 +1,140 @@
 import time
 
-from malcolm.compat import queue, OrderedDict
-from malcolm.controllers.builtin.defaultcontroller import DefaultController
-from malcolm.core import Spawnable, Loggable
-from malcolm.parts.pandabox.pandaboxblockmaker import PandABoxBlockMaker
-from malcolm.vmetas.builtin import BooleanMeta, TableMeta
+from malcolm.compat import OrderedDict
+from malcolm.controllers.builtin import StatefulController, BaseController, \
+    ManagerController
+from malcolm.core import method_also_takes, Queue, TimeoutError, \
+    call_with_params
+from malcolm.parts.pandablocks.pandablocksmaker import PandABlocksMaker
+from malcolm.vmetas.builtin import BooleanMeta, TableMeta, StringMeta, \
+    NumberMeta
+from .pandablocksclient import PandABlocksClient
 
 
-class PandABoxPoller(Spawnable, Loggable):
-    def __init__(self, process, control):
-        self.set_logger_name("PandABoxPoller(%s)" % control.hostname)
-        self.process = process
-        self.control = control
-        # block_name -> BlockData
-        self._block_data = {}
-        # block_name -> {field_name: Part}
-        self._parts = OrderedDict()
+@method_also_takes(
+    "hostname", StringMeta("Hostname of the box"), "localhost",
+    "port", NumberMeta("uint32", "Port number of the server client"), 8888,
+    "areaDetectorPrefix",
+        StringMeta("Prefix for areaDetector records, if using EPICS"), ""
+)
+class PandABlocksController(ManagerController):
+    def __init__(self, process, parts, params):
+        super(PandABlocksController, self).__init__(process, parts, params)
+        # {block_name: BlockData}
+        self._blocks_data = {}
+        # {block_name: {field_name: Part}}
+        self._blocks_parts = OrderedDict()
         # src_attr -> [dest_attr]
         self._listening_attrs = {}
         # (block_name, src_field_name) -> [dest_field_name]
         self._scale_offset_fields = {}
         # full_src_field -> [full_dest_field]
         self._mirrored_fields = {}
-        # changes left over from last time
-        self.changes = OrderedDict()
         # fields that need to inherit UNITS, SCALE and OFFSET from upstream
         self._inherit_scale = {}
         self._inherit_offset = {}
-        self.q = process.create_queue()
-        self.add_spawn_function(self.poll_loop,
-                                self.make_default_stop_func(self.q))
+        # changes left over from last time
+        self.changes = OrderedDict()
+        # The PandABlock client that does the comms
+        self.client = PandABlocksClient(params.hostname, params.port)
+        # Filled in on reset
+        self._stop_queue = None
+        self._poll_spawned = None
 
-    def make_panda_block(self, mri, block_name, block_data, parts=None,
-                         area_detector=False):
-        # Validate and store block_data
-        self._store_block_data(block_name, block_data)
+    def do_init(self):
+        # start the poll loop first to fill in our parts before calling
+        # _set_block_children()
+        self.start_poll_loop()
+        super(PandABlocksController, self).do_reset()
 
+    def start_poll_loop(self):
+        # queue to listen for stop events
+        self._stop_queue = Queue()
+        if self.client.started:
+            self.client.stop()
+        if self.use_cothread:
+            from cothread.cosocket import socket
+        else:
+            from socket import socket
+        self.client.start(self.spawn, socket)
+        if not self._blocks_parts:
+            self._make_blocks_parts()
+        self._poll_spawned = self.spawn(self.poll_loop)
+
+    def do_disable(self):
+        super(PandABlocksController, self).do_disable()
+        self.stop_poll_loop()
+
+    def do_reset(self):
+        self.start_poll_loop()
+        super(PandABlocksController, self).do_reset()
+
+    def _poll_loop(self):
+        """At 10Hz poll for changes"""
+        next_poll = time.time()
+        while True:
+            next_poll += 0.1
+            timeout = next_poll - time.time()
+            if timeout < 0:
+                timeout = 0
+            try:
+                return self._stop_queue.get(timeout=timeout)
+            except TimeoutError:
+                # No stop, no problem
+                pass
+            try:
+                self.handle_changes(self.client.get_changes())
+            except Exception:
+                # TODO: should fault here?
+                self.log_exception("Error while getting changes")
+
+    def stop_poll_loop(self):
+        if self._poll_spawned:
+            self._stop_queue.put(self.STOP)
+            self._poll_spawned.wait()
+            self._poll_spawned = None
+        if self.client.started:
+            self.client.stop()
+
+    def _make_blocks_parts(self):
+        self._blocks_data = self.client.get_blocks_data()
+        self._blocks_parts = OrderedDict()
+        for block_name, block_data in self._blocks_data.items():
+            block_names = []
+            if block_data.number == 1:
+                block_names.append(block_name)
+            else:
+                for i in range(block_data.number):
+                    block_names.append("%s%d" % (block_name, i + 1))
+            for bn in block_names:
+                self._make_parts(bn, block_data)
+
+    def _make_parts(self, block_name, block_data):
+        mri = "%s:%s" % (self.params.mri, block_name)
         # Defer creation of parts to a block maker
-        maker = PandABoxBlockMaker(self.process, self.control, block_name,
-                                   block_data, area_detector)
+        maker = PandABlocksMaker(
+            self.client, block_name, block_data, self.params.areaDetectorPrefix)
 
-        # Add in any extras we are passed
-        if parts:
-            for part in parts:
-                maker.parts[part.name] = part
+        # Add in any extras we need to make from areaDetector
+        parts = maker.parts.values()
+        if block_name == "PCAP" and self.params.areaDetectorPrefix:
+            from malcolm.includes.ADCore import adbase_parts
+            parts += call_with_params(
+                adbase_parts, prefix=self.params.areaDetectorPrefix)
+            controller_cls = StatefulController
+        else:
+            controller_cls = BaseController
 
-        # Make a controller
-        params = DefaultController.MethodMeta.prepare_input_map(mri=mri)
-        controller = DefaultController(
-            self.process, maker.parts.values(), params)
-        block = controller.block
+        # Add it to the process
+        controller = call_with_params(
+            controller_cls, self.process, parts, mri=mri)
+        self.process.add_controller(mri, controller)
 
-        self._parts[block_name] = maker.parts
+        # Store the parts so we can update them with the poller
+        self._blocks_parts[block_name] = maker.parts
 
         # Set the initial block_url
         self._set_icon_url(block_name)
-
-        return block
-
-    def _set_icon_url(self, block_name):
-        icon_attr = self._parts[block_name]["icon"].attr
-        fname = block_name.rstrip("0123456789")
-        if fname == "LUT":
-            # TODO: Get fname from func
-            pass
-        # TODO: make relative
-        url = "http://localhost:8080/path/to/%s" % fname
-        icon_attr.set_value(url)
-
-    def _store_block_data(self, block_name, block_data):
-        self._block_data[block_name] = block_data
 
         # setup param pos on a block with pos_out to inherit SCALE OFFSET UNITS
         pos_fields = []
@@ -92,6 +157,18 @@ class PandABoxPoller(Spawnable, Loggable):
             for field_name in pos_fields:
                 self._map_scale_offset(block_name, sources[0], field_name)
 
+        # Make the corresponding part for us
+        if block_name == "PCAP" and self.params.areaDetectorPrefix:
+            from malcolm.parts.pandablocks import \
+                PandABlocksDriverPart as ChildPart
+        elif self.params.areaDetectorPrefix:
+            from malcolm.parts.pandablocks import \
+                PandABlocksChildPart as ChildPart
+        else:
+            from malcolm.parts.builtin import ChildPart
+        child_part = call_with_params(ChildPart, name=block_name, mri=mri)
+        self.parts[block_name] = child_part
+
     def _map_scale_offset(self, block_name, src_field, dest_field):
         self._scale_offset_fields.setdefault(
             (block_name, src_field), []).append(dest_field)
@@ -104,25 +181,15 @@ class PandABoxPoller(Spawnable, Loggable):
             self._mirrored_fields.setdefault(full_src_field, []).append(
                 full_dest_field)
 
-    def poll_loop(self):
-        """At 10Hz poll for changes"""
-        next_poll = time.time()
-        while True:
-            next_poll += 0.1
-            timeout = next_poll - time.time()
-            if timeout < 0:
-                timeout = 0
-            try:
-                message = self.q.get(timeout=timeout)
-                if message is Spawnable.STOP:
-                    break
-            except queue.Empty:
-                # No problem
-                pass
-            try:
-                self.handle_changes(self.control.get_changes())
-            except Exception:
-                self.log_exception("Error while getting changes")
+    def _set_icon_url(self, block_name):
+        icon_attr = self._blocks_parts[block_name]["icon"].attr
+        fname = block_name.rstrip("0123456789")
+        if fname == "LUT":
+            # TODO: Get fname from func
+            pass
+        # TODO: make relative
+        url = "http://localhost:8080/path/to/%s" % fname
+        icon_attr.set_value(url)
 
     def handle_changes(self, changes):
         for k, v in changes.items():
@@ -130,7 +197,7 @@ class PandABoxPoller(Spawnable, Loggable):
         for full_field, val in list(self.changes.items()):
             # If we have a mirrored field then fire off a request
             for dest_field in self._mirrored_fields.get(full_field, []):
-                self.control.send("%s=%s\n" % (dest_field, val))
+                self.client.send("%s=%s\n" % (dest_field, val))
             block_name, field_name = full_field.split(".", 1)
             ret = self.update_attribute(block_name, field_name, val)
             if ret is not None:
@@ -143,17 +210,17 @@ class PandABoxPoller(Spawnable, Loggable):
 
     def update_attribute(self, block_name, field_name, val):
         ret = None
-        if block_name not in self._parts:
+        if block_name not in self._blocks_parts:
             self.log_debug("Block %s not known", block_name)
             return
-        parts = self._parts[block_name]
+        parts = self._blocks_parts[block_name]
         if field_name not in parts:
             self.log_debug("Block %s has no field %s", block_name,
                            field_name)
             return
         part = parts[field_name]
         attr = part.attr
-        field_data = self._block_data[block_name].fields.get(field_name, None)
+        field_data = self._blocks_data[block_name].fields.get(field_name, None)
         if val == Exception:
             # TODO: set error
             val = None
@@ -187,7 +254,7 @@ class PandABoxPoller(Spawnable, Loggable):
 
     def _update_scale_offset_mapping(self, block_name, field_name, mux_val):
         # Find the fields that depend on this input
-        field_data = self._block_data[block_name].fields.get(field_name, None)
+        field_data = self._blocks_data[block_name].fields.get(field_name, None)
         if field_data.field_subtype == "relative_pos":
             suffs = ("SCALE", "UNITS")
         else:
@@ -211,10 +278,10 @@ class PandABoxPoller(Spawnable, Loggable):
                 value = dict(SCALE=1, OFFSET=0, UNITS="")[suff]
             else:
                 mon_block_name, mon_field_name = mux_val.split(".", 1)
-                mon_parts = self._parts[mon_block_name]
+                mon_parts = self._blocks_parts[mon_block_name]
                 src_attr = mon_parts["%s.%s" % (mon_field_name, suff)].attr
                 value = src_attr.value
-            self.control.send("%s=%s\n" % (full_dest_field, value))
+            self.client.send("%s=%s\n" % (full_dest_field, value))
 
     def _update_val_attr(self, val_attr, mux_val):
         # Remove the old val_attr from all lists
@@ -230,7 +297,7 @@ class PandABoxPoller(Spawnable, Loggable):
             val_attr.set_value(1)
         else:
             mon_block_name, mon_field_name = mux_val.split(".", 1)
-            mon_parts = self._parts[mon_block_name]
+            mon_parts = self._blocks_parts[mon_block_name]
             out_attr = mon_parts[mon_field_name].attr
             self._listening_attrs.setdefault(out_attr, []).append(val_attr)
             # update it to the right value

@@ -1,7 +1,7 @@
 import thread
 
 from malcolm.compat import queue, maybe_import_cothread
-from .errors import TimeoutError
+from .errors import TimeoutError, WrongThreadError
 
 
 class Queue(object):
@@ -38,6 +38,11 @@ class Queue(object):
                     return self._queue.get(self, timeout=timeout)
                 except queue.Empty:
                     raise TimeoutError("Queue().get() timed out")
+        elif isinstance(self._event_queue, self.cothread.EventQueue) and \
+                thread.get_ident() != self.cothread.scheduler_thread_id:
+            raise WrongThreadError(
+                "Created Queue in cothread's thread then called get() from "
+                "outside")
         else:
             # If we're not in cothread's thread and using an EventQueue this
             # will fail in the Wait() call

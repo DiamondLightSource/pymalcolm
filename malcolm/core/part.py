@@ -10,7 +10,9 @@ class Part(Loggable):
         assert isinstance(name, str_), \
             "Expected name to be a string, got %s. Did you forget to " \
             "subclass __init__ in %s?" % (name, self)
-        self.controller = None
+        self._controller = None
+        self.use_cothread = False
+        self.process = None
         self.name = name
         self.set_logger_name(name)
         self.method_models = {}
@@ -18,16 +20,18 @@ class Part(Loggable):
     def attach_to_controller(self, controller):
         self.set_logger_name("%s(%s.%s)" % (
             type(self).__name__, controller.mri, self.name))
-        self.controller = controller
+        self._controller = controller
+        self.process = controller.process
+        self.use_cothread = controller.use_cothread
 
     def spawn(self, func, *args, **kwargs):
         """Spawn a function in the right thread"""
-        spawned = self.controller.spawn(func, *args, **kwargs)
+        spawned = self.process.spawn(func, args, kwargs, self.use_cothread)
         return spawned
 
     def set_health(self, alarm=None):
         """Set the health attribute"""
-        self.controller.set_health(self, alarm)
+        self._controller.set_health(self, alarm)
 
     def make_hook_runner(self, hook_queue, func_name, context, *args, **params):
         func = getattr(self, func_name)
@@ -59,5 +63,3 @@ class Part(Loggable):
         """
         return iter(())
 
-    def get_controller(self, mri):
-        return self.controller.get_controller(mri)

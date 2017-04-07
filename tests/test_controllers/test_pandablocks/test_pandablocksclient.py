@@ -6,52 +6,52 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import call, patch
+from mock import call, Mock
 
-from malcolm.parts.pandabox.pandaboxcontrol import PandABoxControl, BlockData, \
-    FieldData
-from malcolm.core import Process, SyncFactory
+from malcolm.controllers.pandablocks.pandablocksclient import \
+    PandABlocksClient, FieldData, BlockData
 
 
 class PandABoxControlTest(unittest.TestCase):
-    @patch("malcolm.parts.pandabox.pandaboxcontrol.socket")
-    def setUp(self, mock_socket):
-        self.p = Process("process", SyncFactory("sf"))
-        self.c = PandABoxControl(self.p, "h", "p")
+    def setUp(self):
+        self.c = PandABlocksClient("h", "p")
+
+    def start(self, messages=None):
+        self.socket = Mock()
+        if messages:
+            self.socket.recv.side_effect = messages
+
+        def socket_cls():
+            return self.socket
+
+        self.c.start(socket_cls=socket_cls)
 
     def tearDown(self):
-        del self.p.sync_factory
+        if self.c.started:
+            self.c.stop()
 
     def test_multiline_response_good(self):
         messages = ["!TTLIN 6\n", "!OUTENC 4\n!CAL", "C 2\n.\nblah"]
-        self.c.socket.recv.side_effect = messages
-        self.c.start()
+        self.start(messages)
         resp = list(self.c.send_recv(""))
         self.c.stop()
-        self.c.wait()
         expected = ["TTLIN 6", "OUTENC 4", "CALC 2"]
         self.assertEqual(resp, expected)
 
     def test_two_resp(self):
         messages = ["OK =mm\n", "OK =232\n"]
-        self.c.socket.recv.side_effect = messages
-        self.c.start()
+        self.start(messages)
         self.assertEqual(self.c.send_recv(""), "OK =mm")
         self.assertEqual(self.c.send_recv(""), "OK =232")
-        self.c.stop()
-        self.c.wait()
 
     def test_bad_good(self):
         messages = ["ERR Invalid bit value\n", "OK =232\n"]
-        self.c.socket.recv.side_effect = messages
-        self.c.start()
+        self.start(messages)
         self.assertRaises(ValueError, self.c.send_recv, "")
         self.assertEqual(self.c.send_recv(""), "OK =232")
-        self.c.stop()
-        self.c.wait()
 
     def test_block_data(self):
-        self.c.socket.recv.side_effect = [
+        messages = [
             "!TTLIN 6\n!TTLOUT 10\n.\n",
             "OK =TTL input\n",
             "OK =TTL output\n",
@@ -64,11 +64,10 @@ class PandABoxControlTest(unittest.TestCase):
             "OK =TTL output value\n",
             "!ZERO\n!TTLIN1.VAL\n!TTLIN2.VAL\n.\n",
         ]
-        self.c.start()
+        self.start(messages)
         block_data = self.c.get_blocks_data()
         self.c.stop()
-        self.c.wait()
-        self.assertEqual(self.c.socket.send.call_args_list, [
+        self.assertEqual(self.socket.send.call_args_list, [
             call("*BLOCKS?\n"),
             call("*DESC.TTLIN?\n"),
             call("*DESC.TTLOUT?\n"),
@@ -96,7 +95,7 @@ class PandABoxControlTest(unittest.TestCase):
                          BlockData(10, "TTL output", out_fields))
 
     def test_changes(self):
-        self.c.socket.recv.side_effect = ["""!PULSE0.WIDTH=1.43166e+09
+        messages = ["""!PULSE0.WIDTH=1.43166e+09
 !PULSE1.WIDTH=1.43166e+09
 !PULSE2.WIDTH=1.43166e+09
 !PULSE3.WIDTH=1.43166e+09
@@ -111,11 +110,10 @@ class PandABoxControlTest(unittest.TestCase):
 !3
 .
 """]
-        self.c.start()
+        self.start(messages)
         changes = self.c.get_changes()
         self.c.stop()
-        self.c.wait()
-        self.assertEqual(self.c.socket.send.call_args_list, [
+        self.assertEqual(self.socket.send.call_args_list, [
             call("*CHANGES?\n"), call("SEQ1.TABLE?\n")])
         expected = OrderedDict()
         expected["PULSE0.WIDTH"] = "1.43166e+09"
@@ -130,20 +128,18 @@ class PandABoxControlTest(unittest.TestCase):
         self.assertEqual(changes, expected)
 
     def test_set_field(self):
-        self.c.socket.recv.return_value = "OK\n"
-        self.c.start()
+        messages = "OK\n"
+        self.start(messages)
         self.c.set_field("PULSE0", "WIDTH", 0)
         self.c.stop()
-        self.c.wait()
-        self.c.socket.send.assert_called_once_with("PULSE0.WIDTH=0\n")
+        self.socket.send.assert_called_once_with("PULSE0.WIDTH=0\n")
 
     def test_set_table(self):
-        self.c.socket.recv.return_value = "OK\n"
-        self.c.start()
+        messages = "OK\n"
+        self.start(messages)
         self.c.set_table("SEQ1", "TABLE", [1, 2, 3])
         self.c.stop()
-        self.c.wait()
-        self.c.socket.send.assert_called_once_with("""SEQ1.TABLE<
+        self.socket.send.assert_called_once_with("""SEQ1.TABLE<
 1
 2
 3
@@ -151,17 +147,16 @@ class PandABoxControlTest(unittest.TestCase):
 """)
 
     def test_table_fields(self):
-        self.c.socket.recv.return_value = """!31:0    REPEATS
+        messages = """!31:0    REPEATS
 !32:32   USE_INPA
 !64:54   STUFF
 !37:37   INPB
 .
 """
-        self.c.start()
+        self.start(messages)
         fields = self.c.get_table_fields("SEQ1", "TABLE")
         self.c.stop()
-        self.c.wait()
-        self.c.socket.send.assert_called_once_with("SEQ1.TABLE.FIELDS?\n")
+        self.socket.send.assert_called_once_with("SEQ1.TABLE.FIELDS?\n")
         expected = OrderedDict()
         expected["REPEATS"] = (31, 0)
         expected["USE_INPA"] = (32, 32)

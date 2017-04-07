@@ -13,7 +13,7 @@ class RunnableChildPart(StatefulChildPart):
     # stored between runs
     run_future = None
 
-    # For child controller
+    # For child _controller
     child_controller = None
 
     def update_configure_args(self, response):
@@ -22,7 +22,7 @@ class RunnableChildPart(StatefulChildPart):
         configure_meta = deserialize_object(response.value, MethodModel)
         self.method_models["validate"].recreate_from_others([configure_meta])
         self.method_models["configure"].recreate_from_others([configure_meta])
-        self.controller.update_configure_args()
+        self._controller.update_configure_args()
 
     @RunnableController.Init
     def init(self, context):
@@ -69,7 +69,7 @@ class RunnableChildPart(StatefulChildPart):
         context.unsubscribe_all()
         child = context.block_view(self.params.mri)
         child.completedSteps.subscribe_value(update_completed_steps, self)
-        match_future = self._wait_for_postrun(context)
+        match_future = self._wait_for_postrun(child)
         self.run_future = child.run_async()
         try:
             context.wait_all_futures(match_future)
@@ -97,14 +97,14 @@ class RunnableChildPart(StatefulChildPart):
     def resume(self, context, update_completed_steps):
         child = context.block_view(self.params.mri)
         child.completedSteps.subscribe_value(update_completed_steps, self)
-        match_future = self._wait_for_postrun(context)
+        match_future = self._wait_for_postrun(child)
         child.resume()
         context.wait_all_futures(match_future)
 
-    def _wait_for_postrun(self, context):
+    def _wait_for_postrun(self, child):
         bad_states = [ss.DISABLING, ss.ABORTING, ss.FAULT]
-        match_future = context.when_matches_async(
-            (self.params.mri, "state", "value"), ss.POSTRUN, bad_states)
+        match_future = child.when_value_matches_async(
+            "state", ss.POSTRUN, bad_states)
         return match_future
 
     @RunnableController.Abort

@@ -3,7 +3,7 @@ import os
 from malcolm.core import method_takes, REQUIRED, Part
 from malcolm.core.vmetas import PointGeneratorMeta, StringMeta
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
+from malcolm.infos.ADCore.datasetproducedinfo import DatasetProducedInfo
 
 
 class VdsWrapperPart(Part):

@@ -75,7 +75,7 @@ class WebsocketServerPart(Part):
                 return
         else:
             mri = request.path[0]
-        controller = self.get_controller(mri)
+        controller = self.process.get_controller(mri)
         controller.handle_request(request)
 
     def on_response(self, response, write_message):

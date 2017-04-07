@@ -1,17 +1,16 @@
 from malcolm.core import Part
-from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
 from malcolm.vmetas.builtin import BooleanMeta
+from .pandablocksutil import make_label_attr_name
 
 
-class PandABoxFieldPart(Part):
+class PandABlocksFieldPart(Part):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, process, control, meta, block_name, field_name,
-                 writeable, initial_value=None):
-        params = Part.MethodMeta.prepare_input_map(name=field_name)
-        super(PandABoxFieldPart, self).__init__(process, params)
-        self.control = control
+    def __init__(self, child, meta, block_name, field_name, writeable,
+                 initial_value=None):
+        super(PandABlocksFieldPart, self).__init__(field_name)
+        self.child = child
         self.meta = meta
         self.block_name = block_name
         self.field_name = field_name
@@ -42,5 +41,5 @@ class PandABoxFieldPart(Part):
                     value = "BITS.ONE"
         elif isinstance(self.meta, BooleanMeta):
             value = int(value)
-        self.control.set_field(self.block_name, self.field_name, value)
+        self.child.set_field(self.block_name, self.field_name, value)
 

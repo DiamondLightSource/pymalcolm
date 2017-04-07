@@ -4,27 +4,24 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import MagicMock
+from mock import ANY
 
-from malcolm.parts.ADCore.datasettablepart import DatasetTablePart, \
-    DatasetProducedInfo
+from malcolm.core import call_with_params
+from malcolm.parts.ADCore.datasettablepart import DatasetTablePart
+from malcolm.infos.ADCore.datasetproducedinfo import DatasetProducedInfo
 
 
 class TestDatasetReportingPart(unittest.TestCase):
 
     def setUp(self):
-        self.process = MagicMock()
-        self.child = MagicMock()
-        self.params = MagicMock()
-        self.o = DatasetTablePart(self.process, self.params)
+        self.o = call_with_params(DatasetTablePart, name="n")
         list(self.o.create_attributes())
 
     def test_init(self):
-        self.assertEqual(self.o.datasets.meta.elements.endpoints,
+        self.assertEqual(list(self.o.datasets.meta.elements),
                          ["name", "filename", "type", "rank", "path", "uniqueid"])
 
     def test_post_configure(self):
-        task = MagicMock()
         part_info = dict(
             HDF=[
                 DatasetProducedInfo(
@@ -35,7 +32,7 @@ class TestDatasetReportingPart(unittest.TestCase):
                     "det.min", "fn1", "secondary", 0, "/p/s2", "/p/uid"),
             ]
         )
-        self.o.update_datasets_table(task, part_info)
+        self.o.update_datasets_table(ANY, part_info)
         v = self.o.datasets.value
         self.assertEqual(v.name, ("det.data", "det.sum", "det.min"))
         self.assertEqual(v.filename, ("fn1", "fn1", "fn1"))

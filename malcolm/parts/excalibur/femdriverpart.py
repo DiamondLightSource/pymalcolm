@@ -1,6 +1,6 @@
 from malcolm.parts.builtin.childpart import ChildPart
 from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.ADCore.hdfwriterpart import NDArrayDatasetInfo
+from malcolm.infos.ADCore.ndarraydatasetinfo import NDArrayDatasetInfo
 
 
 class FemDriverPart(ChildPart):

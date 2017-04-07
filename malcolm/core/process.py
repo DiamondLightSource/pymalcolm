@@ -123,11 +123,11 @@ class Process(Loggable):
         return spawned
 
     def add_controller(self, mri, controller, publish=True, timeout=None):
-        """Add a controller to be hosted by this process
+        """Add a _controller to be hosted by this process
 
         Args:
-            mri (str): The malcolm resource id for the controller
-            controller (Controller): Its controller
+            mri (str): The malcolm resource id for the _controller
+            controller (Controller): Its _controller
             publish (bool): Whether to notify other controllers about its
                 existence
             timeout (float): Maximum amount of time to wait for each spawned
@@ -149,10 +149,10 @@ class Process(Loggable):
                            timeout=timeout)
 
     def remove_controller(self, mri, timeout=None):
-        """Remove a controller that is hosted by this process
+        """Remove a _controller that is hosted by this process
 
         Args:
-            mri (str): The malcolm resource id for the controller
+            mri (str): The malcolm resource id for the _controller
             timeout (float): Maximum amount of time to wait for each spawned
                 object. None means forever
         """
@@ -169,21 +169,21 @@ class Process(Loggable):
             self._run_hook(self.Halt, [controller], timeout=timeout)
 
     def get_controller(self, mri):
-        """Get controller from mri
+        """Get _controller from mri
 
         Args:
-            mri (str): The malcolm resource id for the controller
+            mri (str): The malcolm resource id for the _controller
 
         Returns:
-            Controller: the controller
+            Controller: the _controller
         """
         try:
             return self._controllers[mri]
         except KeyError:
-            raise ValueError("No controller registered for mri %r" % mri)
+            raise ValueError("No _controller registered for mri %r" % mri)
 
     def block_view(self, mri):
-        """Get a Block view from a controller
+        """Get a Block view from a Controller
 
         Args:
             mri (str): The malcolm resource id for the block

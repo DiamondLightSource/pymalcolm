@@ -3,38 +3,15 @@ from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
 from malcolm.controllers.scanning.runnablecontroller import RunnableController
-from malcolm.core import method_takes, REQUIRED, Info
-from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo, \
-    dataset_types
-from malcolm.parts.builtin.childpart import StatefulChildPart
-from malcolm.vmetas.builtin import StringMeta, PointGeneratorMeta
+from malcolm.core import method_takes, REQUIRED
+from malcolm.infos.ADCore import CalculatedNDAttributeDatasetInfo, \
+    DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
+    attribute_dataset_types
+from malcolm.parts.builtin import StatefulChildPart
+from malcolm.vmetas.builtin import StringMeta
+from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
 
 SUFFIXES = "NXY3456789"
-
-attribute_dataset_types = ["detector", "monitor", "position"]
-
-
-# Produced by plugins in part_info
-class NDAttributeDatasetInfo(Info):
-    def __init__(self, name, type, attr, rank):
-        self.name = name
-        assert type in attribute_dataset_types, \
-            "Dataset type %s not in %s" % (type, dataset_types)
-        self.type = type
-        self.attr = attr
-        self.rank = rank
-
-
-class CalculatedNDAttributeDatasetInfo(Info):
-    def __init__(self, name, attr):
-        self.name = name
-        self.attr = attr
-
-
-class NDArrayDatasetInfo(Info):
-    def __init__(self, name, rank):
-        self.name = name
-        self.rank = rank
 
 
 class HDFWriterPart(StatefulChildPart):
@@ -107,26 +84,27 @@ class HDFWriterPart(StatefulChildPart):
                 path="/entry/detector/%s_set" % dim, uniqueid="")
 
     @RunnableController.Reset
-    def reset(self, task):
-        super(HDFWriterPart, self).reset(task)
-        self.abort(task)
+    def reset(self, context):
+        super(HDFWriterPart, self).reset(context)
+        self.abort(context)
 
     @RunnableController.Configure
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
         "filePath", StringMeta("File path to write data to"), REQUIRED)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
+    def configure(self, context, completed_steps, steps_to_do, part_info, params):
         self.done_when_reaches = completed_steps + steps_to_do
+        child = context.block_view(self.params.mri)
         # For first run then open the file
         # Enable position mode before setting any position related things
-        task.put(self.child["positionMode"], True)
+        child.positionMode.put_value(True)
         # Setup our required settings
         # TODO: this should be different for windows detectors
         file_path = params.filePath.rstrip(os.sep)
         file_dir, filename = file_path.rsplit(os.sep, 1)
         assert "." in filename, \
             "File extension for %r should be supplied" % filename
-        futures = task.put_many_async(self.child, dict(
+        futures = child.put_attribute_values_async(dict(
             enableCallbacks=True,
             fileWriteMode="Stream",
             swmrMode=True,
@@ -137,16 +115,11 @@ class HDFWriterPart(StatefulChildPart):
             filePath=file_dir + os.sep,
             fileName=filename,
             fileTemplate="%s%s"))
-        futures += self._set_dimensions(task, params.generator)
+        futures += self._set_dimensions(child, params.generator)
         xml = self._make_layout_xml(params.generator, part_info)
         layout_filename = os.path.join(
             file_dir, "%s-layout.xml" % self.params.mri)
         open(layout_filename, "w").write(xml)
-        futures += task.put_async(self.child["xml"], layout_filename)
-        # Wait for the previous puts to finish
-        task.wait_all(futures)
-        # Reset numCapture back to 0
-        task.put(self.child["numCapture"], 0)
         # We want the HDF writer to flush this often:
         flush_time = 1  # seconds
         # (In particular this means that HDF files can be read cleanly by
@@ -156,14 +129,18 @@ class HDFWriterPart(StatefulChildPart):
             % params.generator.duration
         n_frames_between_flushes = max(2, round(
             flush_time/params.generator.duration))
-        task.put(self.child["flushDataPerNFrames"], n_frames_between_flushes)
-        task.put(self.child["flushAttrPerNFrames"], n_frames_between_flushes)
-
+        futures += child.put_attribute_values_async(dict(
+            xml=layout_filename,
+            flushDataPerNFrames=n_frames_between_flushes,
+            flushAttrPerNFrames=n_frames_between_flushes))
+        # Wait for the previous puts to finish
+        context.wait_all_futures(futures)
+        # Reset numCapture back to 0
+        child.numCapture.put_value(0)
         # Start the plugin
-        self.start_future = task.post_async(self.child["start"])
+        self.start_future = child.start_async()
         # Start a future waiting for the first array
-        self.array_future = task.when_matches_async(
-            self.child["arrayCounter"], 1)
+        self.array_future = child.when_value_matches_async("arrayCounter", 1)
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
             part_info, params.generator, filename))
@@ -171,33 +148,35 @@ class HDFWriterPart(StatefulChildPart):
 
     @RunnableController.PostRunReady
     @RunnableController.Seek
-    def seek(self, task, completed_steps, steps_to_do, part_info):
+    def seek(self, context, completed_steps, steps_to_do, part_info):
         self.done_when_reaches = completed_steps + steps_to_do
+        child = context.block_view(self.params.mri)
         # Just reset the array counter_block
-        task.put(self.child["arrayCounter"], 0)
+        child.arrayCounter.put_value(0)
         # Start a future waiting for the first array
-        self.array_future = task.when_matches_async(
-            self.child["arrayCounter"], 1)
+        self.array_future = child.when_value_matches_async("arrayCounter", 1)
 
     @RunnableController.Run
     @RunnableController.Resume
-    def run(self, task, update_completed_steps):
-        task.wait_all(self.array_future)
-        task.unsubscribe_all()
-        task.subscribe(self.child["uniqueId"], update_completed_steps, self)
+    def run(self, context, update_completed_steps):
+        context.wait_all_futures(self.array_future)
+        context.unsubscribe_all()
+        child = context.block_view(self.params.mri)
+        child.uniqueId.subscribe_value(update_completed_steps, self)
         # TODO: what happens if we miss the last frame?
-        task.when_matches(self.child["uniqueId"], self.done_when_reaches)
+        child.when_value_matches("uniqueId", self.done_when_reaches)
 
     @RunnableController.PostRunIdle
-    def post_run_idle(self, task):
+    def post_run_idle(self, context):
         # If this is the last one, wait until the file is closed
-        task.wait_all(self.start_future)
+        context.wait_all_futures(self.start_future)
 
     @RunnableController.Abort
-    def abort(self, task):
-        task.post(self.child["stop"])
+    def abort(self, context):
+        child = context.block_view(self.params.mri)
+        child.stop()
 
-    def _set_dimensions(self, task, generator):
+    def _set_dimensions(self, child, generator):
         num_dims = len(generator.dimensions)
         assert num_dims <= 10, \
             "Can only do 10 dims, you gave me %s" % num_dims
@@ -216,7 +195,7 @@ class HDFWriterPart(StatefulChildPart):
                 index_size = 1
             attr_dict["posNameDim%s" % suffix] = index_name
             attr_dict["extraDimSize%s" % suffix] = index_size
-        futures = task.put_many_async(self.child, attr_dict)
+        futures = child.put_attribute_values_async(attr_dict)
         return futures
 
     def _make_nxdata(self, name, rank, entry_el, generator, link=False):

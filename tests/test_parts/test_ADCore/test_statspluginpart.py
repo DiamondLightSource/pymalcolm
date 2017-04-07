@@ -4,26 +4,18 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, MagicMock, ANY
+from mock import call, MagicMock, ANY
 
+from malcolm.core import Context, call_with_params
 from malcolm.parts.ADCore.statspluginpart import StatsPluginPart
 
 
 class TestStatsPluginPart(unittest.TestCase):
 
     def setUp(self):
-        self.process = MagicMock()
-        self.child = MagicMock()
-
-        def getitem(name):
-            return name
-
-        self.child.__getitem__.side_effect = getitem
-
-        self.params = MagicMock()
-        self.params.mri = "BLOCK-STAT"
-        self.process.get_block.return_value = self.child
-        self.o = StatsPluginPart(self.process, self.params)
+        self.context = MagicMock(spec=Context)
+        self.o = call_with_params(
+            StatsPluginPart, name="stat", mri="BLOCK-STAT")
 
     def test_report_info(self):
         infos = self.o.report_info(ANY)
@@ -32,21 +24,22 @@ class TestStatsPluginPart(unittest.TestCase):
         self.assertEqual(infos[0].attr, "StatsTotal")
 
     def test_configure(self):
-        task = MagicMock()
         completed_steps = ANY
         steps_to_do = ANY
         part_info = ANY
         params = MagicMock()
         params.filePath = "/tmp/anything.h5"
         infos = self.o.configure(
-            task, completed_steps, steps_to_do, part_info, params)
+            self.context, completed_steps, steps_to_do, part_info, params)
         self.assertIsNone(infos)
-        task.put_many_async.assert_called_once_with(self.child, dict(
-            enableCallbacks=True,
-            computeStatistics=True))
         expected_filename = "/tmp/BLOCK-STAT-attributes.xml"
-        task.put_async.assert_called_once_with(
-            self.child["attributesFile"], expected_filename)
+        assert self.context.mock_calls == [
+            call.block_view('BLOCK-STAT'),
+            call.block_view().put_attribute_values(dict(
+                enableCallbacks=True,
+                computeStatistics=True)),
+            call.block_view().attributesFile.put_value(expected_filename),
+            call.wait_all_futures(ANY)]
         expected_xml = """<?xml version="1.0" ?>
 <Attributes>
 <Attribute addr="0" datatype="DOUBLE" description="Sum of the array" name="StatsTotal" source="TOTAL" type="PARAM" />

@@ -118,9 +118,6 @@ class Controller(Loggable):
             for data in part_fields:
                 yield data
 
-    def get_controller(self, mri):
-        return self.process.get_controller(mri)
-
     def spawn(self, func, *args, **kwargs):
         """Spawn a function in the right thread"""
         spawned = self.process.spawn(func, args, kwargs, self.use_cothread)
@@ -161,6 +158,11 @@ class Controller(Loggable):
             self.health.set_timeStamp()
 
     def block_view(self):
+        """Get a view of the block we control
+
+        Returns:
+            Block: The block we control
+        """
         context = Context("Context", self.process)
         return self.make_view(context)
 
@@ -299,7 +301,7 @@ class Controller(Loggable):
 
     def start_hook(self, hook, part_contexts, *args, **params):
         assert hook in self._hook_names, \
-            "Hook %s doesn't appear in controller hooks %s" % (
+            "Hook %s doesn't appear in _controller hooks %s" % (
                 hook, self._hook_names)
 
         # This queue will hold (part, result) tuples

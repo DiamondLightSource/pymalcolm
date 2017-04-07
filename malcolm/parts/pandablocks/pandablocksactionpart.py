@@ -1,16 +1,15 @@
-from malcolm.core import Part, method_takes, REQUIRED, MethodMeta
-from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
+from malcolm.core import Part, method_takes, REQUIRED, MethodModel
+from .pandablocksutil import make_label_attr_name
 
 
-class PandABoxActionPart(Part):
+class PandABlocksActionPart(Part):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, process, control, block_name, field_name, description,
-                 tags, arg_meta=None):
-        params = Part.MethodMeta.prepare_input_map(name=field_name)
-        super(PandABoxActionPart, self).__init__(process, params)
-        self.control = control
+    def __init__(self, client, block_name, field_name, description, tags,
+                 arg_meta=None):
+        super(PandABlocksActionPart, self).__init__(field_name)
+        self.client = client
         self.block_name = block_name
         self.field_name = field_name
         self.description = description
@@ -32,7 +31,7 @@ class PandABoxActionPart(Part):
             self.method = set_field.MethodMeta
             writeable_func = set_field
         else:
-            self.method = MethodMeta()
+            self.method = MethodModel()
             writeable_func = None
         self.method.set_description(self.description)
         self.method.set_tags(self.tags)
@@ -44,5 +43,5 @@ class PandABoxActionPart(Part):
             value = 0
         else:
             value = params[self.arg_name]
-        self.control.set_field(self.block_name, self.field_name, value)
+        self.client.set_field(self.block_name, self.field_name, value)
 

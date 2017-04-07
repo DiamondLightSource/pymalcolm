@@ -1,15 +1,13 @@
 from malcolm.compat import OrderedDict
-from malcolm.core import Loggable
-from malcolm.parts.builtin.choicepart import ChoicePart
-from malcolm.parts.builtin.stringpart import StringPart
-from malcolm.parts.pandabox.pandaboxactionpart import PandABoxActionPart
-from malcolm.parts.pandabox.pandaboxfieldpart import PandABoxFieldPart
-from malcolm.parts.pandabox.pandaboxgrouppart import PandABoxGroupPart
-from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
-from malcolm.parts.pandabox.pandaboxutil import make_label_attr_name
+from malcolm.core import Loggable, call_with_params
+from malcolm.parts.builtin import ChoicePart, StringPart
 from malcolm.tags import widget, group, inport, outport, config
 from malcolm.vmetas.builtin import BooleanMeta, NumberMeta, StringMeta, \
     ChoiceMeta, TableMeta
+from .pandablocksactionpart import PandABlocksActionPart
+from .pandablocksfieldpart import PandABlocksFieldPart
+from .pandablockstablepart import PandABlocksTablePart
+from .pandablocksutil import make_label_attr_name
 
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
@@ -48,12 +46,10 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
     return meta
 
 
-class PandABoxBlockMaker(Loggable):
-    def __init__(self, process, control, block_name, block_data,
-                 area_detector=False):
-        self.set_logger_name("PandABoxBlockMaker")
-        self.process = process
-        self.control = control
+class PandABlocksMaker(Loggable):
+    def __init__(self, client, block_name, block_data, area_detector=False):
+        self.set_logger_name("PandABlocksMaker")
+        self.client = client
         self.block_name = block_name
         self.block_data = block_data
         self.area_detector = area_detector
@@ -152,8 +148,8 @@ class PandABoxBlockMaker(Loggable):
             arg_meta = make_meta(
                 field_data.field_subtype, field_data.description,
                 tags=[group_tag], writeable=True, labels=field_data.labels)
-        part = PandABoxActionPart(
-            self.process, self.control, self.block_name, field_name,
+        part = PandABlocksActionPart(
+            self.client, self.block_name, field_name,
             field_data.description, [widget("action"), group_tag], arg_meta)
         self._add_part(field_name, part)
 
@@ -182,16 +178,15 @@ class PandABoxBlockMaker(Loggable):
                           field_data.labels, tags=[group_tag, widget("combo")])
         self._make_field_part(field_name + ".CAPTURE", meta, writeable=True)
         if self.area_detector:
-            from malcolm.parts.ADCore.hdfwriterpart import \
+            from malcolm.infos.ADCore.ndattributedatasetinfo import \
                 attribute_dataset_types
             # Make a string part to hold the name of the dataset
             part_name = field_name + ".DATASET_NAME"
             label, attr_name = make_label_attr_name(part_name)
-            params = StringPart.MethodMeta.prepare_input_map(
-                name=attr_name, widget="textinput",
+            part = call_with_params(
+                StringPart, name=attr_name, widget="textinput",
                 description="Name of the captured dataset in HDF file",
                 writeable=True, config=True)
-            part = StringPart(self.process, params)
             self._add_part(part_name, part)
             # Make a choice part to hold the type of the dataset
             part_name = field_name + ".DATASET_TYPE"
@@ -200,12 +195,11 @@ class PandABoxBlockMaker(Loggable):
                 initial = "position"
             else:
                 initial = "monitor"
-            params = ChoicePart.MethodMeta.prepare_input_map(
-                name=attr_name, widget="textinput",
+            part = call_with_params(
+                ChoicePart, name=attr_name, widget="combo",
                 description="Type of the captured dataset in HDF file",
                 writeable=True, choices=attribute_dataset_types,
                 initialValue=initial)
-            part = StringPart(self.process, params)
             self._add_part(part_name, part)
 
     def _make_mux(self, field_name, field_data, typ):
@@ -232,8 +226,8 @@ class PandABoxBlockMaker(Loggable):
         group_tag = self._make_group("parameters")
         tags = [widget("table"), group_tag, config()]
         meta = TableMeta(field_data.description, tags)
-        part = PandABoxTablePart(self.process, self.control, meta,
-                                 self.block_name, field_name, writeable=True)
+        part = PandABlocksTablePart(self.client, meta,
+                                    self.block_name, field_name, writeable=True)
         self._add_part(field_name, part)
 
     def _add_part(self, field_name, part):
@@ -244,14 +238,18 @@ class PandABoxBlockMaker(Loggable):
     def _make_field_part(self, field_name, meta, writeable, initial_value=None):
         if writeable:
             meta.set_tags(meta.tags + (config(),))
-        part = PandABoxFieldPart(self.process, self.control, meta,
-                                 self.block_name, field_name, writeable,
-                                 initial_value)
+        part = PandABlocksFieldPart(self.client, meta,
+                                    self.block_name, field_name, writeable,
+                                    initial_value)
         self._add_part(field_name, part)
 
     def _make_group(self, attr_name):
         if attr_name not in self.parts:
-            part = PandABoxGroupPart(self.process, attr_name)
+            part = call_with_params(
+                ChoicePart, name=attr_name, widget="group",
+                description="All %s attributes" % attr_name,
+                writeable=True, choices=["expanded", "collapsed"],
+                initialValue="expanded", config=True)
             self._add_part(attr_name, part)
         group_tag = group(attr_name)
         return group_tag

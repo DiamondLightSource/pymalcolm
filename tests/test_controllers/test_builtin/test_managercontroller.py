@@ -44,7 +44,7 @@ class TestManagerController(unittest.TestCase):
     def setUp(self):
         self.p = Process('process1')
 
-        # create a child to control
+        # create a child to client
         self.c_part = MyPart("cp1")
         self.c_child = call_with_params(
             StatefulController, self.p, [self.c_part], mri="childBlock")

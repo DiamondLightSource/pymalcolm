@@ -51,7 +51,7 @@ def make_include_creator(init_path, filename):
 
     # Check we don't have any controllers
     assert len(sections["controllers"]) == 0, \
-        "Expected exactly 0 controller, got %s" % (sections["controllers"],)
+        "Expected exactly 0 _controller, got %s" % (sections["controllers"],)
 
     # Add any parameters to the takes arguments
     @method_takes(*_create_takes_arguments(sections))
@@ -83,7 +83,7 @@ def make_block_creator(init_path, filename):
 
     # Check we have only one controller
     assert len(sections["controllers"]) == 1, \
-        "Expected exactly 1 controller, got %s" % (sections["controllers"],)
+        "Expected exactly 1 _controller, got %s" % (sections["controllers"],)
     controller_section = sections["controllers"][0]
 
     # Add any parameters to the takes arguments

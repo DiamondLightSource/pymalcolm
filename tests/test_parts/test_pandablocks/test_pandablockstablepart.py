@@ -10,37 +10,36 @@ from mock import call, Mock
 
 from malcolm.core import Table
 from malcolm.vmetas.builtin import TableMeta, BooleanArrayMeta, NumberArrayMeta
-from malcolm.parts.pandabox.pandaboxtablepart import PandABoxTablePart
+from malcolm.parts.pandablocks.pandablockstablepart import PandABlocksTablePart
 
 
 class PandABoxTablePartTest(unittest.TestCase):
     def setUp(self):
-        self.process = Mock()
-        self.control = Mock()
+        self.client = Mock()
         fields = OrderedDict()
         fields["NREPEATS"] = (7, 0)
         fields["INPUT_MASK"] = (32, 32)
         fields["TRIGGER_MASK"] = (48, 48)
         fields["TIME_PH_A"] = (95, 64)
-        self.control.get_table_fields.return_value = fields
+        self.client.get_table_fields.return_value = fields
         self.meta = TableMeta("Seq table")
-        self.o = PandABoxTablePart(
-            self.process, self.control, self.meta,
+        self.o = PandABlocksTablePart(
+            self.client, self.meta,
             block_name="SEQ1", field_name="TABLE", writeable=True)
 
     def test_init(self):
         self.assertEqual(list(self.meta.elements), [
             "nrepeats", "inputMask", "triggerMask", "timePhA"])
-        self.assertIsInstance(self.meta.elements.nrepeats, NumberArrayMeta)
-        self.assertEqual(self.meta.elements.nrepeats.dtype, "uint8")
-        self.assertEqual(self.meta.elements.nrepeats.tags, ("widget:textinput",))
-        self.assertIsInstance(self.meta.elements.inputMask, BooleanArrayMeta)
-        self.assertEqual(self.meta.elements.inputMask.tags, ("widget:checkbox",))
-        self.assertIsInstance(self.meta.elements.triggerMask, BooleanArrayMeta)
-        self.assertEqual(self.meta.elements.triggerMask.tags, ("widget:checkbox",))
-        self.assertIsInstance(self.meta.elements.timePhA, NumberArrayMeta)
-        self.assertEqual(self.meta.elements.timePhA.dtype, "uint32")
-        self.assertEqual(self.meta.elements.timePhA.tags, ("widget:textinput",))
+        self.assertIsInstance(self.meta.elements["nrepeats"], NumberArrayMeta)
+        self.assertEqual(self.meta.elements["nrepeats"].dtype, "uint8")
+        self.assertEqual(self.meta.elements["nrepeats"].tags, ("widget:textinput",))
+        self.assertIsInstance(self.meta.elements["inputMask"], BooleanArrayMeta)
+        self.assertEqual(self.meta.elements["inputMask"].tags, ("widget:checkbox",))
+        self.assertIsInstance(self.meta.elements["triggerMask"], BooleanArrayMeta)
+        self.assertEqual(self.meta.elements["triggerMask"].tags, ("widget:checkbox",))
+        self.assertIsInstance(self.meta.elements["timePhA"], NumberArrayMeta)
+        self.assertEqual(self.meta.elements["timePhA"].dtype, "uint32")
+        self.assertEqual(self.meta.elements["timePhA"].tags, ("widget:textinput",))
 
     def test_list_from_table(self):
         table = Table(self.meta)

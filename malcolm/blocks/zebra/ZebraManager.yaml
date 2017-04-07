@@ -14,7 +14,7 @@
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- parts.pandabox.PandABoxDriverPart:
+- parts.pandabox.PandABlocksDriverPart:
     name: DRV
     mri: $(mriPrefix)-DRV
 

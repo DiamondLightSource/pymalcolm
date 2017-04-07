@@ -4,8 +4,9 @@ from xml.etree import cElementTree as ET
 from malcolm.compat import et_to_string
 from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import REQUIRED, method_takes
-from malcolm.parts.ADCore.hdfwriterpart import CalculatedNDAttributeDatasetInfo
-from malcolm.parts.builtin.childpart import StatefulChildPart
+from malcolm.infos.ADCore.calculatedndattributedatasetinfo import \
+    CalculatedNDAttributeDatasetInfo
+from malcolm.parts.builtin import StatefulChildPart
 from malcolm.vmetas.builtin import StringMeta
 
 
@@ -28,15 +29,16 @@ class StatsPluginPart(StatefulChildPart):
     @RunnableController.Configure
     @method_takes(
         "filePath", StringMeta("File path to write data to"), REQUIRED)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
+    def configure(self, context, completed_steps, steps_to_do, part_info,
+                  params):
         file_dir, filename = params.filePath.rsplit(os.sep, 1)
-        fs = task.put_many_async(self.child, dict(
+        child = context.block_view(self.params.mri)
+        fs = child.put_attribute_values(dict(
             enableCallbacks=True,
-            computeStatistics=True,
-            inp="XSP3.POS"))
+            computeStatistics=True))
         xml = self._make_attributes_xml()
         attributes_filename = os.path.join(
             file_dir, "%s-attributes.xml" % self.params.mri)
         open(attributes_filename, "w").write(xml)
-        fs += task.put_async(self.child["attributesFile"], attributes_filename)
-        task.wait_all(fs)
+        child.attributesFile.put_value(attributes_filename)
+        context.wait_all_futures(fs)

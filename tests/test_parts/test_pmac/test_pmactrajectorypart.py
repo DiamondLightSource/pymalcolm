@@ -9,7 +9,7 @@ from mock import MagicMock, call, patch, ANY
 
 Mock = MagicMock
 
-from malcolm.core import call_with_params
+from malcolm.core import call_with_params, Context
 from malcolm.parts.pmac import PmacTrajectoryPart
 from malcolm.infos.pmac import MotorInfo
 from scanpointgenerator import LineGenerator, CompoundGenerator
@@ -22,7 +22,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.o = call_with_params(
             PmacTrajectoryPart, name="pmac", mri="TST-PMAC")
         list(self.o.create_attributes())
-        self.context = MagicMock()
+        self.context = MagicMock(spec=Context)
         self.child = self.context.block_view.return_value
         self.child.i10 = 1705244
 
@@ -113,7 +113,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 positionsB=[0.0, 0.0, 0.0, 0.0, 0.0])),
             call.block_view().buildProfile(),
             call.block_view().executeProfile_async(),
-            call.wait_all(self.child.executeProfile_async.return_value),
+            call.wait_all_futures(self.child.executeProfile_async.return_value),
             call.block_view().put_attribute_values(self.resolutions_and_use()),
             call.block_view().put_attribute_values(dict(
                 timeArray=[
@@ -155,7 +155,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 positionsB=[0.10000000000000001, 0.0])),
             call.block_view().buildProfile(),
             call.block_view().executeProfile_async(),
-            call.wait_all(self.child.executeProfile_async.return_value),
+            call.wait_all_futures(self.child.executeProfile_async.return_value),
             call.block_view().put_attribute_values(self.resolutions_and_use()),
             call.block_view().put_attribute_values(ANY),
             call.block_view().buildProfile()]
@@ -211,7 +211,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             call.block_view('TST-PMAC'),
             call.block_view().numPoints.put_value(4000000),
             call.block_view().cs.put_value('CS1'),
-            call.wait_all([]),
+            call.wait_all_futures([]),
             call.block_view().put_attribute_values(
                 self.resolutions_and_use(useB=False)),
             call.block_view().put_attribute_values(dict(

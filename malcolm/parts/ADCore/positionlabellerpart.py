@@ -3,8 +3,8 @@ from xml.etree import cElementTree as ET
 from malcolm.compat import et_to_string
 from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.parts.builtin.childpart import StatefulChildPart
-from malcolm.vmetas.builtin import PointGeneratorMeta
+from malcolm.parts.builtin import StatefulChildPart
+from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
 
 # How big an XML file can the EPICS waveform receive?
 XML_MAX_SIZE = 1000000 - 2
@@ -66,49 +66,53 @@ class PositionLabellerPart(StatefulChildPart):
         return xml, end_index
 
     @RunnableController.Reset
-    def reset(self, task):
-        super(PositionLabellerPart, self).reset(task)
-        self.abort(task)
+    def reset(self, context):
+        super(PositionLabellerPart, self).reset(context)
+        self.abort(context)
 
     @RunnableController.Configure
     @RunnableController.PostRunReady
     @RunnableController.Seek
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
+    def configure(self, context, completed_steps, steps_to_do, part_info,
+                  params):
         # clear out old subscriptions
-        task.unsubscribe_all()
+        context.unsubscribe_all()
         self.generator = params.generator
         # Delete any remaining old positions
-        futures = task.post_async(self.child["delete"])
-        futures += task.put_many_async(self.child, dict(
+        child = context.block_view(self.params.mri)
+        futures = [child.delete_async()]
+        futures += child.put_attribute_values_async(dict(
             enableCallbacks=True,
             idStart=completed_steps + 1))
         self.steps_up_to = completed_steps + steps_to_do
         xml, self.end_index = self._make_xml(completed_steps)
         # Wait for the previous puts to finish
-        task.wait_all(futures)
+        context.wait_all_futures(futures)
         # Put the xml
-        task.put(self.child["xml"], xml)
+        child.xml.put_value(xml)
         # Start the plugin
-        self.start_future = task.post_async(self.child["start"])
+        self.start_future = child.start_async()
 
     @RunnableController.Run
     @RunnableController.Resume
-    def run(self, task, update_completed_steps):
+    def run(self, context, update_completed_steps):
         self.loading = False
-        task.subscribe(self.child["qty"], self.load_more_positions, task)
-        task.wait_all(self.start_future)
+        child = context.block_view(self.params.mri)
+        child.qty.subscribe_value(self.load_more_positions, child)
+        context.wait_all_futures(self.start_future)
 
-    def load_more_positions(self, number_left, task):
+    def load_more_positions(self, number_left, child):
         if not self.loading and self.end_index < self.steps_up_to and \
                         number_left < POSITIONS_PER_XML * N_LOAD_AHEAD:
             self.loading = True
             xml, self.end_index = self._make_xml(self.end_index)
-            task.put(self.child["xml"], xml)
+            child.xml.put_value(xml)
             self.loading = False
 
     @RunnableController.Abort
     @RunnableController.Pause
-    def abort(self, task):
-        task.post(self.child["stop"])
+    def abort(self, context):
+        child = context.block_view(self.params.mri)
+        child.stop()
