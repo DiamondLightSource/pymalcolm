@@ -1,6 +1,5 @@
-from malcolm.core import Part
+from malcolm.core import Part, snake_to_camel
 from malcolm.vmetas.builtin import BooleanMeta
-from .pandablocksutil import make_label_attr_name
 
 
 class PandABlocksFieldPart(Part):
@@ -19,8 +18,7 @@ class PandABlocksFieldPart(Part):
         self.attr = None
 
     def create_attributes(self):
-        label, attr_name = make_label_attr_name(self.field_name)
-        self.meta.set_label(label)
+        attr_name = snake_to_camel(self.field_name.replace(".", "_"))
         self.attr = self.meta.create_attribute(self.initial_value)
         if self.writeable:
             writeable_func = self.set_field

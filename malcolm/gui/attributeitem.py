@@ -12,7 +12,8 @@ class AttributeItem(BaseItem):
 
     def set_value(self, value):
         self._state = self.RUNNING
-        request = Put(path=self.endpoint + ("value",), value=str(value))
+        request = Put(path=self.endpoint + ("value",), value=str(value),
+                      callback=self.handle_response)
         return request
 
     def handle_response(self, response):

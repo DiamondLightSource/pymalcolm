@@ -23,7 +23,7 @@ from .queue import Queue
 from .request import Request, Subscribe, Unsubscribe, Get, Put, Post
 from .response import Response, Delta, Update, Return, Error
 from .serializable import Serializable, deserialize_object, serialize_object, \
-    json_decode, json_encode
+    json_decode, json_encode, snake_to_camel, camel_to_title
 from .stringarray import StringArray
 from .table import Table
 from .timestamp import TimeStamp

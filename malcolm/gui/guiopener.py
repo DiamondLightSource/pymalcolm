@@ -1,4 +1,5 @@
 import time
+import logging
 
 from PyQt4.QtCore import QObject, pyqtSignal
 
@@ -17,8 +18,12 @@ class GuiOpener(QObject):
         self.open_gui_signal.emit(block, process)
 
     def _open_gui(self, block, process):
-        if block not in self.guis:
-            self.guis[block] = BlockGui(process, block)
-            # If we don't sleep here we get a blank GUI, very strange...
-            time.sleep(0.1)
-        self.guis[block].show()
+        try:
+            if block not in self.guis:
+                self.guis[block] = BlockGui(process, block)
+                # If we don't sleep here we get a blank GUI, very strange...
+                time.sleep(0.1)
+            self.guis[block].show()
+        except:
+            logging.exception("Error opening gui %s" % block)
+            raise

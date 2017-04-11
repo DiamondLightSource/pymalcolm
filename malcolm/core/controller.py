@@ -10,7 +10,7 @@ from .block import Block
 from .blockmeta import BlockMeta
 from .blockmodel import BlockModel
 from .context import Context
-from .errors import UnexpectedError, AbortedError
+from .errors import UnexpectedError, AbortedError, WrongThreadError
 from .healthmeta import HealthMeta
 from .hook import Hook, get_hook_decorated
 from .loggable import Loggable
@@ -22,7 +22,7 @@ from .notifier import Notifier
 from .request import Get, Subscribe, Unsubscribe, Put, Post
 from .queue import Queue
 from .rlock import RLock
-from .serializable import serialize_object, deserialize_object
+from .serializable import serialize_object, deserialize_object, camel_to_title
 from .view import make_view
 
 
@@ -79,6 +79,13 @@ class Controller(Loggable):
                 self.add_block_field(name, child, writeable_func)
 
     def add_block_field(self, name, child, writeable_func):
+        # Manufacture label if it is not already set
+        if hasattr(child, "meta"):
+            meta = child.meta
+        else:
+            meta = child
+        if not meta.label:
+            meta.set_label(camel_to_title(name))
         self._block.set_endpoint_data(name, child)
         if writeable_func:
             self._write_functions[name] = writeable_func
@@ -168,15 +175,24 @@ class Controller(Loggable):
 
     def make_view(self, context, data=None, child_name=None):
         """Make a child View of data[child_name]"""
+        try:
+            return self._make_view(context, data, child_name)
+        except WrongThreadError:
+            # called from wrong thread, spawn it again
+            result = self.spawn(self._make_view, context, data, child_name)
+            return result.get()
+
+    def _make_view(self, context, data, child_name):
+        """Called in cothread's thread"""
         with self._lock:
             if data is None:
                 child = self._block
             else:
                 child = data[child_name]
-            child_view = self._make_view(context, child)
+            child_view = self._make_appropriate_view(context, child)
         return child_view
 
-    def _make_view(self, context, data):
+    def _make_appropriate_view(self, context, data):
         if isinstance(data, BlockModel):
             # Make an Attribute View
             return make_view(self, context, data, Block)
@@ -193,11 +209,11 @@ class Controller(Loggable):
             # Need to recurse down
             d = OrderedDict()
             for k, v in data.items():
-                d[k] = self._make_view(context, v)
+                d[k] = self._make_appropriate_view(context, v)
             return d
         elif isinstance(data, list):
             # Need to recurse down
-            return [self._make_view(context, x) for x in data]
+            return [self._make_appropriate_view(context, x) for x in data]
         else:
             return data
 

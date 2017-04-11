@@ -49,6 +49,6 @@ class TestMethod(unittest.TestCase):
 
     def test_post_async(self):
         method_view = self.block.my_method
-        f = method_view.post_async('testAsync','y')
+        f = method_view.post_async('testAsync', 'y')
         assert f.result().ret == 'testAsyncy'
 

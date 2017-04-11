@@ -1,6 +1,9 @@
-# Find all subpackages, MethodMeta decorated callables, and YAML files
-from malcolm.packageutil import prepare_package
+from malcolm.yamlutil import make_include_creator
 
-__all__ = prepare_package(globals(), __name__)
+adbase_parts = make_include_creator(__file__, "adbase_parts.yaml")
+filewriting_collection = make_include_creator(
+    __file__, "filewriting_collection.yaml")
+ndarray_parts = make_include_creator(__file__, "ndarray_parts.yaml")
+ndpluginbase_parts = make_include_creator(__file__, "ndpluginbase_parts.yaml")
 
-del prepare_package
+del make_include_creator

@@ -1,5 +1,5 @@
-from malcolm.core import Part, method_takes, REQUIRED, MethodModel
-from .pandablocksutil import make_label_attr_name
+from malcolm.core import Part, method_takes, REQUIRED, MethodModel, \
+    snake_to_camel
 
 
 class PandABlocksActionPart(Part):
@@ -19,7 +19,7 @@ class PandABlocksActionPart(Part):
         self.method = None
 
     def create_methods(self):
-        label, method_name = make_label_attr_name(self.field_name)
+        method_name = snake_to_camel(self.field_name)
         if self.arg_meta:
             self.arg_name = method_name
 
@@ -35,7 +35,6 @@ class PandABlocksActionPart(Part):
             writeable_func = None
         self.method.set_description(self.description)
         self.method.set_tags(self.tags)
-        self.method.set_label(label)
         yield method_name, self.method, writeable_func
 
     def set_field(self, params=None):

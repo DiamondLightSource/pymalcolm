@@ -8,18 +8,17 @@ import unittest
 from mock import call, Mock, patch, ANY
 
 from malcolm.core import call_with_params
-from malcolm.controllers.pandablocks.pandablockscontroller import \
-    PandABlocksController
+from malcolm.controllers.pandablocks import PandABlocksManagerController
 from malcolm.controllers.pandablocks.pandablocksclient import FieldData, \
     BlockData
 
 
-class PandABlocksControllerTest(unittest.TestCase):
-    @patch("malcolm.controllers.pandablocks.pandablockscontroller.PandABlocksClient")
+class PandABlocksManagerControllerTest(unittest.TestCase):
+    @patch("malcolm.controllers.pandablocks.pandablocksmanagercontroller.PandABlocksClient")
     def setUp(self, mock_client):
         self.process = Mock()
         self.o = call_with_params(
-            PandABlocksController, self.process, [], mri="P", configDir="/tmp")
+            PandABlocksManagerController, self.process, [], mri="P", configDir="/tmp")
         blocks_data = OrderedDict()
         fields = OrderedDict()
         fields["INP"] = FieldData("pos_mux", "", "Input A", ["ZERO", "COUNTER.OUT"])
@@ -71,13 +70,13 @@ class PandABlocksControllerTest(unittest.TestCase):
             call.add_controller('P:TTLIN', ANY)]
         pcomp, counter, ttlin = self._blocks()
         assert pcomp.inp.value == "ZERO"
-        assert pcomp.inpVal.value == 0.0
+        assert pcomp.inpCurrent.value == 0.0
         assert pcomp.start.value == 0.0
         assert pcomp.step.value == 0.0
         assert pcomp.out.value is False
         assert counter.inp.value == "ZERO"
         assert counter.inpDelay.value == 0
-        assert counter.inpVal.value is False
+        assert counter.inpCurrent.value is False
         assert counter.out.value == 0.0
         assert counter.outScale.value == 1.0
         assert counter.outOffset.value == 0.0
@@ -90,10 +89,10 @@ class PandABlocksControllerTest(unittest.TestCase):
         assert counter.out.value== 32.0
         self.o.handle_changes({"PCOMP.INP": "COUNTER.OUT"})
         assert pcomp.inp.value == "COUNTER.OUT"
-        assert pcomp.inpVal.value == 32.0
+        assert pcomp.inpCurrent.value == 32.0
         self.o.handle_changes({"PCOMP.INP": "ZERO"})
         assert pcomp.inp.value == "ZERO"
-        assert pcomp.inpVal.value == 0.0
+        assert pcomp.inpCurrent.value == 0.0
 
     def test_scale_offset_following(self):
         pcomp, counter, ttlin = self._blocks()
@@ -110,7 +109,7 @@ class PandABlocksControllerTest(unittest.TestCase):
         self.client.send.reset_mock()
         self.o.handle_changes({"PCOMP.INP": "COUNTER.OUT"})
         assert pcomp.inp.value == "COUNTER.OUT"
-        assert pcomp.inpVal.value == 0.0
+        assert pcomp.inpCurrent.value == 0.0
         assert self.client.send.call_args_list == [
             call('PCOMP.START.SCALE=1.0\n'),
             call('PCOMP.START.OFFSET=0.0\n'),

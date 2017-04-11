@@ -37,16 +37,18 @@ def _create_blocks_and_parts(process, sections, params):
     return parts
 
 
-def _get_yaml_text(init_path, filename):
-    yaml_path = os.path.join(os.path.dirname(init_path), filename)
+def _get_yaml_text(yaml_path, filename=None):
+    if filename:
+        # different filename to support passing __file__
+        yaml_path = os.path.join(os.path.dirname(yaml_path), filename)
     logging.debug("Parsing %s", yaml_path)
     with open(yaml_path) as f:
         text = f.read()
     return text
 
 
-def make_include_creator(init_path, filename):
-    text = _get_yaml_text(init_path, filename)
+def make_include_creator(yaml_path, filename=None):
+    text = _get_yaml_text(yaml_path, filename)
     sections = Section.from_yaml(text)
 
     # Check we don't have any controllers
@@ -55,7 +57,9 @@ def make_include_creator(init_path, filename):
 
     # Add any parameters to the takes arguments
     @method_takes(*_create_takes_arguments(sections))
-    def include_creator(process, params):
+    def include_creator(process, params=None):
+        if params is None:
+            params = {}
         return _create_blocks_and_parts(process, sections, params)
 
     return include_creator

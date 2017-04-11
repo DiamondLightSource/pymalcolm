@@ -8,12 +8,12 @@ from .queue import Queue
 class Spawned(object):
     NO_RESULT = object()
 
-    def __init__(self, function, args, kwargs, from_thread,
-                 use_cothread=True, thread_pool=None):
+    def __init__(self, function, args, kwargs, use_cothread=True,
+                 thread_pool=None):
         self.cothread = maybe_import_cothread()
         if use_cothread and not self.cothread:
             use_cothread = False
-        self._result_queue = Queue(from_thread)
+        self._result_queue = Queue()
         self._result = self.NO_RESULT
         self._function = function
 

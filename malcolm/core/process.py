@@ -101,9 +101,8 @@ class Process(Loggable):
             Spawned: Something you can call wait(timeout) on to see when it's
                 finished executing
         """
-        from_thread = thread.get_ident()
         return self._call_in_right_thread(
-            self._spawn, function, args, kwargs, from_thread, use_cothread)
+            self._spawn, function, args, kwargs, use_cothread)
 
     def _call_in_right_thread(self, func, *args):
         try:
@@ -112,11 +111,11 @@ class Process(Loggable):
             # called from outside cothread's thread, spawn it again
             return self._cothread.CallbackResult(func, *args)
 
-    def _spawn(self, function, args, kwargs, from_thread, use_cothread):
+    def _spawn(self, function, args, kwargs, use_cothread):
         with self._lock:
             assert self.started, "Can't spawn before process started"
-            spawned = Spawned(function, args, kwargs, from_thread,
-                              use_cothread, self._thread_pool)
+            spawned = Spawned(
+                function, args, kwargs, use_cothread, self._thread_pool)
             self._spawned.append(spawned)
             # Filter out things that are ready to avoid memory leaks
             self._spawned = [s for s in self._spawned if not s.ready()]
@@ -167,6 +166,10 @@ class Process(Loggable):
             self._run_hook(self.Publish, args=(self._published,),
                            timeout=timeout)
             self._run_hook(self.Halt, [controller], timeout=timeout)
+
+    @property
+    def mri_list(self):
+        return list(self._controllers)
 
     def get_controller(self, mri):
         """Get _controller from mri

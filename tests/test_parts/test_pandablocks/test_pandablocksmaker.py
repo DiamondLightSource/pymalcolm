@@ -30,9 +30,9 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             'icon',
             'inputs',
             'INPA',
-            'INPA.VAL',
+            'INPA.CURRENT',
             'INPB',
-            'INPB.VAL',
+            'INPB.CURRENT',
             'parameters',
             'DIVIDE',
             'outputs',
@@ -56,7 +56,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             "group:inputs", "inport:int32:ZERO", "widget:combo", "config"))
         self.assertEqual(inpa.meta.choices, ("A.OUT", "B.OUT"))
 
-        val = o.parts["INPA.VAL"]
+        val = o.parts["INPA.CURRENT"]
         self.assertEqual(val.block_name, "ADDER1")
         self.assertEqual(val.writeable, False)
         self.assertIsInstance(val.meta, NumberMeta)
@@ -145,7 +145,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             'DELAY.UNITS',
             'inputs',
             'INP',
-            'INP.VAL',
+            'INP.CURRENT',
             'INP.DELAY',
             'outputs',
             'OUT',
@@ -179,7 +179,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             "group:inputs", "inport:bool:ZERO", "widget:combo", "config"))
         self.assertEqual(inp.meta.choices, ("X.OUT", "Y.OUT"))
 
-        val = o.parts["INP.VAL"]
+        val = o.parts["INP.CURRENT"]
         self.assertEqual(val.block_name, "PULSE2")
         self.assertEqual(val.writeable, False)
         self.assertIsInstance(val.meta, BooleanMeta)

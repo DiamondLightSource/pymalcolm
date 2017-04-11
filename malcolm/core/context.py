@@ -46,6 +46,10 @@ class Context(Loggable):
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
 
+    @property
+    def mri_list(self):
+        return self._process.mri_list
+
     def get_controller(self, mri):
         controller = self._process.get_controller(mri)
         return controller

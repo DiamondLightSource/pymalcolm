@@ -1,24 +1,16 @@
 import thread
 
 from malcolm.compat import queue, maybe_import_cothread
-from .errors import TimeoutError, WrongThreadError
+from .errors import TimeoutError
 
 
 class Queue(object):
     """Threadsafe and cothreadsafe queue with gets in calling thread"""
 
-    def __init__(self, from_thread=None):
-        if from_thread is None:
-            from_thread = thread.get_ident()
+    def __init__(self):
         self.cothread = maybe_import_cothread()
         if self.cothread:
-            # Cothread available, check if we are in its thread
-            if self.cothread.scheduler_thread_id == from_thread:
-                # In cothread's thread
-                self._event_queue = self.cothread.EventQueue()
-            else:
-                # Not in cothread's thread
-                self._event_queue = self.cothread.ThreadedEventQueue()
+            self._event_queue = self.cothread.EventQueue()
         else:
             self._queue = queue.Queue()
 
@@ -38,14 +30,11 @@ class Queue(object):
                     return self._queue.get(self, timeout=timeout)
                 except queue.Empty:
                     raise TimeoutError("Queue().get() timed out")
-        elif isinstance(self._event_queue, self.cothread.EventQueue) and \
-                thread.get_ident() != self.cothread.scheduler_thread_id:
-            raise WrongThreadError(
-                "Created Queue in cothread's thread then called get() from "
-                "outside")
+        elif thread.get_ident() != self.cothread.scheduler_thread_id:
+            # Not in cothread's thread, so need to use CallbackResult
+            return self.cothread.CallbackResult(self.get, timeout)
         else:
-            # If we're not in cothread's thread and using an EventQueue this
-            # will fail in the Wait() call
+            # In cothread's thread
             try:
                 return self._event_queue.Wait(timeout=timeout)
             except self.cothread.Timedout:
@@ -55,12 +44,10 @@ class Queue(object):
         if self.cothread is None:
             # No cothread, this is a queue.Queue()
             self._queue.put(value)
-        elif isinstance(self._event_queue, self.cothread.EventQueue) and \
-                self.cothread.scheduler_thread_id != thread.get_ident():
-            # Not in cothread's thread, but this is an EventQueue, so need to
-            # use Callback
+        elif self.cothread.scheduler_thread_id != thread.get_ident():
+            # Not in cothread's thread, so need to use Callback
             self.cothread.Callback(self._event_queue.Signal, value)
         else:
-            # Safe to call this as either it is a ThreadedEventQueue or we are
-            # in cothread's thread
+            # In cothread's thread
             self._event_queue.Signal(value)
+

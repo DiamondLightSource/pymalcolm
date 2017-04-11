@@ -15,16 +15,16 @@ class GuiModel(QAbstractItemModel):
         self.block = block
         self.id_ = 1
         self.root_item = BlockItem((self.block.mri,), block)
-        # map id -> request
-        self.requests = {}
+        # map id -> item
+        self.item_lookup = {}
         # TODO: unsubscribe when done
         self.response_received.connect(self.handle_response)
         self.send_request(Subscribe(path=[self.block.mri], delta=True)).wait()
 
-    def send_request(self, request):
+    def send_request(self, request, item=None):
         request.set_id(self.id_)
         request.set_callback(self.response_received.emit)
-        self.requests[self.id_] = request
+        self.item_lookup[self.id_] = item
         self.id_ += 1
         return self.controller.handle_request(request)
 
@@ -49,8 +49,7 @@ class GuiModel(QAbstractItemModel):
         if isinstance(response, Delta):
             self.handle_changes(response.changes)
         else:
-            request = self.requests[response.id]
-            item = request.context
+            item = self.item_lookup[response.id]
             item.handle_response(response)
             index = self.get_index(item, 2)
             self.dataChanged.emit(index, index)
@@ -162,7 +161,7 @@ class GuiModel(QAbstractItemModel):
                     value = value.toString()
                 request = item.set_value(value)
                 if request:
-                    self.send_request(request)
+                    self.send_request(request, item)
                 self.dataChanged.emit(index, index)
                 if item.children:
                     start = self.get_index(item.children[0], 0)

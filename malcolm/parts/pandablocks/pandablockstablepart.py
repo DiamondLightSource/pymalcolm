@@ -1,9 +1,8 @@
 from malcolm.compat import OrderedDict
-from malcolm.core import Table
+from malcolm.core import Table, snake_to_camel, camel_to_title
 from malcolm.tags import widget
 from malcolm.vmetas.builtin import NumberArrayMeta, BooleanArrayMeta
 from .pandablocksfieldpart import PandABlocksFieldPart
-from .pandablocksutil import make_label_attr_name
 
 
 class PandABlocksTablePart(PandABlocksFieldPart):
@@ -37,8 +36,8 @@ class PandABlocksTablePart(PandABlocksFieldPart):
                     raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
                 column_meta = NumberArrayMeta(dtype, field_name)
                 widget_tag = widget("textinput")
-            label, column_name = make_label_attr_name(field_name)
-            column_meta.set_label(label)
+            column_name = snake_to_camel(field_name)
+            column_meta.set_label(camel_to_title(column_name))
             column_meta.set_tags([widget_tag])
             columns[column_name] = column_meta
             self.fields[column_name] = (bits_hi, bits_lo)
@@ -46,7 +45,7 @@ class PandABlocksTablePart(PandABlocksFieldPart):
 
     def set_field(self, value):
         int_values = self.list_from_table(value)
-        self.control.set_table(self.block_name, self.field_name, int_values)
+        self.client.set_table(self.block_name, self.field_name, int_values)
 
     def _calc_nconsume(self):
         max_bits_hi = max(self.fields.values())[0]

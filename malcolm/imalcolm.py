@@ -29,36 +29,6 @@ def make_process():
         raise ValueError('Invalid log level: %s' % args.log)
     logging.basicConfig(level=numeric_level)
 
-    from malcolm.core import SyncFactory, Process
-    from malcolm.yamlutil import make_include_creator
-
-    sf = SyncFactory("Sync")
-
-    if args.yaml:
-        proc_name = os.path.basename(args.yaml).split(".")[-2]
-        proc = Process(proc_name, sf)
-        with open(args.yaml) as f:
-            assembly = make_include_creator(f.read())
-        params = assembly.MethodMeta.prepare_input_map()
-        assembly(proc, params)
-        proc_name = "%s - imalcolm" % proc_name
-    else:
-        proc = Process("Process", sf)
-        proc_name = "imalcolm"
-    # set terminal title
-    sys.stdout.write("\x1b]0;%s\x07" % proc_name)
-
-    if args.client:
-        if args.client.startswith("ws://"):
-            from malcolm.controllers.web import WebsocketClientComms
-            hostname, port = args.client[5:].split(":")
-            comms = WebsocketClientComms(
-                proc, dict(hostname=hostname, port=int(port)))
-            proc.add_comms(comms)
-        else:
-            raise ValueError(
-                "Don't know how to create client to %s" % args.client)
-
     def gui(block):
         global opener
         opener.open_gui(block, proc)
@@ -85,34 +55,56 @@ def make_process():
         qt_thread = threading.Thread(target=start_qt)
         qt_thread.start()
 
-    return proc, gui
+    from malcolm.core import Process, call_with_params, Context
+    from malcolm.yamlutil import make_include_creator
+
+    if args.yaml:
+        proc_name = os.path.basename(args.yaml).split(".")[-2]
+        proc = Process(proc_name)
+        assembly = make_include_creator(args.yaml)
+        call_with_params(assembly, proc)
+        proc_name = "%s - imalcolm" % proc_name
+    else:
+        proc = Process("Process")
+        proc_name = "imalcolm"
+    # set terminal title
+    sys.stdout.write("\x1b]0;%s\x07" % proc_name)
+
+    if args.client:
+        if args.client.startswith("ws://"):
+            from malcolm.controllers.web import WebsocketClientComms
+            hostname, port = args.client[5:].split(":")
+            comms = call_with_params(
+                WebsocketClientComms, proc, mri=hostname, hostname=hostname,
+                port=int(port))
+            proc.add_controller(comms.mri, comms)
+        else:
+            raise ValueError(
+                "Don't know how to create client to %s" % args.client)
+
+    context = Context("IMalcolmContext", proc)
+    proc.start()
+    return context, gui
 
 
 def main():
-    from malcolm.core.profilingsampler import ProfilingSampler
-    sampler = ProfilingSampler()
-
     self, gui = make_process()
 
     header = """Welcome to iMalcolm.
 
-self.process_block.blocks:
+self.mri_list:
     %s
 
 Try:
-hello_block = self.get_block("HELLO")
+hello_block = self.block_view("HELLO")
 print hello_block.greet("me")
 
 or
 
-gui(self.get_block("COUNTER"))
+gui(self.block_view("COUNTER"))
 
-or
+""" % (self.mri_list,)
 
-self.process_block.blocks
-""" % (self.process_block.blocks,)
-
-    self.start()
     try:
         import IPython
     except ImportError:

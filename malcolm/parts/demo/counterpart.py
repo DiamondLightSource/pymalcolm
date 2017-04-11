@@ -23,6 +23,5 @@ class CounterPart(Part):
     @method_takes()
     def increment(self):
         """Add one to the counter_block attribute"""
-        print "counter %s" % (self.counter.value + 1,)
         self.counter.set_value(self.counter.value + 1)
 

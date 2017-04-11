@@ -130,23 +130,23 @@ class TestController(unittest.TestCase):
         assert self.o.health.value == "OK"
 
     def test_make_view(self):
-        method_view = self.o._make_view(self.context, self.part.my_method)
-        attribute_view = self.o._make_view(self.context, self.part.myAttribute)
-        dict_view = self.o._make_view(self.context,
-                {'a': self.part.myAttribute, 'm':self.part.my_method})
-        list_view = self.o._make_view(self.context,
-                [self.part.myAttribute, self.part.my_method])
+        method_view = self.o._make_appropriate_view(self.context, self.part.my_method)
+        attribute_view = self.o._make_appropriate_view(self.context, self.part.myAttribute)
+        dict_view = self.o._make_appropriate_view(self.context,
+                                                  {'a': self.part.myAttribute, 'm':self.part.my_method})
+        list_view = self.o._make_appropriate_view(self.context,
+                                                  [self.part.myAttribute, self.part.my_method])
 
         model = Model()
-        model_view = self.o._make_view(self.context, model)
+        model_view = self.o._make_appropriate_view(self.context, model)
 
-        none_view = self.o._make_view(self.context, None)
+        none_view = self.o._make_appropriate_view(self.context, None)
 
         block_data = BlockModel()
         block_data.set_endpoint_data("attr", StringMeta().create_attribute())
         block_data.set_endpoint_data("method", MethodModel())
         block_data.set_notifier_path(MagicMock(), ["block"])
-        block_view = self.o._make_view(self.context, block_data)
+        block_view = self.o._make_appropriate_view(self.context, block_data)
 
         # Todo check create_part_contexts worked
         self.o.create_part_contexts()

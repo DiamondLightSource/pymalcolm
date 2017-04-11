@@ -31,8 +31,8 @@ class TestSpawned(unittest.TestCase):
         self.pool.join()
 
     def do_spawn(self, use_cothread, throw_me=None):
-        s = Spawned(do_div, (40, 2, self.q, throw_me), {}, thread.get_ident(),
-                    use_cothread, self.pool)
+        s = Spawned(
+            do_div, (40, 2, self.q, throw_me), {}, use_cothread, self.pool)
         return s
 
     def do_spawn_div_test(self, use_cothread):

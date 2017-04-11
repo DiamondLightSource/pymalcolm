@@ -1,10 +1,10 @@
 import time
 
 from malcolm.compat import OrderedDict
-from malcolm.controllers.builtin import StatefulController, BaseController, \
-    ManagerController
+from malcolm.controllers.builtin import BaseController, ManagerController
 from malcolm.core import method_also_takes, Queue, TimeoutError, \
     call_with_params
+from malcolm.parts.builtin import ChildPart
 from malcolm.parts.pandablocks.pandablocksmaker import PandABlocksMaker
 from malcolm.vmetas.builtin import BooleanMeta, TableMeta, StringMeta, \
     NumberMeta
@@ -13,13 +13,10 @@ from .pandablocksclient import PandABlocksClient
 
 @method_also_takes(
     "hostname", StringMeta("Hostname of the box"), "localhost",
-    "port", NumberMeta("uint32", "Port number of the server client"), 8888,
-    "areaDetectorPrefix",
-        StringMeta("Prefix for areaDetector records, if using EPICS"), ""
-)
-class PandABlocksController(ManagerController):
+    "port", NumberMeta("uint32", "Port number of the server client"), 8888)
+class PandABlocksManagerController(ManagerController):
     def __init__(self, process, parts, params):
-        super(PandABlocksController, self).__init__(process, parts, params)
+        super(PandABlocksManagerController, self).__init__(process, parts, params)
         # {block_name: BlockData}
         self._blocks_data = {}
         # {block_name: {field_name: Part}}
@@ -45,7 +42,7 @@ class PandABlocksController(ManagerController):
         # start the poll loop first to fill in our parts before calling
         # _set_block_children()
         self.start_poll_loop()
-        super(PandABlocksController, self).do_reset()
+        super(PandABlocksManagerController, self).do_reset()
 
     def start_poll_loop(self):
         # queue to listen for stop events
@@ -62,12 +59,12 @@ class PandABlocksController(ManagerController):
         self._poll_spawned = self.spawn(self.poll_loop)
 
     def do_disable(self):
-        super(PandABlocksController, self).do_disable()
+        super(PandABlocksManagerController, self).do_disable()
         self.stop_poll_loop()
 
     def do_reset(self):
         self.start_poll_loop()
-        super(PandABlocksController, self).do_reset()
+        super(PandABlocksManagerController, self).do_reset()
 
     def _poll_loop(self):
         """At 10Hz poll for changes"""
@@ -109,25 +106,23 @@ class PandABlocksController(ManagerController):
             for bn in block_names:
                 self._make_parts(bn, block_data)
 
+    def _make_child_controller(self, parts, mri):
+        controller = call_with_params(
+            BaseController, self.process, parts, mri=mri)
+        return controller
+
+    def _make_corresponding_part(self, block_name, mri):
+        part = call_with_params(ChildPart, name=block_name, mri=mri)
+        return part
+
     def _make_parts(self, block_name, block_data):
         mri = "%s:%s" % (self.params.mri, block_name)
+
         # Defer creation of parts to a block maker
-        maker = PandABlocksMaker(
-            self.client, block_name, block_data, self.params.areaDetectorPrefix)
+        maker = PandABlocksMaker(self.client, block_name, block_data)
 
-        # Add in any extras we need to make from areaDetector
-        parts = maker.parts.values()
-        if block_name == "PCAP" and self.params.areaDetectorPrefix:
-            from malcolm.includes.ADCore import adbase_parts
-            parts += call_with_params(
-                adbase_parts, prefix=self.params.areaDetectorPrefix)
-            controller_cls = StatefulController
-        else:
-            controller_cls = BaseController
-
-        # Add it to the process
-        controller = call_with_params(
-            controller_cls, self.process, parts, mri=mri)
+        # Make the child controller and add it to the process
+        controller = self._make_child_controller(maker.parts.values(), mri)
         self.process.add_controller(mri, controller)
 
         # Store the parts so we can update them with the poller
@@ -158,15 +153,7 @@ class PandABlocksController(ManagerController):
                 self._map_scale_offset(block_name, sources[0], field_name)
 
         # Make the corresponding part for us
-        if block_name == "PCAP" and self.params.areaDetectorPrefix:
-            from malcolm.parts.pandablocks import \
-                PandABlocksDriverPart as ChildPart
-        elif self.params.areaDetectorPrefix:
-            from malcolm.parts.pandablocks import \
-                PandABlocksChildPart as ChildPart
-        else:
-            from malcolm.parts.builtin import ChildPart
-        child_part = call_with_params(ChildPart, name=block_name, mri=mri)
+        child_part = self._make_corresponding_part(block_name, mri)
         self.parts[block_name] = child_part
 
     def _map_scale_offset(self, block_name, src_field, dest_field):
@@ -241,9 +228,9 @@ class PandABlocksController(ManagerController):
 
         # if we changed the value of a mux, update the slaved values
         if field_data and field_data.field_type in ("bit_mux", "pos_mux"):
-            val_part = parts[field_name + ".VAL"]
-            val_attr = val_part.attr
-            self._update_val_attr(val_attr, val)
+            current_part = parts[field_name + ".CURRENT"]
+            current_attr = current_part.attr
+            self._update_current_attr(current_attr, val)
             if field_data.field_type == "pos_mux" and field_name == "INP":
                 # all param pos fields should inherit scale and offset
                 for dest_field_name in self._scale_offset_fields.get(
@@ -283,22 +270,22 @@ class PandABlocksController(ManagerController):
                 value = src_attr.value
             self.client.send("%s=%s\n" % (full_dest_field, value))
 
-    def _update_val_attr(self, val_attr, mux_val):
-        # Remove the old val_attr from all lists
+    def _update_current_attr(self, current_attr, mux_val):
+        # Remove the old current_attr from all lists
         for mux_list in self._listening_attrs.values():
             try:
-                mux_list.remove(val_attr)
+                mux_list.remove(current_attr)
             except ValueError:
                 pass
         # add it to the list of things that need to update
         if mux_val == "ZERO":
-            val_attr.set_value(0)
+            current_attr.set_value(0)
         elif mux_val == "ONE":
-            val_attr.set_value(1)
+            current_attr.set_value(1)
         else:
             mon_block_name, mon_field_name = mux_val.split(".", 1)
             mon_parts = self._blocks_parts[mon_block_name]
             out_attr = mon_parts[mon_field_name].attr
-            self._listening_attrs.setdefault(out_attr, []).append(val_attr)
+            self._listening_attrs.setdefault(out_attr, []).append(current_attr)
             # update it to the right value
-            val_attr.set_value(out_attr.value)
+            current_attr.set_value(out_attr.value)

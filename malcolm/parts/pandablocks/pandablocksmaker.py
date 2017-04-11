@@ -1,13 +1,12 @@
 from malcolm.compat import OrderedDict
 from malcolm.core import Loggable, call_with_params
-from malcolm.parts.builtin import ChoicePart, StringPart
+from malcolm.parts.builtin import ChoicePart
 from malcolm.tags import widget, group, inport, outport, config
 from malcolm.vmetas.builtin import BooleanMeta, NumberMeta, StringMeta, \
     ChoiceMeta, TableMeta
 from .pandablocksactionpart import PandABlocksActionPart
 from .pandablocksfieldpart import PandABlocksFieldPart
 from .pandablockstablepart import PandABlocksTablePart
-from .pandablocksutil import make_label_attr_name
 
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
@@ -47,12 +46,11 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
 
 
 class PandABlocksMaker(Loggable):
-    def __init__(self, client, block_name, block_data, area_detector=False):
+    def __init__(self, client, block_name, block_data):
         self.set_logger_name("PandABlocksMaker")
         self.client = client
         self.block_name = block_name
         self.block_data = block_data
-        self.area_detector = area_detector
         self.parts = OrderedDict()
         # Make an icon
         self._make_icon()
@@ -177,30 +175,6 @@ class PandABlocksMaker(Loggable):
         meta = ChoiceMeta("Capture %s in PCAP?" % field_name,
                           field_data.labels, tags=[group_tag, widget("combo")])
         self._make_field_part(field_name + ".CAPTURE", meta, writeable=True)
-        if self.area_detector:
-            from malcolm.infos.ADCore.ndattributedatasetinfo import \
-                attribute_dataset_types
-            # Make a string part to hold the name of the dataset
-            part_name = field_name + ".DATASET_NAME"
-            label, attr_name = make_label_attr_name(part_name)
-            part = call_with_params(
-                StringPart, name=attr_name, widget="textinput",
-                description="Name of the captured dataset in HDF file",
-                writeable=True, config=True)
-            self._add_part(part_name, part)
-            # Make a choice part to hold the type of the dataset
-            part_name = field_name + ".DATASET_TYPE"
-            label, attr_name = make_label_attr_name(part_name)
-            if "INENC" in self.block_name:
-                initial = "position"
-            else:
-                initial = "monitor"
-            part = call_with_params(
-                ChoicePart, name=attr_name, widget="combo",
-                description="Type of the captured dataset in HDF file",
-                writeable=True, choices=attribute_dataset_types,
-                initialValue=initial)
-            self._add_part(part_name, part)
 
     def _make_mux(self, field_name, field_data, typ):
         group_tag = self._make_group("inputs")
@@ -213,7 +187,7 @@ class PandABlocksMaker(Loggable):
         self._make_field_part(field_name, meta, writeable=True)
         meta = make_meta(typ, "%s current value" % field_name,
                          tags=[group_tag], writeable=False)
-        self._make_field_part(field_name + ".VAL", meta, writeable=False)
+        self._make_field_part(field_name + ".CURRENT", meta, writeable=False)
 
     def _make_mux_delay(self, field_name):
         group_tag = self._make_group("inputs")
