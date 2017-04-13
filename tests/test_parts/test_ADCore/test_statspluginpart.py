@@ -35,7 +35,7 @@ class TestStatsPluginPart(unittest.TestCase):
         expected_filename = "/tmp/BLOCK-STAT-attributes.xml"
         assert self.context.mock_calls == [
             call.block_view('BLOCK-STAT'),
-            call.block_view().put_attribute_values(dict(
+            call.block_view().put_attribute_values_async(dict(
                 enableCallbacks=True,
                 computeStatistics=True)),
             call.block_view().attributesFile.put_value(expected_filename),

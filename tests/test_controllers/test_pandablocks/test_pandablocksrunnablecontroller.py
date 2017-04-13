@@ -8,7 +8,7 @@ import unittest
 from mock import call, Mock, patch, ANY
 
 from malcolm.core import call_with_params
-from malcolm.controllers.pandablocks import PandABlocksRunnableController
+from malcolm.controllers.ADPandABlocks import PandABlocksRunnableController
 from malcolm.controllers.pandablocks.pandablocksclient import FieldData, \
     BlockData
 

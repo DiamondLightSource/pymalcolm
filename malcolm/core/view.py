@@ -65,7 +65,7 @@ def make_view(controller, context, data, cls=View):
     """Make a View subclass containing properties specific for given data
 
     Args:
-        controller (Controller): The child _controller that hosts the data
+        controller (Controller): The child controller that hosts the data
         context (Context): The context the parent has made that the View should
             use for manipulating the data
         data (Model): The actual data that context will be manipulating
@@ -81,6 +81,8 @@ def make_view(controller, context, data, cls=View):
     class ViewSubclass(cls):
         def __init__(self):
             self._do_init(controller, context, data)
+
+    ViewSubclass.__name__ = "%sSubclass" % cls.__name__
 
     for endpoint in data:
         # make properties for the endpoints we know about

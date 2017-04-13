@@ -20,11 +20,8 @@ class TestManagerStates(unittest.TestCase):
     def test_init(self):
         expected = OrderedDict()
         expected['Resetting'] = {'Ready', 'Fault', 'Disabling'}
-        expected['Ready'] = {'Editing', "Fault", "Disabling", "Loading"}
-        expected['Editing'] = {'Disabling', 'Editable', 'Fault'}
-        expected['Editable'] = {'Fault', 'Saving', 'Disabling', 'Reverting'}
+        expected['Ready'] = {'Saving', "Fault", "Disabling", "Loading"}
         expected['Saving'] = {'Fault', 'Ready', 'Disabling'}
-        expected['Reverting'] = {'Fault', 'Ready', 'Disabling'}
         expected['Loading'] = {'Disabling', 'Fault', 'Ready'}
         expected['Fault'] = {"Resetting", "Disabling"}
         expected['Disabling'] = {"Disabled", "Fault"}
@@ -73,25 +70,14 @@ class TestManagerController(unittest.TestCase):
         assert self.c.layout.value.x == [0.0]
         assert self.c.layout.value.y == [0.0]
         assert self.c.layout.value.visible == [True]
-        assert self.c.layout_name.value == ""
+        assert self.c.design.value == ""
         assert self.c.exports.value.name == ()
-        assert self.c.exports.meta.elements["name"].choices == ()
-        assert self.c.exports.value.exportName == ()
-
-    def test_edit(self):
-        structure = MagicMock()
-        self.c.load_structure = structure
-        self.c.edit()
-        assert self.c.state.value == "Editable"
-        assert self.c.load_structure == structure
         assert self.c.exports.meta.elements["name"].choices == \
                ('part2.health', 'part2.state', 'part2.disable', 'part2.reset',
                 'part2.attr')
-
-    def test_edit_exception(self):
-        self.c.edit()
-        with self.assertRaises(Exception):
-            self.c.edit()
+        assert self.c.exports.value.exportName == ()
+        assert self.c.modified.value == False
+        assert self.c.modified.alarm.message == ""
 
     def check_expected_save(self, x=0.0, y=0.0, visible="true", attr="defaultv"):
         expected = [x.strip() for x in ("""{
@@ -112,17 +98,19 @@ class TestManagerController(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_save(self):
-        self.c.edit()
-        call_with_params(self.c.save, layoutName="testSaveLayout")
+        call_with_params(self.c.save, design="testSaveLayout")
         self.check_expected_save()
         assert self.c.state.value == "Ready"
-        assert self.c.layout_name.value == 'testSaveLayout'
+        assert self.c.design.value == 'testSaveLayout'
+        assert self.c.modified.value == False
         os.remove("/tmp/mainBlock/testSaveLayout.json")
-        self.c.edit()
         self.c_part.attr.set_value("newv")
-        call_with_params(self.c.save, layoutName="")
+        assert self.c.modified.value == True
+        assert self.c.modified.alarm.message == \
+               "part2.attr.value = 'newv' not 'defaultv'"
+        call_with_params(self.c.save, design="")
         self.check_expected_save(attr="newv")
-        assert self.c.layout_name.value == 'testSaveLayout'
+        assert self.c.design.value == 'testSaveLayout'
 
     def move_child_block(self):
         new_layout = Table(self.c.layout.meta)
@@ -134,7 +122,6 @@ class TestManagerController(unittest.TestCase):
         self.c.set_layout(new_layout)
 
     def test_move_child_block_dict(self):
-        self.c.edit()
         assert self.c.layout.value.x == [0]
         new_layout = dict(
             name=["part2"],
@@ -144,18 +131,10 @@ class TestManagerController(unittest.TestCase):
             visible=[True])
         self.c.set_layout(new_layout)
         assert self.c.layout.value.x == [10]
-
-    def test_revert(self):
-        self.c.edit()
-        self.move_child_block()
-        assert self.c.layout.value.x == [10]
-        self.c.revert()
-        assert self.c.layout.value.x == [0]
-        assert self.c.state.value == "Ready"
+        assert self.c.modified.value == True
+        assert self.c.modified.alarm.message == "layout changed"
 
     def test_set_and_load_layout(self):
-        self.c.edit()
-        assert self.c.state.value == "Editable"
         new_layout = Table(self.c.layout.meta)
         new_layout.name = ["part2"]
         new_layout.mri = ["anything"]
@@ -166,12 +145,15 @@ class TestManagerController(unittest.TestCase):
         assert self.c.parts['part2'].x == 10
         assert self.c.parts['part2'].y == 20
         assert self.c.parts['part2'].visible == False
+        assert self.c.modified.value == True
+        assert self.c.modified.alarm.message == "layout changed"
 
         # save the layout, modify and restore it
-        call_with_params(self.c.save, layoutName='testSaveLayout')
+        call_with_params(self.c.save, design='testSaveLayout')
+        assert self.c.modified.value == False
         self.check_expected_save(10.0, 20.0, "false")
         self.c.parts['part2'].x = 30
-        self.c.load('testSaveLayout')
+        self.c.set_design('testSaveLayout')
         self.assertEqual(self.c.parts['part2'].x, 10)
 
     def test_set_export_parts(self):
@@ -182,19 +164,20 @@ class TestManagerController(unittest.TestCase):
             'health',
             'state',
             'layout',
-            'layoutName',
+            'design',
             'exports',
+            'modified',
             'disable',
-            'edit',
             'reset',
-            'revert',
             'save']
-        self.c.edit()
         new_exports = Table(self.c.exports.meta)
         new_exports.append(('part2.attr', 'childAttr'))
         new_exports.append(('part2.reset', 'childReset'))
-        self.c.exports.set_value(new_exports)
-        call_with_params(self.c.save, layoutName='testSaveLayout')
+        self.c.set_exports(new_exports)
+        assert self.c.modified.value == True
+        assert self.c.modified.alarm.message == "exports changed"
+        call_with_params(self.c.save, design='testSaveLayout')
+        assert self.c.modified.value == False
         # block has changed, get a new view
         b = context.block_view("mainBlock")
         assert list(b) == [
@@ -202,22 +185,25 @@ class TestManagerController(unittest.TestCase):
             'health',
             'state',
             'layout',
-            'layoutName',
+            'design',
             'exports',
+            'modified',
             'disable',
-            'edit',
             'reset',
-            'revert',
             'save',
             'childAttr',
             'childReset']
         assert self.c.state.value == "Ready"
         assert b.childAttr.value == "defaultv"
+        assert self.c.modified.value == False
         m = MagicMock()
         f = b.childAttr.subscribe_value(m)
         self.c_part.attr.set_value("newv")
         assert b.childAttr.value == "newv"
         assert self.c_part.attr.value == "newv"
+        assert self.c.modified.value == True
+        assert self.c.modified.alarm.message == \
+               "part2.attr.value = 'newv' not 'defaultv'"
         # allow a subscription to come through
         context.unsubscribe(f)
         context.wait_all_futures(f)
@@ -225,11 +211,15 @@ class TestManagerController(unittest.TestCase):
         b.childAttr.put_value("again")
         assert b.childAttr.value == "again"
         assert self.c_part.attr.value == "again"
+        assert self.c.modified.value == True
+        assert self.c.modified.alarm.message == \
+               "part2.attr.value = 'again' not 'defaultv'"
         # remove the field
-        self.c.edit()
         new_exports = Table(self.c.exports.meta)
-        self.c.exports.set_value(new_exports)
+        self.c.set_exports(new_exports)
+        assert self.c.modified.value == True
         call_with_params(self.c.save)
+        assert self.c.modified.value == False
         # block has changed, get a new view
         b = context.block_view("mainBlock")
         assert "childAttr" not in b

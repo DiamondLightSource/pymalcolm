@@ -93,7 +93,7 @@ class PmacTrajectoryPart(StatefulChildPart):
         child = context.block_view(self.params.mri)
         assert params.generator.duration > 0, \
             "Can only do fixed duration at the moment"
-        servo_freq = 8388608000. / child.i10
+        servo_freq = 8388608000. / child.i10.value
         # convert half an exposure to multiple of servo ticks, rounding down
         # + 0.002 for some observed jitter in the servo frequency (I18)
         ticks = np.floor(servo_freq * 0.5 * params.generator.duration) + 0.002
@@ -122,7 +122,7 @@ class PmacTrajectoryPart(StatefulChildPart):
                 axis_mapping[motor_info.scannable] = motor_info
         missing = set(axes_to_move) - set(axis_mapping)
         assert not missing, \
-            "Some scannables %s are not children of this _controller" % missing
+            "Some scannables %s are not children of this controller" % missing
         assert len(cs_ports) == 1, \
             "Requested axes %s are in multiple CS numbers %s" % (
                 axes_to_move, list(cs_ports))

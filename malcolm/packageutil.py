@@ -20,8 +20,7 @@ def try_import_module(import_name):
     try:
         return importlib.import_module(import_name)
     except Exception:
-        pass
-        #logging.info("Importing %s failed", import_name, exc_info=True)
+        logging.info("Importing %s failed", import_name, exc_info=True)
 
 
 def find_method_meta_decorated(module):

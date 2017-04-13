@@ -6,7 +6,7 @@ from malcolm.vmetas.builtin import StringMeta
     "mri", StringMeta("Malcolm resource id of created block"), REQUIRED)
 class BaseController(Controller):
     Init = Hook()
-    """Called when this _controller is told to start by the process
+    """Called when this controller is told to start by the process
 
     Args:
         context (Context): The context that should be used to perform operations
@@ -14,7 +14,7 @@ class BaseController(Controller):
     """
 
     Halt = Hook()
-    """Called when this _controller is told to halt
+    """Called when this controller is told to halt
 
     Args:
         context (Context): The context that should be used to perform operations

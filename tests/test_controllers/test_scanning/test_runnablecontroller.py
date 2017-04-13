@@ -24,12 +24,9 @@ class TestRunnableStates(unittest.TestCase):
     def test_init(self):
         expected = OrderedDict()
         expected['Resetting'] = {"Ready", "Fault", "Disabling"}
-        expected['Ready'] = {"Configuring", "Aborting", 'Editing', "Fault",
+        expected['Ready'] = {"Configuring", "Aborting", 'Saving', "Fault",
                              "Disabling", "Loading"}
-        expected['Editing'] = {'Disabling', 'Editable', 'Fault'}
-        expected['Editable'] = {'Fault', 'Saving', 'Disabling', 'Reverting'}
         expected['Saving'] = {'Fault', 'Ready', 'Disabling'}
-        expected['Reverting'] = {'Fault', 'Ready', 'Disabling'}
         expected['Loading'] = {'Disabling', 'Fault', 'Ready'}
         expected['Configuring'] = {"Armed", "Aborting", "Fault", "Disabling"}
         expected['Armed'] = {"Seeking", "Resetting", "Aborting", "Running",
@@ -104,10 +101,6 @@ class TestRunnableController(unittest.TestCase):
         assert self.c.axes_to_move.value == ("x",)
         assert list(self.b.configure.takes.elements) == \
                ["generator", "axesToMove", "exceptionStep"]
-
-    def test_edit(self):
-        self.c.edit()
-        self.checkState(self.ss.EDITABLE, child=False)
 
     def test_reset(self):
         self.c.disable()

@@ -10,7 +10,7 @@
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- controllers.scanning.RunnableController:
     mri: $(mri)
     configDir: $(configDir)
     axesToMove: [stagex, stagey]

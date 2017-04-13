@@ -1,7 +1,7 @@
 from malcolm.controllers.scanning.runnablecontroller import \
     RunnableController
 from malcolm.core import BadValueError, method_takes, serialize_object, \
-    Update, deserialize_object, Subscribe, MethodModel
+    Update, deserialize_object, Subscribe, MethodModel, Unsubscribe
 from malcolm.infos.builtin.parametertweakinfo import ParameterTweakInfo
 from malcolm.parts.builtin.statefulchildpart import StatefulChildPart
 
@@ -13,28 +13,30 @@ class RunnableChildPart(StatefulChildPart):
     # stored between runs
     run_future = None
 
-    # For child _controller
-    child_controller = None
-
     def update_configure_args(self, response):
         # Decorate validate and configure with the sum of its parts
         response = deserialize_object(response, Update)
         configure_meta = deserialize_object(response.value, MethodModel)
         self.method_models["validate"].recreate_from_others([configure_meta])
         self.method_models["configure"].recreate_from_others([configure_meta])
-        self._controller.update_configure_args()
+        self.controller.update_configure_args()
 
     @RunnableController.Init
     def init(self, context):
-        # Monitor the child configure for changes
-        self.child_controller = context.get_controller(self.params.mri)
-        # TODO: unsubscribe on halt
+        super(RunnableChildPart, self).init(context)
+        # Monitor the child configure Method for changes
         # TODO: this happens every time writeable changes, is this really good?
         subscription = Subscribe(
             path=[self.params.mri, "configure"],
             callback=self.update_configure_args)
         # Wait for the first update to come in
         self.child_controller.handle_request(subscription).wait()
+
+    @RunnableController.Halt
+    def halt(self, context):
+        super(RunnableChildPart, self).halt(context)
+        unsubscribe = Unsubscribe(callback=self.update_configure_args)
+        self.child_controller.handle_request(unsubscribe)
 
     @RunnableController.Reset
     def reset(self, context):
@@ -62,6 +64,11 @@ class RunnableChildPart(StatefulChildPart):
     def configure(self, context, completed_steps, steps_to_do, part_info,
                   params):
         child = context.block_view(self.params.mri)
+        # If we have done a save or load with the child having a particular
+        # design then make sure the child now has that design
+        design = self.saved_structure.get("design", "")
+        if design:
+            child.design.put_value(design)
         child.configure(**params)
 
     @RunnableController.Run

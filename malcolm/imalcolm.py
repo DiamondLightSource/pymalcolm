@@ -38,7 +38,7 @@ def make_process():
         # If this environment variable doesn't exist then there is probably no
         # X server for us to talk to.
     except KeyError:
-        pass
+        qt_thread = None
     else:
         from PyQt4.Qt import QApplication
 
@@ -53,7 +53,6 @@ def make_process():
             app.exec_()
 
         qt_thread = threading.Thread(target=start_qt)
-        qt_thread.start()
 
     from malcolm.core import Process, call_with_params, Context
     from malcolm.yamlutil import make_include_creator
@@ -83,6 +82,8 @@ def make_process():
                 "Don't know how to create client to %s" % args.client)
 
     context = Context("IMalcolmContext", proc)
+    if qt_thread:
+        qt_thread.start()
     proc.start()
     return context, gui
 

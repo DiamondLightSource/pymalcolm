@@ -141,7 +141,7 @@ class StatefulController(BaseController):
 
     def go_to_error_state(self, exception):
         if self.state.value != ss.FAULT:
-            self.log_exception("Fault occurred while running stateful function")
+            #self.log_exception("Fault occurred while running stateful function")
             self.transition(ss.FAULT, str(exception))
 
     def transition(self, state, message=""):

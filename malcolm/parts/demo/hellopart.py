@@ -7,7 +7,7 @@ from malcolm.vmetas.builtin import StringMeta, NumberMeta
 
 
 @method_takes(
-    "name", StringMeta("Name of the Part within the _controller"), REQUIRED)
+    "name", StringMeta("Name of the Part within the controller"), REQUIRED)
 class HelloPart(Part):
     def __init__(self, params):
         super(HelloPart, self).__init__(params.name)

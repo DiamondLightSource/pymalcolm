@@ -33,7 +33,7 @@ class StatsPluginPart(StatefulChildPart):
                   params):
         file_dir, filename = params.filePath.rsplit(os.sep, 1)
         child = context.block_view(self.params.mri)
-        fs = child.put_attribute_values(dict(
+        fs = child.put_attribute_values_async(dict(
             enableCallbacks=True,
             computeStatistics=True))
         xml = self._make_attributes_xml()

@@ -28,7 +28,7 @@ class PandABlocksActionPart(Part):
             def set_field(params):
                 self.set_field(params)
 
-            self.method = set_field.MethodMeta
+            self.method = set_field.MethodModel
             writeable_func = set_field
         else:
             self.method = MethodModel()

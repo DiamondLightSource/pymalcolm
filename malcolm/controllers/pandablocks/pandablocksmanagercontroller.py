@@ -33,30 +33,32 @@ class PandABlocksManagerController(ManagerController):
         # changes left over from last time
         self.changes = OrderedDict()
         # The PandABlock client that does the comms
-        self.client = PandABlocksClient(params.hostname, params.port)
+        self.client = PandABlocksClient(params.hostname, params.port, Queue)
         # Filled in on reset
         self._stop_queue = None
         self._poll_spawned = None
 
     def do_init(self):
-        # start the poll loop first to fill in our parts before calling
-        # _set_block_children()
+        # start the poll loop and make block parts first to fill in our parts
+        # before calling _set_block_children()
         self.start_poll_loop()
-        super(PandABlocksManagerController, self).do_reset()
+        super(PandABlocksManagerController, self).do_init()
 
     def start_poll_loop(self):
         # queue to listen for stop events
-        self._stop_queue = Queue()
-        if self.client.started:
-            self.client.stop()
-        if self.use_cothread:
-            from cothread.cosocket import socket
-        else:
-            from socket import socket
-        self.client.start(self.spawn, socket)
+        if not self.client.started:
+            self._stop_queue = Queue()
+            if self.client.started:
+                self.client.stop()
+            if self.use_cothread:
+                from cothread.cosocket import socket
+            else:
+                from socket import socket
+            self.client.start(self.spawn, socket)
         if not self._blocks_parts:
             self._make_blocks_parts()
-        self._poll_spawned = self.spawn(self.poll_loop)
+        if self._poll_spawned is None:
+            self._poll_spawned = self.spawn(self._poll_loop)
 
     def do_disable(self):
         super(PandABlocksManagerController, self).do_disable()
@@ -94,17 +96,23 @@ class PandABlocksManagerController(ManagerController):
             self.client.stop()
 
     def _make_blocks_parts(self):
-        self._blocks_data = self.client.get_blocks_data()
+        # {block_name_without_number: BlockData}
+        self._blocks_data = OrderedDict()
         self._blocks_parts = OrderedDict()
-        for block_name, block_data in self._blocks_data.items():
+        for block_rootname, block_data in self.client.get_blocks_data().items():
             block_names = []
             if block_data.number == 1:
-                block_names.append(block_name)
+                block_names.append(block_rootname)
             else:
                 for i in range(block_data.number):
-                    block_names.append("%s%d" % (block_name, i + 1))
-            for bn in block_names:
-                self._make_parts(bn, block_data)
+                    block_names.append("%s%d" % (block_rootname, i + 1))
+            for block_name in block_names:
+                self._blocks_data[block_name] = block_data
+                self._make_parts(block_name, block_data)
+        # Handle the initial set of changes to get an initial value
+        self.handle_changes(self.client.get_changes())
+        # Then once more to let bit_outs toggle back
+        self.handle_changes({})
 
     def _make_child_controller(self, parts, mri):
         controller = call_with_params(
@@ -154,7 +162,7 @@ class PandABlocksManagerController(ManagerController):
 
         # Make the corresponding part for us
         child_part = self._make_corresponding_part(block_name, mri)
-        self.parts[block_name] = child_part
+        self.add_part(child_part)
 
     def _map_scale_offset(self, block_name, src_field, dest_field):
         self._scale_offset_fields.setdefault(

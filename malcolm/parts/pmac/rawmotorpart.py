@@ -7,17 +7,17 @@ class RawMotorPart(StatefulChildPart):
     @RunnableController.ReportStatus
     def report_cs_info(self, context):
         child = context.block_view(self.params.mri)
-        acceleration = float(
-            child.maxVelocity) / child.accelerationTime
+        max_velocity = child.maxVelocity.value
+        acceleration = float(max_velocity) / child.accelerationTime.value
         motor_info = MotorInfo(
-            cs_axis=child.csAxis,
-            cs_port=child.csPort,
+            cs_axis=child.csAxis.value,
+            cs_port=child.csPort.value,
             acceleration=acceleration,
-            resolution=child.resolution,
-            offset=child.offset,
-            max_velocity=child.maxVelocity,
-            current_position=child.position,
-            scannable=child.scannable,
-            velocity_settle=child.velocitySettle
+            resolution=child.resolution.value,
+            offset=child.offset.value,
+            max_velocity=max_velocity,
+            current_position=child.position.value,
+            scannable=child.scannable.value,
+            velocity_settle=child.velocitySettle.value
         )
         return [motor_info]

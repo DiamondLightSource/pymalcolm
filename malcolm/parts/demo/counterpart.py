@@ -3,7 +3,7 @@ from malcolm.vmetas.builtin import NumberMeta, StringMeta
 
 
 @method_takes(
-    "name", StringMeta("Name of the Part within the _controller"), REQUIRED)
+    "name", StringMeta("Name of the Part within the controller"), REQUIRED)
 class CounterPart(Part):
     # Attribute for the counter_block value
     counter = None

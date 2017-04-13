@@ -6,7 +6,7 @@
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- controllers.scanning.RunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
 

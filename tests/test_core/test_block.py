@@ -8,8 +8,6 @@ from mock import Mock
 # module imports
 from malcolm.core.block import Block
 from malcolm.core.blockmodel import BlockModel
-from malcolm.core.attributemodel import AttributeModel
-from malcolm.core.attribute import Attribute
 from malcolm.core.methodmodel import MethodModel
 from malcolm.core.view import make_view
 from malcolm.vmetas.builtin import StringMeta

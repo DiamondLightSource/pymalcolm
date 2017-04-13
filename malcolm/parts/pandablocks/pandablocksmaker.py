@@ -148,7 +148,7 @@ class PandABlocksMaker(Loggable):
                 tags=[group_tag], writeable=True, labels=field_data.labels)
         part = PandABlocksActionPart(
             self.client, self.block_name, field_name,
-            field_data.description, [widget("action"), group_tag], arg_meta)
+            field_data.description, [group_tag], arg_meta)
         self._add_part(field_name, part)
 
     def _make_out(self, field_name, field_data, typ):

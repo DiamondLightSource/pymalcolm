@@ -1,14 +1,14 @@
 from malcolm.controllers.builtin import StatefulController
+from malcolm.controllers.pandablocks import PandABlocksManagerController
 from malcolm.controllers.scanning import RunnableController
 from malcolm.core import method_also_takes, REQUIRED, call_with_params, \
     snake_to_camel
-from malcolm.parts.builtin import StringPart, ChoicePart
-from malcolm.parts.pandablocks import PandABlocksDriverPart, \
-    PandABlocksChildPart
 from malcolm.includes.ADCore import adbase_parts
 from malcolm.infos.ADCore import attribute_dataset_types
+from malcolm.parts.builtin import StringPart, ChoicePart
+from malcolm.parts.ADPandABlocks import PandABlocksDriverPart, \
+    PandABlocksChildPart
 from malcolm.vmetas.builtin import StringMeta, StringArrayMeta
-from .pandablocksmanagercontroller import PandABlocksManagerController
 
 
 @method_also_takes(

@@ -37,14 +37,16 @@ class Controller(Loggable):
         self.process = process
         self.mri = mri
         self._request_queue = Queue()
-        # {Part: fault string}
+        # {Part: Alarm} for current faults
         self._faults = {}
         # {Hook: name}
         self._hook_names = self._find_hooks()
-        # {name: Part}
-        self.parts = self._setup_parts(parts)
         # {part_name: (field_name, Model, setter)
-        self.part_fields = {}
+        self.part_fields = OrderedDict()
+        # {name: Part}
+        self.parts = OrderedDict()
+        for part in parts:
+            self.add_part(part)
         self._lock = RLock(self.use_cothread)
         self._block = BlockModel()
         self._notifier = Notifier(mri, self._lock, self._block)
@@ -52,17 +54,17 @@ class Controller(Loggable):
         self._write_functions = {}
         self._add_block_fields()
 
-    def _setup_parts(self, parts):
-        parts_dict = OrderedDict()
-        for part in parts:
-            part.attach_to_controller(self)
-            # Check part hooks into one of our hooks
-            for func_name, part_hook, _ in get_hook_decorated(part):
-                assert part_hook in self._hook_names, \
-                    "Part %s func %s not hooked into %s" % (
-                        part.name, func_name, self)
-            parts_dict[part.name] = part
-        return parts_dict
+    def add_part(self, part):
+        part.attach_to_controller(self)
+        # Check part hooks into one of our hooks
+        for func_name, part_hook, _ in get_hook_decorated(part):
+            assert part_hook in self._hook_names, \
+                "Part %s func %s not hooked into %s" % (
+                    part.name, func_name, self)
+        part_fields = list(part.create_attributes()) + \
+                      list(part.create_methods())
+        self.parts[part.name] = part
+        self.part_fields[part.name] = part_fields
 
     def _find_hooks(self):
         hook_names = {}
@@ -73,8 +75,8 @@ class Controller(Loggable):
         return hook_names
 
     def _add_block_fields(self):
-        for iterable in ([self.create_meta()], self.create_attributes(),
-                         self.create_methods(), self.create_part_fields()):
+        for iterable in (self.create_attributes(), self.create_methods(),
+                         self.initial_part_fields()):
             for name, child, writeable_func in iterable:
                 self.add_block_field(name, child, writeable_func)
 
@@ -113,15 +115,8 @@ class Controller(Loggable):
         self.health = HealthMeta().create_attribute()
         yield "health", self.health, None
 
-    def create_meta(self):
-        """Create the Block meta object"""
-        return "meta", BlockMeta(), None
-
-    def create_part_fields(self):
-        for name, part in self.parts.items():
-            part_fields = list(part.create_attributes()) + \
-                          list(part.create_methods())
-            self.part_fields[name] = part_fields
+    def initial_part_fields(self):
+        for part_fields in self.part_fields.values():
             for data in part_fields:
                 yield data
 
@@ -160,9 +155,7 @@ class Controller(Loggable):
             else:
                 alarm = None
                 text = "OK"
-            self.health.set_value(text)
-            self.health.set_alarm(alarm)
-            self.health.set_timeStamp()
+            self.health.set_value(text, alarm=alarm)
 
     def block_view(self):
         """Get a view of the block we control
@@ -226,6 +219,7 @@ class Controller(Loggable):
         responses = []
         with self._lock:
             request = self._request_queue.get(timeout=0)
+            self.log_debug("Handling %s", request)
             if isinstance(request, Get):
                 handler = self._handle_get
             elif isinstance(request, Put):
@@ -247,6 +241,7 @@ class Controller(Loggable):
                 cb(response)
             except Exception as e:
                 self.log_exception("Exception notifying %s", response)
+                raise
 
     def _handle_get(self, request):
         """Called with the lock taken"""
@@ -317,14 +312,14 @@ class Controller(Loggable):
 
     def start_hook(self, hook, part_contexts, *args, **params):
         assert hook in self._hook_names, \
-            "Hook %s doesn't appear in _controller hooks %s" % (
+            "Hook %s doesn't appear in controller hooks %s" % (
                 hook, self._hook_names)
 
         # This queue will hold (part, result) tuples
         hook_queue = Queue()
 
         # ask the hook to find the functions it should run
-        part_funcs = hook.find_hooked_functions(self.parts.values())
+        part_funcs = hook.find_hooked_functions(part_contexts)
         hook_runners = {}
 
         # now start them off

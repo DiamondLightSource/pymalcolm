@@ -58,7 +58,8 @@ class PandABlocksClient(object):
         assert self.started, "Send and recv threads not started"
         self._send_queue.put((self.STOP, None))    
         self._send_spawned.wait()
-        self._socket.shutdown()
+        import socket
+        self._socket.shutdown(socket.SHUT_RDWR)
         self._recv_spawned.wait()
         self._socket.close()
         self._socket = None
@@ -80,7 +81,7 @@ class PandABlocksClient(object):
         else:
             return response
 
-    def send_recv(self, message, timeout=1.0):
+    def send_recv(self, message, timeout=10.0):
         """Send a message to a PandABox and wait for the response
 
         Args:

@@ -14,6 +14,7 @@ class BlockModel(Model):
     def __init__(self):
         # TODO: how do we take children while preserving order?
         self.endpoints = []
+        self.meta = self.set_endpoint_data("meta", BlockMeta())
 
     def set_endpoint_data(self, name, value):
         name = deserialize_object(name, str_)
@@ -23,10 +24,15 @@ class BlockModel(Model):
             value = deserialize_object(value, (AttributeModel, MethodModel))
         return super(BlockModel, self).set_endpoint_data(name, value)
 
+    def _update_fields(self):
+        self.meta.set_fields([x for x in self.endpoints if x != "meta"])
+
     def set_endpoint_data_locked(self, name, value):
         if name not in self.endpoints:
             self.endpoints.append(name)
-        super(BlockModel, self).set_endpoint_data_locked(name, value)
+        ret = super(BlockModel, self).set_endpoint_data_locked(name, value)
+        self._update_fields()
+        return ret
 
     def remove_endpoint(self, name):
         if self.notifier:
@@ -38,3 +44,4 @@ class BlockModel(Model):
     def remove_endpoint_locked(self, name):
         self.endpoints.remove(name)
         delattr(self, name)
+        self._update_fields()

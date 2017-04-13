@@ -6,7 +6,7 @@
     name: prefix
     description: The root PV for the all records
 
-- controllers.DefaultController:
+- controllers.builtin.StatefulController:
     mri: $(mri)
 
 # This includes the input port

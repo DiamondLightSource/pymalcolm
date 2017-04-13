@@ -10,7 +10,7 @@ class Part(Loggable):
         assert isinstance(name, str_), \
             "Expected name to be a string, got %s. Did you forget to " \
             "subclass __init__ in %s?" % (name, self)
-        self._controller = None
+        self.controller = None
         self.use_cothread = False
         self.process = None
         self.name = name
@@ -20,7 +20,7 @@ class Part(Loggable):
     def attach_to_controller(self, controller):
         self.set_logger_name("%s(%s.%s)" % (
             type(self).__name__, controller.mri, self.name))
-        self._controller = controller
+        self.controller = controller
         self.process = controller.process
         self.use_cothread = controller.use_cothread
 
@@ -31,9 +31,10 @@ class Part(Loggable):
 
     def set_health(self, alarm=None):
         """Set the health attribute"""
-        self._controller.set_health(self, alarm)
+        self.controller.set_health(self, alarm)
 
     def make_hook_runner(self, hook_queue, func_name, context, *args, **params):
+        # TODO: add phase information
         func = getattr(self, func_name)
         method_model = self.method_models.get(func_name, MethodModel())
         filtered_params = {k: v for k, v in params.items()

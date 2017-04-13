@@ -1,5 +1,5 @@
 from malcolm.parts.builtin.childpart import ChildPart
-from malcolm.controllers.runnablecontroller import RunnableController
+from malcolm.controllers.scanning import RunnableController
 from malcolm.infos.ADCore.ndarraydatasetinfo import NDArrayDatasetInfo
 
 

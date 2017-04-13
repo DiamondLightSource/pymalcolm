@@ -9,18 +9,18 @@
 - parts.ADCore.DatasetTablePart:
     name: DSET
 
-- blocks.ADCore.PositionLabeller:
-    mri: $(mriPrefix)-POS
+- blocks.ADCore.position_labeller_block:
+    mri: $(mriPrefix):POS
     prefix: $(pvPrefix):POS
 
 - parts.ADCore.PositionLabellerPart:
     name: POS
-    mri: $(mriPrefix)-POS
+    mri: $(mriPrefix):POS
 
-- blocks.ADCore.HDFWriter:
-    mri: $(mriPrefix)-HDF5
+- blocks.ADCore.hdf_writer_block:
+    mri: $(mriPrefix):HDF5
     prefix: $(pvPrefix):HDF5
 
 - parts.ADCore.HDFWriterPart:
     name: HDF5
-    mri: $(mriPrefix)-HDF5
+    mri: $(mriPrefix):HDF5

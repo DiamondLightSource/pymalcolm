@@ -10,20 +10,20 @@
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- controllers.scanning.RunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.ADCore.SimDetectorDriver:
+- blocks.ADCore.sim_detector_driver_block:
     mri: $(mriPrefix)-DRV
     prefix: $(pvPrefix):DET
 
-- parts.ADCore.SimDetectorDriverPart:
+- parts.ADCore.DetectorDriverPart:
     name: DRV
     mri: $(mriPrefix)-DRV
     readoutTime: 40e-6
 
-- blocks.ADCore.StatsPlugin:
+- blocks.ADCore.stats_plugin_block:
     mri: $(mriPrefix)-STAT
     prefix: $(pvPrefix):STAT
 

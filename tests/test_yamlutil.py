@@ -84,39 +84,42 @@ class TestYamlUtil(unittest.TestCase):
 
         ca = Mock(CAPart=f)
         parts = Mock(ca=ca)
-        section = Section("ca.CAPart", dict(desc="my name"))
+        section = Section("f", 1, "ca.CAPart", dict(desc="my name"))
         result = section.instantiate({}, parts, "extra")
         self.assertEqual(result, ("extra", 2, "my name", "thing"))
 
     def test_split_into_sections(self):
-        text = """
+        filename = "/tmp/yamltest.yaml"
+        with open(filename, "w") as f:
+            f.write("""
 - parameters.string:
     name: something
 
 - controllers.builtin.ManagerController:
     mri: m
-"""
-        sections = Section.from_yaml(text)
-        assert sections == dict(
+""")
+        sections = Section.from_yaml(filename)
+        assert sections == (dict(
             blocks=[],
             parameters=[ANY],
             controllers=[ANY],
             parts=[],
-            includes=[])
-        assert sections["parameters"][0].name == "string"
-        assert sections["parameters"][0].param_dict == dict(name="something")
-        assert sections["controllers"][0].name == "builtin.ManagerController"
-        assert sections["controllers"][0].param_dict == dict(mri="m")
+            includes=[]), "yamltest")
+        assert sections[0]["parameters"][0].name == "string"
+        assert sections[0]["parameters"][0].param_dict == dict(name="something")
+        assert sections[0]["controllers"][0].name == "builtin.ManagerController"
+        assert sections[0]["controllers"][0].param_dict == dict(mri="m")
 
     def test_substitute_params(self):
-        section = Section("name", {"name": "$(name):pos", "exposure": 1.0})
+        section = Section(
+            "f", 1, "name", {"name": "$(name):pos", "exposure": 1.0})
         params = {"name": "me"}
         param_dict = section.substitute_params(params)
         expected = {"name": "me:pos", "exposure": 1.0}
         self.assertEqual(param_dict, expected)
 
     def test_repr(self):
-        s = Section("ca.CADoublePart", {"name": "me"})
+        s = Section("f", 1, "ca.CADoublePart", {"name": "me"})
         expected = "Section(ca.CADoublePart, {'name': 'me'})"
         self.assertEqual(repr(s), expected)
 

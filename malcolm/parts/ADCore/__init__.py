@@ -1,6 +1,7 @@
-# Find all subpackages, MethodMeta decorated callables, and YAML files
-from malcolm.packageutil import prepare_package
-
-__all__ = prepare_package(globals(), __name__)
-
-del prepare_package
+from datasetrunnablechildpart import DatasetRunnableChildPart
+from datasettablepart import DatasetTablePart
+from detectordriverpart import DetectorDriverPart
+from hdfwriterpart import HDFWriterPart
+from positionlabellerpart import PositionLabellerPart
+from simdetectordriverpart import SimDetectorDriverPart
+from statspluginpart import StatsPluginPart

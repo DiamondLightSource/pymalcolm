@@ -21,10 +21,9 @@ class Spawned(object):
             try:
                 result = function(*args, **kwargs)
             except Exception as result:
-                # Should only get this far in badly written code. What should
-                # actually happen is that function should have the try catch
-                logging.exception(
-                    "Exception calling %s(*%s, **%s)", function, args, kwargs)
+                logging.debug(
+                    "Exception calling %s(*%s, **%s)", function, args, kwargs,
+                    exc_info=True)
             self._result_queue.put(result)
 
         if use_cothread:

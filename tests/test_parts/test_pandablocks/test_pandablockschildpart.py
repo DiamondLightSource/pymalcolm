@@ -9,7 +9,7 @@ import unittest
 from mock import MagicMock, Mock
 
 from malcolm.core import Context
-from malcolm.parts.pandablocks import PandABlocksChildPart
+from malcolm.parts.ADPandABlocks import PandABlocksChildPart
 
 
 class PandABoxChildPartTest(unittest.TestCase):

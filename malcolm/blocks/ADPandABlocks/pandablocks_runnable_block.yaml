@@ -7,29 +7,25 @@
     description: PV prefix for driver and all plugins
 
 - parameters.string:
+    name: hostname
+    description: Hostname of the box
+    default: localhost
+
+- parameters.int32:
+    name: port
+    description: Port number of the server control
+    default: 8888
+
+- parameters.string:
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- controllers.ADPandABlocks.PandABlocksRunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
-
-- blocks.ADCore.SimDetectorDriver:
-    mri: $(mriPrefix)-DRV
-    prefix: $(pvPrefix):DET
-
-- parts.ADCore.DetectorDriverPart:
-    name: DRV
-    mri: $(mriPrefix)-DRV
-    readoutTime: 40e-6
-
-- blocks.ADCore.StatsPlugin:
-    mri: $(mriPrefix)-STAT
-    prefix: $(pvPrefix):STAT
-
-- parts.ADCore.StatsPluginPart:
-    name: STAT
-    mri: $(mriPrefix)-STAT
+    hostname: $(hostname)
+    port: $(port)
+    areaDetectorPrefix: $(pvPrefix):DRV
 
 - includes.ADCore.filewriting_collection:
     pvPrefix: $(pvPrefix)

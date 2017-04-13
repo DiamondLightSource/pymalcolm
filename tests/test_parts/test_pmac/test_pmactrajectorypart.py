@@ -24,7 +24,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         list(self.o.create_attributes())
         self.context = MagicMock(spec=Context)
         self.child = self.context.block_view.return_value
-        self.child.i10 = 1705244
+        self.child.i10.value = 1705244
 
     def resolutions_and_use(self, useB=True):
         expected = dict(

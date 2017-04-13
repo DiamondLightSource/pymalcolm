@@ -1,0 +1,27 @@
+- parameters.string:
+    name: mriPrefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- parameters.string:
+    name: pvPrefix
+    description: PV prefix for driver and all plugins
+
+- parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- controllers.scanning.RunnableController:
+    mri: $(mriPrefix)
+    configDir: $(configDir)
+
+- parts.ADPandABlocks.PandABlocksDriverPart:
+    name: DRV
+    mri: $(mriPrefix):DRV
+
+- blocks.zebra.zebra_driver_block:
+    mri: $(mriPrefix):DRV
+    prefix: $(pvPrefix)
+
+- includes.ADCore.filewriting_collection:
+    pvPrefix: $(pvPrefix)
+    mriPrefix: $(mriPrefix)

@@ -6,10 +6,10 @@ class PandABlocksFieldPart(Part):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, child, meta, block_name, field_name, writeable,
+    def __init__(self, client, meta, block_name, field_name, writeable,
                  initial_value=None):
         super(PandABlocksFieldPart, self).__init__(field_name)
-        self.child = child
+        self.client = client
         self.meta = meta
         self.block_name = block_name
         self.field_name = field_name
@@ -39,5 +39,5 @@ class PandABlocksFieldPart(Part):
                     value = "BITS.ONE"
         elif isinstance(self.meta, BooleanMeta):
             value = int(value)
-        self.child.set_field(self.block_name, self.field_name, value)
+        self.client.set_field(self.block_name, self.field_name, value)
 

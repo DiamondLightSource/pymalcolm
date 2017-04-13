@@ -1,49 +1,51 @@
 import os
 
 from malcolm.controllers.scanning.runnablecontroller import RunnableController
-from malcolm.core import method_takes, REQUIRED
+from malcolm.core import method_takes, REQUIRED, Update, \
+    MethodModel, deserialize_object
 from malcolm.infos.ADCore.datasetproducedinfo import DatasetProducedInfo
 from malcolm.parts.scanning.runnablechildpart import RunnableChildPart
 from malcolm.vmetas.builtin import StringMeta
 
 
 class DatasetRunnableChildPart(RunnableChildPart):
-
-    def update_configure_validate_args(self):
+    def update_configure_args(self, response):
         # Decorate validate and configure with the sum of its parts
-        method_metas = [self.child["configure"],
-                        DatasetRunnableChildPart.configure.MethodMeta]
+        response = deserialize_object(response, Update)
+        method_metas = [deserialize_object(response.value, MethodModel),
+                        DatasetRunnableChildPart.configure.MethodModel]
         without = ["filePath"]
         self.method_models["validate"].recreate_from_others(
             method_metas, without)
         self.method_models["configure"].recreate_from_others(
             method_metas, without)
-        self._controller.update_configure_args()
+        self.controller.update_configure_args()
 
     def _params_with_file_path(self, params):
         file_path = os.path.join(params.fileDir, self.name + ".h5")
         filtered_params = {k: v for k, v in params.items() if k != "fileDir"}
-        params = self.child["configure"].prepare_input_map(
-            filePath=file_path, **filtered_params)
-        return params
+        filtered_params["filePath"] = file_path
+        return filtered_params
 
-    # Method will be filled in by _update_configure_args
+    # Method will be filled in by update_configure_validate_args
     @RunnableController.Validate
     @method_takes()
-    def validate(self, task, part_info, params):
+    def validate(self, context, part_info, params):
         params = self._params_with_file_path(params)
         return super(DatasetRunnableChildPart, self).validate(
-            task, part_info, params)
+            context, part_info, params)
 
-    # Method will be filled in at reset()
+    # Method will be filled in at update_configure_validate_args
     @RunnableController.Configure
     @method_takes(
         "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
-        if "filePath" in self.child["configure"].takes.elements:
+    def configure(self, context, completed_steps, steps_to_do, part_info,
+                  params):
+        child = context.block_view(self.params.mri)
+        if "filePath" in child.configure.takes.elements:
             params = self._params_with_file_path(params)
-        task.post(self.child["configure"], params)
-        datasets_table = self.child.datasets
+        child.configure(**params)
+        datasets_table = child.datasets.value
         info_list = []
         for i in range(len(datasets_table.name)):
             info = DatasetProducedInfo(

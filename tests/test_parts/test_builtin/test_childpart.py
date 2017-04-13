@@ -85,9 +85,6 @@ class TestChildPart(unittest.TestCase):
             b = self.p.block_view(controller.mri)
             assert b.inportConnector.value == ''
             assert b.outportConnector.value == ''
-
-    def test_edit_export_choices(self):
-        self.c.edit()
         self.assertEqual(self.c.exports.meta.elements["name"].choices, (
             'partchild1.health',
             'partchild1.inportConnector',
@@ -114,8 +111,6 @@ class TestChildPart(unittest.TestCase):
 
     def test_layout(self):
         b = self.p.block_view("mainBlock")
-        self.c.edit()
-        self.checkState(sm.EDITABLE)
 
         new_layout = Table(self.c.layout.meta)
         new_layout.name = ["partchild1", "partchild2", "partchild3"]
@@ -123,7 +118,7 @@ class TestChildPart(unittest.TestCase):
         new_layout.x = [10, 11, 12]
         new_layout.y = [20, 21, 22]
         new_layout.visible = [True, True, True]
-        b.layout.value = new_layout
+        b.layout.put_value(new_layout)
         self.assertEqual(self.c.parts['partchild1'].x, 10)
         self.assertEqual(self.c.parts['partchild1'].y, 20)
         self.assertEqual(self.c.parts['partchild1'].visible, True)
@@ -135,7 +130,7 @@ class TestChildPart(unittest.TestCase):
         self.assertEqual(self.c.parts['partchild3'].visible, True)
 
         new_layout.visible = [True, False, True]
-        b.layout.value = new_layout
+        b.layout.put_value(new_layout)
         self.assertEqual(self.c.parts['partchild1'].visible, True)
         self.assertEqual(self.c.parts['partchild2'].visible, False)
         self.assertEqual(self.c.parts['partchild3'].visible, True)

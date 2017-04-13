@@ -167,7 +167,7 @@ class TestController(unittest.TestCase):
         self.assertIsInstance(response, Return)
         self.assertEqual(response.id, 41)
         self.assertEqual(response.value["value"], "hello_block")
-
+        # It's part2 that will get the attribute as it was defined second
         self.part2.myAttribute.meta.writeable = False
         request = Put(id=42, path=["mri", "myAttribute"],
                       value='hello_block', callback=q.put)

@@ -50,6 +50,7 @@ class CAPart(AttributePart):
         CA connect before the first update_value()"""
         pass
 
+    @StatefulController.Init
     @StatefulController.Reset
     def reset(self, context=None):
         # release old monitor
@@ -105,5 +106,10 @@ class CAPart(AttributePart):
                               message="PV in alarm state")
             else:
                 alarm = Alarm()
-            ts = TimeStamp(*value.raw_stamp)
+            if hasattr(value, "raw_stamp"):
+                # We only have a raw_stamp attr on monitor, the initial
+                # caget with CTRL doesn't give us a timestamp
+                ts = TimeStamp(*value.raw_stamp)
+            else:
+                ts = TimeStamp()
         self.attr.set_value(value, set_alarm_ts=True, alarm=alarm, ts=ts)

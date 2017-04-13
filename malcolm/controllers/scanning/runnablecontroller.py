@@ -5,7 +5,7 @@ from malcolm.vmetas.builtin import NumberMeta, StringArrayMeta
 from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
 from malcolm.controllers.builtin.managercontroller import ManagerStates, \
     ManagerController
-
+from malcolm.tags import widget
 
 class RunnableStates(ManagerStates):
 
@@ -219,25 +219,29 @@ class RunnableController(ManagerController):
         for data in super(RunnableController, self).create_attributes():
             yield data
         self.completed_steps = NumberMeta(
-            "int32", "Readback of number of scan steps").create_attribute(0)
+            "int32", "Readback of number of scan steps",
+            tags=[widget("textupdate")]).create_attribute(0)
         self.completed_steps.meta.set_writeable_in(
             ss.PAUSED, ss.ARMED)
         yield "completedSteps", self.completed_steps, self.set_completed_steps
         self.configured_steps = NumberMeta(
-            "int32", "Number of steps currently configured").create_attribute(0)
+            "int32", "Number of steps currently configured",
+            tags=[widget("textupdate")]).create_attribute(0)
         yield "configuredSteps", self.configured_steps, None
         self.total_steps = NumberMeta(
-            "int32", "Readback of number of scan steps"
-        ).create_attribute(0)
+            "int32", "Readback of number of scan steps",
+            tags=[widget("textupdate")]).create_attribute(0)
         yield "totalSteps", self.total_steps, None
         self.axes_to_move = StringArrayMeta(
-            "Default axis names to scan for configure()"
+            "Default axis names to scan for configure()",
+            tags=[widget("table")]
         ).create_attribute(self.params.axesToMove)
-        self.axes_to_move.meta.set_writeable_in(ss.EDITABLE)
+        self.axes_to_move.meta.set_writeable_in(ss.READY)
         yield "axesToMove", self.axes_to_move, self.set_axes_to_move
 
     def do_init(self):
         super(RunnableController, self).do_init()
+        self.part_contexts = {}
         self.update_configure_args()
 
     def do_reset(self):
@@ -253,23 +257,24 @@ class RunnableController(ManagerController):
             super(RunnableController, self).go_to_error_state(exception)
 
     def update_configure_args(self):
-        # Look for all parts that hook into Configure
-        configure_funcs = self.Configure.find_hooked_functions(
-            self.parts.values())
-        method_models = []
-        for part, func_name in configure_funcs.items():
-            method_models.append(part.method_models[func_name])
+        with self.changes_squashed:
+            # Look for all parts that hook into Configure
+            configure_funcs = self.Configure.find_hooked_functions(
+                self.parts.values())
+            method_models = []
+            for part, func_name in configure_funcs.items():
+                method_models.append(part.method_models[func_name])
 
-        # Update takes with the things we need
-        default_configure = MethodModel.from_dict(
-            RunnableController.configure.MethodModel.to_dict())
-        default_configure.defaults["axesToMove"] = self.axes_to_move.value
-        method_models.append(default_configure)
+            # Update takes with the things we need
+            default_configure = MethodModel.from_dict(
+                RunnableController.configure.MethodModel.to_dict())
+            default_configure.defaults["axesToMove"] = self.axes_to_move.value
+            method_models.append(default_configure)
 
-        # Decorate validate and configure with the sum of its parts
-        self._block.validate.recreate_from_others(method_models)
-        self._block.validate.set_returns(self._block.validate.takes)
-        self._block.configure.recreate_from_others(method_models)
+            # Decorate validate and configure with the sum of its parts
+            self._block.validate.recreate_from_others(method_models)
+            self._block.validate.set_returns(self._block.validate.takes)
+            self._block.configure.recreate_from_others(method_models)
 
     def set_axes_to_move(self, value):
         self.axes_to_move.set_value(value)
@@ -311,8 +316,6 @@ class RunnableController(ManagerController):
     def do_configure(self, params):
         # These are the part tasks that abort() and pause() will operate on
         self.part_contexts = self.create_part_contexts()
-        # Load the saved settings first
-        self.run_hook(self.Load, self.part_contexts, self.load_structure)
         # Store the params for use in seek()
         self.configure_params = params
         # This will calculate what we need from the generator, possibly a long
@@ -341,6 +344,7 @@ class RunnableController(ManagerController):
         self.run_hook(self.PostConfigure, self.part_contexts, part_info)
         # Update the completed and configured steps
         self.configured_steps.set_value(steps_to_do)
+        self.resume_queue = Queue()
 
     def _get_steps_per_run(self, generator, axes_to_move):
         steps = 1
@@ -370,7 +374,6 @@ class RunnableController(ManagerController):
 
     def _call_do_run(self):
         hook = self.Run
-        self.resume_queue = Queue()
         while True:
             try:
                 return self.do_run(hook)
@@ -423,7 +426,7 @@ class RunnableController(ManagerController):
                 context.runner.wait()
         self.run_hook(hook, self.create_part_contexts())
         # Tell _call_do_run not to resume if we are aborting
-        if hook is self.Abort:
+        if hook is self.Abort and self.resume_queue:
             self.resume_queue.put(False)
 
     def set_completed_steps(self, completed_steps):

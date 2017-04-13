@@ -1,6 +1,8 @@
-# Find all subpackages, MethodMeta decorated callables, and YAML files
-from malcolm.packageutil import prepare_package
+from malcolm.yamlutil import make_block_creator
 
-__all__ = prepare_package(globals(), __name__)
+zebra_driver_block = make_block_creator(
+    __file__, "zebra_driver_block.yaml")
+zebra_runnable_block = make_block_creator(
+    __file__, "zebra_runnable_block.yaml")
 
-del prepare_package
+del make_block_creator

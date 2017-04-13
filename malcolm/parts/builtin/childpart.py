@@ -1,10 +1,9 @@
 from malcolm.compat import OrderedDict
 from malcolm.controllers.builtin import ManagerController
-from malcolm.infos.builtin.exportableinfo import ExportableInfo
-from malcolm.infos.builtin.portinfo import PortInfo
-from malcolm.infos.builtin.layoutinfo import LayoutInfo
+from malcolm.infos.builtin import ExportableInfo, PortInfo, LayoutInfo, \
+    ModifiedInfo
 from malcolm.core import Part, REQUIRED, method_takes, serialize_object, \
-    Attribute
+    Attribute, Subscribe, Unsubscribe
 from malcolm.vmetas.builtin import StringMeta
 
 
@@ -19,10 +18,32 @@ class ChildPart(Part):
         self.visible = None
         # {part_name: visible} saying whether part_name is visible
         self.part_visible = {}
+        # {attr_name: attr_value} of last saved/loaded structure
+        self.saved_structure = {}
+        # The controller hosting our child
+        self.child_controller = None
+        # {id: Subscribe} for subscriptions to config tagged fields
+        self.config_subscriptions = {}
         # Store params
         self.params = params
         super(ChildPart, self).__init__(params.name)
         
+    @ManagerController.Init
+    def init(self, context):
+        # Save what we have
+        self.save(context)
+        # Monitor the child configure for changes
+        self.child_controller = context.get_controller(self.params.mri)
+        subscribe = Subscribe(path=[self.params.mri, "meta", "fields"],
+                              callback=self.update_exportable)
+        # Wait for the first update to come in
+        self.child_controller.handle_request(subscribe).wait()
+
+    @ManagerController.Halt
+    def halt(self, context):
+        unsubscribe = Unsubscribe(callback=self.update_exportable)
+        self.child_controller.handle_request(unsubscribe)
+
     @ManagerController.ReportPorts
     def report_ports(self, context):
         child = context.block_view(self.params.mri)
@@ -52,6 +73,80 @@ class ChildPart(Part):
                             direction=direction, type=type, value=attr.value,
                             extra=extra)
         return ports
+
+    def update_exportable(self, response):
+        # Get a child context to check if we have a config field
+        child = self.child_controller.block_view()
+        spawned = []
+        if response.value:
+            new_fields = response.value
+        else:
+            new_fields = []
+
+        # Remove any existing subscription that is not in the new fields
+        for subscribe in self.config_subscriptions.values():
+            attr_name = subscribe.path[-2]
+            if attr_name not in new_fields:
+                unsubscribe = Unsubscribe(subscribe.id, subscribe.callback)
+                spawned.append(
+                    self.child_controller.handle_request(unsubscribe))
+
+        # Add a subscription to any new field
+        existing_fields = set(
+            s.path[-2] for s in self.config_subscriptions.values())
+        for field in set(new_fields) - existing_fields:
+            attr = getattr(child, field)
+            if isinstance(attr, Attribute) and "config" in attr.meta.tags:
+                if self.config_subscriptions:
+                    new_id = max(self.config_subscriptions) + 1
+                else:
+                    new_id = 1
+                subscribe = Subscribe(id=new_id,
+                                      path=[self.params.mri, field, "value"],
+                                      callback=self.update_modified)
+                self.config_subscriptions[new_id] = subscribe
+                # Signal that any change we get is a difference
+                if attr not in self.saved_structure:
+                    self.saved_structure[attr] = None
+                spawned.append(
+                    self.child_controller.handle_request(subscribe))
+
+        # Wait for them to finish
+        for s in spawned:
+            s.wait()
+
+        # Tell the controller we have new fields to export
+        self.controller.update_exportable()
+
+    def update_modified(self, response):
+        # Tell the controller to update if the value has changed from saved
+        subscribe = self.config_subscriptions[response.id]
+        attr = subscribe.path[-2]
+        if self.saved_structure[attr] != response.value:
+            self.controller.update_modified()
+
+    @ManagerController.ReportExportable
+    def report_exportable(self, context):
+        child = context.block_view(self.params.mri)
+        ret = []
+        for name in child:
+            if name != "meta":
+                ret.append(ExportableInfo(name=name, mri=self.params.mri))
+        return ret
+
+    @ManagerController.ReportModified
+    def report_modified(self, context):
+        child = context.block_view(self.params.mri)
+        ret = []
+        for name in child:
+            attr = getattr(child, name)
+            if isinstance(attr, Attribute) and "config" in attr.meta.tags:
+                original_value = self.saved_structure[name]
+                current_value = serialize_object(attr.value)
+                if original_value != current_value:
+                    ret.append(
+                        ModifiedInfo(name, original_value, current_value))
+        return ret
 
     @ManagerController.Layout
     def layout(self, context, part_info, layout_table):
@@ -93,9 +188,13 @@ class ChildPart(Part):
             except KeyError:
                 self.log_warning("Cannot restore non-existant attr %s" % k)
             else:
-                if "config" not in attr.meta.tags:
-                    raise ValueError("Attr %s doesn't have config tag" % k)
-                params[k] = v
+                assert "config" in attr.meta.tags, \
+                    "Attr %s doesn't have config tag" % k
+                if attr.value != v:
+                    params[k] = v
+        # Do this first so that any callbacks that happen in the put know
+        # not to notify controller
+        self.saved_structure = part_structure
         child.put_attribute_values(params)
 
     @ManagerController.Save
@@ -106,16 +205,8 @@ class ChildPart(Part):
             attr = getattr(child, k)
             if isinstance(attr, Attribute) and "config" in attr.meta.tags:
                 part_structure[k] = serialize_object(attr.value)
+        self.saved_structure = part_structure
         return part_structure
-
-    @ManagerController.ReportExportable
-    def report_exportable(self, context):
-        child = context.block_view(self.params.mri)
-        ret = []
-        for name in child:
-            if name != "meta":
-                ret.append(ExportableInfo(name=name, mri=self.params.mri))
-        return ret
 
     def sever_inports(self, child, outport_lookup=None):
         """Conditionally sever inport of the child. If outports is then None
@@ -168,5 +259,3 @@ class ChildPart(Part):
         # otherwise, treat a block with no ports as connected
         else:
             return True
-
-

@@ -5,7 +5,7 @@ from mock import Mock
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
-from malcolm.core import call_with_params, Process
+from malcolm.core import call_with_params
 from malcolm.blocks.demo import hello_block, counter_block, ticker_block
 
 
@@ -31,8 +31,9 @@ class TestBuiltin(unittest.TestCase):
              'health',
              'state',
              'layout',
-             'layoutName',
+             'design',
              'exports',
+             'modified',
              'completedSteps',
              'configuredSteps',
              'totalSteps',
@@ -40,11 +41,9 @@ class TestBuiltin(unittest.TestCase):
              'abort',
              'configure',
              'disable',
-             'edit',
              'pause',
              'reset',
              'resume',
-             'revert',
              'run',
              'save',
              'validate']

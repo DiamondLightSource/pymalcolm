@@ -2,10 +2,10 @@ import re
 
 from malcolm.controllers.scanning import RunnableController
 from malcolm.infos.ADCore.ndattributedatasetinfo import NDAttributeDatasetInfo
-from malcolm.parts.builtin import StatefulChildPart
+from malcolm.parts.builtin import ChildPart
 
 
-class PandABlocksChildPart(StatefulChildPart):
+class PandABlocksChildPart(ChildPart):
     # Stored futures
     start_future = None
 

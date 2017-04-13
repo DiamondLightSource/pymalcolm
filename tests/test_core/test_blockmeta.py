@@ -18,6 +18,7 @@ class TestSerialization(unittest.TestCase):
         self.serialized["tags"] = ()
         self.serialized["writeable"] = False
         self.serialized["label"] = ""
+        self.serialized["fields"] = ()
 
     def test_to_dict(self):
         m = BlockMeta("desc")

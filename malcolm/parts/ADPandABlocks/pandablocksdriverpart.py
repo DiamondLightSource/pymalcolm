@@ -1,9 +1,10 @@
 from malcolm.controllers.scanning import RunnableController
 from malcolm.core import method_takes
+from malcolm.parts.builtin import StatefulChildPart
 from .pandablockschildpart import PandABlocksChildPart
 
 
-class PandABlocksDriverPart(PandABlocksChildPart):
+class PandABlocksDriverPart(StatefulChildPart, PandABlocksChildPart):
     # Stored futures
     start_future = None
 
