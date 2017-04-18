@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 import unittest
 
-from malcolm.vmetas.builtin import StringArrayMeta
+from malcolm.modules.builtin.vmetas import StringArrayMeta
 from malcolm.core.mapmeta import MapMeta
 
 

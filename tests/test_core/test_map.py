@@ -7,7 +7,7 @@ from collections import OrderedDict
 from mock import MagicMock, Mock
 
 from malcolm.core import Map
-from malcolm.vmetas.builtin import NumberMeta, StringMeta
+from malcolm.modules.builtin.vmetas import NumberMeta, StringMeta
 from malcolm.core.meta import Meta
 from malcolm.core.mapmeta import MapMeta
 

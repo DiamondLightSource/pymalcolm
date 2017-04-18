@@ -8,7 +8,7 @@ from mock import MagicMock, patch, call
 from collections import OrderedDict
 
 from malcolm.core.hook import Hook, get_hook_decorated
-from malcolm.vmetas.builtin import StringMeta, StringArrayMeta
+from malcolm.modules.builtin.vmetas import StringMeta, StringArrayMeta
 from malcolm.core import method_returns, REQUIRED
 
 

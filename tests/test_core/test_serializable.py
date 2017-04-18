@@ -7,7 +7,7 @@ from collections import OrderedDict
 import unittest
 
 from malcolm.core.serializable import Serializable, deserialize_object
-from malcolm.vmetas.builtin.stringmeta import StringMeta
+from malcolm.modules.builtin.vmetas.stringmeta import StringMeta
 
 class TestSerialization(unittest.TestCase):
 

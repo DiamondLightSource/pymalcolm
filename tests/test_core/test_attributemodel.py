@@ -8,9 +8,9 @@ from collections import OrderedDict
 import unittest
 
 from malcolm.core.ntscalar import NTScalar
-from malcolm.vmetas.builtin import StringMeta
 from malcolm.core.alarm import Alarm, AlarmSeverity, AlarmStatus
 from malcolm.core.timestamp import TimeStamp
+from malcolm.modules.builtin.vmetas import StringMeta
 
 
 class TestAttribute(unittest.TestCase):

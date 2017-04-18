@@ -9,7 +9,7 @@ from mock import Mock
 from malcolm.core.attribute import Attribute
 from malcolm.core.ntscalar import NTScalar
 from malcolm.core.view import make_view
-from malcolm.vmetas.builtin import StringMeta
+from malcolm.modules.builtin.vmetas import StringMeta
 
 
 class TestAttribute(unittest.TestCase):

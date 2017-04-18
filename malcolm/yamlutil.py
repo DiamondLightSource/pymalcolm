@@ -8,34 +8,28 @@ from malcolm.core import method_takes, call_with_params
 
 
 def _create_takes_arguments(sections):
-    import malcolm.parameters as parameters_base
     takes_arguments = []
     for parameter_section in sections["parameters"]:
-        takes_arguments += parameter_section.instantiate({}, parameters_base)
+        takes_arguments += parameter_section.instantiate({})
     return takes_arguments
 
 
 def _create_blocks_and_parts(process, sections, params):
-    import malcolm.includes as includes_base
-    import malcolm.parts as parts_base
-    import malcolm.blocks as blocks_base
-
     parts = []
 
     # Any child blocks
     for section in sections["blocks"]:
-        section.instantiate(params, blocks_base, process)
+        section.instantiate(params, process)
 
     # Do the includes first
     for section in sections["includes"]:
-        parts += section.instantiate(params, includes_base, process)
+        parts += section.instantiate(params, process)
 
     # Add any parts in
     for section in sections["parts"]:
-        parts.append(section.instantiate(params, parts_base))
+        parts.append(section.instantiate(params))
 
     return parts
-
 
 
 def make_include_creator(yaml_path, filename=None):
@@ -74,8 +68,6 @@ def make_block_creator(yaml_path, filename=None):
             blocks listed then they will be called. All created blocks
             by this or any sub collection will be returned
     """
-    import malcolm.controllers as controllers_base
-
     sections, yamlname = Section.from_yaml(yaml_path, filename)
 
     # Check we have only one controller
@@ -95,8 +87,7 @@ def make_block_creator(yaml_path, filename=None):
         parts = _create_blocks_and_parts(process, sections, params)
 
         # Make the controller
-        controller = controller_section.instantiate(
-            params, controllers_base, process, parts)
+        controller = controller_section.instantiate(params, process, parts)
         process.add_controller(controller.mri, controller)
 
         return controller
@@ -115,13 +106,12 @@ class Section(object):
             # dictify yaml's intermediate dict like object
             self.param_dict = dict(param_dict)
 
-    def instantiate(self, substitutions, base, *args):
+    def instantiate(self, substitutions, *args):
         """Keep recursing down from base using dotted name, then call it with
         self.params and args
 
         Args:
             substitutions (dict): Substitutions to make to self.param_dict
-            base (object): The starting object
             *args: Any other args to pass to the callable
 
         Returns:
@@ -130,16 +120,18 @@ class Section(object):
         E.g. if ob is malcolm.parts, and name is "ca.CADoublePart", then the
         object will be malcolm.parts.ca.CADoublePart
         """
+        from malcolm import modules
+        ob = modules
         split = self.name.split(".")
         param_dict = self.substitute_params(substitutions)
         for n in split:
             try:
-                base = getattr(base, n)
+                ob = getattr(ob, n)
             except AttributeError as e:
-                raise ValueError("%s:%d: Can't find %r of %r" %(
+                raise ValueError("%s:%d: Can't find %r of %r" % (
                     self.filename, self.lineno, n, self.name))
-        logging.debug("Instantiating %s with %s", base, param_dict)
-        return call_with_params(base, *args, **param_dict)
+        logging.debug("Instantiating %s with %s", ob, param_dict)
+        return call_with_params(ob, *args, **param_dict)
 
     @classmethod
     def from_yaml(cls, yaml_path, filename=None):
@@ -154,10 +146,11 @@ class Section(object):
             dict: dictionary containing sections sub dictionaries lists. E.g.
                 {
                     "parameters": [
-                        Section(name="string", params={"name": "something"}
+                        Section(name="builtin.parameters.string",
+                            params={"name": "something"})
                     ],
                     "controllers": [
-                        Section(name="ManagerController",
+                        Section(name="builtin.controllers.ManagerController",
                             params={"mri": "something")
                     ]
                 }
@@ -180,10 +173,15 @@ class Section(object):
                 "Expected section length 1, got %d" % len(d)
             lineno = d._yaml_line_col.line + 1
             name = list(d)[0]
-            section, subsection = name.split(".", 1)
+            split = name.split(".")
+            if len(split) != 3:
+                raise ValueError(
+                    "%s:%d: Expected something like builtin.parts.ChildPart. "
+                    "Got %r" % (filename, lineno, name))
+            section = split[1]
             if section in sections:
                 sections[section].append(cls(
-                    yaml_path, lineno, subsection, d[name]))
+                    yaml_path, lineno, name, d[name]))
             else:
                 raise ValueError("Unknown section name %s" % name)
 

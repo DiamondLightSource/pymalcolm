@@ -10,7 +10,7 @@ from malcolm.core.block import Block
 from malcolm.core.blockmodel import BlockModel
 from malcolm.core.methodmodel import MethodModel
 from malcolm.core.view import make_view
-from malcolm.vmetas.builtin import StringMeta
+from malcolm.modules.builtin.vmetas import StringMeta
 
 
 class TestBlock(unittest.TestCase):

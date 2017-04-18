@@ -8,7 +8,7 @@ from collections import OrderedDict
 import unittest
 from mock import Mock, patch
 
-from malcolm.vmetas.builtin import TableMeta, StringArrayMeta
+from malcolm.modules.builtin.vmetas import TableMeta, StringArrayMeta
 from malcolm.core import Table, NTTable, Alarm, TimeStamp
 
 

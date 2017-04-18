@@ -10,7 +10,7 @@ from mock import Mock
 from malcolm.core.methodmodel import MethodModel, method_takes, method_returns, \
     method_writeable_in, OPTIONAL, REQUIRED, method_also_takes
 
-from malcolm.vmetas.builtin import StringMeta, BooleanMeta
+from malcolm.modules.builtin.vmetas import StringMeta, BooleanMeta
 from malcolm.core.mapmeta import MapMeta
 
 

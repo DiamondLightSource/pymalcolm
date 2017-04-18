@@ -10,7 +10,7 @@ from mock import MagicMock
 # module imports
 from malcolm.gui.guimodel import GuiModel, BlockItem
 from malcolm.core import Process, call_with_params
-from malcolm.blocks.demo import hello_block
+from malcolm.modules.demo.blocks import hello_block
 
 
 class TestBlockModel(unittest.TestCase):

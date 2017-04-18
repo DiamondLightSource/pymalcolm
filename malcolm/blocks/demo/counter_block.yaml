@@ -1,9 +1,0 @@
-- parameters.string:
-    name: mri
-    description: Malcolm resource id of the Block
-
-- controllers.builtin.BaseController:
-    mri: $(mri)
-
-- parts.demo.CounterPart:
-    name: counter_block

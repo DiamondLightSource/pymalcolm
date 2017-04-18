@@ -25,7 +25,7 @@ from malcolm.core.request import Post, Subscribe, Put, Get, Unsubscribe
 from malcolm.core.response import Return, Update, Error
 from malcolm.core.errors import UnexpectedError, AbortedError
 
-from malcolm.vmetas.builtin import StringMeta
+from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.core.mapmeta import MapMeta
 from malcolm.core.methodmodel import MethodModel, OPTIONAL, REQUIRED
 from malcolm.core import method_takes, method_returns

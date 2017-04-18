@@ -10,8 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 # module imports
 from malcolm.core import call_with_params, Process, Post, Subscribe, Return, \
     Update, Controller, Queue, TimeoutError
-from malcolm.parts.demo.hellopart import HelloPart
-from malcolm.parts.demo.counterpart import CounterPart
+from malcolm.modules.demo.parts import HelloPart, CounterPart
 
 
 class TestHelloDemoSystem(unittest.TestCase):

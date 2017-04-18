@@ -7,7 +7,7 @@ import unittest
 # module imports
 from malcolm.core.blockmodel import BlockModel
 from malcolm.core.methodmodel import MethodModel
-from malcolm.vmetas.builtin import StringMeta
+from malcolm.modules.builtin.vmetas import StringMeta
 
 
 class TestBlockModel(unittest.TestCase):
