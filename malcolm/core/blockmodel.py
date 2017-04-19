@@ -22,26 +22,19 @@ class BlockModel(Model):
             value = deserialize_object(value, BlockMeta)
         else:
             value = deserialize_object(value, (AttributeModel, MethodModel))
-        return super(BlockModel, self).set_endpoint_data(name, value)
+        with self.notifier.changes_squashed:
+            if name not in self.endpoints:
+                self.endpoints.append(name)
+            super(BlockModel, self).set_endpoint_data(name, value)
+            self._update_fields()
+        return value
 
     def _update_fields(self):
         self.meta.set_fields([x for x in self.endpoints if x != "meta"])
 
-    def set_endpoint_data_locked(self, name, value):
-        if name not in self.endpoints:
-            self.endpoints.append(name)
-        ret = super(BlockModel, self).set_endpoint_data_locked(name, value)
-        self._update_fields()
-        return ret
-
     def remove_endpoint(self, name):
-        if self.notifier:
-            self.notifier.make_endpoint_change(
-                self.remove_endpoint_locked, self.path + [name])
-        else:
-            self.remove_endpoint_locked(name)
-
-    def remove_endpoint_locked(self, name):
-        self.endpoints.remove(name)
-        delattr(self, name)
-        self._update_fields()
+        with self.notifier.changes_squashed:
+            self.endpoints.remove(name)
+            delattr(self, name)
+            self._update_fields()
+            self.notifier.add_squashed_change(self.path + [name])

@@ -1,16 +1,7 @@
-from contextlib import contextmanager
-
 from .model import Model
 from .serializable import deserialize_object
 from .alarm import Alarm
 from .timestamp import TimeStamp
-
-
-class DummyNotifier(object):
-    @property
-    @contextmanager
-    def changes_squashed(self):
-        yield
 
 
 class AttributeModel(Model):
@@ -38,11 +29,7 @@ class AttributeModel(Model):
     def set_value(self, value, set_alarm_ts=True, alarm=None, ts=None):
         """Set the value"""
         value = self.meta.validate(value)
-        if self.notifier:
-            notifier = self.notifier
-        else:
-            notifier = DummyNotifier()
-        with notifier.changes_squashed:
+        with self.notifier.changes_squashed:
             self.set_endpoint_data("value", value)
             if set_alarm_ts:
                 self.set_alarm(alarm)
@@ -52,7 +39,7 @@ class AttributeModel(Model):
     def set_alarm(self, alarm=None):
         """Set the Alarm"""
         if alarm is None:
-            alarm = Alarm()
+            alarm = Alarm.ok
         else:
             alarm = deserialize_object(alarm, Alarm)
         return self.set_endpoint_data("alarm", alarm)

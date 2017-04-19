@@ -1,8 +1,48 @@
-from contextlib import contextmanager
+import logging
 
 from .serializable import serialize_object
 from .loggable import Loggable
 from .request import Subscribe, Unsubscribe
+
+
+class Squasher(object):
+    def __init__(self, lock, tree):
+        self._lock = lock
+        self._tree = tree
+        # Incremented every time we do with changes_squashed
+        self._squashed_count = 0
+        self._squashed_changes = []
+
+    def __enter__(self):
+        self._lock.acquire()
+        self._squashed_count += 1
+
+    def __exit__(self, exc_type=None, exc_val=None, exc_tb=None):
+        responses = []
+        try:
+            self._squashed_count -= 1
+            if self._squashed_count == 0:
+                changes = self._squashed_changes
+                self._squashed_changes = []
+                responses += self._tree.notify_changes(changes)
+        finally:
+            self._lock.release()
+            self._callback_responses(responses)
+
+    def _callback_responses(self, responses):
+        for cb, response in responses:
+            try:
+                cb(response)
+            except Exception:
+                logging.exception("Exception notifying %s", response)
+
+    def add_squashed_change(self, path, data=None):
+        assert self._squashed_count, "Called while not squashing changes"
+        if data is None:
+            change = [path[1:]]
+        else:
+            change = [path[1:], data]
+        self._squashed_changes.append(change)
 
 
 class Notifier(Loggable):
@@ -12,9 +52,7 @@ class Notifier(Loggable):
         self.set_logger_name(name)
         self._tree = NotifierNode(block)
         self._lock = lock
-        # Incremented every time we do with changes_squashed
-        self._squashed_count = 0
-        self._squashed_changes = []
+        self._squasher = Squasher(self._lock, self._tree)
         # {Subscribe.generator_key(): Subscribe}
         self._subscription_keys = {}
 
@@ -45,7 +83,6 @@ class Notifier(Loggable):
         return ret
 
     @property
-    @contextmanager
     def changes_squashed(self):
         """Context manager to allow multiple calls to notify_change() to be
         made and all changes squashed into one consistent set. E.g:
@@ -54,55 +91,17 @@ class Notifier(Loggable):
             attr.set_value(1)
             attr.set_alarm(MINOR)
         """
-        responses = []
-        self._lock.acquire()
-        self._squashed_count += 1
-        try:
-            yield
-        finally:
-            try:
-                self._squashed_count -= 1
-                if self._squashed_count == 0:
-                    changes = self._squashed_changes
-                    self._squashed_changes = []
-                    responses += self._tree.notify_changes(changes)
-            finally:
-                self._lock.release()
-                self.callback_responses(responses)
+        return self._squasher
 
-    def callback_responses(self, responses):
-        for cb, response in responses:
-            try:
-                cb(response)
-            except Exception as e:
-                self.log_exception("Exception notifying %s", response)
-
-    def make_endpoint_change(self, setter, path, data=None):
-        """Call setter, then notify subscribers of change, all with lock taken
+    def add_squashed_change(self, path, data=None):
+        """Call setter, then notify subscribers of change
 
         Args:
-            setter (function): Call setter(path[-1], data) first
             path (list): The path of what has changed, relative from Block
             data (object): The new data, None for deletion
-
-        Returns:
-            The return value from setter()
         """
-        responses = []
-        with self._lock:
-            if data is None:
-                ret = setter(path[-1])
-                change = [path[1:]]
-            else:
-                ret = setter(path[-1], data)
-                change = [path[1:], data]
-            # If we are squashing changes, defer notification
-            if self._squashed_count:
-                self._squashed_changes.append(change)
-            else:
-                responses += self._tree.notify_changes([change])
-        self.callback_responses(responses)
-        return ret
+        self._squasher.add_squashed_change(path, data)
+
 
 
 class NotifierNode(object):
@@ -134,24 +133,7 @@ class NotifierNode(object):
         ret = []
         child_changes = {}
         for change in changes:
-            path = change[0]
-            if path:
-                # This is for one of our children
-                name = path[0]
-                if name in self.children:
-                    if len(change) == 2:
-                        child_change = [path[1:], change[1]]
-                    else:
-                        child_change = [path[1:]]
-                    child_changes.setdefault(name, []).append(child_change)
-            else:
-                # This is for us
-                if len(change) == 2:
-                    child_change_dict = self._update_data(change[1])
-                else:
-                    child_change_dict = self._update_data(None)
-                for name, child_change in child_change_dict.items():
-                    child_changes.setdefault(name, []).append(child_change)
+            self._add_child_change(change, child_changes)
         # If we have subscribers, serialize at this level
         if self.requests:
             for request in self.requests:
@@ -166,6 +148,26 @@ class NotifierNode(object):
         for name, child_changes in child_changes.items():
             ret += self.children[name].notify_changes(child_changes)
         return ret
+
+    def _add_child_change(self, change, child_changes):
+        path = change[0]
+        if path:
+            # This is for one of our children
+            name = path[0]
+            if name in self.children:
+                if len(change) == 2:
+                    child_change = [path[1:], change[1]]
+                else:
+                    child_change = [path[1:]]
+                child_changes.setdefault(name, []).append(child_change)
+        else:
+            # This is for us
+            if len(change) == 2:
+                child_change_dict = self._update_data(change[1])
+            else:
+                child_change_dict = self._update_data(None)
+            for name, child_change in child_change_dict.items():
+                child_changes.setdefault(name, []).append(child_change)
 
     def _update_data(self, data):
         """Set our data and notify any subscribers of children what has changed

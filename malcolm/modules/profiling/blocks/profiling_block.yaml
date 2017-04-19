@@ -1,0 +1,14 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: profilesDir
+    description: Output Directory for storing profiler results
+
+- builtin.controllers.BaseController:
+    mri: $(mri)
+
+- profiling.parts.ProfilingPart:
+    name: profiling
+    profilesDir: $(profilesDir)

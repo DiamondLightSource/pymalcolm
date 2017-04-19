@@ -54,8 +54,9 @@ class TestNotifier(unittest.TestCase):
         request.callback.reset_mock()
         # set data and check response
         self.block["attr"] = Dummy()
-        self.o.make_endpoint_change(
-            self.block.attr.__setitem__, ["b", "attr", "value"], 32)
+        with self.o.changes_squashed:
+            self.block.attr["value"] = 32
+            self.o.add_squashed_change(["b", "attr", "value"], 32)
         self.assertEqual(self.block.attr.value, 32)
         request.callback.assert_called_once_with(Update(value=32))
         request.callback.reset_mock()
@@ -64,8 +65,9 @@ class TestNotifier(unittest.TestCase):
         request.callback.assert_called_once_with(Return(value=None))
         request.callback.reset_mock()
         # notify and check no longer responding
-        self.o.make_endpoint_change(
-            self.block.attr.__setitem__, ["b", "attr", "value"], 33)
+        with self.o.changes_squashed:
+            self.block.attr["value"] = 33
+            self.o.add_squashed_change(["b", "attr", "value"], 33)
         self.assertEqual(self.block.attr.value, 33)
         request.callback.assert_not_called()
 
@@ -97,15 +99,17 @@ class TestNotifier(unittest.TestCase):
         r2.callback.reset_mock()
         # set some data and check only second got called
         self.block["attr2"] = Dummy()
-        self.block.attr2["value"] = "st"
-        self.o.make_endpoint_change(Mock(), ["b", "attr2"], self.block.attr2)
+        with self.o.changes_squashed:
+            self.block.attr2["value"] = "st"
+            self.o.add_squashed_change(["b", "attr2"], self.block.attr2)
         r1.callback.assert_not_called()
         r2.callback.assert_called_once_with(Delta(
             changes=[[["attr2"], dict(value="st")]]))
         r2.callback.reset_mock()
         # delete the first and check calls
-        self.block.data.pop("attr")
-        self.o.make_endpoint_change(Mock(), ["b", "attr"])
+        with self.o.changes_squashed:
+            self.block.data.pop("attr")
+            self.o.add_squashed_change(["b", "attr"])
         r1.callback.assert_called_once_with(Update(value=None))
         r1.callback.reset_mock()
         r2.callback.assert_called_once_with(Delta(
@@ -113,8 +117,9 @@ class TestNotifier(unittest.TestCase):
         r2.callback.reset_mock()
         # add it again and check updates
         self.block["attr"] = Dummy()
-        self.block.attr["value"] = 22
-        self.o.make_endpoint_change(Mock(), ["b", "attr"], self.block.attr)
+        with self.o.changes_squashed:
+            self.block.attr["value"] = 22
+            self.o.add_squashed_change(["b", "attr"], self.block.attr)
         r1.callback.assert_called_once_with(Update(value=22))
         r2.callback.assert_called_once_with(Delta(
             changes=[[["attr"], dict(value=22)]]))
@@ -135,11 +140,11 @@ class TestNotifier(unittest.TestCase):
         r1.callback.reset_mock()
         # squash two changes together
         with self.o.changes_squashed:
-            self.o.make_endpoint_change(
-                self.block.attr.__setitem__, ["b", "attr", "value"], 33)
+            self.block.attr["value"] = 33
+            self.o.add_squashed_change(["b", "attr", "value"], 33)
             self.assertEqual(self.block.attr.value, 33)
-            self.o.make_endpoint_change(
-                self.block.attr2.__setitem__, ["b", "attr2", "value"], "tr")
+            self.block.attr2["value"] = "tr"
+            self.o.add_squashed_change(["b", "attr2", "value"], "tr")
             self.assertEqual(self.block.attr2.value, "tr")
         r1.callback.assert_called_once_with(Delta(
             changes=[[["attr", "value"], 33], [["attr2", "value"], "tr"]]))

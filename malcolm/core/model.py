@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from .loggable import Loggable
 from .serializable import Serializable
 
@@ -10,10 +12,7 @@ def set_notifier_path(o, notifier, notifier_path):
         notifier (Notifier): The notifier to set
         notifier_path (list): The path to get to this object from block
     """
-    if hasattr(o, "set_notifier_path"):
-        # This will do all the sub layers for us
-        o.set_notifier_path(notifier, notifier_path)
-    elif isinstance(o, dict):
+    if isinstance(o, dict):
         # Need to recurse down
         for k, v in o.items():
             set_notifier_path(v, notifier, notifier_path + [k])
@@ -21,11 +20,24 @@ def set_notifier_path(o, notifier, notifier_path):
         # Need to recurse down
         for i, v in enumerate(o):
             set_notifier_path(v, notifier, notifier_path + [i])
+    elif hasattr(o, "set_notifier_path"):
+        # This will do all the sub layers for us
+        o.set_notifier_path(notifier, notifier_path)
+
+
+class DummyNotifier(object):
+    @property
+    @contextmanager
+    def changes_squashed(self):
+        yield
+
+    def add_squashed_change(self, path, data=None):
+        pass
 
 
 class Model(Loggable, Serializable):
-    notifier = None
-    path = None
+    notifier = DummyNotifier()
+    path = []
 
     def set_notifier_path(self, notifier, path):
         """Sets the notifier, and the path from the path from block root
@@ -37,20 +49,19 @@ class Model(Loggable, Serializable):
         self.notifier = notifier
         self.path = list(path)
         self.set_logger_name(".".join(self.path))
-        for name in self:
-            set_notifier_path(self[name], notifier, self.path + [name])
+        for endpoint in self.endpoints:
+            set_notifier_path(self[endpoint], notifier, self.path + [endpoint])
 
     def set_endpoint_data(self, name, value):
-        if self.notifier:
+        with self.notifier.changes_squashed:
             # Set the notifier for the child
-            path = self.path + [name]
-            set_notifier_path(value, self.notifier, path)
-            # Get notifier to run this with its lock taken
-            return self.notifier.make_endpoint_change(
-                self.set_endpoint_data_locked, path, value)
-        else:
-            # Just run the function ourself
-            return self.set_endpoint_data_locked(name, value)
+            if self.path:
+                path = self.path + [name]
+                set_notifier_path(value, self.notifier, path)
+                # Tell the notifier what changed
+                self.notifier.add_squashed_change(path, value)
+            # Actually set the attribute
+            super(Model, self).set_endpoint_data(name, value)
+        return value
 
-    def set_endpoint_data_locked(self, name, value):
-        return super(Model, self).set_endpoint_data(name, value)
+

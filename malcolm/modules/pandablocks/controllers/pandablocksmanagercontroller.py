@@ -90,7 +90,7 @@ class PandABlocksManagerController(ManagerController):
 
     def stop_poll_loop(self):
         if self._poll_spawned:
-            self._stop_queue.put(self.STOP)
+            self._stop_queue.put(None)
             self._poll_spawned.wait()
             self._poll_spawned = None
         if self.client.started:

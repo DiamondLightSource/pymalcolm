@@ -21,7 +21,7 @@
 - ADCore.parts.DetectorDriverPart:
     name: DRV
     mri: $(mriPrefix)-DRV
-    readoutTime: 40e-6
+    readoutTime: 120e-6
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mriPrefix)-STAT

@@ -24,6 +24,7 @@ class AlarmStatus(object):
 class Alarm(Serializable):
 
     endpoints = ["severity", "status", "message"]
+    __slots__ = endpoints
 
     def __init__(self, severity=AlarmSeverity.NO_ALARM,
                  status=AlarmStatus.NO_STATUS, message=""):
@@ -45,3 +46,5 @@ class Alarm(Serializable):
     def invalid(cls, message):
         return cls(
             AlarmSeverity.INVALID_ALARM, AlarmStatus.DEVICE_STATUS, message)
+
+Alarm.ok = Alarm()

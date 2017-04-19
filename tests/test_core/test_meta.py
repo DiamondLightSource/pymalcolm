@@ -14,13 +14,9 @@ class TestMeta(unittest.TestCase):
 
     def setUp(self):
         self.o = Meta("desc")
-        self.notifier = Mock()
-
-        def make_endpoint_change(setter, path, data=None):
-            return setter(path[-1], data)
-
-        self.notifier.make_endpoint_change.side_effect = make_endpoint_change
-        self.o.set_notifier_path(self.notifier, ["path"])
+        self.o.notifier.add_squashed_change = Mock(
+            wraps=self.o.notifier.add_squashed_change)
+        self.o.set_notifier_path(self.o.notifier, ["path"])
 
     def test_init(self):
         self.assertEqual(self.o.writeable_in, [])
@@ -29,29 +25,29 @@ class TestMeta(unittest.TestCase):
         description = "desc2"
         self.assertEqual(self.o.set_description(description), description)
         self.assertEqual(self.o.description, description)
-        self.notifier.make_endpoint_change.assert_called_once_with(
-            self.o.set_endpoint_data_locked, ["path", "description"], description)
+        self.o.notifier.add_squashed_change.assert_called_once_with(
+            ["path", "description"], description)
 
     def test_set_tags(self):
         tags = ("widget:textinput",)
         self.assertEqual(self.o.set_tags(tags), tags)
         self.assertEqual(self.o.tags, tags)
-        self.notifier.make_endpoint_change.assert_called_once_with(
-            self.o.set_endpoint_data_locked, ["path", "tags"], tags)
+        self.o.notifier.add_squashed_change.assert_called_once_with(
+            ["path", "tags"], tags)
 
     def test_set_writeable(self):
         writeable = True
         self.assertEqual(self.o.set_writeable(writeable), writeable)
         self.assertEqual(self.o.writeable, writeable)
-        self.notifier.make_endpoint_change.assert_called_once_with(
-            self.o.set_endpoint_data_locked, ["path", "writeable"], writeable)
+        self.o.notifier.add_squashed_change.assert_called_once_with(
+            ["path", "writeable"], writeable)
 
     def test_set_label(self):
         label = "my label"
         self.assertEqual(self.o.set_label(label), label)
         self.assertEqual(self.o.label, label)
-        self.notifier.make_endpoint_change.assert_called_once_with(
-            self.o.set_endpoint_data_locked, ["path", "label"], label)
+        self.o.notifier.add_squashed_change.assert_called_once_with(
+            ["path", "label"], label)
 
 
 class TestSerialization(unittest.TestCase):

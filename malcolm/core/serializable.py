@@ -101,19 +101,15 @@ class Serializable(object):
     typeid = None
 
     # List of endpoint strings for to_dict()
-    endpoints = None
+    endpoints = ()
 
     # dict mapping typeid name -> cls
     _subcls_lookup = {}
 
     def __len__(self):
-        if self.endpoints is None:
-            return 0
         return len(self.endpoints)
 
     def __iter__(self):
-        if self.endpoints is None:
-            return iter(())
         return iter(self.endpoints)
 
     def __getitem__(self, item):
@@ -136,7 +132,7 @@ class Serializable(object):
         d = OrderedDict()
         d["typeid"] = self.typeid
 
-        for endpoint in self:
+        for endpoint in self.endpoints:
             check_camel_case(endpoint)
             d[endpoint] = serialize_object(self[endpoint])
 
@@ -176,7 +172,7 @@ class Serializable(object):
 
     def set_endpoint_data(self, name, value):
         """Called by subclass to set endpoint data"""
-        assert name in self, \
+        assert name in self.endpoints, \
             "Endpoint %r not defined for %r" % (name, self)
         setattr(self, name, value)
         return value

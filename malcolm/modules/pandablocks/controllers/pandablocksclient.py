@@ -74,7 +74,7 @@ class PandABlocksClient(object):
         self._send_queue.put((message, response_queue))
         return response_queue
 
-    def recv(self, response_queue, timeout=1.0):
+    def recv(self, response_queue, timeout=10.0):
         response = response_queue.get(timeout=timeout)
         if isinstance(response, Exception):
             raise response
