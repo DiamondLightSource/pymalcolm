@@ -1,7 +1,7 @@
 from cothread import catools
 
 from malcolm.modules.builtin.vmetas import NumberMeta
-from malcolm.parts.ca.capart import CAPart
+from .capart import CAPart
 
 
 class CADoublePart(CAPart):

@@ -1,12 +1,12 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mriPrefix
     description: Malcolm resource id of the Block and prefix for children
 
-- parameters.string:
+- builtin.parameters.string:
     name: pvPrefix
     description: PV prefix for driver and all plugins
 
-- parameters.string:
+- builtin.parameters.string:
     name: configDir
     description: Where to store saved configs
 
@@ -22,14 +22,14 @@
     name: Xspress3A
     mri: $(mriPrefix)-DRV
 
-- blocks.ADCore.StatsPlugin:
+- ADCore.blocks.StatsPlugin:
     mri: $(mriPrefix)-STAT
     prefix: $(pvPrefix):STAT
 
-- parts.ADCore.StatsPluginPart:
+- ADCore.parts.StatsPluginPart:
     name: STAT
     mri: $(mriPrefix)-STAT
 
-- includes.ADCore.filewriting_collection:
+- ADCore.includes.filewriting_collection:
     pvPrefix: $(pvPrefix)
     mriPrefix: $(mriPrefix)

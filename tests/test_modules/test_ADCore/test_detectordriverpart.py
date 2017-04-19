@@ -4,12 +4,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, MagicMock, ANY, call
+from mock import MagicMock, ANY, call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import call_with_params, Context
-from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
+from malcolm.modules.ADCore.parts import DetectorDriverPart
 
 
 class TestSimDetectorDriverPart(unittest.TestCase):

@@ -1,6 +1,6 @@
-from malcolm.controllers.scanning import RunnableController
 from malcolm.core import method_takes
-from malcolm.parts.builtin import StatefulChildPart
+from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.scanning.controllers import RunnableController
 from .pandablockschildpart import PandABlocksChildPart
 
 

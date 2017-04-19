@@ -8,7 +8,7 @@ import setup_malcolm_paths
 import unittest
 from mock import call, Mock
 
-from malcolm.controllers.pandablocks.pandablocksclient import \
+from malcolm.modules.pandablocks.controllers.pandablocksclient import \
     PandABlocksClient, FieldData, BlockData
 
 

@@ -1,6 +1,6 @@
 from cothread import catools
 
-from malcolm.controllers.builtin import StatefulController
+from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.core import Part, method_takes, REQUIRED, MethodModel
 from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta, BooleanMeta
 

@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import unittest
 from mock import MagicMock
 
-from malcolm.controllers.builtin import ProxyController
+from malcolm.modules.builtin.controllers import ProxyController
 from malcolm.core import Process, call_with_params
 
 

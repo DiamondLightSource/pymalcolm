@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import unittest
 
-from malcolm.controllers.web import WebsocketClientComms
+from malcolm.modules.web.controllers import WebsocketClientComms
 from malcolm.core import Process, call_with_params
 
 

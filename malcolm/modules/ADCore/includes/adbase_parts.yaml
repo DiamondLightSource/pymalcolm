@@ -1,45 +1,45 @@
-- parameters.string:
+- builtin.parameters.string:
     name: prefix
     description: The root PV for the all records
 
-- includes.ADCore.ndarray_parts:
+- ADCore.includes.ndarray_parts:
     prefix: $(prefix)
 
-- parts.ca.CAChoicePart:
+- ca.parts.CAChoicePart:
     name: imageMode
     description: set to zero when motor is stationary
     pv: $(prefix):ImageMode
     rbvSuff: _RBV
     widget: combo
 
-- parts.ca.CALongPart:
+- ca.parts.CALongPart:
     name: numImages
     description: Number of images to take if imageMode=Multiple
     pv: $(prefix):NumImages
     rbvSuff: _RBV
     widget: textinput
 
-- parts.ca.CAActionPart:
+- ca.parts.CAActionPart:
     name: start
     description: Demand for starting acquisition
     pv: $(prefix):Acquire
     statusPv: $(prefix):DetectorState_RBV
     goodStatus: Idle
 
-- parts.ca.CAActionPart:
+- ca.parts.CAActionPart:
     name: stop
     description: Stop acquisition
     pv: $(prefix):Acquire
     value: 0
     wait: False
 
-- parts.ca.CABooleanPart:
+- ca.parts.CABooleanPart:
     name: acquiring
     description: If detector is currently acquiring
     rbv: $(prefix):Acquire
     widget: led
 
-- parts.ca.CAChoicePart:
+- ca.parts.CAChoicePart:
     name: triggerMode
     description: What is triggering the detector to take frames
     pv: $(prefix):TriggerMode

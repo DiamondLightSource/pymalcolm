@@ -1,8 +1,8 @@
 import re
 
-from malcolm.controllers.scanning import RunnableController
-from malcolm.infos.ADCore.ndattributedatasetinfo import NDAttributeDatasetInfo
-from malcolm.parts.builtin import ChildPart
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.ADCore.infos import NDAttributeDatasetInfo
+from malcolm.modules.builtin.parts import ChildPart
 
 
 class PandABlocksChildPart(ChildPart):

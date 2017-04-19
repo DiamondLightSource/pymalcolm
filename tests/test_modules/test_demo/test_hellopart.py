@@ -6,7 +6,7 @@ import setup_malcolm_paths
 import unittest
 from mock import Mock
 
-from malcolm.parts.demo.hellopart import HelloPart
+from malcolm.modules.demo.parts import HelloPart
 from malcolm.core import call_with_params
 
 

@@ -13,7 +13,7 @@ from mock import MagicMock, patch
 # module imports
 from malcolm.core import call_with_params, AlarmSeverity, AlarmStatus
 from malcolm.modules.builtin.vmetas import NumberMeta
-from malcolm.parts.ca.capart import CAPart
+from malcolm.modules.ca.parts.capart import CAPart
 
 
 class caint(int):
@@ -22,7 +22,7 @@ class caint(int):
     raw_stamp = (340000, 43)
 
 
-@patch("malcolm.parts.ca.capart.catools")
+@patch("malcolm.modules.ca.parts.capart.catools")
 class TestCAPart(unittest.TestCase):
 
     def create_part(self, params=None):

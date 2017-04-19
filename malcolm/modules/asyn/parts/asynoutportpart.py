@@ -1,6 +1,6 @@
-from malcolm.controllers.builtin import StatefulController
-from malcolm.core import method_takes, REQUIRED, call_with_params
-from malcolm.parts.ca.castringpart import CAStringPart
+from malcolm.modules.builtin.controllers import StatefulController
+from malcolm.core import method_takes, REQUIRED
+from malcolm.modules.ca.parts import CAStringPart
 from malcolm.tags import port_types, outport, widget
 from malcolm.modules.builtin.vmetas import StringMeta, ChoiceMeta
 
@@ -22,8 +22,8 @@ class AsynOutportPart(CAStringPart):
         return tags
 
     @StatefulController.Reset
-    def reset(self, task=None):
-        super(AsynOutportPart, self).reset(task)
+    def reset(self, context=None):
+        super(AsynOutportPart, self).reset(context)
         # Add the outport tags
         tags = [t for t in self.attr.meta.tags if not t.startswith("outport:")]
         tags.append(outport(self.outport_type, self.attr.value))

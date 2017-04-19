@@ -6,11 +6,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import call, Mock
+from mock import Mock
 
 from malcolm.core import Table
 from malcolm.modules.builtin.vmetas import TableMeta, BooleanArrayMeta, NumberArrayMeta
-from malcolm.parts.pandablocks.pandablockstablepart import PandABlocksTablePart
+from malcolm.modules.pandablocks.parts.pandablockstablepart import \
+    PandABlocksTablePart
 
 
 class PandABoxTablePartTest(unittest.TestCase):

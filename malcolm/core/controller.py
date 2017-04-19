@@ -7,7 +7,6 @@ from .alarm import Alarm
 from .attribute import Attribute
 from .attributemodel import AttributeModel
 from .block import Block
-from .blockmeta import BlockMeta
 from .blockmodel import BlockModel
 from .context import Context
 from .errors import UnexpectedError, AbortedError, WrongThreadError

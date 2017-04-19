@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import unittest
 
-from malcolm.infos.pmac import MotorInfo
+from malcolm.modules.pmac.infos import MotorInfo
 
 
 class TestMotorPVT(unittest.TestCase):

@@ -4,7 +4,7 @@ from mock import Mock
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, Process
-from malcolm.controllers.builtin.statefulcontroller import StatefulController, \
+from malcolm.modules.builtin.controllers import StatefulController, \
     StatefulStates
 
 

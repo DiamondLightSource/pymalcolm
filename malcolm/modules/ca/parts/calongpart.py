@@ -1,7 +1,7 @@
 from cothread import catools
 
-from malcolm.parts.ca.capart import CAPart
 from malcolm.modules.builtin.vmetas import NumberMeta
+from .capart import CAPart
 
 
 class CALongPart(CAPart):

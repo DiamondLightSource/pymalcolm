@@ -171,17 +171,16 @@ class Subscribe(PathRequest):
         self.delta = self.set_delta(delta)
 
     def set_delta(self, delta):
-        """Parameters to Post to endpoint
+        """Whether to ask for delta responses or not
 
         Args:
-            parameters: Value to post to path
+            delta: If true then request Delta responses, otherwise Update
         """
         delta = deserialize_object(delta, bool)
         return self.set_endpoint_data("delta", delta)
 
     def update_response(self, value):
-        """
-        Create an Update Response object to handle the request
+        """Create an Update Response object to handle the request
 
         Args:
             value: Serialized new value
@@ -190,8 +189,7 @@ class Subscribe(PathRequest):
         return self.callback, response
 
     def delta_response(self, changes):
-        """
-        Create a Delta Response object to handle the request
+        """Create a Delta Response object to handle the request
 
         Args:
             changes (list): list of [[path], value] pairs for changed values

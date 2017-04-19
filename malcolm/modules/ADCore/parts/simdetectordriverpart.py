@@ -1,4 +1,4 @@
-from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
+from malcolm.modules.ADCore.parts import DetectorDriverPart
 
 
 class SimDetectorDriverPart(DetectorDriverPart):

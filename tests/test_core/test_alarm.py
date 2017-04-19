@@ -1,7 +1,6 @@
 import os
 import sys
 import unittest
-from collections import OrderedDict
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 

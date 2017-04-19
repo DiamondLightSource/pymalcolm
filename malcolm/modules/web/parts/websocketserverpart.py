@@ -1,10 +1,9 @@
 from tornado.websocket import WebSocketHandler, WebSocketError
 
-from malcolm.controllers.web import HTTPServerComms
-from malcolm.core import method_takes, REQUIRED, Part, json_decode, \
-    deserialize_object, Request, json_encode, Subscribe, Unsubscribe, Delta, \
-    Update
-from malcolm.infos.web import HandlerInfo
+from malcolm.modules.web.controllers import HTTPServerComms
+from malcolm.core import method_takes, Part, json_decode, deserialize_object, \
+    Request, json_encode, Subscribe, Unsubscribe, Delta, Update
+from malcolm.modules.web.infos import HandlerInfo
 from malcolm.modules.builtin.vmetas import StringMeta
 
 

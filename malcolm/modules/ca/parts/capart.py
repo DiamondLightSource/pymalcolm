@@ -1,8 +1,8 @@
 from cothread import catools
 
-from malcolm.controllers.builtin import StatefulController
+from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.core import method_takes, REQUIRED, Alarm, AlarmStatus, TimeStamp
-from malcolm.parts.builtin.attributepart import AttributePart
+from malcolm.modules.builtin.parts.attributepart import AttributePart
 from malcolm.tags import widget_types, inport, port_types
 from malcolm.modules.builtin.vmetas import StringMeta, ChoiceMeta, BooleanMeta
 

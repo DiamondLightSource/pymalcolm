@@ -7,8 +7,8 @@ import unittest
 from mock import ANY
 
 from malcolm.core import call_with_params
-from malcolm.parts.ADCore.datasettablepart import DatasetTablePart
-from malcolm.infos.ADCore.datasetproducedinfo import DatasetProducedInfo
+from malcolm.modules.ADCore.parts import DatasetTablePart
+from malcolm.modules.ADCore.infos import DatasetProducedInfo
 
 
 class TestDatasetReportingPart(unittest.TestCase):

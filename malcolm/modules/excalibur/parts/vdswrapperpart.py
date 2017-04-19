@@ -1,10 +1,10 @@
 import os
 
-from malcolm.controllers.scanning import RunnableController
+from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.core import method_takes, REQUIRED, Part
 from malcolm.infos.ADCore.datasetproducedinfo import DatasetProducedInfo
 from malcolm.modules.builtin.vmetas import StringMeta
-from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
+from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 
 class VdsWrapperPart(Part):

@@ -7,7 +7,7 @@ import unittest
 from mock import MagicMock, ANY, call
 
 from malcolm.core import Context, call_with_params
-from malcolm.parts.xmap.xmapdriverpart import XmapDriverPart
+from malcolm.modules.xmap.parts import XmapDriverPart
 
 
 class TestXmap3DetectorDriverPart(unittest.TestCase):

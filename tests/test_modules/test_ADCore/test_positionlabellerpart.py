@@ -8,7 +8,7 @@ from mock import Mock, MagicMock, call, ANY
 import time
 
 from malcolm.core import Context, call_with_params
-from malcolm.parts.ADCore.positionlabellerpart import PositionLabellerPart
+from malcolm.modules.ADCore.parts import PositionLabellerPart
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 

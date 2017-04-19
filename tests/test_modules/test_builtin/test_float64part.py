@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import unittest
 
 from malcolm.core import call_with_params
-from malcolm.parts.builtin import Float64Part
+from malcolm.modules.builtin.parts import Float64Part
 
 
 class TestFloat64Part(unittest.TestCase):

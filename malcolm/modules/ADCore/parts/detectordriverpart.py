@@ -1,9 +1,9 @@
-from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_also_takes, REQUIRED, method_takes
-from malcolm.infos.ADCore.ndarraydatasetinfo import NDArrayDatasetInfo
-from malcolm.parts.builtin import StatefulChildPart
+from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
+from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.builtin.vmetas import NumberMeta, ChoiceMeta
-from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 # Args for configure() and validate
 configure_args = [

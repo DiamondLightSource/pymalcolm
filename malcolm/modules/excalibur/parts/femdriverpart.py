@@ -1,6 +1,6 @@
-from malcolm.parts.builtin.childpart import ChildPart
-from malcolm.controllers.scanning import RunnableController
-from malcolm.infos.ADCore.ndarraydatasetinfo import NDArrayDatasetInfo
+from malcolm.modules.builtin.parts.childpart import ChildPart
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
 
 
 class FemDriverPart(ChildPart):

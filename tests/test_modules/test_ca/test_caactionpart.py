@@ -12,14 +12,14 @@ from mock import patch, ANY
 
 # module imports
 from malcolm.core import call_with_params
-from malcolm.parts.ca.caactionpart import CAActionPart
+from malcolm.modules.ca.parts import CAActionPart
 
 
 class caint(int):
     ok = True
     
 
-@patch("malcolm.parts.ca.caactionpart.catools")
+@patch("malcolm.modules.ca.parts.caactionpart.catools")
 class TestCAActionPart(unittest.TestCase):
 
     def create_part(self, params=None):

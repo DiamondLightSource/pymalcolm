@@ -1,13 +1,13 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mri
     description: Malcolm resource id of the Block
 
-- parameters.string:
+- builtin.parameters.string:
     name: prefix
     description: The root PV for the all records
 
 - controllers.DefaultController:
     mri: $(mri)
 
-- includes.ADCore.adbase_parts:
+- ADCore.includes.adbase_parts:
     prefix: $(prefix)

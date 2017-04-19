@@ -7,7 +7,7 @@ import unittest
 from mock import MagicMock, ANY, call
 
 from malcolm.core import Context
-from malcolm.parts.ADPandABlocks import PandABlocksDriverPart
+from malcolm.modules.ADPandABlocks.parts import PandABlocksDriverPart
 
 
 class TestPandaABoxDriverPart(unittest.TestCase):

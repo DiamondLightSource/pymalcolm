@@ -2,14 +2,14 @@ import os
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
-from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.infos.ADCore import CalculatedNDAttributeDatasetInfo, \
+from malcolm.modules.ADCore.infos import CalculatedNDAttributeDatasetInfo, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
     attribute_dataset_types
-from malcolm.parts.builtin import StatefulChildPart
+from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.builtin.vmetas import StringMeta
-from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 SUFFIXES = "NXY3456789"
 

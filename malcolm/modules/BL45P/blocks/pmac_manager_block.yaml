@@ -1,34 +1,34 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mriPrefix
     description: MRI for created block
 
-- parameters.string:
+- builtin.parameters.string:
     name: configDir
     description: Where to store saved configs
 
-- controllers.scanning.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- includes.pmac.rawmotor_collection:
+- pmac.includes.rawmotor_collection:
     mri: P45-STAGE-X
     motorPrefix: BL45P-MO-MAP-01:STAGE:X
     prefix: BL45P-MO-MAP-01:STAGEGB1:M1
     scannable: stagex
 
-- includes.pmac.rawmotor_collection:
+- pmac.includes.rawmotor_collection:
     mri: P45-STAGE-Y
     motorPrefix: BL45P-MO-MAP-01:STAGE:Y
     prefix: BL45P-MO-MAP-01:STAGEGB1:M2
     scannable: stagey
 
-- includes.pmac.rawmotor_collection:
+- pmac.includes.rawmotor_collection:
     mri: P45-STAGE-Z
     motorPrefix: BL45P-MO-MAP-01:STAGE:Z
     prefix: BL45P-MO-MAP-01:STAGEGB1:M3
     scannable: stagez
 
-- includes.pmac.trajectory_collection:
+- pmac.includes.trajectory_collection:
     mri: $(mriPrefix)-TRAJ
     prefix: BL45P-MO-MAP-01:STAGEGB1
     statPrefix: BL45P-MO-STEP-02:STAGE

@@ -1,5 +1,4 @@
 from multiprocessing.pool import ThreadPool
-import thread
 
 from malcolm.compat import OrderedDict, maybe_import_cothread
 from .context import Context

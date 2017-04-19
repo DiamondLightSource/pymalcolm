@@ -1,4 +1,4 @@
-from malcolm.controllers.builtin import ManagerController
+from malcolm.modules.builtin.controllers import ManagerController
 from .childpart import ChildPart
 
 

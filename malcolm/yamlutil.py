@@ -1,5 +1,6 @@
 import logging
 import os
+import importlib
 
 from ruamel import yaml
 
@@ -120,16 +121,19 @@ class Section(object):
         E.g. if ob is malcolm.parts, and name is "ca.CADoublePart", then the
         object will be malcolm.parts.ca.CADoublePart
         """
-        from malcolm import modules
-        ob = modules
-        split = self.name.split(".")
         param_dict = self.substitute_params(substitutions)
-        for n in split:
-            try:
-                ob = getattr(ob, n)
-            except AttributeError as e:
-                raise ValueError("%s:%d: Can't find %r of %r" % (
-                    self.filename, self.lineno, n, self.name))
+        pkg, ident = self.name.rsplit(".", 1)
+        pkg = "malcolm.modules.%s" % pkg
+        try:
+            ob = importlib.import_module(pkg)
+        except ImportError:
+            raise ImportError("%s:%d: Can't import %r" % (
+                self.filename, self.lineno, pkg))
+        try:
+            ob = getattr(ob, ident)
+        except AttributeError:
+            raise ImportError("%s:%d: Package %r has no ident %r" % (
+                self.filename, self.lineno, pkg, ident))
         logging.debug("Instantiating %s with %s", ob, param_dict)
         return call_with_params(ob, *args, **param_dict)
 
@@ -175,15 +179,16 @@ class Section(object):
             name = list(d)[0]
             split = name.split(".")
             if len(split) != 3:
-                raise ValueError(
+                raise ImportError(
                     "%s:%d: Expected something like builtin.parts.ChildPart. "
-                    "Got %r" % (filename, lineno, name))
+                    "Got %r" % (yaml_path, lineno, name))
             section = split[1]
             if section in sections:
                 sections[section].append(cls(
                     yaml_path, lineno, name, d[name]))
             else:
-                raise ValueError("Unknown section name %s" % name)
+                raise ImportError("%s:%d: Unknown section name %s" % (
+                    yaml_path, lineno, name))
 
         return sections, yamlname
 

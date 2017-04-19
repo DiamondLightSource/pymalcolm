@@ -7,12 +7,12 @@ from malcolm.core import method_writeable_in, method_takes, Hook, Table, \
     json_encode, json_decode, method_also_takes, REQUIRED, Unsubscribe, \
     Subscribe, deserialize_object, Delta, Context, AttributeModel, Alarm, \
     AlarmSeverity, AlarmStatus, Response
-from malcolm.infos.builtin import ExportableInfo, LayoutInfo, PortInfo, \
-    ModifiedInfo
-from malcolm.tags import widget, config
+from malcolm.modules.builtin.infos import ExportableInfo, LayoutInfo, \
+    PortInfo, ModifiedInfo
 from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberArrayMeta, \
     BooleanArrayMeta, TableMeta, StringMeta, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta
+from malcolm.tags import widget, config
 from .statefulcontroller import StatefulController, StatefulStates
 
 
@@ -347,7 +347,6 @@ class ManagerController(StatefulController):
         ret = {}
 
         def update_field(response):
-            response = deserialize_object(response, Response)
             if not isinstance(response, Delta):
                 # Return or Error is the end of our subscription, log and ignore
                 self.log_debug("Export got response %r", response)

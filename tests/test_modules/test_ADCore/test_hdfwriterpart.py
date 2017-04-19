@@ -4,12 +4,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import setup_malcolm_paths
 
 import unittest
-from mock import Mock, MagicMock, call, ANY
+from mock import MagicMock, call, ANY
 
 from malcolm.core import Context, call_with_params
-from malcolm.parts.ADCore.hdfwriterpart import HDFWriterPart
-from malcolm.infos.ADCore.ndarraydatasetinfo import NDArrayDatasetInfo
-from malcolm.infos.ADCore.calculatedndattributedatasetinfo import \
+from malcolm.modules.ADCore.parts import HDFWriterPart
+from malcolm.modules.ADCore.infos import NDArrayDatasetInfo, \
     CalculatedNDAttributeDatasetInfo
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator

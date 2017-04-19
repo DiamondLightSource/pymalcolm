@@ -2,7 +2,7 @@ from tornado import gen
 from tornado.ioloop import IOLoop
 from tornado.websocket import websocket_connect
 
-from malcolm.controllers.builtin import ClientComms
+from malcolm.modules.builtin.controllers import ClientComms
 from malcolm.core import Subscribe, deserialize_object, method_also_takes, \
     json_decode, json_encode, Response, Error, Unsubscribe, Update, Return, \
     Queue, TimeoutError

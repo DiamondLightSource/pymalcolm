@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 from malcolm.core import call_with_params
-from malcolm.blocks.builtin import proxy_block
+from malcolm.modules.builtin.blocks import proxy_block
 
 
 class TestBuiltin(unittest.TestCase):

@@ -10,10 +10,11 @@ from mock import Mock, ANY
 # logging.basicConfig(level=logging.DEBUG)
 
 # module imports
-from malcolm.controllers.builtin import BaseController, ManagerController
 from malcolm.core import Part, Process, Table, call_with_params, Context
-from malcolm.parts.builtin import ChildPart
-from malcolm.modules.builtin.vmetas.stringmeta import StringMeta
+from malcolm.modules.builtin.controllers import BaseController, \
+    ManagerController
+from malcolm.modules.builtin.parts import ChildPart
+from malcolm.modules.builtin.vmetas import StringMeta
 
 sm = ManagerController.stateSet
 

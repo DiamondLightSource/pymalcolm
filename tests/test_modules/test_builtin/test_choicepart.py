@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import unittest
 
 from malcolm.core import call_with_params
-from malcolm.parts.builtin import ChoicePart
+from malcolm.modules.builtin.parts import ChoicePart
 
 
 class TestChoicePart(unittest.TestCase):

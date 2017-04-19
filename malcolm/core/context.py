@@ -6,8 +6,7 @@ from .loggable import Loggable
 from .request import Put, Post, Subscribe, Unsubscribe
 from .response import Update, Return, Error
 from .queue import Queue
-from .errors import TimeoutError, AbortedError, UnexpectedError, \
-    ResponseError, BadValueError
+from .errors import TimeoutError, AbortedError, ResponseError, BadValueError
 
 
 class When(object):

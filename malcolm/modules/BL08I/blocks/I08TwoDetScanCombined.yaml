@@ -1,20 +1,20 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mri
     description: MRI for created block
 
-- parameters.string:
+- builtin.parameters.string:
     name: det1
     description: MRI for detector 1 DetectorManager object
 
-- parameters.string:
+- builtin.parameters.string:
     name: det2
     description: MRI for detector 2 DetectorManager object
 
-- parameters.string:
+- builtin.parameters.string:
     name: brick
     description: MRI for brick PMACManager object
 
-- parameters.string:
+- builtin.parameters.string:
     name: pandabox
     description: MRI for PandABoxManager object
 
@@ -22,21 +22,21 @@
     mri: $(mri)
     axesToMove: [SampleX, SampleY]
 
-- parts.ADCore.DatasetTablePart:
+- ADCore.parts.DatasetTablePart:
     name: DSET
 
 - parts.demo.BL08IScanCombinedPart:
     name: BRICK
     mri: $(brick)
 
-- parts.ADCore.DatasetRunnableChildPart:
+- ADCore.parts.DatasetRunnableChildPart:
     name: DET
     mri: $(det1)
 
-- parts.ADCore.DatasetRunnableChildPart:
+- ADCore.parts.DatasetRunnableChildPart:
     name: DET
     mri: $(det2)
 
-- parts.ADCore.DatasetRunnableChildPart:
+- ADCore.parts.DatasetRunnableChildPart:
     name: PANDABOX
     mri: $(pandabox)

@@ -1,11 +1,11 @@
-- parameters.string:
+- builtin.parameters.string:
     name: prefix
     description: The root PV for the all records
 
-- includes.ADCore.ndarray_parts:
+- ADCore.includes.ndarray_parts:
     prefix: $(prefix)
 
-- parts.ca.CAStringPart:
+- ca.parts.CAStringPart:
     name: inp
     description: Array inport name
     pv: $(prefix):NDArrayPort
@@ -13,7 +13,7 @@
     widget: textinput
     inport: NDArray
 
-- parts.ca.CABooleanPart:
+- ca.parts.CABooleanPart:
     name: enableCallbacks
     description: Enable plugin to run when we get a new frame
     pv: $(prefix):EnableCallbacks

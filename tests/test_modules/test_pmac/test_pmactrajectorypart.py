@@ -10,8 +10,8 @@ from mock import MagicMock, call, patch, ANY
 Mock = MagicMock
 
 from malcolm.core import call_with_params, Context
-from malcolm.parts.pmac import PmacTrajectoryPart
-from malcolm.infos.pmac import MotorInfo
+from malcolm.modules.pmac.parts import PmacTrajectoryPart
+from malcolm.modules.pmac.infos import MotorInfo
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 
@@ -94,7 +94,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         expected = 0.010166
         self.assertEqual(ret[0].value.duration, expected)
 
-    @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 0.2)
+    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL", 0.2)
     def test_configure(self):
         self.do_configure(axes_to_scan=["x", "y"])
         assert self.context.mock_calls == [
@@ -136,7 +136,9 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                     0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])),
             call.block_view().buildProfile()]
 
-    @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 0.2)
+    @patch(
+        "malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
+        0.2)
     def test_2_axis_move_to_start(self):
         self.do_configure(
             axes_to_scan=["x", "y"], x_pos=0.0, y_pos=0.2)
@@ -160,8 +162,10 @@ class TestPMACTrajectoryPart(unittest.TestCase):
             call.block_view().put_attribute_values(ANY),
             call.block_view().buildProfile()]
 
-    @patch("malcolm.parts.pmac.pmactrajectorypart.POINTS_PER_BUILD", 4)
-    @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 0.2)
+    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.POINTS_PER_BUILD", 4)
+    @patch(
+        "malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
+        0.2)
     def test_update_step(self):
         self.do_configure(axes_to_scan=["x", "y"])
         positionsA = self.child.put_attribute_values.call_args_list[-1][0][0]["positionsA"]
@@ -225,7 +229,9 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                     0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375])),
             call.block_view().buildProfile()]
 
-    @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 0.2)
+    @patch(
+        "malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL", 
+        0.2)
     def test_long_steps_lookup(self):
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.62506, duration=14.0)
@@ -258,7 +264,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
         self.assertEqual(self.o.completed_steps_lookup,
                          [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
 
-    @patch("malcolm.parts.pmac.pmactrajectorypart.INTERPOLATE_INTERVAL", 2.0)
+    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL", 2.0)
     def test_long_move(self):
         self.do_configure(axes_to_scan=["x"], x_pos=-10.1375)
         assert self.child.mock_calls[3] == call.put_attribute_values(dict(

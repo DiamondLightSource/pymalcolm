@@ -2,10 +2,10 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 
-from malcolm.controllers.builtin.servercomms import ServerComms
+from malcolm.modules.builtin.controllers.servercomms import ServerComms
 from malcolm.core import Hook, method_also_takes, Process
-from malcolm.infos.web import HandlerInfo
 from malcolm.modules.builtin.vmetas import NumberMeta
+from malcolm.modules.web.infos import HandlerInfo
 
 
 @method_also_takes(

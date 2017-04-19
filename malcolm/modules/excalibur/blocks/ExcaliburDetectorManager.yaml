@@ -1,12 +1,12 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mriPrefix
     description: Malcolm resource id of the Block and prefix for children
 
-- parameters.string:
+- builtin.parameters.string:
     name: pvPrefix
     description: PV prefix for driver and all plugins
 
-- parameters.string:
+- builtin.parameters.string:
     name: configDir
     description: Where to store saved configs
 

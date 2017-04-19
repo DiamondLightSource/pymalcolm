@@ -7,7 +7,7 @@ from mock import patch
 from collections import OrderedDict
 
 from malcolm.core import StringArray
-from malcolm.controllers.pva.pvautil import pva_structure_from_value, \
+from malcolm.modules.pva.controllers.pvautil import pva_structure_from_value, \
     dict_to_pv_object
 
 import pvaccess
@@ -44,7 +44,7 @@ class PvTempObject(object):
 
 class TestPVAUtil(unittest.TestCase):
 
-    @patch("malcolm.controllers.pva.pvautil.pvaccess.PvObject", PvTempObject)
+    @patch("malcolm.modules.pva.controllers.pvautil.pvaccess.PvObject", PvTempObject)
     def test_dict_to_stucture(self):
         val_dict = OrderedDict()
         val_dict["typeid"] = "type1"
@@ -90,7 +90,7 @@ class TestPVAUtil(unittest.TestCase):
         test_val = pvaccess.PvObject(test_dict, "")
         self.assertEquals(val, test_val)
 
-    @patch("malcolm.controllers.pva.pvautil.pvaccess.PvObject", PvTempObject)
+    @patch("malcolm.modules.pva.controllers.pvautil.pvaccess.PvObject", PvTempObject)
     def test_dict_to_pv(self):
         val_dict = OrderedDict()
         val_dict["typeid"] = "type1"

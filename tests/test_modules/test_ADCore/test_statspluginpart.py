@@ -7,7 +7,7 @@ import unittest
 from mock import call, MagicMock, ANY
 
 from malcolm.core import Context, call_with_params
-from malcolm.parts.ADCore.statspluginpart import StatsPluginPart
+from malcolm.modules.ADCore.parts import StatsPluginPart
 
 
 class TestStatsPluginPart(unittest.TestCase):

@@ -1,39 +1,39 @@
-- parameters.string:
+- builtin.parameters.string:
     name: prefix
     description: the root PV for the motor record
 
-- parts.ca.CADoublePart:
+- ca.parts.CADoublePart:
     name: position
     description: set the target position of the motor or get current position
     pv: $(prefix)
     rbvSuff: .RBV
     widget: textinput
 
-- parts.ca.CALongPart:
+- ca.parts.CALongPart:
     name: doneMoving
     description: set to zero when motor is stationary
     rbv: $(prefix).DMOV
     widget: led
 
-- parts.ca.CADoublePart:
+- ca.parts.CADoublePart:
     name: accelerationTime
     description: time taken to accelerate to velocity
     pv: $(prefix).ACCL
     widget: textinput
 
-- parts.ca.CADoublePart:
+- ca.parts.CADoublePart:
     name: maxVelocity
     description: maximum velocity
     pv: $(prefix).VMAX
     widget: textinput
 
-- parts.ca.CADoublePart:
+- ca.parts.CADoublePart:
     name: resolution
     description: Motor resolution
     rbv: $(prefix).ERES
     widget: textupdate
 
-- parts.ca.CADoublePart:
+- ca.parts.CADoublePart:
     name: offset
     description: User offset
     pv: $(prefix).OFF

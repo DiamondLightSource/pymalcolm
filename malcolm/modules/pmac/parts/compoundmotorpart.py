@@ -1,7 +1,7 @@
-from malcolm.controllers.scanning.runnablecontroller import RunnableController
-from malcolm.parts.builtin import StatefulChildPart
-from malcolm.parts.pmac.pmactrajectorypart import cs_axis_names
-from malcolm.infos.pmac.motorinfo import MotorInfo
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.pmac.infos import MotorInfo
+from .pmactrajectorypart import cs_axis_names
 
 
 class CompoundMotorPart(StatefulChildPart):

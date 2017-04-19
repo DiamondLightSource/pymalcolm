@@ -7,7 +7,7 @@ from pkg_resources import require
 require("tornado", "numpy")
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from malcolm.core import SyncFactory, Process
+from malcolm.core import Process, call_with_params
 from malcolm.controllers import ManagerController
 from malcolm.controllers.web.websocketservercomms import WebsocketServerComms
 from malcolm.includes.pandabox.hardware_collection import hardware_collection
@@ -18,10 +18,10 @@ PORT = 8888
 WSPORT = 8080
 
 # Make the top level objects
-sf = SyncFactory("Sync")
-process = Process("Process", sf)
+process = Process("Process")
 
 # Add the websocket server
+
 params = WebsocketServerComms.MethodMeta.prepare_input_map(port=WSPORT)
 comms = WebsocketServerComms(process, params)
 process.add_comms(comms)

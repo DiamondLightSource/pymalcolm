@@ -6,8 +6,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import setup_malcolm_paths
 
 from malcolm.core import call_with_params
-from malcolm.blocks.pmac import pmac_trajectory_block, compound_motor_block, \
-    raw_motor_block
+from malcolm.modules.pmac.blocks import pmac_trajectory_block, \
+    compound_motor_block, raw_motor_block
 
 
 class TestBuiltin(unittest.TestCase):

@@ -1,6 +1,6 @@
 from malcolm.compat import OrderedDict
 from malcolm.core import Loggable, call_with_params
-from malcolm.parts.builtin import ChoicePart
+from malcolm.modules.builtin.parts import ChoicePart
 from malcolm.tags import widget, group, inport, outport, config
 from malcolm.modules.builtin.vmetas import BooleanMeta, NumberMeta, StringMeta, \
     ChoiceMeta, TableMeta

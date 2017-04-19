@@ -1,16 +1,16 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mri
     description: MRI for created block
 
-- parameters.string:
+- builtin.parameters.string:
     name: det
     description: MRI for detector DetectorManager object
 
-- parameters.string:
+- builtin.parameters.string:
     name: brick
     description: MRI for brick PMACManager object
 
-- parameters.string:
+- builtin.parameters.string:
     name: pandabox
     description: MRI for PandABoxManager object
 
@@ -19,17 +19,17 @@
     axesToMove: [table_x, table_y]
     configDir: /tmp/malcolm
 
-- parts.ADCore.DatasetTablePart:
+- ADCore.parts.DatasetTablePart:
     name: DSET
 
 - parts.pmac.PmacRunnableChildPart:
     name: BRICK
     mri: $(brick)
 
-- parts.ADCore.DatasetRunnableChildPart:
+- ADCore.parts.DatasetRunnableChildPart:
     name: DET
     mri: $(det)
 
-- parts.ADCore.DatasetRunnableChildPart:
+- ADCore.parts.DatasetRunnableChildPart:
     name: PANDABOX
     mri: $(pandabox)

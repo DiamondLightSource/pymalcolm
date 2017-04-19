@@ -1,47 +1,47 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mri
     description: MRI for created block
 
-- parameters.string:
+- builtin.parameters.string:
     name: mic
     description: MRI for microscope DetectorManager object
 
-- parameters.string:
+- builtin.parameters.string:
     name: brick
     description: MRI for brick PMACManager object
 
-- parameters.string:
+- builtin.parameters.string:
     name: pandabox
     description: MRI for PandABoxManager object
 
-- parameters.string:
+- builtin.parameters.string:
     name: zebra
     description: MRI for ZebraManager object
 
-- parameters.string:
+- builtin.parameters.string:
     name: configDir
     description: Where to store saved configs
 
-- controllers.scanning.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mri)
     configDir: $(configDir)
     axesToMove: [stagex, stagey]
 
-- parts.ADCore.DatasetTablePart:
+- ADCore.parts.DatasetTablePart:
     name: DSET
 
-- parts.scanning.RunnableChildPart:
+- scanning.parts.RunnableChildPart:
     name: BRICK
     mri: $(brick)
 
-- parts.ADCore.DatasetRunnableChildPart:
+- ADCore.parts.DatasetRunnableChildPart:
     name: MIC
     mri: $(mic)
 
-- parts.ADCore.DatasetRunnableChildPart:
+- ADCore.parts.DatasetRunnableChildPart:
     name: PANDABOX
     mri: $(pandabox)
 
-- parts.ADCore.DatasetRunnableChildPart:
+- ADCore.parts.DatasetRunnableChildPart:
     name: ZEBRA
     mri: $(zebra)

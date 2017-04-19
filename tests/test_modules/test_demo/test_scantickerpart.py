@@ -8,7 +8,7 @@ from mock import MagicMock, call, ANY
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.parts.demo.scantickerpart import ScanTickerPart
+from malcolm.modules.demo.parts import ScanTickerPart
 from malcolm.core import call_with_params, Context
 
 

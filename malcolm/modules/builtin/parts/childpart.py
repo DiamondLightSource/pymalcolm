@@ -1,9 +1,9 @@
 from malcolm.compat import OrderedDict
-from malcolm.controllers.builtin import ManagerController
-from malcolm.infos.builtin import ExportableInfo, PortInfo, LayoutInfo, \
-    ModifiedInfo
 from malcolm.core import Part, REQUIRED, method_takes, serialize_object, \
     Attribute, Subscribe, Unsubscribe
+from malcolm.modules.builtin.controllers import ManagerController
+from malcolm.modules.builtin.infos import ExportableInfo, PortInfo, \
+    LayoutInfo, ModifiedInfo
 from malcolm.modules.builtin.vmetas import StringMeta
 
 

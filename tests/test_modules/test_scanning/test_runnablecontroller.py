@@ -9,10 +9,10 @@ import setup_malcolm_paths
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import Process, Part, call_with_params, \
     Context, ResponseError
-from malcolm.parts.scanning.runnablechildpart import RunnableChildPart
-from malcolm.blocks.demo import ticker_block
+from malcolm.modules.scanning.parts import RunnableChildPart
+from malcolm.modules.demo.blocks import ticker_block
 from malcolm.compat import OrderedDict
-from malcolm.controllers.scanning.runnablecontroller import \
+from malcolm.modules.scanning.controllers import \
     RunnableController, RunnableStates
 
 

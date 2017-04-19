@@ -1,9 +1,9 @@
 from malcolm.compat import OrderedDict
-from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import Part, Table, method_takes, REQUIRED
-from malcolm.infos.ADCore import DatasetProducedInfo, dataset_types
+from malcolm.modules.ADCore.infos import DatasetProducedInfo, dataset_types
 from malcolm.modules.builtin.vmetas import StringArrayMeta, ChoiceArrayMeta, \
     TableMeta, NumberArrayMeta, StringMeta
+from malcolm.modules.scanning.controllers import RunnableController
 
 # Make a table for the dataset info we produce
 columns = OrderedDict()

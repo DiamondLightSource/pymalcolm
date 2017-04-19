@@ -12,15 +12,14 @@ import unittest
 from tornado.websocket import websocket_connect
 from tornado import gen
 import json
-import time
 
 
 # module imports
 from malcolm.core import Process, call_with_params, Queue, Context, \
     ResponseError
-from malcolm.blocks.builtin import proxy_block
-from malcolm.blocks.demo import hello_block, counter_block
-from malcolm.blocks.web import web_server_block, websocket_client_block
+from malcolm.modules.builtin.blocks import proxy_block
+from malcolm.modules.demo.blocks import hello_block, counter_block
+from malcolm.modules.web.blocks import web_server_block, websocket_client_block
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):

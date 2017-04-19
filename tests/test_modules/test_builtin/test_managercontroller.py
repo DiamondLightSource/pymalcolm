@@ -4,12 +4,11 @@ import os
 
 # module imports
 from malcolm.compat import OrderedDict
-from malcolm.controllers.builtin.statefulcontroller import StatefulController
-from malcolm.controllers.builtin.managercontroller import ManagerController, \
-    ManagerStates
+from malcolm.modules.builtin.controllers import StatefulController, \
+    ManagerController, ManagerStates
 from malcolm.core import Process, Part, Table, Context, call_with_params
 from malcolm.modules.builtin.vmetas import StringMeta
-from malcolm.parts.builtin.childpart import ChildPart
+from malcolm.modules.builtin.parts import ChildPart
 
 
 class TestManagerStates(unittest.TestCase):

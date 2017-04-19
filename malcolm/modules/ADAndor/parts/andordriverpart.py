@@ -1,9 +1,9 @@
-from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
+from malcolm.modules.ADCore.parts import DetectorDriverPart
 
 
 class AndorDriverPart(DetectorDriverPart):
-    def post_configure(self, task, params):
-        task.put(self.child["acquirePeriod"],
-                 self.child.exposure + self.readout_time.value)
-        super(AndorDriverPart, self).post_configure(task, params)
-
+    def post_configure(self, context, params):
+        child = context.block_view(self.params.mri)
+        child.acquirePeriod.put_value(
+            child.exposure.value + self.readout_time.value)
+        super(AndorDriverPart, self).post_configure(context, params)

@@ -1,10 +1,8 @@
-from malcolm.controllers.scanning.runnablecontroller import \
-    RunnableController
 from malcolm.core import BadValueError, method_takes, serialize_object, \
     Update, deserialize_object, Subscribe, MethodModel, Unsubscribe
-from malcolm.infos.builtin.parametertweakinfo import ParameterTweakInfo
-from malcolm.parts.builtin.statefulchildpart import StatefulChildPart
-
+from malcolm.modules.builtin.infos import ParameterTweakInfo
+from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.scanning.controllers import RunnableController
 
 ss = RunnableController.stateSet
 
@@ -15,10 +13,13 @@ class RunnableChildPart(StatefulChildPart):
 
     def update_configure_args(self, response):
         # Decorate validate and configure with the sum of its parts
-        response = deserialize_object(response, Update)
-        configure_meta = deserialize_object(response.value, MethodModel)
-        self.method_models["validate"].recreate_from_others([configure_meta])
-        self.method_models["configure"].recreate_from_others([configure_meta])
+        if not isinstance(response, Update):
+            # Return or Error is the end of our subscription, log and ignore
+            self.log_debug("update_configure_args got response %r", response)
+            return
+        configure_model = deserialize_object(response.value, MethodModel)
+        self.method_models["validate"].recreate_from_others([configure_model])
+        self.method_models["configure"].recreate_from_others([configure_model])
         self.controller.update_configure_args()
 
     @RunnableController.Init

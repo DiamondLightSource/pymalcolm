@@ -1,8 +1,7 @@
 from malcolm.core import method_takes, REQUIRED
 from malcolm.modules.builtin.vmetas import StringMeta
-from malcolm.controllers.scanning import RunnableController
-from malcolm.parts.ADCore.datasetrunnablechildpart import \
-    DatasetRunnableChildPart
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.ADCore.parts import DatasetRunnableChildPart
 
 
 class FemChildPart(DatasetRunnableChildPart):

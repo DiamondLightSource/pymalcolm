@@ -7,7 +7,7 @@ import unittest
 from mock import MagicMock
 
 from malcolm.core import call_with_params, Context
-from malcolm.parts.pmac import RawMotorPart
+from malcolm.modules.pmac.parts import RawMotorPart
 
 
 class TestRawMotorPart(unittest.TestCase):

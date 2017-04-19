@@ -1,4 +1,4 @@
-from malcolm.parts.builtin.attributepart import AttributePart
+from malcolm.modules.builtin.parts.attributepart import AttributePart
 from malcolm.core import method_also_takes
 from malcolm.modules.builtin.vmetas import NumberMeta
 

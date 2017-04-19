@@ -6,31 +6,31 @@ import unittest
 from mock import Mock, ANY, patch, mock_open
 
 from malcolm.core import method_takes, REQUIRED
-from malcolm.controllers.builtin import BaseController
+from malcolm.modules.builtin.controllers import BaseController
 from malcolm.modules.builtin.vmetas import StringMeta
-from malcolm.parts.builtin.stringpart import StringPart
+from malcolm.modules.builtin.parts import StringPart
 from malcolm.yamlutil import make_block_creator, Section, make_include_creator
 
 include_yaml = """
-- parameters.string:
+- builtin.parameters.string:
     name: something
     description: my description
 
-- parts.builtin.StringPart:
+- builtin.parts.StringPart:
     name: scannable
     description: Scannable name for motor
     initialValue: $(something)
 """
 
 block_yaml = """
-- parameters.string:
+- builtin.parameters.string:
     name: something
     description: my description
 
-- controllers.builtin.BaseController:
+- builtin.controllers.BaseController:
     mri: some_mri
 
-- parts.builtin.StringPart:
+- builtin.parts.StringPart:
     name: scannable
     description: Scannable name for motor
     initialValue: $(something)
@@ -40,7 +40,7 @@ block_yaml = """
 class TestYamlUtil(unittest.TestCase):
 
     def test_all_yamls(self):
-        from malcolm.blocks.demo import hello_block
+        from malcolm.modules.demo.blocks import hello_block
         process = Mock()
         controller = hello_block(process, dict(mri="h"))
         assert isinstance(controller, BaseController)
@@ -74,7 +74,8 @@ class TestYamlUtil(unittest.TestCase):
         self.assertEqual(controller.parts["scannable"].params.initialValue,
                          "blah")
 
-    def test_instantiate(self):
+    @patch("importlib.import_module")
+    def test_instantiate(self, mock_import):
         @method_takes(
             "desc", StringMeta("description"), REQUIRED,
             "foo", StringMeta("optional thing"), "thing"
@@ -82,20 +83,21 @@ class TestYamlUtil(unittest.TestCase):
         def f(extra, params):
             return extra, 2, params.desc, params.foo
 
-        ca = Mock(CAPart=f)
-        parts = Mock(ca=ca)
-        section = Section("f", 1, "ca.CAPart", dict(desc="my name"))
-        result = section.instantiate({}, parts, "extra")
+        mock_import.return_value = Mock(MyPart=f)
+
+        section = Section("f", 1, "mymodule.parts.MyPart", dict(desc="my name"))
+        result = section.instantiate({}, "extra")
+        mock_import.assert_called_once_with("malcolm.modules.mymodule.parts")
         self.assertEqual(result, ("extra", 2, "my name", "thing"))
 
     def test_split_into_sections(self):
         filename = "/tmp/yamltest.yaml"
         with open(filename, "w") as f:
             f.write("""
-- parameters.string:
+- builtin.parameters.string:
     name: something
 
-- controllers.builtin.ManagerController:
+- builtin.controllers.ManagerController:
     mri: m
 """)
         sections = Section.from_yaml(filename)
@@ -105,9 +107,9 @@ class TestYamlUtil(unittest.TestCase):
             controllers=[ANY],
             parts=[],
             includes=[]), "yamltest")
-        assert sections[0]["parameters"][0].name == "string"
+        assert sections[0]["parameters"][0].name == "builtin.parameters.string"
         assert sections[0]["parameters"][0].param_dict == dict(name="something")
-        assert sections[0]["controllers"][0].name == "builtin.ManagerController"
+        assert sections[0]["controllers"][0].name == "builtin.controllers.ManagerController"
         assert sections[0]["controllers"][0].param_dict == dict(mri="m")
 
     def test_substitute_params(self):

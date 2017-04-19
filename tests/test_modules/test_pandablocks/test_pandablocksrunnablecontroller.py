@@ -8,13 +8,13 @@ import unittest
 from mock import call, Mock, patch, ANY
 
 from malcolm.core import call_with_params
-from malcolm.controllers.ADPandABlocks import PandABlocksRunnableController
-from malcolm.controllers.pandablocks.pandablocksclient import FieldData, \
-    BlockData
+from malcolm.modules.ADPandABlocks.controllers import PandABlocksRunnableController
+from malcolm.modules.pandablocks.controllers.pandablocksclient import \
+    FieldData, BlockData
 
 
 class PandABlocksManagerControllerTest(unittest.TestCase):
-    @patch("malcolm.controllers.pandablocks.pandablocksmanagercontroller.PandABlocksClient")
+    @patch("malcolm.modules.pandablocks.controllers.pandablocksmanagercontroller.PandABlocksClient")
     def setUp(self, mock_client):
         self.process = Mock()
         self.o = call_with_params(

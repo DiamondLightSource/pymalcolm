@@ -1,6 +1,7 @@
-from malcolm.controllers.scanning.runnablecontroller import RunnableController, configure_args
+from malcolm.modules.scanning.controllers import RunnableController, \
+    configure_args
 from malcolm.core import method_takes
-from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
+from malcolm.modules.ADCore.parts import DetectorDriverPart
 
 
 class XmapDriverPart(DetectorDriverPart):

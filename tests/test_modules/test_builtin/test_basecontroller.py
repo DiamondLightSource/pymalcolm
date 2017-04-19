@@ -2,7 +2,7 @@ import unittest
 from mock import Mock
 
 from malcolm.core import Part, Process
-from malcolm.controllers.builtin.basecontroller import BaseController
+from malcolm.modules.builtin.controllers import BaseController
 
 
 class MyPart(Part):

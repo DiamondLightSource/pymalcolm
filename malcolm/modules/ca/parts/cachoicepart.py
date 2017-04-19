@@ -1,7 +1,7 @@
 from cothread import catools
 
 from malcolm.modules.builtin.vmetas import ChoiceMeta
-from malcolm.parts.ca.capart import CAPart
+from .capart import CAPart
 
 
 class CAChoicePart(CAPart):

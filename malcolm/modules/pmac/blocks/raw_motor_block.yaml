@@ -1,31 +1,31 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mri
     description: Malcolm resource id of the Block
 
-- parameters.string:
+- builtin.parameters.string:
     name: prefix
     description: The root PV for the all records
 
-- parameters.string:
+- builtin.parameters.string:
     name: motorPrefix
     description: the root PV for the motor record (will eventually be prefix)
 
-- parameters.string:
+- builtin.parameters.string:
     name: scannable
     description: The scannable name for GDA of this motor
 
-- parameters.float64:
+- builtin.parameters.float64:
     name: velocitySettle
     description: Time in seconds for motor to settle at constant velocity
     default: 0.0
 
-- controllers.builtin.StatefulController:
+- builtin.controllers.StatefulController:
     mri: $(mri)
 
-- includes.pmac.motor_records:
+- pmac.includes.motor_records:
     prefix: $(motorPrefix)
 
-- parts.ca.CAStringPart:
+- ca.parts.CAStringPart:
     name: csPort
     description: CS asyn port name
     pv: $(prefix):CsPort
@@ -33,21 +33,21 @@
     widget: textinput
     inport: CS
 
-- parts.ca.CAStringPart:
+- ca.parts.CAStringPart:
     name: csAxis
     description: CS axis definition (like X, B, 0 or I)
     pv: $(prefix):CsAxis
     rbvSuff: _RBV
     widget: textinput
 
-- parts.builtin.StringPart:
+- builtin.parts.StringPart:
     name: scannable
     description: Scannable name for motor
     widget: textinput
     writeable: True
     initialValue: $(scannable)
 
-- parts.builtin.Float64Part:
+- builtin.parts.Float64Part:
     name: velocitySettle
     description: Time in seconds for motor to settle at constant velocity
     widget: textinput

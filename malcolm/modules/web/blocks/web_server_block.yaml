@@ -1,16 +1,16 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mri
     description: Malcolm resource id of the Block
 
-- parameters.int32:
+- builtin.parameters.int32:
     name: port
     description: Port number to run up under
     default: 8080
 
-- controllers.web.HTTPServerComms:
+- web.controllers.HTTPServerComms:
     mri: $(mri)
     port: $(port)
 
-- parts.web.RestfulServerPart:
+- web.parts.RestfulServerPart:
 
-- parts.web.WebsocketServerPart:
+- web.parts.WebsocketServerPart:

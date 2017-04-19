@@ -2,7 +2,7 @@ import pvaccess
 
 from malcolm.core import Loggable, Process, Queue, Get, Put, Post, Subscribe, \
     Error, ResponseError, Map
-from malcolm.controllers.builtin import ServerComms
+from malcolm.modules.builtin.controllers import ServerComms
 from .pvautil import dict_to_pv_object, value_for_pva_set
 
 

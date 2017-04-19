@@ -2,12 +2,11 @@ import os
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
-from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import REQUIRED, method_takes
-from malcolm.infos.ADCore.calculatedndattributedatasetinfo import \
-    CalculatedNDAttributeDatasetInfo
-from malcolm.parts.builtin import StatefulChildPart
+from malcolm.modules.ADCore.infos import CalculatedNDAttributeDatasetInfo
+from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.modules.scanning.controllers import RunnableController
 
 
 class StatsPluginPart(StatefulChildPart):

@@ -1,4 +1,4 @@
-from malcolm.parts.ca.capart import CAPart
+from .capart import CAPart
 
 
 class CAArrayPart(CAPart):

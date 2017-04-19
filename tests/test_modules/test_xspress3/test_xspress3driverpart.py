@@ -8,7 +8,7 @@ from mock import Mock, MagicMock, ANY, call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import call_with_params, Context
-from malcolm.parts.xspress3.xspress3driverpart import Xspress3DriverPart
+from malcolm.modules.xspress3.parts import Xspress3DriverPart
 
 
 class TestXspress3DetectorDriverPart(unittest.TestCase):

@@ -1,7 +1,7 @@
 from cothread import catools
 
 from malcolm.modules.builtin.vmetas import NumberArrayMeta
-from malcolm.parts.ca.caarraypart import CAArrayPart
+from .caarraypart import CAArrayPart
 
 
 class CALongArrayPart(CAArrayPart):

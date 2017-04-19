@@ -6,13 +6,13 @@ from collections import Counter
 import numpy as np
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED, method_also_takes
-from malcolm.infos.builtin import ParameterTweakInfo
-from malcolm.infos.pmac import MotorInfo
-from malcolm.parts.builtin import StatefulChildPart
+from malcolm.modules.builtin.infos import ParameterTweakInfo
+from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberMeta
-from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
+from malcolm.modules.pmac.infos import MotorInfo
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001

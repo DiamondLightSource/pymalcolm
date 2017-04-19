@@ -7,10 +7,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import unittest
 from mock import Mock
 
-from malcolm.modules.builtin.vmetas import BooleanMeta, ChoiceMeta, NumberMeta, StringMeta
-from malcolm.controllers.pandablocks.pandablocksclient import BlockData, \
-    FieldData
-from malcolm.parts.pandablocks.pandablocksmaker import PandABlocksMaker
+from malcolm.modules.builtin.vmetas import BooleanMeta, ChoiceMeta, \
+    NumberMeta, StringMeta
+from malcolm.modules.pandablocks.controllers.pandablocksclient import \
+    BlockData, FieldData
+from malcolm.modules.pandablocks.parts.pandablocksmaker import PandABlocksMaker
 
 
 class PandABoxBlockMakerTest(unittest.TestCase):

@@ -1,11 +1,11 @@
 import os
 
-from malcolm.controllers.scanning.runnablecontroller import RunnableController
 from malcolm.core import method_takes, REQUIRED, Update, \
     MethodModel, deserialize_object
-from malcolm.infos.ADCore.datasetproducedinfo import DatasetProducedInfo
-from malcolm.parts.scanning.runnablechildpart import RunnableChildPart
+from malcolm.modules.ADCore.infos import DatasetProducedInfo
 from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.scanning.parts import RunnableChildPart
 
 
 class DatasetRunnableChildPart(RunnableChildPart):

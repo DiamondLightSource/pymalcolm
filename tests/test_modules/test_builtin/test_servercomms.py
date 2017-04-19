@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import unittest
 
-from malcolm.controllers.builtin import ServerComms
+from malcolm.modules.builtin.controllers import ServerComms
 from malcolm.core import Process, call_with_params
 
 

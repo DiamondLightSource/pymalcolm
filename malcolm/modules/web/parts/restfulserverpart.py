@@ -1,10 +1,10 @@
 from tornado.web import RequestHandler, asynchronous
 
-from malcolm.controllers.web import HTTPServerComms
 from malcolm.core import method_takes, Part, json_decode, json_encode, Get, \
     Post, Return, Error
-from malcolm.infos.web import HandlerInfo
 from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.modules.web.controllers import HTTPServerComms
+from malcolm.modules.web.infos import HandlerInfo
 
 
 class RestfulHandler(RequestHandler):

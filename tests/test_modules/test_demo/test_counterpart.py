@@ -9,7 +9,7 @@ import setup_malcolm_paths
 
 import unittest
 
-from malcolm.parts.demo import CounterPart
+from malcolm.modules.demo.parts import CounterPart
 from malcolm.core import call_with_params
 
 

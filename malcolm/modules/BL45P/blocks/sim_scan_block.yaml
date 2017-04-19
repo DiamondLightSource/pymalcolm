@@ -1,23 +1,23 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mri
     description: MRI for created block
 
-- parameters.string:
+- builtin.parameters.string:
     name: sim
     description: MRI for sim object
 
-- parameters.string:
+- builtin.parameters.string:
     name: configDir
     description: Where to store saved configs
 
-- controllers.scanning.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mri)
     configDir: $(configDir)
     axesToMove: [stagex, stagey]
 
-- parts.ADCore.DatasetTablePart:
+- ADCore.parts.DatasetTablePart:
     name: DSET
 
-- parts.ADCore.DatasetRunnableChildPart:
+- ADCore.parts.DatasetRunnableChildPart:
     name: SIM
     mri: $(sim)

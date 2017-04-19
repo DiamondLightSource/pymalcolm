@@ -1,6 +1,6 @@
 import pvaccess
 
-from malcolm.controllers.builtin import ClientComms
+from malcolm.modules.builtin.controllers import ClientComms
 from malcolm.core import Request, Get, Put, Post, Subscribe, Update, Return, \
     Error, Queue, deserialize_object, UnexpectedError, Unsubscribe, Delta
 from .pvautil import dict_to_pv_object

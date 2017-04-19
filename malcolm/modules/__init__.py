@@ -4,15 +4,22 @@ class Importer(object):
 
     def import_subpackages(self, path):
         import os
-        import importlib
         dirname = os.path.join(os.path.dirname(__file__), *path)
         for f in os.listdir(dirname):
             if os.path.isdir(os.path.join(dirname, f)):
-                name = ".".join(path + [f])
-                self.update_dict[name] = importlib.import_module(
-                    "malcolm.modules.%s" % name)
-                # Try the import of subpackages too
-                self.import_subpackages(path + [f])
+                self.try_import_path(path + [f])
+
+    def try_import_path(self, path):
+        import importlib
+        name = ".".join(path)
+        try:
+            self.update_dict[name] = importlib.import_module(
+                "malcolm.modules.%s" % name)
+        except ImportError:
+            import logging
+            logging.info("Importing %s failed", name, exc_info=True)
+        # Try the import of subpackages too
+        self.import_subpackages(path)
 
     def prepare(self, globals_d):
         self.import_subpackages([])

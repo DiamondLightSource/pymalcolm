@@ -4,4 +4,4 @@ try:
     from .scantickerpart import ScanTickerPart
 except ImportError:
     import logging
-    logging.warning("Can't import ScanTickerPart", exc_info=True)
+    logging.info("Can't import ScanTickerPart", exc_info=True)

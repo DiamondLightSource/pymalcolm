@@ -71,7 +71,7 @@ def make_process():
 
     if args.client:
         if args.client.startswith("ws://"):
-            from malcolm.controllers.web import WebsocketClientComms
+            from malcolm.modules.web.controllers import WebsocketClientComms
             hostname, port = args.client[5:].split(":")
             comms = call_with_params(
                 WebsocketClientComms, proc, mri=hostname, hostname=hostname,

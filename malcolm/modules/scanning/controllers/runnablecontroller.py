@@ -1,11 +1,12 @@
 from malcolm.core import method_takes, REQUIRED, method_also_takes, \
     method_writeable_in, Hook, AbortedError, MethodModel, Queue
-from malcolm.infos.builtin.parametertweakinfo import ParameterTweakInfo
-from malcolm.modules.builtin.vmetas import NumberMeta, StringArrayMeta
-from malcolm.vmetas.scanpointgenerator import PointGeneratorMeta
-from malcolm.controllers.builtin.managercontroller import ManagerStates, \
+from malcolm.modules.builtin.controllers import ManagerStates, \
     ManagerController
+from malcolm.modules.builtin.infos import ParameterTweakInfo
+from malcolm.modules.builtin.vmetas import NumberMeta, StringArrayMeta
+from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 from malcolm.tags import widget
+
 
 class RunnableStates(ManagerStates):
 

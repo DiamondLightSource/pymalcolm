@@ -1,13 +1,14 @@
 import time
 
 from malcolm.compat import OrderedDict
-from malcolm.controllers.builtin import BaseController, ManagerController
 from malcolm.core import method_also_takes, Queue, TimeoutError, \
     call_with_params
-from malcolm.parts.builtin import ChildPart
-from malcolm.parts.pandablocks.pandablocksmaker import PandABlocksMaker
+from malcolm.modules.builtin.controllers import BaseController, \
+    ManagerController
+from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.vmetas import BooleanMeta, TableMeta, StringMeta, \
     NumberMeta
+from malcolm.modules.pandablocks.parts.pandablocksmaker import PandABlocksMaker
 from .pandablocksclient import PandABlocksClient
 
 

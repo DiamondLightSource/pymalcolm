@@ -1,11 +1,12 @@
 from scanpointgenerator import LineGenerator, SpiralGenerator
 
 from malcolm.core import method_takes
-from malcolm.parts.scanning import RunnableChildPart
-from malcolm.controllers.scanning import RunnableController
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.scanning.parts import RunnableChildPart
 
 
 class BL08IScanCombinedPart(RunnableChildPart):
+    # TODO: needs rewriting for spg 2...
     def _get_range(self, params, name="X"):
         # Make some very specific assumptions about the generator
         search_name = "Sample%s" % name

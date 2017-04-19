@@ -1,32 +1,32 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mriPrefix
     description: Malcolm resource id of the Block and prefix for children
 
-- parameters.string:
+- builtin.parameters.string:
     name: pvPrefix
     description: PV prefix for driver and all plugins
 
-- parameters.string:
+- builtin.parameters.string:
     name: hostname
     description: Hostname of the box
     default: localhost
 
-- parameters.int32:
+- builtin.parameters.int32:
     name: port
     description: Port number of the server control
     default: 8888
 
-- parameters.string:
+- builtin.parameters.string:
     name: configDir
     description: Where to store saved configs
 
-- controllers.ADPandABlocks.PandABlocksRunnableController:
+- ADPandABlocks.controllers.PandABlocksRunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
     hostname: $(hostname)
     port: $(port)
     areaDetectorPrefix: $(pvPrefix):DRV
 
-- includes.ADCore.filewriting_collection:
+- ADCore.includes.filewriting_collection:
     pvPrefix: $(pvPrefix)
     mriPrefix: $(mriPrefix)
