@@ -69,21 +69,22 @@ def snake_to_camel(name):
 
 
 def serialize_object(o):
-    if hasattr(o, "to_dict"):
+    try:
         # This will do all the sub layers for us
         return o.to_dict()
-    elif isinstance(o, dict):
-        # Need to recurse down
-        d = OrderedDict()
-        for k, v in o.items():
-            d[k] = serialize_object(v)
-        return d
-    elif isinstance(o, list):
-        # Need to recurse down
-        return [serialize_object(x) for x in o]
-    else:
-        # Hope it's serializable!
-        return o
+    except AttributeError:
+        if isinstance(o, dict):
+            # Need to recurse down
+            d = OrderedDict()
+            for k, v in o.items():
+                d[k] = serialize_object(v)
+            return d
+        elif isinstance(o, list):
+            # Need to recurse down
+            return [serialize_object(x) for x in o]
+        else:
+            # Hope it's serializable!
+            return o
 
 
 def deserialize_object(ob, type_check=None):
@@ -171,13 +172,6 @@ class Serializable(object):
 
         inst = cls(**filtered)
         return inst
-
-    def set_endpoint_data(self, name, value):
-        """Called by subclass to set endpoint data"""
-        assert name in self.endpoints, \
-            "Endpoint %r not defined for %r" % (name, self)
-        setattr(self, name, value)
-        return value
 
     @classmethod
     def register_subclass(cls, typeid):

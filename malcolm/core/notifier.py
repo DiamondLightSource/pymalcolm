@@ -96,11 +96,13 @@ class Notifier(Loggable):
 class NotifierNode(object):
 
     # Define slots so it uses less resources to make these
-    __slots__ = ["requests", "children", "parent", "data"]
+    __slots__ = [
+        "delta_requests", "update_requests", "children", "parent", "data"]
 
     def __init__(self, data, parent=None):
         # [Subscribe]
-        self.requests = []
+        self.delta_requests = []
+        self.update_requests = []
         # {name: NotifierNode}
         self.children = {}
         # Leaf
@@ -122,17 +124,22 @@ class NotifierNode(object):
         ret = []
         child_changes = {}
         for change in changes:
+            # Add any changes that our children need to know about
             self._add_child_change(change, child_changes)
-        # If we have subscribers, serialize at this level
-        if self.requests:
-            for request in self.requests:
-                if request.delta:
-                    for change in changes:
-                        change[-1] = serialize_object(change[-1])
-                    ret.append(request.delta_response(changes))
-                else:
-                    ret.append(
-                        request.update_response(serialize_object(self.data)))
+
+        # If we have update subscribers, serialize at this level
+        if self.update_requests:
+            serialized = serialize_object(self.data)
+            for request in self.update_requests:
+                ret.append(request.update_response(serialized))
+
+        # If we have delta subscribers, serialize the changes
+        if self.delta_requests:
+            for change in changes:
+                change[-1] = serialize_object(change[-1])
+            for request in self.delta_requests:
+                ret.append(request.delta_response(changes))
+
         # Now notify our children
         for name, child_changes in child_changes.items():
             ret += self.children[name].notify_changes(child_changes)
@@ -202,11 +209,12 @@ class NotifierNode(object):
             ret += self.children[name].handle_subscribe(request, path[1:])
         else:
             # This is for us
-            self.requests.append(request)
             serialized = serialize_object(self.data)
             if request.delta:
+                self.delta_requests.append(request)
                 ret.append(request.delta_response([[[], serialized]]))
             else:
+                self.update_requests.append(request)
                 ret.append(request.update_response(serialized))
         return ret
 
@@ -225,10 +233,14 @@ class NotifierNode(object):
             name = path[0]
             child = self.children[name]
             ret += child.handle_unsubscribe(request, path[1:])
-            if not child.children and not child.requests:
+            if not child.children and not child.update_requests \
+                    and not child.delta_requests:
                 del self.children[name]
         else:
             # This is for us
-            self.requests.remove(request)
+            if request in self.update_requests:
+                self.update_requests.remove(request)
+            else:
+                self.delta_requests.remove(request)
             ret.append(request.return_response())
         return ret

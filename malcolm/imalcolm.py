@@ -28,9 +28,9 @@ def make_process():
         "disable_existing_loggers": False,
 
         "formatters": {
-            # "simple": {
-            #     "format": "%(message)s"
-            # },
+            "simple": {
+                "format": "%(message)s"
+            },
             "extended": {
                 "format": "%(asctime)s - %(levelname)6s - %(name)s\n"
                           "    %(message)s"
@@ -38,12 +38,12 @@ def make_process():
         },
 
         "handlers": {
-            # "console": {
-            #     "class": "logging.StreamHandler",
-            #     "level": "DEBUG",
-            #     "formatter": "simple",
-            #     "stream": "ext://sys.stdout"
-            # },
+            "console": {
+                "class": "logging.StreamHandler",
+                "level": "WARNING",
+                "formatter": "simple",
+                "stream": "ext://sys.stdout"
+            },
 
             # "local_file_handler": {
             #     "class": "logging.handlers.RotatingFileHandler",
@@ -89,7 +89,7 @@ def make_process():
 
         "root": {
             "level": "DEBUG",
-            "handlers": ["graylog_gelf"],
+            "handlers": ["graylog_gelf", "console"],
         }
     }
 

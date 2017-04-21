@@ -2,7 +2,7 @@ from .statefulcontroller import StatefulController
 
 
 class ClientComms(StatefulController):
-    """Abstract class for dispatching requests to a server and resonses to
+    """Abstract class for dispatching requests to a server and responses to
     a method"""
 
     def send_to_server(self, request):

@@ -168,7 +168,7 @@ class TestRunnableController(unittest.TestCase):
     def test_resume_in_run(self):
         self.prepare_half_run(duration=0.5)
         f = self.b.run_async()
-        self.context.sleep(0.55)
+        self.context.sleep(0.75)
         self.b.pause()
         self.checkState(self.ss.PAUSED)
         self.checkSteps(2, 1, 6)
@@ -176,7 +176,7 @@ class TestRunnableController(unittest.TestCase):
         # Parent should be running, child won't have got request yet
         then = time.time()
         self.checkState(self.ss.RUNNING, child=False)
-        self.context.wait_all_futures(f)
+        self.context.wait_all_futures(f, timeout=2)
         now = time.time()
         self.checkState(self.ss.ARMED)
         self.checkSteps(4, 2, 6)

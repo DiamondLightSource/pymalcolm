@@ -288,8 +288,10 @@ class ManagerController(StatefulController):
 
     def _update_block_endpoints(self):
         if self._current_part_fields:
-            for name, _, _ in self._current_part_fields:
+            for name, child, _ in self._current_part_fields:
                 self._block.remove_endpoint(name)
+                for state, state_writeable in self._children_writeable.items():
+                    state_writeable.pop(child, None)
         self._current_part_fields = tuple(self._get_current_part_fields())
         for name, child, writeable_func in self._current_part_fields:
             self.add_block_field(name, child, writeable_func)

@@ -20,6 +20,11 @@ class MapMeta(Meta):
         self.elements = self.set_elements(elements)
         self.required = self.set_required(required)
 
+    def set_notifier_path(self, notifier, path):
+        super(MapMeta, self).set_notifier_path(notifier, path)
+        for k, v in self.elements.items():
+            v.set_notifier_path(notifier, self.path + ["elements", k])
+
     def set_elements(self, elements):
         """Set the elements dict from a serialized dict"""
         deserialized = OrderedDict()
@@ -27,6 +32,12 @@ class MapMeta(Meta):
             if k != "typeid":
                 k = deserialize_object(k, str_)
                 deserialized[k] = deserialize_object(v, VMeta)
+        if hasattr(self, "elements"):
+            # Stop old elements notifying
+            for k, v in self.elements.items():
+                v.set_notifier_path(None, ())
+        for k, v in deserialized.items():
+            v.set_notifier_path(self.notifier, self.path + ["elements", k])
         return self.set_endpoint_data("elements", deserialized)
 
     def set_required(self, required):

@@ -12,6 +12,9 @@ class Request(Serializable):
     """Request object that registers a callback for when action is complete."""
 
     endpoints = ["id"]
+    __slots__ = endpoints
+
+    id = None
     callback = None
 
     def __init__(self, id=None, callback=None):
@@ -22,7 +25,7 @@ class Request(Serializable):
 
         callback(response) will be called when the request is completed
         """
-        self.id = self.set_id(id)
+        self.set_id(id)
         self.set_callback(callback)
 
     def set_id(self, id):
@@ -33,7 +36,7 @@ class Request(Serializable):
         """
         if id is not None:
             id = deserialize_object(id, int)
-        return self.set_endpoint_data("id", id)
+        self.id = id
 
     def set_callback(self, callback):
         """Set the callback to be called on response"""
@@ -73,6 +76,9 @@ class PathRequest(Request):
     """Create a Get Request object"""
 
     endpoints = ["id", "path"]
+    __slots__ = endpoints
+
+    path = None
 
     def __init__(self, id=None, path=None, callback=None):
         """
@@ -82,7 +88,7 @@ class PathRequest(Request):
             callback (function): Callback for when the response is available
         """
         super(PathRequest, self).__init__(id, callback)
-        self.path = self.set_path(path)
+        self.set_path(path)
 
     def set_path(self, path):
         """Set the path to the endpoint to operate on
@@ -90,8 +96,7 @@ class PathRequest(Request):
         Args:
             path (list): [`str`] Path to target Block substructure
         """
-        path = [deserialize_object(e, str_) for e in path]
-        return self.set_endpoint_data("path", path)
+        self.path = [deserialize_object(e, str_) for e in path]
 
 
 @Serializable.register_subclass("malcolm:core/Get:1.0")
@@ -104,6 +109,9 @@ class Put(PathRequest):
     """Create a Put Request object"""
 
     endpoints = ["id", "path", "value"]
+    __slots__ = endpoints
+
+    value = None
 
     def __init__(self, id=None, path=(), value=None, callback=None):
         """
@@ -114,7 +122,7 @@ class Put(PathRequest):
             callback (function): Callback for when the response is available
         """
         super(Put, self).__init__(id, path, callback)
-        self.value = self.set_value(value)
+        self.set_value(value)
 
     def set_value(self, value):
         """Value to Put to endpoint
@@ -122,8 +130,7 @@ class Put(PathRequest):
         Args:
             value: Value to put to path
         """
-        value = serialize_object(value)
-        return self.set_endpoint_data("value", value)
+        self.value = serialize_object(value)
 
 
 @Serializable.register_subclass("malcolm:core/Post:1.0")
@@ -131,6 +138,9 @@ class Post(PathRequest):
     """Create a Post Request object"""
 
     endpoints = ["id", "path", "parameters"]
+    __slots__ = endpoints
+
+    parameters = None
 
     def __init__(self, id=None, path=(), parameters=None, callback=None):
         """
@@ -141,7 +151,7 @@ class Post(PathRequest):
             callback (function): Callback for when the response is available
         """
         super(Post, self).__init__(id, path, callback)
-        self.parameters = self.set_parameters(parameters)
+        self.set_parameters(parameters)
 
     def set_parameters(self, parameters):
         """Parameters to Post to endpoint
@@ -153,7 +163,7 @@ class Post(PathRequest):
             parameters = OrderedDict(
                 (deserialize_object(k, str_), serialize_object(v))
                 for k, v in parameters.items())
-        return self.set_endpoint_data("parameters", parameters)
+        self.parameters = parameters
 
 
 @Serializable.register_subclass("malcolm:core/Subscribe:1.0")
@@ -161,6 +171,9 @@ class Subscribe(PathRequest):
     """Create a Subscribe Request object"""
 
     endpoints = ["id", "path", "delta"]
+    __slots__ = endpoints
+
+    delta = None
 
     def __init__(self, id=None, path=(), delta=False, callback=None):
         """Args:
@@ -171,7 +184,7 @@ class Subscribe(PathRequest):
         """
 
         super(Subscribe, self).__init__(id, path, callback)
-        self.delta = self.set_delta(delta)
+        self.set_delta(delta)
 
     def set_delta(self, delta):
         """Whether to ask for delta responses or not
@@ -179,8 +192,7 @@ class Subscribe(PathRequest):
         Args:
             delta: If true then request Delta responses, otherwise Update
         """
-        delta = deserialize_object(delta, bool)
-        return self.set_endpoint_data("delta", delta)
+        self.delta = deserialize_object(delta, bool)
 
     def update_response(self, value):
         """Create an Update Response object to handle the request

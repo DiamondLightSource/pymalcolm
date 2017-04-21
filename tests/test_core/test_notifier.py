@@ -49,7 +49,8 @@ class TestNotifier(unittest.TestCase):
             path=["b", "attr", "value"], delta=False, callback=Mock())
         self.handle_subscribe(request)
         self.assertEqual(
-            self.o._tree.children["attr"].children["value"].requests, [request])
+            self.o._tree.children["attr"].children["value"].update_requests,
+            [request])
         request.callback.assert_called_once_with(Update(value=None))
         request.callback.reset_mock()
         # set data and check response

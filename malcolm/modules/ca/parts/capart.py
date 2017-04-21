@@ -94,8 +94,6 @@ class CAPart(AttributePart):
         self.update_value(value)
 
     def update_value(self, value):
-        alarm = None
-        ts = None
         if not value.ok:
             alarm = Alarm.invalid("PV disconnected")
             ts = TimeStamp()
@@ -105,8 +103,9 @@ class CAPart(AttributePart):
                 alarm = Alarm(severity=value.severity,
                               status=AlarmStatus.RECORD_STATUS,
                               message="PV in alarm state")
-            if hasattr(value, "raw_stamp"):
-                # We only have a raw_stamp attr on monitor, the initial
-                # caget with CTRL doesn't give us a timestamp
-                ts = TimeStamp(*value.raw_stamp)
-        self.attr.set_value(value, set_alarm_ts=True, alarm=alarm, ts=ts)
+            else:
+                alarm = Alarm.ok
+            # We only have a raw_stamp attr on monitor, the initial
+            # caget with CTRL doesn't give us a timestamp
+            ts = TimeStamp(*getattr(value, "raw_stamp", (None, None)))
+        self.attr.set_value_alarm_ts(value, alarm, ts)

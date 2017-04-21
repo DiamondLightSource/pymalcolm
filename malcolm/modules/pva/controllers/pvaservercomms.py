@@ -230,12 +230,12 @@ class PvaMonitorImplementation(PvaGetImplementation):
                 new_value = value_for_pva_set(change[1])
                 # Don't update on the first change if all is the same
                 if not self._do_update:
-                    if self._pv_structure[field_path] != new_value:
+                    if self._pv_structure[field_path] == new_value:
                         continue
                     else:
                         self._do_update = True
                 self._pv_structure[field_path] = new_value
-        if not self._do_update:
+        if self._do_update is False:
             # First update gave us not changes, but unconditionally update from
             # now on
             self._do_update = True

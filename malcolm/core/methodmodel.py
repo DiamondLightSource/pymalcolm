@@ -25,12 +25,20 @@ class MethodModel(Meta):
         self.returns = self.set_returns(returns)
         self.defaults = self.set_defaults(defaults)
 
+    def set_notifier_path(self, notifier, path):
+        super(MethodModel, self).set_notifier_path(notifier, path)
+        for endpoint in ["takes", "returns"]:
+            self[endpoint].set_notifier_path(notifier, self.path + [endpoint])
+
     def set_takes(self, takes):
         """Set the takes MapMeta"""
         if takes is None:
             takes = MapMeta()
         else:
             takes = deserialize_object(takes, MapMeta)
+        if hasattr(self, "takes"):
+            self.takes.set_notifier_path(None, ())
+        takes.set_notifier_path(self.notifier, self.path + ["takes"])
         return self.set_endpoint_data("takes", takes)
 
     def set_defaults(self, defaults):
@@ -49,6 +57,9 @@ class MethodModel(Meta):
             returns = MapMeta()
         else:
             returns = deserialize_object(returns, MapMeta)
+        if hasattr(self, "returns"):
+            self.returns.set_notifier_path(None, ())
+        returns.set_notifier_path(self.notifier, self.path + ["returns"])
         return self.set_endpoint_data("returns", returns)
 
     def prepare_call_args(self, **param_dict):

@@ -16,6 +16,11 @@ class BlockModel(Model):
         self.endpoints = []
         self.meta = self.set_endpoint_data("meta", BlockMeta())
 
+    def set_notifier_path(self, notifier, path):
+        super(BlockModel, self).set_notifier_path(notifier, path)
+        for endpoint in self.endpoints:
+            self[endpoint].set_notifier_path(notifier, self.path + [endpoint])
+
     def set_endpoint_data(self, name, value):
         name = deserialize_object(name, str_)
         if name == "meta":
@@ -23,9 +28,15 @@ class BlockModel(Model):
         else:
             value = deserialize_object(value, (AttributeModel, MethodModel))
         with self.notifier.changes_squashed:
-            if name not in self.endpoints:
+            if name in self.endpoints:
+                # Stop the old endpoint notifying
+                self[name].set_notifier_path(None, ())
+            else:
                 self.endpoints.append(name)
-            super(BlockModel, self).set_endpoint_data(name, value)
+            value.set_notifier_path(self.notifier, self.path + [name])
+            setattr(self, name, value)
+            # Tell the notifier what changed
+            self.notifier.add_squashed_change(self.path + [name], value)
             self._update_fields()
         return value
 
@@ -34,6 +45,7 @@ class BlockModel(Model):
 
     def remove_endpoint(self, name):
         with self.notifier.changes_squashed:
+            self[name].set_notifier_path(None, ())
             self.endpoints.remove(name)
             delattr(self, name)
             self._update_fields()

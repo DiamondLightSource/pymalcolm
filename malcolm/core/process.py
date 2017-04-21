@@ -10,7 +10,7 @@ from .errors import WrongThreadError
 
 
 class Process(Loggable):
-    """Hosts a number of Blocks, distributing requests between them"""
+    """Hosts a number of Controllers and provides spawn capabilities"""
 
     Init = Hook()
     """Called at start() to start all child controllers"""

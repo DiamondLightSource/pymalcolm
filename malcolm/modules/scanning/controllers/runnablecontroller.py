@@ -1,5 +1,8 @@
+import time
+
 from malcolm.core import method_takes, REQUIRED, method_also_takes, \
-    method_writeable_in, Hook, AbortedError, MethodModel, Queue
+    method_writeable_in, Hook, AbortedError, MethodModel, Queue, \
+    call_with_params, TimeoutError
 from malcolm.modules.builtin.controllers import ManagerStates, \
     ManagerController
 from malcolm.modules.builtin.infos import ParameterTweakInfo
@@ -205,7 +208,10 @@ class RunnableController(ManagerController):
 
     # Progress reporting dict
     # {part: completed_steps for that part}
-    progress_reporting = None
+    progress_updates = None
+
+    # And a Queue so it can be stopped
+    stop_progress_queue = None
 
     # Queue so that do_run can wait to see why it was aborted and resume if
     # needed
@@ -332,8 +338,6 @@ class RunnableController(ManagerController):
             params.generator, params.axesToMove)
         # Get any status from all parts
         part_info = self.run_hook(self.ReportStatus, self.part_contexts)
-        # Reset the progress of all child parts
-        self.progress_reporting = {}
         # Run the configure command on all parts, passing them info from
         # ReportStatus. Parts should return any reporting info for PostConfigure
         completed_steps = 0
@@ -345,6 +349,9 @@ class RunnableController(ManagerController):
         self.run_hook(self.PostConfigure, self.part_contexts, part_info)
         # Update the completed and configured steps
         self.configured_steps.set_value(steps_to_do)
+        # Reset the progress of all child parts
+        self.progress_updates = {}
+        self.stop_progress_queue = Queue()
         self.resume_queue = Queue()
 
     def _get_steps_per_run(self, generator, axes_to_move):
@@ -370,8 +377,37 @@ class RunnableController(ManagerController):
             next_state = ss.ARMED
         else:
             next_state = ss.READY
-        self.try_stateful_function(
-            ss.RUNNING, next_state, self._call_do_run)
+        s = self.spawn(self._progress_update_loop)
+        try:
+            self.try_stateful_function(
+                ss.RUNNING, next_state, self._call_do_run)
+        finally:
+            self.stop_progress_queue.put(None)
+            s.wait()
+
+    def _calculate_completed_steps(self):
+        with self._lock:
+            # Update
+            if self.progress_updates:
+                min_completed_steps = min(self.progress_updates.values())
+                if min_completed_steps > self.completed_steps.value:
+                    self.completed_steps.set_value(min_completed_steps)
+
+    def _progress_update_loop(self):
+        next_poll = time.time()
+        while True:
+            next_poll += 0.1
+            timeout = next_poll - time.time()
+            # Wait for a bit
+            try:
+                self.stop_progress_queue.get(timeout)
+            except TimeoutError:
+                # Consume updates and continue
+                self._calculate_completed_steps()
+            else:
+                # Consume the rest of the progress updates and stop
+                self._calculate_completed_steps()
+                return
 
     def _call_do_run(self):
         hook = self.Run
@@ -405,11 +441,9 @@ class RunnableController(ManagerController):
             self.run_hook(self.PostRunIdle, self.part_contexts)
 
     def update_completed_steps(self, completed_steps, part):
-        # This is run in the child thread, so make sure it is thread safe
-        self.progress_reporting[part] = completed_steps
-        min_completed_steps = min(self.progress_reporting.values())
-        if min_completed_steps > self.completed_steps.value:
-            self.completed_steps.set_value(min_completed_steps)
+        # This is run in the child thread
+        with self._lock:
+            self.progress_updates[part] = completed_steps
 
     @method_writeable_in(
         ss.READY, ss.CONFIGURING, ss.ARMED, ss.RUNNING, ss.POSTRUN, ss.PAUSED,
@@ -431,9 +465,7 @@ class RunnableController(ManagerController):
             self.resume_queue.put(False)
 
     def set_completed_steps(self, completed_steps):
-        args = self.pause.MethodModel.prepare_call_args(
-            completedSteps=completed_steps)
-        self.pause(*args)
+        call_with_params(self.pause, completedSteps=completed_steps)
 
     @method_writeable_in(ss.ARMED, ss.PAUSED, ss.RUNNING)
     @method_takes("completedSteps", NumberMeta(
@@ -469,3 +501,11 @@ class RunnableController(ManagerController):
         self.transition(ss.RUNNING)
         self.resume_queue.put(True)
         # self._call_do_run will now take over
+
+    def do_disable(self):
+        # Abort anything that is currently running
+        for context in self.part_contexts.values():
+            context.stop()
+        if self.resume_queue:
+            self.resume_queue.put(False)
+        super(RunnableController, self).do_disable()

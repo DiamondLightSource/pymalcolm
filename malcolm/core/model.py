@@ -3,27 +3,6 @@ from contextlib import contextmanager
 from .serializable import Serializable
 
 
-def set_notifier_path(o, notifier, notifier_path):
-    """Set notifier path recursively on object
-
-    Args:
-        o (Model): The object to start with
-        notifier (Notifier): The notifier to set
-        notifier_path (list): The path to get to this object from block
-    """
-    if isinstance(o, dict):
-        # Need to recurse down
-        for k, v in o.items():
-            set_notifier_path(v, notifier, notifier_path + [k])
-    elif isinstance(o, list):
-        # Need to recurse down
-        for i, v in enumerate(o):
-            set_notifier_path(v, notifier, notifier_path + [i])
-    elif hasattr(o, "set_notifier_path"):
-        # This will do all the sub layers for us
-        o.set_notifier_path(notifier, notifier_path)
-
-
 class DummyNotifier(object):
     @property
     @contextmanager
@@ -34,7 +13,7 @@ class DummyNotifier(object):
         pass
 
 
-class Model(Serializable):  # Loggable?
+class Model(Serializable):
     notifier = DummyNotifier()
     path = []
 
@@ -47,20 +26,15 @@ class Model(Serializable):  # Loggable?
         """
         self.notifier = notifier
         self.path = list(path)
-        #self.set_logger_suffix(*self.path)
-        for endpoint in self.endpoints:
-            set_notifier_path(self[endpoint], notifier, self.path + [endpoint])
 
     def set_endpoint_data(self, name, value):
         with self.notifier.changes_squashed:
-            # Set the notifier for the child
-            if self.path:
-                path = self.path + [name]
-                set_notifier_path(value, self.notifier, path)
-                # Tell the notifier what changed
-                self.notifier.add_squashed_change(path, value)
             # Actually set the attribute
-            super(Model, self).set_endpoint_data(name, value)
+            assert name in self.endpoints, \
+                "Endpoint %r not defined for %r" % (name, self)
+            setattr(self, name, value)
+            # Tell the notifier what changed
+            self.notifier.add_squashed_change(self.path + [name], value)
         return value
 
 
