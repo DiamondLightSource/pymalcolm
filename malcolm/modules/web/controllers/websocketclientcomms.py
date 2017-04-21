@@ -111,7 +111,7 @@ class WebsocketClientComms(ClientComms):
             message(str): Received message
         """
         try:
-            self.log_debug("Got message %s", message)
+            self.log.debug("Got message %s", message)
             d = json_decode(message)
             response = deserialize_object(d, Response)
             if isinstance(response, (Return, Error)):
@@ -126,7 +126,7 @@ class WebsocketClientComms(ClientComms):
         except Exception:
             # If we don't catch the exception here, tornado will spew odd
             # error messages about 'HTTPRequest' object has no attribute 'path'
-            self.log_exception("on_message(%r) failed", message)
+            self.log.exception("on_message(%r) failed", message)
 
     def send_to_server(self, request):
         """Dispatch a request to the server
@@ -154,5 +154,5 @@ class WebsocketClientComms(ClientComms):
 
     def _send_request(self, request):
         message = json_encode(request)
-        self.log_debug("Sending message %s", message)
+        self.log.debug("Sending message %s", message)
         self._conn.write_message(message)

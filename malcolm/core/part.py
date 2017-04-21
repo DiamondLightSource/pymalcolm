@@ -14,12 +14,10 @@ class Part(Loggable):
         self.use_cothread = False
         self.process = None
         self.name = name
-        self.set_logger_name(name)
         self.method_models = {}
 
     def attach_to_controller(self, controller):
-        self.set_logger_name("%s(%s.%s)" % (
-            type(self).__name__, controller.mri, self.name))
+        self.set_logger_extra(mri=controller.mri, part=self.name)
         self.controller = controller
         self.process = controller.process
         self.use_cothread = controller.use_cothread

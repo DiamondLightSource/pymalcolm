@@ -34,7 +34,7 @@ class TestMethod(unittest.TestCase):
         self.part = MyPart("test_part")
         self.controller = MyController(self.process, "mri", [self.part])
         self.process.add_controller("mri", self.controller)
-        self.context = Context("Context", self.process)
+        self.context = Context(self.process)
         self.block = self.controller.make_view(self.context)
         self.process.start()
         self.process.my_method_executed = False

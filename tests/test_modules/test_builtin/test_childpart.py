@@ -98,7 +98,7 @@ class TestChildPart(unittest.TestCase):
             'partchild3.outportConnector'))
 
     def test_report_ports(self):
-        context = Context("c", self.p)
+        context = Context(self.p)
         ports = self.p1.report_ports(context)
         self.assertEqual(len(ports), 2)
         self.assertEqual(ports[0].direction, "in")
@@ -160,7 +160,7 @@ class TestChildPart(unittest.TestCase):
 
     def test_load_save(self):
         b1 = self.c1.block_view()
-        context = Context("c", self.p)
+        context = Context(self.p)
         structure1 = self.p1.save(context)
         expected = dict(inportConnector="")
         assert structure1 == expected

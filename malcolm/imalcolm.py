@@ -4,8 +4,11 @@ def make_process():
     import sys
     import threading
     import argparse
-    import logging
-    from os import environ
+    import logging.config
+    import os
+    import getpass
+    import json
+    from ruamel import yaml
 
     parser = argparse.ArgumentParser(
         description="Interactive shell for malcolm")
@@ -13,28 +16,102 @@ def make_process():
         '--client', '-c',
         help="Add a client to given server, like ws://localhost:8080 or pva")
     parser.add_argument(
-        '--log', default="INFO",
-        help="Lowest level of logs to see. One of: ERROR, WARNING, INFO, DEBUG "
-        "Default is INFO")
+        '--logcfg', help="Logging dict config in JSON or YAML file")
     parser.add_argument(
         'yaml', nargs="?",
         help="The YAML file containing the blocks to be loaded"
     )
     args = parser.parse_args()
-    # assuming loglevel is bound to the string value obtained from the
-    # command line argument. Convert to upper case to allow the user to
-    # specify --log=DEBUG or --log=debug
-    numeric_level = getattr(logging, args.log.upper(), None)
-    if not isinstance(numeric_level, int):
-        raise ValueError('Invalid log level: %s' % args.log)
-    logging.basicConfig(level=numeric_level)
+
+    log_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+
+        "formatters": {
+            # "simple": {
+            #     "format": "%(message)s"
+            # },
+            "extended": {
+                "format": "%(asctime)s - %(levelname)6s - %(name)s\n"
+                          "    %(message)s"
+            },
+        },
+
+        "handlers": {
+            # "console": {
+            #     "class": "logging.StreamHandler",
+            #     "level": "DEBUG",
+            #     "formatter": "simple",
+            #     "stream": "ext://sys.stdout"
+            # },
+
+            # "local_file_handler": {
+            #     "class": "logging.handlers.RotatingFileHandler",
+            #     "level": "DEBUG",
+            #     "formatter": "extended",
+            #     "filename": "debug.log",
+            #     "maxBytes": 1048576,
+            #     "backupCount": 20,
+            #     "encoding": "utf8"
+            # },
+
+            "graylog_gelf": {
+                "class": "pygelf.GelfUdpHandler",
+                # Obviously a DLS-specific configuration: the graylog server
+                # address and port
+                "host": "cs04r-sc-serv-14.diamond.ac.uk",
+                "port": 12202,
+                "debug": True,
+                "level": "DEBUG",
+                #  The following custom fields will be disabled if setting this
+                # False
+                "include_extra_fields": True,
+                "username": getpass.getuser(),
+                "pid": os.getpid()
+            }
+        },
+
+
+        # "loggers": {
+        #     # Fine-grained logging configuration for individual modules or
+        #     # classes
+        #     # Use this to set different log levels without changing 'real' code.
+        #     "myclasses": {
+        #         "level": "DEBUG",
+        #         "propagate": True
+        #     },
+        #     "usermessages": {
+        #         "level": "INFO",
+        #         "propagate": True,
+        #         "handlers": ["console"]
+        #     }
+        # },
+
+        "root": {
+            "level": "DEBUG",
+            "handlers": ["graylog_gelf"],
+        }
+    }
+
+    if args.logcfg:
+        with open(args.logcfg) as f:
+            text = f.read()
+        if args.logcfg.endswith(".json"):
+            file_config = json.loads(text)
+        else:
+            file_config = yaml.load(text, Loader=yaml.RoundTripLoader)
+        if file_config:
+            log_config = file_config
+    logging.config.dictConfig(log_config)
+
+    from pygelf import GelfUdpHandler
 
     def gui(block):
         global opener
         opener.open_gui(block, proc)
 
     try:
-        environ['DISPLAY']
+        os.environ['DISPLAY']
         # If this environment variable doesn't exist then there is probably no
         # X server for us to talk to.
     except KeyError:
@@ -81,7 +158,7 @@ def make_process():
             raise ValueError(
                 "Don't know how to create client to %s" % args.client)
 
-    context = Context("IMalcolmContext", proc)
+    context = Context(proc)
     if qt_thread:
         qt_thread.start()
     proc.start()
@@ -128,7 +205,7 @@ if __name__ == "__main__":
     from pkg_resources import require
 
     require("tornado", "numpy", "cothread", "ruamel.yaml",
-            "scanpointgenerator", "plop")
+            "scanpointgenerator", "plop", "pygelf")
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "scanpointgenerator"))
     sys.path.append(
         "/dls_sw/work/R3.14.12.3/support/pvaPy/lib/python/2.7/linux-x86_64")

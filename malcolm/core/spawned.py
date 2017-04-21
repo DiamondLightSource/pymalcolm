@@ -4,6 +4,9 @@ import thread
 from malcolm.compat import maybe_import_cothread
 from .queue import Queue
 
+# Create a module level logger
+log = logging.getLogger(__name__)
+
 
 class Spawned(object):
     NO_RESULT = object()
@@ -21,7 +24,7 @@ class Spawned(object):
             try:
                 result = function(*args, **kwargs)
             except Exception as result:
-                logging.debug(
+                log.debug(
                     "Exception calling %s(*%s, **%s)", function, args, kwargs,
                     exc_info=True)
             self._result_queue.put(result)

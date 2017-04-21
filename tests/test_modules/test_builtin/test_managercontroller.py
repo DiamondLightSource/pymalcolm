@@ -156,7 +156,7 @@ class TestManagerController(unittest.TestCase):
         self.assertEqual(self.c.parts['part2'].x, 10)
 
     def test_set_export_parts(self):
-        context = Context("c", self.p)
+        context = Context(self.p)
         b = context.block_view("mainBlock")
         assert list(b) == [
             'meta',

@@ -6,4 +6,4 @@
     mri: $(mri)
 
 - demo.parts.CounterPart:
-    name: counter_block
+    name: counter

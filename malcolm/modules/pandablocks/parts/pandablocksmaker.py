@@ -1,5 +1,5 @@
 from malcolm.compat import OrderedDict
-from malcolm.core import Loggable, call_with_params
+from malcolm.core import call_with_params
 from malcolm.modules.builtin.parts import ChoicePart
 from malcolm.tags import widget, group, inport, outport, config
 from malcolm.modules.builtin.vmetas import BooleanMeta, NumberMeta, StringMeta, \
@@ -45,9 +45,8 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
     return meta
 
 
-class PandABlocksMaker(Loggable):
+class PandABlocksMaker(object):
     def __init__(self, client, block_name, block_data):
-        self.set_logger_name("PandABlocksMaker")
         self.client = client
         self.block_name = block_name
         self.block_data = block_data

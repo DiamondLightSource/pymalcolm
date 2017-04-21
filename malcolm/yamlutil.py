@@ -7,6 +7,9 @@ from ruamel import yaml
 from malcolm.compat import str_
 from malcolm.core import method_takes, call_with_params
 
+# Create a module level logger
+log = logging.getLogger(__name__)
+
 
 def _create_takes_arguments(sections):
     takes_arguments = []
@@ -134,7 +137,7 @@ class Section(object):
         except AttributeError:
             raise ImportError("%s:%d: Package %r has no ident %r" % (
                 self.filename, self.lineno, pkg, ident))
-        logging.debug("Instantiating %s with %s", ob, param_dict)
+        log.debug("Instantiating %s with %s", ob, param_dict)
         return call_with_params(ob, *args, **param_dict)
 
     @classmethod
@@ -165,7 +168,7 @@ class Section(object):
         assert yaml_path.endswith(".yaml"), \
             "Expected a/path/to/<yamlname>.yaml, got %r" % yaml_path
         yamlname = os.path.basename(yaml_path)[:-5]
-        logging.debug("Parsing %s", yaml_path)
+        log.debug("Parsing %s", yaml_path)
         with open(yaml_path) as f:
             text = f.read()
         # First separate them into their relevant sections

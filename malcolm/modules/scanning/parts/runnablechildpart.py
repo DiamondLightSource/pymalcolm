@@ -15,7 +15,7 @@ class RunnableChildPart(StatefulChildPart):
         # Decorate validate and configure with the sum of its parts
         if not isinstance(response, Update):
             # Return or Error is the end of our subscription, log and ignore
-            self.log_debug("update_configure_args got response %r", response)
+            self.log.debug("update_configure_args got response %r", response)
             return
         configure_model = deserialize_object(response.value, MethodModel)
         self.method_models["validate"].recreate_from_others([configure_model])

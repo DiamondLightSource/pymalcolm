@@ -4,9 +4,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import unittest
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
 # module imports
 from malcolm.core import call_with_params, Process, Post, Subscribe, Return, \
     Update, Controller, Queue, TimeoutError

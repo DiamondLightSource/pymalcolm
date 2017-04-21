@@ -1,14 +1,14 @@
 # Create some Blocks
-- blocks.demo.hello_block:
+- demo.blocks.hello_block:
     mri: HELLO
 
-- blocks.demo.hello_block:
+- demo.blocks.hello_block:
     mri: HELLO2
 
-- blocks.demo.counter_block:
+- demo.blocks.counter_block:
     mri: COUNTER
 
 # Add a webserver
-- blocks.web.web_server_block:
+- web.blocks.web_server_block:
     mri: WEB
     port: 8080

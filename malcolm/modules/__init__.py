@@ -17,7 +17,9 @@ class Importer(object):
                 "malcolm.modules.%s" % name)
         except ImportError:
             import logging
-            logging.info("Importing %s failed", name, exc_info=True)
+            # Create a module level logger
+            log = logging.getLogger(__name__)
+            log.info("Importing %s failed", name, exc_info=True)
         # Try the import of subpackages too
         self.import_subpackages(path)
 

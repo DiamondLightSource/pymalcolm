@@ -275,6 +275,7 @@ class ManagerController(StatefulController):
                 for part_exportable in part_exportables:
                     names.append(
                         "%s.%s" % (part_name, part_exportable.name))
+            # TODO: store this... and use in _get_current_part_fields
             changed_names = set(names).symmetric_difference(
                 self.exports.meta.elements["name"].choices)
             changed_exports = changed_names.intersection(
@@ -318,10 +319,9 @@ class ManagerController(StatefulController):
                 for data in self.part_fields[part_name]:
                     yield data
 
-        # Find the exportable fields for each part
-        # TODO: why not only look at visible here?
-        part_info = self.run_hook(self.ReportExportable,
-                                  self.create_part_contexts(only_visible=False))
+        # Find the exportable fields for each visible part
+        part_info = self.run_hook(
+            self.ReportExportable, self.create_part_contexts())
         # {part_name: [ExportableInfo()]
         exportable = ExportableInfo.filter_parts(part_info)
 
@@ -349,12 +349,12 @@ class ManagerController(StatefulController):
         def update_field(response):
             if not isinstance(response, Delta):
                 # Return or Error is the end of our subscription, log and ignore
-                self.log_debug("Export got response %r", response)
+                self.log.debug("Export got response %r", response)
                 return
             if not ret:
                 # First call, create the initial object
                 ret["export"] = deserialize_object(response.changes[0][1])
-                context = Context("ExportContext", self.process)
+                context = Context(self.process)
                 if isinstance(ret["export"], AttributeModel):
                     def setter(value):
                         context.put(path, value)

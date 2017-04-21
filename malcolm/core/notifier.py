@@ -1,58 +1,18 @@
-import logging
-
 from .serializable import serialize_object
 from .loggable import Loggable
 from .request import Subscribe, Unsubscribe
 
 
-class Squasher(object):
-    def __init__(self, lock, tree):
-        self._lock = lock
-        self._tree = tree
-        # Incremented every time we do with changes_squashed
-        self._squashed_count = 0
-        self._squashed_changes = []
-
-    def __enter__(self):
-        self._lock.acquire()
-        self._squashed_count += 1
-
-    def __exit__(self, exc_type=None, exc_val=None, exc_tb=None):
-        responses = []
-        try:
-            self._squashed_count -= 1
-            if self._squashed_count == 0:
-                changes = self._squashed_changes
-                self._squashed_changes = []
-                responses += self._tree.notify_changes(changes)
-        finally:
-            self._lock.release()
-            self._callback_responses(responses)
-
-    def _callback_responses(self, responses):
-        for cb, response in responses:
-            try:
-                cb(response)
-            except Exception:
-                logging.exception("Exception notifying %s", response)
-
-    def add_squashed_change(self, path, data=None):
-        assert self._squashed_count, "Called while not squashing changes"
-        if data is None:
-            change = [path[1:]]
-        else:
-            change = [path[1:], data]
-        self._squashed_changes.append(change)
-
-
 class Notifier(Loggable):
     """Object that can service callbacks on given endpoints"""
 
-    def __init__(self, name, lock, block):
-        self.set_logger_name(name)
+    def __init__(self, mri, lock, block):
+        self.set_logger_extra(mri=mri)
         self._tree = NotifierNode(block)
         self._lock = lock
-        self._squasher = Squasher(self._lock, self._tree)
+        # Incremented every time we do with changes_squashed
+        self._squashed_count = 0
+        self._squashed_changes = []
         # {Subscribe.generator_key(): Subscribe}
         self._subscription_keys = {}
 
@@ -91,7 +51,7 @@ class Notifier(Loggable):
             attr.set_value(1)
             attr.set_alarm(MINOR)
         """
-        return self._squasher
+        return self
 
     def add_squashed_change(self, path, data=None):
         """Call setter, then notify subscribers of change
@@ -100,8 +60,37 @@ class Notifier(Loggable):
             path (list): The path of what has changed, relative from Block
             data (object): The new data, None for deletion
         """
-        self._squasher.add_squashed_change(path, data)
+        assert self._squashed_count, "Called while not squashing changes"
+        if data is None:
+            change = [path[1:]]
+        else:
+            change = [path[1:], data]
+        self._squashed_changes.append(change)
 
+    def __enter__(self):
+        """So we can use this as a context manager for squashing changes"""
+        self._lock.acquire()
+        self._squashed_count += 1
+
+    def __exit__(self, exc_type=None, exc_val=None, exc_tb=None):
+        """So we can use this as a context manager for squashing changes"""
+        responses = []
+        try:
+            self._squashed_count -= 1
+            if self._squashed_count == 0:
+                changes = self._squashed_changes
+                self._squashed_changes = []
+                responses += self._tree.notify_changes(changes)
+        finally:
+            self._lock.release()
+            self._callback_responses(responses)
+
+    def _callback_responses(self, responses):
+        for cb, response in responses:
+            try:
+                cb(response)
+            except Exception:
+                self.log.exception("Exception notifying %s", response)
 
 
 class NotifierNode(object):

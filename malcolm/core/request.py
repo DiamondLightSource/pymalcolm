@@ -4,6 +4,9 @@ from malcolm.compat import OrderedDict, str_
 from .response import Return, Error, Update, Delta
 from .serializable import Serializable, deserialize_object, serialize_object
 
+# Create a module level logger
+log = logging.getLogger(__name__)
+
 
 class Request(Serializable):
     """Request object that registers a callback for when action is complete."""
@@ -56,7 +59,7 @@ class Request(Serializable):
         """
 
         response = Error(id=self.id, message=str(exception))
-        logging.exception("Exception raised for request %s", self)
+        log.exception("Exception raised for request %s", self)
         return self.callback, response
 
     def generate_key(self):

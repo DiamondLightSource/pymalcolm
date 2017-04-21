@@ -32,7 +32,6 @@ class CAPartsTest(unittest.TestCase):
     def create_part(self, cls, **args):
         params = cls.MethodMeta.prepare_input_map(args)
         p = cls(self.process, params)
-        p.set_logger_name(cls.__name__)
         list(p.create_attributes())
         p.reset()
         return p

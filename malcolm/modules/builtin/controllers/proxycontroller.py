@@ -41,8 +41,10 @@ class ProxyController(Controller):
     def _handle_response(self):
         with self.changes_squashed:
             response = self._response_queue.get(timeout=0)
-            self.log_debug("Got response %s", response)
-            response = deserialize_object(response, Delta)
+            if not isinstance(response, Delta):
+                # Return or Error is the end of our subscription, log and ignore
+                self.log.debug("Proxy got response %r", response)
+                return
             for change in response.changes:
                 path = change[0]
                 if len(path) == 0:

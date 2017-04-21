@@ -66,7 +66,7 @@ class TestController(unittest.TestCase):
         self.part = MyPart("test_part")
         self.part2 = MyPart("test_part2")
         self.o = MyController(self.process, "mri", [self.part, self.part2])
-        self.context = Context("Context", self.process)
+        self.context = Context(self.process)
         self.process.start()
 
     def tearDown(self):

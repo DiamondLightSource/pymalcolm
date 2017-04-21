@@ -50,7 +50,7 @@ class TestRunnableStates(unittest.TestCase):
 class TestRunnableController(unittest.TestCase):
     def setUp(self):
         self.p = Process('process1')
-        self.context = Context("c", self.p)
+        self.context = Context(self.p)
 
         # Make a ticker_block block to act as our child
         self.c_child = call_with_params(

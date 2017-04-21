@@ -2,10 +2,6 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-# logging
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
 import unittest
 
 # tornado
@@ -94,7 +90,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def test_server_hello_with_malcolm_client(self):
         call_with_params(
             proxy_block, self.process2, mri="hello", comms="client")
-        context = Context("context", self.process2)
+        context = Context(self.process2)
         context.when_matches(["hello", "health", "value"], "OK", timeout=2)
         block2 = self.process2.block_view("hello")
         ret = block2.greet("me2")
@@ -105,7 +101,7 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def test_server_counter_with_malcolm_client(self):
         call_with_params(
             proxy_block, self.process2, mri="counter", comms="client")
-        context = Context("context", self.process2)
+        context = Context(self.process2)
         context.when_matches(["counter", "health", "value"], "OK", timeout=2)
         block2 = self.process2.block_view("counter")
         self.assertEqual(block2.counter.value, 0)

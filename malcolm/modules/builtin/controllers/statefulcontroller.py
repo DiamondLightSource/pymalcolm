@@ -1,11 +1,11 @@
 from malcolm.compat import OrderedDict
-from malcolm.core import Hook, method_writeable_in, method_takes, Loggable, \
-    Alarm, MethodModel, AttributeModel, Process
+from malcolm.core import Hook, method_writeable_in, method_takes, Alarm, \
+    MethodModel, AttributeModel, Process
 from malcolm.modules.builtin.vmetas import ChoiceMeta
 from .basecontroller import BaseController
 
 
-class StatefulStates(Loggable):
+class StatefulStates(object):
 
     RESETTING = "Resetting"
     DISABLED = "Disabled"
@@ -14,7 +14,6 @@ class StatefulStates(Loggable):
     READY = "Ready"
 
     def __init__(self):
-        self.set_logger_name(type(self).__name__)
         self._allowed = OrderedDict()
         # These are all the states we can possibly be in
         self.possible_states = []
@@ -141,7 +140,6 @@ class StatefulController(BaseController):
 
     def go_to_error_state(self, exception):
         if self.state.value != ss.FAULT:
-            #self.log_exception("Fault occurred while running stateful function")
             self.transition(ss.FAULT, str(exception))
 
     def transition(self, state, message=""):
@@ -154,7 +152,7 @@ class StatefulController(BaseController):
         with self.changes_squashed:
             if self.stateSet.transition_allowed(
                     initial_state=self.state.value, target_state=state):
-                self.log_debug("Transitioning to %s", state)
+                self.log.debug("Transitioning to %s", state)
                 if state == ss.DISABLED:
                     alarm = Alarm.invalid("Disabled")
                 elif state == ss.FAULT:

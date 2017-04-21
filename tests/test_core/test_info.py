@@ -24,6 +24,9 @@ class TestInit(unittest.TestCase):
         self.d2["partc"] = [MyInfo("v2"), MyInfo("v3")]
         self.d2["partd"] = None
 
+    def test_repr(self):
+        assert repr(MyInfo("thing")) == "MyInfo('thing')"
+
     def test_filter_parts(self):
         filtered = MyInfo.filter_parts(self.d1)
         assert len(filtered) == 0

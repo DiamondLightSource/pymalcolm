@@ -186,7 +186,7 @@ class ChildPart(Part):
             try:
                 attr = getattr(child, k)
             except KeyError:
-                self.log_warning("Cannot restore non-existant attr %s" % k)
+                self.log.warning("Cannot restore non-existant attr %s" % k)
             else:
                 assert "config" in attr.meta.tags, \
                     "Attr %s doesn't have config tag" % k

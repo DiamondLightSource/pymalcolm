@@ -40,7 +40,7 @@ class CAActionPart(Part):
             cmd = "caput -c -w 1000"
         else:
             cmd = "caput"
-        self.log_debug("%s %s %s", cmd, self.params.pv, self.params.value)
+        self.log.info("%s %s %s", cmd, self.params.pv, self.params.value)
         catools.caput(
             self.params.pv, self.params.value,
             wait=self.params.wait, timeout=None)

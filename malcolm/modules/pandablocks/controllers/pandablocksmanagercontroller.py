@@ -86,7 +86,7 @@ class PandABlocksManagerController(ManagerController):
                 self.handle_changes(self.client.get_changes())
             except Exception:
                 # TODO: should fault here?
-                self.log_exception("Error while getting changes")
+                self.log.exception("Error while getting changes")
 
     def stop_poll_loop(self):
         if self._poll_spawned:
@@ -207,12 +207,11 @@ class PandABlocksManagerController(ManagerController):
     def update_attribute(self, block_name, field_name, val):
         ret = None
         if block_name not in self._blocks_parts:
-            self.log_debug("Block %s not known", block_name)
+            self.log.debug("Block %s not known", block_name)
             return
         parts = self._blocks_parts[block_name]
         if field_name not in parts:
-            self.log_debug("Block %s has no field %s", block_name,
-                           field_name)
+            self.log.debug("Block %s has no field %s", block_name, field_name)
             return
         part = parts[field_name]
         attr = part.attr

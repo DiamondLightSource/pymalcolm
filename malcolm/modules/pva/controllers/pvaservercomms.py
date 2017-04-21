@@ -24,48 +24,48 @@ class PvaServerComms(ServerComms):
         if self._pva_server:
             with self._lock:
                 # Delete blocks we no longer have
-                for block_name in self._endpoints:
-                    if block_name not in published:
+                for mri in self._endpoints:
+                    if mri not in published:
                         # TODO: delete endpoint here when we can
                         pass
                 # Add new blocks
-                for block_name in published:
-                    if block_name not in self._endpoints:
-                        self._add_new_pva_channel(block_name)
+                for mri in published:
+                    if mri not in self._endpoints:
+                        self._add_new_pva_channel(mri)
 
-    def _add_new_pva_channel(self, block_name):
+    def _add_new_pva_channel(self, mri):
         """Create a new PVA endpoint for the block name
 
         Args:
-            block_name (str): The name of the block to create the PVA endpoint
+            mri (str): The name of the block to create the PVA endpoint
         """
-        controller = self.process.get_controller(block_name)
+        controller = self.process.get_controller(mri)
 
         def _get(pv_request):
             try:
-                return PvaGetImplementation(block_name, controller, pv_request)
+                return PvaGetImplementation(mri, controller, pv_request)
             except Exception:
-                self.log_exception("Error doing Get")
+                self.log.exception("Error doing Get")
 
         def _put(pv_request):
             try:
-                return PvaPutImplementation(block_name, controller, pv_request)
+                return PvaPutImplementation(mri, controller, pv_request)
             except Exception:
-                self.log_exception("Error doing Put")
+                self.log.exception("Error doing Put")
 
         def _rpc(pv_request):
             try:
-                rpc = PvaRpcImplementation(block_name, controller, pv_request)
+                rpc = PvaRpcImplementation(mri, controller, pv_request)
                 return rpc.execute
             except Exception:
-                self.log_exception("Error doing Rpc")
+                self.log.exception("Error doing Rpc")
 
         def _monitor(pv_request):
             try:
                 return PvaMonitorImplementation(
-                    block_name, controller, pv_request)
+                    mri, controller, pv_request)
             except Exception:
-                self.log_exception("Error doing Monitor")
+                self.log.exception("Error doing Monitor")
 
         endpoint = pvaccess.Endpoint()
         endpoint.registerEndpointGet(_get)
@@ -75,16 +75,16 @@ class PvaServerComms(ServerComms):
         # TODO: There is no way to eliminate dead monitors
         # TODO: Monitors do not support deltas
         endpoint.registerEndpointMonitor(_monitor)
-        self._pva_server.registerEndpoint(block_name, endpoint)
-        self._endpoints[block_name] = endpoint
+        self._pva_server.registerEndpoint(mri, endpoint)
+        self._endpoints[mri] = endpoint
 
     def _start_pva_server(self):
         if self._pva_server is None:
             self._pva_server = pvaccess.PvaServer()
-            # {block_name: Endpoint}
+            # {mri: Endpoint}
             self._endpoints = {}
-            for block_name in self._published:
-                self._add_new_pva_channel(block_name)
+            for mri in self._published:
+                self._add_new_pva_channel(mri)
             self._spawned = self.spawn(self._pva_server.startListener)
 
     def _stop_pva_server(self):
@@ -95,9 +95,9 @@ class PvaServerComms(ServerComms):
 
 
 class PvaImplementation(Loggable):
-    def __init__(self, block_name, controller, request):
-        self.set_logger_name("%s(%s)" % (type(self).__name__, block_name))
-        self._block_name = block_name
+    def __init__(self, mri, controller, request):
+        self.set_logger_extra(mri=mri)
+        self._mri = mri
         self._controller = controller
         self._request = request
 
@@ -115,7 +115,7 @@ class PvaImplementation(Loggable):
     def _request_response(self, request_cls, path, **kwargs):
         queue = Queue()
         request = request_cls(
-            path=[self._block_name] + path, callback=queue.put, **kwargs)
+            path=[self._mri] + path, callback=queue.put, **kwargs)
         self._controller.handle_request(request)
         response = queue.get()
         if isinstance(response, Error):
@@ -141,26 +141,26 @@ class PvaGetImplementation(PvaImplementation):
     _pv_structure = None
 
     def getPVStructure(self):
-        self.log_debug("getPVStructure")
         if self._pv_structure is None:
             self._pv_structure = self._get_pv_structure(self._request)
         return self._pv_structure
 
     def get(self):
         # No-op as getPvStructure gets values too
-        self.log_debug("get")
+        pass
 
 
 class PvaPutImplementation(PvaGetImplementation):
     def put(self, put_request):
-        self.log_debug("put %s", put_request.toDict())
+        self.log.debug("Put to %r value:\n%s", self._mri, put_request.toDict())
         self.getPVStructure()
         try:
             path, value = self._dict_to_path_value(put_request)
             self._request_response(Put, path, value=value)
         except Exception:
-            self.log_exception(
-                "Exception while putting %s", put_request.toDict())
+            self.log.exception(
+                "Exception while putting to %r value:\n%s",
+                self._mri, put_request.toDict())
 
 
 class PvaRpcImplementation(PvaImplementation):
@@ -178,12 +178,10 @@ class PvaRpcImplementation(PvaImplementation):
         return item
 
     def execute(self, args):
-        self.log_debug("execute")
         try:
-            print "execute", args.toDict(True)
-            print self._request["method"]
-            self.log_debug("execute %s %s", self._request["method"], args.toDict())
             method_name = self._request["method"]
+            self.log.debug("Execute method %r of %r with args:\n%s",
+                           self._mri, method_name, args.toDict())
             path = [method_name]
             parameters = self._strip_tuples(args.toDict(True))
             response = self._request_response(Post, path, parameters=parameters)
@@ -192,24 +190,27 @@ class PvaRpcImplementation(PvaImplementation):
             else:
                 # We need to return something, otherwise we get a timeout...
                 pv_object = dict_to_pv_object(dict(typeid=Map.typeid))
-            self.log_debug("return %s", pv_object.toDict())
+            self.log.debug("Return from method %r of %r",
+                           self._mri, method_name, pv_object.toDict())
             return pv_object
         except Exception as e:
-            self.log_exception("Error doing execute")
+            self.log.exception(
+                "Exception while executing method of %r with args:\n%s",
+                self._mri, args.toDict())
             error = Error(message=str(e)).to_dict()
             error.pop("id")
             return dict_to_pv_object(error)
 
 
 class PvaMonitorImplementation(PvaGetImplementation):
-    def __init__(self, block_name, controller, request):
+    def __init__(self, mri, controller, request):
         super(PvaMonitorImplementation, self).__init__(
-            block_name, controller, request)
+            mri, controller, request)
         self._mu = pvaccess.MonitorServiceUpdater()
         self.getPVStructure()
         self._do_update = False
         path, _ = self._dict_to_path_value(self._request)
-        request = Subscribe(path=[self._block_name] + path, delta=True,
+        request = Subscribe(path=[self._mri] + path, delta=True,
                             callback=self._on_response)
         self._controller.handle_request(request)
 

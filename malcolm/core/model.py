@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 
-from .loggable import Loggable
 from .serializable import Serializable
 
 
@@ -35,7 +34,7 @@ class DummyNotifier(object):
         pass
 
 
-class Model(Loggable, Serializable):
+class Model(Serializable):  # Loggable?
     notifier = DummyNotifier()
     path = []
 
@@ -48,7 +47,7 @@ class Model(Loggable, Serializable):
         """
         self.notifier = notifier
         self.path = list(path)
-        self.set_logger_name(".".join(self.path))
+        #self.set_logger_suffix(*self.path)
         for endpoint in self.endpoints:
             set_notifier_path(self[endpoint], notifier, self.path + [endpoint])
 

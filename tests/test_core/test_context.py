@@ -29,7 +29,7 @@ class TestContext(unittest.TestCase):
         self.process = Process("proc")
         self.controller = MagicMock()
         self.process.add_controller("block", self.controller)
-        self.o = Context("Context", self.process)
+        self.o = Context(self.process)
         self.cothread = maybe_import_cothread()
 
     def test_block_view(self):

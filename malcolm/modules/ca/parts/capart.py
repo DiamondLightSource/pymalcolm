@@ -66,7 +66,6 @@ class CAPart(AttributePart):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
         self.set_initial_metadata(ca_values[0])
         self.update_value(ca_values[0])
-        self.log_debug("ca values connected %s", ca_values)
         # now setup monitor on rbv
         self.monitor = catools.camonitor(
             self.params.rbv, self.update_value,
@@ -80,7 +79,7 @@ class CAPart(AttributePart):
             self.monitor = None
 
     def format_caput_value(self, value):
-        self.log_debug("caput -c -w 1000 %s %s", self.params.pv, value)
+        self.log.info("caput -c -w 1000 %s %s", self.params.pv, value)
         return value
 
     def caput(self, value):

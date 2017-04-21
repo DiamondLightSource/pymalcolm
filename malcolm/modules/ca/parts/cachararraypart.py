@@ -14,5 +14,5 @@ class CACharArrayPart(CAPart):
         return catools.DBR_CHAR_STR
 
     def format_caput_value(self, value):
-        self.log_debug("caput -c -w 1000 -S %s %r", self.params.pv, value)
+        self.log.info("caput -c -w 1000 -S %s %r", self.params.pv, value)
         return value

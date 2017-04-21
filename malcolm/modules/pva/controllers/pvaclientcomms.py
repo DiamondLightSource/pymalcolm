@@ -73,13 +73,11 @@ class PvaClientComms(ClientComms):
     def _execute_monitor(self, request):
         # Connect to the channel
         path = ".".join(request.path[1:])
-        self.log_debug("%r %r", request.path[0], path)
         channel = pvaccess.Channel(request.path[0])
         self._monitors[request.generate_key()] = channel
 
         # Store the connection within the monitor set
         def callback(value=None):
-            self.log_debug("Callback %r", value)
             # TODO: ordering is not maintained here...
             d = value.toDict(True)
             if d.get("typeid", "") == Error.typeid:

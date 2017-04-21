@@ -1,6 +1,9 @@
 from collections import namedtuple, OrderedDict
 import logging
 
+# Create a module level logger
+log = logging.getLogger(__name__)
+
 
 BlockData = namedtuple("BlockData", "number,description,fields")
 FieldData = namedtuple("FieldData",
@@ -105,7 +108,7 @@ class PandABlocksClient(object):
                 self._response_queues.put(response_queue)
                 self._socket.send(message)
             except Exception:  # pylint:disable=broad-except
-                logging.exception("Exception sending message %s", message)
+                log.exception("Exception sending message %s", message)
 
     def _get_lines(self):
         buf = ""
@@ -121,7 +124,6 @@ class PandABlocksClient(object):
 
     def _respond(self, resp):
         """Respond to the person waiting"""
-        logging.debug("Response %r", resp)
         response_queue = self._response_queues.get(timeout=0.1)
         response_queue.put(resp)
         self._completed_response_lines = []
@@ -150,7 +152,7 @@ class PandABlocksClient(object):
                 else:
                     self._respond(line)
             except Exception:
-                logging.exception("Exception receiving message")
+                log.exception("Exception receiving message")
                 raise
 
     def _get_block_numbers(self):
@@ -279,7 +281,7 @@ class PandABlocksClient(object):
             elif "=" in line:
                 field, val = line.split("=", 1)
             else:
-                logging.warning("Can't parse line %r of changes", line)
+                log.warning("Can't parse line %r of changes", line)
                 continue
             # TODO: Goes in server
             if val in ("POSITIONS.ZERO", "BITS.ZERO"):

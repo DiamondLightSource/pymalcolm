@@ -27,7 +27,7 @@ class Process(Loggable):
 
     def __init__(self, name):
         self.name = name
-        self.set_logger_name(name)
+        self.set_logger_extra(process=name)
         self._cothread = maybe_import_cothread()
         self._controllers = OrderedDict()  # mri -> Controller
         self._published = []  # [mri] for publishable controllers
@@ -194,6 +194,6 @@ class Process(Loggable):
             Block: the block view
         """
         controller = self.get_controller(mri)
-        context = Context("Context(%s)" % mri, self)
+        context = Context(self)
         block = controller.make_view(context)
         return block

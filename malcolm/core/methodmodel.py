@@ -240,8 +240,6 @@ def get_method_decorated(instance):
         if hasattr(member, "MethodModel"):
             # Copy it so we get a new one for this instance
             method_model = MethodModel.from_dict(member.MethodModel.to_dict())
-            method_model.set_logger_name("%s.%s.MethodModel" % (
-                instance.__class__.__name__, name))
             method_model.writeable_in = member.MethodModel.writeable_in
             yield name, method_model, member
 

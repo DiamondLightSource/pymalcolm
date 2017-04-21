@@ -50,7 +50,7 @@ class ScanTickerPart(ChildPart):
             child = context.block_view(self.params.mri)
             for i in range(self.completed_steps,
                            self.completed_steps + self.steps_to_do):
-                self.log_debug("Starting point %s", i)
+                self.log.debug("Starting point %s", i)
                 # Get the point we are meant to be scanning
                 point = self.generator.get_point(i)
                 # Update the child counter_block to be the demand position
@@ -59,7 +59,7 @@ class ScanTickerPart(ChildPart):
                 # Wait until the next point is due
                 point_time += point.duration
                 wait_time = point_time - time.time()
-                self.log_debug("%s Sleeping %s", self.name, wait_time)
+                self.log.debug("%s Sleeping %s", self.name, wait_time)
                 context.sleep(wait_time)
                 # Update the point as being complete
                 update_completed_steps(i + 1, self)

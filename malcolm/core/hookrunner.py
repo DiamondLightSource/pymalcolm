@@ -4,7 +4,7 @@ from malcolm.core.errors import AbortedError
 
 class HookRunner(Loggable):
     def __init__(self, hook_queue, part, func, context, args):
-        self.set_logger_name("HookRunner(%s)" % part.name)
+        self.set_logger_extra(part=part.name)
         self.hook_queue = hook_queue
         self.part = part
         self.func = func
@@ -21,10 +21,10 @@ class HookRunner(Loggable):
         try:
             result = self.func(self.context, *self.args)
         except AbortedError as e:
-            self.log_info("%s has been aborted", self.func)
+            self.log.info("%s has been aborted", self.func)
             result = e
         except Exception as e:  # pylint:disable=broad-except
-            self.log_exception("%s%s raised exception", self.func, self.args)
+            self.log.exception("%s%s raised exception", self.func, self.args)
             result = e
         self.hook_queue.put((self.part, result))
         # TODO: this is a bit ugly

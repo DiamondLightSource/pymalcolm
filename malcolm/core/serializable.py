@@ -6,6 +6,8 @@ import numpy as np
 
 from malcolm.compat import OrderedDict
 
+# Create a module level logger
+log = logging.getLogger(__name__)
 
 camel_re = re.compile(r"[a-z][a-z0-9]*([A-Z][a-z0-9]*)*")
 
@@ -34,7 +36,7 @@ def serialize_hook(o):
 def check_camel_case(name):
     match = camel_re.match(name)
     if not match:
-        logging.warning("String %r is not camelCase", name)
+        log.warning("String %r is not camelCase", name)
 
 
 def camel_to_title(name):

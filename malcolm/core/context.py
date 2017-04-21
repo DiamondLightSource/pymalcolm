@@ -34,8 +34,7 @@ class Context(Loggable):
     STOP = object()
     runner = None
 
-    def __init__(self, name, process):
-        self.set_logger_name(name)
+    def __init__(self, process):
         self._q = Queue()
         self._process = process
         self._next_id = 1
@@ -179,7 +178,7 @@ class Context(Loggable):
         futures = [f for f, r in self._requests.items()
                    if isinstance(r, Subscribe)]
         if futures:
-            self.log_debug("Unsubscribing from %d futures", len(futures))
+            self.log.debug("Unsubscribing from %d futures", len(futures))
             for future in futures:
                 self.unsubscribe(future)
 
@@ -198,9 +197,7 @@ class Context(Loggable):
                 forever if None
         """
         future = self.when_matches_async(path, good_value, bad_values)
-        self.log_debug("Before")
         self.wait_all_futures(future, timeout)
-        self.log_debug("After")
 
     def when_matches_async(self, path, good_value, bad_values=None):
         """Wait for an attribute to become a given value

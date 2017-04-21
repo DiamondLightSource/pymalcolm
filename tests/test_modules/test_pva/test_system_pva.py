@@ -20,7 +20,7 @@ def p1(q):
     call_with_params(hello_block, process, mri="hello")
     call_with_params(counter_block, process, mri="counter2")
     call_with_params(pva_server_block, process, mri="server")
-    context = Context("c", process)
+    context = Context(process)
     process.start()
     while True:
         try:
@@ -55,7 +55,7 @@ class TestSystemPVACommsServerAndClient(unittest.TestCase):
         from malcolm.blocks.builtin import proxy_block
         call_with_params(
             proxy_block, self.process2, mri="hello", comms="client")
-        context = Context("context", self.process2)
+        context = Context(self.process2)
         context.when_matches(["hello", "health", "value"], "OK", timeout=2)
         block2 = self.process2.block_view("hello")
         ret = block2.greet(name="me2")

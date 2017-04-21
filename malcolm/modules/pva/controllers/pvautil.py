@@ -6,6 +6,9 @@ import pvaccess
 from malcolm.compat import str_, OrderedDict, long_
 from malcolm.core import StringArray
 
+# Create a module level logger
+log = logging.getLogger(__name__)
+
 
 pva_dtypes = {
     np.bool_: pvaccess.BOOLEAN,
@@ -26,7 +29,7 @@ def dict_to_pv_object(dict_in, empty_allowed=True):
     structure = pva_structure_from_value(dict_in, empty_allowed)
     if structure:
         set_value = value_for_pva_set(dict_in, empty_allowed)
-        logging.debug("Set %s to %r", structure, set_value)
+        log.debug("Set %s to %r", structure, set_value)
         structure.set(set_value)
         return structure
 

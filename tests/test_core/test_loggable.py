@@ -14,22 +14,19 @@ class TestLoggable(unittest.TestCase):
     @patch("malcolm.core.loggable.logging")
     def test_init(self, mock_logging):
         l = Loggable()
-        l.set_logger_name("foo")
-        mock_logging.getLogger.assert_called_once_with("foo")
+        l.set_logger_extra(foo="foo", bar="bat")
+        mock_logging.getLogger.assert_called_once_with(
+            "malcolm.core.loggable.Loggable.bat.foo")
+        filter = l.log.addFilter.call_args[0][0]
+        assert filter.fields == dict(foo="foo", bar="bat")
 
     @patch("malcolm.core.loggable.logging")
     def test_call_method_no_log_name(self, mock_logging):
         l = Loggable()
-        self.assertRaises(ValueError, l.log_info, "msg")
-
-    @patch("malcolm.core.loggable.logging")
-    def test_calls_logger_function(self, mock_logging):
-        l = Loggable()
-        l.set_logger_name("bar")
-        for n in "debug info warning error exception".split():
-            m = getattr(l, "log_%s" % n)
-            m("hello_block", n)
-            getattr(l._logger, n).assert_called_once_with("hello_block", n)
+        l.log.debug("Something")
+        mock_logging.getLogger.assert_called_once_with(
+            "malcolm.core.loggable.Loggable")
+        l.log.debug.assert_called_once_with("Something")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

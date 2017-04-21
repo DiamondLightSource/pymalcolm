@@ -253,7 +253,7 @@ class RunnableController(ManagerController):
 
     def go_to_error_state(self, exception):
         if isinstance(exception, AbortedError):
-            self.log_info("Got AbortedError in %s" % self.state.value)
+            self.log.info("Got AbortedError in %s" % self.state.value)
         else:
             super(RunnableController, self).go_to_error_state(exception)
 
@@ -298,7 +298,7 @@ class RunnableController(ManagerController):
             if tweaks:
                 for tweak in tweaks:
                     params[tweak.parameter] = tweak.value
-                    self.log_debug(
+                    self.log.debug(
                         "Tweaking %s to %s", tweak.parameter, tweak.value)
             else:
                 # Consistent set, just return the params
@@ -384,7 +384,7 @@ class RunnableController(ManagerController):
                 if should_resume:
                     # we need to resume
                     hook = self.Resume
-                    self.log_debug("Resuming run")
+                    self.log.debug("Resuming run")
                 else:
                     # we don't need to resume, just drop out
                     raise

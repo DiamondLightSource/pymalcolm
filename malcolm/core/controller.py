@@ -32,7 +32,7 @@ class Controller(Loggable):
     health = None
 
     def __init__(self, process, mri, parts):
-        self.set_logger_name("%s(%s)" % (type(self).__name__, mri))
+        self.set_logger_extra(mri=mri)
         self.process = process
         self.mri = mri
         self._request_queue = Queue()
@@ -162,7 +162,7 @@ class Controller(Loggable):
         Returns:
             Block: The block we control
         """
-        context = Context("Context", self.process)
+        context = Context(self.process)
         return self.make_view(context)
 
     def make_view(self, context, data=None, child_name=None):
@@ -218,7 +218,7 @@ class Controller(Loggable):
         responses = []
         with self._lock:
             request = self._request_queue.get(timeout=0)
-            self.log_debug("Handling %s", request)
+            self.log.debug(request)
             if isinstance(request, Get):
                 handler = self._handle_get
             elif isinstance(request, Put):
@@ -239,7 +239,7 @@ class Controller(Loggable):
             try:
                 cb(response)
             except Exception as e:
-                self.log_exception("Exception notifying %s", response)
+                self.log.exception("Exception notifying %s", response)
                 raise
 
     def _handle_get(self, request):
@@ -299,8 +299,7 @@ class Controller(Loggable):
     def create_part_contexts(self):
         part_contexts = {}
         for part_name, part in self.parts.items():
-            part_contexts[part] = Context(
-                "Context(%s)" % part_name, self.process)
+            part_contexts[part] = Context(self.process)
         return part_contexts
 
     def run_hook(self, hook, part_contexts, *args, **params):
@@ -313,6 +312,7 @@ class Controller(Loggable):
         assert hook in self._hook_names, \
             "Hook %s doesn't appear in controller hooks %s" % (
                 hook, self._hook_names)
+        self.log.debug("Running hook %s", self._hook_names[hook])
 
         # This queue will hold (part, result) tuples
         hook_queue = Queue()
@@ -344,8 +344,13 @@ class Controller(Loggable):
             # Wait for the process to terminate
             hook_runner.wait()
             return_dict[part.name] = ret
-            self.log_debug("Part %s returned %r. Still waiting for %s",
-                           part.name, ret, [p.name for p in hook_runners])
+            if hook_runners:
+                self.log.debug(
+                    "Part %s returned %r. Still waiting for %s",
+                    part.name, ret, [p.name for p in hook_runners])
+            else:
+                self.log.debug(
+                    "Part %s returned %r. Returning...", part.name, ret)
 
             if isinstance(ret, Exception):
                 # Got an error, so stop and wait all hook runners
