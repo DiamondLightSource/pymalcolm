@@ -115,7 +115,8 @@ self.process_block.blocks
     self.start()
     # TODO Remove this when Toms fixed the config elsewhere
     self.get_block("I08-PANDA01-COUNTER1").outDatasetName = "I0"
-    
+    def set_xmap_exposure(exp, self=self):
+        self.get_block("I08-PANDA01-PULSE1").width = exp
     try:
         import IPython
     except ImportError:
