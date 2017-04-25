@@ -19,13 +19,13 @@ class RLock(object):
                 self._lock = self.cothread.CallbackResult(self.cothread.RLock)
         else:
             self._lock = threading.RLock()
+            self._check_cothread_lock = lambda: None
 
     def _check_cothread_lock(self):
-        if self.cothread and isinstance(self._lock, self.cothread.RLock):
+        if self.cothread.scheduler_thread_id != thread.get_ident():
             # can only use a cothread RLock from cothread's thread
-            if self.cothread.scheduler_thread_id != thread.get_ident():
-                raise WrongThreadError(
-                    "Can only use a cothread RLock from cothread's thread")
+            raise WrongThreadError(
+                "Can only use a cothread RLock from cothread's thread")
 
     def acquire(self):
         self._check_cothread_lock()
@@ -39,3 +39,4 @@ class RLock(object):
 
     def __exit__(self, t, v, tb):
         self.release()
+

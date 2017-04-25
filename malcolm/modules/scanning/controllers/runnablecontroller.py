@@ -210,9 +210,6 @@ class RunnableController(ManagerController):
     # {part: completed_steps for that part}
     progress_updates = None
 
-    # And a Queue so it can be stopped
-    stop_progress_queue = None
-
     # Queue so that do_run can wait to see why it was aborted and resume if
     # needed
     resume_queue = None
@@ -351,7 +348,6 @@ class RunnableController(ManagerController):
         self.configured_steps.set_value(steps_to_do)
         # Reset the progress of all child parts
         self.progress_updates = {}
-        self.stop_progress_queue = Queue()
         self.resume_queue = Queue()
 
     def _get_steps_per_run(self, generator, axes_to_move):
@@ -377,37 +373,8 @@ class RunnableController(ManagerController):
             next_state = ss.ARMED
         else:
             next_state = ss.READY
-        s = self.spawn(self._progress_update_loop)
-        try:
-            self.try_stateful_function(
+        self.try_stateful_function(
                 ss.RUNNING, next_state, self._call_do_run)
-        finally:
-            self.stop_progress_queue.put(None)
-            s.wait()
-
-    def _calculate_completed_steps(self):
-        with self._lock:
-            # Update
-            if self.progress_updates:
-                min_completed_steps = min(self.progress_updates.values())
-                if min_completed_steps > self.completed_steps.value:
-                    self.completed_steps.set_value(min_completed_steps)
-
-    def _progress_update_loop(self):
-        next_poll = time.time()
-        while True:
-            next_poll += 0.1
-            timeout = next_poll - time.time()
-            # Wait for a bit
-            try:
-                self.stop_progress_queue.get(timeout)
-            except TimeoutError:
-                # Consume updates and continue
-                self._calculate_completed_steps()
-            else:
-                # Consume the rest of the progress updates and stop
-                self._calculate_completed_steps()
-                return
 
     def _call_do_run(self):
         hook = self.Run
@@ -441,9 +408,12 @@ class RunnableController(ManagerController):
             self.run_hook(self.PostRunIdle, self.part_contexts)
 
     def update_completed_steps(self, completed_steps, part):
-        # This is run in the child thread
         with self._lock:
+            # Update
             self.progress_updates[part] = completed_steps
+            min_completed_steps = min(self.progress_updates.values())
+            if min_completed_steps > self.completed_steps.value:
+                self.completed_steps.set_value(min_completed_steps)
 
     @method_writeable_in(
         ss.READY, ss.CONFIGURING, ss.ARMED, ss.RUNNING, ss.POSTRUN, ss.PAUSED,

@@ -20,9 +20,8 @@ class TimeStamp(Serializable):
             self.secondsPastEpoch = np.int64(now)
             self.nanoseconds = np.int32(now % 1 / 1e-9)
         else:
-            # Assume we have been passed the right types...
-            self.secondsPastEpoch = secondsPastEpoch
-            self.nanoseconds = nanoseconds
+            self.secondsPastEpoch = np.int64(secondsPastEpoch)
+            self.nanoseconds = np.int32(nanoseconds)
         self.userTag = userTag
 
     def to_time(self):
