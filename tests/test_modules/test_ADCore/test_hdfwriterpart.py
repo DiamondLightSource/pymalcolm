@@ -117,7 +117,8 @@ class TestHDFWriterPart(unittest.TestCase):
             call.wait_all_futures(ANY),
             call.block_view().numCapture.put_value(0),
             call.block_view().start_async(),
-            call.block_view().when_value_matches_async('arrayCounter', 1)]
+            call.block_view().when_value_matches_async(
+                'arrayCounter', self.o._greater_than_zero)]
         expected_xml = """<?xml version="1.0" ?>
 <hdf5_layout>
 <group name="entry">

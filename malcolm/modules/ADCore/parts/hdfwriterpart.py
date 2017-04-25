@@ -140,11 +140,15 @@ class HDFWriterPart(StatefulChildPart):
         # Start the plugin
         self.start_future = child.start_async()
         # Start a future waiting for the first array
-        self.array_future = child.when_value_matches_async("arrayCounter", 1)
+        self.array_future = child.when_value_matches_async(
+            "arrayCounter", self._greater_than_zero)
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
             part_info, params.generator, filename))
         return dataset_infos
+
+    def _greater_than_zero(self, v):
+        return v > 0
 
     @RunnableController.PostRunReady
     @RunnableController.Seek
@@ -154,7 +158,8 @@ class HDFWriterPart(StatefulChildPart):
         # Just reset the array counter_block
         child.arrayCounter.put_value(0)
         # Start a future waiting for the first array
-        self.array_future = child.when_value_matches_async("arrayCounter", 1)
+        self.array_future = child.when_value_matches_async(
+            "arrayCounter", self._greater_than_zero)
 
     @RunnableController.Run
     @RunnableController.Resume
