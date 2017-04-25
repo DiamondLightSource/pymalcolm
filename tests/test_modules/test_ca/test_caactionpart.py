@@ -19,7 +19,7 @@ class caint(int):
     ok = True
     
 
-@patch("malcolm.modules.ca.parts.caactionpart.catools")
+@patch("malcolm.modules.ca.parts.caactionpart.CaToolsHelper")
 class TestCAActionPart(unittest.TestCase):
 
     def create_part(self, params=None):
@@ -44,24 +44,24 @@ class TestCAActionPart(unittest.TestCase):
 
     def test_reset(self, catools):
         p = self.create_part()
-        catools.caget.reset_mock()
-        catools.caget.return_value = [caint(4)]
+        p.catools.caget.reset_mock()
+        p.catools.caget.return_value = [caint(4)]
         p.connect_pvs("unused context object")
-        catools.caget.assert_called_with(["pv"])
+        p.catools.caget.assert_called_with(["pv"])
 
     def test_caput(self, catools):
         p = self.create_part()
-        catools.caput.reset_mock()
+        p.catools.caput.reset_mock()
         p.caput()
-        catools.caput.assert_called_once_with(
+        p.catools.caput.assert_called_once_with(
             "pv", 1, wait=True, timeout=None)
 
     def test_caput_status_pv_ok(self, catools):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", statusPv="spv",
             goodStatus="All Good"))
-        catools.caput.reset_mock()
-        catools.caget.return_value = "All Good"
+        p.catools.caput.reset_mock()
+        p.catools.caget.return_value = "All Good"
         p.caput()
 
     def test_caput_status_pv_no_good(self, catools):

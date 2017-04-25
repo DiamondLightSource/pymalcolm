@@ -1,5 +1,3 @@
-from cothread import catools
-
 from malcolm.modules.builtin.vmetas import ChoiceMeta
 from .capart import CAPart
 
@@ -11,7 +9,7 @@ class CAChoicePart(CAPart):
         return ChoiceMeta(description=description, tags=tags)
 
     def get_datatype(self):
-        return catools.DBR_ENUM
+        return self.catools.DBR_ENUM
 
     def set_initial_metadata(self, value):
         self.attr.meta.set_choices(value.enums)

@@ -22,7 +22,7 @@ class caint(int):
     raw_stamp = (340000, 43)
 
 
-@patch("malcolm.modules.ca.parts.capart.catools")
+@patch("malcolm.modules.ca.parts.capart.CaToolsHelper")
 class TestCAPart(unittest.TestCase):
 
     def create_part(self, params=None):
@@ -67,28 +67,28 @@ class TestCAPart(unittest.TestCase):
 
     def test_reset(self, catools):
         p = self.create_part()
-        catools.caget.return_value = [caint(4), caint(5)]
+        p.catools.caget.return_value = [caint(4), caint(5)]
         p.reset("unused context object")
-        catools.caget.assert_called_with(
+        p.catools.caget.assert_called_with(
             ["pv2", "pv"],
-            format=catools.FORMAT_CTRL, datatype=p.get_datatype())
-        catools.camonitor.assert_called_once_with(
-            "pv2", p.update_value, format=catools.FORMAT_TIME,
-            datatype=p.get_datatype(), notify_disconnect=True, all_updates=True)
+            format=p.catools.FORMAT_CTRL, datatype=p.get_datatype())
+        p.catools.camonitor.assert_called_once_with(
+            "pv2", p.monitor_callback, format=p.catools.FORMAT_TIME,
+            datatype=p.get_datatype(), notify_disconnect=True)
         self.assertEqual(p.attr.value, 4)
-        self.assertEqual(p.monitor, catools.camonitor())
+        self.assertEqual(p.monitor, p.catools.camonitor())
 
     def test_caput(self, catools):
         p = self.create_part()
-        catools.caput.reset_mock()
-        catools.caget.reset_mock()
-        catools.caget.return_value = caint(3)
+        p.catools.caput.reset_mock()
+        p.catools.caget.reset_mock()
+        p.catools.caget.return_value = caint(3)
         p.caput(32)
         datatype = p.get_datatype.return_value
-        catools.caput.assert_called_once_with(
+        p.catools.caput.assert_called_once_with(
             "pv", 32, wait=True, timeout=None, datatype=datatype)
-        catools.caget.assert_called_once_with(
-            "pv2", format=catools.FORMAT_TIME, datatype=datatype)
+        p.catools.caget.assert_called_once_with(
+            "pv2", format=p.catools.FORMAT_TIME, datatype=datatype)
         self.assertEqual(p.attr.value, 3)
 
     def test_close_monitor(self, catools):

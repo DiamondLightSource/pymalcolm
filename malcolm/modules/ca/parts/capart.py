@@ -1,10 +1,12 @@
-from cothread import catools
+import time
 
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.core import method_takes, REQUIRED, Alarm, AlarmStatus, TimeStamp
 from malcolm.modules.builtin.parts.attributepart import AttributePart
 from malcolm.tags import widget_types, inport, port_types
-from malcolm.modules.builtin.vmetas import StringMeta, ChoiceMeta, BooleanMeta
+from malcolm.modules.builtin.vmetas import StringMeta, ChoiceMeta, \
+    BooleanMeta, NumberMeta
+from .catoolshelper import CaToolsHelper
 
 
 @method_takes(
@@ -15,7 +17,9 @@ from malcolm.modules.builtin.vmetas import StringMeta, ChoiceMeta, BooleanMeta
     "rbvSuff", StringMeta("Set rbv ro pv + rbv_suff"), "",
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "inport", ChoiceMeta("Inport type", [""] + port_types), "",
-    "config", BooleanMeta("Should this field be loaded/saved?"), False)
+    "config", BooleanMeta("Should this field be loaded/saved?"), False,
+    "minDelta", NumberMeta(
+        "float64", "Minumum time between attribute updates in seconds"), 0.1)
 class CAPart(AttributePart):    
     def __init__(self, params):
         if not params.rbv and not params.pv:
@@ -27,6 +31,8 @@ class CAPart(AttributePart):
                 params.rbv = params.pv
         # Camonitor subscription
         self.monitor = None
+        self.catools = CaToolsHelper.instance()
+        self._update_after = 0
         super(CAPart, self).__init__(params)
 
     def get_writeable_func(self):
@@ -59,18 +65,18 @@ class CAPart(AttributePart):
         pvs = [self.params.rbv]
         if self.params.pv:
             pvs.append(self.params.pv)
-        ca_values = catools.caget(
-            pvs, format=catools.FORMAT_CTRL, datatype=self.get_datatype())
+        ca_values = self.catools.caget(
+            pvs, format=self.catools.FORMAT_CTRL, datatype=self.get_datatype())
         # check connection is ok
         for i, v in enumerate(ca_values):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
         self.set_initial_metadata(ca_values[0])
         self.update_value(ca_values[0])
         # now setup monitor on rbv
-        self.monitor = catools.camonitor(
-            self.params.rbv, self.update_value,
-            format=catools.FORMAT_TIME, datatype=self.get_datatype(),
-            notify_disconnect=True, all_updates=True)
+        self.monitor = self.catools.camonitor(
+            self.params.rbv, self.monitor_callback,
+            format=self.catools.FORMAT_TIME, datatype=self.get_datatype(),
+            notify_disconnect=True)
 
     @StatefulController.Disable
     def close_monitor(self, context=None):
@@ -84,14 +90,30 @@ class CAPart(AttributePart):
 
     def caput(self, value):
         value = self.format_caput_value(value)
-        catools.caput(
+        self.catools.caput(
             self.params.pv, value, wait=True, timeout=None,
             datatype=self.get_datatype())
         # now do a caget
-        value = catools.caget(
+        value = self.catools.caget(
             self.params.rbv,
-            format=catools.FORMAT_TIME, datatype=self.get_datatype())
+            format=self.catools.FORMAT_TIME, datatype=self.get_datatype())
         self.update_value(value)
+
+    def monitor_callback(self, value):
+        now = time.time()
+        delta = now - self._update_after
+        self.update_value(value)
+        # See how long to sleep for to make sure we don't get more than one
+        # update at < minDelta interval
+        if delta > self.params.minDelta:
+            # If we were more than minDelta late then reset next update time
+            self._update_after = now + self.params.minDelta
+        elif delta < 0:
+            # If delta is less than zero sleep for a bit
+            self.catools.cothread.Sleep(-delta)
+        else:
+            # If we were within the delta window just increment next update
+            self._update_after += self.params.minDelta
 
     def update_value(self, value):
         if not value.ok:
