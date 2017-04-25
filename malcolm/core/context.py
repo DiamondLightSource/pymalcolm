@@ -204,18 +204,25 @@ class Context(Loggable):
 
         Args:
             path (list): The path to wait to
-            good_value (object): the value to wait for
+            good_value: If it is a callable then expect it to return
+                True if we are satisfied and raise on error. If it is not
+                callable then compare each value against this one and return
+                if it matches.
             bad_values (list): values to raise an error on
 
         Returns:
             Future: a single Future that will resolve when the path matches
                 good_value or bad_values
         """
-        def condition_satisfied(value):
-            if bad_values and value in bad_values:
-                raise BadValueError(
-                    "Waiting for %r, got %r" % (good_value, value))
-            return value == good_value
+        if callable(good_value):
+            def condition_satisfied(value):
+                return good_value(value)
+        else:
+            def condition_satisfied(value):
+                if bad_values and value in bad_values:
+                    raise BadValueError(
+                        "Waiting for %r, got %r" % (good_value, value))
+                return value == good_value
 
         when = When(condition_satisfied)
         future = self.subscribe(path, when.check_condition)
@@ -241,14 +248,14 @@ class Context(Loggable):
         if not isinstance(futures, list):
             futures = [futures]
 
-        filtered_futures = []
+        filtered_futures = set()
 
         for f in futures:
             if f.done():
                 if f.exception() is not None:
                     raise f.exception()
             else:
-                filtered_futures.append(f)
+                filtered_futures.add(f)
 
         while filtered_futures:
             self._service_futures(filtered_futures, until)
@@ -262,11 +269,15 @@ class Context(Loggable):
         until = time.time() + seconds
         try:
             while True:
-                self._service_futures([], until)
+                self._service_futures(set(), until)
         except TimeoutError:
             return
 
     def _service_futures(self, futures, until=None):
+        """Args:
+            futures (set): The futures to service
+            until (float): Timestamp to wait until
+        """
         if until is None:
             timeout = None
         else:
@@ -293,12 +304,17 @@ class Context(Loggable):
                 controller = self.get_controller(request.path[0])
                 result = controller.validate_result(request.path[1], result)
             future.set_result(result)
-            if future in futures:
+            try:
                 futures.remove(future)
+            except KeyError:
+                pass
         elif isinstance(response, Error):
             future = self._futures.pop(response.id)
             del self._requests[future]
             future.set_exception(ResponseError(response.message))
-            if future in futures:
+            try:
                 futures.remove(future)
+            except KeyError:
+                pass
+            else:
                 raise future.exception()

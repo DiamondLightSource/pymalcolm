@@ -133,6 +133,18 @@ class TestContext(unittest.TestCase):
             call(Subscribe(1, ["block", "attr", "value"])),
             call(Unsubscribe(1))])
 
+    def test_when_matches_func(self):
+        self.o._q.put(Update(1, "value1"))
+        self.o._q.put(Return(1))
+
+        def f(value):
+            return value.startswith("v")
+
+        self.o.when_matches(["block", "attr", "value"], f, timeout=0.01)
+        self.assertEqual(self.controller.handle_request.call_args_list, [
+            call(Subscribe(1, ["block", "attr", "value"])),
+            call(Unsubscribe(1))])
+
     def test_when_not_matches(self):
         self.o._q.put(Update(1, "value2"))
         with self.assertRaises(BadValueError):
