@@ -1,6 +1,6 @@
 import time
 
-from malcolm.compat import OrderedDict
+from malcolm.compat import OrderedDict, maybe_import_cothread
 from malcolm.core import method_also_takes, Queue, TimeoutError, \
     call_with_params
 from malcolm.modules.builtin.controllers import BaseController, \
@@ -51,10 +51,11 @@ class PandABlocksManagerController(ManagerController):
             self._stop_queue = Queue()
             if self.client.started:
                 self.client.stop()
+            from socket import socket
             if self.use_cothread:
-                from cothread.cosocket import socket
-            else:
-                from socket import socket
+                cothread = maybe_import_cothread()
+                if cothread:
+                    from cothread.cosocket import socket
             self.client.start(self.spawn, socket)
         if not self._blocks_parts:
             self._make_blocks_parts()
