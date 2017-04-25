@@ -41,6 +41,14 @@ class MyPart(Part):
     def disable(self, context):
         self.disable_done = True
 
+    @StatefulController.Init
+    def init(self, context):
+        self.started = True
+
+    @StatefulController.Halt
+    def halt(self, context):
+        self.halted = True
+
 
 class TestStatefulController(unittest.TestCase):
     def setUp(self):
@@ -53,7 +61,22 @@ class TestStatefulController(unittest.TestCase):
 
     def start_process(self):
         self.process.start()
-        self.addCleanup(self.process.stop)
+        self.addCleanup(self.stop_process)
+
+    def stop_process(self):
+        if self.process.started:
+            self.process.stop()
+
+    def test_process_init(self, ):
+        assert not hasattr(self.part, "started")
+        self.start_process()
+        assert self.part.started
+
+    def test_process_stop(self):
+        self.start_process()
+        assert not hasattr(self.part, "halted")
+        self.process.stop()
+        assert self.part.halted
 
     def test_init(self):
         assert self.o.state.value == "Disabled"

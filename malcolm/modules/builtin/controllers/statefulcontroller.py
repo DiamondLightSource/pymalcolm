@@ -77,6 +77,22 @@ class StatefulController(BaseController):
     # Attributes
     state = None
 
+    Init = Hook()
+    """Called when this controller is told to start by the process
+
+    Args:
+        context (Context): The context that should be used to perform operations
+            on child blocks
+    """
+
+    Halt = Hook()
+    """Called when this controller is told to halt
+
+    Args:
+        context (Context): The context that should be used to perform operations
+            on child blocks
+    """
+
     Reset = Hook()
     """Called at reset() to reset all parts to a known good state
 
@@ -117,11 +133,11 @@ class StatefulController(BaseController):
         self.try_stateful_function(ss.RESETTING, ss.READY, self.do_init)
 
     def do_init(self):
-        super(StatefulController, self).init()
+        self.run_hook(self.Init, self.create_part_contexts())
 
     @Process.Halt
     def halt(self):
-        super(StatefulController, self).halt()
+        self.run_hook(self.Halt, self.create_part_contexts())
         self.disable()
 
     @method_takes()
