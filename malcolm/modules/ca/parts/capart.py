@@ -19,7 +19,7 @@ from .catoolshelper import CaToolsHelper
     "inport", ChoiceMeta("Inport type", [""] + port_types), "",
     "config", BooleanMeta("Should this field be loaded/saved?"), False,
     "minDelta", NumberMeta(
-        "float64", "Minumum time between attribute updates in seconds"), 0.1)
+        "float64", "Minumum time between attribute updates in seconds"), 0.05)
 class CAPart(AttributePart):    
     def __init__(self, params):
         if not params.rbv and not params.pv:

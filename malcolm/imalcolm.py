@@ -195,6 +195,7 @@ gui(self.block_view("COUNTER"))
 
 
 if __name__ == "__main__":
+    print "Loading..."
     import os
     import sys
 

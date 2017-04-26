@@ -120,12 +120,16 @@ class ManagerController(StatefulController):
     def __init__(self, process, parts, params):
         super(ManagerController, self).__init__(process, parts, params)
         # last saved layout and exports
-        self.saved_layout = None
+        self.saved_visibility = None
         self.saved_exports = None
         # ((name, AttributeModel/MethodModel, setter))
         self._current_part_fields = ()
         # [Subscribe]
         self._subscriptions = []
+        # {part_name: [PortInfo]}
+        self.port_info = {}
+        # {part_name: [ExportableInfo]}
+        self.exportable_info = {}
 
     def create_attributes(self):
         for data in super(ManagerController, self).create_attributes():
@@ -173,6 +177,8 @@ class ManagerController(StatefulController):
         super(ManagerController, self).do_init()
         # List the configDir and add to choices
         self._set_layout_names()
+        # Do an initial poll of the exportable parts
+        self.update_exportable(update_block=False)
         # This will trigger all parts to report their layout, making sure
         # the layout table has a valid value. It will also do
         # _update_block_endpoints()
@@ -187,12 +193,9 @@ class ManagerController(StatefulController):
         with self.changes_squashed:
             if not isinstance(value, Table):
                 value = Table(self.layout.meta, value)
-            port_part_info = PortInfo.filter_parts(self.run_hook(
-                self.ReportPorts, self.create_part_contexts(
-                    only_visible=False)))
             part_info = self.run_hook(
                 self.Layout, self.create_part_contexts(only_visible=False),
-                port_part_info, value)
+                self.port_info, value)
             layout_table = Table(self.layout.meta)
             layout_parts = LayoutInfo.filter_parts(part_info)
             for name, layout_infos in layout_parts.items():
@@ -212,12 +215,12 @@ class ManagerController(StatefulController):
             else:
                 visibility_changed = False
             self.layout.set_value(layout_table)
-            if not self.saved_layout:
+            if self.saved_visibility is None:
                 # First write of table, set layout and exports saves
-                self.saved_layout = layout_table.to_dict()
+                self.saved_visibility = layout_table.visible
                 self.saved_exports = self.exports.value.to_dict()
-            self.update_modified()
             if visibility_changed:
+                self.update_modified()
                 self.update_exportable(update_block=False)
                 if update_block:
                     # Part visibility changed, might have attributes or methods
@@ -247,7 +250,7 @@ class ManagerController(StatefulController):
             # Add in any modification messages from the layout and export tables
             try:
                 np.testing.assert_equal(
-                    self.layout.value.to_dict(), self.saved_layout)
+                    self.layout.value.visible, self.saved_visibility)
             except AssertionError:
                 message_list.append("layout changed")
             try:
@@ -265,17 +268,20 @@ class ManagerController(StatefulController):
 
     def update_exportable(self, update_block=True):
         with self.changes_squashed:
+            # Find the parts of every part
+            part_info = self.run_hook(
+                self.ReportPorts, self.create_part_contexts(only_visible=False))
+            self.port_info = PortInfo.filter_parts(part_info)
             # Find the exportable fields for each visible part
             part_info = self.run_hook(
                 self.ReportExportable, self.create_part_contexts())
+            self.exportable_info = ExportableInfo.filter_parts(part_info)
             names = []
-            # {part_name: [ExportableInfo()]
-            exportable = ExportableInfo.filter_parts(part_info)
-            for part_name, part_exportables in sorted(exportable.items()):
+            for part_name, part_exportables in sorted(
+                    self.exportable_info.items()):
                 for part_exportable in part_exportables:
                     names.append(
                         "%s.%s" % (part_name, part_exportable.name))
-            # TODO: store this... and use in _get_current_part_fields
             changed_names = set(names).symmetric_difference(
                 self.exports.meta.elements["name"].choices)
             changed_exports = changed_names.intersection(
@@ -321,12 +327,6 @@ class ManagerController(StatefulController):
                 for data in self.part_fields[part_name]:
                     yield data
 
-        # Find the exportable fields for each visible part
-        part_info = self.run_hook(
-            self.ReportExportable, self.create_part_contexts())
-        # {part_name: [ExportableInfo()]
-        exportable = ExportableInfo.filter_parts(part_info)
-
         # Add exported fields from visible parts
         for name, export_name in zip(
                 self.exports.value.name, self.exports.value.exportName):
@@ -336,8 +336,9 @@ class ManagerController(StatefulController):
                 continue
             if export_name == "":
                 export_name = field_name
-            exportable_infos = [x for x in exportable.get(part_name, [])
-                                if field_name == x.name]
+            exportable_infos = [
+                x for x in self.exportable_info.get(part_name, [])
+                if field_name == x.name]
             assert len(exportable_infos), \
                 "No (or multiple) ExportableInfo for %s" % name
             export, setter = self._make_export_field(exportable_infos[0])
@@ -470,7 +471,7 @@ class ManagerController(StatefulController):
             layout_structure["y"] = y
             layout_structure["visible"] = visible
             structure["layout"][name] = layout_structure
-        self.saved_layout = self.layout.value.to_dict()
+        self.saved_visibility = self.layout.value.visible
         # Add the exports table
         structure["exports"] = OrderedDict()
         for name, export_name in sorted(
@@ -492,7 +493,7 @@ class ManagerController(StatefulController):
                 part_name, "", part_structure["x"], part_structure["y"],
                 part_structure["visible"]])
         self.set_layout(layout_table, update_block=False)
-        self.saved_layout = self.layout.value.to_dict()
+        self.saved_visibility = self.layout.value.visible
         # Set the exports table
         exports_table = Table(self.exports.meta)
         for name, export_name in structure.get("exports", {}).items():

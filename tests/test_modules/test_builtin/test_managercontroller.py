@@ -130,8 +130,6 @@ class TestManagerController(unittest.TestCase):
             visible=[True])
         self.c.set_layout(new_layout)
         assert self.c.layout.value.x == [10]
-        assert self.c.modified.value == True
-        assert self.c.modified.alarm.message == "layout changed"
 
     def test_set_and_load_layout(self):
         new_layout = Table(self.c.layout.meta)

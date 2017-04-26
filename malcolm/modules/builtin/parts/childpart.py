@@ -1,3 +1,5 @@
+import re
+
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, REQUIRED, method_takes, serialize_object, \
     Attribute, Subscribe, Unsubscribe
@@ -6,6 +8,8 @@ from malcolm.modules.builtin.infos import ExportableInfo, PortInfo, \
     LayoutInfo, ModifiedInfo
 from malcolm.modules.builtin.vmetas import StringMeta
 
+
+port_tag_re = re.compile(r"(in|out)port:(.*):(.*)")
 
 @method_takes(
     "name", StringMeta("Name of the Part within the controller"), REQUIRED,
@@ -26,8 +30,10 @@ class ChildPart(Part):
         self.config_subscriptions = {}
         # Store params
         self.params = params
+        # Don't do first update
+        self._do_update = False
         super(ChildPart, self).__init__(params.name)
-        
+
     @ManagerController.Init
     def init(self, context):
         # Save what we have
@@ -47,11 +53,10 @@ class ChildPart(Part):
     @ManagerController.ReportPorts
     def report_ports(self, context):
         child = context.block_view(self.params.mri)
-        port_infos = list(self._get_flowgraph_ports(child, "in").values())
-        port_infos += list(self._get_flowgraph_ports(child, "out").values())
+        port_infos = list(self._get_flowgraph_ports(child).values())
         return port_infos
 
-    def _get_flowgraph_ports(self, child, direction):
+    def _get_flowgraph_ports(self, child, direction=None):
         """Get a PortInfo for each flowgraph of the child matching a direction
 
         Args:
@@ -65,13 +70,13 @@ class ChildPart(Part):
             attr = getattr(child, attr_name)
             if isinstance(attr, Attribute):
                 for tag in attr.meta.tags:
-                    if tag.startswith("%sport" % direction):
-                        direction, type, extra = tag.split(":", 3)
-                        # Strip of the "port" suffix
-                        direction = direction[:-4]
-                        ports[attr_name] = PortInfo(
-                            direction=direction, type=type, value=attr.value,
-                            extra=extra)
+                    match = port_tag_re.match(tag)
+                    if match:
+                        d, type, extra = match.groups()
+                        if direction is None or d == direction:
+                            ports[attr_name] = PortInfo(
+                                direction=d, type=type, value=attr.value,
+                                extra=extra)
         return ports
 
     def update_exportable(self, response):
@@ -106,24 +111,29 @@ class ChildPart(Part):
                                       callback=self.update_modified)
                 self.config_subscriptions[new_id] = subscribe
                 # Signal that any change we get is a difference
-                if attr not in self.saved_structure:
-                    self.saved_structure[attr] = None
+                if field not in self.saved_structure:
+                    self.saved_structure[field] = None
                 spawned.append(
                     self.child_controller.handle_request(subscribe))
 
-        # Wait for them to finish
+        # Wait for the first update to come in
         for s in spawned:
             s.wait()
 
-        # Tell the controller we have new fields to export
-        self.controller.update_exportable()
+        # Tell the controller we have new fields to export unless at init
+        if self._do_update:
+            self.controller.update_exportable()
+        else:
+            self._do_update = True
 
     def update_modified(self, response):
-        # Tell the controller to update if the value has changed from saved
-        subscribe = self.config_subscriptions[response.id]
-        attr = subscribe.path[-2]
-        if self.saved_structure[attr] != response.value:
-            self.controller.update_modified()
+        # Ignore initial updates
+        if self._do_update:
+            # Tell the controller to update if the value has changed from saved
+            subscribe = self.config_subscriptions[response.id]
+            attr = subscribe.path[-2]
+            if self.saved_structure[attr] != response.value:
+                self.controller.update_modified()
 
     @ManagerController.ReportExportable
     def report_exportable(self, context):
@@ -138,10 +148,9 @@ class ChildPart(Part):
     def report_modified(self, context):
         child = context.block_view(self.params.mri)
         ret = []
-        for name in child:
+        for name, original_value in self.saved_structure.items():
             attr = getattr(child, name)
             if isinstance(attr, Attribute) and "config" in attr.meta.tags:
-                original_value = self.saved_structure[name]
                 current_value = serialize_object(attr.value)
                 if original_value != current_value:
                     ret.append(
@@ -152,13 +161,19 @@ class ChildPart(Part):
     def layout(self, context, part_info, layout_table):
         # if this is the first call, we need to calculate if we are visible
         # or not
-        child = context.block_view(self.params.mri)
+        child = None
         if self.visible is None:
+            if child is None:
+                child = context.block_view(self.params.mri)
             self.visible = self.child_connected(child, part_info)
         for i, name in enumerate(layout_table.name):
-            _, _, x, y, visible = layout_table[i]
+            x = layout_table.x[i]
+            y = layout_table.y[i]
+            visible = layout_table.visible[i]
             if name == self.name:
                 if self.visible and not visible:
+                    if child is None:
+                        child = context.block_view(self.params.mri)
                     self.sever_inports(child)
                 self.x = x
                 self.y = y
@@ -171,6 +186,8 @@ class ChildPart(Part):
                         if outport_info.direction == "out":
                             outport_lookup[outport_info.value] = \
                                 outport_info.type
+                    if child is None:
+                        child = context.block_view(self.params.mri)
                     self.sever_inports(child, outport_lookup)
                 self.part_visible[name] = visible
         ret = LayoutInfo(
