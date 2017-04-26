@@ -1,10 +1,10 @@
 from malcolm.modules.scanning.controllers import RunnableController, \
     configure_args
 from malcolm.core import method_takes
-from malcolm.modules.ADCore.parts import DetectorDriverPart
+from malcolm.modules.ADCore.parts import ExposureDetectorDriverPart
 
 
-class XmapDriverPart(DetectorDriverPart):
+class XmapDriverPart(ExposureDetectorDriverPart):
     @RunnableController.Configure
     @RunnableController.PostRunReady
     @RunnableController.Seek

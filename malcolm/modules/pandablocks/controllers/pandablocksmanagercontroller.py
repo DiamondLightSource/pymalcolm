@@ -115,6 +115,7 @@ class PandABlocksManagerController(ManagerController):
         self.handle_changes(self.client.get_changes())
         # Then once more to let bit_outs toggle back
         self.handle_changes({})
+        assert not self.changes, "There are still changes %s" % self.changes
 
     def _make_child_controller(self, parts, mri):
         controller = call_with_params(

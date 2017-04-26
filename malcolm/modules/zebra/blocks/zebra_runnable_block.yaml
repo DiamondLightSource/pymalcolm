@@ -14,7 +14,7 @@
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- ADPandABlocks.parts.PandABlocksDriverPart:
+- ADCore.parts.DetectorDriverPart:
     name: DRV
     mri: $(mriPrefix):DRV
 

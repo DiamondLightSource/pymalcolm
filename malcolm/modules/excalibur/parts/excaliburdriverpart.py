@@ -1,7 +1,7 @@
-from malcolm.modules.ADCore.parts import DetectorDriverPart
+from malcolm.modules.ADCore.parts import ExposureDetectorDriverPart
 
 
-class ExcaliburDriverPart(DetectorDriverPart):
+class ExcaliburDriverPart(ExposureDetectorDriverPart):
     def post_configure(self, context, params):
         child = context.block_view(self.params.mri)
         if child.triggerMode.value == "Internal":

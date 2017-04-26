@@ -23,31 +23,6 @@ class TestPandaABoxDriverPart(unittest.TestCase):
         self.o = PandABlocksDriverPart(self.params)
         list(self.o.create_attributes())
 
-    def test_configure(self):
-        completed_steps = 0
-        steps_to_do = 6
-        part_info = ANY
-        self.o.configure(self.context, completed_steps, steps_to_do, part_info)
-        assert self.context.mock_calls == [
-            call.block_view("mri"),
-            call.unsubscribe_all(),
-            call.block_view().put_attribute_values(dict(
-                imageMode="Multiple",
-                numImages=steps_to_do,
-                arrayCounter=completed_steps,
-                arrayCallbacks=True)),
-            call.block_view().start_async()]
-
-    def test_run(self):
-        update_completed_steps = MagicMock()
-        self.o.start_future = MagicMock()
-        self.o.run(self.context, update_completed_steps)
-        assert self.context.mock_calls == [
-            call.block_view("mri"),
-            call.block_view().arrayCounter.subscribe_value(
-                update_completed_steps, self.o),
-            call.wait_all_futures(self.o.start_future)]
-
     def test_abort(self):
         self.o.abort(self.context)
         assert self.context.mock_calls == [

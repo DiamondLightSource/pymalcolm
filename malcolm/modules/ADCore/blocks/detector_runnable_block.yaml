@@ -18,7 +18,7 @@
     mri: $(mriPrefix)-DRV
     prefix: $(pvPrefix):DET
 
-- ADCore.parts.DetectorDriverPart:
+- ADCore.parts.ExposureDetectorDriverPart:
     name: DRV
     mri: $(mriPrefix)-DRV
     readoutTime: 120e-6
