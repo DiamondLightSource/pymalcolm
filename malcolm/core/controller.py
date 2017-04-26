@@ -39,7 +39,10 @@ class Controller(Loggable):
         # {Part: Alarm} for current faults
         self._faults = {}
         # {Hook: name}
-        self._hook_names = self._find_hooks()
+        self._hook_names = {}
+        # {Hook: {Part: func_name}}
+        self._hooked_func_names = {}
+        self._find_hooks()
         # {part_name: (field_name, Model, setter)
         self.part_fields = OrderedDict()
         # {name: Part}
@@ -60,18 +63,19 @@ class Controller(Loggable):
             assert part_hook in self._hook_names, \
                 "Part %s func %s not hooked into %s" % (
                     part.name, func_name, self)
+            self._hooked_func_names[part_hook][part] = func_name
         part_fields = list(part.create_attributes()) + \
                       list(part.create_methods())
         self.parts[part.name] = part
         self.part_fields[part.name] = part_fields
 
     def _find_hooks(self):
-        hook_names = {}
         for name, member in inspect.getmembers(self, Hook.isinstance):
-            assert member not in hook_names, \
-                "Hook %s already in %s as %s" % (self, name, hook_names[member])
-            hook_names[member] = name
-        return hook_names
+            assert member not in self._hook_names, \
+                "Hook %s already in %s as %s" % (
+                    self, name, self._hook_names[member])
+            self._hook_names[member] = name
+            self._hooked_func_names[member] = {}
 
     def _add_block_fields(self):
         for iterable in (self.create_attributes(), self.create_methods(),
@@ -316,16 +320,15 @@ class Controller(Loggable):
 
         # This queue will hold (part, result) tuples
         hook_queue = Queue()
-
-        # ask the hook to find the functions it should run
-        part_funcs = hook.find_hooked_functions(part_contexts)
         hook_runners = {}
 
         # now start them off
-        for part, func_name in part_funcs.items():
-            context = part_contexts[part]
-            hook_runners[part] = part.make_hook_runner(
-                hook_queue, func_name, weakref.proxy(context), *args, **params)
+        for part, context in part_contexts.items():
+            func_name = self._hooked_func_names[hook].get(part, None)
+            if func_name:
+                hook_runners[part] = part.make_hook_runner(
+                    hook_queue, func_name, weakref.proxy(context), *args,
+                    **params)
 
         return hook_queue, hook_runners
 

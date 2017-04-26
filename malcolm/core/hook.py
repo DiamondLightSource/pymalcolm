@@ -1,7 +1,5 @@
 import inspect
 
-from malcolm.compat import str_
-
 
 class Hook(object):
     def __call__(self, func):
@@ -22,22 +20,6 @@ class Hook(object):
     @classmethod
     def isinstance(cls, o):
         return isinstance(o, cls)
-
-    def find_hooked_functions(self, part_list):
-        # Filter part dict to find parts that have a function hooked to us
-        # {Part: func_name}
-        part_funcs = {}
-
-        for part in part_list:
-            assert not isinstance(part, str_), \
-                "Needed Part, got %r" % part
-            for func_name, part_hook, func in get_hook_decorated(part):
-                if part_hook is self:
-                    assert part not in part_funcs, \
-                        "Function %s is second defined for a hook" % func_name
-                    part_funcs[part] = func_name
-
-        return part_funcs
 
 
 def get_hook_decorated(part):

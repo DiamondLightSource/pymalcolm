@@ -60,15 +60,6 @@ class TestHook(unittest.TestCase):
             ("do_the_other_thing", DummyController.Running, inst.do_the_other_thing),
             ("do_thing", DummyController.Configuring, inst.do_thing)])
 
-    def test_find_hooked_functions(self):
-        inst1 = DummyPart1()
-        inst2 = DummyPart2()
-        parts = dict(inst1=inst1, inst2=inst2)
-        func_tasks = DummyController().Configuring.find_hooked_functions(
-            parts.values())
-        self.assertEqual(func_tasks, {
-            inst1: "do_thing",
-            inst2: "do_all_the_things"})
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

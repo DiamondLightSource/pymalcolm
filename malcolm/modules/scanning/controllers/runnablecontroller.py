@@ -263,8 +263,7 @@ class RunnableController(ManagerController):
     def update_configure_args(self):
         with self.changes_squashed:
             # Look for all parts that hook into Configure
-            configure_funcs = self.Configure.find_hooked_functions(
-                self.parts.values())
+            configure_funcs = self._hooked_func_names[self.Configure]
             method_models = []
             for part, func_name in configure_funcs.items():
                 method_models.append(part.method_models[func_name])

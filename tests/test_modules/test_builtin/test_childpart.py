@@ -139,9 +139,9 @@ class TestChildPart(unittest.TestCase):
     def test_sever_all_inports(self):
         b1, b2, b3 = (self.c1.block_view(), self.c2.block_view(),
                       self.c3.block_view())
-        b1.inportConnector.value = 'Connector'
-        b2.inportConnector.value = 'Connector'
-        b3.inportConnector.value = 'Connector3'
+        b1.inportConnector.put_value('Connector')
+        b2.inportConnector.put_value('Connector')
+        b3.inportConnector.put_value('Connector3')
 
         self.p1.sever_inports(b1)
         assert b1.inportConnector.value == ''
@@ -151,7 +151,7 @@ class TestChildPart(unittest.TestCase):
     def test_sever_inports_connected_to(self):
         b1 = self.c1.block_view()
 
-        b1.inportConnector.value = 'Connector'
+        b1.inportConnector.put_value('Connector')
         assert b1.inportConnector.value == 'Connector'
 
         lookup = {'Connector': 'int32'}
@@ -164,7 +164,7 @@ class TestChildPart(unittest.TestCase):
         structure1 = self.p1.save(context)
         expected = dict(inportConnector="")
         assert structure1 == expected
-        b1.inportConnector.value = "blah"
+        b1.inportConnector.put_value("blah")
         structure2 = self.p1.save(context)
         expected = dict(inportConnector="blah")
         assert structure2 == expected

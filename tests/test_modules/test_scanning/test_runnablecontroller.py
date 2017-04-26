@@ -160,7 +160,7 @@ class TestRunnableController(unittest.TestCase):
         self.checkSteps(2, 1, 6)
         self.b.run()
         self.checkSteps(4, 2, 6)
-        self.b.completedSteps.value = 5
+        self.b.completedSteps.put_value(5)
         self.checkSteps(6, 5, 6)
         self.b.run()
         self.checkState(self.ss.READY)

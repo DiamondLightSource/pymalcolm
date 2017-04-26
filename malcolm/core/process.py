@@ -1,8 +1,9 @@
 from multiprocessing.pool import ThreadPool
+import inspect
 
 from malcolm.compat import OrderedDict, maybe_import_cothread
 from .context import Context
-from .hook import Hook
+from .hook import Hook, get_hook_decorated
 from .loggable import Loggable
 from .spawned import Spawned
 from .rlock import RLock
@@ -35,6 +36,17 @@ class Process(Loggable):
         self._spawned = []
         self._thread_pool = None
         self._lock = RLock()
+        self._hooked_func_names = {}
+        self._hook_names = {}
+        self._find_hooks()
+
+    def _find_hooks(self):
+        for name, member in inspect.getmembers(self, Hook.isinstance):
+            assert member not in self._hook_names, \
+                "Hook %s already in %s as %s" % (
+                    self, name, self._hook_names[member])
+            self._hook_names[member] = name
+            self._hooked_func_names[member] = {}
 
     def start(self, timeout=None):
         """Start the process going
@@ -59,11 +71,13 @@ class Process(Loggable):
         # but swallowing any errors
         if controller_list is None:
             controller_list = self._controllers.values()
-        controller_funcs = hook.find_hooked_functions(controller_list)
+
         spawned = []
-        for controller, func_name in controller_funcs.items():
-            func = getattr(controller, func_name)
-            spawned.append(controller.spawn(func, *args))
+        for controller in controller_list:
+            func_name = self._hooked_func_names[hook].get(controller, None)
+            if func_name:
+                func = getattr(controller, func_name)
+                spawned.append(controller.spawn(func, *args))
         for s in spawned:
             s.wait(timeout)
 
@@ -139,6 +153,11 @@ class Process(Loggable):
             assert mri not in self._controllers, \
                 "Controller already exists for %s" % mri
             self._controllers[mri] = controller
+            for func_name, hook, _ in get_hook_decorated(controller):
+                assert hook in self._hook_names, \
+                    "Controller %s func %s not hooked into %s" % (
+                        mri, func_name, self)
+                self._hooked_func_names[hook][controller] = func_name
             if publish:
                 self._published.append(mri)
         if self.started:
@@ -159,6 +178,8 @@ class Process(Loggable):
     def _remove_controller(self, mri, timeout):
         with self._lock:
             controller = self._controllers.pop(mri)
+            for d in self._hooked_func_names.values():
+                d.pop(controller, None)
             if mri in self._published:
                 self._published.remove(mri)
         if self.started:
