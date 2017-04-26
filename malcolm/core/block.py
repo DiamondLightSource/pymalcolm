@@ -1,5 +1,5 @@
 from .methodmodel import MethodModel
-from .view import View
+from .view import View, make_get_property
 
 
 class Block(View):
@@ -20,7 +20,7 @@ class Block(View):
             child = getattr(self, endpoint)
             return child.post_async(*args, **kwargs)
 
-        setattr(self, "%s_async" % endpoint, post_async)
+        object.__setattr__(self, "%s_async" % endpoint, post_async)
 
     def put_attribute_values_async(self, params):
         futures = []
@@ -45,3 +45,16 @@ class Block(View):
         path = self._data.path + [attr, "value"]
         future = self._context.when_matches_async(path, good_value, bad_values)
         return future
+
+
+def make_block_view(controller, context, data):
+    class BlockSubclass(Block):
+        def __init__(self):
+            self._do_init(controller, context, data)
+
+    for endpoint in data:
+        # make properties for the endpoints we know about
+        make_get_property(BlockSubclass, endpoint)
+
+    block = BlockSubclass()
+    return block

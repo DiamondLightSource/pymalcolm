@@ -6,10 +6,9 @@ import unittest
 from mock import Mock
 
 # module imports
-from malcolm.core.block import Block
+from malcolm.core.block import make_block_view
 from malcolm.core.blockmodel import BlockModel
 from malcolm.core.methodmodel import MethodModel
-from malcolm.core.view import make_view
 from malcolm.modules.builtin.vmetas import StringMeta
 
 
@@ -21,7 +20,7 @@ class TestBlock(unittest.TestCase):
         self.data.set_notifier_path(Mock(), ["block"])
         self.controller = Mock()
         self.context = Mock()
-        self.o = make_view(self.controller, self.context, self.data, Block)
+        self.o = make_block_view(self.controller, self.context, self.data)
 
     def test_init(self):
         self.assertTrue(hasattr(self.o, "attr"))

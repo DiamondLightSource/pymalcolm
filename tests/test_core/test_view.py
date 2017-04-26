@@ -42,17 +42,6 @@ class TestView(unittest.TestCase):
         self.assertFalse(hasattr(self.o, "a"))
         self.assertFalse(hasattr(self.o, "subscribe_a"))
 
-    def test_custom_subclass(self):
-        class MySubclass(View):
-            @property
-            def boo(self):
-                return "boo"
-
-        o2 = make_view(self.controller, self.context, self.data, MySubclass)
-        self.assertIsInstance(o2, MySubclass)
-        self.assertNotEqual(type(o2), MySubclass)
-        self.assertEqual(o2.boo, "boo")
-
     def test_subscribe_view(self):
         cb = Mock()
         f = self.o.subscribe_label(cb)

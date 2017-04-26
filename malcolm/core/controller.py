@@ -6,7 +6,7 @@ from malcolm.compat import OrderedDict
 from .alarm import Alarm
 from .attribute import Attribute
 from .attributemodel import AttributeModel
-from .block import Block
+from .block import Block, make_block_view
 from .blockmodel import BlockModel
 from .context import Context
 from .errors import UnexpectedError, AbortedError, WrongThreadError
@@ -186,16 +186,16 @@ class Controller(Loggable):
 
     def _make_appropriate_view(self, context, data):
         if isinstance(data, BlockModel):
-            # Make an Attribute View
-            return make_view(self, context, data, Block)
+            # Make an Block View
+            return make_block_view(self, context, data)
         elif isinstance(data, AttributeModel):
             # Make an Attribute View
-            return make_view(self, context, data, Attribute)
+            return Attribute(self, context, data)
         elif isinstance(data, MethodModel):
             # Make a Method View
-            return make_view(self, context, data, Method)
+            return Method(self, context, data)
         elif isinstance(data, Model):
-            # Make a view of it
+            # Make a generic View of it
             return make_view(self, context, data)
         elif isinstance(data, dict):
             # Need to recurse down

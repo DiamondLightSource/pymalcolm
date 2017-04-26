@@ -8,7 +8,6 @@ from mock import Mock
 
 from malcolm.core.attribute import Attribute
 from malcolm.core.ntscalar import NTScalar
-from malcolm.core.view import make_view
 from malcolm.modules.builtin.vmetas import StringMeta
 
 
@@ -18,7 +17,7 @@ class TestAttribute(unittest.TestCase):
         self.data.set_notifier_path(Mock(), ["block", "attr"])
         self.controller = Mock()
         self.context = Mock()
-        self.o = make_view(self.controller, self.context, self.data, Attribute)
+        self.o = Attribute(self.controller, self.context, self.data)
 
     def test_init(self):
         self.assertIsInstance(self.o, Attribute)
@@ -26,10 +25,6 @@ class TestAttribute(unittest.TestCase):
         self.assertTrue(hasattr(self.o, "subscribe_meta"))
         self.assertTrue(hasattr(self.o, "value"))
         self.assertTrue(hasattr(self.o, "subscribe_value"))
-
-    def test_put_setattr(self):
-        self.o.value = 32
-        self.context.put.assert_called_once_with(["block", "attr", "value"], 32)
 
     def test_put(self):
         self.o.put_value(32)
