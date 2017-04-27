@@ -1,6 +1,8 @@
 import unittest
 from mock import Mock, MagicMock, call, patch, ANY
 
+import numpy as np
+
 from malcolm.core import call_with_params, Context
 from malcolm.modules.pmac.parts import PmacTrajectoryPart
 from malcolm.modules.pmac.infos import MotorInfo
@@ -100,7 +102,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 velocityMode=[0, 0, 0, 0, 2],
                 userPrograms=[8, 8, 8, 8, 8],
                 pointsToBuild=5,
-                positionsA=[0.44617968749999998, 0.28499999999999998,
+                positionsA=[0.4461796875, 0.285,
                             0.077499999999999958, -0.083679687500000072,
                             -0.13750000000000007],
                 positionsB=[0.0, 0.0, 0.0, 0.0, 0.0])),
