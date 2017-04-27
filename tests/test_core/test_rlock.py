@@ -1,55 +1,82 @@
 import unittest
-from cothread import Spawn, Yield
 
 from malcolm.core.rlock import RLock
+from multiprocessing.pool import ThreadPool
+from malcolm.core.spawned import Spawned
+from malcolm.core.queue import Queue
+from malcolm.core.errors import TimeoutError
+
+
+def sleep(t):
+    try:
+        Queue().get(timeout=t)
+    except TimeoutError:
+        # that's how long we wanted to sleep for
+        pass
 
 
 class TestLockCothread(unittest.TestCase):
 
     def setUp(self):
-        self.o = RLock()
+        self.pool = ThreadPool(4)
         self.v = None
 
-    def test_lock_allows_other_unlocked_cothreads(self):
+    def do_spawn(self, func, use_cothread, *args, **kwargs):
+        return Spawned(func, args, kwargs, use_cothread, self.pool)
+
+    def do_spawn_unlocked(self, use_cothread):
+        l = RLock(use_cothread)
+
         def set_v1():
             self.v = 1
 
         # check our setter works in isolation
-        Spawn(set_v1).Wait()
+        self.do_spawn(set_v1, use_cothread).wait()
         self.assertEqual(self.v, 1)
 
         # now do a long running task works
-        with self.o:
+        with l:
             self.v = 2
             self.assertEqual(self.v, 2)
-            Spawn(set_v1).Wait()
+            self.do_spawn(set_v1, use_cothread).wait()
             self.assertEqual(self.v, 1)
 
         self.assertEqual(self.v, 1)
 
-    def test_locked_blocks_other_cothreads(self):
+    def do_spawn_locked(self, use_cothread):
+        l = RLock(use_cothread)
+
         def set_v1():
-            with self.o:
+            with l:
                 self.v = 1
 
         # check our setter works in isolation
         self.assertEqual(self.v, None)
-        Spawn(set_v1).Wait()
+        self.do_spawn(set_v1, use_cothread).wait()
         self.assertEqual(self.v, 1)
 
         # now do a long running task works
-        with self.o:
+        with l:
             self.v = 2
             self.assertEqual(self.v, 2)
-            # start our thing that will be blocked, then yield to make sure
-            # it can't set our variable
-            Spawn(set_v1)
-            Yield()
-            Yield()
-            Yield()
+            # start our thing that will be blocked, then sleep to make sure
+            # it can't do its thing
+            s = self.do_spawn(set_v1, use_cothread)
+            sleep(0.2)
             self.assertEqual(self.v, 2)
 
-        self.assertEqual(self.v, 2)
-        # let the other cothread get a lookin
-        Yield()
+        # now wait for the other to complete, and check it could
+        s.wait()
         self.assertEqual(self.v, 1)
+
+    def test_allowed_unlocked_threads_cothread(self):
+        self.do_spawn_unlocked(True)
+
+    def test_allowed_unlocked_threads_no_cothread(self):
+        self.do_spawn_unlocked(False)
+
+    def test_locked_threads_not_allowed_cothread(self):
+        self.do_spawn_locked(True)
+
+    def test_locked_threads_not_allowed_no_cothread(self):
+        self.do_spawn_locked(False)
