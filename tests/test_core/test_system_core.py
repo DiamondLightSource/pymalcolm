@@ -1,10 +1,5 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
 
-# module imports
 from malcolm.core import call_with_params, Process, Post, Subscribe, Return, \
     Update, Controller, Queue, TimeoutError
 from malcolm.modules.demo.parts import HelloPart, CounterPart
@@ -63,6 +58,3 @@ class TestCounterDemoSystem(unittest.TestCase):
         self.assertEqual(response.value, None)
         with self.assertRaises(TimeoutError):
             q.get(timeout=0.05)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

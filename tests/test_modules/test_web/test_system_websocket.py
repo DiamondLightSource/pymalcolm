@@ -1,16 +1,9 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
-
-# tornado
-from tornado.websocket import websocket_connect
-from tornado import gen
 import json
 
+from tornado.websocket import websocket_connect
+from tornado import gen
 
-# module imports
 from malcolm.core import Process, call_with_params, Queue, Context, \
     ResponseError
 from malcolm.modules.builtin.blocks import proxy_block
@@ -73,9 +66,6 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.server = call_with_params(
             web_server_block, self.process, mri="server", port=self.socket)
         self.process.start()
-        # If we don't wait long enough, sometimes the websocket_connect()
-        # in process2 will hang...
-        #time.sleep(1)
         self.process2 = Process("proc2")
         self.client = call_with_params(
             websocket_client_block, self.process2, mri="client",
@@ -111,6 +101,3 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.assertEqual(block2.counter.value, 0)
         assert self.client.remote_blocks.value == (
             "hello", "counter", "server")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

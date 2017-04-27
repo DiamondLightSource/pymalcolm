@@ -1,9 +1,3 @@
-import os
-import sys
-from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-import setup_malcolm_paths
 import unittest
 
 from malcolm.modules.builtin.vmetas import ChoiceArrayMeta

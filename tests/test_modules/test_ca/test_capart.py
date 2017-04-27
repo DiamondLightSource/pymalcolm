@@ -1,16 +1,6 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import MagicMock, patch
 
-# logging
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-
-# module imports
 from malcolm.core import call_with_params, AlarmSeverity, AlarmStatus
 from malcolm.modules.builtin.vmetas import NumberMeta
 from malcolm.modules.ca.parts.capart import CAPart
@@ -120,6 +110,3 @@ class TestCAPart(unittest.TestCase):
         self.assertEqual(p.attr.alarm.severity, AlarmSeverity.INVALID_ALARM)
         self.assertEqual(p.attr.alarm.status, AlarmStatus.DEVICE_STATUS)
         self.assertEqual(p.attr.alarm.message, "PV disconnected")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

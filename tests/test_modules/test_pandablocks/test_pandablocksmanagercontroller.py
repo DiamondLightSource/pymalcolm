@@ -1,9 +1,4 @@
-import os
-import sys
 from collections import OrderedDict
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
 from mock import call, Mock, patch, ANY
 
@@ -139,7 +134,3 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
             call('PCOMP.STEP.SCALE=1\n'),
             call('PCOMP.STEP.UNITS=\n')
         ]
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

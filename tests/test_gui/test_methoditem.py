@@ -1,13 +1,7 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
 from collections import OrderedDict
 from mock import MagicMock, patch
 
-# module imports
 from malcolm.gui.methoditem import MethodItem
 from malcolm.core.response import Delta, Return, Error
 from malcolm.core.request import Post
@@ -72,7 +66,3 @@ class TestMethodItem(unittest.TestCase):
     def test_handle_response_unknown(self):
         response = Delta(changes=[])
         self.assertRaises(TypeError, self.item.handle_response, response)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
-

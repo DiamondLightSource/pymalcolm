@@ -1,10 +1,4 @@
-import os
-import sys
 import unittest
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-import setup_malcolm_paths
-
 from mock import MagicMock, patch
 
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
@@ -36,6 +30,3 @@ class TestPointGeneratorMeta(unittest.TestCase):
     def test_validate_raises(self):
         with self.assertRaises(TypeError):
             self.PGM.validate(7)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

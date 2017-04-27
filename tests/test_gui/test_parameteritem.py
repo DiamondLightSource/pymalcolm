@@ -1,12 +1,6 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import MagicMock
 
-# module imports
 from malcolm.gui.parameteritem import ParameterItem
 
 
@@ -40,8 +34,3 @@ class TestParameterItem(unittest.TestCase):
 
     def test_get_writeable(self):
         self.assertEqual(self.item.get_writeable(), self.item.ref.writeable)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
-

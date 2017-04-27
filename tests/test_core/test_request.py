@@ -1,13 +1,8 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
+import unittest
+from mock import MagicMock
 
 from malcolm.core.request import Request, Get, Post, Subscribe, Unsubscribe, Put
 from malcolm.core.response import Return, Error, Update, Delta
-
-import unittest
-from mock import MagicMock, patch
 
 
 class TestRequest(unittest.TestCase):
@@ -141,6 +136,3 @@ class TestUnsubscribe(unittest.TestCase):
 
     def test_keys_same(self):
         self.assertEqual(self.subscribes[self.o.generate_key()], self.subscribe)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

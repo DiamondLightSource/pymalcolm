@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
 
 from malcolm.core import Process, call_with_params
@@ -21,6 +17,3 @@ class TestClientComms(unittest.TestCase):
     def test_abstract(self):
         with self.assertRaises(NotImplementedError):
             self.o.send_to_server("anything")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

@@ -1,26 +1,18 @@
-import logging
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import MagicMock, ANY, call, patch
+from mock import MagicMock, ANY, call
 import time
-import weakref
 
-#module imports
 from malcolm.core.context import Context
 from malcolm.core.errors import ResponseError, TimeoutError, BadValueError, \
-                                AbortedError, UnexpectedError
+    AbortedError
 from malcolm.core.request import Put, Post, Subscribe, Unsubscribe
 from malcolm.core.response import Error, Return, Update
 from malcolm.core.process import Process
 from malcolm.core.future import Future
-from malcolm.compat import queue, maybe_import_cothread
+from malcolm.compat import maybe_import_cothread
 
-class TestWarning(Exception):
+
+class MyWarning(Exception):
     pass
 
 
@@ -33,7 +25,7 @@ class TestContext(unittest.TestCase):
         self.cothread = maybe_import_cothread()
 
     def test_block_view(self):
-        block = self.o.block_view("block")
+        self.o.block_view("block")
         self.controller.make_view.assert_called_once_with(ANY)
 
     def test_put(self):
@@ -75,7 +67,7 @@ class TestContext(unittest.TestCase):
         cb.assert_called_once_with("value1", ANY, 'arg2')
         # since args = self.o it should be a weak proxy in second argument
         param1 = cb.call_args[0][1]
-        # Todo giles cant work out how to check weakproxy equivalence??
+        # TODO: giles cant work out how to check weakproxy equivalence??
         # self.assertEquals(param1, self.o)
         cb.reset_mock()
         self.o._q.put(Update(1, "value2"))
@@ -86,15 +78,15 @@ class TestContext(unittest.TestCase):
 
     def test_subscribe_cb_failure(self):
         def cb(value):
-            raise TestWarning()
+            raise MyWarning()
 
         f = self.o.subscribe(["block", "attr", "value"], cb)
         self.o._q.put(Update(1, "value1"))
-        with self.assertRaises(TestWarning):
+        with self.assertRaises(MyWarning):
             self.o.wait_all_futures(f, 0.01)
         self.assertFalse(f.done())
         self.o._q.put(Update(1, "value1"))
-        with self.assertRaises(TestWarning):
+        with self.assertRaises(MyWarning):
             self.o.wait_all_futures(f, 0.01)
         self.assertFalse(f.done())
         self.o._q.put(Return(1))
@@ -102,9 +94,8 @@ class TestContext(unittest.TestCase):
         self.assertTrue(f.done())
 
     def test_many_puts(self):
-        fs = []
-        fs.append(self.o.put_async(["block", "attr", "value"], 32))
-        fs.append(self.o.put_async(["block", "attr2", "value"], 32))
+        fs = [self.o.put_async(["block", "attr", "value"], 32),
+              self.o.put_async(["block", "attr2", "value"], 32)]
         with self.assertRaises(TimeoutError):
             self.o.wait_all_futures(fs, 0.01)
         self.assertEqual([f.done() for f in fs], [False, False])
@@ -155,8 +146,7 @@ class TestContext(unittest.TestCase):
             call(Unsubscribe(1))])
 
     def test_ignore_stops_before_now(self):
-        fs = []
-        fs.append(self.o.put_async(["block", "attr", "value"], 32))
+        fs = [self.o.put_async(["block", "attr", "value"], 32)]
         self.o.stop()
         self.o.ignore_stops_before_now()
 
@@ -169,8 +159,7 @@ class TestContext(unittest.TestCase):
             self.assertEquals(0, self.o._q._queue.qsize())
 
     def test_futures_exception(self):
-        fs = []
-        fs.append(self.o.put_async(["block", "attr", "value"], 32))
+        fs = [self.o.put_async(["block", "attr", "value"], 32)]
 
         fs[0]._exception = BadValueError
         fs[0]._state = Future.FINISHED
@@ -178,11 +167,7 @@ class TestContext(unittest.TestCase):
             self.o.wait_all_futures(fs, 0)
 
     def test_futures_remaining_paths(self):
-        fs = []
-        fs.append(self.o.put_async(["block", "attr", "value"], 32))
+        fs = [self.o.put_async(["block", "attr", "value"], 32)]
         self.o.stop()
         with self.assertRaises(AbortedError):
             self.o.wait_all_futures(fs, 0)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

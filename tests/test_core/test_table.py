@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
 from collections import OrderedDict
 from mock import Mock
@@ -155,6 +151,3 @@ class TestTableMetaSerialization(unittest.TestCase):
         d2.pop("typeid")
         t2 = Table(self.meta, d2)
         self.assertEqual(d, t2.to_dict())
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

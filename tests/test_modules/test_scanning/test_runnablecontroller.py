@@ -1,12 +1,8 @@
 import unittest
 import time
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
 
-# module imports
 from scanpointgenerator import LineGenerator, CompoundGenerator
+
 from malcolm.core import Process, Part, call_with_params, \
     Context, ResponseError
 from malcolm.modules.scanning.parts import RunnableChildPart

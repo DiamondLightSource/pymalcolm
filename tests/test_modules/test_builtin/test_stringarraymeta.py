@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-import setup_malcolm_paths
 import unittest
 
 from malcolm.modules.builtin.vmetas import StringArrayMeta
@@ -32,6 +27,3 @@ class TestStringArrayMeta(unittest.TestCase):
     def test_null_element_raises(self):
         array = ["test", None]
         self.assertRaises(ValueError, self.meta.validate, array)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

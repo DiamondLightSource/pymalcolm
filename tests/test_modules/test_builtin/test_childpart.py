@@ -1,20 +1,11 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
-from mock import Mock, ANY
 
-# logging
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-
-# module imports
 from malcolm.core import Part, Process, Table, call_with_params, Context
 from malcolm.modules.builtin.controllers import BaseController, \
     ManagerController
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.vmetas import StringMeta
+
 
 sm = ManagerController.stateSet
 
@@ -155,6 +146,3 @@ class TestChildPart(unittest.TestCase):
         self.p1.load(context, dict(
             partchild1=dict(inportConnector="blah_again")))
         assert b1.inportConnector.value == "blah_again"
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import MagicMock, call, ANY
 
@@ -50,7 +45,3 @@ class TestScanTickerPart(unittest.TestCase):
             call.sleep(AlmostFloat(1.0, delta=0.05)),
             call.block_view().counter.put_value(2),
             call.sleep(AlmostFloat(2.0, delta=0.1))])
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

@@ -1,11 +1,6 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
 from mock import Mock
 
-# module imports
 from malcolm.core.block import make_block_view
 from malcolm.core.blockmodel import BlockModel
 from malcolm.core.methodmodel import MethodModel
@@ -37,7 +32,3 @@ class TestBlock(unittest.TestCase):
     def test_async_call(self):
         self.o.method_async(a=3)
         self.o.method.post_async.assert_called_once_with(a=3)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

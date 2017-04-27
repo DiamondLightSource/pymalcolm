@@ -1,9 +1,5 @@
-import os
-import sys
 import unittest
 from collections import OrderedDict
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from malcolm.modules.builtin.vmetas import ChoiceMeta
 
@@ -73,7 +69,3 @@ class TestSerialization(unittest.TestCase):
         self.assertEqual(bm.tags, ())
         self.assertFalse(bm.writeable)
         self.assertEqual(bm.label, "name")
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

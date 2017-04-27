@@ -1,14 +1,10 @@
-import os
-import sys
 from collections import OrderedDict
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
 from mock import call, Mock, patch, ANY
 
 from malcolm.core import call_with_params
-from malcolm.modules.ADPandABlocks.controllers import PandABlocksRunnableController
+from malcolm.modules.ADPandABlocks.controllers import \
+    PandABlocksRunnableController
 from malcolm.modules.pandablocks.controllers.pandablocksclient import \
     FieldData, BlockData
 
@@ -49,7 +45,3 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         assert inenc.valCapture.value == "No"
         assert inenc.valDatasetName.value == ""
         assert inenc.valDatasetType.value == "position"
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

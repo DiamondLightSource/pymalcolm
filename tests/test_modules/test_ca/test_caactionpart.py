@@ -1,16 +1,6 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import patch, ANY
 
-# logging
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-
-# module imports
 from malcolm.core import call_with_params
 from malcolm.modules.ca.parts import CAActionPart
 
@@ -71,7 +61,3 @@ class TestCAActionPart(unittest.TestCase):
         catools.caput.reset_mock()
         catools.caget.return_value = "No Good"
         self.assertRaises(AssertionError, p.caput)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

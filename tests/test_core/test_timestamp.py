@@ -1,11 +1,6 @@
-import os
-import sys
-import unittest
-from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import time
+import unittest
+
 from malcolm.core.timestamp import TimeStamp
 
 
@@ -22,6 +17,3 @@ class TestAlarm(unittest.TestCase):
         self.assertEqual(o.nanoseconds, 211255265)
         self.assertEqual(o.userTag, 43)
         self.assertEqual(o.to_time(), 1231112.211255265)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

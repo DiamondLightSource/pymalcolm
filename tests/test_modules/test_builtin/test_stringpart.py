@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
 
 from malcolm.core import call_with_params
@@ -22,7 +18,3 @@ class TestStringPart(unittest.TestCase):
         assert self.o.attr.meta.description == "desc"
         assert self.o.attr.meta.tags == ("widget:textinput", "config")
         assert self.setter is None
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

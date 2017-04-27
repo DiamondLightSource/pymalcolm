@@ -1,10 +1,4 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import Mock, MagicMock
 
 from malcolm.core.response import Response, Return, Error, Delta, Update
 
@@ -39,7 +33,3 @@ class TestResponse(unittest.TestCase):
         self.assertEquals(r.typeid, "malcolm:core/Delta:1.0")
         self.assertEquals(r.id, 123)
         self.assertEquals(r.changes, changes)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

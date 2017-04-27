@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
 
 from malcolm.modules.web.controllers import WebsocketClientComms
@@ -20,6 +16,3 @@ class TestWebsocketClientComms(unittest.TestCase):
         assert self.o.params.port == 8080
         assert self.o.params.connectTimeout == 5.0
         assert self.o.mri == "mri"
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

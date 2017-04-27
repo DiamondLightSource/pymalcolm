@@ -1,15 +1,8 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 from collections import OrderedDict
-
 import unittest
-from mock import Mock
 
-from malcolm.core.methodmodel import MethodModel, method_takes, method_returns, \
-    method_writeable_in, OPTIONAL, REQUIRED, method_also_takes
-
+from malcolm.core.methodmodel import MethodModel, method_takes, REQUIRED, \
+    method_returns, method_writeable_in, OPTIONAL, method_also_takes
 from malcolm.modules.builtin.vmetas import StringMeta, BooleanMeta
 from malcolm.core.mapmeta import MapMeta
 
@@ -212,6 +205,3 @@ class TestSerialization(unittest.TestCase):
         self.assertEqual(m.writeable, True)
         self.assertEqual(m.label, "")
         self.assertEqual(m.returns.to_dict(), MapMeta().to_dict())
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

@@ -60,7 +60,7 @@ class Process(Loggable):
             num_threads = 8
         else:
             num_threads = 128
-        self._thread_pool = ThreadPool(num_threads)
+        self._thread_pool = ThreadPool()#num_threads)
         self.started = True
         self._run_hook(self.Init, timeout=timeout)
         self._run_hook(

@@ -1,10 +1,4 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 from collections import OrderedDict
-
 import unittest
 
 from malcolm.core.ntscalar import NTScalar
@@ -41,7 +35,6 @@ class TestAttribute(unittest.TestCase):
         self.assertEquals(self.o.timeStamp, timeStamp)
 
 
-
 class TestSerialization(unittest.TestCase):
 
     def setUp(self):
@@ -62,6 +55,3 @@ class TestSerialization(unittest.TestCase):
         a = NTScalar.from_dict(self.serialized)
         self.assertEquals(a.meta.to_dict(), StringMeta("desc").to_dict())
         self.assertEquals(a.value, "some string")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 from collections import OrderedDict
 
 import unittest
@@ -63,7 +58,3 @@ class TestSerialization(unittest.TestCase):
         self.assertEquals(tm.elements["c1"].to_dict(), expected)
         self.assertEquals(tm.tags, ())
         self.assertEquals(tm.required, ("c1",))
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

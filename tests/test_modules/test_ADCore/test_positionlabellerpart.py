@@ -1,16 +1,10 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import Mock, MagicMock, call, ANY
-import time
+from mock import MagicMock, call, ANY
+
+from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Context, call_with_params
 from malcolm.modules.ADCore.parts import PositionLabellerPart
-
-from scanpointgenerator import LineGenerator, CompoundGenerator
 
 
 class TestPositionLabellerPart(unittest.TestCase):

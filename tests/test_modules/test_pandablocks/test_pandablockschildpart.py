@@ -1,10 +1,4 @@
-import os
-import sys
 from collections import OrderedDict
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import MagicMock, Mock
 
@@ -58,6 +52,3 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.assertEqual(dataset_infos[0].type, "detector")
         self.assertEqual(dataset_infos[0].rank, 2)
         self.assertEqual(dataset_infos[0].attr, "INENC1.ENCODER_VALUE3")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

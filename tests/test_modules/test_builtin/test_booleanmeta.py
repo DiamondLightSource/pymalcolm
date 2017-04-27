@@ -1,8 +1,4 @@
-import os
-import sys
 import unittest
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from malcolm.modules.builtin.vmetas import BooleanMeta
 
@@ -37,6 +33,3 @@ class TestValidate(unittest.TestCase):
         response = self.boolean_meta.validate(None)
 
         self.assertEqual(False, response)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

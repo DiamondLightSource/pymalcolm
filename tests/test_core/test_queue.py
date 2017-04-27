@@ -1,18 +1,5 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
-import gc
-from mock import MagicMock, call, ANY, patch
 
-# logging
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-
-# module imports
-import threading
 from malcolm.core.queue import Queue
 from malcolm.core.errors import TimeoutError
 from cothread import Spawn

@@ -1,12 +1,5 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 from collections import OrderedDict
-
 import unittest
-from mock import Mock, patch
 
 from malcolm.modules.builtin.vmetas import TableMeta, StringArrayMeta
 from malcolm.core import Table, NTTable, Alarm, TimeStamp
@@ -61,7 +54,3 @@ class TestSerialization(unittest.TestCase):
         self.assertEquals(o.meta.label, "my label")
         self.assertEquals(o.value.foo, ("foo1", "foo2"))
         self.assertEquals(o.value.bar, ("bar1", "bar2"))
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

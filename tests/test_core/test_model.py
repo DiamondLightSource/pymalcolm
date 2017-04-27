@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import Mock, MagicMock
 
@@ -34,6 +29,3 @@ class TestModel(unittest.TestCase):
         self.o.set_endpoint_data("child", self.child)
         self.notifier.add_squashed_change.assert_called_once_with(
             ["thing", "child"], self.child)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

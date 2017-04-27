@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import patch
 
@@ -27,6 +22,3 @@ class TestLoggable(unittest.TestCase):
         mock_logging.getLogger.assert_called_once_with(
             "malcolm.core.loggable.Loggable")
         l.log.debug.assert_called_once_with("Something")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

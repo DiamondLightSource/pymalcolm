@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
 from mock import MagicMock
 
@@ -22,6 +18,3 @@ class TestProxyController(unittest.TestCase):
         assert self.o.mri == "mri"
         assert self.o.params.comms == "comms"
         assert self.o.client_comms == self.comms
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

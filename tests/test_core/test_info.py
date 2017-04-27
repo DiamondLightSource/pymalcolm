@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
 
 from malcolm.compat import OrderedDict
@@ -46,4 +41,3 @@ class TestInit(unittest.TestCase):
         assert filtered[0].val == "v1"
         assert filtered[1].val == "v2"
         assert filtered[2].val == "v3"
-

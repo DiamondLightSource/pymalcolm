@@ -1,13 +1,6 @@
-#!/bin/env dls-python
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
-
 from mock import MagicMock, patch
 
-# module imports
 from malcolm.gui.guimodel import GuiModel, BlockItem
 from malcolm.core import Process, call_with_params
 from malcolm.modules.demo.blocks import hello_block
@@ -60,7 +53,3 @@ class TestBlockModel(unittest.TestCase):
         self.assertEqual(n_item.endpoint,
                          ('hello_block', 'greet', 'takes', 'elements', 'sleep'))
         self.assertEqual(n_item.children, [])
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
-

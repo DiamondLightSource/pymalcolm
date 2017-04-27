@@ -1,17 +1,13 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
 from mock import patch
 from collections import OrderedDict
 
+import pvaccess
+import numpy as np
+
 from malcolm.core import StringArray
 from malcolm.modules.pva.controllers.pvautil import pva_structure_from_value, \
     dict_to_pv_object
-
-import pvaccess
-import numpy as np
 
 
 class PvTempObject(object):

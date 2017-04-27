@@ -1,12 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
-# logging
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-
 import unittest
 
 from malcolm.modules.demo.parts import CounterPart
@@ -30,7 +21,3 @@ class TestCounterPart(unittest.TestCase):
         self.c.counter.set_value(1234)
         self.c.zero()
         self.assertEquals(0, self.c.counter.value)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

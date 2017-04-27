@@ -1,6 +1,5 @@
 import unittest
 
-# module imports
 from malcolm.core.controller import Controller
 from malcolm.core.process import Process
 from malcolm.core.hook import Hook
@@ -51,4 +50,3 @@ class TestMethod(unittest.TestCase):
         method_view = self.block.my_method
         f = method_view.post_async('testAsync', 'y')
         assert f.result().ret == 'testAsyncy'
-

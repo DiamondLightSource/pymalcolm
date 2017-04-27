@@ -1,10 +1,5 @@
-import os
-import sys
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 from mock import Mock
 
 from malcolm.core.meta import Meta
@@ -64,6 +59,3 @@ class TestSerialization(unittest.TestCase):
         m = Meta("desc")
         m.typeid = "filled_in_by_subclass"
         self.assertEqual(m.to_dict(), self.serialized)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

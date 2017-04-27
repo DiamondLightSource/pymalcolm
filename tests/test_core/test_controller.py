@@ -1,17 +1,7 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
 import gc
-from mock import MagicMock, call, ANY, patch
+from mock import MagicMock, patch
 
-# logging
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-
-# module imports
 from malcolm.core.controller import Controller
 from malcolm.core.process import Process
 from malcolm.core.hook import Hook
@@ -23,12 +13,11 @@ from malcolm.core.blockmodel import BlockModel
 from malcolm.core.queue import Queue
 from malcolm.core.request import Post, Subscribe, Put, Get, Unsubscribe
 from malcolm.core.response import Return, Update, Error
-from malcolm.core.errors import UnexpectedError, AbortedError
-
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.errors import AbortedError
 from malcolm.core.mapmeta import MapMeta
-from malcolm.core.methodmodel import MethodModel, OPTIONAL, REQUIRED
+from malcolm.core.methodmodel import MethodModel, OPTIONAL
 from malcolm.core import method_takes, method_returns
+from malcolm.modules.builtin.vmetas import StringMeta
 
 
 class MyController(Controller):
@@ -214,6 +203,3 @@ class TestController(unittest.TestCase):
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
         self.assertEqual(response.id, 44)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

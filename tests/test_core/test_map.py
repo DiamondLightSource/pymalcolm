@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
 from collections import OrderedDict
 from mock import MagicMock, Mock
@@ -207,6 +203,3 @@ class TestMap(unittest.TestCase):
         m = Map(self.nmeta, {"b": 44})
         r = repr(m)
         self.assertEqual(r, "Map({'b': 44.0})")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import Mock
 
@@ -24,6 +19,3 @@ class TestHelloPart(unittest.TestCase):
         returns_mock = Mock()
         response = self.c.greet(parameters_mock, returns_mock)
         self.assertEquals(expected, response.greeting)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

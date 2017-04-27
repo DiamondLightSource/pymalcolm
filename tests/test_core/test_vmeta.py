@@ -1,8 +1,5 @@
-import os
-import sys
-import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+import unittest
 
 from malcolm.core.serializable import Serializable
 from malcolm.core.vmeta import VMeta
@@ -52,6 +49,3 @@ class TestSerialization(unittest.TestCase):
         self.assertEquals(m.tags, ())
         self.assertEquals(m.writeable, True)
         self.assertEquals(m.label, "my label")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

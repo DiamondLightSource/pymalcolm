@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
 
 from malcolm.modules.builtin.vmetas import StringMeta
@@ -32,7 +27,3 @@ class TestValidate(unittest.TestCase):
         response = self.string_meta.validate(None)
 
         self.assertEqual("", response)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

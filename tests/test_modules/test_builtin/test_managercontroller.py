@@ -2,7 +2,6 @@ import unittest
 from mock import MagicMock
 import os
 
-# module imports
 from malcolm.compat import OrderedDict
 from malcolm.modules.builtin.controllers import StatefulController, \
     ManagerController, ManagerStates
@@ -220,6 +219,3 @@ class TestManagerController(unittest.TestCase):
         # block has changed, get a new view
         b = context.block_view("mainBlock")
         assert "childAttr" not in b
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

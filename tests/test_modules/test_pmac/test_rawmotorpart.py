@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import MagicMock
 
@@ -29,7 +24,3 @@ class TestRawMotorPart(unittest.TestCase):
         self.assertEqual(returns.max_velocity, self.child.maxVelocity.value)
         self.assertEqual(returns.current_position, self.child.position.value)
         self.assertEqual(returns.scannable, self.child.scannable.value)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

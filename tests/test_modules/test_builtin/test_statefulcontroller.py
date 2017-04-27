@@ -1,5 +1,4 @@
 import unittest
-import pytest
 from mock import Mock
 
 from malcolm.compat import OrderedDict
@@ -85,7 +84,7 @@ class TestStatefulController(unittest.TestCase):
 
     def test_reset_fails_from_ready(self):
         self.start_process()
-        with pytest.raises(TypeError):
+        with self.assertRaises(TypeError):
             self.o.reset()
         assert not hasattr(self.part, "reset_done")
 

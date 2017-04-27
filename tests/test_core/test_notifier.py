@@ -1,13 +1,4 @@
-import os
-import sys
 import unittest
-from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
-
-import setup_malcolm_paths
 from mock import Mock
 from threading import RLock
 
@@ -149,8 +140,3 @@ class TestNotifier(unittest.TestCase):
             self.assertEqual(self.block.attr2.value, "tr")
         r1.callback.assert_called_once_with(Delta(
             changes=[[["attr", "value"], 33], [["attr2", "value"], "tr"]]))
-
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

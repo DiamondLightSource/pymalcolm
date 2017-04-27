@@ -1,9 +1,3 @@
-import os
-import sys
-from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-import setup_malcolm_paths
 import unittest
 
 from malcolm.modules.builtin.vmetas import BooleanArrayMeta
@@ -36,6 +30,3 @@ class TestValidate(unittest.TestCase):
         array = ["test", None]
         self.assertEquals(
             [True, False], list(self.meta.validate(array)))
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

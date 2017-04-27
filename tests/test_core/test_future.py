@@ -1,21 +1,10 @@
-import os
-import sys
-import logging
-
-from collections import OrderedDict
-
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import MagicMock, call, ANY
+from mock import MagicMock
 
 from malcolm.core.future import Future
 
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
 
-class TestError(Exception):
+class MyError(Exception):
     pass
 
 
@@ -56,14 +45,14 @@ class TestFuture(unittest.TestCase):
         f = Future(self.context)
 
         def wait_all_futures(fs, timeout):
-            fs[0].set_exception(TestError())
+            fs[0].set_exception(MyError())
 
         self.context.wait_all_futures.side_effect = wait_all_futures
 
-        with self.assertRaises(TestError):
+        with self.assertRaises(MyError):
             f.result()
 
         self.context.wait_all_futures.assert_called_once_with([f], None)
         self.context.wait_all_futures.reset_mock()
-        self.assertIsInstance(f.exception(), TestError)
+        self.assertIsInstance(f.exception(), MyError)
         self.context.wait_all_futures.assert_not_called()

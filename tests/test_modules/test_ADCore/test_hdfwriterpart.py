@@ -1,17 +1,12 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import MagicMock, call, ANY
+
+from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
 from malcolm.core import Context, call_with_params
 from malcolm.modules.ADCore.parts import HDFWriterPart
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo, \
     CalculatedNDAttributeDatasetInfo
-
-from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
 
 class TestHDFWriterPart(unittest.TestCase):
@@ -180,7 +175,3 @@ class TestHDFWriterPart(unittest.TestCase):
         self.o.post_run_idle(self.context)
         assert self.context.mock_calls == [
             call.wait_all_futures(self.o.start_future)]
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

@@ -1,9 +1,4 @@
-import os
-import sys
 from collections import OrderedDict
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
 from mock import Mock
 
@@ -211,6 +206,3 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(err.meta, BooleanMeta)
         self.assertEqual(err.meta.tags, (
             "group:readbacks", "widget:led"))
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

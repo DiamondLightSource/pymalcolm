@@ -1,14 +1,8 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import MagicMock, patch, call
-from collections import OrderedDict
+from mock import MagicMock
 
 from malcolm.core.hook import Hook, get_hook_decorated
-from malcolm.modules.builtin.vmetas import StringMeta, StringArrayMeta
+from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.core import method_returns, REQUIRED
 
 
@@ -59,7 +53,3 @@ class TestHook(unittest.TestCase):
         self.assertEqual(decorated, [
             ("do_the_other_thing", DummyController.Running, inst.do_the_other_thing),
             ("do_thing", DummyController.Configuring, inst.do_thing)])
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

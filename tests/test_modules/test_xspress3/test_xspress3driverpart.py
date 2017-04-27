@@ -1,10 +1,5 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import Mock, MagicMock, ANY, call
+from mock import MagicMock, ANY, call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import call_with_params, Context
@@ -46,6 +41,3 @@ class TestXspress3DetectorDriverPart(unittest.TestCase):
             call.block_view().put_attribute_values_async().__iadd__(ANY),
             call.wait_all_futures(ANY),
             call.block_view().start_async()]
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

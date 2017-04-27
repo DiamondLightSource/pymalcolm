@@ -1,15 +1,10 @@
-import os
-import sys
 from collections import OrderedDict
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import Mock
 
 from malcolm.core import Table
-from malcolm.modules.builtin.vmetas import TableMeta, BooleanArrayMeta, NumberArrayMeta
+from malcolm.modules.builtin.vmetas import TableMeta, BooleanArrayMeta, \
+    NumberArrayMeta
 from malcolm.modules.pandablocks.parts.pandablockstablepart import \
     PandABlocksTablePart
 

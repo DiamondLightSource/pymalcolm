@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
 from mock import Mock
 
@@ -35,7 +30,3 @@ class TestAttribute(unittest.TestCase):
         self.context.put_async.assert_called_once_with(
             ["block", "attr", "value"], 32)
         self.assertEqual(f, self.context.put_async.return_value)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

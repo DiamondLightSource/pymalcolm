@@ -61,7 +61,7 @@ When in the project directory::
 
     $ pip install -r requirements/docs.txt
     $ python setup.py build_sphinx
-    $ open docs/_build/html/index.html
+    $ firefox docs/_build/html/index.html
 
 Release Checklist
 -----------------

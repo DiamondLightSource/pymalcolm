@@ -1,7 +1,6 @@
 import unittest
 from mock import MagicMock
 
-# module imports
 from malcolm.core.process import Process
 from malcolm.core.controller import Controller
 
@@ -50,6 +49,3 @@ class TestProcess(unittest.TestCase):
         self.assertEqual(c.published, ["mri", "mri2"])
         self.o.remove_controller("mri2")
         self.assertEqual(c.published, ["mri"])
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

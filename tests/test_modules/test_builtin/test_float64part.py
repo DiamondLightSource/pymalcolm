@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
 
 from malcolm.core import call_with_params
@@ -27,7 +23,3 @@ class TestFloat64Part(unittest.TestCase):
         self.setter(3)
         assert self.o.attr.value == 3.0
         self.assertRaises(ValueError, self.setter, "c")
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

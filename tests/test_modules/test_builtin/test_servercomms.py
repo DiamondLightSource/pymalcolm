@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
 
 from malcolm.modules.builtin.controllers import ServerComms
@@ -17,6 +13,3 @@ class TestServerComms(unittest.TestCase):
 
     def test_init(self):
         assert self.o.mri == "mri"
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

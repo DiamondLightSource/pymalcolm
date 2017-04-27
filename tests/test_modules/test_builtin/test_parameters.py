@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.dirname(__file__))
-
 import unittest
 from mock import Mock
 
@@ -64,6 +60,3 @@ class TestParameters(unittest.TestCase):
         self.assertEqual(meta.description, "desc")
         self.assertIsInstance(meta, NumberMeta)
         self.assertEqual(meta.dtype, "float64")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

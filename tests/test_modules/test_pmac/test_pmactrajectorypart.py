@@ -1,13 +1,5 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
-import pytest
-from mock import MagicMock, call, patch, ANY
-
-Mock = MagicMock
+from mock import Mock, MagicMock, call, patch, ANY
 
 from malcolm.core import call_with_params, Context
 from malcolm.modules.pmac.parts import PmacTrajectoryPart
@@ -108,8 +100,9 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                 velocityMode=[0, 0, 0, 0, 2],
                 userPrograms=[8, 8, 8, 8, 8],
                 pointsToBuild=5,
-                positionsA=pytest.approx([
-                    0.4461796875, 0.285, 0.0775, -0.0836796875, -0.1375]),
+                positionsA=[0.44617968749999998, 0.28499999999999998,
+                            0.077499999999999958, -0.083679687500000072,
+                            -0.13750000000000007],
                 positionsB=[0.0, 0.0, 0.0, 0.0, 0.0])),
             call.block_view().buildProfile(),
             call.block_view().executeProfile_async(),
@@ -278,7 +271,3 @@ class TestPMACTrajectoryPart(unittest.TestCase):
                         -2.0174999999999983,
                         -0.1374999999999984],
         ))
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

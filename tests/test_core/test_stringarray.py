@@ -1,12 +1,4 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
-
-from mock import Mock
 
 from malcolm.core import StringArray
 
@@ -42,6 +34,3 @@ class TestStringArray(unittest.TestCase):
             str(cm.exception),
             'Expected StringArray(s1, s2, ...) or StringArray(seq). '
             'Got StringArray(1, 2, 3)')
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

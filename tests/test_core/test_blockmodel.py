@@ -1,10 +1,5 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 import unittest
 
-# module imports
 from malcolm.core.blockmodel import BlockModel
 from malcolm.core.methodmodel import MethodModel
 from malcolm.modules.builtin.vmetas import StringMeta
@@ -36,7 +31,3 @@ class TestBlockModel(unittest.TestCase):
         self.assertEqual(self.o.endpoints, ["meta", "method", "attr"])
         self.assertEqual(self.o.meta.fields, ("method", "attr"))
         self.assertEqual(self.o.attr, self.attr)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

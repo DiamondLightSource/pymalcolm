@@ -1,13 +1,6 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import patch
 from cothread import Spawn, Yield
 
-# module imports
 from malcolm.core.rlock import RLock
 
 
@@ -60,7 +53,3 @@ class TestLockCothread(unittest.TestCase):
         # let the other cothread get a lookin
         Yield()
         self.assertEqual(self.v, 1)
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

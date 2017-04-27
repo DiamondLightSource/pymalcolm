@@ -1,11 +1,6 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 import unittest
 from mock import Mock
 
-# module imports
 from malcolm.core.view import make_view, View
 from malcolm.core.blockmeta import BlockMeta
 
@@ -52,6 +47,3 @@ class TestView(unittest.TestCase):
     def test_view_init_fails(self):
         with self.assertRaises(NotImplementedError):
             v = View()
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

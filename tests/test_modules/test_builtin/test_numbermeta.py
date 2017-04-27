@@ -1,13 +1,7 @@
-import os
-import sys
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-import setup_malcolm_paths
 
 from malcolm.modules.builtin.vmetas import NumberMeta
-from malcolm.core.serializable import Serializable
 
 
 class TestInit(unittest.TestCase):
@@ -73,7 +67,3 @@ class TestSerialization(unittest.TestCase):
         self.assertEqual(nm.tags, ())
         self.assertFalse(nm.writeable)
         self.assertEqual(nm.label, "name")
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

@@ -1,9 +1,5 @@
-import os
-import sys
 import unittest
 from mock import Mock
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
 
 from malcolm.core import call_with_params
 from malcolm.modules.demo.blocks import hello_block, counter_block, ticker_block

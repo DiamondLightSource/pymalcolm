@@ -1,10 +1,5 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import MagicMock, ANY, call
+from mock import MagicMock, call
 
 from malcolm.core import Context
 from malcolm.modules.ADPandABlocks.parts import PandABlocksDriverPart
@@ -28,7 +23,3 @@ class TestPandaABoxDriverPart(unittest.TestCase):
         assert self.context.mock_calls == [
             call.block_view("mri"),
             call.block_view().stop()]
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
