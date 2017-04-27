@@ -1,6 +1,6 @@
 from malcolm.compat import str_, OrderedDict
 from .meta import Meta
-from .serializable import Serializable, deserialize_object
+from .serializable import Serializable, deserialize_object, camel_to_title
 from .stringarray import StringArray
 from .vmeta import VMeta
 
@@ -31,7 +31,10 @@ class MapMeta(Meta):
         for k, v in elements.items():
             if k != "typeid":
                 k = deserialize_object(k, str_)
-                deserialized[k] = deserialize_object(v, VMeta)
+                v = deserialize_object(v, VMeta)
+                if not v.label:
+                    v.set_label(camel_to_title(k))
+                deserialized[k] = v
         if hasattr(self, "elements"):
             # Stop old elements notifying
             for k, v in self.elements.items():

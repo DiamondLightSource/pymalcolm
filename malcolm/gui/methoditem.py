@@ -4,6 +4,11 @@ from malcolm.gui.parameteritem import ParameterItem
 
 
 class MethodItem(BaseItem):
+    def get_label(self):
+        if self.ref.label:
+            return self.ref.label
+        else:
+            return super(MethodItem, self).get_label()
 
     def get_writeable(self):
         return self.ref.writeable

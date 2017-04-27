@@ -84,22 +84,23 @@ class Controller(Loggable):
                 self.add_block_field(name, child, writeable_func)
 
     def add_block_field(self, name, child, writeable_func):
-        # Manufacture label if it is not already set
-        if hasattr(child, "meta"):
-            meta = child.meta
-        else:
-            meta = child
-        if not meta.label:
-            meta.set_label(camel_to_title(name))
-        self._block.set_endpoint_data(name, child)
         if writeable_func:
             self._write_functions[name] = writeable_func
-            if isinstance(child, AttributeModel):
+        if isinstance(child, AttributeModel):
+            if writeable_func:
                 child.meta.set_writeable(True)
-            elif isinstance(child, MethodModel):
+            if not child.meta.label:
+                child.meta.set_label(camel_to_title(name))
+        elif isinstance(child, MethodModel):
+            if writeable_func:
                 child.set_writeable(True)
                 for k, v in child.takes.elements.items():
                     v.set_writeable(True)
+            if not child.label:
+                child.set_label(camel_to_title(name))
+        else:
+            raise ValueError("Invalid block field %r" % child)
+        self._block.set_endpoint_data(name, child)
 
     def create_methods(self):
         """Method that should provide Method instances for Block

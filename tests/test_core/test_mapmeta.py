@@ -41,6 +41,7 @@ class TestSerialization(unittest.TestCase):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/MapMeta:1.0"
         self.serialized["elements"] = dict(c1=self.sam.to_dict())
+        self.serialized["elements"]["c1"]["label"] = "C1"
         self.serialized["description"] = "desc"
         self.serialized["tags"] = ()
         self.serialized["writeable"] = False
@@ -57,7 +58,9 @@ class TestSerialization(unittest.TestCase):
         tm = MapMeta.from_dict(self.serialized)
         self.assertEquals(tm.description, "desc")
         self.assertEquals(len(tm.elements), 1)
-        self.assertEquals(tm.elements["c1"].to_dict(), self.sam.to_dict())
+        expected = self.sam.to_dict()
+        expected["label"] = "C1"
+        self.assertEquals(tm.elements["c1"].to_dict(), expected)
         self.assertEquals(tm.tags, ())
         self.assertEquals(tm.required, ("c1",))
 

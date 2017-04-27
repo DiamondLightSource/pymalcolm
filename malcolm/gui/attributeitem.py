@@ -4,6 +4,12 @@ from malcolm.gui.baseitem import BaseItem
 
 class AttributeItem(BaseItem):
 
+    def get_label(self):
+        if self.ref.meta.label:
+            return self.ref.meta.label
+        else:
+            return super(AttributeItem, self).get_label()
+
     def get_value(self):
         return str(self.ref.value)
 
