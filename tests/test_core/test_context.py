@@ -166,7 +166,7 @@ class TestContext(unittest.TestCase):
         if self.cothread:
             self.assertEquals(0, len(self.o._q._event_queue))
         else:
-            self.assertEquals(0, len(self.o._q._queue))
+            self.assertEquals(0, self.o._q._queue.qsize())
 
     def test_futures_exception(self):
         fs = []

@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import unittest
 
-from mock import MagicMock
+from mock import MagicMock, patch
 
 # module imports
 from malcolm.gui.guimodel import GuiModel, BlockItem
@@ -14,7 +14,16 @@ from malcolm.modules.demo.blocks import hello_block
 
 
 class TestBlockModel(unittest.TestCase):
-    def setUp(self):
+    @patch("malcolm.gui.guimodel.GuiModel.response_received")
+    def setUp(self, mock_received):
+        # Mock out the signal as it doesn't work without a QApplication running
+        def register(func):
+            self.saved_handle_response = func
+        mock_received.connect.side_effect = register
+        def emit(response):
+            self.saved_handle_response(response)
+        mock_received.emit.side_effect = emit
+
         self.process = Process("proc")
         self.controller = call_with_params(
             hello_block, self.process, mri="hello_block")
