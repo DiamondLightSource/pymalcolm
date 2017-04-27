@@ -20,8 +20,12 @@ To get the source source code and run the unit tests, run::
     $ virtualenv --no-site-packages -p /path/to/python2.7 venv27
     $ . venv27/bin/activate
     $ pip install -r requirements/test.txt
-    $ python setup.py install
-    $ python setup.py nosetests
+    $ nosetests tests
+
+You might want to use the pytest runner::
+
+    $ pip install pytest pytest-catchlog
+    $ pytest -vv --tb=native tests
 
 While 100% code coverage does not make a library bug-free, it significantly
 reduces the number of easily caught bugs! Please make sure coverage is at 100%

@@ -6,5 +6,3 @@ scanpointgenerator>=2.1.0
 git+git://github.com/thomascobb/cothread
 ruamel.yaml
 plop==0.3.0
-pytest
-pytest-catchlog
