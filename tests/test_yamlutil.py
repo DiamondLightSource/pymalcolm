@@ -9,7 +9,8 @@ from malcolm.core import method_takes, REQUIRED
 from malcolm.modules.builtin.controllers import BaseController
 from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.modules.builtin.parts import StringPart
-from malcolm.yamlutil import make_block_creator, Section, make_include_creator
+from malcolm.yamlutil import make_block_creator, Section, check_yaml_names, \
+    make_include_creator
 
 include_yaml = """
 - builtin.parameters.string:
@@ -51,6 +52,7 @@ class TestYamlUtil(unittest.TestCase):
                    mock_open(read_data=include_yaml), create=True) as m:
             include_creator = make_include_creator(
                 "/tmp/__init__.py", "include.yaml")
+        assert include_creator.yamlname == "include"
         m.assert_called_once_with("/tmp/include.yaml")
         process = Mock()
         parts = include_creator(process, dict(something="blah"))
@@ -65,6 +67,7 @@ class TestYamlUtil(unittest.TestCase):
                    mock_open(read_data=block_yaml), create=True) as m:
             block_creator = make_block_creator(
                 "/tmp/__init__.py", "block.yaml")
+        assert block_creator.yamlname == "block"
         m.assert_called_once_with("/tmp/block.yaml")
         process = Mock()
         controller = block_creator(process, dict(something="blah"))
@@ -73,6 +76,24 @@ class TestYamlUtil(unittest.TestCase):
         self.assertIsInstance(controller.parts["scannable"], StringPart)
         self.assertEqual(controller.parts["scannable"].params.initialValue,
                          "blah")
+
+    def test_check_names_good(self):
+        d = dict(
+            thinga=Mock(yamlname="thinga"),
+            thingb=Mock(yamlname="thingb"))
+        d_save = d.copy()
+        check_yaml_names(d_save)
+        assert d == d_save
+
+    def test_check_names_mismatch(self):
+        d = dict(
+            thinga=Mock(yamlname="thinga"),
+            thingb=Mock(yamlname="thingc"))
+        d_save = d.copy()
+        with self.assertRaises(AssertionError) as cm:
+            check_yaml_names(d_save)
+        assert str(cm.exception) == \
+            "'thingb' should be called 'thingc' as it comes from 'thingc.yaml'"
 
     @patch("importlib.import_module")
     def test_instantiate(self, mock_import):

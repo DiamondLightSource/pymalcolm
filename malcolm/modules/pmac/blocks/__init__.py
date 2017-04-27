@@ -1,4 +1,4 @@
-from malcolm.yamlutil import make_block_creator
+from malcolm.yamlutil import make_block_creator, check_yaml_names
 
 compound_motor_block = make_block_creator(__file__, "compound_motor_block.yaml")
 pmac_trajectory_block = make_block_creator(
@@ -7,4 +7,4 @@ raw_motor_block = make_block_creator(__file__, "raw_motor_block.yaml")
 simulator_pmac_manager_block = make_block_creator(
     __file__, "simulator_pmac_manager_block.yaml")
 
-del make_block_creator
+check_yaml_names(globals())

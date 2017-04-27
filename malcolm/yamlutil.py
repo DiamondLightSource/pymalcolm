@@ -36,6 +36,19 @@ def _create_blocks_and_parts(process, sections, params):
     return parts
 
 
+def check_yaml_names(globals_d):
+    keys = list(globals_d)
+    for k in keys:
+        v = globals_d[k]
+        if v in (make_include_creator, make_block_creator):
+            # don't need these
+            globals_d.pop(k)
+        elif hasattr(v, "yamlname"):
+            assert v.yamlname == k, \
+                "%r should be called %r as it comes from %r" % (
+                    k, v.yamlname, v.yamlname + ".yaml")
+
+
 def make_include_creator(yaml_path, filename=None):
     sections, yamlname = Section.from_yaml(yaml_path, filename)
 
@@ -53,6 +66,7 @@ def make_include_creator(yaml_path, filename=None):
         params["yamlname"] = yamlname
         return _create_blocks_and_parts(process, sections, params)
 
+    include_creator.yamlname = yamlname
     return include_creator
 
 
@@ -96,6 +110,7 @@ def make_block_creator(yaml_path, filename=None):
 
         return controller
 
+    block_creator.yamlname = yamlname
     return block_creator
 
 

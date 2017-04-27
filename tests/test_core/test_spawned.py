@@ -35,7 +35,7 @@ class TestSpawned(unittest.TestCase):
             do_div, (40, 2, self.q, throw_me), {}, use_cothread, self.pool)
         return s
 
-    def do_spawn_div_test(self, use_cothread):
+    def do_spawn_div(self, use_cothread):
         s = self.do_spawn(use_cothread)
         assert s.ready() is False
         s.wait(1)
@@ -43,7 +43,7 @@ class TestSpawned(unittest.TestCase):
         assert self.q.get(1) == 20
         assert s.get() == 20
 
-    def do_spawn_err_test(self, use_cothread):
+    def do_spawn_err(self, use_cothread):
         s = self.do_spawn(use_cothread, UnexpectedError)
         assert s.ready() is False
         s.wait(1)
@@ -52,13 +52,13 @@ class TestSpawned(unittest.TestCase):
         self.assertRaises(UnexpectedError, s.get)
 
     def test_use_cothread(self):
-        self.do_spawn_div_test(True)
+        self.do_spawn_div(True)
 
     def test_not_use_cothread(self):
-        self.do_spawn_div_test(False)
+        self.do_spawn_div(False)
 
     def test_use_cothread_err(self):
-        self.do_spawn_err_test(True)
+        self.do_spawn_err(True)
 
     def test_not_use_cothread_err(self):
-        self.do_spawn_err_test(False)
+        self.do_spawn_err(False)
