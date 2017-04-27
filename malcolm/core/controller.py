@@ -147,7 +147,7 @@ class Controller(Loggable):
         if alarm is not None:
             alarm = deserialize_object(alarm, Alarm)
         with self.changes_squashed:
-            if alarm is None:
+            if alarm is None or not alarm.severity:
                 self._faults.pop(part, None)
             else:
                 self._faults[part] = alarm
