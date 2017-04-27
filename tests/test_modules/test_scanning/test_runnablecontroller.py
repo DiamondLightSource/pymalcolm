@@ -180,7 +180,7 @@ class TestRunnableController(unittest.TestCase):
         now = time.time()
         self.checkState(self.ss.ARMED)
         self.checkSteps(4, 2, 6)
-        self.assertAlmostEqual(now - then, 0.5, delta=0.3)
+        self.assertAlmostEqual(now - then, 0.5, delta=0.45)
 
     def test_run_exception(self):
         self.prepare_half_run(exception=1)

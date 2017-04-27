@@ -20,27 +20,19 @@ sm = ManagerController.stateSet
 
 
 class PortsPart(Part):
-    in_port = ''
-    out_port = ''
-
-    def write_in_port(self, val):
-        self.in_port = val
-
-    def write_out_port(self, val):
-        self.out_port = val
 
     def create_attributes(self):
         for data in super(PortsPart, self).create_attributes():
             yield data
         # note 3rd part of inport tag is its disconnected value
         in_tag = "inport:int32:"
-        in_name = "inport%s" % self.name
+        in_name = "inportConnector"
         in_port = StringMeta(in_name, [in_tag, "config"]).create_attribute()
         in_port.meta.set_writeable_in(sm.READY)
         yield in_name, in_port, in_port.set_value
 
-        out_name = "outport%s" % self.name
-        out_tag = "outport:int32:%s" %self.name
+        out_name = "outportConnector"
+        out_tag = "outport:int32:%s" % self.name
         out_port = StringMeta(in_name, [out_tag]).create_attribute()
         out_port.meta.set_writeable_in(sm.READY)
         yield out_name, out_port, out_port.set_value
@@ -53,7 +45,8 @@ class TestChildPart(unittest.TestCase):
 
     def makeChildBlock(self, blockMri):
         controller = call_with_params(
-            BaseController, self.p, [PortsPart(name='Connector')], mri=blockMri)
+            BaseController, self.p, [
+                PortsPart(name='Connector%s' % blockMri[-1])], mri=blockMri)
         part = call_with_params(
             ChildPart, mri=blockMri, name='part%s' % blockMri)
         self.p.add_controller(blockMri, controller)
@@ -65,6 +58,9 @@ class TestChildPart(unittest.TestCase):
         self.p1, self.c1 = self.makeChildBlock('child1')
         self.p2, self.c2 = self.makeChildBlock('child2')
         self.p3, self.c3 = self.makeChildBlock('child3')
+        self.c1._block.inportConnector.set_value('Connector3')
+        self.c2._block.inportConnector.set_value('Connector1')
+        self.c3._block.inportConnector.set_value('Connector2')
 
         # create a root block for the child blocks to reside in
         parts = [self.p1, self.p2, self.p3]
@@ -84,7 +80,6 @@ class TestChildPart(unittest.TestCase):
     def test_init(self):
         for controller in (self.c1, self.c2, self.c3):
             b = self.p.block_view(controller.mri)
-            assert b.inportConnector.value == ''
             assert b.outportConnector.value == ''
         self.assertEqual(self.c.exports.meta.elements["name"].choices, (
             'partchild1.health',
@@ -103,12 +98,12 @@ class TestChildPart(unittest.TestCase):
         self.assertEqual(len(ports), 2)
         self.assertEqual(ports[0].direction, "in")
         self.assertEqual(ports[0].type, "int32")
-        self.assertEqual(ports[0].value, "")
+        self.assertEqual(ports[0].value, "Connector3")
         self.assertEqual(ports[0].extra, "")
         self.assertEqual(ports[1].direction, "out")
         self.assertEqual(ports[1].type, "int32")
         self.assertEqual(ports[1].value, "")
-        self.assertEqual(ports[1].extra, "Connector")
+        self.assertEqual(ports[1].extra, "Connector1")
 
     def test_layout(self):
         b = self.p.block_view("mainBlock")
@@ -137,32 +132,21 @@ class TestChildPart(unittest.TestCase):
         self.assertEqual(self.c.parts['partchild3'].visible, True)
 
     def test_sever_all_inports(self):
+        b = self.p.block_view("mainBlock")
         b1, b2, b3 = (self.c1.block_view(), self.c2.block_view(),
                       self.c3.block_view())
-        b1.inportConnector.put_value('Connector')
-        b2.inportConnector.put_value('Connector')
-        b3.inportConnector.put_value('Connector3')
-
-        self.p1.sever_inports(b1)
+        new_layout = dict(
+            name=["partchild1"], mri=[""], x=[0], y=[0], visible=[False])
+        b.layout.put_value(new_layout)
         assert b1.inportConnector.value == ''
-        assert b2.inportConnector.value == 'Connector'
-        assert b3.inportConnector.value == 'Connector3'
-
-    def test_sever_inports_connected_to(self):
-        b1 = self.c1.block_view()
-
-        b1.inportConnector.put_value('Connector')
-        assert b1.inportConnector.value == 'Connector'
-
-        lookup = {'Connector': 'int32'}
-        self.p1.sever_inports(b1, lookup)
-        assert b1.inportConnector.value == ''
+        assert b2.inportConnector.value == ''
+        assert b3.inportConnector.value == 'Connector2'
 
     def test_load_save(self):
         b1 = self.c1.block_view()
         context = Context(self.p)
         structure1 = self.p1.save(context)
-        expected = dict(inportConnector="")
+        expected = dict(inportConnector="Connector3")
         assert structure1 == expected
         b1.inportConnector.put_value("blah")
         structure2 = self.p1.save(context)

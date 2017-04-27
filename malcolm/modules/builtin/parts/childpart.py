@@ -53,19 +53,7 @@ class ChildPart(Part):
     @ManagerController.ReportPorts
     def report_ports(self, context):
         child = context.block_view(self.params.mri)
-        port_infos = list(self._get_flowgraph_ports(child).values())
-        return port_infos
-
-    def _get_flowgraph_ports(self, child, direction=None):
-        """Get a PortInfo for each flowgraph of the child matching a direction
-
-        Args:
-            direction (str): Which direction to get, "in" or "out"
-
-        Returns:
-            dict: {attr_name: PortInfo}: PortInfo for the requested Attributes
-        """
-        ports = OrderedDict()
+        port_infos = []
         for attr_name in child:
             attr = getattr(child, attr_name)
             if isinstance(attr, Attribute):
@@ -73,11 +61,10 @@ class ChildPart(Part):
                     match = port_tag_re.match(tag)
                     if match:
                         d, type, extra = match.groups()
-                        if direction is None or d == direction:
-                            ports[attr_name] = PortInfo(
-                                direction=d, type=type, value=attr.value,
-                                extra=extra)
-        return ports
+                        port_infos.append(PortInfo(
+                            name=attr_name, value=attr.value, direction=d,
+                            type=type, extra=extra))
+        return port_infos
 
     def update_exportable(self, response):
         # Get a child context to check if we have a config field
@@ -161,34 +148,22 @@ class ChildPart(Part):
     def layout(self, context, part_info, layout_table):
         # if this is the first call, we need to calculate if we are visible
         # or not
-        child = None
         if self.visible is None:
-            if child is None:
-                child = context.block_view(self.params.mri)
-            self.visible = self.child_connected(child, part_info)
+            self.visible = self.child_connected(part_info)
         for i, name in enumerate(layout_table.name):
             x = layout_table.x[i]
             y = layout_table.y[i]
             visible = layout_table.visible[i]
             if name == self.name:
                 if self.visible and not visible:
-                    if child is None:
-                        child = context.block_view(self.params.mri)
-                    self.sever_inports(child)
+                    self.sever_inports(context, part_info)
                 self.x = x
                 self.y = y
                 self.visible = visible
             else:
                 was_visible = self.part_visible.get(name, True)
                 if was_visible and not visible:
-                    outport_lookup = {}
-                    for outport_info in part_info.get(name, []):
-                        if outport_info.direction == "out":
-                            outport_lookup[outport_info.value] = \
-                                outport_info.type
-                    if child is None:
-                        child = context.block_view(self.params.mri)
-                    self.sever_inports(child, outport_lookup)
+                    self.sever_inports(context, part_info, name)
                 self.part_visible[name] = visible
         ret = LayoutInfo(
             mri=self.params.mri, x=self.x, y=self.y, visible=self.visible)
@@ -212,7 +187,11 @@ class ChildPart(Part):
         # Do this first so that any callbacks that happen in the put know
         # not to notify controller
         self.saved_structure = part_structure
+
+        # Don't update while we're putting values or we'll deadlock
+        self._do_update = False
         child.put_attribute_values(params)
+        self._do_update = True
 
     @ManagerController.Save
     def save(self, context):
@@ -225,28 +204,59 @@ class ChildPart(Part):
         self.saved_structure = part_structure
         return part_structure
 
-    def sever_inports(self, child, outport_lookup=None):
-        """Conditionally sever inport of the child. If outports is then None
-        then sever all, otherwise restrict to the listed outports
+    def _get_flowgraph_ports(self, part_info, direction):
+        # {attr_name: port_info}
+        ports = {}
+        for port_info in part_info.get(self.name, []):
+            if port_info.direction == direction:
+                ports[port_info.name] = port_info
+        return ports
+
+    def _outport_lookup(self, port_infos):
+        outport_lookup = {}
+        for outport_info in port_infos:
+            if outport_info.direction == "out":
+                outport_lookup[outport_info.extra] = outport_info.type
+        return outport_lookup
+
+    def sever_inports(self, context, part_info, connected_to=None):
+        """Conditionally sever inports of the child. If connected_to is then
+        None then sever all, otherwise restrict to connected_to's outports
 
         Args:
-            child (Block): The child we are severing inports on
-            outport_lookup (dict): {outport_value: outport_type} for each
-                outport or None for all inports
+            context (Context): The context to use
+            part_info (dict): {part_name: [PortInfo]}
+            connected_to (str): Restrict severing to this part
         """
-        attribute_values = {}
-        for name, port_info in self._get_flowgraph_ports(child, "in").items():
-            if outport_lookup is None or outport_lookup.get(
-                    port_info.value, None) == port_info.type:
-                attribute_values[name] = port_info.extra
-        child.put_attribute_values(attribute_values)
+        # Find the outports to connect to
+        if connected_to:
+            # Calculate a lookup of the outport "name" to type
+            outport_lookup = self._outport_lookup(
+                part_info.get(connected_to, []))
+        else:
+            outport_lookup = True
 
-    def child_connected(self, child, part_info):
+        # Find our inports
+        inports = self._get_flowgraph_ports(part_info, "in")
+
+        # If we have inports that need to be disconnected then do so
+        if inports and outport_lookup:
+            child = context.block_view(self.params.mri)
+            attribute_values = {}
+            for name, port_info in inports.items():
+                if outport_lookup is True or outport_lookup.get(
+                        child[name].value, None) == port_info.type:
+                    attribute_values[name] = port_info.extra
+            # Don't update while we're putting values or we'll deadlock
+            self._do_update = False
+            child.put_attribute_values(attribute_values)
+            self._do_update = True
+
+    def child_connected(self, part_info):
         """Calculate if anything is connected to us or we are connected to
         anything else
 
         Args:
-            child (Block): The child we are checking for connections on
             part_info (dict): {part_name: [PortInfo]} from other ports
 
         Returns:
@@ -254,21 +264,22 @@ class ChildPart(Part):
         """
         has_ports = False
         # See if our inports are connected to anything
-        for inport_info in self._get_flowgraph_ports(child, "in").values():
+        inports = self._get_flowgraph_ports(part_info, "in")
+        for name, inport_info in inports.items():
             disconnected_value = inport_info.extra
             has_ports = True
             if inport_info.value != disconnected_value:
                 return True
-        # Calculate a lookup of outport values to their types
-        # {outport_value: outport_type}
-        outport_lookup = {}
-        for outport_info in self._get_flowgraph_ports(child, "out").values():
+        # Calculate a lookup of outport "name" to their types
+        outport_lookup = self._outport_lookup(part_info.get(self.name, []))
+        if outport_lookup:
             has_ports = True
-            outport_lookup[outport_info.value] = outport_info.type
         # See if anything is connected to one of our outports
         for inport_info in PortInfo.filter_values(part_info):
-            if outport_lookup.get(inport_info.value, None) == inport_info.type:
-                return True
+            if inport_info.direction == "in":
+                if outport_lookup.get(
+                        inport_info.value, None) == inport_info.type:
+                    return True
         # If we have ports and they haven't been connected to anything then
         # we are disconnected
         if has_ports:
