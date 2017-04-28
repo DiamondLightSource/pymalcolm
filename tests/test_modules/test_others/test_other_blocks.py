@@ -26,6 +26,8 @@ from malcolm.modules.excalibur.blocks import excalibur_detector_driver_block,\
     fem_detector_manager_block
 from malcolm.modules.profiling.blocks import profiling_block,\
     profiling_web_server_block
+from malcolm.modules.xmap.blocks import xmap_detector_driver_block,\
+    xmap_detector_manager_block
 
 
 
@@ -189,5 +191,23 @@ class TestBuiltin(unittest.TestCase):
             profiling_web_server_block, Mock(),
             mri="mri",
             profilesDir="/tmp/malcolm")
+
+        del controller
+
+    # xmap blocks
+    def test_xmap_detector_driver_block(self):
+        controller = call_with_params(
+            xmap_detector_driver_block, Mock(),
+            mri="mri",
+            prefix="prefix")
+
+        del controller
+
+    def test_xmap_detector_manager_block(self):
+        controller = call_with_params(
+            xmap_detector_manager_block, Mock(),
+            mriPrefix="mriPrefix",
+            pvPrefix="pvPrefix",
+            configDir="/tmp/malcolm")
 
         del controller

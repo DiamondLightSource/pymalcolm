@@ -22,7 +22,7 @@
     name: DRV
     mri: $(mriPrefix)-DRV
 
-- ADCore.blocks.StatsPlugin:
+- ADCore.blocks.stats_plugin_block:
     mri: $(mriPrefix)-STAT
     prefix: $(pvPrefix):STAT1
 
