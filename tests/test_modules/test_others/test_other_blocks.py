@@ -28,6 +28,10 @@ from malcolm.modules.profiling.blocks import profiling_block,\
     profiling_web_server_block
 from malcolm.modules.xmap.blocks import xmap_detector_driver_block,\
     xmap_detector_manager_block
+from malcolm.modules.xspress3.blocks import xspress3_detector_driver_block,\
+    xspress3_detector_manager_block
+from malcolm.modules.zebra.blocks import zebra_driver_block,\
+    zebra_runnable_block
 
 
 
@@ -206,6 +210,42 @@ class TestBuiltin(unittest.TestCase):
     def test_xmap_detector_manager_block(self):
         controller = call_with_params(
             xmap_detector_manager_block, Mock(),
+            mriPrefix="mriPrefix",
+            pvPrefix="pvPrefix",
+            configDir="/tmp/malcolm")
+
+        del controller
+
+    # xspress3 blocks
+    def test_xspress3_detector_driver_blocks(self):
+        controller = call_with_params(
+            xspress3_detector_driver_block, Mock(),
+            mri="mri",
+            prefix="prefix")
+
+        del controller
+
+    def test_xspress3_detector_manager_block(self):
+        controller = call_with_params(
+            xspress3_detector_manager_block, Mock(),
+            mriPrefix="mriPrefix",
+            pvPrefix="pvPrefix",
+            configDir="/tmp/malcolm")
+
+        del controller
+
+    # zebra blocks
+    def test_zebra_driver_block(self):
+        controller = call_with_params(
+            zebra_driver_block, Mock(),
+            mri="mri",
+            prefix="prefix")
+
+        del controller
+
+    def test_zebra_runnable_block(self):
+        controller = call_with_params(
+            zebra_runnable_block, Mock(),
             mriPrefix="mriPrefix",
             pvPrefix="pvPrefix",
             configDir="/tmp/malcolm")
