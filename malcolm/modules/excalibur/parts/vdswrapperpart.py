@@ -2,15 +2,20 @@ import os
 
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.core import method_takes, REQUIRED, Part
-from malcolm.infos.ADCore.datasetproducedinfo import DatasetProducedInfo
+from malcolm.modules.ADCore.infos import DatasetProducedInfo
 from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
-
+@method_takes(
+    "name", StringMeta("Name of the Part within the controller"), REQUIRED)
 class VdsWrapperPart(Part):
+    def __init__(self, params):
+        self.params = params
+        super(VdsWrapperPart, self).__init__(params.name)
+
     @RunnableController.Abort
     @RunnableController.Reset
-    def abort(self, task):
+    def abort(self, context):
         # Close the VDS file if it is open
         pass
 
@@ -49,7 +54,7 @@ class VdsWrapperPart(Part):
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
         "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
+    def configure(self, context, completed_steps, steps_to_do, part_info, params):
         self.done_when_reaches = completed_steps + steps_to_do
         filename = os.path.join(params.fileDir, "EXCALIBUR.h5")
         # Open output HDF file
@@ -66,12 +71,12 @@ class VdsWrapperPart(Part):
 
     @RunnableController.PostRunReady
     @RunnableController.Seek
-    def seek(self, task, completed_steps, steps_to_do, part_info):
+    def seek(self, context, completed_steps, steps_to_do, part_info):
         self.done_when_reaches = completed_steps + steps_to_do
 
     @RunnableController.Run
     @RunnableController.Resume
-    def run(self, task, update_completed_steps):
+    def run(self, context, update_completed_steps):
         # Monitor 6 stripe inputs and generate NDArrayUniqueId as minimum of 6 stripe NDArrayUniqueId, and sum as sum of 6 stripe sums.
         # Return when we have processed unique id self.done_when_reaches
         pass

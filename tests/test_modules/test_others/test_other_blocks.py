@@ -20,6 +20,10 @@ from malcolm.modules.BL18I.blocks import i18_fine_theta_manager_block,\
 from malcolm.modules.BL45P.blocks import hardware_scan_block,\
     pmac_manager_block,\
     sim_scan_block
+from malcolm.modules.excalibur.blocks import excalibur_detector_driver_block,\
+    excalibur_detector_manager_block,\
+    fem_detector_driver_block,\
+    fem_detector_manager_block
 
 
 
@@ -136,6 +140,36 @@ class TestBuiltin(unittest.TestCase):
     def test_sim_scan_block(self):
         controller = call_with_params(
             sim_scan_block, Mock(), mri="mri", sim="sim",
+            configDir="/tmp/malcolm")
+
+        del controller
+
+    # Excalibur blocks
+    def test_excalibur_detector_driver_block(self):
+        controller = call_with_params(
+            excalibur_detector_driver_block, Mock(), mri="mri", prefix="prefix")
+
+        del controller
+
+    def test_excalibur_detector_manager_block(self):
+        controller = call_with_params(
+            excalibur_detector_manager_block, Mock(), mriPrefix="mriPrefix",
+            pvPrefix="pvPrefix",
+            configDir="/tmp/malcolm")
+
+        del controller
+
+    def test_fem_detector_driver_block(self):
+        controller = call_with_params(
+            fem_detector_driver_block, Mock(), mri="mri",
+            prefix="prefix")
+
+        del controller
+
+    def test_fem_detector_manager_block(self):
+        controller = call_with_params(
+            fem_detector_manager_block, Mock(), mriPrefix="mriPrefix",
+            pvPrefix="pvPrefix",
             configDir="/tmp/malcolm")
 
         del controller
