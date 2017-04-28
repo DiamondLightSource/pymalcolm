@@ -1,7 +1,7 @@
 from malcolm.yamlutil import make_block_creator, check_yaml_names
 
 i18_fine_theta_manager_block = make_block_creator(
-    __file__, "i18_fine_thata_manager_block.yaml")
+    __file__, "i18_fine_theta_manager_block.yaml")
 
 i18_pmac_manager_block = make_block_creator(
     __file__, "i18_pmac_manager_block.yaml")
