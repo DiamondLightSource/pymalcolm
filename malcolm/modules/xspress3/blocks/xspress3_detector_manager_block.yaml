@@ -10,21 +10,21 @@
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.xmap.XmapDetectorDriver:
+- xspress3.blocks.xspress3_detector_driver_block:
     mri: $(mriPrefix)-DRV
     prefix: $(pvPrefix)
 
-- parts.xmap.XmapDriverPart:
-    name: DRV
+- xspress3.parts.Xspress3DriverPart:
+    name: Xspress3A
     mri: $(mriPrefix)-DRV
 
-- ADCore.blocks.StatsPlugin:
+- ADCore.blocks.stats_plugin_block:
     mri: $(mriPrefix)-STAT
-    prefix: $(pvPrefix):STAT1
+    prefix: $(pvPrefix):STAT
 
 - ADCore.parts.StatsPluginPart:
     name: STAT

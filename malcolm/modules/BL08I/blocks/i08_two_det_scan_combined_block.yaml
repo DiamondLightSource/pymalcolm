@@ -18,14 +18,19 @@
     name: pandabox
     description: MRI for PandABoxManager object
 
-- controllers.RunnableController:
+- builtin.parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- scanning.controllers.RunnableController:
     mri: $(mri)
     axesToMove: [SampleX, SampleY]
+    configDir: $(configDir)
 
 - ADCore.parts.DatasetTablePart:
     name: DSET
 
-- parts.demo.BL08IScanCombinedPart:
+- BL08I.parts.BL08IScanCombinedPart:
     name: BRICK
     mri: $(brick)
 

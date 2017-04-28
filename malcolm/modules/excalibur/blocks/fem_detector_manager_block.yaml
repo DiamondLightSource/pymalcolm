@@ -10,26 +10,25 @@
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.ADAndor.AndorDetectorDriver:
-    mri: $(mriPrefix)-DRV
-    prefix: $(pvPrefix):CAM
+- excalibur.blocks.fem_detector_driver_block:
+    mri: $(mriPrefix):FEM
+    prefix: $(pvPrefix):FEM
 
-- parts.ADAndor.AndorDriverPart:
-    name: DRV
-    mri: $(mriPrefix)-DRV
-    readoutTime: 13e-3
+- excalibur.parts.FemDriverPart:
+    name: FEM
+    mri: $(mriPrefix):FEM
 
-- ADCore.blocks.StatsPlugin:
-    mri: $(mriPrefix)-STAT
-    prefix: $(pvPrefix):STAT
+#- ADCore.blocks.StatsPlugin:
+#    mri: $(mriPrefix):STAT
+#    prefix: $(pvPrefix):STAT
 
-- ADCore.parts.StatsPluginPart:
-    name: STAT
-    mri: $(mriPrefix)-STAT
+#- ADCore.parts.StatsPluginPart:
+#    name: STAT
+#    mri: $(mriPrefix):STAT
 
 - ADCore.includes.filewriting_collection:
     pvPrefix: $(pvPrefix)

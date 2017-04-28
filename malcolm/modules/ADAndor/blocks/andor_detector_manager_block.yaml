@@ -10,19 +10,20 @@
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.xspress3.Xspress3DetectorDriver:
+- ADAndor.blocks.andor_detector_driver_block:
     mri: $(mriPrefix)-DRV
-    prefix: $(pvPrefix)
+    prefix: $(pvPrefix):CAM
 
-- parts.xspress3.Xspress3DriverPart:
-    name: Xspress3A
+- ADAndor.parts.AndorDriverPart:
+    name: DRV
     mri: $(mriPrefix)-DRV
+    readoutTime: 13e-3
 
-- ADCore.blocks.StatsPlugin:
+- ADCore.blocks.stats_plugin_block:
     mri: $(mriPrefix)-STAT
     prefix: $(pvPrefix):STAT
 

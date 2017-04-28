@@ -10,25 +10,25 @@
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.excalibur.FemDetectorDriver:
-    mri: $(mriPrefix):FEM
-    prefix: $(pvPrefix):FEM
+- xmap.blocks.xmap_detector_driver_block:
+    mri: $(mriPrefix)-DRV
+    prefix: $(pvPrefix)
 
-- parts.excalibur.FemDriverPart:
-    name: FEM
-    mri: $(mriPrefix):FEM
+- xmap.parts.XmapDriverPart:
+    name: DRV
+    mri: $(mriPrefix)-DRV
 
-#- ADCore.blocks.StatsPlugin:
-#    mri: $(mriPrefix):STAT
-#    prefix: $(pvPrefix):STAT
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mriPrefix)-STAT
+    prefix: $(pvPrefix):STAT1
 
-#- ADCore.parts.StatsPluginPart:
-#    name: STAT
-#    mri: $(mriPrefix):STAT
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix)-STAT
 
 - ADCore.includes.filewriting_collection:
     pvPrefix: $(pvPrefix)
