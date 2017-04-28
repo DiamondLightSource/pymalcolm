@@ -162,6 +162,7 @@ class TestRunnableController(unittest.TestCase):
         self.checkState(self.ss.READY)
 
     def test_resume_in_run(self):
+        # TODO: sometimes hangs
         self.prepare_half_run(duration=0.5)
         f = self.b.run_async()
         self.context.sleep(0.75)

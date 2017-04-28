@@ -1,19 +1,10 @@
-from malcolm.modules.scanning.controllers import RunnableController, \
-    configure_args
-from malcolm.core import method_takes
-from malcolm.modules.ADCore.parts import ExposureDetectorDriverPart
+from malcolm.modules.ADCore.parts import DetectorDriverPart
 
 
-class XmapDriverPart(ExposureDetectorDriverPart):
-    @RunnableController.Configure
-    @RunnableController.PostRunReady
-    @RunnableController.Seek
-    @method_takes(*configure_args)
-    def configure(self, context, completed_steps, steps_to_do, part_info,
-                  params):
-        context.unsubscribe_all()
-        child = context.block_view(self.params.mri)
-        child.put_attribute_values(dict(
+class XmapDriverPart(DetectorDriverPart):
+    # No numImages or imageMode so no superclass call
+    def setup_detector(self, child, completed_steps, steps_to_do, params=None):
+        fs = child.put_attribute_values_async(dict(
             collectMode="MCA mapping",
             pixelAdvanceMode="Gate",
             presetMode="No preset",
@@ -29,5 +20,4 @@ class XmapDriverPart(ExposureDetectorDriverPart):
             inputLogicPolarity="Normal",
             arrayCounter=completed_steps,
             arrayCallbacks=True))
-        self.post_configure(child, params)
-
+        return fs

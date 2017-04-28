@@ -246,7 +246,10 @@ class Context(Loggable):
             until = time.time() + timeout
 
         if not isinstance(futures, list):
-            futures = [futures]
+            if futures:
+                futures = [futures]
+            else:
+                futures = []
 
         filtered_futures = set()
 

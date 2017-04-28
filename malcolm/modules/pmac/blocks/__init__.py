@@ -4,7 +4,5 @@ compound_motor_block = make_block_creator(__file__, "compound_motor_block.yaml")
 pmac_trajectory_block = make_block_creator(
     __file__, "pmac_trajectory_block.yaml")
 raw_motor_block = make_block_creator(__file__, "raw_motor_block.yaml")
-simulator_pmac_manager_block = make_block_creator(
-    __file__, "simulator_pmac_manager_block.yaml")
 
 check_yaml_names(globals())

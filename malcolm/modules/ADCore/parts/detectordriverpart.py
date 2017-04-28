@@ -1,6 +1,5 @@
 from malcolm.core import method_takes, TimeoutError
 from malcolm.modules.builtin.parts import StatefulChildPart
-from malcolm.modules.builtin.vmetas import ChoiceMeta
 from malcolm.modules.scanning.controllers import RunnableController
 
 
@@ -13,14 +12,6 @@ class DetectorDriverPart(StatefulChildPart):
 
     # How many we are waiting for
     done_when_reaches = None
-
-    def create_attributes(self):
-        for data in super(DetectorDriverPart, self).create_attributes():
-            yield data
-        meta = ChoiceMeta("Whether detector is software or hardware triggered",
-                          ["Software", "Hardware"])
-        self.trigger_mode = meta.create_attribute("Hardware")
-        yield "triggerMode", self.trigger_mode, None
 
     @RunnableController.Reset
     def reset(self, context):
@@ -38,9 +29,12 @@ class DetectorDriverPart(StatefulChildPart):
         self.done_when_reaches = completed_steps + steps_to_do
         fs = self.setup_detector(child, completed_steps, steps_to_do, params)
         context.wait_all_futures(fs)
-        if self.trigger_mode.value == "Hardware":
+        if self.is_hardware_triggered(child):
             # Start now if we are hardware triggered
             self.start_future = child.start_async()
+
+    def is_hardware_triggered(self, child):
+        return True
 
     def setup_detector(self, child, completed_steps, steps_to_do, params=None):
         fs = child.put_attribute_values_async(dict(
@@ -55,7 +49,7 @@ class DetectorDriverPart(StatefulChildPart):
     def run(self, context, update_completed_steps):
         child = context.block_view(self.params.mri)
         child.arrayCounter.subscribe_value(update_completed_steps, self)
-        if self.trigger_mode.value != "Hardware":
+        if not self.is_hardware_triggered(child):
             # Start now
             self.start_future = child.start_async()
         context.wait_all_futures(self.start_future)

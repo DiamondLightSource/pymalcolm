@@ -52,6 +52,9 @@ class Block(View):
         future = self._context.when_matches_async(path, good_value, bad_values)
         return future
 
+    def wait_all_futures(self, futures, timeout=None):
+        self._context.wait_all_futures(futures, timeout)
+
 
 def make_block_view(controller, context, data):
     class BlockSubclass(Block):

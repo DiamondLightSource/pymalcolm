@@ -2,8 +2,11 @@ from malcolm.modules.ADCore.parts import ExposureDetectorDriverPart
 
 
 class AndorDriverPart(ExposureDetectorDriverPart):
-    def post_configure(self, context, params):
-        child = context.block_view(self.params.mri)
-        child.acquirePeriod.put_value(
+    def setup_detector(self, child, completed_steps, steps_to_do, params=None):
+        fs = super(AndorDriverPart, self).setup_detector(
+            child, completed_steps, steps_to_do, params)
+        child.wait_all_futures(fs)
+        # Need to reset acquirePeriod as it's sometimes wrong
+        fs = child.acquirePeriod.put_value_async(
             child.exposure.value + self.readout_time.value)
-        super(AndorDriverPart, self).post_configure(context, params)
+        return fs
