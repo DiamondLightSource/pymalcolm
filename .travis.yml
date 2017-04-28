@@ -40,5 +40,8 @@ install:
 script:
   - pytest -vv --tb=native tests/
 
+# submit coverage
 after_script:
-  - coveralls
+  - if [[ $ENV == python=2.7 ]]; then
+          coveralls;
+    fi

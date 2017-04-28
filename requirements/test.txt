@@ -8,3 +8,4 @@ ruamel.yaml
 plop==0.3.0
 pytest>=3
 pytest-catchlog
+pytest-cov
