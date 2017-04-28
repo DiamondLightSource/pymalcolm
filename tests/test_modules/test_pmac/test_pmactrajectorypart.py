@@ -1,29 +1,22 @@
-import unittest
-import functools
 from mock import Mock, call, patch, ANY
+
+from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import call_with_params, Context, Process
 from malcolm.modules.pmac.parts import PmacTrajectoryPart
 from malcolm.modules.pmac.infos import MotorInfo
 from malcolm.modules.pmac.blocks import pmac_trajectory_block
-from scanpointgenerator import LineGenerator, CompoundGenerator
+from malcolm.testutil import ChildTestCase
 
 
-class TestPMACTrajectoryPart(unittest.TestCase):
-    maxDiff = None
-
-    @patch("malcolm.modules.ca.parts.capart.CAPart.reset")
-    @patch("malcolm.modules.ca.parts.catoolshelper.CaToolsHelper._instance")
-    def setUp(self, catools, reset):
-        self.put = Mock(return_value=None)
+class TestPMACTrajectoryPart(ChildTestCase):
+    def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
-        child = call_with_params(
+        self.child = self.create_child_block(
             pmac_trajectory_block, self.process, mri="PMAC:TRAJ",
             prefix="PV:PRE", statPrefix="PV:STAT")
-        for k in child._write_functions:
-            child._write_functions[k] = functools.partial(self.put, k)
-        child.parts["i10"].attr.set_value(1705244)
+        self.child.parts["i10"].attr.set_value(1705244)
         self.o = call_with_params(
             PmacTrajectoryPart, name="pmac", mri="PMAC:TRAJ")
         list(self.o.create_attributes())
@@ -104,7 +97,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
            0.2)
     def test_configure(self):
         self.do_configure(axes_to_scan=["x", "y"])
-        assert self.put.mock_calls == [
+        assert self.child.mock_writes.mock_calls == [
             call('numPoints', 4000000),
             call('cs', 'CS1'),
         ] + self.resolutions_and_use_calls() + [
@@ -141,7 +134,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
     def test_2_axis_move_to_start(self):
         self.do_configure(
             axes_to_scan=["x", "y"], x_pos=0.0, y_pos=0.2)
-        assert self.put.mock_calls == [
+        assert self.child.mock_writes.mock_calls == [
             call('numPoints', 4000000),
             call('cs', 'CS1'),
         ] + self.resolutions_and_use_calls() + [
@@ -167,18 +160,18 @@ class TestPMACTrajectoryPart(unittest.TestCase):
            0.2)
     def test_update_step(self):
         self.do_configure(axes_to_scan=["x", "y"])
-        positionsA = self.put.call_args_list[-6][0][1]
+        positionsA = self.child.mock_writes.call_args_list[-6][0][1]
         assert len(positionsA) == 11
         assert positionsA[-1] == 0.375
         assert self.o.end_index == 4
         assert len(self.o.completed_steps_lookup) == 11
         update_completed_steps = Mock()
-        self.put.reset_mock()
+        self.child.mock_writes.reset_mock()
         self.o.update_step(
             3, update_completed_steps, self.context.block_view("PMAC:TRAJ"))
         update_completed_steps.assert_called_once_with(1, self.o)
         assert not self.o.loading
-        assert self.put.mock_calls == self.resolutions_and_use_calls() + [
+        assert self.child.mock_writes.mock_calls == self.resolutions_and_use_calls() + [
             call('pointsToBuild', 5),
             call('positionsA', [
                 0.25, 0.125, 0.0, -0.125, -0.1375]),
@@ -195,16 +188,16 @@ class TestPMACTrajectoryPart(unittest.TestCase):
     def test_run(self):
         update = Mock()
         self.o.run(self.context, update)
-        assert self.put.mock_calls == [call('executeProfile')]
+        assert self.child.mock_writes.mock_calls == [call('executeProfile')]
 
     def test_multi_run(self):
         self.do_configure(axes_to_scan=["x"])
         self.assertEqual(self.o.completed_steps_lookup,
                          [0, 0, 1, 1, 2, 2, 3, 3])
-        self.put.reset_mock()
+        self.child.mock_writes.reset_mock()
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.6375)
-        assert self.put.mock_calls == [
+        assert self.child.mock_writes.mock_calls == [
             call('numPoints', 4000000),
             call('cs', 'CS1'),
         ] + self.resolutions_and_use_calls(useB=False) + [
@@ -223,7 +216,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
     def test_long_steps_lookup(self):
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.62506, duration=14.0)
-        assert self.put.mock_calls[-6:] == [
+        assert self.child.mock_writes.mock_calls[-6:] == [
             call('pointsToBuild', 14),
             call('positionsA',
                  [0.625, 0.5625, 0.5, 0.4375, 0.375, 0.3125, 0.25, 0.1875,
@@ -243,7 +236,7 @@ class TestPMACTrajectoryPart(unittest.TestCase):
            2.0)
     def test_long_move(self):
         self.do_configure(axes_to_scan=["x"], x_pos=-10.1375)
-        assert self.put.mock_calls[13:18] == [
+        assert self.child.mock_writes.mock_calls[13:18] == [
             call('pointsToBuild', 5),
             call('positionsA', [
                 -8.2575000000000003, -6.1774999999999984, -4.0974999999999984,

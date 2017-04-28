@@ -5,14 +5,14 @@ import sys
 
 import numpy as np
 
-# Mock out pvaccess
-sys.modules["pvaccess"] = MagicMock()
+# Mock out pvaccess if it isn't there
+if "pvaccess" not in sys.modules:
+    sys.modules["pvaccess"] = MagicMock()
 import pvaccess
 
 from malcolm.core import StringArray
 from malcolm.modules.pva.controllers.pvautil import pva_structure_from_value, \
     dict_to_pv_object
-
 
 
 class PvTempObject(object):
@@ -71,7 +71,7 @@ class TestPVAUtil(unittest.TestCase):
         test_dict["val8"] = [pvaccess.BOOLEAN]
         test_dict["val9"] = [pvaccess.LONG]
         test_dict["val10"] = [pvaccess.DOUBLE]
-        test_val = pvaccess.PvObject(test_dict, "type1")
+        test_val = PvTempObject(test_dict, "type1")
         self.assertEquals(val, test_val)
 
         # Test the variant union array type
@@ -82,13 +82,13 @@ class TestPVAUtil(unittest.TestCase):
             ]})
         test_dict = OrderedDict()
         test_dict["union_array"] = [()]
-        test_val = pvaccess.PvObject(test_dict, "")
+        test_val = PvTempObject(test_dict, "")
         self.assertEquals(val, test_val)
         val = pva_structure_from_value(
             {"union_array": []})
         test_dict = OrderedDict()
         test_dict["union_array"] = [()]
-        test_val = pvaccess.PvObject(test_dict, "")
+        test_val = PvTempObject(test_dict, "")
         self.assertEquals(val, test_val)
 
     @patch("malcolm.modules.pva.controllers.pvautil.pvaccess.PvObject", PvTempObject)

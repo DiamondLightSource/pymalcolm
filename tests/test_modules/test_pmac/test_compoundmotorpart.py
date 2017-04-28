@@ -1,25 +1,17 @@
-import unittest
-import functools
-from mock import Mock, patch
-
 from malcolm.core import call_with_params, Context, Process
 from malcolm.modules.pmac.parts import CompoundMotorPart
 from malcolm.modules.pmac.blocks import compound_motor_block
+from malcolm.testutil import ChildTestCase
 
 
-class TestRawMotorPart(unittest.TestCase):
+class TestRawMotorPart(ChildTestCase):
 
-    @patch("malcolm.modules.ca.parts.capart.CAPart.reset")
-    @patch("malcolm.modules.ca.parts.catoolshelper.CaToolsHelper._instance")
-    def setUp(self, catools, reset):
-        self.put = Mock(return_value=None)
+    def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
-        child = call_with_params(
+        child = self.create_child_block(
             compound_motor_block, self.process, mri="my_mri", prefix="PV:PRE",
             scannable="scan")
-        for k in child._write_functions:
-            child._write_functions[k] = functools.partial(self.put, k)
         child.parts["maxVelocity"].attr.set_value(5.0)
         child.parts["accelerationTime"].attr.set_value(0.5)
         child.parts["position"].attr.set_value(12.3)
@@ -44,7 +36,3 @@ class TestRawMotorPart(unittest.TestCase):
         self.assertEqual(returns.max_velocity, 5.0)
         self.assertEqual(returns.current_position, 12.3)
         self.assertEqual(returns.scannable, "scan")
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

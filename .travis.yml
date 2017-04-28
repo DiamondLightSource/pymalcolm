@@ -38,7 +38,7 @@ install:
   
 # command to run tests
 script:
-  - nosetests tests
+  - pytest -vv --tb=native tests/
 
 after_script:
   - coveralls
