@@ -18,13 +18,24 @@ class ChildTestCase(unittest.TestCase):
             **params: Parameters to pass to child_block()
 
         Returns:
-            child: The child object with an attribute mock_writes that will have
-                a call(attr_name, value) or call(method_name, params) for
-                anything the child is asked to do
+            child: The child object with an attribute mock_requests that will
+                have a call.put(attr_name, value) or
+                a call.post(method_name, params) for anything the child is
+                asked to handle
         """
         child = call_with_params(child_block, process, **params)
-        child.mock_writes = Mock(return_value=None)
-        for k in child._write_functions:
-            child._write_functions[k] = functools.partial(child.mock_writes, k)
-        return child
+        child.handled_requests = Mock(return_value=None)
 
+        def handle_put(request):
+            attr_name = request.path[1]
+            child.handled_requests.put(attr_name, request.value)
+            return [request.return_response()]
+
+        def handle_post(request):
+            method_name = request.path[1]
+            child.handled_requests.post(method_name, **request.parameters)
+            return [request.return_response()]
+
+        child._handle_put = handle_put
+        child._handle_post = handle_post
+        return child

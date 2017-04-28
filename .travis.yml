@@ -38,7 +38,7 @@ install:
   
 # command to run tests
 script:
-  - pytest tests
+  - pytest --cov=malcolm tests
 
 # submit coverage
 after_script:

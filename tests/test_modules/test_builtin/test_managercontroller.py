@@ -201,8 +201,7 @@ class TestManagerController(unittest.TestCase):
         assert self.c.modified.alarm.message == \
                "part2.attr.value = 'newv' not 'defaultv'"
         # allow a subscription to come through
-        context.unsubscribe(f)
-        context.wait_all_futures(f)
+        context.sleep(0.1)
         m.assert_called_once_with("newv")
         b.childAttr.put_value("again")
         assert b.childAttr.value == "again"

@@ -36,7 +36,6 @@ from malcolm.modules.zebra.blocks import zebra_driver_block,\
 
 
 class TestBuiltin(unittest.TestCase):
-
     # ADAndor Blocks
     def test_andor_detector_driver_block(self):
         controller = call_with_params(

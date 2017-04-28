@@ -40,7 +40,7 @@ def et_to_string(element):
 
 
 def maybe_import_cothread():
-    if os.environ.get("PYMALCOLM_USE_COTHREAD", "YES")[0].upper() == "Y":
+    if os.environ.get("PYMALCOLM_USE_COTHREAD", "NO")[0].upper() == "Y":
         try:
             import cothread
         except ImportError:
