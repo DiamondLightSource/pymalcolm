@@ -14,7 +14,7 @@
     name: pandabox
     description: MRI for PandABoxManager object
 
-- controllers.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mri)
     axesToMove: [sc_MicroFocusSampleX, sc_sample_thetafine]
     configDir: /tmp/malcolm

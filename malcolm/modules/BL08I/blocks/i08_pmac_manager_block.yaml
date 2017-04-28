@@ -2,7 +2,7 @@
     name: mriPrefix
     description: MRI for created block
 
-- controllers.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mriPrefix)
 
 #- pmac.includes.rawmotor_collection:
