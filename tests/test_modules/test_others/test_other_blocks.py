@@ -24,6 +24,8 @@ from malcolm.modules.excalibur.blocks import excalibur_detector_driver_block,\
     excalibur_detector_manager_block,\
     fem_detector_driver_block,\
     fem_detector_manager_block
+from malcolm.modules.profiling.blocks import profiling_block,\
+    profiling_web_server_block
 
 
 
@@ -171,5 +173,21 @@ class TestBuiltin(unittest.TestCase):
             fem_detector_manager_block, Mock(), mriPrefix="mriPrefix",
             pvPrefix="pvPrefix",
             configDir="/tmp/malcolm")
+
+        del controller
+
+    # Profiling blocks
+    def test_profiling_block(self):
+        controller = call_with_params(
+            profiling_block, Mock(), mri="mri",
+            profilesDir="/tmp/malcolm")
+
+        del controller
+
+    def test_profiling_web_server_block(self):
+        controller = call_with_params(
+            profiling_web_server_block, Mock(),
+            mri="mri",
+            profilesDir="/tmp/malcolm")
 
         del controller
