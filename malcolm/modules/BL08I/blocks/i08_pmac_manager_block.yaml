@@ -2,8 +2,13 @@
     name: mriPrefix
     description: MRI for created block
 
+- builtin.parameters.string:
+    name: configDir
+    description: Config dir for RunnableController object
+
 - scanning.controllers.RunnableController:
     mri: $(mriPrefix)
+    configDir: $(configDir)
 
 #- pmac.includes.rawmotor_collection:
 #    mri: I08-T1-XC

@@ -14,11 +14,11 @@
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.xspress3.Xspress3DetectorDriver:
+- xspress3.blocks.xspress3_detector_driver_block:
     mri: $(mriPrefix)-DRV
     prefix: $(pvPrefix)
 
-- parts.xspress3.Xspress3DriverPart:
+- xspress3.parts.Xspress3DriverPart:
     name: Xspress3A
     mri: $(mriPrefix)-DRV
 

@@ -22,7 +22,7 @@
 - ADCore.parts.DatasetTablePart:
     name: DSET
 
-- parts.pmac.PmacRunnableChildPart:
+- pmac.parts.PmacRunnableChildPart:
     name: BRICK
     mri: $(brick)
 

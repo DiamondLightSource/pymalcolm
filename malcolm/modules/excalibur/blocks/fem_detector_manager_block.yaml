@@ -14,11 +14,11 @@
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.excalibur.FemDetectorDriver:
+- excalibur.blocks.fem_detector_driver_block:
     mri: $(mriPrefix):FEM
     prefix: $(pvPrefix):FEM
 
-- parts.excalibur.FemDriverPart:
+- excalibur.parts.FemDriverPart:
     name: FEM
     mri: $(mriPrefix):FEM
 

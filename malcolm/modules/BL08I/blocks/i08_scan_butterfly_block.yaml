@@ -2,6 +2,10 @@
     name: mri
     description: MRI for created block
 
+- builtin.parameters.string:
+    name: configDir
+    description: Config dir for RunnableController object
+
 #- builtin.parameters.string:
 #    name: det
 #    description: MRI for detector DetectorManager object
@@ -17,11 +21,12 @@
 - scanning.controllers.RunnableController:
     mri: $(mri)
     axesToMove: [SampleX, ZonePlateZ]
+    configDir: $(configDir)
 
 - ADCore.parts.DatasetTablePart:
     name: DSET
 
-- parts.demo.BL08IScanCombinedPart:
+- BL08I.parts.BL08IScanCombinedPart:
     name: BRICK
     mri: $(brick)
 

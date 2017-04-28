@@ -14,11 +14,11 @@
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.xmap.XmapDetectorDriver:
+- xmap.blocks.xmap_detector_driver_block:
     mri: $(mriPrefix)-DRV
     prefix: $(pvPrefix)
 
-- parts.xmap.XmapDriverPart:
+- xmap.parts.XmapDriverPart:
     name: DRV
     mri: $(mriPrefix)-DRV
 
