@@ -42,6 +42,4 @@ script:
 
 # submit coverage
 after_script:
-  - if [[ $ENV == python=2.7 ]]; then
-          coveralls;
-    fi
+  - coveralls

@@ -1,6 +1,7 @@
 from mock import Mock, call, patch, ANY
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
+import pytest
 
 from malcolm.core import call_with_params, Context, Process
 from malcolm.modules.pmac.parts import PmacTrajectoryPart
@@ -102,9 +103,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call('cs', 'CS1'),
         ] + self.resolutions_and_use_calls() + [
             call('pointsToBuild', 5),
-            call('positionsA', [
-                0.44617968749999998, 0.28499999999999998, 0.077499999999999958,
-                -0.083679687500000072, -0.13750000000000007]),
+            call('positionsA', pytest.approx([
+                0.4461796875, 0.285, 0.0775, -0.0836796875, -0.1375])),
             call('positionsB', [0.0, 0.0, 0.0, 0.0, 0.0]),
             call('timeArray', [207500, 207500, 207500, 207500, 207500]),
             call('userPrograms', [8, 8, 8, 8, 8]),
@@ -113,12 +113,12 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call('executeProfile'),
         ] + self.resolutions_and_use_calls() + [
             call('pointsToBuild', 16),
-            call('positionsA', [
+            call('positionsA', pytest.approx([
                 -0.125, 0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
-                0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375]),
-            call('positionsB', [
+                0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375])),
+            call('positionsB', pytest.approx([
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
-                0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]),
+                0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])),
             call('timeArray', [
                 100000, 500000, 500000, 500000, 500000, 500000, 500000,
                 200000, 200000, 500000, 500000, 500000, 500000, 500000,
@@ -139,8 +139,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call('cs', 'CS1'),
         ] + self.resolutions_and_use_calls() + [
             call('pointsToBuild', 2),
-            call('positionsA', [-0.068750000000000019, -0.13750000000000001]),
-            call('positionsB', [0.10000000000000001, 0.0]),
+            call('positionsA', pytest.approx([-0.06875, -0.1375])),
+            call('positionsB', pytest.approx([0.1, 0.0])),
             call('timeArray', [282843, 282842]),
             call('userPrograms', [8, 8]),
             call('velocityMode', [0, 2]),
@@ -202,8 +202,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call('cs', 'CS1'),
         ] + self.resolutions_and_use_calls(useB=False) + [
             call('pointsToBuild', 8),
-            call('positionsA', [
-                0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375]),
+            call('positionsA', pytest.approx([
+                0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375])),
             call('timeArray', [
                 100000, 500000, 500000, 500000, 500000, 500000, 500000,
                 100000]),
