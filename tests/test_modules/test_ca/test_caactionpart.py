@@ -26,11 +26,11 @@ class TestCAActionPart(unittest.TestCase):
 
     def test_init(self, catools):
         p = self.create_part()
-        self.assertEqual(p.params.pv, "pv")
-        self.assertEqual(p.params.value, 1)
-        self.assertEqual(p.params.wait, True)
-        self.assertEqual(p.method.description, "desc")
-        self.assertEqual(self.yielded, [("mname", ANY, p.caput)])
+        assert p.params.pv == "pv"
+        assert p.params.value == 1
+        assert p.params.wait == True
+        assert p.method.description == "desc"
+        assert self.yielded == [("mname", ANY, p.caput)]
 
     def test_reset(self, catools):
         p = self.create_part()
@@ -60,4 +60,5 @@ class TestCAActionPart(unittest.TestCase):
             goodStatus="All Good"))
         catools.caput.reset_mock()
         catools.caget.return_value = "No Good"
-        self.assertRaises(AssertionError, p.caput)
+        with self.assertRaises(AssertionError):
+            p.caput()

@@ -16,10 +16,10 @@ class TestAttribute(unittest.TestCase):
 
     def test_init(self):
         self.assertIsInstance(self.o, Attribute)
-        self.assertTrue(hasattr(self.o, "meta"))
-        self.assertTrue(hasattr(self.o, "subscribe_meta"))
-        self.assertTrue(hasattr(self.o, "value"))
-        self.assertTrue(hasattr(self.o, "subscribe_value"))
+        assert hasattr(self.o, "meta")
+        assert hasattr(self.o, "subscribe_meta")
+        assert hasattr(self.o, "value")
+        assert hasattr(self.o, "subscribe_value")
 
     def test_put(self):
         self.o.put_value(32)
@@ -29,4 +29,4 @@ class TestAttribute(unittest.TestCase):
         f = self.o.put_value_async(32)
         self.context.put_async.assert_called_once_with(
             ["block", "attr", "value"], 32)
-        self.assertEqual(f, self.context.put_async.return_value)
+        assert f == self.context.put_async.return_value

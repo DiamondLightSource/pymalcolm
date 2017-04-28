@@ -15,11 +15,11 @@ class TestMethodItem(unittest.TestCase):
         self.item = MethodItem(("endpoint",), ref)
 
     def test_get_writeable(self):
-        self.assertEqual(self.item.get_writeable(), self.item.ref.writeable)
+        assert self.item.get_writeable() == self.item.ref.writeable
 
     def test_ref_children(self):
         self.item.ref.takes.elements = dict(a=1, b=2)
-        self.assertEqual(self.item.ref_children(), 2)
+        assert self.item.ref_children() == 2
 
     @patch("malcolm.gui.methoditem.ParameterItem")
     def test_create_children(self, parameter_mock):
@@ -31,11 +31,11 @@ class TestMethodItem(unittest.TestCase):
         self.item.ref.defaults = dict(p=4)
         self.item.create_children()
         # Check it made the right thing
-        self.assertEqual(len(self.item.children), 2)
+        assert len(self.item.children) == 2
         parameter_mock.assert_any_call(("endpoint", "takes", "elements", "p"), 1, 4)
-        self.assertEqual(self.item.children[0], pi1)
+        assert self.item.children[0] == pi1
         parameter_mock.assert_any_call(("endpoint", "takes", "elements", "q"), 2, None)
-        self.assertEqual(self.item.children[1], pi2)
+        assert self.item.children[1] == pi2
 
     def test_set_value(self):
         p1 = MagicMock()
@@ -48,21 +48,22 @@ class TestMethodItem(unittest.TestCase):
         request = self.item.set_value("anything")
         p1.reset_value.assert_called_once_with()
         p2.reset_value.assert_called_once_with()
-        self.assertEqual(self.item.get_state(), self.item.RUNNING)
-        self.assertEqual(request.parameters, dict(p1=43, p2=1))
-        self.assertEqual(request.path, ["endpoint"])
+        assert self.item.get_state() == self.item.RUNNING
+        assert request.parameters == dict(p1=43, p2=1)
+        assert request.path == ["endpoint"]
         self.assertIsInstance(request, Post)
 
     def test_handle_response_error(self):
         response = Error(message="bad")
         self.item.handle_response(response)
-        self.assertEqual(self.item.get_state(), self.item.ERROR)
+        assert self.item.get_state() == self.item.ERROR
 
     def test_handle_response_return(self):
         response = Return(value="yay")
         self.item.handle_response(response)
-        self.assertEqual(self.item.get_state(), self.item.IDLE)
+        assert self.item.get_state() == self.item.IDLE
 
     def test_handle_response_unknown(self):
         response = Delta(changes=[])
-        self.assertRaises(TypeError, self.item.handle_response, response)
+        with self.assertRaises(TypeError):
+            self.item.handle_response(response)

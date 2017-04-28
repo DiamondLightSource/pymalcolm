@@ -45,7 +45,7 @@ class TestSerialization(unittest.TestCase):
         assert expected == s.to_dict()
 
         n = DummySerializable.from_dict(expected)
-        self.assertEqual(n.to_dict(), expected)
+        assert n.to_dict() == expected
 
     def test_deserialize(self):
         a = EmptySerializable()

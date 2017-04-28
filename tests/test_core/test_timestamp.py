@@ -13,7 +13,7 @@ class TestAlarm(unittest.TestCase):
 
     def test_args(self):
         o = TimeStamp(1231112, 211255265, 43)
-        self.assertEqual(o.secondsPastEpoch, 1231112)
-        self.assertEqual(o.nanoseconds, 211255265)
-        self.assertEqual(o.userTag, 43)
-        self.assertEqual(o.to_time(), 1231112.211255265)
+        assert o.secondsPastEpoch == 1231112
+        assert o.nanoseconds == 211255265
+        assert o.userTag == 43
+        assert o.to_time() == 1231112.211255265

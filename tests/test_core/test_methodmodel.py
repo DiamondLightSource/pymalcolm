@@ -11,14 +11,14 @@ class TestMethodMeta(unittest.TestCase):
 
     def test_init(self):
         m = MethodModel("test_description")
-        self.assertEquals("test_description", m.description)
-        self.assertEquals("malcolm:core/Method:1.0", m.typeid)
-        self.assertEquals("", m.label)
+        assert "test_description" == m.description
+        assert "malcolm:core/Method:1.0" == m.typeid
+        assert "" == m.label
 
     def test_set_label(self):
         m = MethodModel("test_description")
         m.set_label("new_label")
-        self.assertEquals("new_label", m.label)
+        assert "new_label" == m.label
 
     def test_recreate(self):
         @method_takes(
@@ -59,9 +59,9 @@ class TestMethodMeta(unittest.TestCase):
         defaults = OrderedDict()
         defaults["arg8"] = "2"
         defaults["arg3"] = "33"
-        self.assertEqual(m.takes.to_dict(), itakes.to_dict())
-        self.assertEqual(m.returns.to_dict(), MapMeta().to_dict())
-        self.assertEqual(m.defaults, defaults)
+        assert m.takes.to_dict() == itakes.to_dict()
+        assert m.returns.to_dict() == MapMeta().to_dict()
+        assert m.defaults == defaults
 
 
 class TestDecorators(unittest.TestCase):
@@ -73,9 +73,9 @@ class TestDecorators(unittest.TestCase):
 
         itakes = MapMeta()
         itakes.set_elements(OrderedDict(hello=StringMeta()))
-        self.assertEqual(say_hello.MethodModel.takes.to_dict(), itakes.to_dict())
-        self.assertEqual(say_hello.MethodModel.returns.to_dict(), MapMeta().to_dict())
-        self.assertEqual(say_hello.MethodModel.defaults, {})
+        assert say_hello.MethodModel.takes.to_dict() == itakes.to_dict()
+        assert say_hello.MethodModel.returns.to_dict() == MapMeta().to_dict()
+        assert say_hello.MethodModel.defaults == {}
 
     def test_takes_given_defaults(self):
         @method_takes("hello", StringMeta(), "Something")
@@ -85,9 +85,9 @@ class TestDecorators(unittest.TestCase):
 
         itakes = MapMeta()
         itakes.set_elements(OrderedDict(hello=StringMeta()))
-        self.assertEqual(say_hello.MethodModel.takes.to_dict(), itakes.to_dict())
-        self.assertEqual(say_hello.MethodModel.returns.to_dict(), MapMeta().to_dict())
-        self.assertEqual(say_hello.MethodModel.defaults, {"hello": "Something"})
+        assert say_hello.MethodModel.takes.to_dict() == itakes.to_dict()
+        assert say_hello.MethodModel.returns.to_dict() == MapMeta().to_dict()
+        assert say_hello.MethodModel.defaults == {"hello": "Something"}
 
     def test_takes_given_required(self):
         @method_takes("hello", StringMeta(), REQUIRED)
@@ -98,9 +98,9 @@ class TestDecorators(unittest.TestCase):
         itakes = MapMeta()
         itakes.set_elements(OrderedDict(hello=StringMeta()))
         itakes.set_required(["hello"])
-        self.assertEqual(say_hello.MethodModel.takes.to_dict(), itakes.to_dict())
-        self.assertEqual(say_hello.MethodModel.returns.to_dict(), MapMeta().to_dict())
-        self.assertEqual(say_hello.MethodModel.defaults, {})
+        assert say_hello.MethodModel.takes.to_dict() == itakes.to_dict()
+        assert say_hello.MethodModel.returns.to_dict() == MapMeta().to_dict()
+        assert say_hello.MethodModel.defaults == {}
 
     def test_returns_given_valid_sets(self):
         @method_returns("hello", StringMeta(), REQUIRED)
@@ -112,9 +112,9 @@ class TestDecorators(unittest.TestCase):
         ireturns = MapMeta()
         ireturns.set_elements(OrderedDict(hello=StringMeta()))
         ireturns.set_required(["hello"])
-        self.assertEqual(say_hello.MethodModel.takes.to_dict(), MapMeta().to_dict())
-        self.assertEqual(say_hello.MethodModel.returns.to_dict(), ireturns.to_dict())
-        self.assertEqual(say_hello.MethodModel.defaults, {})
+        assert say_hello.MethodModel.takes.to_dict() == MapMeta().to_dict()
+        assert say_hello.MethodModel.returns.to_dict() == ireturns.to_dict()
+        assert say_hello.MethodModel.defaults == {}
 
     def test_returns_not_given_req_or_opt_raises(self):
         with self.assertRaises(AssertionError):
@@ -129,8 +129,8 @@ class TestDecorators(unittest.TestCase):
         def f():
             pass
 
-        self.assertTrue(hasattr(f, "MethodModel"))
-        self.assertEqual(f.MethodModel.writeable_in, ("boo", "boo2"))
+        assert hasattr(f, "MethodModel")
+        assert f.MethodModel.writeable_in == ("boo", "boo2")
 
     def test_method_also_takes(self):
         @method_takes(
@@ -155,9 +155,9 @@ class TestDecorators(unittest.TestCase):
         itakes.set_required(["hello"])
         defaults = OrderedDict()
         defaults["hello2"] = False
-        self.assertEqual(Thing.MethodModel.takes.to_dict(), itakes.to_dict())
-        self.assertEqual(Thing.MethodModel.returns.to_dict(), MapMeta().to_dict())
-        self.assertEqual(Thing.MethodModel.defaults, defaults)
+        assert Thing.MethodModel.takes.to_dict() == itakes.to_dict()
+        assert Thing.MethodModel.returns.to_dict() == MapMeta().to_dict()
+        assert Thing.MethodModel.defaults == defaults
 
         # Check new one overrides/improves on original
         itakes = MapMeta()
@@ -171,9 +171,9 @@ class TestDecorators(unittest.TestCase):
         defaults = OrderedDict()
         defaults["hello2"] = True
         defaults["default"] = "nothing"
-        self.assertEqual(Thing2.MethodModel.takes.to_dict(), itakes.to_dict())
-        self.assertEqual(Thing2.MethodModel.returns.to_dict(), MapMeta().to_dict())
-        self.assertEqual(Thing2.MethodModel.defaults, defaults)
+        assert Thing2.MethodModel.takes.to_dict() == itakes.to_dict()
+        assert Thing2.MethodModel.returns.to_dict() == MapMeta().to_dict()
+        assert Thing2.MethodModel.defaults == defaults
 
 
 class TestSerialization(unittest.TestCase):
@@ -195,13 +195,13 @@ class TestSerialization(unittest.TestCase):
         m = MethodModel("test_description")
         m.set_takes(self.takes)
         m.set_defaults(self.serialized["defaults"])
-        self.assertEqual(m.to_dict(), self.serialized)
+        assert m.to_dict() == self.serialized
 
     def test_from_dict(self):
         m = MethodModel.from_dict(self.serialized)
-        self.assertEqual(m.takes.to_dict(), self.takes.to_dict())
-        self.assertEqual(m.defaults, self.serialized["defaults"])
-        self.assertEqual(m.tags, ())
-        self.assertEqual(m.writeable, True)
-        self.assertEqual(m.label, "")
-        self.assertEqual(m.returns.to_dict(), MapMeta().to_dict())
+        assert m.takes.to_dict() == self.takes.to_dict()
+        assert m.defaults == self.serialized["defaults"]
+        assert m.tags == ()
+        assert m.writeable == True
+        assert m.label == ""
+        assert m.returns.to_dict() == MapMeta().to_dict()

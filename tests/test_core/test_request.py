@@ -12,8 +12,8 @@ class TestRequest(unittest.TestCase):
         self.o = Request(32, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.o.id, 32)
-        self.assertEqual(self.o.callback, self.callback)
+        assert self.o.id == 32
+        assert self.o.callback == self.callback
 
     def test_respond_with_return(self):
         cb, response = self.o.return_response(value=5)
@@ -27,7 +27,7 @@ class TestRequest(unittest.TestCase):
 
     def test_setters(self):
         self.o.set_id(123)
-        self.assertEquals(123, self.o.id)
+        assert 123 == self.o.id
         self.o.set_callback(None)
         self.o.callback(888)
         self.callback.assert_not_called()
@@ -41,14 +41,14 @@ class TestGet(unittest.TestCase):
         self.o = Get(32, self.path, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.o.typeid, "malcolm:core/Get:1.0")
-        self.assertEqual(self.o.id, 32)
-        self.assertEqual(self.o.callback, self.callback)
-        self.assertEqual(self.path, self.o.path)
+        assert self.o.typeid == "malcolm:core/Get:1.0"
+        assert self.o.id == 32
+        assert self.o.callback == self.callback
+        assert self.path == self.o.path
 
     def test_setters(self):
         self.o.set_path(["BL18I:XSPRESS3", "state"])
-        self.assertEquals(self.o.path, ["BL18I:XSPRESS3", "state"])
+        assert self.o.path == ["BL18I:XSPRESS3", "state"]
 
 
 class TestPut(unittest.TestCase):
@@ -60,15 +60,15 @@ class TestPut(unittest.TestCase):
         self.o = Put(32, self.path, self.value, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.o.typeid, "malcolm:core/Put:1.0")
-        self.assertEqual(self.o.id, 32)
-        self.assertEqual(self.o.callback, self.callback)
-        self.assertEqual(self.path, self.o.path)
-        self.assertEqual(self.value, self.o.value)
+        assert self.o.typeid == "malcolm:core/Put:1.0"
+        assert self.o.id == 32
+        assert self.o.callback == self.callback
+        assert self.path == self.o.path
+        assert self.value == self.o.value
 
     def test_setters(self):
         self.o.set_value("7")
-        self.assertEquals(self.o.value, "7")
+        assert self.o.value == "7"
 
 
 class TestPost(unittest.TestCase):
@@ -80,15 +80,15 @@ class TestPost(unittest.TestCase):
         self.o = Post(32, self.path, self.parameters, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.o.typeid, "malcolm:core/Post:1.0")
-        self.assertEqual(self.o.id, 32)
-        self.assertEqual(self.o.callback, self.callback)
-        self.assertEqual(self.path, self.o.path)
-        self.assertEqual(self.parameters, self.o.parameters)
+        assert self.o.typeid == "malcolm:core/Post:1.0"
+        assert self.o.id == 32
+        assert self.o.callback == self.callback
+        assert self.path == self.o.path
+        assert self.parameters == self.o.parameters
 
     def test_setters(self):
         self.o.set_parameters(dict(arg1=2, arg2=False))
-        self.assertEquals(self.o.parameters, dict(arg1=2, arg2=False))
+        assert self.o.parameters == dict(arg1=2, arg2=False)
 
 
 class TestSubscribe(unittest.TestCase):
@@ -100,11 +100,11 @@ class TestSubscribe(unittest.TestCase):
         self.o = Subscribe(32, self.path, self.delta, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.o.typeid, "malcolm:core/Subscribe:1.0")
-        self.assertEqual(self.o.id, 32)
-        self.assertEqual(self.o.callback, self.callback)
-        self.assertEqual(self.path, self.o.path)
-        self.assertEqual(self.delta, self.o.delta)
+        assert self.o.typeid == "malcolm:core/Subscribe:1.0"
+        assert self.o.id == 32
+        assert self.o.callback == self.callback
+        assert self.path == self.o.path
+        assert self.delta == self.o.delta
 
     def test_respond_with_update(self):
         cb, response = self.o.update_response(value=5)
@@ -119,7 +119,7 @@ class TestSubscribe(unittest.TestCase):
 
     def test_setters(self):
         self.o.set_delta(False)
-        self.assertFalse(self.o.delta)
+        assert not self.o.delta
 
 
 class TestUnsubscribe(unittest.TestCase):
@@ -131,8 +131,8 @@ class TestUnsubscribe(unittest.TestCase):
         self.o = Unsubscribe(32, self.callback)
 
     def test_init(self):
-        self.assertEqual(self.o.typeid, "malcolm:core/Unsubscribe:1.0")
-        self.assertEqual(self.o.id, 32)
+        assert self.o.typeid == "malcolm:core/Unsubscribe:1.0"
+        assert self.o.id == 32
 
     def test_keys_same(self):
-        self.assertEqual(self.subscribes[self.o.generate_key()], self.subscribe)
+        assert self.subscribes[self.o.generate_key()] == self.subscribe

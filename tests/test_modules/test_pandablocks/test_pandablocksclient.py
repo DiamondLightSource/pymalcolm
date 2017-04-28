@@ -30,19 +30,20 @@ class PandABoxControlTest(unittest.TestCase):
         resp = list(self.c.send_recv(""))
         self.c.stop()
         expected = ["TTLIN 6", "OUTENC 4", "CALC 2"]
-        self.assertEqual(resp, expected)
+        assert resp == expected
 
     def test_two_resp(self):
         messages = ["OK =mm\n", "OK =232\n"]
         self.start(messages)
-        self.assertEqual(self.c.send_recv(""), "OK =mm")
-        self.assertEqual(self.c.send_recv(""), "OK =232")
+        assert self.c.send_recv("") == "OK =mm"
+        assert self.c.send_recv("") == "OK =232"
 
     def test_bad_good(self):
         messages = ["ERR Invalid bit value\n", "OK =232\n"]
         self.start(messages)
-        self.assertRaises(ValueError, self.c.send_recv, "")
-        self.assertEqual(self.c.send_recv(""), "OK =232")
+        with self.assertRaises(ValueError):
+            self.c.send_recv("")
+        assert self.c.send_recv("") == "OK =232"
 
     def test_block_data(self):
         messages = [
@@ -61,7 +62,7 @@ class PandABoxControlTest(unittest.TestCase):
         self.start(messages)
         block_data = self.c.get_blocks_data()
         self.c.stop()
-        self.assertEqual(self.socket.send.call_args_list, [
+        assert self.socket.send.call_args_list == [
             call("*BLOCKS?\n"),
             call("*DESC.TTLIN?\n"),
             call("*DESC.TTLOUT?\n"),
@@ -73,19 +74,19 @@ class PandABoxControlTest(unittest.TestCase):
             call("*ENUMS.TTLIN.VAL.CAPTURE?\n"),
             call("*DESC.TTLOUT.VAL?\n"),
             call("*ENUMS.TTLOUT.VAL?\n"),
-        ])
-        self.assertEqual(list(block_data), ["TTLIN", "TTLOUT"])
+        ]
+        assert list(block_data) == ["TTLIN", "TTLOUT"]
         in_fields = OrderedDict()
         in_fields["TERM"] = FieldData("param", "enum", "TTL termination",
                                       ["High-Z", "50-Ohm"])
         in_fields["VAL"] = FieldData("pos_out", "", "TTL input value",
                                      ["Average", "No"])
-        self.assertEqual(block_data["TTLIN"],
+        assert block_data["TTLIN"] == (
                          BlockData(6, "TTL input", in_fields))
         out_fields = OrderedDict()
         out_fields["VAL"] = FieldData("bit_mux", "", "TTL output value", [
             "ZERO", "TTLIN1.VAL", "TTLIN2.VAL"])
-        self.assertEqual(block_data["TTLOUT"],
+        assert block_data["TTLOUT"] == (
                          BlockData(10, "TTL output", out_fields))
 
     def test_changes(self):
@@ -107,8 +108,8 @@ class PandABoxControlTest(unittest.TestCase):
         self.start(messages)
         changes = self.c.get_changes()
         self.c.stop()
-        self.assertEqual(self.socket.send.call_args_list, [
-            call("*CHANGES?\n"), call("SEQ1.TABLE?\n")])
+        assert self.socket.send.call_args_list == [
+            call("*CHANGES?\n"), call("SEQ1.TABLE?\n")]
         expected = OrderedDict()
         expected["PULSE0.WIDTH"] = "1.43166e+09"
         expected["PULSE1.WIDTH"] = "1.43166e+09"
@@ -119,7 +120,7 @@ class PandABoxControlTest(unittest.TestCase):
         expected["PULSE1.INP"] = Exception
         expected["PULSE2.INP"] = Exception
         expected["PULSE3.INP"] = Exception
-        self.assertEqual(changes, expected)
+        assert changes == expected
 
     def test_set_field(self):
         messages = "OK\n"
@@ -156,4 +157,4 @@ class PandABoxControlTest(unittest.TestCase):
         expected["USE_INPA"] = (32, 32)
         expected["STUFF"] = (64, 54)
         expected["INPB"] = (37, 37)
-        self.assertEqual(fields, expected)
+        assert fields == expected

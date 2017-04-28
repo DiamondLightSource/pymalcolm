@@ -17,7 +17,7 @@ class TestBlockItem(unittest.TestCase):
         self.item.ref = dict(
             a=MagicMock(spec=Method), b=MagicMock(spec=Method),
             c=MagicMock(spec=Attribute))
-        self.assertEqual(self.item.ref_children(), 3)
+        assert self.item.ref_children() == 3
 
     def make_grouped_attr(self):
         attr = MagicMock(spec=Attribute)
@@ -27,12 +27,12 @@ class TestBlockItem(unittest.TestCase):
 
     def test_group_name(self):
         attr = self.make_grouped_attr()
-        self.assertEqual(self.item._get_group_name(attr), "foo")
+        assert self.item._get_group_name(attr) == "foo"
 
     def test_grouped_children(self):
         attr = self.make_grouped_attr()
         self.item.ref = dict(c=attr, d=MagicMock(spec=Attribute))
-        self.assertEqual(self.item.ref_children(), 1)
+        assert self.item.ref_children() == 1
 
     @patch("malcolm.gui.blockitem.MethodItem")
     @patch("malcolm.gui.blockitem.AttributeItem")
@@ -52,15 +52,15 @@ class TestBlockItem(unittest.TestCase):
             ("foo", group_attr), ("c", child_attr), ("a", m1), ("b", m2)))
         self.item.create_children()
         # Check it made the right thing
-        self.assertEqual(len(self.item.children), 3)
+        assert len(self.item.children) == 3
         attribute_mock.assert_any_call(("endpoint", "foo"), group_attr)
-        self.assertEqual(self.item.children[0], ai1)
+        assert self.item.children[0] == ai1
         attribute_mock.assert_any_call(("endpoint", "c"), child_attr)
         ai1.add_child.assert_called_once_with(ai2)
         method_mock.assert_any_call(("endpoint", "a"), m1)
-        self.assertEqual(self.item.children[1], mi1)
+        assert self.item.children[1] == mi1
         method_mock.assert_any_call(("endpoint", "b"), m2)
-        self.assertEqual(self.item.children[2], mi2)
+        assert self.item.children[2] == mi2
 
 
 

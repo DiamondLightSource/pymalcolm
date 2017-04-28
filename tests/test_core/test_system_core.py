@@ -22,8 +22,8 @@ class TestHelloDemoSystem(unittest.TestCase):
         self.controller.handle_request(request)
         response = q.get(timeout=1.0)
         self.assertIsInstance(response, Return)
-        self.assertEqual(response.id, 44)
-        self.assertEqual(response.value["greeting"], "Hello thing")
+        assert response.id == 44
+        assert response.value["greeting"] == "Hello thing"
 
 
 class TestCounterDemoSystem(unittest.TestCase):
@@ -43,18 +43,18 @@ class TestCounterDemoSystem(unittest.TestCase):
         self.controller.handle_request(sub)
         response = q.get(timeout=1.0)
         self.assertIsInstance(response, Update)
-        self.assertEqual(response.id, 20)
-        self.assertEqual(response.value["typeid"], "epics:nt/NTScalar:1.0")
-        self.assertEqual(response.value["value"], 0)
+        assert response.id == 20
+        assert response.value["typeid"] == "epics:nt/NTScalar:1.0"
+        assert response.value["value"] == 0
         post = Post(id=21, path=["counting", "increment"], callback=q.put)
         self.controller.handle_request(post)
         response = q.get(timeout=1)
         self.assertIsInstance(response, Update)
-        self.assertEqual(response.id, 20)
-        self.assertEqual(response.value["value"], 1)
+        assert response.id == 20
+        assert response.value["value"] == 1
         response = q.get(timeout=1)
         self.assertIsInstance(response, Return)
-        self.assertEqual(response.id, 21)
-        self.assertEqual(response.value, None)
+        assert response.id == 21
+        assert response.value == None
         with self.assertRaises(TimeoutError):
             q.get(timeout=0.05)

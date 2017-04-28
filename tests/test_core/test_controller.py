@@ -62,15 +62,15 @@ class TestController(unittest.TestCase):
         self.process.stop()
 
     def test_init(self):
-        self.assertEqual(self.o.mri, "mri")
-        self.assertEqual(self.o.process, self.process)
+        assert self.o.mri == "mri"
+        assert self.o.process == self.process
 
     def test_run_hook(self):
         context = MagicMock()
         context2 = MagicMock()
         part_contexts = {self.part: context, self.part2: context2}
         result = self.o.run_hook(self.o.TestHook, part_contexts)
-        self.assertEquals(result,
+        assert result == (
                           dict(test_part=dict(foo="bar"),
                                test_part2=dict(foo="bar")))
         self.assertIs(self.part.context.anything, context.anything)
@@ -154,8 +154,8 @@ class TestController(unittest.TestCase):
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
-        self.assertEqual(response.id, 41)
-        self.assertEqual(response.value["value"], "hello_block")
+        assert response.id == 41
+        assert response.value["value"] == "hello_block"
         # It's part2 that will get the attribute as it was defined second
         self.part2.myAttribute.meta.writeable = False
         request = Put(id=42, path=["mri", "myAttribute"],
@@ -163,22 +163,22 @@ class TestController(unittest.TestCase):
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Error)  # not writeable
-        self.assertEqual(response.id, 42)
+        assert response.id == 42
 
         self.part2.myAttribute.meta.writeable = True
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
-        self.assertEqual(response.id, 42)
-        self.assertEqual(response.value, "hello_block")
+        assert response.id == 42
+        assert response.value == "hello_block"
 
         request = Post(id=43, path=["mri", "my_method"],
                       callback=q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
-        self.assertEqual(response.id, 43)
-        self.assertEqual(response.value['ret'], "world")
+        assert response.id == 43
+        assert response.value['ret'] == "world"
 
         # cover the controller._handle_post path for parameters
         request = Post(id=43, path=["mri", "my_method"],
@@ -186,20 +186,20 @@ class TestController(unittest.TestCase):
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
-        self.assertEqual(response.id, 43)
-        self.assertEqual(response.value['ret'], "world")
+        assert response.id == 43
+        assert response.value['ret'] == "world"
 
         request = Subscribe(id=44, path=["mri", "myAttribute"],
                             delta=False, callback=q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Update)
-        self.assertEqual(response.id, 44)
-        self.assertEqual(response.value["typeid"], "epics:nt/NTScalar:1.0")
-        self.assertEqual(response.value["value"], "hello_block")
+        assert response.id == 44
+        assert response.value["typeid"] == "epics:nt/NTScalar:1.0"
+        assert response.value["value"] == "hello_block"
 
         request = Unsubscribe(id=44, callback=q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
-        self.assertEqual(response.id, 44)
+        assert response.id == 44

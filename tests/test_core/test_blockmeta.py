@@ -17,11 +17,11 @@ class TestSerialization(unittest.TestCase):
 
     def test_to_dict(self):
         m = BlockMeta("desc")
-        self.assertEqual(m.to_dict(), self.serialized)
+        assert m.to_dict() == self.serialized
 
     def test_from_dict(self):
         m = BlockMeta.from_dict(self.serialized)
-        self.assertEquals(m.description, "desc")
-        self.assertEquals(m.tags, ())
-        self.assertEquals(m.writeable, False)
-        self.assertEquals(m.label, "")
+        assert m.description == "desc"
+        assert m.tags == ()
+        assert m.writeable == False
+        assert m.label == ""

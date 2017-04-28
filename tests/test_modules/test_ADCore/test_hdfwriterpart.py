@@ -32,39 +32,39 @@ class TestHDFWriterPart(unittest.TestCase):
         }
         infos = self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, params)
-        self.assertEqual(len(infos), 5)
-        self.assertEquals(infos[0].name, "xspress3.data")
-        self.assertEquals(infos[0].filename, "file.h5")
-        self.assertEquals(infos[0].type, "primary")
-        self.assertEquals(infos[0].rank, 4)
-        self.assertEquals(infos[0].path, "/entry/detector/detector")
-        self.assertEquals(infos[0].uniqueid,
+        assert len(infos) == 5
+        assert infos[0].name == "xspress3.data"
+        assert infos[0].filename == "file.h5"
+        assert infos[0].type == "primary"
+        assert infos[0].rank == 4
+        assert infos[0].path == "/entry/detector/detector"
+        assert infos[0].uniqueid == (
                           "/entry/NDAttributes/NDArrayUniqueId")
-        self.assertEquals(infos[1].name, "xspress3.sum")
-        self.assertEquals(infos[1].filename, "file.h5")
-        self.assertEquals(infos[1].type, "secondary")
-        self.assertEquals(infos[1].rank, 4)
-        self.assertEquals(infos[1].path, "/entry/sum/sum")
-        self.assertEquals(infos[1].uniqueid,
+        assert infos[1].name == "xspress3.sum"
+        assert infos[1].filename == "file.h5"
+        assert infos[1].type == "secondary"
+        assert infos[1].rank == 4
+        assert infos[1].path == "/entry/sum/sum"
+        assert infos[1].uniqueid == (
                           "/entry/NDAttributes/NDArrayUniqueId")
-        self.assertEquals(infos[2].name, "energy.value_set")
-        self.assertEquals(infos[2].filename, "file.h5")
-        self.assertEquals(infos[2].type, "position_set")
-        self.assertEquals(infos[2].rank, 1)
-        self.assertEquals(infos[2].path, "/entry/detector/energy_set")
-        self.assertEquals(infos[2].uniqueid, "")
-        self.assertEquals(infos[3].name, "x.value_set")
-        self.assertEquals(infos[3].filename, "file.h5")
-        self.assertEquals(infos[3].type, "position_set")
-        self.assertEquals(infos[3].rank, 1)
-        self.assertEquals(infos[3].path, "/entry/detector/x_set")
-        self.assertEquals(infos[3].uniqueid, "")
-        self.assertEquals(infos[4].name, "y.value_set")
-        self.assertEquals(infos[4].filename, "file.h5")
-        self.assertEquals(infos[4].type, "position_set")
-        self.assertEquals(infos[4].rank, 1)
-        self.assertEquals(infos[4].path, "/entry/detector/y_set")
-        self.assertEquals(infos[4].uniqueid, "")
+        assert infos[2].name == "energy.value_set"
+        assert infos[2].filename == "file.h5"
+        assert infos[2].type == "position_set"
+        assert infos[2].rank == 1
+        assert infos[2].path == "/entry/detector/energy_set"
+        assert infos[2].uniqueid == ""
+        assert infos[3].name == "x.value_set"
+        assert infos[3].filename == "file.h5"
+        assert infos[3].type == "position_set"
+        assert infos[3].rank == 1
+        assert infos[3].path == "/entry/detector/x_set"
+        assert infos[3].uniqueid == ""
+        assert infos[4].name == "y.value_set"
+        assert infos[4].filename == "file.h5"
+        assert infos[4].type == "position_set"
+        assert infos[4].rank == 1
+        assert infos[4].path == "/entry/detector/y_set"
+        assert infos[4].uniqueid == ""
         expected_xml_filename = "/tmp/BLOCK-HDF5-layout.xml"
         assert self.context.mock_calls == [
             call.block_view('BLOCK-HDF5'),
@@ -156,7 +156,7 @@ class TestHDFWriterPart(unittest.TestCase):
 </group>
 </hdf5_layout>"""
         actual_xml = open(expected_xml_filename).read().replace(">", ">\n")
-        self.assertEqual(actual_xml.splitlines(), expected_xml.splitlines())
+        assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_run(self):
         update = MagicMock()

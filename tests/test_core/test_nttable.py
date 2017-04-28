@@ -41,16 +41,16 @@ class TestSerialization(unittest.TestCase):
         value.bar = ["bar1", "bar2"]
         o = meta.create_attribute(value)
         o.set_timeStamp(self.serialized["timeStamp"])
-        self.assertEqual(o.to_dict(), self.serialized)
+        assert o.to_dict() == self.serialized
 
     def test_from_dict(self):
         o = NTTable.from_dict(self.serialized)
-        self.assertEquals(list(o.meta.elements), ["foo", "bar"])
-        self.assertEquals(o.meta.elements["foo"].label, "Foo")
-        self.assertEquals(o.meta.elements["bar"].label, "")
-        self.assertEquals(o.meta.description, "desc")
-        self.assertEquals(o.meta.tags, ())
-        self.assertEquals(o.meta.writeable, True)
-        self.assertEquals(o.meta.label, "my label")
-        self.assertEquals(o.value.foo, ("foo1", "foo2"))
-        self.assertEquals(o.value.bar, ("bar1", "bar2"))
+        assert list(o.meta.elements) == ["foo", "bar"]
+        assert o.meta.elements["foo"].label == "Foo"
+        assert o.meta.elements["bar"].label == ""
+        assert o.meta.description == "desc"
+        assert o.meta.tags == ()
+        assert o.meta.writeable == True
+        assert o.meta.label == "my label"
+        assert o.value.foo == ("foo1", "foo2")
+        assert o.value.bar == ("bar1", "bar2")

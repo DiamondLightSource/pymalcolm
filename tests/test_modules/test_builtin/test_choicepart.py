@@ -22,4 +22,5 @@ class TestChoicePart(unittest.TestCase):
         assert self.o.attr.value == "a"
         self.setter("b")
         assert self.o.attr.value == "b"
-        self.assertRaises(ValueError, self.setter, "c")
+        with self.assertRaises(ValueError):
+            self.setter("c")

@@ -38,7 +38,7 @@ class TestContext(unittest.TestCase):
         self.o._q.put(Error(1, "Test Exception"))
         with self.assertRaises(ResponseError) as cm:
             self.o.put(["block", "attr", "value"], 32)
-        self.assertEqual(str(cm.exception), "Test Exception")
+        assert str(cm.exception) == "Test Exception"
 
     def test_post(self):
         self.controller.validate_result.return_value = 22
@@ -48,13 +48,13 @@ class TestContext(unittest.TestCase):
             Post(1, ["block", "method"], dict(b=32)))
         self.controller.validate_result.assert_called_once_with(
             "method", dict(a=2))
-        self.assertEqual(result, 22)
+        assert result == 22
 
     def test_post_failure(self):
         self.o._q.put(Error(1, "Test Exception"))
         with self.assertRaises(ResponseError) as cm:
             self.o.post(["block", "method"], dict(b=32))
-        self.assertEqual(str(cm.exception), "Test Exception")
+        assert str(cm.exception) == "Test Exception"
 
     def test_subscribe(self):
         cb = MagicMock()
@@ -74,7 +74,7 @@ class TestContext(unittest.TestCase):
         self.o._q.put(Return(1))
         self.o.wait_all_futures(f, 0.01)
         cb.assert_called_once_with("value2", ANY, 'arg2')
-        self.assertEqual(f.result(0.01), None)
+        assert f.result(0.01) == None
 
     def test_subscribe_cb_failure(self):
         def cb(value):
@@ -84,31 +84,31 @@ class TestContext(unittest.TestCase):
         self.o._q.put(Update(1, "value1"))
         with self.assertRaises(MyWarning):
             self.o.wait_all_futures(f, 0.01)
-        self.assertFalse(f.done())
+        assert not f.done()
         self.o._q.put(Update(1, "value1"))
         with self.assertRaises(MyWarning):
             self.o.wait_all_futures(f, 0.01)
-        self.assertFalse(f.done())
+        assert not f.done()
         self.o._q.put(Return(1))
         self.o.wait_all_futures(f, 0.01)
-        self.assertTrue(f.done())
+        assert f.done()
 
     def test_many_puts(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32),
               self.o.put_async(["block", "attr2", "value"], 32)]
         with self.assertRaises(TimeoutError):
             self.o.wait_all_futures(fs, 0.01)
-        self.assertEqual([f.done() for f in fs], [False, False])
+        assert [f.done() for f in fs] == [False, False]
         self.o._q.put(Return(2, None))
-        self.assertEqual([f.done() for f in fs], [False, False])
+        assert [f.done() for f in fs] == [False, False]
         with self.assertRaises(TimeoutError):
             self.o.wait_all_futures(fs, 0.01)
-        self.assertEqual([f.done() for f in fs], [False, True])
+        assert [f.done() for f in fs] == [False, True]
         self.o._q.put(Return(1, None))
         self.o.wait_all_futures(fs, 0.01)
-        self.assertEqual([f.done() for f in fs], [True, True])
+        assert [f.done() for f in fs] == [True, True]
         self.o.wait_all_futures(fs, 0.01)
-        self.assertEqual([f.done() for f in fs], [True, True])
+        assert [f.done() for f in fs] == [True, True]
 
     def test_sleep(self):
         start = time.time()
@@ -120,9 +120,9 @@ class TestContext(unittest.TestCase):
         self.o._q.put(Update(1, "value1"))
         self.o._q.put(Return(1))
         self.o.when_matches(["block", "attr", "value"], "value1", timeout=0.01)
-        self.assertEqual(self.controller.handle_request.call_args_list, [
+        assert self.controller.handle_request.call_args_list == [
             call(Subscribe(1, ["block", "attr", "value"])),
-            call(Unsubscribe(1))])
+            call(Unsubscribe(1))]
 
     def test_when_matches_func(self):
         self.o._q.put(Update(1, "value1"))
@@ -132,18 +132,18 @@ class TestContext(unittest.TestCase):
             return value.startswith("v")
 
         self.o.when_matches(["block", "attr", "value"], f, timeout=0.01)
-        self.assertEqual(self.controller.handle_request.call_args_list, [
+        assert self.controller.handle_request.call_args_list == [
             call(Subscribe(1, ["block", "attr", "value"])),
-            call(Unsubscribe(1))])
+            call(Unsubscribe(1))]
 
     def test_when_not_matches(self):
         self.o._q.put(Update(1, "value2"))
         with self.assertRaises(BadValueError):
             self.o.when_matches(
                 ["block", "attr", "value"], "value1", ["value2"], timeout=0.01)
-        self.assertEqual(self.controller.handle_request.call_args_list, [
+        assert self.controller.handle_request.call_args_list == [
             call(Subscribe(1, ["block", "attr", "value"])),
-            call(Unsubscribe(1))])
+            call(Unsubscribe(1))]
 
     def test_ignore_stops_before_now(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32)]
@@ -154,9 +154,9 @@ class TestContext(unittest.TestCase):
             self.o.wait_all_futures(fs, 0)
 
         if self.cothread:
-            self.assertEquals(0, len(self.o._q._event_queue))
+            assert 0 == len(self.o._q._event_queue)
         else:
-            self.assertEquals(0, self.o._q._queue.qsize())
+            assert 0 == self.o._q._queue.qsize()
 
     def test_futures_exception(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32)]

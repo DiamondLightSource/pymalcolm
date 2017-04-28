@@ -18,7 +18,7 @@ class TestModel(unittest.TestCase):
 
     def test_set_endpoint_no_notifier(self):
         c = self.o.set_endpoint_data("child", self.child)
-        self.assertEqual(c, self.child)
+        assert c == self.child
 
     def test_set_notifier_child(self):
         self.o.set_endpoint_data("child", self.child)

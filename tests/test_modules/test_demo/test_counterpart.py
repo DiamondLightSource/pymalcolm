@@ -11,13 +11,13 @@ class TestCounterPart(unittest.TestCase):
         list(self.c.create_attributes())
 
     def test_increment_increments(self):
-        self.assertEquals(0, self.c.counter.value)
+        assert 0 == self.c.counter.value
         self.c.increment()
-        self.assertEquals(1, self.c.counter.value)
+        assert 1 == self.c.counter.value
         self.c.increment()
-        self.assertEquals(2, self.c.counter.value)
+        assert 2 == self.c.counter.value
 
     def test_reset_sets_zero(self):
         self.c.counter.set_value(1234)
         self.c.zero()
-        self.assertEquals(0, self.c.counter.value)
+        assert 0 == self.c.counter.value

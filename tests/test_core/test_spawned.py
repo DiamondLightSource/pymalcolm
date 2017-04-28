@@ -43,7 +43,8 @@ class TestSpawned(unittest.TestCase):
         s.wait(1)
         assert s.ready() is True
         assert self.q.get(1) == UnexpectedError
-        self.assertRaises(UnexpectedError, s.get)
+        with self.assertRaises(UnexpectedError):
+            s.get()
 
     def test_use_cothread(self):
         self.do_spawn_div(True)

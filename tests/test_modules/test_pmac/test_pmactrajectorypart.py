@@ -91,7 +91,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         part_info = self.make_part_info()
         ret = self.o.validate(self.context, part_info, params)
         expected = 0.010166
-        self.assertEqual(ret[0].value.duration, expected)
+        assert ret[0].value.duration == expected
 
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
@@ -192,7 +192,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
 
     def test_multi_run(self):
         self.do_configure(axes_to_scan=["x"])
-        self.assertEqual(self.o.completed_steps_lookup,
+        assert self.o.completed_steps_lookup == (
                          [0, 0, 1, 1, 2, 2, 3, 3])
         self.child.mock_writes.reset_mock()
         self.do_configure(
@@ -229,7 +229,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call('userPrograms', [3, 0, 4, 0, 3, 0, 4, 0, 3, 0, 4, 0, 2, 8]),
             call('velocityMode', [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3]),
             call('buildProfile')]
-        self.assertEqual(self.o.completed_steps_lookup,
+        assert self.o.completed_steps_lookup == (
                          [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
 
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",

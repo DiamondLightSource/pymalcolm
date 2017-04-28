@@ -13,7 +13,7 @@ class TestValidation(unittest.TestCase):
         response = nm.validate(values)
 
         for i, value in enumerate(response):
-            self.assertEqual(values[i], value)
+            assert values[i] == value
 
     def test_numpy_array_wrong_type_raises(self):
         nm = NumberArrayMeta("float64")
@@ -35,7 +35,7 @@ class TestValidation(unittest.TestCase):
         response = nm.validate(values)
 
         for i, value in enumerate(response):
-            self.assertEqual(values[i], value)
+            assert values[i] == value
 
     def test_float_against_float32(self):
         nm = NumberArrayMeta("float32")
@@ -51,14 +51,14 @@ class TestValidation(unittest.TestCase):
         response = nm.validate(values)
 
         for i, value in enumerate(response):
-            self.assertEqual(values[i], value)
+            assert values[i] == value
 
         nm = NumberArrayMeta("float64")
         values = [1, 2, 3]
         response = nm.validate(values)
 
         for i, value in enumerate(response):
-            self.assertEqual(values[i], value)
+            assert values[i] == value
 
     def test_int_against_int(self):
         nm = NumberArrayMeta("int32")
@@ -66,21 +66,21 @@ class TestValidation(unittest.TestCase):
         response = nm.validate(values)
 
         for i, value in enumerate(response):
-            self.assertEqual(values[i], value)
+            assert values[i] == value
 
     def test_float_against_int_floors(self):
         nm = NumberArrayMeta("int32")
         actual = list(nm.validate([1.2, 34, 56]))
         expected = [1, 34, 56]
-        self.assertEqual(actual, expected)
+        assert actual == expected
 
     def test_null_element_zero(self):
         nm = NumberArrayMeta("float64")
         actual = nm.validate([1.2, None, 1.3])
-        self.assertEqual(actual[0], 1.2)
-        self.assertTrue(np.isnan(actual[1]))
-        self.assertEqual(actual[2], 1.3)
+        assert actual[0] == 1.2
+        assert np.isnan(actual[1])
+        assert actual[2] == 1.3
 
     def test_none_validates(self):
         nm = NumberArrayMeta("int32")
-        self.assertEquals(list(nm.validate(None)), [])
+        assert list(nm.validate(None)) == []

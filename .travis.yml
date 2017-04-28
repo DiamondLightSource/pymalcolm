@@ -38,7 +38,7 @@ install:
   
 # command to run tests
 script:
-  - pytest -vv --tb=native tests/
+  - pytest tests
 
 # submit coverage
 after_script:

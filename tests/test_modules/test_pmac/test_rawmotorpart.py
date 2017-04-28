@@ -29,11 +29,11 @@ class TestRawMotorPart(ChildTestCase):
 
     def test_report(self):
         returns = self.o.report_cs_info(self.context)[0]
-        self.assertEqual(returns.cs_axis, "Y")
-        self.assertEqual(returns.cs_port, "CS1")
-        self.assertEqual(returns.acceleration, 10.0)
-        self.assertEqual(returns.resolution, 0.001)
-        self.assertEqual(returns.offset, 4.5)
-        self.assertEqual(returns.max_velocity, 5.0)
-        self.assertEqual(returns.current_position, 12.3)
-        self.assertEqual(returns.scannable, "scan")
+        assert returns.cs_axis == "Y"
+        assert returns.cs_port == "CS1"
+        assert returns.acceleration == 10.0
+        assert returns.resolution == 0.001
+        assert returns.offset == 4.5
+        assert returns.max_velocity == 5.0
+        assert returns.current_position == 12.3
+        assert returns.scannable == "scan"

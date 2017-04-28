@@ -11,8 +11,8 @@ class TestPointGeneratorMeta(unittest.TestCase):
         self.PGM = PointGeneratorMeta("test_description")
 
     def test_init(self):
-        self.assertEqual("test_description", self.PGM.description)
-        self.assertEqual(self.PGM.label, "")
+        assert "test_description" == self.PGM.description
+        assert self.PGM.label == ""
 
     def test_validate(self):
         g = CompoundGenerator([MagicMock()], [], [])
@@ -25,7 +25,7 @@ class TestPointGeneratorMeta(unittest.TestCase):
         d = dict()
         response = self.PGM.validate(d)
         from_dict_mock.assert_called_once_with(d)
-        self.assertEqual(gen_mock, response)
+        assert gen_mock == response
 
     def test_validate_raises(self):
         with self.assertRaises(TypeError):

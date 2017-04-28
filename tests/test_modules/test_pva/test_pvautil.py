@@ -72,7 +72,7 @@ class TestPVAUtil(unittest.TestCase):
         test_dict["val9"] = [pvaccess.LONG]
         test_dict["val10"] = [pvaccess.DOUBLE]
         test_val = PvTempObject(test_dict, "type1")
-        self.assertEquals(val, test_val)
+        assert val == test_val
 
         # Test the variant union array type
         val = pva_structure_from_value(
@@ -83,13 +83,13 @@ class TestPVAUtil(unittest.TestCase):
         test_dict = OrderedDict()
         test_dict["union_array"] = [()]
         test_val = PvTempObject(test_dict, "")
-        self.assertEquals(val, test_val)
+        assert val == test_val
         val = pva_structure_from_value(
             {"union_array": []})
         test_dict = OrderedDict()
         test_dict["union_array"] = [()]
         test_val = PvTempObject(test_dict, "")
-        self.assertEquals(val, test_val)
+        assert val == test_val
 
     @patch("malcolm.modules.pva.controllers.pvautil.pvaccess.PvObject", PvTempObject)
     def test_dict_to_pv(self):
@@ -102,15 +102,15 @@ class TestPVAUtil(unittest.TestCase):
         val_dict["val5"] = [dict(a=43), dict(b=44)]
         val_dict["val6"] = "s"
         actual = dict_to_pv_object(val_dict)
-        self.assertEqual(actual._type, "type1")
-        self.assertEqual(actual._dict["val1"], ["", ""])
-        self.assertEqual(actual._dict["val2"], [1, 2])
-        self.assertEqual(actual._dict["val3"], dict(a=43))
-        self.assertEqual(actual._dict["val4"], [True, False])
-        self.assertEqual(len(actual._dict["val5"]), 2)
-        self.assertEqual(actual._dict["val5"][0]._dict, dict(a=43))
-        self.assertEqual(actual._dict["val5"][1]._dict, dict(b=44))
-        self.assertEqual(actual._dict["val6"], "s")
+        assert actual._type == "type1"
+        assert actual._dict["val1"] == ["", ""]
+        assert actual._dict["val2"] == [1, 2]
+        assert actual._dict["val3"] == dict(a=43)
+        assert actual._dict["val4"] == [True, False]
+        assert len(actual._dict["val5"]) == 2
+        assert actual._dict["val5"][0]._dict == dict(a=43)
+        assert actual._dict["val5"][1]._dict == dict(b=44)
+        assert actual._dict["val6"] == "s"
 
 
 

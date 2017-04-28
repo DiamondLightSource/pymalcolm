@@ -45,14 +45,14 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
     def test_server_and_simple_client(self):
         self.server._loop.add_callback(self.send_message)
         resp = self.result.get(timeout=2)
-        self.assertEqual(resp, dict(
+        assert resp == dict(
             typeid="malcolm:core/Return:1.0",
             id=0,
             value=dict(
                 typeid='malcolm:core/Map:1.0',
                 greeting="Hello me",
             )
-        ))
+        )
 
 
 class TestSystemWSCommsServerAndClient(unittest.TestCase):
@@ -94,10 +94,10 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         context = Context(self.process2)
         context.when_matches(["counter", "health", "value"], "OK", timeout=2)
         block2 = self.process2.block_view("counter")
-        self.assertEqual(block2.counter.value, 0)
+        assert block2.counter.value == 0
         block2.increment()
-        self.assertEqual(block2.counter.value, 1)
+        assert block2.counter.value == 1
         block2.zero()
-        self.assertEqual(block2.counter.value, 0)
+        assert block2.counter.value == 0
         assert self.client.remote_blocks.value == (
             "hello", "counter", "server")

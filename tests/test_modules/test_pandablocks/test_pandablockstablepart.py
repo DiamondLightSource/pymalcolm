@@ -24,18 +24,18 @@ class PandABoxTablePartTest(unittest.TestCase):
             block_name="SEQ1", field_name="TABLE", writeable=True)
 
     def test_init(self):
-        self.assertEqual(list(self.meta.elements), [
-            "nrepeats", "inputMask", "triggerMask", "timePhA"])
+        assert list(self.meta.elements) == [
+            "nrepeats", "inputMask", "triggerMask", "timePhA"]
         self.assertIsInstance(self.meta.elements["nrepeats"], NumberArrayMeta)
-        self.assertEqual(self.meta.elements["nrepeats"].dtype, "uint8")
-        self.assertEqual(self.meta.elements["nrepeats"].tags, ("widget:textinput",))
+        assert self.meta.elements["nrepeats"].dtype == "uint8"
+        assert self.meta.elements["nrepeats"].tags == ("widget:textinput",)
         self.assertIsInstance(self.meta.elements["inputMask"], BooleanArrayMeta)
-        self.assertEqual(self.meta.elements["inputMask"].tags, ("widget:checkbox",))
+        assert self.meta.elements["inputMask"].tags == ("widget:checkbox",)
         self.assertIsInstance(self.meta.elements["triggerMask"], BooleanArrayMeta)
-        self.assertEqual(self.meta.elements["triggerMask"].tags, ("widget:checkbox",))
+        assert self.meta.elements["triggerMask"].tags == ("widget:checkbox",)
         self.assertIsInstance(self.meta.elements["timePhA"], NumberArrayMeta)
-        self.assertEqual(self.meta.elements["timePhA"].dtype, "uint32")
-        self.assertEqual(self.meta.elements["timePhA"].tags, ("widget:textinput",))
+        assert self.meta.elements["timePhA"].dtype == "uint32"
+        assert self.meta.elements["timePhA"].tags == ("widget:textinput",)
 
     def test_list_from_table(self):
         table = Table(self.meta)
@@ -43,7 +43,7 @@ class PandABoxTablePartTest(unittest.TestCase):
         table.append([0, True, False, 1])
         table.append([0, False, False, 0])
         l = self.o.list_from_table(table)
-        self.assertEqual(l,
+        assert l == (
                          [32, 0x10001, 4294967295,
                          0, 0x1, 1,
                          0, 0x0, 0])
@@ -53,10 +53,10 @@ class PandABoxTablePartTest(unittest.TestCase):
              0, 0x1, 1,
              0, 0x0, 0]
         table = self.o.table_from_list(l)
-        self.assertEqual(list(table.nrepeats), [32, 0, 0])
-        self.assertEqual(list(table.inputMask), [True, True, False])
-        self.assertEqual(list(table.triggerMask), [True, False, False])
-        self.assertEqual(list(table.timePhA), [4294967295, 1, 0])
+        assert list(table.nrepeats) == [32, 0, 0]
+        assert list(table.inputMask) == [True, True, False]
+        assert list(table.triggerMask) == [True, False, False]
+        assert list(table.timePhA) == [4294967295, 1, 0]
 
 
 if __name__ == "__main__":

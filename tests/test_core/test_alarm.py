@@ -7,12 +7,12 @@ class TestAlarm(unittest.TestCase):
 
     def test_no_alarm(self):
         o = Alarm()
-        self.assertEqual(o.severity, AlarmSeverity.NO_ALARM)
-        self.assertEqual(o.status, AlarmStatus.NO_STATUS)
-        self.assertEqual(o.message, "")
+        assert o.severity == AlarmSeverity.NO_ALARM
+        assert o.status == AlarmStatus.NO_STATUS
+        assert o.message == ""
 
     def test_names(self):
-        self.assertEqual(AlarmStatus.names[2], "DRIVER_STATUS")
+        assert AlarmStatus.names[2] == "DRIVER_STATUS"
 
     def test_bad_number(self):
         with self.assertRaises(AssertionError):

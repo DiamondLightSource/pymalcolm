@@ -29,26 +29,26 @@ class PandABoxChildPartTest(unittest.TestCase):
 
     def test_report_configuration(self):
         dataset_infos = self.o.report_configuration(self.context)
-        self.assertEqual(len(dataset_infos), 1)
-        self.assertEqual(dataset_infos[0].name, "x2")
-        self.assertEqual(dataset_infos[0].type, "position")
-        self.assertEqual(dataset_infos[0].rank, 2)
-        self.assertEqual(dataset_infos[0].attr, "INENC1.ENCODER_VALUE3")
+        assert len(dataset_infos) == 1
+        assert dataset_infos[0].name == "x2"
+        assert dataset_infos[0].type == "position"
+        assert dataset_infos[0].rank == 2
+        assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3"
 
     def test_counter_configuration(self):
         self.child["encoderValue3DatasetType"] = Mock(value="monitor")
         dataset_infos = self.o.report_configuration(self.context)
-        self.assertEqual(len(dataset_infos), 1)
-        self.assertEqual(dataset_infos[0].name, "x2")
-        self.assertEqual(dataset_infos[0].type, "monitor")
-        self.assertEqual(dataset_infos[0].rank, 2)
-        self.assertEqual(dataset_infos[0].attr, "INENC1.ENCODER_VALUE3")
+        assert len(dataset_infos) == 1
+        assert dataset_infos[0].name == "x2"
+        assert dataset_infos[0].type == "monitor"
+        assert dataset_infos[0].rank == 2
+        assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3"
 
     def test_counter_configuration_detector(self):
         self.child["encoderValue3DatasetType"] = Mock(value="detector")
         dataset_infos = self.o.report_configuration(self.context)
-        self.assertEqual(len(dataset_infos), 1)
-        self.assertEqual(dataset_infos[0].name, "x2")
-        self.assertEqual(dataset_infos[0].type, "detector")
-        self.assertEqual(dataset_infos[0].rank, 2)
-        self.assertEqual(dataset_infos[0].attr, "INENC1.ENCODER_VALUE3")
+        assert len(dataset_infos) == 1
+        assert dataset_infos[0].name == "x2"
+        assert dataset_infos[0].type == "detector"
+        assert dataset_infos[0].rank == 2
+        assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3"

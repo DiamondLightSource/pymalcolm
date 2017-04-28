@@ -14,24 +14,24 @@ class TestParameters(unittest.TestCase):
             v = getattr(parameters, k)
             if hasattr(v, "MethodModel"):
                 decorated[k] = v
-        self.assertEqual(decorated, dict(
+        assert decorated == dict(
             string=parameters.string,
             float64=parameters.float64,
-            int32=parameters.int32))
+            int32=parameters.int32)
 
     def test_make_string_meta(self):
         params = Mock()
         params.name = "me"
         params.description = "desc"
         del params.default
-        self.assertEqual(list(parameters.string.MethodModel.takes.elements),
+        assert list(parameters.string.MethodModel.takes.elements) == (
                          ["name", "description", "default"])
         default_meta = parameters.string.MethodModel.takes.elements["default"]
         self.assertIsInstance(default_meta, StringMeta)
         name, meta, default = parameters.string(params)
-        self.assertEqual(default, REQUIRED)
-        self.assertEqual(name, "me")
-        self.assertEqual(meta.description, "desc")
+        assert default == REQUIRED
+        assert name == "me"
+        assert meta.description == "desc"
         self.assertIsInstance(meta, StringMeta)
 
     def test_make_int32_meta(self):
@@ -41,13 +41,13 @@ class TestParameters(unittest.TestCase):
         params.default = 32
         default_meta = parameters.int32.MethodModel.takes.elements["default"]
         self.assertIsInstance(default_meta, NumberMeta)
-        self.assertEqual(default_meta.dtype, "int32")
+        assert default_meta.dtype == "int32"
         name, meta, default = parameters.int32(params)
-        self.assertEqual(default, 32)
-        self.assertEqual(name, "me")
-        self.assertEqual(meta.description, "desc")
+        assert default == 32
+        assert name == "me"
+        assert meta.description == "desc"
         self.assertIsInstance(meta, NumberMeta)
-        self.assertEqual(meta.dtype, "int32")
+        assert meta.dtype == "int32"
 
     def test_make_float64_meta(self):
         params = Mock()
@@ -55,8 +55,8 @@ class TestParameters(unittest.TestCase):
         params.description = "desc"
         params.default = 32.6
         name, meta, default = parameters.float64(params)
-        self.assertEqual(default, 32.6)
-        self.assertEqual(name, "me")
-        self.assertEqual(meta.description, "desc")
+        assert default == 32.6
+        assert name == "me"
+        assert meta.description == "desc"
         self.assertIsInstance(meta, NumberMeta)
-        self.assertEqual(meta.dtype, "float64")
+        assert meta.dtype == "float64"

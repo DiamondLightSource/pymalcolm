@@ -18,9 +18,9 @@ class TestBlock(unittest.TestCase):
         self.o = make_block_view(self.controller, self.context, self.data)
 
     def test_init(self):
-        self.assertTrue(hasattr(self.o, "attr"))
-        self.assertTrue(hasattr(self.o, "method"))
-        self.assertTrue(hasattr(self.o, "method_async"))
+        assert hasattr(self.o, "attr")
+        assert hasattr(self.o, "method")
+        assert hasattr(self.o, "method_async")
 
     def test_put_attribute_values(self):
         self.o.put_attribute_values(dict(attr=43))

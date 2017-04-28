@@ -34,26 +34,27 @@ class TestCAPart(unittest.TestCase):
 
     def test_init(self, catools):
         p = self.create_part()
-        self.assertEqual(p.params.pv, "pv")
-        self.assertEqual(p.params.rbv, "pv2")
-        self.assertEqual(p.attr.meta, p.create_meta.return_value)
+        assert p.params.pv == "pv"
+        assert p.params.rbv == "pv2"
+        assert p.attr.meta == p.create_meta.return_value
 
     def test_init_no_pv_no_rbv(self, catools):
         # create test for no pv or rbv
         params = dict(name="", description="")
-        self.assertRaises(ValueError, self.create_part, params)
+        with self.assertRaises(ValueError):
+            self.create_part(params)
 
     def test_init_with_rbv(self, catools):
         params = dict(name="", description="", pv="pv", rbv="rbv")
         p = self.create_part(params)
-        self.assertEqual(p.params.rbv, "rbv")
-        self.assertEqual(p.params.pv, "pv")
+        assert p.params.rbv == "rbv"
+        assert p.params.pv == "pv"
 
     def test_init_no_rbv(self, catools):
         params = dict(name="", description="", pv="pv")
         p = self.create_part(params)
-        self.assertEqual(p.params.rbv, "pv")
-        self.assertEqual(p.params.pv, "pv")
+        assert p.params.rbv == "pv"
+        assert p.params.pv == "pv"
 
     def test_reset(self, catools):
         p = self.create_part()
@@ -65,8 +66,8 @@ class TestCAPart(unittest.TestCase):
         p.catools.camonitor.assert_called_once_with(
             "pv2", p.monitor_callback, format=p.catools.FORMAT_TIME,
             datatype=p.get_datatype(), notify_disconnect=True)
-        self.assertEqual(p.attr.value, 4)
-        self.assertEqual(p.monitor, p.catools.camonitor())
+        assert p.attr.value == 4
+        assert p.monitor == p.catools.camonitor()
 
     def test_caput(self, catools):
         p = self.create_part()
@@ -79,7 +80,7 @@ class TestCAPart(unittest.TestCase):
             "pv", 32, wait=True, timeout=None, datatype=datatype)
         p.catools.caget.assert_called_once_with(
             "pv2", format=p.catools.FORMAT_TIME, datatype=datatype)
-        self.assertEqual(p.attr.value, 3)
+        assert p.attr.value == 3
 
     def test_close_monitor(self, catools):
         p = self.create_part()
@@ -87,26 +88,26 @@ class TestCAPart(unittest.TestCase):
         p.monitor = m
         p.close_monitor()
         m.close.assert_called_once_with()
-        self.assertEqual(p.monitor, None)
+        assert p.monitor == None
 
     def test_update_value_good(self, catools):
         p = self.create_part()
         value = caint(4)
         p.update_value(value)
-        self.assertEqual(p.attr.value, 4)
-        self.assertEqual(p.attr.timeStamp.secondsPastEpoch, 340000)
-        self.assertEqual(p.attr.timeStamp.nanoseconds, 43)
-        self.assertEqual(p.attr.timeStamp.userTag, 0)
-        self.assertEqual(p.attr.alarm.severity, AlarmSeverity.NO_ALARM)
-        self.assertEqual(p.attr.alarm.status, AlarmStatus.NO_STATUS)
-        self.assertEqual(p.attr.alarm.message, "")
+        assert p.attr.value == 4
+        assert p.attr.timeStamp.secondsPastEpoch == 340000
+        assert p.attr.timeStamp.nanoseconds == 43
+        assert p.attr.timeStamp.userTag == 0
+        assert p.attr.alarm.severity == AlarmSeverity.NO_ALARM
+        assert p.attr.alarm.status == AlarmStatus.NO_STATUS
+        assert p.attr.alarm.message == ""
 
     def test_update_value_bad(self, catools):
         p = self.create_part()
         value = caint(44)
         value.ok = False
         p.update_value(value)
-        self.assertEqual(p.attr.value, 0)
-        self.assertEqual(p.attr.alarm.severity, AlarmSeverity.INVALID_ALARM)
-        self.assertEqual(p.attr.alarm.status, AlarmStatus.DEVICE_STATUS)
-        self.assertEqual(p.attr.alarm.message, "PV disconnected")
+        assert p.attr.value == 0
+        assert p.attr.alarm.severity == AlarmSeverity.INVALID_ALARM
+        assert p.attr.alarm.status == AlarmStatus.DEVICE_STATUS
+        assert p.attr.alarm.message == "PV disconnected"

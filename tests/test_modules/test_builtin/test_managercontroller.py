@@ -93,7 +93,7 @@ class TestManagerController(unittest.TestCase):
         }""" % (x, y, visible, attr)).splitlines()]
         actual = [x.strip() for x in open(
             "/tmp/mainBlock/testSaveLayout.json").readlines()]
-        self.assertEqual(actual, expected)
+        assert actual == expected
 
     def test_save(self):
         call_with_params(self.c.save, design="testSaveLayout")
@@ -150,7 +150,7 @@ class TestManagerController(unittest.TestCase):
         self.check_expected_save(10.0, 20.0, "false")
         self.c.parts['part2'].x = 30
         self.c.set_design('testSaveLayout')
-        self.assertEqual(self.c.parts['part2'].x, 10)
+        assert self.c.parts['part2'].x == 10
 
     def test_set_export_parts(self):
         context = Context(self.p)

@@ -13,7 +13,7 @@ class TestDatasetReportingPart(unittest.TestCase):
         list(self.o.create_attributes())
 
     def test_init(self):
-        self.assertEqual(list(self.o.datasets.meta.elements),
+        assert list(self.o.datasets.meta.elements) == (
                          ["name", "filename", "type", "rank", "path", "uniqueid"])
 
     def test_post_configure(self):
@@ -29,9 +29,9 @@ class TestDatasetReportingPart(unittest.TestCase):
         )
         self.o.update_datasets_table(ANY, part_info)
         v = self.o.datasets.value
-        self.assertEqual(v.name, ("det.data", "det.sum", "det.min"))
-        self.assertEqual(v.filename, ("fn1", "fn1", "fn1"))
-        self.assertEqual(v.type, ("primary", "secondary", "secondary"))
-        self.assertEqual(list(v.rank), [2, 0, 0])
-        self.assertEqual(v.path, ("/p/det", "/p/s1", "/p/s2"))
-        self.assertEqual(v.uniqueid, ("/p/uid", "/p/uid", "/p/uid"))
+        assert v.name == ("det.data", "det.sum", "det.min")
+        assert v.filename == ("fn1", "fn1", "fn1")
+        assert v.type == ("primary", "secondary", "secondary")
+        assert list(v.rank) == [2, 0, 0]
+        assert v.path == ("/p/det", "/p/s1", "/p/s2")
+        assert v.uniqueid == ("/p/uid", "/p/uid", "/p/uid")

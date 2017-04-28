@@ -32,7 +32,7 @@ class PortsPart(Part):
 class TestChildPart(unittest.TestCase):
 
     def checkState(self, state):
-        self.assertEqual(self.c.state.value, state)
+        assert self.c.state.value == state
 
     def makeChildBlock(self, blockMri):
         controller = call_with_params(
@@ -72,7 +72,7 @@ class TestChildPart(unittest.TestCase):
         for controller in (self.c1, self.c2, self.c3):
             b = self.p.block_view(controller.mri)
             assert b.outportConnector.value == ''
-        self.assertEqual(self.c.exports.meta.elements["name"].choices, (
+        assert self.c.exports.meta.elements["name"].choices == (
             'partchild1.health',
             'partchild1.inportConnector',
             'partchild1.outportConnector',
@@ -81,20 +81,20 @@ class TestChildPart(unittest.TestCase):
             'partchild2.outportConnector',
             'partchild3.health',
             'partchild3.inportConnector',
-            'partchild3.outportConnector'))
+            'partchild3.outportConnector')
 
     def test_report_ports(self):
         context = Context(self.p)
         ports = self.p1.report_ports(context)
-        self.assertEqual(len(ports), 2)
-        self.assertEqual(ports[0].direction, "in")
-        self.assertEqual(ports[0].type, "int32")
-        self.assertEqual(ports[0].value, "Connector3")
-        self.assertEqual(ports[0].extra, "")
-        self.assertEqual(ports[1].direction, "out")
-        self.assertEqual(ports[1].type, "int32")
-        self.assertEqual(ports[1].value, "")
-        self.assertEqual(ports[1].extra, "Connector1")
+        assert len(ports) == 2
+        assert ports[0].direction == "in"
+        assert ports[0].type == "int32"
+        assert ports[0].value == "Connector3"
+        assert ports[0].extra == ""
+        assert ports[1].direction == "out"
+        assert ports[1].type == "int32"
+        assert ports[1].value == ""
+        assert ports[1].extra == "Connector1"
 
     def test_layout(self):
         b = self.p.block_view("mainBlock")
@@ -106,21 +106,21 @@ class TestChildPart(unittest.TestCase):
         new_layout.y = [20, 21, 22]
         new_layout.visible = [True, True, True]
         b.layout.put_value(new_layout)
-        self.assertEqual(self.c.parts['partchild1'].x, 10)
-        self.assertEqual(self.c.parts['partchild1'].y, 20)
-        self.assertEqual(self.c.parts['partchild1'].visible, True)
-        self.assertEqual(self.c.parts['partchild2'].x, 11)
-        self.assertEqual(self.c.parts['partchild2'].y, 21)
-        self.assertEqual(self.c.parts['partchild2'].visible, True)
-        self.assertEqual(self.c.parts['partchild3'].x, 12)
-        self.assertEqual(self.c.parts['partchild3'].y, 22)
-        self.assertEqual(self.c.parts['partchild3'].visible, True)
+        assert self.c.parts['partchild1'].x == 10
+        assert self.c.parts['partchild1'].y == 20
+        assert self.c.parts['partchild1'].visible == True
+        assert self.c.parts['partchild2'].x == 11
+        assert self.c.parts['partchild2'].y == 21
+        assert self.c.parts['partchild2'].visible == True
+        assert self.c.parts['partchild3'].x == 12
+        assert self.c.parts['partchild3'].y == 22
+        assert self.c.parts['partchild3'].visible == True
 
         new_layout.visible = [True, False, True]
         b.layout.put_value(new_layout)
-        self.assertEqual(self.c.parts['partchild1'].visible, True)
-        self.assertEqual(self.c.parts['partchild2'].visible, False)
-        self.assertEqual(self.c.parts['partchild3'].visible, True)
+        assert self.c.parts['partchild1'].visible == True
+        assert self.c.parts['partchild2'].visible == False
+        assert self.c.parts['partchild3'].visible == True
 
     def test_sever_all_inports(self):
         b = self.p.block_view("mainBlock")

@@ -106,7 +106,7 @@ class TestRunnableController(unittest.TestCase):
 
     def test_set_axes_to_move(self):
         self.c.set_axes_to_move(['y'])
-        self.assertEqual(self.c.axes_to_move.value, ('y',))
+        assert self.c.axes_to_move.value == ('y',)
 
     def test_validate(self):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)

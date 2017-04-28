@@ -39,8 +39,8 @@ class TestNotifier(unittest.TestCase):
         request = Subscribe(
             path=["b", "attr", "value"], delta=False, callback=Mock())
         self.handle_subscribe(request)
-        self.assertEqual(
-            self.o._tree.children["attr"].children["value"].update_requests,
+        assert (
+            self.o._tree.children["attr"].children["value"].update_requests) == (
             [request])
         request.callback.assert_called_once_with(Update(value=None))
         request.callback.reset_mock()
@@ -49,7 +49,7 @@ class TestNotifier(unittest.TestCase):
         with self.o.changes_squashed:
             self.block.attr["value"] = 32
             self.o.add_squashed_change(["b", "attr", "value"], 32)
-        self.assertEqual(self.block.attr.value, 32)
+        assert self.block.attr.value == 32
         request.callback.assert_called_once_with(Update(value=32))
         request.callback.reset_mock()
         # unsubscribe
@@ -60,7 +60,7 @@ class TestNotifier(unittest.TestCase):
         with self.o.changes_squashed:
             self.block.attr["value"] = 33
             self.o.add_squashed_change(["b", "attr", "value"], 33)
-        self.assertEqual(self.block.attr.value, 33)
+        assert self.block.attr.value == 33
         request.callback.assert_not_called()
 
     def handle_unsubscribe(self, request):
@@ -134,9 +134,9 @@ class TestNotifier(unittest.TestCase):
         with self.o.changes_squashed:
             self.block.attr["value"] = 33
             self.o.add_squashed_change(["b", "attr", "value"], 33)
-            self.assertEqual(self.block.attr.value, 33)
+            assert self.block.attr.value == 33
             self.block.attr2["value"] = "tr"
             self.o.add_squashed_change(["b", "attr2", "value"], "tr")
-            self.assertEqual(self.block.attr2.value, "tr")
+            assert self.block.attr2.value == "tr"
         r1.callback.assert_called_once_with(Delta(
             changes=[[["attr", "value"], 33], [["attr2", "value"], "tr"]]))

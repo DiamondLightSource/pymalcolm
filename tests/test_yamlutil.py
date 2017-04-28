@@ -56,11 +56,11 @@ class TestYamlUtil(unittest.TestCase):
         m.assert_called_once_with("/tmp/include.yaml")
         process = Mock()
         parts = include_creator(process, dict(something="blah"))
-        self.assertEquals(len(parts), 1)
+        assert len(parts) == 1
         part = parts[0]
         self.assertIsInstance(part, StringPart)
-        self.assertEqual(part.name, "scannable")
-        self.assertEqual(part.params.initialValue, "blah")
+        assert part.name == "scannable"
+        assert part.params.initialValue == "blah"
 
     def test_make_block(self):
         with patch("malcolm.yamlutil.open",
@@ -72,9 +72,9 @@ class TestYamlUtil(unittest.TestCase):
         process = Mock()
         controller = block_creator(process, dict(something="blah"))
         process.add_controller.assert_called_once_with("some_mri", controller)
-        self.assertEquals(len(controller.parts), 1)
+        assert len(controller.parts) == 1
         self.assertIsInstance(controller.parts["scannable"], StringPart)
-        self.assertEqual(controller.parts["scannable"].params.initialValue,
+        assert controller.parts["scannable"].params.initialValue == (
                          "blah")
 
     def test_check_names_good(self):
@@ -109,7 +109,7 @@ class TestYamlUtil(unittest.TestCase):
         section = Section("f", 1, "mymodule.parts.MyPart", dict(desc="my name"))
         result = section.instantiate({}, "extra")
         mock_import.assert_called_once_with("malcolm.modules.mymodule.parts")
-        self.assertEqual(result, ("extra", 2, "my name", "thing"))
+        assert result == ("extra", 2, "my name", "thing")
 
     def test_split_into_sections(self):
         filename = "/tmp/yamltest.yaml"
@@ -139,12 +139,12 @@ class TestYamlUtil(unittest.TestCase):
         params = {"name": "me"}
         param_dict = section.substitute_params(params)
         expected = {"name": "me:pos", "exposure": 1.0}
-        self.assertEqual(param_dict, expected)
+        assert param_dict == expected
 
     def test_repr(self):
         s = Section("f", 1, "ca.CADoublePart", {"name": "me"})
         expected = "Section(ca.CADoublePart, {'name': 'me'})"
-        self.assertEqual(repr(s), expected)
+        assert repr(s) == expected
 
 
 if __name__ == "__main__":

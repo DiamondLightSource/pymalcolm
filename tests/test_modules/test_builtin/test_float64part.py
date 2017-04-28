@@ -22,4 +22,5 @@ class TestFloat64Part(unittest.TestCase):
         assert self.o.attr.value == 2.3
         self.setter(3)
         assert self.o.attr.value == 3.0
-        self.assertRaises(ValueError, self.setter, "c")
+        with self.assertRaises(ValueError):
+            self.setter("c")

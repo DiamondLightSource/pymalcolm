@@ -15,12 +15,12 @@ class TestProcess(unittest.TestCase):
         self.o.stop()
 
     def test_init(self):
-        self.assertEqual(self.o.name, "proc")
+        assert self.o.name == "proc"
 
     def test_add_controller(self):
         controller = MagicMock()
         self.o.add_controller("mri", controller)
-        self.assertEqual(self.o.get_controller("mri"), controller)
+        assert self.o.get_controller("mri") == controller
 
     def test_init_controller(self):
         class InitController(Controller):
@@ -31,7 +31,7 @@ class TestProcess(unittest.TestCase):
 
         c = InitController(self.o, "mri", [])
         self.o.add_controller("mri", c)
-        self.assertEqual(c.init, True)
+        assert c.init == True
 
     def test_publish_controller(self):
         class PublishController(Controller):
@@ -42,10 +42,10 @@ class TestProcess(unittest.TestCase):
 
         c = PublishController(self.o, "mri", [])
         self.o.add_controller("mri", c)
-        self.assertEqual(c.published, ["mri"])
+        assert c.published == ["mri"]
         self.o.add_controller("mri2", MagicMock())
-        self.assertEqual(c.published, ["mri", "mri2"])
+        assert c.published == ["mri", "mri2"]
         self.o.add_controller("mri3", MagicMock(), False)
-        self.assertEqual(c.published, ["mri", "mri2"])
+        assert c.published == ["mri", "mri2"]
         self.o.remove_controller("mri2")
-        self.assertEqual(c.published, ["mri"])
+        assert c.published == ["mri"]

@@ -13,29 +13,30 @@ class TestAttributeItem(unittest.TestCase):
         self.item = AttributeItem(("endpoint",), ref)
 
     def test_get_value(self):
-        self.assertEqual(self.item.get_value(), str(self.item.ref.value))
+        assert self.item.get_value() == str(self.item.ref.value)
 
     def test_get_writeable(self):
-        self.assertEqual(self.item.get_writeable(), self.item.ref.meta.writeable)
+        assert self.item.get_writeable() == self.item.ref.meta.writeable
 
     def test_set_value(self):
         value = MagicMock()
         request = self.item.set_value(value)
-        self.assertEqual(AttributeItem.RUNNING, self.item.get_state())
-        self.assertEqual(
-            list(self.item.endpoint + ("value",)), request.path)
-        self.assertEqual(value.__str__.return_value, request.value)
+        assert AttributeItem.RUNNING == self.item.get_state()
+        assert (
+            list(self.item.endpoint + ("value",))) == request.path
+        assert value.__str__.return_value == request.value
 
     def test_handle_response_error(self):
         response = Error(message="bad")
         self.item.handle_response(response)
-        self.assertEqual(self.item.get_state(), self.item.ERROR)
+        assert self.item.get_state() == self.item.ERROR
 
     def test_handle_response_return(self):
         response = Return(value="yay")
         self.item.handle_response(response)
-        self.assertEqual(self.item.get_state(), self.item.IDLE)
+        assert self.item.get_state() == self.item.IDLE
 
     def test_handle_response_unknown(self):
         response = Delta(changes=[])
-        self.assertRaises(TypeError, self.item.handle_response, response)
+        with self.assertRaises(TypeError):
+            self.item.handle_response(response)

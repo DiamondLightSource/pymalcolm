@@ -10,11 +10,11 @@ class TestTableMetaInit(unittest.TestCase):
 
     def test_init(self):
         tm = TableMeta("desc")
-        self.assertEquals("desc", tm.description)
-        self.assertEquals("malcolm:core/TableMeta:1.0", tm.typeid)
-        self.assertEquals((), tm.tags)
-        self.assertEquals(False, tm.writeable)
-        self.assertEquals("", tm.label)
+        assert "desc" == tm.description
+        assert "malcolm:core/TableMeta:1.0" == tm.typeid
+        assert () == tm.tags
+        assert False == tm.writeable
+        assert "" == tm.label
 
 
 class TestTableMetaSetters(unittest.TestCase):
@@ -29,7 +29,7 @@ class TestTableMetaSetters(unittest.TestCase):
         elements["col1"]=StringArrayMeta()
         elements["col2"]=StringArrayMeta()
         tm.set_elements(elements)
-        self.assertEqual(elements, tm.elements)
+        assert elements == tm.elements
 
     def test_set_elements_from_serialized(self):
         tm = self.tm
@@ -58,16 +58,16 @@ class TestTableMetaSerialization(unittest.TestCase):
         tm.set_label("Name")
         tm.set_elements(dict(c1=self.sam))
         tm.set_writeable(True)
-        self.assertEqual(tm.to_dict(), self.serialized)
+        assert tm.to_dict() == self.serialized
 
     def test_from_dict(self):
         tm = TableMeta.from_dict(self.serialized)
-        self.assertEquals(tm.description, "desc")
-        self.assertEquals(len(tm.elements), 1)
-        self.assertEquals(tm.elements["c1"].to_dict(), self.sam.to_dict())
-        self.assertEquals(tm.tags, ())
-        self.assertEquals(tm.writeable, True)
-        self.assertEquals(tm.label, "Name")
+        assert tm.description == "desc"
+        assert len(tm.elements) == 1
+        assert tm.elements["c1"].to_dict() == self.sam.to_dict()
+        assert tm.tags == ()
+        assert tm.writeable == True
+        assert tm.label == "Name"
 
 
 class TestTableMetaValidation(unittest.TestCase):
@@ -81,7 +81,7 @@ class TestTableMetaValidation(unittest.TestCase):
         t.c1 = ["me", "me3"]
         t_serialized = t.to_dict()
         t = tm.validate(t)
-        self.assertEqual(t.to_dict(), t_serialized)
+        assert t.to_dict() == t_serialized
 
     def test_validate_from_serialized(self):
         tm = self.tm
@@ -90,5 +90,5 @@ class TestTableMetaValidation(unittest.TestCase):
             c1=("me", "me3")
         )
         t = tm.validate(serialized)
-        self.assertEqual(t.endpoints, ["c1"])
-        self.assertEqual(t.c1, serialized["c1"])
+        assert t.endpoints == ["c1"]
+        assert t.c1 == serialized["c1"]

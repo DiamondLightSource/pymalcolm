@@ -54,16 +54,16 @@ class PVAUtilTest(unittest.TestCase):
 
     def test_variant_union(self):
         d = dict_to_pv_object(self.d)
-        self.assertEquals(d.getString("fileDir"),
+        assert d.getString("fileDir") == (
                           '/dls/i08/data/2017/cm16789-1/nexus/i08-4351')
-        self.assertEquals(d.getString("fileDir2"),
+        assert d.getString("fileDir2") == (
                           '/dls/i08/data/2017/cm16789-1/nexus/i08-4352')
-        self.assertEquals(d.getScalarArray("axesToMove"),
+        assert d.getScalarArray("axesToMove") == (
                           ['SampleX', 'SampleY'])
         # TODO: doesn't work for boolean arrays
         #self.assertEquals(d.getScalarArray("go"), [False, True])
-        self.assertEquals(d.getScalarArray("stop"), [1, 2])
-        self.assertEquals(d.getScalarArray("empty"), [])
+        assert d.getScalarArray("stop") == [1, 2]
+        assert d.getScalarArray("empty") == []
 
 
 if __name__ == "__main__":

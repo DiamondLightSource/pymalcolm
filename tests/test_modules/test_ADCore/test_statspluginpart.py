@@ -14,9 +14,9 @@ class TestStatsPluginPart(unittest.TestCase):
 
     def test_report_info(self):
         infos = self.o.report_info(ANY)
-        self.assertEqual(len(infos), 1)
-        self.assertEqual(infos[0].name, "sum")
-        self.assertEqual(infos[0].attr, "StatsTotal")
+        assert len(infos) == 1
+        assert infos[0].name == "sum"
+        assert infos[0].attr == "StatsTotal"
 
     def test_configure(self):
         completed_steps = ANY
@@ -26,7 +26,7 @@ class TestStatsPluginPart(unittest.TestCase):
         params.filePath = "/tmp/anything.h5"
         infos = self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, params)
-        self.assertIsNone(infos)
+        assert infos is None
         expected_filename = "/tmp/BLOCK-STAT-attributes.xml"
         assert self.context.mock_calls == [
             call.block_view('BLOCK-STAT'),
@@ -40,7 +40,7 @@ class TestStatsPluginPart(unittest.TestCase):
 <Attribute addr="0" datatype="DOUBLE" description="Sum of the array" name="StatsTotal" source="TOTAL" type="PARAM" />
 </Attributes>"""
         actual_xml = open(expected_filename).read().replace(">", ">\n")
-        self.assertEqual(actual_xml.splitlines(), expected_xml.splitlines())
+        assert actual_xml.splitlines() == expected_xml.splitlines()
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

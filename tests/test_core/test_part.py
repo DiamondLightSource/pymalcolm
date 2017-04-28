@@ -20,9 +20,9 @@ class MyPart(Part):
 class TestPart(unittest.TestCase):
     def test_init(self):
         p = Part("name")
-        self.assertEqual(p.name, "name")
+        assert p.name == "name"
 
     def test_non_hooked_methods(self):
         p = MyPart("")
         methods = list(p.create_methods())
-        self.assertEqual(methods, [("bar", p.method_models["bar"], p.bar)])
+        assert methods == [("bar", p.method_models["bar"], p.bar)]

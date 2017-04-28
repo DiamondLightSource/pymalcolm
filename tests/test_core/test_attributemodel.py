@@ -15,24 +15,24 @@ class TestAttribute(unittest.TestCase):
 
     def test_init(self):
         self.assertIs(self.o.meta, self.meta)
-        self.assertEquals(self.o.value, "")
-        self.assertEquals(self.o.typeid, "epics:nt/NTScalar:1.0")
+        assert self.o.value == ""
+        assert self.o.typeid == "epics:nt/NTScalar:1.0"
 
     def test_set_value(self):
         value = "test_value"
         self.o.set_value(value)
-        self.assertEquals(self.o.value, value)
+        assert self.o.value == value
 
     def test_set_alarm(self):
         alarm = Alarm(
             AlarmSeverity.MAJOR_ALARM, AlarmStatus.DEVICE_STATUS, "bad")
         self.o.set_alarm(alarm)
-        self.assertEquals(self.o.alarm, alarm)
+        assert self.o.alarm == alarm
 
     def test_set_timeStamp(self):
         timeStamp = TimeStamp()
         self.o.set_timeStamp(timeStamp)
-        self.assertEquals(self.o.timeStamp, timeStamp)
+        assert self.o.timeStamp == timeStamp
 
 
 class TestSerialization(unittest.TestCase):
@@ -49,9 +49,9 @@ class TestSerialization(unittest.TestCase):
         a = StringMeta("desc").create_attribute()
         a.set_value("some string")
         a.set_timeStamp(self.serialized["timeStamp"])
-        self.assertEqual(a.to_dict(), self.serialized)
+        assert a.to_dict() == self.serialized
 
     def test_from_dict(self):
         a = NTScalar.from_dict(self.serialized)
-        self.assertEquals(a.meta.to_dict(), StringMeta("desc").to_dict())
-        self.assertEquals(a.value, "some string")
+        assert a.meta.to_dict() == StringMeta("desc").to_dict()
+        assert a.value == "some string"

@@ -13,20 +13,20 @@ class TestSetters(unittest.TestCase):
 
     def test_values_set(self):
         self.assertIsInstance(self.mm.elements, dict)
-        self.assertEqual(len(self.mm.elements), 0)
-        self.assertEqual(self.mm.typeid, "malcolm:core/MapMeta:1.0")
-        self.assertEqual(self.mm.description, "description")
+        assert len(self.mm.elements) == 0
+        assert self.mm.typeid == "malcolm:core/MapMeta:1.0"
+        assert self.mm.description == "description"
 
     def test_set_elements(self):
         els = dict(sam=StringArrayMeta())
         self.mm.set_elements(els)
-        self.assertEqual(self.mm.elements, els)
+        assert self.mm.elements == els
 
     def test_set_required(self):
         self.test_set_elements()
         req = ("sam",)
         self.mm.set_required(req)
-        self.assertEqual(self.mm.required, req)
+        assert self.mm.required == req
 
 
 class TestSerialization(unittest.TestCase):
@@ -47,14 +47,14 @@ class TestSerialization(unittest.TestCase):
         tm = MapMeta("desc")
         tm.set_elements(dict(c1=self.sam))
         tm.set_required(["c1"])
-        self.assertEqual(tm.to_dict(), self.serialized)
+        assert tm.to_dict() == self.serialized
 
     def test_from_dict(self):
         tm = MapMeta.from_dict(self.serialized)
-        self.assertEquals(tm.description, "desc")
-        self.assertEquals(len(tm.elements), 1)
+        assert tm.description == "desc"
+        assert len(tm.elements) == 1
         expected = self.sam.to_dict()
         expected["label"] = "C1"
-        self.assertEquals(tm.elements["c1"].to_dict(), expected)
-        self.assertEquals(tm.tags, ())
-        self.assertEquals(tm.required, ("c1",))
+        assert tm.elements["c1"].to_dict() == expected
+        assert tm.tags == ()
+        assert tm.required == ("c1",)
