@@ -9,9 +9,12 @@ from malcolm.modules.pandablocks.controllers.pandablocksclient import \
     FieldData, BlockData
 
 
-class PandABlocksManagerControllerTest(unittest.TestCase):
-    @patch("malcolm.modules.pandablocks.controllers.pandablocksmanagercontroller.PandABlocksClient")
-    def setUp(self, mock_client):
+class PandABlocksRunnableControllerTest(unittest.TestCase):
+    @patch("malcolm.modules.ca.parts.capart.CAPart.reset")
+    @patch("malcolm.modules.ca.parts.catoolshelper.CaToolsHelper._instance")
+    @patch("malcolm.modules.pandablocks.controllers."
+           "pandablocksmanagercontroller.PandABlocksClient")
+    def setUp(self, mock_client, catools, reset):
         self.process = Mock()
         self.o = call_with_params(
             PandABlocksRunnableController, self.process, [], mri="P",

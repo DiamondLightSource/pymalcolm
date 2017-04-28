@@ -5,6 +5,7 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
 
 env:
   - PYMALCOLM_USE_COTHREAD=YES

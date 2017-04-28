@@ -56,11 +56,6 @@ class Process(Loggable):
                 process. None means forever
         """
         assert not self.started, "Process already started"
-        if self._cothread:
-            num_threads = 8
-        else:
-            num_threads = 128
-        self._thread_pool = ThreadPool(num_threads)
         self.started = True
         self._run_hook(self.Init, timeout=timeout)
         self._run_hook(
@@ -97,9 +92,10 @@ class Process(Loggable):
         self._controllers = OrderedDict()
         self._published = []
         self.started = False
-        self._thread_pool.close()
-        self._thread_pool.join()
-        self._thread_pool = None
+        if self._thread_pool:
+            self._thread_pool.close()
+            self._thread_pool.join()
+            self._thread_pool = None
 
     def spawn(self, function, args, kwargs, use_cothread):
         """Runs the function in a worker thread, returning a Result object
@@ -127,6 +123,9 @@ class Process(Loggable):
     def _spawn(self, function, args, kwargs, use_cothread):
         with self._lock:
             assert self.started, "Can't spawn before process started"
+            if self._thread_pool is None:
+                if not self._cothread or not use_cothread:
+                    self._thread_pool = ThreadPool()
             spawned = Spawned(
                 function, args, kwargs, use_cothread, self._thread_pool)
             self._spawned.append(spawned)

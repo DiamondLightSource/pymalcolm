@@ -137,7 +137,8 @@ class PmacTrajectoryPart(StatefulChildPart):
     @RunnableController.PostRunReady
     @RunnableController.Seek
     @method_takes(*configure_args)
-    def configure(self, context, completed_steps, steps_to_do, part_info, params):
+    def configure(self, context, completed_steps, steps_to_do, part_info,
+                  params):
         context.unsubscribe_all()
         child = context.block_view(self.params.mri)
         child.numPoints.put_value(4000000)

@@ -1,13 +1,18 @@
 import unittest
-from mock import patch
+from mock import patch, MagicMock
 from collections import OrderedDict
+import sys
 
-import pvaccess
 import numpy as np
+
+# Mock out pvaccess
+sys.modules["pvaccess"] = MagicMock()
+import pvaccess
 
 from malcolm.core import StringArray
 from malcolm.modules.pva.controllers.pvautil import pva_structure_from_value, \
     dict_to_pv_object
+
 
 
 class PvTempObject(object):

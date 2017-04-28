@@ -24,7 +24,13 @@ class Block(View):
 
     def put_attribute_values_async(self, params):
         futures = []
-        for attr, value in params.items():
+        if type(params) is dict:
+            # If we have a plain dictionary, then sort items
+            items = sorted(params.items())
+        else:
+            # Assume we are already ordered
+            items = params.items()
+        for attr, value in items:
             assert hasattr(self, attr), \
                 "Block does not have attribute %s" % attr
             future = self._context.put_async(
