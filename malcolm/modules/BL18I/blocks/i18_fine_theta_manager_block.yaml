@@ -14,10 +14,14 @@
     name: pandabox
     description: MRI for PandABoxManager object
 
+- builtin.parameters.string:
+    name: configDir
+    description: Config dir for RunnableController object
+
 - scanning.controllers.RunnableController:
     mri: $(mri)
     axesToMove: [sc_MicroFocusSampleX, sc_sample_thetafine]
-    configDir: /tmp/malcolm
+    configDir: $(configDir)
 
 - ADCore.parts.DatasetTablePart:
     name: DSET
