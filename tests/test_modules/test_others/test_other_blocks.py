@@ -147,17 +147,17 @@ class TestBuiltin(ChildTestCase):
         
 
     # Profiling blocks
-    def test_profiling_block(self):
-        self.create_child_block(
-            profiling_block, Mock(), mri="mri",
-            profilesDir="/tmp")
+    #def test_profiling_block(self):
+    #    self.create_child_block(
+    #        profiling_block, Mock(), mri="mri",
+    #        profilesDir="/tmp")
 
         
 
-    def test_profiling_web_server_block(self):
-        self.create_child_block(
-            profiling_web_server_block, Mock(),
-            mri="mri",
-            profilesDir="/tmp")
+    #def test_profiling_web_server_block(self):
+    #    self.create_child_block(
+    #        profiling_web_server_block, Mock(),
+    #        mri="mri",
+    #        profilesDir="/tmp")
 
         
