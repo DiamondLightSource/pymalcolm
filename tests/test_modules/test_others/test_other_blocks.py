@@ -17,6 +17,9 @@ from malcolm.modules.BL18I.blocks import i18_fine_theta_manager_block,\
     i18_pmac_manager_block,\
     i18_table01_manager_block,\
     i18_table03_manager_block
+from malcolm.modules.BL45P.blocks import hardware_scan_block,\
+    pmac_manager_block,\
+    sim_scan_block
 
 
 
@@ -109,6 +112,30 @@ class TestBuiltin(unittest.TestCase):
         controller = call_with_params(
             i18_table03_manager_block, Mock(), mri="mri",
             det="det", brick="brick", pandabox="pandabox",
+            configDir="/tmp/malcolm")
+
+        del controller
+
+    # BL45P blocks
+    def test_hardware_scan_block(self):
+        controller = call_with_params(
+            hardware_scan_block, Mock(), mri="mri",
+            mic="mic", pandabox="pandabox", zebra="zebra",
+            brick="brick",
+            configDir="/tmp/malcolm")
+
+        del controller
+
+    def test_pmac_manager_block(self):
+        controller = call_with_params(
+            pmac_manager_block, Mock(), mriPrefix="mriPrefix",
+            configDir="/tmp/malcolm")
+
+        del controller
+
+    def test_sim_scan_block(self):
+        controller = call_with_params(
+            sim_scan_block, Mock(), mri="mri", sim="sim",
             configDir="/tmp/malcolm")
 
         del controller

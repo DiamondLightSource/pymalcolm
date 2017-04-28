@@ -4,7 +4,7 @@
 
 - builtin.parameters.string:
     name: configDir
-    description: Config dir for RunnableController object
+    description: Where to store saved configs
 
 #- builtin.parameters.string:
 #    name: det
