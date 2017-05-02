@@ -125,7 +125,11 @@ class Process(Loggable):
             assert self.started, "Can't spawn before process started"
             if self._thread_pool is None:
                 if not self._cothread or not use_cothread:
-                    self._thread_pool = ThreadPool()
+                    if self._cothread:
+                        num_threads = 8
+                    else:
+                        num_threads = 128
+                    self._thread_pool = ThreadPool(num_threads)
             spawned = Spawned(
                 function, args, kwargs, use_cothread, self._thread_pool)
             self._spawned.append(spawned)
