@@ -120,6 +120,7 @@ def make_process():
             os.mkdir(args.profiledir)
         ProfilingViewerPart.profiledir = args.profiledir
         locals_d["profiler"] = Profiler(args.profiledir)
+        #locals_d["profiler"].start()
 
     # Setup Qt gui
     try:
@@ -176,10 +177,19 @@ def make_process():
             raise ValueError(
                 "Don't know how to create client to %s" % args.client)
 
-    locals_d["self"] = Context(proc)
+    class UserContext(Context):
+        def post(self, path, params=None, timeout=None):
+            try:
+                super(UserContext, self).post(path, params, timeout)
+            except KeyboardInterrupt:
+                self.post([path[0], "abort"])
+                raise
+
+    locals_d["self"] = UserContext(proc, user_facing=True)
     if qt_thread:
         qt_thread.start()
     proc.start()
+    locals_d["process"] = proc
     return locals_d
 
 
@@ -211,6 +221,10 @@ gui(self.block_view("COUNTER"))
         IPython.embed(header=header)
     if "app" in locals_d:
         locals_d["app"].quit()
+    if "profiler" in locals_d:
+        locals_d["profiler"].stop()
+    # TODO: tearDown doesn't work properly yet
+    #locals_d["process"].stop()
 
 
 if __name__ == "__main__":

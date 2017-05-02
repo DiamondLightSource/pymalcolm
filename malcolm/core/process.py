@@ -10,6 +10,10 @@ from .rlock import RLock
 from .errors import WrongThreadError
 
 
+# Clear spawned handles after how many spawns?
+SPAWN_CLEAR_COUNT = 1000
+
+
 class Process(Loggable):
     """Hosts a number of Controllers and provides spawn capabilities"""
 
@@ -34,6 +38,7 @@ class Process(Loggable):
         self._published = []  # [mri] for publishable controllers
         self.started = False
         self._spawned = []
+        self._spawn_count = 0
         self._thread_pool = None
         self._lock = RLock()
         self._hooked_func_names = {}
@@ -87,6 +92,7 @@ class Process(Loggable):
         # Allow every controller a chance to clean up
         self._run_hook(self.Halt, timeout=timeout)
         for s in self._spawned:
+            self.log.debug("Waiting for %s", s._function)
             s.wait()
         self._spawned = []
         self._controllers = OrderedDict()
@@ -133,8 +139,11 @@ class Process(Loggable):
             spawned = Spawned(
                 function, args, kwargs, use_cothread, self._thread_pool)
             self._spawned.append(spawned)
+            self._spawn_count += 1
             # Filter out things that are ready to avoid memory leaks
-            self._spawned = [s for s in self._spawned if not s.ready()]
+            if self._spawn_count > SPAWN_CLEAR_COUNT:
+                self._spawn_count = 0
+                self._spawned = [s for s in self._spawned if not s.ready()]
         return spawned
 
     def add_controller(self, mri, controller, publish=True, timeout=None):

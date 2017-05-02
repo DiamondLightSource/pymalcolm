@@ -107,7 +107,8 @@ class ChildPart(Part):
         for s in spawned:
             s.wait()
 
-        # Tell the controller we have new fields to export unless at init
+        # Tell the controller we have new fields to export unless at init or
+        # disable
         if self._do_update:
             self.controller.update_exportable()
         else:

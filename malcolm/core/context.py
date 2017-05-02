@@ -34,8 +34,9 @@ class Context(Loggable):
     STOP = object()
     runner = None
 
-    def __init__(self, process):
-        self._q = Queue()
+    def __init__(self, process, user_facing=False):
+        self._user_facing = user_facing
+        self._q = Queue(self._user_facing)
         self._process = process
         self._next_id = 1
         self._futures = {}  # dict {int id: Future)}
