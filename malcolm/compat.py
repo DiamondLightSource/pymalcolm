@@ -47,3 +47,10 @@ def maybe_import_cothread():
             cothread = None
         return cothread
 
+
+def get_pool_num_threads():
+    if maybe_import_cothread():
+        num_threads = 8
+    else:
+        num_threads = 128
+    return num_threads

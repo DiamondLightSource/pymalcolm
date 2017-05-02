@@ -1,7 +1,8 @@
 from multiprocessing.pool import ThreadPool
 import inspect
 
-from malcolm.compat import OrderedDict, maybe_import_cothread
+from malcolm.compat import OrderedDict, maybe_import_cothread, \
+    get_pool_num_threads
 from .context import Context
 from .hook import Hook, get_hook_decorated
 from .loggable import Loggable
@@ -131,11 +132,7 @@ class Process(Loggable):
             assert self.started, "Can't spawn before process started"
             if self._thread_pool is None:
                 if not self._cothread or not use_cothread:
-                    if self._cothread:
-                        num_threads = 8
-                    else:
-                        num_threads = 128
-                    self._thread_pool = ThreadPool(num_threads)
+                    self._thread_pool = ThreadPool(get_pool_num_threads())
             spawned = Spawned(
                 function, args, kwargs, use_cothread, self._thread_pool)
             self._spawned.append(spawned)

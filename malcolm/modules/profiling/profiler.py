@@ -3,19 +3,15 @@ import os
 
 from plop.collector import Collector, FlamegraphFormatter, PlopFormatter
 
-from malcolm.compat import maybe_import_cothread
+from malcolm.compat import get_pool_num_threads
 
 
 class Profiler(Collector):
-    def __init__(self, dirname, interval=0.01):
+    def __init__(self, dirname, mode="prof", interval=0.001):
         self.dirname = dirname
         self.start_time = None
-        cothread = maybe_import_cothread()
-        if cothread:
-            mode = "virtual"
-        else:
-            mode = "real"
-        super(Profiler, self).__init__(interval, mode)
+        num_threads = get_pool_num_threads() + 1
+        super(Profiler, self).__init__(interval * num_threads, mode)
 
     def start(self, duration=None):
         # Go forever
