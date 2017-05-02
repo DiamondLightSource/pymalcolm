@@ -1,7 +1,8 @@
-Malcolm is a middlelayer framework that implements high level configure/run behaviour
-of control system components like those used in continuous scans. 
-This `repository`_ contains a Python implementation (pymalcolm) allowing the creation of Malcolm
-servers and clients. There is also a `malcolmjs`_ JavaScript client and a `jmalcolm`_ Java client.
+Malcolm is a middlelayer framework that implements high level configure/run
+behaviour of control system components like those used in continuous scans.
+This `repository`_ contains a Python implementation (pymalcolm) allowing the
+creation of Malcolm servers and clients. There is also a `malcolmjs`_
+JavaScript client and a `jmalcolm`_ Java client.
 
 Malcolm was created as part of the `Mapping project`_ at `Diamond Light Source`_
 in order to improve the performance of continuous scanning.
@@ -13,15 +14,22 @@ Malcolm provides a layer on top of `EPICS`_
 that wraps up groups of `PVs`_ and presents a higher level scanning interface to
 `GDA`_ via `pvAccess`_.
 
-.. uml::
+.. digraph:: usage
 
-    !include docs/style.iuml
+    bgcolor=transparent
+    node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
 
-    [GDA] -down-> [Malcolm] : scan.configure()\nscan.run()
-    [Malcolm] -down-> [EPICS] : caput\ncamonitor
-    [Detector] -right-> [EPICS] : frame data
-    [EPICS] -right-> [HDF File] : frame data
-    [EPICS] -down-> [Motor Controller]: motion trajectory
+    {rank=same;Detector EPICS "HDF File"}
+
+    Malcolm [shape=doublecircle]
+    GDA -> Malcolm [label="scan.configure()\nscan.run()"]
+    Malcolm -> EPICS [label="caput\ncamonitor"]
+    Detector -> EPICS [label="Frame data"]
+    EPICS -> "HDF File" [label="Frame data"]
+    EPICS -> "Motor Controller" [label="Motion trajectory"]
+
+
 
 Malcolm was developed for continuous scanning and the diagram above shows
 how Diamond uses it, but it can also be used in other ways:
@@ -36,8 +44,9 @@ how Diamond uses it, but it can also be used in other ways:
 How is the documentation structured?
 ------------------------------------
 
-The aim of this documentation is to educate and enlighten users of Malcolm at all levels of expertise.
-To achieve this the documentation is broken into two sections:
+The aim of this documentation is to educate and enlighten users of Malcolm at
+all levels of expertise. To achieve this the documentation is broken into two
+sections:
 
 * :ref:`user-docs` - How to run a Malcolm server that talks to supported
   hardware and write Malcolm support for a new piece of hardware

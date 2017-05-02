@@ -55,6 +55,7 @@ extensions = [
     'sphinxcontrib.plantuml',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinx.ext.graphviz',
     'IPython.sphinxext.ipython_console_highlighting',
 ]
 
@@ -131,6 +132,8 @@ if not which("plantuml"):
 autoclass_content = "both"
 
 autodoc_member_order = 'bysource'
+
+graphviz_output_format = "svg"
 
 # If true, Sphinx will warn about all references where the target can't be found
 nitpicky = True
