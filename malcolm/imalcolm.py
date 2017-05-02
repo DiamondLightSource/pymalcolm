@@ -10,6 +10,9 @@ def make_process():
     import json
     from ruamel import yaml
 
+    # These are the locals that we will pass to the console
+    locals_d = {}
+
     parser = argparse.ArgumentParser(
         description="Interactive shell for malcolm")
     parser.add_argument(
@@ -18,9 +21,11 @@ def make_process():
     parser.add_argument(
         '--logcfg', help="Logging dict config in JSON or YAML file")
     parser.add_argument(
+        "--profiledir", help="Directory to store profiler results in",
+        default="/tmp/imalcolm_profiles")
+    parser.add_argument(
         'yaml', nargs="?",
-        help="The YAML file containing the blocks to be loaded"
-    )
+        help="The YAML file containing the blocks to be loaded")
     args = parser.parse_args()
 
     log_config = {
@@ -104,12 +109,19 @@ def make_process():
             log_config = file_config
     logging.config.dictConfig(log_config)
 
-    from pygelf import GelfUdpHandler
+    # Setup profiler dir
+    try:
+        from malcolm.modules.profiling.parts import ProfilingViewerPart
+        from malcolm.modules.profiling.profiler import Profiler
+    except ImportError:
+        raise
+    else:
+        if not os.path.isdir(args.profiledir):
+            os.mkdir(args.profiledir)
+        ProfilingViewerPart.profiledir = args.profiledir
+        locals_d["profiler"] = Profiler(args.profiledir)
 
-    def gui(block):
-        global opener
-        opener.open_gui(block, proc)
-
+    # Setup Qt gui
     try:
         os.environ['DISPLAY']
         # If this environment variable doesn't exist then there is probably no
@@ -121,15 +133,21 @@ def make_process():
 
         # Start qt
         def start_qt():
-            global app
             app = QApplication(sys.argv)
             app.setQuitOnLastWindowClosed(False)
+            locals_d["app"] = app
             from malcolm.gui.guiopener import GuiOpener
             global opener
             opener = GuiOpener()
             app.exec_()
 
         qt_thread = threading.Thread(target=start_qt)
+
+        def gui(block):
+            global opener
+            opener.open_gui(block, proc)
+
+        locals_d["gui"] = gui
 
     from malcolm.core import Process, call_with_params, Context
     from malcolm.yamlutil import make_include_creator
@@ -158,15 +176,15 @@ def make_process():
             raise ValueError(
                 "Don't know how to create client to %s" % args.client)
 
-    context = Context(proc)
+    locals_d["self"] = Context(proc)
     if qt_thread:
         qt_thread.start()
     proc.start()
-    return context, gui
+    return locals_d
 
 
 def main():
-    self, gui = make_process()
+    locals_d = make_process()
 
     header = """Welcome to iMalcolm.
 
@@ -181,17 +199,18 @@ or
 
 gui(self.block_view("COUNTER"))
 
-""" % (self.mri_list,)
+""" % (locals_d["self"].mri_list,)
 
     try:
         import IPython
     except ImportError:
         import code
-        code.interact(header, local=locals())
+        code.interact(header, local=locals_d)
     else:
+        locals().update(locals_d)
         IPython.embed(header=header)
-    global app
-    app.quit()
+    if "app" in locals_d:
+        locals_d["app"].quit()
 
 
 if __name__ == "__main__":

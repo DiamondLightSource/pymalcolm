@@ -4,7 +4,7 @@ import inspect
 from plop.viewer import IndexHandler, ViewFlatHandler
 from tornado.options import options
 
-from malcolm.core import method_takes, Part, REQUIRED
+from malcolm.core import method_takes, Part
 from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.modules.web.controllers import HTTPServerComms
 from malcolm.modules.web.infos import HandlerInfo
@@ -27,12 +27,14 @@ class MalcolmViewHandler(ViewFlatHandler):
 
 
 @method_takes(
-    "name", StringMeta("Name of the Part within the controller"), "profiles",
-    "profilesDir", StringMeta("Directory where data results are"), REQUIRED)
+    "name", StringMeta("Name of the Part within the controller"), "profiles")
 class ProfilingViewerPart(Part):
+    # This will be written by imalcolm
+    profiledir = None
+
     def __init__(self, params):
         self.params = params
-        options.datadir = params.profilesDir
+        options.datadir = self.profiledir
         super(ProfilingViewerPart, self).__init__(params.name)
 
     @HTTPServerComms.ReportHandlers

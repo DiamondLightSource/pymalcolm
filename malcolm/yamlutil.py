@@ -152,8 +152,12 @@ class Section(object):
         except AttributeError:
             raise ImportError("%s:%d: Package %r has no ident %r" % (
                 self.filename, self.lineno, pkg, ident))
-        log.debug("Instantiating %s with %s", ob, param_dict)
-        return call_with_params(ob, *args, **param_dict)
+        try:
+            ret = call_with_params(ob, *args, **param_dict)
+        except ValueError as e:
+            raise ValueError("%s:%d: %s" % (self.filename, self.lineno, e))
+        else:
+            return ret
 
     @classmethod
     def from_yaml(cls, yaml_path, filename=None):

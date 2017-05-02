@@ -41,8 +41,3 @@
 - profiling.blocks.profiling_web_server_block:
     mri: $(yamlname):WEB-SERVER
     port: 8080
-    profilesDir: $(configDir)/profiles
-
-- profiling.blocks.profiling_block:
-    mri: $(yamlname):PROFILER
-    profilesDir: $(configDir)/profiles
