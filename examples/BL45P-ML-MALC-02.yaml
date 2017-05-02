@@ -2,15 +2,15 @@
 #/dls_sw/prod/common/python/RHEL6-x86_64/pymalcolm/2-0a6/malcolm/imalcolm.py
 # This sample is intended for use with the test lab setup LAB-MO-IOC-01
 
-- blocks.ADCore.sim_detector_runnable_block:
+- ADCore.blocks.sim_detector_runnable_block:
     pvPrefix: BL45P-EA-XSP-01
     mriPrefix: BL45P-ML-XSP-01
     configDir: /tmp
 
-- blocks.BL45P.sim_scan_block:
+- BL45P.blocks.sim_scan_block:
     mri: BL45P-ML-SCAN-02
     sim: BL45P-ML-XSP-01
     configDir: /tmp
 
-- blocks.pva.pva_server_block:
+- pva.blocks.pva_server_block:
     mri: $(yamlname):PVA-SERVER
