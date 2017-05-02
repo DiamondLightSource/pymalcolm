@@ -1,7 +1,7 @@
-BlockModel
+GuiModel
 ----------
 
 .. module:: malcolm.gui.blockmodel
 
-.. autoclass:: BlockModel
+.. autoclass:: GuiModel
     :members:

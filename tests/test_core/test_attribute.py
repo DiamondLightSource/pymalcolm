@@ -1,62 +1,32 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
-from collections import OrderedDict
-
 import unittest
-from mock import Mock, patch
+from mock import Mock
 
+from malcolm.core.attribute import Attribute
 from malcolm.core.ntscalar import NTScalar
-from malcolm.core.request import Put
-from malcolm.core.serializable import Serializable
-from malcolm.core.vmetas import StringMeta
+from malcolm.modules.builtin.vmetas import StringMeta
 
 
 class TestAttribute(unittest.TestCase):
-
     def setUp(self):
-        self.meta = StringMeta()
+        self.data = NTScalar(StringMeta())
+        self.data.set_notifier_path(Mock(), ["block", "attr"])
+        self.controller = Mock()
+        self.context = Mock()
+        self.o = Attribute(self.controller, self.context, self.data)
 
     def test_init(self):
-        a = self.meta.make_attribute()
-        self.assertIs(self.meta, a.meta)
-        self.assertEquals(a.value, "")
-        self.assertEquals("epics:nt/NTScalar:1.0", a.typeid)
+        self.assertIsInstance(self.o, Attribute)
+        assert hasattr(self.o, "meta")
+        assert hasattr(self.o, "subscribe_meta")
+        assert hasattr(self.o, "value")
+        assert hasattr(self.o, "subscribe_value")
 
-    def test_set_value(self):
-        value = "test_value"
-        a = self.meta.make_attribute()
-        a.process = Mock()
-        a.set_value(value)
-        self.assertEquals(a.value, value)
-        a.process.report_changes.assert_called_once_with([['value'], value])
+    def test_put(self):
+        self.o.put_value(32)
+        self.context.put.assert_called_once_with(["block", "attr", "value"], 32)
 
-    def test_handle_request(self):
-        a = self.meta.make_attribute()
-        request = Put(endpoint=["1", "2", "value"], value=Mock())
-        put_function = Mock()
-        a.handle_request(request, put_function)
-        put_function.assert_called_once_with(self.meta, request.value)
-
-class TestSerialization(unittest.TestCase):
-
-    def setUp(self):
-        self.serialized = OrderedDict()
-        self.serialized["typeid"] = "epics:nt/NTScalar:1.0"
-        self.serialized["meta"] = StringMeta("desc").to_dict()
-        self.serialized["value"] = "some string"
-
-    def test_to_dict(self):
-        a = StringMeta("desc").make_attribute()
-        a.set_value("some string")
-        self.assertEqual(a.to_dict(), self.serialized)
-
-    def test_from_dict(self):
-        a = NTScalar.from_dict(self.serialized)
-        self.assertEquals(a.meta.to_dict(), StringMeta("desc").to_dict())
-        self.assertEquals(a.value, "some string")
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
+    def test_put_async(self):
+        f = self.o.put_value_async(32)
+        self.context.put_async.assert_called_once_with(
+            ["block", "attr", "value"], 32)
+        assert f == self.context.put_async.return_value

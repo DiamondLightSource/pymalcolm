@@ -1,0 +1,12 @@
+# Define the parameters this Block will take
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+# The Controller will create the Block for us
+- builtin.controllers.BaseController:
+    mri: $(mri)
+
+# The Part will add a Method to the Block
+- demo.parts.HelloPart:
+    name: hello

@@ -10,7 +10,7 @@ make sense for the block. The general purpose state machine is shown here,
 along with the simplest "Ready" state machine, and two variants of the
 configure/run state machine that are used for mapping scans.
 
-General Purpose States
+General Purpose StatefulStates
 ----------------------
 
 Every state machine in Malcolm will include the following states. BlockStates

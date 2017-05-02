@@ -233,7 +233,7 @@ writeable attribute of each child Block into one of 3 categories:
   Attribute. If the child Attribute is changed, the export changes, and if the
   child Attribute is writeable then writes to the Manager Attribute will
   propagate to the child Attribute. If the child Attribute is writeable it will
-  also add it to the configure() MethodMeta arguments.
+  also add it to the configure() Method arguments.
 
 - **Follower**
 

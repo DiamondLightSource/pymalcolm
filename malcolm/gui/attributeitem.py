@@ -4,6 +4,12 @@ from malcolm.gui.baseitem import BaseItem
 
 class AttributeItem(BaseItem):
 
+    def get_label(self):
+        if self.ref.meta.label:
+            return self.ref.meta.label
+        else:
+            return super(AttributeItem, self).get_label()
+
     def get_value(self):
         return str(self.ref.value)
 
@@ -12,7 +18,8 @@ class AttributeItem(BaseItem):
 
     def set_value(self, value):
         self._state = self.RUNNING
-        request = Put(self, None, self.endpoint + ("value",), str(value))
+        request = Put(path=self.endpoint + ("value",), value=str(value),
+                      callback=self.handle_response)
         return request
 
     def handle_response(self, response):

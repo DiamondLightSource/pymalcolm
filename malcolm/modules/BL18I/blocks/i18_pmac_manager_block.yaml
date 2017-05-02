@@ -1,0 +1,44 @@
+- builtin.parameters.string:
+    name: mriPrefix
+    description: MRI for created block
+
+- builtin.parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- scanning.controllers.RunnableController:
+    mri: $(mriPrefix)
+    configDir: $(configDir)
+
+- pmac.includes.compoundmotor_collection:
+    mri: I18-T1-Y
+    prefix: BL18I-MO-TABLE-01:HEIGHT
+    scannable: sc_MicroFocusSampleY
+
+- pmac.includes.compoundmotor_collection:
+    mri: I18-T1-X
+    prefix: BL18I-MO-TABLE-01:CSX
+    scannable: sc_MicroFocusSampleX
+
+- pmac.includes.compoundmotor_collection:
+    mri: I18-T1-FROT
+    prefix: BL18I-MO-TABLE-01:CSFROT
+    scannable: sc_sample_thetafine
+
+- pmac.includes.rawmotor_collection:
+    mri: I18-T3-X
+    prefix: BL18I-MO-STEP-06:GB:M6
+    motorPrefix: BL18I-MO-TABLE-03:X
+    scannable: table_x
+
+- pmac.includes.rawmotor_collection:
+    mri: I18-T3-Y
+    prefix: BL18I-MO-STEP-06:GB:M8
+    motorPrefix: BL18I-MO-TABLE-03:Y
+    scannable: table_y
+
+- pmac.includes.trajectory_collection:
+    mri: $(mriPrefix)-TRAJ
+    prefix: BL18I-MO-STEP-06:GB
+    statPrefix: BL18I-MO-STEP-06
+    minTurnaround: 2

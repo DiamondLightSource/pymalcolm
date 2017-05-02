@@ -1,0 +1,43 @@
+#!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python /home/tmc43/common/python/pymalcolm/malcolm/imalcolm.py
+#/dls_sw/prod/common/python/RHEL6-x86_64/pymalcolm/2-0a6/malcolm/imalcolm.py
+# This sample is intended for use with the test lab setup LAB-MO-IOC-01
+
+- builtin.parameters.string:
+    name: configDir
+    description: Where to store saved configs
+    default: /dls/p45/epics/malcolm
+
+- ADCore.blocks.detector_runnable_block:
+    pvPrefix: BL45P-EA-MAP-01:MIC
+    mriPrefix: BL45P-ML-MIC-01
+    configDir: $(configDir)
+
+- BL45P.blocks.pmac_manager_block:
+    mriPrefix: BL45P-ML-BRICK-01
+    configDir: $(configDir)
+
+- ADPandABlocks.blocks.pandablocks_runnable_block:
+    pvPrefix: BL45P-EA-PANDA-01
+    mriPrefix: BL45P-ML-PANDA-01
+    hostname: 172.23.252.201
+    configDir: $(configDir)
+
+- zebra.blocks.zebra_runnable_block:
+    pvPrefix: BL45P-EA-MAP-01:ZEBRA
+    mriPrefix: BL45P-ML-ZEBRA-01
+    configDir: $(configDir)
+
+- BL45P.blocks.hardware_scan_block:
+    mri: BL45P-ML-SCAN-01
+    mic: BL45P-ML-MIC-01
+    brick: BL45P-ML-BRICK-01
+    pandabox: BL45P-ML-PANDA-01
+    zebra: BL45P-ML-ZEBRA-01
+    configDir: $(configDir)
+
+- pva.blocks.pva_server_block:
+    mri: $(yamlname):PVA-SERVER
+
+- profiling.blocks.profiling_web_server_block:
+    mri: $(yamlname):WEB-SERVER
+    port: 8080

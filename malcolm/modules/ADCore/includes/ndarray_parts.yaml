@@ -1,0 +1,35 @@
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- asyn.parts.AsynOutportPart:
+    name: out
+    description: Array outport name
+    rbv: $(prefix):PortName_RBV
+    outport: NDArray
+
+- ca.parts.CABooleanPart:
+    name: arrayCallbacks
+    description: Whether to produce images or not
+    pv: $(prefix):ArrayCallbacks
+    rbvSuff: _RBV
+    widget: checkbox
+
+- ca.parts.CALongPart:
+    name: arrayCounter
+    description: Current unique id number for frame
+    pv: $(prefix):ArrayCounter
+    rbvSuff: _RBV
+    widget: textinput
+
+- ca.parts.CALongPart:
+    name: uniqueId
+    description: Current unique id number for frame
+    rbv: $(prefix):UniqueId_RBV
+    widget: textupdate
+
+- ca.parts.CACharArrayPart:
+    name: attributesFile
+    description: Filename for NDAttributes
+    pv: $(prefix):NDAttributesFile
+    widget: textinput

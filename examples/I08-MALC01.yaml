@@ -1,0 +1,51 @@
+#!/home/pjl45/R3.14.12.3/support/malcolm/pymalcolm/malcolm/imalcolm.py
+- blocks.ADAndor.AndorDetectorManager:
+   pvPrefix: BL08I-EA-DET-01
+   mriPrefix: I08-ANDOR01
+
+- blocks.xmap.XmapDetectorManager:
+   pvPrefix: BL08I-EA-DET-02
+   mriPrefix: I08-XMAP01
+
+- blocks.demo.I08PMACManager:
+    mriPrefix: I08-BRICK10
+
+- blocks.pandabox.PandABoxManager:
+    pvPrefix: BL08I-EA-PANDA-01
+    mriPrefix: I08-PANDA01
+    hostname: bl08i-mo-pandabox-01
+
+- blocks.demo.I08ScanCombined:
+    mri: I08-SCAN01
+    brick: I08-BRICK10
+    pandabox: I08-PANDA01
+
+- blocks.demo.I08ScanButterfly:
+    mri: I08-SCAN02
+    brick: I08-BRICK10
+    pandabox: I08-PANDA01
+
+- blocks.demo.I08DetScanCombined:
+    mri: I08-SCAN03-XMAP
+    det: I08-XMAP01
+    brick: I08-BRICK10
+    pandabox: I08-PANDA01
+
+- blocks.demo.I08DetScanCombined:
+    mri: I08-SCAN04-ANDOR
+    det: I08-ANDOR01
+    brick: I08-BRICK10
+    pandabox: I08-PANDA01
+
+- blocks.demo.I08TwoDetScanCombined:
+    mri: I08-SCAN05-ANDOR-XMAP
+    det1: I08-ANDOR01
+    det2: I08-XMAP01
+    brick: I08-BRICK10
+    pandabox: I08-PANDA01
+
+- comms.pva.PvaServerComms:
+
+# Add a webserver
+#- comms.websocket.WebsocketServerComms:
+#    port: 8080

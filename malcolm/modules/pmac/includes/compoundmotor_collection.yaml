@@ -1,0 +1,20 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the RawMotor Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- builtin.parameters.string:
+    name: scannable
+    description: The scannable name for GDA of this motor
+
+- pmac.blocks.compound_motor_block:
+    mri: $(mri)
+    prefix: $(prefix)
+    scannable: $(scannable)
+
+- pmac.parts.CompoundMotorPart:
+    name: $(mri)
+    mri: $(mri)

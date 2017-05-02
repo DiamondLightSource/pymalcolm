@@ -2,6 +2,10 @@ mock>=2.0.0
 nose>=1.3.0
 coverage>=3.7.1
 tornado>=4.1
-scanpointgenerator>=2.0.0
-cothread
+scanpointgenerator>=2.1.0
+git+git://github.com/thomascobb/cothread
 ruamel.yaml
+plop==0.3.0
+pytest>=3
+pytest-catchlog
+pytest-cov

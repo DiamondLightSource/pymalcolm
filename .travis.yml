@@ -5,6 +5,11 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
+
+env:
+  - PYMALCOLM_USE_COTHREAD=YES
+  - PYMALCOLM_USE_COTHREAD=NO
 
 addons:
   apt:
@@ -33,9 +38,8 @@ install:
   
 # command to run tests
 script:
-  - nosetests tests
+  - pytest --cov=malcolm tests
 
+# submit coverage
 after_script:
   - coveralls
-
-

@@ -1,83 +1,69 @@
-import functools
-
-from malcolm.core.attribute import Attribute
-from malcolm.core.blockmeta import BlockMeta
-from malcolm.core.elementmap import ElementMap
-from malcolm.core.methodmeta import MethodMeta
-from malcolm.core.request import Put, Post
-from malcolm.core.response import Return, Error
-from malcolm.core.serializable import Serializable
+from .methodmodel import MethodModel
+from .view import View, make_get_property
 
 
-@Serializable.register_subclass("malcolm:core/Block:1.0")
-class Block(ElementMap):
+class Block(View):
     """Object consisting of a number of Attributes and Methods"""
+    @property
+    def mri(self):
+        return self._data.path[0]
 
-    child_type_check = (Attribute, MethodMeta, BlockMeta)
+    def _prepare_endpoints(self, data):
+        for endpoint in data:
+            if isinstance(data[endpoint], MethodModel):
+                # Add _async versions of method
+                self._make_async_method(endpoint)
+        return super(Block, self)._prepare_endpoints(data)
 
-    def __init__(self):
-        super(Block, self).__init__()
-        self._writeable_functions = {}
+    def _make_async_method(self, endpoint):
+        def post_async(*args, **kwargs):
+            child = getattr(self, endpoint)
+            return child.post_async(*args, **kwargs)
 
-    def __setattr__(self, attr, value):
-        if attr in self:
-            child = self[attr]
-            assert isinstance(child, Attribute), \
-                "Expected Attribute, got %r" % (child,)
-            func = self._writeable_functions[attr]
-            func(child.meta, value)
+        object.__setattr__(self, "%s_async" % endpoint, post_async)
+
+    def put_attribute_values_async(self, params):
+        futures = []
+        if type(params) is dict:
+            # If we have a plain dictionary, then sort items
+            items = sorted(params.items())
         else:
-            object.__setattr__(self, attr, value)
+            # Assume we are already ordered
+            items = params.items()
+        for attr, value in items:
+            assert hasattr(self, attr), \
+                "Block does not have attribute %s" % attr
+            future = self._context.put_async(
+                self._data.path + [attr, "value"], value)
+            futures.append(future)
+        return futures
 
-    def __getattr__(self, attr):
-        if attr in self:
-            child = self[attr]
-            if isinstance(child, Attribute):
-                return child.value
-            else:
-                func = self._writeable_functions[attr]
-                return functools.partial(self._call_method, child, func)
-        else:
-            raise AttributeError(attr)
+    def put_attribute_values(self, params, timeout=None):
+        futures = self.put_attribute_values_async(params)
+        self._context.wait_all_futures(futures, timeout=timeout)
 
-    def _call_method(self, method_meta, func, *args, **kwargs):
-        for name, v in zip(method_meta.takes.elements, args):
-            assert name not in kwargs, \
-                "%s specified as positional and keyword args" % (name,)
-            kwargs[name] = v
-        return method_meta.call_post_function(func, kwargs, method_meta)
+    def when_value_matches(self, attr, good_value, bad_values=None,
+                           timeout=None):
+        future = self.when_value_matches_async(attr, good_value, bad_values)
+        self._context.wait_all_futures(future, timeout)
 
-    def set_endpoint_data(self, name, value, notify=True):
-        if name == "meta":
-            assert isinstance(value, BlockMeta), \
-                "Expected meta child to be BlockMeta, got %s" % (value,)
-        else:
-            assert isinstance(value, (Attribute, MethodMeta)), \
-                "Expected %s child to be Attribute or MethodMeta, got %s" % \
-                (name, value)
-        super(Block, self).set_endpoint_data(name, value, notify)
+    def when_value_matches_async(self, attr, good_value, bad_values=None):
+        path = self._data.path + [attr, "value"]
+        future = self._context.when_matches_async(path, good_value, bad_values)
+        return future
 
-    def set_writeable_functions(self, writeable_functions):
-        self._writeable_functions = writeable_functions
+    def wait_all_futures(self, futures, timeout=None):
+        self._context.wait_all_futures(futures, timeout)
 
-    def handle_request(self, request):
-        """
-        Process the request depending on the type
 
-        Args:
-            request(Request): Request object specifying action
-        """
-        self.log_debug("Received request %s", request)
-        try:
-            assert isinstance(request, Post) or isinstance(request, Put), \
-                "Expected Post or Put request, received %s" % request.typeid
-            child_name = request.endpoint[1]
-            child = self[child_name]
-            writeable_function = self._writeable_functions[child_name]
-            result = child.handle_request(request, writeable_function)
-            response = Return(request.id, request.context, result)
-        except Exception as e:  # pylint:disable=broad-except
-            self.log_info("Exception while handling %s" % request)
-            response = Error(request.id, request.context, str(e))
-        self.log_debug("Responding with %s", response)
-        self.process.block_respond(response, request.response_queue)
+def make_block_view(controller, context, data):
+    class BlockSubclass(Block):
+        def __init__(self):
+            self._do_init(controller, context, data)
+
+    for endpoint in data:
+        # make properties for the endpoints we know about
+        make_get_property(BlockSubclass, endpoint)
+
+    block = BlockSubclass()
+    return block

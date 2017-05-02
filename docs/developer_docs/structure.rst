@@ -34,7 +34,7 @@ A Block looks like this::
         Attribute   status      // StringMeta
         Attribute   busy        // BooleanMeta
         {Attribute  <attribute-name>}0+
-        {MethodMeta <method-name>}0+
+        {Method <method-name>}0+
 
 
     BlockMeta :=
@@ -173,13 +173,13 @@ A PointGeneratorMeta looks similar::
         string      label      :opt // Short label if different to name
 
 
-A MethodMeta looks like this::
+A Method looks like this::
 
     Argument := scalar_t | scalar_t[] | TableValue | PointGeneratorValue
 
-    MethodMeta :=
+    Method :=
 
-    malcolm:core/MethodMeta:1.0
+    malcolm:core/Method:1.0
         MapMeta     takes           // Argument spec
         structure   defaults
             {Argument   <argname>}0+    // The defaults if not supplied
@@ -203,7 +203,7 @@ A MethodMeta looks like this::
         string[]    required       :opt // These fields will always be present
 
 The `takes` structure describes the arguments that should be passed to the
-MethodMeta. The `returns` structure describes what will be returned as a result.
+Method. The `returns` structure describes what will be returned as a result.
 The `defaults` structure contains default values that will be used if the
 argument is not supplied.
 

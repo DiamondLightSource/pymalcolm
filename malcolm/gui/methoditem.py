@@ -4,6 +4,11 @@ from malcolm.gui.parameteritem import ParameterItem
 
 
 class MethodItem(BaseItem):
+    def get_label(self):
+        if self.ref.label:
+            return self.ref.label
+        else:
+            return super(MethodItem, self).get_label()
 
     def get_writeable(self):
         return self.ref.writeable
@@ -27,7 +32,8 @@ class MethodItem(BaseItem):
             args[item.endpoint[-1]] = item.get_value()
             item.reset_value()
         self._state = self.RUNNING
-        request = Post(self, None, self.endpoint, args)
+        request = Post(path=self.endpoint, parameters=args,
+                       callback=self.handle_response)
         return request
 
     def handle_response(self, response):

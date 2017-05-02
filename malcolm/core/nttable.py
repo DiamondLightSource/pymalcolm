@@ -1,10 +1,10 @@
 from malcolm.compat import OrderedDict
-from malcolm.core.attribute import Attribute
-from malcolm.core.serializable import Serializable
+from .attributemodel import AttributeModel
+from .serializable import Serializable
 
 
 @Serializable.register_subclass("epics:nt/NTTable:1.0")
-class NTTable(Attribute):
+class NTTable(AttributeModel):
     def to_dict(self):
         d = OrderedDict()
         d["typeid"] = self.typeid
@@ -21,6 +21,6 @@ class NTTable(Attribute):
         return d
 
     @classmethod
-    def from_dict(cls, d):
-        d.pop("labels")
-        return super(NTTable, cls).from_dict(d)
+    def from_dict(cls, d, ignore=()):
+        ignore += ("labels",)
+        return super(NTTable, cls).from_dict(d, ignore)

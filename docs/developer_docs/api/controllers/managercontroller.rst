@@ -6,7 +6,7 @@ ManagerController
 .. autoclass:: LayoutInfo
     :members:
 
-.. autoclass:: OutportInfo
+.. autoclass:: PortInfo
     :members:
 
 .. autoclass:: ManagerController

@@ -1,0 +1,21 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+
+# This includes the input port
+- ADCore.includes.ndpluginbase_parts:
+    prefix: $(prefix)
+
+- ca.parts.CABooleanPart:
+    name: computeStatistics
+    description: Compute min, max, mean, tot, sigma, net
+    pv: $(prefix):ComputeStatistics
+    rbvSuff: _RBV
+    widget: checkbox

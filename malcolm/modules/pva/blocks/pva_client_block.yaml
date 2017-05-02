@@ -1,0 +1,6 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- pva.controllers.PvaClientComms:
+    mri: $(mri)

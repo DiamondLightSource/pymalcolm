@@ -1,0 +1,21 @@
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- ADCore.includes.ndarray_parts:
+    prefix: $(prefix)
+
+- ca.parts.CAStringPart:
+    name: inp
+    description: Array inport name
+    pv: $(prefix):NDArrayPort
+    rbvSuff: _RBV
+    widget: textinput
+    inport: NDArray
+
+- ca.parts.CABooleanPart:
+    name: enableCallbacks
+    description: Enable plugin to run when we get a new frame
+    pv: $(prefix):EnableCallbacks
+    rbvSuff: _RBV
+    widget: checkbox

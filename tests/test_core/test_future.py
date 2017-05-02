@@ -1,74 +1,59 @@
-import os
-import sys
-import logging
-
-from collections import OrderedDict
-
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import MagicMock, call, ANY
+from mock import MagicMock
 
-#module imports
-from malcolm.compat import queue
-from malcolm.core.task import Task
 from malcolm.core.future import Future
-from malcolm.core import ResponseError
-from malcolm.core.response import Return, Error
 
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
+
+class MyError(Exception):
+    pass
+
 
 class TestFuture(unittest.TestCase):
 
     def setUp(self):
-        self.proc = MagicMock(q=queue.Queue())
-        self.proc.create_queue = MagicMock(return_value=queue.Queue())
-        self.task = Task("testTask", self.proc)
+        self.context = MagicMock()
 
     def test_set_result(self):
-        f = Future(self.task)
+        f = Future(self.context)
         f.set_result("testResult")
-        self.assertTrue(f.done())
-        self.assertEqual(f.result(0), "testResult")
+        assert f.done()
+        assert f.result(0) == "testResult"
 
     def test_set_exception(self):
-        f = Future(self.task)
+        f = Future(self.context)
         e = ValueError("test Error")
         f.set_exception(e)
-        self.assertTrue(f.done())
-        self.assertRaises(ValueError, f.result, 0)
-        self.assertEqual(f.exception(), e)
+        assert f.done()
+        with self.assertRaises(ValueError):
+            f.result(timeout=0)
+        assert f.exception() == e
 
     def test_result(self):
-        # timeout due to no response arriving
-        f0 = Future(self.task)
-        f1 = Future(self.task)
-        self.task._futures = {0: f0, 1: f1}
-        self.assertRaises(queue.Empty, f0.result, 0)
-        # return after waiting for response object
-        resp0 = Return(0, None, None)
-        resp0.set_value('testVal')
-        resp1 = Error(1, None, "test Error")
-        resp1.set_message('test Error')
-        self.task.q.put(resp0)
-        self.task.q.put(resp1)
-        self.assertEqual(f0.result(),'testVal')
+        f = Future(self.context)
+
+        def wait_all_futures(fs, timeout):
+            fs[0].set_result(32)
+
+        self.context.wait_all_futures.side_effect = wait_all_futures
+
+        assert f.result() == 32
+        self.context.wait_all_futures.assert_called_once_with([f], None)
+        self.context.wait_all_futures.reset_mock()
+        assert f.result() == 32
+        self.context.wait_all_futures.assert_not_called()
 
     def test_exception(self):
-        # timeout due to no response arriving
-        f0 = Future(self.task)
-        f1 = Future(self.task)
-        self.task._futures = {0: f0, 1: f1}
-        self.assertRaises(queue.Empty, f0.exception, 0)
-        # return after waiting for response object
-        resp0 = Return(0, None, None)
-        resp0.set_value('testVal')
-        resp1 = Error(1, None, None)
-        resp1.set_message('test Error')
-        self.task.q.put(resp0)
-        self.task.q.put(resp1)
-        with self.assertRaises(ResponseError) as cm:
-            f1.exception()
-        self.assertEqual(str(cm.exception), 'test Error')
+        f = Future(self.context)
+
+        def wait_all_futures(fs, timeout):
+            fs[0].set_exception(MyError())
+
+        self.context.wait_all_futures.side_effect = wait_all_futures
+
+        with self.assertRaises(MyError):
+            f.result()
+
+        self.context.wait_all_futures.assert_called_once_with([f], None)
+        self.context.wait_all_futures.reset_mock()
+        self.assertIsInstance(f.exception(), MyError)
+        self.context.wait_all_futures.assert_not_called()

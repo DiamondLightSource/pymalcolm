@@ -1,9 +1,16 @@
+import inspect
+
 from malcolm.compat import OrderedDict
 
 
 class Info(object):
     """Base class that should be inherited from when a part needs to return
     something from a hooked function"""
+
+    def __repr__(self):
+        spec = inspect.getargspec(self.__init__)
+        args = ", ".join(repr(getattr(self, x)) for x in spec.args[1:])
+        return "%s(%s)" % (self.__class__.__name__, args)
 
     @classmethod
     def filter_parts(cls, part_info):

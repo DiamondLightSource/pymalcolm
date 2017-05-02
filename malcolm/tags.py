@@ -5,9 +5,7 @@ widget_types = [
     "combo",  # Select from a number of choice values
     "icon",  # This field gives the URL for an icon for the whole Block
     "group",  # This is a group in a TreeView that other fields can attach to
-    # TODO: what about the standard state/status etc?
-    "action",  # This is an action button that should always be visible
-    "table",  # This is a table of rows
+    "table",  # This is a table of rows. A list is a single column table
     "checkbox",  # This is a box that can be checked or not
 ]
 

@@ -1,4 +1,4 @@
-from malcolm.core import MethodMeta, Attribute
+from malcolm.core import Method, Attribute
 from malcolm.gui.baseitem import BaseItem
 from malcolm.gui.methoditem import MethodItem
 from malcolm.gui.attributeitem import AttributeItem
@@ -41,7 +41,7 @@ class BlockItem(BaseItem):
                     parent_item = self.items[parent_endpoint]
                 parent_item.add_child(item)
                 item.create_children()
-            elif isinstance(child, MethodMeta):
+            elif isinstance(child, Method):
                 method = child
                 item = MethodItem(self.endpoint + (name,), method)
                 self.add_child(item)

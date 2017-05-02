@@ -1,0 +1,35 @@
+- builtin.parameters.string:
+    name: mriPrefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pvPrefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- scanning.controllers.RunnableController:
+    mri: $(mriPrefix)
+    configDir: $(configDir)
+
+- xspress3.blocks.xspress3_detector_driver_block:
+    mri: $(mriPrefix)-DRV
+    prefix: $(pvPrefix)
+
+- xspress3.parts.Xspress3DriverPart:
+    name: Xspress3A
+    mri: $(mriPrefix)-DRV
+
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mriPrefix)-STAT
+    prefix: $(pvPrefix):STAT
+
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix)-STAT
+
+- ADCore.includes.filewriting_collection:
+    pvPrefix: $(pvPrefix)
+    mriPrefix: $(mriPrefix)

@@ -1,33 +1,90 @@
 import re
 import logging
+import json
 
 import numpy as np
 
 from malcolm.compat import OrderedDict
 
+# Create a module level logger
+log = logging.getLogger(__name__)
 
-camel_re = re.compile("[a-z]([a-z0-9]*)([A-Z]+[a-z0-9]*)*$")
+camel_re = re.compile(r"[a-z][a-z0-9]*([A-Z][a-z0-9]*)*")
+
+
+def json_encode(o, indent=None):
+    s = json.dumps(o, default=serialize_hook, indent=indent)
+    return s
+
+
+def json_decode(s):
+    o = json.loads(s, object_pairs_hook=OrderedDict)
+    return o
+
+
+def serialize_hook(o):
+    o = serialize_object(o)
+    if isinstance(o, (np.number, np.bool_)):
+        return o.tolist()
+    elif isinstance(o, np.ndarray):
+        assert len(o.shape) == 1, "Expected 1d array, got {}".format(o.shape)
+        return o.tolist()
+    else:
+        return o
 
 
 def check_camel_case(name):
     match = camel_re.match(name)
     if not match:
-        logging.warning("String %r is not camelCase", name)
+        log.warning("String %r is not camelCase", name)
+
+
+def camel_to_title(name):
+    """Takes a camelCaseFieldName and returns an Title Case Field Name
+
+    Args:
+        name (str): E.g. camelCaseFieldName
+
+    Returns:
+        str: Title Case converted name. E.g. Camel Case Field Name
+    """
+    split = re.findall(r"[A-Z]?[a-z0-9]+|[A-Z]+(?=[A-Z]|$)", name)
+    ret = " ".join(split)
+    ret = ret[0].upper() + ret[1:]
+    return ret
+
+
+def snake_to_camel(name):
+    """Takes a snake_field_name and returns a camelCaseFieldName
+
+    Args:
+        name (str): E.g. snake_field_name or SNAKE_FIELD_NAME
+
+    Returns:
+        str: camelCase converted name. E.g. capsFieldName
+    """
+    ret = "".join(x.title() for x in name.split("_"))
+    ret = ret[0].lower() + ret[1:]
+    return ret
 
 
 def serialize_object(o):
-    if hasattr(o, "to_dict"):
+    try:
         # This will do all the sub layers for us
         return o.to_dict()
-    elif isinstance(o, (dict, OrderedDict)):
-        # Need to recurse down
-        d = OrderedDict()
-        for k, v in o.items():
-            d[k] = serialize_object(v)
-        return d
-    else:
-        # Hope it's serializable!
-        return o
+    except AttributeError:
+        if isinstance(o, dict):
+            # Need to recurse down
+            d = OrderedDict()
+            for k, v in o.items():
+                d[k] = serialize_object(v)
+            return d
+        elif isinstance(o, list):
+            # Need to recurse down
+            return [serialize_object(x) for x in o]
+        else:
+            # Hope it's serializable!
+            return o
 
 
 def deserialize_object(ob, type_check=None):
@@ -47,109 +104,74 @@ class Serializable(object):
     typeid = None
 
     # List of endpoint strings for to_dict()
-    endpoints = None
+    endpoints = ()
 
     # dict mapping typeid name -> cls
     _subcls_lookup = {}
 
-    # instance dictionary of endpoint data
-    _endpoint_data = None
-
     def __len__(self):
-        if self.endpoints is None:
-            return 0
         return len(self.endpoints)
 
     def __iter__(self):
-        if self.endpoints is None:
-            return iter(())
         return iter(self.endpoints)
 
     def __getitem__(self, item):
         """Dictionary access to endpoint data"""
-        try:
-            return self._endpoint_data[item]
-        except (KeyError, TypeError):
+        if item in self.endpoints:
+            try:
+                return getattr(self, item)
+            except (AttributeError, TypeError):
+                raise KeyError(item)
+        else:
             raise KeyError(item)
 
-    def __getattr__(self, item):
-        """Attr access to endpoint data, if not already in self"""
-        try:
-            return self._endpoint_data[item]
-        except (KeyError, TypeError):
-            raise AttributeError(item)
-
-    def __setattr__(self, item, value):
-        """Make sure we aren't shadowing an endpoint"""
-        if item in self:
-            raise AttributeError(
-                "Setting attr %s would shadow an endpoint %s. Use a setter" %
-                (item, list(self)))
-        super(Serializable, self).__setattr__(item, value)
-
     def to_dict(self):
-        """
-        Create a dictionary representation of object attributes
+        """Create a dictionary representation of object attributes
 
         Returns:
-            dict: Serialised version of self
+            OrderedDict: Serialised version of self
         """
 
         d = OrderedDict()
         d["typeid"] = self.typeid
 
-        for endpoint in self:
+        for endpoint in self.endpoints:
             check_camel_case(endpoint)
-            value = self._endpoint_data[endpoint]
-            d[endpoint] = serialize_object(value)
+            d[endpoint] = serialize_object(getattr(self, endpoint))
 
         return d
 
+    def __repr__(self):
+        return json_encode(self.to_dict())
+
+    def __eq__(self, other):
+        if hasattr(other, "to_dict"):
+            return self.to_dict() == other.to_dict()
+        else:
+            return self.to_dict() == other
+
     @classmethod
-    def from_dict(cls, d):
-        """
-        Base method to create a serializable instance from a dictionary
+    def from_dict(cls, d, ignore=()):
+        """Create an instance from a serialized version of cls
 
         Args:
-            d(dict): Class instance attributes to set
+            d(dict): Endpoints of cls to set
+            ignore(tuple): Keys to ignore
 
         Returns:
-            Instance of subclass given in d
+            cls: Instance of this class
         """
-        inst = cls()
-        inst.replace_endpoints(d)
-        return inst
-
-    def set_endpoint_data(self, name, value, **kwargs):
-        # Called by subclass to set endpoint data
-        assert name in self, \
-            "Endpoint %r not defined for %r" % (name, self)
-        try:
-            self._endpoint_data[name] = value
-        except TypeError:
-            self._endpoint_data = {name: value}
-
-    def replace_endpoints(self, d):
-        # Update the instance with any values in the dictionary that are known
-        # endpoints
-        done = []
-        for endpoint in self:
-            if endpoint in d:
-                setter = getattr(self, "set_%s" % endpoint)
-                setter(d[endpoint])
-                done.append(endpoint)
-
-        # For anything that is not a known endpoint it must be a typeid or a
-        # new endpoint
+        filtered = {}
         for k, v in d.items():
-            if k not in done:
-                if k == "typeid":
-                    assert v == self.typeid, \
-                        "Dict has typeid %s but %s has typeid %s" % \
-                        (v, self, self.typeid)
-                else:
-                    raise ValueError(
-                        "Unknown endpoint %s for %s" % (k, self))
+            if k == "typeid":
+                assert v == cls.typeid, \
+                    "Dict has typeid %s but %s has typeid %s" % \
+                    (v, cls, cls.typeid)
+            elif k not in ignore:
+                filtered[k] = v
+
+        inst = cls(**filtered)
+        return inst
 
     @classmethod
     def register_subclass(cls, typeid):
@@ -166,8 +188,7 @@ class Serializable(object):
 
     @classmethod
     def lookup_subclass(cls, d):
-        """
-        Look up a class based on a serialized dictionary containing a typeid
+        """Look up a class based on a serialized dictionary containing a typeid
 
         Args:
             d (dict): Dictionary with key "typeid"

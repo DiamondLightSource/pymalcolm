@@ -1,14 +1,8 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 import unittest
-from mock import MagicMock, patch, call
-from collections import OrderedDict
+from mock import MagicMock
 
 from malcolm.core.hook import Hook, get_hook_decorated
-from malcolm.core.vmetas import StringMeta, StringArrayMeta
+from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.core import method_returns, REQUIRED
 
 
@@ -44,8 +38,8 @@ class DummyPart2(object):
 class TestHook(unittest.TestCase):
 
     def test_decorator(self):
-        self.assertEqual(
-            DummyPart1().do_thing.Hooked, [DummyController.Configuring])
+        assert (
+            DummyPart1().do_thing.Hooked) == [DummyController.Configuring]
 
     def setUp(self):
         block_mock = MagicMock()
@@ -56,18 +50,6 @@ class TestHook(unittest.TestCase):
     def test_get_hook_decorated(self):
         inst = DummyPart1()
         decorated = list(get_hook_decorated(inst))
-        self.assertEqual(decorated, [
+        assert decorated == [
             ("do_the_other_thing", DummyController.Running, inst.do_the_other_thing),
-            ("do_thing", DummyController.Configuring, inst.do_thing)])
-
-    def test_find_hooked_functions(self):
-        inst1 = DummyPart1()
-        inst2 = DummyPart2()
-        parts = dict(inst1=inst1, inst2=inst2)
-        func_tasks = DummyController().Configuring.find_hooked_functions(parts)
-        self.assertEqual(func_tasks, {
-            inst1: "do_thing",
-            inst2: "do_all_the_things"})
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
+            ("do_thing", DummyController.Configuring, inst.do_thing)]

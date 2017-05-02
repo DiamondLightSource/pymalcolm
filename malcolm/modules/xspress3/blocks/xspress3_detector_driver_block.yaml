@@ -1,0 +1,34 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+
+- ADCore.includes.adbase_parts:
+    prefix: $(prefix)
+
+- ca.parts.CADoublePart:
+    name: pointsPerRow
+    description: Number of points before xspress3 will reset buffers
+    pv: $(prefix):PointsPerRow
+    rbvSuff: _RBV
+    widget: textinput
+
+- ca.parts.CAChoicePart:
+    name: triggerMode
+    description: Triggering and behaviour of xspress3 time frames
+    pv: $(prefix):TriggerMode
+    rbvSuff: _RBV
+    widget: textinput
+
+- ca.parts.CADoublePart:
+    name: exposure
+    description: Exposure time for each frame
+    pv: $(prefix):AcquireTime
+    rbvSuff: _RBV
+    widget: textinput
