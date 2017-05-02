@@ -39,7 +39,7 @@ class TestMethod(unittest.TestCase):
         self.process.my_method_executed = False
 
     def tearDown(self):
-        self.process.stop()
+        self.process.stop(timeout=1)
 
     def test_post(self):
         method_view = self.block.my_method

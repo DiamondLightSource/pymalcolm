@@ -12,7 +12,7 @@ class TestProcess(unittest.TestCase):
         self.o.start()
 
     def tearDown(self):
-        self.o.stop()
+        self.o.stop(timeout=1)
 
     def test_init(self):
         assert self.o.name == "proc"

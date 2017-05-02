@@ -64,7 +64,7 @@ class TestStatefulController(unittest.TestCase):
 
     def stop_process(self):
         if self.process.started:
-            self.process.stop()
+            self.process.stop(timeout=1)
 
     def test_process_init(self, ):
         assert not hasattr(self.part, "started")
@@ -74,7 +74,7 @@ class TestStatefulController(unittest.TestCase):
     def test_process_stop(self):
         self.start_process()
         assert not hasattr(self.part, "halted")
-        self.process.stop()
+        self.process.stop(timeout=1)
         assert self.part.halted
 
     def test_init(self):

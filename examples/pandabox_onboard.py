@@ -52,4 +52,4 @@ process.start()
 code.interact("Welcome to PandABox", local=locals())
 
 # TODO: why does this not shutdown cleanly? socket.shutdown not called right?
-process.stop()
+process.stop(timeout=1)

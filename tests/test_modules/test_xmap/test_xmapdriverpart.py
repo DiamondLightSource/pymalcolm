@@ -20,7 +20,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
 
     def tearDown(self):
         del self.context
-        self.process.stop()
+        self.process.stop(timeout=1)
 
     def test_configure(self):
         params = MagicMock()

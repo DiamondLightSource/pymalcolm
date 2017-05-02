@@ -94,7 +94,7 @@ class Process(Loggable):
         self._run_hook(self.Halt, timeout=timeout)
         for s in self._spawned:
             self.log.debug("Waiting for %s", s._function)
-            s.wait()
+            s.wait(timeout=timeout)
         self._spawned = []
         self._controllers = OrderedDict()
         self._published = []

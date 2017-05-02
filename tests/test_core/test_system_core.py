@@ -13,7 +13,7 @@ class TestHelloDemoSystem(unittest.TestCase):
         self.process.start()
 
     def tearDown(self):
-        self.process.stop()
+        self.process.stop(timeout=1)
 
     def test_hello_good_input(self):
         q = Queue()
@@ -34,7 +34,7 @@ class TestCounterDemoSystem(unittest.TestCase):
         self.process.start()
 
     def tearDown(self):
-        self.process.stop()
+        self.process.stop(timeout=1)
 
     def test_counter_subscribe(self):
         q = Queue()

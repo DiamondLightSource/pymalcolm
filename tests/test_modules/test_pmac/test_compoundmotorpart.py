@@ -24,7 +24,7 @@ class TestRawMotorPart(ChildTestCase):
 
     def tearDown(self):
         del self.context
-        self.process.stop()
+        self.process.stop(timeout=1)
 
     def test_report(self):
         returns = self.o.report_cs_info(self.context)[0]

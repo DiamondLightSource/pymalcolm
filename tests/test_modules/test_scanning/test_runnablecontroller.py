@@ -74,7 +74,7 @@ class TestRunnableController(unittest.TestCase):
         self.checkState(self.ss.READY)
 
     def tearDown(self):
-        self.p.stop()
+        self.p.stop(timeout=1)
 
     def checkState(self, state, child=True, parent=True):
         if child:

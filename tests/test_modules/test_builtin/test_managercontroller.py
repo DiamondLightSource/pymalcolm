@@ -60,7 +60,7 @@ class TestManagerController(unittest.TestCase):
         assert self.c.state.value == "Ready"
 
     def tearDown(self):
-        self.p.stop()
+        self.p.stop(timeout=1)
 
     def test_init(self):
         assert self.c.layout.value.name == ("part2",)

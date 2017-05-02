@@ -59,7 +59,7 @@ class TestController(unittest.TestCase):
         self.process.start()
 
     def tearDown(self):
-        self.process.stop()
+        self.process.stop(timeout=1)
 
     def test_init(self):
         assert self.o.mri == "mri"

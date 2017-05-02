@@ -28,7 +28,7 @@ def p1(q):
         except Exception as e:
             context.sleep(0.1)
         else:
-            process.stop()
+            process.stop(timeout=1)
             return
 
 
@@ -46,7 +46,7 @@ class TestSystemPVACommsServerAndClient(unittest.TestCase):
         self.process2.start()
 
     def tearDown(self):
-        self.process2.stop()
+        self.process2.stop(timeout=1)
         self.mp_q.put(None)
         self.mp.join()
 

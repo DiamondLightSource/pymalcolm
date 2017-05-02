@@ -25,7 +25,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
 
     def tearDown(self):
         del self.context
-        self.process.stop()
+        self.process.stop(timeout=1)
 
     def resolutions_and_use_call(self, useB=True):
         offset = [call.put('offsetA', 0.0)]

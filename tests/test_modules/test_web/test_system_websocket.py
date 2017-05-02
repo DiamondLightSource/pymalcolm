@@ -23,7 +23,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.process.start()
 
     def tearDown(self):
-        self.process.stop()
+        self.process.stop(timeout=1)
 
     @gen.coroutine
     def send_message(self):
@@ -74,8 +74,8 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
 
     def tearDown(self):
         self.socket += 1
-        self.process.stop()
-        self.process2.stop()
+        self.process.stop(timeout=1)
+        self.process2.stop(timeout=1)
 
     def test_server_hello_with_malcolm_client(self):
         call_with_params(

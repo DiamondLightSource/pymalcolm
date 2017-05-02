@@ -24,7 +24,7 @@ class TestBlockModel(unittest.TestCase):
         self.m = GuiModel(self.process, self.controller.block_view())
 
     def tearDown(self):
-        self.process.stop()
+        self.process.stop(timeout=1)
 
     def test_init(self):
         assert self.m.root_item.endpoint == ('hello_block',)

@@ -66,7 +66,7 @@ class TestChildPart(unittest.TestCase):
         assert self.c.state.value == sm.READY
 
     def tearDown(self):
-        self.p.stop()
+        self.p.stop(timeout=1)
 
     def test_init(self):
         for controller in (self.c1, self.c2, self.c3):
