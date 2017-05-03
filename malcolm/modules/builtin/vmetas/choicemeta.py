@@ -43,3 +43,6 @@ class ChoiceMeta(VMeta):
         else:
             raise ValueError(
                 "%s is not a valid value in %s" % (value, self.choices))
+
+    def doc_type_string(self):
+        return " | ".join([repr(x) for x in self.choices])

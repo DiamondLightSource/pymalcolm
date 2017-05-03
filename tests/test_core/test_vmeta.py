@@ -15,14 +15,8 @@ class TestVMeta(unittest.TestCase):
         assert not self.meta.writeable
 
     def test_given_validate_called_then_raise_error(self):
-
-        expected_error_message = \
-            "Abstract validate function must be implemented in child classes"
-
-        with self.assertRaises(NotImplementedError) as error:
+        with self.assertRaises(NotImplementedError):
             self.meta.validate(1)
-
-        assert expected_error_message == error.exception.args[0]
 
 
 class TestSerialization(unittest.TestCase):

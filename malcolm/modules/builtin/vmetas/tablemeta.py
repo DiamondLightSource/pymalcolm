@@ -40,3 +40,6 @@ class TableMeta(VMeta):
         # Check column lengths
         value.verify_column_lengths()
         return value
+
+    def doc_type_string(self):
+        return "`Table`"

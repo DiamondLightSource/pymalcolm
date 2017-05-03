@@ -23,6 +23,7 @@ that wraps up groups of `PVs`_ and presents a higher level scanning interface to
     {rank=same;Detector EPICS "HDF File"}
 
     Malcolm [shape=doublecircle]
+
     GDA -> Malcolm [label="scan.configure()\nscan.run()"]
     Malcolm -> EPICS [label="caput\ncamonitor"]
     Detector -> EPICS [label="Frame data"]

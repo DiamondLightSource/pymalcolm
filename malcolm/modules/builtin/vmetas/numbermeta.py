@@ -31,3 +31,6 @@ class NumberMeta(VMeta):
             value = 0
         cast = self._np_dtype(value)
         return cast
+
+    def doc_type_string(self):
+        return "%s" % self.dtype

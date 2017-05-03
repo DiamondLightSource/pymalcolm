@@ -1,13 +1,7 @@
 ManagerController
 -----------------
 
-.. module:: malcolm.controllers
-
-.. autoclass:: LayoutInfo
-    :members:
-
-.. autoclass:: PortInfo
-    :members:
+.. module:: malcolm.modules.builtin.controllers
 
 .. autoclass:: ManagerController
     :members:

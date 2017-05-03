@@ -15,3 +15,6 @@ class BooleanMeta(VMeta):
             bool: Value as a boolean
         """
         return bool(value)
+
+    def doc_type_string(self):
+        return "bool"

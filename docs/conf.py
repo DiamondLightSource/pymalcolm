@@ -16,11 +16,6 @@ MOCK_MODULES = ["tornado", "tornado.websocket", "tornado.websocket",
                 "cothread", "scanpointgenerator"]
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
-sys.path.append(os.path.dirname(__file__))
-from generate_api_docs import generate_docs
-
-generate_docs()  # Generate api.rst
-
 def get_version():
     """
     Extracts the version number from the version.py file.
@@ -47,6 +42,11 @@ else:
     require("sphinxcontrib-plantuml")
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..')))
 
+sys.path.append(os.path.dirname(__file__))
+from generate_api_docs import generate_docs
+
+generate_docs()  # Generate api.rst
+
 # -- General configuration ------------------------------------------------
 
 extensions = [
@@ -57,6 +57,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.graphviz',
     'IPython.sphinxext.ipython_console_highlighting',
+    'malcolm.sphinxext',
 ]
 
 # http://twistedmatrix.com/trac/browser/tags/releases/twisted-8.2.0/twisted/python/procutils.py?format=txt

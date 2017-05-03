@@ -18,3 +18,6 @@ class BooleanArrayMeta(VArrayMeta):
             np.ndarray: Value as a boolean numpy array
         """
         return validate_array(value, np.bool_)
+
+    def doc_type_string(self):
+        return "[bool]"

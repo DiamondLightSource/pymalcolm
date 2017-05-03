@@ -5,15 +5,20 @@ from .catoolshelper import CaToolsHelper
 
 
 @method_takes(
-    "name", StringMeta("name of the created method"), REQUIRED,
+    "name", StringMeta("Name of the created method"), REQUIRED,
     "description", StringMeta("desc of created method"), REQUIRED,
     "pv", StringMeta("full pv to write to when method called"), REQUIRED,
-    "statusPv", StringMeta("Status pv to see if successful"), None,
+    "statusPv", StringMeta("Status pv to see if successful"), "",
     "goodStatus", StringMeta("Good value for status pv"), "",
     "value", NumberMeta("int32", "value to write to pv when method called"), 1,
     "wait", BooleanMeta("Wait for caput callback?"), True)
 class CAActionPart(Part):
+    """Group a number of PVs together that represent a method like acquire()"""
     def __init__(self, params):
+        """
+        Args:
+            params (Map): The params to initialize with
+        """
         self.method = None
         self.params = params
         self.catools = CaToolsHelper.instance()

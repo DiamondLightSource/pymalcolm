@@ -11,10 +11,10 @@ from .catoolshelper import CaToolsHelper
 
 @method_takes(
     "name", StringMeta("Name of the created attribute"), REQUIRED,
-    "description", StringMeta("Desc of created attribute"), REQUIRED,
+    "description", StringMeta("Description of created attribute"), REQUIRED,
     "pv", StringMeta("Full pv of demand and default for rbv"), "",
     "rbv", StringMeta("Override for rbv"), "",
-    "rbvSuff", StringMeta("Set rbv ro pv + rbv_suff"), "",
+    "rbvSuff", StringMeta("Set rbv to pv + rbv_suff"), "",
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "inport", ChoiceMeta("Inport type", [""] + port_types), "",
     "config", BooleanMeta("Should this field be loaded/saved?"), False,

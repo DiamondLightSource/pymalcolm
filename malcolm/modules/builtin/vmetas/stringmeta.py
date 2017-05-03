@@ -21,3 +21,6 @@ class StringMeta(VMeta):
             return ""
         else:
             return str(value)
+
+    def doc_type_string(self):
+        return "str"

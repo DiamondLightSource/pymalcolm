@@ -12,8 +12,7 @@ class VMeta(Meta):
         Args:
             value: Value to validate
         """
-        raise NotImplementedError(
-            "Abstract validate function must be implemented in child classes")
+        raise NotImplementedError()
 
     def create_attribute(self, initial_value=None):
         """Make an Attribute instance of the correct type for this Meta
@@ -23,3 +22,10 @@ class VMeta(Meta):
         """
         attr = self.attribute_class(self, initial_value)
         return attr
+
+    def doc_type_string(self):
+        """Abstract function to return the python type string.
+
+        For example, "str" or "numpy.int32"
+        """
+        raise NotImplementedError()

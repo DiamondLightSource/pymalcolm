@@ -2,7 +2,7 @@ from .capart import CAPart
 
 
 class CAArrayPart(CAPart):
-    """ Defines a part which connects to a pv via channel access DBR_DOUBLE"""
+    """Abstract class with better logging for CAParts with array types"""
 
     def format_caput_value(self, value):
         l = len(value)

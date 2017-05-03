@@ -29,3 +29,6 @@ class NumberArrayMeta(NumberMeta, VArrayMeta):
     """Meta object containing information for an array of numerical values"""
     def validate(self, value):
         return validate_array(value, self.dtype)
+
+    def doc_type_string(self):
+        return "[%s]" % self.dtype

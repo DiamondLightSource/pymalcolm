@@ -19,3 +19,6 @@ class StringArrayMeta(VArrayMeta):
             return StringArray()
         else:
             return StringArray(value)
+
+    def doc_type_string(self):
+        return "[str]"

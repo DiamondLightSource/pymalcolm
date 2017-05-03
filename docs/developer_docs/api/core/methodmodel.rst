@@ -1,11 +1,9 @@
-.. _Method:
-
-Method
-------
+MethodModel
+-----------
 
 .. module:: malcolm.core
 
-.. autoclass:: Method
+.. autoclass:: MethodModel
     :members:
 
     A Method exposes a function call for a Block:

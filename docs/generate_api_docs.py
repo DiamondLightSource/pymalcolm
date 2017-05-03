@@ -1,13 +1,15 @@
 import os
+import shutil
 
 
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 def generate_docs():
-
-    if "build" not in os.listdir(os.path.join(repo_root, "docs")):
-        os.mkdir(os.path.join(repo_root, "docs", "build"))
+    build_dir = os.path.join(repo_root, "docs", "build")
+    if os.path.isdir(build_dir):
+        shutil.rmtree(build_dir)
+    os.mkdir(build_dir)
 
     # open the .rst file
     fname = os.path.join(repo_root, "docs", "build", "api.rst")
@@ -15,35 +17,51 @@ def generate_docs():
 
         # add header
         api_docs.write('Malcolm API\n===========\n\n')
+        malcolm_root = os.path.join(repo_root, 'malcolm')
 
-        modules_root = os.path.join(repo_root, 'malcolm')
-
-        excluded_files = ['__init__.py']
+        # add the core docs
+        core_root = os.path.join(malcolm_root, 'core')
+        section = "malcolm.core"
+        filenames = filter_filenames(core_root)
+        doc_dir = os.path.join("..", "developer_docs", "api", "core")
+        add_module_entry(api_docs, section, doc_dir, filenames)
 
         # create entries in the .rst file for each module
-        for root, _, modules in os.walk(modules_root, topdown=True):
-
-            modules.sort()
-            if '__' not in root and len(root.split("/malcolm/")) > 1:
-                modules[:] = [m for m in modules if m.split('.')[-1] == 'py']
-                modules[:] = [m for m in modules if m not in excluded_files]
-
-                add_module_entry(api_docs, root, modules)
-
+        modules_root = os.path.join(malcolm_root, 'modules')
+        for modulename in sorted(os.listdir(modules_root)):
+            module_root = os.path.join(modules_root, modulename)
+            if not os.path.isdir(module_root):
+                continue
+            # Copy the docs dir if it exists
+            docs_build = os.path.join(repo_root, "docs", "build", modulename)
+            docs_dir = os.path.join(module_root, "docs")
+            if os.path.isdir(docs_dir):
+                shutil.copytree(docs_dir, docs_build)
+            for dirname in sorted(os.listdir(module_root)):
+                if dirname in ["controllers", "parts", "infos", "vmetas"]:
+                    # Only document places we know python files will live
+                    section = "malcolm.modules.%s.%s" % (modulename, dirname)
+                    filenames = filter_filenames(os.path.join(
+                        module_root, dirname))
+                    add_module_entry(api_docs, section, modulename, filenames)
+                elif dirname == "parameters.py":
+                    # TODO: Also document parameters
+                    pass
         add_indices_and_tables(api_docs)
 
 
-def add_module_entry(module, _root, modules_list):
-    pkg_path = _root.split('/malcolm/')[1]
-    sub_section = pkg_path.replace('/', '.')
+def filter_filenames(root):
+    filenames = [f for f in sorted(os.listdir(root))
+                 if f.endswith(".py") and f != "__init__.py"]
+    return filenames
 
-    module.write(sub_section + '\n' + '-' * len(sub_section) + '\n')
-    module.write('\n..  toctree::\n')
 
-    for file_ in modules_list:
-        file_path = os.path.join("..", "developer_docs", "api", pkg_path, file_)
-        module.write(' ' * 4 + file_path.split('.py')[0] + '\n')
-    module.write('\n\n')
+def add_module_entry(api_docs, section, doc_dir, filenames):
+    api_docs.write(section + '\n' + '-' * len(section) + '\n')
+    api_docs.write('\n..  toctree::\n')
+    for filename in filenames:
+        api_docs.write(' ' * 4 + os.path.join(doc_dir, filename[:-3]) + '\n')
+    api_docs.write("\n")
 
 
 def add_indices_and_tables(f):
@@ -52,6 +70,7 @@ def add_indices_and_tables(f):
     f.write('* :ref:`genindex`\n')
     f.write('* :ref:`modindex`\n')
     f.write('* :ref:`search`\n')
+
 
 if __name__ == "__main__":
     generate_docs()

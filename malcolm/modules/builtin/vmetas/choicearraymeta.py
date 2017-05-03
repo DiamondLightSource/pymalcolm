@@ -28,3 +28,6 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
                     raise ValueError("%s is not a valid value for element %s" %
                                      (choice, i))
             return StringArray(value)
+
+    def doc_type_string(self):
+        return "[%s]" % super(ChoiceArrayMeta, self).doc_type_string()

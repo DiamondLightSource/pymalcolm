@@ -1,7 +1,7 @@
 DefaultController
 -----------------
 
-.. module:: malcolm.controllers
+.. module:: malcolm.modules.builtin.controllers
 
 .. autoclass:: DefaultController
     :members:
