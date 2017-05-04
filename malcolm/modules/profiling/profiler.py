@@ -10,16 +10,19 @@ class Profiler(Collector):
     def __init__(self, dirname, mode="prof", interval=0.001):
         self.dirname = dirname
         self.start_time = None
+        self.started = False
         num_threads = get_pool_num_threads() + 1
         super(Profiler, self).__init__(interval * num_threads, mode)
 
     def start(self, duration=None):
         # Go forever
         self.start_time = time.time()
+        self.started = True
         super(Profiler, self).start(duration=1000000)
 
     def stop(self, filename=None):
         super(Profiler, self).stop()
+        self.started = False
         self.store(filename)
 
     def store(self, filename=None):

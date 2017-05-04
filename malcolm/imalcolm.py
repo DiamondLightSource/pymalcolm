@@ -109,20 +109,8 @@ def make_process():
             log_config = file_config
     logging.config.dictConfig(log_config)
 
-    # Setup profiler dir
-    try:
-        from malcolm.modules.profiling.parts import ProfilingViewerPart
-        from malcolm.modules.profiling.profiler import Profiler
-    except ImportError:
-        raise
-    else:
-        if not os.path.isdir(args.profiledir):
-            os.mkdir(args.profiledir)
-        ProfilingViewerPart.profiledir = args.profiledir
-        locals_d["profiler"] = Profiler(args.profiledir)
-        #locals_d["profiler"].start()
-
-    # Setup Qt gui
+    # Setup Qt gui, must be done before any malcolm imports otherwise cothread
+    # starts in the wrong thread
     try:
         os.environ['DISPLAY']
         # If this environment variable doesn't exist then there is probably no
@@ -150,7 +138,21 @@ def make_process():
 
         locals_d["gui"] = gui
 
+    # Setup profiler dir
+    try:
+        from malcolm.modules.profiling.parts import ProfilingViewerPart
+        from malcolm.modules.profiling.profiler import Profiler
+    except ImportError:
+        raise
+    else:
+        if not os.path.isdir(args.profiledir):
+            os.mkdir(args.profiledir)
+        ProfilingViewerPart.profiledir = args.profiledir
+        locals_d["profiler"] = Profiler(args.profiledir)
+        #locals_d["profiler"].start()
+
     from malcolm.core import Process, call_with_params, Context
+    from malcolm.modules.builtin.blocks import proxy_block
     from malcolm.yamlutil import make_include_creator
 
     if args.yaml:
@@ -170,7 +172,8 @@ def make_process():
             from malcolm.modules.web.controllers import WebsocketClientComms
             hostname, port = args.client[5:].split(":")
             comms = call_with_params(
-                WebsocketClientComms, proc, mri=hostname, hostname=hostname,
+                WebsocketClientComms, proc, [],
+                mri="%s:%s" % (hostname, port), hostname=hostname,
                 port=int(port))
             proc.add_controller(comms.mri, comms)
         else:
@@ -180,10 +183,13 @@ def make_process():
     class UserContext(Context):
         def post(self, path, params=None, timeout=None):
             try:
-                super(UserContext, self).post(path, params, timeout)
+                return super(UserContext, self).post(path, params, timeout)
             except KeyboardInterrupt:
                 self.post([path[0], "abort"])
                 raise
+
+        def make_proxy(self, comms, mri):
+            call_with_params(proxy_block, proc, comms=comms, mri=mri)
 
     locals_d["self"] = UserContext(proc, user_facing=True)
     if qt_thread:
@@ -202,13 +208,17 @@ self.mri_list:
     %s
 
 Try:
-hello_block = self.block_view("HELLO")
-print hello_block.greet("me")
+hello = self.block_view("HELLO")
+print hello.greet("me")
 
 or
 
 gui(self.block_view("COUNTER"))
 
+or
+
+self.make_proxy("localhost:8080", "HELLO")
+print self.block_view("HELLO").greet("me")
 """ % (locals_d["self"].mri_list,)
 
     try:
@@ -222,9 +232,10 @@ gui(self.block_view("COUNTER"))
     if "app" in locals_d:
         locals_d["app"].quit()
     if "profiler" in locals_d:
-        locals_d["profiler"].stop()
+        if locals_d["profiler"].started:
+            locals_d["profiler"].stop()
     # TODO: tearDown doesn't work properly yet
-    #locals_d["process"].stop()
+    # locals_d["process"].stop()
 
 
 if __name__ == "__main__":
