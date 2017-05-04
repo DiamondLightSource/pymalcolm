@@ -3,7 +3,7 @@ from .capart import CAPart
 
 
 class CAStringPart(CAPart):
-    """Defines a part which connects to a pv via channel access DBR_STRING"""
+    """Defines a string `Attribute` that talks to a DBR_STRING stringout PV"""
 
     def create_meta(self, description, tags):
         return StringMeta(description=description, tags=tags)

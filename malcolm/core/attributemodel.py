@@ -10,9 +10,13 @@ class AttributeModel(Model):
     endpoints = ["meta", "value", "alarm", "timeStamp"]
 
     def __init__(self, meta, value=None, alarm=None, timeStamp=None):
+        #: The `VMeta` for validating value sets
         self.meta = self.set_meta(meta)
+        #: The current value of the attribute
         self.value = self.set_value(value, set_alarm_ts=False)
+        #: The `Alarm` status associated with the value
         self.alarm = self.set_alarm(alarm)
+        #: The `TimeStamp` that the value was last updated
         self.timeStamp = self.set_timeStamp(timeStamp)
 
     def set_notifier_path(self, notifier, path):

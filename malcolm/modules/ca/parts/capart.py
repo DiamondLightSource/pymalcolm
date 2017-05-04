@@ -20,7 +20,8 @@ from .catoolshelper import CaToolsHelper
     "config", BooleanMeta("Should this field be loaded/saved?"), False,
     "minDelta", NumberMeta(
         "float64", "Minumum time between attribute updates in seconds"), 0.05)
-class CAPart(AttributePart):    
+class CAPart(AttributePart):
+    """Abstract class for exposing PVs as `Attribute` instances"""
     def __init__(self, params):
         if not params.rbv and not params.pv:
             raise ValueError('Must pass pv or rbv')

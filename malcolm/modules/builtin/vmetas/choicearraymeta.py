@@ -8,16 +8,14 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
     """Meta object containing information for a choice array"""
 
     def validate(self, value):
-        """
-        Verify value can be iterated and cast elements to choices
+        """Verify value can be iterated and cast elements to choices
 
         Args:
-            value(iterable): Value to be validated
+            value (list): Value to be validated
 
         Returns:
-            List of Choices
+            StringArray: The validated value
         """
-
         if value is None:
             return StringArray()
         elif isinstance(value, str_):

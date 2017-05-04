@@ -1,5 +1,5 @@
 from malcolm.core import Post, Subscribe, Put, Controller, method_takes, \
-    REQUIRED, Alarm, Process, Unsubscribe, Delta, deserialize_object, Queue
+    REQUIRED, Alarm, Process, Unsubscribe, Delta, Queue
 from malcolm.modules.builtin.vmetas import StringMeta
 
 
@@ -14,13 +14,16 @@ class ProxyController(Controller):
         self.client_comms = process.get_controller(params.comms)
         self.set_health(self, Alarm.invalid("Uninitialized"))
         self._response_queue = Queue()
+        self._notify_response = True
+        self._first_response_queue = Queue()
 
     @Process.Init
     def init(self):
         subscribe = Subscribe(
             path=[self.params.mri], delta=True, callback=self.handle_response)
         self.client_comms.send_to_server(subscribe)
-        # TODO: should we wait until connected here?
+        # Wait until connected
+        self._first_response_queue.get(timeout=5)
 
     @Process.Halt
     def halt(self):
@@ -40,6 +43,9 @@ class ProxyController(Controller):
 
     def _handle_response(self):
         with self.changes_squashed:
+            if self._notify_response:
+                self._first_response_queue.put(True)
+                self._notify_response = False
             response = self._response_queue.get(timeout=0)
             if not isinstance(response, Delta):
                 # Return or Error is the end of our subscription, log and ignore

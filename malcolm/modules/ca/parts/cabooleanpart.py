@@ -3,7 +3,7 @@ from .capart import CAPart
 
 
 class CABooleanPart(CAPart):
-    """Defines a boolean `Attribute` that talks to a DBR_LONG pv"""
+    """Defines a boolean `Attribute` that talks to a DBR_LONG longout PV"""
 
     def create_meta(self, description, tags):
         return BooleanMeta(description=description, tags=tags)

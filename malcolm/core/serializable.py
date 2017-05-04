@@ -129,7 +129,7 @@ class Serializable(object):
         """Create a dictionary representation of object attributes
 
         Returns:
-            OrderedDict: Serialised version of self
+            OrderedDict serialised version of self
         """
 
         d = OrderedDict()
@@ -159,7 +159,7 @@ class Serializable(object):
             ignore(tuple): Keys to ignore
 
         Returns:
-            cls: Instance of this class
+            Instance of this class
         """
         filtered = {}
         for k, v in d.items():

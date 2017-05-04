@@ -2,6 +2,7 @@
 from .alarm import Alarm, AlarmSeverity, AlarmStatus
 from .attribute import Attribute
 from .attributemodel import AttributeModel
+from .block import Block
 from .context import Context
 from .controller import Controller
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \

@@ -6,7 +6,7 @@ import unittest
 from mock import Mock, ANY, patch, mock_open
 
 from malcolm.core import method_takes, REQUIRED
-from malcolm.modules.builtin.controllers import BaseController
+from malcolm.modules.builtin.controllers import BasicController
 from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.modules.builtin.parts import StringPart
 from malcolm.yamlutil import make_block_creator, Section, check_yaml_names, \
@@ -28,7 +28,7 @@ block_yaml = """
     name: something
     description: my description
 
-- builtin.controllers.BaseController:
+- builtin.controllers.BasicController:
     mri: some_mri
 
 - builtin.parts.StringPart:
@@ -44,7 +44,7 @@ class TestYamlUtil(unittest.TestCase):
         from malcolm.modules.demo.blocks import hello_block
         process = Mock()
         controller = hello_block(process, dict(mri="h"))
-        assert isinstance(controller, BaseController)
+        assert isinstance(controller, BasicController)
         process.add_controller.assert_called_once_with("h", controller)
 
     def test_make_include(self):

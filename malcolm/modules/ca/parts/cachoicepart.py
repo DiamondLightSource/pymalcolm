@@ -3,7 +3,7 @@ from .capart import CAPart
 
 
 class CAChoicePart(CAPart):
-    """Defines a part which connects to a pv via channel access DBR_ENUM"""
+    """Defines a string `Attribute` that talks to a DBR_ENUM mbbo PV"""
 
     def create_meta(self, description, tags):
         return ChoiceMeta(description=description, tags=tags)

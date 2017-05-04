@@ -23,7 +23,7 @@ def generate_docs():
         core_root = os.path.join(malcolm_root, 'core')
         section = "malcolm.core"
         filenames = filter_filenames(core_root)
-        doc_dir = os.path.join("..", "developer_docs", "api", "core")
+        doc_dir = os.path.join("..", "developer_docs", "core_api")
         add_module_entry(api_docs, section, doc_dir, filenames)
 
         # create entries in the .rst file for each module

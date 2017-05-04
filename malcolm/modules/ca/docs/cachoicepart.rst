@@ -1,7 +1,7 @@
 CAChoicePart
 ------------
 
-.. module:: malcolm.parts.ca
+.. module:: malcolm.modules.ca.parts
 
 .. autoclass:: CAChoicePart
     :members:

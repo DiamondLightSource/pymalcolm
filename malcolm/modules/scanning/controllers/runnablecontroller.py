@@ -1,12 +1,10 @@
-import time
-
 from malcolm.core import method_takes, REQUIRED, method_also_takes, \
     method_writeable_in, Hook, AbortedError, MethodModel, Queue, \
-    call_with_params, TimeoutError
+    call_with_params
 from malcolm.modules.builtin.controllers import ManagerStates, \
     ManagerController
-from malcolm.modules.builtin.infos import ParameterTweakInfo
 from malcolm.modules.builtin.vmetas import NumberMeta, StringArrayMeta
+from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 from malcolm.tags import widget
 
@@ -96,7 +94,8 @@ class RunnableController(ManagerController):
     """Called at configure() to configure child block for a run
 
     Args:
-        context (Task): The context used to perform operations on child blocks
+        context (Context): The context that should be used to perform operations
+            on child blocks
         completed_steps (int): Number of steps already completed
         steps_to_do (int): Number of steps we should configure for
         part_info (dict): {part_name: [Info]} returned from ReportStatus

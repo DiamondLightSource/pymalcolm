@@ -9,6 +9,7 @@ from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 
 class ScanTickerPart(ChildPart):
+    """Provides control of a `counter_block` within a `RunnableController`"""
     # Generator instance
     generator = None
     # Where to start

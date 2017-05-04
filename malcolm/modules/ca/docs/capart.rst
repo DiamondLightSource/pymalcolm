@@ -1,7 +1,7 @@
-CAPart
-------
+CAActionPart
+------------
 
-.. module:: malcolm.parts.ca.capart
+.. module:: malcolm.modules.ca.parts.capart
 
 .. autoclass:: CAPart
     :members:

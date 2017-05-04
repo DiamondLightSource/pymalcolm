@@ -1,7 +1,7 @@
 CACharArrayPart
 ---------------
 
-.. module:: malcolm.parts.ca
+.. module:: malcolm.modules.ca.parts
 
 .. autoclass:: CACharArrayPart
     :members:

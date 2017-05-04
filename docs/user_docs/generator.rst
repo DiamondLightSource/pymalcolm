@@ -36,16 +36,15 @@ Let's take a look at the Process definition ``./examples/DEMO-TICKER.yaml``:
     :language: yaml
 
 That's not very exciting, we just load a single Ticker Block and a Comms
-object. Let's look at ``./malcolm/blocks/demo/Ticker.yaml`` to see what one
-of those does:
+object. Let's look at ``./malcolm/modules/demo/blocks/ticker_block.yaml`` to
+see what one of those does:
 
-.. literalinclude:: ../../malcolm/blocks/demo/Ticker.yaml
+.. literalinclude:: ../../malcolm/modules/demo/blocks/ticker_block.yaml
     :language: yaml
 
-We instantiate two Counter blocks (``COUNTERX`` and ``COUNTERY``) and instantiate 
-two ScanTickerParts (``x`` and ``y``) that
-will connect to them. We then use a `RunnableController` to construct
-our Block. 
+We instantiate two Counter blocks (``COUNTERX`` and ``COUNTERY``) and
+instantiate two ScanTickerParts (``x`` and ``y``) that will connect to them.
+We then use a `RunnableController` to construct our Block.
 
 This is probably better viewed as a diagram:
 
@@ -158,9 +157,10 @@ Hooking into configure() and run()
 
 We mentioned earlier that a Part can register functions to run the correct
 phase of Methods provided by the Controller. Lets take a look at the first
-part of ``./malcolm/parts/demo/scantickerpart.py`` to see how this works:
+part of ``./malcolm/modules/demo/parts/scantickerpart.py`` to see how this
+works:
 
-.. literalinclude:: ../../malcolm/parts/demo/scantickerpart.py
+.. literalinclude:: ../../malcolm/modules/demo/parts/scantickerpart.py
     :language: python
     :end-before: @RunnableController.Run
 
@@ -173,7 +173,7 @@ example, we are hooking our ``configure()`` method to the
 
 Let's take a look at its documentation:
 
-.. py:currentmodule:: malcolm.controllers
+.. py:currentmodule:: malcolm.modules.scanning.controllers
 
 .. autoattribute:: RunnableController.Configure
     :noindex:
@@ -186,7 +186,7 @@ be passed the five arguments listed in the documentation above. Our ScanTicker
 
 Lets look at that next:
 
-.. literalinclude:: ../../malcolm/parts/demo/scantickerpart.py
+.. literalinclude:: ../../malcolm/modules/demo/parts/scantickerpart.py
     :language: python
     :start-after: self.generator = None
 
@@ -197,12 +197,11 @@ This is hooked to the `Run` Hook. Let's take a look at its documentation:
 
 Walking through the code we can see that we are iterating through each of the
 step indexes that we need to produce, getting a `scanpointgenerator.Point`
-object for each one.
-We then pick out the position of the current axis, and use the `Task` to put
-the value to the ``counter`` value. It is important that we use ``task`` parameter to
-do this rather than doing ``self.child.counter = value`` because this is
-interruptable. The `Task` helper can also do asynchronous puts and puts to
-multiple attributes at the same time.
+object for each one. We then pick out the position of the current axis, and
+use the `Context` to create a `Block` view that we use put the value to the
+``counter`` value. It is important that we use ``context`` parameter to
+because this is interruptable. The `Context` helper can also do asynchronous
+puts and puts to multiple attributes at the same time.
 
 After we have done the put, we work out how long we need to wait until the
 next position is to be produced, then do an interruptable sleep. Finally we
@@ -298,7 +297,7 @@ difference in our example. In a real example, there may be some device state
 that would mean different things need to be run in these two hooks.
 
 Conclusion
-==========
+----------
 
 This tutorial has given us an understanding of how scans are specified
 in Malcolm, how child Blocks are controlled from parent Blocks and how Parts

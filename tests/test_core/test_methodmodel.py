@@ -134,16 +134,16 @@ class TestDecorators(unittest.TestCase):
 
     def test_method_also_takes(self):
         @method_takes(
-            "hello", StringMeta("h1"), REQUIRED,
-            "hello2", BooleanMeta("h2"), False)
+            "hello", StringMeta(), REQUIRED,
+            "hello2", BooleanMeta(), False)
         class Thing(object):
             def __init__(self):
                 pass
 
         @method_also_takes(
-            "world", BooleanMeta("W"), REQUIRED,
-            "hello2", BooleanMeta("H2"), True,
-            "default", StringMeta("D"), "nothing")
+            "world", BooleanMeta(), REQUIRED,
+            "hello2", BooleanMeta(), True,
+            "default", StringMeta(), "nothing")
         class Thing2(Thing):
             pass
 
@@ -159,15 +159,6 @@ class TestDecorators(unittest.TestCase):
         assert Thing.MethodModel.takes.to_dict() == itakes.to_dict()
         assert Thing.MethodModel.returns.to_dict() == MapMeta().to_dict()
         assert Thing.MethodModel.defaults == defaults
-
-        # Check docstring
-        assert Thing.__init__.__doc__ == """
-params:
-    - hello (str):
-        h1. Required
-    - hello2 (bool):
-        h2. Default=False
-"""
 
         # Check new one overrides/improves on original
         itakes = MapMeta()

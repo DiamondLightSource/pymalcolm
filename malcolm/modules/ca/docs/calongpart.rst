@@ -1,7 +1,7 @@
 CALongPart
 ----------
 
-.. module:: malcolm.parts.ca
+.. module:: malcolm.modules.ca.parts
 
 .. autoclass:: CALongPart
     :members:

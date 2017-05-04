@@ -20,14 +20,13 @@ class ChoiceMeta(VMeta):
         return self.set_endpoint_data("choices", choices)
 
     def validate(self, value):
-        """
-        Check if the value is valid returns it
+        """Check if the value is valid returns it
 
         Args:
             value: Value to validate
 
         Returns:
-            Value if it is valid
+            str: Value if it is valid
         Raises:
             ValueError: If value not valid
         """

@@ -21,7 +21,7 @@ class Request(Serializable):
         """
         Args:
             id (int): ID that context(): Context of request
-            callback (function): Callback for when the response is available
+            callback (callable): Callback for when the response is available
 
         callback(response) will be called when the request is completed
         """
@@ -119,7 +119,7 @@ class Put(PathRequest):
             id (int): Unique identifier for request
             path (list): [`str`] Path to target Block substructure
             value: Value to put to path
-            callback (function): Callback for when the response is available
+            callback (callable): Callback for when the response is available
         """
         super(Put, self).__init__(id, path, callback)
         self.set_value(value)
@@ -148,7 +148,7 @@ class Post(PathRequest):
             id (int): Unique identifier for request
             path (list): [`str`] Path to target Block substructure
             parameters: Parameters to Post
-            callback (function): Callback for when the response is available
+            callback (callable): Callback for when the response is available
         """
         super(Post, self).__init__(id, path, callback)
         self.set_parameters(parameters)
@@ -180,7 +180,7 @@ class Subscribe(PathRequest):
             id (int): Unique identifier for request
             path (list): [`str`] Path to target Block substructure
             delta (bool): Notify of differences only (default False)
-            callback (function): Callback for when the response is available
+            callback (callable): Callback for when the response is available
         """
 
         super(Subscribe, self).__init__(id, path, callback)

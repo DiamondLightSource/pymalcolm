@@ -236,8 +236,8 @@ class Context(Loggable):
         come off the queue and raises an exception on abort
 
         Args:
-            futures (Union[list, Future]): a future or list of all futures
-                that the caller wants to wait for
+            futures (list): a `Future` or list of all futures that the caller
+                wants to wait for
             timeout (float): time in seconds to wait for responses, wait
                 forever if None
         """

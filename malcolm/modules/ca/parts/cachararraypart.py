@@ -3,7 +3,7 @@ from .capart import CAPart
 
 
 class CACharArrayPart(CAPart):
-    """Defines a part which connects to a pv via channel access DBR_CHAR_STR"""
+    """Defines a string `Attribute` that talks to a DBR_CHAR_STR waveform PV"""
 
     def create_meta(self, description, tags):
         return StringMeta(description=description, tags=tags)

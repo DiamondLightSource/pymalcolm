@@ -2,7 +2,7 @@
     name: mri
     description: Malcolm resource id of the Block
 
-- builtin.controllers.BaseController:
+- builtin.controllers.BasicController:
     mri: $(mri)
 
 - demo.parts.CounterPart:

@@ -1,8 +1,9 @@
 from malcolm.core import BadValueError, method_takes, serialize_object, \
     Update, deserialize_object, Subscribe, MethodModel, Unsubscribe
-from malcolm.modules.builtin.infos import ParameterTweakInfo
 from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.scanning.infos import ParameterTweakInfo
+
 
 ss = RunnableController.stateSet
 

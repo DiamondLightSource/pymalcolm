@@ -3,7 +3,7 @@ import time
 from malcolm.compat import OrderedDict, maybe_import_cothread
 from malcolm.core import method_also_takes, Queue, TimeoutError, \
     call_with_params
-from malcolm.modules.builtin.controllers import BaseController, \
+from malcolm.modules.builtin.controllers import BasicController, \
     ManagerController
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.vmetas import BooleanMeta, TableMeta, StringMeta, \
@@ -119,7 +119,7 @@ class PandABlocksManagerController(ManagerController):
 
     def _make_child_controller(self, parts, mri):
         controller = call_with_params(
-            BaseController, self.process, parts, mri=mri)
+            BasicController, self.process, parts, mri=mri)
         return controller
 
     def _make_corresponding_part(self, block_name, mri):

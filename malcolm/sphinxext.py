@@ -23,6 +23,7 @@ class ParamClassDocumenter(ClassDocumenter):
                     default = "Optional"
                 docstring.append(
                     "        %s %s" % (description, default))
+            docstring.append("")
             docstrings.append(docstring)
         return docstrings
 

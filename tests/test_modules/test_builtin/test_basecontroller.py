@@ -1,7 +1,7 @@
 import unittest
 from mock import Mock
 
-from malcolm.modules.builtin.controllers import BaseController
+from malcolm.modules.builtin.controllers import BasicController
 
 
 class TestBaseController(unittest.TestCase):
@@ -9,7 +9,7 @@ class TestBaseController(unittest.TestCase):
         params = Mock()
         params.mri = "MyMRI"
         process = Mock()
-        o = BaseController(process, [], params)
+        o = BasicController(process, [], params)
         assert o.mri == params.mri
         assert o.params is params
         assert o.process is process

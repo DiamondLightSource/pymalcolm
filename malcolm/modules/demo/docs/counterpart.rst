@@ -1,7 +1,7 @@
 CounterPart
 -----------
 
-.. module:: malcolm.parts.demo
+.. module:: malcolm.modules.demo.parts
 
 .. autoclass:: CounterPart
     :members:

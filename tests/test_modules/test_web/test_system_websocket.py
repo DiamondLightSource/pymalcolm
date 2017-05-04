@@ -80,8 +80,6 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def test_server_hello_with_malcolm_client(self):
         call_with_params(
             proxy_block, self.process2, mri="hello", comms="client")
-        context = Context(self.process2)
-        context.when_matches(["hello", "health", "value"], "OK", timeout=2)
         block2 = self.process2.block_view("hello")
         ret = block2.greet("me2")
         assert ret == dict(greeting="Hello me2")
@@ -91,8 +89,6 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def test_server_counter_with_malcolm_client(self):
         call_with_params(
             proxy_block, self.process2, mri="counter", comms="client")
-        context = Context(self.process2)
-        context.when_matches(["counter", "health", "value"], "OK", timeout=2)
         block2 = self.process2.block_view("counter")
         assert block2.counter.value == 0
         block2.increment()

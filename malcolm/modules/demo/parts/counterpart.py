@@ -5,7 +5,8 @@ from malcolm.modules.builtin.vmetas import NumberMeta, StringMeta
 @method_takes(
     "name", StringMeta("Name of the Part within the controller"), REQUIRED)
 class CounterPart(Part):
-    # Attribute for the counter_block value
+    """Defines a counter `Attribute` with zero and increment `Method` objects"""
+    #: `Attribute` that will hold the counter value
     counter = None
 
     def __init__(self, params):
@@ -17,11 +18,11 @@ class CounterPart(Part):
 
     @method_takes()
     def zero(self):
-        """Zero the counter_block attribute"""
+        """Zero the counter attribute"""
         self.counter.set_value(0)
 
     @method_takes()
     def increment(self):
-        """Add one to the counter_block attribute"""
+        """Add one to the counter attribute"""
         self.counter.set_value(self.counter.value + 1)
 

@@ -16,6 +16,7 @@ MOCK_MODULES = ["tornado", "tornado.websocket", "tornado.websocket",
                 "cothread", "scanpointgenerator"]
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
+
 def get_version():
     """
     Extracts the version number from the version.py file.
@@ -139,7 +140,7 @@ graphviz_output_format = "svg"
 # If true, Sphinx will warn about all references where the target can't be found
 nitpicky = True
 
-#The name of a reST role (builtin or Sphinx extension) to use as the default
+# The name of a reST role (builtin or Sphinx extension) to use as the default
 # role, that is, for text marked up `like this`
 default_role = "any"
 
@@ -169,8 +170,8 @@ pygments_style = 'sphinx'
 
 intersphinx_mapping = dict(
     python=('http://docs.python.org/2.7/', None),
-    scanpointgenerator=('http://scanpointgenerator.readthedocs.io/en/latest/',
-                        None))
+    scanpointgenerator=(
+        'http://scanpointgenerator.readthedocs.io/en/latest/', None))
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -184,9 +185,6 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []

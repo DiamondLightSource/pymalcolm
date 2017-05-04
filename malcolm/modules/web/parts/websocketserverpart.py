@@ -86,7 +86,7 @@ class WebsocketServerPart(Part):
             if isinstance(response, (Delta, Update)):
                 request = self._subscription_keys[response.id]
                 unsubscribe = Unsubscribe(request.id)
-                controller = self.get_controller(request.path[0])
+                controller = self.process.get_controller(request.path[0])
                 controller.handle_request(unsubscribe)
 
     @HTTPServerComms.Publish

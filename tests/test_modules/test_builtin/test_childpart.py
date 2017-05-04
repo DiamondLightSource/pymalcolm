@@ -1,7 +1,7 @@
 import unittest
 
 from malcolm.core import Part, Process, Table, call_with_params, Context
-from malcolm.modules.builtin.controllers import BaseController, \
+from malcolm.modules.builtin.controllers import BasicController, \
     ManagerController
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.vmetas import StringMeta
@@ -36,7 +36,7 @@ class TestChildPart(unittest.TestCase):
 
     def makeChildBlock(self, blockMri):
         controller = call_with_params(
-            BaseController, self.p, [
+            BasicController, self.p, [
                 PortsPart(name='Connector%s' % blockMri[-1])], mri=blockMri)
         part = call_with_params(
             ChildPart, mri=blockMri, name='part%s' % blockMri)

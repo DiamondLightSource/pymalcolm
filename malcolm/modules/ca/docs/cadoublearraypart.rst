@@ -1,7 +1,7 @@
 CADoubleArrayPart
 -----------------
 
-.. module:: malcolm.parts.ca
+.. module:: malcolm.modules.ca.parts
 
 .. autoclass:: CADoubleArrayPart
     :members:

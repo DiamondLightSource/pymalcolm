@@ -1,12 +1,14 @@
 Block
 -----
 
-An object consisting of a number of Attributes and Methods.
-
 .. module:: malcolm.core
 
 .. autoclass:: Block
     :members:
+
+    An object consisting of a number of Attributes and Methods.
+
+
 
     It should
     be designed to be as small and self contained as possible, and complex logic

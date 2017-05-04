@@ -10,23 +10,23 @@ exposes an `Attribute` as well.
 
 Let's take the example of a Counter. It contains:
 
-- a writeable Attribute called ``counter`` which will keep the current counter value. 
-- a Method zero() which will set ``counter = 0``.
-- a Method increment() which will set ``counter = counter + 1``. 
+- a writeable `Attribute` called ``counter`` which will keep the current
+  counter value.
+- a `Method` zero() which will set ``counter = 0``.
+- a `Method` increment() which will set ``counter = counter + 1``.
 
-The block definition in
-``./malcolm/blocks/demo/Counter.yaml`` looks very similar to the Hello
-example in the previous tutorial:
+The block definition in ``./malcolm/modules/demo/blocks/counter_block.yaml``
+looks very similar to the hello_block example in the previous tutorial:
 
-.. literalinclude:: ../../malcolm/blocks/demo/Counter.yaml
+.. literalinclude:: ../../malcolm/modules/demo/blocks/counter_block.yaml
     :language: yaml
 
 Creating Attributes in a Part
 -----------------------------
 
-Let's take a look at the ``./malcolm/parts/demo/counterpart.py`` now:
+Let's take a look at the ``./malcolm/modules/demo/parts/counterpart.py`` now:
 
-.. literalinclude:: ../../malcolm/parts/demo/counterpart.py
+.. literalinclude:: ../../malcolm/modules/demo/parts/counterpart.py
     :language: python
 
 Again, we start by subclassing `Part`, and we have decorated a couple
@@ -45,14 +45,15 @@ To make the Attribute we first need to make a meta object. In our example we
 want a ``float64`` `NumberMeta` as we want to demonstrate
 floating point numbers. If our counter was an integer we could choose
 ``int32`` or ``int64``. The actual Attribute is returned by the
-:meth:`~VMeta.make_attribute` method of this meta.
+:meth:`~VMeta.create_attribute` method of this meta.
 
-In the two methods (zero and increment), we make use of the ``counter`` Attribute. 
-We can get its value by using the :attr:`~Attribute.value` attribute and set its value by calling
-the :meth:`~Attribute.set_value` method. This method will validate the new value using
-the `VMeta` object we passed in :meth:`~Part.create_attributes` and
-notify the Process, that the Block is attached to, that something has changed
-and subscribers need to be updated.
+In the two methods (zero and increment), we make use of the ``counter``
+Attribute. We can get its value by using the :attr:`~AttributeModel.value`
+attribute and set its value by calling the :meth:`~AttributeModel.set_value`
+method. This method will validate the new value using the `VMeta` object we
+passed in :meth:`~Part.create_attributes` and notify the Process, that the
+Block is attached to, that something has changed and subscribers need to be
+updated.
 
 Visualising the Block with the GUI
 ----------------------------------

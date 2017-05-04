@@ -2,7 +2,7 @@ from malcolm.compat import OrderedDict
 from malcolm.core import Hook, method_writeable_in, method_takes, Alarm, \
     MethodModel, AttributeModel, Process
 from malcolm.modules.builtin.vmetas import ChoiceMeta
-from .basecontroller import BaseController
+from .basiccontroller import BasicController
 
 
 class StatefulStates(object):
@@ -69,7 +69,7 @@ class StatefulStates(object):
 ss = StatefulStates
 
 
-class StatefulController(BaseController):
+class StatefulController(BasicController):
     # The stateSet that this controller implements
     stateSet = ss()
     # {state (str): {Meta/MethodMeta/Attribute: writeable (bool)}

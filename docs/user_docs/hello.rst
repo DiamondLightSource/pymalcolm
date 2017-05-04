@@ -6,35 +6,34 @@ copy of pymalcolm which includes some example code.
   
 So now would be a good time for a "Hello World" tutorial.
 
-Let's start with some terminology.   A Malcolm application consists of a
-`Process` which hosts a number of `Block` instances. Each Block has
-a number of `Attribute` and `Method` instances that can be used to
-interact with it. The Process may also contain `ServerComms` that allow
-it to expose its Blocks to the outside world, and it may also contain
-`ClientComms` that link it to another Malcolm Process and allow access
-to its Blocks.
+Let's start with some terminology. A Malcolm application consists of a `Process`
+which hosts a number of `Block` instances. Each Block has a number of
+`Attribute` and `Method` instances that can be used to interact with it. The
+Process may also contain `ServerComms` that allow it to expose its Blocks to the
+outside world, and it may also contain `ClientComms` that link it to another
+Malcolm Process and allow access to its Blocks.
 
 Launching a Malcolm Process
 ---------------------------
 
 So how do we launch a Malcolm process? 
 
-The simplest way is to use the imalcolm application. It will be installed on the system as ``imalcolm``, but
-you can use it from your checked out copy of pymalcolm by running
-``./malcolm/imalcolm.py``. You also need to tell imalcolm what Blocks it
-should instantiate and what Comms modules it should use by writing a `YAML`_
-file.
+The simplest way is to use the imalcolm application. It will be installed on the
+system as ``imalcolm``, but you can use it from your checked out copy of
+pymalcolm by running ``./malcolm/imalcolm.py``. You also need to tell imalcolm
+what Blocks it should instantiate and what Comms modules it should use by
+writing a `YAML`_ file.
 
-Let's look at a ``./examples/DEMO-HELLO.yaml`` now:
+Let's look at ``./examples/DEMO-HELLO.yaml`` now:
 
 .. literalinclude:: ../../examples/DEMO-HELLO.yaml
     :language: yaml
 
 You will see 4 entries in the file. The first 3 entries are instantiating Blocks
-that have already been defined. These Blocks each take a single mri
-(Malcolm Resource Identifier) argument which tells the Process how clients will
-address that Block. The last entry tells the Process to start an HTTP server
-on port 8080 and listen for websocket connections from another Malcolm
+that have already been defined. These Blocks each take a single mri (Malcolm
+Resource Identifier) argument which tells the Process how clients will address
+that Block. The last entry creates a ServerComms Block which starts an HTTP
+server on port 8080 and listen for websocket connections from another Malcolm
 process or a web GUI.
 
 .. highlight:: ipython
@@ -42,6 +41,7 @@ process or a web GUI.
 Let's run it now::
 
     [tmc43@pc0013 pymalcolm]$ ./malcolm/imalcolm.py examples/DEMO-HELLO.yaml
+    Loading...
     Python 2.7.3 (default, Nov  9 2013, 21:59:00)
     Type "copyright", "credits" or "license" for more information.
 
@@ -54,20 +54,16 @@ Let's run it now::
 
     Welcome to iMalcolm.
 
-    self.process_block.blocks:
-        ['DEMO-HELLO', 'HELLO', 'HELLO2', 'COUNTER']
+    self.mri_list:
+        ['HELLO', 'HELLO2', 'COUNTER', 'WEB']
 
     Try:
-    hello = self.get_block("HELLO")
+    hello = self.block_view("HELLO")
     print hello.greet("me")
 
     or
 
-    gui(self.get_block("COUNTER"))
-
-    or
-
-    self.process_block.blocks
+    gui(self.block_view("COUNTER"))
 
 
     In [1]:
@@ -76,7 +72,7 @@ We are presented with an `IPython`_ interactive console with the running
 Process as ``self``. Let's try to get one of the Blocks we created from the
 Process and call a Method on it::
 
-    In [1]: hello = self.get_block("HELLO")
+    In [1]: hello = self.block_view("HELLO")
 
     In [2]: print hello.greet("me")
     Manufacturing greeting...
@@ -145,10 +141,10 @@ on it::
 So how do we know it actually worked? 
 
 Well if you look closely, you'll see
-that the printed statement ``Manufacturing greeting...`` came out on the console of the first session
-rather than the second session (you can get your prompt back on the first session by pressing return). 
-This means that the Block in the first
-session was doing the actual "work", while the Block in the second session
+that the printed statement ``Manufacturing greeting...`` came out on the console
+of the first session rather than the second session (you can get your prompt
+back on the first session by pressing return). This means that the Block in the
+first session was doing the actual "work", while the Block in the second session
 was just firing off a request and waiting for the response as shown in the
 diagram below.
 
@@ -183,9 +179,10 @@ Defining a Block
 
 We've found out how to create Blocks that have already been defined, so lets
 have a look at how we define a Block. The Hello Block of the last example is
-a good example, it is defined in the ``./malcolm/blocks/demo/Hello.yaml`` file:
+a good example, it is defined in the
+``./malcolm/modules/demo/blocks/hello_block.yaml`` file:
 
-.. literalinclude:: ../../malcolm/blocks/demo/Hello.yaml
+.. literalinclude:: ../../malcolm/modules/demo/blocks/hello_block.yaml
     :language: yaml
 
 The first item in the YAML file is a `parameter`. This defines a parameter
@@ -253,9 +250,9 @@ We've seen that we don't write any code to define a Block, we compose it from
 a Controller and the Parts that contribute Methods and Attributes to it.
 We will normally use one of the builtin Controllers, so the only place we
 write code is when we define a Part. Let's take a look at our
-``./malcolm/parts/demo/hellopart.py`` now:
+``./malcolm/modules/demo/parts/hellopart.py`` now:
 
-.. literalinclude:: ../../malcolm/parts/demo/hellopart.py
+.. literalinclude:: ../../malcolm/modules/demo/parts/hellopart.py
     :language: python
 
 .. py:currentmodule:: malcolm.core

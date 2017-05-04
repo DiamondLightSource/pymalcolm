@@ -10,10 +10,10 @@ class StringArrayMeta(VArrayMeta):
         Verify value can be iterated and cast elements to strings
 
         Args:
-            value (iterable): value to be validated
+            value (list): value to be validated
 
         Returns:
-            List of Strings or None if value is None
+            StringArray: the validated value
         """
         if value is None:
             return StringArray()
