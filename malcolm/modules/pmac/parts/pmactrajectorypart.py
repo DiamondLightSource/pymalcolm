@@ -293,29 +293,28 @@ class PmacTrajectoryPart(StatefulChildPart):
                 new_time_array = time_array[:i]
                 new_velocity_mode = velocity_mode[:i]
                 new_user_programs = user_programs[:i]
-                if completed_steps_lookup is not None:
-                    new_completed_steps_lookup = completed_steps_lookup[:i]
                 for _ in range(nsplit):
                     new_time_array.append(t / nsplit)
                     new_velocity_mode.append(PREV_TO_NEXT)
                     new_user_programs.append(NO_PROGRAM)
-                    if completed_steps_lookup is not None:
-                        new_completed_steps_lookup.append(
-                            new_completed_steps_lookup[-1])
                 time_array = new_time_array + time_array[i+1:]
                 user_programs = new_user_programs[:-1] + user_programs[i:]
                 velocity_mode = new_velocity_mode[:-1] + velocity_mode[i:]
                 if completed_steps_lookup is not None:
+                    if i > 0:
+                        last_completed_step = completed_steps_lookup[i - 1]
+                    else:
+                        last_completed_step = 0
+                    new_completed_steps_lookup = completed_steps_lookup[:i] + \
+                                                 [last_completed_step] * nsplit
                     completed_steps_lookup = new_completed_steps_lookup[:-1] + \
                                              completed_steps_lookup[i:]
-
                 for k, traj in trajectory.items():
                     new_traj = traj[:i]
                     per_section = float(traj[i] - traj[i-1]) / nsplit
                     for j in range(1, nsplit+1):
                         new_traj.append(traj[i-1] + j * per_section)
                     trajectory[k] = new_traj + traj[i+1:]
-
                 i += nsplit
             else:
                 i += 1
