@@ -387,11 +387,11 @@ class PMACTrajectoryPart(ChildPart):
             velocities[axis_name] = velocity
         return velocities
 
-    def make_consistent_velocity_profiles(self, v1s, v2s, distances):
+    def make_consistent_velocity_profiles(self, v1s, v2s, distances,
+                                          min_time=MIN_TIME):
         time_arrays = {}
         velocity_arrays = {}
         iterations = 5
-        min_time = MIN_TIME
         while iterations > 0:
             for axis_name, motor_info in self.axis_mapping.items():
                 time_arrays[axis_name], velocity_arrays[axis_name] = \
@@ -662,7 +662,8 @@ class PMACTrajectoryPart(ChildPart):
                     # Work out the velocity profiles of how to move to the start
                     time_arrays, velocity_arrays = \
                         self.make_consistent_velocity_profiles(
-                            start_velocities, end_velocities, distances)
+                            start_velocities, end_velocities, distances,
+                            self.min_turnaround.value)
 
                     # Work out the Position trajectories from these profiles
                     profile = self.build_profile_from_velocities(
