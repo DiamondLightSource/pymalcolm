@@ -28,11 +28,8 @@ Malcolm
     :caption: Developer Documentation
 
     developer_docs/structure
-    developer_docs/statemachine
-    developer_docs/hierarchy
     developer_docs/messages
     developer_docs/tags
-    developer_docs/types
     build/api
     developer_docs/contributing
     developer_docs/release_notes

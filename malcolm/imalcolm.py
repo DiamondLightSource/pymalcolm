@@ -34,7 +34,7 @@ def make_process():
 
         "formatters": {
             "simple": {
-                "format": "%(message)s"
+                "format": "%(name)s: %(message)s"
             },
             "extended": {
                 "format": "%(asctime)s - %(levelname)6s - %(name)s\n"

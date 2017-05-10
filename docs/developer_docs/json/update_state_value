@@ -1,7 +1,7 @@
 .. code-block:: javascript
 
     {
-        "type": "Update",
-        "id": 0,
+        "typeid": "malcolm:core/Update:1.0",
+        "id": 19,
         "value": "Running"
     }

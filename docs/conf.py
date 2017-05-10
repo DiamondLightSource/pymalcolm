@@ -40,7 +40,6 @@ except:
 else:
     require("mock")
     require("numpy")
-    require("sphinxcontrib-plantuml")
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..')))
 
 sys.path.append(os.path.dirname(__file__))
@@ -53,83 +52,13 @@ generate_docs()  # Generate api.rst
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    'sphinxcontrib.plantuml',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinx.ext.inheritance_diagram',
     'sphinx.ext.graphviz',
     'IPython.sphinxext.ipython_console_highlighting',
     'malcolm.sphinxext',
 ]
-
-# http://twistedmatrix.com/trac/browser/tags/releases/twisted-8.2.0/twisted/python/procutils.py?format=txt
-def which(name, flags=os.X_OK):
-    """Search PATH for executable files with the given name.
-
-    On newer versions of MS-Windows, the PATHEXT environment variable will be
-    set to the list of file extensions for files considered executable. This
-    will normally include things like ".EXE". This fuction will also find files
-    with the given name ending with any of these extensions.
-
-    On MS-Windows the only flag that has any meaning is os.F_OK. Any other
-    flags will be ignored.
-
-    @type name: C{str}
-    @param name: The name for which to search.
-
-    @type flags: C{int}
-    @param flags: Arguments to L{os.access}.
-
-    @rtype: C{list}
-    @param: A list of the full paths to files found, in the
-    order in which they were found.
-    """
-    result = []
-    exts = filter(None, os.environ.get('PATHEXT', '').split(os.pathsep))
-    path = os.environ.get('PATH', None)
-    if path is None:
-        return []
-    for p in os.environ.get('PATH', '').split(os.pathsep):
-        p = os.path.join(p, name)
-        if os.access(p, flags):
-            result.append(p)
-        for e in exts:
-            pext = p + e
-            if os.access(pext, flags):
-                result.append(pext)
-    return result
-
-here = os.path.abspath(os.path.dirname(__file__))
-
-if not which("plantuml"):
-    # For github
-    import subprocess
-    print "download plantuml..."
-    here_plantuml = os.path.join(here, "plantuml_downloaded.jar")
-    url = "http://downloads.sourceforge.net/project/plantuml/plantuml.8045.jar"
-    subprocess.call(["curl", "-v", "-L", url, "-o", here_plantuml])
-    print "download java..."
-    here_jre_tar = os.path.join(here, "jre.tar.gz")
-    url = "http://download.oracle.com/otn-pub/java/jdk/8u65-b17/jre-8u65-linux-x64.tar.gz"
-    subprocess.call(["curl", "-v", "-j", "-k", "-L", "-H", "Cookie: oraclelicense=accept-securebackup-cookie", url, "-o", here_jre_tar])
-    print "unzip java..."
-    subprocess.call(["/bin/tar", "xvzf", here_jre_tar])
-    here_jre = os.path.join(here, "jre1.8.0_65")
-    os.environ["JAVA_HOME"] = here_jre
-    plantuml = '%s/bin/java -Dplantuml.include.path=%s/.. -jar %s' % (here_jre, here, here_plantuml)
-    print "done prep plantuml"
-    # get the right font
-    fontdir = os.path.expanduser("~/.fonts")
-    try:
-        os.mkdir(fontdir)
-    except OSError:
-        pass
-    import urllib
-    url = "https://github.com/shreyankg/xkcd-desktop/raw/master/Humor-Sans.ttf"
-    urllib.urlretrieve(url, os.path.join(fontdir, "Humor-Sans.ttf"))
-    # install it
-    subprocess.call(["fc-cache", "-vf", fontdir])
-
-#napoleon_use_ivar = True
 
 autoclass_content = "both"
 
@@ -172,6 +101,9 @@ intersphinx_mapping = dict(
     python=('http://docs.python.org/2.7/', None),
     scanpointgenerator=(
         'http://scanpointgenerator.readthedocs.io/en/latest/', None))
+
+# A dictionary of graphviz graph attributes for inheritance diagrams.
+inheritance_graph_attrs = dict(rankdir="TB")
 
 # -- Options for HTML output ----------------------------------------------
 

@@ -36,5 +36,5 @@ test:
 docs/html/index.html: $(wildcard docs/*.rst docs/*/*.rst docs/conf.py malcolm/modules/*/docs/*.rst)
 	sphinx-build -b html docs docs/html
 
-docs: dist docs/html/index.html
+docs: docs/html/index.html
 

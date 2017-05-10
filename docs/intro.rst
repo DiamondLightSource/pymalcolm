@@ -14,7 +14,7 @@ Malcolm provides a layer on top of `EPICS`_
 that wraps up groups of `PVs`_ and presents a higher level scanning interface to
 `GDA`_ via `pvAccess`_.
 
-.. digraph:: usage
+.. digraph:: malcolm_dls_usage
 
     bgcolor=transparent
     node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]

@@ -1,8 +1,8 @@
 .. code-block:: javascript
 
     {
-      "type": "Error",
-      "id": 0,
+      "typeid": "malcolm:core/Error:1.0",
+      "id": 2,
       "message": "Non-existant block 'foo'"
     }
 

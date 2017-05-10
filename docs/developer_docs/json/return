@@ -1,6 +1,7 @@
 .. code-block:: javascript
 
     {
-        "type": "Return",
-        "id": 0
+        "typeid": "malcolm:core/Return:1.0",
+        "id": 35,
+        "value": null
     }

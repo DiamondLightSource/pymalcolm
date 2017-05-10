@@ -10,6 +10,7 @@ from malcolm.tags import widget
 
 
 class RunnableStates(ManagerStates):
+    """A state set listing the valid transitions for a `RunnableController`"""
 
     CONFIGURING = "Configuring"
     ARMED = "Armed"
@@ -29,8 +30,8 @@ class RunnableStates(ManagerStates):
             self.ARMED, [self.RUNNING, self.SEEKING, self.RESETTING])
         self.set_allowed(self.RUNNING, [self.POSTRUN, self.SEEKING])
         self.set_allowed(self.POSTRUN, [self.READY, self.ARMED])
-        self.set_allowed(self.PAUSED, [self.SEEKING, self.RUNNING])
         self.set_allowed(self.SEEKING, [self.ARMED, self.PAUSED])
+        self.set_allowed(self.PAUSED, [self.SEEKING, self.RUNNING])
 
         # Add Abort to all normal states
         normal_states = [
@@ -284,6 +285,10 @@ class RunnableController(ManagerController):
 
     @method_takes(*configure_args)
     def validate(self, params, returns):
+        """Validate configuration parameters and return validated parameters.
+
+        Doesn't take device state into account so can be run in any state
+        """
         iterations = 10
         # Make some tasks just for validate
         part_contexts = self.create_part_contexts()
@@ -309,11 +314,19 @@ class RunnableController(ManagerController):
     @method_takes(*configure_args)
     @method_writeable_in(ss.READY)
     def configure(self, params):
-        """Configure for a scan"""
+        """Validate the params then configure the device ready for run().
+
+        Try to prepare the device as much as possible so that run() is quick to
+        start, this may involve potentially long running activities like moving
+        motors.
+
+        Normally it will return in Armed state. If the user aborts then it will
+        return in Aborted state. If something goes wrong it will return in Fault
+        state. If the user disables then it will return in Disabled state.
+        """
         self.validate(params, params)
         self.try_stateful_function(
-            ss.CONFIGURING, ss.ARMED, self.do_configure,
-            params)
+            ss.CONFIGURING, ss.ARMED, self.do_configure, params)
 
     def do_configure(self, params):
         # These are the part tasks that abort() and pause() will operate on
@@ -366,7 +379,14 @@ class RunnableController(ManagerController):
 
     @method_writeable_in(ss.ARMED)
     def run(self):
-        """Run an already configured scan"""
+        """Run a device where configure() has already be called
+
+        Normally it will return in Ready state. If setup for multiple-runs with
+        a single configure() then it will return in Armed state. If the user
+        aborts then it will return in Aborted state. If something goes wrong it
+        will return in Fault state. If the user disables then it will return in
+        Disabled state.
+        """
         if self.configured_steps.value < self.total_steps.value:
             next_state = ss.ARMED
         else:
@@ -417,6 +437,12 @@ class RunnableController(ManagerController):
         ss.READY, ss.CONFIGURING, ss.ARMED, ss.RUNNING, ss.POSTRUN, ss.PAUSED,
         ss.SEEKING)
     def abort(self):
+        """Abort the current operation and block until aborted
+
+        Normally it will return in Aborted state. If something goes wrong it
+        will return in Fault state. If the user disables then it will return in
+        Disabled state.
+        """
         self.try_stateful_function(
             ss.ABORTING, ss.ABORTED, self.do_abort,
             self.Abort)
@@ -433,12 +459,28 @@ class RunnableController(ManagerController):
             self.resume_queue.put(False)
 
     def set_completed_steps(self, completed_steps):
+        """Seek a Armed or Paused scan back to another value
+
+        Normally it will return in the state it started in. If the user aborts
+        then it will return in Aborted state. If something goes wrong it will
+        return in Fault state. If the user disables then it will return in
+        Disabled state.
+        """
         call_with_params(self.pause, completedSteps=completed_steps)
 
     @method_writeable_in(ss.ARMED, ss.PAUSED, ss.RUNNING)
     @method_takes("completedSteps", NumberMeta(
         "int32", "Step to mark as the last completed step, -1 for current"), -1)
     def pause(self, params):
+        """Pause a run() so that resume() can be called later.
+
+        The original call to run() will not be interrupted by pause(), it will
+        with until the scan completes or is aborted.
+
+        Normally it will return in Paused state. If the user aborts then it will
+        return in Aborted state. If something goes wrong it will return in Fault
+        state. If the user disables then it will return in Disabled state.
+        """
         current_state = self.state.value
         if params.completedSteps < 0:
             completed_steps = self.completed_steps.value
@@ -466,6 +508,11 @@ class RunnableController(ManagerController):
 
     @method_writeable_in(ss.PAUSED)
     def resume(self):
+        """Resume a paused scan.
+
+        Normally it will return in Running state. If something goes wrong it
+        will return in Fault state.
+        """
         self.transition(ss.RUNNING)
         self.resume_queue.put(True)
         # self._call_do_run will now take over

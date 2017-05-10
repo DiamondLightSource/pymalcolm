@@ -31,10 +31,10 @@ class TestRunnableStates(unittest.TestCase):
                                "Disabling"}
         expected['PostRun'] = {"Ready", "Armed", "Aborting", "Fault",
                                "Disabling"}
-        expected['Paused'] = {"Seeking", "Running", "Aborting", "Fault",
-                              "Disabling"}
         expected['Seeking'] = {"Armed", "Paused", "Aborting", "Fault",
                                "Disabling"}
+        expected['Paused'] = {"Seeking", "Running", "Aborting", "Fault",
+                              "Disabling"}
         expected['Aborting'] = {"Aborted", "Fault", "Disabling"}
         expected['Aborted'] = {"Resetting", "Fault", "Disabling"}
         expected['Fault'] = {"Resetting", "Disabling"}

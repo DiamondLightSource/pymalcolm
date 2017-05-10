@@ -6,7 +6,7 @@ from malcolm.modules.builtin.vmetas import NumberMeta, StringMeta
     "name", StringMeta("Name of the Part within the controller"), REQUIRED)
 class CounterPart(Part):
     """Defines a counter `Attribute` with zero and increment `Method` objects"""
-    #: `Attribute` that will hold the counter value
+    #: `AttributeModel` that will hold the counter value
     counter = None
 
     def __init__(self, params):

@@ -21,10 +21,52 @@ looks very similar to the hello_block example in the previous tutorial:
 .. literalinclude:: ../../malcolm/modules/demo/blocks/counter_block.yaml
     :language: yaml
 
+It creates the Methods and Attributes you would expect:
+
+.. digraph:: counter_controllers_and_parts
+
+    bgcolor=transparent
+    node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=none]
+
+    controller [shape=Mrecord label="{BasicController|mri: 'COUNTER'}"]
+    cpart [shape=Mrecord label="{CounterPart|name: 'counter'}"]
+
+    subgraph cluster_control {
+        label="Control"
+        labelloc="b"
+        controller -> cpart
+    }
+
+    block [shape=Mrecord label="{Block|mri: 'COUNTER'}"]
+    zero [shape=Mrecord label="{Method|name: 'zero'}"]
+    increment [shape=Mrecord label="{Method|name: 'increment'}"]
+    counter [shape=Mrecord label="{Attribute|name: 'counter'}"]
+    health [shape=Mrecord label="{Attribute|name: 'health'}"]
+
+    subgraph cluster_view {
+        label="View"
+        labelloc="b"
+        block -> zero
+        block -> increment
+        block -> counter
+        block -> health
+    }
+
+    {rank=same;controller block}
+
+    controller -> health [style=dashed]
+    cpart -> zero [style=dashed]
+    cpart -> increment [style=dashed]
+    cpart -> counter [style=dashed]
+    controller -> block [arrowhead=vee dir=from style=dashed label=produces]
+
 Creating Attributes in a Part
 -----------------------------
 
-Let's take a look at the ``./malcolm/modules/demo/parts/counterpart.py`` now:
+Let's take a look at the definition of `CounterPart` in
+``./malcolm/modules/demo/parts/counterpart.py`` now:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/counterpart.py
     :language: python
@@ -34,26 +76,36 @@ of functions with `method_takes`, but this time they don't take or
 return any arguments, so the functions don't have a ``parameters`` argument.
 The main difference to the Hello example is that we have implemented
 :meth:`~Part.create_attributes` which expects us to create and yield any
-Attributes we expect the Block to have. In our example we yield:
+`AttributeModel` instances we expect the Block to have.
 
-- "counter": the name of the Attribute within the Block
-- self.counter: the actual Attribute instance
-- self.counter.set_value: the function that will be called when someone tries
-  to "Put" to the Attribute, or None if it isn't writeable
+.. note:: We are producing an `AttributeModel` rather than an `Attribute`.
 
-To make the Attribute we first need to make a meta object. In our example we
-want a ``float64`` `NumberMeta` as we want to demonstrate
-floating point numbers. If our counter was an integer we could choose
-``int32`` or ``int64``. The actual Attribute is returned by the
-:meth:`~VMeta.create_attribute` method of this meta.
+    This is because the Attribute is a user facing View, with methods like
+    :meth:`~Attribute.put_value`, while AttributeModel is a data centred model
+    with methods like :meth:`~AttributeModel.set_value`. Each user gets their
+    own Attribute view of a single underlying AttributeModel that holds the
+    actual data.
+
+In our example we yield:
+
+- ``"counter"``: the name of the Attribute within the Block
+- ``self.counter``: the AttributeModel instance
+- ``self.counter.set_value``: the function that will be called when someone
+  tries to "Put" to the Attribute, or None if it isn't writeable
+
+To make the AttributeModel we first need to make a meta object. In our example
+we want a ``float64`` `NumberMeta` as we want to demonstrate floating point
+numbers. If our counter was an integer we could choose ``int32`` or ``int64``.
+The actual AttributeModel is returned by the :meth:`~VMeta.create_attribute`
+method of this meta.
 
 In the two methods (zero and increment), we make use of the ``counter``
 Attribute. We can get its value by using the :attr:`~AttributeModel.value`
 attribute and set its value by calling the :meth:`~AttributeModel.set_value`
 method. This method will validate the new value using the `VMeta` object we
-passed in :meth:`~Part.create_attributes` and notify the Process, that the
-Block is attached to, that something has changed and subscribers need to be
-updated.
+passed in :meth:`~Part.create_attributes` and notify any interested subscribers
+that something has changed.
+
 
 Visualising the Block with the GUI
 ----------------------------------
@@ -109,8 +161,19 @@ this:
 
 And a message on the console::
 
-    INFO:COUNTER:Exception while handling ordereddict([('typeid', 'malcolm:core/Put:1.0'), ('id', 9), ('endpoint', ['COUNTER', 'counter', 'value']), ('value', 'foo')])
-
+    malcolm.core.request: Exception raised for request {"typeid": "malcolm:core/Put:1.0", "id": 13, "path": ["COUNTER", "counter", "value"], "value": "foo"}
+    Traceback (most recent call last):
+      File "./malcolm/../malcolm/core/controller.py", line 240, in _handle_request
+        responses += handler(request)
+      File "./malcolm/../malcolm/core/controller.py", line 269, in _handle_put
+        result = put_function(request.value)
+      File "./malcolm/../malcolm/core/attributemodel.py", line 51, in set_value
+        self.set_value_alarm_ts(value, alarm, ts)
+      File "./malcolm/../malcolm/core/attributemodel.py", line 61, in set_value_alarm_ts
+        self.value = self.meta.validate(value)
+      File "./malcolm/../malcolm/modules/builtin/vmetas/numbermeta.py", line 32, in validate
+        cast = self._np_dtype(value)
+    ValueError: could not convert string to float: foo
 
 Conclusion
 ----------

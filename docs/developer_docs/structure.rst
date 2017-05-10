@@ -11,10 +11,10 @@ typeid in pvData serialized messages.
 
 There are a number of operations that can be performed on the Block structure,
 such as Get, Put, Subscribe, Post. These will be described in the
-:ref:`messages` section. It is important to note that operations such as Get and
+`messages` section. It is important to note that operations such as Get and
 Subscribe will by default operate on the entire Block structure to avoid race
 conditions between substructure updates, but some of the protocols supported
-(like pvAccess) will allow the substructures to be operated on independantly.
+(like pvAccess) will allow the substructures to be operated on independently.
 
 Also note the placement of meta objects in the Block structure. The presence of
 a meta element in the structure allows separation of the current value from the

@@ -6,6 +6,7 @@ from .basiccontroller import BasicController
 
 
 class StatefulStates(object):
+    """The most basic Malcolm state machine"""
 
     RESETTING = "Resetting"
     DISABLED = "Disabled"
@@ -54,7 +55,7 @@ class StatefulStates(object):
 
         Args:
             initial_state(str): Initial state
-            allowed_states(list(str) / str): ss that initial_state can
+            allowed_states(list): str or [str] states that initial_state can
                 transition to
         """
         if not isinstance(allowed_states, list):
@@ -70,6 +71,7 @@ ss = StatefulStates
 
 
 class StatefulController(BasicController):
+    """A controller that implements `StatefulStates`"""
     # The stateSet that this controller implements
     stateSet = ss()
     # {state (str): {Meta/MethodMeta/Attribute: writeable (bool)}

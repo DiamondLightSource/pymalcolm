@@ -1,5 +1,6 @@
 from .meta import Meta
 from .ntscalar import NTScalar
+from .attributemodel import AttributeModel
 
 
 class VMeta(Meta):
@@ -15,10 +16,13 @@ class VMeta(Meta):
         raise NotImplementedError()
 
     def create_attribute(self, initial_value=None):
-        """Make an Attribute instance of the correct type for this Meta
+        """Make an AttributeModel instance of the correct type for this Meta
 
         Args:
             initial_value: The initial value the Attribute should take
+
+        Returns:
+            AttributeModel: The created attribute model instance
         """
         attr = self.attribute_class(self, initial_value)
         return attr

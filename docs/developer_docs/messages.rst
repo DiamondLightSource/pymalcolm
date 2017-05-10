@@ -1,15 +1,15 @@
 .. _messages:
 
-Messages
-========
+Message Structure
+=================
 
-The communication between Blocks in the same Process is by passing Python
-dictionaries representing messages to each other's input queues. When the
-Blocks are in different Processes, a serialization method and transport
-protocol is needed. The simplest is JSON serialization over websockets or
-ZeroMQ, and this is what is described below. The structures will also be
-accessible via pvData over pvAccess, with the communication layer providing
-translation of the messages to and from their Python dictionary equivalents.
+The communication between Blocks in the same Process is by calling passing
+`Request` objects to the blocks, and being called back with `Response` objects.
+When the Blocks are in different Processes, a serialization method and transport
+protocol is needed. The simplest is JSON serialization over websockets, and this
+is what is described below. The structures will also be accessible via pvData
+over pvAccess, with the communication layer providing translation of the
+messages to and from their Python dictionary equivalents.
 
 The protocol is asymmetric, with different message types from client to server
 than for server to client. Each client sent message contains an integer id which
@@ -38,17 +38,17 @@ following message types back:
 Get
 ---
 
-This message will ask the server to serialize the ``endpoint`` and send it back
-as a `Return`_ message. It will receive an `Error`_ message if the ``endpoint``
+This message will ask the server to serialize the ``path`` and send it back
+as a `Return`_ message. It will receive an `Error`_ message if the ``path``
 doesn't exist.
 
 Dictionary with members:
 
-- type
-    String ``Get``.
+- typeid
+    String ``malcolm:core/Get:1.0``.
 - id
     Integer id which will be contained in any server response.
-- endpoint
+- path
     List of strings specifying the path to the Block the Block or substructure
     of the Block that should be returned. The first element will be the name of
     the Block, and any subsequent elements will be paths to traverse within the
@@ -74,18 +74,18 @@ Dictionary with members:
 Put
 ---
 
-This message will ask the server to put ``value`` to the ``endpoint`` of the
+This message will ask the server to put ``value`` to the ``path`` of the
 ``block``. It will get a `Return`_ message when complete or an `Error`_ message
-if the ``block`` or ``endpoint`` don't exist or aren't writeable. Only the value
+if the ``block`` or ``path`` don't exist or aren't writeable. Only the value
 fields of writeable Attributes accept Puts.
 
 Dictionary with members:
 
-- type
-    String ``Put``.
+- typeid
+    String ``malcolm:core/Put:1.0``.
 - id
     Integer id which will be contained in any server response.
-- endpoint
+- path
     List of strings specifying the path to the substructure of the Block that
     should be modified. The first element will be the name of the Block, and
     subsequent elements will be paths to traverse within the Block structure.
@@ -107,18 +107,18 @@ Dictionary with members:
 Post
 ----
 
-This message will ask the server to post to an ``endpoint`` of a ``block`` with
+This message will ask the server to post to an ``path`` of a ``block`` with
 some ``parameters``. This is typically used to call a method. It will get a
 `Return`_ message when complete or an `Error`_ message if the ``block`` or
-``endpoint`` don't exist or aren't Methods.
+``path`` don't exist or aren't Methods.
 
 Dictionary with members:
 
-- type
-    String ``Post``.
+- typeid
+    String ``malcolm:core/Post:1.0``.
 - id
     Integer id which will be contained in any server response.
-- endpoint
+- path
     List of strings specifying the path to the substructure
     of the Block that should be posted to. The first element will be the name of
     the Block, and the second will be the Method name. See :ref:`structure` for
@@ -141,22 +141,22 @@ Subscribe
 ---------
 
 This message will ask the server to respond with a message every time the
-``block`` (or ``endpoint`` of the ``block``) changes. If ``delta`` then the
+``block`` (or ``path`` of the ``block``) changes. If ``delta`` then the
 server will respond with a `Delta`_ message listing what has changed, otherwise
 it will respond with a `Update`_ message with the entire structure each time.
 The first message received will give the current value, and subsequent messages
 will be sent whenever it changes. It will receive an `Error`_ message if the
-``block`` or ``endpoint`` don't exist, or if the Block or substructure of the
+``block`` or ``path`` don't exist, or if the Block or substructure of the
 Block disappears while the subscription is active. When `Unsubscribe`_ is called
 with the same id, a `Return`_ message will be received on that id with no value.
 
 Dictionary with members:
 
-- type
-    String ``Subscribe``.
+- typeid
+    String ``malcolm:core/Subscribe:1.0``.
 - id
     Integer id which will be contained in any server response.
-- endpoint
+- path
     List of strings specifying the path to the Block the Block or substructure
     of the Block that should be returned. The first element will be the name of
     the Block, and any subsequent elements will be paths to traverse within the
@@ -193,8 +193,8 @@ successful.
 
 Dictionary with members:
 
-- type
-    String ``Unsubscribe``.
+- typeid
+    String ``malcolm:core/Unsubscribe:1.0``.
 - id
     Integer id which was given in the `Subscribe`_ method.
 
@@ -211,7 +211,7 @@ Return
 
 This message is sent to signify completion of an operation:
 
-- In response to a `Get`_ to return the serialized version of an endpoint
+- In response to a `Get`_ to return the serialized version of an path
 - In response to a `Put`_ or `Unsubscribe`_ with no value to indicate successful
   completion
 - In response to a `Post`_ with the return value of that Method call, or no
@@ -219,13 +219,13 @@ This message is sent to signify completion of an operation:
 
 Dictionary with members:
 
-- type
-    String ``Return``.
+- typeid
+    String ``malcolm:core/Return:1.0``.
 - id
     Integer id from original client `Get`_, `Put`_, `Post`_ or `Unsubscribe`_.
 - value (optional)
     Object return value if it exists. For `Get`_ this will be the structure of
-    the endpoint. For `Post`_ this will be described by the ``returns`` element
+    the path. For `Post`_ this will be described by the ``returns`` element
     of the Method. See :ref:`structure` for more details.
 
 .. container:: toggle
@@ -250,13 +250,13 @@ Error
 This message is sent for a number of reasons:
 
 - The client has sent a badly formed message
-- The client has asked to interact with a nonexistant block or endpoint
+- The client has asked to interact with a nonexistant block or path
 - The `Put`_ or `Post`_ operation has thrown an error
 
 Dictionary with members:
 
-- type
-    String ``Error``.
+- typeid
+    String ``malcolm:core/Error:1.0``.
 - id
     Integer id from original client message. If the id cannot be determined
     from the original message, -1 will be used.
@@ -280,12 +280,12 @@ contains the serialized version of a Block or substructure of a Block.
 
 Dictionary with members:
 
-- type
-    String ``Update``.
+- typeid
+    String ``malcolm:core/Update:1.0``.
 - id
     Integer id from original client `Subscribe`_.
 - value
-    Object current value of subscribed endpoint. This will be the dictionary
+    Object current value of subscribed path. This will be the dictionary
     representation of the Attribute value type. For simple types this will just
     be a String or Integer. See :ref:`structure` for how more complex structures
     are represented.
@@ -313,8 +313,8 @@ transmitted value (if any) and the current value.
 
 Dictionary with members:
 
-- type
-    String ``Delta``.
+- typeid
+    String ``malcolm:core/Delta:1.0``.
 - id
     Integer id from original client `Subscribe`_.
 - changes
@@ -334,6 +334,4 @@ Dictionary with members:
         **Example**: A message sent when monitoring the top level Block, and
         the state Attribute's value changed:
 
-    .. include:: json/changes_state_value
-
-
+    .. include:: json/delta_state_value

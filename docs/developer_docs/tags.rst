@@ -1,4 +1,4 @@
-.. _tags:
+.. _tags_reference:
 
 Tags reference
 ==============
@@ -16,3 +16,4 @@ Tag                     Description
 widget:textinput        Single line text input for writeable fields
 widget:textupdate       Single line label showing an updating field
 ======================= ========================================================
+

@@ -16,6 +16,7 @@ class Attribute(View):
         return self._controller.make_view(self._context, self._data, "value")
 
     def put_value(self, value):
+        """Put a value to the Attribute and wait for completion"""
         self._context.put(self._data.path + ["value"], value)
 
     def put_value_async(self, value):

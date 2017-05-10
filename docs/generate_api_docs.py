@@ -19,12 +19,17 @@ def generate_docs():
         api_docs.write('Malcolm API\n===========\n\n')
         malcolm_root = os.path.join(repo_root, 'malcolm')
 
+        # add the tags docs
+        section = "malcolm"
+        docnames = ["tags_api"]
+        doc_dir = os.path.join("..", "developer_docs")
+        add_module_entry(api_docs, section, doc_dir, docnames)
+
         # add the core docs
-        core_root = os.path.join(malcolm_root, 'core')
         section = "malcolm.core"
-        filenames = filter_filenames(core_root)
+        docnames = filter_py_docnames(malcolm_root, 'core')
         doc_dir = os.path.join("..", "developer_docs", "core_api")
-        add_module_entry(api_docs, section, doc_dir, filenames)
+        add_module_entry(api_docs, section, doc_dir, docnames)
 
         # create entries in the .rst file for each module
         modules_root = os.path.join(malcolm_root, 'modules')
@@ -37,30 +42,57 @@ def generate_docs():
             docs_dir = os.path.join(module_root, "docs")
             if os.path.isdir(docs_dir):
                 shutil.copytree(docs_dir, docs_build)
-            for dirname in sorted(os.listdir(module_root)):
-                if dirname in ["controllers", "parts", "infos", "vmetas"]:
+            else:
+                os.mkdir(docs_build)
+            dirs = sorted(os.listdir(module_root))
+            if "parameters.py" in dirs:
+                section = "malcolm.modules.%s" % (modulename,)
+                docnames = ["parameters"]
+                add_module_entry(api_docs, section, modulename, docnames)
+            for dirname in ["blocks", "includes"]:
+                if dirname in dirs:
+                    # Document all the produced blocks
+                    section = "malcolm.modules.%s.%s" % (modulename, dirname)
+                    docnames = filter_yaml_docnames(module_root, dirname)
+                    for docname in docnames:
+                        make_yaml_doc(section, docs_build, docname)
+                    add_module_entry(api_docs, section, modulename, docnames)
+            for dirname in ["controllers", "parts", "infos", "vmetas"]:
+                if dirname in dirs:
                     # Only document places we know python files will live
                     section = "malcolm.modules.%s.%s" % (modulename, dirname)
-                    filenames = filter_filenames(os.path.join(
-                        module_root, dirname))
-                    add_module_entry(api_docs, section, modulename, filenames)
-                elif dirname == "parameters.py":
-                    # TODO: Also document parameters
-                    pass
+                    docnames = filter_py_docnames(module_root, dirname)
+                    add_module_entry(api_docs, section, modulename, docnames)
         add_indices_and_tables(api_docs)
 
 
-def filter_filenames(root):
-    filenames = [f for f in sorted(os.listdir(root))
+def filter_py_docnames(root, dirname):
+    filenames = [f[:-3] for f in sorted(os.listdir(os.path.join(root, dirname)))
                  if f.endswith(".py") and f != "__init__.py"]
     return filenames
 
 
-def add_module_entry(api_docs, section, doc_dir, filenames):
+def filter_yaml_docnames(root, dirname):
+    filenames = [f[:-5] + "_api"
+                 for f in sorted(os.listdir(os.path.join(root, dirname)))
+                 if f.endswith(".yaml")]
+    return filenames
+
+
+def make_yaml_doc(section, docs_build, docname):
+    with open(os.path.join(docs_build, docname + ".rst"), "w") as f:
+        docname = docname[:-4]
+        f.write(docname + "\n")
+        f.write("-" * len(docname) + "\n\n")
+        f.write(".. module:: %s\n\n" % section)
+        f.write(".. autofunction:: %s\n\n" % docname)
+
+
+def add_module_entry(api_docs, section, doc_dir, docnames):
     api_docs.write(section + '\n' + '-' * len(section) + '\n')
     api_docs.write('\n..  toctree::\n')
-    for filename in filenames:
-        api_docs.write(' ' * 4 + os.path.join(doc_dir, filename[:-3]) + '\n')
+    for docname in docnames:
+        api_docs.write(' ' * 4 + os.path.join(doc_dir, docname) + '\n')
     api_docs.write("\n")
 
 

@@ -1,7 +1,7 @@
 .. code-block:: javascript
 
     {
-        "type": "Delta",
+        "typeid": "malcolm:core/Delta:1.0",
         "id": 0,
         "changes":
             [

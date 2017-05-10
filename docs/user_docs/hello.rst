@@ -55,7 +55,7 @@ Let's run it now::
     Welcome to iMalcolm.
 
     self.mri_list:
-        ['HELLO', 'HELLO2', 'COUNTER', 'WEB']
+        ['localhost:8080']
 
     Try:
     hello = self.block_view("HELLO")
@@ -64,6 +64,11 @@ Let's run it now::
     or
 
     gui(self.block_view("COUNTER"))
+
+    or
+
+    self.make_proxy("localhost:8080", "HELLO")
+    print self.block_view("HELLO").greet("me")
 
 
     In [1]:
@@ -103,6 +108,7 @@ first session, get the HELLO block from the first Process, and run a Method
 on it::
 
     [tmc43@pc0013 pymalcolm]$ ./malcolm/imalcolm.py -c ws://localhost:8080
+    Loading...
     Python 2.7.3 (default, Nov  9 2013, 21:59:00)
     Type "copyright", "credits" or "license" for more information.
 
@@ -115,26 +121,27 @@ on it::
 
     Welcome to iMalcolm.
 
-    self.process_block.blocks:
-        ['Process']
+    self.mri_list:
+        ['localhost:8080']
 
     Try:
-    hello = self.get_block("HELLO")
+    hello = self.block_view("HELLO")
     print hello.greet("me")
 
     or
 
-    gui(self.get_block("COUNTER"))
+    gui(self.block_view("COUNTER"))
 
     or
 
-    self.process_block.blocks
+    self.make_proxy("localhost:8080", "HELLO")
+    print self.block_view("HELLO").greet("me")
 
 
-    In [1]: hello = self.get_block("HELLO")
+    In [1]: self.make_proxy("localhost:8080", "HELLO")
 
-    In [2]: print hello.greet("me")
-    Map({u'greeting': 'Hello me'})
+    In [2]: print self.block_view("HELLO").greet("me")
+    Map({'greeting': 'Hello me'})
 
     In [3]:
 
@@ -148,108 +155,153 @@ first session was doing the actual "work", while the Block in the second session
 was just firing off a request and waiting for the response as shown in the
 diagram below.
 
-.. uml::
+.. digraph:: distributed_object_usage
 
-    !include docs/style.iuml
+    bgcolor=transparent
+    node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]
+    graph [fontname=Arial fontsize=11 fillcolor="#DDDDDD"]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
 
-    frame "First Process" {
-        frame HELLO {
-            [Method greet] as H1.greet
-        }
-
-        frame COUNTER {
-            [Attribute counter]
-            [Method zero]
-            [Method increment]
-        }
-    }
-
-    frame "Second Process" {
-        frame "HELLO " {
-            [Method greet] as H2.greet
+    subgraph cluster_p2 {
+        label="Second Process"
+        subgraph cluster_h2 {
+            label="Hello Block"
+            style=filled
+            g2 [label="greet()"]
+            e2 [label="error()"]
         }
     }
 
-    H1.greet <.up.> H2.greet
+    subgraph cluster_p1 {
+        label="First Process"
+        subgraph cluster_c1 {
+            label="Counter Block"
+            style=filled
+            counter "zero()" "increment()"
+        }
+        subgraph cluster_h1 {
+            label="Hello Block"
+            style=filled
+            g1 [label="greet()"]
+            e1 [label="error()"]
+        }
+    }
+
+    g2 -> g1 [style=dashed label="Post(name='me')"]
+    g1 -> g2 [style=dashed label="Return(greeting='Hello me')"]
 
 You can quit those imalcolm sessions now by pressing CTRL-D or typing exit.
 
 Defining a Block
 ----------------
 
-We've found out how to create Blocks that have already been defined, so lets
-have a look at how we define a Block. The Hello Block of the last example is
-a good example, it is defined in the
-``./malcolm/modules/demo/blocks/hello_block.yaml`` file:
+We have already seen that a `Block` is made up of `Method` and `Attribute`
+instances, but how do we define one? Well, although Methods and Attributes make
+a good interface to the outside world, they aren't the right size unit to divide
+our Block into re-usable chunks of code. What we actually need is something to
+co-ordinate our Block and provide a framework for the logic we will write, and
+plugins that can extend and customize this logic. The object that play a
+co-ordinating role is called a `Controller` and each plugin is called a `Part`.
+This is how they fit together:
+
+.. digraph:: controllers_and_parts
+
+    bgcolor=transparent
+    node [fontname=Arial fontsize=10 shape=Mrecord style=filled fillcolor="#8BC4E9"]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=none]
+
+    Process
+
+    subgraph cluster_control {
+        label="Control"
+        labelloc="b"
+        Controller -> Parts
+    }
+
+    subgraph cluster_view {
+        label="View"
+        labelloc="b"
+        Block -> Methods
+        Block -> Attributes
+    }
+
+    {rank=same;Controller Block}
+
+    Process -> Controller
+    Controller -> Block [arrowhead=vee dir=from style=dashed label=produces]
+
+The `Controller` is responsible for making a Block View on request that we can
+interact with. It populates it with Methods and Attributes that it has created
+as well as those created by `Part` instances attached to it. Parts are also
+called at specific times during Controller Methods to allow them to contribute
+logic.
+
+Lets take a look at how the Hello Block of the last example is created. It is
+defined in the ``./malcolm/modules/demo/blocks/hello_block.yaml`` file:
 
 .. literalinclude:: ../../malcolm/modules/demo/blocks/hello_block.yaml
     :language: yaml
 
-The first item in the YAML file is a `parameter`. This defines a parameter
-that must be defined when instantiating the Block. It's value is then available
+The first item in the YAML file is a `parameter`. This defines a parameter that
+must be defined when instantiating the Block. It's value is then available
 throughout the YAML file by using the ``$(<name>)`` syntax.
 
-The second item is a `Controller`. This is responsible for creating the
-Block, populating it with Methods and Attributes, and managing state
-according to the `StateMachine` it implements.
+The second item is a `BasicController` that just acts as a container for Parts.
+It only contributes a ``health`` Attribute to the Block.
 
-The third item is a `Part`. A Controller can own many parts, and these
-Parts can contribute Methods and Attributes, as well as being called at
-specific times during Controller methods.
+The third item is a `HelloPart`. It contributes the ``greet()`` and ``error()``
+Methods to the Block.
 
-When we instantiate a Block, we are actually creating a Controller and Parts
-which will then populate a Block object with Attributes and Methods which
-will be kept up to date with whatever created it. In our Hello example, it
-looks like this:
+Here's a diagram showing who created those Methods and Attributes:
 
-.. uml::
+.. digraph:: hello_controllers_and_parts
 
-    !include docs/style.iuml
+    bgcolor=transparent
+    node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=none]
 
-    object Process
+    controller [shape=Mrecord label="{BasicController|mri: 'HELLO'}"]
+    hello [shape=Mrecord label="{HelloPart|name: 'hello'}"]
 
-    package "Data" <<Frame>> {
-        object Block {
-            mri: "HELLO"
-        }
-        object Method {
-            name: "greet"
-        }
-        object Attribute {
-            name: "state"
-        }
+    subgraph cluster_control {
+        label="Control"
+        labelloc="b"
+        controller -> hello
     }
 
-    package "Control" <<Frame>> {
-        object DefaultController {
-            state: Attribute
-            block: Block
-        }
-        object HelloPart {
-            greet: Method
-        }
+    block [shape=Mrecord label="{Block|mri: 'HELLO'}"]
+    greet [shape=Mrecord label="{Method|name: 'greet'}"]
+    error [shape=Mrecord label="{Method|name: 'error'}"]
+    health [shape=Mrecord label="{Attribute|name: 'health'}"]
+
+    subgraph cluster_view {
+        label="View"
+        labelloc="b"
+        block -> greet
+        block -> error
+        block -> health
     }
 
-    Process o-- Block
-    Block o-- Attribute
-    Block o-- Method
-    Process *-- DefaultController
-    DefaultController *-- Block
-    DefaultController *-- Attribute
-    DefaultController *-- HelloPart
-    HelloPart *-- Method
+    {rank=same;controller block}
 
-The outside world only sees the Data side, but whenever a Method is called or
+    controller -> health [style=dashed]
+    hello -> greet [style=dashed]
+    hello -> error [style=dashed]
+    controller -> block [arrowhead=vee dir=from style=dashed label=produces]
+
+The outside world only sees the View side, but whenever a Method is called or
 an Attribute set, something on the Control side is responsible for actioning
 the request.
 
 Defining a Part
 ---------------
 
-We've seen that we don't write any code to define a Block, we compose it from
-a Controller and the Parts that contribute Methods and Attributes to it.
-We will normally use one of the builtin Controllers, so the only place we
-write code is when we define a Part. Let's take a look at our
+We've seen that we don't write any code to define a Block, we compose it from a
+Controller and the Parts that contribute Methods and Attributes to it. We will
+normally use one of the builtin Controllers, so the only place we write code is
+when we define a Part. Let's take a look at our
 ``./malcolm/modules/demo/parts/hellopart.py`` now:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/hellopart.py

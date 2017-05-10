@@ -46,74 +46,86 @@ We instantiate two Counter blocks (``COUNTERX`` and ``COUNTERY``) and
 instantiate two ScanTickerParts (``x`` and ``y``) that will connect to them.
 We then use a `RunnableController` to construct our Block.
 
-This is probably better viewed as a diagram:
+This tree of Blocks is probably better viewed as a diagram:
 
-.. uml::
+.. digraph:: ticker_child_connections
 
-    !include docs/style.iuml
+    bgcolor=transparent
+    compound=true
+    node [fontname=Arial fontsize=10 shape=Mrecord style=filled fillcolor="#8BC4E9"]
+    graph [fontname=Arial fontsize=10]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
 
-    package "TICKER" <<Frame>> {
-        object Block1 {
-            mri: "TICKER"
-        }
-        object Method1 {
-            name: "configure"
-        }
-        object Method2 {
-            name: "run"
-        }
-        object RunnableController
-        object ScanTickerPart1 {
-            child: COUNTERX
-        }
-        object ScanTickerPart2 {
-            child: COUNTERY
-        }
-        Block1 o-- Method1
-        Block1 o-- Method2
-        RunnableController *-left- Block1
-        RunnableController *-- Method1
-        RunnableController *-- Method2
-        RunnableController *-- ScanTickerPart1
-        RunnableController *-- ScanTickerPart2
+    subgraph cluster_ticker {
+        label="TICKER"
+        ranksep=0.1
+        ticker_c [label="RunnableController"]
+        x [label="{ScanTickerPart|name: 'x'}"]
+        y [label="{ScanTickerPart|name: 'y'}"]
+        ticker_c -> x [style=invis]
+        ticker_c -> y [style=invis]
     }
 
-    package "COUNTERX" <<Frame>> {
-        object Block2 {
-            mri: "COUNTERX"
-        }
-        object Attribute1 {
-            name: "counter"
-        }
-        object DefaultController1
-        object CounterPart1 {
-            counter: Attribute1
-        }
-        Block2 o-- Attribute1
-        DefaultController1 *-left- Block2
-        DefaultController1 *-- CounterPart1
-        CounterPart1 *-left- Attribute1
+    subgraph cluster_counterx {
+        label="COUNTERX"
+        counterx_c [label="BasicController"]
+        counterx_p [label="CounterPart"]
+        counterx_c -> counterx_p [style=invis]
     }
 
-    package "COUNTERY" <<Frame>> {
-        object Block3 {
-            mri: "COUNTERY"
-        }
-        object Attribute2 {
-            name: "counter"
-        }
-        object DefaultController2
-        object CounterPart2 {
-            counter: Attribute2
-        }
-        Block3 o-- Attribute2
-        DefaultController2 *-left- Block3
-        DefaultController2 *-- CounterPart2
-        CounterPart2 *-left- Attribute2
+    subgraph cluster_countery {
+        label="COUNTERY"
+        countery_c [label="BasicController"]
+        countery_p [label="CounterPart"]
+        countery_c -> countery_p [style=invis]
     }
 
-    ScanTickerPart1 o-- Block2
-    ScanTickerPart2 o-- Block3
+    x -> counterx_c [lhead=cluster_counterx minlen=3]
+    y -> countery_c [lhead=cluster_countery minlen=3]
+
+Now let's see some of the Methods and Attributes that are created:
+
+.. digraph:: ticker_controllers_and_parts
+
+    bgcolor=transparent
+    node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=none]
+
+    controller [shape=Mrecord label="{RunnableController|mri: 'TICKER'}"]
+    tpart1 [shape=Mrecord label="{ScanTickerPart|name: 'x'}"]
+    tpart2 [shape=Mrecord label="{ScanTickerPart|name: 'y'}"]
+
+    subgraph cluster_control {
+        label="Control"
+        labelloc="b"
+        controller -> tpart1
+        controller -> tpart2
+    }
+
+    block [shape=Mrecord label="{Block|mri: 'TICKER'}"]
+    configure [shape=Mrecord label="{Method|name: 'configure'}"]
+    run [shape=Mrecord label="{Method|name: 'run'}"]
+    state [shape=Mrecord label="{Attribute|name: 'state'}"]
+    health [shape=Mrecord label="{Attribute|name: 'health'}"]
+
+    subgraph cluster_view {
+        label="View"
+        labelloc="b"
+        block -> configure
+        block -> run
+        block -> state
+        block -> health
+    }
+
+    {rank=same;controller block}
+
+    controller -> health [style=dashed]
+    controller -> state [style=dashed]
+    controller -> configure [style=dashed]
+    controller -> run [style=dashed]
+    controller -> block [arrowhead=vee dir=from style=dashed label=produces]
+
 
 The `RunnableController` contributes the ``configure`` and ``run``
 Methods in a similar way to previous examples, but the two ScanTickerParts do
@@ -197,27 +209,26 @@ This is hooked to the `Run` Hook. Let's take a look at its documentation:
 
 Walking through the code we can see that we are iterating through each of the
 step indexes that we need to produce, getting a `scanpointgenerator.Point`
-object for each one. We then pick out the position of the current axis, and
-use the `Context` to create a `Block` view that we use put the value to the
-``counter`` value. It is important that we use ``context`` parameter to
-because this is interruptable. The `Context` helper can also do asynchronous
-puts and puts to multiple attributes at the same time.
+object for each one. We then pick out the position of the current axis, and use
+the `Context` to create a `Block` view that we use put the ``counter`` value. It
+is important that we use ``context`` parameter to because this is interruptable.
+The `Context` helper can also do asynchronous puts and puts to multiple
+attributes at the same time.
 
 After we have done the put, we work out how long we need to wait until the
 next position is to be produced, then do an interruptable sleep. Finally we
-call ``update_completed_steps`` with the step number (note that steps are
-1-indexed so that 0 can signify no steps complete) and self, the object that
+call ``update_completed_steps`` with the step number and self, the object that
 is producing the update.
+
+.. note:: Step numbers in Malcolm are 1-indexed, so a value of 0 means no steps
+    completed.
 
 .. highlight:: ipython
 
 Let's run up the example and give it a go::
 
     [tmc43@pc0013 pymalcolm]$ ./malcolm/imalcolm.py examples/DEMO-TICKER.yaml
-    INFO:COUNTERX.reset:I'm not writeable
-    INFO:COUNTERX:Exception while handling ordereddict([('typeid', 'malcolm:core/Post:1.0'), ('id', 0), ('endpoint', ['COUNTERX', 'reset']), ('parameters', None)])
-    INFO:COUNTERY.reset:I'm not writeable
-    INFO:COUNTERY:Exception while handling ordereddict([('typeid', 'malcolm:core/Post:1.0'), ('id', 0), ('endpoint', ['COUNTERY', 'reset']), ('parameters', None)])
+    Loading...
     Python 2.7.3 (default, Nov  9 2013, 21:59:00)
     Type "copyright", "credits" or "license" for more information.
 
@@ -230,53 +241,52 @@ Let's run up the example and give it a go::
 
     Welcome to iMalcolm.
 
-    self.process_block.blocks:
-        ['DEMO-TICKER', 'COUNTERX', 'COUNTERY', 'TICKER']
+    self.mri_list:
+        ['COUNTERX', 'COUNTERY', 'TICKER', 'WEB']
 
     Try:
-    hello = self.get_block("HELLO")
+    hello = self.block_view("HELLO")
     print hello.greet("me")
 
     or
 
-    gui(self.get_block("COUNTER"))
+    gui(self.block_view("COUNTER"))
 
     or
 
-    self.process_block.blocks
+    self.make_proxy("localhost:8080", "HELLO")
+    print self.block_view("HELLO").greet("me")
 
 
     In [1]:
 
 Then enter::
 
-    In [1]: from scanpointgenerator import LineGenerator, CompoundGenerator, FixedDurationMutator
+    In [1]: from scanpointgenerator import LineGenerator, CompoundGenerator
 
-    In [2]: ticker = self.get_block("TICKER")
+    In [2]: ticker = self.block_view("TICKER")
 
     In [3]: yline = LineGenerator("y", "mm", 0., 1., 6)
 
-    In [4]: xline = LineGenerator("x", "mm", 0., 1., 5, alternate_direction=True)
+    In [4]: xline = LineGenerator("x", "mm", 0., 1., 5, alternate=True)
 
-    In [5]: duration = FixedDurationMutator(0.5)
+    In [5]: generator = CompoundGenerator([yline, xline], [], [], duration=0.5)
 
-    In [6]: generator = CompoundGenerator([yline, xline], [], [duration])
+    In [6]: ticker.configure(generator, ["x", "y"])
 
-    In [7]: ticker.configure(generator, ["x", "y"])
+    In [7]: gui(ticker)
 
-    In [8]: gui(ticker)
+    In [8]: gui(self.block_view("COUNTERX"))
 
-    In [9]: gui(self.get_block("COUNTERX"))
-
-    In [10]: gui(self.get_block("COUNTERY"))
-
+    In [9]: gui(self.block_view("COUNTERY"))
 
 What we have done here is set up a scan that is 6 rows in y and 5 columns in x.
 The x value will snake forwards and backwards, and the y value will increase
 at the end of each x row. We have told it that each scan point should last for
 0.5 seconds, which should give us enough time to see the ticks.
 
-If you now click the run button on the TICKER window, you should now see a scan performed:
+If you now click the run button on the TICKER window, you should now see a scan
+performed:
 
 .. image:: ticker_1.png
 
@@ -285,9 +295,10 @@ to re-run the scan you need to run::
 
     In [11]: ticker.configure(generator, ["x", "y"])
 
-This is because the GUI doesn't yet include an editor for scan specifications. This command 
-will set the device to ``Ready`` so that you can then ``run()`` again. See `statemachine_diagrams`
-for more information about what functions you can run in different Block states.
+This is because the GUI doesn't yet include an editor for scan specifications.
+This command will set the device to ``Armed`` so that you can then ``run()``
+again. See `RunnableStates` for more information about what functions you can
+run in different Block states.
 
 What is happening under the hood is that our hooked ``configure()`` method is being
 called during ``pause()``, ``configure()`` and ``seek()``, but we want it to

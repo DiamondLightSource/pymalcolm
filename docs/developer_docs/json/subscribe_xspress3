@@ -1,8 +1,8 @@
 .. code-block:: javascript
 
     {
-        "type": "Subscribe",
-        "id": 0,
-        "endpoint": ["BL18I:XSPRESS3"],
+        "typeid": "malcolm:core/Subscribe:1.0",
+        "id": 11,
+        "path": ["BL18I:XSPRESS3"],
         "delta": true
     }

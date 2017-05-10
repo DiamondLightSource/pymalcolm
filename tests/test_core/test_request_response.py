@@ -1,8 +1,20 @@
 import unittest
+import os
 from mock import MagicMock
 
+from malcolm.compat import OrderedDict
+from malcolm.core import json_decode
 from malcolm.core.request import Request, Get, Post, Subscribe, Unsubscribe, Put
-from malcolm.core.response import Return, Error, Update, Delta
+from malcolm.core.response import Return, Error, Update, Delta, Response
+
+
+def get_doc_json(fname):
+    malcolm_root = os.path.join(os.path.dirname(__file__), "..", "..")
+    json_root = os.path.join(malcolm_root, "docs", "developer_docs", "json")
+    with open(os.path.join(json_root, fname)) as f:
+        lines = f.readlines()
+    text = "\n".join(lines[1:])
+    return json_decode(text)
 
 
 class TestRequest(unittest.TestCase):
@@ -47,21 +59,25 @@ class TestGet(unittest.TestCase):
         assert self.path == self.o.path
 
     def test_setters(self):
-        self.o.set_path(["BL18I:XSPRESS3", "state"])
-        assert self.o.path == ["BL18I:XSPRESS3", "state"]
+        self.o.set_path(["BL18I:XSPRESS3"])
+        assert self.o.path == ["BL18I:XSPRESS3"]
+        assert get_doc_json("get_xspress3") == self.o.to_dict()
+
+    def test_doc_state(self):
+        assert get_doc_json("get_xspress3_state_value") == self.o.to_dict()
 
 
 class TestPut(unittest.TestCase):
 
     def setUp(self):
         self.callback = MagicMock()
-        self.path = ["BL18I:XSPRESS3", "state", "value"]
-        self.value = "5"
-        self.o = Put(32, self.path, self.value, self.callback)
+        self.path = ["BL18I:XSPRESS3:HDF", "filePath", "value"]
+        self.value = "/path/to/file.h5"
+        self.o = Put(35, self.path, self.value, self.callback)
 
     def test_init(self):
         assert self.o.typeid == "malcolm:core/Put:1.0"
-        assert self.o.id == 32
+        assert self.o.id == 35
         assert self.o.callback == self.callback
         assert self.path == self.o.path
         assert self.value == self.o.value
@@ -70,18 +86,23 @@ class TestPut(unittest.TestCase):
         self.o.set_value("7")
         assert self.o.value == "7"
 
+    def test_doc(self):
+        assert get_doc_json("put_hdf_file_path") == self.o.to_dict()
+
 
 class TestPost(unittest.TestCase):
 
     def setUp(self):
         self.callback = MagicMock()
-        self.path = ["BL18I:XSPRESS3", "state", "value"]
-        self.parameters = dict(arg1=2, arg2=True)
-        self.o = Post(32, self.path, self.parameters, self.callback)
+        self.path = ["BL18I:XSPRESS3", "configure"]
+        self.parameters = OrderedDict()
+        self.parameters["filePath"] = "/path/to/file.h5"
+        self.parameters["exposure"] = 0.1
+        self.o = Post(2, self.path, self.parameters, self.callback)
 
     def test_init(self):
         assert self.o.typeid == "malcolm:core/Post:1.0"
-        assert self.o.id == 32
+        assert self.o.id == 2
         assert self.o.callback == self.callback
         assert self.path == self.o.path
         assert self.parameters == self.o.parameters
@@ -90,18 +111,21 @@ class TestPost(unittest.TestCase):
         self.o.set_parameters(dict(arg1=2, arg2=False))
         assert self.o.parameters == dict(arg1=2, arg2=False)
 
+    def test_doc(self):
+        assert get_doc_json("post_xspress3_configure") == self.o.to_dict()
+
 
 class TestSubscribe(unittest.TestCase):
 
     def setUp(self):
         self.callback = MagicMock()
-        self.path = ["BL18I:XSPRESS3", "state", "value"]
+        self.path = ["BL18I:XSPRESS3"]
         self.delta = True
-        self.o = Subscribe(32, self.path, self.delta, self.callback)
+        self.o = Subscribe(11, self.path, self.delta, self.callback)
 
     def test_init(self):
         assert self.o.typeid == "malcolm:core/Subscribe:1.0"
-        assert self.o.id == 32
+        assert self.o.id == 11
         assert self.o.callback == self.callback
         assert self.path == self.o.path
         assert self.delta == self.o.delta
@@ -109,17 +133,25 @@ class TestSubscribe(unittest.TestCase):
     def test_respond_with_update(self):
         cb, response = self.o.update_response(value=5)
         assert cb == self.callback
-        assert response == Update(id=32, value=5)
+        assert response == Update(id=11, value=5)
 
     def test_respond_with_delta(self):
         changes = [[["path"], "value"]]
         cb, response = self.o.delta_response(changes)
         assert cb == self.callback
-        assert response == Delta(id=32, changes=changes)
+        assert response == Delta(id=11, changes=changes)
 
     def test_setters(self):
         self.o.set_delta(False)
         assert not self.o.delta
+        self.o.set_path(["BL18I:XSPRESS3", "state", "value"])
+        self.o.set_id(19)
+        d = self.o.to_dict()
+        del d["delta"]
+        assert get_doc_json("subscribe_xspress3_state_value") == d
+
+    def test_doc(self):
+        assert get_doc_json("subscribe_xspress3") == self.o.to_dict()
 
 
 class TestUnsubscribe(unittest.TestCase):
@@ -136,3 +168,47 @@ class TestUnsubscribe(unittest.TestCase):
 
     def test_keys_same(self):
         assert self.subscribes[self.o.generate_key()] == self.subscribe
+
+    def test_doc(self):
+        assert get_doc_json("unsubscribe") == self.o.to_dict()
+
+
+class TestResponse(unittest.TestCase):
+    def test_init(self):
+        r = Response(123)
+        assert r.id == 123
+
+    def test_Return(self):
+        r = Return(35)
+        assert r.typeid == "malcolm:core/Return:1.0"
+        assert r.id == 35
+        assert r.value is None
+        assert get_doc_json("return") == r.to_dict()
+
+    def test_Return_value(self):
+        r = Return(32, "Running")
+        assert r.typeid == "malcolm:core/Return:1.0"
+        assert r.id == 32
+        assert r.value == "Running"
+        assert get_doc_json("return_state_value") == r.to_dict()
+
+    def test_Error(self):
+        r = Error(2, "Non-existant block 'foo'")
+        assert r.typeid == "malcolm:core/Error:1.0"
+        assert r.id == 2
+        assert r.message == "Non-existant block 'foo'"
+        assert get_doc_json("error") == r.to_dict()
+
+    def test_Update(self):
+        r = Update(19, "Running")
+        assert r.typeid == "malcolm:core/Update:1.0"
+        assert r.id == 19
+        assert r.value == "Running"
+        assert get_doc_json("update_state_value") == r.to_dict()
+
+    def test_Delta(self):
+        changes = [[["state", "value"], "Running"]]
+        r = Delta(123, changes)
+        assert r.typeid == "malcolm:core/Delta:1.0"
+        assert r.id == 123
+        assert r.changes == changes

@@ -85,7 +85,7 @@ class PathRequest(Request):
         Args:
             id (int): Unique identifier for request
             path (list): [`str`] Path to target Block substructure
-            callback (function): Callback for when the response is available
+            callback (callable): Callback for when the response is available
         """
         super(PathRequest, self).__init__(id, callback)
         self.set_path(path)

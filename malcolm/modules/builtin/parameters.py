@@ -24,14 +24,17 @@ def args_for_takes(params, meta_cls, *meta_args):
 
 @takes_with_default_meta(StringMeta)
 def string(params):
+    """Define a string parameter to be used within this YAML file"""
     return args_for_takes(params, StringMeta)
 
 
 @takes_with_default_meta(NumberMeta, "float64")
 def float64(params):
+    """Define a float64 parameter to be used within this YAML file"""
     return args_for_takes(params, NumberMeta, "float64")
 
 
 @takes_with_default_meta(NumberMeta, "int32")
 def int32(params):
+    """Define an int32 parameter to be used within this YAML file"""
     return args_for_takes(params, NumberMeta, "int32")

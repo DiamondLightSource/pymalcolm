@@ -29,4 +29,5 @@ class HelloPart(Part):
 
     @method_takes()
     def error(self):
-        raise RuntimeError("You called method bad()")
+        """Raise an error"""
+        raise RuntimeError("You called method error()")
