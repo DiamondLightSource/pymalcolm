@@ -5,3 +5,5 @@ tornado>=4.1
 scanpointgenerator>=2.0.0
 cothread
 ruamel.yaml
+git+https://github.com/aaron-parsons/h5py.git#egg=h5py
+git+https://github.com/dls-controls/vds-gen.git#egg=vds-gen

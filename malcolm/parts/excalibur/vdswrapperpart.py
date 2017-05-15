@@ -1,23 +1,87 @@
 import os
+import sys
+from time import sleep
+from subprocess import check_call
 
-from malcolm.core import method_takes, REQUIRED, Part
-from malcolm.core.vmetas import PointGeneratorMeta, StringMeta
+sys.path.insert(0, "/home/mef65357/Detectors/VDS/vds-gen/venv/lib/python2.7/"
+                   "site-packages")
+import h5py as h5
+
+from malcolm.core import method_takes, REQUIRED, Part, method_also_takes
+from malcolm.core.vmetas import PointGeneratorMeta, StringMeta, NumberMeta
 from malcolm.controllers.runnablecontroller import RunnableController
 from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
 
 
-class VdsWrapperPart(Part):
+@method_also_takes(
+    "dataType", StringMeta("Data type of dataset"), REQUIRED,
+    "stripeHeight", NumberMeta("int16", "Height of stripes"), REQUIRED,
+    "stripeWidth", NumberMeta("int16", "Width of stripes"), REQUIRED)
+class VDSWrapperPart(Part):
+
+    # Constants for vds-gen CLI app
+    VENV = "/home/mef65357/Detectors/VDS/vds-gen/venv/bin/python"
+    VDS_GEN = "/home/mef65357/Detectors/VDS/vds-gen/vdsgen/app.py"
+    EMPTY = "-e"
+    OUTPUT = "-o"
+    FILES = "-f"
+    SHAPE = "--shape"
+    DATA_TYPE = "--data_type"
+    DATA_PATH = "-d"
+    STRIPE_SPACING = "-s"
+    MODULE_SPACING = "-m"
+    SOURCE_NODE = "--source_node"
+    TARGET_NODE = "--target_node"
+    LOG_LEVEL = "-l"
+
+    # Constants for class
+    RAW_FILE_TEMPLATE = "FEM{}.h5"
+    OUTPUT_FILE = "EXCALIBUR.h5"
+    CREATE = "w"
+    APPEND = "a"
+    READ = "r"
+    ID = "/entry/NDAttributes/NDArrayUniqueId"
+    SUM = "/entry/sum/sum"
+
+    required_nodes = ["/entry/detector", "/entry/sum", "/entry/NDAttributes"]
+    set_bases = ["/entry/detector", "/entry/sum"]
+    default_node_tree = ["/entry/detector/axes", "/entry/detector/signal",
+                         "/entry/sum/axes", "/entry/sum/signal"]
+
+    def __init__(self, process, params):
+        super(VDSWrapperPart, self).__init__(process, params)
+
+        self.set_logger_name("VDSWrapperPart")
+        self._logger.setLevel("INFO")
+        self.done_when_reaches = None
+
+        self.fems = [1, 2, 3, 4, 5, 6]
+        self.vds_path = ""
+        self.vds = None
+        self.command = []
+        self.raw_paths = []
+        self.raw_datasets = []
+
+        self.data_type = params.dataType
+        self.stripe_height = params.stripeHeight
+        self.stripe_width = params.stripeWidth
+
     @RunnableController.Abort
     @RunnableController.Reset
     def abort(self, task):
-        # Close the VDS file if it is open
-        pass
+        self.close_files()
+
+    def close_files(self):
+        for file_ in self.raw_datasets + [self.vds]:
+            if file_ is not None and file_.id.valid:
+                self._logger.info("Closing file %s", file_)
+                file_.close()
 
     def _create_dataset_infos(self, generator, filename):
         uniqueid_path = "/entry/NDAttributes/NDArrayUniqueId"
         data_path = "/entry/detector/detector"
         sum_path = "/entry/sum/sum"
-        generator_rank = len(generator.index_dims)
+        generator_rank = len(generator.axes)
 
         # Create the main detector data
         yield DatasetProducedInfo(
@@ -38,11 +102,11 @@ class VdsWrapperPart(Part):
             uniqueid=uniqueid_path)
 
         # Add any setpoint dimensions
-        for dim in generator.axes:
+        for axis in generator.axes:
             yield DatasetProducedInfo(
-                name="%s.value_set" % dim, filename=filename,
+                name="%s.value_set" % axis, filename=filename,
                 type="position_set", rank=1,
-                path="/entry/detector/%s_set" % dim, uniqueid="")
+                path="/entry/detector/%s_set" % axis, uniqueid="")
 
     @RunnableController.Configure
     @method_takes(
@@ -50,16 +114,59 @@ class VdsWrapperPart(Part):
         "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         self.done_when_reaches = completed_steps + steps_to_do
-        filename = os.path.join(params.fileDir, "EXCALIBUR.h5")
-        # Open output HDF file
-        # Write "/entry/NDAttributes/NDArrayUniqueId" blank INT32 dataset node
-        # Write "/entry/detector" node with with hardlinks to everything except stripe_hdf:"/entry/detector/detector"
-        # Write "/entry/sum" node with with hardlinks to everything except stripe_hdf:"/entry/sum/sum"
-        # Write "/entry/sum/sum" blank FLOAT64 dataset node
-        # Use subprocess call with anaconda python on vds_gen to make "/entry/detector/detector"
+
+        self._logger.debug("Creating ExternalLinks from VDS to FEM1.h5")
+        self.vds_path = os.path.join(params.fileDir, self.OUTPUT_FILE)
+        raw_file_path = os.path.join(params.fileDir,
+                                     self.RAW_FILE_TEMPLATE.format(1))
+        node_tree = list(self.default_node_tree)
+        for axis in params.generator.axes:
+            for base in self.set_bases:
+                node_tree.append(base + "/{}_set".format(axis))
+                node_tree.append(base + "/{}_set_indices".format(axis))
+
+        with h5.File(self.vds_path, self.CREATE, libver="latest") as self.vds:
+            for node in self.required_nodes:
+                self.vds.require_group(node)
+            for node in node_tree:
+                self.vds[node] = h5.ExternalLink(raw_file_path, node)
+
+            # Create placeholder id and sum datasets
+            initial_shape = params.generator.shape + (1, 1)
+            max_shape = params.generator.shape + (None, 1)
+            self.vds.create_dataset(self.ID, initial_shape, maxshape=max_shape,
+                                    dtype="int32")
+            self.vds.create_dataset(self.SUM, initial_shape, dtype="float64")
+
+        self._logger.debug("Calling vds-gen to create dataset in VDS")
+        files = [self.RAW_FILE_TEMPLATE.format(fem) for fem in self.fems]
+        shape = [str(d) for d in params.generator.shape] + \
+                [str(self.stripe_height), str(self.stripe_width)]
+        # Base arguments
+        command = [self.VENV, self.VDS_GEN, params.fileDir]
+        # Define empty and required arguments to do so
+        command += [self.EMPTY,
+                    self.FILES] + files + \
+                   [self.SHAPE] + shape + \
+                   [self.DATA_TYPE, self.data_type]
+        # Override default spacing and data path
+        command += [self.STRIPE_SPACING, "3",
+                    self.MODULE_SPACING, "127",
+                    self.SOURCE_NODE, "/entry/detector/detector",
+                    self.TARGET_NODE, "/entry/detector/detector"]
+        # Define output file path
+        command += [self.OUTPUT, self.OUTPUT_FILE]
+        command += [self.LOG_LEVEL, "1"] # str(self._logger.level / 10)]
+        self.log_warning("Command" + str(command))
+        check_call(command)
+
+        # Store required attributes
+        self.raw_paths = [os.path.abspath(os.path.join(params.fileDir, file_))
+                          for file_ in files]
+
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
-            params.generator, filename))
+            params.generator, self.vds_path))
 
         return dataset_infos
 
@@ -71,6 +178,65 @@ class VdsWrapperPart(Part):
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, task, update_completed_steps):
-        # Monitor 6 stripe inputs and generate NDArrayUniqueId as minimum of 6 stripe NDArrayUniqueId, and sum as sum of 6 stripe sums.
-        # Return when we have processed unique id self.done_when_reaches
-        pass
+        self.vds = h5.File(self.vds_path, self.APPEND, libver="latest")
+        try:
+            # Wait until raw files exist and have UniqueIDArray
+            for path_ in self.raw_paths:
+                self._logger.info("Waiting for file %s to be created", path_)
+                while not os.path.exists(path_):
+                    sleep(1)
+                self.raw_datasets.append(
+                    h5.File(path_, self.READ, libver="latest", swmr=True))
+            for dataset in self.raw_datasets:
+                self._logger.info("Waiting for id in file %s", dataset)
+                while self.ID not in dataset:
+                    sleep(1)
+
+            self._logger.info("Monitoring raw files until ID reaches %s",
+                              self.done_when_reaches)
+            while self.id < self.done_when_reaches:
+                ids = []
+                for dataset in self.raw_datasets:
+                    ids.append(self.get_id(dataset))
+                if min(ids) > self.id:
+                    self._logger.info("Raw ID changed: %s - "
+                                      "Updating VDS ID and Sum", min(ids))
+                    idx = ids.index(min(ids))
+                    self.update_id(idx)
+                    try:
+                        self.update_sum()
+                    except Exception:
+                        self.log_warning("Can't access sum")
+
+            self._logger.info("ID reached: " + str(self.id))
+        except Exception:
+            self.log_error("Error in run")
+            raise
+        finally:
+            self.close_files()
+
+    @property
+    def id(self):
+        return self.get_id(self.vds)
+
+    def get_id(self, file_):
+        if file_.id.valid and self.ID in file_:
+            file_[self.ID].refresh()
+            return max(file_[self.ID].value.flatten())
+        else:
+            self.logger_.warning("File %s does not exist or does not have a "
+                                 "UniqueIDArray, returning 0", file_)
+            return 0
+
+    def update_id(self, idx):
+        min_id = self.raw_datasets[idx][self.ID]
+        self.vds[self.ID].resize(min_id.shape)
+
+        self.vds[self.ID][...] = min_id
+
+    def update_sum(self):
+        sum_ = 0
+        for dataset in self.raw_datasets:
+            sum_ += dataset[self.SUM].value
+
+        self.vds[self.SUM][...] = sum_
