@@ -11,6 +11,7 @@ addons:
     packages:
       - qt4-qmake
       - libqt4-dev
+      - libhdf5-serial-dev
 
 cache:
   directories:
