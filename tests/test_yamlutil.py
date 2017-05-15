@@ -52,7 +52,7 @@ class TestYamlUtil(unittest.TestCase):
                    mock_open(read_data=include_yaml), create=True) as m:
             include_creator = make_include_creator(
                 "/tmp/__init__.py", "include.yaml")
-        assert include_creator.yamlname == "include"
+        assert include_creator.__name__ == "include"
         m.assert_called_once_with("/tmp/include.yaml")
         process = Mock()
         parts = include_creator(process, dict(something="blah"))
@@ -67,7 +67,7 @@ class TestYamlUtil(unittest.TestCase):
                    mock_open(read_data=block_yaml), create=True) as m:
             block_creator = make_block_creator(
                 "/tmp/__init__.py", "block.yaml")
-        assert block_creator.yamlname == "block"
+        assert block_creator.__name__ == "block"
         m.assert_called_once_with("/tmp/block.yaml")
         process = Mock()
         controller = block_creator(process, dict(something="blah"))
@@ -79,16 +79,16 @@ class TestYamlUtil(unittest.TestCase):
 
     def test_check_names_good(self):
         d = dict(
-            thinga=Mock(yamlname="thinga"),
-            thingb=Mock(yamlname="thingb"))
+            thinga=Mock(__name__="thinga"),
+            thingb=Mock(__name__="thingb"))
         d_save = d.copy()
         check_yaml_names(d_save)
         assert d == d_save
 
     def test_check_names_mismatch(self):
         d = dict(
-            thinga=Mock(yamlname="thinga"),
-            thingb=Mock(yamlname="thingc"))
+            thinga=Mock(__name__="thinga"),
+            thingb=Mock(__name__="thingc"))
         d_save = d.copy()
         with self.assertRaises(AssertionError) as cm:
             check_yaml_names(d_save)
@@ -118,20 +118,27 @@ class TestYamlUtil(unittest.TestCase):
 - builtin.parameters.string:
     name: something
 
+- builtin.defines.docstring:
+    value: My special docstring
+
 - builtin.controllers.ManagerController:
     mri: m
 """)
         sections = Section.from_yaml(filename)
         assert sections == (dict(
             blocks=[],
+            defines=[ANY],
             parameters=[ANY],
             controllers=[ANY],
             parts=[],
-            includes=[]), "yamltest")
+            includes=[]), "yamltest", "My special docstring")
         assert sections[0]["parameters"][0].name == "builtin.parameters.string"
         assert sections[0]["parameters"][0].param_dict == dict(name="something")
         assert sections[0]["controllers"][0].name == "builtin.controllers.ManagerController"
         assert sections[0]["controllers"][0].param_dict == dict(mri="m")
+        assert sections[0]["defines"][0].name == "builtin.defines.docstring"
+        assert sections[0]["defines"][0].param_dict == dict(
+            value="My special docstring")
 
     def test_substitute_params(self):
         section = Section(

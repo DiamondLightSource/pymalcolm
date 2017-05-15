@@ -8,6 +8,7 @@ class TestBaseController(unittest.TestCase):
     def test_init(self):
         params = Mock()
         params.mri = "MyMRI"
+        params.description = "My description"
         process = Mock()
         o = BasicController(process, [], params)
         assert o.mri == params.mri

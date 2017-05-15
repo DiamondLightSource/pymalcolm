@@ -12,9 +12,9 @@
 
 - builtin.defines.docstring:
     value: |
-      Device block corresponding to SimDetector + stat + pos + hdf writer.
+      Device block corresponding to ADAndor + stat + pos + hdf writer.
 
-      - Detector driver should have pv prefix $(pvPrefix):DET
+      - Detector driver should have pv prefix $(pvPrefix):CAM
       - Pos should have pv prefix $(pvPrefix):POS
       - Stat should have pv prefix $(pvPrefix):STAT
       - HDF should have pv prefix $(pvPrefix):HDF5
@@ -24,14 +24,14 @@
     configDir: $(configDir)
     description: $(docstring)
 
-- ADCore.blocks.sim_detector_driver_block:
+- ADAndor.blocks.andor_detector_driver_block:
     mri: $(mriPrefix):DRV
-    prefix: $(pvPrefix):DET
+    prefix: $(pvPrefix):CAM
 
-- ADCore.parts.SimDetectorDriverPart:
+- ADAndor.parts.AndorDriverPart:
     name: DRV
     mri: $(mriPrefix):DRV
-    readoutTime: 40e-6
+    readoutTime: 13e-3
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mriPrefix):STAT

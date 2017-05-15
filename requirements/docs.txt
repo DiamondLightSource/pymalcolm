@@ -1,4 +1,4 @@
 sphinx>=1.4.9
-sphinxcontrib-plantuml
 numpy
 ipython
+sphinx_rtd_theme

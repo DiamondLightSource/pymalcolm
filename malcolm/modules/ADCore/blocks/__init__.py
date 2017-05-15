@@ -1,7 +1,5 @@
 from malcolm.yamlutil import make_block_creator, check_yaml_names
 
-detector_runnable_block = make_block_creator(
-    __file__, "detector_runnable_block.yaml")
 hdf_writer_block = make_block_creator(
     __file__, "hdf_writer_block.yaml")
 position_labeller_block = make_block_creator(

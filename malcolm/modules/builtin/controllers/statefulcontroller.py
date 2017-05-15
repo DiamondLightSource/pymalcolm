@@ -54,9 +54,9 @@ class StatefulStates(object):
         """Add an allowed transition state
 
         Args:
-            initial_state(str): Initial state
-            allowed_states(list): str or [str] states that initial_state can
-                transition to
+            initial_state (str): Initial state
+            allowed_states (str or list): state or list of states that
+                initial_state can transition to
         """
         if not isinstance(allowed_states, list):
             allowed_states = [allowed_states]

@@ -36,6 +36,15 @@ def _create_blocks_and_parts(process, sections, params):
     return parts
 
 
+def _create_defines(sections, yamlname, params):
+    defines = dict(yamlname=yamlname, docstring="")
+    if params:
+        defines.update(params)
+    for section in sections["defines"]:
+        defines.update(section.instantiate(defines))
+    return defines
+
+
 def check_yaml_names(globals_d):
     keys = list(globals_d)
     for k in keys:
@@ -43,14 +52,14 @@ def check_yaml_names(globals_d):
         if v in (make_include_creator, make_block_creator):
             # don't need these
             globals_d.pop(k)
-        elif hasattr(v, "yamlname"):
-            assert v.yamlname == k, \
+        elif hasattr(v, "__name__"):
+            assert v.__name__ == k, \
                 "%r should be called %r as it comes from %r" % (
-                    k, v.yamlname, v.yamlname + ".yaml")
+                    k, v.__name__, v.__name__ + ".yaml")
 
 
 def make_include_creator(yaml_path, filename=None):
-    sections, yamlname = Section.from_yaml(yaml_path, filename)
+    sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
 
     # Check we don't have any controllers
     assert len(sections["controllers"]) == 0, \
@@ -59,14 +68,13 @@ def make_include_creator(yaml_path, filename=None):
     # Add any parameters to the takes arguments
     @method_takes(*_create_takes_arguments(sections))
     def include_creator(process, params=None):
-        if params:
-            params = dict(params)
-        else:
-            params = {}
-        params["yamlname"] = yamlname
-        return _create_blocks_and_parts(process, sections, params)
+        # Create the param dict of the static defined arguments
+        defines = _create_defines(sections, yamlname, params)
+        return _create_blocks_and_parts(process, sections, defines)
 
-    include_creator.yamlname = yamlname
+    include_creator.__doc__ = docstring
+    include_creator.__name__ = yamlname
+
     return include_creator
 
 
@@ -86,7 +94,7 @@ def make_block_creator(yaml_path, filename=None):
             blocks listed then they will be called. All created blocks
             by this or any sub collection will be returned
     """
-    sections, yamlname = Section.from_yaml(yaml_path, filename)
+    sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
 
     # Check we have only one controller
     assert len(sections["controllers"]) == 1, \
@@ -96,21 +104,19 @@ def make_block_creator(yaml_path, filename=None):
     # Add any parameters to the takes arguments
     @method_takes(*_create_takes_arguments(sections))
     def block_creator(process, params=None):
-        if params:
-            params = dict(params)
-        else:
-            params = {}
-        params["yamlname"] = yamlname
-
-        parts = _create_blocks_and_parts(process, sections, params)
+        # Create the param dict of the static defined arguments
+        defines = _create_defines(sections, yamlname, params)
+        parts = _create_blocks_and_parts(process, sections, defines)
 
         # Make the controller
-        controller = controller_section.instantiate(params, process, parts)
+        controller = controller_section.instantiate(defines, process, parts)
         process.add_controller(controller.mri, controller)
 
         return controller
 
-    block_creator.yamlname = yamlname
+    block_creator.__doc__ = docstring
+    block_creator.__name__ = yamlname
+
     return block_creator
 
 
@@ -161,7 +167,7 @@ class Section(object):
 
     @classmethod
     def from_yaml(cls, yaml_path, filename=None):
-        """Split a dictionary into parameters, controllers, parts and blocks
+        """Split a dictionary into parameters controllers parts blocks defines
 
         Args:
             yaml_path (str): File path to YAML file, or a file in the same dir
@@ -169,7 +175,8 @@ class Section(object):
                 the yaml_path (so yaml_path can be __file__)
 
         Returns:
-            dict: dictionary containing sections sub dictionaries lists. E.g.
+            tuple: (sections, yamlname, docstring) where sections is a
+                dictionary containing sections sub dictionaries lists. E.g.
                 {
                     "parameters": [
                         Section(name="builtin.parameters.string",
@@ -192,8 +199,10 @@ class Section(object):
             text = f.read()
         # First separate them into their relevant sections
         ds = yaml.load(text, Loader=yaml.RoundTripLoader)
+        docstring = None
         sections = dict(
-            parameters=[], controllers=[], parts=[], blocks=[], includes=[])
+            parameters=[], controllers=[], parts=[], blocks=[], includes=[],
+            defines=[])
         for d in ds:
             assert len(d) == 1, \
                 "Expected section length 1, got %d" % len(d)
@@ -202,17 +211,19 @@ class Section(object):
             split = name.split(".")
             if len(split) != 3:
                 raise ImportError(
-                    "%s:%d: Expected something like builtin.parts.ChildPart. "
+                    "%s:%d: Expected something like 'builtin.parts.ChildPart'. "
                     "Got %r" % (yaml_path, lineno, name))
             section = split[1]
             if section in sections:
                 sections[section].append(cls(
                     yaml_path, lineno, name, d[name]))
+                if name == "builtin.defines.docstring":
+                    docstring = d[name]["value"]
             else:
                 raise ImportError("%s:%d: Unknown section name %s" % (
                     yaml_path, lineno, name))
 
-        return sections, yamlname
+        return sections, yamlname, docstring
 
     def substitute_params(self, substitutions):
         """Substitute param values in our param_dict from params

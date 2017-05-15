@@ -3,8 +3,10 @@ from malcolm.modules.builtin.vmetas import StringMeta
 
 
 @method_takes(
-    "mri", StringMeta("Malcolm resource id of created block"), REQUIRED)
+    "mri", StringMeta("Malcolm resource id of created block"), REQUIRED,
+    "description", StringMeta("Description for the created block"), "")
 class BasicController(Controller):
     def __init__(self, process, parts, params):
         self.params = params
-        super(BasicController, self).__init__(process, params.mri, parts)
+        super(BasicController, self).__init__(
+            process, params.mri, parts, params.description)

@@ -8,7 +8,7 @@ Malcolm was created as part of the `Mapping project`_ at `Diamond Light Source`_
 in order to improve the performance of continuous scanning.
 
 What can Malcolm do?
---------------------
+====================
 
 Malcolm provides a layer on top of `EPICS`_
 that wraps up groups of `PVs`_ and presents a higher level scanning interface to
@@ -43,15 +43,35 @@ how Diamond uses it, but it can also be used in other ways:
   communicate and synchronise objects between multiple Malcolm processes
 
 How is the documentation structured?
-------------------------------------
+====================================
 
-The aim of this documentation is to educate and enlighten users of Malcolm at
-all levels of expertise. To achieve this the documentation is broken into two
-sections:
+Structured into `tutorials-doc` and `reference-doc`
 
-* :ref:`user-docs` - How to run a Malcolm server that talks to supported
-  hardware and write Malcolm support for a new piece of hardware
-* :ref:`developer-docs` - Protocol specifications and API documentation
+Using Malcolm with existing support
+-----------------------------------
+
+Read these pages
+
+Writing support for hardware in Malcolm
+---------------------------------------
+
+Read these pages
+
+Controlling Malcolm via comms protocols
+---------------------------------------
+
+Read these pages
+
+
+Installation
+============
+
+For now, in a Diamond environment just run::
+
+    git clone https://github.com/dls-controls/pymalcolm
+
+All optional modules are already installed and available
+
 
 .. _Mapping project:
     https://indico.esss.lu.se/event/357/session/8/contribution/63

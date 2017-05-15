@@ -10,6 +10,7 @@ from malcolm.modules.scanning.controllers import RunnableController
 
 
 class StatsPluginPart(StatefulChildPart):
+    """Stats plugin"""
 
     @RunnableController.ReportStatus
     def report_info(self, _):

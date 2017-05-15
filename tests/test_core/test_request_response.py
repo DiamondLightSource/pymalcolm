@@ -10,7 +10,7 @@ from malcolm.core.response import Return, Error, Update, Delta, Response
 
 def get_doc_json(fname):
     malcolm_root = os.path.join(os.path.dirname(__file__), "..", "..")
-    json_root = os.path.join(malcolm_root, "docs", "developer_docs", "json")
+    json_root = os.path.join(malcolm_root, "docs", "reference", "json")
     with open(os.path.join(json_root, fname)) as f:
         lines = f.readlines()
     text = "\n".join(lines[1:])

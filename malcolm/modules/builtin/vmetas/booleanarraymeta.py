@@ -15,7 +15,7 @@ class BooleanArrayMeta(VArrayMeta):
             value: Value to validate
 
         Returns:
-            numpy.ndarray: Value as a boolean numpy array
+            :obj:`numpy.ndarray` Value as a boolean numpy array
         """
         return validate_array(value, np.bool_)
 

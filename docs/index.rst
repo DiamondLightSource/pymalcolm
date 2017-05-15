@@ -10,52 +10,28 @@ Malcolm
 
     Introduction <intro>
 
-.. _user-docs:
+.. _tutorials-doc:
 
 .. toctree::
     :maxdepth: 1
-    :caption: User Documentation
+    :caption: Tutorials
 
-    user_docs/install
-    user_docs/hello
-    user_docs/counter
-    user_docs/generator
+    tutorials/hello
+    tutorials/counter
+    tutorials/generator
 
-.. _developer-docs:
+.. _reference-doc:
 
 .. toctree::
     :maxdepth: 1
-    :caption: Developer Documentation
+    :caption: Reference
 
-    developer_docs/structure
-    developer_docs/messages
-    developer_docs/tags
-    build/api
-    developer_docs/contributing
-    developer_docs/release_notes
-
-.. _Mapping project:
-    https://indico.esss.lu.se/event/357/session/8/contribution/63
-
-.. _EPICS:
-    http://www.aps.anl.gov/epics/
-
-.. _PVs:
-    https://ics-web.sns.ornl.gov/kasemir/train_2006/1_3_CA_Overview.pdf
-
-.. _GDA:
-    http://www.opengda.org/
-
-.. _pvAccess:
-    http://epics-pvdata.sourceforge.net/arch.html#Network
-
-.. _websockets:
-    https://en.wikipedia.org/wiki/WebSocket
-
-.. _Diamond Light Source:
-    http://www.diamond.ac.uk
-
-.. _JSON:
-    http://www.json.org/
+    reference/glossary
+    reference/structure
+    reference/messages
+    reference/tags
+    reference/api/index
+    reference/contributing
+    reference/release_notes
 
 

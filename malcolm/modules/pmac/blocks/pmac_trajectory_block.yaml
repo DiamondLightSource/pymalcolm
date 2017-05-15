@@ -4,14 +4,18 @@
 
 - builtin.parameters.string:
     name: prefix
-    description: the root PV for the trajectory scan template
+    description: The root PV for the trajectory scan template
 
 - builtin.parameters.string:
     name: statPrefix
-    description: the root PV for the pmacStatus template
+    description: The root PV for the pmacStatus template
+
+- builtin.defines.docstring:
+    value: Hardware block corresponding to PVs used for trajectory scan
 
 - builtin.controllers.StatefulController:
     mri: $(mri)
+    description: $(docstring)
 
 - ca.parts.CALongPart:
     name: i10

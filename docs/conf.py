@@ -6,29 +6,18 @@ import os
 import re
 import sys
 
-from pkg_resources import require
-require('mock')
-from mock import MagicMock
-
-# Mock out failing imports
-MOCK_MODULES = ["tornado", "tornado.websocket", "tornado.websocket",
-                "tornado.web", "tornado.httpserver", "tornado.ioloop",
-                "cothread", "scanpointgenerator"]
-sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
-
 
 def get_version():
-    """
-    Extracts the version number from the version.py file.
-    """
+    """Extracts the version number from the version.py file."""
     VERSION_FILE = '../malcolm/version.py'
-    mo = re.search(
-        r'^__version__ = [\'"]([^\'"]*)[\'"]', open(VERSION_FILE, 'rt').read(), re.M)
+    mo = re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]',
+                   open(VERSION_FILE, 'rt').read(), re.M)
     if mo:
         return mo.group(1)
     else:
         raise RuntimeError(
             'Unable to find version string in {0}.'.format(VERSION_FILE))
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -40,12 +29,25 @@ except:
 else:
     require("mock")
     require("numpy")
+    require("ruamel.yaml")
+
+from mock import MagicMock
+
+# Mock out failing imports
+MOCK_MODULES = ["tornado", "tornado.websocket", "tornado.websocket",
+                "tornado.web", "tornado.httpserver", "tornado.ioloop",
+                "cothread", "scanpointgenerator"]
+
+sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
+
+
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..')))
 
 sys.path.append(os.path.dirname(__file__))
+
 from generate_api_docs import generate_docs
 
-generate_docs()  # Generate api.rst
+generate_docs()  # Generate modules_api.rst
 
 # -- General configuration ------------------------------------------------
 
@@ -100,7 +102,9 @@ pygments_style = 'sphinx'
 intersphinx_mapping = dict(
     python=('http://docs.python.org/2.7/', None),
     scanpointgenerator=(
-        'http://scanpointgenerator.readthedocs.io/en/latest/', None))
+        'http://scanpointgenerator.readthedocs.io/en/latest/', None),
+    numpy=('https://docs.scipy.org/doc/numpy/', None),
+)
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
 inheritance_graph_attrs = dict(rankdir="TB")
@@ -110,7 +114,6 @@ inheritance_graph_attrs = dict(rankdir="TB")
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 # on_rtd is whether we are on readthedocs.org
-import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if not on_rtd:  # only import and set the theme if we're building docs locally

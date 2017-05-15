@@ -31,7 +31,7 @@ class Controller(Loggable):
     # Attributes
     health = None
 
-    def __init__(self, process, mri, parts):
+    def __init__(self, process, mri, parts, description=""):
         self.set_logger_extra(mri=mri)
         self.process = process
         self.mri = mri
@@ -51,6 +51,7 @@ class Controller(Loggable):
             self.add_part(part)
         self._lock = RLock(self.use_cothread)
         self._block = BlockModel()
+        self._block.meta.set_description(description)
         self._notifier = Notifier(mri, self._lock, self._block)
         self._block.set_notifier_path(self._notifier, [mri])
         self._write_functions = {}

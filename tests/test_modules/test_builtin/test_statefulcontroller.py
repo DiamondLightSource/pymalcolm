@@ -54,6 +54,7 @@ class TestStatefulController(unittest.TestCase):
         self.process = Process("proc")
         self.params = Mock()
         self.params.mri = "MyMRI"
+        self.params.description = "My description"
         self.part = MyPart("testpart")
         self.o = StatefulController(self.process, [self.part], self.params)
         self.process.add_controller(self.params.mri, self.o)
