@@ -12,4 +12,4 @@ fem_detector_driver_block = make_block_creator(
 fem_detector_manager_block = make_block_creator(
     __file__, "fem_detector_manager_block.yaml")
 
-check_yaml_names(globals())
+__all__ = check_yaml_names(globals())

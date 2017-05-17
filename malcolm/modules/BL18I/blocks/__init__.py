@@ -12,4 +12,4 @@ i18_table01_manager_block = make_block_creator(
 i18_table03_manager_block = make_block_creator(
     __file__, "i18_table03_manager_block.yaml")
 
-check_yaml_names(globals())
+__all__ = check_yaml_names(globals())

@@ -6,8 +6,7 @@ class StringArrayMeta(VArrayMeta):
     """Meta object containing information for a string array"""
 
     def validate(self, value):
-        """
-        Verify value can be iterated and cast elements to strings
+        """Verify value can be iterated and cast elements to strings
 
         Args:
             value (list): value to be validated

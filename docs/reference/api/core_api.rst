@@ -225,6 +225,9 @@ This is the core of Malcolm
 
     Objects that need to be sent over json implement the Serializable class:
 
+.. autoclass:: Spawned
+    :members:
+
 
 .. autoclass:: StringArray
     :members:

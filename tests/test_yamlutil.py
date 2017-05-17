@@ -79,19 +79,18 @@ class TestYamlUtil(unittest.TestCase):
 
     def test_check_names_good(self):
         d = dict(
-            thinga=Mock(__name__="thinga"),
-            thingb=Mock(__name__="thingb"))
-        d_save = d.copy()
-        check_yaml_names(d_save)
-        assert d == d_save
+            thinga=Mock(yamlname="thinga"),
+            thingb=Mock(yamlname="thingb"),
+            hidden=Mock(spec=dict))
+        a = check_yaml_names(d)
+        assert a == ["thinga", "thingb"]
 
     def test_check_names_mismatch(self):
         d = dict(
-            thinga=Mock(__name__="thinga"),
-            thingb=Mock(__name__="thingc"))
-        d_save = d.copy()
+            thinga=Mock(yamlname="thinga"),
+            thingb=Mock(yamlname="thingc"))
         with self.assertRaises(AssertionError) as cm:
-            check_yaml_names(d_save)
+            check_yaml_names(d)
         assert str(cm.exception) == \
             "'thingb' should be called 'thingc' as it comes from 'thingc.yaml'"
 

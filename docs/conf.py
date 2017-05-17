@@ -34,9 +34,7 @@ else:
 from mock import MagicMock
 
 # Mock out failing imports
-MOCK_MODULES = ["tornado", "tornado.websocket", "tornado.websocket",
-                "tornado.web", "tornado.httpserver", "tornado.ioloop",
-                "cothread", "scanpointgenerator"]
+MOCK_MODULES = []
 
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
@@ -45,9 +43,42 @@ sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..')))
 
 sys.path.append(os.path.dirname(__file__))
 
-from generate_api_docs import generate_docs
 
-generate_docs()  # Generate modules_api.rst
+# Autodoc event handlers
+def skip_member(app, what, name, obj, skip, options):
+    # Override @method_takes to always be documented
+    if hasattr(obj, "MethodModel") and hasattr(obj.MethodModel, "takes") and \
+            obj.MethodModel.takes.elements:
+        return False
+
+
+def process_docstring(app, what, name, obj, options, lines):
+    # Add some documentation for @method_takes decorated members
+    if hasattr(obj, "MethodModel") and obj.MethodModel.takes.elements:
+        # Add a new docstring
+        lines.append("params:")
+        for param, vmeta in obj.MethodModel.takes.elements.items():
+            lines.append(
+                "    - %s (%s):" % (param, vmeta.doc_type_string()))
+            description = vmeta.description.strip()
+            if not description[-1] in ".?!,":
+                description += "."
+            if param in obj.MethodModel.takes.required:
+                default = "Required"
+            elif param in obj.MethodModel.defaults:
+                default = "Default=%r" % (obj.MethodModel.defaults[param],)
+            else:
+                default = "Optional"
+            lines.append("        %s %s" % (description, default))
+        lines.append("")
+
+
+def setup(app):
+    app.connect('autodoc-skip-member', skip_member)
+    app.connect('autodoc-process-docstring', process_docstring)
+    from generate_api_docs import generate_docs
+    generate_docs()  # Generate modules_api.rst
+
 
 # -- General configuration ------------------------------------------------
 
@@ -59,7 +90,6 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.graphviz',
     'IPython.sphinxext.ipython_console_highlighting',
-    'malcolm.sphinxext',
 ]
 
 autoclass_content = "both"
@@ -82,7 +112,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'contents'
 
 # General information about the project.
 project = u'malcolm'
@@ -100,10 +130,11 @@ exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
 intersphinx_mapping = dict(
-    python=('http://docs.python.org/2.7/', None),
+    python=('https://docs.python.org/2.7/', None),
     scanpointgenerator=(
         'http://scanpointgenerator.readthedocs.io/en/latest/', None),
     numpy=('https://docs.scipy.org/doc/numpy/', None),
+    tornado=('http://www.tornadoweb.org/en/stable/', None),
 )
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
@@ -118,8 +149,10 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if not on_rtd:  # only import and set the theme if we're building docs locally
     import sphinx_rtd_theme
+    html_context = dict(css_files=[])
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []

@@ -6,8 +6,7 @@ class StringMeta(VMeta):
     """Meta object containing information for a string"""
 
     def validate(self, value):
-        """
-        Check if the value is None and returns None, else casts value to a
+        """Check if the value is None and returns "", else casts value to a
         string and returns it
 
         Args:

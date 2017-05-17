@@ -213,7 +213,7 @@ class Context(Loggable):
 
         Returns:
             Future: a single Future that will resolve when the path matches
-                good_value or bad_values
+            good_value or bad_values
         """
         if callable(good_value):
             def condition_satisfied(value):

@@ -6,4 +6,4 @@ filewriting_collection = make_include_creator(
 ndarray_parts = make_include_creator(__file__, "ndarray_parts.yaml")
 ndpluginbase_parts = make_include_creator(__file__, "ndpluginbase_parts.yaml")
 
-check_yaml_names(globals())
+__all__ = check_yaml_names(globals())

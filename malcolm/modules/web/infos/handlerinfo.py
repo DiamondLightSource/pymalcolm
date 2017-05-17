@@ -6,7 +6,8 @@ class HandlerInfo(Info):
 
     Args:
         regex (str): Path for this handler to get requests from. E.g. r"/ws"
-        request_class (RequestHandler): Request handler to instantiate for this
+        request_class (tornado.web.RequestHandler): Request handler to
+            instantiate for this
         **kwargs: Keyword args to be passed to request_class constructor
     """
     def __init__(self, regexp, request_class, **kwargs):

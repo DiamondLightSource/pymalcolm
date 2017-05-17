@@ -1,9 +1,9 @@
+.. _api:
+
 Malcolm API
 ===========
 
 See `genindex` for an index by class name.
-
-.. _api:
 
 .. toctree::
     :maxdepth: 1

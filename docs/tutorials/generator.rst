@@ -1,3 +1,5 @@
+.. _generator_tutorial:
+
 Generator Tutorial
 ==================
 
@@ -56,28 +58,43 @@ This tree of Blocks is probably better viewed as a diagram:
     graph [fontname=Arial fontsize=10]
     edge [fontname=Arial fontsize=10 arrowhead=vee]
 
-    subgraph cluster_ticker {
-        label="TICKER"
-        ranksep=0.1
-        ticker_c [label="RunnableController"]
-        x [label="{ScanTickerPart|name: 'x'}"]
-        y [label="{ScanTickerPart|name: 'y'}"]
-        ticker_c -> x [style=invis]
-        ticker_c -> y [style=invis]
+    subgraph cluster_device {
+        label="Device layer"
+		style=filled
+		color=lightgrey
+
+        subgraph cluster_ticker {
+            label="TICKER"
+            ranksep=0.1
+		    color=white
+            ticker_c [label="RunnableController"]
+            x [label="{ScanTickerPart|name: 'x'}"]
+            y [label="{ScanTickerPart|name: 'y'}"]
+            ticker_c -> x [style=invis]
+            ticker_c -> y [style=invis]
+        }
     }
 
-    subgraph cluster_counterx {
-        label="COUNTERX"
-        counterx_c [label="BasicController"]
-        counterx_p [label="CounterPart"]
-        counterx_c -> counterx_p [style=invis]
-    }
+    subgraph cluster_hardware {
+        label="Hardware layer"
+		style=filled
+		color=lightgrey
 
-    subgraph cluster_countery {
-        label="COUNTERY"
-        countery_c [label="BasicController"]
-        countery_p [label="CounterPart"]
-        countery_c -> countery_p [style=invis]
+        subgraph cluster_counterx {
+            label="COUNTERX"
+            color=white
+            counterx_c [label="BasicController"]
+            counterx_p [label="CounterPart"]
+            counterx_c -> counterx_p [style=invis]
+        }
+
+        subgraph cluster_countery {
+            label="COUNTERY"
+            color=white
+            countery_c [label="BasicController"]
+            countery_p [label="CounterPart"]
+            countery_c -> countery_p [style=invis]
+        }
     }
 
     x -> counterx_c [lhead=cluster_counterx minlen=3]
@@ -107,7 +124,6 @@ Now let's see some of the Methods and Attributes that are created:
     configure [shape=Mrecord label="{Method|name: 'configure'}"]
     run [shape=Mrecord label="{Method|name: 'run'}"]
     state [shape=Mrecord label="{Attribute|name: 'state'}"]
-    health [shape=Mrecord label="{Attribute|name: 'health'}"]
 
     subgraph cluster_view {
         label="View"
@@ -115,12 +131,10 @@ Now let's see some of the Methods and Attributes that are created:
         block -> configure
         block -> run
         block -> state
-        block -> health
     }
 
     {rank=same;controller block}
 
-    controller -> health [style=dashed]
     controller -> state [style=dashed]
     controller -> configure [style=dashed]
     controller -> run [style=dashed]

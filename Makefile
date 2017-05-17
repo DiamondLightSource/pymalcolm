@@ -33,8 +33,7 @@ testpublish:
 test:
 	PYTHONPATH=../scanpointgenerator $(PYTHON) setup.py test
 
-docs/html/index.html: $(wildcard docs/*.rst docs/*/*.rst docs/conf.py malcolm/modules/*/docs/*.rst)
+docs:
 	sphinx-build -b html docs docs/html
 
-docs: docs/html/index.html
-
+.PHONY: docs

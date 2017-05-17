@@ -5,4 +5,4 @@ zebra_driver_block = make_block_creator(
 zebra_runnable_block = make_block_creator(
     __file__, "zebra_runnable_block.yaml")
 
-check_yaml_names(globals())
+__all__ = check_yaml_names(globals())

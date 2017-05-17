@@ -58,7 +58,7 @@ class Request(Serializable):
         """Create an Error Response object to signal an error
 
         Args:
-            exception (Exception): Message explaining error
+            exception (exceptions.Exception): Message explaining error
         """
 
         response = Error(id=self.id, message=str(exception))

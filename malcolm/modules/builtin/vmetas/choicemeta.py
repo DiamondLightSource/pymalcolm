@@ -28,7 +28,7 @@ class ChoiceMeta(VMeta):
         Returns:
             str: Value if it is valid
         Raises:
-            ValueError: If value not valid
+            exceptions.ValueError: If value not valid
         """
         if value is None:
             if self.choices:

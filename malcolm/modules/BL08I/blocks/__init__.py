@@ -15,4 +15,4 @@ i08_scan_combined_block = make_block_creator(
 i08_two_det_scan_combined_block = make_block_creator(
     __file__, "i08_two_det_scan_combined_block.yaml")
 
-check_yaml_names(globals())
+__all__ = check_yaml_names(globals())

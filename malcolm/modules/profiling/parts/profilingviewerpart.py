@@ -1,8 +1,8 @@
 import os
 import inspect
 
-from plop.viewer import IndexHandler, ViewFlatHandler
 from tornado.options import options
+from plop.viewer import IndexHandler, ViewFlatHandler
 
 from malcolm.core import method_takes, Part
 from malcolm.modules.builtin.vmetas import StringMeta

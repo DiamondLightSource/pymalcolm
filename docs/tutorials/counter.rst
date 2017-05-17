@@ -1,3 +1,5 @@
+.. _counter_tutorial:
+
 Counter Tutorial
 ================
 

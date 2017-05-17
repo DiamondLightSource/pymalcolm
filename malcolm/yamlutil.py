@@ -46,16 +46,14 @@ def _create_defines(sections, yamlname, params):
 
 
 def check_yaml_names(globals_d):
-    keys = list(globals_d)
-    for k in keys:
-        v = globals_d[k]
-        if v in (make_include_creator, make_block_creator):
-            # don't need these
-            globals_d.pop(k)
-        elif hasattr(v, "__name__"):
-            assert v.__name__ == k, \
+    all_list = []
+    for k, v in sorted(globals_d.items()):
+        if hasattr(v, "yamlname"):
+            assert v.yamlname == k, \
                 "%r should be called %r as it comes from %r" % (
-                    k, v.__name__, v.__name__ + ".yaml")
+                    k, v.yamlname, v.yamlname + ".yaml")
+            all_list.append(k)
+    return all_list
 
 
 def make_include_creator(yaml_path, filename=None):
@@ -74,6 +72,7 @@ def make_include_creator(yaml_path, filename=None):
 
     include_creator.__doc__ = docstring
     include_creator.__name__ = yamlname
+    include_creator.yamlname = yamlname
 
     return include_creator
 
@@ -116,6 +115,7 @@ def make_block_creator(yaml_path, filename=None):
 
     block_creator.__doc__ = docstring
     block_creator.__name__ = yamlname
+    block_creator.yamlname = yamlname
 
     return block_creator
 

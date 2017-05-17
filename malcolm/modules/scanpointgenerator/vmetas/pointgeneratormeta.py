@@ -18,3 +18,6 @@ class PointGeneratorMeta(VMeta):
         else:
             raise TypeError(
                 "Value %s must be a Generator object or dictionary" % value)
+
+    def doc_type_string(self):
+        return "CompoundGenerator"

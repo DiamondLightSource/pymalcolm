@@ -13,7 +13,7 @@ class VMeta(Meta):
         Args:
             value: Value to validate
         """
-        raise NotImplementedError()
+        raise NotImplementedError(self)
 
     def create_attribute(self, initial_value=None):
         """Make an AttributeModel instance of the correct type for this Meta
@@ -32,4 +32,4 @@ class VMeta(Meta):
 
         For example, "str" or "numpy.int32"
         """
-        raise NotImplementedError()
+        raise NotImplementedError(self)

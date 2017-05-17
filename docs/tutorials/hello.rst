@@ -1,7 +1,9 @@
+.. _hello_tutorial:
+
 Hello World Tutorial
 ====================
 
-If you have followed the installation guide you will have a checked out a
+If you have followed the `installation_guide` you will have a checked out a
 copy of pymalcolm which includes some example code.
   
 So now would be a good time for a "Hello World" tutorial.

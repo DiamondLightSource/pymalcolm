@@ -5,4 +5,4 @@ pmac_trajectory_block = make_block_creator(
     __file__, "pmac_trajectory_block.yaml")
 raw_motor_block = make_block_creator(__file__, "raw_motor_block.yaml")
 
-check_yaml_names(globals())
+__all__ = check_yaml_names(globals())

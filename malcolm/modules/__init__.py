@@ -1,12 +1,13 @@
 class Importer(object):
     def __init__(self):
         self.update_dict = {}
+        self.ignore = ["docs"]
 
     def import_subpackages(self, path):
         import os
         dirname = os.path.join(os.path.dirname(__file__), *path)
         for f in os.listdir(dirname):
-            if os.path.isdir(os.path.join(dirname, f)):
+            if f not in self.ignore and os.path.isdir(os.path.join(dirname, f)):
                 self.try_import_path(path + [f])
 
     def try_import_path(self, path):

@@ -11,4 +11,4 @@ sim_detector_runnable_block = make_block_creator(
 stats_plugin_block = make_block_creator(
     __file__, "stats_plugin_block.yaml")
 
-check_yaml_names(globals())
+__all__ = check_yaml_names(globals())

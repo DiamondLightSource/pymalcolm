@@ -1,4 +1,4 @@
-.. _messages:
+.. _message_structure:
 
 Message Structure
 =================
@@ -52,7 +52,7 @@ Dictionary with members:
     List of strings specifying the path to the Block the Block or substructure
     of the Block that should be returned. The first element will be the name of
     the Block, and any subsequent elements will be paths to traverse within the
-    Block structure. See :ref:`structure` for more details.
+    Block structure. See `block_structure` for more details.
 
 .. container:: toggle
 
@@ -89,11 +89,11 @@ Dictionary with members:
     List of strings specifying the path to the substructure of the Block that
     should be modified. The first element will be the name of the Block, and
     subsequent elements will be paths to traverse within the Block structure.
-    See :ref:`structure` for more details.
+    See `block_structure` for more details.
 - value
     Object value to be set. This will be the dictionary representation of the
     Attribute value type. For simple types this will just be a String or
-    Integer. See :ref:`structure` for how more complex structures are
+    Integer. See `block_structure` for how more complex structures are
     represented.
 
 .. container:: toggle
@@ -121,12 +121,12 @@ Dictionary with members:
 - path
     List of strings specifying the path to the substructure
     of the Block that should be posted to. The first element will be the name of
-    the Block, and the second will be the Method name. See :ref:`structure` for
+    the Block, and the second will be the Method name. See `block_structure` for
     more details.
 - parameters
     Dictionary of parameters that should be Posted. The keys of the dictionary
     are string parameter names, and the types of the values should match those
-    described in the ``takes`` element of the Method. See :ref:`structure` for
+    described in the ``takes`` element of the Method. See `block_structure` for
     details.
 
 .. container:: toggle
@@ -160,7 +160,7 @@ Dictionary with members:
     List of strings specifying the path to the Block the Block or substructure
     of the Block that should be returned. The first element will be the name of
     the Block, and any subsequent elements will be paths to traverse within the
-    Block structure. See :ref:`structure` for more details.
+    Block structure. See `block_structure` for more details.
 - delta (optional)
     If given and is true then send `Delta`_ messages on updates, otherwise
     send `Update`_ messages.
@@ -226,7 +226,7 @@ Dictionary with members:
 - value (optional)
     Object return value if it exists. For `Get`_ this will be the structure of
     the path. For `Post`_ this will be described by the ``returns`` element
-    of the Method. See :ref:`structure` for more details.
+    of the Method. See `block_structure` for more details.
 
 .. container:: toggle
 
@@ -287,7 +287,7 @@ Dictionary with members:
 - value
     Object current value of subscribed path. This will be the dictionary
     representation of the Attribute value type. For simple types this will just
-    be a String or Integer. See :ref:`structure` for how more complex structures
+    be a String or Integer. See `block_structure` for how more complex structures
     are represented.
 
 .. container:: toggle

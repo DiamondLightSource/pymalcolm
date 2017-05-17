@@ -1,20 +1,23 @@
-.. _structure:
+.. _block_structure:
 
 Block Structure
 ===============
 
 To describe how a Block is structured, we will use the `pvData Meta Language`_.
 It is important to note that although many EPICS conventions are followed in
-Malcolm, it is not a required part of it. The typeid of structures (in italics)
-will appear as a string typeid field in JSON serialized messages, and as the
-typeid in pvData serialized messages.
+Malcolm, it is not a required part of it. The typeid of structures (before the
+indented block) will appear as a string typeid field in JSON serialized
+messages, and as the typeid in pvData serialized messages.
 
 There are a number of operations that can be performed on the Block structure,
 such as Get, Put, Subscribe, Post. These will be described in the
-`messages` section. It is important to note that operations such as Get and
-Subscribe will by default operate on the entire Block structure to avoid race
-conditions between substructure updates, but some of the protocols supported
-(like pvAccess) will allow the substructures to be operated on independently.
+`message_structure` section.
+
+.. note::
+    Operations such as Get and Subscribe will by default operate on the entire
+    Block structure to avoid race conditions between substructure updates, but
+    some of the protocols supported (like pvAccess) will allow the substructures
+    to be operated on independently.
 
 Also note the placement of meta objects in the Block structure. The presence of
 a meta element in the structure allows separation of the current value from the
@@ -30,9 +33,7 @@ A Block looks like this::
 
     malcolm:core/Block:1.0
         BlockMeta   meta
-        Attribute   state       // ChoiceMeta
-        Attribute   status      // StringMeta
-        Attribute   busy        // BooleanMeta
+        Attribute   health      // HealthMeta
         {Attribute  <attribute-name>}0+
         {Method <method-name>}0+
 
@@ -40,15 +41,19 @@ A Block looks like this::
     BlockMeta :=
 
     malcolm:core/BlockMeta:1.0
-        string      description // Description of Block
-        string[]    tags  :opt  // e.g. "instance:FlowGraph"
+        string      description     // Description of Block
+        string[]    tags       :opt // For future use
+        bool        writeable  :opt // For future use
+        string      label      :opt // Short label if different to name
 
-The `state` Attribute corresponds to the state described in the
-:ref:`statemachine` section. The `status` Attribute will hold any status
-message that is reported by the Block, for instance reporting on the progress
-through a long running activity. The `busy` Attribute will be true if the state
-is not a Rest state as described in the :ref:`statemachine` section. The tags
-field of the Meta object is defined in the :ref:`tags` section.
+
+The ``health`` `Attribute` will have value "OK" if everything is fine, otherwise
+will be in alarm status and report what is wrong. The other `Attribute` and
+`Method` objects define the interface for this particular `Block` and may
+change, appear and disappear depending on the state of the Block.
+
+The ``meta`` `BlockMeta` defines a description and label for this Block. All
+meta objects have tags that are defined in the `tags_reference`.
 
 An Attribute looks like this::
 
@@ -202,9 +207,9 @@ A Method looks like this::
         string[]    tags           :opt // e.g. "widget:group"
         string[]    required       :opt // These fields will always be present
 
-The `takes` structure describes the arguments that should be passed to the
-Method. The `returns` structure describes what will be returned as a result.
-The `defaults` structure contains default values that will be used if the
+The ``takes`` structure describes the arguments that should be passed to the
+Method. The ``returns`` structure describes what will be returned as a result.
+The ``defaults`` structure contains default values that will be used if the
 argument is not supplied.
 
 Methods are called by sending a Post message to the block with the name of the
@@ -215,7 +220,6 @@ The Map just looks like this::
     Map :=
 
     structure
-        {Arguemnt   <argname>}0+
+        {Argument   <argname>}0+
 
-    
 
