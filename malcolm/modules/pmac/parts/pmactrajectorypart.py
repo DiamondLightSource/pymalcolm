@@ -95,8 +95,11 @@ class PmacTrajectoryPart(StatefulChildPart):
             "Can only do fixed duration at the moment"
         servo_freq = 8388608000. / child.i10.value
         # convert half an exposure to multiple of servo ticks, rounding down
-        # + 0.002 for some observed jitter in the servo frequency (I18)
-        ticks = np.floor(servo_freq * 0.5 * params.generator.duration) + 0.002
+        ticks = np.floor(servo_freq * 0.5 * params.generator.duration)
+        if not np.isclose(servo_freq, 3200):
+            # + 0.002 for some observed jitter in the servo frequency if I10
+            # isn't a whole number (any frequency apart from 3.2 kHz)
+            ticks += 0.002
         # convert to integer number of microseconds, rounding up
         micros = np.ceil(ticks / servo_freq * 1e6)
         # back to duration
