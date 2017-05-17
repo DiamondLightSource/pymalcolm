@@ -3,7 +3,8 @@ malcolm.core
 
 This is the core of Malcolm
 
-.. module:: malcolm.core
+.. automodule:: malcolm.core
+    :members:
 
 .. autoclass:: Alarm
     :members:

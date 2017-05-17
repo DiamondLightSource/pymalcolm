@@ -24,8 +24,7 @@ def generate_docs():
 
         # Add the toctree
         api_docs.write(".. toctree::\n")
-        api_docs.write("    :maxdepth: 1\n")
-        api_docs.write("    :caption: malcolm.modules\n\n")
+        api_docs.write("    :maxdepth: 1\n\n")
 
         # Add entries for each module
         for modulename in sorted(os.listdir(modules_root)):
@@ -71,7 +70,7 @@ def make_automodule_doc(section, docs_build):
     docname = section.rsplit(".")[-1]
     with open(os.path.join(docs_build, docname + "_api.rst"), "w") as f:
         f.write(docname + "\n")
-        f.write("-" * len(docname) + "\n\n")
+        f.write("=" * len(docname) + "\n\n")
         f.write(".. automodule:: %s\n" % section)
         f.write("    :members:\n")
 
@@ -79,7 +78,7 @@ def make_automodule_doc(section, docs_build):
 def make_index_doc(modulename, docs_build, doc_dirs):
     with open(os.path.join(docs_build, "index.rst"), "w") as f:
         f.write(modulename + "\n")
-        f.write("-" * len(modulename) + "\n\n")
+        f.write("=" * len(modulename) + "\n\n")
         f.write(".. module:: malcolm.modules.%s\n\n" % modulename)
         f.write(".. toctree::\n")
         f.write("    :maxdepth: 1\n")

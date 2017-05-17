@@ -54,7 +54,8 @@ def skip_member(app, what, name, obj, skip, options):
 
 def process_docstring(app, what, name, obj, options, lines):
     # Add some documentation for @method_takes decorated members
-    if hasattr(obj, "MethodModel") and obj.MethodModel.takes.elements:
+    if hasattr(obj, "MethodModel") and hasattr(obj.MethodModel, "takes") and \
+            obj.MethodModel.takes.elements:
         # Add a new docstring
         lines.append("params:")
         for param, vmeta in obj.MethodModel.takes.elements.items():

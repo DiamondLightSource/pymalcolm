@@ -1,3 +1,6 @@
+Contents
+========
+
 .. toctree::
     :caption: Introduction
 
@@ -22,6 +25,13 @@
     reference/structure
     reference/messages
     reference/tags
-    reference/api/index
     reference/contributing
     reference/release_notes
+
+.. toctree::
+    :caption: API
+
+    genindex
+    api/core_api
+    api/tags_api
+    build/modules_api
