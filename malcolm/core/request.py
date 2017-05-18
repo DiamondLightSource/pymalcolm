@@ -2,7 +2,8 @@ import logging
 
 from malcolm.compat import OrderedDict, str_
 from .response import Return, Error, Update, Delta
-from .serializable import Serializable, deserialize_object, serialize_object
+from .serializable import Serializable, deserialize_object, serialize_object, \
+    json_encode
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -27,6 +28,12 @@ class Request(Serializable):
         """
         self.set_id(id)
         self.set_callback(callback)
+
+    def __repr__(self):
+        d = self.to_dict()
+        if self.callback:
+            d["callback"] = repr(self.callback)
+        return json_encode(d)
 
     def set_id(self, id):
         """Set the identifier for the request

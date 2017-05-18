@@ -20,14 +20,17 @@ class When(object):
         self.context = context
 
     def check_condition(self, value):
-        try:
-            if self.condition_satisfied(value):
-                # All done, so unsubscribe
+        if self.future:
+            try:
+                if self.condition_satisfied(value):
+                    # All done, so unsubscribe
+                    self.context.unsubscribe(self.future)
+                    self.future = None
+            except Exception:
+                # Bad value, so unsubscribe
                 self.context.unsubscribe(self.future)
-        except Exception:
-            # Bad value, so unsubscribe
-            self.context.unsubscribe(self.future)
-            raise
+                self.future = None
+                raise
 
 
 class Context(Loggable):
@@ -42,6 +45,7 @@ class Context(Loggable):
         self._futures = {}  # dict {int id: Future)}
         self._subscriptions = {}  # dict {int id: (func, args)}
         self._requests = {}  # dict {Future: Request}
+        self._pending_unsubscribes = {}  # dict {Future: Subscribe}
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
 
@@ -169,15 +173,20 @@ class Context(Loggable):
         Args:
             future (Future): The future of the original subscription
         """
+        assert future not in self._pending_unsubscribes, \
+            "%r has already been unsubscribed from" % \
+            self._pending_unsubscribes[future]
         subscribe = self._requests[future]
         request = Unsubscribe(subscribe.id, self._q.put)
         controller = self.get_controller(subscribe.path[0])
         controller.handle_request(request)
+        self._pending_unsubscribes[future] = subscribe
 
     def unsubscribe_all(self):
         """Send an unsubscribe for all active subscriptions"""
         futures = [f for f, r in self._requests.items()
-                   if isinstance(r, Subscribe)]
+                   if isinstance(r, Subscribe)
+                   and f not in self._pending_unsubscribes]
         if futures:
             self.log.debug("Unsubscribing from %d futures", len(futures))
             for future in futures:
@@ -302,6 +311,7 @@ class Context(Loggable):
         elif isinstance(response, Return):
             future = self._futures.pop(response.id)
             request = self._requests.pop(future)
+            self._pending_unsubscribes.pop(future, None)
             result = response.value
             # Deserialize if this was a method
             if isinstance(request, Post) and result is not None:
