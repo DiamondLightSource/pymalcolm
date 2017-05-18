@@ -2,3 +2,4 @@ sphinx>=1.4.9
 numpy
 ipython
 sphinx_rtd_theme
+ruamel.yaml

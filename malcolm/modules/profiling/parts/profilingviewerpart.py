@@ -9,20 +9,22 @@ from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.modules.web.controllers import HTTPServerComms
 from malcolm.modules.web.infos import HandlerInfo
 
-plop_dir = os.path.dirname(inspect.getfile(ViewFlatHandler))
+
+def plop_dir():
+    return os.path.dirname(inspect.getfile(ViewFlatHandler))
 
 
 class MalcolmIndexHandler(IndexHandler):
     def get_template_path(self):
-        return os.path.join(plop_dir, "templates")
+        return os.path.join(plop_dir(), "templates")
 
 
 class MalcolmViewHandler(ViewFlatHandler):
     def get_template_path(self):
-        return os.path.join(plop_dir, "templates")
+        return os.path.join(plop_dir(), "templates")
 
     def embed_file(self, filename):
-        with open(os.path.join(plop_dir, "static", filename)) as f:
+        with open(os.path.join(plop_dir(), "static", filename)) as f:
             return f.read()
 
 

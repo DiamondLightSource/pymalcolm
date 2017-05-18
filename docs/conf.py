@@ -34,7 +34,7 @@ else:
 from mock import MagicMock
 
 # Mock out failing imports
-MOCK_MODULES = []
+MOCK_MODULES = ["scanpointgenerator", "pvaccess", "plop", "plop.viewer"]
 
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
