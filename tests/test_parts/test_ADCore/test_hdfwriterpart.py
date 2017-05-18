@@ -38,6 +38,7 @@ class TestHDFWriterPart(unittest.TestCase):
             ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
         params.generator = CompoundGenerator([energy, spiral], [], [], 0.1)
         params.filePath = "/tmp/file.h5"
+        params.fileTemplate = "%sthing-%s"
         params.generator.prepare()
         completed_steps = 0
         steps_to_do = 38
@@ -97,7 +98,7 @@ class TestHDFWriterPart(unittest.TestCase):
                              arrayCounter=0,
                              filePath="/tmp/",
                              fileName="file.h5",
-                             fileTemplate="%s%s")))
+                             fileTemplate="%sthing-%s")))
         self.assertEqual(task.put_many_async.call_args_list[1],
                          call(self.child, dict(
                              numExtraDims=1,
@@ -180,9 +181,15 @@ class TestHDFWriterPart(unittest.TestCase):
 
     def test_post_run(self):
         self.o.start_future = MagicMock()
+        fname = "/tmp/test_filename"
+        with open(fname, "w") as f:
+            f.write("thing")
+        assert os.path.isfile(fname)
+        self.o.layout_filename = fname
         task = MagicMock()
         self.o.post_run_idle(task)
         task.wait_all.assert_called_once_with(self.o.start_future)
+        assert not os.path.isfile(fname)
 
 
 if __name__ == "__main__":

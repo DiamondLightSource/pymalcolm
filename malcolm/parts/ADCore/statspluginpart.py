@@ -10,6 +10,9 @@ from malcolm.parts.ADCore.hdfwriterpart import CalculatedNDAttributeDatasetInfo
 
 
 class StatsPluginPart(ChildPart):
+    """Stats plugin"""
+    # The NDAttributes file we write to say what to capture
+    attributes_filename = None
 
     @RunnableController.ReportStatus
     def report_info(self, _):
@@ -34,8 +37,14 @@ class StatsPluginPart(ChildPart):
             enableCallbacks=True,
             computeStatistics=True))
         xml = self._make_attributes_xml()
-        attributes_filename = os.path.join(
+        self.attributes_filename = os.path.join(
             file_dir, "%s-attributes.xml" % self.params.mri)
-        open(attributes_filename, "w").write(xml)
-        fs += task.put_async(self.child["attributesFile"], attributes_filename)
+        open(self.attributes_filename, "w").write(xml)
+        fs += task.put_async(self.child["attributesFile"],
+                             self.attributes_filename)
         task.wait_all(fs)
+
+    @RunnableController.PostRunIdle
+    def post_run_idle(self, context):
+        # Delete the attribute XML file
+        os.remove(self.attributes_filename)

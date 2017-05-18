@@ -47,6 +47,9 @@ class HDFWriterPart(ChildPart):
     array_future = None
     done_when_reaches = 0
 
+    # The HDF5 layout file we write to say where the datasets go
+    layout_filename = None
+
     def _create_dataset_infos(self, part_info, generator, filename):
         # Update the dataset table
         uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
@@ -115,7 +118,12 @@ class HDFWriterPart(ChildPart):
     @RunnableController.Configure
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-        "filePath", StringMeta("File path to write data to"), REQUIRED)
+        "filePath", StringMeta("Full file path to write data to"), REQUIRED,
+        "fileTemplate", StringMeta(
+            """Printf style template to generate full path from. Arguments are:
+            1) %s: directory name including trailing slash from filePath
+            2) %s: file name from filePath
+            """), "%s%s")
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         self.done_when_reaches = completed_steps + steps_to_do
         # For first run then open the file
@@ -137,13 +145,13 @@ class HDFWriterPart(ChildPart):
             arrayCounter=0,
             filePath=file_dir + os.sep,
             fileName=filename,
-            fileTemplate="%s%s"))
+            fileTemplate=params.fileTemplate))
         futures += self._set_dimensions(task, params.generator)
         xml = self._make_layout_xml(params.generator, part_info)
-        layout_filename = os.path.join(
+        self.layout_filename = os.path.join(
             file_dir, "%s-layout.xml" % self.params.mri)
-        open(layout_filename, "w").write(xml)
-        futures += task.put_async(self.child["xml"], layout_filename)
+        open(self.layout_filename, "w").write(xml)
+        futures += task.put_async(self.child["xml"], self.layout_filename)
         # Wait for the previous puts to finish
         task.wait_all(futures)
         # Reset numCapture back to 0
@@ -159,7 +167,6 @@ class HDFWriterPart(ChildPart):
             flush_time/params.generator.duration))
         task.put(self.child["flushDataPerNFrames"], n_frames_between_flushes)
         task.put(self.child["flushAttrPerNFrames"], n_frames_between_flushes)
-
         # Start the plugin
         self.start_future = task.post_async(self.child["start"])
         # Start a future waiting for the first array
@@ -193,6 +200,8 @@ class HDFWriterPart(ChildPart):
     def post_run_idle(self, task):
         # If this is the last one, wait until the file is closed
         task.wait_all(self.start_future)
+        # Delete the layout XML file
+        os.remove(self.layout_filename)
 
     @RunnableController.Abort
     def abort(self, task):
