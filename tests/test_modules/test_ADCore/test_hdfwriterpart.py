@@ -1,4 +1,5 @@
 import unittest
+import os
 from mock import MagicMock, call, ANY
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
@@ -23,6 +24,7 @@ class TestHDFWriterPart(unittest.TestCase):
             ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
         params.generator = CompoundGenerator([energy, spiral], [], [], 0.1)
         params.filePath = "/tmp/file.h5"
+        params.fileTemplate = "%s%s"
         params.generator.prepare()
         completed_steps = 0
         steps_to_do = 38
@@ -172,6 +174,12 @@ class TestHDFWriterPart(unittest.TestCase):
 
     def test_post_run(self):
         self.o.start_future = MagicMock()
+        fname = "/tmp/test_filename"
+        with open(fname, "w") as f:
+            f.write("thing")
+        assert os.path.isfile(fname)
+        self.o.layout_filename = fname
         self.o.post_run_idle(self.context)
         assert self.context.mock_calls == [
             call.wait_all_futures(self.o.start_future)]
+        assert not os.path.isfile(fname)

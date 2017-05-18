@@ -11,6 +11,8 @@ from malcolm.modules.scanning.controllers import RunnableController
 
 class StatsPluginPart(StatefulChildPart):
     """Stats plugin"""
+    # The NDAttributes file we write to say what to capture
+    attributes_filename = None
 
     @RunnableController.ReportStatus
     def report_info(self, _):
@@ -37,8 +39,13 @@ class StatsPluginPart(StatefulChildPart):
             enableCallbacks=True,
             computeStatistics=True))
         xml = self._make_attributes_xml()
-        attributes_filename = os.path.join(
+        self.attributes_filename = os.path.join(
             file_dir, "%s-attributes.xml" % self.params.mri)
-        open(attributes_filename, "w").write(xml)
-        child.attributesFile.put_value(attributes_filename)
+        open(self.attributes_filename, "w").write(xml)
+        child.attributesFile.put_value(self.attributes_filename)
         context.wait_all_futures(fs)
+
+    @RunnableController.PostRunIdle
+    def post_run_idle(self, context):
+        # Delete the attribute XML file
+        os.remove(self.attributes_filename)
