@@ -7,7 +7,7 @@
     description: Where to store saved configs
     default: /dls/p45/epics/malcolm
 
-- ADCore.blocks.detector_runnable_block:
+- aravisGigE.blocks.aravisGigE_runnable_block:
     pvPrefix: BL45P-EA-MAP-01:MIC
     mriPrefix: BL45P-ML-MIC-01
     configDir: $(configDir)
