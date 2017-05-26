@@ -22,13 +22,13 @@
     name: FEM
     mri: $(mriPrefix):FEM
 
-#- blocks.ADCore.StatsPlugin:
-#    mri: $(mriPrefix):STAT
-#    prefix: $(pvPrefix):STAT
+- blocks.ADCore.StatsPlugin:
+    mri: $(mriPrefix):STAT
+    prefix: $(pvPrefix):STAT
 
-#- parts.ADCore.StatsPluginPart:
-#    name: STAT
-#    mri: $(mriPrefix):STAT
+- parts.ADCore.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix):STAT
 
 - includes.ADCore.filewriting_collection:
     pvPrefix: $(pvPrefix)

@@ -136,7 +136,7 @@ if __name__ == "__main__":
     from pkg_resources import require
 
     sys.path.insert(0,
-                    "/home/mef65357/Detectors/VDS/vds-gen/venv/lib/python2.7/"
+                    "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
                     "site-packages")
     require("tornado", "numpy", "cothread", "ruamel.yaml",
             "scanpointgenerator", "h5py")

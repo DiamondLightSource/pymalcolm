@@ -1,9 +1,8 @@
 import os
 import sys
-from time import sleep
 from subprocess import check_call
 
-sys.path.insert(0, "/home/mef65357/Detectors/VDS/vds-gen/venv/lib/python2.7/"
+sys.path.insert(0, "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
                    "site-packages")
 import h5py as h5
 
@@ -20,8 +19,8 @@ from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
 class VDSWrapperPart(Part):
 
     # Constants for vds-gen CLI app
-    VENV = "/home/mef65357/Detectors/VDS/vds-gen/venv/bin/python"
-    VDS_GEN = "/home/mef65357/Detectors/VDS/vds-gen/vdsgen/app.py"
+    VENV = "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/bin/python"
+    VDS_GEN = "/dls_sw/work/tools/RHEL6-x86_64/odin/vds-gen/vdsgen/app.py"
     EMPTY = "-e"
     OUTPUT = "-o"
     FILES = "-f"
@@ -132,11 +131,12 @@ class VDSWrapperPart(Part):
                 self.vds[node] = h5.ExternalLink(raw_file_path, node)
 
             # Create placeholder id and sum datasets
-            initial_shape = params.generator.shape + (1, 1)
-            max_shape = params.generator.shape + (None, 1)
-            self.vds.create_dataset(self.ID, initial_shape, maxshape=max_shape,
-                                    dtype="int32")
-            self.vds.create_dataset(self.SUM, initial_shape, dtype="float64")
+            initial_shape = (1, 1, 1, 1)
+            max_shape = params.generator.shape + (1, 1)
+            self.vds.create_dataset(self.ID, initial_shape,
+                                    maxshape=max_shape, dtype="int32")
+            self.vds.create_dataset(self.SUM, initial_shape,
+                                    maxshape=max_shape, dtype="float64")
 
         self._logger.debug("Calling vds-gen to create dataset in VDS")
         files = [self.RAW_FILE_TEMPLATE.format(fem) for fem in self.fems]
@@ -157,7 +157,7 @@ class VDSWrapperPart(Part):
         # Define output file path
         command += [self.OUTPUT, self.OUTPUT_FILE]
         command += [self.LOG_LEVEL, "1"] # str(self._logger.level / 10)]
-        self.log_warning("Command" + str(command))
+        self.log_info("Command: %s", command)
         check_call(command)
 
         # Store required attributes
@@ -182,35 +182,33 @@ class VDSWrapperPart(Part):
         try:
             # Wait until raw files exist and have UniqueIDArray
             for path_ in self.raw_paths:
-                self._logger.info("Waiting for file %s to be created", path_)
+                self.log_info("Waiting for file %s to be created", path_)
                 while not os.path.exists(path_):
-                    sleep(1)
+                    task.sleep(1)
                 self.raw_datasets.append(
                     h5.File(path_, self.READ, libver="latest", swmr=True))
             for dataset in self.raw_datasets:
-                self._logger.info("Waiting for id in file %s", dataset)
+                self.log_info("Waiting for id in file %s", dataset)
                 while self.ID not in dataset:
-                    sleep(1)
+                    task.sleep(1)
 
-            self._logger.info("Monitoring raw files until ID reaches %s",
-                              self.done_when_reaches)
+            self.log_info("Monitoring raw files until ID reaches %s",
+                          self.done_when_reaches)
             while self.id < self.done_when_reaches:
+                task.sleep(0.1)  # Allow while loop to be aborted by controller
                 ids = []
                 for dataset in self.raw_datasets:
                     ids.append(self.get_id(dataset))
                 if min(ids) > self.id:
-                    self._logger.info("Raw ID changed: %s - "
-                                      "Updating VDS ID and Sum", min(ids))
+                    self.log_info("Raw ID changed: %s - "
+                                  "Updating VDS ID and Sum", min(ids))
                     idx = ids.index(min(ids))
                     self.update_id(idx)
-                    try:
-                        self.update_sum()
-                    except Exception:
-                        self.log_warning("Can't access sum")
+                    self.update_sum()
 
-            self._logger.info("ID reached: " + str(self.id))
-        except Exception:
-            self.log_error("Error in run")
+            self.log_info("ID reached: %s", self.id)
+        except Exception as error:
+            self.log_error("Error in run. Message:\n%s", error.message)
             raise
         finally:
             self.close_files()
@@ -224,19 +222,23 @@ class VDSWrapperPart(Part):
             file_[self.ID].refresh()
             return max(file_[self.ID].value.flatten())
         else:
-            self.logger_.warning("File %s does not exist or does not have a "
-                                 "UniqueIDArray, returning 0", file_)
+            self.log_warning("File %s does not exist or does not have a "
+                             "UniqueIDArray, returning 0", file_)
             return 0
 
     def update_id(self, idx):
         min_id = self.raw_datasets[idx][self.ID]
-        self.vds[self.ID].resize(min_id.shape)
 
+        self.log_debug("ID shape:\n%s", min_id.shape)
+        self.vds[self.ID].resize(min_id.shape)
         self.vds[self.ID][...] = min_id
 
     def update_sum(self):
         sum_ = 0
         for dataset in self.raw_datasets:
+            dataset[self.SUM].refresh()
             sum_ += dataset[self.SUM].value
 
+        self.log_debug("Sum shape:\n%s", sum_.shape)
+        self.vds[self.SUM].resize(sum_.shape)
         self.vds[self.SUM][...] = sum_
