@@ -204,7 +204,7 @@ class VDSWrapperPart(Part):
                                   "Updating VDS ID and Sum", min(ids))
                     idx = ids.index(min(ids))
                     self.update_id(idx)
-                    self.update_sum()
+                    self.update_sum(idx)
 
             self.log_info("ID reached: %s", self.id)
         except Exception as error:
@@ -226,18 +226,22 @@ class VDSWrapperPart(Part):
                              "UniqueIDArray, returning 0", file_)
             return 0
 
-    def update_id(self, idx):
-        min_id = self.raw_datasets[idx][self.ID]
+    def update_id(self, min_dataset):
+        min_id = self.raw_datasets[min_dataset][self.ID]
 
         self.log_debug("ID shape:\n%s", min_id.shape)
         self.vds[self.ID].resize(min_id.shape)
         self.vds[self.ID][...] = min_id
 
-    def update_sum(self):
+    def update_sum(self, min_dataset):
         sum_ = 0
         for dataset in self.raw_datasets:
             dataset[self.SUM].refresh()
             sum_ += dataset[self.SUM].value
+
+        # Re-insert -1 for incomplete indexes using mask from minimum dataset
+        mask = self.raw_datasets[min_dataset][self.SUM].value < 0
+        sum_[mask] = -1
 
         self.log_debug("Sum shape:\n%s", sum_.shape)
         self.vds[self.SUM].resize(sum_.shape)
