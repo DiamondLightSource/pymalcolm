@@ -1,4 +1,5 @@
 import os
+import math as m
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
@@ -156,15 +157,23 @@ class HDFWriterPart(ChildPart):
         task.wait_all(futures)
         # Reset numCapture back to 0
         task.put(self.child["numCapture"], 0)
+        assert params.generator.duration > 0, \
+            "Duration %s for generator must be >0 to signify constant " \
+            "exposure" % params.generator.duration
         # We want the HDF writer to flush this often:
         flush_time = 1  # seconds
         # (In particular this means that HDF files can be read cleanly by
         # SciSoft at the start of a scan.)
-        assert params.generator.duration > 0, \
-            "Duration %s for generator must be >0 to signify constant exposure"\
-            % params.generator.duration
-        n_frames_between_flushes = max(2, round(
-            flush_time/params.generator.duration))
+        if params.generator.duration > flush_time:
+            # We are going slower than 1/flush_time Hz, so flush every frame
+            n_frames_between_flushes = 1
+        else:
+            # Limit update rate to be every flush_time seconds
+            n_frames_between_flushes = int(m.ceil(
+                flush_time / params.generator.duration))
+            # But make sure we flush in this round of frames
+            n_frames_between_flushes = min(
+                steps_to_do, n_frames_between_flushes)
         task.put(self.child["flushDataPerNFrames"], n_frames_between_flushes)
         task.put(self.child["flushAttrPerNFrames"], n_frames_between_flushes)
         # Start the plugin
