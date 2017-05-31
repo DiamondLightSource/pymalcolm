@@ -1,6 +1,33 @@
-- blocks.excalibur.ExcaliburDetectorManager:
-   pvPrefix: BL14I-EA-EXCBR-01
-   mriPrefix: BL14I-ML-EXCBR-01
-   configDir: /tmp
+- parameters.string:
+    name: configDir
+    description: Where to store saved configs
+    default: /dls_sw/i14/epics/malcolm
+
+- blocks.xspress3.Xspress3DetectorManager:
+    pvPrefix: BL14I-EA-XSP3-01
+    mriPrefix: BL14I-ML-XSP3-01
+    configDir: $(configDir)
+
+#- blocks.excalibur.ExcaliburDetectorManager:
+#    pvPrefix: BL14I-EA-EXCBR-01
+#    mriPrefix: BL14I-ML-EXCBR-01
+#    configDir: $(configDir)
+
+- blocks.demo.I14PMACManager:
+    mriPrefix: BL14I-ML-BRICK-14
+    configDir: $(configDir)
+
+- blocks.pandabox.PandABoxManager:
+    pvPrefix: BL14I-MO-PANDA-01
+    mriPrefix: BL14I-ML-PANDA-01
+    hostname: bl14i-mo-pandabox-01
+    configDir: $(configDir)
+
+- blocks.demo.I14Manager:
+    mri: BL14I-ML-SCAN-01
+    det: BL14I-ML-XSP3-01
+    brick: BL14I-ML-BRICK-14
+    pandabox: BL14I-ML-PANDA-01
+    configDir: $(configDir)
 
 - comms.pva.PvaServerComms:

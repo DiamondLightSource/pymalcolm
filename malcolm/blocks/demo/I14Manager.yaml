@@ -1,0 +1,39 @@
+- parameters.string:
+    name: mri
+    description: MRI for created block
+
+- parameters.string:
+    name: det
+    description: MRI for detector DetectorManager object
+
+- parameters.string:
+    name: brick
+    description: MRI for brick PMACManager object
+
+- parameters.string:
+    name: pandabox
+    description: MRI for PandABoxManager object
+    
+- parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- controllers.RunnableController:
+    mri: $(mri)
+    axesToMove: [stage1_x, stage1_y]
+    configDir: $(configDir)
+
+- parts.ADCore.DatasetTablePart:
+    name: DSET
+
+- parts.pmac.PmacRunnableChildPart:
+    name: BRICK
+    mri: $(brick)
+
+- parts.ADCore.DatasetRunnableChildPart:
+    name: DET
+    mri: $(det)
+
+- parts.ADCore.DatasetRunnableChildPart:
+    name: PANDABOX
+    mri: $(pandabox)

@@ -43,6 +43,6 @@ class ChoiceMeta(VMeta):
             return value
         elif isinstance(value, int) and value < len(self.choices):
             return self.choices[value]
-        else:
-            raise ValueError(
-                "%s is not a valid value in %s" % (value, self.choices))
+        #else:
+        #    raise ValueError(
+        #        "%s is not a valid value in %s" % (value, self.choices))

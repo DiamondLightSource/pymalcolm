@@ -1,0 +1,38 @@
+- parameters.string:
+    name: mriPrefix
+    description: MRI for created block
+
+- parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- controllers.RunnableController:
+    mri: $(mriPrefix)
+    configDir: $(configDir)
+
+#- includes.pmac.compoundmotor_collection:
+#    mri: I18-T1-X
+#    prefix: BL18I-MO-TABLE-01:CSX
+#    scannable: t1x
+
+#- includes.pmac.compoundmotor_collection:
+#    mri: I18-T1-Y
+#    prefix: BL18I-MO-TABLE-01:HEIGHT
+#    scannable: sc_MicroFocusSampleY
+
+- includes.pmac.rawmotor_collection:
+    mri: BL14I-ML-STAGE-01:XC
+    prefix: BL14I-MO-STEP-14:M1
+    motorPrefix: BL14I-MO-STAGE-01:XC
+    scannable: stage1_x
+
+- includes.pmac.rawmotor_collection:
+    mri: BL14I-ML-STAGE-01:YC
+    prefix: BL14I-MO-STEP-14:M2
+    motorPrefix: BL14I-MO-STAGE-01:YC
+    scannable: stage1_y
+
+- includes.pmac.trajectory_collection:
+    mri: $(mriPrefix):TRAJ
+    prefix: BL14I-MO-STEP-14
+    statPrefix: BL14I-MO-STEP-14
