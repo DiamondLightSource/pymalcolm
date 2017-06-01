@@ -1,21 +1,29 @@
-import unittest
 import os
-from mock import MagicMock, call, ANY
+from mock import MagicMock, call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
-from malcolm.core import Context, call_with_params
+from malcolm.core import Context, call_with_params, Process, Future
+from malcolm.modules.ADCore.blocks import hdf_writer_block
 from malcolm.modules.ADCore.parts import HDFWriterPart
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo, \
-    CalculatedNDAttributeDatasetInfo
+    CalculatedNDAttributeDatasetInfo, NDAttributeDatasetInfo
+from malcolm.testutil import ChildTestCase
 
 
-class TestHDFWriterPart(unittest.TestCase):
+class TestHDFWriterPart(ChildTestCase):
     maxDiff = None
 
     def setUp(self):
-        self.context = MagicMock(spec=Context)
-        self.o = call_with_params(HDFWriterPart, name="hdf", mri="BLOCK-HDF5")
+        self.process = Process("Process")
+        self.context = Context(self.process)
+        self.child = self.create_child_block(
+            hdf_writer_block, self.process,
+            mri="BLOCK-HDF5", prefix="prefix")
+        self.o = call_with_params(
+            HDFWriterPart, name="m", mri="BLOCK-HDF5")
+        list(self.o.create_attributes())
+        self.process.start()
 
     def test_configure(self):
         params = MagicMock()
@@ -30,92 +38,112 @@ class TestHDFWriterPart(unittest.TestCase):
         steps_to_do = 38
         part_info = {
             "DET": [NDArrayDatasetInfo("xspress3", 2)],
+            "PANDA": [
+                NDAttributeDatasetInfo("I0", "detector", "COUNTER1.COUNTER", 2),
+                NDAttributeDatasetInfo("It", "monitor", "COUNTER2.COUNTER", 2),
+                NDAttributeDatasetInfo("t1x", "position", "INENC1.VAL", 2)],
             "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
         }
         infos = self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, params)
-        assert len(infos) == 5
+        assert len(infos) == 8
         assert infos[0].name == "xspress3.data"
         assert infos[0].filename == "file.h5"
         assert infos[0].type == "primary"
         assert infos[0].rank == 4
         assert infos[0].path == "/entry/detector/detector"
-        assert infos[0].uniqueid == (
-                          "/entry/NDAttributes/NDArrayUniqueId")
+        assert infos[0].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
+
         assert infos[1].name == "xspress3.sum"
         assert infos[1].filename == "file.h5"
         assert infos[1].type == "secondary"
         assert infos[1].rank == 4
         assert infos[1].path == "/entry/sum/sum"
-        assert infos[1].uniqueid == (
-                          "/entry/NDAttributes/NDArrayUniqueId")
-        assert infos[2].name == "energy.value_set"
+        assert infos[1].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
+
+        assert infos[2].name == "I0.data"
         assert infos[2].filename == "file.h5"
-        assert infos[2].type == "position_set"
-        assert infos[2].rank == 1
-        assert infos[2].path == "/entry/detector/energy_set"
-        assert infos[2].uniqueid == ""
-        assert infos[3].name == "x.value_set"
+        assert infos[2].type == "primary"
+        assert infos[2].rank == 4
+        assert infos[2].path == "/entry/I0/I0"
+        assert infos[2].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
+
+        assert infos[3].name == "It.data"
         assert infos[3].filename == "file.h5"
-        assert infos[3].type == "position_set"
-        assert infos[3].rank == 1
-        assert infos[3].path == "/entry/detector/x_set"
-        assert infos[3].uniqueid == ""
-        assert infos[4].name == "y.value_set"
+        assert infos[3].type == "monitor"
+        assert infos[3].rank == 4
+        assert infos[3].path == "/entry/It/It"
+        assert infos[3].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
+
+        assert infos[4].name == "t1x.value"
         assert infos[4].filename == "file.h5"
-        assert infos[4].type == "position_set"
-        assert infos[4].rank == 1
-        assert infos[4].path == "/entry/detector/y_set"
-        assert infos[4].uniqueid == ""
+        assert infos[4].type == "position_value"
+        assert infos[4].rank == 4
+        assert infos[4].path == "/entry/t1x/t1x"
+        assert infos[4].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
+
+        assert infos[5].name == "energy.value_set"
+        assert infos[5].filename == "file.h5"
+        assert infos[5].type == "position_set"
+        assert infos[5].rank == 1
+        assert infos[5].path == "/entry/detector/energy_set"
+        assert infos[5].uniqueid == ""
+
+        assert infos[6].name == "x.value_set"
+        assert infos[6].filename == "file.h5"
+        assert infos[6].type == "position_set"
+        assert infos[6].rank == 1
+        assert infos[6].path == "/entry/detector/x_set"
+        assert infos[6].uniqueid == ""
+
+        assert infos[7].name == "y.value_set"
+        assert infos[7].filename == "file.h5"
+        assert infos[7].type == "position_set"
+        assert infos[7].rank == 1
+        assert infos[7].path == "/entry/detector/y_set"
+        assert infos[7].uniqueid == ""
+
         expected_xml_filename = "/tmp/BLOCK-HDF5-layout.xml"
-        assert self.context.mock_calls == [
-            call.block_view('BLOCK-HDF5'),
-            call.block_view().positionMode.put_value(True),
-            call.block_view().put_attribute_values_async(dict(
-                enableCallbacks=True,
-                fileWriteMode="Stream",
-                swmrMode=True,
-                positionMode=True,
-                dimAttDatasets=True,
-                lazyOpen=True,
-                arrayCounter=0,
-                filePath="/tmp/",
-                fileName="file.h5",
-                fileTemplate="%s%s")),
-            call.block_view().put_attribute_values_async(dict(
-                numExtraDims=1,
-                posNameDimN="d1",
-                extraDimSizeN=20,
-                posNameDimX="d0",
-                extraDimSizeX=2,
-                posNameDimY="",
-                extraDimSizeY=1,
-                posNameDim3="",
-                extraDimSize3=1,
-                posNameDim4="",
-                extraDimSize4=1,
-                posNameDim5="",
-                extraDimSize5=1,
-                posNameDim6="",
-                extraDimSize6=1,
-                posNameDim7="",
-                extraDimSize7=1,
-                posNameDim8="",
-                extraDimSize8=1,
-                posNameDim9="",
-                extraDimSize9=1)),
-            call.block_view().put_attribute_values_async().__iadd__(ANY),
-            call.block_view().put_attribute_values_async(dict(
-                xml=expected_xml_filename,
-                flushDataPerNFrames=10.0,
-                flushAttrPerNFrames=10.0)),
-            call.block_view().put_attribute_values_async(
-                ).__iadd__().__iadd__(ANY),
-            call.wait_all_futures(ANY),
-            call.block_view().numCapture.put_value(0),
-            call.block_view().start_async(),
-            call.block_view().when_value_matches_async(
-                'arrayCounter', self.o._greater_than_zero)]
+        # Need to wait for the spawned mock start call to run
+        self.o.start_future.result()
+        assert self.child.handled_requests.mock_calls == [
+            call.put('positionMode', True),
+            call.put('arrayCounter', 0),
+            call.put('dimAttDatasets', True),
+            call.put('enableCallbacks', True),
+            call.put('fileName', 'file.h5'),
+            call.put('filePath', '/tmp/'),
+            call.put('fileTemplate', '%s%s'),
+            call.put('fileWriteMode', 'Stream'),
+            call.put('lazyOpen', True),
+            call.put('positionMode', True),
+            call.put('swmrMode', True),
+            call.put('extraDimSize3', 1),
+            call.put('extraDimSize4', 1),
+            call.put('extraDimSize5', 1),
+            call.put('extraDimSize6', 1),
+            call.put('extraDimSize7', 1),
+            call.put('extraDimSize8', 1),
+            call.put('extraDimSize9', 1),
+            call.put('extraDimSizeN', 20),
+            call.put('extraDimSizeX', 2),
+            call.put('extraDimSizeY', 1),
+            call.put('numExtraDims', 1),
+            call.put('posNameDim3', ''),
+            call.put('posNameDim4', ''),
+            call.put('posNameDim5', ''),
+            call.put('posNameDim6', ''),
+            call.put('posNameDim7', ''),
+            call.put('posNameDim8', ''),
+            call.put('posNameDim9', ''),
+            call.put('posNameDimN', 'd1'),
+            call.put('posNameDimX', 'd0'),
+            call.put('posNameDimY', ''),
+            call.put('flushAttrPerNFrames', 10.0),
+            call.put('flushDataPerNFrames', 10.0),
+            call.put('xml', expected_xml_filename),
+            call.put('numCapture', 0),
+            call.post('start')]
         expected_xml = """<?xml version="1.0" ?>
 <hdf5_layout>
 <group name="entry">
@@ -152,6 +180,42 @@ class TestHDFWriterPart(unittest.TestCase):
 <hardlink name="y_set" target="/entry/detector/y_set" />
 <dataset name="sum" ndattribute="StatsTotal" source="ndattribute" />
 </group>
+<group name="I0">
+<attribute name="signal" source="constant" type="string" value="I0" />
+<attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
+<attribute name="NX_class" source="constant" type="string" value="NXdata" />
+<attribute name="energy_set_indices" source="constant" type="string" value="0" />
+<hardlink name="energy_set" target="/entry/detector/energy_set" />
+<attribute name="x_set_indices" source="constant" type="string" value="1" />
+<hardlink name="x_set" target="/entry/detector/x_set" />
+<attribute name="y_set_indices" source="constant" type="string" value="1" />
+<hardlink name="y_set" target="/entry/detector/y_set" />
+<dataset name="I0" ndattribute="COUNTER1.COUNTER" source="ndattribute" />
+</group>
+<group name="It">
+<attribute name="signal" source="constant" type="string" value="It" />
+<attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
+<attribute name="NX_class" source="constant" type="string" value="NXdata" />
+<attribute name="energy_set_indices" source="constant" type="string" value="0" />
+<hardlink name="energy_set" target="/entry/detector/energy_set" />
+<attribute name="x_set_indices" source="constant" type="string" value="1" />
+<hardlink name="x_set" target="/entry/detector/x_set" />
+<attribute name="y_set_indices" source="constant" type="string" value="1" />
+<hardlink name="y_set" target="/entry/detector/y_set" />
+<dataset name="It" ndattribute="COUNTER2.COUNTER" source="ndattribute" />
+</group>
+<group name="t1x">
+<attribute name="signal" source="constant" type="string" value="t1x" />
+<attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
+<attribute name="NX_class" source="constant" type="string" value="NXdata" />
+<attribute name="energy_set_indices" source="constant" type="string" value="0" />
+<hardlink name="energy_set" target="/entry/detector/energy_set" />
+<attribute name="x_set_indices" source="constant" type="string" value="1" />
+<hardlink name="x_set" target="/entry/detector/x_set" />
+<attribute name="y_set_indices" source="constant" type="string" value="1" />
+<hardlink name="y_set" target="/entry/detector/y_set" />
+<dataset name="t1x" ndattribute="INENC1.VAL" source="ndattribute" />
+</group>
 <group name="NDAttributes" ndattr_default="true">
 <attribute name="NX_class" source="constant" type="string" value="NXcollection" />
 </group>
@@ -163,23 +227,32 @@ class TestHDFWriterPart(unittest.TestCase):
     def test_run(self):
         update = MagicMock()
         self.o.done_when_reaches = 38
-        self.o.array_future = MagicMock()
+        # Say that we're getting the first frame
+        self.o.array_future = Future(None)
+        self.o.array_future.set_result(None)
+        # run waits for this value
+        self.child.parts["uniqueId"].attr.set_value(self.o.done_when_reaches)
         self.o.run(self.context, update)
-        assert self.context.mock_calls == [
-            call.wait_all_futures(self.o.array_future),
-            call.unsubscribe_all(),
-            call.block_view('BLOCK-HDF5'),
-            call.block_view().uniqueId.subscribe_value(update, self.o),
-            call.block_view().when_value_matches('uniqueId', 38)]
+        assert self.child.handled_requests.mock_calls == []
+        assert update.mock_calls == [call(38, self.o)]
 
-    def test_post_run(self):
-        self.o.start_future = MagicMock()
+    def test_seek(self):
+        completed_steps = 4
+        steps_to_do = 3
+        self.o.seek(self.context, completed_steps, steps_to_do, {})
+        assert self.child.handled_requests.mock_calls == [
+            call.put('arrayCounter', 0)]
+        assert self.o.done_when_reaches == 7
+
+    def test_post_run_idle(self):
+        # Say that we've returned from start
+        self.o.start_future = Future(None)
+        self.o.start_future.set_result(None)
         fname = "/tmp/test_filename"
         with open(fname, "w") as f:
             f.write("thing")
         assert os.path.isfile(fname)
         self.o.layout_filename = fname
         self.o.post_run_idle(self.context)
-        assert self.context.mock_calls == [
-            call.wait_all_futures(self.o.start_future)]
+        assert self.child.handled_requests.mock_calls == []
         assert not os.path.isfile(fname)

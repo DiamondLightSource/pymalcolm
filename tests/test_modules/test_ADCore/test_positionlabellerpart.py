@@ -1,18 +1,25 @@
-import unittest
 from mock import MagicMock, call, ANY
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.core import Context, call_with_params
+from malcolm.core import Context, call_with_params, Process, Future
+from malcolm.modules.ADCore.blocks import position_labeller_block
 from malcolm.modules.ADCore.parts import PositionLabellerPart
+from malcolm.testutil import ChildTestCase
 
 
-class TestPositionLabellerPart(unittest.TestCase):
+class TestPositionLabellerPart(ChildTestCase):
 
     def setUp(self):
-        self.context = MagicMock(spec=Context)
+        self.process = Process("Process")
+        self.context = Context(self.process)
+        self.child = self.create_child_block(
+            position_labeller_block, self.process,
+            mri="BLOCK-POS", prefix="prefix")
         self.o = call_with_params(
-            PositionLabellerPart, name="pos", mri="BLOCK-POS")
+            PositionLabellerPart, name="m", mri="BLOCK-POS")
+        list(self.o.create_attributes())
+        self.process.start()
 
     def test_configure(self):
         params = MagicMock()
@@ -39,27 +46,23 @@ class TestPositionLabellerPart(unittest.TestCase):
 <position FilePluginClose="1" d0="1" d1="0" />
 </positions>
 </pos_layout>""".replace("\n", "")
-        assert self.context.mock_calls == [
-            call.unsubscribe_all(),
-            call.block_view('BLOCK-POS'),
-            call.block_view().delete_async(),
-            call.block_view().put_attribute_values_async(dict(
-                enableCallbacks=True,
-                idStart=3)),
-            call.block_view().put_attribute_values_async().__radd__([ANY]),
-            call.wait_all_futures(ANY),
-            call.block_view().xml.put_value(expected_xml),
-            call.block_view().start_async()]
+        # Need to wait for the spawned mock start call to run
+        self.o.start_future.result()
+        assert self.child.handled_requests.mock_calls == [
+            call.post('delete'),
+            call.put('enableCallbacks', True),
+            call.put('idStart', 3),
+            call.put('xml', expected_xml),
+            call.post('start')]
 
     def test_run(self):
         update = MagicMock()
-        self.o.start_future = MagicMock()
+        # Say that we've returned from start
+        self.o.start_future = Future(None)
+        self.o.start_future.set_result(None)
         self.o.run(self.context, update)
-        assert self.context.mock_calls == [
-            call.block_view('BLOCK-POS'),
-            call.block_view().qty.subscribe_value(
-                self.o.load_more_positions, ANY),
-            call.wait_all_futures(self.o.start_future)]
+        assert update.mock_calls == []
+        assert self.child.handled_requests.mock_calls == []
 
     def test_load_more_positions(self):
         child = MagicMock()
@@ -86,7 +89,3 @@ class TestPositionLabellerPart(unittest.TestCase):
 </pos_layout>""".replace("\n", "")
         assert child.mock_calls == [call.xml.put_value(expected_xml)]
         assert self.o.end_index == 6
-
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

@@ -1,16 +1,23 @@
-import unittest
 from mock import call, MagicMock, ANY
 
-from malcolm.core import Context, call_with_params
+from malcolm.core import Context, call_with_params, Process
+from malcolm.modules.ADCore.blocks import stats_plugin_block
 from malcolm.modules.ADCore.parts import StatsPluginPart
+from malcolm.testutil import ChildTestCase
 
 
-class TestStatsPluginPart(unittest.TestCase):
+class TestStatsPluginPart(ChildTestCase):
 
     def setUp(self):
-        self.context = MagicMock(spec=Context)
+        self.process = Process("Process")
+        self.context = Context(self.process)
+        self.child = self.create_child_block(
+            stats_plugin_block, self.process,
+            mri="BLOCK-STAT", prefix="prefix")
         self.o = call_with_params(
-            StatsPluginPart, name="stat", mri="BLOCK-STAT")
+            StatsPluginPart, name="m", mri="BLOCK-STAT")
+        list(self.o.create_attributes())
+        self.process.start()
 
     def test_report_info(self):
         infos = self.o.report_info(ANY)
@@ -28,13 +35,10 @@ class TestStatsPluginPart(unittest.TestCase):
             self.context, completed_steps, steps_to_do, part_info, params)
         assert infos is None
         expected_filename = "/tmp/BLOCK-STAT-attributes.xml"
-        assert self.context.mock_calls == [
-            call.block_view('BLOCK-STAT'),
-            call.block_view().put_attribute_values_async(dict(
-                enableCallbacks=True,
-                computeStatistics=True)),
-            call.block_view().attributesFile.put_value(expected_filename),
-            call.wait_all_futures(ANY)]
+        assert self.child.handled_requests.mock_calls == [
+            call.put('computeStatistics', True),
+            call.put('enableCallbacks', True),
+            call.put('attributesFile', expected_filename)]
         expected_xml = """<?xml version="1.0" ?>
 <Attributes>
 <Attribute addr="0" datatype="DOUBLE" description="Sum of the array" name="StatsTotal" source="TOTAL" type="PARAM" />
@@ -42,5 +46,3 @@ class TestStatsPluginPart(unittest.TestCase):
         actual_xml = open(expected_filename).read().replace(">", ">\n")
         assert actual_xml.splitlines() == expected_xml.splitlines()
 
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
