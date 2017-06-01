@@ -131,7 +131,8 @@ class VDSWrapperPart(Part):
                 self.vds[node] = h5.ExternalLink(raw_file_path, node)
 
             # Create placeholder id and sum datasets
-            initial_shape = (1, 1, 1, 1)
+            initial_dims = tuple([1 for _ in params.generator.shape])
+            initial_shape = initial_dims + (1, 1)
             max_shape = params.generator.shape + (1, 1)
             self.vds.create_dataset(self.ID, initial_shape,
                                     maxshape=max_shape, dtype="int32")
@@ -234,13 +235,18 @@ class VDSWrapperPart(Part):
         self.vds[self.ID][...] = min_id
 
     def update_sum(self, min_dataset):
+        min_sum = self.raw_datasets[min_dataset][self.SUM].value
+
+        # Slice the full the extent of the minimum dataset from each dataset
+        # Some nodes could be a row ahead meaning the shapes are mismatched
+        min_shape = tuple([slice(0, axis_size) for axis_size in min_sum.shape])
         sum_ = 0
         for dataset in self.raw_datasets:
             dataset[self.SUM].refresh()
-            sum_ += dataset[self.SUM].value
+            sum_ += dataset[self.SUM].value[min_shape]
 
         # Re-insert -1 for incomplete indexes using mask from minimum dataset
-        mask = self.raw_datasets[min_dataset][self.SUM].value < 0
+        mask = min_sum < 0
         sum_[mask] = -1
 
         self.log_debug("Sum shape:\n%s", sum_.shape)
