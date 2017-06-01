@@ -30,6 +30,14 @@
     name: STAT
     mri: $(mriPrefix):STAT
 
+- blocks.excalibur.GapPlugin:
+    mri: $(mriPrefix):GAP
+    prefix: $(pvPrefix):GAP
+
+- parts.excalibur.GapPluginPart:
+    name: GAP
+    mri: $(mriPrefix):GAP
+
 - includes.ADCore.filewriting_collection:
     pvPrefix: $(pvPrefix)
     mriPrefix: $(mriPrefix)

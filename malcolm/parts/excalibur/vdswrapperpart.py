@@ -29,6 +29,7 @@ class VDSWrapperPart(Part):
     DATA_PATH = "-d"
     STRIPE_SPACING = "-s"
     MODULE_SPACING = "-m"
+    FILL_VALUE = "-F"
     SOURCE_NODE = "--source_node"
     TARGET_NODE = "--target_node"
     LOG_LEVEL = "-l"
@@ -110,7 +111,8 @@ class VDSWrapperPart(Part):
     @RunnableController.Configure
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-        "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED)
+        "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED,
+        "fillValue", NumberMeta("int32", "Fill value for stripe spacing"), 0)
     def configure(self, task, completed_steps, steps_to_do, part_info, params):
         self.done_when_reaches = completed_steps + steps_to_do
 
@@ -151,8 +153,9 @@ class VDSWrapperPart(Part):
                    [self.SHAPE] + shape + \
                    [self.DATA_TYPE, self.data_type]
         # Override default spacing and data path
-        command += [self.STRIPE_SPACING, "3",
-                    self.MODULE_SPACING, "127",
+        command += [self.STRIPE_SPACING, "0",
+                    self.MODULE_SPACING, "121",
+                    self.FILL_VALUE, str(params.fillValue),
                     self.SOURCE_NODE, "/entry/detector/detector",
                     self.TARGET_NODE, "/entry/detector/detector"]
         # Define output file path
