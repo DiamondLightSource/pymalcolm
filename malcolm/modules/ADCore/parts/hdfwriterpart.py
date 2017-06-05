@@ -1,4 +1,5 @@
 import os
+import math
 from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
@@ -135,8 +136,16 @@ class HDFWriterPart(StatefulChildPart):
         assert params.generator.duration > 0, \
             "Duration %s for generator must be >0 to signify constant exposure"\
             % params.generator.duration
-        n_frames_between_flushes = max(2, round(
-            flush_time/params.generator.duration))
+        if params.generator.duration > flush_time:
+            # We are going slower than 1/flush_time Hz, so flush every frame
+            n_frames_between_flushes = 1
+        else:
+            # Limit update rate to be every flush_time seconds
+            n_frames_between_flushes = int(math.ceil(
+                flush_time / params.generator.duration))
+            # But make sure we flush in this round of frames
+            n_frames_between_flushes = min(
+                steps_to_do, n_frames_between_flushes)
         futures += child.put_attribute_values_async(dict(
             xml=self.layout_filename,
             flushDataPerNFrames=n_frames_between_flushes,

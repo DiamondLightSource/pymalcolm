@@ -249,8 +249,11 @@ if __name__ == "__main__":
 
     from pkg_resources import require
 
+    sys.path.insert(0,
+                    "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
+                    "site-packages")
     require("tornado", "numpy", "cothread", "ruamel.yaml",
-            "scanpointgenerator", "plop", "pygelf")
+            "scanpointgenerator", "plop", "pygelf", "h5py")
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "scanpointgenerator"))
     sys.path.append(
         "/dls_sw/work/R3.14.12.3/support/pvaPy/lib/python/2.7/linux-x86_64")

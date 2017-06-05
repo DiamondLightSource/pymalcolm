@@ -42,7 +42,8 @@ class StatsPluginPart(StatefulChildPart):
         self.attributes_filename = os.path.join(
             file_dir, "%s-attributes.xml" % self.params.mri)
         open(self.attributes_filename, "w").write(xml)
-        child.attributesFile.put_value(self.attributes_filename)
+        fs.append(
+            child.attributesFile.put_value_async(self.attributes_filename))
         context.wait_all_futures(fs)
 
     @RunnableController.PostRunIdle

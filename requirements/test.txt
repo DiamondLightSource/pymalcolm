@@ -9,3 +9,5 @@ plop==0.3.0
 pytest>=3
 pytest-catchlog
 pytest-cov
+git+https://github.com/aaron-parsons/h5py.git#egg=h5py
+git+https://github.com/dls-controls/vds-gen.git#egg=vds-gen
