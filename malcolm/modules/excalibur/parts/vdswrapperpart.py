@@ -6,13 +6,15 @@ sys.path.insert(0, "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
                    "site-packages")
 import h5py as h5
 
-from malcolm.core import method_takes, REQUIRED, Part, method_also_takes
-from malcolm.core.vmetas import PointGeneratorMeta, StringMeta, NumberMeta
-from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.ADCore.datasettablepart import DatasetProducedInfo
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.core import method_takes, REQUIRED, Part
+from malcolm.modules.ADCore.infos import DatasetProducedInfo
+from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
+from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 
-@method_also_takes(
+@method_takes(
+    "name", StringMeta("Name of part"), REQUIRED,
     "dataType", StringMeta("Data type of dataset"), REQUIRED,
     "stripeHeight", NumberMeta("int16", "Height of stripes"), REQUIRED,
     "stripeWidth", NumberMeta("int16", "Width of stripes"), REQUIRED)
@@ -48,11 +50,10 @@ class VDSWrapperPart(Part):
     default_node_tree = ["/entry/detector/axes", "/entry/detector/signal",
                          "/entry/sum/axes", "/entry/sum/signal"]
 
-    def __init__(self, process, params):
-        super(VDSWrapperPart, self).__init__(process, params)
+    def __init__(self, params):
+        self.params = params
+        super(VDSWrapperPart, self).__init__(params.name)
 
-        self.set_logger_name("VDSWrapperPart")
-        self._logger.setLevel("INFO")
         self.done_when_reaches = None
 
         self.fems = [1, 2, 3, 4, 5, 6]
@@ -68,7 +69,7 @@ class VDSWrapperPart(Part):
 
     @RunnableController.Abort
     @RunnableController.Reset
-    def abort(self, task):
+    def abort(self, context):
         self.close_files()
 
     def close_files(self):
@@ -113,7 +114,8 @@ class VDSWrapperPart(Part):
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
         "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED,
         "fillValue", NumberMeta("int32", "Fill value for stripe spacing"), 0)
-    def configure(self, task, completed_steps, steps_to_do, part_info, params):
+    def configure(self, context, completed_steps, steps_to_do, part_info,
+                  params):
         self.done_when_reaches = completed_steps + steps_to_do
 
         self._logger.debug("Creating ExternalLinks from VDS to FEM1.h5")
@@ -176,30 +178,30 @@ class VDSWrapperPart(Part):
 
     @RunnableController.PostRunReady
     @RunnableController.Seek
-    def seek(self, task, completed_steps, steps_to_do, part_info):
+    def seek(self, context, completed_steps, steps_to_do, part_info):
         self.done_when_reaches = completed_steps + steps_to_do
 
     @RunnableController.Run
     @RunnableController.Resume
-    def run(self, task, update_completed_steps):
+    def run(self, context, update_completed_steps):
         self.vds = h5.File(self.vds_path, self.APPEND, libver="latest")
         try:
             # Wait until raw files exist and have UniqueIDArray
             for path_ in self.raw_paths:
                 self.log_info("Waiting for file %s to be created", path_)
                 while not os.path.exists(path_):
-                    task.sleep(1)
+                    context.sleep(1)
                 self.raw_datasets.append(
                     h5.File(path_, self.READ, libver="latest", swmr=True))
             for dataset in self.raw_datasets:
                 self.log_info("Waiting for id in file %s", dataset)
                 while self.ID not in dataset:
-                    task.sleep(1)
+                    context.sleep(1)
 
             self.log_info("Monitoring raw files until ID reaches %s",
                           self.done_when_reaches)
             while self.id < self.done_when_reaches:
-                task.sleep(0.1)  # Allow while loop to be aborted by controller
+                context.sleep(0.1)  # Allow while loop to be aborted
                 ids = []
                 for dataset in self.raw_datasets:
                     ids.append(self.get_id(dataset))

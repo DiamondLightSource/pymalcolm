@@ -1,43 +1,35 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mriPrefix
     description: Malcolm resource id of the Block and prefix for children
 
-- parameters.string:
+- builtin.parameters.string:
     name: pvPrefix
     description: PV prefix for driver and all plugins
 
-- parameters.string:
+- builtin.parameters.string:
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.excalibur.FemDetectorDriver:
+- excalibur.blocks.fem_detector_driver_block:
     mri: $(mriPrefix):FEM
     prefix: $(pvPrefix):FEM
 
-- parts.excalibur.FemDriverPart:
+- excalibur.parts.FemDriverPart:
     name: FEM
     mri: $(mriPrefix):FEM
 
-- blocks.ADCore.StatsPlugin:
+- ADCore.blocks.stats_plugin_block:
     mri: $(mriPrefix):STAT
     prefix: $(pvPrefix):STAT
 
-- parts.ADCore.StatsPluginPart:
+- ADCore.parts.StatsPluginPart:
     name: STAT
     mri: $(mriPrefix):STAT
 
-- blocks.excalibur.GapPlugin:
-    mri: $(mriPrefix):GAP
-    prefix: $(pvPrefix):GAP
-
-- parts.excalibur.GapPluginPart:
-    name: GAP
-    mri: $(mriPrefix):GAP
-
-- includes.ADCore.filewriting_collection:
+- ADCore.includes.filewriting_collection:
     pvPrefix: $(pvPrefix)
     mriPrefix: $(mriPrefix)

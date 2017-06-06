@@ -1,19 +1,19 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mri
     description: Malcolm resource id of the Block
 
-- parameters.string:
+- builtin.parameters.string:
     name: prefix
     description: The root PV for the all records
 
-- controllers.DefaultController:
+- builtin.controllers.StatefulController:
     mri: $(mri)
 
 # This includes the input port
-- includes.ADCore.ndpluginbase_parts:
+- ADCore.includes.ndpluginbase_parts:
     prefix: $(prefix)
 
-- parts.ca.CALongPart:
+- ca.parts.CALongPart:
     name: fillValue
     description: Fill value for gaps
     pv: $(prefix):GapFillConstant

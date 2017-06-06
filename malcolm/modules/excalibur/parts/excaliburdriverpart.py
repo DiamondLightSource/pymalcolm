@@ -1,12 +1,8 @@
-from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
+from malcolm.modules.ADCore.parts import ExposureDetectorDriverPart
 
 
-class ExcaliburDriverPart(DetectorDriverPart):
-    def post_configure(self, task, params):
-        if self.child.triggerMode == "Internal":
-            self.trigger_mode.set_value("Software")
-        else:
-            self.trigger_mode.set_value("Hardware")
-        super(ExcaliburDriverPart, self).post_configure(task, params)
+class ExcaliburDriverPart(ExposureDetectorDriverPart):
+    def is_hardware_triggered(self, child):
+        return child.triggerMode.value != "Internal"
 
 

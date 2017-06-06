@@ -1,83 +1,83 @@
-- parameters.string:
+- builtin.parameters.string:
     name: mriPrefix
     description: Malcolm resource id of the Block and prefix for children
 
-- parameters.string:
+- builtin.parameters.string:
     name: pvPrefix
     description: PV prefix for driver and all plugins
 
-- parameters.string:
+- builtin.parameters.string:
     name: configDir
     description: Where to store saved configs
 
-- controllers.RunnableController:
+- scanning.controllers.RunnableController:
     mri: $(mriPrefix)
     configDir: $(configDir)
 
-- blocks.excalibur.FemDetectorManager:
+- excalibur.blocks.fem_detector_runnable_block:
     mriPrefix: $(mriPrefix):1
     pvPrefix: $(pvPrefix):1
     configDir: $(configDir)
 
-- blocks.excalibur.FemDetectorManager:
+- excalibur.blocks.fem_detector_runnable_block:
     mriPrefix: $(mriPrefix):2
     pvPrefix: $(pvPrefix):2
     configDir: $(configDir)
 
-- blocks.excalibur.FemDetectorManager:
+- excalibur.blocks.fem_detector_runnable_block:
     mriPrefix: $(mriPrefix):3
     pvPrefix: $(pvPrefix):3
     configDir: $(configDir)
 
-- blocks.excalibur.FemDetectorManager:
+- excalibur.blocks.fem_detector_runnable_block:
     mriPrefix: $(mriPrefix):4
     pvPrefix: $(pvPrefix):4
     configDir: $(configDir)
 
-- blocks.excalibur.FemDetectorManager:
+- excalibur.blocks.fem_detector_runnable_block:
     mriPrefix: $(mriPrefix):5
     pvPrefix: $(pvPrefix):5
     configDir: $(configDir)
 
-- blocks.excalibur.FemDetectorManager:
+- excalibur.blocks.fem_detector_runnable_block:
     mriPrefix: $(mriPrefix):6
     pvPrefix: $(pvPrefix):6
     configDir: $(configDir)
 
-- parts.excalibur.FemChildPart:
+- excalibur.parts.FemChildPart:
     name: FEM1
     mri: $(mriPrefix):1
 
-- parts.excalibur.FemChildPart:
+- excalibur.parts.FemChildPart:
     name: FEM2
     mri: $(mriPrefix):2
 
-- parts.excalibur.FemChildPart:
+- excalibur.parts.FemChildPart:
     name: FEM3
     mri: $(mriPrefix):3
 
-- parts.excalibur.FemChildPart:
+- excalibur.parts.FemChildPart:
     name: FEM4
     mri: $(mriPrefix):4
 
-- parts.excalibur.FemChildPart:
+- excalibur.parts.FemChildPart:
     name: FEM5
     mri: $(mriPrefix):5
 
-- parts.excalibur.FemChildPart:
+- excalibur.parts.FemChildPart:
     name: FEM6
     mri: $(mriPrefix):6
 
-- blocks.excalibur.ExcaliburDetectorDriver:
+- excalibur.blocks.excalibur_detector_driver_block:
     mri: $(mriPrefix):MASTER
     prefix: $(pvPrefix):CONFIG:ACQUIRE
 
-- parts.excalibur.ExcaliburDriverPart:
+- excalibur.parts.ExcaliburDriverPart:
     name: CONFIG
     mri: $(mriPrefix):MASTER
     readoutTime: 12e-6
 
-- parts.excalibur.VDSWrapperPart:
+- excalibur.parts.VDSWrapperPart:
     name: VDS
     dataType: "int16"
     stripeHeight: 259

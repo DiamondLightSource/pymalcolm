@@ -13,9 +13,9 @@ from malcolm.modules.BL45P.blocks import hardware_scan_block,\
     pmac_manager_block,\
     sim_scan_block
 from malcolm.modules.excalibur.blocks import excalibur_detector_driver_block,\
-    excalibur_detector_manager_block,\
+    excalibur_detector_runnable_block,\
     fem_detector_driver_block,\
-    fem_detector_manager_block
+    fem_detector_runnable_block
 from malcolm.modules.profiling.blocks import profiling_web_server_block
 from malcolm.testutil import ChildTestCase
 
@@ -94,9 +94,9 @@ class TestBuiltin(ChildTestCase):
         self.create_child_block(
             excalibur_detector_driver_block, Mock(), mri="mri", prefix="prefix")
 
-    def test_excalibur_detector_manager_block(self):
+    def test_excalibur_detector_runnable_block(self):
         self.create_child_block(
-            excalibur_detector_manager_block, Mock(), mriPrefix="mriPrefix",
+            excalibur_detector_runnable_block, Mock(), mriPrefix="mriPrefix",
             pvPrefix="pvPrefix",
             configDir="/tmp")
 
@@ -105,9 +105,9 @@ class TestBuiltin(ChildTestCase):
             fem_detector_driver_block, Mock(), mri="mri",
             prefix="prefix")
 
-    def test_fem_detector_manager_block(self):
+    def test_fem_detector_runnable_block(self):
         self.create_child_block(
-            fem_detector_manager_block, Mock(), mriPrefix="mriPrefix",
+            fem_detector_runnable_block, Mock(), mriPrefix="mriPrefix",
             pvPrefix="pvPrefix",
             configDir="/tmp")
 

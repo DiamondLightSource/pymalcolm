@@ -1,9 +1,9 @@
-from malcolm.parts.builtin.childpart import ChildPart
-from malcolm.controllers.runnablecontroller import RunnableController
-from malcolm.parts.ADCore.hdfwriterpart import NDArrayDatasetInfo
+from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
 
 
-class FemDriverPart(ChildPart):
+class FemDriverPart(StatefulChildPart):
     # Only need to report that we will make a dataset, top level will do all
     # control
     @RunnableController.ReportStatus
