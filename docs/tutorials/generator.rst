@@ -3,18 +3,19 @@
 Generator Tutorial
 ==================
 
-You should already know how to create a `Part` that attaches
-`Attribute` and `Method` instances to a `Block`.
-The Blocks we have made in previous tutorials are quite simple and low level
-and might correspond to the interface provided by EPICS devices: a collection
-of Attributes that we can set and simple Methods we can call that cause the
-device to operate in a particular way. What is missing is the logic of "do
-this, then that, then these 3 things at the same time". To do this, we will
-create a higher level Block that will control a number of child Blocks to
-synchronise them and use them for a particular application.
+You should already know how to create a `part_` that attaches `Attributes
+<attribute_>` and `Methods <method_>` to a `block_`. The Blocks we have made in
+previous tutorials are quite simple and low level and might correspond to the
+interface provided by EPICS devices: a collection of Attributes that we can set
+and simple Methods we can call that cause the device to operate in a particular
+way. We call Blocks like this the `hardware_layer`. What is missing from these
+Hardware Blocks is the logic of "do this, then that, then these 3 things at the
+same time". To do this, we will create a higher level `device_layer` containing
+Blocks that will control a number of child Hardware Blocks to synchronise them
+and use them for a particular application.
 
-Creating Higher Level Blocks
-----------------------------
+Creating Device Blocks
+----------------------
 
 These higher level Blocks have two main methods:
 
@@ -59,7 +60,7 @@ This tree of Blocks is probably better viewed as a diagram:
     edge [fontname=Arial fontsize=10 arrowhead=vee]
 
     subgraph cluster_device {
-        label="Device layer"
+        label="Device Layer"
 		style=filled
 		color=lightgrey
 
@@ -76,7 +77,7 @@ This tree of Blocks is probably better viewed as a diagram:
     }
 
     subgraph cluster_hardware {
-        label="Hardware layer"
+        label="Hardware Layer"
 		style=filled
 		color=lightgrey
 
@@ -144,7 +145,7 @@ Now let's see some of the Methods and Attributes that are created:
 The `RunnableController` contributes the ``configure`` and ``run``
 Methods in a similar way to previous examples, but the two ScanTickerParts do
 not contribute any Attributes or Methods to the Block. Instead, these register
-functions with `Hook` instances on the Controller to
+functions with `Hooks <hook_>` on the Controller to
 make their child Block behave in a particular way during the correct phase of
 `RunnableController.configure` or `RunnableController.run`.
 
@@ -191,11 +192,10 @@ works:
     :end-before: @RunnableController.Run
 
 You'll notice some more decorators on those functions. The
-``@RunnableController.Configure`` line registers a function with a `Hook`.
-A `Controller` defines a a number of Hooks that define what methods
-of a `Part` will be run during a particular `Method`. For
-example, we are hooking our ``configure()`` method to the
-`Configure` Hook. 
+``@RunnableController.Configure`` line registers a function with a `hook_`. A
+Controller defines a a number of Hooks that define what methods of a Part will
+be run during a particular Method. For example, we are hooking our
+``configure()`` method to the `Configure` Hook.
 
 Let's take a look at its documentation:
 
@@ -324,9 +324,11 @@ that would mean different things need to be run in these two hooks.
 Conclusion
 ----------
 
-This tutorial has given us an understanding of how scans are specified
-in Malcolm, how child Blocks are controlled from parent Blocks and how Parts
-can register code to run at different phases of a Controller.
+This tutorial has given us an understanding of how scans are specified in
+Malcolm, how child Hardware Blocks are controlled from a parent Device Block and
+how Parts can register code to run at different phases of a Controller. In the
+next tutorial we will see how to make an EPICS areaDetector Block in the
+`device_layer` capable of performing scans.
 
 .. _Scan Point Generator:
     http://scanpointgenerator.readthedocs.org/en/latest/writing.html

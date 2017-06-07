@@ -3,6 +3,7 @@ from .alarm import Alarm, AlarmSeverity, AlarmStatus
 from .attribute import Attribute
 from .attributemodel import AttributeModel
 from .block import Block
+from .blockmodel import BlockModel
 from .blockmeta import BlockMeta
 from .context import Context
 from .controller import Controller

@@ -6,6 +6,7 @@ from malcolm.modules.builtin.vmetas import StringMeta
     "mri", StringMeta("Malcolm resource id of created block"), REQUIRED,
     "description", StringMeta("Description for the created block"), "")
 class BasicController(Controller):
+    """Basic Controller"""
     def __init__(self, process, parts, params):
         self.params = params
         super(BasicController, self).__init__(

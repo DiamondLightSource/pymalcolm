@@ -3,49 +3,137 @@
 Glossary
 ========
 
-Here are some commonly used Malcolm terms
+Here are some commonly used Malcolm terms.
 
-Process
--------
+.. define references for `Attribute_` and `attribute_` that don't conflict with
+.. the one for `Attribute` that links to the python class
 
-A Malcolm `Process` hosts a number of `Controller`_ instances that can handle
-requests meant for a particular `Block`_. First introduced in the
+.. _attribute_:
+
+Attribute
+---------
+
+An `Attribute` is the interface to an object attached to a `block_` that holds a
+current value with alarm and timeStamp and some meta information. If writeable
+it can accept `Put` requests to run a remote procedure. It is a user centred
+view, backed by an `AttributeModel` to hold the data. Introduced in the
 `hello_tutorial`.
+
+
+.. _block_:
 
 Block
 -----
 
-A `Block` is the interface to a single object with Methods and Attributes.
+A `Block` is the interface to a single object with `Methods <method_>` and
+`Attributes <attribute_>`. It is a user centred view, backed by a `BlockModel`
+to hold the data. Introduced in the `hello_tutorial`.
+
+
+.. _clientcomms_:
+
+ClientComms
+-----------
+
+A `ClientComms` is a special `controller_` that provides access to remote
+`Blocks <block_>` hosted by another Malcolm `process_` with a `servercomms_`.
 Introduced in the `hello_tutorial`.
+
+
+.. _controller_:
 
 Controller
 ----------
 
-A `Controller`
+A `Controller` is responsible for making a `block_` View on request, possibly
+synchronizing its state with some hardware. Introduced in the `hello_tutorial`.
+
+
+.. _device_layer:
+
+Device Layer
+------------
+
+Middle level of `block_`, corresponding to a device like a Detector or a
+Motor controller. They manage a number of Hardware blocks and expose a
+configure/run interface. Introduced in the `generator_tutorial`.
+
+
+.. _hardware_layer:
+
+Hardware Layer
+--------------
+
+Contains the lowest level of `block_`, providing an interface that directly
+exposes the attributes that the hardware device provides. Introduced in the
+`generator_tutorial`.
+
+
+.. _hook_:
+
+Hook
+----
+
+A `Hook` is an object attached to a `controller_` that `Parts <part_>` can
+register with so that arbitrary logic is run concurrently during specific times
+in Controller `Methods <method_>`. Introduced in the `generator_tutorial`.
+
+
+.. _method_:
+
+Method
+------
+
+A `Method` is the interface to an object attached to a `block_` that holds meta
+information about what arguments it takes and receives, and can accept `Post`
+requests to run a remote procedure. It is a user centred view, backed by a
+`MethodModel` to hold the data. Introduced in the `hello_tutorial`.
+
+
+.. _mri:
+
+mri
+---
+
+Malcolm Resource Identifier. A unique name for a `controller_` within a
+`process_` that becomes the way clients ask for a particular `block_`.
+Introduced in the `hello_tutorial`.
+
+
+.. _part_:
 
 Part
 ----
 
-A `Part`
+A `Part` is attached to a `controller_`, and is also able to contribute
+Methods and Attributes to the Controller's Block. It can also register to be run
+at specific times during Controller Methods to contribute logic. Introduced in
+the `hello_tutorial`.
 
-Hardware Block
---------------
 
-Lowest level of `Block`, providing an interface that directly exposes the
-attributes that the hardware device provides. Introduced in the
-`generator_tutorial`.
+.. _process_:
 
-Device Block
-------------
+Process
+-------
 
-Middle level of `Block`, corresponding to a device like a Detector or a Motor
-controller. They manage a number of Hardware blocks and expose a configure/run
-interface. Introduced in the `generator_tutorial`.
+A Malcolm `Process` hosts a number of `controller_` instances that can handle
+requests meant for a particular `block_`. Introduced in the `hello_tutorial`.
 
-Scan Block
+
+.. _scan_layer:
+
+Scan Layer
 ----------
 
-Top level of `Block`, corresponding to a combination of Devices making up a
-scan.
+Top level of `block_`, corresponding to a combination of Devices making up a
+scan. Introduced in the `scanning_tutorial`.
 
 
+.. _servercomms_:
+
+ServerComms
+-----------
+
+A `ServerComms` is a special `controller_` that provides access to the `Blocks
+<block_>` hosted by the current Malcolm `process_`. Introduced in the
+`hello_tutorial`.

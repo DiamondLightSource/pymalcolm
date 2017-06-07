@@ -66,6 +66,9 @@ This is the core of Malcolm
     perform the logic, and the client copies will expose the same API as the
     server Block to the end user.
 
+.. autoclass:: BlockModel
+    :members:
+
 .. autoclass:: Context
     :members:
 

@@ -8,12 +8,12 @@ copy of pymalcolm which includes some example code.
   
 So now would be a good time for a "Hello World" tutorial.
 
-Let's start with some terminology. A Malcolm application consists of a `Process`
-which hosts a number of `Block` instances. Each Block has a number of
-`Attribute` and `Method` instances that can be used to interact with it. The
-Process may also contain `ServerComms` that allow it to expose its Blocks to the
-outside world, and it may also contain `ClientComms` that link it to another
-Malcolm Process and allow access to its Blocks.
+Let's start with some terminology. A Malcolm application consists of a
+`process_` which hosts a number of `Blocks <block_>`. Each Block has a number of
+`Attributes <attribute_>` and `Methods <method_>` that can be used to interact
+with it. The Process may also contain `servercomms_` that allow it to expose its
+Blocks to the outside world, and it may also contain `clientcomms_` that link it
+to another Malcolm Process and allow access to its Blocks.
 
 Launching a Malcolm Process
 ---------------------------
@@ -32,7 +32,7 @@ Let's look at ``./examples/DEMO-HELLO.yaml`` now:
     :language: yaml
 
 You will see 4 entries in the file. The first 3 entries are instantiating Blocks
-that have already been defined. These Blocks each take a single mri (Malcolm
+that have already been defined. These Blocks each take a single `mri` (Malcolm
 Resource Identifier) argument which tells the Process how clients will address
 that Block. The last entry creates a ServerComms Block which starts an HTTP
 server on port 8080 and listen for websocket connections from another Malcolm
@@ -189,22 +189,22 @@ diagram below.
         }
     }
 
-    g2 -> g1 [style=dashed label="Post(name='me')"]
-    g1 -> g2 [style=dashed label="Return(greeting='Hello me')"]
+    g2 -> g1 [style=dashed label="Post\n{name:'me'}"]
+    g1 -> g2 [style=dashed label="Return\n{greeting:'Hello me'}"]
 
 You can quit those imalcolm sessions now by pressing CTRL-D or typing exit.
 
 Defining a Block
 ----------------
 
-We have already seen that a `Block` is made up of `Method` and `Attribute`
-instances, but how do we define one? Well, although Methods and Attributes make
-a good interface to the outside world, they aren't the right size unit to divide
-our Block into re-usable chunks of code. What we actually need is something to
-co-ordinate our Block and provide a framework for the logic we will write, and
-plugins that can extend and customize this logic. The object that play a
-co-ordinating role is called a `Controller` and each plugin is called a `Part`.
-This is how they fit together:
+We have already seen that a `block_` is made up of `Methods <method_>` and
+`Attributes <attribute_>`, but how do we define one? Well, although Methods and
+Attributes make a good interface to the outside world, they aren't the right
+size unit to divide our Block into re-usable chunks of code. What we actually
+need is something to co-ordinate our Block and provide a framework for the logic
+we will write, and plugins that can extend and customize this logic. The object
+that play a co-ordinating role is called a `controller_` and each plugin is
+called a `part_`. This is how they fit together:
 
 .. digraph:: controllers_and_parts
 
@@ -233,9 +233,9 @@ This is how they fit together:
     Process -> Controller
     Controller -> Block [arrowhead=vee dir=from style=dashed label=produces]
 
-The `Controller` is responsible for making a Block View on request that we can
+The `controller_` is responsible for making a Block View on request that we can
 interact with. It populates it with Methods and Attributes that it has created
-as well as those created by `Part` instances attached to it. Parts are also
+as well as those created by `Parts <part_>` attached to it. Parts are also
 called at specific times during Controller Methods to allow them to contribute
 logic.
 
@@ -245,9 +245,9 @@ defined in the ``./malcolm/modules/demo/blocks/hello_block.yaml`` file:
 .. literalinclude:: ../../malcolm/modules/demo/blocks/hello_block.yaml
     :language: yaml
 
-The first item in the YAML file is a `parameter`. This defines a parameter that
-must be defined when instantiating the Block. It's value is then available
-throughout the YAML file by using the ``$(<name>)`` syntax.
+The first item in the YAML file is a `builtin.parameters.string`. This defines a
+parameter that must be defined when instantiating the Block. It's value is then
+available throughout the YAML file by using the ``$(<name>)`` syntax.
 
 The second item is a `BasicController` that just acts as a container for Parts.
 It only contributes a ``health`` Attribute to the Block.

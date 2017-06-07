@@ -5,17 +5,17 @@ Counter Tutorial
 
 .. py:currentmodule:: malcolm.core
 
-You should already know how to run up a Malcolm `Process` with some
-`Block` instances that are composed of `Part` instances, and have
-seen a Part that exposes a `Method`. Now we will look at a Part that
-exposes an `Attribute` as well.
+You should already know how to run up a Malcolm `process_` with some `Blocks
+<block_>` that are each composed of `controller_` with `Parts <part_>`, and have
+seen a Part that exposes a `method_`. Now we will look at a Part that exposes an
+`attribute_` as well.
 
 Let's take the example of a Counter. It contains:
 
-- a writeable `Attribute` called ``counter`` which will keep the current
+- a writeable `attribute_` called ``counter`` which will keep the current
   counter value.
-- a `Method` zero() which will set ``counter = 0``.
-- a `Method` increment() which will set ``counter = counter + 1``.
+- a `method_` zero() which will set ``counter = 0``.
+- a `method_` increment() which will set ``counter = counter + 1``.
 
 The block definition in ``./malcolm/modules/demo/blocks/counter_block.yaml``
 looks very similar to the hello_block example in the previous tutorial:
@@ -85,7 +85,7 @@ The main difference to the Hello example is that we have implemented
     This is because the Attribute is a user facing View, with methods like
     :meth:`~Attribute.put_value`, while AttributeModel is a data centred model
     with methods like :meth:`~AttributeModel.set_value`. Each user gets their
-    own Attribute view of a single underlying AttributeModel that holds the
+    own `Attribute` view of a single underlying `AttributeModel` that holds the
     actual data.
 
 In our example we yield:
