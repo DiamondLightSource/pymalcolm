@@ -31,8 +31,9 @@ class TestHDFWriterPart(ChildTestCase):
         spiral = SpiralGenerator(
             ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
         params.generator = CompoundGenerator([energy, spiral], [], [], 0.1)
-        params.filePath = "/tmp/file.h5"
-        params.fileTemplate = "%s%s"
+        params.fileDir = "/tmp"
+        params.formatName = "file"
+        params.fileTemplate = "thing-%s.h5"
         params.generator.prepare()
         completed_steps = 0
         steps_to_do = 38
@@ -48,56 +49,56 @@ class TestHDFWriterPart(ChildTestCase):
             self.context, completed_steps, steps_to_do, part_info, params)
         assert len(infos) == 8
         assert infos[0].name == "xspress3.data"
-        assert infos[0].filename == "file.h5"
+        assert infos[0].filename == "thing-file.h5"
         assert infos[0].type == "primary"
         assert infos[0].rank == 4
         assert infos[0].path == "/entry/detector/detector"
         assert infos[0].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[1].name == "xspress3.sum"
-        assert infos[1].filename == "file.h5"
+        assert infos[1].filename == "thing-file.h5"
         assert infos[1].type == "secondary"
         assert infos[1].rank == 4
         assert infos[1].path == "/entry/sum/sum"
         assert infos[1].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[2].name == "I0.data"
-        assert infos[2].filename == "file.h5"
+        assert infos[2].filename == "thing-file.h5"
         assert infos[2].type == "primary"
         assert infos[2].rank == 4
         assert infos[2].path == "/entry/I0/I0"
         assert infos[2].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[3].name == "It.data"
-        assert infos[3].filename == "file.h5"
+        assert infos[3].filename == "thing-file.h5"
         assert infos[3].type == "monitor"
         assert infos[3].rank == 4
         assert infos[3].path == "/entry/It/It"
         assert infos[3].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[4].name == "t1x.value"
-        assert infos[4].filename == "file.h5"
+        assert infos[4].filename == "thing-file.h5"
         assert infos[4].type == "position_value"
         assert infos[4].rank == 4
         assert infos[4].path == "/entry/t1x/t1x"
         assert infos[4].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[5].name == "energy.value_set"
-        assert infos[5].filename == "file.h5"
+        assert infos[5].filename == "thing-file.h5"
         assert infos[5].type == "position_set"
         assert infos[5].rank == 1
         assert infos[5].path == "/entry/detector/energy_set"
         assert infos[5].uniqueid == ""
 
         assert infos[6].name == "x.value_set"
-        assert infos[6].filename == "file.h5"
+        assert infos[6].filename == "thing-file.h5"
         assert infos[6].type == "position_set"
         assert infos[6].rank == 1
         assert infos[6].path == "/entry/detector/x_set"
         assert infos[6].uniqueid == ""
 
         assert infos[7].name == "y.value_set"
-        assert infos[7].filename == "file.h5"
+        assert infos[7].filename == "thing-file.h5"
         assert infos[7].type == "position_set"
         assert infos[7].rank == 1
         assert infos[7].path == "/entry/detector/y_set"
@@ -111,9 +112,9 @@ class TestHDFWriterPart(ChildTestCase):
             call.put('arrayCounter', 0),
             call.put('dimAttDatasets', True),
             call.put('enableCallbacks', True),
-            call.put('fileName', 'file.h5'),
+            call.put('fileName', 'file'),
             call.put('filePath', '/tmp/'),
-            call.put('fileTemplate', '%s%s'),
+            call.put('fileTemplate', '%sthing-%s.h5'),
             call.put('fileWriteMode', 'Stream'),
             call.put('lazyOpen', True),
             call.put('positionMode', True),

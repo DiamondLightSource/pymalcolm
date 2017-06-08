@@ -95,12 +95,14 @@ class HDFWriterPart(StatefulChildPart):
     @RunnableController.Configure
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-        "filePath", StringMeta("Full file path to write data to"), REQUIRED,
+        "fileDir", StringMeta("Directory to write hdf file to"), REQUIRED,
+        "formatName", StringMeta(
+            "Name argument for fileTemplate, normally filename without extension"),
+        REQUIRED,
         "fileTemplate", StringMeta(
-            """Printf style template to generate full path from. Arguments are:
-            1) %s: directory name including trailing slash from filePath
-            2) %s: file name from filePath
-            """), "%s%s")
+            """Printf style template to generate filename relative to fileDir.
+            Arguments are:
+              1) %s: the value of formatName"""), "%s.h5")
     def configure(self, context, completed_steps, steps_to_do, part_info, params):
         self.done_when_reaches = completed_steps + steps_to_do
         child = context.block_view(self.params.mri)
@@ -109,8 +111,8 @@ class HDFWriterPart(StatefulChildPart):
         child.positionMode.put_value(True)
         # Setup our required settings
         # TODO: this should be different for windows detectors
-        file_path = params.filePath.rstrip(os.sep)
-        file_dir, filename = file_path.rsplit(os.sep, 1)
+        file_dir = params.fileDir.rstrip(os.sep)
+        filename = params.fileTemplate % params.formatName
         assert "." in filename, \
             "File extension for %r should be supplied" % filename
         futures = child.put_attribute_values_async(dict(
@@ -122,8 +124,8 @@ class HDFWriterPart(StatefulChildPart):
             lazyOpen=True,
             arrayCounter=0,
             filePath=file_dir + os.sep,
-            fileName=filename,
-            fileTemplate=params.fileTemplate))
+            fileName=params.formatName,
+            fileTemplate="%s" + params.fileTemplate))
         futures += self._set_dimensions(child, params.generator)
         xml = self._make_layout_xml(params.generator, part_info)
         self.layout_filename = os.path.join(

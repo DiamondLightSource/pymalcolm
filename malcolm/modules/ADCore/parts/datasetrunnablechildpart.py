@@ -14,36 +14,35 @@ class DatasetRunnableChildPart(RunnableChildPart):
         response = deserialize_object(response, Update)
         method_metas = [deserialize_object(response.value, MethodModel),
                         DatasetRunnableChildPart.configure.MethodModel]
-        without = ["filePath"]
+        without = ["formatName"]
         self.method_models["validate"].recreate_from_others(
             method_metas, without)
         self.method_models["configure"].recreate_from_others(
             method_metas, without)
         self.controller.update_configure_args()
 
-    def _params_with_file_path(self, params):
-        file_path = os.path.join(params.fileDir, self.name + ".h5")
-        filtered_params = {k: v for k, v in params.items() if k != "fileDir"}
-        filtered_params["filePath"] = file_path
-        return filtered_params
+    def _params_with_format_name(self, params):
+        new_params = dict(formatName=self.name)
+        new_params.update(params)
+        return new_params
 
     # Method will be filled in by update_configure_validate_args
     @RunnableController.Validate
     @method_takes()
     def validate(self, context, part_info, params):
         params = self._params_with_file_path(params)
+        params = self._params_with_format_name(params)
         return super(DatasetRunnableChildPart, self).validate(
             context, part_info, params)
 
     # Method will be filled in at update_configure_validate_args
     @RunnableController.Configure
-    @method_takes(
-        "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED)
+    @method_takes()
     def configure(self, context, completed_steps, steps_to_do, part_info,
                   params):
         child = context.block_view(self.params.mri)
-        if "filePath" in child.configure.takes.elements:
-            params = self._params_with_file_path(params)
+        if "formatName" in child.configure.takes.elements:
+            params = self._params_with_format_name(params)
         child.configure(**params)
         datasets_table = child.datasets.value
         info_list = []

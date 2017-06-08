@@ -30,7 +30,7 @@ class TestStatsPluginPart(ChildTestCase):
         steps_to_do = ANY
         part_info = ANY
         params = MagicMock()
-        params.filePath = "/tmp/anything.h5"
+        params.fileDir = "/tmp"
         infos = self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, params)
         assert infos is None

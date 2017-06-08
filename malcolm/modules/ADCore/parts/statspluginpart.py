@@ -30,17 +30,16 @@ class StatsPluginPart(StatefulChildPart):
 
     @RunnableController.Configure
     @method_takes(
-        "filePath", StringMeta("File path to write data to"), REQUIRED)
+        "fileDir", StringMeta("File directory to write data to"), REQUIRED)
     def configure(self, context, completed_steps, steps_to_do, part_info,
                   params):
-        file_dir, filename = params.filePath.rsplit(os.sep, 1)
         child = context.block_view(self.params.mri)
         fs = child.put_attribute_values_async(dict(
             enableCallbacks=True,
             computeStatistics=True))
         xml = self._make_attributes_xml()
         self.attributes_filename = os.path.join(
-            file_dir, "%s-attributes.xml" % self.params.mri)
+            params.fileDir, "%s-attributes.xml" % self.params.mri)
         open(self.attributes_filename, "w").write(xml)
         fs.append(
             child.attributesFile.put_value_async(self.attributes_filename))
