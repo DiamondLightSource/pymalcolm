@@ -37,8 +37,9 @@ class TestHDFWriterPart(unittest.TestCase):
         spiral = SpiralGenerator(
             ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
         params.generator = CompoundGenerator([energy, spiral], [], [], 0.1)
-        params.filePath = "/tmp/file.h5"
-        params.fileTemplate = "%sthing-%s"
+        params.fileDir = "/tmp"
+        params.formatName = "file"
+        params.fileTemplate = "thing-%s.h5"
         params.generator.prepare()
         completed_steps = 0
         steps_to_do = 38
@@ -50,33 +51,33 @@ class TestHDFWriterPart(unittest.TestCase):
             task, completed_steps, steps_to_do, part_info, params)
         self.assertEqual(len(infos), 5)
         self.assertEquals(infos[0].name, "xspress3.data")
-        self.assertEquals(infos[0].filename, "file.h5")
+        self.assertEquals(infos[0].filename, "thing-file.h5")
         self.assertEquals(infos[0].type, "primary")
         self.assertEquals(infos[0].rank, 4)
         self.assertEquals(infos[0].path, "/entry/detector/detector")
         self.assertEquals(infos[0].uniqueid,
                           "/entry/NDAttributes/NDArrayUniqueId")
         self.assertEquals(infos[1].name, "xspress3.sum")
-        self.assertEquals(infos[1].filename, "file.h5")
+        self.assertEquals(infos[1].filename, "thing-file.h5")
         self.assertEquals(infos[1].type, "secondary")
         self.assertEquals(infos[1].rank, 4)
         self.assertEquals(infos[1].path, "/entry/sum/sum")
         self.assertEquals(infos[1].uniqueid,
                           "/entry/NDAttributes/NDArrayUniqueId")
         self.assertEquals(infos[2].name, "energy.value_set")
-        self.assertEquals(infos[2].filename, "file.h5")
+        self.assertEquals(infos[2].filename, "thing-file.h5")
         self.assertEquals(infos[2].type, "position_set")
         self.assertEquals(infos[2].rank, 1)
         self.assertEquals(infos[2].path, "/entry/detector/energy_set")
         self.assertEquals(infos[2].uniqueid, "")
         self.assertEquals(infos[3].name, "x.value_set")
-        self.assertEquals(infos[3].filename, "file.h5")
+        self.assertEquals(infos[3].filename, "thing-file.h5")
         self.assertEquals(infos[3].type, "position_set")
         self.assertEquals(infos[3].rank, 1)
         self.assertEquals(infos[3].path, "/entry/detector/x_set")
         self.assertEquals(infos[3].uniqueid, "")
         self.assertEquals(infos[4].name, "y.value_set")
-        self.assertEquals(infos[4].filename, "file.h5")
+        self.assertEquals(infos[4].filename, "thing-file.h5")
         self.assertEquals(infos[4].type, "position_set")
         self.assertEquals(infos[4].rank, 1)
         self.assertEquals(infos[4].path, "/entry/detector/y_set")
@@ -97,8 +98,8 @@ class TestHDFWriterPart(unittest.TestCase):
                              lazyOpen=True,
                              arrayCounter=0,
                              filePath="/tmp/",
-                             fileName="file.h5",
-                             fileTemplate="%sthing-%s")))
+                             fileName="file",
+                             fileTemplate="%sthing-%s.h5")))
         self.assertEqual(task.put_many_async.call_args_list[1],
                          call(self.child, dict(
                              numExtraDims=1,
