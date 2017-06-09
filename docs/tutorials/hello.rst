@@ -350,11 +350,3 @@ that we could now add "greeting" functionality to another Block just by
 adding it to the instantiated parts. In the next tutorial we will read more
 about adding functionality using Parts.
 
-.. _YAML:
-    https://en.wikipedia.org/wiki/YAML
-
-.. _IPython:
-    https://ipython.org
-
-.. _decorators:
-    https://realpython.com/blog/python/primer-on-python-decorators/

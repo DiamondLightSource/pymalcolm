@@ -34,8 +34,11 @@ class Loggable(object):
                 ".".join([<module_name>, <cls_name>] + fields_sorted_on_key)
         """
         names = [self.__module__, self.__class__.__name__]
-        for field in sorted(fields):
-            names.append(fields[field])
+        for field, value in sorted(fields.items()):
+            names.append(value)
+        # names should be something like this for one field:
+        #   ["malcolm.modules.scanning.controllers.runnablecontroller",
+        #    "RunnableController", "BL45P-ML-SCAN-01"]
         self._log = logging.getLogger(".".join(names))
         if fields:
             self._log.addFilter(FieldFilter(fields))

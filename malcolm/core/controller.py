@@ -58,6 +58,8 @@ class Controller(Loggable):
         self._add_block_fields()
 
     def add_part(self, part):
+        assert part.name not in self.parts, \
+            "Part %r already exists in Controller %r" % (part.name, self.mri)
         part.attach_to_controller(self)
         # Check part hooks into one of our hooks
         for func_name, part_hook, _ in get_hook_decorated(part):

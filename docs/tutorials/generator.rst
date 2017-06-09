@@ -98,8 +98,8 @@ This tree of Blocks is probably better viewed as a diagram:
         }
     }
 
-    x -> counterx_c [lhead=cluster_counterx minlen=3]
-    y -> countery_c [lhead=cluster_countery minlen=3]
+    x -> counterx_c [lhead=cluster_counterx minlen=3 style=dashed]
+    y -> countery_c [lhead=cluster_countery minlen=3 style=dashed]
 
 Now let's see some of the Methods and Attributes that are created:
 
@@ -314,10 +314,10 @@ This command will set the device to ``Armed`` so that you can then ``run()``
 again. See `RunnableStates` for more information about what functions you can
 run in different Block states.
 
-What is happening under the hood is that our hooked ``configure()`` method is being
-called during ``pause()``, ``configure()`` and ``seek()``, but we want it to
-do the same thing each time so can use the same method.  The ``run()`` command
-is likewise hooked to both ``run()`` and ``resume()`` as it makes no
+What is happening under the hood is that our hooked ``configure()`` method is
+being called during ``pause()``, ``configure()`` and ``seek()``, but we want it
+to do the same thing each time so can use the same method.  The ``run()``
+command is likewise hooked to both ``run()`` and ``resume()`` as it makes no
 difference in our example. In a real example, there may be some device state
 that would mean different things need to be run in these two hooks.
 
@@ -327,8 +327,5 @@ Conclusion
 This tutorial has given us an understanding of how scans are specified in
 Malcolm, how child Hardware Blocks are controlled from a parent Device Block and
 how Parts can register code to run at different phases of a Controller. In the
-next tutorial we will see how to make an EPICS areaDetector Block in the
+next tutorial we will see how to make an `EPICS`_ `areaDetector`_ Block in the
 `device_layer` capable of performing scans.
-
-.. _Scan Point Generator:
-    http://scanpointgenerator.readthedocs.org/en/latest/writing.html

@@ -3,8 +3,8 @@ from mock import MagicMock, ANY, call
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import call_with_params, Context, Process
-from malcolm.modules.ADCore.blocks import sim_detector_driver_block
-from malcolm.modules.ADCore.parts import SimDetectorDriverPart
+from malcolm.modules.ADSimDetector.blocks import sim_detector_driver_block
+from malcolm.modules.ADSimDetector.parts import SimDetectorDriverPart
 from malcolm.testutil import ChildTestCase
 
 

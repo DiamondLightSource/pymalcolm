@@ -30,7 +30,6 @@ class DatasetRunnableChildPart(RunnableChildPart):
     @RunnableController.Validate
     @method_takes()
     def validate(self, context, part_info, params):
-        params = self._params_with_file_path(params)
         params = self._params_with_format_name(params)
         return super(DatasetRunnableChildPart, self).validate(
             context, part_info, params)

@@ -2,7 +2,7 @@
     name: prefix
     description: The root PV for the all records
 
-- ADCore.includes.ndarray_parts:
+- ADCore.includes.ndarraybase_parts:
     prefix: $(prefix)
 
 - ca.parts.CAStringPart:

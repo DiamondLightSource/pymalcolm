@@ -13,9 +13,8 @@ in order to improve the performance of continuous scanning.
 What can Malcolm do?
 --------------------
 
-Malcolm provides a layer on top of `EPICS`_
-that wraps up groups of `PVs`_ and presents a higher level scanning interface to
-`GDA`_ via `pvAccess`_.
+Malcolm provides a layer on top of `EPICS`_ that wraps up groups of `PVs`_ and
+presents a higher level scanning interface to `GDA`_ via `pvAccess`_.
 
 .. digraph:: malcolm_dls_usage
 
@@ -82,33 +81,6 @@ For now, in a Diamond environment just run::
 All optional modules are already installed and available
 
 
-
-
-
-
-.. _Mapping project:
-    https://indico.esss.lu.se/event/357/session/8/contribution/63
-
-.. _EPICS:
-    http://www.aps.anl.gov/epics/
-
-.. _PVs:
-    https://ics-web.sns.ornl.gov/kasemir/train_2006/1_3_CA_Overview.pdf
-
-.. _GDA:
-    http://www.opengda.org/
-
-.. _pvAccess:
-    http://epics-pvdata.sourceforge.net/arch.html#Network
-
-.. _websockets:
-    https://en.wikipedia.org/wiki/WebSocket
-
-.. _Diamond Light Source:
-    http://www.diamond.ac.uk
-
-.. _JSON:
-    http://www.json.org/
 
 .. _repository:
     https://github.com/dls-controls/pymalcolm

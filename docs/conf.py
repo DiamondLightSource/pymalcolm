@@ -224,3 +224,52 @@ texinfo_documents = [
      u'Tom Cobb', 'malcolm', 'A short description',
      'Miscellaneous'),
 ]
+
+# Common links that should be available on every page
+rst_epilog = """
+.. _Mapping project:
+    https://indico.esss.lu.se/event/357/session/8/contribution/63
+
+.. _EPICS:
+    http://www.aps.anl.gov/epics/
+
+.. _PVs:
+    https://ics-web.sns.ornl.gov/kasemir/train_2006/1_3_CA_Overview.pdf
+
+.. _GDA:
+    http://www.opengda.org/
+
+.. _pvAccess:
+    http://epics-pvdata.sourceforge.net/arch.html#Network
+
+.. _websockets:
+    https://en.wikipedia.org/wiki/WebSocket
+
+.. _Diamond Light Source:
+    http://www.diamond.ac.uk
+
+.. _JSON:
+    http://www.json.org/
+
+.. _areaDetector:
+    http://cars.uchicago.edu/software/epics/areaDetector.html
+
+.. _YAML:
+    https://en.wikipedia.org/wiki/YAML
+
+.. _IPython:
+    https://ipython.org
+
+.. _decorators:
+    https://realpython.com/blog/python/primer-on-python-decorators/
+
+.. _Scan Point Generator:
+    http://scanpointgenerator.readthedocs.org/en/latest/writing.html
+
+.. _NeXus:
+    http://www.nexusformat.org/
+
+.. _HDF5:
+    https://support.hdfgroup.org/HDF5/
+
+"""

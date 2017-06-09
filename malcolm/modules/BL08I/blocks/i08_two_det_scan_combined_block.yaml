@@ -35,11 +35,11 @@
     mri: $(brick)
 
 - ADCore.parts.DatasetRunnableChildPart:
-    name: DET
+    name: DET1
     mri: $(det1)
 
 - ADCore.parts.DatasetRunnableChildPart:
-    name: DET
+    name: DET2
     mri: $(det2)
 
 - ADCore.parts.DatasetRunnableChildPart:
