@@ -254,7 +254,15 @@ class Controller(Loggable):
         """Called with the lock taken"""
         data = self._block
         for endpoint in request.path[1:]:
-            data = data[endpoint]
+            try:
+                data = data[endpoint]
+            except KeyError:
+                if hasattr(data, "typeid"):
+                    typ = data.typeid
+                else:
+                    typ = type(data)
+                raise UnexpectedError(
+                    "Object of type %r has no attribute %r" % (typ, endpoint))
         serialized = serialize_object(data)
         ret = [request.return_response(serialized)]
         return ret

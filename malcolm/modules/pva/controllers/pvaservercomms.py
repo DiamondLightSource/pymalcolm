@@ -136,13 +136,24 @@ class PvaImplementation(Loggable):
         pv_structure = dict_to_pv_object(response_dict)
         return pv_structure
 
+    def _pv_error_structure(self, exception):
+        """Make an error structure in lieu of actually being able to raise"""
+        error = Error(message=str(exception)).to_dict()
+        error.pop("id")
+        return dict_to_pv_object(error)
+
 
 class PvaGetImplementation(PvaImplementation):
     _pv_structure = None
 
     def getPVStructure(self):
         if self._pv_structure is None:
-            self._pv_structure = self._get_pv_structure(self._request)
+            try:
+                self._pv_structure = self._get_pv_structure(self._request)
+            except Exception as e:
+                # TODO: pvaPy should really allow us to raise here
+                # Return a malcolm error structure instead...
+                self._pv_structure = self._pv_error_structure(e)
         return self._pv_structure
 
     def get(self):
@@ -197,9 +208,8 @@ class PvaRpcImplementation(PvaImplementation):
             self.log.exception(
                 "Exception while executing method of %r with args:\n%s",
                 self._mri, args.toDict())
-            error = Error(message=str(e)).to_dict()
-            error.pop("id")
-            return dict_to_pv_object(error)
+            error = self._pv_error_structure(e)
+            return error
 
 
 class PvaMonitorImplementation(PvaGetImplementation):
