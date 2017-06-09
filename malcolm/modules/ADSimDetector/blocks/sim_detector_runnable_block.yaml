@@ -24,11 +24,11 @@
     configDir: $(configDir)
     description: $(docstring)
 
-- ADCore.blocks.sim_detector_driver_block:
+- ADSimDetector.blocks.sim_detector_driver_block:
     mri: $(mriPrefix):DRV
     prefix: $(pvPrefix):DET
 
-- ADCore.parts.SimDetectorDriverPart:
+- ADSimDetector.parts.SimDetectorDriverPart:
     name: DRV
     mri: $(mriPrefix):DRV
     readoutTime: 40e-6
