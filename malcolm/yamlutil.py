@@ -36,8 +36,8 @@ def _create_blocks_and_parts(process, sections, params):
     return parts
 
 
-def _create_defines(sections, yamlname, params):
-    defines = dict(yamlname=yamlname, docstring="")
+def _create_defines(sections, yamlname, yamldir, params):
+    defines = dict(yamlname=yamlname, yamldir=yamldir, docstring="")
     if params:
         defines.update(params)
     for section in sections["defines"]:
@@ -58,6 +58,7 @@ def check_yaml_names(globals_d):
 
 def make_include_creator(yaml_path, filename=None):
     sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
+    yamldir = os.path.dirname(yaml_path)
 
     # Check we don't have any controllers
     assert len(sections["controllers"]) == 0, \
@@ -67,7 +68,7 @@ def make_include_creator(yaml_path, filename=None):
     @method_takes(*_create_takes_arguments(sections))
     def include_creator(process, params=None):
         # Create the param dict of the static defined arguments
-        defines = _create_defines(sections, yamlname, params)
+        defines = _create_defines(sections, yamlname, yamldir, params)
         return _create_blocks_and_parts(process, sections, defines)
 
     include_creator.__doc__ = docstring
@@ -94,6 +95,7 @@ def make_block_creator(yaml_path, filename=None):
             by this or any sub collection will be returned
     """
     sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
+    yamldir = os.path.dirname(yaml_path)
 
     # Check we have only one controller
     assert len(sections["controllers"]) == 1, \
@@ -104,7 +106,7 @@ def make_block_creator(yaml_path, filename=None):
     @method_takes(*_create_takes_arguments(sections))
     def block_creator(process, params=None):
         # Create the param dict of the static defined arguments
-        defines = _create_defines(sections, yamlname, params)
+        defines = _create_defines(sections, yamlname, yamldir, params)
         parts = _create_blocks_and_parts(process, sections, defines)
 
         # Make the controller
