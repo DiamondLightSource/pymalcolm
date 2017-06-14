@@ -201,7 +201,7 @@ class PvaRpcImplementation(PvaImplementation):
             else:
                 # We need to return something, otherwise we get a timeout...
                 pv_object = dict_to_pv_object(dict(typeid=Map.typeid))
-            self.log.debug("Return from method %r of %r",
+            self.log.debug("Return from method %r of %r:\n%s",
                            self._mri, method_name, pv_object.toDict())
             return pv_object
         except Exception as e:
