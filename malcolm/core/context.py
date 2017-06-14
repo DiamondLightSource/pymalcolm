@@ -37,9 +37,14 @@ class Context(Loggable):
     STOP = object()
     runner = None
 
-    def __init__(self, process, user_facing=False):
-        self._user_facing = user_facing
-        self._q = Queue(self._user_facing)
+    def __init__(self, process):
+        """
+        Args:
+            process (Process): The process to use to find child Block
+        """
+        self._q = self.make_queue()
+        # Func to call just before requests are dispatched
+        self._notify_dispatch_request = None
         self._process = process
         self._next_id = 1
         self._futures = {}  # dict {int id: Future)}
@@ -48,6 +53,9 @@ class Context(Loggable):
         self._pending_unsubscribes = {}  # dict {Future: Subscribe}
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
+
+    def make_queue(self):
+        return Queue()
 
     @property
     def mri_list(self):
@@ -75,11 +83,22 @@ class Context(Loggable):
         self._next_id += 1
         return new_id
 
+    def set_notify_dispatch_request(self, notify_dispatch_request):
+        """Set function to call just before requests are dispatched
+
+        Args:
+            notify_dispatch_request (callable): function will be called
+                with request as single arg just before request is dispatched
+        """
+        self._notify_dispatch_request = notify_dispatch_request
+
     def _dispatch_request(self, request):
         future = Future(weakref.proxy(self))
         self._futures[request.id] = future
         self._requests[future] = request
         controller = self.get_controller(request.path[0])
+        if self._notify_dispatch_request:
+            self._notify_dispatch_request(request)
         controller.handle_request(request)
         return future
 

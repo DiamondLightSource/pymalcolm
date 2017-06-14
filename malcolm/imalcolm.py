@@ -151,7 +151,7 @@ def make_process():
         locals_d["profiler"] = Profiler(args.profiledir)
         #locals_d["profiler"].start()
 
-    from malcolm.core import Process, call_with_params, Context
+    from malcolm.core import Process, call_with_params, Context, Queue
     from malcolm.modules.builtin.blocks import proxy_block
     from malcolm.yamlutil import make_include_creator
 
@@ -181,6 +181,9 @@ def make_process():
                 "Don't know how to create client to %s" % args.client)
 
     class UserContext(Context):
+        def make_queue(self):
+            return Queue(user_facing=True)
+
         def post(self, path, params=None, timeout=None):
             try:
                 return super(UserContext, self).post(path, params, timeout)
@@ -191,7 +194,7 @@ def make_process():
         def make_proxy(self, comms, mri):
             call_with_params(proxy_block, proc, comms=comms, mri=mri)
 
-    locals_d["self"] = UserContext(proc, user_facing=True)
+    locals_d["self"] = UserContext(proc)
     if qt_thread:
         qt_thread.start()
     proc.start()

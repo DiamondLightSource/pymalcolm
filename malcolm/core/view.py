@@ -13,6 +13,8 @@ class View(object):
         object.__setattr__(self, "_controller", controller)
         object.__setattr__(self, "_context", context)
         object.__setattr__(self, "_data", data)
+        if hasattr(data, "typeid"):
+            object.__setattr__(self, "typeid", data.typeid)
         self._prepare_endpoints(data)
 
     def _prepare_endpoints(self, data):
