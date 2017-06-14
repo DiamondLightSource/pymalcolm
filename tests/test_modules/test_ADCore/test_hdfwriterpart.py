@@ -1,5 +1,5 @@
 import os
-from mock import MagicMock, call
+from mock import MagicMock, call, ANY
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
@@ -7,7 +7,7 @@ from malcolm.core import Context, call_with_params, Process, Future
 from malcolm.modules.ADCore.blocks import hdf_writer_block
 from malcolm.modules.ADCore.parts import HDFWriterPart
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo, \
-    CalculatedNDAttributeDatasetInfo, NDAttributeDatasetInfo
+    CalculatedNDAttributeDatasetInfo, NDAttributeDatasetInfo, UniqueIdInfo
 from malcolm.testutil import ChildTestCase
 
 
@@ -228,6 +228,7 @@ class TestHDFWriterPart(ChildTestCase):
     def test_run(self):
         update = MagicMock()
         self.o.done_when_reaches = 38
+        self.o.completed_offset = 0
         # Say that we're getting the first frame
         self.o.array_future = Future(None)
         self.o.array_future.set_result(None)
@@ -240,10 +241,11 @@ class TestHDFWriterPart(ChildTestCase):
     def test_seek(self):
         completed_steps = 4
         steps_to_do = 3
-        self.o.seek(self.context, completed_steps, steps_to_do, {})
+        part_infos = {ANY: [UniqueIdInfo(10)]}
+        self.o.seek(self.context, completed_steps, steps_to_do, part_infos)
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCounter', 0)]
-        assert self.o.done_when_reaches == 7
+        assert self.o.done_when_reaches == 13
 
     def test_post_run_idle(self):
         # Say that we've returned from start

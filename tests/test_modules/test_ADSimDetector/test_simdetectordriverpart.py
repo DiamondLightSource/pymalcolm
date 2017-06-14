@@ -22,10 +22,11 @@ class TestSimDetectorDriverPart(ChildTestCase):
         self.process.start()
 
     def test_report(self):
-        infos = self.o.report_configuration(ANY)
-        assert len(infos) == 1
-        assert infos[0].name == "m"
-        assert infos[0].rank == 2
+        infos = self.o.report_configuration(self.context)
+        assert len(infos) == 2
+        assert infos[0].value == 0
+        assert infos[1].name == "m"
+        assert infos[1].rank == 2
 
     def test_validate(self):
         params = MagicMock()
@@ -57,6 +58,7 @@ class TestSimDetectorDriverPart(ChildTestCase):
         update_completed_steps = MagicMock()
         self.o.start_future = MagicMock()
         self.o.done_when_reaches = MagicMock()
+        self.o.completed_offset = 0
         self.o.run(self.context, update_completed_steps)
         assert self.child.handled_requests.mock_calls == [
             call.post('start')]

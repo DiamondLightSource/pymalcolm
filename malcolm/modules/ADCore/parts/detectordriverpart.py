@@ -1,6 +1,7 @@
 from malcolm.core import method_takes, TimeoutError
 from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.modules.ADCore.infos import UniqueIdInfo
 
 
 class DetectorDriverPart(StatefulChildPart):
@@ -13,10 +14,19 @@ class DetectorDriverPart(StatefulChildPart):
     # How many we are waiting for
     done_when_reaches = None
 
+    # The offset we should apply to the arrayCounter to give us completedSteps
+    completed_offset = None
+
     @RunnableController.Reset
     def reset(self, context):
         super(DetectorDriverPart, self).reset(context)
         self.abort(context)
+
+    @RunnableController.ReportStatus
+    def report_configuration(self, context):
+        child = context.block_view(self.params.mri)
+        infos = [UniqueIdInfo(child.arrayCounter.value)]
+        return infos
 
     @RunnableController.Configure
     @RunnableController.PostRunReady
@@ -26,9 +36,10 @@ class DetectorDriverPart(StatefulChildPart):
                   params=None):
         context.unsubscribe_all()
         child = context.block_view(self.params.mri)
-        self.done_when_reaches = completed_steps + steps_to_do
         fs = self.setup_detector(child, completed_steps, steps_to_do, params)
         context.wait_all_futures(fs)
+        self.done_when_reaches = child.arrayCounter.value + steps_to_do
+        self.completed_offset = completed_steps - child.arrayCounter.value
         if self.is_hardware_triggered(child):
             # Start now if we are hardware triggered
             self.start_future = child.start_async()
@@ -37,18 +48,29 @@ class DetectorDriverPart(StatefulChildPart):
         return True
 
     def setup_detector(self, child, completed_steps, steps_to_do, params=None):
-        fs = child.put_attribute_values_async(dict(
+        if completed_steps == 0:
+            # This is an initial configure, so reset arrayCounter to 0
+            values = dict(arrayCounter=0)
+        else:
+            # Leave the arrayCounter where it is, just start from here
+            values = {}
+        values.update(dict(
             imageMode="Multiple",
             numImages=steps_to_do,
-            arrayCounter=completed_steps,
             arrayCallbacks=True))
+        fs = child.put_attribute_values_async(values)
         return fs
+
+    def update_completed_steps(self, value, update_completed_steps):
+        completed_steps = value + self.completed_offset
+        update_completed_steps(completed_steps, self)
 
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, context, update_completed_steps):
         child = context.block_view(self.params.mri)
-        child.arrayCounter.subscribe_value(update_completed_steps, self)
+        child.arrayCounter.subscribe_value(
+            self.update_completed_steps, update_completed_steps)
         if not self.is_hardware_triggered(child):
             # Start now
             self.start_future = child.start_async()

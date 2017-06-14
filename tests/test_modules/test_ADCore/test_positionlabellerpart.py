@@ -5,6 +5,7 @@ from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import Context, call_with_params, Process, Future
 from malcolm.modules.ADCore.blocks import position_labeller_block
 from malcolm.modules.ADCore.parts import PositionLabellerPart
+from malcolm.modules.ADCore.infos import UniqueIdInfo
 from malcolm.testutil import ChildTestCase
 
 
@@ -29,7 +30,7 @@ class TestPositionLabellerPart(ChildTestCase):
         params.generator.prepare()
         completed_steps = 2
         steps_to_do = 4
-        part_info = ANY
+        part_info = {ANY: [UniqueIdInfo(30)]}
         self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, params)
         expected_xml = """<?xml version="1.0" ?>
@@ -51,7 +52,7 @@ class TestPositionLabellerPart(ChildTestCase):
         assert self.child.handled_requests.mock_calls == [
             call.post('delete'),
             call.put('enableCallbacks', True),
-            call.put('idStart', 3),
+            call.put('idStart', 31),
             call.put('xml', expected_xml),
             call.post('start')]
 

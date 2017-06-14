@@ -6,7 +6,7 @@ from malcolm.compat import et_to_string
 from malcolm.core import method_takes, REQUIRED
 from malcolm.modules.ADCore.infos import CalculatedNDAttributeDatasetInfo, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
-    attribute_dataset_types
+    attribute_dataset_types, UniqueIdInfo
 from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.modules.scanning.controllers import RunnableController
@@ -23,6 +23,9 @@ class HDFWriterPart(StatefulChildPart):
     start_future = None
     array_future = None
     done_when_reaches = 0
+
+    # The offset we should apply to the uniqueId to give us completedSteps
+    completed_offset = None
 
     # The HDF5 layout file we write to say where the datasets go
     layout_filename = None
@@ -97,14 +100,16 @@ class HDFWriterPart(StatefulChildPart):
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
         "fileDir", StringMeta("Directory to write hdf file to"), REQUIRED,
         "formatName", StringMeta(
-            "Name argument for fileTemplate, normally filename without extension"),
-        REQUIRED,
+            "Argument for fileTemplate, normally filename without extension"),
+        "det",
         "fileTemplate", StringMeta(
             """Printf style template to generate filename relative to fileDir.
             Arguments are:
               1) %s: the value of formatName"""), "%s.h5")
     def configure(self, context, completed_steps, steps_to_do, part_info, params):
+        # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + steps_to_do
+        self.completed_offset = 0
         child = context.block_view(self.params.mri)
         # For first run then open the file
         # Enable position mode before setting any position related things
@@ -172,7 +177,13 @@ class HDFWriterPart(StatefulChildPart):
     @RunnableController.PostRunReady
     @RunnableController.Seek
     def seek(self, context, completed_steps, steps_to_do, part_info):
-        self.done_when_reaches = completed_steps + steps_to_do
+        # The detector has been setup differently, so work out what the last
+        # frame it will produce is called
+        infos = UniqueIdInfo.filter_values(part_info)
+        assert len(infos) == 1, \
+            "Expected one uniqueId reporter, got %r" % (infos,)
+        self.done_when_reaches = infos[0].value + steps_to_do
+        self.completed_offset = completed_steps - infos[0].value
         child = context.block_view(self.params.mri)
         # Just reset the array counter_block
         child.arrayCounter.put_value(0)
@@ -180,13 +191,18 @@ class HDFWriterPart(StatefulChildPart):
         self.array_future = child.when_value_matches_async(
             "arrayCounter", self._greater_than_zero)
 
+    def update_completed_steps(self, value, update_completed_steps):
+        completed_steps = value + self.completed_offset
+        update_completed_steps(completed_steps, self)
+
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, context, update_completed_steps):
         context.wait_all_futures(self.array_future)
         context.unsubscribe_all()
         child = context.block_view(self.params.mri)
-        child.uniqueId.subscribe_value(update_completed_steps, self)
+        child.uniqueId.subscribe_value(
+            self.update_completed_steps, update_completed_steps)
         # TODO: what happens if we miss the last frame?
         child.when_value_matches("uniqueId", self.done_when_reaches)
 

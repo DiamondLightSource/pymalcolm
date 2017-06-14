@@ -25,8 +25,11 @@ class ExposureDetectorDriverPart(DetectorDriverPart):
         yield "readoutTime", self.readout_time, self.readout_time.set_value
 
     @RunnableController.ReportStatus
-    def report_configuration(self, _):
-        return [NDArrayDatasetInfo(name=self.name, rank=2)]
+    def report_configuration(self, context):
+        infos = super(ExposureDetectorDriverPart, self).report_configuration(
+            context)
+        infos.append(NDArrayDatasetInfo(name=self.name, rank=2))
+        return infos
 
     @RunnableController.Validate
     @method_takes(*configure_args)
@@ -47,7 +50,7 @@ class ExposureDetectorDriverPart(DetectorDriverPart):
     @method_takes(*configure_args)
     def configure(self, context, completed_steps, steps_to_do, part_info,
                   params=None):
-        super(ExposureDetectorDriverPart, self).configure(
+        return super(ExposureDetectorDriverPart, self).configure(
             context, completed_steps, steps_to_do, part_info, params)
 
     def setup_detector(self, child, completed_steps, steps_to_do, params=None):

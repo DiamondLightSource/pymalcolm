@@ -5,6 +5,7 @@ from malcolm.core import method_takes, REQUIRED
 from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
+from malcolm.modules.ADCore.infos import UniqueIdInfo
 
 # How big an XML file can the EPICS waveform receive?
 XML_MAX_SIZE = 1000000 - 2
@@ -80,12 +81,24 @@ class PositionLabellerPart(StatefulChildPart):
         # clear out old subscriptions
         context.unsubscribe_all()
         self.generator = params.generator
+        # Work out the offset between the generator index and uniqueID
+        if completed_steps == 0:
+            # The detector will reset, so the first uniqueId (for index 0)
+            # will be 1
+            idStart = 1
+        else:
+            # The detector will report the last frame it produced, so the
+            # first ID will be that number plus 1
+            infos = UniqueIdInfo.filter_values(part_info)
+            assert len(infos) == 1, \
+                "Expected one uniqueId reporter, got %r" % (infos,)
+            idStart = infos[0].value + 1
         # Delete any remaining old positions
         child = context.block_view(self.params.mri)
         futures = [child.delete_async()]
         futures += child.put_attribute_values_async(dict(
             enableCallbacks=True,
-            idStart=completed_steps + 1))
+            idStart=idStart))
         self.steps_up_to = completed_steps + steps_to_do
         xml, self.end_index = self._make_xml(completed_steps)
         # Wait for the previous puts to finish
