@@ -30,7 +30,7 @@ class BlockModel(Model):
         with self.notifier.changes_squashed:
             if name in self.endpoints:
                 # Stop the old endpoint notifying
-                self[name].set_notifier_path(None, ())
+                self[name].set_notifier_path(Model.notifier, ())
             else:
                 self.endpoints.append(name)
             value.set_notifier_path(self.notifier, self.path + [name])
@@ -45,7 +45,7 @@ class BlockModel(Model):
 
     def remove_endpoint(self, name):
         with self.notifier.changes_squashed:
-            self[name].set_notifier_path(None, ())
+            self[name].set_notifier_path(Model.notifier, ())
             self.endpoints.remove(name)
             delattr(self, name)
             self._update_fields()
