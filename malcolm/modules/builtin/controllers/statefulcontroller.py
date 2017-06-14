@@ -124,10 +124,10 @@ class StatefulController(BasicController):
         """
         for y in super(StatefulController, self).create_attributes():
             yield y
-        # Add the state attribute
-        self.state = ChoiceMeta(
-            "State of Block", self.stateSet.possible_states, label="State"
-        ).create_attribute(ss.DISABLING)
+        # Create read-only attribute for current state string
+        meta = ChoiceMeta(
+            "State of Block", self.stateSet.possible_states, label="State")
+        self.state = meta.create_attribute(ss.DISABLING)
         yield "state", self.state, None
 
     @Process.Init

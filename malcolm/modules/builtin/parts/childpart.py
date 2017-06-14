@@ -2,11 +2,12 @@ import re
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, REQUIRED, method_takes, serialize_object, \
-    Attribute, Subscribe, Unsubscribe
+    Attribute, Subscribe, Unsubscribe, Put
 from malcolm.modules.builtin.controllers import ManagerController
 from malcolm.modules.builtin.infos import ExportableInfo, PortInfo, \
     LayoutInfo, ModifiedInfo
 from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.tags import config
 
 
 port_tag_re = re.compile(r"(in|out)port:(.*):(.*)")
@@ -28,11 +29,20 @@ class ChildPart(Part):
         self.child_controller = None
         # {id: Subscribe} for subscriptions to config tagged fields
         self.config_subscriptions = {}
+        # set(attribute_name) where the attribute is a config tagged field
+        # we are modifying
+        self.we_modified = set()
         # Store params
         self.params = params
         # Don't do first update
         self._do_update = False
         super(ChildPart, self).__init__(params.name)
+
+    def notify_dispatch_request(self, request):
+        """Will be called when a context passed to a hooked function is about
+        to dispatch a request"""
+        if isinstance(request, Put):
+            self.we_modified.add(request.path[-2])
 
     @ManagerController.Init
     def init(self, context):
@@ -88,7 +98,7 @@ class ChildPart(Part):
             s.path[-2] for s in self.config_subscriptions.values())
         for field in set(new_fields) - existing_fields:
             attr = getattr(child, field)
-            if isinstance(attr, Attribute) and "config" in attr.meta.tags:
+            if isinstance(attr, Attribute) and config() in attr.meta.tags:
                 if self.config_subscriptions:
                     new_id = max(self.config_subscriptions) + 1
                 else:
@@ -119,9 +129,11 @@ class ChildPart(Part):
         if self._do_update:
             # Tell the controller to update if the value has changed from saved
             subscribe = self.config_subscriptions[response.id]
-            attr = subscribe.path[-2]
-            if self.saved_structure[attr] != response.value:
-                self.controller.update_modified()
+            # TODO: these lines used to stop update if value changed lots,
+            # but then we don't catch the value going back to saved
+            #attr = subscribe.path[-2]
+            #if self.saved_structure[attr] != response.value:
+            self.controller.update_modified()
 
     @ManagerController.ReportExportable
     def report_exportable(self, context):
@@ -141,8 +153,9 @@ class ChildPart(Part):
             if isinstance(attr, Attribute) and "config" in attr.meta.tags:
                 current_value = serialize_object(attr.value)
                 if original_value != current_value:
-                    ret.append(
-                        ModifiedInfo(name, original_value, current_value))
+                    we_modified = name in self.we_modified
+                    ret.append(ModifiedInfo(
+                        name, original_value, current_value, we_modified))
         return ret
 
     @ManagerController.Layout

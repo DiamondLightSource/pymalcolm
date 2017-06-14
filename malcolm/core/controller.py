@@ -119,7 +119,9 @@ class Controller(Loggable):
         Yields:
             tuple: (string name, Attribute, callable put_function).
         """
-        self.health = HealthMeta().create_attribute()
+        # Create read-only attribute to show error texts
+        meta = HealthMeta("Displays OK or an error message")
+        self.health = meta.create_attribute()
         yield "health", self.health, None
 
     def initial_part_fields(self):

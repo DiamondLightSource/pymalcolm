@@ -33,7 +33,7 @@ ss = ManagerStates
 
 @method_also_takes(
     "configDir", StringMeta("Directory to write save/load config to"), REQUIRED,
-    "defaultConfig", StringMeta("Default config to load"), "",
+    "defaultDesign", StringMeta("Default design to load"), "",
 )
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
@@ -136,7 +136,7 @@ class ManagerController(StatefulController):
             yield data
         assert os.path.isdir(self.params.configDir), \
             "%s is not a directory" % self.params.configDir
-        # Make a table for the layout info we need
+        # Create writeable attribute table for the layout info we need
         elements = OrderedDict()
         elements["name"] = StringArrayMeta("Name of layout part")
         elements["mri"] = StringArrayMeta("Malcolm full name of child block")
@@ -146,17 +146,18 @@ class ManagerController(StatefulController):
             "float64", "Y Coordinate of child block")
         elements["visible"] = BooleanArrayMeta("Whether child block is visible")
         layout_table_meta = TableMeta(
-            "Layout of child blocks", tags=[widget("table")], elements=elements)
+            "Layout of child blocks", elements=elements,
+            tags=[widget("flowgraph")])
         layout_table_meta.set_writeable_in(ss.READY)
         self.layout = layout_table_meta.create_attribute()
         yield "layout", self.layout, self.set_layout
-        # Make a choice attribute for loading an existing layout
-        self.design = ChoiceMeta(
-            "Design name to load", tags=[config(), widget("combo")]
-        ).create_attribute()
-        self.design.meta.set_writeable_in(ss.READY)
+        # Create writeable attribute for loading an existing layout
+        design_meta = ChoiceMeta(
+            "Design name to load", tags=[config(), widget("combo")])
+        design_meta.set_writeable_in(ss.READY)
+        self.design = design_meta.create_attribute()
         yield "design", self.design, self.set_design
-        # Make a table for the exported fields
+        # Create writeable attribute table for the exported fields
         elements = OrderedDict()
         elements["name"] = ChoiceArrayMeta("Name of exported block.field")
         elements["exportName"] = StringArrayMeta(
@@ -167,10 +168,10 @@ class ManagerController(StatefulController):
         exports_table_meta.set_writeable_in(ss.READY)
         self.exports = exports_table_meta.create_attribute()
         yield "exports", self.exports, self.set_exports
-        # Make an indicator for when things are modified
-        self.modified = BooleanMeta(
-            "Whether the design is modified", tags=[widget("led")]
-        ).create_attribute()
+        # Create read-only indicator for when things are modified
+        modified_meta = BooleanMeta(
+            "Whether the design is modified", tags=[widget("led")])
+        self.modified = modified_meta.create_attribute()
         yield "modified", self.modified, None
 
     def do_init(self):
@@ -184,8 +185,8 @@ class ManagerController(StatefulController):
         # _update_block_endpoints()
         self.set_layout(Table(self.layout.meta))
         # If given a default config, load this
-        if self.params.defaultConfig:
-            self.do_load(self.params.defaultConfig)
+        if self.params.defaultDesign:
+            self.do_load(self.params.defaultDesign)
 
     def set_layout(self, value, update_block=True):
         """Set the layout table value. Called on attribute put"""
@@ -241,11 +242,16 @@ class ManagerController(StatefulController):
             # {part_name: [ModifiedInfo()]
             modified_infos = ModifiedInfo.filter_parts(part_info)
             message_list = []
+            only_modified_by_us = True
             for part_name, infos in modified_infos.items():
                 for info in infos:
                     message = "%s.%s.value = %r not %r" % (
                         part_name, info.name, info.current_value,
                         info.original_value)
+                    if info.we_modified:
+                        message = "(We modified) " + message
+                    else:
+                        only_modified_by_us = False
                     message_list.append(message)
             # Add in any modification messages from the layout and export tables
             try:
@@ -253,13 +259,19 @@ class ManagerController(StatefulController):
                     self.layout.value.visible, self.saved_visibility)
             except AssertionError:
                 message_list.append("layout changed")
+                only_modified_by_us = False
             try:
                 np.testing.assert_equal(
                     self.exports.value.to_dict(), self.saved_exports)
             except AssertionError:
                 message_list.append("exports changed")
+                only_modified_by_us = False
             if message_list:
-                alarm = Alarm(AlarmSeverity.MINOR_ALARM,
+                if only_modified_by_us:
+                    severity = AlarmSeverity.NO_ALARM
+                else:
+                    severity = AlarmSeverity.MINOR_ALARM
+                alarm = Alarm(severity,
                               AlarmStatus.CONF_STATUS,
                               "\n".join(message_list))
                 self.modified.set_value(True, alarm=alarm)

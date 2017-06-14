@@ -25,6 +25,7 @@
     pv: $(prefix):Filename
     rbvSuff: _RBV
     widget: textinput
+    config: False
 
 - ca.parts.CALongPart:
     name: idStart

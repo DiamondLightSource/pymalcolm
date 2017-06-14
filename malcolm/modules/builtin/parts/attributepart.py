@@ -8,7 +8,8 @@ from malcolm.modules.builtin.vmetas import StringMeta, BooleanMeta, ChoiceMeta
     "description", StringMeta("Desc of created attribute"), REQUIRED,
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "writeable", BooleanMeta("Is the attribute writeable?"), False,
-    "config", BooleanMeta("Should this field be loaded/saved?"), False)
+    "config", BooleanMeta(
+        "If writeable, should this field be loaded/saved?"), True)
 class AttributePart(Part):
     def __init__(self, params):
         # The created attribute
@@ -25,24 +26,27 @@ class AttributePart(Part):
         # The attribute we will be publishing
         initial_value = self.get_initial_value()
         self.attr = meta.create_attribute(initial_value)
-        writeable_func = self.get_writeable_func()
+        if self.is_writeable():
+            writeable_func = self.get_writeable_func()
+        else:
+            writeable_func = None
         yield self.params.name, self.attr, writeable_func
 
     def create_meta(self, description, tags):
         raise NotImplementedError()
 
+    def is_writeable(self):
+        return self.params.writeable
+
     def get_writeable_func(self):
-        if self.params.writeable:
-            writeable_func = self.attr.set_value
-        else:
-            writeable_func = None
-        return writeable_func
+        return self.attr.set_value
 
     def create_tags(self):
         tags = []
         if self.params.widget:
             tags.append(widget(self.params.widget))
-        if self.params.config:
+        if self.params.config and self.is_writeable():
+            # If we have a writeable func we can be a config param
             tags.append(config())
         return tags
 

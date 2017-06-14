@@ -3,6 +3,7 @@ from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
 from malcolm.modules.builtin.vmetas import NumberMeta
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
+from malcolm.tags import widget, config
 from .detectordriverpart import DetectorDriverPart
 
 # Args for configure() and validate
@@ -20,7 +21,11 @@ class ExposureDetectorDriverPart(DetectorDriverPart):
     def create_attributes(self):
         for data in super(ExposureDetectorDriverPart, self).create_attributes():
             yield data
-        meta = NumberMeta("float64", "Time taken to readout detector")
+        # Create writeable attribute for how long we should allow for detector
+        # read out
+        meta = NumberMeta(
+            "float64", "Time taken to readout detector",
+            tags=[widget("textinput"), config()])
         self.readout_time = meta.create_attribute(self.params.readoutTime)
         yield "readoutTime", self.readout_time, self.readout_time.set_value
 

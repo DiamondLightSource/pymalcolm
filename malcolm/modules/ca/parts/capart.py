@@ -17,7 +17,7 @@ from .catoolshelper import CaToolsHelper
     "rbvSuff", StringMeta("Set rbv to pv + rbv_suff"), "",
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "inport", ChoiceMeta("Inport type", [""] + port_types), "",
-    "config", BooleanMeta("Should this field be loaded/saved?"), False,
+    "config", BooleanMeta("Should this field be loaded/saved?"), True,
     "minDelta", NumberMeta(
         "float64", "Minumum time between attribute updates in seconds"), 0.05)
 class CAPart(AttributePart):
@@ -36,12 +36,11 @@ class CAPart(AttributePart):
         self._update_after = 0
         super(CAPart, self).__init__(params)
 
+    def is_writeable(self):
+        return bool(self.params.pv)
+
     def get_writeable_func(self):
-        if self.params.pv:
-            writeable_func = self.caput
-        else:
-            writeable_func = None
-        return writeable_func
+        return self.caput
 
     def create_tags(self):
         tags = super(CAPart, self).create_tags()

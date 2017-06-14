@@ -17,6 +17,7 @@ class TestChoicePart(unittest.TestCase):
         assert self.o.attr.value == "a"
         assert self.o.attr.meta.description == "desc"
         assert self.o.attr.meta.choices == ("a", "b")
+        assert self.o.attr.meta.tags == ("config",)
 
     def test_setter(self):
         assert self.o.attr.value == "a"

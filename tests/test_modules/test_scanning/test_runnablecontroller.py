@@ -4,7 +4,7 @@ import time
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Process, Part, call_with_params, \
-    Context, ResponseError
+    Context, ResponseError, AlarmStatus, AlarmSeverity
 from malcolm.modules.scanning.parts import RunnableChildPart
 from malcolm.modules.demo.blocks import ticker_block
 from malcolm.compat import OrderedDict
@@ -107,6 +107,54 @@ class TestRunnableController(unittest.TestCase):
     def test_set_axes_to_move(self):
         self.c.set_axes_to_move(['y'])
         assert self.c.axes_to_move.value == ('y',)
+
+    def test_modify_child(self):
+        # Save an initial setting for the child
+        self.b_child.save("init_child")
+        assert self.b_child.modified.value is False
+        x = self.context.block_view("COUNTERX")
+        x.counter.put_value(31)
+        # x counter now at 31, child should be modified
+        assert x.counter.value == 31
+        assert self.b_child.modified.value is True
+        assert self.b_child.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
+        assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
+        assert self.b_child.modified.alarm.message == \
+            "x.counter.value = 31.0 not 0.0"
+        self.prepare_half_run()
+        self.b.run()
+        # x counter now at 2, child should be modified by us
+        assert self.b_child.modified.value is True
+        assert self.b_child.modified.alarm.severity == AlarmSeverity.NO_ALARM
+        assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
+        assert self.b_child.modified.alarm.message == \
+            "(We modified) x.counter.value = 2.0 not 0.0"
+        assert x.counter.value == 2.0
+        x.counter.put_value(0.0)
+        # x counter now at 0, child should be unmodified
+        assert x.counter.value == 0
+        assert self.b_child.modified.alarm.message == ""
+        assert self.b_child.modified.value is False
+
+    def test_modify_parent(self):
+        # Save an initial setting for child and parent
+        self.b_child.save("init_child")
+        self.b.save("init_parent")
+        # Change a value and save as a new child setting
+        x = self.context.block_view("COUNTERX")
+        x.counter.put_value(31)
+        self.b_child.save("new_child")
+        assert self.b_child.modified.value is False
+        assert self.b.modified.value is True
+        assert self.b.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
+        assert self.b.modified.alarm.status == AlarmStatus.CONF_STATUS
+        assert self.b.modified.alarm.message == \
+            "part2.design.value = 'new_child' not 'init_child'"
+        # Do a configure, and check we get set back
+        self.prepare_half_run()
+        assert self.b_child.design.value == "init_child"
+        assert self.b_child.modified.value is False
+        assert self.b.modified.value is False
 
     def test_validate(self):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)

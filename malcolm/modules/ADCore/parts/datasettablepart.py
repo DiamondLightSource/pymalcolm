@@ -4,6 +4,7 @@ from malcolm.modules.ADCore.infos import DatasetProducedInfo, dataset_types
 from malcolm.modules.builtin.vmetas import StringArrayMeta, ChoiceArrayMeta, \
     TableMeta, NumberArrayMeta, StringMeta
 from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.tags import widget
 
 # Make a table for the dataset info we produce
 columns = OrderedDict()
@@ -14,7 +15,8 @@ columns["type"] = ChoiceArrayMeta("Type of dataset", dataset_types)
 columns["rank"] = NumberArrayMeta("int32", "Rank (number of dimensions)")
 columns["path"] = StringArrayMeta("Dataset path within HDF file")
 columns["uniqueid"] = StringArrayMeta("UniqueID array path within HDF file")
-dataset_table_meta = TableMeta("Datsets produced in HDF file", elements=columns)
+dataset_table_meta = TableMeta(
+    "Datsets produced in HDF file", elements=columns, tags=[widget("table")])
 
 @method_takes(
     "name", StringMeta("Name of the Part within the controller"), REQUIRED)
@@ -25,6 +27,7 @@ class DatasetTablePart(Part):
         super(DatasetTablePart, self).__init__(params.name)
 
     def create_attributes(self):
+        # Create read-only attribute showing the datasets we are creating
         self.datasets = dataset_table_meta.create_attribute()
         yield "datasets", self.datasets, None
 

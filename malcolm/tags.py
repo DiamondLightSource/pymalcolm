@@ -4,9 +4,10 @@ widget_types = [
     "led",  # On/Off LED indicator
     "combo",  # Select from a number of choice values
     "icon",  # This field gives the URL for an icon for the whole Block
-    "group",  # This is a group in a TreeView that other fields can attach to
-    "table",  # This is a table of rows. A list is a single column table
-    "checkbox",  # This is a box that can be checked or not
+    "group",  # Group node in a TreeView that other fields can attach to
+    "table",  # Table of rows. A list is a single column table
+    "checkbox",  # A box that can be checked or not
+    "flowgraph",  # Boxes with lines representing child blocks and connections
 ]
 
 

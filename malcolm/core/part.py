@@ -16,6 +16,11 @@ class Part(Loggable):
         self.name = name
         self.method_models = {}
 
+    def notify_dispatch_request(self, request):
+        """Will be called when a context passed to a hooked function is about
+        to dispatch a request"""
+        pass
+
     def attach_to_controller(self, controller):
         self.set_logger_extra(mri=controller.mri, part=self.name)
         self.controller = controller

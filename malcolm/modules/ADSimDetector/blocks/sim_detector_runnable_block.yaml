@@ -10,11 +10,21 @@
     name: configDir
     description: Where to store saved configs
 
+- builtin.parameters.string:
+    name: defaultDesign
+    description: Default design to load
+    default:
+
+- builtin.parameters.string:
+    name: drvSuffix
+    description: PV suffix for detector driver
+    default: DET
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to SimDetector + stat + pos + hdf writer.
 
-      - Detector driver should have pv prefix $(pvPrefix):DET
+      - Detector driver should have pv prefix $(pvPrefix):$(drvSuffix)
       - Pos should have pv prefix $(pvPrefix):POS
       - Stat should have pv prefix $(pvPrefix):STAT
       - HDF should have pv prefix $(pvPrefix):HDF5
@@ -23,10 +33,11 @@
     mri: $(mriPrefix)
     configDir: $(configDir)
     description: $(docstring)
+    defaultDesign: $(defaultDesign)
 
 - ADSimDetector.blocks.sim_detector_driver_block:
     mri: $(mriPrefix):DRV
-    prefix: $(pvPrefix):DET
+    prefix: $(pvPrefix):$(drvSuffix)
 
 - ADSimDetector.parts.SimDetectorDriverPart:
     name: DRV

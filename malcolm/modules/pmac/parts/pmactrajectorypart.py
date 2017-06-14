@@ -13,6 +13,7 @@ from malcolm.modules.pmac.infos import MotorInfo
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
+from malcolm.tags import widget, config
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
@@ -73,9 +74,12 @@ class PmacTrajectoryPart(StatefulChildPart):
     def create_attributes(self):
         for data in super(PmacTrajectoryPart, self).create_attributes():
             yield data
-        self.min_turnaround = NumberMeta(
-            "float64", "Min time for any gaps between frames").create_attribute(
-            self.params.minTurnaround)
+        # Create writeable attribute for the minimum time to leave when there
+        # is a gap between frames
+        meta = NumberMeta(
+            "float64", "Min time for any gaps between frames",
+            tags=[widget("textinput"), config()])
+        self.min_turnaround = meta.create_attribute(self.params.minTurnaround)
         yield "minTurnaround", self.min_turnaround, \
               self.min_turnaround.set_value
 

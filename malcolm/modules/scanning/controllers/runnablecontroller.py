@@ -6,7 +6,7 @@ from malcolm.modules.builtin.controllers import ManagerStates, \
 from malcolm.modules.builtin.vmetas import NumberMeta, StringArrayMeta
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
-from malcolm.tags import widget
+from malcolm.tags import widget, config
 
 
 class RunnableStates(ManagerStates):
@@ -222,25 +222,33 @@ class RunnableController(ManagerController):
     def create_attributes(self):
         for data in super(RunnableController, self).create_attributes():
             yield data
-        self.completed_steps = NumberMeta(
+        # Create sometimes writeable attribute for the current completed scan
+        # step
+        completed_steps_meta = NumberMeta(
             "int32", "Readback of number of scan steps",
-            tags=[widget("textupdate")]).create_attribute(0)
-        self.completed_steps.meta.set_writeable_in(
-            ss.PAUSED, ss.ARMED)
+            tags=[widget("textinput")])
+        completed_steps_meta.set_writeable_in(ss.PAUSED, ss.ARMED)
+        self.completed_steps = completed_steps_meta.create_attribute(0)
         yield "completedSteps", self.completed_steps, self.set_completed_steps
-        self.configured_steps = NumberMeta(
+        # Create read-only attribute for the number of configured scan steps
+        configured_steps_meta = NumberMeta(
             "int32", "Number of steps currently configured",
-            tags=[widget("textupdate")]).create_attribute(0)
+            tags=[widget("textupdate")])
+        self.configured_steps = configured_steps_meta.create_attribute(0)
         yield "configuredSteps", self.configured_steps, None
-        self.total_steps = NumberMeta(
+        # Create read-only attribute for the total number scan steps
+        total_steps_meta = NumberMeta(
             "int32", "Readback of number of scan steps",
-            tags=[widget("textupdate")]).create_attribute(0)
+            tags=[widget("textupdate")])
+        self.total_steps = total_steps_meta.create_attribute(0)
         yield "totalSteps", self.total_steps, None
-        self.axes_to_move = StringArrayMeta(
+        # Create sometimes writeable attribute for the default axis names
+        axes_to_move_meta = StringArrayMeta(
             "Default axis names to scan for configure()",
-            tags=[widget("table")]
-        ).create_attribute(self.params.axesToMove)
-        self.axes_to_move.meta.set_writeable_in(ss.READY)
+            tags=[widget("table"), config()])
+        axes_to_move_meta.set_writeable_in(ss.READY)
+        self.axes_to_move = axes_to_move_meta.create_attribute(
+            self.params.axesToMove)
         yield "axesToMove", self.axes_to_move, self.set_axes_to_move
 
     def do_init(self):
@@ -331,6 +339,10 @@ class RunnableController(ManagerController):
     def do_configure(self, params):
         # These are the part tasks that abort() and pause() will operate on
         self.part_contexts = self.create_part_contexts()
+        # Tell these contexts to notify their parts that about things they
+        # modify so it doesn't screw up the modified led
+        for part, context in self.part_contexts.items():
+            context.set_notify_dispatch_request(part.notify_dispatch_request)
         # Store the params for use in seek()
         self.configure_params = params
         # This will calculate what we need from the generator, possibly a long

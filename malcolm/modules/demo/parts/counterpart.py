@@ -1,5 +1,6 @@
 from malcolm.core import method_takes, Part, REQUIRED
 from malcolm.modules.builtin.vmetas import NumberMeta, StringMeta
+from malcolm.tags import config
 
 
 @method_takes(
@@ -13,7 +14,9 @@ class CounterPart(Part):
         super(CounterPart, self).__init__(params.name)
 
     def create_attributes(self):
-        self.counter = NumberMeta("float64", "A counter").create_attribute()
+        # Create writeable attribute for current counter value
+        meta = NumberMeta("float64", "A counter", tags=[config()])
+        self.counter = meta.create_attribute()
         yield "counter", self.counter, self.counter.set_value
 
     @method_takes()

@@ -6,7 +6,9 @@ from malcolm.modules.builtin.controllers import ClientComms
 from malcolm.core import Subscribe, deserialize_object, method_also_takes, \
     json_decode, json_encode, Response, Error, Unsubscribe, Update, Return, \
     Queue, TimeoutError
-from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta, StringArrayMeta
+from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta, \
+    StringArrayMeta
+from malcolm.tags import widget
 
 
 @method_also_takes(
@@ -32,9 +34,10 @@ class WebsocketClientComms(ClientComms):
     def create_attributes(self):
         for y in super(WebsocketClientComms, self).create_attributes():
             yield y
-
-        self.remote_blocks = StringArrayMeta(
-            "Remotely reachable blocks").create_attribute()
+        # Create read-only attribute for the remotely reachable blocks
+        meta = StringArrayMeta(
+            "Remotely reachable blocks", tags=[widget("table")])
+        self.remote_blocks = meta.create_attribute()
         yield "remoteBlocks", self.remote_blocks, None
 
     def do_init(self):

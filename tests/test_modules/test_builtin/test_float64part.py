@@ -9,7 +9,7 @@ class TestFloat64Part(unittest.TestCase):
     def setUp(self):
         self.o = call_with_params(
             Float64Part, name="fp", description="desc", initialValue=2.3,
-            writeable=True)
+            writeable=True, widget="textinput")
         self.setter = list(self.o.create_attributes())[0][2]
 
     def test_init(self):
@@ -17,6 +17,7 @@ class TestFloat64Part(unittest.TestCase):
         assert self.o.attr.value == 2.3
         assert self.o.attr.meta.description == "desc"
         assert self.o.attr.meta.dtype == "float64"
+        assert self.o.attr.meta.tags == ("widget:textinput", "config")
 
     def test_setter(self):
         assert self.o.attr.value == 2.3
