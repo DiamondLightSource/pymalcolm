@@ -42,7 +42,7 @@ def docstring(params):
     "name", StringMeta("The name of the defined parameter"), REQUIRED,
     "env", StringMeta(
         "The environment variable name to get the value from"), REQUIRED)
-def envstring(params):
+def env_string(params):
     """Define a string parameter coming from the environment to be used within
     this YAML file"""
     return {params.name: os.environ[params.env]}
@@ -52,6 +52,19 @@ def envstring(params):
     "name", StringMeta("The name of the defined parameter"), REQUIRED,
     "cmd", StringMeta(
         "The shell command to run to get the value from"), REQUIRED)
-def cmdstring(params):
-    value = subprocess.check_output(params.cmd, shell=True)
+def cmd_string(params):
+    """Define a string parameter coming from a shell command to be used within
+    this YAML file. Trailing newlines will be stripped."""
+    value = subprocess.check_output(params.cmd, shell=True).rstrip("\n")
     return {params.name: value}
+
+
+@method_takes(
+    "name", StringMeta(
+        "The environment variable name to set"), REQUIRED,
+    "value", StringMeta(
+        "The value of the exported environment variable"), REQUIRED)
+def export_env_string(params):
+    """Exports an environment variable with the given value"""
+    os.environ[params.name] = params.value
+    return {params.name: params.value}
