@@ -153,17 +153,17 @@ class Section(object):
         try:
             ob = importlib.import_module(pkg)
         except ImportError:
-            raise ImportError("%s:%d: Can't import %r" % (
+            raise ImportError("%s:%d:\nCan't import %r" % (
                 self.filename, self.lineno, pkg))
         try:
             ob = getattr(ob, ident)
         except AttributeError:
-            raise ImportError("%s:%d: Package %r has no ident %r" % (
+            raise ImportError("%s:%d:\nPackage %r has no ident %r" % (
                 self.filename, self.lineno, pkg, ident))
         try:
             ret = call_with_params(ob, *args, **param_dict)
         except ValueError as e:
-            raise ValueError("%s:%d: %s" % (self.filename, self.lineno, e))
+            raise ValueError("%s:%d:\n%s" % (self.filename, self.lineno, e))
         else:
             return ret
 

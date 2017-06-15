@@ -11,8 +11,8 @@
     description: Where to store saved configs
 
 - builtin.parameters.string:
-    name: defaultDesign
-    description: Default design to load
+    name: initialDesign
+    description: Design to load at init
     default:
 
 - builtin.parameters.string:
@@ -22,7 +22,7 @@
 
 - builtin.defines.docstring:
     value: |
-      Device block corresponding to SimDetector + stat + pos + hdf writer.
+      Device Block corresponding to SimDetector + stat + pos + hdf writer.
 
       - Detector driver should have pv prefix $(pvPrefix):$(drvSuffix)
       - Pos should have pv prefix $(pvPrefix):POS
@@ -33,7 +33,7 @@
     mri: $(mriPrefix)
     configDir: $(configDir)
     description: $(docstring)
-    defaultDesign: $(defaultDesign)
+    initialDesign: $(initialDesign)
 
 - ADSimDetector.blocks.sim_detector_driver_block:
     mri: $(mriPrefix):DRV

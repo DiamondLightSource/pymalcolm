@@ -33,7 +33,7 @@ ss = ManagerStates
 
 @method_also_takes(
     "configDir", StringMeta("Directory to write save/load config to"), REQUIRED,
-    "defaultDesign", StringMeta("Default design to load"), "",
+    "initialDesign", StringMeta("Design to load at init"), "",
 )
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
@@ -185,8 +185,8 @@ class ManagerController(StatefulController):
         # _update_block_endpoints()
         self.set_layout(Table(self.layout.meta))
         # If given a default config, load this
-        if self.params.defaultDesign:
-            self.do_load(self.params.defaultDesign)
+        if self.params.initialDesign:
+            self.do_load(self.params.initialDesign)
 
     def set_layout(self, value, update_block=True):
         """Set the layout table value. Called on attribute put"""
@@ -407,6 +407,7 @@ class ManagerController(StatefulController):
         "design", StringMeta(
             "Name of design to save, if different from current design"), "")
     def save(self, params):
+        """Save the current design to file"""
         self.try_stateful_function(
             ss.SAVING, ss.READY, self.do_save, params.design)
 

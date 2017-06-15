@@ -117,7 +117,7 @@ Visualising the Block with the GUI
 There is a basic PyQt GUI that ships with pymalcolm. We can use it to play
 with this counter block and see how it works. Let's launch our demo again::
 
-    [tmc43@pc0013 pymalcolm]$ ./malcolm/imalcolm.py examples/DEMO-HELLO.yaml
+    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-HELLO.yaml
     Python 2.7.3 (default, Nov  9 2013, 21:59:00)
     Type "copyright", "credits" or "license" for more information.
 

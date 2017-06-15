@@ -18,6 +18,7 @@ N_LOAD_AHEAD = 4
 
 
 class PositionLabellerPart(StatefulChildPart):
+    """Part for controlling a `position_labeller_block` in a Device"""
     # Stored generator for positions
     generator = None
     # The last index we have loaded

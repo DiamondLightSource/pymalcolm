@@ -16,6 +16,7 @@ SUFFIXES = "NXY3456789"
 
 
 class HDFWriterPart(StatefulChildPart):
+    """Part for controlling an `hdf_writer_block` in a Device"""
     # Attributes
     datasets = None
 

@@ -26,13 +26,13 @@ pymalcolm by running ``./malcolm/imalcolm.py``. You also need to tell imalcolm
 what Blocks it should instantiate and what Comms modules it should use by
 writing a `YAML`_ file.
 
-Let's look at ``./examples/DEMO-HELLO.yaml`` now:
+Let's look at ``./malcolm/modules/demo/DEMO-HELLO.yaml`` now:
 
-.. literalinclude:: ../../examples/DEMO-HELLO.yaml
+.. literalinclude:: ../../malcolm/modules/demo/DEMO-HELLO.yaml
     :language: yaml
 
 You will see 4 entries in the file. The first 3 entries are instantiating Blocks
-that have already been defined. These Blocks each take a single `mri` (Malcolm
+that have already been defined. These Blocks each take a single `mri_` (Malcolm
 Resource Identifier) argument which tells the Process how clients will address
 that Block. The last entry creates a ServerComms Block which starts an HTTP
 server on port 8080 and listen for websocket connections from another Malcolm
@@ -42,7 +42,7 @@ process or a web GUI.
 
 Let's run it now::
 
-    [tmc43@pc0013 pymalcolm]$ ./malcolm/imalcolm.py examples/DEMO-HELLO.yaml
+    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-HELLO.yaml
     Loading...
     Python 2.7.3 (default, Nov  9 2013, 21:59:00)
     Type "copyright", "credits" or "license" for more information.
@@ -109,7 +109,7 @@ Well if we start a second imalcolm session we can tell it to connect to the
 first session, get the HELLO block from the first Process, and run a Method
 on it::
 
-    [tmc43@pc0013 pymalcolm]$ ./malcolm/imalcolm.py -c ws://localhost:8080
+    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py -c ws://localhost:8080
     Loading...
     Python 2.7.3 (default, Nov  9 2013, 21:59:00)
     Type "copyright", "credits" or "license" for more information.

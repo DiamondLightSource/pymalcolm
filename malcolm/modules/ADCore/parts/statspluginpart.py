@@ -10,7 +10,7 @@ from malcolm.modules.scanning.controllers import RunnableController
 
 
 class StatsPluginPart(StatefulChildPart):
-    """Stats plugin"""
+    """Part for controlling a `stats_plugin_block` in a Device"""
     # The NDAttributes file we write to say what to capture
     attributes_filename = None
 

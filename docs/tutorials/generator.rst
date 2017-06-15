@@ -8,9 +8,9 @@ You should already know how to create a `part_` that attaches `Attributes
 previous tutorials are quite simple and low level and might correspond to the
 interface provided by EPICS devices: a collection of Attributes that we can set
 and simple Methods we can call that cause the device to operate in a particular
-way. We call Blocks like this the `hardware_layer`. What is missing from these
+way. We call Blocks like this the `hardware_layer_`. What is missing from these
 Hardware Blocks is the logic of "do this, then that, then these 3 things at the
-same time". To do this, we will create a higher level `device_layer` containing
+same time". To do this, we will create a higher level `device_layer_` containing
 Blocks that will control a number of child Hardware Blocks to synchronise them
 and use them for a particular application.
 
@@ -33,9 +33,9 @@ the last tutorial, setting them to the demand positions of the axes in the
 scan. This will look a little like a Motor Controller performing a continuous
 scan.
 
-Let's take a look at the Process definition ``./examples/DEMO-TICKER.yaml``:
+Let's take a look at the Process definition ``./malcolm/modules/demo/DEMO-TICKER.yaml``:
 
-.. literalinclude:: ../../examples/DEMO-TICKER.yaml
+.. literalinclude:: ../../malcolm/modules/demo/DEMO-TICKER.yaml
     :language: yaml
 
 That's not very exciting, we just load a single Ticker Block and a Comms
@@ -241,7 +241,7 @@ is producing the update.
 
 Let's run up the example and give it a go::
 
-    [tmc43@pc0013 pymalcolm]$ ./malcolm/imalcolm.py examples/DEMO-TICKER.yaml
+    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-TICKER.yaml
     Loading...
     Python 2.7.3 (default, Nov  9 2013, 21:59:00)
     Type "copyright", "credits" or "license" for more information.
@@ -328,4 +328,4 @@ This tutorial has given us an understanding of how scans are specified in
 Malcolm, how child Hardware Blocks are controlled from a parent Device Block and
 how Parts can register code to run at different phases of a Controller. In the
 next tutorial we will see how to make an `EPICS`_ `areaDetector`_ Block in the
-`device_layer` capable of performing scans.
+`device_layer_` capable of performing scans.

@@ -14,10 +14,10 @@
 # Create some Blocks
 - ADSimDetector.blocks.sim_detector_runnable_block:
     mriPrefix: DETECTOR
-    configDir: $(yamldir)
+    configDir: $(yamldir)/saved_designs
     pvPrefix: $(hostname)-AD-SIM-01
     drvSuffix: CAM
-    defaultDesign: demo_config
+    initialDesign: demo_design
 
 # Add a webserver
 - web.blocks.web_server_block:

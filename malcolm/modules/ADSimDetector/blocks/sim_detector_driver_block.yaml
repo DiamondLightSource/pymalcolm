@@ -8,7 +8,7 @@
 
 - builtin.defines.docstring:
     value: |
-      Hardware block corresponding to PVs used for SimDetector detector driver
+      Hardware Block corresponding to PVs used for SimDetector detector driver
 
       - simDetector.template should have pv prefix $(prefix)
 

@@ -21,6 +21,8 @@ dataset_table_meta = TableMeta(
 @method_takes(
     "name", StringMeta("Name of the Part within the controller"), REQUIRED)
 class DatasetTablePart(Part):
+    """Exposes an Attribute that reports the datasets that will be written
+    during a scan"""
     def __init__(self, params):
         # Created attributes
         self.datasets = None
