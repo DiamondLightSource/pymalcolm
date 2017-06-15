@@ -39,15 +39,15 @@ class TestMap(unittest.TestCase):
             m.a
 
     def test_to_dict(self):
-        a_mock = MagicMock()
         s = StringMeta(description="a string")
-        meta = Meta()
-        meta.elements = OrderedDict()
-        meta.elements["b"] = s
-        meta.elements["c"] = s
-        meta.elements["d"] = NumberMeta("int32")
-        meta.elements["e"] = s
-        m = Map(meta, {"b":"test", "d":123, "e":"e"})
+        meta = MapMeta()
+        elements = OrderedDict()
+        elements["b"] = s
+        elements["c"] = s
+        elements["d"] = NumberMeta("int32")
+        elements["e"] = s
+        meta.set_elements(elements)
+        m = Map(meta, {"b": "test", "d": 123, "e": "e"})
 
         expected = OrderedDict()
         expected["typeid"] = "malcolm:core/Map:1.0"

@@ -16,8 +16,10 @@ class Map(Serializable):
                 raise AttributeError(
                     "%s is not a valid key for given meta" % attr)
             val = self.meta.elements[attr].validate(val)
-            if attr not in self.endpoints:
-                self.endpoints.append(attr)
+            unordered_endpoints = self.endpoints + [attr]
+            object.__setattr__(
+                self, "endpoints",
+                [x for x in self.meta.elements if x in unordered_endpoints])
         super(Map, self).__setattr__(attr, val)
 
     def __setitem__(self, key, val):
