@@ -33,10 +33,11 @@ Contents
 .. toctree::
     :caption: API
 
-    genindex
     api/core_api
     api/tags_api
     build/modules_api
+
+* :ref:`genindex`
 
 .. class:: list
 
