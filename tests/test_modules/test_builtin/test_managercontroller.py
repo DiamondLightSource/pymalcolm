@@ -194,6 +194,10 @@ class TestManagerController(unittest.TestCase):
         assert self.c.modified.value == False
         m = MagicMock()
         f = b.childAttr.subscribe_value(m)
+        # allow a subscription to come through
+        context.sleep(0.1)
+        m.assert_called_once_with("defaultv")
+        m.reset_mock()
         self.c_part.attr.set_value("newv")
         assert b.childAttr.value == "newv"
         assert self.c_part.attr.value == "newv"
