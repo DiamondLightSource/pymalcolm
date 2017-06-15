@@ -2,7 +2,7 @@
 #/dls_sw/prod/common/python/RHEL6-x86_64/pymalcolm/2-0a6/malcolm/imalcolm.py
 # This sample is intended for use with the test lab setup LAB-MO-IOC-01
 
-- builtin.parameters.string:
+- builtin.defines.string:
     name: configDir
     description: Where to store saved configs
     default: /dls_sw/p45/epics/malcolm
