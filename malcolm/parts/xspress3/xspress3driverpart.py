@@ -6,7 +6,6 @@ from malcolm.parts.ADCore.detectordriverpart import DetectorDriverPart
 
 XSPRESS3_BUFFER = 16384
 
-
 class Xspress3DriverPart(DetectorDriverPart):
     @RunnableController.Configure
     @RunnableController.PostRunReady
