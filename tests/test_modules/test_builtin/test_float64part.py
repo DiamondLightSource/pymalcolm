@@ -10,7 +10,7 @@ class TestFloat64Part(unittest.TestCase):
         self.o = call_with_params(
             Float64Part, name="fp", description="desc", initialValue=2.3,
             writeable=True, widget="textinput")
-        self.setter = list(self.o.create_attributes())[0][2]
+        self.setter = list(self.o.create_attribute_models())[0][2]
 
     def test_init(self):
         assert self.o.name == "fp"

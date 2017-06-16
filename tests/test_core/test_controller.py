@@ -41,9 +41,9 @@ class MyPart(Part):
         returns.ret = 'world'
         return returns
 
-    def create_attributes(self):
+    def create_attribute_models(self):
         meta = StringMeta(description="MyString")
-        self.myAttribute = meta.create_attribute(initial_value='hello_block')
+        self.myAttribute = meta.create_attribute_model(initial_value='hello_block')
         yield "myAttribute", self.myAttribute, self.myAttribute.set_value
 
 
@@ -132,7 +132,7 @@ class TestController(unittest.TestCase):
         none_view = self.o._make_appropriate_view(self.context, None)
 
         block_data = BlockModel()
-        block_data.set_endpoint_data("attr", StringMeta().create_attribute())
+        block_data.set_endpoint_data("attr", StringMeta().create_attribute_model())
         block_data.set_endpoint_data("method", MethodModel())
         block_data.set_notifier_path(MagicMock(), ["block"])
         block_view = self.o._make_appropriate_view(self.context, block_data)

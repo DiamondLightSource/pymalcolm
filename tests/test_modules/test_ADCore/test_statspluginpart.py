@@ -16,7 +16,7 @@ class TestStatsPluginPart(ChildTestCase):
             mri="BLOCK-STAT", prefix="prefix")
         self.o = call_with_params(
             StatsPluginPart, name="m", mri="BLOCK-STAT")
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
         self.process.start()
 
     def test_report_info(self):

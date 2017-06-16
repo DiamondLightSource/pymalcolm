@@ -116,18 +116,18 @@ class StatefulController(BasicController):
         super(StatefulController, self).__init__(process, parts, params)
         self.transition(ss.DISABLED)
 
-    def create_attributes(self):
+    def create_attribute_models(self):
         """MethodModel that should provide Attribute instances for Block
 
         Yields:
             tuple: (string name, Attribute, callable put_function).
         """
-        for y in super(StatefulController, self).create_attributes():
+        for y in super(StatefulController, self).create_attribute_models():
             yield y
         # Create read-only attribute for current state string
         meta = ChoiceMeta(
             "State of Block", self.stateSet.possible_states, label="State")
-        self.state = meta.create_attribute(ss.DISABLING)
+        self.state = meta.create_attribute_model(ss.DISABLING)
         yield "state", self.state, None
 
     @Process.Init

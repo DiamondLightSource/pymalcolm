@@ -18,15 +18,15 @@ class ExposureDetectorDriverPart(DetectorDriverPart):
     # Attributes
     readout_time = None
 
-    def create_attributes(self):
-        for data in super(ExposureDetectorDriverPart, self).create_attributes():
+    def create_attribute_models(self):
+        for data in super(ExposureDetectorDriverPart, self).create_attribute_models():
             yield data
         # Create writeable attribute for how long we should allow for detector
         # read out
         meta = NumberMeta(
             "float64", "Time taken to readout detector",
             tags=[widget("textinput"), config()])
-        self.readout_time = meta.create_attribute(self.params.readoutTime)
+        self.readout_time = meta.create_attribute_model(self.params.readoutTime)
         yield "readoutTime", self.readout_time, self.readout_time.set_value
 
     @RunnableController.ReportStatus

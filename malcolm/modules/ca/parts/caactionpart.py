@@ -24,7 +24,7 @@ class CAActionPart(Part):
         self.catools = CaToolsHelper.instance()
         super(CAActionPart, self).__init__(params.name)
 
-    def create_methods(self):
+    def create_method_models(self):
         # Method instance
         self.method = MethodModel(self.params.description)
         # TODO: set widget tag?

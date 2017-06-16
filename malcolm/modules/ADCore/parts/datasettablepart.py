@@ -28,9 +28,9 @@ class DatasetTablePart(Part):
         self.datasets = None
         super(DatasetTablePart, self).__init__(params.name)
 
-    def create_attributes(self):
+    def create_attribute_models(self):
         # Create read-only attribute showing the datasets we are creating
-        self.datasets = dataset_table_meta.create_attribute()
+        self.datasets = dataset_table_meta.create_attribute_model()
         yield "datasets", self.datasets, None
 
     @RunnableController.PostConfigure

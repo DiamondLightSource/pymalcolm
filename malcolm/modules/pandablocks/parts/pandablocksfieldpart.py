@@ -17,9 +17,9 @@ class PandABlocksFieldPart(Part):
         self.initial_value = initial_value
         self.attr = None
 
-    def create_attributes(self):
+    def create_attribute_models(self):
         attr_name = snake_to_camel(self.field_name.replace(".", "_"))
-        self.attr = self.meta.create_attribute(self.initial_value)
+        self.attr = self.meta.create_attribute_model(self.initial_value)
         if self.writeable:
             writeable_func = self.set_field
         else:

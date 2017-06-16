@@ -8,7 +8,7 @@ class TestCounterPart(unittest.TestCase):
 
     def setUp(self):
         self.c = call_with_params(CounterPart, name="counting")
-        list(self.c.create_attributes())
+        list(self.c.create_attribute_models())
 
     def test_increment_increments(self):
         assert 0 == self.c.counter.value

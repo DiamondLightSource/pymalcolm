@@ -16,7 +16,7 @@ class TestPandaABoxDriverPart(unittest.TestCase):
         self.params.mri = "mri"
         self.params.readoutTime = 0.002
         self.o = PandABlocksDriverPart(self.params)
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
 
     def test_abort(self):
         self.o.abort(self.context)

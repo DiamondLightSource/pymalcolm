@@ -31,13 +31,13 @@ class WebsocketClientComms(ClientComms):
     _subscription_keys = {}
     _next_id = 1
 
-    def create_attributes(self):
-        for y in super(WebsocketClientComms, self).create_attributes():
+    def create_attribute_models(self):
+        for y in super(WebsocketClientComms, self).create_attribute_models():
             yield y
         # Create read-only attribute for the remotely reachable blocks
         meta = StringArrayMeta(
             "Remotely reachable blocks", tags=[widget("table")])
-        self.remote_blocks = meta.create_attribute()
+        self.remote_blocks = meta.create_attribute_model()
         yield "remoteBlocks", self.remote_blocks, None
 
     def do_init(self):

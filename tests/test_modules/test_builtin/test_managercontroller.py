@@ -28,8 +28,8 @@ class TestManagerStates(unittest.TestCase):
 
 
 class MyPart(Part):
-    def create_attributes(self):
-        self.attr = StringMeta(tags=["config"]).create_attribute("defaultv")
+    def create_attribute_models(self):
+        self.attr = StringMeta(tags=["config"]).create_attribute_model("defaultv")
         yield "attr", self.attr, self.attr.set_value
 
 

@@ -24,5 +24,5 @@ class TestPart(unittest.TestCase):
 
     def test_non_hooked_methods(self):
         p = MyPart("")
-        methods = list(p.create_methods())
+        methods = list(p.create_method_models())
         assert methods == [("bar", p.method_models["bar"], p.bar)]

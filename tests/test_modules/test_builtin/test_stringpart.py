@@ -10,7 +10,7 @@ class TestStringPart(unittest.TestCase):
         self.o = call_with_params(
             StringPart, name="sp", description="desc",
             widget="textinput")
-        self.setter = list(self.o.create_attributes())[0][2]
+        self.setter = list(self.o.create_attribute_models())[0][2]
 
     def test_init(self):
         assert self.o.name == "sp"

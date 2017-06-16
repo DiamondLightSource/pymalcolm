@@ -8,7 +8,7 @@ from malcolm.modules.builtin.vmetas import StringMeta
 class TestBlockModel(unittest.TestCase):
 
     def setUp(self):
-        self.attr = StringMeta().create_attribute()
+        self.attr = StringMeta().create_attribute_model()
         self.method = MethodModel()
         self.o = BlockModel()
         self.o.set_endpoint_data("attr", self.attr)

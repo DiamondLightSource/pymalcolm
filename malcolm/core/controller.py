@@ -67,8 +67,8 @@ class Controller(Loggable):
                 "Part %s func %s not hooked into %s" % (
                     part.name, func_name, self)
             self._hooked_func_names[part_hook][part] = func_name
-        part_fields = list(part.create_attributes()) + \
-                      list(part.create_methods())
+        part_fields = list(part.create_attribute_models()) + \
+                      list(part.create_method_models())
         self.parts[part.name] = part
         self.part_fields[part.name] = part_fields
 
@@ -81,7 +81,7 @@ class Controller(Loggable):
             self._hooked_func_names[member] = {}
 
     def _add_block_fields(self):
-        for iterable in (self.create_attributes(), self.create_methods(),
+        for iterable in (self.create_attribute_models(), self.create_method_models(),
                          self.initial_part_fields()):
             for name, child, writeable_func in iterable:
                 self.add_block_field(name, child, writeable_func)
@@ -105,23 +105,23 @@ class Controller(Loggable):
             raise ValueError("Invalid block field %r" % child)
         self._block.set_endpoint_data(name, child)
 
-    def create_methods(self):
-        """Method that should provide Method instances for Block
+    def create_method_models(self):
+        """Provide MethodModel instances to be attached to BlockModel
 
         Yields:
-            tuple: (string name, Method, callable post_function).
+            tuple: (string name, MethodModel, callable post_function).
         """
         return get_method_decorated(self)
 
-    def create_attributes(self):
-        """MethodModel that should provide Attribute instances for Block
+    def create_attribute_models(self):
+        """Provide AttributeModel instances to be attached to BlockModel
 
         Yields:
-            tuple: (string name, Attribute, callable put_function).
+            tuple: (string name, AttributeModel, callable put_function).
         """
         # Create read-only attribute to show error texts
         meta = HealthMeta("Displays OK or an error message")
-        self.health = meta.create_attribute()
+        self.health = meta.create_attribute_model()
         yield "health", self.health, None
 
     def initial_part_fields(self):

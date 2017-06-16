@@ -25,7 +25,7 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.params = MagicMock(mri="P:INENC1")
         self.params.name = "INENC1"
         self.o = PandABlocksChildPart(self.params)
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
 
     def test_report_configuration(self):
         dataset_infos = self.o.report_configuration(self.context)

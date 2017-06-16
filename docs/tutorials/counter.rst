@@ -77,7 +77,7 @@ Again, we start by subclassing `Part`, and we have decorated a couple
 of functions with `method_takes`, but this time they don't take or
 return any arguments, so the functions don't have a ``parameters`` argument.
 The main difference to the Hello example is that we have implemented
-:meth:`~Part.create_attributes` which expects us to create and yield any
+:meth:`~Part.create_attribute_models` which expects us to create and yield any
 `AttributeModel` instances we expect the Block to have.
 
 .. note:: We are producing an `AttributeModel` rather than an `Attribute`.
@@ -98,14 +98,14 @@ In our example we yield:
 To make the AttributeModel we first need to make a meta object. In our example
 we want a ``float64`` `NumberMeta` as we want to demonstrate floating point
 numbers. If our counter was an integer we could choose ``int32`` or ``int64``.
-The actual AttributeModel is returned by the :meth:`~VMeta.create_attribute`
-method of this meta.
+The actual AttributeModel is returned by the
+:meth:`~VMeta.create_attribute_model` method of this meta.
 
 In the two methods (zero and increment), we make use of the ``counter``
 Attribute. We can get its value by using the :attr:`~AttributeModel.value`
 attribute and set its value by calling the :meth:`~AttributeModel.set_value`
 method. This method will validate the new value using the `VMeta` object we
-passed in :meth:`~Part.create_attributes` and notify any interested subscribers
+passed in :meth:`~Part.create_attribute_models` and notify any interested subscribers
 that something has changed.
 
 
@@ -118,6 +118,7 @@ There is a basic PyQt GUI that ships with pymalcolm. We can use it to play
 with this counter block and see how it works. Let's launch our demo again::
 
     [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-HELLO.yaml
+    Loading...
     Python 2.7.3 (default, Nov  9 2013, 21:59:00)
     Type "copyright", "credits" or "license" for more information.
 
@@ -130,23 +131,24 @@ with this counter block and see how it works. Let's launch our demo again::
 
     Welcome to iMalcolm.
 
-    self.process_block.blocks:
-        ['DEMO-HELLO', 'HELLO', 'HELLO2', 'COUNTER']
+    self.mri_list:
+        ['localhost:8080']
 
     Try:
-    hello = self.get_block("HELLO")
+    hello = self.block_view("HELLO")
     print hello.greet("me")
 
     or
 
-    gui(self.get_block("COUNTER"))
+    gui(self.block_view("COUNTER"))
 
     or
 
-    self.process_block.blocks
+    self.make_proxy("localhost:8080", "HELLO")
+    print self.block_view("HELLO").greet("me")
 
 
-    In [1]: gui(self.get_block("COUNTER"))
+    In [1]: gui(self.block_view("COUNTER"))
 
 This will launch a GUI that lets us see what's going on:
 

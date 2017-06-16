@@ -11,7 +11,7 @@ class TestAttribute(unittest.TestCase):
 
     def setUp(self):
         self.meta = StringMeta()
-        self.o = self.meta.create_attribute()
+        self.o = self.meta.create_attribute_model()
 
     def test_init(self):
         self.assertIs(self.o.meta, self.meta)
@@ -46,7 +46,7 @@ class TestSerialization(unittest.TestCase):
         self.serialized["timeStamp"] = TimeStamp().to_dict()
 
     def test_to_dict(self):
-        a = StringMeta("desc").create_attribute()
+        a = StringMeta("desc").create_attribute_model()
         a.set_value("some string")
         a.set_timeStamp(self.serialized["timeStamp"])
         assert a.to_dict() == self.serialized

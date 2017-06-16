@@ -15,7 +15,7 @@ class VMeta(Meta):
         """
         raise NotImplementedError(self)
 
-    def create_attribute(self, initial_value=None):
+    def create_attribute_model(self, initial_value=None):
         """Make an AttributeModel instance of the correct type for this Meta
 
         Args:

@@ -22,7 +22,7 @@ class TestHDFWriterPart(ChildTestCase):
             mri="BLOCK-HDF5", prefix="prefix")
         self.o = call_with_params(
             HDFWriterPart, name="m", mri="BLOCK-HDF5")
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
         self.process.start()
 
     def test_configure(self):

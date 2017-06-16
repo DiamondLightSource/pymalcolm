@@ -18,14 +18,14 @@ class AttributePart(Part):
         self.params = params
         super(AttributePart, self).__init__(params.name)
 
-    def create_attributes(self):
+    def create_attribute_models(self):
         # Find the tags
         tags = self.create_tags()
         # Make a meta object for our attribute
         meta = self.create_meta(self.params.description, tags)
         # The attribute we will be publishing
         initial_value = self.get_initial_value()
-        self.attr = meta.create_attribute(initial_value)
+        self.attr = meta.create_attribute_model(initial_value)
         if self.is_writeable():
             writeable_func = self.get_writeable_func()
         else:

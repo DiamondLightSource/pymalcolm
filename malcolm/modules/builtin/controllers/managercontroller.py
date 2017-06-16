@@ -131,8 +131,8 @@ class ManagerController(StatefulController):
         # {part_name: [ExportableInfo]}
         self.exportable_info = {}
 
-    def create_attributes(self):
-        for data in super(ManagerController, self).create_attributes():
+    def create_attribute_models(self):
+        for data in super(ManagerController, self).create_attribute_models():
             yield data
         assert os.path.isdir(self.params.configDir), \
             "%s is not a directory" % self.params.configDir
@@ -149,13 +149,13 @@ class ManagerController(StatefulController):
             "Layout of child blocks", elements=elements,
             tags=[widget("flowgraph")])
         layout_table_meta.set_writeable_in(ss.READY)
-        self.layout = layout_table_meta.create_attribute()
+        self.layout = layout_table_meta.create_attribute_model()
         yield "layout", self.layout, self.set_layout
         # Create writeable attribute for loading an existing layout
         design_meta = ChoiceMeta(
             "Design name to load", tags=[config(), widget("combo")])
         design_meta.set_writeable_in(ss.READY)
-        self.design = design_meta.create_attribute()
+        self.design = design_meta.create_attribute_model()
         yield "design", self.design, self.set_design
         # Create writeable attribute table for the exported fields
         elements = OrderedDict()
@@ -166,12 +166,12 @@ class ManagerController(StatefulController):
             "Exported fields of child blocks", tags=[widget("table")],
             elements=elements)
         exports_table_meta.set_writeable_in(ss.READY)
-        self.exports = exports_table_meta.create_attribute()
+        self.exports = exports_table_meta.create_attribute_model()
         yield "exports", self.exports, self.set_exports
         # Create read-only indicator for when things are modified
         modified_meta = BooleanMeta(
             "Whether the design is modified", tags=[widget("led")])
-        self.modified = modified_meta.create_attribute()
+        self.modified = modified_meta.create_attribute_model()
         yield "modified", self.modified, None
 
     def do_init(self):

@@ -10,7 +10,7 @@ class TestDatasetReportingPart(unittest.TestCase):
 
     def setUp(self):
         self.o = call_with_params(DatasetTablePart, name="n")
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
 
     def test_init(self):
         assert list(self.o.datasets.meta.elements) == (

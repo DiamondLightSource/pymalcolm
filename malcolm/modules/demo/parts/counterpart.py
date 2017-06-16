@@ -13,10 +13,10 @@ class CounterPart(Part):
     def __init__(self, params):
         super(CounterPart, self).__init__(params.name)
 
-    def create_attributes(self):
+    def create_attribute_models(self):
         # Create writeable attribute for current counter value
         meta = NumberMeta("float64", "A counter", tags=[config()])
-        self.counter = meta.create_attribute()
+        self.counter = meta.create_attribute_model()
         yield "counter", self.counter, self.counter.set_value
 
     @method_takes()

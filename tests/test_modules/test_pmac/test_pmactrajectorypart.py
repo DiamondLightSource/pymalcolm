@@ -20,7 +20,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.child.parts["i10"].attr.set_value(1705244)
         self.o = call_with_params(
             PmacTrajectoryPart, name="pmac", mri="PMAC:TRAJ")
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
         self.process.start()
 
     def tearDown(self):

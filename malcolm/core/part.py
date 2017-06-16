@@ -46,14 +46,14 @@ class Part(Loggable):
         runner = HookRunner(hook_queue, self, func, context, args)
         return runner
 
-    def create_methods(self):
+    def create_method_models(self):
         hooked = [name for (name, _, _) in get_hook_decorated(self)]
         for name, method_model, func in get_method_decorated(self):
             self.method_models[name] = method_model
             if name not in hooked:
                 yield name, method_model, func
 
-    def create_attributes(self):
+    def create_attribute_models(self):
         """Should be implemented in subclasses to yield any Attributes that
         should be attached to the Block
 

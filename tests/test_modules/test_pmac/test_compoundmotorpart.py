@@ -19,7 +19,7 @@ class TestRawMotorPart(ChildTestCase):
         child.parts["resolution"].attr.set_value(0.001)
         child.parts["outLink"].attr.set_value("@asyn(CS_PORT,2)")
         self.o = call_with_params(CompoundMotorPart, name="part", mri="my_mri")
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
         self.process.start()
 
     def tearDown(self):

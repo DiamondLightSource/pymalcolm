@@ -19,7 +19,7 @@ class TestPositionLabellerPart(ChildTestCase):
             mri="BLOCK-POS", prefix="prefix")
         self.o = call_with_params(
             PositionLabellerPart, name="m", mri="BLOCK-POS")
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
         self.process.start()
 
     def test_configure(self):

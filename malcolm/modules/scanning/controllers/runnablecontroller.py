@@ -219,8 +219,8 @@ class RunnableController(ManagerController):
         # Override reset to work from aborted and ready too
         super(RunnableController, self).reset()
 
-    def create_attributes(self):
-        for data in super(RunnableController, self).create_attributes():
+    def create_attribute_models(self):
+        for data in super(RunnableController, self).create_attribute_models():
             yield data
         # Create sometimes writeable attribute for the current completed scan
         # step
@@ -228,26 +228,26 @@ class RunnableController(ManagerController):
             "int32", "Readback of number of scan steps",
             tags=[widget("textinput")])
         completed_steps_meta.set_writeable_in(ss.PAUSED, ss.ARMED)
-        self.completed_steps = completed_steps_meta.create_attribute(0)
+        self.completed_steps = completed_steps_meta.create_attribute_model(0)
         yield "completedSteps", self.completed_steps, self.set_completed_steps
         # Create read-only attribute for the number of configured scan steps
         configured_steps_meta = NumberMeta(
             "int32", "Number of steps currently configured",
             tags=[widget("textupdate")])
-        self.configured_steps = configured_steps_meta.create_attribute(0)
+        self.configured_steps = configured_steps_meta.create_attribute_model(0)
         yield "configuredSteps", self.configured_steps, None
         # Create read-only attribute for the total number scan steps
         total_steps_meta = NumberMeta(
             "int32", "Readback of number of scan steps",
             tags=[widget("textupdate")])
-        self.total_steps = total_steps_meta.create_attribute(0)
+        self.total_steps = total_steps_meta.create_attribute_model(0)
         yield "totalSteps", self.total_steps, None
         # Create sometimes writeable attribute for the default axis names
         axes_to_move_meta = StringArrayMeta(
             "Default axis names to scan for configure()",
             tags=[widget("table"), config()])
         axes_to_move_meta.set_writeable_in(ss.READY)
-        self.axes_to_move = axes_to_move_meta.create_attribute(
+        self.axes_to_move = axes_to_move_meta.create_attribute_model(
             self.params.axesToMove)
         yield "axesToMove", self.axes_to_move, self.set_axes_to_move
 

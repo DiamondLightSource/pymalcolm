@@ -21,7 +21,7 @@ class TestCAActionPart(unittest.TestCase):
             )
 
         p = call_with_params(CAActionPart, **params)
-        self.yielded = list(p.create_methods())
+        self.yielded = list(p.create_method_models())
         return p
 
     def test_init(self, catools):

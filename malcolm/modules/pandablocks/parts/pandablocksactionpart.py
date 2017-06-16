@@ -18,7 +18,7 @@ class PandABlocksActionPart(Part):
         self.arg_meta = arg_meta
         self.method = None
 
-    def create_methods(self):
+    def create_method_models(self):
         method_name = snake_to_camel(self.field_name)
         if self.arg_meta:
             self.arg_name = method_name

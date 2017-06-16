@@ -29,7 +29,7 @@ class TestCAPart(unittest.TestCase):
             get_datatype = MagicMock()
 
         p = call_with_params(MyCAPart, **params)
-        list(p.create_attributes())
+        list(p.create_attribute_models())
         return p
 
     def test_init(self, catools):

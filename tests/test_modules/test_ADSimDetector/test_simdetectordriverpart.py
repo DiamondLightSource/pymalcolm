@@ -18,7 +18,7 @@ class TestSimDetectorDriverPart(ChildTestCase):
             mri="mri", prefix="prefix")
         self.o = call_with_params(
             SimDetectorDriverPart, name="m", mri="mri")
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
         self.process.start()
 
     def test_report(self):

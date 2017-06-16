@@ -20,7 +20,7 @@ class TestRawMotorPart(ChildTestCase):
         child.parts["csPort"].attr.set_value("CS1")
         child.parts["csAxis"].attr.set_value("Y")
         self.o = call_with_params(RawMotorPart, name="part", mri="mri")
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
         self.process.start()
 
     def tearDown(self):

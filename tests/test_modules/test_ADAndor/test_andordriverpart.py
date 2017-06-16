@@ -17,7 +17,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             mri="mri", prefix="prefix")
         self.o = call_with_params(
             AndorDriverPart, readoutTime=0.002, name="m", mri="mri")
-        list(self.o.create_attributes())
+        list(self.o.create_attribute_models())
         self.process.start()
 
     def tearDown(self):

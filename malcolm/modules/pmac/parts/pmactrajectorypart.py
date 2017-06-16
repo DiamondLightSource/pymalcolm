@@ -71,15 +71,15 @@ class PmacTrajectoryPart(StatefulChildPart):
     # Min turnaround time
     min_turnaround = None
 
-    def create_attributes(self):
-        for data in super(PmacTrajectoryPart, self).create_attributes():
+    def create_attribute_models(self):
+        for data in super(PmacTrajectoryPart, self).create_attribute_models():
             yield data
         # Create writeable attribute for the minimum time to leave when there
         # is a gap between frames
         meta = NumberMeta(
             "float64", "Min time for any gaps between frames",
             tags=[widget("textinput"), config()])
-        self.min_turnaround = meta.create_attribute(self.params.minTurnaround)
+        self.min_turnaround = meta.create_attribute_model(self.params.minTurnaround)
         yield "minTurnaround", self.min_turnaround, \
               self.min_turnaround.set_value
 

@@ -12,19 +12,19 @@ sm = ManagerController.stateSet
 
 class PortsPart(Part):
 
-    def create_attributes(self):
-        for data in super(PortsPart, self).create_attributes():
+    def create_attribute_models(self):
+        for data in super(PortsPart, self).create_attribute_models():
             yield data
         # note 3rd part of inport tag is its disconnected value
         in_tag = "inport:int32:"
         in_name = "inportConnector"
-        in_port = StringMeta(in_name, [in_tag, "config"]).create_attribute()
+        in_port = StringMeta(in_name, [in_tag, "config"]).create_attribute_model()
         in_port.meta.set_writeable_in(sm.READY)
         yield in_name, in_port, in_port.set_value
 
         out_name = "outportConnector"
         out_tag = "outport:int32:%s" % self.name
-        out_port = StringMeta(in_name, [out_tag]).create_attribute()
+        out_port = StringMeta(in_name, [out_tag]).create_attribute_model()
         out_port.meta.set_writeable_in(sm.READY)
         yield out_name, out_port, out_port.set_value
 
