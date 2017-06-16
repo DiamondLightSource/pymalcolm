@@ -32,8 +32,7 @@ class ExposureDetectorDriverPart(DetectorDriverPart):
     @RunnableController.ReportStatus
     def report_configuration(self, context):
         infos = super(ExposureDetectorDriverPart, self).report_configuration(
-            context)
-        infos.append(NDArrayDatasetInfo(name=self.name, rank=2))
+            context) + [NDArrayDatasetInfo(rank=2)]
         return infos
 
     @RunnableController.Validate

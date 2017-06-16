@@ -25,7 +25,6 @@ class TestSimDetectorDriverPart(ChildTestCase):
         infos = self.o.report_configuration(self.context)
         assert len(infos) == 2
         assert infos[0].value == 0
-        assert infos[1].name == "m"
         assert infos[1].rank == 2
 
     def test_validate(self):

@@ -31,7 +31,7 @@ class HDFWriterPart(StatefulChildPart):
     # The HDF5 layout file we write to say where the datasets go
     layout_filename = None
 
-    def _create_dataset_infos(self, part_info, generator, filename):
+    def _create_dataset_infos(self, name, part_info, generator, filename):
         # Update the dataset table
         uniqueid = "/entry/NDAttributes/NDArrayUniqueId"
         generator_rank = len(generator.dimensions)
@@ -45,7 +45,7 @@ class HDFWriterPart(StatefulChildPart):
         if ndarray_infos:
             ndarray_info = ndarray_infos[0]
             yield DatasetProducedInfo(
-                name="%s.data" % ndarray_info.name, filename=filename,
+                name="%s.data" % name, filename=filename,
                 type="primary", rank=ndarray_info.rank + generator_rank,
                 path="/entry/detector/detector",
                 uniqueid=uniqueid)
@@ -54,7 +54,7 @@ class HDFWriterPart(StatefulChildPart):
             for calculated_info in \
                     CalculatedNDAttributeDatasetInfo.filter_values(part_info):
                 yield DatasetProducedInfo(
-                    name="%s.%s" % (ndarray_info.name, calculated_info.name),
+                    name="%s.%s" % (name, calculated_info.name),
                     filename=filename, type="secondary",
                     rank=ndarray_info.rank + generator_rank,
                     path="/entry/%s/%s" % (
@@ -169,7 +169,7 @@ class HDFWriterPart(StatefulChildPart):
             "arrayCounter", self._greater_than_zero)
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
-            part_info, params.generator, filename))
+            params.formatName, part_info, params.generator, filename))
         return dataset_infos
 
     def _greater_than_zero(self, v):

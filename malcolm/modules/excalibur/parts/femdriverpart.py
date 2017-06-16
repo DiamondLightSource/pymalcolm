@@ -8,4 +8,4 @@ class FemDriverPart(StatefulChildPart):
     # control
     @RunnableController.ReportStatus
     def report_configuration(self, _):
-        return [NDArrayDatasetInfo(name=self.name, rank=2)]
+        return [NDArrayDatasetInfo(rank=2)]
