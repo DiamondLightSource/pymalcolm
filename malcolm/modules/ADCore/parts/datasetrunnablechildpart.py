@@ -1,14 +1,11 @@
-import os
-
-from malcolm.core import method_takes, REQUIRED, Update, \
-    MethodModel, deserialize_object
+from malcolm.core import method_takes, Update, MethodModel, deserialize_object
 from malcolm.modules.ADCore.infos import DatasetProducedInfo
-from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.parts import RunnableChildPart
 
 
 class DatasetRunnableChildPart(RunnableChildPart):
+    """Part controlling a configure/run child Block with a dataset table"""
     def update_configure_args(self, response):
         # Decorate validate and configure with the sum of its parts
         response = deserialize_object(response, Update)

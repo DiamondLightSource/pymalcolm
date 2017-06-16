@@ -36,15 +36,15 @@ diagram:
             label="DETECTOR"
             ranksep=0.1
 		    color=white
-            ticker_c [label="RunnableController"]
+            detector_c [label="RunnableController"]
             DRV [label="{SimDetectorDriverPart|name: 'DRV'}"]
             POS [label="{PositionLabellerPart|name: 'POS'}"]
             STAT [label="{StatsPluginPart|name: 'STAT'}"]
             HDF [label="{HDFWriterPart|name: 'HDF'}"]
-            ticker_c -> DRV [style=invis]
-            ticker_c -> POS [style=invis]
-            ticker_c -> STAT [style=invis]
-            ticker_c -> HDF [style=invis]
+            DSET [label="{DatasetTablePart|name: 'DSET'}"]
+            detector_c -> DRV [style=invis]
+            detector_c -> HDF [style=invis]
+            DRV -> DSET [style=invis]
             {rank=same; DRV -> POS -> STAT -> HDF}
         }
     }
@@ -342,8 +342,8 @@ to write in the ``datasets`` Attribute::
 
     In [9]: for col in det.datasets.value:
         print "%09s: %s" % (col, det.datasets.value[col])
-       ....:
-         name: ('DRV.data', 'DRV.sum', 'y.value_set', 'x.value_set')
+       ...:
+         name: ('det.data', 'det.sum', 'y.value_set', 'x.value_set')
      filename: ('det.h5', 'det.h5', 'det.h5', 'det.h5')
          type: ('primary', 'secondary', 'position_set', 'position_set')
          rank: [4 4 1 1]
@@ -358,7 +358,7 @@ frame. There is also a secondary (calculated) dataset called ``/entry/sum/sum``
 in the same file that shares the uniqueid dataset. Finally there are a couple of
 position setpoints for ``x`` and ``y`` demand values.
 
-If you now click the run button on the DETECTOR window you will see the scan
+If you now click the Run button on the DETECTOR window you will see the scan
 being performed:
 
 .. image:: areadetector_1.png

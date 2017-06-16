@@ -9,6 +9,7 @@ ss = RunnableController.stateSet
 
 
 class RunnableChildPart(StatefulChildPart):
+    """Part controlling a child Block that exposes a configure/run interface"""
     # stored between runs
     run_future = None
 

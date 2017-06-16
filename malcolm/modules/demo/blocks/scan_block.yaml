@@ -1,0 +1,37 @@
+- builtin.parameters.string:
+    name: mri
+    description: MRI for created block
+
+- builtin.parameters.string:
+    name: det
+    description: MRI for detector DetectorManager object
+
+- builtin.parameters.string:
+    name: motors
+    description: MRI for the motor controller
+
+- builtin.parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- builtin.defines.docstring:
+    value: |
+      Scan Block that controls a detector and ticker simulate a continuous scan
+
+- scanning.controllers.RunnableController:
+    mri: $(mri)
+    axesToMove: [x, y]
+    configDir: $(configDir)
+    description: $(docstring)
+
+- ADCore.parts.DatasetTablePart:
+    name: DSET
+
+- ADCore.parts.DatasetRunnableChildPart:
+    name: DET
+    mri: $(det)
+
+- scanning.parts.RunnableChildPart:
+    name: MOTORS
+    mri: $(motors)
+

@@ -1,0 +1,24 @@
+{
+  "layout": {
+    "DET": {
+      "x": 0.0, 
+      "y": 0.0, 
+      "visible": true
+    }, 
+    "MOTORS": {
+      "x": 0.0, 
+      "y": 0.0, 
+      "visible": true
+    }
+  }, 
+  "exports": {}, 
+  "DET": {
+    "design": "demo_design", 
+    "axesToMove": [], 
+    "readoutTime": 4.0000000000000003e-05
+  }, 
+  "MOTORS": {
+    "design": "", 
+    "axesToMove": []
+  }
+}
