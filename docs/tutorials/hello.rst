@@ -339,6 +339,20 @@ Inside the actual function, we print a message just so we can see what is
 happening, then sleep for a bit to simulate doing some work, then place the
 greeting into the return map and return it.
 
+There is also a `method_takes` decorator on the class. This is used to define
+the parameters that ``HelloPart.__init__`` should receive in it's params `Map`.
+The reason it's on the class rather than the ``__init__`` function is because
+it's less likely to get lost there when subclassing.
+
+The last thing to explain is the `super` call in ``__init__``. This is a Python
+construct that lets us reliably call methods of our superclass that we have just
+overridden, even if multiple inheritance is used. If someone instantiates
+HelloPart, then ``super(HelloPart, self).__init__`` will return the ``__init__``
+function of the `Part`, bound so that ``self`` does not need to be passed into
+it. It's not necessary to understand what `super` does, but it is necessary to
+use it when you need to call the method you have just overridden, otherwise your
+class may not behave correctly if subclassed and multiple inheritance is used.
+
 Conclusion
 ----------
 
