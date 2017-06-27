@@ -1,35 +1,36 @@
 #!/home/qvr31998/malcolm/pymalcolm/malcolm/imalcolm.py
 
-- parameters.string:
+- builtin.defines.string:
     name: configDir
-    description: Where to store saved configs
-    default: /dls_sw/i14/epics/malcolm
+    value: /dls_sw/i14/epics/malcolm
 
-- blocks.xspress3.Xspress3DetectorManager:
+- xspress3.blocks.xspress3_detector_manager_block:
     pvPrefix: BL14I-EA-XSP3-01
     mriPrefix: BL14I-ML-XSP3-01
     configDir: $(configDir)
 
-#- blocks.excalibur.ExcaliburDetectorManager:
-#    pvPrefix: BL14I-EA-EXCBR-01
-#    mriPrefix: BL14I-ML-EXCBR-01
-#    configDir: $(configDir)
+- excalibur.blocks.excalibur_detector_runnable_block:
+    pvPrefix: BL14I-EA-EXCBR-01
+    mriPrefix: BL14I-ML-EXCBR-01
+    configDir: $(configDir)
 
-- blocks.demo.I14PMACManager:
+- BL14I.blocks.pmac_runnable_block:
     mriPrefix: BL14I-ML-BRICK-14
     configDir: $(configDir)
 
-- blocks.pandabox.PandABoxManager:
+- ADPandABlocks.blocks.pandablocks_runnable_block:
     pvPrefix: BL14I-MO-PANDA-01
     mriPrefix: BL14I-ML-PANDA-01
     hostname: bl14i-mo-pandabox-01
     configDir: $(configDir)
 
-- blocks.demo.I14Manager:
+- BL14I.blocks.xspress3_scan_block:
     mri: BL14I-ML-SCAN-01
     det: BL14I-ML-XSP3-01
     brick: BL14I-ML-BRICK-14
     pandabox: BL14I-ML-PANDA-01
     configDir: $(configDir)
 
-- comms.pva.PvaServerComms:
+- pva.blocks.pva_server_block:
+    mri: $(yamlname):PVA-SERVER
+

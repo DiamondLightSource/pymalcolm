@@ -79,7 +79,7 @@ class DetectorDriverPart(StatefulChildPart):
         # update_completed_steps come in
         try:
             child.when_value_matches(
-                "arrayCounter", self.done_when_reaches, timeout=0.1)
+                "arrayCounter", self.done_when_reaches, timeout=5.0)
         except TimeoutError:
             raise ValueError("Detector %r didn't produce %s frames in time" % (
                 self.params.mri, self.done_when_reaches))

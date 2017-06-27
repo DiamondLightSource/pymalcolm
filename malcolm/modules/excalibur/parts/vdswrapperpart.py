@@ -69,14 +69,17 @@ class VDSWrapperPart(Part):
 
     @RunnableController.Abort
     @RunnableController.Reset
+    @RunnableController.PostRunIdle
     def abort(self, context):
         self.close_files()
 
     def close_files(self):
         for file_ in self.raw_datasets + [self.vds]:
             if file_ is not None and file_.id.valid:
-                self._logger.info("Closing file %s", file_)
+                self.log.info("Closing file %s", file_)
                 file_.close()
+        self.raw_datasets = []
+        self.vds = None
 
     def _create_dataset_infos(self, generator, filename):
         uniqueid_path = "/entry/NDAttributes/NDArrayUniqueId"
@@ -118,10 +121,9 @@ class VDSWrapperPart(Part):
                   params):
         self.done_when_reaches = completed_steps + steps_to_do
 
-        self._logger.debug("Creating ExternalLinks from VDS to FEM1.h5")
+        self.log.debug("Creating ExternalLinks from VDS to FEM1.h5")
         self.vds_path = os.path.join(params.fileDir, self.OUTPUT_FILE)
-        raw_file_path = os.path.join(params.fileDir,
-                                     self.RAW_FILE_TEMPLATE.format(1))
+        raw_file_path = self.RAW_FILE_TEMPLATE.format(1)
         node_tree = list(self.default_node_tree)
         for axis in params.generator.axes:
             for base in self.set_bases:
@@ -143,7 +145,7 @@ class VDSWrapperPart(Part):
             self.vds.create_dataset(self.SUM, initial_shape,
                                     maxshape=max_shape, dtype="float64")
 
-        self._logger.debug("Calling vds-gen to create dataset in VDS")
+        self.log.debug("Calling vds-gen to create dataset in VDS")
         files = [self.RAW_FILE_TEMPLATE.format(fem) for fem in self.fems]
         shape = [str(d) for d in params.generator.shape] + \
                 [str(self.stripe_height), str(self.stripe_width)]
@@ -162,13 +164,17 @@ class VDSWrapperPart(Part):
                     self.TARGET_NODE, "/entry/detector/detector"]
         # Define output file path
         command += [self.OUTPUT, self.OUTPUT_FILE]
-        command += [self.LOG_LEVEL, "1"] # str(self._logger.level / 10)]
-        self.log_info("Command: %s", command)
+        command += [self.LOG_LEVEL, "1"] # str(self.log.level / 10)]
+        self.log.info("Command: %s", command)
         check_call(command)
 
         # Store required attributes
         self.raw_paths = [os.path.abspath(os.path.join(params.fileDir, file_))
                           for file_ in files]
+
+        # Open the VDS
+        self.vds = h5.File(self.vds_path, self.APPEND, libver="latest")
+        
 
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
@@ -184,21 +190,19 @@ class VDSWrapperPart(Part):
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, context, update_completed_steps):
-        self.vds = h5.File(self.vds_path, self.APPEND, libver="latest")
-        try:
-            # Wait until raw files exist and have UniqueIDArray
+        if not self.raw_datasets:
             for path_ in self.raw_paths:
-                self.log_info("Waiting for file %s to be created", path_)
+                self.log.info("Waiting for file %s to be created", path_)
                 while not os.path.exists(path_):
                     context.sleep(1)
                 self.raw_datasets.append(
                     h5.File(path_, self.READ, libver="latest", swmr=True))
             for dataset in self.raw_datasets:
-                self.log_info("Waiting for id in file %s", dataset)
+                self.log.info("Waiting for id in file %s", dataset)
                 while self.ID not in dataset:
-                    context.sleep(1)
-
-            self.log_info("Monitoring raw files until ID reaches %s",
+                    context.sleep(0.1)
+        try:
+            self.log.info("Monitoring raw files until ID reaches %s",
                           self.done_when_reaches)
             while self.id < self.done_when_reaches:
                 context.sleep(0.1)  # Allow while loop to be aborted
@@ -206,17 +210,15 @@ class VDSWrapperPart(Part):
                 for dataset in self.raw_datasets:
                     ids.append(self.get_id(dataset))
                 if min(ids) > self.id:
-                    self.log_info("Raw ID changed: %s - "
+                    self.log.info("Raw ID changed: %s - "
                                   "Updating VDS ID and Sum", min(ids))
                     idx = ids.index(min(ids))
                     self.update_id(idx)
                     self.update_sum(idx)
 
-            self.log_info("ID reached: %s", self.id)
+            self.log.info("ID reached: %s", self.id)
         except Exception as error:
-            self.log_error("Error in run. Message:\n%s", error.message)
-            raise
-        finally:
+            self.log.exception("Error in run. Message:\n%s", error.message)
             self.close_files()
 
     @property
@@ -228,14 +230,14 @@ class VDSWrapperPart(Part):
             file_[self.ID].refresh()
             return max(file_[self.ID].value.flatten())
         else:
-            self.log_warning("File %s does not exist or does not have a "
+            self.log.warning("File %s does not exist or does not have a "
                              "UniqueIDArray, returning 0", file_)
             return 0
 
     def update_id(self, min_dataset):
         min_id = self.raw_datasets[min_dataset][self.ID]
 
-        self.log_debug("ID shape:\n%s", min_id.shape)
+        self.log.debug("ID shape:\n%s", min_id.shape)
         self.vds[self.ID].resize(min_id.shape)
         self.vds[self.ID][...] = min_id
 
@@ -254,6 +256,6 @@ class VDSWrapperPart(Part):
         mask = min_sum < 0
         sum_[mask] = -1
 
-        self.log_debug("Sum shape:\n%s", sum_.shape)
+        self.log.debug("Sum shape:\n%s", sum_.shape)
         self.vds[self.SUM].resize(sum_.shape)
         self.vds[self.SUM][...] = sum_

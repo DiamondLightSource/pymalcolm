@@ -1,5 +1,7 @@
 import re
 
+import numpy as np
+
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, REQUIRED, method_takes, serialize_object, \
     Attribute, Subscribe, Unsubscribe, Put
@@ -152,7 +154,9 @@ class ChildPart(Part):
             attr = getattr(child, name)
             if isinstance(attr, Attribute) and "config" in attr.meta.tags:
                 current_value = serialize_object(attr.value)
-                if original_value != current_value:
+                try:
+                    np.testing.assert_equal(original_value, current_value)
+                except AssertionError:
                     we_modified = name in self.we_modified
                     ret.append(ModifiedInfo(
                         name, original_value, current_value, we_modified))
