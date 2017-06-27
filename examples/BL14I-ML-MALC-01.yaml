@@ -1,3 +1,5 @@
+#!/home/qvr31998/malcolm/pymalcolm/malcolm/imalcolm.py
+
 - parameters.string:
     name: configDir
     description: Where to store saved configs

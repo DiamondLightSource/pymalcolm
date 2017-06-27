@@ -1,5 +1,4 @@
-#!/bin/env dls-python
-
+#!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
 
 def make_process():
     import sys
