@@ -1,4 +1,5 @@
 from xml.etree import cElementTree as ET
+import os
 
 try:
     # python 2
@@ -28,6 +29,7 @@ except ImportError:
     # fallback to slower collections
     from collections import OrderedDict
 
+
 def et_to_string(element):
     xml = '<?xml version="1.0" ?>'
     try:
@@ -35,3 +37,20 @@ def et_to_string(element):
     except LookupError:
         xml += ET.tostring(element)
     return xml
+
+
+def maybe_import_cothread():
+    if os.environ.get("PYMALCOLM_USE_COTHREAD", "YES")[0].upper() == "Y":
+        try:
+            import cothread
+        except ImportError:
+            cothread = None
+        return cothread
+
+
+def get_pool_num_threads():
+    if maybe_import_cothread():
+        num_threads = 8
+    else:
+        num_threads = 128
+    return num_threads

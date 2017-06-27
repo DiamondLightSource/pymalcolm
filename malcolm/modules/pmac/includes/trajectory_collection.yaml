@@ -1,0 +1,26 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: the root PV for the trajectory scan template
+
+- builtin.parameters.string:
+    name: statPrefix
+    description: the root PV for the pmacStatus template
+
+- builtin.parameters.float64:
+    name: minTurnaround
+    description: Minimum turnaround time
+    default: 0.0
+
+- pmac.blocks.pmac_trajectory_block:
+    mri: $(mri)
+    prefix: $(prefix)
+    statPrefix: $(statPrefix)
+
+- pmac.parts.PmacTrajectoryPart:
+    name: $(mri)
+    mri: $(mri)
+    minTurnaround: $(minTurnaround)

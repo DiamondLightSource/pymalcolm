@@ -2,7 +2,7 @@ import os
 
 from PyQt4.Qt import QTreeView, QSize, QIcon
 
-from malcolm.gui.blockmodel import BlockModel
+from malcolm.gui.guimodel import GuiModel
 from malcolm.gui.delegate import Delegate
 from malcolm.gui.attributeitem import AttributeItem
 
@@ -11,9 +11,9 @@ class BlockGui(QTreeView):
 
     def __init__(self, process, block):
         QTreeView.__init__(self)
-        model = BlockModel(process, block)
+        model = GuiModel(process, block)
         self.setModel(model)
-        self.setWindowTitle("%s: imalcolm" % model.block_path[0])
+        self.setWindowTitle("%s: imalcolm" % model.block.mri)
         root = os.path.join(os.path.dirname(__file__), "..", "..")
         icon_path = os.path.join(root, "docs", "malcolm-logo.svg")
         self.setWindowIcon(QIcon(icon_path))

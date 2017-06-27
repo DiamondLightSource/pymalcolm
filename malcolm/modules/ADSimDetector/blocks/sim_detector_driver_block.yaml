@@ -1,0 +1,34 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- builtin.defines.docstring:
+    value: |
+      Hardware Block corresponding to PVs used for SimDetector detector driver
+
+      - simDetector.template should have pv prefix $(prefix)
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: $(docstring)
+
+- ADCore.includes.adbase_parts:
+    prefix: $(prefix)
+
+- ca.parts.CADoublePart:
+    name: gainX
+    description: Gain in the X direction for generating image
+    pv: $(prefix):GainX
+    rbvSuff: _RBV
+    widget: textinput
+
+- ca.parts.CADoublePart:
+    name: gainY
+    description: Gain in the Y direction for generating image
+    pv: $(prefix):GainY
+    rbvSuff: _RBV
+    widget: textinput

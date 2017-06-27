@@ -1,0 +1,16 @@
+# Define the parameters this Block will take
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.defines.docstring:
+    value: Hardware Block with a greet() Method
+
+# The Controller will create the Block for us
+- builtin.controllers.BasicController:
+    mri: $(mri)
+    description: $(docstring)
+
+# The Part will add a Method to the Block
+- demo.parts.HelloPart:
+    name: hello

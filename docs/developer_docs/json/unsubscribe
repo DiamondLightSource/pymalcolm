@@ -1,6 +1,0 @@
-.. code-block:: javascript
-
-    {
-        "type": "Unsubscribe",
-        "id": 0
-    }

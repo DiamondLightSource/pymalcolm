@@ -1,0 +1,46 @@
+- builtin.parameters.string:
+    name: mriPrefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pvPrefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- builtin.defines.docstring:
+    value: |
+      Device block corresponding to ADAndor + stat + pos + hdf writer.
+
+      - Detector driver should have pv prefix $(pvPrefix):CAM
+      - Pos should have pv prefix $(pvPrefix):POS
+      - Stat should have pv prefix $(pvPrefix):STAT
+      - HDF should have pv prefix $(pvPrefix):HDF5
+
+- scanning.controllers.RunnableController:
+    mri: $(mriPrefix)
+    configDir: $(configDir)
+    description: $(docstring)
+
+- ADAndor.blocks.andor_detector_driver_block:
+    mri: $(mriPrefix):DRV
+    prefix: $(pvPrefix):CAM
+
+- ADAndor.parts.AndorDriverPart:
+    name: DRV
+    mri: $(mriPrefix):DRV
+    readoutTime: 13e-3
+
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mriPrefix):STAT
+    prefix: $(pvPrefix):STAT
+
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix):STAT
+
+- ADCore.includes.filewriting_collection:
+    pvPrefix: $(pvPrefix)
+    mriPrefix: $(mriPrefix)

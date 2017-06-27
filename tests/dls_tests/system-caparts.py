@@ -32,8 +32,7 @@ class CAPartsTest(unittest.TestCase):
     def create_part(self, cls, **args):
         params = cls.MethodMeta.prepare_input_map(args)
         p = cls(self.process, params)
-        p.set_logger_name(cls.__name__)
-        list(p.create_attributes())
+        list(p.create_attribute_models())
         p.reset()
         return p
 
@@ -48,7 +47,7 @@ class CAPartsTest(unittest.TestCase):
         for i in range(1, 6):
             f = i / 2.0
             p.caput(f)
-            self.assertEqual(p.attr.value, f)
+            assert p.attr.value == f
 
         p.close_monitor()
 
@@ -62,7 +61,7 @@ class CAPartsTest(unittest.TestCase):
 
         for i in [1, 5]:
             p.caput(i)
-            self.assertEqual(p.attr.value, i)
+            assert p.attr.value == i
 
         self.assertItemsEqual(p.attr.meta.choices,
                               ['Int8', 'UInt8', 'Int16', 'UInt16', 'Int32',
@@ -80,7 +79,7 @@ class CAPartsTest(unittest.TestCase):
         for i in range(1, 6):
             f = i / 2.0
             p.caput(f)
-            self.assertEqual(p.attr.value, int(f))
+            assert p.attr.value == int(f)
 
         p.close_monitor()
 
@@ -94,7 +93,7 @@ class CAPartsTest(unittest.TestCase):
 
         for s in ["Hello", "World", "Again"]:
             p.caput(s)
-            self.assertEqual(p.attr.value, s)
+            assert p.attr.value == s
 
         p.close_monitor()
 
@@ -120,7 +119,7 @@ class CAPartsTest(unittest.TestCase):
 
         for s in ['Testing', '1111', '2222']:
             p.caput(s)
-            self.assertEqual(p.attr.value, s)
+            assert p.attr.value == s
 
         p.close_monitor()
 

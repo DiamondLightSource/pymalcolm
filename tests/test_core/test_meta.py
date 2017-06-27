@@ -1,58 +1,48 @@
-import os
-import sys
 import unittest
 from collections import OrderedDict
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-import setup_malcolm_paths
-
 from mock import Mock
 
 from malcolm.core.meta import Meta
 
 
-class TestInit(unittest.TestCase):
+class TestMeta(unittest.TestCase):
+
+    def setUp(self):
+        self.o = Meta("desc")
+        self.o.notifier.add_squashed_change = Mock(
+            wraps=self.o.notifier.add_squashed_change)
+        self.o.set_notifier_path(self.o.notifier, ["path"])
 
     def test_init(self):
-        m = Meta("desc")
-        self.assertEquals("desc", m.description)
-
-
-class TestSetters(unittest.TestCase):
-    def setUp(self):
-        m = Meta("desc")
-        m.process = Mock()
-        self.m = m
+        assert self.o.writeable_in == []
 
     def test_set_description(self):
-        m = self.m
         description = "desc2"
-        m.set_description(description)
-        self.assertEqual(m.description, description)
-        m.process.report_changes.assert_called_once_with(
-            [["description"], description])
+        assert self.o.set_description(description) == description
+        assert self.o.description == description
+        self.o.notifier.add_squashed_change.assert_called_once_with(
+            ["path", "description"], description)
 
     def test_set_tags(self):
-        m = self.m
         tags = ("widget:textinput",)
-        m.set_tags(tags)
-        self.assertEquals(tags, m.tags)
-        m.process.report_changes.assert_called_once_with([["tags"], tags])
+        assert self.o.set_tags(tags) == tags
+        assert self.o.tags == tags
+        self.o.notifier.add_squashed_change.assert_called_once_with(
+            ["path", "tags"], tags)
 
     def test_set_writeable(self):
-        meta = self.m
         writeable = True
-        meta.set_writeable(writeable)
-        self.assertEquals(meta.writeable, writeable)
-        meta.process.report_changes.assert_called_once_with(
-            [["writeable"], writeable])
+        assert self.o.set_writeable(writeable) == writeable
+        assert self.o.writeable == writeable
+        self.o.notifier.add_squashed_change.assert_called_once_with(
+            ["path", "writeable"], writeable)
 
     def test_set_label(self):
-        meta = self.m
         label = "my label"
-        meta.set_label(label)
-        self.assertEquals(meta.label, label)
-        meta.process.report_changes.assert_called_once_with(
-            [["label"], label])
+        assert self.o.set_label(label) == label
+        assert self.o.label == label
+        self.o.notifier.add_squashed_change.assert_called_once_with(
+            ["path", "label"], label)
 
 
 class TestSerialization(unittest.TestCase):
@@ -68,7 +58,4 @@ class TestSerialization(unittest.TestCase):
     def test_to_dict(self):
         m = Meta("desc")
         m.typeid = "filled_in_by_subclass"
-        self.assertEqual(m.to_dict(), self.serialized)
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
+        assert m.to_dict() == self.serialized

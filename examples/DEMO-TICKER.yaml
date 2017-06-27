@@ -1,7 +1,0 @@
-# Create some Blocks
-- blocks.demo.Ticker:
-    mri: TICKER
-
-# Add a webserver
-- comms.websocket.WebsocketServerComms:
-    port: 8080

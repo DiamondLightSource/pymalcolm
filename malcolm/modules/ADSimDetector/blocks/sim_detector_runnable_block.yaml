@@ -1,0 +1,57 @@
+- builtin.parameters.string:
+    name: mriPrefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pvPrefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- builtin.parameters.string:
+    name: initialDesign
+    description: Design to load at init
+    default:
+
+- builtin.parameters.string:
+    name: drvSuffix
+    description: PV suffix for detector driver
+    default: DET
+
+- builtin.defines.docstring:
+    value: |
+      Device Block corresponding to SimDetector + stat + pos + hdf writer.
+
+      - Detector driver should have pv prefix $(pvPrefix):$(drvSuffix)
+      - Pos should have pv prefix $(pvPrefix):POS
+      - Stat should have pv prefix $(pvPrefix):STAT
+      - HDF should have pv prefix $(pvPrefix):HDF5
+
+- scanning.controllers.RunnableController:
+    mri: $(mriPrefix)
+    configDir: $(configDir)
+    description: $(docstring)
+    initialDesign: $(initialDesign)
+
+- ADSimDetector.blocks.sim_detector_driver_block:
+    mri: $(mriPrefix):DRV
+    prefix: $(pvPrefix):$(drvSuffix)
+
+- ADSimDetector.parts.SimDetectorDriverPart:
+    name: DRV
+    mri: $(mriPrefix):DRV
+    readoutTime: 40e-6
+
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mriPrefix):STAT
+    prefix: $(pvPrefix):STAT
+
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix):STAT
+
+- ADCore.includes.filewriting_collection:
+    pvPrefix: $(pvPrefix)
+    mriPrefix: $(mriPrefix)

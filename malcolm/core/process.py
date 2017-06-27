@@ -1,294 +1,229 @@
-from collections import namedtuple
+from multiprocessing.pool import ThreadPool
+import inspect
 
-from malcolm.compat import OrderedDict
-from malcolm.core.block import Block
-from malcolm.core.cache import Cache
-from malcolm.core.clientcontroller import ClientController
-from malcolm.core.loggable import Loggable
-from malcolm.core.request import Post, Put, Subscribe, Unsubscribe, Get
-from malcolm.core.vmetas import StringArrayMeta
+from malcolm.compat import OrderedDict, maybe_import_cothread, \
+    get_pool_num_threads
+from .context import Context
+from .hook import Hook, get_hook_decorated
+from .loggable import Loggable
+from .spawned import Spawned
+from .rlock import RLock
+from .errors import WrongThreadError
 
-# Sentinel object that when received stops the recv_loop
-PROCESS_STOP = object()
 
-# Internal update messages
-BlockChanges = namedtuple("BlockChanges", "changes")
-BlockRespond = namedtuple("BlockRespond", "response, response_queue")
-BlockAdd = namedtuple("BlockAdd", "block, name, controller")
-BlockList = namedtuple("BlockList", "client_comms, blocks")
-AddSpawned = namedtuple("AddSpawned", "spawned, function")
+# Clear spawned handles after how many spawns?
+SPAWN_CLEAR_COUNT = 1000
 
 
 class Process(Loggable):
-    """Hosts a number of Blocks, distributing requests between them"""
+    """Hosts a number of Controllers and provides spawn capabilities"""
 
-    def __init__(self, name, sync_factory):
-        self.set_logger_name(name)
+    Init = Hook()
+    """Called at start() to start all child controllers"""
+
+    Publish = Hook()
+    """Called when a new block is added
+
+    Args:
+        published (list): [mri] list of published Controller mris
+    """
+
+    Halt = Hook()
+    """Called at stop() to gracefully stop all child controllers"""
+
+    def __init__(self, name):
         self.name = name
-        self.sync_factory = sync_factory
-        self.q = self.create_queue()
-        self._blocks = OrderedDict()  # block_name -> Block
-        self._controllers = OrderedDict()  # block_name -> Controller
-        self._block_state_cache = Cache()
-        self._recv_spawned = None
-        self._other_spawned = []
-        # lookup of all Subscribe requests, ordered to guarantee subscription
-        # notification ordering
-        # {Request.generate_key(): Subscribe}
-        self._subscriptions = OrderedDict()
-        self.comms = []
-        self._client_comms = OrderedDict()  # client comms -> list of blocks
-        self._handle_functions = {
-            Post: self._forward_block_request,
-            Put: self._forward_block_request,
-            Get: self._handle_get,
-            Subscribe: self._handle_subscribe,
-            Unsubscribe: self._handle_unsubscribe,
-            BlockChanges: self._handle_block_changes,
-            BlockRespond: self._handle_block_respond,
-            BlockAdd: self._handle_block_add,
-            BlockList: self._handle_block_list,
-            AddSpawned: self._add_spawned,
-        }
-        self.create_process_block()
+        self.set_logger_extra(process=name)
+        self._cothread = maybe_import_cothread()
+        self._controllers = OrderedDict()  # mri -> Controller
+        self._published = []  # [mri] for publishable controllers
+        self.started = False
+        self._spawned = []
+        self._spawn_count = 0
+        self._thread_pool = None
+        self._lock = RLock()
+        self._hooked_func_names = {}
+        self._hook_names = {}
+        self._find_hooks()
 
-    def recv_loop(self):
-        """Service self.q, distributing the requests to the right block"""
-        while True:
-            request = self.q.get()
-            self.log_debug("Received request %s", request)
-            if request is PROCESS_STOP:
-                # Got the sentinel, stop immediately
-                break
-            try:
-                self._handle_functions[type(request)](request)
-            except Exception as e:  # pylint:disable=broad-except
-                self.log_exception("Exception while handling %s", request)
-                try:
-                    request.respond_with_error(str(e))
-                except Exception:
-                    pass
+    def _find_hooks(self):
+        for name, member in inspect.getmembers(self, Hook.isinstance):
+            assert member not in self._hook_names, \
+                "Hook %s already in %s as %s" % (
+                    self, name, self._hook_names[member])
+            self._hook_names[member] = name
+            self._hooked_func_names[member] = {}
 
-    def add_comms(self, comms):
-        assert not self._recv_spawned, \
-            "Can't add comms when process has been started"
-        self.comms.append(comms)
+    def start(self, timeout=None):
+        """Start the process going
 
-    def start(self):
-        """Start the process going"""
-        self._recv_spawned = self.sync_factory.spawn(self.recv_loop)
-        for comms in self.comms:
-            comms.start()
+        Args:
+            timeout (float): Maximum amount of time to wait for each spawned
+                process. None means forever
+        """
+        assert not self.started, "Process already started"
+        self.started = True
+        self._run_hook(self.Init, timeout=timeout)
+        self._run_hook(
+            self.Publish, args=(self._published,), timeout=timeout)
+
+    def _run_hook(self, hook, controller_list=None, args=(), timeout=None):
+        # Run the given hook waiting til all hooked functions are complete
+        # but swallowing any errors
+        if controller_list is None:
+            controller_list = self._controllers.values()
+
+        spawned = []
+        for controller in controller_list:
+            func_name = self._hooked_func_names[hook].get(controller, None)
+            if func_name:
+                func = getattr(controller, func_name)
+                spawned.append(controller.spawn(func, *args))
+        for s in spawned:
+            s.wait(timeout)
 
     def stop(self, timeout=None):
         """Stop the process and wait for it to finish
 
         Args:
             timeout (float): Maximum amount of time to wait for each spawned
-                process. None means forever
+                object. None means forever
         """
-        assert self._recv_spawned, "Process not started"
-        self.q.put(PROCESS_STOP)
-        for comms in self.comms:
-            comms.stop()
-        # Wait for recv_loop to complete first
-        self._recv_spawned.wait(timeout=timeout)
-        # Now wait for anything it spawned to complete
-        for s, _ in self._other_spawned:
+        assert self.started, "Process not started"
+        # Allow every controller a chance to clean up
+        self._run_hook(self.Halt, timeout=timeout)
+        for s in self._spawned:
+            self.log.debug("Waiting for %s", s._function)
             s.wait(timeout=timeout)
-        # Garbage collect the syncfactory
-        del self.sync_factory
+        self._spawned = []
+        self._controllers = OrderedDict()
+        self._published = []
+        self.started = False
+        if self._thread_pool:
+            self._thread_pool.close()
+            self._thread_pool.join()
+            self._thread_pool = None
 
-    def _forward_block_request(self, request):
-        """Lookup target Block and spawn block.handle_request(request)
+    def spawn(self, function, args, kwargs, use_cothread):
+        """Runs the function in a worker thread, returning a Result object
 
         Args:
-            request (Request): The message that should be passed to the Block
-        """
-        block_name = request.endpoint[0]
-        block = self._blocks[block_name]
-        spawned = self.sync_factory.spawn(block.handle_request, request)
-        self._add_spawned(AddSpawned(spawned, block.handle_request))
-
-    def create_queue(self):
-        """
-        Create a queue using sync_factory object
+            function: Function to run
+            args: Positional arguments to run the function with
+            kwargs: Keyword arguments to run the function with
+            use_cothread (bool): Whether to try and run this as a cothread
 
         Returns:
-            Queue: New queue
+            Spawned: Something you can call wait(timeout) on to see when it's
+                finished executing
         """
+        return self._call_in_right_thread(
+            self._spawn, function, args, kwargs, use_cothread)
 
-        return self.sync_factory.create_queue()
+    def _call_in_right_thread(self, func, *args):
+        try:
+            return func(*args)
+        except WrongThreadError:
+            # called from outside cothread's thread, spawn it again
+            return self._cothread.CallbackResult(func, *args)
 
-    def create_lock(self):
-        """
-        Create a lock using sync_factory object
-
-        Returns:
-            New lock object
-        """
-        return self.sync_factory.create_lock()
-
-    def spawn(self, function, *args, **kwargs):
-        """Calls SyncFactory.spawn()"""
-        def catching_function():
-            try:
-                function(*args, **kwargs)
-            except Exception:
-                self.log_exception(
-                    "Exception calling %s(*%s, **%s)", function, args, kwargs)
-                raise
-        spawned = self.sync_factory.spawn(catching_function)
-        request = AddSpawned(spawned, function)
-        self.q.put(request)
+    def _spawn(self, function, args, kwargs, use_cothread):
+        with self._lock:
+            assert self.started, "Can't spawn before process started"
+            if self._thread_pool is None:
+                if not self._cothread or not use_cothread:
+                    self._thread_pool = ThreadPool(get_pool_num_threads())
+            spawned = Spawned(
+                function, args, kwargs, use_cothread, self._thread_pool)
+            self._spawned.append(spawned)
+            self._spawn_count += 1
+            # Filter out things that are ready to avoid memory leaks
+            if self._spawn_count > SPAWN_CLEAR_COUNT:
+                self._spawn_count = 0
+                self._spawned = [s for s in self._spawned if not s.ready()]
         return spawned
 
-    def _add_spawned(self, request):
-        spawned = self._other_spawned
-        self._other_spawned = []
-        spawned.append((request.spawned, request.function))
-        # Filter out the spawned that have completed to stop memory leaks
-        for sp, f in spawned:
-            if not sp.ready():
-                self._other_spawned.append((sp, f))
-
-    def get_client_comms(self, block_name):
-        for client_comms, blocks in list(self._client_comms.items()):
-            if block_name in blocks:
-                return client_comms
-
-    def create_process_block(self):
-        self.process_block = Block()
-        # TODO: add a meta here
-        children = OrderedDict()
-        children["blocks"] = StringArrayMeta(
-            description="Blocks hosted by this Process"
-        ).make_attribute([])
-        children["remoteBlocks"] = StringArrayMeta(
-                description="Blocks reachable via ClientComms"
-        ).make_attribute([])
-        self.process_block.replace_endpoints(children)
-        self.process_block.set_process_path(self, [self.name])
-        self.add_block(self.process_block, self)
-
-    def update_block_list(self, client_comms, blocks):
-        self.q.put(BlockList(client_comms=client_comms, blocks=blocks))
-
-    def _handle_block_list(self, request):
-        self._client_comms[request.client_comms] = request.blocks
-        remotes = []
-        for blocks in self._client_comms.values():
-            remotes += [b for b in blocks if b not in remotes]
-        self.process_block["remoteBlocks"].set_value(remotes)
-
-    def _handle_block_changes(self, request):
-        """Update subscribers with changes and applies stored changes to the
-        cached structure"""
-        # update cached dict
-        subscription_changes = self._block_state_cache.apply_changes(
-            *request.changes)
-
-        # Send out the changes
-        for subscription, changes in subscription_changes.items():
-            if subscription.delta:
-                # respond with the filtered changes
-                subscription.respond_with_delta(changes)
-            else:
-                # respond with the structure of everything
-                # below the endpoint
-                d = self._block_state_cache.walk_path(subscription.endpoint)
-                subscription.respond_with_update(d)
-
-    def report_changes(self, *changes):
-        self.q.put(BlockChanges(changes=list(changes)))
-
-    def block_respond(self, response, response_queue):
-        self.q.put(BlockRespond(response, response_queue))
-
-    def _handle_block_respond(self, request):
-        """Push the response to the required queue"""
-        request.response_queue.put(request.response)
-
-    def add_block(self, block, controller):
-        """Add a block to be hosted by this process
+    def add_controller(self, mri, controller, publish=True, timeout=None):
+        """Add a controller to be hosted by this process
 
         Args:
-            block (Block): The block to be added
+            mri (str): The malcolm resource id for the controller
             controller (Controller): Its controller
+            publish (bool): Whether to notify other controllers about its
+                existence
+            timeout (float): Maximum amount of time to wait for each spawned
+                object. None means forever
         """
-        path = block.process_path
-        assert len(path) == 1, \
-            "Expected block %r to have %r as parent, got path %r" % \
-            (block, self, path)
-        name = path[0]
-        assert name not in self._blocks, \
-            "There is already a block called %r" % name
-        request = BlockAdd(block=block, controller=controller, name=name)
-        if self._recv_spawned:
-            # Started, so call in Process thread
-            self.q.put(request)
-        else:
-            # Not started yet so we are safe to add in this thread
-            self._handle_block_add(request)
+        self._call_in_right_thread(
+            self._add_controller, mri, controller, publish, timeout)
 
-    def _handle_block_add(self, request):
-        """Add a block to be hosted by this process"""
-        assert request.name not in self._blocks, \
-            "There is already a block called %r" % request.name
-        self._blocks[request.name] = request.block
-        self._controllers[request.name] = request.controller
-        serialized = request.block.to_dict()
-        change_request = BlockChanges([[[request.name], serialized]])
-        self._handle_block_changes(change_request)
-        # Regenerate list of blocks
-        self.process_block["blocks"].set_value(list(self._blocks))
+    def _add_controller(self, mri, controller, publish, timeout):
+        with self._lock:
+            assert mri not in self._controllers, \
+                "Controller already exists for %s" % mri
+            self._controllers[mri] = controller
+            for func_name, hook, _ in get_hook_decorated(controller):
+                assert hook in self._hook_names, \
+                    "Controller %s func %s not hooked into %s" % (
+                        mri, func_name, self)
+                self._hooked_func_names[hook][controller] = func_name
+            if publish:
+                self._published.append(mri)
+        if self.started:
+            self._run_hook(self.Init, [controller], timeout=timeout)
+            self._run_hook(self.Publish, args=(self._published,),
+                           timeout=timeout)
 
-    def get_block(self, block_name):
+    def remove_controller(self, mri, timeout=None):
+        """Remove a controller that is hosted by this process
+
+        Args:
+            mri (str): The malcolm resource id for the controller
+            timeout (float): Maximum amount of time to wait for each spawned
+                object. None means forever
+        """
+        self._call_in_right_thread(self._remove_controller, mri, timeout)
+
+    def _remove_controller(self, mri, timeout):
+        with self._lock:
+            controller = self._controllers.pop(mri)
+            for d in self._hooked_func_names.values():
+                d.pop(controller, None)
+            if mri in self._published:
+                self._published.remove(mri)
+        if self.started:
+            self._run_hook(self.Publish, args=(self._published,),
+                           timeout=timeout)
+            self._run_hook(self.Halt, [controller], timeout=timeout)
+
+    @property
+    def mri_list(self):
+        return list(self._controllers)
+
+    def get_controller(self, mri):
+        """Get controller from mri
+
+        Args:
+            mri (str): The malcolm resource id for the controller
+
+        Returns:
+            Controller: the controller
+        """
         try:
-            return self._blocks[block_name]
+            return self._controllers[mri]
         except KeyError:
-            if block_name in self.process_block.remoteBlocks:
-                return self.make_client_block(block_name)
-            else:
-                raise
+            raise ValueError("No controller registered for mri %r" % mri)
 
-    def make_client_block(self, block_name):
-        params = ClientController.MethodMeta.prepare_input_map(
-            mri=block_name)
-        controller = ClientController(self, {}, params)
-        return controller.block
+    def block_view(self, mri):
+        """Get a Block view from a Controller
 
-    def get_controller(self, block_name):
-        return self._controllers[block_name]
+        Args:
+            mri (str): The malcolm resource id for the block
 
-    def _handle_subscribe(self, request):
-        """Add a new subscriber and respond with the current
-        sub-structure state"""
-        key = request.generate_key()
-        assert key not in self._subscriptions, \
-            "Subscription on %s already exists" % (key,)
-        self._subscriptions[key] = request
-        self._block_state_cache.add_subscriber(request, request.endpoint)
-        d = self._block_state_cache.walk_path(request.endpoint)
-        self.log_debug("Initial subscription value %s", d)
-        if request.delta:
-            request.respond_with_delta([[[], d]])
-        else:
-            request.respond_with_update(d)
-
-    def _handle_unsubscribe(self, request):
-        """Remove a subscriber and respond with success or error"""
-        key = request.generate_key()
-        try:
-            subscription = self._subscriptions.pop(key)
-        except KeyError:
-            request.respond_with_error(
-                "No subscription found for %s" % (key,))
-        else:
-            self._block_state_cache.remove_subscriber(
-                subscription, subscription.endpoint)
-            request.respond_with_return()
-
-    def _handle_get(self, request):
-        d = self._block_state_cache.walk_path(request.endpoint)
-        request.respond_with_return(d)
+        Returns:
+            Block: the block view
+        """
+        controller = self.get_controller(mri)
+        context = Context(self)
+        block = controller.make_view(context)
+        return block

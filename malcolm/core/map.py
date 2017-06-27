@@ -11,18 +11,22 @@ class Map(Serializable):
             self.update(d)
 
     def __setattr__(self, attr, val):
-        if hasattr(self, "meta") and attr in self.meta.elements:
-            self[attr] = val
-        else:
-            super(Map, self).__setattr__(attr, val)
+        if hasattr(self, "meta"):
+            if attr not in self.meta.elements:
+                raise AttributeError(
+                    "%s is not a valid key for given meta" % attr)
+            val = self.meta.elements[attr].validate(val)
+            unordered_endpoints = self.endpoints + [attr]
+            object.__setattr__(
+                self, "endpoints",
+                [x for x in self.meta.elements if x in unordered_endpoints])
+        super(Map, self).__setattr__(attr, val)
 
     def __setitem__(self, key, val):
-        if key not in self.meta.elements:
-            raise ValueError("%s is not a valid key for given meta" % key)
-        val = self.meta.elements[key].validate(val)
-        self.endpoints = [
-            k for k in self.meta.elements if k in list(self) + [key]]
-        self.set_endpoint_data(key, val)
+        try:
+            setattr(self, key, val)
+        except AttributeError:
+            raise ValueError(key)
 
     def update(self, d):
         invalid = [k for k in d
@@ -46,11 +50,11 @@ class Map(Serializable):
         return "Map({%s})" % elements
 
     def clear(self):
-        self._endpoint_data = {}
-        self.endpoints = []
+        while self.endpoints:
+            delattr(self, self.endpoints.pop())
 
     def keys(self):
-        return self.endpoints
+        return self.endpoints[:]
 
     def values(self):
         return [self[k] for k in self]

@@ -1,0 +1,13 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.defines.docstring:
+    value: Hardware Block simulating a single float64 counter
+
+- builtin.controllers.BasicController:
+    mri: $(mri)
+    description: $(docstring)
+
+- demo.parts.CounterPart:
+    name: counter

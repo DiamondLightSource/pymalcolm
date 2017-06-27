@@ -1,0 +1,43 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: the root PV for the motor record
+
+- builtin.parameters.string:
+    name: scannable
+    description: The scannable name for GDA of this motor
+
+- builtin.parameters.float64:
+    name: velocitySettle
+    description: Time in seconds for motor to settle at constant velocity
+    default: 0.0
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+
+- pmac.includes.motor_records:
+    prefix: $(prefix)
+
+# TODO: this should be an outlink, but has wrong type, maybe push down?
+- ca.parts.CAStringPart:
+    name: outLink
+    description: asyn out link
+    rbv: $(prefix).OUT
+    widget: textupdate
+
+- builtin.parts.StringPart:
+    name: scannable
+    description: Scannable name for motor
+    widget: textinput
+    writeable: True
+    initialValue: $(scannable)
+
+- builtin.parts.Float64Part:
+    name: velocitySettle
+    description: Time in seconds for motor to settle at constant velocity
+    widget: textinput
+    writeable: True
+    initialValue: $(velocitySettle)

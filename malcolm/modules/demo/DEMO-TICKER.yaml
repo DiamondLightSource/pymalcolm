@@ -1,0 +1,9 @@
+# Create some Blocks
+- demo.blocks.ticker_block:
+    mri: TICKER
+    configDir: /tmp
+
+# Add a webserver
+- web.blocks.web_server_block:
+    mri: WEB
+    port: 8080

@@ -1,32 +1,59 @@
-from malcolm.core.methodmeta import get_method_decorated, REQUIRED, \
-    method_takes
-from malcolm.core.vmetas import StringMeta
-from malcolm.core.loggable import Loggable
-from malcolm.core.hook import get_hook_decorated
+from malcolm.compat import str_
+from .hook import get_hook_decorated
+from .hookrunner import HookRunner
+from .loggable import Loggable
+from .methodmodel import get_method_decorated, MethodModel
 
 
-@method_takes(
-    "name", StringMeta("Name of the part within controller"), REQUIRED)
 class Part(Loggable):
-    params = None
+    def __init__(self, name):
+        assert isinstance(name, str_), \
+            "Expected name to be a string, got %s. Did you forget to " \
+            "subclass __init__ in %s?" % (name, self)
+        self.controller = None
+        self.use_cothread = False
+        self.process = None
+        self.name = name
+        self.method_models = {}
 
-    def __init__(self, process, params):
-        self.process = process
-        self.name = params.name
-        self.store_params(params)
-        self.method_metas = {}
+    def notify_dispatch_request(self, request):
+        """Will be called when a context passed to a hooked function is about
+        to dispatch a request"""
+        pass
 
-    def store_params(self, params):
-        self.params = params
+    def attach_to_controller(self, controller):
+        self.set_logger_extra(mri=controller.mri, part=self.name)
+        self.controller = controller
+        self.process = controller.process
+        self.use_cothread = controller.use_cothread
 
-    def create_methods(self):
+    def spawn(self, func, *args, **kwargs):
+        """Spawn a function in the right thread"""
+        spawned = self.process.spawn(func, args, kwargs, self.use_cothread)
+        return spawned
+
+    def set_health(self, alarm=None):
+        """Set the health attribute"""
+        self.controller.set_health(self, alarm)
+
+    def make_hook_runner(self, hook_queue, func_name, context, *args, **params):
+        # TODO: add phase information
+        func = getattr(self, func_name)
+        method_model = self.method_models.get(func_name, MethodModel())
+        filtered_params = {k: v for k, v in params.items()
+                           if k in method_model.takes.elements}
+        args += method_model.prepare_call_args(**filtered_params)
+        runner = HookRunner(hook_queue, self, func, context, args)
+        return runner
+
+    def create_method_models(self):
         hooked = [name for (name, _, _) in get_hook_decorated(self)]
-        for name, method_meta, func in get_method_decorated(self):
-            self.method_metas[name] = method_meta
+        for name, method_model, func in get_method_decorated(self):
+            self.method_models[name] = method_model
             if name not in hooked:
-                yield name, method_meta, func
+                yield name, method_model, func
 
-    def create_attributes(self):
+    def create_attribute_models(self):
         """Should be implemented in subclasses to yield any Attributes that
         should be attached to the Block
 
@@ -39,3 +66,4 @@ class Part(Loggable):
                   writeable, or None if not
         """
         return iter(())
+

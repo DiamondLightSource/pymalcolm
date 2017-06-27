@@ -1,0 +1,6 @@
+.. code-block:: javascript
+
+    {
+        "typeid": "malcolm:core/Unsubscribe:1.0",
+        "id": 32
+    }

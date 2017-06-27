@@ -1,0 +1,7 @@
+.. code-block:: javascript
+
+    {
+        "typeid": "malcolm:core/Subscribe:1.0",
+        "id": 19,
+        "path": ["BL18I:XSPRESS3", "state", "value"]
+    }

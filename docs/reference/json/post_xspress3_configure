@@ -1,0 +1,12 @@
+.. code-block:: javascript
+
+    {
+        "typeid": "malcolm:core/Post:1.0",
+        "id": 2,
+        "path": ["BL18I:XSPRESS3", "configure"],
+        "parameters":
+        {
+            "filePath": "/path/to/file.h5",
+            "exposure": 0.1
+        }
+    }

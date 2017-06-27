@@ -1,8 +1,0 @@
-.. code-block:: javascript
-
-    {
-      "type": "Error",
-      "id": 0,
-      "message": "Non-existant block 'foo'"
-    }
-

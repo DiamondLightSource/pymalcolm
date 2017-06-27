@@ -6,33 +6,18 @@ import os
 import re
 import sys
 
-from pkg_resources import require
-require('mock')
-from mock import MagicMock
-
-# Mock out failing imports
-MOCK_MODULES = ["tornado", "tornado.websocket", "tornado.websocket",
-                "tornado.web", "tornado.httpserver", "tornado.ioloop",
-                "cothread", "scanpointgenerator"]
-sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
-
-sys.path.append(os.path.dirname(__file__))
-from generate_api_docs import generate_docs
-
-generate_docs()  # Generate api.rst
 
 def get_version():
-    """
-    Extracts the version number from the version.py file.
-    """
+    """Extracts the version number from the version.py file."""
     VERSION_FILE = '../malcolm/version.py'
-    mo = re.search(
-        r'^__version__ = [\'"]([^\'"]*)[\'"]', open(VERSION_FILE, 'rt').read(), re.M)
+    mo = re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]',
+                   open(VERSION_FILE, 'rt').read(), re.M)
     if mo:
         return mo.group(1)
     else:
         raise RuntimeError(
             'Unable to find version string in {0}.'.format(VERSION_FILE))
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -44,98 +29,81 @@ except:
 else:
     require("mock")
     require("numpy")
-    require("sphinxcontrib-plantuml")
+    require("ruamel.yaml")
+
+from mock import MagicMock
+
+# Mock out failing imports
+MOCK_MODULES = [
+    "scanpointgenerator", "pvaccess", "plop", "plop.viewer", "h5py"]
+
+sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
+
+
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..')))
+
+sys.path.append(os.path.dirname(__file__))
+
+
+# Autodoc event handlers
+def skip_member(app, what, name, obj, skip, options):
+    # Override @method_takes to always be documented
+    if hasattr(obj, "MethodModel") and hasattr(obj.MethodModel, "takes") and \
+            obj.MethodModel.takes.elements:
+        return False
+
+
+def process_docstring(app, what, name, obj, options, lines):
+    # Add some documentation for @method_takes decorated members
+    if hasattr(obj, "MethodModel") and hasattr(obj.MethodModel, "takes") and \
+            obj.MethodModel.takes.elements:
+        # Add a new docstring
+        lines.append("params:")
+        for param, vmeta in obj.MethodModel.takes.elements.items():
+            lines.append(
+                "    - %s (%s):" % (param, vmeta.doc_type_string()))
+            description = vmeta.description.strip()
+            if not description[-1] in ".?!,":
+                description += "."
+            if param in obj.MethodModel.takes.required:
+                default = "Required"
+            elif param in obj.MethodModel.defaults:
+                default = "Default=%r" % (obj.MethodModel.defaults[param],)
+            else:
+                default = "Optional"
+            lines.append("        %s %s" % (description, default))
+        lines.append("")
+
+
+def setup(app):
+    app.connect('autodoc-skip-member', skip_member)
+    app.connect('autodoc-process-docstring', process_docstring)
+    from generate_api_docs import generate_docs
+    generate_docs()  # Generate modules_api.rst
+
 
 # -- General configuration ------------------------------------------------
 
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    'sphinxcontrib.plantuml',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.graphviz',
     'IPython.sphinxext.ipython_console_highlighting',
 ]
-
-# http://twistedmatrix.com/trac/browser/tags/releases/twisted-8.2.0/twisted/python/procutils.py?format=txt
-def which(name, flags=os.X_OK):
-    """Search PATH for executable files with the given name.
-
-    On newer versions of MS-Windows, the PATHEXT environment variable will be
-    set to the list of file extensions for files considered executable. This
-    will normally include things like ".EXE". This fuction will also find files
-    with the given name ending with any of these extensions.
-
-    On MS-Windows the only flag that has any meaning is os.F_OK. Any other
-    flags will be ignored.
-
-    @type name: C{str}
-    @param name: The name for which to search.
-
-    @type flags: C{int}
-    @param flags: Arguments to L{os.access}.
-
-    @rtype: C{list}
-    @param: A list of the full paths to files found, in the
-    order in which they were found.
-    """
-    result = []
-    exts = filter(None, os.environ.get('PATHEXT', '').split(os.pathsep))
-    path = os.environ.get('PATH', None)
-    if path is None:
-        return []
-    for p in os.environ.get('PATH', '').split(os.pathsep):
-        p = os.path.join(p, name)
-        if os.access(p, flags):
-            result.append(p)
-        for e in exts:
-            pext = p + e
-            if os.access(pext, flags):
-                result.append(pext)
-    return result
-
-here = os.path.abspath(os.path.dirname(__file__))
-
-if not which("plantuml"):
-    # For github
-    import subprocess
-    print "download plantuml..."
-    here_plantuml = os.path.join(here, "plantuml_downloaded.jar")
-    url = "http://downloads.sourceforge.net/project/plantuml/plantuml.8045.jar"
-    subprocess.call(["curl", "-v", "-L", url, "-o", here_plantuml])
-    print "download java..."
-    here_jre_tar = os.path.join(here, "jre.tar.gz")
-    url = "http://download.oracle.com/otn-pub/java/jdk/8u65-b17/jre-8u65-linux-x64.tar.gz"
-    subprocess.call(["curl", "-v", "-j", "-k", "-L", "-H", "Cookie: oraclelicense=accept-securebackup-cookie", url, "-o", here_jre_tar])
-    print "unzip java..."
-    subprocess.call(["/bin/tar", "xvzf", here_jre_tar])
-    here_jre = os.path.join(here, "jre1.8.0_65")
-    os.environ["JAVA_HOME"] = here_jre
-    plantuml = '%s/bin/java -Dplantuml.include.path=%s/.. -jar %s' % (here_jre, here, here_plantuml)
-    print "done prep plantuml"
-    # get the right font
-    fontdir = os.path.expanduser("~/.fonts")
-    try:
-        os.mkdir(fontdir)
-    except OSError:
-        pass
-    import urllib
-    url = "https://github.com/shreyankg/xkcd-desktop/raw/master/Humor-Sans.ttf"
-    urllib.urlretrieve(url, os.path.join(fontdir, "Humor-Sans.ttf"))
-    # install it
-    subprocess.call(["fc-cache", "-vf", fontdir])
-
-#napoleon_use_ivar = True
 
 autoclass_content = "both"
 
 autodoc_member_order = 'bysource'
 
+graphviz_output_format = "svg"
+
 # If true, Sphinx will warn about all references where the target can't be found
 nitpicky = True
 
-#The name of a reST role (builtin or Sphinx extension) to use as the default
+# The name of a reST role (builtin or Sphinx extension) to use as the default
 # role, that is, for text marked up `like this`
 default_role = "any"
 
@@ -146,7 +114,7 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'contents'
 
 # General information about the project.
 project = u'malcolm'
@@ -164,25 +132,29 @@ exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
 intersphinx_mapping = dict(
-    python=('http://docs.python.org/2.7/', None),
-    scanpointgenerator=('http://scanpointgenerator.readthedocs.io/en/latest/',
-                        None))
+    python=('https://docs.python.org/2.7/', None),
+    scanpointgenerator=(
+        'http://scanpointgenerator.readthedocs.io/en/latest/', None),
+    numpy=('https://docs.scipy.org/doc/numpy/', None),
+    tornado=('http://www.tornadoweb.org/en/stable/', None),
+)
+
+# A dictionary of graphviz graph attributes for inheritance diagrams.
+inheritance_graph_attrs = dict(rankdir="TB")
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 # on_rtd is whether we are on readthedocs.org
-import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if not on_rtd:  # only import and set the theme if we're building docs locally
     import sphinx_rtd_theme
+    html_context = dict(css_files=[])
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -230,7 +202,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'malcolm.tex', u'malcolm Documentation',
+    ('contents', 'malcolm.tex', u'malcolm Documentation',
      u'Tom Cobb', 'manual'),
 ]
 
@@ -239,7 +211,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'malcolm', u'malcolm Documentation',
+    ('contents', 'malcolm', u'malcolm Documentation',
      [u'Tom Cobb'], 1)
 ]
 
@@ -249,7 +221,56 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'malcolm', u'malcolm Documentation',
+    ('contents', 'malcolm', u'malcolm Documentation',
      u'Tom Cobb', 'malcolm', 'A short description',
      'Miscellaneous'),
 ]
+
+# Common links that should be available on every page
+rst_epilog = """
+.. _Mapping project:
+    https://indico.esss.lu.se/event/357/session/8/contribution/63
+
+.. _EPICS:
+    http://www.aps.anl.gov/epics/
+
+.. _PVs:
+    https://ics-web.sns.ornl.gov/kasemir/train_2006/1_3_CA_Overview.pdf
+
+.. _GDA:
+    http://www.opengda.org/
+
+.. _pvAccess:
+    http://epics-pvdata.sourceforge.net/arch.html#Network
+
+.. _websockets:
+    https://en.wikipedia.org/wiki/WebSocket
+
+.. _Diamond Light Source:
+    http://www.diamond.ac.uk
+
+.. _JSON:
+    http://www.json.org/
+
+.. _areaDetector:
+    http://cars.uchicago.edu/software/epics/areaDetector.html
+
+.. _YAML:
+    https://en.wikipedia.org/wiki/YAML
+
+.. _IPython:
+    https://ipython.org
+
+.. _decorators:
+    https://realpython.com/blog/python/primer-on-python-decorators/
+
+.. _Scan Point Generator:
+    http://scanpointgenerator.readthedocs.org/en/latest/writing.html
+
+.. _NeXus:
+    http://www.nexusformat.org/
+
+.. _HDF5:
+    https://support.hdfgroup.org/HDF5/
+
+"""

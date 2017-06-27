@@ -68,12 +68,13 @@ class Table(Serializable):
 
     def __setattr__(self, attr, value):
         """Set column"""
-        if hasattr(self, "meta") and attr in self.meta.elements:
+        if hasattr(self, "meta"):
+            if attr not in self.meta.elements:
+                raise AttributeError(
+                    "Attr %s not in %s" % (attr, self.meta.elements))
             column_meta = self.meta.elements[attr]
             value = column_meta.validate(value)
-            self.set_endpoint_data(attr, value)
-        else:
-            object.__setattr__(self, attr, value)
+        object.__setattr__(self, attr, value)
 
     def append(self, row):
         self.verify_column_lengths()

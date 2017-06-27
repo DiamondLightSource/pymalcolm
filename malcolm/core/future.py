@@ -1,29 +1,28 @@
-# Possible future states (for internal use).
-RUNNING = 'RUNNING'
-#  Task has set the return or exception and this future is filled
-FINISHED = 'FINISHED'
-
-_FUTURE_STATES = [
-    RUNNING,
-    FINISHED
-]
+from .errors import TimeoutError
 
 
 class Future(object):
     """Represents the result of an asynchronous computation.
-   This class has a similar API to concurrent.futures.Future but this
-   simpler version is not thread safe"""
+    This class has a similar API to concurrent.futures.Future but this
+    simpler version is not thread safe"""
+    # Possible future states (for internal use).
+    RUNNING = 'RUNNING'
+    #  Task has set the return or exception and this future is filled
+    FINISHED = 'FINISHED'
 
-    def __init__(self, task):
-        """Initializes the future """
-        self._task = task
-        self._state = RUNNING
+    def __init__(self, context):
+        """
+        Args:
+            context (Context): The context to run under
+        """
+        self._context = context
+        self._state = self.RUNNING
         self._result = None
         self._exception = None
 
     def done(self):
         """Return True if the future finished executing."""
-        return self._state in [FINISHED]
+        return self._state == self.FINISHED
 
     def __get_result(self):
         if self._exception:
@@ -44,10 +43,11 @@ class Future(object):
         Raises:
             TimeoutError: If the future didn't finish executing before the given
                 timeout.
-            Exception: If the call raised then that exception will be raised.
+            exceptions.Exception: If the call raised then that exception will be
+                raised.
         """
-        if self._state == RUNNING:
-            self._task.wait_all([self], timeout)
+        if self._state == self.RUNNING:
+            self._context.wait_all_futures([self], timeout)
         return self.__get_result()
 
     def exception(self, timeout=None):
@@ -66,8 +66,8 @@ class Future(object):
             TimeoutError: If the future didn't finish executing before the given
                 timeout.
         """
-        if self._state == RUNNING:
-            self._task.wait_all([self], timeout)
+        if self._state == self.RUNNING:
+            self._context.wait_all_futures([self], timeout)
         return self._exception
 
     # The following methods should only be used by Task and in unit tests.
@@ -78,7 +78,7 @@ class Future(object):
         Should only be used by Task and unit tests.
         """
         self._result = result
-        self._state = FINISHED
+        self._state = self.FINISHED
 
     def set_exception(self, exception):
         """Sets the result of the future as being the given exception.
@@ -86,4 +86,4 @@ class Future(object):
         Should only be used by Task and unit tests.
         """
         self._exception = exception
-        self._state = FINISHED
+        self._state = self.FINISHED

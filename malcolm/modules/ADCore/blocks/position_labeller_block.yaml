@@ -1,0 +1,66 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- builtin.defines.docstring:
+    value: |
+      Hardware block corresponding to PVs used for NDPosPlugin
+
+      - NDPosPlugin.template should have pv prefix $(prefix)
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: $(docstring)
+
+# This includes the input port
+- ADCore.includes.ndpluginbase_parts:
+    prefix: $(prefix)
+
+- ca.parts.CAActionPart:
+    name: delete
+    description: Delete existing positions acquisition
+    pv: $(prefix):Delete
+    value: 1
+
+- ca.parts.CACharArrayPart:
+    name: xml
+    description: Filename of xml or xml text
+    pv: $(prefix):Filename
+    rbvSuff: _RBV
+    widget: textinput
+    config: False
+
+- ca.parts.CALongPart:
+    name: idStart
+    description: First uid value to look for
+    pv: $(prefix):IDStart
+    rbvSuff: _RBV
+    widget: textinput
+
+- ca.parts.CALongPart:
+    name: qty
+    description: Number of positions left in the buffer
+    rbv: $(prefix):Qty_RBV
+    widget: textupdate
+
+- ca.parts.CAActionPart:
+    name: start
+    description: Demand for starting acquisition
+    pv: $(prefix):Running
+
+- ca.parts.CAActionPart:
+    name: stop
+    description: Demand for stopping acquisition
+    pv: $(prefix):Running
+    value: 0
+    wait: False
+
+- ca.parts.CABooleanPart:
+    name: running
+    description: If detector is currently acquiring
+    rbv: $(prefix):Running_RBV
+    widget: led
