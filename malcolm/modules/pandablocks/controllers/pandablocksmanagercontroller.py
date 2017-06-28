@@ -1,4 +1,5 @@
 import time
+import os
 
 from malcolm.compat import OrderedDict, maybe_import_cothread
 from malcolm.core import method_also_takes, Queue, TimeoutError, \
@@ -10,6 +11,9 @@ from malcolm.modules.builtin.vmetas import BooleanMeta, TableMeta, StringMeta, \
     NumberMeta
 from malcolm.modules.pandablocks.parts.pandablocksmaker import PandABlocksMaker
 from .pandablocksclient import PandABlocksClient
+
+
+SVG_DIR = os.path.join(os.path.dirname(__file__), "..", "icons")
 
 
 @method_also_takes(
@@ -181,13 +185,14 @@ class PandABlocksManagerController(ManagerController):
 
     def _set_icon_url(self, block_name):
         icon_attr = self._blocks_parts[block_name]["icon"].attr
-        fname = block_name.rstrip("0123456789")
+        fname = block_name.rstrip("0123456789") + ".svg"
+        svg_text = "<svg/>"
         if fname == "LUT":
             # TODO: Get fname from func
             pass
-        # TODO: make relative
-        url = "http://localhost:8080/path/to/%s" % fname
-        icon_attr.set_value(url)
+        elif fname in os.listdir(SVG_DIR):
+            svg_text = open(os.path.join(SVG_DIR, fname)).read()
+        icon_attr.set_value(svg_text)
 
     def handle_changes(self, changes):
         for k, v in changes.items():
