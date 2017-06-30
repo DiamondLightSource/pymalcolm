@@ -302,6 +302,17 @@ class PandABlocksClient(object):
             fields[name] = bits
         return fields
 
+    def get_field(self, block, field):
+        try:
+            resp = self.send_recv("%s.%s?\n" % (block, field))
+        except ValueError as e:
+            raise ValueError("Error getting %s.%s: %s" % (
+                block, field, e))
+        else:
+            assert resp.startswith("OK ="), "Expected 'OK =val', got %r" % resp
+            value = resp[4:]
+            return value
+
     def set_field(self, block, field, value):
         try:
             resp = self.send_recv("%s.%s=%s\n" % (block, field, value))

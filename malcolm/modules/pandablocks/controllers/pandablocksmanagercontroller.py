@@ -187,11 +187,12 @@ class PandABlocksManagerController(ManagerController):
         icon_attr = self._blocks_parts[block_name]["icon"].attr
         fname = block_name.rstrip("0123456789") + ".svg"
         svg_text = "<svg/>"
-        if fname == "LUT":
-            # TODO: Get fname from func
-            pass
-        elif fname in os.listdir(SVG_DIR):
+        if fname in os.listdir(SVG_DIR):
             svg_text = open(os.path.join(SVG_DIR, fname)).read()
+            if fname == "LUT":
+                fnum = int(self.client.get_field(block_name, "FUNC.RAW"))
+                # TODO: Hide bits not needed here
+                pass
         icon_attr.set_value(svg_text)
 
     def handle_changes(self, changes):

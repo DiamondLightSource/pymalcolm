@@ -4,8 +4,7 @@
 
 - builtin.defines.string:
     name: configDir
-    description: Where to store saved configs
-    default: /dls_sw/p45/epics/malcolm
+    value: /dls_sw/p45/epics/malcolm
 
 - aravisGigE.blocks.aravisGigE_runnable_block:
     pvPrefix: BL45P-EA-MAP-01:MIC
