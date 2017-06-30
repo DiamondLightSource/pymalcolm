@@ -6,17 +6,10 @@ from malcolm.modules.scanning.parts import RunnableChildPart
 
 class DatasetRunnableChildPart(RunnableChildPart):
     """Part controlling a configure/run child Block with a dataset table"""
-    def update_configure_args(self, response):
+    def update_configure_args(self, response, without=()):
         # Decorate validate and configure with the sum of its parts
-        response = deserialize_object(response, Update)
-        method_metas = [deserialize_object(response.value, MethodModel),
-                        DatasetRunnableChildPart.configure.MethodModel]
-        without = ["formatName"]
-        self.method_models["validate"].recreate_from_others(
-            method_metas, without)
-        self.method_models["configure"].recreate_from_others(
-            method_metas, without)
-        self.controller.update_configure_args()
+        super(DatasetRunnableChildPart, self).update_configure_args(
+            response, without=without + ("formatName",))
 
     def _params_with_format_name(self, params):
         new_params = dict(formatName=self.name)
