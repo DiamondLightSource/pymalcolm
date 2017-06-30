@@ -198,18 +198,17 @@ class ChildPart(Part):
             except KeyError:
                 self.log.warning("Cannot restore non-existant attr %s" % k)
             else:
-                assert "config" in attr.meta.tags, \
-                    "Attr %s doesn't have config tag" % k
-                if attr.value != v:
+                try:
+                    np.testing.assert_equal(serialize_object(attr.value), v)
+                except AssertionError:
                     params[k] = v
         # Do this first so that any callbacks that happen in the put know
         # not to notify controller
         self.saved_structure = part_structure
-
-        # Don't update while we're putting values or we'll deadlock
-        self._do_update = False
-        child.put_attribute_values(params)
-        self._do_update = True
+        if params:
+            self._do_update = False
+            child.put_attribute_values(params)
+            self._do_update = True
 
     @ManagerController.Save
     def save(self, context):
