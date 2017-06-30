@@ -30,3 +30,9 @@ class TestAttribute(unittest.TestCase):
         self.context.put_async.assert_called_once_with(
             ["block", "attr", "value"], 32)
         assert f == self.context.put_async.return_value
+
+    def test_repr(self):
+        self.controller.make_view.return_value = "foo"
+        assert repr(self.o) == "<Attribute value='foo'>"
+        self.controller.make_view.assert_called_once_with(
+            self.context, self.o, "value")

@@ -32,3 +32,5 @@ class Attribute(View):
         return self._controller.make_view(
             self._context, self._data, "timeStamp")
 
+    def __repr__(self):
+        return "<%s value=%r>" % (self.__class__.__name__, self.value)
