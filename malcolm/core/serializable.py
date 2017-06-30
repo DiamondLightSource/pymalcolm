@@ -86,6 +86,23 @@ def serialize_object(o):
             # Hope it's serializable!
             return o
 
+def repr_object(o):
+    if hasattr(o, "to_dict"):
+        # This will do all the sub layers for us
+        return repr(o)
+    elif isinstance(o, dict):
+        # Need to recurse down
+        d = OrderedDict()
+        for k, v in o.items():
+            d[k] = repr_object(v)
+        return repr(d)
+    elif isinstance(o, list):
+        # Need to recurse down
+        return repr([repr_object(x) for x in o])
+    else:
+        # Hope it's serializable!
+        return repr(o)
+
 
 def deserialize_object(ob, type_check=None):
     if isinstance(ob, dict):
@@ -142,13 +159,20 @@ class Serializable(object):
         return d
 
     def __repr__(self):
-        return json_encode(self.to_dict())
+        fields = [(endpoint, repr_object(getattr(self, endpoint)))
+                  for endpoint in self.endpoints]
+        fields = " ".join("%s=%s" % f for f in fields)
+        s = "<%s %s>" % (self.__class__.__name__, fields)
+        return s
 
     def __eq__(self, other):
         if hasattr(other, "to_dict"):
             return self.to_dict() == other.to_dict()
         else:
             return self.to_dict() == other
+
+    def __ne__(self, other):
+        return not self == other
 
     @classmethod
     def from_dict(cls, d, ignore=()):

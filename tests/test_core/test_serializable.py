@@ -68,12 +68,13 @@ class TestSerialization(unittest.TestCase):
         assert n.to_dict() == expected
 
     def test_eq_etc(self):
-        s1 = DummySerializable(3, 3, 3)
-        s2 = DummySerializable(3, 3, 3)
+        s1 = DummySerializable(3, "foo", 3)
+        s2 = DummySerializable(3, "foo", 3)
         assert s1 == s2
+        assert not s1 != s2
 
         assert s1.__repr__() == \
-            '{"typeid": "foo:1.0", "boo": 3, "bar": 3, "NOT_CAMEL": 3}'
+            "<DummySerializable boo=3 bar='foo' NOT_CAMEL=3>"
 
         with self.assertRaises(KeyError):
             x = s1["boo2"]
