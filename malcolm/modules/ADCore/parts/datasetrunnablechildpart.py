@@ -32,7 +32,8 @@ class DatasetRunnableChildPart(RunnableChildPart):
         child = context.block_view(self.params.mri)
         if "formatName" in child.configure.takes.elements:
             params = self._params_with_format_name(params)
-        child.configure(**params)
+        super(DatasetRunnableChildPart, self).configure(
+            context, completed_steps, steps_to_do, part_info, params)
         datasets_table = child.datasets.value
         info_list = []
         for i in range(len(datasets_table.name)):
