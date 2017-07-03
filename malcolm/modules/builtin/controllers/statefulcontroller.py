@@ -177,7 +177,7 @@ class StatefulController(BasicController):
                     alarm = Alarm.major(message)
                 else:
                     alarm = Alarm()
-                self.set_health(self, alarm)
+                self.update_health(self, alarm)
                 self.state.set_value(state)
                 self.state.set_alarm(alarm)
                 for child, writeable in self._children_writeable[state].items():

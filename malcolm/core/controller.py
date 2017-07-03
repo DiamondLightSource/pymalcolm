@@ -147,8 +147,8 @@ class Controller(Loggable):
     def changes_squashed(self):
         return self._notifier.changes_squashed
 
-    def set_health(self, part, alarm=None):
-        """Set the health attribute"""
+    def update_health(self, part, alarm=None):
+        """Set the health attribute. Called from part"""
         if alarm is not None:
             alarm = deserialize_object(alarm, Alarm)
         with self.changes_squashed:

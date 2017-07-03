@@ -102,20 +102,20 @@ class TestController(unittest.TestCase):
                 self.o.run_hook(self.o.TestHook, part_contexts)
 
     def test_set_health(self):
-        self.o.set_health(self.part,
-                          Alarm(severity=AlarmSeverity.MINOR_ALARM))
-        self.o.set_health(self.part2,
-                          Alarm(severity=AlarmSeverity.MAJOR_ALARM))
+        self.o.update_health(self.part,
+                             Alarm(severity=AlarmSeverity.MINOR_ALARM))
+        self.o.update_health(self.part2,
+                             Alarm(severity=AlarmSeverity.MAJOR_ALARM))
         assert self.o.health.alarm.severity == AlarmSeverity.MAJOR_ALARM
 
-        self.o.set_health(self.part,
-                          Alarm(severity=AlarmSeverity.UNDEFINED_ALARM))
-        self.o.set_health(self.part2,
-                          Alarm(severity=AlarmSeverity.INVALID_ALARM))
+        self.o.update_health(self.part,
+                             Alarm(severity=AlarmSeverity.UNDEFINED_ALARM))
+        self.o.update_health(self.part2,
+                             Alarm(severity=AlarmSeverity.INVALID_ALARM))
         assert self.o.health.alarm.severity == AlarmSeverity.UNDEFINED_ALARM
 
-        self.o.set_health(self.part)
-        self.o.set_health(self.part2)
+        self.o.update_health(self.part)
+        self.o.update_health(self.part2)
         assert self.o.health.value == "OK"
 
     def test_make_view(self):

@@ -32,9 +32,9 @@ class Part(Loggable):
         spawned = self.process.spawn(func, args, kwargs, self.use_cothread)
         return spawned
 
-    def set_health(self, alarm=None):
+    def update_health(self, alarm=None):
         """Set the health attribute"""
-        self.controller.set_health(self, alarm)
+        self.controller.update_health(self, alarm)
 
     def make_hook_runner(self, hook_queue, func_name, context, *args, **params):
         # TODO: add phase information
