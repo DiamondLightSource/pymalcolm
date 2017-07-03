@@ -81,7 +81,8 @@ class Controller(Loggable):
             self._hooked_func_names[member] = {}
 
     def _add_block_fields(self):
-        for iterable in (self.create_attribute_models(), self.create_method_models(),
+        for iterable in (self.create_attribute_models(),
+                         self.create_method_models(),
                          self.initial_part_fields()):
             for name, child, writeable_func in iterable:
                 self.add_block_field(name, child, writeable_func)
@@ -221,12 +222,16 @@ class Controller(Loggable):
 
     def handle_request(self, request):
         """Spawn a new thread that handles Request"""
+        # Put data on the queue, so if spawns are handled out of order we
+        # still get the most up to date data
         self._request_queue.put(request)
         return self.spawn(self._handle_request)
 
     def _handle_request(self):
         responses = []
         with self._lock:
+            # We spawned just above, so there is definitely something on the
+            # queue
             request = self._request_queue.get(timeout=0)
             self.log.debug(request)
             if isinstance(request, Get):
