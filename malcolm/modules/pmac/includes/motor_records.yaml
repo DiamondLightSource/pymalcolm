@@ -3,11 +3,16 @@
     description: the root PV for the motor record
 
 - ca.parts.CADoublePart:
-    name: position
-    description: set the target position of the motor or get current position
+    name: demand
+    description: set the demand position of the motor
     pv: $(prefix)
-    rbvSuff: .RBV
     widget: textinput
+
+- ca.parts.CADoublePart:
+    name: readback
+    description: set the target position of the motor or get current position
+    rbv: $(prefix).RBV
+    widget: textupdate
 
 - ca.parts.CALongPart:
     name: doneMoving
