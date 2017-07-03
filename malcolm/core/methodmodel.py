@@ -101,9 +101,7 @@ class MethodModel(Meta):
         func.MethodModel = method
         return func
 
-    def recreate_from_others(self, method_metas, without=None):
-        if without is None:
-            without = []
+    def recreate_from_others(self, method_metas, without=()):
         defaults = OrderedDict()
         elements = OrderedDict()
         required = []

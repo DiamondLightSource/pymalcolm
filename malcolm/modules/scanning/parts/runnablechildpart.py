@@ -13,18 +13,19 @@ class RunnableChildPart(StatefulChildPart):
     # stored between runs
     run_future = None
 
-    def update_configure_args(self, response, without=()):
+    def update_part_configure_args(self, response, without=()):
         # Decorate validate and configure with the sum of its parts
         if not isinstance(response, Update):
             # Return or Error is the end of our subscription, log and ignore
-            self.log.debug("update_configure_args got response %r", response)
+            self.log.debug(
+                "update_part_configure_args got response %r", response)
             return
         configure_model = deserialize_object(response.value, MethodModel)
         self.method_models["validate"].recreate_from_others(
             [configure_model], without=without)
         self.method_models["configure"].recreate_from_others(
             [configure_model], without=without)
-        self.controller.update_configure_args()
+        self.spawn(self.controller.update_configure_args)
 
     @RunnableController.Init
     def init(self, context):
@@ -33,14 +34,14 @@ class RunnableChildPart(StatefulChildPart):
         # TODO: this happens every time writeable changes, is this really good?
         subscription = Subscribe(
             path=[self.params.mri, "configure"],
-            callback=self.update_configure_args)
+            callback=self.update_part_configure_args)
         # Wait for the first update to come in
         self.child_controller.handle_request(subscription).wait()
 
     @RunnableController.Halt
     def halt(self, context):
         super(RunnableChildPart, self).halt(context)
-        unsubscribe = Unsubscribe(callback=self.update_configure_args)
+        unsubscribe = Unsubscribe(callback=self.update_part_configure_args)
         self.child_controller.handle_request(unsubscribe)
 
     @RunnableController.Reset
@@ -51,7 +52,7 @@ class RunnableChildPart(StatefulChildPart):
         if child.reset.writeable:
             child.reset()
 
-    # MethodMeta will be filled in by update_configure_args
+    # MethodMeta will be filled in by update_part_configure_args
     @RunnableController.Validate
     @method_takes()
     def validate(self, context, part_info, params):
@@ -63,7 +64,7 @@ class RunnableChildPart(StatefulChildPart):
                 ret.append(ParameterTweakInfo(k, v))
         return ret
 
-    # MethodMeta will be filled in by update_configure_args
+    # MethodMeta will be filled in by update_part_configure_args
     @RunnableController.Configure
     @method_takes()
     def configure(self, context, completed_steps, steps_to_do, part_info,

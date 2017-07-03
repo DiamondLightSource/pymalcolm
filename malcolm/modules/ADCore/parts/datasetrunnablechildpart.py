@@ -6,9 +6,9 @@ from malcolm.modules.scanning.parts import RunnableChildPart
 
 class DatasetRunnableChildPart(RunnableChildPart):
     """Part controlling a configure/run child Block with a dataset table"""
-    def update_configure_args(self, response, without=()):
+    def update_part_configure_args(self, response, without=()):
         # Decorate validate and configure with the sum of its parts
-        super(DatasetRunnableChildPart, self).update_configure_args(
+        super(DatasetRunnableChildPart, self).update_part_configure_args(
             response, without=without + ("formatName",))
 
     def _params_with_format_name(self, params):
