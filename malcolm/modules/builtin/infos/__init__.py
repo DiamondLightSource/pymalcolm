@@ -1,4 +1,3 @@
-from .exportableinfo import ExportableInfo
 from .layoutinfo import LayoutInfo
 from .portinfo import PortInfo
 

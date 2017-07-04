@@ -7,8 +7,7 @@ from malcolm.core import Part, REQUIRED, method_takes, serialize_object, \
     Attribute, Subscribe, Unsubscribe, Put, Alarm, AlarmSeverity, AlarmStatus, \
     Queue
 from malcolm.modules.builtin.controllers import ManagerController
-from malcolm.modules.builtin.infos import ExportableInfo, PortInfo, \
-    LayoutInfo
+from malcolm.modules.builtin.infos import PortInfo, LayoutInfo
 from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.tags import config
 
@@ -40,10 +39,14 @@ class ChildPart(Part):
         self.we_modified = set()
         # Update queue of modified alarms
         self.modified_update_queue = Queue()
+        # Update queue of exportable fields
+        self.exportable_update_queue = Queue()
+        # {attr_name: PortInfo}
+        self.port_infos = {}
         # Store params
         self.params = params
-        # Don't do first update
-        self._do_update = False
+        # Whether to do updates
+        self._do_update = True
         super(ChildPart, self).__init__(params.name)
 
     def notify_dispatch_request(self, request):
@@ -68,23 +71,6 @@ class ChildPart(Part):
         unsubscribe = Unsubscribe(callback=self.update_part_exportable)
         self.child_controller.handle_request(unsubscribe)
 
-    @ManagerController.ReportPorts
-    def report_ports(self, context):
-        # TODO: should this be done in update_part_exportable?
-        child = context.block_view(self.params.mri)
-        port_infos = []
-        for attr_name in child:
-            attr = getattr(child, attr_name)
-            if isinstance(attr, Attribute):
-                for tag in attr.meta.tags:
-                    match = port_tag_re.match(tag)
-                    if match:
-                        d, type, extra = match.groups()
-                        port_infos.append(PortInfo(
-                            name=attr_name, value=attr.value, direction=d,
-                            type=type, extra=extra))
-        return port_infos
-
     def update_part_exportable(self, response):
         # Get a child context to check if we have a config field
         child = self.child_controller.block_view()
@@ -101,12 +87,21 @@ class ChildPart(Part):
                 unsubscribe = Unsubscribe(subscribe.id, subscribe.callback)
                 spawned.append(
                     self.child_controller.handle_request(unsubscribe))
+                self.port_infos.pop(attr_name, None)
 
         # Add a subscription to any new field
         existing_fields = set(
             s.path[-2] for s in self.config_subscriptions.values())
         for field in set(new_fields) - existing_fields:
             attr = getattr(child, field)
+            if isinstance(attr, Attribute):
+                for tag in attr.meta.tags:
+                    match = port_tag_re.match(tag)
+                    if match:
+                        d, type, extra = match.groups()
+                        self.port_infos[field] = PortInfo(
+                            name=field, value=attr.value, direction=d,
+                            type=type, extra=extra)
             if isinstance(attr, Attribute) and config() in attr.meta.tags:
                 if self.config_subscriptions:
                     new_id = max(self.config_subscriptions) + 1
@@ -126,12 +121,18 @@ class ChildPart(Part):
         for s in spawned:
             s.wait()
 
-        # Tell the controller we have new fields to export unless at init or
-        # disable
-        if self._do_update:
-            self.controller.update_exportable()
-        else:
-            self._do_update = True
+        # Put data on the queue, so if spawns are handled out of order we
+        # still get the most up to date data
+        port_infos = [
+            self.port_infos[f] for f in new_fields if f in self.port_infos]
+        self.exportable_update_queue.put((new_fields, port_infos))
+        self.spawn(self._update_part_exportable).wait()
+
+    def _update_part_exportable(self):
+        # We spawned just above, so there is definitely something on the
+        # queue
+        fields, port_infos = self.exportable_update_queue.get(timeout=0)
+        self.controller.update_exportable(self, fields, port_infos)
 
     def update_part_modified(self, response):
         subscribe = self.config_subscriptions[response.id]
@@ -172,15 +173,6 @@ class ChildPart(Part):
         # queue
         alarm = self.modified_update_queue.get(timeout=0)
         self.controller.update_modified(self, alarm)
-
-    @ManagerController.ReportExportable
-    def report_exportable(self, context):
-        child = context.block_view(self.params.mri)
-        ret = []
-        for name in child:
-            if name != "meta":
-                ret.append(ExportableInfo(name=name, mri=self.params.mri))
-        return ret
 
     @ManagerController.Layout
     def layout(self, context, part_info, layout_table):

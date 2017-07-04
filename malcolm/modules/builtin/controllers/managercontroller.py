@@ -7,8 +7,7 @@ from malcolm.core import method_writeable_in, method_takes, Hook, Table, \
     json_encode, json_decode, method_also_takes, REQUIRED, Unsubscribe, \
     Subscribe, deserialize_object, Delta, Context, AttributeModel, Alarm, \
     AlarmSeverity, AlarmStatus
-from malcolm.modules.builtin.infos import ExportableInfo, LayoutInfo, \
-    PortInfo
+from malcolm.modules.builtin.infos import LayoutInfo, PortInfo
 from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberArrayMeta, \
     BooleanArrayMeta, TableMeta, StringMeta, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta
@@ -38,19 +37,6 @@ ss = ManagerStates
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     stateSet = ss()
-
-    ReportExportable = Hook()
-    """Called to work out what field names the export table can contain and
-    to get the actual attribute or method that it points to. A call to
-    update_exportable() will cause this Hook to be run again.
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-
-    Returns:
-        [`ExportableInfo`] - the name of each exportable field and the child mri
-    """
 
     ReportPorts = Hook()
     """Called before Layout to get in and out port info from children
@@ -116,10 +102,10 @@ class ManagerController(StatefulController):
         self._subscriptions = []
         # {part_name: [PortInfo]}
         self.port_info = {}
-        # {part_name: [ExportableInfo]}
-        self.exportable_info = {}
-        # {part_name: Alarm}
-        self.part_modified = OrderedDict()
+        # {part: [attr_name]}
+        self.part_exportable = {}
+        # {part: Alarm}
+        self.part_modified = {}
 
     def create_attribute_models(self):
         for data in super(ManagerController, self).create_attribute_models():
@@ -265,22 +251,18 @@ class ManagerController(StatefulController):
             else:
                 self.modified.set_value(False)
 
-    def update_exportable(self, update_block=True):
+    def update_exportable(self, part=None, fields=None, port_infos=None,
+                          update_block=True):
         with self.changes_squashed:
-            # Find the parts of every part
-            part_info = self.run_hook(
-                self.ReportPorts, self.create_part_contexts(only_visible=False))
-            self.port_info = PortInfo.filter_parts(part_info)
+            if part:
+                self.part_exportable[part] = fields
+                self.port_info[part.name] = port_infos
             # Find the exportable fields for each visible part
-            part_info = self.run_hook(
-                self.ReportExportable, self.create_part_contexts())
-            self.exportable_info = ExportableInfo.filter_parts(part_info)
             names = []
-            for part_name, part_exportables in sorted(
-                    self.exportable_info.items()):
-                for part_exportable in part_exportables:
-                    names.append(
-                        "%s.%s" % (part_name, part_exportable.name))
+            for part in self.parts.values():
+                fields = self.part_exportable.get(part, [])
+                for attr_name in fields:
+                    names.append("%s.%s" % (part.name, attr_name))
             changed_names = set(names).symmetric_difference(
                 self.exports.meta.elements["name"].choices)
             changed_exports = changed_names.intersection(
@@ -313,39 +295,34 @@ class ManagerController(StatefulController):
             controller.handle_request(unsubscribe)
         self._subscriptions = []
 
-        # Find the invisible parts
-        invisible = []
-        for name, visible in zip(
-                self.layout.value.name, self.layout.value.visible):
-            if not visible:
-                invisible.append(name)
-
-        # Add fields from parts that aren't invisible
-        for part_name in self.parts:
-            if part_name not in invisible:
+        # Find the visible parts
+        mris = OrderedDict()
+        for part_name, mri, visible in zip(
+                self.layout.value.name,
+                self.layout.value.mri,
+                self.layout.value.visible):
+            if visible:
+                mris[part_name] = mri
+                # Add fields from parts that aren't invisible
                 for data in self.part_fields[part_name]:
                     yield data
 
         # Add exported fields from visible parts
         for name, export_name in zip(
                 self.exports.value.name, self.exports.value.exportName):
-            part_name, field_name = name.rsplit(".", 1)
-            # If part is invisible, don't report it
-            if part_name in invisible:
-                continue
-            if export_name == "":
-                export_name = field_name
-            exportable_infos = [
-                x for x in self.exportable_info.get(part_name, [])
-                if field_name == x.name]
-            assert len(exportable_infos), \
-                "No (or multiple) ExportableInfo for %s" % name
-            export, setter = self._make_export_field(exportable_infos[0])
-            yield export_name, export, setter
+            part_name, attr_name = name.rsplit(".", 1)
+            part = self.parts[part_name]
+            # If part is visible, get its mri
+            mri = mris.get(part_name, None)
+            if mri and attr_name in self.part_exportable.get(part, []):
+                if not export_name:
+                    export_name = attr_name
+                export, setter = self._make_export_field(mri, attr_name)
+                yield export_name, export, setter
 
-    def _make_export_field(self, exportable_info):
-        controller = self.process.get_controller(exportable_info.mri)
-        path = [exportable_info.mri, exportable_info.name]
+    def _make_export_field(self, mri, attr_name):
+        controller = self.process.get_controller(mri)
+        path = [mri, attr_name]
         ret = {}
 
         def update_field(response):

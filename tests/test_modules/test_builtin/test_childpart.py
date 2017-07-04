@@ -82,19 +82,17 @@ class TestChildPart(unittest.TestCase):
             'partchild3.health',
             'partchild3.inportConnector',
             'partchild3.outportConnector')
-
-    def test_report_ports(self):
-        context = Context(self.p)
-        ports = self.p1.report_ports(context)
-        assert len(ports) == 2
-        assert ports[0].direction == "in"
-        assert ports[0].type == "int32"
-        assert ports[0].value == "Connector3"
-        assert ports[0].extra == ""
-        assert ports[1].direction == "out"
-        assert ports[1].type == "int32"
-        assert ports[1].value == ""
-        assert ports[1].extra == "Connector1"
+        assert len(self.c.port_info) == 3
+        port_info = self.c.port_info["partchild1"]
+        assert len(port_info) == 2
+        assert port_info[0].direction == "in"
+        assert port_info[0].type == "int32"
+        assert port_info[0].value == "Connector3"
+        assert port_info[0].extra == ""
+        assert port_info[1].direction == "out"
+        assert port_info[1].type == "int32"
+        assert port_info[1].value == ""
+        assert port_info[1].extra == "Connector1"
 
     def test_layout(self):
         b = self.p.block_view("mainBlock")
