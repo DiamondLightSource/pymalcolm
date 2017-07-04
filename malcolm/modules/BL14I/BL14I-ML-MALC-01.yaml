@@ -30,6 +30,8 @@
     brick: BL14I-ML-BRICK-14
     pandabox: BL14I-ML-PANDA-01
     configDir: $(configDir)
+#    initialDesign: Xsp3_Coarse
+    initialDesign:
 
 - pva.blocks.pva_server_block:
     mri: $(yamlname):PVA-SERVER
