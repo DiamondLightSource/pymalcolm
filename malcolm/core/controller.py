@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import inspect
 import weakref
+import time
 
 from malcolm.compat import OrderedDict
 from .alarm import Alarm
@@ -335,10 +336,12 @@ class Controller(Loggable):
         assert hook in self._hook_names, \
             "Hook %s doesn't appear in controller hooks %s" % (
                 hook, self._hook_names)
-        self.log.debug("Running hook %s", self._hook_names[hook])
+        hook_name = self._hook_names[hook]
+        self.log.debug("%s: Running hook", hook_name)
 
         # This queue will hold (part, result) tuples
         hook_queue = Queue()
+        hook_queue.hook_name = hook_name
         hook_runners = {}
 
         # now start them off
@@ -354,6 +357,7 @@ class Controller(Loggable):
     def wait_hook(self, hook_queue, hook_runners):
         # Wait for them all to finish
         return_dict = {}
+        start = time.time()
         while hook_runners:
             part, ret = hook_queue.get()
             hook_runner = hook_runners.pop(part)
@@ -366,13 +370,16 @@ class Controller(Loggable):
             # Wait for the process to terminate
             hook_runner.wait()
             return_dict[part.name] = ret
+            duration = time.time() - start
             if hook_runners:
                 self.log.debug(
-                    "Part %s returned %r. Still waiting for %s",
-                    part.name, ret, [p.name for p in hook_runners])
+                    "%s: Part %s returned %r after %ss. Still waiting for %s",
+                    hook_queue.hook_name, duration, part.name, ret,
+                    [p.name for p in hook_runners])
             else:
                 self.log.debug(
-                    "Part %s returned %r. Returning...", part.name, ret)
+                    "%s: Part %s returned %r after %ss. Returning...",
+                    hook_queue.hook_name, duration, part.name, ret)
 
             if isinstance(ret, Exception):
                 # Got an error, so stop and wait all hook runners
