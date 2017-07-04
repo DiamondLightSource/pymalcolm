@@ -374,12 +374,12 @@ class Controller(Loggable):
             if hook_runners:
                 self.log.debug(
                     "%s: Part %s returned %r after %ss. Still waiting for %s",
-                    hook_queue.hook_name, duration, part.name, ret,
+                    hook_queue.hook_name, part.name, ret, duration,
                     [p.name for p in hook_runners])
             else:
                 self.log.debug(
                     "%s: Part %s returned %r after %ss. Returning...",
-                    hook_queue.hook_name, duration, part.name, ret)
+                    hook_queue.hook_name, part.name, ret, duration)
 
             if isinstance(ret, Exception):
                 # Got an error, so stop and wait all hook runners

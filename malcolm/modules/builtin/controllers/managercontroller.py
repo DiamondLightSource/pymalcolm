@@ -38,18 +38,6 @@ class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     stateSet = ss()
 
-    ReportPorts = Hook()
-    """Called before Layout to get in and out port info from children
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-
-    Returns:
-        [`PortInfo`] - the direction, type and value of each in or out port of
-            the child
-    """
-
     Layout = Hook()
     """Called when layout table set and at init to update child layout
 
@@ -106,6 +94,8 @@ class ManagerController(StatefulController):
         self.part_exportable = {}
         # {part: Alarm}
         self.part_modified = {}
+        # Whether to do updates
+        self._do_update = True
 
     def create_attribute_models(self):
         for data in super(ManagerController, self).create_attribute_models():
@@ -151,28 +141,30 @@ class ManagerController(StatefulController):
         yield "modified", self.modified, None
 
     def do_init(self):
+        # This will do an initial poll of the exportable parts,
+        # so don't update here
         super(ManagerController, self).do_init()
         # List the configDir and add to choices
         self._set_layout_names()
-        # Do an initial poll of the exportable parts
-        self.update_exportable(update_block=False)
         # This will trigger all parts to report their layout, making sure
-        # the layout table has a valid value. It will also do
-        # _update_block_endpoints()
+        # the layout table has a valid value. This will also call
+        # self._update_block_endpoints()
         self.set_layout(Table(self.layout.meta))
         # If given a default config, load this
         if self.params.initialDesign:
             self.do_load(self.params.initialDesign)
 
-    def set_layout(self, value, update_block=True):
+    def set_layout(self, value):
         """Set the layout table value. Called on attribute put"""
         # If it isn't a table, make it one
+        if not isinstance(value, Table):
+            value = Table(self.layout.meta, value)
+        # Can't do this with changes_squashed as it will call update_modified
+        # from another thread and deadlock
+        part_info = self.run_hook(
+            self.Layout, self.create_part_contexts(only_visible=False),
+            self.port_info, value)
         with self.changes_squashed:
-            if not isinstance(value, Table):
-                value = Table(self.layout.meta, value)
-            part_info = self.run_hook(
-                self.Layout, self.create_part_contexts(only_visible=False),
-                self.port_info, value)
             layout_table = Table(self.layout.meta)
             layout_parts = LayoutInfo.filter_parts(part_info)
             for name, layout_infos in layout_parts.items():
@@ -198,11 +190,10 @@ class ManagerController(StatefulController):
                 self.saved_exports = self.exports.value.to_dict()
             if visibility_changed:
                 self.update_modified()
-                self.update_exportable(update_block=False)
-                if update_block:
-                    # Part visibility changed, might have attributes or methods
-                    # that we need to hide or show
-                    self._update_block_endpoints()
+                self.update_exportable()
+                # Part visibility changed, might have attributes or methods
+                # that we need to hide or show
+                self._update_block_endpoints()
 
     def set_exports(self, value):
         with self.changes_squashed:
@@ -251,8 +242,7 @@ class ManagerController(StatefulController):
             else:
                 self.modified.set_value(False)
 
-    def update_exportable(self, part=None, fields=None, port_infos=None,
-                          update_block=True):
+    def update_exportable(self, part=None, fields=None, port_infos=None):
         with self.changes_squashed:
             if part:
                 self.part_exportable[part] = fields
@@ -270,7 +260,7 @@ class ManagerController(StatefulController):
             self.exports.meta.elements["name"].set_choices(names)
             # Update the block endpoints if anything currently exported is
             # added or deleted
-            if changed_exports and update_block:
+            if changed_exports:
                 self._update_block_endpoints()
 
     def _update_block_endpoints(self):
@@ -379,16 +369,31 @@ class ManagerController(StatefulController):
         if not design:
             design = self.design.value
         assert design, "Please specify save design name when saving from new"
-        structure = self._save_to_structure()
+        structure = OrderedDict()
+        # Add the layout table
+        structure["layout"] = OrderedDict()
+        for name, x, y, visible in sorted(
+                zip(self.layout.value.name, self.layout.value.x,
+                    self.layout.value.y, self.layout.value.visible)):
+            layout_structure = OrderedDict()
+            layout_structure["x"] = x
+            layout_structure["y"] = y
+            layout_structure["visible"] = visible
+            structure["layout"][name] = layout_structure
+        # Add the exports table
+        structure["exports"] = OrderedDict()
+        for name, export_name in sorted(
+                zip(self.exports.value.name, self.exports.value.exportName)):
+            structure["exports"][name] = export_name
+        # Add any structure that a child part wants to save
+        part_structures = self.run_hook(
+            self.Save, self.create_part_contexts(only_visible=False))
+        for part_name, part_structure in sorted(part_structures.items()):
+            structure[part_name] = part_structure
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
         open(filename, "w").write(text)
-        with self.changes_squashed:
-            self._set_layout_names(design)
-            self.design.set_value(design)
-            # Now we are saved, modified should clear
-            self.part_modified = OrderedDict()
-            self.update_modified()
+        self._mark_clean(design)
 
     def _set_layout_names(self, extra_name=None):
         names = []
@@ -424,62 +429,39 @@ class ManagerController(StatefulController):
         return dir_name
 
     def set_design(self, value):
+        value = self.design.meta.validate(value)
         self.try_stateful_function(
             ss.LOADING, ss.READY, self.do_load, value)
 
-    def do_load(self, value):
-        filename = self._validated_config_filename(value)
+    def do_load(self, design):
+        filename = self._validated_config_filename(design)
         text = open(filename, "r").read()
         structure = json_decode(text)
-        with self.changes_squashed:
-            self._load_from_structure(structure)
-            self.design.set_value(value)
-            # Now we are loaded, modified should clear
-            self.part_modified = OrderedDict()
-            self.update_modified()
-
-    def _save_to_structure(self):
-        structure = OrderedDict()
-        # Add the layout table
-        structure["layout"] = OrderedDict()
-        for name, x, y, visible in sorted(
-                zip(self.layout.value.name, self.layout.value.x,
-                    self.layout.value.y, self.layout.value.visible)):
-            layout_structure = OrderedDict()
-            layout_structure["x"] = x
-            layout_structure["y"] = y
-            layout_structure["visible"] = visible
-            structure["layout"][name] = layout_structure
-        self.saved_visibility = self.layout.value.visible
-        # Add the exports table
-        structure["exports"] = OrderedDict()
-        for name, export_name in sorted(
-                zip(self.exports.value.name, self.exports.value.exportName)):
-            structure["exports"][name] = export_name
-        self.saved_exports = self.exports.value.to_dict()
-        # Add any structure that a child part wants to save
-        part_structures = self.run_hook(
-            self.Save, self.create_part_contexts(only_visible=False))
-        for part_name, part_structure in sorted(part_structures.items()):
-            structure[part_name] = part_structure
-        return structure
-
-    def _load_from_structure(self, structure):
         # Set the layout table
         layout_table = Table(self.layout.meta)
         for part_name, part_structure in structure.get("layout", {}).items():
             layout_table.append([
                 part_name, "", part_structure["x"], part_structure["y"],
                 part_structure["visible"]])
-        self.set_layout(layout_table, update_block=False)
-        self.saved_visibility = self.layout.value.visible
+        self.set_layout(layout_table)
         # Set the exports table
         exports_table = Table(self.exports.meta)
         for name, export_name in structure.get("exports", {}).items():
             exports_table.append([name, export_name])
         self.exports.set_value(exports_table)
-        self.saved_exports = self.exports.value.to_dict()
         # Run the load hook to get parts to load their own structure
-        self.run_hook(self.Load, self.create_part_contexts(only_visible=False),
+        self.run_hook(self.Load,
+                      self.create_part_contexts(only_visible=False),
                       structure)
-        self._update_block_endpoints()
+        self._mark_clean(design)
+
+    def _mark_clean(self, design):
+        with self.changes_squashed:
+            self.saved_visibility = self.layout.value.visible
+            self.saved_exports = self.exports.value.to_dict()
+            # Now we are clean, modified should clear
+            self.part_modified = OrderedDict()
+            self.update_modified()
+            self._set_layout_names(design)
+            self.design.set_value(design)
+            self._update_block_endpoints()

@@ -28,8 +28,8 @@ class ChildPart(Part):
         self.part_visible = {}
         # {attr_name: attr_value} of last saved/loaded structure
         self.saved_structure = {}
-        # {attr_name: attr_value} of current values
-        self.current_values = {}
+        # {attr_name: modified_message} of current values
+        self.modified_messages = {}
         # The controller hosting our child
         self.child_controller = None
         # {id: Subscribe} for subscriptions to config tagged fields
@@ -45,8 +45,6 @@ class ChildPart(Part):
         self.port_infos = {}
         # Store params
         self.params = params
-        # Whether to do updates
-        self._do_update = True
         super(ChildPart, self).__init__(params.name)
 
     def notify_dispatch_request(self, request):
@@ -137,36 +135,37 @@ class ChildPart(Part):
     def update_part_modified(self, response):
         subscribe = self.config_subscriptions[response.id]
         name = subscribe.path[-2]
-        self.current_values[name] = response.value
-        if self._do_update:
-            message_list = []
-            only_modified_by_us = True
-            # Tell the controller what has changed
-            for name, original_value in self.saved_structure.items():
-                current_value = self.current_values.get(name, original_value)
-                try:
-                    np.testing.assert_equal(original_value, current_value)
-                except AssertionError:
-                    message = "%s.%s.value = %r not %r" % (
-                        self.name, name, current_value, original_value)
-                    if name in self.we_modified:
-                        message = "(We modified) " + message
-                    else:
-                        only_modified_by_us = False
-                    message_list.append(message)
-            if message_list:
-                if only_modified_by_us:
-                    severity = AlarmSeverity.NO_ALARM
-                else:
-                    severity = AlarmSeverity.MINOR_ALARM
-                alarm = Alarm(
-                    severity, AlarmStatus.CONF_STATUS, "\n".join(message_list))
+        original_value = self.saved_structure[name]
+        try:
+            np.testing.assert_equal(original_value, response.value)
+        except AssertionError:
+            message = "%s.%s.value = %r not %r" % (
+                self.name, name, response.value, original_value)
+            if name in self.we_modified:
+                message = "(We modified) " + message
+            self.modified_messages[name] = message
+        else:
+            self.modified_messages.pop(name, None)
+        message_list = []
+        only_modified_by_us = True
+        # Tell the controller what has changed
+        for name, message in self.modified_messages.items():
+            if name not in self.we_modified:
+                only_modified_by_us = False
+            message_list.append(message)
+        if message_list:
+            if only_modified_by_us:
+                severity = AlarmSeverity.NO_ALARM
             else:
-                alarm = None
-            # Put data on the queue, so if spawns are handled out of order we
-            # still get the most up to date data
-            self.modified_update_queue.put(alarm)
-            self.spawn(self._update_part_modified).wait()
+                severity = AlarmSeverity.MINOR_ALARM
+            alarm = Alarm(
+                severity, AlarmStatus.CONF_STATUS, "\n".join(message_list))
+        else:
+            alarm = None
+        # Put data on the queue, so if spawns are handled out of order we
+        # still get the most up to date data
+        self.modified_update_queue.put(alarm)
+        self.spawn(self._update_part_modified).wait()
 
     def _update_part_modified(self):
         # We spawned just above, so there is definitely something on the
@@ -218,9 +217,7 @@ class ChildPart(Part):
         # not to notify controller
         self.saved_structure = part_structure
         if params:
-            self._do_update = False
             child.put_attribute_values(params)
-            self._do_update = True
 
     @ManagerController.Save
     def save(self, context):
@@ -276,10 +273,7 @@ class ChildPart(Part):
                 if outport_lookup is True or outport_lookup.get(
                         child[name].value, None) == port_info.type:
                     attribute_values[name] = port_info.extra
-            # Don't update while we're putting values or we'll deadlock
-            self._do_update = False
             child.put_attribute_values(attribute_values)
-            self._do_update = True
 
     def child_connected(self, part_info):
         """Calculate if anything is connected to us or we are connected to
