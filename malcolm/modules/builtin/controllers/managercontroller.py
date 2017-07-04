@@ -6,9 +6,9 @@ from malcolm.compat import OrderedDict
 from malcolm.core import method_writeable_in, method_takes, Hook, Table, \
     json_encode, json_decode, method_also_takes, REQUIRED, Unsubscribe, \
     Subscribe, deserialize_object, Delta, Context, AttributeModel, Alarm, \
-    AlarmSeverity, AlarmStatus, Response
+    AlarmSeverity, AlarmStatus
 from malcolm.modules.builtin.infos import ExportableInfo, LayoutInfo, \
-    PortInfo, ModifiedInfo
+    PortInfo
 from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberArrayMeta, \
     BooleanArrayMeta, TableMeta, StringMeta, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta
@@ -50,18 +50,6 @@ class ManagerController(StatefulController):
 
     Returns:
         [`ExportableInfo`] - the name of each exportable field and the child mri
-    """
-
-    ReportModified = Hook()
-    """Called to work out what has been modified since the last save/load. A
-    call to update_modified() will cause this Hook to be run again.
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-
-    Returns:
-        [`ModifiedInfo`] - the name of the field, saved and current values
     """
 
     ReportPorts = Hook()
@@ -130,6 +118,8 @@ class ManagerController(StatefulController):
         self.port_info = {}
         # {part_name: [ExportableInfo]}
         self.exportable_info = {}
+        # {part_name: Alarm}
+        self.part_modified = OrderedDict()
 
     def create_attribute_models(self):
         for data in super(ManagerController, self).create_attribute_models():
@@ -234,25 +224,23 @@ class ManagerController(StatefulController):
             self.update_modified()
             self._update_block_endpoints()
 
-    def update_modified(self):
+    def update_modified(self, part=None, alarm=None):
         with self.changes_squashed:
-            # Find the modified fields for each visible part
-            part_info = self.run_hook(
-                self.ReportModified, self.create_part_contexts())
-            # {part_name: [ModifiedInfo()]
-            modified_infos = ModifiedInfo.filter_parts(part_info)
+            # Update the alarm for the given part
+            if part:
+                self.part_modified[part] = alarm
+            # Find the modified alarms for each visible part
             message_list = []
             only_modified_by_us = True
-            for part_name, infos in modified_infos.items():
-                for info in infos:
-                    message = "%s.%s.value = %r not %r" % (
-                        part_name, info.name, info.current_value,
-                        info.original_value)
-                    if info.we_modified:
-                        message = "(We modified) " + message
-                    else:
-                        only_modified_by_us = False
-                    message_list.append(message)
+            for part_name, visible in zip(
+                    self.layout.value.name, self.layout.value.visible):
+                if visible:
+                    alarm = self.part_modified.get(self.parts[part_name], None)
+                    if alarm:
+                        # Part flagged as been modified, is it by us?
+                        if alarm.severity:
+                            only_modified_by_us = False
+                        message_list.append(alarm.message)
             # Add in any modification messages from the layout and export tables
             try:
                 np.testing.assert_equal(
@@ -271,9 +259,8 @@ class ManagerController(StatefulController):
                     severity = AlarmSeverity.NO_ALARM
                 else:
                     severity = AlarmSeverity.MINOR_ALARM
-                alarm = Alarm(severity,
-                              AlarmStatus.CONF_STATUS,
-                              "\n".join(message_list))
+                alarm = Alarm(
+                    severity, AlarmStatus.CONF_STATUS, "\n".join(message_list))
                 self.modified.set_value(True, alarm=alarm)
             else:
                 self.modified.set_value(False)
@@ -371,8 +358,8 @@ class ManagerController(StatefulController):
                 ret["export"] = deserialize_object(response.changes[0][1])
                 context = Context(self.process)
                 if isinstance(ret["export"], AttributeModel):
-                    def setter(value):
-                        context.put(path, value)
+                    def setter(v):
+                        context.put(path, v)
                 else:
                     def setter(*args):
                         context.post(path, *args)
@@ -423,6 +410,7 @@ class ManagerController(StatefulController):
             self._set_layout_names(design)
             self.design.set_value(design)
             # Now we are saved, modified should clear
+            self.part_modified = OrderedDict()
             self.update_modified()
 
     def _set_layout_names(self, extra_name=None):
@@ -470,6 +458,7 @@ class ManagerController(StatefulController):
             self._load_from_structure(structure)
             self.design.set_value(value)
             # Now we are loaded, modified should clear
+            self.part_modified = OrderedDict()
             self.update_modified()
 
     def _save_to_structure(self):

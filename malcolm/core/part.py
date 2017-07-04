@@ -1,4 +1,5 @@
 from malcolm.compat import str_
+from .controller import Controller
 from .hook import get_hook_decorated
 from .hookrunner import HookRunner
 from .loggable import Loggable
@@ -22,6 +23,11 @@ class Part(Loggable):
         pass
 
     def attach_to_controller(self, controller):
+        """Attach this part to a controller
+
+        Args:
+            controller (Controller): The controller to attach to
+        """
         self.set_logger_extra(mri=controller.mri, part=self.name)
         self.controller = controller
         self.process = controller.process
@@ -32,7 +38,7 @@ class Part(Loggable):
         spawned = self.process.spawn(func, args, kwargs, self.use_cothread)
         return spawned
 
-    def update_health(self, alarm=None):
+    def update_part_health(self, alarm=None):
         """Set the health attribute"""
         self.controller.update_health(self, alarm)
 

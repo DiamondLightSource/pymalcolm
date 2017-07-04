@@ -100,10 +100,10 @@ class TestManagerController(unittest.TestCase):
         self.check_expected_save()
         assert self.c.state.value == "Ready"
         assert self.c.design.value == 'testSaveLayout'
-        assert self.c.modified.value == False
+        assert self.c.modified.value is False
         os.remove("/tmp/mainBlock/testSaveLayout.json")
         self.c_part.attr.set_value("newv")
-        assert self.c.modified.value == True
+        assert self.c.modified.value is True
         assert self.c.modified.alarm.message == \
                "part2.attr.value = 'newv' not 'defaultv'"
         call_with_params(self.c.save, design="")

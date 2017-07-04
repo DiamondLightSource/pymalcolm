@@ -4,15 +4,17 @@ import numpy as np
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, REQUIRED, method_takes, serialize_object, \
-    Attribute, Subscribe, Unsubscribe, Put
+    Attribute, Subscribe, Unsubscribe, Put, Alarm, AlarmSeverity, AlarmStatus, \
+    Queue
 from malcolm.modules.builtin.controllers import ManagerController
 from malcolm.modules.builtin.infos import ExportableInfo, PortInfo, \
-    LayoutInfo, ModifiedInfo
+    LayoutInfo
 from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.tags import config
 
 
 port_tag_re = re.compile(r"(in|out)port:(.*):(.*)")
+
 
 @method_takes(
     "name", StringMeta("Name of the Part within the controller"), REQUIRED,
@@ -27,6 +29,8 @@ class ChildPart(Part):
         self.part_visible = {}
         # {attr_name: attr_value} of last saved/loaded structure
         self.saved_structure = {}
+        # {attr_name: attr_value} of current values
+        self.current_values = {}
         # The controller hosting our child
         self.child_controller = None
         # {id: Subscribe} for subscriptions to config tagged fields
@@ -34,6 +38,8 @@ class ChildPart(Part):
         # set(attribute_name) where the attribute is a config tagged field
         # we are modifying
         self.we_modified = set()
+        # Update queue of modified alarms
+        self.modified_update_queue = Queue()
         # Store params
         self.params = params
         # Don't do first update
@@ -53,17 +59,18 @@ class ChildPart(Part):
         # Monitor the child configure for changes
         self.child_controller = context.get_controller(self.params.mri)
         subscribe = Subscribe(path=[self.params.mri, "meta", "fields"],
-                              callback=self.update_exportable)
+                              callback=self.update_part_exportable)
         # Wait for the first update to come in
         self.child_controller.handle_request(subscribe).wait()
 
     @ManagerController.Halt
     def halt(self, context):
-        unsubscribe = Unsubscribe(callback=self.update_exportable)
+        unsubscribe = Unsubscribe(callback=self.update_part_exportable)
         self.child_controller.handle_request(unsubscribe)
 
     @ManagerController.ReportPorts
     def report_ports(self, context):
+        # TODO: should this be done in update_part_exportable?
         child = context.block_view(self.params.mri)
         port_infos = []
         for attr_name in child:
@@ -78,7 +85,7 @@ class ChildPart(Part):
                             type=type, extra=extra))
         return port_infos
 
-    def update_exportable(self, response):
+    def update_part_exportable(self, response):
         # Get a child context to check if we have a config field
         child = self.child_controller.block_view()
         spawned = []
@@ -107,7 +114,7 @@ class ChildPart(Part):
                     new_id = 1
                 subscribe = Subscribe(id=new_id,
                                       path=[self.params.mri, field, "value"],
-                                      callback=self.update_modified)
+                                      callback=self.update_part_modified)
                 self.config_subscriptions[new_id] = subscribe
                 # Signal that any change we get is a difference
                 if field not in self.saved_structure:
@@ -126,16 +133,45 @@ class ChildPart(Part):
         else:
             self._do_update = True
 
-    def update_modified(self, response):
-        # Ignore initial updates
+    def update_part_modified(self, response):
+        subscribe = self.config_subscriptions[response.id]
+        name = subscribe.path[-2]
+        self.current_values[name] = response.value
         if self._do_update:
-            # Tell the controller to update if the value has changed from saved
-            subscribe = self.config_subscriptions[response.id]
-            # TODO: these lines used to stop update if value changed lots,
-            # but then we don't catch the value going back to saved
-            #attr = subscribe.path[-2]
-            #if self.saved_structure[attr] != response.value:
-            self.controller.update_modified()
+            message_list = []
+            only_modified_by_us = True
+            # Tell the controller what has changed
+            for name, original_value in self.saved_structure.items():
+                current_value = self.current_values.get(name, original_value)
+                try:
+                    np.testing.assert_equal(original_value, current_value)
+                except AssertionError:
+                    message = "%s.%s.value = %r not %r" % (
+                        self.name, name, current_value, original_value)
+                    if name in self.we_modified:
+                        message = "(We modified) " + message
+                    else:
+                        only_modified_by_us = False
+                    message_list.append(message)
+            if message_list:
+                if only_modified_by_us:
+                    severity = AlarmSeverity.NO_ALARM
+                else:
+                    severity = AlarmSeverity.MINOR_ALARM
+                alarm = Alarm(
+                    severity, AlarmStatus.CONF_STATUS, "\n".join(message_list))
+            else:
+                alarm = None
+            # Put data on the queue, so if spawns are handled out of order we
+            # still get the most up to date data
+            self.modified_update_queue.put(alarm)
+            self.spawn(self._update_part_modified).wait()
+
+    def _update_part_modified(self):
+        # We spawned just above, so there is definitely something on the
+        # queue
+        alarm = self.modified_update_queue.get(timeout=0)
+        self.controller.update_modified(self, alarm)
 
     @ManagerController.ReportExportable
     def report_exportable(self, context):
@@ -144,22 +180,6 @@ class ChildPart(Part):
         for name in child:
             if name != "meta":
                 ret.append(ExportableInfo(name=name, mri=self.params.mri))
-        return ret
-
-    @ManagerController.ReportModified
-    def report_modified(self, context):
-        child = context.block_view(self.params.mri)
-        ret = []
-        for name, original_value in self.saved_structure.items():
-            attr = getattr(child, name)
-            if isinstance(attr, Attribute) and "config" in attr.meta.tags:
-                current_value = serialize_object(attr.value)
-                try:
-                    np.testing.assert_equal(original_value, current_value)
-                except AssertionError:
-                    we_modified = name in self.we_modified
-                    ret.append(ModifiedInfo(
-                        name, original_value, current_value, we_modified))
         return ret
 
     @ManagerController.Layout

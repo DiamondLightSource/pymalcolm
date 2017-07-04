@@ -27,7 +27,7 @@ class RunnableChildPart(StatefulChildPart):
         # Put data on the queue, so if spawns are handled out of order we
         # still get the most up to date data
         self.configure_args_update_queue.put((configure_model, without))
-        self.spawn(self._update_part_configure_args)
+        self.spawn(self._update_part_configure_args).wait()
 
     def _update_part_configure_args(self):
         # We spawned just above, so there is definitely something on the
