@@ -12,7 +12,7 @@ class ProxyController(Controller):
         self.params = params
         super(ProxyController, self).__init__(process, params.mri, parts)
         self.client_comms = process.get_controller(params.comms)
-        self.set_health(self, Alarm.invalid("Uninitialized"))
+        self.update_health(self, Alarm.invalid("Uninitialized"))
         self._response_queue = Queue()
         self._notify_response = True
         self._first_response_queue = Queue()
@@ -67,7 +67,7 @@ class ProxyController(Controller):
                 elif len(path) == 2 and path[:1] == ["health", "alarm"]:
                     # If we got an alarm update for health
                     assert len(change) == 2, "Can't delete health alarm"
-                    self.set_health(self, change[1])
+                    self.update_health(self, change[1])
                 elif path[0] not in ("health", "meta"):
                     # Update a child of the block
                     assert len(change) == 2, \
@@ -86,9 +86,9 @@ class ProxyController(Controller):
         for field, value in d.items():
             if field == "health":
                 if value["alarm"]["severity"]:
-                    self.set_health(self, value["alarm"])
+                    self.update_health(self, value["alarm"])
                 else:
-                    self.set_health(self, None)
+                    self.update_health(self, None)
             elif field == "meta":
                 # TODO: set meta
                 pass

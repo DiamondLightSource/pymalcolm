@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import inspect
 import weakref
+import time
 
 from malcolm.compat import OrderedDict
 from .alarm import Alarm
@@ -81,7 +82,8 @@ class Controller(Loggable):
             self._hooked_func_names[member] = {}
 
     def _add_block_fields(self):
-        for iterable in (self.create_attribute_models(), self.create_method_models(),
+        for iterable in (self.create_attribute_models(),
+                         self.create_method_models(),
                          self.initial_part_fields()):
             for name, child, writeable_func in iterable:
                 self.add_block_field(name, child, writeable_func)
@@ -147,8 +149,8 @@ class Controller(Loggable):
     def changes_squashed(self):
         return self._notifier.changes_squashed
 
-    def set_health(self, part, alarm=None):
-        """Set the health attribute"""
+    def update_health(self, part, alarm=None):
+        """Set the health attribute. Called from part"""
         if alarm is not None:
             alarm = deserialize_object(alarm, Alarm)
         with self.changes_squashed:
@@ -221,12 +223,16 @@ class Controller(Loggable):
 
     def handle_request(self, request):
         """Spawn a new thread that handles Request"""
+        # Put data on the queue, so if spawns are handled out of order we
+        # still get the most up to date data
         self._request_queue.put(request)
         return self.spawn(self._handle_request)
 
     def _handle_request(self):
         responses = []
         with self._lock:
+            # We spawned just above, so there is definitely something on the
+            # queue
             request = self._request_queue.get(timeout=0)
             self.log.debug(request)
             if isinstance(request, Get):
@@ -330,10 +336,12 @@ class Controller(Loggable):
         assert hook in self._hook_names, \
             "Hook %s doesn't appear in controller hooks %s" % (
                 hook, self._hook_names)
-        self.log.debug("Running hook %s", self._hook_names[hook])
+        hook_name = self._hook_names[hook]
+        self.log.debug("%s: Running hook", hook_name)
 
         # This queue will hold (part, result) tuples
         hook_queue = Queue()
+        hook_queue.hook_name = hook_name
         hook_runners = {}
 
         # now start them off
@@ -349,6 +357,7 @@ class Controller(Loggable):
     def wait_hook(self, hook_queue, hook_runners):
         # Wait for them all to finish
         return_dict = {}
+        start = time.time()
         while hook_runners:
             part, ret = hook_queue.get()
             hook_runner = hook_runners.pop(part)
@@ -361,13 +370,16 @@ class Controller(Loggable):
             # Wait for the process to terminate
             hook_runner.wait()
             return_dict[part.name] = ret
+            duration = time.time() - start
             if hook_runners:
                 self.log.debug(
-                    "Part %s returned %r. Still waiting for %s",
-                    part.name, ret, [p.name for p in hook_runners])
+                    "%s: Part %s returned %r after %ss. Still waiting for %s",
+                    hook_queue.hook_name, part.name, ret, duration,
+                    [p.name for p in hook_runners])
             else:
                 self.log.debug(
-                    "Part %s returned %r. Returning...", part.name, ret)
+                    "%s: Part %s returned %r after %ss. Returning...",
+                    hook_queue.hook_name, part.name, ret, duration)
 
             if isinstance(ret, Exception):
                 # Got an error, so stop and wait all hook runners

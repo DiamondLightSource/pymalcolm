@@ -6,9 +6,8 @@ from malcolm.compat import OrderedDict
 from malcolm.core import method_writeable_in, method_takes, Hook, Table, \
     json_encode, json_decode, method_also_takes, REQUIRED, Unsubscribe, \
     Subscribe, deserialize_object, Delta, Context, AttributeModel, Alarm, \
-    AlarmSeverity, AlarmStatus, Response
-from malcolm.modules.builtin.infos import ExportableInfo, LayoutInfo, \
-    PortInfo, ModifiedInfo
+    AlarmSeverity, AlarmStatus
+from malcolm.modules.builtin.infos import LayoutInfo, PortInfo
 from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberArrayMeta, \
     BooleanArrayMeta, TableMeta, StringMeta, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta
@@ -38,43 +37,6 @@ ss = ManagerStates
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     stateSet = ss()
-
-    ReportExportable = Hook()
-    """Called to work out what field names the export table can contain and
-    to get the actual attribute or method that it points to. A call to
-    update_exportable() will cause this Hook to be run again.
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-
-    Returns:
-        [`ExportableInfo`] - the name of each exportable field and the child mri
-    """
-
-    ReportModified = Hook()
-    """Called to work out what has been modified since the last save/load. A
-    call to update_modified() will cause this Hook to be run again.
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-
-    Returns:
-        [`ModifiedInfo`] - the name of the field, saved and current values
-    """
-
-    ReportPorts = Hook()
-    """Called before Layout to get in and out port info from children
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-
-    Returns:
-        [`PortInfo`] - the direction, type and value of each in or out port of
-            the child
-    """
 
     Layout = Hook()
     """Called when layout table set and at init to update child layout
@@ -128,8 +90,12 @@ class ManagerController(StatefulController):
         self._subscriptions = []
         # {part_name: [PortInfo]}
         self.port_info = {}
-        # {part_name: [ExportableInfo]}
-        self.exportable_info = {}
+        # {part: [attr_name]}
+        self.part_exportable = {}
+        # {part: Alarm}
+        self.part_modified = {}
+        # Whether to do updates
+        self._do_update = True
 
     def create_attribute_models(self):
         for data in super(ManagerController, self).create_attribute_models():
@@ -175,28 +141,30 @@ class ManagerController(StatefulController):
         yield "modified", self.modified, None
 
     def do_init(self):
+        # This will do an initial poll of the exportable parts,
+        # so don't update here
         super(ManagerController, self).do_init()
         # List the configDir and add to choices
         self._set_layout_names()
-        # Do an initial poll of the exportable parts
-        self.update_exportable(update_block=False)
         # This will trigger all parts to report their layout, making sure
-        # the layout table has a valid value. It will also do
-        # _update_block_endpoints()
+        # the layout table has a valid value. This will also call
+        # self._update_block_endpoints()
         self.set_layout(Table(self.layout.meta))
         # If given a default config, load this
         if self.params.initialDesign:
             self.do_load(self.params.initialDesign)
 
-    def set_layout(self, value, update_block=True):
+    def set_layout(self, value):
         """Set the layout table value. Called on attribute put"""
         # If it isn't a table, make it one
+        if not isinstance(value, Table):
+            value = Table(self.layout.meta, value)
+        # Can't do this with changes_squashed as it will call update_modified
+        # from another thread and deadlock
+        part_info = self.run_hook(
+            self.Layout, self.create_part_contexts(only_visible=False),
+            self.port_info, value)
         with self.changes_squashed:
-            if not isinstance(value, Table):
-                value = Table(self.layout.meta, value)
-            part_info = self.run_hook(
-                self.Layout, self.create_part_contexts(only_visible=False),
-                self.port_info, value)
             layout_table = Table(self.layout.meta)
             layout_parts = LayoutInfo.filter_parts(part_info)
             for name, layout_infos in layout_parts.items():
@@ -222,11 +190,10 @@ class ManagerController(StatefulController):
                 self.saved_exports = self.exports.value.to_dict()
             if visibility_changed:
                 self.update_modified()
-                self.update_exportable(update_block=False)
-                if update_block:
-                    # Part visibility changed, might have attributes or methods
-                    # that we need to hide or show
-                    self._update_block_endpoints()
+                self.update_exportable()
+                # Part visibility changed, might have attributes or methods
+                # that we need to hide or show
+                self._update_block_endpoints()
 
     def set_exports(self, value):
         with self.changes_squashed:
@@ -234,25 +201,23 @@ class ManagerController(StatefulController):
             self.update_modified()
             self._update_block_endpoints()
 
-    def update_modified(self):
+    def update_modified(self, part=None, alarm=None):
         with self.changes_squashed:
-            # Find the modified fields for each visible part
-            part_info = self.run_hook(
-                self.ReportModified, self.create_part_contexts())
-            # {part_name: [ModifiedInfo()]
-            modified_infos = ModifiedInfo.filter_parts(part_info)
+            # Update the alarm for the given part
+            if part:
+                self.part_modified[part] = alarm
+            # Find the modified alarms for each visible part
             message_list = []
             only_modified_by_us = True
-            for part_name, infos in modified_infos.items():
-                for info in infos:
-                    message = "%s.%s.value = %r not %r" % (
-                        part_name, info.name, info.current_value,
-                        info.original_value)
-                    if info.we_modified:
-                        message = "(We modified) " + message
-                    else:
-                        only_modified_by_us = False
-                    message_list.append(message)
+            for part_name, visible in zip(
+                    self.layout.value.name, self.layout.value.visible):
+                if visible:
+                    alarm = self.part_modified.get(self.parts[part_name], None)
+                    if alarm:
+                        # Part flagged as been modified, is it by us?
+                        if alarm.severity:
+                            only_modified_by_us = False
+                        message_list.append(alarm.message)
             # Add in any modification messages from the layout and export tables
             try:
                 np.testing.assert_equal(
@@ -271,29 +236,23 @@ class ManagerController(StatefulController):
                     severity = AlarmSeverity.NO_ALARM
                 else:
                     severity = AlarmSeverity.MINOR_ALARM
-                alarm = Alarm(severity,
-                              AlarmStatus.CONF_STATUS,
-                              "\n".join(message_list))
+                alarm = Alarm(
+                    severity, AlarmStatus.CONF_STATUS, "\n".join(message_list))
                 self.modified.set_value(True, alarm=alarm)
             else:
                 self.modified.set_value(False)
 
-    def update_exportable(self, update_block=True):
+    def update_exportable(self, part=None, fields=None, port_infos=None):
         with self.changes_squashed:
-            # Find the parts of every part
-            part_info = self.run_hook(
-                self.ReportPorts, self.create_part_contexts(only_visible=False))
-            self.port_info = PortInfo.filter_parts(part_info)
+            if part:
+                self.part_exportable[part] = fields
+                self.port_info[part.name] = port_infos
             # Find the exportable fields for each visible part
-            part_info = self.run_hook(
-                self.ReportExportable, self.create_part_contexts())
-            self.exportable_info = ExportableInfo.filter_parts(part_info)
             names = []
-            for part_name, part_exportables in sorted(
-                    self.exportable_info.items()):
-                for part_exportable in part_exportables:
-                    names.append(
-                        "%s.%s" % (part_name, part_exportable.name))
+            for part in self.parts.values():
+                fields = self.part_exportable.get(part, [])
+                for attr_name in fields:
+                    names.append("%s.%s" % (part.name, attr_name))
             changed_names = set(names).symmetric_difference(
                 self.exports.meta.elements["name"].choices)
             changed_exports = changed_names.intersection(
@@ -301,7 +260,7 @@ class ManagerController(StatefulController):
             self.exports.meta.elements["name"].set_choices(names)
             # Update the block endpoints if anything currently exported is
             # added or deleted
-            if changed_exports and update_block:
+            if changed_exports:
                 self._update_block_endpoints()
 
     def _update_block_endpoints(self):
@@ -326,39 +285,34 @@ class ManagerController(StatefulController):
             controller.handle_request(unsubscribe)
         self._subscriptions = []
 
-        # Find the invisible parts
-        invisible = []
-        for name, visible in zip(
-                self.layout.value.name, self.layout.value.visible):
-            if not visible:
-                invisible.append(name)
-
-        # Add fields from parts that aren't invisible
-        for part_name in self.parts:
-            if part_name not in invisible:
+        # Find the visible parts
+        mris = OrderedDict()
+        for part_name, mri, visible in zip(
+                self.layout.value.name,
+                self.layout.value.mri,
+                self.layout.value.visible):
+            if visible:
+                mris[part_name] = mri
+                # Add fields from parts that aren't invisible
                 for data in self.part_fields[part_name]:
                     yield data
 
         # Add exported fields from visible parts
         for name, export_name in zip(
                 self.exports.value.name, self.exports.value.exportName):
-            part_name, field_name = name.rsplit(".", 1)
-            # If part is invisible, don't report it
-            if part_name in invisible:
-                continue
-            if export_name == "":
-                export_name = field_name
-            exportable_infos = [
-                x for x in self.exportable_info.get(part_name, [])
-                if field_name == x.name]
-            assert len(exportable_infos), \
-                "No (or multiple) ExportableInfo for %s" % name
-            export, setter = self._make_export_field(exportable_infos[0])
-            yield export_name, export, setter
+            part_name, attr_name = name.rsplit(".", 1)
+            part = self.parts[part_name]
+            # If part is visible, get its mri
+            mri = mris.get(part_name, None)
+            if mri and attr_name in self.part_exportable.get(part, []):
+                if not export_name:
+                    export_name = attr_name
+                export, setter = self._make_export_field(mri, attr_name)
+                yield export_name, export, setter
 
-    def _make_export_field(self, exportable_info):
-        controller = self.process.get_controller(exportable_info.mri)
-        path = [exportable_info.mri, exportable_info.name]
+    def _make_export_field(self, mri, attr_name):
+        controller = self.process.get_controller(mri)
+        path = [mri, attr_name]
         ret = {}
 
         def update_field(response):
@@ -371,8 +325,8 @@ class ManagerController(StatefulController):
                 ret["export"] = deserialize_object(response.changes[0][1])
                 context = Context(self.process)
                 if isinstance(ret["export"], AttributeModel):
-                    def setter(value):
-                        context.put(path, value)
+                    def setter(v):
+                        context.put(path, v)
                 else:
                     def setter(*args):
                         context.post(path, *args)
@@ -415,15 +369,31 @@ class ManagerController(StatefulController):
         if not design:
             design = self.design.value
         assert design, "Please specify save design name when saving from new"
-        structure = self._save_to_structure()
+        structure = OrderedDict()
+        # Add the layout table
+        structure["layout"] = OrderedDict()
+        for name, x, y, visible in sorted(
+                zip(self.layout.value.name, self.layout.value.x,
+                    self.layout.value.y, self.layout.value.visible)):
+            layout_structure = OrderedDict()
+            layout_structure["x"] = x
+            layout_structure["y"] = y
+            layout_structure["visible"] = visible
+            structure["layout"][name] = layout_structure
+        # Add the exports table
+        structure["exports"] = OrderedDict()
+        for name, export_name in sorted(
+                zip(self.exports.value.name, self.exports.value.exportName)):
+            structure["exports"][name] = export_name
+        # Add any structure that a child part wants to save
+        part_structures = self.run_hook(
+            self.Save, self.create_part_contexts(only_visible=False))
+        for part_name, part_structure in sorted(part_structures.items()):
+            structure[part_name] = part_structure
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
         open(filename, "w").write(text)
-        with self.changes_squashed:
-            self._set_layout_names(design)
-            self.design.set_value(design)
-            # Now we are saved, modified should clear
-            self.update_modified()
+        self._mark_clean(design)
 
     def _set_layout_names(self, extra_name=None):
         names = []
@@ -459,61 +429,39 @@ class ManagerController(StatefulController):
         return dir_name
 
     def set_design(self, value):
+        value = self.design.meta.validate(value)
         self.try_stateful_function(
             ss.LOADING, ss.READY, self.do_load, value)
 
-    def do_load(self, value):
-        filename = self._validated_config_filename(value)
+    def do_load(self, design):
+        filename = self._validated_config_filename(design)
         text = open(filename, "r").read()
         structure = json_decode(text)
-        with self.changes_squashed:
-            self._load_from_structure(structure)
-            self.design.set_value(value)
-            # Now we are loaded, modified should clear
-            self.update_modified()
-
-    def _save_to_structure(self):
-        structure = OrderedDict()
-        # Add the layout table
-        structure["layout"] = OrderedDict()
-        for name, x, y, visible in sorted(
-                zip(self.layout.value.name, self.layout.value.x,
-                    self.layout.value.y, self.layout.value.visible)):
-            layout_structure = OrderedDict()
-            layout_structure["x"] = x
-            layout_structure["y"] = y
-            layout_structure["visible"] = visible
-            structure["layout"][name] = layout_structure
-        self.saved_visibility = self.layout.value.visible
-        # Add the exports table
-        structure["exports"] = OrderedDict()
-        for name, export_name in sorted(
-                zip(self.exports.value.name, self.exports.value.exportName)):
-            structure["exports"][name] = export_name
-        self.saved_exports = self.exports.value.to_dict()
-        # Add any structure that a child part wants to save
-        part_structures = self.run_hook(
-            self.Save, self.create_part_contexts(only_visible=False))
-        for part_name, part_structure in sorted(part_structures.items()):
-            structure[part_name] = part_structure
-        return structure
-
-    def _load_from_structure(self, structure):
         # Set the layout table
         layout_table = Table(self.layout.meta)
         for part_name, part_structure in structure.get("layout", {}).items():
             layout_table.append([
                 part_name, "", part_structure["x"], part_structure["y"],
                 part_structure["visible"]])
-        self.set_layout(layout_table, update_block=False)
-        self.saved_visibility = self.layout.value.visible
+        self.set_layout(layout_table)
         # Set the exports table
         exports_table = Table(self.exports.meta)
         for name, export_name in structure.get("exports", {}).items():
             exports_table.append([name, export_name])
         self.exports.set_value(exports_table)
-        self.saved_exports = self.exports.value.to_dict()
         # Run the load hook to get parts to load their own structure
-        self.run_hook(self.Load, self.create_part_contexts(only_visible=False),
+        self.run_hook(self.Load,
+                      self.create_part_contexts(only_visible=False),
                       structure)
-        self._update_block_endpoints()
+        self._mark_clean(design)
+
+    def _mark_clean(self, design):
+        with self.changes_squashed:
+            self.saved_visibility = self.layout.value.visible
+            self.saved_exports = self.exports.value.to_dict()
+            # Now we are clean, modified should clear
+            self.part_modified = OrderedDict()
+            self.update_modified()
+            self._set_layout_names(design)
+            self.design.set_value(design)
+            self._update_block_endpoints()

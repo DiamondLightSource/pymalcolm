@@ -91,18 +91,21 @@
     description: time slices for each step in the profile in 0.25ms ticks
     pv: $(prefix):ProfileTimeArray
     widget: table
+    config: False
 
 - ca.parts.CALongArrayPart:
     name: velocityMode
     description: a list of the velocity mode masks, lower bit is Prev->Current
     pv: $(prefix):VelocityMode
     widget: table
+    config: False
 
 - ca.parts.CALongArrayPart:
     name: userPrograms
     description: a list of the user programs to run at each point
     pv: $(prefix):UserArray
     widget: table
+    config: False
 
 - ca.parts.CALongPart:
     name: numPoints
@@ -129,6 +132,7 @@
     description: a list of positions for CoordSys axis A
     pv: $(prefix):A:Positions
     widget: table
+    config: False
 
 - ca.parts.CADoublePart:
     name: resolutionA
@@ -155,6 +159,7 @@
     description: a list of positions for CoordSys axis B
     pv: $(prefix):B:Positions
     widget: table
+    config: False
 
 - ca.parts.CADoublePart:
     name: resolutionB
@@ -181,6 +186,7 @@
     description: a list of positions for CoordSys axis C
     pv: $(prefix):C:Positions
     widget: table
+    config: False
 
 - ca.parts.CADoublePart:
     name: resolutionC
@@ -207,6 +213,7 @@
     description: a list of positions for CoordSys axis U
     pv: $(prefix):U:Positions
     widget: table
+    config: False
 
 - ca.parts.CADoublePart:
     name: resolutionU
@@ -233,6 +240,7 @@
     description: a list of positions for CoordSys axis V
     pv: $(prefix):V:Positions
     widget: table
+    config: False
 
 - ca.parts.CADoublePart:
     name: resolutionV
@@ -259,6 +267,7 @@
     description: a list of positions for CoordSys axis W
     pv: $(prefix):W:Positions
     widget: table
+    config: False
 
 - ca.parts.CADoublePart:
     name: resolutionW
@@ -285,6 +294,7 @@
     description: a list of positions for CoordSys axis X
     pv: $(prefix):X:Positions
     widget: table
+    config: False
 
 - ca.parts.CADoublePart:
     name: resolutionX
@@ -311,6 +321,7 @@
     description: a list of positions for CoordSys axis Y
     pv: $(prefix):Y:Positions
     widget: table
+    config: False
 
 - ca.parts.CADoublePart:
     name: resolutionY
@@ -337,6 +348,7 @@
     description: a list of positions for CoordSys axis Z
     pv: $(prefix):Z:Positions
     widget: table
+    config: False
 
 - ca.parts.CADoublePart:
     name: resolutionZ

@@ -23,7 +23,7 @@ class CompoundMotorPart(StatefulChildPart):
             resolution=1.0,
             offset=child.offset.value,
             max_velocity=max_velocity,
-            current_position=child.position.value,
+            current_position=child.readback.value,
             scannable=child.scannable.value,
             velocity_settle=child.velocitySettle.value
         )

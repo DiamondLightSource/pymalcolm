@@ -1,4 +1,4 @@
-from malcolm.core import method_takes, Update, MethodModel, deserialize_object
+from malcolm.core import method_takes
 from malcolm.modules.ADCore.infos import DatasetProducedInfo
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.parts import RunnableChildPart
@@ -34,15 +34,16 @@ class DatasetRunnableChildPart(RunnableChildPart):
             params = self._params_with_format_name(params)
         super(DatasetRunnableChildPart, self).configure(
             context, completed_steps, steps_to_do, part_info, params)
-        datasets_table = child.datasets.value
         info_list = []
-        for i in range(len(datasets_table.name)):
-            info = DatasetProducedInfo(
-                name=datasets_table.name[i],
-                filename=datasets_table.filename[i],
-                type=datasets_table.type[i],
-                rank=datasets_table.rank[i],
-                path=datasets_table.path[i],
-                uniqueid=datasets_table.uniqueid[i])
-            info_list.append(info)
+        if hasattr(child, "datasets"):
+            datasets_table = child.datasets.value
+            for i in range(len(datasets_table.name)):
+                info = DatasetProducedInfo(
+                    name=datasets_table.name[i],
+                    filename=datasets_table.filename[i],
+                    type=datasets_table.type[i],
+                    rank=datasets_table.rank[i],
+                    path=datasets_table.path[i],
+                    uniqueid=datasets_table.uniqueid[i])
+                info_list.append(info)
         return info_list

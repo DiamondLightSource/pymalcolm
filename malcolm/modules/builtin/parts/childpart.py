@@ -4,15 +4,16 @@ import numpy as np
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, REQUIRED, method_takes, serialize_object, \
-    Attribute, Subscribe, Unsubscribe, Put
+    Attribute, Subscribe, Unsubscribe, Put, Alarm, AlarmSeverity, AlarmStatus, \
+    Queue
 from malcolm.modules.builtin.controllers import ManagerController
-from malcolm.modules.builtin.infos import ExportableInfo, PortInfo, \
-    LayoutInfo, ModifiedInfo
+from malcolm.modules.builtin.infos import PortInfo, LayoutInfo
 from malcolm.modules.builtin.vmetas import StringMeta
 from malcolm.tags import config
 
 
 port_tag_re = re.compile(r"(in|out)port:(.*):(.*)")
+
 
 @method_takes(
     "name", StringMeta("Name of the Part within the controller"), REQUIRED,
@@ -27,6 +28,8 @@ class ChildPart(Part):
         self.part_visible = {}
         # {attr_name: attr_value} of last saved/loaded structure
         self.saved_structure = {}
+        # {attr_name: modified_message} of current values
+        self.modified_messages = {}
         # The controller hosting our child
         self.child_controller = None
         # {id: Subscribe} for subscriptions to config tagged fields
@@ -34,10 +37,14 @@ class ChildPart(Part):
         # set(attribute_name) where the attribute is a config tagged field
         # we are modifying
         self.we_modified = set()
+        # Update queue of modified alarms
+        self.modified_update_queue = Queue()
+        # Update queue of exportable fields
+        self.exportable_update_queue = Queue()
+        # {attr_name: PortInfo}
+        self.port_infos = {}
         # Store params
         self.params = params
-        # Don't do first update
-        self._do_update = False
         super(ChildPart, self).__init__(params.name)
 
     def notify_dispatch_request(self, request):
@@ -53,32 +60,16 @@ class ChildPart(Part):
         # Monitor the child configure for changes
         self.child_controller = context.get_controller(self.params.mri)
         subscribe = Subscribe(path=[self.params.mri, "meta", "fields"],
-                              callback=self.update_exportable)
+                              callback=self.update_part_exportable)
         # Wait for the first update to come in
         self.child_controller.handle_request(subscribe).wait()
 
     @ManagerController.Halt
     def halt(self, context):
-        unsubscribe = Unsubscribe(callback=self.update_exportable)
+        unsubscribe = Unsubscribe(callback=self.update_part_exportable)
         self.child_controller.handle_request(unsubscribe)
 
-    @ManagerController.ReportPorts
-    def report_ports(self, context):
-        child = context.block_view(self.params.mri)
-        port_infos = []
-        for attr_name in child:
-            attr = getattr(child, attr_name)
-            if isinstance(attr, Attribute):
-                for tag in attr.meta.tags:
-                    match = port_tag_re.match(tag)
-                    if match:
-                        d, type, extra = match.groups()
-                        port_infos.append(PortInfo(
-                            name=attr_name, value=attr.value, direction=d,
-                            type=type, extra=extra))
-        return port_infos
-
-    def update_exportable(self, response):
+    def update_part_exportable(self, response):
         # Get a child context to check if we have a config field
         child = self.child_controller.block_view()
         spawned = []
@@ -94,12 +85,21 @@ class ChildPart(Part):
                 unsubscribe = Unsubscribe(subscribe.id, subscribe.callback)
                 spawned.append(
                     self.child_controller.handle_request(unsubscribe))
+                self.port_infos.pop(attr_name, None)
 
         # Add a subscription to any new field
         existing_fields = set(
             s.path[-2] for s in self.config_subscriptions.values())
         for field in set(new_fields) - existing_fields:
             attr = getattr(child, field)
+            if isinstance(attr, Attribute):
+                for tag in attr.meta.tags:
+                    match = port_tag_re.match(tag)
+                    if match:
+                        d, type, extra = match.groups()
+                        self.port_infos[field] = PortInfo(
+                            name=field, value=attr.value, direction=d,
+                            type=type, extra=extra)
             if isinstance(attr, Attribute) and config() in attr.meta.tags:
                 if self.config_subscriptions:
                     new_id = max(self.config_subscriptions) + 1
@@ -107,7 +107,7 @@ class ChildPart(Part):
                     new_id = 1
                 subscribe = Subscribe(id=new_id,
                                       path=[self.params.mri, field, "value"],
-                                      callback=self.update_modified)
+                                      callback=self.update_part_modified)
                 self.config_subscriptions[new_id] = subscribe
                 # Signal that any change we get is a difference
                 if field not in self.saved_structure:
@@ -119,48 +119,59 @@ class ChildPart(Part):
         for s in spawned:
             s.wait()
 
-        # Tell the controller we have new fields to export unless at init or
-        # disable
-        if self._do_update:
-            self.controller.update_exportable()
+        # Put data on the queue, so if spawns are handled out of order we
+        # still get the most up to date data
+        port_infos = [
+            self.port_infos[f] for f in new_fields if f in self.port_infos]
+        self.exportable_update_queue.put((new_fields, port_infos))
+        self.spawn(self._update_part_exportable).wait()
+
+    def _update_part_exportable(self):
+        # We spawned just above, so there is definitely something on the
+        # queue
+        fields, port_infos = self.exportable_update_queue.get(timeout=0)
+        self.controller.update_exportable(self, fields, port_infos)
+
+    def update_part_modified(self, response):
+        subscribe = self.config_subscriptions[response.id]
+        name = subscribe.path[-2]
+        original_value = self.saved_structure[name]
+        try:
+            np.testing.assert_equal(original_value, response.value)
+        except AssertionError:
+            message = "%s.%s.value = %r not %r" % (
+                self.name, name, response.value, original_value)
+            if name in self.we_modified:
+                message = "(We modified) " + message
+            self.modified_messages[name] = message
         else:
-            self._do_update = True
+            self.modified_messages.pop(name, None)
+        message_list = []
+        only_modified_by_us = True
+        # Tell the controller what has changed
+        for name, message in self.modified_messages.items():
+            if name not in self.we_modified:
+                only_modified_by_us = False
+            message_list.append(message)
+        if message_list:
+            if only_modified_by_us:
+                severity = AlarmSeverity.NO_ALARM
+            else:
+                severity = AlarmSeverity.MINOR_ALARM
+            alarm = Alarm(
+                severity, AlarmStatus.CONF_STATUS, "\n".join(message_list))
+        else:
+            alarm = None
+        # Put data on the queue, so if spawns are handled out of order we
+        # still get the most up to date data
+        self.modified_update_queue.put(alarm)
+        self.spawn(self._update_part_modified).wait()
 
-    def update_modified(self, response):
-        # Ignore initial updates
-        if self._do_update:
-            # Tell the controller to update if the value has changed from saved
-            subscribe = self.config_subscriptions[response.id]
-            # TODO: these lines used to stop update if value changed lots,
-            # but then we don't catch the value going back to saved
-            #attr = subscribe.path[-2]
-            #if self.saved_structure[attr] != response.value:
-            self.controller.update_modified()
-
-    @ManagerController.ReportExportable
-    def report_exportable(self, context):
-        child = context.block_view(self.params.mri)
-        ret = []
-        for name in child:
-            if name != "meta":
-                ret.append(ExportableInfo(name=name, mri=self.params.mri))
-        return ret
-
-    @ManagerController.ReportModified
-    def report_modified(self, context):
-        child = context.block_view(self.params.mri)
-        ret = []
-        for name, original_value in self.saved_structure.items():
-            attr = getattr(child, name)
-            if isinstance(attr, Attribute) and "config" in attr.meta.tags:
-                current_value = serialize_object(attr.value)
-                try:
-                    np.testing.assert_equal(original_value, current_value)
-                except AssertionError:
-                    we_modified = name in self.we_modified
-                    ret.append(ModifiedInfo(
-                        name, original_value, current_value, we_modified))
-        return ret
+    def _update_part_modified(self):
+        # We spawned just above, so there is definitely something on the
+        # queue
+        alarm = self.modified_update_queue.get(timeout=0)
+        self.controller.update_modified(self, alarm)
 
     @ManagerController.Layout
     def layout(self, context, part_info, layout_table):
@@ -206,9 +217,7 @@ class ChildPart(Part):
         # not to notify controller
         self.saved_structure = part_structure
         if params:
-            self._do_update = False
             child.put_attribute_values(params)
-            self._do_update = True
 
     @ManagerController.Save
     def save(self, context):
@@ -264,10 +273,7 @@ class ChildPart(Part):
                 if outport_lookup is True or outport_lookup.get(
                         child[name].value, None) == port_info.type:
                     attribute_values[name] = port_info.extra
-            # Don't update while we're putting values or we'll deadlock
-            self._do_update = False
             child.put_attribute_values(attribute_values)
-            self._do_update = True
 
     def child_connected(self, part_info):
         """Calculate if anything is connected to us or we are connected to

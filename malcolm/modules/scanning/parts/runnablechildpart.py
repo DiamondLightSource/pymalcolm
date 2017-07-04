@@ -1,5 +1,5 @@
 from malcolm.core import BadValueError, method_takes, serialize_object, \
-    Update, deserialize_object, Subscribe, MethodModel, Unsubscribe
+    Update, deserialize_object, Subscribe, MethodModel, Unsubscribe, Queue
 from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.infos import ParameterTweakInfo
@@ -13,6 +13,9 @@ class RunnableChildPart(StatefulChildPart):
     # stored between runs
     run_future = None
 
+    # make sure updates are processed in order
+    configure_args_update_queue = None
+
     def update_part_configure_args(self, response, without=()):
         # Decorate validate and configure with the sum of its parts
         if not isinstance(response, Update):
@@ -21,14 +24,26 @@ class RunnableChildPart(StatefulChildPart):
                 "update_part_configure_args got response %r", response)
             return
         configure_model = deserialize_object(response.value, MethodModel)
+        # Put data on the queue, so if spawns are handled out of order we
+        # still get the most up to date data
+        self.configure_args_update_queue.put((configure_model, without))
+        self.spawn(self._update_part_configure_args).wait()
+
+    def _update_part_configure_args(self):
+        # We spawned just above, so there is definitely something on the
+        # queue
+        configure_model, without = self.configure_args_update_queue.get(
+            timeout=0)
         self.method_models["validate"].recreate_from_others(
             [configure_model], without=without)
         self.method_models["configure"].recreate_from_others(
             [configure_model], without=without)
-        self.spawn(self.controller.update_configure_args)
+        self.controller.update_configure_args(
+            self, self.method_models["configure"])
 
     @RunnableController.Init
     def init(self, context):
+        self.configure_args_update_queue = Queue()
         super(RunnableChildPart, self).init(context)
         # Monitor the child configure Method for changes
         # TODO: this happens every time writeable changes, is this really good?

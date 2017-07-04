@@ -14,7 +14,7 @@ class TestRawMotorPart(ChildTestCase):
             motorPrefix="MOT:PRE", scannable="scan")
         child.parts["maxVelocity"].attr.set_value(5.0)
         child.parts["accelerationTime"].attr.set_value(0.5)
-        child.parts["position"].attr.set_value(12.3)
+        child.parts["readback"].attr.set_value(12.3)
         child.parts["offset"].attr.set_value(4.5)
         child.parts["resolution"].attr.set_value(0.001)
         child.parts["csPort"].attr.set_value("CS1")

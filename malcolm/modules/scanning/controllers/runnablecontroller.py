@@ -203,6 +203,10 @@ class RunnableController(ManagerController):
     # Shared contexts between Configure, Run, Pause, Seek, Resume
     part_contexts = None
 
+    # Configure method_models
+    # {part: configure_method_model}
+    configure_method_models = None
+
     # Stored for pause
     steps_per_run = 0
 
@@ -252,9 +256,15 @@ class RunnableController(ManagerController):
         yield "axesToMove", self.axes_to_move, self.set_axes_to_move
 
     def do_init(self):
-        super(RunnableController, self).do_init()
         self.part_contexts = {}
-        self.update_configure_args()
+        # Populate configure args from any child method hooked to Configure.
+        # If we have runnablechildparts, they will call update_configure_args
+        # during do_init
+        self.configure_method_models = {}
+        # Look for all parts that hook into Configure
+        for part, func_name in self._hooked_func_names[self.Configure].items():
+            self.update_configure_args(part, part.method_models[func_name])
+        super(RunnableController, self).do_init()
 
     def do_reset(self):
         super(RunnableController, self).do_reset()
@@ -268,13 +278,12 @@ class RunnableController(ManagerController):
         else:
             super(RunnableController, self).go_to_error_state(exception)
 
-    def update_configure_args(self):
+    def update_configure_args(self, part, configure_model):
+        """Tell controller part needs different things passed to Configure"""
         with self.changes_squashed:
-            # Look for all parts that hook into Configure
-            configure_funcs = self._hooked_func_names[self.Configure]
-            method_models = []
-            for part, func_name in configure_funcs.items():
-                method_models.append(part.method_models[func_name])
+            # Update the dict
+            self.configure_method_models[part] = configure_model
+            method_models = self.configure_method_models.values()
 
             # Update takes with the things we need
             default_configure = MethodModel.from_dict(
@@ -289,7 +298,6 @@ class RunnableController(ManagerController):
 
     def set_axes_to_move(self, value):
         self.axes_to_move.set_value(value)
-        self.update_configure_args()
 
     @method_takes(*configure_args)
     def validate(self, params, returns):

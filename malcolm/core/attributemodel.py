@@ -39,6 +39,7 @@ class AttributeModel(Model):
 
     def set_value(self, value, set_alarm_ts=True, alarm=None, ts=None):
         """Set the value"""
+        value = self.meta.validate(value)
         if set_alarm_ts:
             if alarm is None:
                 alarm = Alarm.ok
@@ -50,7 +51,6 @@ class AttributeModel(Model):
                 ts = deserialize_object(ts, TimeStamp)
             self.set_value_alarm_ts(value, alarm, ts)
         else:
-            value = self.meta.validate(value)
             self.set_endpoint_data("value", value)
         return self.value
 
@@ -58,7 +58,7 @@ class AttributeModel(Model):
         """Set value with pre-validated alarm and timeStamp"""
         with self.notifier.changes_squashed:
             # Assume they are of the right format
-            self.value = self.meta.validate(value)
+            self.value = value
             self.notifier.add_squashed_change(self.path + ["value"], value)
             self.alarm = alarm
             self.notifier.add_squashed_change(self.path + ["alarm"], alarm)
