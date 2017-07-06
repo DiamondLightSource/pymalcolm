@@ -1,7 +1,13 @@
-from malcolm.core import method_takes, TimeoutError
+from malcolm.core import method_takes, TimeoutError, REQUIRED
+from malcolm.modules.ADCore.infos import UniqueIdInfo
 from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.ADCore.infos import UniqueIdInfo
+from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
+
+
+# Args for configure()
+configure_args = [
+    "generator", PointGeneratorMeta("Generator instance"), REQUIRED]
 
 
 class DetectorDriverPart(StatefulChildPart):
@@ -31,9 +37,9 @@ class DetectorDriverPart(StatefulChildPart):
     @RunnableController.Configure
     @RunnableController.PostRunReady
     @RunnableController.Seek
-    @method_takes()
+    @method_takes(*configure_args)
     def configure(self, context, completed_steps, steps_to_do, part_info,
-                  params=None):
+                  params):
         context.unsubscribe_all()
         child = context.block_view(self.params.mri)
         fs = self.setup_detector(child, completed_steps, steps_to_do, params)

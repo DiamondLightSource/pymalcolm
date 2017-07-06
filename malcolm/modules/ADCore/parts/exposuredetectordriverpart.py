@@ -1,14 +1,9 @@
-from malcolm.core import method_also_takes, REQUIRED, method_takes
+from malcolm.core import method_also_takes, method_takes
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
 from malcolm.modules.builtin.vmetas import NumberMeta
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 from malcolm.tags import widget, config
-from .detectordriverpart import DetectorDriverPart
-
-# Args for configure() and validate
-configure_args = [
-    "generator", PointGeneratorMeta("Generator instance"), REQUIRED]
+from .detectordriverpart import DetectorDriverPart, configure_args
 
 
 @method_also_takes(
@@ -19,7 +14,8 @@ class ExposureDetectorDriverPart(DetectorDriverPart):
     readout_time = None
 
     def create_attribute_models(self):
-        for data in super(ExposureDetectorDriverPart, self).create_attribute_models():
+        for data in super(
+                ExposureDetectorDriverPart, self).create_attribute_models():
             yield data
         # Create writeable attribute for how long we should allow for detector
         # read out
@@ -47,15 +43,6 @@ class ExposureDetectorDriverPart(DetectorDriverPart):
         assert exposure > 0.0, \
             "Exposure time %s too small when readoutTime taken into account" % (
                 exposure)
-
-    @RunnableController.Configure
-    @RunnableController.PostRunReady
-    @RunnableController.Seek
-    @method_takes(*configure_args)
-    def configure(self, context, completed_steps, steps_to_do, part_info,
-                  params=None):
-        return super(ExposureDetectorDriverPart, self).configure(
-            context, completed_steps, steps_to_do, part_info, params)
 
     def setup_detector(self, child, completed_steps, steps_to_do, params=None):
         fs = super(ExposureDetectorDriverPart, self).setup_detector(

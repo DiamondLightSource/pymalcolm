@@ -1,0 +1,53 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records
+
+- builtin.defines.docstring:
+    value: Hardware block corresponding to PVs used for aravisGigE detector driver
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: $(docstring)
+
+- ADCore.includes.ndpluginbase_parts:
+    prefix: $(prefix)
+
+- ca.parts.CAChoicePart:
+    name: imageMode
+    description: Whether to take 1, many, or unlimited images at start
+    pv: $(prefix):TriggerMode
+    rbvSuff: _RBV
+    widget: combo
+
+- ca.parts.CALongPart:
+    name: numImages
+    description: Number of images to take if imageMode=Multiple
+    pv: $(prefix):TriggerCount
+    rbvSuff: _RBV
+    widget: textinput
+
+- ca.parts.CADoublePart:
+    name: postCount
+    description: How many samples to take after each trigger
+    pv: $(prefix):POSTCOUNT
+    rbvSuff: _RBV
+    widget: textinput
+
+- ca.parts.CAActionPart:
+    name: start
+    description: Demand for starting acquisition
+    pv: $(prefix):Capture
+    statusPv: $(prefix):Mode_RBV
+    goodStatus: Idle
+
+- ca.parts.CAActionPart:
+    name: stop
+    description: Stop acquisition
+    pv: $(prefix):Capture
+    value: 0
+    wait: False
+
