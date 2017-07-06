@@ -45,7 +45,7 @@ class TestManagerController(unittest.TestCase):
             StatefulController, self.p, [self.c_part], mri="childBlock")
         self.p.add_controller("childBlock", self.c_child)
 
-        part1 = Part("part1")
+        part1 = MyPart("part1")
         part2 = call_with_params(ChildPart, name='part2', mri='childBlock')
 
         # create a root block for the ManagerController block to reside in
@@ -165,7 +165,8 @@ class TestManagerController(unittest.TestCase):
             'modified',
             'disable',
             'reset',
-            'save']
+            'save',
+            'attr']
         new_exports = Table(self.c.exports.meta)
         new_exports.append(('part2.attr', 'childAttr'))
         new_exports.append(('part2.reset', 'childReset'))
@@ -187,6 +188,7 @@ class TestManagerController(unittest.TestCase):
             'disable',
             'reset',
             'save',
+            'attr',
             'childAttr',
             'childReset']
         assert self.c.state.value == "Ready"

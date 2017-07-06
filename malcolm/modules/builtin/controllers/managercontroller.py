@@ -285,15 +285,21 @@ class ManagerController(StatefulController):
             controller.handle_request(unsubscribe)
         self._subscriptions = []
 
-        # Find the visible parts
-        mris = OrderedDict()
+        # Find the mris of parts
+        mris = {}
+        invisible = set()
         for part_name, mri, visible in zip(
                 self.layout.value.name,
                 self.layout.value.mri,
                 self.layout.value.visible):
             if visible:
                 mris[part_name] = mri
-                # Add fields from parts that aren't invisible
+            else:
+                invisible.add(part_name)
+
+        # Add fields from parts that aren't invisible
+        for part_name in self.parts:
+            if part_name not in invisible:
                 for data in self.part_fields[part_name]:
                     yield data
 
@@ -371,7 +377,7 @@ class ManagerController(StatefulController):
         assert design, "Please specify save design name when saving from new"
         structure = OrderedDict()
         # Add the layout table
-        structure["layout"] = OrderedDict()
+        part_layouts = {}
         for name, x, y, visible in sorted(
                 zip(self.layout.value.name, self.layout.value.x,
                     self.layout.value.y, self.layout.value.visible)):
@@ -379,7 +385,11 @@ class ManagerController(StatefulController):
             layout_structure["x"] = x
             layout_structure["y"] = y
             layout_structure["visible"] = visible
-            structure["layout"][name] = layout_structure
+            part_layouts[name] = layout_structure
+        structure["layout"] = OrderedDict()
+        for part_name in self.parts:
+            if part_name in part_layouts:
+                structure["layout"][part_name] = part_layouts[part_name]
         # Add the exports table
         structure["exports"] = OrderedDict()
         for name, export_name in sorted(
