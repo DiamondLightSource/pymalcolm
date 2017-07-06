@@ -263,7 +263,8 @@ class RunnableController(ManagerController):
         self.configure_method_models = {}
         # Look for all parts that hook into Configure
         for part, func_name in self._hooked_func_names[self.Configure].items():
-            self.update_configure_args(part, part.method_models[func_name])
+            if func_name in part.method_models:
+                self.update_configure_args(part, part.method_models[func_name])
         super(RunnableController, self).do_init()
 
     def do_reset(self):
