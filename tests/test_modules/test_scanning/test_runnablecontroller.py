@@ -4,12 +4,14 @@ import time
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Process, Part, call_with_params, \
-    Context, ResponseError, AlarmStatus, AlarmSeverity
+    Context, ResponseError, AlarmStatus, AlarmSeverity, method_takes, \
+    method_also_takes, REQUIRED
 from malcolm.modules.scanning.parts import RunnableChildPart
 from malcolm.modules.demo.blocks import ticker_block
 from malcolm.compat import OrderedDict
 from malcolm.modules.scanning.controllers import \
     RunnableController, RunnableStates
+from malcolm.modules.builtin.vmetas import StringMeta
 
 
 class TestRunnableStates(unittest.TestCase):
@@ -247,6 +249,100 @@ class TestRunnableController(unittest.TestCase):
         with self.assertRaises(ResponseError):
             f.result()
         self.checkState(self.ss.ABORTED)
+
+
+class PartTester1(Part):
+
+    @RunnableController.Configure
+    @method_takes(
+        "size", StringMeta("Size of the thing"), REQUIRED)
+    def configure(self, params):
+        pass
+
+
+class PartTester2(Part):
+
+    def configure(self):
+        pass
+
+
+class PartTester3(Part):
+
+    @RunnableController.Configure
+    def configure(self):
+        pass
+
+
+class PartTester4(Part):
+
+    @RunnableController.Configure
+    @method_takes()
+    def configure(self):
+        pass
+
+
+class RunnableControllerTester(RunnableController):
+
+    def __init__(self, process, parts, params):
+        super(RunnableControllerTester, self).__init__(process, parts, params)
+
+        self.add_part(PartTester1("1"))
+        self.add_part(PartTester2("2"))
+
+
+class TestRunnableControllerCollectsAllParams(unittest.TestCase):
+
+    def setUp(self):
+        self.p = Process('process1')
+        self.context = Context(self.p)
+
+    def tearDown(self):
+        self.p.stop(timeout=1)
+
+    def test_no_hook_passes(self):
+        # create a root block for the RunnableController block to reside in
+        self.c = call_with_params(RunnableController, self.p,
+                                  [PartTester1("1"), PartTester2("2")],
+                                  mri='mainBlock', configDir="/tmp",
+                                  axesToMove=["x"])
+        self.p.add_controller('mainBlock', self.c)
+        self.b = self.context.block_view("mainBlock")
+
+        # start the process off
+        self.p.start()
+
+        takes = list(self.b.configure.takes.elements)
+        self.assertEqual(takes, ["size", "generator", "axesToMove"])
+
+    def test_hook_fails(self):
+        # create a root block for the RunnableController block to reside in
+        self.c = call_with_params(RunnableController, self.p,
+                                  [PartTester1("1"), PartTester3("2")],
+                                  mri='mainBlock', configDir="/tmp",
+                                  axesToMove=["x"])
+        self.p.add_controller('mainBlock', self.c)
+        self.b = self.context.block_view("mainBlock")
+
+        # start the process off
+        self.p.start()
+
+        takes = list(self.b.configure.takes.elements)
+        self.assertEqual(takes, ["size", "generator", "axesToMove"])
+
+    def test_hook_plus_method_takes_nothing_passes(self):
+        # create a root block for the RunnableController block to reside in
+        self.c = call_with_params(RunnableController, self.p,
+                                  [PartTester1("1"), PartTester4("2")],
+                                  mri='mainBlock', configDir="/tmp",
+                                  axesToMove=["x"])
+        self.p.add_controller('mainBlock', self.c)
+        self.b = self.context.block_view("mainBlock")
+
+        # start the process off
+        self.p.start()
+
+        takes = list(self.b.configure.takes.elements)
+        self.assertEqual(takes, ["size", "generator", "axesToMove"])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
