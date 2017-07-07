@@ -44,11 +44,12 @@ POINTS_PER_BUILD = 4000
 cs_axis_names = list("ABCUVWXYZ")
 
 # Args for configure and validate
-configure_args = [
+configure_args = (
     "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
     "axesToMove", StringArrayMeta(
         "List of axes in inner dimension of generator that should be moved"),
-    []]
+    []
+)
 
 
 @method_also_takes(

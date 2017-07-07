@@ -48,11 +48,13 @@ class RunnableStates(ManagerStates):
 ss = RunnableStates
 
 
-configure_args = [
+configure_args = (
     "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
     "axesToMove", StringArrayMeta(
         "List of axes in inner dimension of generator that should be moved"),
-    []]
+    []
+)
+
 
 @method_also_takes(
     "axesToMove", StringArrayMeta("Default value for configure() axesToMove"),

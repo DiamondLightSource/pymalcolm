@@ -6,8 +6,9 @@ from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 
 # Args for configure()
-configure_args = [
-    "generator", PointGeneratorMeta("Generator instance"), REQUIRED]
+configure_args = (
+    "generator", PointGeneratorMeta("Generator instance"), REQUIRED
+)
 
 
 class DetectorDriverPart(StatefulChildPart):

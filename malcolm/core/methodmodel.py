@@ -191,6 +191,8 @@ def method_also_takes(*args):
     """
 
     def decorator(func):
+        assert inspect.isclass(func), \
+            "method_also_takes() only works on a Class, not %r" % func
         MethodModel.wrap_method(func)
         takes_meta, defaults = _prepare_map_meta(
             args, allow_defaults=True,
