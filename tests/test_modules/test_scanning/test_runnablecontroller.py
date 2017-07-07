@@ -219,7 +219,7 @@ class TestRunnableController(unittest.TestCase):
     def test_resume_in_run(self):
         self.prepare_half_run(duration=0.5)
         f = self.b.run_async()
-        self.context.sleep(0.75)
+        self.context.sleep(0.95)
         self.b.pause()
         self.checkState(self.ss.PAUSED)
         self.checkSteps(2, 1, 6)
