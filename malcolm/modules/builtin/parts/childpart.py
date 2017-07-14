@@ -206,7 +206,7 @@ class ChildPart(Part):
         for k, v in part_structure.items():
             try:
                 attr = getattr(child, k)
-            except KeyError:
+            except AttributeError:
                 self.log.warning("Cannot restore non-existant attr %s" % k)
             else:
                 try:
