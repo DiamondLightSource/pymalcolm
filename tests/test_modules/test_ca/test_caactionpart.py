@@ -58,7 +58,20 @@ class TestCAActionPart(unittest.TestCase):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", statusPv="spv",
             goodStatus="All Good"))
-        catools.caput.reset_mock()
-        catools.caget.return_value = "No Good"
-        with self.assertRaises(AssertionError):
+        p.catools.caput.reset_mock()
+        p.catools.caget.return_value = "No Good"
+        with self.assertRaises(AssertionError) as cm:
             p.caput()
+        assert str(cm.exception) == \
+            "Status No Good: while performing 'caput -c -w 1000 pv 1'"
+
+    def test_caput_status_pv_message(self, catools):
+        p = self.create_part(dict(
+            name="mname", description="desc", pv="pv", statusPv="spv",
+            goodStatus="All Good", messagePv="mpv"))
+        p.catools.caput.reset_mock()
+        p.catools.caget.side_effect = ["No Good", "Bad things happened"]
+        with self.assertRaises(AssertionError) as cm:
+            p.caput()
+        assert str(cm.exception) == "Status No Good: Bad things happened: " \
+            "while performing 'caput -c -w 1000 pv 1'"

@@ -10,6 +10,7 @@ from .catoolshelper import CaToolsHelper
     "pv", StringMeta("full pv to write to when method called"), REQUIRED,
     "statusPv", StringMeta("Status pv to see if successful"), "",
     "goodStatus", StringMeta("Good value for status pv"), "",
+    "messagePv", StringMeta("PV containing error message if unsuccessful"), "",
     "value", NumberMeta("int32", "value to write to pv when method called"), 1,
     "wait", BooleanMeta("Wait for caput callback?"), True)
 class CAActionPart(Part):
@@ -50,9 +51,15 @@ class CAActionPart(Part):
             self.params.pv, self.params.value,
             wait=self.params.wait, timeout=None)
         if self.params.statusPv:
-            value = self.catools.caget(
+            status = self.catools.caget(
                 self.params.statusPv,
                 datatype=self.catools.DBR_STRING)
-            assert value == self.params.goodStatus, \
-                "Action '%s %s %s' failed with status %r" % (
-                    cmd, self.params.pv, self.params.value, value)
+            if self.params.messagePv:
+                message = " %s:" % self.catools.caget(
+                    self.params.messagePv,
+                    datatype=self.catools.DBR_CHAR_STR)
+            else:
+                message = ""
+            assert status == self.params.goodStatus, \
+                "Status %s:%s while performing '%s %s %s'" % (
+                    status, message, cmd, self.params.pv, self.params.value)
