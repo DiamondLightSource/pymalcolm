@@ -1,7 +1,6 @@
-import thread
 import signal
 
-from malcolm.compat import queue, maybe_import_cothread
+from malcolm.compat import queue, maybe_import_cothread, get_thread_ident
 from .errors import TimeoutError
 
 
@@ -40,7 +39,7 @@ class Queue(object):
                     return self._queue.get(self, timeout=timeout)
                 except queue.Empty:
                     raise TimeoutError("Queue().get() timed out")
-        elif thread.get_ident() != self.cothread.scheduler_thread_id:
+        elif get_thread_ident() != self.cothread.scheduler_thread_id:
             # Not in cothread's thread, so need to use CallbackResult
             return self.cothread.CallbackResult(self.get, timeout)
         else:
@@ -59,7 +58,7 @@ class Queue(object):
         if self.cothread is None:
             # No cothread, this is a queue.Queue()
             self._queue.put(value)
-        elif self.cothread.scheduler_thread_id != thread.get_ident():
+        elif self.cothread.scheduler_thread_id != get_thread_ident():
             # Not in cothread's thread, so need to use Callback
             self.cothread.Callback(self._event_queue.Signal, value)
         else:
