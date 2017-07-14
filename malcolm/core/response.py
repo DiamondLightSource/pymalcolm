@@ -6,7 +6,7 @@ class Response(Serializable):
     """Represents a response to a Request"""
 
     endpoints = ["id"]
-    __slots__ = endpoints
+    __slots__ = []
 
     id = None
 
@@ -31,7 +31,7 @@ class Response(Serializable):
 class Return(Response):
 
     endpoints = ["id", "value"]
-    __slots__ = endpoints
+    __slots__ = []
 
     value = None
 
@@ -58,7 +58,7 @@ class Error(Response):
     """Create an Error Response object with the provided parameters"""
 
     endpoints = ["id", "message"]
-    __slots__ = endpoints
+    __slots__ = []
 
     message = None
 
@@ -85,7 +85,7 @@ class Update(Response):
     """Create an Update Response object with the provided parameters"""
 
     endpoints = ["id", "value"]
-    __slots__ = endpoints
+    __slots__ = []
 
     value = None
 
@@ -112,7 +112,7 @@ class Delta(Response):
     """Create a Delta Response object with the provided parameters"""
 
     endpoints = ["id", "changes"]
-    __slots__ = endpoints
+    __slots__ = []
 
     changes = None
 
