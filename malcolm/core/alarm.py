@@ -5,7 +5,8 @@ from .serializable import Serializable, deserialize_object
 
 
 def sort_names(d):
-    return list(sorted(d, key=d.__getitem__))
+    name_d = dict((k, v) for k, v in d.items() if isinstance(v, int))
+    return list(sorted(name_d, key=name_d.__getitem__))
 
 
 class AlarmSeverity(object):
