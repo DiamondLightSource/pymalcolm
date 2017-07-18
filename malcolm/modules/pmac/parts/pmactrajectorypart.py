@@ -127,9 +127,10 @@ class PmacTrajectoryPart(StatefulChildPart):
                     (motor_info.scannable, motor_info.cs_axis)
                 cs_ports.add(motor_info.cs_port)
                 axis_mapping[motor_info.scannable] = motor_info
-        missing = set(axes_to_move) - set(axis_mapping)
+        missing = list(set(axes_to_move) - set(axis_mapping))
         assert not missing, \
-            "Some scannables %s are not children of this controller" % missing
+            "Some scannables %s are not in the CS mapping %s" % (
+                missing, axis_mapping)
         assert len(cs_ports) == 1, \
             "Requested axes %s are in multiple CS numbers %s" % (
                 axes_to_move, list(cs_ports))
