@@ -286,7 +286,7 @@ class RunnableController(ManagerController):
         with self.changes_squashed:
             # Update the dict
             self.configure_method_models[part] = configure_model
-            method_models = self.configure_method_models.values()
+            method_models = list(self.configure_method_models.values())
 
             # Update takes with the things we need
             default_configure = MethodModel.from_dict(

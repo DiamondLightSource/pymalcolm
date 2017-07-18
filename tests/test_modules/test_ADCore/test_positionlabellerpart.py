@@ -30,7 +30,7 @@ class TestPositionLabellerPart(ChildTestCase):
         params.generator.prepare()
         completed_steps = 2
         steps_to_do = 4
-        part_info = {ANY: [UniqueIdInfo(30)]}
+        part_info = {"anything": [UniqueIdInfo(30)]}
         self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, params)
         expected_xml = """<?xml version="1.0" ?>

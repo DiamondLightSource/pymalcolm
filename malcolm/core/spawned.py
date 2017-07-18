@@ -22,10 +22,11 @@ class Spawned(object):
         def catching_function():
             try:
                 result = function(*args, **kwargs)
-            except Exception as result:
+            except Exception as e:
                 log.debug(
                     "Exception calling %s(*%s, **%s)", function, args, kwargs,
                     exc_info=True)
+                result = e
             self._result_queue.put(result)
 
         if use_cothread:
