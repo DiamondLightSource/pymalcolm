@@ -1,5 +1,5 @@
 from malcolm.core import Part, method_takes, REQUIRED
-from malcolm.tags import widget_types, widget, config
+from malcolm.tags import widget_types, widget, config, group
 from malcolm.modules.builtin.vmetas import StringMeta, BooleanMeta, ChoiceMeta
 
 
@@ -8,6 +8,7 @@ from malcolm.modules.builtin.vmetas import StringMeta, BooleanMeta, ChoiceMeta
     "description", StringMeta("Desc of created attribute"), REQUIRED,
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "writeable", BooleanMeta("Is the attribute writeable?"), False,
+    "group", StringMeta("If given, which GUI group should we attach to"), "",
     "config", BooleanMeta(
         "If writeable, should this field be loaded/saved?"), True)
 class AttributePart(Part):
@@ -48,6 +49,9 @@ class AttributePart(Part):
         if self.params.config and self.is_writeable():
             # If we have a writeable func we can be a config param
             tags.append(config())
+        if self.params.group:
+            # If we have a group then add the tag
+            tags.append(group(self.params.group))
         return tags
 
     def get_initial_value(self):

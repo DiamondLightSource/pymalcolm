@@ -1,12 +1,17 @@
+import os
+
 from malcolm.compat import OrderedDict
 from malcolm.core import call_with_params
-from malcolm.modules.builtin.parts import ChoicePart
+from malcolm.modules.builtin.parts import GroupPart, IconPart
 from malcolm.tags import widget, group, inport, outport, config
 from malcolm.modules.builtin.vmetas import BooleanMeta, NumberMeta, StringMeta, \
     ChoiceMeta, TableMeta
 from .pandablocksactionpart import PandABlocksActionPart
 from .pandablocksfieldpart import PandABlocksFieldPart
 from .pandablockstablepart import PandABlocksTablePart
+
+
+SVG_DIR = os.path.join(os.path.dirname(__file__), "..", "icons")
 
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
@@ -98,8 +103,9 @@ class PandABlocksMaker(object):
             raise ValueError("Unknown type %r subtype %r" % (type, subtyp))
 
     def _make_icon(self):
-        meta = StringMeta("URL for ICON", tags=[widget("icon")])
-        self._make_field_part("icon", meta, writeable=False)
+        svg_name = self.block_name.rstrip("0123456789") + ".svg"
+        part = call_with_params(IconPart, svg=os.path.join(SVG_DIR, svg_name))
+        self._add_part("icon", part)
 
     def _make_scale_offset(self, field_name):
         group_tag = self._make_group("outputs")
@@ -219,10 +225,8 @@ class PandABlocksMaker(object):
     def _make_group(self, attr_name):
         if attr_name not in self.parts:
             part = call_with_params(
-                ChoicePart, name=attr_name, widget="group",
-                description="All %s attributes" % attr_name,
-                writeable=True, choices=["expanded", "collapsed"],
-                initialValue="expanded", config=True)
+                GroupPart, name=attr_name,
+                description="All %s attributes" % attr_name)
             self._add_part(attr_name, part)
         group_tag = group(attr_name)
         return group_tag

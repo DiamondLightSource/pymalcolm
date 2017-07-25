@@ -255,6 +255,12 @@ def get_method_decorated(instance):
             yield name, method_model, member
 
 
+def create_class_params(cls, **kwargs):
+    method_model = cls.MethodModel
+    params = method_model.prepare_call_args(**kwargs)[0]
+    return params
+
+
 def call_with_params(func, *args, **params):
     method_model = func.MethodModel
     args += method_model.prepare_call_args(**params)

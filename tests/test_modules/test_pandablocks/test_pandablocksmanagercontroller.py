@@ -164,7 +164,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         self.o._blocks_parts["LUT1"] = dict(icon=m)
         # !A&!B&!C&!D&!E
         self.client.get_field.return_value = "1"
-        self.o._set_icon_svg("LUT1")
+        self.o._set_lut_icon("LUT1")
         svg_text = m.attr.set_value.call_args[0][0]
         root = ET.fromstring(svg_text)
         assert len(root.findall(".//*[@id='A']")) == 1

@@ -11,11 +11,10 @@ from malcolm.modules.builtin.controllers import BasicController, \
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.vmetas import BooleanMeta, TableMeta, StringMeta, \
     NumberMeta
-from malcolm.modules.pandablocks.parts.pandablocksmaker import PandABlocksMaker
+from malcolm.modules.pandablocks.parts.pandablocksmaker import \
+    PandABlocksMaker, SVG_DIR
 from .pandablocksclient import PandABlocksClient
 
-
-SVG_DIR = os.path.join(os.path.dirname(__file__), "..", "icons")
 
 LUT_CONSTANTS = dict(
     A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
@@ -152,9 +151,6 @@ class PandABlocksManagerController(ManagerController):
         # Store the parts so we can update them with the poller
         self._blocks_parts[block_name] = maker.parts
 
-        # Set the initial block_url
-        self._set_icon_svg(block_name)
-
         # setup param pos on a block with pos_out to inherit SCALE OFFSET UNITS
         pos_fields = []
         pos_out_fields = []
@@ -192,23 +188,20 @@ class PandABlocksManagerController(ManagerController):
             self._mirrored_fields.setdefault(full_src_field, []).append(
                 full_dest_field)
 
-    def _set_icon_svg(self, block_name):
+    def _set_lut_icon(self, block_name):
         icon_attr = self._blocks_parts[block_name]["icon"].attr
-        fname = block_name.rstrip("0123456789") + ".svg"
-        svg_text = "<svg/>"
-        if fname in os.listdir(SVG_DIR):
-            svg_text = open(os.path.join(SVG_DIR, fname)).read()
-            if fname == "LUT.svg":
-                fnum = int(self.client.get_field(block_name, "FUNC.RAW"))
-                invis = self._get_lut_icon_elements(fnum)
-                root = ET.fromstring(svg_text)
-                for i in invis:
-                    # Find the first parent which has a child with id i
-                    parent = root.find('.//*[@id=%r]/..' % i)
-                    # Find the child and remove it
-                    child = parent.find('./*[@id=%r]' % i)
-                    parent.remove(child)
-                svg_text = et_to_string(root)
+        with open(os.path.join(SVG_DIR, "LUT.svg")) as f:
+            svg_text = f.read()
+        fnum = int(self.client.get_field(block_name, "FUNC.RAW"))
+        invis = self._get_lut_icon_elements(fnum)
+        root = ET.fromstring(svg_text)
+        for i in invis:
+            # Find the first parent which has a child with id i
+            parent = root.find('.//*[@id=%r]/..' % i)
+            # Find the child and remove it
+            child = parent.find('./*[@id=%r]' % i)
+            parent.remove(child)
+        svg_text = et_to_string(root)
         icon_attr.set_value(svg_text)
 
     def _get_lut_icon_elements(self, fnum):
@@ -278,7 +271,7 @@ class PandABlocksManagerController(ManagerController):
                 self.changes.pop(full_field)
             # If it was LUT.FUNC then recalculate icon
             if block_name.startswith("LUT") and field_name == "FUNC":
-                self._set_icon_svg(block_name)
+                self._set_lut_icon(block_name)
 
     def update_attribute(self, block_name, field_name, val):
         ret = None

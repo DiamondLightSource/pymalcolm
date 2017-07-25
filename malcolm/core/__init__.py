@@ -19,7 +19,8 @@ from .mapmeta import MapMeta
 from .meta import Meta
 from .method import Method
 from .methodmodel import MethodModel, method_takes, method_returns, \
-    method_writeable_in, REQUIRED, OPTIONAL, method_also_takes, call_with_params
+    method_writeable_in, REQUIRED, OPTIONAL, method_also_takes, \
+    call_with_params, create_class_params
 from .ntscalar import NTScalar
 from .ntscalararray import NTScalarArray
 from .nttable import NTTable
