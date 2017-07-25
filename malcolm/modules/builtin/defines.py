@@ -1,5 +1,7 @@
 import os
 import subprocess
+import types
+import sys
 
 from malcolm.core import method_takes, REQUIRED
 from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
@@ -68,3 +70,20 @@ def export_env_string(params):
     """Exports an environment variable with the given value"""
     os.environ[params.name] = params.value
     return {params.name: params.value}
+
+
+@method_takes(
+    "name", StringMeta("The name of the exported module"), REQUIRED,
+    "path", StringMeta("The path of a python package dir to insert as "
+                       "malcolm.modules.<name>"), REQUIRED)
+def module_path(params):
+    """Load an external malcolm module (e.g. ADCore/etc/malcolm)"""
+    import malcolm.modules
+    path = os.path.join(params.path, "__init__.py")
+    assert os.path.isfile(path), "%r doesn't exist" % path
+    name = "malcolm.modules.%s" % params.name
+    created_module = types.ModuleType(name)
+    sys.modules[name] = created_module
+    execfile(path, created_module.__dict__)
+    setattr(malcolm.modules, params.name, created_module)
+    return {params.name: params.path}
