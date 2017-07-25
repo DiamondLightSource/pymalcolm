@@ -11,6 +11,7 @@ from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
     UnexpectedError
 from .future import Future
 from .hook import Hook
+from .importer import Importer
 from .info import Info
 from .loggable import Loggable
 from .map import Map

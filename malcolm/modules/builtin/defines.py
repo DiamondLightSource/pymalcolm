@@ -3,7 +3,7 @@ import subprocess
 import types
 import sys
 
-from malcolm.core import method_takes, REQUIRED
+from malcolm.core import method_takes, REQUIRED, Importer
 from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
 
 
@@ -78,12 +78,9 @@ def export_env_string(params):
                        "malcolm.modules.<name>"), REQUIRED)
 def module_path(params):
     """Load an external malcolm module (e.g. ADCore/etc/malcolm)"""
-    import malcolm.modules
-    path = os.path.join(params.path, "__init__.py")
-    assert os.path.isfile(path), "%r doesn't exist" % path
+    importer = Importer()
+    assert os.path.isdir(params.path), "%r doesn't exist" % params.path
     name = "malcolm.modules.%s" % params.name
-    created_module = types.ModuleType(name)
-    sys.modules[name] = created_module
-    execfile(path, created_module.__dict__)
-    setattr(malcolm.modules, params.name, created_module)
+    importer.import_package_from_path(name, params.path)
+    importer.import_special_subpackages(name, params.path)
     return {params.name: params.path}
