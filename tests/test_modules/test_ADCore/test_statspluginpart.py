@@ -43,6 +43,7 @@ class TestStatsPluginPart(ChildTestCase):
 <Attributes>
 <Attribute addr="0" datatype="DOUBLE" description="Sum of the array" name="STATS_TOTAL" source="TOTAL" type="PARAM" />
 </Attributes>"""
-        actual_xml = open(expected_filename).read().replace(">", ">\n")
+        with open(expected_filename) as f:
+            actual_xml = f.read().replace(">", ">\n")
         assert actual_xml.splitlines() == expected_xml.splitlines()
 

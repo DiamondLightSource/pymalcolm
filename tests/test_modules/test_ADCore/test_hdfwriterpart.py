@@ -222,7 +222,8 @@ class TestHDFWriterPart(ChildTestCase):
 </group>
 </group>
 </hdf5_layout>"""
-        actual_xml = open(expected_xml_filename).read().replace(">", ">\n")
+        with open(expected_xml_filename) as f:
+            actual_xml = f.read().replace(">", ">\n")
         assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_run(self):

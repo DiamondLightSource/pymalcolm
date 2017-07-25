@@ -91,8 +91,8 @@ class TestManagerController(unittest.TestCase):
             "attr": "%s"
           }
         }""" % (x, y, visible, attr)).splitlines()]
-        actual = [x.strip() for x in open(
-            "/tmp/mainBlock/testSaveLayout.json").readlines()]
+        with open("/tmp/mainBlock/testSaveLayout.json") as f:
+            actual = [x.strip() for x in f.readlines()]
         assert actual == expected
 
     def test_save(self):

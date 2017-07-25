@@ -402,7 +402,8 @@ class ManagerController(StatefulController):
             structure[part_name] = part_structure
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
-        open(filename, "w").write(text)
+        with open(filename, "w") as f:
+            f.write(text)
         self._mark_clean(design)
 
     def _set_layout_names(self, extra_name=None):
@@ -445,7 +446,8 @@ class ManagerController(StatefulController):
 
     def do_load(self, design):
         filename = self._validated_config_filename(design)
-        text = open(filename, "r").read()
+        with open(filename, "r") as f:
+            text = f.read()
         structure = json_decode(text)
         # Set the layout table
         layout_table = Table(self.layout.meta)

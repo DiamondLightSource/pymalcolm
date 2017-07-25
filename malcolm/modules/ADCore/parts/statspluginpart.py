@@ -64,7 +64,8 @@ class StatsPluginPart(StatefulChildPart):
         xml = self._make_attributes_xml()
         self.attributes_filename = os.path.join(
             params.fileDir, "%s-attributes.xml" % self.params.mri)
-        open(self.attributes_filename, "w").write(xml)
+        with open(self.attributes_filename, "w") as f:
+            f.write(xml)
         fs.append(
             child.attributesFile.put_value_async(self.attributes_filename))
         context.wait_all_futures(fs)
