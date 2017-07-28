@@ -8,7 +8,7 @@ from .blockmeta import BlockMeta
 from .context import Context
 from .controller import Controller
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
-    UnexpectedError
+    UnexpectedError, YamlError
 from .future import Future
 from .hook import Hook
 from .importer import Importer

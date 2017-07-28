@@ -5,7 +5,7 @@ import importlib
 from ruamel import yaml
 
 from malcolm.compat import str_
-from malcolm.core import method_takes, call_with_params
+from malcolm.core import method_takes, call_with_params, YamlError
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -162,8 +162,8 @@ class Section(object):
                 self.filename, self.lineno, pkg, ident))
         try:
             ret = call_with_params(ob, *args, **param_dict)
-        except ValueError as e:
-            raise ValueError("%s:%d:\n%s" % (self.filename, self.lineno, e))
+        except YamlError as e:
+            raise YamlError("%s:%d:\n%s" % (self.filename, self.lineno, e))
         else:
             return ret
 
