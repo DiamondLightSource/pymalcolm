@@ -45,7 +45,7 @@ class Importer(object):
             return {name: imp}
 
     def import_package_from_path(self, name, path):
-        dirname, basename = path.rsplit(os.sep, 1)
+        dirname, basename = os.path.abspath(path).rsplit(os.sep, 1)
         file, pathname, description = imp.find_module(basename, [dirname])
         try:
             mod = imp.load_module(name, file, pathname, description)
