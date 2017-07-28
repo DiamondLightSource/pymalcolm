@@ -2,7 +2,7 @@ import os
 
 from malcolm.compat import OrderedDict
 from malcolm.core import call_with_params
-from malcolm.modules.builtin.parts import GroupPart, IconPart
+from malcolm.modules.builtin.parts import GroupPart, IconPart, LabelPart
 from malcolm.tags import widget, group, inport, outport, config
 from malcolm.modules.builtin.vmetas import BooleanMeta, NumberMeta, StringMeta, \
     ChoiceMeta, TableMeta
@@ -57,7 +57,7 @@ class PandABlocksMaker(object):
         self.block_data = block_data
         self.parts = OrderedDict()
         # Make an icon
-        self._make_icon()
+        self._make_icon_label()
         for field_name, field_data in block_data.fields.items():
             self.make_parts_for(field_name, field_data)
 
@@ -102,10 +102,13 @@ class PandABlocksMaker(object):
         else:
             raise ValueError("Unknown type %r subtype %r" % (type, subtyp))
 
-    def _make_icon(self):
-        svg_name = self.block_name.rstrip("0123456789") + ".svg"
+    def _make_icon_label(self):
+        block_type = self.block_name.rstrip("0123456789")
+        svg_name = block_type + ".svg"
         part = call_with_params(IconPart, svg=os.path.join(SVG_DIR, svg_name))
         self._add_part("icon", part)
+        part = call_with_params(LabelPart, initialValue=block_type)
+        self._add_part("label", part)
 
     def _make_scale_offset(self, field_name):
         group_tag = self._make_group("outputs")
