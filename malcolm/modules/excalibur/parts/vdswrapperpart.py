@@ -22,7 +22,7 @@ class VDSWrapperPart(Part):
 
     # Constants for vds-gen CLI app
     VENV = "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/bin/python"
-    VDS_GEN = "/dls_sw/work/tools/RHEL6-x86_64/odin/vds-gen/vdsgen/app.py"
+    VDS_GEN = "/home/clb02321/DAWN_stable/vds-gen/vds-gen/build/lib/vdsgen/app.py"#VDS_GEN = "/dls_sw/work/tools/RHEL6-x86_64/odin/vds-gen/vdsgen/app.py"
     EMPTY = "-e"
     OUTPUT = "-o"
     FILES = "-f"
@@ -131,6 +131,7 @@ class VDSWrapperPart(Part):
                 node_tree.append(base + "/{}_set_indices".format(axis))
 
         with h5.File(self.vds_path, self.CREATE, libver="latest") as self.vds:
+            self.vds.swmr_mode = True
             for node in self.required_nodes:
                 self.vds.require_group(node)
             for node in node_tree:
@@ -173,7 +174,7 @@ class VDSWrapperPart(Part):
                           for file_ in files]
 
         # Open the VDS
-        self.vds = h5.File(self.vds_path, self.APPEND, libver="latest")
+        self.vds = h5.File(self.vds_path, self.APPEND, libver="latest",swmr=True)
         
 
         # Return the dataset information
