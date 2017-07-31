@@ -22,7 +22,7 @@ class VDSWrapperPart(Part):
 
     # Constants for vds-gen CLI app
     VENV = "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/bin/python"
-    VDS_GEN = "/home/clb02321/DAWN_stable/vds-gen/vds-gen/build/lib/vdsgen/app.py"#VDS_GEN = "/dls_sw/work/tools/RHEL6-x86_64/odin/vds-gen/vdsgen/app.py"
+    VDS_GEN = "/dls_sw/work/tools/RHEL6-x86_64/odin/vds-gen/vdsgen/app.py"
     EMPTY = "-e"
     OUTPUT = "-o"
     FILES = "-f"
