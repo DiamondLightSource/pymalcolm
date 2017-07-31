@@ -197,6 +197,27 @@ class TestPMACTrajectoryPart(ChildTestCase):
         assert self.child.handled_requests.mock_calls == [
             call.post('executeProfile')]
 
+    def test_reset(self):
+        self.o.reset(self.context)
+        assert self.child.handled_requests.mock_calls == [
+            call.post('abortProfile'),
+            call.put('numPoints', 10),
+            call.put('useA', False),
+            call.put('useB', False),
+            call.put('useC', False),
+            call.put('useU', False),
+            call.put('useV', False),
+            call.put('useW', False),
+            call.put('useX', False),
+            call.put('useY', False),
+            call.put('useZ', False),
+            call.put('pointsToBuild', 1),
+            call.put('timeArray', [100000]),
+            call.put('userPrograms', [8]),
+            call.put('velocityMode', [3]),
+            call.post('buildProfile'),
+            call.post('executeProfile')]
+
     def test_multi_run(self):
         self.do_configure(axes_to_scan=["x"])
         assert self.o.completed_steps_lookup == (
