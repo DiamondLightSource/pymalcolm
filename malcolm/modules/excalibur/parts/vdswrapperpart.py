@@ -131,7 +131,6 @@ class VDSWrapperPart(Part):
                 node_tree.append(base + "/{}_set_indices".format(axis))
 
         with h5.File(self.vds_path, self.CREATE, libver="latest") as self.vds:
-            self.vds.swmr_mode = True
             for node in self.required_nodes:
                 self.vds.require_group(node)
             for node in node_tree:
@@ -174,8 +173,8 @@ class VDSWrapperPart(Part):
                           for file_ in files]
 
         # Open the VDS
-        self.vds = h5.File(self.vds_path, self.APPEND, libver="latest",swmr=True)
-        
+        self.vds = h5.File(
+                self.vds_path, self.APPEND, libver="latest", swmr=True)
 
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
@@ -202,6 +201,7 @@ class VDSWrapperPart(Part):
                 self.log.info("Waiting for id in file %s", dataset)
                 while self.ID not in dataset:
                     context.sleep(0.1)
+            self.vds.swmr_mode = True
         try:
             self.log.info("Monitoring raw files until ID reaches %s",
                           self.done_when_reaches)
@@ -241,6 +241,7 @@ class VDSWrapperPart(Part):
         self.log.debug("ID shape:\n%s", min_id.shape)
         self.vds[self.ID].resize(min_id.shape)
         self.vds[self.ID][...] = min_id
+        self.vds[self.ID].flush()
 
     def update_sum(self, min_dataset):
         min_sum = self.raw_datasets[min_dataset][self.SUM].value
@@ -260,3 +261,4 @@ class VDSWrapperPart(Part):
         self.log.debug("Sum shape:\n%s", sum_.shape)
         self.vds[self.SUM].resize(sum_.shape)
         self.vds[self.SUM][...] = sum_
+        self.vds[self.SUM].flush()

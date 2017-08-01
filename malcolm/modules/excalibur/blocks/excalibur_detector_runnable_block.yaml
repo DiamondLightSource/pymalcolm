@@ -79,6 +79,9 @@
 
 - excalibur.parts.VDSWrapperPart:
     name: VDS
-    dataType: "int16"
+    dataType: int32
     stripeHeight: 259
     stripeWidth: 2069
+
+- ADCore.parts.DatasetTablePart:
+    name: DSET
