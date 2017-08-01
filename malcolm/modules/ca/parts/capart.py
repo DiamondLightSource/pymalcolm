@@ -129,4 +129,5 @@ class CAPart(AttributePart):
             # We only have a raw_stamp attr on monitor, the initial
             # caget with CTRL doesn't give us a timestamp
             ts = TimeStamp(*getattr(value, "raw_stamp", (None, None)))
+            value = self.attr.meta.validate(value)
             self.attr.set_value_alarm_ts(value, alarm, ts)
