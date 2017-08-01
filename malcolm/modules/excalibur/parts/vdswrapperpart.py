@@ -37,8 +37,8 @@ class VDSWrapperPart(Part):
     LOG_LEVEL = "-l"
 
     # Constants for class
-    RAW_FILE_TEMPLATE = "FEM{}.h5"
-    OUTPUT_FILE = "EXCALIBUR.h5"
+    RAW_FILE_TEMPLATE = "FEM{}"
+    OUTPUT_FILE = "EXCALIBUR"
     CREATE = "w"
     APPEND = "a"
     READ = "r"
@@ -116,14 +116,19 @@ class VDSWrapperPart(Part):
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
         "fileDir", StringMeta("File dir to write HDF files into"), REQUIRED,
+        "fileTemplate", StringMeta(
+            """Printf style template to generate filename relative to fileDir.
+            Arguments are:
+              1) %s: EXCALIBUR"""), "%s.h5",
         "fillValue", NumberMeta("int32", "Fill value for stripe spacing"), 0)
     def configure(self, context, completed_steps, steps_to_do, part_info,
                   params):
         self.done_when_reaches = completed_steps + steps_to_do
 
         self.log.debug("Creating ExternalLinks from VDS to FEM1.h5")
-        self.vds_path = os.path.join(params.fileDir, self.OUTPUT_FILE)
-        raw_file_path = self.RAW_FILE_TEMPLATE.format(1)
+        self.vds_path = os.path.join(params.fileDir,
+                                     params.fileTemplate % self.OUTPUT_FILE)
+        raw_file_path = params.fileTemplate % self.RAW_FILE_TEMPLATE.format(1)
         node_tree = list(self.default_node_tree)
         for axis in params.generator.axes:
             for base in self.set_bases:
@@ -146,7 +151,8 @@ class VDSWrapperPart(Part):
                                     maxshape=max_shape, dtype="float64")
 
         self.log.debug("Calling vds-gen to create dataset in VDS")
-        files = [self.RAW_FILE_TEMPLATE.format(fem) for fem in self.fems]
+        files = [params.fileTemplate % self.RAW_FILE_TEMPLATE.format(fem)
+                 for fem in self.fems]
         shape = [str(d) for d in params.generator.shape] + \
                 [str(self.stripe_height), str(self.stripe_width)]
         # Base arguments
@@ -163,7 +169,7 @@ class VDSWrapperPart(Part):
                     self.SOURCE_NODE, "/entry/detector/detector",
                     self.TARGET_NODE, "/entry/detector/detector"]
         # Define output file path
-        command += [self.OUTPUT, self.OUTPUT_FILE]
+        command += [self.OUTPUT, params.fileTemplate % self.OUTPUT_FILE]
         command += [self.LOG_LEVEL, "1"] # str(self.log.level / 10)]
         self.log.info("Command: %s", command)
         check_call(command)
@@ -178,7 +184,7 @@ class VDSWrapperPart(Part):
 
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
-            params.generator, self.vds_path))
+            params.generator, params.fileTemplate % self.OUTPUT_FILE))
 
         return dataset_infos
 
