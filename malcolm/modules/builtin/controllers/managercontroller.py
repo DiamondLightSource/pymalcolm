@@ -427,7 +427,7 @@ class ManagerController(StatefulController):
         self._mark_clean(design)
 
     def _set_layout_names(self, extra_name=None):
-        names = []
+        names = [""]
         if extra_name:
             names.append(extra_name)
         dir_name = self._make_config_dir()

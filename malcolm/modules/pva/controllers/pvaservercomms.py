@@ -3,7 +3,7 @@ import pvaccess
 from malcolm.core import Loggable, Process, Queue, Get, Put, Post, Subscribe, \
     Error, ResponseError, Map
 from malcolm.modules.builtin.controllers import ServerComms
-from .pvautil import dict_to_pv_object, value_for_pva_set
+from .pvautil import dict_to_pv_object, value_for_pva_set, strip_tuples
 
 
 class PvaServerComms(ServerComms):
@@ -176,25 +176,13 @@ class PvaPutImplementation(PvaGetImplementation):
 
 class PvaRpcImplementation(PvaImplementation):
 
-    def _strip_tuples(self, item):
-        if isinstance(item, dict):
-            for k, v in item.items():
-                item[k] = self._strip_tuples(v)
-        elif isinstance(item, list):
-            for i, v in enumerate(item):
-                item[i] = self._strip_tuples(v)
-        elif isinstance(item, tuple):
-            # Just take the first element, for variant unions?
-            item = self._strip_tuples(item[0])
-        return item
-
     def execute(self, args):
         try:
             method_name = self._request["method"]
             self.log.debug("Execute method %r of %r with args:\n%s",
                            self._mri, method_name, args.toDict())
             path = [method_name]
-            parameters = self._strip_tuples(args.toDict(True))
+            parameters = strip_tuples(args.toDict(True))
             response = self._request_response(Post, path, parameters=parameters)
             if response.value:
                 pv_object = dict_to_pv_object(response.value)

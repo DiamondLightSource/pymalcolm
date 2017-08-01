@@ -175,10 +175,13 @@ def make_process():
                 WebsocketClientComms, proc, [],
                 mri="%s:%s" % (hostname, port), hostname=hostname,
                 port=int(port))
-            proc.add_controller(comms.mri, comms)
+        elif args.client == "pva":
+            from malcolm.modules.pva.controllers import PvaClientComms
+            comms = call_with_params(PvaClientComms, proc, [], mri="pva")
         else:
             raise ValueError(
                 "Don't know how to create client to %s" % args.client)
+        proc.add_controller(comms.mri, comms)
 
     class UserContext(Context):
         def make_queue(self):

@@ -25,6 +25,19 @@ pva_dtypes = {
 }
 
 
+def strip_tuples(item):
+    if isinstance(item, dict):
+        for k, v in item.items():
+            item[k] = strip_tuples(v)
+    elif isinstance(item, list):
+        for i, v in enumerate(item):
+            item[i] = strip_tuples(v)
+    elif isinstance(item, tuple):
+        # Just take the first element, for variant unions?
+        item = strip_tuples(item[0])
+    return item
+
+
 def dict_to_pv_object(dict_in, empty_allowed=True):
     structure = pva_structure_from_value(dict_in, empty_allowed)
     if structure:

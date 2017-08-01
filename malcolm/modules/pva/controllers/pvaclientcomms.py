@@ -3,7 +3,7 @@ import pvaccess
 from malcolm.modules.builtin.controllers import ClientComms
 from malcolm.core import Request, Get, Put, Post, Subscribe, Update, Return, \
     Error, Queue, deserialize_object, UnexpectedError, Unsubscribe, Delta
-from .pvautil import dict_to_pv_object
+from .pvautil import dict_to_pv_object, strip_tuples
 
 
 class PvaClientComms(ClientComms):
@@ -79,6 +79,7 @@ class PvaClientComms(ClientComms):
         # Store the connection within the monitor set
         def callback(value=None):
             # TODO: ordering is not maintained here...
+            # TODO: should we strip_tuples here?
             d = value.toDict(True)
             if d.get("typeid", "") == Error.typeid:
                 response = Error(request.id, d["message"])
@@ -114,6 +115,6 @@ class PvaClientComms(ClientComms):
         # Call the method on the RPC object
         value = rpc.invoke(params)
         # Now create the Return object and populate it with the response
-        d = value.toDict(True)
+        d = strip_tuples(value.toDict(True))
         response = self._response_from_dict(request, d)
         return response
