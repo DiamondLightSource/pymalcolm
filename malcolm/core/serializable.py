@@ -174,6 +174,11 @@ class Serializable(object):
     def __ne__(self, other):
         return not self == other
 
+    def __hash__(self):
+        # This is not technically correct, but will do...
+        # https://stackoverflow.com/a/1608888
+        return id(self)
+
     @classmethod
     def from_dict(cls, d, ignore=()):
         """Create an instance from a serialized version of cls

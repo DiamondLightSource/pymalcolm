@@ -1,7 +1,6 @@
-import thread
 import threading
 
-from malcolm.compat import maybe_import_cothread
+from malcolm.compat import maybe_import_cothread, get_thread_ident
 from .errors import WrongThreadError
 
 
@@ -13,7 +12,7 @@ class RLock(object):
         else:
             self.cothread = None
         if self.cothread:
-            if self.cothread.scheduler_thread_id == thread.get_ident():
+            if self.cothread.scheduler_thread_id == get_thread_ident():
                 self._lock = self.cothread.RLock()
             else:
                 self._lock = self.cothread.CallbackResult(self.cothread.RLock)
@@ -22,7 +21,7 @@ class RLock(object):
             self._check_cothread_lock = lambda: None
 
     def _check_cothread_lock(self):
-        if self.cothread.scheduler_thread_id != thread.get_ident():
+        if self.cothread.scheduler_thread_id != get_thread_ident():
             # can only use a cothread RLock from cothread's thread
             raise WrongThreadError(
                 "Can only use a cothread RLock from cothread's thread")

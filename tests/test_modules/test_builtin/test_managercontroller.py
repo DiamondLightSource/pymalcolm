@@ -1,5 +1,5 @@
 import unittest
-from mock import MagicMock
+from mock import MagicMock, call
 import os
 
 from malcolm.compat import OrderedDict
@@ -91,11 +91,12 @@ class TestManagerController(unittest.TestCase):
             "attr": "%s"
           }
         }""" % (x, y, visible, attr)).splitlines()]
-        actual = [x.strip() for x in open(
-            "/tmp/mainBlock/testSaveLayout.json").readlines()]
+        with open("/tmp/mainBlock/testSaveLayout.json") as f:
+            actual = [x.strip() for x in f.readlines()]
         assert actual == expected
 
     def test_save(self):
+        self.c._run_git_cmd = MagicMock()
         call_with_params(self.c.save, design="testSaveLayout")
         self.check_expected_save()
         assert self.c.state.value == "Ready"
@@ -109,6 +110,11 @@ class TestManagerController(unittest.TestCase):
         call_with_params(self.c.save, design="")
         self.check_expected_save(attr="newv")
         assert self.c.design.value == 'testSaveLayout'
+        assert self.c._run_git_cmd.call_args_list == [
+            call('add', '/tmp/mainBlock/testSaveLayout.json'),
+            call('commit', '--allow-empty', '-m', 'Saved mainBlock testSaveLayout', '/tmp/mainBlock/testSaveLayout.json'),
+            call('add', '/tmp/mainBlock/testSaveLayout.json'),
+            call('commit', '--allow-empty', '-m', 'Saved mainBlock testSaveLayout', '/tmp/mainBlock/testSaveLayout.json')]
 
     def move_child_block(self):
         new_layout = Table(self.c.layout.meta)

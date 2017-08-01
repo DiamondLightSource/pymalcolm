@@ -191,6 +191,8 @@ def method_also_takes(*args):
     """
 
     def decorator(func):
+        assert inspect.isclass(func), \
+            "method_also_takes() only works on a Class, not %r" % func
         MethodModel.wrap_method(func)
         takes_meta, defaults = _prepare_map_meta(
             args, allow_defaults=True,
@@ -251,6 +253,12 @@ def get_method_decorated(instance):
             method_model = MethodModel.from_dict(member.MethodModel.to_dict())
             method_model.writeable_in = member.MethodModel.writeable_in
             yield name, method_model, member
+
+
+def create_class_params(cls, **kwargs):
+    method_model = cls.MethodModel
+    params = method_model.prepare_call_args(**kwargs)[0]
+    return params
 
 
 def call_with_params(func, *args, **params):

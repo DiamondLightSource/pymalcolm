@@ -35,6 +35,7 @@
     description: command to build the profile once times and positions are set
     pv: $(prefix):ProfileBuild
     statusPv: $(prefix):ProfileBuildStatus_RBV
+    messagePv: $(prefix):ProfileBuildMessage_RBV
     goodStatus: Success
 
 - ca.parts.CAStringPart:
@@ -48,6 +49,7 @@
     description: command to execute the profile once built
     pv: $(prefix):ProfileExecute
     statusPv: $(prefix):ProfileExecuteStatus_RBV
+    messagePv: $(prefix):ProfileExecuteMessage_RBV
     goodStatus: Success
 
 - ca.parts.CAStringPart:
@@ -61,6 +63,7 @@
     description: command to append the profile once built
     pv: $(prefix):ProfileAppend
     statusPv: $(prefix):ProfileAppendStatus_RBV
+    messagePv: $(prefix):ProfileAppendMessage_RBV
     goodStatus: Success
 
 - ca.parts.CAStringPart:

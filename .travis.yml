@@ -2,10 +2,10 @@ sudo: false
 language: python
 python:
   - "2.7"
-#  - "3.3"
-#  - "3.4"
-#  - "3.5"
-#  - "3.6"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
 
 env:
   - PYMALCOLM_USE_COTHREAD=YES
@@ -30,6 +30,7 @@ install:
   - ls -al ${VIRTUAL_ENV}/bin
   - ci/install_pyqt.sh
   - python -c "import PyQt4;print(PyQt4)"
+  - pip install "setuptools>=36"
   - pip install -r requirements/test.txt
   - pip install coveralls
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages  

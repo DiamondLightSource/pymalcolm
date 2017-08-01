@@ -54,3 +54,11 @@ def get_pool_num_threads():
     else:
         num_threads = 128
     return num_threads
+
+
+try:
+    # Python2
+    from thread import get_ident as get_thread_ident
+except ImportError:
+    # Python3
+    from threading import get_ident as get_thread_ident

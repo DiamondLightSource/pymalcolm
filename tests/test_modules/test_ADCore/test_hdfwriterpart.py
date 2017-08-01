@@ -222,7 +222,8 @@ class TestHDFWriterPart(ChildTestCase):
 </group>
 </group>
 </hdf5_layout>"""
-        actual_xml = open(expected_xml_filename).read().replace(">", ">\n")
+        with open(expected_xml_filename) as f:
+            actual_xml = f.read().replace(">", ">\n")
         assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_run(self):
@@ -241,7 +242,7 @@ class TestHDFWriterPart(ChildTestCase):
     def test_seek(self):
         completed_steps = 4
         steps_to_do = 3
-        part_infos = {ANY: [UniqueIdInfo(10)]}
+        part_infos = {"anything": [UniqueIdInfo(10)]}
         self.o.seek(self.context, completed_steps, steps_to_do, part_infos)
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCounter', 0)]

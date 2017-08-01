@@ -24,6 +24,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         o = PandABlocksMaker(self.client, "ADDER1", block_data)
         assert list(o.parts) == [
             'icon',
+            'label',
             'inputs',
             'INPA',
             'INPA.CURRENT',
@@ -136,6 +137,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         o = PandABlocksMaker(self.client, "PULSE2", block_data)
         assert list(o.parts) == [
             'icon',
+            'label',
             'parameters',
             'DELAY',
             'DELAY.UNITS',

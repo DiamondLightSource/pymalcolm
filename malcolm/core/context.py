@@ -22,15 +22,17 @@ class When(object):
     def check_condition(self, value):
         if self.future:
             try:
-                if self.condition_satisfied(value):
-                    # All done, so unsubscribe
-                    self.context.unsubscribe(self.future)
-                    self.future = None
+                satisfied = self.condition_satisfied(value)
             except Exception:
                 # Bad value, so unsubscribe
                 self.context.unsubscribe(self.future)
                 self.future = None
                 raise
+            else:
+                if satisfied:
+                    # All done, so unsubscribe
+                    self.context.unsubscribe(self.future)
+                    self.future = None
 
 
 class Context(Loggable):

@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 import numpy as np
 
@@ -97,11 +98,25 @@ class ManagerController(StatefulController):
         # Whether to do updates
         self._do_update = True
 
+    def _run_git_cmd(self, *args):
+        # Run git command, don't care if it fails, logging the output
+        try:
+            output = subprocess.check_output(
+                ("git",) + args, cwd=self.params.configDir)
+        except subprocess.CalledProcessError as e:
+            self.log.warning("Git command failed: %s\n%s", e, e.output)
+        else:
+            self.log.debug("Git command completed: %s", output)
+
     def create_attribute_models(self):
         for data in super(ManagerController, self).create_attribute_models():
             yield data
         assert os.path.isdir(self.params.configDir), \
             "%s is not a directory" % self.params.configDir
+        if not os.path.isdir(os.path.join(self.params.configDir, ".git")):
+            # Try and make it a git repo, don't care if it fails
+            self._run_git_cmd("init")
+            self._run_git_cmd("commit", "--allow-empty", "-m", "Created repo")
         # Create writeable attribute table for the layout info we need
         elements = OrderedDict()
         elements["name"] = StringArrayMeta("Name of layout part")
@@ -402,7 +417,13 @@ class ManagerController(StatefulController):
             structure[part_name] = part_structure
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
-        open(filename, "w").write(text)
+        with open(filename, "w") as f:
+            f.write(text)
+        if os.path.isdir(os.path.join(self.params.configDir, ".git")):
+            # Try and commit the file to git, don't care if it fails
+            self._run_git_cmd("add", filename)
+            msg = "Saved %s %s" % (self.mri, design)
+            self._run_git_cmd("commit", "--allow-empty", "-m", msg, filename)
         self._mark_clean(design)
 
     def _set_layout_names(self, extra_name=None):
@@ -445,7 +466,8 @@ class ManagerController(StatefulController):
 
     def do_load(self, design):
         filename = self._validated_config_filename(design)
-        text = open(filename, "r").read()
+        with open(filename, "r") as f:
+            text = f.read()
         structure = json_decode(text)
         # Set the layout table
         layout_table = Table(self.layout.meta)

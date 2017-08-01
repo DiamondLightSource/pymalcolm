@@ -1,6 +1,6 @@
 from .datasetrunnablechildpart import DatasetRunnableChildPart
 from .datasettablepart import DatasetTablePart
-from .detectordriverpart import DetectorDriverPart
+from .detectordriverpart import DetectorDriverPart, configure_args
 from .exposuredetectordriverpart import ExposureDetectorDriverPart
 from .hdfwriterpart import HDFWriterPart
 from .positionlabellerpart import PositionLabellerPart

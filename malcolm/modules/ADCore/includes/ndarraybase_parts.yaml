@@ -21,6 +21,7 @@
     pv: $(prefix):ArrayCounter
     rbvSuff: _RBV
     widget: textinput
+    config: False
 
 - ca.parts.CALongPart:
     name: uniqueId

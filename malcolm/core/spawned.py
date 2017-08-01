@@ -1,7 +1,6 @@
 import logging
-import thread
 
-from malcolm.compat import maybe_import_cothread
+from malcolm.compat import maybe_import_cothread, get_thread_ident
 from .queue import Queue
 
 # Create a module level logger
@@ -23,14 +22,15 @@ class Spawned(object):
         def catching_function():
             try:
                 result = function(*args, **kwargs)
-            except Exception as result:
+            except Exception as e:
                 log.debug(
                     "Exception calling %s(*%s, **%s)", function, args, kwargs,
                     exc_info=True)
+                result = e
             self._result_queue.put(result)
 
         if use_cothread:
-            if self.cothread.scheduler_thread_id != thread.get_ident():
+            if self.cothread.scheduler_thread_id != get_thread_ident():
                 # Spawning cothread from real thread
                 self.cothread.Callback(self.cothread.Spawn, catching_function)
             else:

@@ -8,9 +8,10 @@ from .blockmeta import BlockMeta
 from .context import Context
 from .controller import Controller
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
-    UnexpectedError
+    UnexpectedError, YamlError
 from .future import Future
 from .hook import Hook
+from .importer import Importer
 from .info import Info
 from .loggable import Loggable
 from .map import Map
@@ -18,7 +19,8 @@ from .mapmeta import MapMeta
 from .meta import Meta
 from .method import Method
 from .methodmodel import MethodModel, method_takes, method_returns, \
-    method_writeable_in, REQUIRED, OPTIONAL, method_also_takes, call_with_params
+    method_writeable_in, REQUIRED, OPTIONAL, method_also_takes, \
+    call_with_params, create_class_params
 from .ntscalar import NTScalar
 from .ntscalararray import NTScalarArray
 from .nttable import NTTable

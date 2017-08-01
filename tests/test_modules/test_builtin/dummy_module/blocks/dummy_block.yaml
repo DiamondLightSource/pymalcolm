@@ -1,0 +1,12 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.controllers.BasicController:
+    mri: $(mri)
+
+- demo.parts.HelloPart:
+    name: hello
+
+- dummy.parts.DummyPart:
+    name: dummy

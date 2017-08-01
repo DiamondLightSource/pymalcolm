@@ -255,8 +255,7 @@ if __name__ == "__main__":
     sys.path.insert(0,
                     "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
                     "site-packages")
-    sys.path.append("/dls_sw/work/common/python/cothread")
-    require("tornado", "numpy", "ruamel.yaml",
+    require("tornado", "numpy", "ruamel.yaml", "cothread==2.14",
             "scanpointgenerator", "plop", "pygelf", "h5py")
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "scanpointgenerator"))
     sys.path.append(

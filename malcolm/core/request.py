@@ -13,7 +13,7 @@ class Request(Serializable):
     """Request object that registers a callback for when action is complete."""
 
     endpoints = ["id"]
-    __slots__ = endpoints
+    __slots__ = []
 
     id = None
     callback = None
@@ -83,7 +83,7 @@ class PathRequest(Request):
     """Create a Get Request object"""
 
     endpoints = ["id", "path"]
-    __slots__ = endpoints
+    __slots__ = []
 
     path = None
 
@@ -116,7 +116,7 @@ class Put(PathRequest):
     """Create a Put Request object"""
 
     endpoints = ["id", "path", "value"]
-    __slots__ = endpoints
+    __slots__ = []
 
     value = None
 
@@ -145,7 +145,7 @@ class Post(PathRequest):
     """Create a Post Request object"""
 
     endpoints = ["id", "path", "parameters"]
-    __slots__ = endpoints
+    __slots__ = []
 
     parameters = None
 
@@ -178,7 +178,7 @@ class Subscribe(PathRequest):
     """Create a Subscribe Request object"""
 
     endpoints = ["id", "path", "delta"]
-    __slots__ = endpoints
+    __slots__ = []
 
     delta = None
 

@@ -48,15 +48,20 @@ class Controller(Loggable):
         self.part_fields = OrderedDict()
         # {name: Part}
         self.parts = OrderedDict()
-        for part in parts:
-            self.add_part(part)
         self._lock = RLock(self.use_cothread)
         self._block = BlockModel()
         self._block.meta.set_description(description)
+        self.set_label(mri)
+        for part in parts:
+            self.add_part(part)
         self._notifier = Notifier(mri, self._lock, self._block)
         self._block.set_notifier_path(self._notifier, [mri])
         self._write_functions = {}
         self._add_block_fields()
+
+    def set_label(self, label):
+        """Set the label of the Block Meta object"""
+        self._block.meta.set_label(label)
 
     def add_part(self, part):
         assert part.name not in self.parts, \

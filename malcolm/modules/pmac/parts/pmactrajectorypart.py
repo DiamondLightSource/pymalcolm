@@ -6,7 +6,7 @@ from collections import Counter
 import numpy as np
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import method_takes, REQUIRED, method_also_takes
+from malcolm.core import method_takes, REQUIRED, method_also_takes, TimeoutError
 from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberMeta
 from malcolm.modules.pmac.infos import MotorInfo
@@ -24,6 +24,9 @@ MIN_TIME = 0.002
 # Interval for interpolating velocity curves
 INTERPOLATE_INTERVAL = 0.02
 
+# Longest move time we can request
+MAX_MOVE_TIME = 4.0
+
 # velocity modes
 PREV_TO_NEXT = 0
 PREV_TO_CURRENT = 1
@@ -37,18 +40,19 @@ TRIG_DEAD_FRAME = 2  # Capture 0, Frame 1, Detector 0
 TRIG_LIVE_FRAME = 3  # Capture 0, Frame 1, Detector 1
 TRIG_ZERO = 8        # Capture 0, Frame 0, Detector 0
 
-# How many generator points to load each time
-POINTS_PER_BUILD = 4000
+# How many profile points to write each time
+PROFILE_POINTS = 10000
 
 # All possible PMAC CS axis assignment
 cs_axis_names = list("ABCUVWXYZ")
 
 # Args for configure and validate
-configure_args = [
+configure_args = (
     "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
     "axesToMove", StringArrayMeta(
         "List of axes in inner dimension of generator that should be moved"),
-    []]
+    []
+)
 
 
 @method_also_takes(
@@ -62,10 +66,13 @@ class PmacTrajectoryPart(StatefulChildPart):
     completed_steps_lookup = []
     # If we are currently loading then block loading more points
     loading = False
-    # The last index we have loaded
+    # Where we have generated into profile
     end_index = 0
     # Where we should stop loading points
     steps_up_to = 0
+    # Profile points that haven't been sent yet
+    # {time_array/velocity_mode/trajectory/user_programs: [elements]}
+    profile = {}
     # Stored generator for positions
     generator = None
     # Min turnaround time
@@ -79,7 +86,8 @@ class PmacTrajectoryPart(StatefulChildPart):
         meta = NumberMeta(
             "float64", "Min time for any gaps between frames",
             tags=[widget("textinput"), config()])
-        self.min_turnaround = meta.create_attribute_model(self.params.minTurnaround)
+        self.min_turnaround = meta.create_attribute_model(
+            self.params.minTurnaround)
         yield "minTurnaround", self.min_turnaround, \
               self.min_turnaround.set_value
 
@@ -155,12 +163,17 @@ class PmacTrajectoryPart(StatefulChildPart):
             part_info, params.axesToMove)
         # Set the right CS to move
         child.cs.put_value(cs_port)
+        self.completed_steps_lookup = []
+        self.profile = dict(time_array=[], velocity_mode=[], user_programs=[],
+                            trajectory={name: [] for name in self.axis_mapping})
         future = self.move_to_start(child, completed_steps)
         self.steps_up_to = completed_steps + steps_to_do
         self.completed_steps_lookup = []
-        profile = self.build_generator_profile(completed_steps, do_run_up=True)
+        self.profile = dict(time_array=[], velocity_mode=[], user_programs=[],
+                            trajectory={name: [] for name in self.axis_mapping})
+        self.calculate_generator_profile(completed_steps, do_run_up=True)
         context.wait_all_futures(future)
-        self.write_profile_points(child, **profile)
+        self.profile = self.write_profile_points(child, **self.profile)
         # Max size of array
         child.buildProfile()
 
@@ -172,6 +185,14 @@ class PmacTrajectoryPart(StatefulChildPart):
         child.pointsScanned.subscribe_value(
             self.update_step, update_completed_steps, child)
         child.executeProfile()
+        # Now wait for up to 2*minDelta time to make sure any
+        # update_completed_steps come in
+        traj_end = len(self.completed_steps_lookup)
+        try:
+            child.when_value_matches("pointsScanned", traj_end, timeout=0.1)
+        except TimeoutError:
+            raise ValueError("PMAC %r didn't report %s steps in time" % (
+                self.params.mri, traj_end))
 
     @RunnableController.Abort
     def abort(self, context):
@@ -188,15 +209,28 @@ class PmacTrajectoryPart(StatefulChildPart):
         if scanned > 0:
             completed_steps = self.completed_steps_lookup[scanned - 1]
             update_completed_steps(completed_steps, self)
+            # Keep PROFILE_POINTS trajectory points in front
             if not self.loading and self.end_index < self.steps_up_to and \
-                    self.end_index - completed_steps < POINTS_PER_BUILD:
+                    len(self.completed_steps_lookup) - scanned < PROFILE_POINTS:
                 self.loading = True
-                profile = self.build_generator_profile(self.end_index)
-                self.write_profile_points(child, **profile)
+                self.calculate_generator_profile(self.end_index)
+                self.profile = self.write_profile_points(child, **self.profile)
                 child.appendProfile()
+
+                # If we got to the end, there might be some leftover points that
+                # need to be appended to finish
+                if self.end_index == self.steps_up_to and \
+                        self.profile["time_array"]:
+                    self.profile = self.write_profile_points(
+                        child, **self.profile)
+                    assert not self.profile["time_array"], \
+                        "Why do we still have points? %s" % self.profile
+                    child.appendProfile()
+
                 self.loading = False
 
     def point_velocities(self, point):
+        """Find the velocities of each axis over the current point"""
         velocities = {}
         for axis_name, motor_info in self.axis_mapping.items():
             full_distance = point.upper[axis_name] - point.lower[axis_name]
@@ -209,6 +243,7 @@ class PmacTrajectoryPart(StatefulChildPart):
 
     def make_consistent_velocity_profiles(self, v1s, v2s, distances,
                                           min_time=MIN_TIME):
+        """Make consistent time and velocity arrays for each axis"""
         time_arrays = {}
         velocity_arrays = {}
         iterations = 5
@@ -256,27 +291,34 @@ class PmacTrajectoryPart(StatefulChildPart):
             return []
 
         # Work out the Position trajectories from these velocity profiles
-        profile = self.build_profile_from_velocities(
-            time_arrays, velocity_arrays, current_positions)
+        self.calculate_profile_from_velocities(
+            time_arrays, velocity_arrays, current_positions, 0)
 
-        self.write_profile_points(child, **profile)
+        # Write the profiles, checking there are no left over points
+        profile = self.write_profile_points(child, **self.profile)
+        assert not profile["time_array"], "Leftover points %s" % profile
         child.buildProfile()
         future = child.executeProfile_async()
         return future
 
-    def write_profile_points(self, child, time_array, velocity_mode, trajectory,
-                             user_programs, completed_steps_lookup=None):
-        """Build profile using part_contexts
+    def write_profile_points(self, child, time_array, velocity_mode,
+                             user_programs, trajectory):
+        """Build profile using given data
 
         Args:
+            child (Block): Child block for running
             time_array (list): List of times in ms
             velocity_mode (list): List of velocity modes like PREV_TO_NEXT
             trajectory (dict): {axis_name: [positions in EGUs]}
-            child (Block): Child block for running
             user_programs (list): List of user programs like TRIG_LIVE_FRAME
-            completed_steps_lookup (list): If given, when we get to this index,
-                how many completed steps have we done?
         """
+        # Overflow profiles go here
+        profile = dict(
+            time_array=time_array[PROFILE_POINTS:],
+            velocity_mode=velocity_mode[PROFILE_POINTS:],
+            user_programs=user_programs[PROFILE_POINTS:],
+            trajectory={k: v[PROFILE_POINTS:] for k, v in trajectory.items()})
+
         # Work out which axes should be used and set their resolutions and
         # offsets
         use = []
@@ -291,46 +333,10 @@ class PmacTrajectoryPart(StatefulChildPart):
             attr_dict["use%s" % cs_axis] = cs_axis in use
         child.put_attribute_values(attr_dict)
 
-        # Start adding points, padding if the move time exceeds 4s
-        i = 0
-        while i < len(time_array):
-            t = time_array[i]
-            if t > 4:
-                # split
-                nsplit = int(t / 4.0 + 1)
-                new_time_array = time_array[:i]
-                new_velocity_mode = velocity_mode[:i]
-                new_user_programs = user_programs[:i]
-                for _ in range(nsplit):
-                    new_time_array.append(t / nsplit)
-                    new_velocity_mode.append(PREV_TO_NEXT)
-                    new_user_programs.append(NO_PROGRAM)
-                time_array = new_time_array + time_array[i+1:]
-                user_programs = new_user_programs[:-1] + user_programs[i:]
-                velocity_mode = new_velocity_mode[:-1] + velocity_mode[i:]
-                if completed_steps_lookup is not None:
-                    if i > 0:
-                        last_completed_step = completed_steps_lookup[i - 1]
-                    else:
-                        last_completed_step = 0
-                    new_completed_steps_lookup = completed_steps_lookup[:i] + \
-                                                 [last_completed_step] * nsplit
-                    completed_steps_lookup = new_completed_steps_lookup[:-1] + \
-                                             completed_steps_lookup[i:]
-                for k, traj in trajectory.items():
-                    new_traj = traj[:i]
-                    per_section = float(traj[i] - traj[i-1]) / nsplit
-                    for j in range(1, nsplit+1):
-                        new_traj.append(traj[i-1] + j * per_section)
-                    trajectory[k] = new_traj + traj[i+1:]
-                i += nsplit
-            else:
-                i += 1
-
         # Process the time in ticks
-        overflow = 0
+        overflow = 0.0
         time_array_ticks = []
-        for t in time_array:
+        for t in time_array[:PROFILE_POINTS]:
             ticks = t / TICK_S
             overflow += (ticks % 1)
             ticks = int(ticks)
@@ -342,45 +348,43 @@ class PmacTrajectoryPart(StatefulChildPart):
         # Set the trajectories
         attr_dict = dict(
             timeArray=time_array_ticks,
-            velocityMode=velocity_mode,
-            userPrograms=user_programs,
-            pointsToBuild=len(time_array)
+            velocityMode=velocity_mode[:PROFILE_POINTS],
+            userPrograms=user_programs[:PROFILE_POINTS],
+            pointsToBuild=len(time_array_ticks)
         )
-        for axis_name in trajectory:
+        for axis_name, axis_points in trajectory.items():
             motor_info = self.axis_mapping[axis_name]
             cs_axis = motor_info.cs_axis
-            attr_dict["positions%s" % cs_axis] = trajectory[axis_name]
+            attr_dict["positions%s" % cs_axis] = axis_points[:PROFILE_POINTS]
         child.put_attribute_values(attr_dict)
-
-        # Set completed_steps
-        if completed_steps_lookup is not None:
-            self.completed_steps_lookup += completed_steps_lookup
+        return profile
 
     def reset_triggers(self, context):
         """Just call a Move to the run up position ready to start the scan"""
         child = context.block_view(self.params.mri)
         child.numPoints.put_value(10)
-        time_array = [0.1]
-        velocity_mode = [ZERO_VELOCITY]
-        user_programs = [TRIG_ZERO]
-        trajectory = {}
-        self.write_profile_points(child, time_array, velocity_mode, trajectory,
-                                  user_programs)
+        self.write_profile_points(child,
+                                  time_array=[0.1],
+                                  velocity_mode=[ZERO_VELOCITY],
+                                  user_programs=[TRIG_ZERO],
+                                  trajectory={})
         child.buildProfile()
         child.executeProfile()
 
-    def build_profile_from_velocities(self, time_arrays, velocity_arrays,
-                                      current_positions):
+    def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,
+                                          current_positions, completed_steps):
         trajectory = {}
 
-        # Interpolate the velocity arrays at about 10ms
+        # Interpolate the velocity arrays at about INTERPOLATE_INTERVAL
         move_time = max(t[-1] for t in time_arrays.values())
         # Make sure there are at least 2 of them
         num_intervals = max(int(np.floor(move_time / INTERPOLATE_INTERVAL)), 2)
         interval = move_time / num_intervals
-        time_array = [interval] * num_intervals
-        velocity_mode = [PREV_TO_NEXT] * (num_intervals - 1) + [CURRENT_TO_NEXT]
-        user_programs = [TRIG_ZERO] * num_intervals
+        self.profile["time_array"] += [interval] * num_intervals
+        self.profile["velocity_mode"] += \
+            [PREV_TO_NEXT] * (num_intervals - 1) + [CURRENT_TO_NEXT]
+        self.profile["user_programs"] += [TRIG_ZERO] * num_intervals
+        self.completed_steps_lookup += [completed_steps] * num_intervals
 
         # Do this for each velocity array
         for axis_name, motor_info in self.axis_mapping.items():
@@ -398,29 +402,48 @@ class PmacTrajectoryPart(StatefulChildPart):
                     vs = vs[1:]
                     ts = ts[1:]
                 assert len(ts) > 1, \
-                   "Bad %s time %s velocity %s" % (time, ts, vs)
+                    "Bad %s time %s velocity %s" % (time, ts, vs)
                 fraction = (time - ts[0]) / (ts[1] - ts[0])
                 velocity = fraction * (vs[1] - vs[0]) + vs[0]
                 part_position = motor_info.ramp_distance(
                     vs[0], velocity, time - ts[0])
-                trajectory[axis_name].append(position + part_position)
+                self.profile["trajectory"][axis_name].append(
+                    position + part_position)
 
-        profile = dict(time_array=time_array, velocity_mode=velocity_mode,
-                       trajectory=trajectory, user_programs=user_programs)
-        return profile
+    def add_profile_point(self, time_point, velocity_point, user_point,
+                          completed_step, axis_points):
 
-    def build_generator_profile(self, start_index, do_run_up=False):
-        trajectory = {axis_name: [] for axis_name in self.axis_mapping}
-        time_array = []
-        velocity_mode = []
-        user_programs = []
-        completed_steps_lookup = []
+        # Add padding if the move time exceeds the max pmac move time
+        if time_point > MAX_MOVE_TIME:
+            assert self.profile["time_array"], \
+                "Can't stretch the first point of a profile"
+            nsplit = int(time_point / MAX_MOVE_TIME + 1)
+            for _ in range(nsplit):
+                self.profile["time_array"].append(time_point / nsplit)
+            for _ in range(nsplit - 1):
+                self.profile["velocity_mode"].append(PREV_TO_NEXT)
+                self.profile["user_programs"].append(NO_PROGRAM)
+            for k, v in axis_points.items():
+                last_point = self.profile["trajectory"][k][-1]
+                per_section = float(v - last_point) / nsplit
+                for i in range(1, nsplit):
+                    self.profile["trajectory"][k].append(
+                        last_point + i * per_section)
+            last_completed_step = self.completed_steps_lookup[-1]
+            for _ in range(nsplit - 1):
+                self.completed_steps_lookup.append(last_completed_step)
+        else:
+            # Add point
+            self.profile["time_array"].append(time_point)
 
-        # Cap last point to steps_up_to
-        self.end_index = start_index + POINTS_PER_BUILD
-        if self.end_index > self.steps_up_to:
-            self.end_index = self.steps_up_to
+        # Set the requested point
+        self.profile["velocity_mode"].append(velocity_point)
+        self.profile["user_programs"].append(user_point)
+        self.completed_steps_lookup.append(completed_step)
+        for k, v in axis_points.items():
+            self.profile["trajectory"][k].append(v)
 
+    def calculate_generator_profile(self, start_index, do_run_up=False):
         # If we are doing the first build, do_run_up will be passed to flag
         # that we need a run up, else just continue from the previous point
         if do_run_up:
@@ -428,109 +451,100 @@ class PmacTrajectoryPart(StatefulChildPart):
 
             # Calculate how long to leave for the run-up (at least MIN_TIME)
             run_up_time = MIN_TIME
+            axis_points = {}
             for axis_name, velocity in self.point_velocities(point).items():
-                trajectory[axis_name].append(point.lower[axis_name])
+                axis_points[axis_name] = point.lower[axis_name]
                 motor_info = self.axis_mapping[axis_name]
                 run_up_time = max(run_up_time,
                                   motor_info.acceleration_time(0, velocity))
 
             # Add lower bound
-            time_array.append(run_up_time)
-            velocity_mode.append(CURRENT_TO_NEXT)
-            user_programs.append(TRIG_LIVE_FRAME)
-            completed_steps_lookup.append(start_index)
+            self.add_profile_point(
+                run_up_time, CURRENT_TO_NEXT, TRIG_LIVE_FRAME, start_index,
+                axis_points)
 
-        for i in range(start_index, self.end_index):
+        for i in range(start_index, self.steps_up_to):
             point = self.generator.get_point(i)
 
             # Add position
-            time_array.append(point.duration / 2.0)
-            velocity_mode.append(PREV_TO_NEXT)
-            user_programs.append(TRIG_CAPTURE)
-            completed_steps_lookup.append(i)
-            for axis_name, positions in trajectory.items():
-                positions.append(point.positions[axis_name])
+            self.add_profile_point(
+                point.duration / 2.0, PREV_TO_NEXT, TRIG_CAPTURE, i,
+                {name: point.positions[name] for name in self.axis_mapping})
 
-            # Add upper bound
-            time_array.append(point.duration / 2.0)
-            velocity_mode.append(PREV_TO_NEXT)
-            user_programs.append(TRIG_LIVE_FRAME)
-            completed_steps_lookup.append(i + 1)
-            for axis_name, positions in trajectory.items():
-                positions.append(point.upper[axis_name])
-
-            # Check if we need to insert the upper bound point
+            # If there will be more frames, insert next live frame
             if i + 1 < self.steps_up_to:
+                self.add_profile_point(
+                    point.duration / 2.0, PREV_TO_NEXT, TRIG_LIVE_FRAME, i + 1,
+                    {name: point.upper[name] for name in self.axis_mapping})
+
+                # Check if we need to insert the lower bound of next_point
                 next_point = self.generator.get_point(i + 1)
 
-                # Check if we need no insert a gap
+                # Check if we need to insert a gap
                 if not self.points_joined(point, next_point):
-                    # Change last point to be dead frame
-                    velocity_mode[-1] = PREV_TO_CURRENT
-                    user_programs[-1] = TRIG_DEAD_FRAME
+                    self.insert_gap(point, next_point, i + 1)
+            else:
+                # No more frames, dead frame to finish
+                self.add_profile_point(
+                    point.duration / 2.0, PREV_TO_CURRENT, TRIG_DEAD_FRAME,
+                    i + 1,
+                    {name: point.upper[name] for name in self.axis_mapping})
 
-                    # Work out the start and end velocities for each axis
-                    start_velocities = self.point_velocities(point)
-                    end_velocities = self.point_velocities(next_point)
-                    start_positions = {}
-                    distances = {}
-                    for axis_name, motor_info in self.axis_mapping.items():
-                        start_positions[axis_name] = point.upper[axis_name]
-                        distances[axis_name] = \
-                            next_point.lower[axis_name] - point.upper[axis_name]
-
-                    # Work out the velocity profiles of how to move to the start
-                    time_arrays, velocity_arrays = \
-                        self.make_consistent_velocity_profiles(
-                            start_velocities, end_velocities, distances,
-                            self.min_turnaround.value)
-
-                    # Work out the Position trajectories from these profiles
-                    profile = self.build_profile_from_velocities(
-                        time_arrays, velocity_arrays, start_positions)
-
-                    # Append them
-                    time_array += profile["time_array"]
-                    velocity_mode += profile["velocity_mode"]
-                    user_programs += profile["user_programs"][:-1] + \
-                                     [TRIG_LIVE_FRAME]
-                    for axis_name in trajectory:
-                        trajectory[axis_name] += \
-                            profile["trajectory"][axis_name]
-                    completed_steps_lookup += [i + 1] * len(
-                        profile["time_array"])
+            # Check if we have exceeded the points number and need to write
+            if len(self.profile["time_array"]) >= PROFILE_POINTS:
+                self.end_index = i + 1
+                return
 
         # Add the last tail off point
-        if self.end_index == self.steps_up_to:
-            point = self.generator.get_point(self.end_index - 1)
+        point = self.generator.get_point(self.steps_up_to - 1)
 
-            # Change last point to be dead frame
-            velocity_mode[-1] = PREV_TO_CURRENT
-            user_programs[-1] = TRIG_DEAD_FRAME
+        # Calculate how long to leave for the tail-off (at least MIN_TIME)
+        axis_points = {}
+        tail_off_time = MIN_TIME
+        for axis_name, velocity in self.point_velocities(point).items():
+            motor_info = self.axis_mapping[axis_name]
+            tail_off_time = max(tail_off_time,
+                                motor_info.acceleration_time(0, velocity))
+            tail_off = motor_info.ramp_distance(velocity, 0)
+            axis_points[axis_name] = point.upper[axis_name] + tail_off
 
-            # Calculate how long to leave for the tail-off (at least MIN_TIME)
-            tail_off_time = MIN_TIME
-            for axis_name, velocity in self.point_velocities(point).items():
-                motor_info = self.axis_mapping[axis_name]
-                tail_off_time = max(tail_off_time,
-                                    motor_info.acceleration_time(0, velocity))
-                positions = trajectory[axis_name]
-                tail_off = motor_info.ramp_distance(velocity, 0)
-                positions.append(positions[-1] + tail_off)
+        # Do the last move
+        self.add_profile_point(tail_off_time, ZERO_VELOCITY, TRIG_ZERO,
+                               self.steps_up_to, axis_points)
+        self.end_index = self.steps_up_to
 
-            time_array.append(tail_off_time)
-            velocity_mode.append(ZERO_VELOCITY)
-            user_programs.append(TRIG_ZERO)
-            completed_steps_lookup.append(self.end_index)
-
-        profile = dict(time_array=time_array, velocity_mode=velocity_mode,
-                       trajectory=trajectory, user_programs=user_programs,
-                       completed_steps_lookup=completed_steps_lookup)
-        return profile
-
-    def points_joined(self, last_point, point):
+    def points_joined(self, point, next_point):
         # Check for axes that need to move within the space between points
         for axis_name, motor_info in self.axis_mapping.items():
-            if last_point.upper[axis_name] != point.lower[axis_name]:
+            if point.upper[axis_name] != next_point.lower[axis_name]:
                 return False
         return True
+
+    def insert_gap(self, point, next_point, completed_steps):
+        # Change last point to be dead frame
+        self.profile["velocity_mode"][-1] = PREV_TO_CURRENT
+        self.profile["user_programs"][-1] = TRIG_DEAD_FRAME
+
+        # Work out the start and end velocities for each axis
+        start_velocities = self.point_velocities(point)
+        end_velocities = self.point_velocities(next_point)
+        start_positions = {}
+        distances = {}
+        for axis_name, motor_info in self.axis_mapping.items():
+            start_positions[axis_name] = point.upper[axis_name]
+            distances[axis_name] = \
+                next_point.lower[axis_name] - point.upper[axis_name]
+
+        # Work out the velocity profiles of how to move to the start
+        time_arrays, velocity_arrays = \
+            self.make_consistent_velocity_profiles(
+                start_velocities, end_velocities, distances,
+                self.min_turnaround.value)
+
+        # Work out the Position trajectories from these profiles
+        self.calculate_profile_from_velocities(
+            time_arrays, velocity_arrays, start_positions, completed_steps)
+
+        # Change the last point to be a live frame
+        self.profile["velocity_mode"][-1] = CURRENT_TO_NEXT
+        self.profile["user_programs"][-1] = TRIG_LIVE_FRAME

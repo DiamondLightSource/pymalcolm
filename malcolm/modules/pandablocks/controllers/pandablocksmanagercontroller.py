@@ -1,7 +1,9 @@
 import time
 import os
+import operator
+from xml.etree import cElementTree as ET
 
-from malcolm.compat import OrderedDict, maybe_import_cothread
+from malcolm.compat import OrderedDict, maybe_import_cothread, et_to_string
 from malcolm.core import method_also_takes, Queue, TimeoutError, \
     call_with_params
 from malcolm.modules.builtin.controllers import BasicController, \
@@ -9,11 +11,13 @@ from malcolm.modules.builtin.controllers import BasicController, \
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.vmetas import BooleanMeta, TableMeta, StringMeta, \
     NumberMeta
-from malcolm.modules.pandablocks.parts.pandablocksmaker import PandABlocksMaker
+from malcolm.modules.pandablocks.parts.pandablocksmaker import \
+    PandABlocksMaker, SVG_DIR
 from .pandablocksclient import PandABlocksClient
 
 
-SVG_DIR = os.path.join(os.path.dirname(__file__), "..", "icons")
+LUT_CONSTANTS = dict(
+    A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
 
 
 @method_also_takes(
@@ -21,7 +25,8 @@ SVG_DIR = os.path.join(os.path.dirname(__file__), "..", "icons")
     "port", NumberMeta("uint32", "Port number of the server client"), 8888)
 class PandABlocksManagerController(ManagerController):
     def __init__(self, process, parts, params):
-        super(PandABlocksManagerController, self).__init__(process, parts, params)
+        super(PandABlocksManagerController, self).__init__(
+            process, parts, params)
         # {block_name: BlockData}
         self._blocks_data = {}
         # {block_name: {field_name: Part}}
@@ -35,6 +40,9 @@ class PandABlocksManagerController(ManagerController):
         # fields that need to inherit UNITS, SCALE and OFFSET from upstream
         self._inherit_scale = {}
         self._inherit_offset = {}
+        # lut elements to be displayed or not
+        # {fnum: {id: visible}}
+        self._lut_elements = {}
         # changes left over from last time
         self.changes = OrderedDict()
         # The PandABlock client that does the comms
@@ -143,9 +151,6 @@ class PandABlocksManagerController(ManagerController):
         # Store the parts so we can update them with the poller
         self._blocks_parts[block_name] = maker.parts
 
-        # Set the initial block_url
-        self._set_icon_url(block_name)
-
         # setup param pos on a block with pos_out to inherit SCALE OFFSET UNITS
         pos_fields = []
         pos_out_fields = []
@@ -183,17 +188,73 @@ class PandABlocksManagerController(ManagerController):
             self._mirrored_fields.setdefault(full_src_field, []).append(
                 full_dest_field)
 
-    def _set_icon_url(self, block_name):
+    def _set_lut_icon(self, block_name):
         icon_attr = self._blocks_parts[block_name]["icon"].attr
-        fname = block_name.rstrip("0123456789") + ".svg"
-        svg_text = "<svg/>"
-        if fname in os.listdir(SVG_DIR):
-            svg_text = open(os.path.join(SVG_DIR, fname)).read()
-            if fname == "LUT":
-                fnum = int(self.client.get_field(block_name, "FUNC.RAW"))
-                # TODO: Hide bits not needed here
-                pass
+        with open(os.path.join(SVG_DIR, "LUT.svg")) as f:
+            svg_text = f.read()
+        fnum = int(self.client.get_field(block_name, "FUNC.RAW"))
+        invis = self._get_lut_icon_elements(fnum)
+        root = ET.fromstring(svg_text)
+        for i in invis:
+            # Find the first parent which has a child with id i
+            parent = root.find('.//*[@id=%r]/..' % i)
+            # Find the child and remove it
+            child = parent.find('./*[@id=%r]' % i)
+            parent.remove(child)
+        svg_text = et_to_string(root)
         icon_attr.set_value(svg_text)
+
+    def _get_lut_icon_elements(self, fnum):
+        if not self._lut_elements:
+            # Generate the lut element table
+            # Do the general case funcs
+            funcs = [("AND", operator.and_), ("OR", operator.or_)]
+            for func, op in funcs:
+                for nargs in (2, 3, 4, 5):
+                    # 2**nargs permutations
+                    for permutation in range(2 ** nargs):
+                        self._calc_visibility(func, op, nargs, permutation)
+            # Add in special cases for NOT
+            for ninp in "ABCDE":
+                invis = {"AND", "OR", "LUT"}
+                for inp in "ABCDE":
+                    if inp != ninp:
+                        invis.add(inp)
+                    invis.add("not%s" % inp)
+                self._lut_elements[~LUT_CONSTANTS[ninp] & (2 ** 32 - 1)] = invis
+            # And catchall for LUT in 0
+            invis = {"AND", "OR", "NOT"}
+            for inp in "ABCDE":
+                invis.add("not%s" % inp)
+            self._lut_elements[0] = invis
+        return self._lut_elements.get(fnum, self._lut_elements[0])
+
+    def _calc_visibility(self, func, op, nargs, permutations):
+        # Visibility dictionary defaults
+        invis = {"AND", "OR", "LUT", "NOT"}
+        invis.remove(func)
+        args = []
+        for i, inp in enumerate("EDCBA"):
+            # xxxxx where x is 0 or 1
+            # EDCBA
+            negations = format(permutations, '05b')
+            if (5 - i) > nargs:
+                # invisible
+                invis.add(inp)
+                invis.add("not%s" % inp)
+            else:
+                # visible
+                if negations[i] == "1":
+                    args.append(~LUT_CONSTANTS[inp] & (2 ** 32 - 1))
+                else:
+                    invis.add("not%s" % inp)
+                    args.append(LUT_CONSTANTS[inp])
+
+        # Insert into table
+        fnum = op(args[0], args[1])
+        for a in args[2:]:
+            fnum = op(fnum, a)
+        self._lut_elements[fnum] = invis
 
     def handle_changes(self, changes):
         for k, v in changes.items():
@@ -210,7 +271,7 @@ class PandABlocksManagerController(ManagerController):
                 self.changes.pop(full_field)
             # If it was LUT.FUNC then recalculate icon
             if block_name.startswith("LUT") and field_name == "FUNC":
-                self._set_icon_url(block_name)
+                self._set_lut_icon(block_name)
 
     def update_attribute(self, block_name, field_name, val):
         ret = None

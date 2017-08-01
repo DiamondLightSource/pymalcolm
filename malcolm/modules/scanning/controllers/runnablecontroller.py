@@ -48,11 +48,13 @@ class RunnableStates(ManagerStates):
 ss = RunnableStates
 
 
-configure_args = [
+configure_args = (
     "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
     "axesToMove", StringArrayMeta(
         "List of axes in inner dimension of generator that should be moved"),
-    []]
+    []
+)
+
 
 @method_also_takes(
     "axesToMove", StringArrayMeta("Default value for configure() axesToMove"),
@@ -263,7 +265,8 @@ class RunnableController(ManagerController):
         self.configure_method_models = {}
         # Look for all parts that hook into Configure
         for part, func_name in self._hooked_func_names[self.Configure].items():
-            self.update_configure_args(part, part.method_models[func_name])
+            if func_name in part.method_models:
+                self.update_configure_args(part, part.method_models[func_name])
         super(RunnableController, self).do_init()
 
     def do_reset(self):
@@ -283,7 +286,7 @@ class RunnableController(ManagerController):
         with self.changes_squashed:
             # Update the dict
             self.configure_method_models[part] = configure_model
-            method_models = self.configure_method_models.values()
+            method_models = list(self.configure_method_models.values())
 
             # Update takes with the things we need
             default_configure = MethodModel.from_dict(

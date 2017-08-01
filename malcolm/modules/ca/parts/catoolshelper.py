@@ -1,4 +1,4 @@
-import thread
+import threading
 
 from malcolm.core import Queue
 from malcolm.compat import maybe_import_cothread
@@ -28,7 +28,7 @@ class CaToolsHelper(object):
         else:
             # We need our own thread to run it in
             q = Queue()
-            thread.start_new_thread(_import_cothread, (q,))
+            threading.Thread(target=_import_cothread, args=(q,)).start()
             self.cothread, catools = q.get()
             self.in_cothread_thread = False
         self.catools = catools

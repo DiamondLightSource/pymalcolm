@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import unittest
-from mock import call, Mock, patch, ANY
+from mock import call, Mock, patch, ANY, MagicMock
+from xml.etree import cElementTree as ET
 
 from malcolm.core import call_with_params
 from malcolm.modules.pandablocks.controllers import PandABlocksManagerController
@@ -134,3 +135,39 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
             call('PCOMP.STEP.SCALE=1\n'),
             call('PCOMP.STEP.UNITS=\n')
         ]
+
+    def test_lut(self):
+        # LUT symbol
+        assert self.o._get_lut_icon_elements(0) == {
+            'AND', 'NOT', 'OR', 'notA', 'notB', 'notC', 'notD', 'notE'}
+        # A&B&C&D&E
+        assert self.o._get_lut_icon_elements(0x80000000) == {
+            'LUT', 'NOT', 'OR', 'notA', 'notB', 'notC', 'notD', 'notE'}
+        # !A&!B&!C&!D&!E
+        assert self.o._get_lut_icon_elements(0x1) == {
+            'LUT', 'NOT', 'OR'}
+        # A&!B
+        assert self.o._get_lut_icon_elements(0xff0000) == {
+            'C', 'D', 'E', 'LUT', 'NOT', 'OR', 'notA', 'notC', 'notD', 'notE'}
+        # A&C should be LUT
+        assert self.o._get_lut_icon_elements(0xf0f00000) == {
+             'AND', 'NOT', 'OR', 'notA', 'notB', 'notC', 'notD', 'notE'}
+        # !C
+        assert self.o._get_lut_icon_elements(0xf0f0f0f) == {
+            'A', 'AND', 'B', 'D', 'E', 'LUT', 'OR', 'notA', 'notB', 'notC', 'notD', 'notE'}\
+        # A|B
+        assert self.o._get_lut_icon_elements(0xffffff00) == {
+            'AND', 'C', 'D', 'E', 'LUT', 'NOT', 'notA', 'notB', 'notC', 'notD', 'notE'}
+
+    def test_symbol(self):
+        m = MagicMock()
+        self.o._blocks_parts["LUT1"] = dict(icon=m)
+        # !A&!B&!C&!D&!E
+        self.client.get_field.return_value = "1"
+        self.o._set_lut_icon("LUT1")
+        svg_text = m.attr.set_value.call_args[0][0]
+        root = ET.fromstring(svg_text)
+        assert len(root.findall(".//*[@id='A']")) == 1
+        assert len(root.findall(".//*[@id='notA']")) == 1
+        assert len(root.findall(".//*[@id='OR']")) == 0
+        assert len(root.findall(".//*[@id='AND']")) == 1

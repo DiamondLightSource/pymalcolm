@@ -136,7 +136,8 @@ class HDFWriterPart(StatefulChildPart):
         xml = self._make_layout_xml(params.generator, part_info)
         self.layout_filename = os.path.join(
             file_dir, "%s-layout.xml" % self.params.mri)
-        open(self.layout_filename, "w").write(xml)
+        with open(self.layout_filename, "w") as f:
+            f.write(xml)
         # We want the HDF writer to flush this often:
         flush_time = 1  # seconds
         # (In particular this means that HDF files can be read cleanly by

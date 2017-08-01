@@ -17,9 +17,10 @@ from .catoolshelper import CaToolsHelper
     "rbvSuff", StringMeta("Set rbv to pv + rbv_suff"), "",
     "widget", ChoiceMeta("Widget type", [""] + widget_types), "",
     "inport", ChoiceMeta("Inport type", [""] + port_types), "",
+    "group", StringMeta("If given, which GUI group should we attach to"), "",
     "config", BooleanMeta("Should this field be loaded/saved?"), True,
     "minDelta", NumberMeta(
-        "float64", "Minumum time between attribute updates in seconds"), 0.05)
+        "float64", "Minimum time between attribute updates in seconds"), 0.05)
 class CAPart(AttributePart):
     """Abstract class for exposing PVs as `Attribute` instances"""
     def __init__(self, params):

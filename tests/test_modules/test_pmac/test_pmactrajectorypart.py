@@ -128,6 +128,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('velocityMode', [
                 2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 1, 3]),
             call.post('buildProfile')]
+        assert self.o.completed_steps_lookup == [
+                0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 6, 6]
 
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
@@ -155,16 +157,17 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('velocityMode', ANY),
             call.post('buildProfile')]
 
-    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.POINTS_PER_BUILD", 4)
+    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.PROFILE_POINTS", 4)
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
     def test_update_step(self):
-        self.do_configure(axes_to_scan=["x", "y"])
+        self.do_configure(axes_to_scan=["x", "y"], x_pos=0.0, y_pos=0.2)
         positionsA = self.child.handled_requests.put.call_args_list[-5][0][1]
-        assert len(positionsA) == 11
-        assert positionsA[-1] == 0.375
-        assert self.o.end_index == 4
-        assert len(self.o.completed_steps_lookup) == 11
+        assert len(positionsA) == 4
+        assert positionsA[-1] == 0.25
+        assert self.o.end_index == 2
+        assert len(self.o.completed_steps_lookup) == 5
+        assert len(self.o.profile["time_array"]) == 1
         update_completed_steps = Mock()
         self.child.handled_requests.reset_mock()
         self.o.update_step(
@@ -172,23 +175,47 @@ class TestPMACTrajectoryPart(ChildTestCase):
         update_completed_steps.assert_called_once_with(1, self.o)
         assert not self.o.loading
         assert self.child.handled_requests.mock_calls == self.resolutions_and_use_call() + [
-            call.put('pointsToBuild', 5),
+            call.put('pointsToBuild', 4),
             call.put('positionsA', pytest.approx([
-                0.25, 0.125, 0.0, -0.125, -0.1375])),
+                0.375, 0.5, 0.625, 0.6375])),
             call.put('positionsB', pytest.approx([
-                0.1, 0.1, 0.1, 0.1, 0.1])),
+                0.0, 0.0, 0.0, 0.05])),
             call.put('timeArray', [
-                500000, 500000, 500000, 500000, 100000]),
+                500000, 500000, 500000, 200000]),
             call.put('userPrograms', [
-                4, 3, 4, 2, 8]),
+                3, 4, 2, 8]),
             call.put('velocityMode', [
-                0, 0, 0, 1, 3]),
+                0, 0, 1, 0]),
             call.post('appendProfile')]
+        assert self.o.end_index == 3
+        assert len(self.o.completed_steps_lookup) == 9
+        assert len(self.o.profile["time_array"]) == 1
 
     def test_run(self):
         update = Mock()
         self.o.run(self.context, update)
         assert self.child.handled_requests.mock_calls == [
+            call.post('executeProfile')]
+
+    def test_reset(self):
+        self.o.reset(self.context)
+        assert self.child.handled_requests.mock_calls == [
+            call.post('abortProfile'),
+            call.put('numPoints', 10),
+            call.put('useA', False),
+            call.put('useB', False),
+            call.put('useC', False),
+            call.put('useU', False),
+            call.put('useV', False),
+            call.put('useW', False),
+            call.put('useX', False),
+            call.put('useY', False),
+            call.put('useZ', False),
+            call.put('pointsToBuild', 1),
+            call.put('timeArray', [100000]),
+            call.put('userPrograms', [8]),
+            call.put('velocityMode', [3]),
+            call.post('buildProfile'),
             call.post('executeProfile')]
 
     def test_multi_run(self):
