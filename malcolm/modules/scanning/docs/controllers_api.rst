@@ -25,7 +25,7 @@ controllers
         subgraph cluster_normal {
             subgraph cluster_abortable {
                 {rank=min Ready}
-                {rank=same Loading Configuring Saving}
+                {rank=same Configuring Loading Saving}
                 {rank=same Armed Seeking}
                 {rank=max Running Paused PostRun}
                 Ready [fillcolor="#BBE7BB"]
@@ -47,19 +47,14 @@ controllers
                 Paused -> Seeking [label="put\nsteps"]
                 Paused -> Running [label="resume()"]
             }
-            {rank=min Resetting Ready}
             Aborted [fillcolor="#FFBE89"]
-            {rank=max Aborting}
             Resetting -> Ready
-            Armed -> Resetting [label="reset()"]
-            Paused -> Aborting [ltail=cluster_abortable label="abort()" weight=0]
+            Ready -> Aborting [ltail=cluster_abortable label="abort()"]
             Aborting -> Aborted
             Aborted -> Resetting
         }
-        {rank=min Disabled Ready}
-        {rank=max Fault}
-        Resetting -> Disabling [ltail=cluster_normal label="disable()"]
-        Aborting -> Fault [ltail=cluster_normal label="on_error" weight=100]
+        Aborting -> Disabling [ltail=cluster_normal label="disable()"]
+        Aborted -> Fault [ltail=cluster_normal label="on_error"]
 
         Fault -> Resetting [label="reset()"]
         Fault -> Disabling [label="disable()"]

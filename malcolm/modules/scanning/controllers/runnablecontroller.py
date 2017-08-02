@@ -26,8 +26,7 @@ class RunnableStates(ManagerStates):
         # Set transitions for normal states
         self.set_allowed(self.READY, self.CONFIGURING)
         self.set_allowed(self.CONFIGURING, self.ARMED)
-        self.set_allowed(
-            self.ARMED, [self.RUNNING, self.SEEKING, self.RESETTING])
+        self.set_allowed(self.ARMED, [self.RUNNING, self.SEEKING])
         self.set_allowed(self.RUNNING, [self.POSTRUN, self.SEEKING])
         self.set_allowed(self.POSTRUN, [self.READY, self.ARMED])
         self.set_allowed(self.SEEKING, [self.ARMED, self.PAUSED])
@@ -40,7 +39,7 @@ class RunnableStates(ManagerStates):
         for state in normal_states:
             self.set_allowed(state, self.ABORTING)
 
-        # Set transitions for other states
+        # Set transitions for aborted states
         self.set_allowed(self.ABORTING, self.ABORTED)
         self.set_allowed(self.ABORTED, self.RESETTING)
 
@@ -220,9 +219,9 @@ class RunnableController(ManagerController):
     # needed
     resume_queue = None
 
-    @method_writeable_in(ss.FAULT, ss.DISABLED, ss.ABORTED, ss.ARMED)
+    @method_writeable_in(ss.FAULT, ss.DISABLED, ss.ABORTED)
     def reset(self):
-        # Override reset to work from aborted and ready too
+        # Override reset to work from aborted too
         super(RunnableController, self).reset()
 
     def create_attribute_models(self):

@@ -38,6 +38,7 @@ controllers
             Resetting -> Ready
         }
         Resetting -> Disabling [ltail=cluster_normal label="disable()"]
+        Resetting -> Fault [ltail=cluster_normal label="on_error"]
 
         Fault -> Resetting [label="reset()"]
         Fault -> Disabling [label="disable()"]
@@ -75,6 +76,7 @@ controllers
             Resetting -> Ready
         }
         Resetting -> Disabling [ltail=cluster_normal label="disable()"]
+        Resetting -> Fault [ltail=cluster_normal label="on_error"]
 
         Fault -> Resetting [label="reset()"]
         Fault -> Disabling [label="disable()"]
