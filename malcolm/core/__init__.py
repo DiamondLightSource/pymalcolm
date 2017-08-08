@@ -6,7 +6,7 @@ from .block import Block
 from .blockmodel import BlockModel
 from .blockmeta import BlockMeta
 from .context import Context
-from .controller import Controller
+from .controller import Controller, ABORT_TIMEOUT
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
     UnexpectedError, YamlError
 from .future import Future

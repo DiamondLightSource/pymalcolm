@@ -168,9 +168,11 @@ class StatefulController(BasicController):
             message (str): Message if the transition is to a fault state
         """
         with self.changes_squashed:
+            initial_state = self.state.value
             if self.stateSet.transition_allowed(
-                    initial_state=self.state.value, target_state=state):
-                self.log.debug("Transitioning to %s", state)
+                    initial_state=initial_state, target_state=state):
+                self.log.debug(
+                    "Transitioning from %s to %s", initial_state, state)
                 if state == ss.DISABLED:
                     alarm = Alarm.invalid("Disabled")
                 elif state == ss.FAULT:
@@ -189,7 +191,7 @@ class StatefulController(BasicController):
                             element.set_writeable(writeable)
             else:
                 raise TypeError("Cannot transition from %s to %s" %
-                                (self.state.value, state))
+                                (initial_state, state))
 
     def try_stateful_function(self, start_state, end_state, func, *args,
                               **kwargs):

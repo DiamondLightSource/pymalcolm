@@ -67,9 +67,9 @@ class Request(Serializable):
         Args:
             exception (exceptions.Exception): Message explaining error
         """
-
-        response = Error(id=self.id, message=str(exception))
-        log.exception("Exception raised for request %s", self)
+        message = "%s: %s" % (exception.__class__.__name__, exception)
+        response = Error(id=self.id, message=message)
+        log.info("Exception raised for request %s", self, exc_info=True)
         return self.callback, response
 
     def generate_key(self):

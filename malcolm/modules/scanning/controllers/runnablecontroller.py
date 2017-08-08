@@ -1,6 +1,6 @@
 from malcolm.core import method_takes, REQUIRED, method_also_takes, \
     method_writeable_in, Hook, AbortedError, MethodModel, Queue, \
-    call_with_params
+    call_with_params, Context, ABORT_TIMEOUT, TimeoutError
 from malcolm.modules.builtin.controllers import ManagerStates, \
     ManagerController
 from malcolm.modules.builtin.vmetas import NumberMeta, StringArrayMeta
@@ -219,6 +219,9 @@ class RunnableController(ManagerController):
     # needed
     resume_queue = None
 
+    # Queue so we can wait for aborts to complete
+    abort_queue = None
+
     @method_writeable_in(ss.FAULT, ss.DISABLED, ss.ABORTED)
     def reset(self):
         # Override reset to work from aborted too
@@ -274,12 +277,6 @@ class RunnableController(ManagerController):
         self.completed_steps.set_value(0)
         self.total_steps.set_value(0)
 
-    def go_to_error_state(self, exception):
-        if isinstance(exception, AbortedError):
-            self.log.info("Got AbortedError in %s" % self.state.value)
-        else:
-            super(RunnableController, self).go_to_error_state(exception)
-
     def update_configure_args(self, part, configure_model):
         """Tell controller part needs different things passed to Configure"""
         with self.changes_squashed:
@@ -329,6 +326,13 @@ class RunnableController(ManagerController):
                 return params
         raise ValueError("Could not get a consistent set of parameters")
 
+    def abortable_transition(self, state):
+        with self._lock:
+            # We might have been aborted just now, so this will fail
+            # with an AbortedError if we were
+            self.part_contexts[self].sleep(0)
+            self.transition(state)
+
     @method_takes(*configure_args)
     @method_writeable_in(ss.READY)
     def configure(self, params):
@@ -343,8 +347,16 @@ class RunnableController(ManagerController):
         state. If the user disables then it will return in Disabled state.
         """
         self.validate(params, params)
-        self.try_stateful_function(
-            ss.CONFIGURING, ss.ARMED, self.do_configure, params)
+        try:
+            self.transition(ss.CONFIGURING)
+            self.do_configure(params)
+            self.abortable_transition(ss.ARMED)
+        except AbortedError:
+            self.abort_queue.put(None)
+            raise
+        except Exception as e:
+            self.go_to_error_state(e)
+            raise
 
     def do_configure(self, params):
         # These are the part tasks that abort() and pause() will operate on
@@ -353,6 +365,8 @@ class RunnableController(ManagerController):
         # modify so it doesn't screw up the modified led
         for part, context in self.part_contexts.items():
             context.set_notify_dispatch_request(part.notify_dispatch_request)
+        # So add one for ourself too so we can be aborted
+        self.part_contexts[self] = Context(self.process)
         # Store the params for use in seek()
         self.configure_params = params
         # This will calculate what we need from the generator, possibly a long
@@ -413,28 +427,36 @@ class RunnableController(ManagerController):
             next_state = ss.ARMED
         else:
             next_state = ss.READY
-        self.try_stateful_function(
-                ss.RUNNING, next_state, self._call_do_run)
-
-    def _call_do_run(self):
-        hook = self.Run
-        while True:
-            try:
-                return self.do_run(hook)
-            except AbortedError:
-                # Wait for a response on the resume_queue
-                should_resume = self.resume_queue.get()
-                if should_resume:
-                    # we need to resume
-                    hook = self.Resume
-                    self.log.debug("Resuming run")
+        try:
+            self.transition(ss.RUNNING)
+            hook = self.Run
+            going = True
+            while going:
+                try:
+                    self.do_run(hook)
+                except AbortedError:
+                    self.abort_queue.put(None)
+                    # Wait for a response on the resume_queue
+                    should_resume = self.resume_queue.get()
+                    if should_resume:
+                        # we need to resume
+                        hook = self.Resume
+                        self.log.debug("Resuming run")
+                    else:
+                        # we don't need to resume, just drop out
+                        raise
                 else:
-                    # we don't need to resume, just drop out
-                    raise
+                    going = False
+            self.abortable_transition(next_state)
+        except AbortedError:
+            raise
+        except Exception as e:
+            self.go_to_error_state(e)
+            raise
 
     def do_run(self, hook):
         self.run_hook(hook, self.part_contexts, self.update_completed_steps)
-        self.transition(ss.POSTRUN)
+        self.abortable_transition(ss.POSTRUN)
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             steps_to_do = self.steps_per_run
@@ -465,20 +487,44 @@ class RunnableController(ManagerController):
         will return in Fault state. If the user disables then it will return in
         Disabled state.
         """
-        self.try_stateful_function(
-            ss.ABORTING, ss.ABORTED, self.do_abort,
-            self.Abort)
-
-    def do_abort(self, hook):
-        for context in self.part_contexts.values():
-            context.stop()
-        for context in self.part_contexts.values():
-            if context.runner:
-                context.runner.wait()
-        self.run_hook(hook, self.create_part_contexts())
-        # Tell _call_do_run not to resume if we are aborting
-        if hook is self.Abort and self.resume_queue:
+        # Tell _call_do_run not to resume
+        if self.resume_queue:
             self.resume_queue.put(False)
+        self.try_aborting_function(ss.ABORTING, ss.ABORTED, self.do_abort)
+
+    def do_abort(self):
+        self.run_hook(self.Abort, self.create_part_contexts())
+
+    def try_aborting_function(self, start_state, end_state, func, *args):
+        try:
+            # To make the running function fail we need to stop any running
+            # contexts (if running a hook) or make transition() fail with
+            # AbortedError. Both of these are accomplished here
+            with self._lock:
+                original_state = self.state.value
+                self.abort_queue = Queue()
+                self.transition(start_state)
+                for context in self.part_contexts.values():
+                    context.stop()
+            if original_state not in (ss.READY, ss.ARMED, ss.PAUSED):
+                # Something was running, let it finish aborting
+                try:
+                    self.abort_queue.get(timeout=ABORT_TIMEOUT)
+                except TimeoutError:
+                    self.log.warning("Timeout waiting while %s" % start_state)
+            with self._lock:
+                # Now we've waited for a while we can remove the error state
+                # for transition in case a hook triggered it rather than a
+                # transition
+                self.part_contexts[self].ignore_stops_before_now()
+            func(*args)
+            self.transition(end_state)
+        except AbortedError:
+            self.abort_queue.put(None)
+            raise
+        except Exception as e:  # pylint:disable=broad-except
+            self.go_to_error_state(e)
+            raise
 
     def set_completed_steps(self, completed_steps):
         """Seek a Armed or Paused scan back to another value
@@ -514,11 +560,11 @@ class RunnableController(ManagerController):
             next_state = current_state
         assert completed_steps < self.total_steps.value, \
             "Cannot seek to after the end of the scan"
-        self.try_stateful_function(
+        self.try_aborting_function(
             ss.SEEKING, next_state, self.do_pause, completed_steps)
 
     def do_pause(self, completed_steps):
-        self.do_abort(self.Pause)
+        self.run_hook(self.Pause, self.create_part_contexts())
         in_run_steps = completed_steps % self.steps_per_run
         steps_to_do = self.steps_per_run - in_run_steps
         part_info = self.run_hook(self.ReportStatus, self.part_contexts)
@@ -537,10 +583,10 @@ class RunnableController(ManagerController):
         """
         self.transition(ss.RUNNING)
         self.resume_queue.put(True)
-        # self._call_do_run will now take over
+        # self.run will now take over
 
     def do_disable(self):
-        # Abort anything that is currently running
+        # Abort anything that is currently running, but don't wait
         for context in self.part_contexts.values():
             context.stop()
         if self.resume_queue:

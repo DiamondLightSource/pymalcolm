@@ -26,6 +26,9 @@ from .serializable import serialize_object, deserialize_object, camel_to_title
 from .view import make_view
 
 
+ABORT_TIMEOUT = 5.0
+
+
 class Controller(Loggable):
     use_cothread = True
 
@@ -342,7 +345,7 @@ class Controller(Loggable):
             "Hook %s doesn't appear in controller hooks %s" % (
                 hook, self._hook_names)
         hook_name = self._hook_names[hook]
-        self.log.debug("%s: Running hook", hook_name)
+        self.log.debug("%s: Starting hook", hook_name)
 
         # This queue will hold (part, result) tuples
         hook_queue = Queue()
@@ -350,12 +353,19 @@ class Controller(Loggable):
         hook_runners = {}
 
         # now start them off
-        for part, context in part_contexts.items():
-            func_name = self._hooked_func_names[hook].get(part, None)
-            if func_name:
-                hook_runners[part] = part.make_hook_runner(
-                    hook_queue, func_name, weakref.proxy(context), *args,
-                    **params)
+        # Take the lock so that no hook abort can come in between now and
+        # the spawn of the context
+        with self._lock:
+            for part, context in part_contexts.items():
+                # context might have been aborted but have nothing servicing
+                # the queue, we still want the legitimate messages on the queue
+                # so just tell it to ignore stops it got before now
+                context.ignore_stops_before_now()
+                func_name = self._hooked_func_names[hook].get(part, None)
+                if func_name:
+                    hook_runners[part] = part.make_hook_runner(
+                        hook_queue, func_name, weakref.proxy(context), *args,
+                        **params)
 
         return hook_queue, hook_runners
 
@@ -366,11 +376,6 @@ class Controller(Loggable):
         while hook_runners:
             part, ret = hook_queue.get()
             hook_runner = hook_runners.pop(part)
-
-            if isinstance(ret, AbortedError):
-                # If AbortedError, all tasks have already been stopped.
-                # Do not wait on them otherwise we might get a deadlock...
-                raise ret
 
             # Wait for the process to terminate
             hook_runner.wait()
@@ -387,12 +392,14 @@ class Controller(Loggable):
                     hook_queue.hook_name, part.name, ret, duration)
 
             if isinstance(ret, Exception):
-                # Got an error, so stop and wait all hook runners
-                for h in hook_runners.values():
-                    h.stop()
+                if not isinstance(ret, AbortedError):
+                    # If AbortedError, all tasks have already been stopped.
+                    # Got an error, so stop and wait all hook runners
+                    for h in hook_runners.values():
+                        h.stop()
                 # Wait for them to finish
                 for h in hook_runners.values():
-                    h.wait()
+                    h.wait(timeout=ABORT_TIMEOUT)
                 raise ret
 
         return return_dict
