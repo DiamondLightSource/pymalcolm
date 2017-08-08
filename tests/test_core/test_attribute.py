@@ -23,7 +23,8 @@ class TestAttribute(unittest.TestCase):
 
     def test_put(self):
         self.o.put_value(32)
-        self.context.put.assert_called_once_with(["block", "attr", "value"], 32)
+        self.context.put.assert_called_once_with(
+            ["block", "attr", "value"], 32, timeout=None)
 
     def test_put_async(self):
         f = self.o.put_value_async(32)
