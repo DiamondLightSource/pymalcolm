@@ -33,9 +33,10 @@ class TestRequest(unittest.TestCase):
         assert response == Return(id=32, value=5)
 
     def test_respond_with_error(self):
-        cb, response = self.o.error_response(exception=ValueError("Test Error"))
+        cb, response = self.o.error_response(
+            exception=ValueError("Test Error"))
         assert cb == self.callback
-        assert response == Error(id=32, message="Test Error")
+        assert response == Error(id=32, message="ValueError: Test Error")
 
     def test_setters(self):
         self.o.set_id(123)
