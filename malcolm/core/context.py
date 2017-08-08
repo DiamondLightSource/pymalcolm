@@ -202,6 +202,8 @@ class Context(Loggable):
         controller = self.get_controller(subscribe.path[0])
         controller.handle_request(request)
         self._pending_unsubscribes[future] = subscribe
+        # Clear out the subscription
+        self._subscriptions.pop(subscribe.id)
 
     def unsubscribe_all(self):
         """Send an unsubscribe for all active subscriptions"""
@@ -327,8 +329,9 @@ class Context(Loggable):
                 raise AbortedError()
         elif isinstance(response, Update):
             # This is an update for a subscription
-            (func, args) = self._subscriptions[response.id]
-            func(response.value, *args)
+            if response.id in self._subscriptions:
+                (func, args) = self._subscriptions[response.id]
+                func(response.value, *args)
         elif isinstance(response, Return):
             future = self._futures.pop(response.id)
             request = self._requests.pop(future)

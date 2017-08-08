@@ -24,6 +24,15 @@ class TestContext(unittest.TestCase):
         self.o = Context(self.process)
         self.cothread = maybe_import_cothread()
 
+    def test_aborts_timeout_zero(self):
+        self.o.ignore_stops_before_now()
+        self.o.sleep(0)
+        self.o.ignore_stops_before_now()
+        self.o.ignore_stops_before_now()
+        self.o.stop()
+        with self.assertRaises(AbortedError):
+            self.o.sleep(0)
+
     def test_block_view(self):
         self.o.block_view("block")
         self.controller.make_view.assert_called_once_with(ANY)
