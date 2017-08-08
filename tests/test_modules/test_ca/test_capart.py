@@ -77,7 +77,7 @@ class TestCAPart(unittest.TestCase):
         p.caput(32)
         datatype = p.get_datatype.return_value
         p.catools.caput.assert_called_once_with(
-            "pv", 32, wait=True, timeout=None, datatype=datatype)
+            "pv", 32, wait=True, timeout=5.0, datatype=datatype)
         p.catools.caget.assert_called_once_with(
             "pv2", format=p.catools.FORMAT_TIME, datatype=datatype)
         assert p.attr.value == 3

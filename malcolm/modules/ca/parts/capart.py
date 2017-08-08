@@ -20,7 +20,9 @@ from .catoolshelper import CaToolsHelper
     "group", StringMeta("If given, which GUI group should we attach to"), "",
     "config", BooleanMeta("Should this field be loaded/saved?"), True,
     "minDelta", NumberMeta(
-        "float64", "Minimum time between attribute updates in seconds"), 0.05)
+        "float64", "Minimum time between attribute updates in seconds"), 0.05,
+    "timeout", NumberMeta(
+        "float64", "Max time to wait for puts to complete, <0 is forever"), 5.0)
 class CAPart(AttributePart):
     """Abstract class for exposing PVs as `Attribute` instances"""
     def __init__(self, params):
@@ -86,13 +88,18 @@ class CAPart(AttributePart):
             self.monitor = None
 
     def format_caput_value(self, value):
-        self.log.info("caput -c -w 1000 %s %s", self.params.pv, value)
+        self.log.info("caput -c -w %s %s %s",
+                      self.params.timeout, self.params.pv, value)
         return value
 
     def caput(self, value):
         value = self.format_caput_value(value)
+        if self.params.timeout < 0:
+            timeout = None
+        else:
+            timeout = self.params.timeout
         self.catools.caput(
-            self.params.pv, value, wait=True, timeout=None,
+            self.params.pv, value, wait=True, timeout=timeout,
             datatype=self.get_datatype())
         # now do a caget
         value = self.catools.caget(
