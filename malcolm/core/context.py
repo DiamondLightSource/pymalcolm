@@ -1,6 +1,7 @@
 import weakref
 import time
 
+from malcolm.compat import maybe_import_cothread
 from .future import Future
 from .loggable import Loggable
 from .request import Put, Post, Subscribe, Unsubscribe
@@ -55,6 +56,7 @@ class Context(Loggable):
         self._pending_unsubscribes = {}  # dict {Future: Subscribe}
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
+        self._cothread = maybe_import_cothread()
 
     def make_queue(self):
         return Queue()
@@ -102,6 +104,11 @@ class Context(Loggable):
         if self._notify_dispatch_request:
             self._notify_dispatch_request(request)
         controller.handle_request(request)
+        # Yield control to allow the request to be handled
+        if self._cothread:
+            self._cothread.Yield()
+        else:
+            time.sleep(0)
         return future
 
     def ignore_stops_before_now(self):
@@ -184,8 +191,8 @@ class Context(Loggable):
                 saved_args.append(weakref.proxy(self))
             else:
                 saved_args.append(arg)
-        future = self._dispatch_request(request)
         self._subscriptions[request.id] = (callback, saved_args)
+        future = self._dispatch_request(request)
         return future
 
     def unsubscribe(self, future):
@@ -198,12 +205,12 @@ class Context(Loggable):
             "%r has already been unsubscribed from" % \
             self._pending_unsubscribes[future]
         subscribe = self._requests[future]
-        request = Unsubscribe(subscribe.id, self._q.put)
-        controller = self.get_controller(subscribe.path[0])
-        controller.handle_request(request)
         self._pending_unsubscribes[future] = subscribe
         # Clear out the subscription
         self._subscriptions.pop(subscribe.id)
+        request = Unsubscribe(subscribe.id, self._q.put)
+        controller = self.get_controller(subscribe.path[0])
+        controller.handle_request(request)
 
     def unsubscribe_all(self):
         """Send an unsubscribe for all active subscriptions"""
@@ -211,7 +218,6 @@ class Context(Loggable):
                    if isinstance(r, Subscribe)
                    and f not in self._pending_unsubscribes]
         if futures:
-            self.log.debug("Unsubscribing from %d futures", len(futures))
             for future in futures:
                 self.unsubscribe(future)
 
