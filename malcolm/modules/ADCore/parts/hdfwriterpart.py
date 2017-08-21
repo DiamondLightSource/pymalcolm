@@ -176,7 +176,7 @@ class HDFWriterPart(StatefulChildPart):
     def _greater_than_zero(self, v):
         return v > 0
 
-    @RunnableController.PostRunReady
+    @RunnableController.PostRunArmed
     @RunnableController.Seek
     def seek(self, context, completed_steps, steps_to_do, part_info):
         # The detector has been setup differently, so work out what the last
@@ -208,8 +208,8 @@ class HDFWriterPart(StatefulChildPart):
         # TODO: what happens if we miss the last frame?
         child.when_value_matches("uniqueId", self.done_when_reaches)
 
-    @RunnableController.PostRunIdle
-    def post_run_idle(self, context):
+    @RunnableController.PostRunReady
+    def post_run_ready(self, context):
         # If this is the last one, wait until the file is closed
         context.wait_all_futures(self.start_future)
         # Delete the layout XML file

@@ -82,7 +82,7 @@ class RunnableController(ManagerController):
     """
 
     ReportStatus = Hook()
-    """Called before Validate, Configure, PostRunReady and Seek hooks to report
+    """Called before Validate, Configure, PostRunArmed and Seek hooks to report
     the current configuration of all parts
 
     Args:
@@ -131,7 +131,7 @@ class RunnableController(ManagerController):
             the integer step value each time progress is updated
     """
 
-    PostRunReady = Hook()
+    PostRunArmed = Hook()
     """Called at the end of run() when there are more steps to be run
 
     Args:
@@ -144,7 +144,7 @@ class RunnableController(ManagerController):
             method_takes() decorator
     """
 
-    PostRunIdle = Hook()
+    PostRunReady = Hook()
     """Called at the end of run() when there are no more steps to be run
 
     Args:
@@ -464,11 +464,11 @@ class RunnableController(ManagerController):
             part_info = self.run_hook(self.ReportStatus, self.part_contexts)
             self.completed_steps.set_value(completed_steps)
             self.run_hook(
-                self.PostRunReady, self.part_contexts, completed_steps,
+                self.PostRunArmed, self.part_contexts, completed_steps,
                 steps_to_do, part_info, **self.configure_params)
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
-            self.run_hook(self.PostRunIdle, self.part_contexts)
+            self.run_hook(self.PostRunReady, self.part_contexts)
 
     def update_completed_steps(self, completed_steps, part):
         with self._lock:

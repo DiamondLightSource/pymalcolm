@@ -108,8 +108,8 @@ class RunnableChildPart(StatefulChildPart):
                 raise self.run_future.exception()
             raise
 
-    @RunnableController.PostRunIdle
     @RunnableController.PostRunReady
+    @RunnableController.PostRunArmed
     def post_run(self, context, completed_steps=None, steps_to_do=None,
                  part_info=None, params=None):
         context.wait_all_futures(self.run_future)

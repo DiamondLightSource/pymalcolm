@@ -70,7 +70,7 @@ class StatsPluginPart(StatefulChildPart):
             child.attributesFile.put_value_async(self.attributes_filename))
         context.wait_all_futures(fs)
 
-    @RunnableController.PostRunIdle
-    def post_run_idle(self, context):
+    @RunnableController.PostRunReady
+    def post_run_ready(self, context):
         # Delete the attribute XML file
         os.remove(self.attributes_filename)

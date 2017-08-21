@@ -69,7 +69,7 @@ class VDSWrapperPart(Part):
 
     @RunnableController.Abort
     @RunnableController.Reset
-    @RunnableController.PostRunIdle
+    @RunnableController.PostRunReady
     def abort(self, context):
         self.close_files()
 
@@ -188,7 +188,7 @@ class VDSWrapperPart(Part):
 
         return dataset_infos
 
-    @RunnableController.PostRunReady
+    @RunnableController.PostRunArmed
     @RunnableController.Seek
     def seek(self, context, completed_steps, steps_to_do, part_info):
         self.done_when_reaches = completed_steps + steps_to_do

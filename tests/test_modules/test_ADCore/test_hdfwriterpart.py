@@ -248,7 +248,7 @@ class TestHDFWriterPart(ChildTestCase):
             call.put('arrayCounter', 0)]
         assert self.o.done_when_reaches == 13
 
-    def test_post_run_idle(self):
+    def test_post_run_ready(self):
         # Say that we've returned from start
         self.o.start_future = Future(None)
         self.o.start_future.set_result(None)
@@ -257,6 +257,6 @@ class TestHDFWriterPart(ChildTestCase):
             f.write("thing")
         assert os.path.isfile(fname)
         self.o.layout_filename = fname
-        self.o.post_run_idle(self.context)
+        self.o.post_run_ready(self.context)
         assert self.child.handled_requests.mock_calls == []
         assert not os.path.isfile(fname)

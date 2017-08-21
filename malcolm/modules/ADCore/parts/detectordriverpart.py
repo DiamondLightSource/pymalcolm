@@ -36,7 +36,7 @@ class DetectorDriverPart(StatefulChildPart):
         return infos
 
     @RunnableController.Configure
-    @RunnableController.PostRunReady
+    @RunnableController.PostRunArmed
     @RunnableController.Seek
     @method_takes(*configure_args)
     def configure(self, context, completed_steps, steps_to_do, part_info,
