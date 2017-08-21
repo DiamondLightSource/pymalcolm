@@ -26,7 +26,8 @@ class RunnableStates(ManagerStates):
         # Set transitions for normal states
         self.set_allowed(self.READY, self.CONFIGURING)
         self.set_allowed(self.CONFIGURING, self.ARMED)
-        self.set_allowed(self.ARMED, [self.RUNNING, self.SEEKING])
+        self.set_allowed(self.ARMED, [
+            self.RUNNING, self.SEEKING, self.RESETTING])
         self.set_allowed(self.RUNNING, [self.POSTRUN, self.SEEKING])
         self.set_allowed(self.POSTRUN, [self.READY, self.ARMED])
         self.set_allowed(self.SEEKING, [self.ARMED, self.PAUSED])
@@ -222,7 +223,7 @@ class RunnableController(ManagerController):
     # Queue so we can wait for aborts to complete
     abort_queue = None
 
-    @method_writeable_in(ss.FAULT, ss.DISABLED, ss.ABORTED)
+    @method_writeable_in(ss.FAULT, ss.DISABLED, ss.ABORTED, ss.ARMED)
     def reset(self):
         # Override reset to work from aborted too
         super(RunnableController, self).reset()
@@ -518,7 +519,7 @@ class RunnableController(ManagerController):
                 # transition
                 self.part_contexts[self].ignore_stops_before_now()
             func(*args)
-            self.transition(end_state)
+            self.abortable_transition(end_state)
         except AbortedError:
             self.abort_queue.put(None)
             raise
