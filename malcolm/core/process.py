@@ -32,8 +32,8 @@ class Process(Loggable):
     """Called at stop() to gracefully stop all child controllers"""
 
     def __init__(self, name):
+        super(Process, self).__init__(process=name)
         self.name = name
-        self.set_logger_extra(process=name)
         self._cothread = maybe_import_cothread()
         self._controllers = OrderedDict()  # mri -> Controller
         self._published = []  # [mri] for publishable controllers
@@ -139,9 +139,12 @@ class Process(Loggable):
             self._spawn_count += 1
             # Filter out things that are ready to avoid memory leaks
             if self._spawn_count > SPAWN_CLEAR_COUNT:
-                self._spawn_count = 0
-                self._spawned = [s for s in self._spawned if not s.ready()]
+                self._clear_spawn_list()
         return spawned
+
+    def _clear_spawn_list(self):
+        self._spawn_count = 0
+        self._spawned = [s for s in self._spawned if not s.ready()]
 
     def add_controller(self, mri, controller, publish=True, timeout=None):
         """Add a controller to be hosted by this process

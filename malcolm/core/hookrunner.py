@@ -1,10 +1,14 @@
-from malcolm.core.loggable import Loggable
+import logging
+
 from malcolm.core.errors import AbortedError
 
 
-class HookRunner(Loggable):
+# Create a module level logger
+log = logging.getLogger(__name__)
+
+
+class HookRunner(object):
     def __init__(self, hook_queue, part, func, context, args):
-        self.set_logger_extra(part=part.name)
         self.hook_queue = hook_queue
         self.part = part
         self.func = func
@@ -16,11 +20,12 @@ class HookRunner(Loggable):
         try:
             result = self.func(self.context, *self.args)
         except AbortedError as e:
-            self.log.info("%s has been aborted", self.func)
+            log.info("%s: %s has been aborted", self.part.name, self.func)
             result = e
         except Exception as e:  # pylint:disable=broad-except
-            self.log.exception(
-                "%s%s raised exception %s", self.func, self.args, e)
+            log.exception(
+                "%s: %s%s raised exception %s",
+                self.part.name, self.func, self.args, e)
             result = e
         self.hook_queue.put((self.part, result))
 

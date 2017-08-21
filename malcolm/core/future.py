@@ -1,6 +1,3 @@
-from .errors import TimeoutError
-
-
 class Future(object):
     """Represents the result of an asynchronous computation.
     This class has a similar API to concurrent.futures.Future but this

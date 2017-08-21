@@ -36,7 +36,7 @@ class Controller(Loggable):
     health = None
 
     def __init__(self, process, mri, parts, description=""):
-        self.set_logger_extra(mri=mri)
+        super(Controller, self).__init__(mri=mri)
         self.process = process
         self.mri = mri
         self._request_queue = Queue()
