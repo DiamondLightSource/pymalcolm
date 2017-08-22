@@ -275,7 +275,7 @@ print self.block_view("HELLO").greet("me")
 
 
 if __name__ == "__main__":
-    print "Loading..."
+    print("Loading...")
     import os
     import sys
 
