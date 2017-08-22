@@ -1,7 +1,10 @@
 from collections import OrderedDict
 import unittest
 
-from malcolm.core.serializable import Serializable, deserialize_object
+import numpy as np
+
+from malcolm.core.serializable import Serializable, deserialize_object, \
+    repr_object, json_encode
 from malcolm.modules.builtin.vmetas.stringmeta import StringMeta
 
 
@@ -101,3 +104,16 @@ class TestSerialization(unittest.TestCase):
         for endpoint in s1:
             endpoints.append(endpoint)
         assert endpoints == ["boo", "bar", "NOT_CAMEL"]
+
+    def test_repr(self):
+        s1 = DummySerializable("bat", [DummySerializable(1, 2, 3)],
+                               dict(s=DummySerializable(4, 5, 6)))
+        assert repr_object(s1) == \
+            "<DummySerializable boo='bat' " \
+            "bar=[<DummySerializable boo=1 bar=2 NOT_CAMEL=3>] " \
+            "NOT_CAMEL={'s': <DummySerializable boo=4 bar=5 NOT_CAMEL=6>}>"
+
+    def test_json_numpy_array(self):
+        s1 = DummySerializable(3, "foo", np.array([3, 4]))
+        assert json_encode(s1) == \
+            '{"typeid": "foo:1.0", "boo": 3, "bar": "foo", "NOT_CAMEL": [3, 4]}'

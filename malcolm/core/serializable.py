@@ -86,19 +86,19 @@ def serialize_object(o):
             # Hope it's serializable!
             return o
 
+
 def repr_object(o):
     if hasattr(o, "to_dict"):
         # This will do all the sub layers for us
         return repr(o)
     elif isinstance(o, dict):
         # Need to recurse down
-        d = OrderedDict()
-        for k, v in o.items():
-            d[k] = repr_object(v)
-        return repr(d)
+        text = ", ".join("%r: %s" % (k, repr_object(v)) for k, v in o.items())
+        return "{%s}" % text
     elif isinstance(o, list):
         # Need to recurse down
-        return repr([repr_object(x) for x in o])
+        text = ", ".join(repr_object(x) for x in o)
+        return "[%s]" % text
     else:
         # Hope it's serializable!
         return repr(o)

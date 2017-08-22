@@ -2,7 +2,7 @@ import logging
 
 from malcolm.compat import maybe_import_cothread, get_thread_ident
 from .queue import Queue
-from .errors import TimeoutError
+
 
 # Create a module level logger
 log = logging.getLogger(__name__)
