@@ -109,8 +109,6 @@ if sys.version_info < (3, 5):
             self.queue = queue
             self.handlers = handlers
             self._thread = None
-            self.respect_handler_level = kwargs.get(
-                "respect_handler_level", False)
 
         def start(self):
             self._thread = threading.Thread(target=self._monitor)
@@ -124,11 +122,7 @@ if sys.version_info < (3, 5):
             to handle.
             """
             for handler in self.handlers:
-                if not self.respect_handler_level:
-                    process = True
-                else:
-                    process = record.levelno >= handler.level
-                if process:
+                if record.levelno >= handler.level:
                     handler.handle(record)
 
         def _monitor(self):
@@ -141,15 +135,12 @@ if sys.version_info < (3, 5):
             q = self.queue
             has_task_done = hasattr(q, 'task_done')
             while True:
-                try:
-                    record = q.get(True)
-                    if record is self._sentinel:
-                        break
-                    self.handle(record)
-                    if has_task_done:
-                        q.task_done()
-                except queue.Empty:
+                record = q.get(True)
+                if record is self._sentinel:
                     break
+                self.handle(record)
+                if has_task_done:
+                    q.task_done()
 
         def stop(self):
             self.queue.put_nowait(self._sentinel)
