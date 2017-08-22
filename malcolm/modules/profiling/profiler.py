@@ -20,10 +20,12 @@ class Profiler(Collector):
         self.started = True
         super(Profiler, self).start(duration=1000000)
 
-    def stop(self, filename=None):
+    def stop(self, filename=None, reset=True):
         super(Profiler, self).stop()
         self.started = False
         self.store(filename)
+        if reset:
+            self.reset()
 
     def store(self, filename=None):
         if not filename:
