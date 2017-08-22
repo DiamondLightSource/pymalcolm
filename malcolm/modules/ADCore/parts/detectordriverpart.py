@@ -36,7 +36,7 @@ class DetectorDriverPart(StatefulChildPart):
         return infos
 
     @RunnableController.Configure
-    @RunnableController.PostRunReady
+    @RunnableController.PostRunArmed
     @RunnableController.Seek
     @method_takes(*configure_args)
     def configure(self, context, completed_steps, steps_to_do, part_info,
@@ -82,7 +82,7 @@ class DetectorDriverPart(StatefulChildPart):
             # Start now
             self.start_future = child.start_async()
         context.wait_all_futures(self.start_future)
-        # Now wait for up to minDelta time to make sure any
+        # Now wait for up to 2*minDelta time to make sure any
         # update_completed_steps come in
         try:
             child.when_value_matches(

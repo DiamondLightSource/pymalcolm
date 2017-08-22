@@ -73,7 +73,7 @@ class PositionLabellerPart(StatefulChildPart):
         self.abort(context)
 
     @RunnableController.Configure
-    @RunnableController.PostRunReady
+    @RunnableController.PostRunArmed
     @RunnableController.Seek
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED)

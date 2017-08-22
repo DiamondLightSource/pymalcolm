@@ -7,7 +7,7 @@ class Notifier(Loggable):
     """Object that can service callbacks on given endpoints"""
 
     def __init__(self, mri, lock, block):
-        self.set_logger_extra(mri=mri)
+        super(Notifier, self).__init__(mri=mri)
         self._tree = NotifierNode(block)
         self._lock = lock
         # Incremented every time we do with changes_squashed
@@ -80,6 +80,7 @@ class Notifier(Loggable):
             if self._squashed_count == 0:
                 changes = self._squashed_changes
                 self._squashed_changes = []
+                # TODO: squash intermediate changes here?
                 responses += self._tree.notify_changes(changes)
         finally:
             self._lock.release()

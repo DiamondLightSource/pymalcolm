@@ -8,7 +8,7 @@ from malcolm.core import method_writeable_in, method_takes, Hook, Table, \
     json_encode, json_decode, method_also_takes, REQUIRED, Unsubscribe, \
     Subscribe, deserialize_object, Delta, Context, AttributeModel, Alarm, \
     AlarmSeverity, AlarmStatus
-from malcolm.modules.builtin.infos import LayoutInfo, PortInfo
+from malcolm.modules.builtin.infos import LayoutInfo
 from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberArrayMeta, \
     BooleanArrayMeta, TableMeta, StringMeta, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta

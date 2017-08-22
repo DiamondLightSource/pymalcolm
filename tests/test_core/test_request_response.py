@@ -213,3 +213,42 @@ class TestResponse(unittest.TestCase):
         assert r.typeid == "malcolm:core/Delta:1.0"
         assert r.id == 123
         assert r.changes == changes
+
+
+class TestDeltaChanges(unittest.TestCase):
+    def test_update_root(self):
+        d = dict(a=32)
+        r = Delta(changes=[[[], dict(b=3, c=4)]])
+        r.apply_changes_to(d)
+        assert d == dict(b=3, c=4)
+
+    def test_update_existing_key(self):
+        d = dict(a=32)
+        r = Delta(changes=[[["a"], 3]])
+        r.apply_changes_to(d)
+        assert d == dict(a=3)
+
+    def test_update_nonexisting_key(self):
+        d = dict(a=32)
+        r = Delta(changes=[[["b"], 3]])
+        r.apply_changes_to(d)
+        assert d == dict(a=32, b=3)
+
+    def test_update_existing_sub_key(self):
+        d = dict(c=dict(a=32))
+        r = Delta(changes=[[["c", "a"], 3]])
+        r.apply_changes_to(d)
+        assert d == dict(c=dict(a=3))
+
+    def test_update_nonexisting_sub_key(self):
+        d = dict(d=dict(a=32))
+        r = Delta(changes=[[["c", "a"], 3]])
+        r.apply_changes_to(d)
+        assert d == dict(d=dict(a=32), c=dict(a=3))
+
+    def test_update_exist_and_nonexist_sub(self):
+        d = dict(d=dict(a=32))
+        r = Delta(changes=[[["d", "b", "x"], 3]])
+        r.apply_changes_to(d)
+        assert d == dict(d=dict(a=32, b=dict(x=3)))
+

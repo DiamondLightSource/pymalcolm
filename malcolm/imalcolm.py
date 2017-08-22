@@ -54,9 +54,9 @@ def make_process():
             #     "class": "logging.handlers.RotatingFileHandler",
             #     "level": "DEBUG",
             #     "formatter": "extended",
-            #     "filename": "debug.log",
-            #     "maxBytes": 1048576,
-            #     "backupCount": 20,
+            #     "filename": "/tmp/debug.log",
+            #     "maxBytes": 100048576,
+            #     "backupCount": 4,
             #     "encoding": "utf8"
             # },
 
@@ -107,7 +107,31 @@ def make_process():
             file_config = yaml.load(text, Loader=yaml.RoundTripLoader)
         if file_config:
             log_config = file_config
+
+    # Now we have our user specified logging config, pipe all logging messages
+    # through a queue to make it asynchronous
+    from malcolm.compat import QueueListener, queue
+    import atexit
+
+    # These are the handlers for our root logger, they should go through a queue
+    root_handlers = log_config["root"].pop("handlers")
+
+    # Create a new handler to replace all the above that just pops messages on
+    # a queue, and set it as the handler for the root logger (and children)
+    q = queue.Queue()
+    log_config["handlers"]["queue"] = {
+        "class": "malcolm.compat.QueueHandler", "queue": q}
+    log_config["root"]["handlers"] = ["queue"]
     logging.config.dictConfig(log_config)
+
+    # Now make a queue listener that consumes messages on the queue and forwards
+    # them to any of the appropriate original root handlers
+    handlers = [logging._handlers[h] for h in root_handlers]
+    listener = QueueListener(q, *handlers, respect_handler_level=True)
+
+    # Start it off, and tell it to stop when we quit
+    listener.start()
+    atexit.register(listener.stop)
 
     # Setup Qt gui, must be done before any malcolm imports otherwise cothread
     # starts in the wrong thread
@@ -131,6 +155,7 @@ def make_process():
             app.exec_()
 
         qt_thread = threading.Thread(target=start_qt)
+        qt_thread.setDaemon(True)
 
         def gui(block):
             global opener
@@ -259,8 +284,10 @@ if __name__ == "__main__":
                     "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
                     "site-packages")
     require("tornado", "numpy", "ruamel.yaml", "cothread==2.14",
-            "scanpointgenerator", "plop", "pygelf", "h5py")
-    #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "scanpointgenerator"))
+            "pygelf==0.3.1", "scanpointgenerator", "plop", "h5py")
+    #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
+    #sys.path.append(
+    #    "/home/tmc43/virtualenvs/pymalcolm/lib/python2.7/site-packages")
     sys.path.append(
         "/dls_sw/work/R3.14.12.3/support/pvaPy/lib/python/2.7/linux-x86_64")
 

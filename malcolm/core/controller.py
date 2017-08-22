@@ -36,7 +36,7 @@ class Controller(Loggable):
     health = None
 
     def __init__(self, process, mri, parts, description=""):
-        self.set_logger_extra(mri=mri)
+        super(Controller, self).__init__(mri=mri)
         self.process = process
         self.mri = mri
         self._request_queue = Queue()
@@ -242,7 +242,7 @@ class Controller(Loggable):
             # We spawned just above, so there is definitely something on the
             # queue
             request = self._request_queue.get(timeout=0)
-            self.log.debug(request)
+            # self.log.debug(request)
             if isinstance(request, Get):
                 handler = self._handle_get
             elif isinstance(request, Put):

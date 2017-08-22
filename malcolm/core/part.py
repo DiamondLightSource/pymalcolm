@@ -8,6 +8,7 @@ from .methodmodel import get_method_decorated, MethodModel
 
 class Part(Loggable):
     def __init__(self, name):
+        super(Part, self).__init__()
         assert isinstance(name, str_), \
             "Expected name to be a string, got %s. Did you forget to " \
             "subclass __init__ in %s?" % (name, self)

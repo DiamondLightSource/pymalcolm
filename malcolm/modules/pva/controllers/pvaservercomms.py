@@ -96,7 +96,7 @@ class PvaServerComms(ServerComms):
 
 class PvaImplementation(Loggable):
     def __init__(self, mri, controller, request):
-        self.set_logger_extra(mri=mri)
+        super(PvaImplementation, self).__init__(mri=mri)
         self._mri = mri
         self._controller = controller
         self._request = request

@@ -26,7 +26,8 @@ class RunnableStates(ManagerStates):
         # Set transitions for normal states
         self.set_allowed(self.READY, self.CONFIGURING)
         self.set_allowed(self.CONFIGURING, self.ARMED)
-        self.set_allowed(self.ARMED, [self.RUNNING, self.SEEKING])
+        self.set_allowed(self.ARMED, [
+            self.RUNNING, self.SEEKING, self.RESETTING])
         self.set_allowed(self.RUNNING, [self.POSTRUN, self.SEEKING])
         self.set_allowed(self.POSTRUN, [self.READY, self.ARMED])
         self.set_allowed(self.SEEKING, [self.ARMED, self.PAUSED])
@@ -81,7 +82,7 @@ class RunnableController(ManagerController):
     """
 
     ReportStatus = Hook()
-    """Called before Validate, Configure, PostRunReady and Seek hooks to report
+    """Called before Validate, Configure, PostRunArmed and Seek hooks to report
     the current configuration of all parts
 
     Args:
@@ -130,7 +131,7 @@ class RunnableController(ManagerController):
             the integer step value each time progress is updated
     """
 
-    PostRunReady = Hook()
+    PostRunArmed = Hook()
     """Called at the end of run() when there are more steps to be run
 
     Args:
@@ -143,7 +144,7 @@ class RunnableController(ManagerController):
             method_takes() decorator
     """
 
-    PostRunIdle = Hook()
+    PostRunReady = Hook()
     """Called at the end of run() when there are no more steps to be run
 
     Args:
@@ -222,7 +223,7 @@ class RunnableController(ManagerController):
     # Queue so we can wait for aborts to complete
     abort_queue = None
 
-    @method_writeable_in(ss.FAULT, ss.DISABLED, ss.ABORTED)
+    @method_writeable_in(ss.FAULT, ss.DISABLED, ss.ABORTED, ss.ARMED)
     def reset(self):
         # Override reset to work from aborted too
         super(RunnableController, self).reset()
@@ -463,11 +464,11 @@ class RunnableController(ManagerController):
             part_info = self.run_hook(self.ReportStatus, self.part_contexts)
             self.completed_steps.set_value(completed_steps)
             self.run_hook(
-                self.PostRunReady, self.part_contexts, completed_steps,
+                self.PostRunArmed, self.part_contexts, completed_steps,
                 steps_to_do, part_info, **self.configure_params)
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
-            self.run_hook(self.PostRunIdle, self.part_contexts)
+            self.run_hook(self.PostRunReady, self.part_contexts)
 
     def update_completed_steps(self, completed_steps, part):
         with self._lock:
@@ -518,7 +519,7 @@ class RunnableController(ManagerController):
                 # transition
                 self.part_contexts[self].ignore_stops_before_now()
             func(*args)
-            self.transition(end_state)
+            self.abortable_transition(end_state)
         except AbortedError:
             self.abort_queue.put(None)
             raise

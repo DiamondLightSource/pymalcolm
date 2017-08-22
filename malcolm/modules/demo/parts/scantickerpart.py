@@ -20,7 +20,7 @@ class ScanTickerPart(ChildPart):
     exception_step = None
 
     @RunnableController.Configure
-    @RunnableController.PostRunReady
+    @RunnableController.PostRunArmed
     @RunnableController.Seek
     @method_takes(
         "generator", PointGeneratorMeta("Generator instance"), REQUIRED,

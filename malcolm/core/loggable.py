@@ -16,15 +16,8 @@ class FieldFilter(object):
 class Loggable(object):
     """Utility class that provides a named logger for a class instance"""
 
-    # The actual logging logger that produces our log messages
-    _log = None
-
-    @property
-    def log(self):
-        if self._log is None:
-            # Get a the default logger name
-            self.set_logger_extra()
-        return self._log
+    def __init__(self, **fields):
+        self.log = self.set_logger_extra(**fields)
 
     def set_logger_extra(self, **fields):
         """Change the name of the logger that log.* should call
@@ -39,6 +32,7 @@ class Loggable(object):
         # names should be something like this for one field:
         #   ["malcolm.modules.scanning.controllers.runnablecontroller",
         #    "RunnableController", "BL45P-ML-SCAN-01"]
-        self._log = logging.getLogger(".".join(names))
+        self.log = logging.getLogger(".".join(names))
         if fields:
-            self._log.addFilter(FieldFilter(fields))
+            self.log.addFilter(FieldFilter(fields))
+        return self.log

@@ -1,5 +1,5 @@
 from malcolm.core import BadValueError, method_takes, serialize_object, \
-    Update, deserialize_object, Subscribe, MethodModel, Unsubscribe, Queue
+    Delta, deserialize_object, Subscribe, MethodModel, Unsubscribe, Queue
 from malcolm.modules.builtin.parts import StatefulChildPart
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.infos import ParameterTweakInfo
@@ -16,18 +16,28 @@ class RunnableChildPart(StatefulChildPart):
     # make sure updates are processed in order
     configure_args_update_queue = None
 
+    # the serialized configure method
+    serialized_configure = None
+
     def update_part_configure_args(self, response, without=()):
         # Decorate validate and configure with the sum of its parts
-        if not isinstance(response, Update):
+        if isinstance(response, Delta):
+            # Check if the changes contain more than just writeable change
+            writeable_path = [c[0] and c[0][-1] == "writeable"
+                              for c in response.changes]
+            if not all(writeable_path):
+                response.apply_changes_to(self.serialized_configure)
+                configure_model = deserialize_object(
+                    self.serialized_configure, MethodModel)
+                # Put data on the queue, so if spawns are handled out of
+                # order we still get the most up to date data
+                self.configure_args_update_queue.put((configure_model, without))
+                self.spawn(self._update_part_configure_args).wait()
+        else:
             # Return or Error is the end of our subscription, log and ignore
             self.log.debug(
                 "update_part_configure_args got response %r", response)
             return
-        configure_model = deserialize_object(response.value, MethodModel)
-        # Put data on the queue, so if spawns are handled out of order we
-        # still get the most up to date data
-        self.configure_args_update_queue.put((configure_model, without))
-        self.spawn(self._update_part_configure_args).wait()
 
     def _update_part_configure_args(self):
         # We spawned just above, so there is definitely something on the
@@ -46,9 +56,9 @@ class RunnableChildPart(StatefulChildPart):
         self.configure_args_update_queue = Queue()
         super(RunnableChildPart, self).init(context)
         # Monitor the child configure Method for changes
-        # TODO: this happens every time writeable changes, is this really good?
+        self.serialized_configure = MethodModel().to_dict()
         subscription = Subscribe(
-            path=[self.params.mri, "configure"],
+            path=[self.params.mri, "configure"], delta=True,
             callback=self.update_part_configure_args)
         # Wait for the first update to come in
         self.child_controller.handle_request(subscription).wait()
@@ -108,8 +118,8 @@ class RunnableChildPart(StatefulChildPart):
                 raise self.run_future.exception()
             raise
 
-    @RunnableController.PostRunIdle
     @RunnableController.PostRunReady
+    @RunnableController.PostRunArmed
     def post_run(self, context, completed_steps=None, steps_to_do=None,
                  part_info=None, params=None):
         context.wait_all_futures(self.run_future)
