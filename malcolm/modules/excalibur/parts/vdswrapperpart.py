@@ -5,7 +5,7 @@ from subprocess import check_call
 sys.path.insert(0, "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
                    "site-packages")
 import h5py as h5
-
+import numpy as np
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.core import method_takes, REQUIRED, Part
 from malcolm.modules.ADCore.infos import DatasetProducedInfo
@@ -181,7 +181,7 @@ class VDSWrapperPart(Part):
         # Open the VDS
         self.vds = h5.File(
                 self.vds_path, self.APPEND, libver="latest", swmr=True)
-
+        self.log.info("the vds is:%s" % self.vds)   
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
             params.generator, params.fileTemplate % self.OUTPUT_FILE))
@@ -196,6 +196,7 @@ class VDSWrapperPart(Part):
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, context, update_completed_steps):
+        self.log.info("In RUN")
         if not self.raw_datasets:
             for path_ in self.raw_paths:
                 self.log.info("Waiting for file %s to be created", path_)
@@ -207,21 +208,37 @@ class VDSWrapperPart(Part):
                 self.log.info("Waiting for id in file %s", dataset)
                 while self.ID not in dataset:
                     context.sleep(0.1)
-            self.vds.swmr_mode = True
+            # here I should grab the handles to the vds dataset, id and all the swmr datasets and ids.
+            self.log.info("the vds is:%s" % self.vds)
+            if self.vds.id.valid and self.ID in self.vds:
+                self.vds_sum = self.vds[self.SUM]
+                self.vds_id = self.vds[self.ID]
+                self.fems_sum = [ix[self.SUM] for ix in self.raw_datasets] 
+                self.fems_id = [ix[self.ID] for ix in self.raw_datasets]
+            else:
+                self.log.warning("File %s does not exist or does not have a "
+                             "UniqueIDArray, returning 0", file_)
+                return 0
+            self.log.info("Did the set up pass")
+
         try:
             self.log.info("Monitoring raw files until ID reaches %s",
                           self.done_when_reaches)
-            while self.id < self.done_when_reaches:
+            while self.id < self.done_when_reaches: # monitor the output of the vds id. When it counts up then we have finished.
                 context.sleep(0.1)  # Allow while loop to be aborted
                 ids = []
-                for dataset in self.raw_datasets:
-                    ids.append(self.get_id(dataset))
-                if min(ids) > self.id:
+                
+                # this bit needs the refactor
+                for id in self.fems_id:
+                    id.refresh()
+                    ids.append(np.max(id[...])) #  see where each fem is up to
+                minimum_ids = min(ids)
+                if minimum_ids > self.id: # if the the fem with the lowest id is less than the vds id
                     self.log.info("Raw ID changed: %s - "
-                                  "Updating VDS ID and Sum", min(ids))
-                    idx = ids.index(min(ids))
-                    self.update_id(idx)
-                    self.update_sum(idx)
+                                  "Updating VDS ID and Sum", minimum_ids)
+                    idx = ids.index(minimum_ids) # find the index to update 
+                    self.update_id(idx) # update the id index
+                    self.update_sum(idx) #  update the sum index
 
             self.log.info("ID reached: %s", self.id)
         except Exception as error:
@@ -230,41 +247,38 @@ class VDSWrapperPart(Part):
 
     @property
     def id(self):
-        return self.get_id(self.vds)
-
-    def get_id(self, file_):
-        if file_.id.valid and self.ID in file_:
-            file_[self.ID].refresh()
-            return max(file_[self.ID].value.flatten())
-        else:
-            self.log.warning("File %s does not exist or does not have a "
-                             "UniqueIDArray, returning 0", file_)
-            return 0
+        self.vds_id.refresh()
+        return np.max(self.vds_id[...])# there has to be a better way of doing this!
 
     def update_id(self, min_dataset):
-        min_id = self.raw_datasets[min_dataset][self.ID]
+        self.log.info("In update ID")
+        min_id = self.fems_id[min_dataset][...]
 
         self.log.debug("ID shape:\n%s", min_id.shape)
-        self.vds[self.ID].resize(min_id.shape)
-        self.vds[self.ID][...] = min_id
-        self.vds[self.ID].flush()
+        self.vds_id.resize(min_id.shape)
+        self.vds_id[...] = min_id
+        self.vds_id.flush()
+        self.log.info("Finished updating the ID")
 
     def update_sum(self, min_dataset):
-        min_sum = self.raw_datasets[min_dataset][self.SUM].value
+        self.log.info("In update sum")
+        min_sum = self.fems_sum[min_dataset][...]
 
         # Slice the full the extent of the minimum dataset from each dataset
         # Some nodes could be a row ahead meaning the shapes are mismatched
         min_shape = tuple([slice(0, axis_size) for axis_size in min_sum.shape])
         sum_ = 0
-        for dataset in self.raw_datasets:
-            dataset[self.SUM].refresh()
-            sum_ += dataset[self.SUM].value[min_shape]
+        for s in self.fems_sum:
+            s.refresh()
+            sum_ += s[min_shape]
 
         # Re-insert -1 for incomplete indexes using mask from minimum dataset
         mask = min_sum < 0
         sum_[mask] = -1
 
         self.log.debug("Sum shape:\n%s", sum_.shape)
-        self.vds[self.SUM].resize(sum_.shape)
-        self.vds[self.SUM][...] = sum_
-        self.vds[self.SUM].flush()
+        #self.vds_sum.refresh()
+        self.vds_sum.resize(sum_.shape)
+        self.vds_sum[...] = sum_
+        self.vds_sum.flush()
+        self.log.info("Finished updating the sum")
