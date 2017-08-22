@@ -1,10 +1,35 @@
 #!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
 
+
+def make_async_logging(log_config):
+    # Now we have our user specified logging config, pipe all logging messages
+    # through a queue to make it asynchronous
+    from malcolm.compat import QueueListener, queue
+    import logging.config
+
+    # These are the handlers for our root logger, they should go through a queue
+    root_handlers = log_config["root"].pop("handlers")
+
+    # Create a new handler to replace all the above that just pops messages on
+    # a queue, and set it as the handler for the root logger (and children)
+    q = queue.Queue()
+    log_config["handlers"]["queue"] = {
+        "class": "malcolm.compat.QueueHandler", "queue": q}
+    log_config["root"]["handlers"] = ["queue"]
+    logging.config.dictConfig(log_config)
+
+    # Now make a queue listener that consumes messages on the queue and forwards
+    # them to any of the appropriate original root handlers
+    handlers = [logging._handlers[h] for h in root_handlers]
+    listener = QueueListener(q, *handlers, respect_handler_level=True)
+    return listener
+
+
 def make_process():
     import sys
     import threading
     import argparse
-    import logging.config
+    import atexit
     import os
     import getpass
     import json
@@ -108,28 +133,8 @@ def make_process():
         if file_config:
             log_config = file_config
 
-    # Now we have our user specified logging config, pipe all logging messages
-    # through a queue to make it asynchronous
-    from malcolm.compat import QueueListener, queue
-    import atexit
-
-    # These are the handlers for our root logger, they should go through a queue
-    root_handlers = log_config["root"].pop("handlers")
-
-    # Create a new handler to replace all the above that just pops messages on
-    # a queue, and set it as the handler for the root logger (and children)
-    q = queue.Queue()
-    log_config["handlers"]["queue"] = {
-        "class": "malcolm.compat.QueueHandler", "queue": q}
-    log_config["root"]["handlers"] = ["queue"]
-    logging.config.dictConfig(log_config)
-
-    # Now make a queue listener that consumes messages on the queue and forwards
-    # them to any of the appropriate original root handlers
-    handlers = [logging._handlers[h] for h in root_handlers]
-    listener = QueueListener(q, *handlers, respect_handler_level=True)
-
     # Start it off, and tell it to stop when we quit
+    listener = make_async_logging(log_config)
     listener.start()
     atexit.register(listener.stop)
 
