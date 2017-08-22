@@ -22,7 +22,7 @@ class TestXspress3DetectorDriverPart(ChildTestCase):
 
     def tearDown(self):
         del self.context
-        self.process.stop(timeout=1)
+        self.process.stop(timeout=2)
 
     def test_configure(self):
         params = MagicMock()
