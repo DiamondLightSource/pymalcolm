@@ -133,3 +133,26 @@ class Delta(Response):
             changes (list): list of [[path], value] pairs for changed values
         """
         self.changes = changes
+
+    def apply_changes_to(self, d):
+        """Apply the changes to a dict like object"""
+        for change in self.changes:
+            path = change[0]
+            if path:
+                o = d
+                # Update a sub-element
+                for p in path[:-1]:
+                    o = o.setdefault(p, {})
+                if len(change) == 1:
+                    # Delete
+                    del o[path[-1]]
+                else:
+                    # Update
+                    o[path[-1]] = change[1]
+            else:
+                # Update root
+                assert len(change) == 2, "Can't delete root"
+                d.clear()
+                for k, v in change[1].items():
+                    d[k] = v
+

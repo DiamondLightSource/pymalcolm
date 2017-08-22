@@ -80,6 +80,7 @@ class Notifier(Loggable):
             if self._squashed_count == 0:
                 changes = self._squashed_changes
                 self._squashed_changes = []
+                # TODO: squash intermediate changes here?
                 responses += self._tree.notify_changes(changes)
         finally:
             self._lock.release()
