@@ -242,7 +242,7 @@ class Controller(Loggable):
             # We spawned just above, so there is definitely something on the
             # queue
             request = self._request_queue.get(timeout=0)
-            self.log.debug(request)
+            # self.log.debug(request)
             if isinstance(request, Get):
                 handler = self._handle_get
             elif isinstance(request, Put):
