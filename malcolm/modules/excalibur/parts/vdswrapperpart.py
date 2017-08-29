@@ -11,7 +11,7 @@ from malcolm.core import method_takes, REQUIRED, Part
 from malcolm.modules.ADCore.infos import DatasetProducedInfo
 from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
-
+from copy import deepcopy
 
 @method_takes(
     "name", StringMeta("Name of part"), REQUIRED,
@@ -55,18 +55,18 @@ class VDSWrapperPart(Part):
         super(VDSWrapperPart, self).__init__(params.name)
 
         self.done_when_reaches = None
-
+        self.generator = None
         self.fems = [1, 2, 3, 4, 5, 6]
         self.vds_path = ""
         self.vds = None
         self.command = []
         self.raw_paths = []
         self.raw_datasets = []
-
+        self.indices = None # indices of the grid
         self.data_type = params.dataType
         self.stripe_height = params.stripeHeight
         self.stripe_width = params.stripeWidth
-
+        self.mask = None
     @RunnableController.Abort
     @RunnableController.Reset
     @RunnableController.PostRunReady
@@ -80,13 +80,13 @@ class VDSWrapperPart(Part):
                 file_.close()
         self.raw_datasets = []
         self.vds = None
+#         pass 
 
     def _create_dataset_infos(self, generator, filename):
         uniqueid_path = "/entry/NDAttributes/NDArrayUniqueId"
         data_path = "/entry/detector/detector"
         sum_path = "/entry/sum/sum"
         generator_rank = len(generator.axes)
-
         # Create the main detector data
         yield DatasetProducedInfo(
             name="EXCALIBUR.data",
@@ -123,6 +123,7 @@ class VDSWrapperPart(Part):
         "fillValue", NumberMeta("int32", "Fill value for stripe spacing"), 0)
     def configure(self, context, completed_steps, steps_to_do, part_info,
                   params):
+        self.generator = params.generator
         self.done_when_reaches = completed_steps + steps_to_do
 
         self.log.debug("Creating ExternalLinks from VDS to FEM1.h5")
@@ -149,7 +150,7 @@ class VDSWrapperPart(Part):
                                     maxshape=max_shape, dtype="int32")
             self.vds.create_dataset(self.SUM, initial_shape,
                                     maxshape=max_shape, dtype="float64")
-
+            self.vds.swmr_mode = True
         self.log.debug("Calling vds-gen to create dataset in VDS")
         files = [params.fileTemplate % self.RAW_FILE_TEMPLATE.format(fem)
                  for fem in self.fems]
@@ -177,11 +178,21 @@ class VDSWrapperPart(Part):
         # Store required attributes
         self.raw_paths = [os.path.abspath(os.path.join(params.fileDir, file_))
                           for file_ in files]
-
+        
+        # there are two use cases. one where we unwrap the scan stages, and one where it is a grid
+        
+        if len(self.generator.shape) == 2:
+            mapX,mapY = np.meshgrid(range(self.generator.shape[1]),range(self.generator.shape[0]))
+            self.indices = [mapY.flatten(),mapX.flatten()] # this now gives me the co-ordinate of the nth point
+            
+        elif len(self.generator.shape) ==1:
+            self.indices = [range(self.generator.shape[0])]
+        else:
+            raise ValueError("Don't know what to do with this generator shape: %s" % self.generator.shape)
         # Open the VDS
+        self.mask = np.zeros(self.generator.shape+(1,1))
         self.vds = h5.File(
                 self.vds_path, self.APPEND, libver="latest", swmr=True)
-        self.log.info("the vds is:%s" % self.vds)   
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
             params.generator, params.fileTemplate % self.OUTPUT_FILE))
@@ -196,7 +207,6 @@ class VDSWrapperPart(Part):
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, context, update_completed_steps):
-        self.log.info("In RUN")
         if not self.raw_datasets:
             for path_ in self.raw_paths:
                 self.log.info("Waiting for file %s to be created", path_)
@@ -209,7 +219,6 @@ class VDSWrapperPart(Part):
                 while self.ID not in dataset:
                     context.sleep(0.1)
             # here I should grab the handles to the vds dataset, id and all the swmr datasets and ids.
-            self.log.info("the vds is:%s" % self.vds)
             if self.vds.id.valid and self.ID in self.vds:
                 self.vds_sum = self.vds[self.SUM]
                 self.vds_id = self.vds[self.ID]
@@ -219,28 +228,28 @@ class VDSWrapperPart(Part):
                 self.log.warning("File %s does not exist or does not have a "
                              "UniqueIDArray, returning 0", file_)
                 return 0
-            self.log.info("Did the set up pass")
 
+            self.previous_idx = 0
+        # does this on every run
         try:
             self.log.info("Monitoring raw files until ID reaches %s",
                           self.done_when_reaches)
             while self.id < self.done_when_reaches: # monitor the output of the vds id. When it counts up then we have finished.
                 context.sleep(0.1)  # Allow while loop to be aborted
                 ids = []
-                
                 # this bit needs the refactor
                 for id in self.fems_id:
                     id.refresh()
                     ids.append(np.max(id[...])) #  see where each fem is up to
-                minimum_ids = min(ids)
-                if minimum_ids > self.id: # if the the fem with the lowest id is less than the vds id
-                    self.log.info("Raw ID changed: %s - "
-                                  "Updating VDS ID and Sum", minimum_ids)
-                    idx = ids.index(minimum_ids) # find the index to update 
-                    self.update_id(idx) # update the id index
-                    self.update_sum(idx) #  update the sum index
-
-            self.log.info("ID reached: %s", self.id)
+                current_idx = min(ids)
+                if current_idx > self.id: # if the the fem with the lowest id is less than the vds id
+                    self.log.info("Raw ID changed- "
+                                  "Updating VDS ID and Sum")
+                    self.update_id(self.previous_idx, current_idx) # update the id index
+                    self.update_sum(self.previous_idx, current_idx) #  update the sum index
+                    new_id = self.id
+            self.previous_idx = new_id
+            self.log.info("ID reached: %s", new_id)
         except Exception as error:
             self.log.exception("Error in run. Message:\n%s", error.message)
             self.close_files()
@@ -250,35 +259,51 @@ class VDSWrapperPart(Part):
         self.vds_id.refresh()
         return np.max(self.vds_id[...])# there has to be a better way of doing this!
 
-    def update_id(self, min_dataset):
+    def update_id(self, previous_idx, current_idx):
         self.log.info("In update ID")
-        min_id = self.fems_id[min_dataset][...]
+        self.fems_id[0].refresh()
+        new_shape = self.fems_id[0].shape
+        self.log.debug("ID shape:\n%s", new_shape)
+        self.vds_id.resize(new_shape) # source and target are now the same shape
+        sl = self.get_modify_slices(previous_idx, current_idx, new_shape) # get the slices we want to modify:
+        new_ids = self.fems_id[0][sl==1]
 
-        self.log.debug("ID shape:\n%s", min_id.shape)
-        self.vds_id.resize(min_id.shape)
-        self.vds_id[...] = min_id
-        self.vds_id.flush()
+        self.vds_id[sl==1] = new_ids # set the updated values
+        self.vds_id.flush() # flush to disc
         self.log.info("Finished updating the ID")
 
-    def update_sum(self, min_dataset):
+    def update_sum(self, previous_idx, current_idx):
         self.log.info("In update sum")
-        min_sum = self.fems_sum[min_dataset][...]
+        self.fems_sum[0].refresh()
+        new_shape = self.fems_sum[0].shape #  get the shape that we have gotten to.
+        self.vds_sum.refresh()
+        self.vds_sum.resize(new_shape) # source and target are now the same size
 
-        # Slice the full the extent of the minimum dataset from each dataset
-        # Some nodes could be a row ahead meaning the shapes are mismatched
-        min_shape = tuple([slice(0, axis_size) for axis_size in min_sum.shape])
-        sum_ = 0
-        for s in self.fems_sum:
-            s.refresh()
-            sum_ += s[min_shape]
+        sl = self.get_modify_slices(previous_idx, current_idx, new_shape) # get the slices we want to modify
+        fems_sum = np.zeros(self.vds_sum[sl==1].shape)
+        for fem in self.fems_sum:
+            fem.refresh()
+            current_fem_slice = fem[sl==1]
+            fems_sum += current_fem_slice
 
-        # Re-insert -1 for incomplete indexes using mask from minimum dataset
-        mask = min_sum < 0
-        sum_[mask] = -1
-
-        self.log.debug("Sum shape:\n%s", sum_.shape)
-        #self.vds_sum.refresh()
-        self.vds_sum.resize(sum_.shape)
-        self.vds_sum[...] = sum_
+        self.vds_sum[sl==1] = fems_sum
         self.vds_sum.flush()
         self.log.info("Finished updating the sum")
+
+    def get_modify_slices(self, previous_idx, current_idx, new_shape):
+        # returns the slices we want to modify
+        sl = [slice(0, axis_size) for axis_size in new_shape]
+        mask = deepcopy(self.mask)
+        if len(self.generator.shape) == 2:
+            if previous_idx!=0:
+                previous_idx-=1
+            xidx = self.indices[1][previous_idx:current_idx]
+            yidx = self.indices[0][previous_idx:current_idx]
+            mask[yidx,xidx] =1
+            print "previous",previous_idx, "current",current_idx
+        elif len(self.generator.shape) == 1:
+            mask[self.indices[0][previous_idx:current_idx]] =1
+        else:
+            raise ValueError("Don't know what to do with this generator shape: %s" % self.generator.shape) # shouldn't get here. It should fail in config.
+        return mask[sl]
+
