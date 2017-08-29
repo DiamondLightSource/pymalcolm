@@ -301,7 +301,7 @@ class VDSWrapperPart(Part):
             xidx = self.indices[1][previous_idx:current_idx]
             yidx = self.indices[0][previous_idx:current_idx]
             mask[yidx,xidx] =1
-            print "previous",previous_idx, "current",current_idx
+#             print "previous",previous_idx, "current",current_idx
         elif len(self.generator.shape) == 1:
             mask[self.indices[0][previous_idx:current_idx]] =1
         else:
