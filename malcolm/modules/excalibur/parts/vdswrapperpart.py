@@ -150,7 +150,6 @@ class VDSWrapperPart(Part):
                                     maxshape=max_shape, dtype="int32")
             self.vds.create_dataset(self.SUM, initial_shape,
                                     maxshape=max_shape, dtype="float64")
-            self.vds.swmr_mode = True
         self.log.debug("Calling vds-gen to create dataset in VDS")
         files = [params.fileTemplate % self.RAW_FILE_TEMPLATE.format(fem)
                  for fem in self.fems]
@@ -220,6 +219,7 @@ class VDSWrapperPart(Part):
                     context.sleep(0.1)
             # here I should grab the handles to the vds dataset, id and all the swmr datasets and ids.
             if self.vds.id.valid and self.ID in self.vds:
+                self.vds.swmr_mode = True
                 self.vds_sum = self.vds[self.SUM]
                 self.vds_id = self.vds[self.ID]
                 self.fems_sum = [ix[self.SUM] for ix in self.raw_datasets] 
@@ -228,7 +228,7 @@ class VDSWrapperPart(Part):
                 self.log.warning("File %s does not exist or does not have a "
                              "UniqueIDArray, returning 0", file_)
                 return 0
-
+            
             self.previous_idx = 0
         # does this on every run
         try:
@@ -257,7 +257,8 @@ class VDSWrapperPart(Part):
     @property
     def id(self):
         self.vds_id.refresh()
-        return np.max(self.vds_id[...])# there has to be a better way of doing this!
+        sl = self.get_modify_slices(self.previous_idx, self.previous_idx+5, self.vds_id.shape)
+        return np.max(self.vds_id[sl==1])# there has to be a better way of doing this!
 
     def update_id(self, previous_idx, current_idx):
         self.log.info("In update ID")
