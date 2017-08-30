@@ -262,9 +262,7 @@ class VDSWrapperPart(Part):
             sl = self.get_modify_slices(self.previous_idx, self.previous_idx+5, self.vds_id.shape)
             return np.max(self.vds_id[sl == 1])# there has to be a better way of doing this!
         elif len(self.generator.shape)==1:
-            self.log.info("VDS shape here: %s" % str(self.vds_id.shape))
-            lookbehind = 1
-            return np.max(self.vds_id[-lookbehind])
+            return np.max(self.vds_id[-1])
 
     def update_id(self, previous_idx, current_idx):
         self.log.info("In update ID")
