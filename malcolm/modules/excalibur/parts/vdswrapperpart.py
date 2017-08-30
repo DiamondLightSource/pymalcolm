@@ -80,7 +80,7 @@ class VDSWrapperPart(Part):
                 file_.close()
         self.raw_datasets = []
         self.vds = None
-#         pass 
+
 
     def _create_dataset_infos(self, generator, filename):
         uniqueid_path = "/entry/NDAttributes/NDArrayUniqueId"
@@ -206,6 +206,7 @@ class VDSWrapperPart(Part):
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, context, update_completed_steps):
+        self.log.info("RUN")
         if not self.raw_datasets:
             for path_ in self.raw_paths:
                 self.log.info("Waiting for file %s to be created", path_)
@@ -257,8 +258,13 @@ class VDSWrapperPart(Part):
     @property
     def id(self):
         self.vds_id.refresh()
-        sl = self.get_modify_slices(self.previous_idx, self.previous_idx+5, self.vds_id.shape)
-        return np.max(self.vds_id[sl==1])# there has to be a better way of doing this!
+        if len(self.generator.shape)==2:
+            sl = self.get_modify_slices(self.previous_idx, self.previous_idx+5, self.vds_id.shape)
+            return np.max(self.vds_id[sl == 1])# there has to be a better way of doing this!
+        elif len(self.generator.shape)==1:
+            self.log.info("VDS shape here: %s" % str(self.vds_id.shape))
+            lookbehind = 1
+            return np.max(self.vds_id[-lookbehind])
 
     def update_id(self, previous_idx, current_idx):
         self.log.info("In update ID")
