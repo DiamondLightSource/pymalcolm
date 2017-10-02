@@ -32,7 +32,7 @@ class DetectorDriverPart(StatefulChildPart):
     @RunnableController.ReportStatus
     def report_configuration(self, context):
         child = context.block_view(self.params.mri)
-        infos = [UniqueIdInfo(child.arrayCounter.value)]
+        infos = [UniqueIdInfo(child.arrayCounterReadback.value)]
         return infos
 
     @RunnableController.Configure
@@ -45,8 +45,8 @@ class DetectorDriverPart(StatefulChildPart):
         child = context.block_view(self.params.mri)
         fs = self.setup_detector(child, completed_steps, steps_to_do, params)
         context.wait_all_futures(fs)
-        self.done_when_reaches = child.arrayCounter.value + steps_to_do
-        self.completed_offset = completed_steps - child.arrayCounter.value
+        self.done_when_reaches = child.arrayCounterReadback.value + steps_to_do
+        self.completed_offset = completed_steps - child.arrayCounterReadback.value
         if self.is_hardware_triggered(child):
             # Start now if we are hardware triggered
             self.start_future = child.start_async()
@@ -76,7 +76,7 @@ class DetectorDriverPart(StatefulChildPart):
     @RunnableController.Resume
     def run(self, context, update_completed_steps):
         child = context.block_view(self.params.mri)
-        child.arrayCounter.subscribe_value(
+        child.arrayCounterReadback.subscribe_value(
             self.update_completed_steps, update_completed_steps)
         if not self.is_hardware_triggered(child):
             # Start now
