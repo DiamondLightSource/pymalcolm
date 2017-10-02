@@ -44,7 +44,6 @@
     description: Current unique id number for frame
     rbv: $(prefix):XBUF:ArrayCounter_RBV
     widget: textupdate
-    config: false
 
 - ca.parts.CAChoicePart:
     name: collectMode
