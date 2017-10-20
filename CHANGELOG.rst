@@ -10,12 +10,9 @@ Changed:
 
 - Nothing yet
 
-
-`2-1-1`_ - 2017-08-31
----------------------
 Fixed:
 
-- Rewrote VDS processing to handle sum arrays updating at different rates
+- Made RunnableChildPart handle a resume on a child that was Armed not Paused
 
 
 `2-1`_ - 2017-08-30
@@ -69,8 +66,7 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-1-1...HEAD
-.. _2-1-1: https://github.com/dls-controls/pymalcolm/compare/2-1-1...2-1
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-1...HEAD
 .. _2-1: https://github.com/dls-controls/pymalcolm/compare/2-0a6...2-1
 .. _2-0a6: https://github.com/dls-controls/pymalcolm/compare/2-0a5...2-0a6
 .. _2-0a5: https://github.com/dls-controls/pymalcolm/compare/2-0a4...2-0a5

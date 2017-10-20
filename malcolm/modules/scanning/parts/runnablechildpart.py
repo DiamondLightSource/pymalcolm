@@ -103,12 +103,18 @@ class RunnableChildPart(StatefulChildPart):
         child.configure(**params)
 
     @RunnableController.Run
+    @RunnableController.Resume
     def run(self, context, update_completed_steps):
         context.unsubscribe_all()
         child = context.block_view(self.params.mri)
         child.completedSteps.subscribe_value(update_completed_steps, self)
-        match_future = self._wait_for_postrun(child)
-        self.run_future = child.run_async()
+        bad_states = [ss.DISABLING, ss.ABORTING, ss.FAULT]
+        match_future = child.when_value_matches_async(
+            "state", ss.POSTRUN, bad_states)
+        if child.state.value == ss.ARMED:
+            self.run_future = child.run_async()
+        else:
+            child.resume()
         try:
             context.wait_all_futures(match_future)
         except BadValueError:
@@ -130,20 +136,6 @@ class RunnableChildPart(StatefulChildPart):
         context.unsubscribe_all()
         child = context.block_view(self.params.mri)
         child.pause(completedSteps=completed_steps)
-
-    @RunnableController.Resume
-    def resume(self, context, update_completed_steps):
-        child = context.block_view(self.params.mri)
-        child.completedSteps.subscribe_value(update_completed_steps, self)
-        match_future = self._wait_for_postrun(child)
-        child.resume()
-        context.wait_all_futures(match_future)
-
-    def _wait_for_postrun(self, child):
-        bad_states = [ss.DISABLING, ss.ABORTING, ss.FAULT]
-        match_future = child.when_value_matches_async(
-            "state", ss.POSTRUN, bad_states)
-        return match_future
 
     @RunnableController.Abort
     def abort(self, context):
