@@ -10,4 +10,4 @@ class FemDriverPart(StatefulChildPart):
     def report_configuration(self, context):
         child = context.block_view(self.params.mri)
         return [
-            NDArrayDatasetInfo(rank=2), UniqueIdInfo(child.arrayCounterReadback.value)]
+            NDArrayDatasetInfo(rank=2), UniqueIdInfo(child.arrayCounter.value)]
