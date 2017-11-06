@@ -1,4 +1,6 @@
 from malcolm.modules.ADCore.parts import DetectorDriverPart
+from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
+from malcolm.modules.scanning.controllers import RunnableController
 
 
 class XmapDriverPart(DetectorDriverPart):
@@ -21,3 +23,9 @@ class XmapDriverPart(DetectorDriverPart):
             arrayCounter=completed_steps,
             arrayCallbacks=True))
         return fs
+
+    @RunnableController.ReportStatus
+    def report_configuration(self, context):
+        infos = super(XmapDriverPart, self).report_configuration(
+            context) + [NDArrayDatasetInfo(rank=2)]
+        return infos
