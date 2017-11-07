@@ -1,6 +1,6 @@
 from malcolm.core import method_takes, REQUIRED, method_also_takes, \
     method_writeable_in, Hook, AbortedError, MethodModel, Queue, \
-    call_with_params, Context, ABORT_TIMEOUT, TimeoutError
+    call_with_params, Context, ABORT_TIMEOUT, TimeoutError, method_returns
 from malcolm.modules.builtin.controllers import ManagerStates, \
     ManagerController
 from malcolm.modules.builtin.vmetas import NumberMeta, StringArrayMeta
@@ -54,6 +54,7 @@ configure_args = (
         "List of axes in inner dimension of generator that should be moved"),
     []
 )
+validate_args = configure_args[:-1] + (REQUIRED,)
 
 
 @method_also_takes(
@@ -300,6 +301,7 @@ class RunnableController(ManagerController):
         self.axes_to_move.set_value(value)
 
     @method_takes(*configure_args)
+    @method_returns(*validate_args)
     def validate(self, params, returns):
         """Validate configuration parameters and return validated parameters.
 

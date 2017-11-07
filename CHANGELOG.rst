@@ -1,13 +1,25 @@
 Change Log
 ==========
 All notable changes to this project will be documented in this file.
-This project adheres to `Semantic Versioning <http://semver.org/>`_.
+This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-`Unreleased`_ - unreleased
---------------------------
-Added:
+`Unreleased`_
+-------------
+
+Changed:
 
 - Nothing yet
+
+Fixed:
+
+- Made RunnableChildPart handle a resume on a child that was Armed not Paused
+
+
+`2-1`_ - 2017-08-30
+-------------------
+Changed:
+
+- Major refactor, many breaking changes
 
 `2-0a6`_ - 2016-10-03
 ---------------------
@@ -54,7 +66,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-0a6...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-1...HEAD
+.. _2-1: https://github.com/dls-controls/pymalcolm/compare/2-0a6...2-1
 .. _2-0a6: https://github.com/dls-controls/pymalcolm/compare/2-0a5...2-0a6
 .. _2-0a5: https://github.com/dls-controls/pymalcolm/compare/2-0a4...2-0a5
 .. _2-0a4: https://github.com/dls-controls/pymalcolm/compare/2-0a3...2-0a4
