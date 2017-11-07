@@ -2,8 +2,8 @@ import os
 import sys
 from subprocess import check_call
 
-sys.path.insert(0, "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
-                   "site-packages")
+#sys.path.insert(0, "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
+#                   "site-packages")
 import h5py as h5
 import numpy as np
 from malcolm.modules.scanning.controllers import RunnableController
@@ -24,8 +24,9 @@ NUM_LOOKAHEAD = 100
 class VDSWrapperPart(Part):
 
     # Constants for vds-gen CLI app
-    VENV = "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/bin/python"
-    VDS_GEN = "/dls_sw/work/tools/RHEL6-x86_64/odin/vds-gen/vdsgen/app.py"
+    #VENV = "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/bin/python"
+    #VDS_GEN = "/dls_sw/work/tools/RHEL6-x86_64/odin/vds-gen/vdsgen/app.py"
+    VDS_GEN = "/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-vds-gen.py"
     EMPTY = "-e"
     OUTPUT = "-o"
     FILES = "-f"
@@ -157,7 +158,8 @@ class VDSWrapperPart(Part):
         shape = [str(d) for d in params.generator.shape] + \
                 [str(self.stripe_height), str(self.stripe_width)]
         # Base arguments
-        command = [self.VENV, self.VDS_GEN, params.fileDir]
+        #command = [self.VENV, self.VDS_GEN, params.fileDir]
+        command = [self.VDS_GEN, params.fileDir]
         # Define empty and required arguments to do so
         command += [self.EMPTY,
                     self.FILES] + files + \
@@ -257,8 +259,8 @@ class VDSWrapperPart(Part):
         
         if min(ids) > self.current_idx: 
             # if the the fem with the lowest id is less than the vds id
-            self.update_id(indexes) # update the id index
             self.update_sum(indexes) #  update the sum index
+            self.update_id(indexes) # update the id index
             self.log.info("ID reached: %s", self.current_idx)        
 
     def index_in_range(self, index, shape):
