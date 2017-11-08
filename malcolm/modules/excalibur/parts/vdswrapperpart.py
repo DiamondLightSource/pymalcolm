@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 import h5py as h5
-from vdsgen import SubFrameVDSGenerator
+from vdsgen.subframevdsgenerator import SubFrameVDSGenerator
 
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.core import method_takes, REQUIRED, Part
@@ -135,8 +135,7 @@ class VDSWrapperPart(Part):
                                     fillvalue=np.nan)
         files = [params.fileTemplate % self.RAW_FILE_TEMPLATE.format(fem)
                  for fem in self.fems]
-        shape = [str(d) for d in params.generator.shape] + \
-                [str(self.stripe_height), str(self.stripe_width)]
+        shape = params.generator.shape + (self.stripe_height, self.stripe_width)
 
         # Create the VDS using vdsgen
         fgen = SubFrameVDSGenerator(
