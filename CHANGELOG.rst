@@ -11,6 +11,7 @@ Fixed:
 
 - Made RunnableChildPart handle a resume on a child that was Armed not Paused
 - Made VDS depend on h5py 2.7.1 and vds-gen 0.2
+- Fix a regression where Xmap would not report its DET and sum datasets
 
 
 `2-1`_ - 2017-08-30
