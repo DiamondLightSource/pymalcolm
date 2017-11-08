@@ -194,6 +194,8 @@ class PandABlocksManagerController(ManagerController):
             svg_text = f.read()
         fnum = int(self.client.get_field(block_name, "FUNC.RAW"))
         invis = self._get_lut_icon_elements(fnum)
+        # https://stackoverflow.com/a/8998773
+        ET.register_namespace('', "http://www.w3.org/2000/svg")
         root = ET.fromstring(svg_text)
         for i in invis:
             # Find the first parent which has a child with id i

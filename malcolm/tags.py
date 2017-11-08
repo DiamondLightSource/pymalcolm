@@ -8,6 +8,7 @@ widget_types = [
     "table",  # Table of rows. A list is a single column table
     "checkbox",  # A box that can be checked or not
     "flowgraph",  # Boxes with lines representing child blocks and connections
+    "title",  # This widget should be used as the title of the page
 ]
 
 

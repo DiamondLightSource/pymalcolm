@@ -39,7 +39,7 @@ class Importer(object):
         try:
             imp = importlib.import_module(name)
         except ImportError:
-            log.warning("Importing %s failed", name, exc_info=True)
+            log.info("Importing %s failed", name, exc_info=True)
             return {}
         else:
             return {name: imp}

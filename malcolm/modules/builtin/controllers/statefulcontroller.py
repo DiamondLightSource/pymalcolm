@@ -1,4 +1,5 @@
 from malcolm.compat import OrderedDict
+from malcolm.tags import widget
 from malcolm.core import Hook, method_writeable_in, method_takes, Alarm, \
     MethodModel, AttributeModel, Process
 from malcolm.modules.builtin.vmetas import ChoiceMeta
@@ -126,7 +127,8 @@ class StatefulController(BasicController):
             yield y
         # Create read-only attribute for current state string
         meta = ChoiceMeta(
-            "State of Block", self.stateSet.possible_states, label="State")
+            "State of Block", self.stateSet.possible_states,
+            tags=[widget("textupdate")])
         self.state = meta.create_attribute_model(ss.DISABLING)
         yield "state", self.state, None
 

@@ -78,10 +78,10 @@ class PandABlocksMaker(object):
 
         if typ == "time" or typ in ("param", "read") and subtyp == "time":
             self._make_time_parts(field_name, field_data, writeable)
-        elif typ in ("param", "read"):
-            self._make_param_part(field_name, field_data, writeable)
-        elif typ == "write":
+        elif typ == "write" and subtyp == "action":
             self._make_action_part(field_name, field_data)
+        elif typ in ("param", "read", "write"):
+            self._make_param_part(field_name, field_data, writeable)
         elif typ == "bit_out":
             self._make_out(field_name, field_data, "bit")
         elif typ == "pos_out":
@@ -107,7 +107,9 @@ class PandABlocksMaker(object):
         svg_name = block_type + ".svg"
         part = call_with_params(IconPart, svg=os.path.join(SVG_DIR, svg_name))
         self._add_part("icon", part)
-        part = call_with_params(LabelPart, initialValue=block_type)
+        label = self.block_data.description + " " + \
+            self.block_name[len(block_type):]
+        part = call_with_params(LabelPart, initialValue=label)
         self._add_part("label", part)
 
     def _make_scale_offset(self, field_name):
@@ -146,17 +148,10 @@ class PandABlocksMaker(object):
         self._make_field_part(field_name, meta, writeable)
 
     def _make_action_part(self, field_name, field_data):
-        group_tag = self._make_group("actions")
-        if field_data.field_subtype == "action":
-            # Nothing to send
-            arg_meta = None
-        else:
-            arg_meta = make_meta(
-                field_data.field_subtype, field_data.description,
-                tags=[group_tag], writeable=True, labels=field_data.labels)
+        group_tag = self._make_group("parameters")
         part = PandABlocksActionPart(
             self.client, self.block_name, field_name,
-            field_data.description, [group_tag], arg_meta)
+            field_data.description, [group_tag])
         self._add_part(field_name, part)
 
     def _make_out(self, field_name, field_data, typ):

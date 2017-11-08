@@ -4,6 +4,7 @@ import weakref
 import time
 
 from malcolm.compat import OrderedDict
+from malcolm.tags import widget
 from .alarm import Alarm
 from .attribute import Attribute
 from .attributemodel import AttributeModel
@@ -130,7 +131,8 @@ class Controller(Loggable):
             tuple: (string name, AttributeModel, callable put_function).
         """
         # Create read-only attribute to show error texts
-        meta = HealthMeta("Displays OK or an error message")
+        meta = HealthMeta(
+            "Displays OK or an error message", tags=[widget("textupdate")])
         self.health = meta.create_attribute_model()
         yield "health", self.health, None
 

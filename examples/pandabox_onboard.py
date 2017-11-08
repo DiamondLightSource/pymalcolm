@@ -1,23 +1,24 @@
 #!/bin/env dls-python
 import os
 import sys
-import code
-
+import logging
 from pkg_resources import require
 
-require("tornado", "numpy")
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+logging.basicConfig()
+require("tornado", "numpy", "cothread")
 
 from malcolm.core import Process, call_with_params
 from malcolm.modules.web.controllers import HTTPServerComms
 from malcolm.modules.web.parts import WebsocketServerPart
 from malcolm.modules.pandablocks.controllers import PandABlocksManagerController
+from malcolm.modules.builtin.parts import LabelPart
 
 # Input params
 HOSTNAME = "localhost"
 PORT = 8888
 WSPORT = 8080
 CONFIGDIR = "/tmp"
+MRI = "PANDABOX"
 
 # Make the top level objects
 process = Process("Process")
@@ -29,10 +30,11 @@ controller = call_with_params(
 process.add_controller("WS", controller)
 
 # Add the PandABox
+label = call_with_params(LabelPart, initialValue="PandABox")
 controller = call_with_params(
-    PandABlocksManagerController, process, [],
-    configDir=CONFIGDIR, hostname=HOSTNAME, port=PORT, mri="P")
-process.add_controller("P", controller)
+    PandABlocksManagerController, process, [label],
+    configDir=CONFIGDIR, hostname=HOSTNAME, port=PORT, mri=MRI)
+process.add_controller(MRI, controller)
 
 # We daemonise the server by double forking, but we leave the controlling
 # terminal and other file connections alone.
@@ -49,7 +51,14 @@ if False:
 process.start()
 
 # Wait for completion
-code.interact("Welcome to PandABox", local=locals())
+header = "Welcome to PandABox"
+try:
+    import IPython
+except ImportError:
+    import code
+    code.interact(header, local=locals())
+else:
+    IPython.embed(header=header)
 
 # TODO: why does this not shutdown cleanly? socket.shutdown not called right?
 process.stop(timeout=1)

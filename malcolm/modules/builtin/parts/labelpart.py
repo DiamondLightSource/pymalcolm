@@ -4,17 +4,15 @@ from .attributepart import AttributePart
 
 
 @method_takes(
-    "initialValue", StringMeta("Initial value of Block label"), REQUIRED,
-    "group", StringMeta("If given, which GUI group should we attach to"), "",
-)
+    "initialValue", StringMeta("Initial value of Block label"), REQUIRED)
 class LabelPart(AttributePart):
     """Part representing a the icon a GUI should display"""
     def __init__(self, params):
         self.initial_value = params.initialValue
         params = create_class_params(
             super(LabelPart, self), name="label",
-            description="Label for created block", widget="textinput",
-            group=params.group, writeable=True, config=True)
+            description="Label for created block", widget="title",
+            writeable=True, config=True)
         super(LabelPart, self).__init__(params)
 
     def get_initial_value(self):

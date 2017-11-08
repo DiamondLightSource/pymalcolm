@@ -380,7 +380,8 @@ class ManagerController(StatefulController):
     @method_writeable_in(ss.READY)
     @method_takes(
         "design", StringMeta(
-            "Name of design to save, if different from current design"), "")
+            "Name of design to save, if different from current design",
+            tags=[widget("textinput")]), "")
     def save(self, params):
         """Save the current design to file"""
         self.try_stateful_function(
@@ -428,13 +429,13 @@ class ManagerController(StatefulController):
 
     def _set_layout_names(self, extra_name=None):
         names = [""]
-        if extra_name:
-            names.append(extra_name)
         dir_name = self._make_config_dir()
         for f in os.listdir(dir_name):
             if os.path.isfile(
                     os.path.join(dir_name, f)) and f.endswith(".json"):
                 names.append(f.split(".json")[0])
+        if extra_name and str(extra_name) not in names:
+            names.append(str(extra_name))
         self.design.meta.set_choices(names)
 
     def _validated_config_filename(self, name):
@@ -465,10 +466,13 @@ class ManagerController(StatefulController):
             ss.LOADING, ss.READY, self.do_load, value)
 
     def do_load(self, design):
-        filename = self._validated_config_filename(design)
-        with open(filename, "r") as f:
-            text = f.read()
-        structure = json_decode(text)
+        if design:
+            filename = self._validated_config_filename(design)
+            with open(filename, "r") as f:
+                text = f.read()
+            structure = json_decode(text)
+        else:
+            structure = {}
         # Set the layout table
         layout_table = Table(self.layout.meta)
         for part_name, part_structure in structure.get("layout", {}).items():

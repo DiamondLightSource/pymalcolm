@@ -1,4 +1,7 @@
+import os
+
 from tornado.websocket import WebSocketHandler, WebSocketError
+from tornado.web import StaticFileHandler
 
 from malcolm.modules.web.controllers import HTTPServerComms
 from malcolm.core import method_takes, Part, json_decode, deserialize_object, \
@@ -50,7 +53,12 @@ class WebsocketServerPart(Part):
         regexp = r"/%s" % self.params.name
         info = HandlerInfo(
             regexp, MalcWebSocketHandler, server_part=self, loop=loop)
-        return [info]
+        path = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), "..", "www"))
+        gui = HandlerInfo(
+            r"/(.*)", StaticFileHandler,
+            path=path, default_filename="index.html")
+        return [info, gui]
 
     def on_request(self, request):
         # called from tornado thread
