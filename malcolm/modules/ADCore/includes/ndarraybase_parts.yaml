@@ -17,11 +17,15 @@
 
 - ca.parts.CALongPart:
     name: arrayCounter
-    description: Current unique id number for frame
+    description: Reset unique id for next frame
     pv: $(prefix):ArrayCounter
-    rbvSuff: _RBV
     widget: textinput
-    config: False
+
+- ca.parts.CALongPart:
+    name: arrayCounterReadback
+    description: Current unique id number for frame
+    rbv: $(prefix):ArrayCounter_RBV
+    widget: textupdate
 
 - ca.parts.CALongPart:
     name: uniqueId
