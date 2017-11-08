@@ -1,17 +1,14 @@
 import os
-import sys
-from subprocess import check_call
 
-#sys.path.insert(0, "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
-#                   "site-packages")
-import h5py as h5
 import numpy as np
+import h5py as h5
+from vdsgen import SubFrameVDSGenerator
+
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.core import method_takes, REQUIRED, Part
 from malcolm.modules.ADCore.infos import DatasetProducedInfo
 from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
-from copy import deepcopy
 
 # Number of points too look ahead of the current id index to account for dropped frames
 NUM_LOOKAHEAD = 100
@@ -22,23 +19,6 @@ NUM_LOOKAHEAD = 100
     "stripeHeight", NumberMeta("int16", "Height of stripes"), REQUIRED,
     "stripeWidth", NumberMeta("int16", "Width of stripes"), REQUIRED)
 class VDSWrapperPart(Part):
-
-    # Constants for vds-gen CLI app
-    #VENV = "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/bin/python"
-    #VDS_GEN = "/dls_sw/work/tools/RHEL6-x86_64/odin/vds-gen/vdsgen/app.py"
-    VDS_GEN = "/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-vds-gen.py"
-    EMPTY = "-e"
-    OUTPUT = "-o"
-    FILES = "-f"
-    SHAPE = "--shape"
-    DATA_TYPE = "--data_type"
-    DATA_PATH = "-d"
-    STRIPE_SPACING = "-s"
-    MODULE_SPACING = "-m"
-    FILL_VALUE = "-F"
-    SOURCE_NODE = "--source_node"
-    TARGET_NODE = "--target_node"
-    LOG_LEVEL = "-l"
 
     # Constants for class
     RAW_FILE_TEMPLATE = "FEM{}"
@@ -84,7 +64,6 @@ class VDSWrapperPart(Part):
                 file_.close()
         self.raw_datasets = []
         self.vds = None
-
 
     def _create_dataset_infos(self, generator, filename):
         uniqueid_path = "/entry/NDAttributes/NDArrayUniqueId"
@@ -152,30 +131,28 @@ class VDSWrapperPart(Part):
             self.vds.create_dataset(self.ID, initial_shape,
                                     maxshape=max_shape, dtype="int32")
             self.vds.create_dataset(self.SUM, initial_shape,
-                                    maxshape=max_shape, dtype="float64", fillvalue=np.nan)
+                                    maxshape=max_shape, dtype="float64",
+                                    fillvalue=np.nan)
         files = [params.fileTemplate % self.RAW_FILE_TEMPLATE.format(fem)
                  for fem in self.fems]
         shape = [str(d) for d in params.generator.shape] + \
                 [str(self.stripe_height), str(self.stripe_width)]
-        # Base arguments
-        #command = [self.VENV, self.VDS_GEN, params.fileDir]
-        command = [self.VDS_GEN, params.fileDir]
-        # Define empty and required arguments to do so
-        command += [self.EMPTY,
-                    self.FILES] + files + \
-                   [self.SHAPE] + shape + \
-                   [self.DATA_TYPE, self.data_type]
-        # Override default spacing and data path
-        command += [self.STRIPE_SPACING, "0",
-                    self.MODULE_SPACING, "121",
-                    self.FILL_VALUE, str(params.fillValue),
-                    self.SOURCE_NODE, "/entry/detector/detector",
-                    self.TARGET_NODE, "/entry/detector/detector"]
-        # Define output file path
-        command += [self.OUTPUT, params.fileTemplate % self.OUTPUT_FILE]
-        command += [self.LOG_LEVEL, "1"] # str(self.log.level / 10)]
-        self.log.info("VDSGen Command: %s", command)
-        check_call(command)
+
+        # Create the VDS using vdsgen
+        fgen = SubFrameVDSGenerator(
+            params.fileDir,
+            prefix=None,
+            files=files,
+            output=params.fileTemplate % self.OUTPUT_FILE,
+            source=dict(shape=shape, dtype=self.data_type),
+            source_node="/entry/detector/detector",
+            target_node="/entry/detector/detector",
+            stripe_spacing=0,
+            module_spacing=121,
+            fill_value=params.fillValue,
+            log_level=1 # DEBUG
+        )
+        fgen.generate_vds()
 
         # Store required attributes
         self.raw_paths = [os.path.abspath(os.path.join(params.fileDir, file_))
