@@ -72,7 +72,8 @@ setup(
     install_requires=install_requires,
     extras_require={
         'websocket':  ['tornado'],
-        'ca': ['cothread']
+        'ca': ['cothread'],
+        'hdf5': ['h5py', 'vds-gen'],
     },
     include_package_data=True,
     test_suite='nose.collector',

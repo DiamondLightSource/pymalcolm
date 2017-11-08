@@ -3,16 +3,14 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
+
 `Unreleased`_
 -------------
-
-Changed:
-
-- Nothing yet
 
 Fixed:
 
 - Made RunnableChildPart handle a resume on a child that was Armed not Paused
+- Made VDS depend on h5py 2.7.1 and vds-gen 0.2
 
 
 `2-1`_ - 2017-08-30

@@ -285,11 +285,11 @@ if __name__ == "__main__":
 
     from pkg_resources import require
 
-    sys.path.insert(0,
-                    "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
-                    "site-packages")
-    require("tornado", "numpy", "ruamel.yaml", "cothread==2.14",
-            "pygelf==0.3.1", "scanpointgenerator", "plop", "h5py")
+    #sys.path.insert(0,
+    #                "/dls_sw/work/tools/RHEL6-x86_64/odin/venv/lib/python2.7/"
+    #                "site-packages")
+    require("tornado", "numpy", "ruamel.yaml", "cothread==2.14", "vdsgen==0.2",
+            "pygelf==0.3.1", "scanpointgenerator", "plop", "h5py==2.7.1")
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
     #sys.path.append(
     #    "/home/tmc43/virtualenvs/pymalcolm/lib/python2.7/site-packages")
