@@ -77,11 +77,20 @@
     mri: $(mriPrefix):MASTER
     readoutTime: 12e-6
 
-- excalibur.parts.VDSWrapperPart:
-    name: VDS
-    dataType: int32
-    stripeHeight: 259
-    stripeWidth: 2069
+#- excalibur.parts.VDSWrapperPart:
+#    name: VDS
+#    dataType: int32
+#    stripeHeight: 259
+#    stripeWidth: 2069
 
 - ADCore.parts.DatasetTablePart:
     name: DSET
+
+- excalibur.blocks.excalibur_munge_block:
+   mri: $(mriPrefix):MUNGE
+   prefix: $(pvPrefix):MUNGE
+
+- excalibur.parts.ExcaliburFileMungePart:
+    name: MUNGE
+    mri: $(mriPrefix):MUNGE
+
