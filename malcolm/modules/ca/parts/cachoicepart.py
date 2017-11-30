@@ -22,13 +22,13 @@ class CAChoicePart(CAPart):
                 pass
             else:
                 raise ValueError("Provided index %d exceeds list length %d"
-                    % (value, len(self.attr.meta.choices)))
+                                 % (value, len(self.attr.meta.choices)))
         else:
             # Validate that value is in the choices list; if so, get its index
             if value in self.attr.meta.choices:
                 value = self.attr.meta.choices.index(value)
             else:
                 raise ValueError("Provided value \"%s\" invalid selection from"
-                    " choices [%s]" %
-                    (value, ", ".join(self.attr.meta.choices)))
+                                 " choices [%s]" %
+                                 (value, ", ".join(self.attr.meta.choices)))
         super(CAChoicePart, self).caput(value)
