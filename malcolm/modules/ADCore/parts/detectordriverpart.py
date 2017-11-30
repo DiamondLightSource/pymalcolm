@@ -61,8 +61,12 @@ class DetectorDriverPart(StatefulChildPart):
         else:
             # Leave the arrayCounter where it is, just start from here
             values = {}
+
+        # Not all areaDetector drivers support the imageMode of Multiple
+        if "Multiple" in child.imageMode.meta.choices:
+            values.update(dict(imageMode="Multiple"))
+
         values.update(dict(
-            imageMode="Multiple",
             numImages=steps_to_do,
             arrayCallbacks=True))
         fs = child.put_attribute_values_async(values)

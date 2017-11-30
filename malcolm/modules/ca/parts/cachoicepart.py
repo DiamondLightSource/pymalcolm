@@ -1,3 +1,4 @@
+from malcolm.compat import long_
 from malcolm.modules.builtin.vmetas import ChoiceMeta
 from .capart import CAPart
 
@@ -15,9 +16,19 @@ class CAChoicePart(CAPart):
         self.attr.meta.set_choices(value.enums)
 
     def caput(self, value):
-        try:
-            value = self.attr.meta.choices.index(value)
-        except ValueError:
-            # Already have the index
-            pass
+        if isinstance(value, int) or isinstance(value, long_):
+            # Already have the index, so validate it.
+            if value < len(self.attr.meta.choices):
+                pass
+            else:
+                raise ValueError("Provided index %d exceeds list length %d"
+                    % (value, len(self.attr.meta.choices)))
+        else:
+            # Validate that value is in the choices list; if so, get its index
+            if value in self.attr.meta.choices:
+                value = self.attr.meta.choices.index(value)
+            else:
+                raise ValueError("Provided value \"%s\" invalid selection from"
+                    " choices [%s]" %
+                    (value, ", ".join(self.attr.meta.choices)))
         super(CAChoicePart, self).caput(value)
