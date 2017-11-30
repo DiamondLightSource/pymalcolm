@@ -167,7 +167,7 @@ class HDFWriterPart(StatefulChildPart):
         self.start_future = child.start_async()
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
-            "arrayCounter", self._greater_than_zero)
+            "arrayCounterReadback", self._greater_than_zero)
         # Return the dataset information
         dataset_infos = list(self._create_dataset_infos(
             params.formatName, part_info, params.generator, filename))
@@ -191,7 +191,7 @@ class HDFWriterPart(StatefulChildPart):
         child.arrayCounter.put_value(0)
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
-            "arrayCounter", self._greater_than_zero)
+            "arrayCounterReadback", self._greater_than_zero)
 
     def update_completed_steps(self, value, update_completed_steps):
         completed_steps = value + self.completed_offset
