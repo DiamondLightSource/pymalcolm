@@ -10,4 +10,4 @@ pytest>=3
 pytest-catchlog
 pytest-cov
 h5py==2.7.1
-git+https://github.com/dls-controls/vds-gen.git@0-2#egg=vds-gen
+git+https://github.com/dls-controls/vds-gen.git@0-2-1#egg=vds-gen
