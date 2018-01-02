@@ -7,6 +7,9 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
+Added:
+- Web gui (malcolmjs 0.4)
+
 Changed:
 
 - Split arrayCounter into arrayCounter and arrayCounterReadback on ADCore ndarraybase_parts

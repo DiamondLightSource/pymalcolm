@@ -153,7 +153,7 @@ class Serializable(object):
         d["typeid"] = self.typeid
 
         for endpoint in self.endpoints:
-            check_camel_case(endpoint)
+            # check_camel_case(endpoint)
             d[endpoint] = serialize_object(getattr(self, endpoint))
 
         return d

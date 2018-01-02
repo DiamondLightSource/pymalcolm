@@ -34,6 +34,7 @@ ss = ManagerStates
 @method_also_takes(
     "configDir", StringMeta("Directory to write save/load config to"), REQUIRED,
     "initialDesign", StringMeta("Design to load at init"), "",
+    "useGit", BooleanMeta("Use git to manage to saved config files"), True,
 )
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
@@ -100,13 +101,14 @@ class ManagerController(StatefulController):
 
     def _run_git_cmd(self, *args):
         # Run git command, don't care if it fails, logging the output
-        try:
-            output = subprocess.check_output(
-                ("git",) + args, cwd=self.params.configDir)
-        except subprocess.CalledProcessError as e:
-            self.log.warning("Git command failed: %s\n%s", e, e.output)
-        else:
-            self.log.debug("Git command completed: %s", output)
+        if self.params.useGit:
+            try:
+                output = subprocess.check_output(
+                    ("git",) + args, cwd=self.params.configDir)
+            except subprocess.CalledProcessError as e:
+                self.log.warning("Git command failed: %s\n%s", e, e.output)
+            else:
+                self.log.debug("Git command completed: %s", output)
 
     def create_attribute_models(self):
         for data in super(ManagerController, self).create_attribute_models():

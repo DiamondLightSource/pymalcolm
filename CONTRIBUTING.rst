@@ -26,14 +26,6 @@ While 100% code coverage does not make a library bug-free, it significantly
 reduces the number of easily caught bugs! Please make sure coverage is at 100%
 before submitting a pull request!
 
-Code Quality
-------------
-
-For code quality, please run flake8::
-
-    $ pip install flake8
-    $ flake8 .
-
 Code Styling
 ------------
 Please arrange imports with the following style
@@ -51,7 +43,7 @@ Please arrange imports with the following style
 
 Please follow `Google's python style`_ guide wherever possible.
 
-.. _Google's python style: http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
+.. _Google's python style: https://google.github.io/styleguide/pyguide.html
 
 Building the docs
 -----------------

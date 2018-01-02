@@ -2,7 +2,7 @@ import os
 
 from malcolm.compat import OrderedDict
 from malcolm.core import call_with_params
-from malcolm.modules.builtin.parts import GroupPart, IconPart, LabelPart
+from malcolm.modules.builtin.parts import GroupPart, IconPart, TitlePart
 from malcolm.tags import widget, group, inport, outport, config
 from malcolm.modules.builtin.vmetas import BooleanMeta, NumberMeta, StringMeta, \
     ChoiceMeta, TableMeta
@@ -109,7 +109,7 @@ class PandABlocksMaker(object):
         self._add_part("icon", part)
         label = self.block_data.description + " " + \
             self.block_name[len(block_type):]
-        part = call_with_params(LabelPart, initialValue=label)
+        part = call_with_params(TitlePart, initialValue=label)
         self._add_part("label", part)
 
     def _make_scale_offset(self, field_name):

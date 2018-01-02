@@ -351,10 +351,10 @@ class PandABlocksManagerController(ManagerController):
 
     def _update_current_attr(self, current_attr, mux_val):
         # Remove the old current_attr from all lists
-        for mux_list in self._listening_attrs.values():
+        for mux_set in self._listening_attrs.values():
             try:
-                mux_list.remove(current_attr)
-            except ValueError:
+                mux_set.remove(current_attr)
+            except KeyError:
                 pass
         # add it to the list of things that need to update
         if mux_val == "ZERO":
@@ -365,6 +365,6 @@ class PandABlocksManagerController(ManagerController):
             mon_block_name, mon_field_name = mux_val.split(".", 1)
             mon_parts = self._blocks_parts[mon_block_name]
             out_attr = mon_parts[mon_field_name].attr
-            self._listening_attrs.setdefault(out_attr, []).append(current_attr)
+            self._listening_attrs.setdefault(out_attr, set()).add(current_attr)
             # update it to the right value
             current_attr.set_value(out_attr.value)

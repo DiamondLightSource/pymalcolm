@@ -331,7 +331,7 @@ class Controller(Loggable):
         return result
 
     def create_part_contexts(self):
-        part_contexts = {}
+        part_contexts = OrderedDict()
         for part_name, part in self.parts.items():
             part_contexts[part] = Context(self.process)
         return part_contexts
@@ -352,7 +352,7 @@ class Controller(Loggable):
         # This queue will hold (part, result) tuples
         hook_queue = Queue()
         hook_queue.hook_name = hook_name
-        hook_runners = {}
+        hook_runners = OrderedDict()
 
         # now start them off
         # Take the lock so that no hook abort can come in between now and
@@ -373,7 +373,9 @@ class Controller(Loggable):
 
     def wait_hook(self, hook_queue, hook_runners):
         # Wait for them all to finish
-        return_dict = {}
+        return_dict = OrderedDict()
+        for part in hook_runners:
+            return_dict[part.name] = None
         start = time.time()
         while hook_runners:
             part, ret = hook_queue.get()

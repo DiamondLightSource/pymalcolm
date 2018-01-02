@@ -62,7 +62,7 @@ class PandABlocksClient(object):
         self._send_queue.put((self.STOP, None))    
         self._send_spawned.wait()
         import socket
-        self._socket.shutdown(socket.SHUT_RDWR)
+        self._socket.shutdown(socket.SHUT_RD)
         self._recv_spawned.wait()
         self._socket.close()
         self._socket = None
@@ -71,7 +71,7 @@ class PandABlocksClient(object):
             self._thread_pool.close()
             self._thread_pool.join()
             self._thread_pool = None
-        
+
     def send(self, message):
         response_queue = self.queue_cls()
         self._send_queue.put((message, response_queue))
@@ -119,8 +119,9 @@ class PandABlocksClient(object):
             buf = lines[-1]
             # Get something new from the socket
             rx = self._socket.recv(4096)
-            if rx:
-                buf += rx
+            if not rx:
+                break
+            buf += rx
 
     def _respond(self, resp):
         """Respond to the person waiting"""
@@ -147,10 +148,12 @@ class PandABlocksClient(object):
                     else:
                         assert line[0] == "!", \
                             "Multiline response {} doesn't start with !" \
-                                .format(repr(line))
+                            .format(repr(line))
                         self._completed_response_lines.append(line[1:])
                 else:
                     self._respond(line)
+            except StopIteration:
+                return
             except Exception:
                 log.exception("Exception receiving message")
                 raise
