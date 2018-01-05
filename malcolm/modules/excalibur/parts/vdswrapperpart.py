@@ -10,8 +10,8 @@ from malcolm.modules.ADCore.infos import DatasetProducedInfo
 from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
-# Number of points too look ahead of the current id index to account for dropped frames
-NUM_LOOKAHEAD = 100
+# Number of points to look ahead of the current id index to account for dropped frames
+NUM_DROPPED = 10
 
 @method_takes(
     "name", StringMeta("Name of part"), REQUIRED,
@@ -106,6 +106,7 @@ class VDSWrapperPart(Part):
         "fillValue", NumberMeta("int32", "Fill value for stripe spacing"), 0)
     def configure(self, context, completed_steps, steps_to_do, part_info,
                   params):
+        print "Configure"
         self.generator = params.generator
         self.current_idx = completed_steps
         self.done_when_reaches = completed_steps + steps_to_do
@@ -151,6 +152,7 @@ class VDSWrapperPart(Part):
             fill_value=params.fillValue,
             log_level=1 # DEBUG
         )
+        print fgen        
         fgen.generate_vds()
 
         # Store required attributes
@@ -175,6 +177,7 @@ class VDSWrapperPart(Part):
     @RunnableController.Run
     @RunnableController.Resume
     def run(self, context, update_completed_steps):
+        self.log.info("VDS part running")
         if not self.raw_datasets:
             for path_ in self.raw_paths:
                 self.log.info("Waiting for file %s to be created", path_)
@@ -205,75 +208,68 @@ class VDSWrapperPart(Part):
                           self.done_when_reaches)
             while self.current_idx < self.done_when_reaches: # monitor the output of the vds id. When it counts up then we have finished.
                 context.sleep(0.1)  # Allow while loop to be aborted
-                indexes = self.get_modify_slices()
-                self.maybe_update_datasets(indexes)
+                self.maybe_update_datasets()
 
         except Exception as error:
             self.log.exception("Error in run. Message:\n%s", error.message)
             self.close_files()
             raise
         
-    def maybe_update_datasets(self, indexes):
-        ids = []
+    def maybe_update_datasets(self):
+        self.log.info("VDS: updating")
+        shapes = []
+
+        self.log.info("VDS: fems ids: %s", self.fems_id)
+        # First update the id datasets and store their shapes
         for id in self.fems_id:
             id.refresh()
-            shape = id.shape
-            # Only select the ones in range
-            if isinstance(indexes, tuple):
-                # One index, unpacked                        
-                if self.index_in_range(indexes, shape):
-                    valid_indexes = indexes
-                else:
-                    valid_indexes = None
-            else:
-                valid_indexes = tuple(i for i in indexes if self.index_in_range(i, shape))
-            if valid_indexes:
-                ids.append(max(id[valid_indexes]))
-            else:
-                # Not ready yet, don't process
+            shapes.append(np.array(id.shape))
+
+
+        self.log.info("Shapes: %s", shapes)
+        # Now iterate through the indexes, updating ids and sums if needed
+        missed = 0
+        for index in self.get_indexes_to_check():
+            ids = []
+            for i, id in enumerate(self.fems_id):
+                if not self.index_in_range(index, shapes[i]):
+                    return
+                ids.append(id[index])
+            min_id = min(ids)
+            if min_id > self.current_idx:
+                self.update_sum(index)
+                self.update_id(index, min_id)
+                self.current_idx = min_id
+                self.log.info("ID reached: %s", self.current_idx)        
+            elif missed > NUM_DROPPED:
                 return
-        
-        if min(ids) > self.current_idx: 
-            # if the the fem with the lowest id is less than the vds id
-            self.update_sum(indexes) #  update the sum index
-            self.update_id(indexes) # update the id index
-            self.log.info("ID reached: %s", self.current_idx)        
+            else:
+                missed += 1
 
     def index_in_range(self, index, shape):
         # check the given index is valid for the shape of the array
         in_range = index < np.array(shape)[:len(index)]
         return np.all(in_range) 
 
-    def update_id(self, indexes):
+    def update_id(self, index, min_id):
         self.vds_id.resize(self.fems_id[0].shape) # source and target are now the same shape
-        new_ids = self.fems_id[0][indexes]
-        for id in self.fems_id[1:]:
-            new_ids = np.minimum(new_ids, id[indexes])
-        self.vds_id[indexes] = new_ids # set the updated values
-        self.current_idx = max(new_ids)
+        self.vds_id[index] = min_id
         self.vds_id.flush() # flush to disc
 
-    def update_sum(self, indexes):
-        self.fems_sum[0].refresh()
-        new_shape = self.fems_sum[0].shape #  get the shape that we have gotten to.
-        self.vds_sum.refresh()
-        self.vds_sum.resize(new_shape) # source and target are now the same size
-        fems_sum = self.fems_sum[0][indexes]
-        for fem in self.fems_sum[1:]:
-            fem.refresh()
-            fems_sum += fem[indexes]
-        self.vds_sum[indexes] = fems_sum
+    def update_sum(self, index):
+        sums = []
+        self.log.info("VDS: Updating sum for %s", index) 
+        for s in self.fems_sum:
+            s.refresh()
+            sums.append(s[index])
+        self.log.info("VDS: Sums - %s", sums)
+        self.vds_sum.resize(self.fems_sum[0].shape)
+        self.vds_sum[index] = sum(sums)
+        self.log.info("VDS: Sum should be %s", self.vds_sum[index])
         self.vds_sum.flush()
 
-    def get_modify_slices(self):
-        # returns the slices we want to modify
-        indexes = []        
-        end_idx = min(self.current_idx + NUM_LOOKAHEAD, self.done_when_reaches)
-        for idx in range(self.current_idx, end_idx):
-            indexes.append(self.generator.get_point(idx).indexes)
-        if len(indexes) == 1:
-            # if indexes = [[0, 4]], return something like (0, 4)
-            return tuple(indexes[0])
-        else:
-            # if indexes = [[0, 4], [0, 5]], return something like [(0, 0), (4, 5)]
-            return zip(*indexes)
+    def get_indexes_to_check(self):
+        # returns the indexes that we should check for updates
+        for idx in range(self.current_idx, self.done_when_reaches):
+            yield tuple(self.generator.get_point(idx).indexes)
+
