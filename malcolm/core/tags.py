@@ -1,0 +1,44 @@
+from enum import Enum
+
+
+def group_tag(group_name):
+    """Marks this field as belonging to a group"""
+    tag = "group:%s" % group_name
+    return tag
+
+
+def config_tag():
+    """Marks this field as a value that should be saved and loaded at config"""
+    tag = "config"
+    return tag
+
+
+class Widget(Enum):
+    NONE = None,  # Force no widget
+    TEXTINPUT = "textinput",  # Editable text input box
+    TEXTUPDATE = "textupdate",  # Read only text update
+    LED = "led",  # On/Off LED indicator
+    COMBO = "combo",  # Select from a number of choice values
+    ICON = "icon",  # This field gives the URL for an icon for the whole Block
+    GROUP = "group",  # Group node in a TreeView that other fields can attach to
+    TABLE = "table",  # Table of rows. A list is a single column table
+    CHECKBOX = "checkbox",  # A box that can be checked or not
+    FLOWGRAPH = "flowgraph",  # Boxes with lines for child block connections
+    TITLE = "title",  # This widget should be used as the title of the page
+
+    def tag(self):
+        assert self != Widget.NONE, "Widget.NONE has no widget tag"
+        return "widget:%s" % self.value
+
+
+class Port(Enum):
+    BOOL = "bool"  # Boolean
+    INT32 = "int32"  # 32-bit signed integer
+    NDARRAY = "NDArray"  # areaDetector NDArray port
+    CS = "CS"  # Motor co-ordinate system
+
+    def inport_tag(self, disconnected_value):
+        return "inport:%s:%s" % (self.value, disconnected_value)
+
+    def outport_tag(self, connected_value):
+        return "outport:%s:%s" % (self.value, connected_value)

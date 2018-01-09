@@ -2,7 +2,7 @@ from tornado.web import RequestHandler, asynchronous
 
 from malcolm.core import method_takes, Part, json_decode, json_encode, Get, \
     Post, Return, Error
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.modules.web.controllers import HTTPServerComms
 from malcolm.modules.web.infos import HandlerInfo
 
@@ -45,8 +45,8 @@ class RestfulHandler(RequestHandler):
         # called from tornado thread
         path = endpoint_str.split("/")
         parameters = json_decode(self.get_body_argument("parameters"))
-        request = Post(
-            path=path, parameters=parameters, callback=self.on_response)
+        request = Post(path=path, parameters=parameters)
+        request.set_callback(self.on_response)
         self._server_part.on_request(request)
 
 

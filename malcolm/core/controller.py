@@ -3,20 +3,21 @@ import inspect
 import weakref
 import time
 
+from annotypes import TYPE_CHECKING
+
 from malcolm.compat import OrderedDict
-from malcolm.tags import widget
+from .tags import widget
 from .alarm import Alarm
-from .attribute import Attribute
-from .attributemodel import AttributeModel
-from .block import Block, make_block_view
-from .blockmodel import BlockModel
+from .attributemodels import AttributeModel
+from malcolm.core.views import make_block_view
+from malcolm.core import BlockModel, Attribute, Method, Block
+from .changed import Changed
 from .context import Context
 from .errors import UnexpectedError, AbortedError, WrongThreadError
-from .healthmeta import HealthMeta
 from .hook import Hook, get_hook_decorated
+from .info import Info
 from .loggable import Loggable
 from .map import Map
-from .method import Method
 from .methodmodel import MethodModel, get_method_decorated
 from .model import Model
 from .notifier import Notifier
@@ -24,10 +25,20 @@ from .request import Get, Subscribe, Unsubscribe, Put, Post
 from .queue import Queue
 from .rlock import RLock
 from .serializable import serialize_object, deserialize_object, camel_to_title
+from .spawned import Spawned
 from .view import make_view
+from .vmetas import StringMeta
+
+if TYPE_CHECKING:
+    from typing import List, Dict, Tuple
 
 
 ABORT_TIMEOUT = 5.0
+
+# TODO: hook this in
+class TitleChanged(Changed):
+    def report(self, part, value):
+        self.controller.set_label(value)
 
 
 class Controller(Loggable):
@@ -131,7 +142,7 @@ class Controller(Loggable):
             tuple: (string name, AttributeModel, callable put_function).
         """
         # Create read-only attribute to show error texts
-        meta = HealthMeta(
+        meta = StringMeta(
             "Displays OK or an error message", tags=[widget("textupdate")])
         self.health = meta.create_attribute_model()
         yield "health", self.health, None
@@ -178,15 +189,6 @@ class Controller(Loggable):
                 text = "OK"
             self.health.set_value(text, alarm=alarm)
 
-    def block_view(self):
-        """Get a view of the block we control
-
-        Returns:
-            Block: The block we control
-        """
-        context = Context(self.process)
-        return self.make_view(context)
-
     def make_view(self, context, data=None, child_name=None):
         """Make a child View of data[child_name]"""
         try:
@@ -196,40 +198,15 @@ class Controller(Loggable):
             result = self.spawn(self._make_view, context, data, child_name)
             return result.get()
 
-    def _make_view(self, context, data, child_name):
+    def _make_view(self, context, data=None, child_name=None):
         """Called in cothread's thread"""
         with self._lock:
             if data is None:
                 child = self._block
             else:
                 child = data[child_name]
-            child_view = self._make_appropriate_view(context, child)
+            child_view = make_view(self, context, child)
         return child_view
-
-    def _make_appropriate_view(self, context, data):
-        if isinstance(data, BlockModel):
-            # Make an Block View
-            return make_block_view(self, context, data)
-        elif isinstance(data, AttributeModel):
-            # Make an Attribute View
-            return Attribute(self, context, data)
-        elif isinstance(data, MethodModel):
-            # Make a Method View
-            return Method(self, context, data)
-        elif isinstance(data, Model):
-            # Make a generic View of it
-            return make_view(self, context, data)
-        elif isinstance(data, dict):
-            # Need to recurse down
-            d = OrderedDict()
-            for k, v in data.items():
-                d[k] = self._make_appropriate_view(context, v)
-            return d
-        elif isinstance(data, list):
-            # Need to recurse down
-            return [self._make_appropriate_view(context, x) for x in data]
-        else:
-            return data
 
     def handle_request(self, request):
         """Spawn a new thread that handles Request"""
@@ -336,73 +313,85 @@ class Controller(Loggable):
             part_contexts[part] = Context(self.process)
         return part_contexts
 
-    def run_hook(self, hook, part_contexts, *args, **params):
-        hook_queue, hook_runners = self.start_hook(
-            hook, part_contexts, *args, **params)
-        return_dict = self.wait_hook(hook_queue, hook_runners)
+    def run_hooks(self, hooks):
+        # type: (List[Hook]) -> Dict[str, List[Info]]
+        hook_queue, hook_spawned = self.start_hooks(hooks)
+        return_dict = self.wait_hooks(hook_queue, hook_spawned)
         return return_dict
 
-    def start_hook(self, hook, part_contexts, *args, **params):
-        assert hook in self._hook_names, \
-            "Hook %s doesn't appear in controller hooks %s" % (
-                hook, self._hook_names)
-        hook_name = self._hook_names[hook]
-        self.log.debug("%s: Starting hook", hook_name)
-
+    def start_hooks(self, hooks):
+        # type: (List[Hook]) -> Tuple[Queue, Dict[Hook, Spawned]]
         # This queue will hold (part, result) tuples
         hook_queue = Queue()
-        hook_queue.hook_name = hook_name
-        hook_runners = OrderedDict()
+
+        # Hooks might be a generator, so convert to a list
+        hooks = list(hooks)
+        if not hooks:
+            # If we didn't get any then there's nothing to do
+            return hook_queue, {}
+
+        # Check that this is a hook we expected to run
+        hook_type = type(hooks[0])
+        assert hook_type in self.registry.runnable_hooks, \
+            "Hook %s doesn't appear in controller hooks %s" % (
+                hook_type, self.registry.runnable_hooks)
+        self.log.debug("%s: Starting hook", hooks[0].name)
+
+        hook_spawned = OrderedDict()
 
         # now start them off
         # Take the lock so that no hook abort can come in between now and
         # the spawn of the context
         with self._lock:
-            for part, context in part_contexts.items():
+            for hook in hooks:
                 # context might have been aborted but have nothing servicing
                 # the queue, we still want the legitimate messages on the queue
                 # so just tell it to ignore stops it got before now
-                context.ignore_stops_before_now()
-                func_name = self._hooked_func_names[hook].get(part, None)
-                if func_name:
-                    hook_runners[part] = part.make_hook_runner(
-                        hook_queue, func_name, weakref.proxy(context), *args,
-                        **params)
+                hook.context.ignore_stops_before_now()
+                try:
+                    func, call_types = self.registry.get_hooked(hook.part, self)
+                except KeyError:
+                    # No hooked function
+                    pass
+                else:
+                    hook_spawned[hook] = self.spawn(
+                        hook.run, func, call_types, hook_queue)
 
-        return hook_queue, hook_runners
+        return hook_queue, hook_spawned
 
-    def wait_hook(self, hook_queue, hook_runners):
+    def wait_hooks(self, hook_queue, hook_spawned):
+        # type: (Queue, Dict[Hook, Spawned]) -> Dict[str, List[Info]]
         # Wait for them all to finish
         return_dict = OrderedDict()
-        for part in hook_runners:
-            return_dict[part.name] = None
+        for hook in hook_spawned:
+            return_dict[hook.part.name] = None
         start = time.time()
-        while hook_runners:
-            part, ret = hook_queue.get()
-            hook_runner = hook_runners.pop(part)
+        while hook_spawned:
+            hook, ret = hook_queue.get()
+            spawned = hook_spawned.pop(hook)
 
             # Wait for the process to terminate
-            hook_runner.wait()
-            return_dict[part.name] = ret
+            spawned.wait()
+            return_dict[hook.part.name] = ret
             duration = time.time() - start
-            if hook_runners:
+            if hook_spawned:
                 self.log.debug(
                     "%s: Part %s returned %r after %ss. Still waiting for %s",
-                    hook_queue.hook_name, part.name, ret, duration,
-                    [p.name for p in hook_runners])
+                    hook.name, hook.part.name, ret, duration,
+                    [h.part.name for h in hook_spawned])
             else:
                 self.log.debug(
                     "%s: Part %s returned %r after %ss. Returning...",
-                    hook_queue.hook_name, part.name, ret, duration)
+                    hook.name, hook.part.name, ret, duration)
 
             if isinstance(ret, Exception):
                 if not isinstance(ret, AbortedError):
                     # If AbortedError, all tasks have already been stopped.
                     # Got an error, so stop and wait all hook runners
-                    for h in hook_runners.values():
-                        h.stop()
+                    for h in hook_spawned:
+                        h.context.stop()
                 # Wait for them to finish
-                for h in hook_runners.values():
+                for h in hook_spawned.values():
                     h.wait(timeout=ABORT_TIMEOUT)
                 raise ret
 

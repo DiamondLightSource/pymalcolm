@@ -1,6 +1,6 @@
 from malcolm.modules.builtin.controllers import ProxyController
 from malcolm.core import method_takes, REQUIRED
-from malcolm.modules.builtin.vmetas import StringMeta, BooleanMeta
+from malcolm.core.vmetas import BooleanMeta, StringMeta
 
 
 # This is done in python rather than YAML so that we can choose whether or not

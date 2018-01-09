@@ -7,7 +7,7 @@ from mock import Mock, ANY, patch, mock_open
 
 from malcolm.core import method_takes, REQUIRED
 from malcolm.modules.builtin.controllers import BasicController
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.modules.builtin.parts import StringPart
 from malcolm.yamlutil import make_block_creator, Section, check_yaml_names, \
     make_include_creator

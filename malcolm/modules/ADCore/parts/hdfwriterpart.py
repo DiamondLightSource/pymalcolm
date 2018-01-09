@@ -8,7 +8,7 @@ from malcolm.modules.ADCore.infos import CalculatedNDAttributeDatasetInfo, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
     attribute_dataset_types, UniqueIdInfo
 from malcolm.modules.builtin.parts import StatefulChildPart
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 

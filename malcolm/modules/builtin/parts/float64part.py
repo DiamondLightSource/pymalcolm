@@ -1,14 +1,32 @@
-from malcolm.core import method_also_takes
-from malcolm.modules.builtin.vmetas import NumberMeta
-from .attributepart import AttributePart
+from annotypes import Anno
+
+from malcolm.core import Part, Registrar
+from malcolm.core.vmetas import NumberMeta
+from ..util import set_tags, Name, Description, Writeable, Config, Group, AWidget
 
 
-@method_also_takes(
-    "initialValue", NumberMeta("float64", "Initial value of attribute"), 0.0,
-)
-class Float64Part(AttributePart):
-    def get_initial_value(self):
-        return self.params.initialValue
+with Anno("Initial value of the created attribute"):
+    Value = float
 
-    def create_meta(self, description, tags):
-        return NumberMeta("float64", description=description, tags=tags)
+
+class Float64Part(Part):
+    """Create a single float64 Attribute on the Block"""
+    def __init__(self,
+                 name,  # type: Name
+                 description,  # type: Description
+                 writeable=False,  # type: Writeable
+                 config=True,  # type: Config
+                 group=None,  # type: Group
+                 widget=None,  # type: AWidget
+                 value=0.0,  # type: Value
+                 ):
+        # type: (...) -> None
+        super(Float64Part, self).__init__(name)
+        meta = NumberMeta("float64", description)
+        set_tags(meta, writeable, config, group, widget)
+        self.attr = meta.create_attribute_model(value)
+        self.writeable_func = self.attr.set_value if writeable else None
+
+    def setup(self, registrar):
+        # type: (Registrar) -> None
+        registrar.add_attribute_model(self.name, self.attr, self.writeable_func)

@@ -1,6 +1,6 @@
 from malcolm.core import Post, Subscribe, Put, Controller, method_takes, \
     REQUIRED, Alarm, Process, Unsubscribe, Delta, Queue
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 @method_takes(

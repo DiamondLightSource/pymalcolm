@@ -5,7 +5,7 @@ import numpy as np
 
 from malcolm.core.serializable import Serializable, deserialize_object, \
     repr_object, json_encode
-from malcolm.modules.builtin.vmetas.stringmeta import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 @Serializable.register_subclass("foo:1.0")

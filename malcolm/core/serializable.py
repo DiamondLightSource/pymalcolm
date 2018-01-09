@@ -3,8 +3,13 @@ import logging
 import json
 
 import numpy as np
+from annotypes import WithCallTypes, TypeVar, Any, TYPE_CHECKING
+from enum import Enum
 
 from malcolm.compat import OrderedDict
+
+if TYPE_CHECKING:
+    from typing import Type
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -82,29 +87,18 @@ def serialize_object(o):
         elif isinstance(o, list):
             # Need to recurse down
             return [serialize_object(x) for x in o]
+        elif isinstance(o, Enum):
+            return o.value
         else:
             # Hope it's serializable!
             return o
 
 
-def repr_object(o):
-    if hasattr(o, "to_dict"):
-        # This will do all the sub layers for us
-        return repr(o)
-    elif isinstance(o, dict):
-        # Need to recurse down
-        text = ", ".join("%r: %s" % (k, repr_object(v)) for k, v in o.items())
-        return "{%s}" % text
-    elif isinstance(o, list):
-        # Need to recurse down
-        text = ", ".join(repr_object(x) for x in o)
-        return "[%s]" % text
-    else:
-        # Hope it's serializable!
-        return repr(o)
+T = TypeVar("T")
 
 
 def deserialize_object(ob, type_check=None):
+    # type: (Any, Type[T]) -> T
     if isinstance(ob, dict):
         subclass = Serializable.lookup_subclass(ob)
         ob = subclass.from_dict(ob)
@@ -114,27 +108,20 @@ def deserialize_object(ob, type_check=None):
     return ob
 
 
-class Serializable(object):
-    """Mixin class for serializable objects"""
+class Serializable(WithCallTypes):
+    """Base class for serializable objects"""
 
     # This will be set by subclasses calling cls.register_subclass()
     typeid = None
 
-    # List of endpoint strings for to_dict()
-    endpoints = ()
-
     # dict mapping typeid name -> cls
     _subcls_lookup = {}
 
-    def __len__(self):
-        return len(self.endpoints)
-
-    def __iter__(self):
-        return iter(self.endpoints)
+    __slots__ = []
 
     def __getitem__(self, item):
-        """Dictionary access to endpoint data"""
-        if item in self.endpoints:
+        """Dictionary access to attr data"""
+        if item in self.call_types:
             try:
                 return getattr(self, item)
             except (AttributeError, TypeError):
@@ -142,7 +129,11 @@ class Serializable(object):
         else:
             raise KeyError(item)
 
+    def __iter__(self):
+        return iter(self.call_types)
+
     def to_dict(self):
+        # type: () -> OrderedDict
         """Create a dictionary representation of object attributes
 
         Returns:
@@ -152,32 +143,11 @@ class Serializable(object):
         d = OrderedDict()
         d["typeid"] = self.typeid
 
-        for endpoint in self.endpoints:
-            # check_camel_case(endpoint)
-            d[endpoint] = serialize_object(getattr(self, endpoint))
+        for k in self.call_types:
+            # check_camel_case(k)
+            d[k] = serialize_object(getattr(self, k))
 
         return d
-
-    def __repr__(self):
-        fields = [(endpoint, repr_object(getattr(self, endpoint)))
-                  for endpoint in self.endpoints]
-        fields = " ".join("%s=%s" % f for f in fields)
-        s = "<%s %s>" % (self.__class__.__name__, fields)
-        return s
-
-    def __eq__(self, other):
-        if hasattr(other, "to_dict"):
-            return self.to_dict() == other.to_dict()
-        else:
-            return self.to_dict() == other
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __hash__(self):
-        # This is not technically correct, but will do...
-        # https://stackoverflow.com/a/1608888
-        return id(self)
 
     @classmethod
     def from_dict(cls, d, ignore=()):

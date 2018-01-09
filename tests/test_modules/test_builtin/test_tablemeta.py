@@ -2,7 +2,7 @@ import unittest
 from collections import OrderedDict
 from mock import Mock
 
-from malcolm.modules.builtin.vmetas import StringArrayMeta, TableMeta
+from malcolm.core.vmetas import StringArrayMeta, TableMeta
 from malcolm.core import Table
 
 

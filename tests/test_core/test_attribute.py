@@ -1,9 +1,8 @@
 import unittest
 from mock import Mock
 
-from malcolm.core.attribute import Attribute
-from malcolm.core.ntscalar import NTScalar
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core import NTScalar, Attribute
+from malcolm.core.vmetas import StringMeta
 
 
 class TestAttribute(unittest.TestCase):

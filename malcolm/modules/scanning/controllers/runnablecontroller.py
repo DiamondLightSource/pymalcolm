@@ -3,10 +3,10 @@ from malcolm.core import method_takes, REQUIRED, method_also_takes, \
     call_with_params, Context, ABORT_TIMEOUT, TimeoutError, method_returns
 from malcolm.modules.builtin.controllers import ManagerStates, \
     ManagerController
-from malcolm.modules.builtin.vmetas import NumberMeta, StringArrayMeta
+from malcolm.core.vmetas import NumberMeta, StringArrayMeta
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
-from malcolm.tags import widget, config
+from malcolm.core.tags import widget, config_tag
 
 
 class RunnableStates(ManagerStates):
@@ -255,7 +255,7 @@ class RunnableController(ManagerController):
         # Create sometimes writeable attribute for the default axis names
         axes_to_move_meta = StringArrayMeta(
             "Default axis names to scan for configure()",
-            tags=[widget("table"), config()])
+            tags=[widget("table"), config_tag()])
         axes_to_move_meta.set_writeable_in(ss.READY)
         self.axes_to_move = axes_to_move_meta.create_attribute_model(
             self.params.axesToMove)
@@ -311,12 +311,12 @@ class RunnableController(ManagerController):
         # Make some tasks just for validate
         part_contexts = self.create_part_contexts()
         # Get any status from all parts
-        status_part_info = self.run_hook(self.ReportStatus, part_contexts)
+        status_part_info = self.run_hooks(self.ReportStatus, part_contexts)
         while iterations > 0:
             # Try up to 10 times to get a valid set of parameters
             iterations -= 1
             # Validate the params with all the parts
-            validate_part_info = self.run_hook(
+            validate_part_info = self.run_hooks(
                 self.Validate, part_contexts, status_part_info, **params)
             tweaks = ParameterTweakInfo.filter_values(validate_part_info)
             if tweaks:
@@ -367,6 +367,8 @@ class RunnableController(ManagerController):
         # Tell these contexts to notify their parts that about things they
         # modify so it doesn't screw up the modified led
         for part, context in self.part_contexts.items():
+            # TODO: should be able to use a "Changed" on the registrar object
+            # self.we_modified.add(request.path[-2])
             context.set_notify_dispatch_request(part.notify_dispatch_request)
         # So add one for ourself too so we can be aborted
         self.part_contexts[self] = Context(self.process)
@@ -384,16 +386,16 @@ class RunnableController(ManagerController):
         self.steps_per_run = self._get_steps_per_run(
             params.generator, params.axesToMove)
         # Get any status from all parts
-        part_info = self.run_hook(self.ReportStatus, self.part_contexts)
+        part_info = self.run_hooks(self.ReportStatus, self.part_contexts)
         # Run the configure command on all parts, passing them info from
         # ReportStatus. Parts should return any reporting info for PostConfigure
         completed_steps = 0
         steps_to_do = self.steps_per_run
-        part_info = self.run_hook(
+        part_info = self.run_hooks(
             self.Configure, self.part_contexts, completed_steps, steps_to_do,
             part_info, **self.configure_params)
         # Take configuration info and reflect it as attribute updates
-        self.run_hook(self.PostConfigure, self.part_contexts, part_info)
+        self.run_hooks(self.PostConfigure, self.part_contexts, part_info)
         # Update the completed and configured steps
         self.configured_steps.set_value(steps_to_do)
         # Reset the progress of all child parts
@@ -458,19 +460,19 @@ class RunnableController(ManagerController):
             raise
 
     def do_run(self, hook):
-        self.run_hook(hook, self.part_contexts, self.update_completed_steps)
+        self.run_hooks(hook, self.part_contexts, self.update_completed_steps)
         self.abortable_transition(ss.POSTRUN)
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             steps_to_do = self.steps_per_run
-            part_info = self.run_hook(self.ReportStatus, self.part_contexts)
+            part_info = self.run_hooks(self.ReportStatus, self.part_contexts)
             self.completed_steps.set_value(completed_steps)
-            self.run_hook(
+            self.run_hooks(
                 self.PostRunArmed, self.part_contexts, completed_steps,
                 steps_to_do, part_info, **self.configure_params)
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
-            self.run_hook(self.PostRunReady, self.part_contexts)
+            self.run_hooks(self.PostRunReady, self.part_contexts)
 
     def update_completed_steps(self, completed_steps, part):
         with self._lock:
@@ -496,7 +498,7 @@ class RunnableController(ManagerController):
         self.try_aborting_function(ss.ABORTING, ss.ABORTED, self.do_abort)
 
     def do_abort(self):
-        self.run_hook(self.Abort, self.create_part_contexts())
+        self.run_hooks(self.Abort, self.create_part_contexts())
 
     def try_aborting_function(self, start_state, end_state, func, *args):
         try:
@@ -567,12 +569,12 @@ class RunnableController(ManagerController):
             ss.SEEKING, next_state, self.do_pause, completed_steps)
 
     def do_pause(self, completed_steps):
-        self.run_hook(self.Pause, self.create_part_contexts())
+        self.run_hooks(self.Pause, self.create_part_contexts())
         in_run_steps = completed_steps % self.steps_per_run
         steps_to_do = self.steps_per_run - in_run_steps
-        part_info = self.run_hook(self.ReportStatus, self.part_contexts)
+        part_info = self.run_hooks(self.ReportStatus, self.part_contexts)
         self.completed_steps.set_value(completed_steps)
-        self.run_hook(
+        self.run_hooks(
             self.Seek, self.part_contexts, completed_steps,
             steps_to_do, part_info, **self.configure_params)
         self.configured_steps.set_value(completed_steps + steps_to_do)

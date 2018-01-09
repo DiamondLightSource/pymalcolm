@@ -3,7 +3,7 @@ import unittest
 
 from malcolm.core.methodmodel import MethodModel, method_takes, REQUIRED, \
     method_returns, method_writeable_in, OPTIONAL, method_also_takes
-from malcolm.modules.builtin.vmetas import StringMeta, BooleanMeta
+from malcolm.core.vmetas import BooleanMeta, StringMeta
 from malcolm.core.mapmeta import MapMeta
 
 

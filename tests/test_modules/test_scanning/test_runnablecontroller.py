@@ -11,7 +11,7 @@ from malcolm.modules.demo.blocks import ticker_block
 from malcolm.compat import OrderedDict
 from malcolm.modules.scanning.controllers import \
     RunnableController, RunnableStates
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 class TestRunnableStates(unittest.TestCase):

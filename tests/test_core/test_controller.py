@@ -9,15 +9,14 @@ from malcolm.core.part import Part
 from malcolm.core.alarm import Alarm, AlarmSeverity
 from malcolm.core.context import Context
 from malcolm.core.model import Model
-from malcolm.core.blockmodel import BlockModel
 from malcolm.core.queue import Queue
 from malcolm.core.request import Post, Subscribe, Put, Get, Unsubscribe
 from malcolm.core.response import Return, Update, Error
 from malcolm.core.errors import AbortedError
 from malcolm.core.mapmeta import MapMeta
 from malcolm.core.methodmodel import MethodModel, OPTIONAL
-from malcolm.core import method_takes, method_returns
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core import method_takes, method_returns, BlockModel
+from malcolm.core.vmetas import StringMeta
 
 
 class MyController(Controller):
@@ -69,7 +68,7 @@ class TestController(unittest.TestCase):
         context = MagicMock()
         context2 = MagicMock()
         part_contexts = {self.part: context, self.part2: context2}
-        result = self.o.run_hook(self.o.TestHook, part_contexts)
+        result = self.o.run_hooks(self.o.TestHook, part_contexts)
         assert result == (
                           dict(test_part=dict(foo="bar"),
                                test_part2=dict(foo="bar")))
@@ -88,7 +87,7 @@ class TestController(unittest.TestCase):
         self.part.exception = MyException()
         part_contexts = {self.part: context, self.part2: context2}
         with self.assertRaises(Exception) as cm:
-            self.o.run_hook(self.o.TestHook, part_contexts)
+            self.o.run_hooks(self.o.TestHook, part_contexts)
         self.assertIs(self.part.context, None)
         self.assertIs(cm.exception, self.part.exception)
 
@@ -99,7 +98,7 @@ class TestController(unittest.TestCase):
         with patch.object(Queue, 'get',
                           return_value=(self.part, AbortedError())):
             with self.assertRaises(AbortedError):
-                self.o.run_hook(self.o.TestHook, part_contexts)
+                self.o.run_hooks(self.o.TestHook, part_contexts)
 
     def test_set_health(self):
         self.o.update_health(self.part,

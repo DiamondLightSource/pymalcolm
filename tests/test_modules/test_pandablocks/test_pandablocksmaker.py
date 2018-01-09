@@ -2,8 +2,7 @@ from collections import OrderedDict
 import unittest
 from mock import Mock
 
-from malcolm.modules.builtin.vmetas import BooleanMeta, ChoiceMeta, \
-    NumberMeta, StringMeta
+from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, NumberMeta, StringMeta
 from malcolm.modules.pandablocks.controllers.pandablocksclient import \
     BlockData, FieldData
 from malcolm.modules.pandablocks.parts.pandablocksmaker import PandABlocksMaker

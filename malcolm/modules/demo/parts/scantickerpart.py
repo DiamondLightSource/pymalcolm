@@ -1,14 +1,20 @@
 import time
 
+from annotypes import Anno
+
 from malcolm.modules.scanning.controllers import \
     RunnableController
 from malcolm.core import REQUIRED, method_takes
 from malcolm.modules.builtin.parts import ChildPart
-from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberMeta
+from malcolm.core.vmetas import NumberMeta, StringArrayMeta
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 
-class ScanTickerPart(ChildPart):
+
+"name", StringMeta("Name of the Part within the controller"), REQUIRED,
+"mri", StringMeta("Malcolm resource id of child object"), REQUIRED)
+
+class ScanTickerPart(Part):
     """Provides control of a `counter_block` within a `RunnableController`"""
     # Generator instance
     generator = None
@@ -18,6 +24,16 @@ class ScanTickerPart(ChildPart):
     steps_to_do = None
     # When to blow up
     exception_step = None
+
+
+    def __init__(self, name, mri):
+        self.cp = ChildPart(name, mri)
+        #super(ScanTickerPart, self).__init__(self, name, mri)
+
+    def setup(self, registrar):
+        self.cp.setup(registrar)
+        #super(ScanTickerPart, self).setup(registrar)
+
 
     @RunnableController.Configure
     @RunnableController.PostRunArmed

@@ -1,23 +1,17 @@
-from malcolm.core import method_takes, REQUIRED, create_class_params
-from malcolm.modules.builtin.vmetas import ChoiceMeta, StringMeta
-from .attributepart import AttributePart
+from malcolm.core import Part, Registrar, Widget
+from malcolm.core.vmetas import ChoiceMeta
+from ..util import set_tags, Name, Description
 
 
-@method_takes(
-    "name", StringMeta("Name of the created attribute"), REQUIRED,
-    "description", StringMeta("Desc of created attribute"), REQUIRED)
-class GroupPart(AttributePart):
-    """Part representing a GUI group other attributes attach to"""
-    def __init__(self, params):
-        params = create_class_params(
-            super(GroupPart, self),
-            widget="group", writeable=True, config=True, **params)
-        super(GroupPart, self).__init__(params)
+class GroupPart(Part):
+    """Part representing a GUI group other Attributes attach to"""
+    def __init__(self, name, description):
+        # type: (Name, Description) -> None
+        super(GroupPart, self).__init__(name)
+        meta = ChoiceMeta(["expanded", "collapsed"], description)
+        set_tags(meta, writeable=True, widget=Widget.GROUP)
+        self.attr = meta.create_attribute_model("expanded")
 
-    def get_initial_value(self):
-        return "expanded"
-
-    def create_meta(self, description, tags):
-        return ChoiceMeta(
-            choices=["expanded", "collapsed"],
-            description=description, tags=tags)
+    def setup(self, registrar):
+        # type: (Registrar) -> None
+        registrar.add_attribute_model(self.name, self.attr, self.attr.set_value)

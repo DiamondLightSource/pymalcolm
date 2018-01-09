@@ -8,12 +8,12 @@ from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import method_takes, REQUIRED, method_also_takes, TimeoutError
 from malcolm.modules.builtin.parts import StatefulChildPart
-from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberMeta
+from malcolm.core.vmetas import NumberMeta, StringArrayMeta
 from malcolm.modules.pmac.infos import MotorInfo
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
-from malcolm.tags import widget, config
+from malcolm.core.tags import widget, config_tag
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
@@ -85,7 +85,7 @@ class PmacTrajectoryPart(StatefulChildPart):
         # is a gap between frames
         meta = NumberMeta(
             "float64", "Min time for any gaps between frames",
-            tags=[widget("textinput"), config()])
+            tags=[widget("textinput"), config_tag()])
         self.min_turnaround = meta.create_attribute_model(
             self.params.minTurnaround)
         yield "minTurnaround", self.min_turnaround, \

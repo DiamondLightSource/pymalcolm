@@ -1,8 +1,8 @@
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.core import method_takes, REQUIRED
 from malcolm.modules.ca.parts import CAStringPart
-from malcolm.tags import port_types, outport, widget
-from malcolm.modules.builtin.vmetas import StringMeta, ChoiceMeta
+from malcolm.core.tags import port_types, outport, widget
+from malcolm.core.vmetas import ChoiceMeta, StringMeta
 
 
 @method_takes(

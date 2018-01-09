@@ -2,7 +2,7 @@ import unittest
 from mock import MagicMock
 
 from malcolm.core.hook import Hook, get_hook_decorated
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.core import method_returns, REQUIRED
 
 

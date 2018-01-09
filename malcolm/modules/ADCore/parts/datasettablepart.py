@@ -1,10 +1,10 @@
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, Table, method_takes, REQUIRED
 from malcolm.modules.ADCore.infos import DatasetProducedInfo, dataset_types
-from malcolm.modules.builtin.vmetas import StringArrayMeta, ChoiceArrayMeta, \
-    TableMeta, NumberArrayMeta, StringMeta
+from malcolm.core.vmetas import ChoiceArrayMeta, NumberArrayMeta, \
+    StringArrayMeta, StringMeta, TableMeta
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.tags import widget
+from malcolm.core.tags import widget
 
 # Make a table for the dataset info we produce
 columns = OrderedDict()

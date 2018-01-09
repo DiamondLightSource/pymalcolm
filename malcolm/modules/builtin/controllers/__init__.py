@@ -1,5 +1,6 @@
 from .basiccontroller import BasicController
-from .statefulcontroller import StatefulController, StatefulStates
+from .statefulcontroller import StatefulController, StatefulStates, InitHook, \
+    ResetHook, DisableHook, HaltHook, AContext
 from .managercontroller import ManagerController, ManagerStates
 from .clientcomms import ClientComms
 from .proxycontroller import ProxyController

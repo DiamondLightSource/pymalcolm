@@ -13,7 +13,7 @@ class TestTitlePart(unittest.TestCase):
         self.c = Controller(self.p, "mri", [self.o])
         self.p.add_controller("mri", self.c)
         self.p.start()
-        self.b = self.c.block_view()
+        self.b = self.p.block_view(self.c.mri)
 
     def tearDown(self):
         self.p.stop(1)

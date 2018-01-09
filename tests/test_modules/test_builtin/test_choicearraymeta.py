@@ -1,6 +1,6 @@
 import unittest
 
-from malcolm.modules.builtin.vmetas import ChoiceArrayMeta
+from malcolm.core.vmetas import ChoiceArrayMeta
 
 
 class TestInit(unittest.TestCase):

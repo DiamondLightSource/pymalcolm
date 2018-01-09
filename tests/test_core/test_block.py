@@ -1,10 +1,10 @@
 import unittest
 from mock import Mock
 
-from malcolm.core.block import make_block_view
-from malcolm.core.blockmodel import BlockModel
+from malcolm.core.views import make_block_view
+from malcolm.core import BlockModel
 from malcolm.core.methodmodel import MethodModel
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 class TestBlock(unittest.TestCase):

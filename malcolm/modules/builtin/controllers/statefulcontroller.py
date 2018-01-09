@@ -1,12 +1,10 @@
-from malcolm.compat import OrderedDict
-from malcolm.tags import widget
-from malcolm.core import Hook, method_writeable_in, method_takes, Alarm, \
-    MethodModel, AttributeModel, Process
-from malcolm.modules.builtin.vmetas import ChoiceMeta
+from malcolm.core import method_writeable_in, method_takes, Alarm, \
+    MethodModel, AttributeModel, Process, StateSet
+from malcolm.core.vmetas import ChoiceMeta
 from .basiccontroller import BasicController
 
 
-class StatefulStates(object):
+class StatefulStates(StateSet):
     """The most basic Malcolm state machine"""
 
     RESETTING = "Resetting"
@@ -16,9 +14,7 @@ class StatefulStates(object):
     READY = "Ready"
 
     def __init__(self):
-        self._allowed = OrderedDict()
-        # These are all the states we can possibly be in
-        self.possible_states = []
+        super(StatefulStates, self).__init__()
         self.create_block_transitions()
         self.create_error_disable_transitions()
 
@@ -36,37 +32,6 @@ class StatefulStates(object):
         self.set_allowed(self.DISABLING, [self.FAULT, self.DISABLED])
         self.set_allowed(self.DISABLED, self.RESETTING)
 
-    def transition_allowed(self, initial_state, target_state):
-        """
-        Check if a transition between two states is allowed
-
-        Args:
-            initial_state(str): Initial state
-            target_state(str): Target state
-
-        Returns:
-            bool: True if allowed, False if not
-        """
-        assert initial_state in self._allowed, \
-            "%s is not in %s" % (initial_state, list(self._allowed))
-        return target_state in self._allowed[initial_state]
-
-    def set_allowed(self, initial_state, allowed_states):
-        """Add an allowed transition state
-
-        Args:
-            initial_state (str): Initial state
-            allowed_states (str or list): state or list of states that
-                initial_state can transition to
-        """
-        if not isinstance(allowed_states, list):
-            allowed_states = [allowed_states]
-
-        self._allowed.setdefault(initial_state, set()).update(allowed_states)
-        for state in allowed_states + [initial_state]:
-            if state not in self.possible_states:
-                self.possible_states.append(state)
-
 
 ss = StatefulStates
 
@@ -79,38 +44,6 @@ class StatefulController(BasicController):
     _children_writeable = None
     # Attributes
     state = None
-
-    Init = Hook()
-    """Called when this controller is told to start by the process
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-    """
-
-    Halt = Hook()
-    """Called when this controller is told to halt
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-    """
-
-    Reset = Hook()
-    """Called at reset() to reset all parts to a known good state
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-    """
-
-    Disable = Hook()
-    """Called at disable() to stop all parts updating their attributes
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-    """
 
     def __init__(self, process, parts, params):
         self._children_writeable = {}
@@ -137,11 +70,14 @@ class StatefulController(BasicController):
         self.try_stateful_function(ss.RESETTING, ss.READY, self.do_init)
 
     def do_init(self):
-        self.run_hook(self.Init, self.create_part_contexts())
+        self.run_hooks(InitHook(part, context)
+                       for part, context in self.create_part_contexts())
+
+        self.run_hooks(self.Init, self.create_part_contexts())
 
     @Process.Halt
     def halt(self):
-        self.run_hook(self.Halt, self.create_part_contexts())
+        self.run_hooks(self.Halt, self.create_part_contexts())
         self.disable()
 
     @method_takes()
@@ -149,14 +85,14 @@ class StatefulController(BasicController):
         self.try_stateful_function(ss.DISABLING, ss.DISABLED, self.do_disable)
 
     def do_disable(self):
-        self.run_hook(self.Disable, self.create_part_contexts())
+        self.run_hooks(self.Disable, self.create_part_contexts())
 
     @method_writeable_in(ss.DISABLED, ss.FAULT)
     def reset(self):
         self.try_stateful_function(ss.RESETTING, ss.READY, self.do_reset)
 
     def do_reset(self):
-        self.run_hook(self.Reset, self.create_part_contexts())
+        self.run_hooks(self.Reset, self.create_part_contexts())
 
     def go_to_error_state(self, exception):
         if self.state.value != ss.FAULT:

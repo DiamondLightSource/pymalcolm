@@ -1,7 +1,7 @@
 import unittest
 from collections import OrderedDict
 
-from malcolm.modules.builtin.vmetas import ChoiceMeta
+from malcolm.core.vmetas import ChoiceMeta
 
 
 class TestInit(unittest.TestCase):

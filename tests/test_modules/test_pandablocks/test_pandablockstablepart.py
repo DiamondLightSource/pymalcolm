@@ -3,8 +3,7 @@ import unittest
 from mock import Mock
 
 from malcolm.core import Table
-from malcolm.modules.builtin.vmetas import TableMeta, BooleanArrayMeta, \
-    NumberArrayMeta
+from malcolm.core.vmetas import BooleanArrayMeta, NumberArrayMeta, TableMeta
 from malcolm.modules.pandablocks.parts.pandablockstablepart import \
     PandABlocksTablePart
 

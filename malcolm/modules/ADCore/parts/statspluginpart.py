@@ -5,7 +5,7 @@ from malcolm.compat import et_to_string, OrderedDict
 from malcolm.core import REQUIRED, method_takes, method_also_takes
 from malcolm.modules.ADCore.infos import CalculatedNDAttributeDatasetInfo
 from malcolm.modules.builtin.parts import StatefulChildPart
-from malcolm.modules.builtin.vmetas import StringMeta, ChoiceMeta
+from malcolm.core.vmetas import ChoiceMeta, StringMeta
 from malcolm.modules.scanning.controllers import RunnableController
 
 

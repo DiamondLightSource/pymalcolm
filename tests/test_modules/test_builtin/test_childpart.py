@@ -4,8 +4,7 @@ from malcolm.core import Part, Process, Table, call_with_params, Context
 from malcolm.modules.builtin.controllers import BasicController, \
     ManagerController
 from malcolm.modules.builtin.parts import ChildPart
-from malcolm.modules.builtin.vmetas import StringMeta
-
+from malcolm.core.vmetas import StringMeta
 
 sm = ManagerController.stateSet
 

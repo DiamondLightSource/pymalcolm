@@ -1,31 +1,25 @@
-from malcolm.core import method_takes, Part, REQUIRED
-from malcolm.modules.builtin.vmetas import NumberMeta, StringMeta
-from malcolm.tags import config
+from malcolm.core import Part, AttributeModel, config_tag
+from malcolm.core.vmetas import NumberMeta
 
 
-@method_takes(
-    "name", StringMeta("Name of the Part within the controller"), REQUIRED)
 class CounterPart(Part):
     """Defines a counter `Attribute` with zero and increment `Method` objects"""
-    #: `AttributeModel` that will hold the counter value
-    counter = None
+    counter = None  # type: AttributeModel
+    """Holds the current counter value"""
 
-    def __init__(self, params):
-        super(CounterPart, self).__init__(params.name)
-
-    def create_attribute_models(self):
+    def setup(self, registrar):
         # Create writeable attribute for current counter value
-        meta = NumberMeta("float64", "A counter", tags=[config()])
-        self.counter = meta.create_attribute_model()
-        yield "counter", self.counter, self.counter.set_value
+        meta = NumberMeta("float64", "A counter", tags=[config_tag()])
+        attr = meta.create_attribute_model()
+        self.counter = registrar.add_attribute_model(
+            "counter", attr, attr.set_value)
+        registrar.add_method_model(self.zero)
+        registrar.add_method_model(self.increment)
 
-    @method_takes()
     def zero(self):
         """Zero the counter attribute"""
         self.counter.set_value(0)
 
-    @method_takes()
     def increment(self):
         """Add one to the counter attribute"""
         self.counter.set_value(self.counter.value + 1)
-

@@ -1,12 +1,41 @@
-from malcolm.modules.builtin.vmetas import NumberArrayMeta
-from .caarraypart import CAArrayPart
+from annotypes import Array
+
+from malcolm.core import Part, Registrar
+from malcolm.core.vmetas import NumberArrayMeta
+from ..util import CaToolsHelper, CAAttribute, Name, Description, Pv, Rbv, \
+    RbvSuff, MinDelta, Timeout, InPort, AWidget, Group, Config
 
 
-class CADoubleArrayPart(CAArrayPart):
+class CADoubleArrayPart(Part):
     """Defines a float64[] `Attribute` that talks to a DBR_DOUBLE waveform PV"""
+    def __init__(self,
+                 name,  # type: Name
+                 description,  # type: Description
+                 pv="",  # type: Pv
+                 rbv="",  # type: Rbv
+                 rbvSuff="",  # type: RbvSuff
+                 minDelta=0.05,  # type: MinDelta
+                 timeout=5.0,  # type: Timeout
+                 inport=None,  # type: InPort
+                 widget=None,  # type: AWidget
+                 group=None,  # type: Group
+                 config=True,  # type: Config
+                 ):
+        # type: (...) -> None
+        super(CADoubleArrayPart, self).__init__(name)
+        catools = CaToolsHelper.instance()
+        self.caa = CAAttribute(
+            NumberArrayMeta("float64", description), catools.DBR_DOUBLE,
+            pv, rbv, rbvSuff, minDelta, timeout, inport, widget, group, config)
 
-    def create_meta(self, description, tags):
-        return NumberArrayMeta("float64", description=description, tags=tags)
+    def setup(self, registrar):
+        # type: (Registrar) -> None
+        self.ca.attach_hooks(registrar)
+        registrar.add_attribute_model(self.name, self.caa.attr, self.caput)
 
-    def get_datatype(self):
-        return self.catools.DBR_DOUBLE
+    def caput(self, value):
+        if isinstance(value, Array):
+            # Unwrap the array before passing to numpy in case it was already
+            # a numpy array
+            value = value.seq
+        self.caa.caput(value)

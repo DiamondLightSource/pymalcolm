@@ -1,10 +1,10 @@
 from collections import OrderedDict
 import unittest
 
-from malcolm.core.ntscalar import NTScalar
+from malcolm.core import NTScalar
 from malcolm.core.alarm import Alarm, AlarmSeverity, AlarmStatus
 from malcolm.core.timestamp import TimeStamp
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 class TestAttribute(unittest.TestCase):
@@ -31,7 +31,7 @@ class TestAttribute(unittest.TestCase):
 
     def test_set_timeStamp(self):
         timeStamp = TimeStamp()
-        self.o.set_timeStamp(timeStamp)
+        self.o.set_ts(timeStamp)
         assert self.o.timeStamp == timeStamp
 
 
@@ -48,7 +48,7 @@ class TestSerialization(unittest.TestCase):
     def test_to_dict(self):
         a = StringMeta("desc").create_attribute_model()
         a.set_value("some string")
-        a.set_timeStamp(self.serialized["timeStamp"])
+        a.set_ts(self.serialized["timeStamp"])
         assert a.to_dict() == self.serialized
 
     def test_from_dict(self):

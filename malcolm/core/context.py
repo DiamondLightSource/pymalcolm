@@ -3,7 +3,6 @@ import time
 
 from malcolm.compat import maybe_import_cothread
 from .future import Future
-from .loggable import Loggable
 from .request import Put, Post, Subscribe, Unsubscribe
 from .response import Update, Return, Error
 from .queue import Queue
@@ -36,9 +35,8 @@ class When(object):
                     self.future = None
 
 
-class Context(Loggable):
+class Context(object):
     STOP = object()
-    runner = None
 
     def __init__(self, process):
         """
@@ -172,7 +170,8 @@ class Context(Loggable):
         Returns:
              Future: as single Future that will resolve to the result
         """
-        request = Post(self._get_next_id(), path, params, self._q.put)
+        request = Post(self._get_next_id(), path, params)
+        request.set_callback(self._q.put)
         future = self._dispatch_request(request)
         return future
 
@@ -183,7 +182,8 @@ class Context(Loggable):
         Returns:
             Future: A single Future which will resolve to the result
         """
-        request = Subscribe(self._get_next_id(), path, False, self._q.put)
+        request = Subscribe(self._get_next_id(), path, False)
+        request.set_callback(self._q.put)
         # If self is in args, then make weak version of it
         saved_args = []
         for arg in args:

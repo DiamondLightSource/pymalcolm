@@ -4,7 +4,7 @@ import types
 import sys
 
 from malcolm.core import method_takes, REQUIRED, Importer
-from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
+from malcolm.core.vmetas import NumberMeta, StringMeta
 
 
 @method_takes(

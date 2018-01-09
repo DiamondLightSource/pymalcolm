@@ -1,5 +1,5 @@
 from malcolm.core import method_takes, REQUIRED, OPTIONAL
-from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
+from malcolm.core.vmetas import NumberMeta, StringMeta
 
 
 def args_for_takes(params, meta_cls, *meta_args):

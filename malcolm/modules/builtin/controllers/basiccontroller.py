@@ -1,5 +1,5 @@
 from malcolm.core import Controller, method_takes, REQUIRED
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 @method_takes(

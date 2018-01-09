@@ -1,6 +1,6 @@
 from malcolm.core import method_takes
 from malcolm.modules.builtin.parts import StatefulChildPart
-from malcolm.modules.builtin.vmetas import NumberMeta
+from malcolm.core.vmetas import NumberMeta
 from malcolm.modules.scanning.controllers import RunnableController
 
 

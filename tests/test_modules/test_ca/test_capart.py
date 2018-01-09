@@ -2,7 +2,7 @@ import unittest
 from mock import MagicMock, patch
 
 from malcolm.core import call_with_params, AlarmSeverity, AlarmStatus
-from malcolm.modules.builtin.vmetas import NumberMeta
+from malcolm.core.vmetas import NumberMeta
 from malcolm.modules.ca.parts.capart import CAPart
 
 
@@ -64,7 +64,7 @@ class TestCAPart(unittest.TestCase):
             ["pv2", "pv"],
             format=p.catools.FORMAT_CTRL, datatype=p.get_datatype())
         p.catools.camonitor.assert_called_once_with(
-            "pv2", p.monitor_callback, format=p.catools.FORMAT_TIME,
+            "pv2", p._monitor_callback, format=p.catools.FORMAT_TIME,
             datatype=p.get_datatype(), notify_disconnect=True)
         assert p.attr.value == 4
         assert p.monitor == p.catools.camonitor()
@@ -93,7 +93,7 @@ class TestCAPart(unittest.TestCase):
     def test_update_value_good(self, catools):
         p = self.create_part()
         value = caint(4)
-        p.update_value(value)
+        p._update_value(value)
         assert p.attr.value == 4
         assert p.attr.timeStamp.secondsPastEpoch == 340000
         assert p.attr.timeStamp.nanoseconds == 43
@@ -106,7 +106,7 @@ class TestCAPart(unittest.TestCase):
         p = self.create_part()
         value = caint(44)
         value.ok = False
-        p.update_value(value)
+        p._update_value(value)
         assert p.attr.value == 0
         assert p.attr.alarm.severity == AlarmSeverity.INVALID_ALARM
         assert p.attr.alarm.status == AlarmStatus.DEVICE_STATUS

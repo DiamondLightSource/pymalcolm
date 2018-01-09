@@ -9,11 +9,10 @@ from malcolm.core import method_writeable_in, method_takes, Hook, Table, \
     Subscribe, deserialize_object, Delta, Context, AttributeModel, Alarm, \
     AlarmSeverity, AlarmStatus
 from malcolm.modules.builtin.infos import LayoutInfo
-from malcolm.modules.builtin.vmetas import StringArrayMeta, NumberArrayMeta, \
-    BooleanArrayMeta, TableMeta, StringMeta, ChoiceMeta, ChoiceArrayMeta, \
-    BooleanMeta
-from malcolm.tags import widget, config
-from .statefulcontroller import StatefulController, StatefulStates
+from malcolm.core.vmetas import BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, \
+    ChoiceMeta, NumberArrayMeta, StringArrayMeta, StringMeta, TableMeta
+from malcolm.core.tags import widget, config_tag
+from .statefulcontroller import StatefulController, StatefulStates, AContext
 
 
 class ManagerStates(StatefulStates):
@@ -31,6 +30,44 @@ class ManagerStates(StatefulStates):
 ss = ManagerStates
 
 
+
+
+Layout = Hook()
+"""
+
+Args:
+    context (Context): The context that should be used to perform operations
+        on child blocks
+    part_info (dict): {part_name: [Info]} returned from Layout hook
+    layout_table (Table): A possibly partial set of changes to the layout
+        table that should be acted on
+
+Returns:
+    [`LayoutInfo`] - the child layout resulting from this change
+"""
+
+Load = Hook()
+"""Called at load() or revert() to load child settings from a structure
+
+Args:
+    context (Context): The context that should be used to perform operations
+        on child blocks
+    structure (dict): {part_name: part_structure} where part_structure is
+        the return from Save hook
+"""
+
+Save = Hook()
+"""Called at save() to serialize child settings into a dict structure
+
+Args:
+    context (Context): The context that should be used to perform operations
+        on child blocks
+
+Returns:
+    dict: serialized version of the child that could be loaded from
+"""
+
+
 @method_also_takes(
     "configDir", StringMeta("Directory to write save/load config to"), REQUIRED,
     "initialDesign", StringMeta("Design to load at init"), "",
@@ -39,41 +76,6 @@ ss = ManagerStates
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     stateSet = ss()
-
-    Layout = Hook()
-    """Called when layout table set and at init to update child layout
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        part_info (dict): {part_name: [Info]} returned from Layout hook
-        layout_table (Table): A possibly partial set of changes to the layout
-            table that should be acted on
-
-    Returns:
-        [`LayoutInfo`] - the child layout resulting from this change
-    """
-
-    Load = Hook()
-    """Called at load() or revert() to load child settings from a structure
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        structure (dict): {part_name: part_structure} where part_structure is
-            the return from Save hook
-    """
-
-    Save = Hook()
-    """Called at save() to serialize child settings into a dict structure
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-
-    Returns:
-        dict: serialized version of the child that could be loaded from
-    """
 
     # Attributes
     layout = None
@@ -136,7 +138,7 @@ class ManagerController(StatefulController):
         yield "layout", self.layout, self.set_layout
         # Create writeable attribute for loading an existing layout
         design_meta = ChoiceMeta(
-            "Design name to load", tags=[config(), widget("combo")])
+            "Design name to load", tags=[config_tag(), widget("combo")])
         design_meta.set_writeable_in(ss.READY)
         self.design = design_meta.create_attribute_model()
         yield "design", self.design, self.set_design
@@ -178,7 +180,7 @@ class ManagerController(StatefulController):
             value = Table(self.layout.meta, value)
         # Can't do this with changes_squashed as it will call update_modified
         # from another thread and deadlock
-        part_info = self.run_hook(
+        part_info = self.run_hooks(
             self.Layout, self.create_part_contexts(only_visible=False),
             self.port_info, value)
         with self.changes_squashed:
@@ -414,7 +416,7 @@ class ManagerController(StatefulController):
                 zip(self.exports.value.name, self.exports.value.exportName)):
             structure["exports"][name] = export_name
         # Add any structure that a child part wants to save
-        part_structures = self.run_hook(
+        part_structures = self.run_hooks(
             self.Save, self.create_part_contexts(only_visible=False))
         for part_name, part_structure in sorted(part_structures.items()):
             structure[part_name] = part_structure
@@ -488,9 +490,9 @@ class ManagerController(StatefulController):
             exports_table.append([name, export_name])
         self.exports.set_value(exports_table)
         # Run the load hook to get parts to load their own structure
-        self.run_hook(self.Load,
-                      self.create_part_contexts(only_visible=False),
-                      structure)
+        self.run_hooks(self.Load,
+                       self.create_part_contexts(only_visible=False),
+                       structure)
         self._mark_clean(design)
 
     def _mark_clean(self, design):

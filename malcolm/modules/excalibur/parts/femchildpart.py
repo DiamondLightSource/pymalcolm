@@ -1,5 +1,5 @@
 from malcolm.core import method_takes, REQUIRED
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.ADCore.parts import DatasetRunnableChildPart
 

@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from malcolm.modules.builtin.vmetas import NumberArrayMeta
+from malcolm.core.vmetas import NumberArrayMeta
 
 
 class TestValidation(unittest.TestCase):

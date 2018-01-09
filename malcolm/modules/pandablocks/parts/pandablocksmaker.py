@@ -3,9 +3,9 @@ import os
 from malcolm.compat import OrderedDict
 from malcolm.core import call_with_params
 from malcolm.modules.builtin.parts import GroupPart, IconPart, TitlePart
-from malcolm.tags import widget, group, inport, outport, config
-from malcolm.modules.builtin.vmetas import BooleanMeta, NumberMeta, StringMeta, \
-    ChoiceMeta, TableMeta
+from malcolm.core.tags import widget, group_tag, inport, outport, config_tag
+from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, NumberMeta, StringMeta, \
+    TableMeta
 from .pandablocksactionpart import PandABlocksActionPart
 from .pandablocksfieldpart import PandABlocksFieldPart
 from .pandablockstablepart import PandABlocksTablePart
@@ -201,7 +201,7 @@ class PandABlocksMaker(object):
 
     def _make_table(self, field_name, field_data):
         group_tag = self._make_group("parameters")
-        tags = [widget("table"), group_tag, config()]
+        tags = [widget("table"), group_tag, config_tag()]
         meta = TableMeta(field_data.description, tags)
         part = PandABlocksTablePart(self.client, meta,
                                     self.block_name, field_name, writeable=True)
@@ -214,7 +214,7 @@ class PandABlocksMaker(object):
 
     def _make_field_part(self, field_name, meta, writeable, initial_value=None):
         if writeable:
-            meta.set_tags(meta.tags + (config(),))
+            meta.set_tags(meta.tags + (config_tag(),))
         part = PandABlocksFieldPart(self.client, meta,
                                     self.block_name, field_name, writeable,
                                     initial_value)
@@ -226,5 +226,5 @@ class PandABlocksMaker(object):
                 GroupPart, name=attr_name,
                 description="All %s attributes" % attr_name)
             self._add_part(attr_name, part)
-        group_tag = group(attr_name)
+        group_tag = group_tag(attr_name)
         return group_tag

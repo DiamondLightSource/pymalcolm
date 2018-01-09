@@ -1,8 +1,18 @@
 import time
 
 import numpy as np
+from annotypes import Anno
 
 from .serializable import Serializable
+
+
+with Anno("Seconds since Jan 1, 1970 00:00:00 UTC"):
+    SecondsPastEpoch = np.int64
+with Anno("Nanoseconds relative to the secondsPastEpoch field"):
+    Nanoseconds = np.int32
+with Anno("An integer value whose interpretation is deliberately undefined"):
+    UserTag = np.int32
+
 
 zero32 = np.int32(0)
 
@@ -10,10 +20,10 @@ zero32 = np.int32(0)
 @Serializable.register_subclass("time_t")
 class TimeStamp(Serializable):
 
-    endpoints = ["secondsPastEpoch", "nanoseconds", "userTag"]
-    __slots__ = endpoints
+    __slots__ = ["secondsPastEpoch", "nanoseconds", "userTag"]
 
     def __init__(self, secondsPastEpoch=None, nanoseconds=None, userTag=zero32):
+        # type: (SecondsPastEpoch, Nanoseconds, UserTag) -> None
         # Set initial values
         if secondsPastEpoch is None or nanoseconds is None:
             now = time.time()
@@ -25,4 +35,5 @@ class TimeStamp(Serializable):
         self.userTag = userTag
 
     def to_time(self):
+        # type: () -> float
         return self.secondsPastEpoch + 1e-9 * self.nanoseconds

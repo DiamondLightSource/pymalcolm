@@ -3,7 +3,7 @@ import os
 from tornado.web import StaticFileHandler
 
 from malcolm.core import method_takes, Part
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 from malcolm.modules.web.controllers import HTTPServerComms
 from malcolm.modules.web.infos import HandlerInfo
 

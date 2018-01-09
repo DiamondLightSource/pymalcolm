@@ -1,16 +1,36 @@
-from malcolm.core import method_also_takes, REQUIRED
-from malcolm.modules.builtin.vmetas import ChoiceMeta, StringMeta, StringArrayMeta
-from .attributepart import AttributePart
+from annotypes import Anno, Array
+
+from malcolm.core import Part, Registrar
+from malcolm.core.vmetas import ChoiceMeta
+from ..util import set_tags, Name, Description, Writeable, Config, Group, AWidget
 
 
-@method_also_takes(
-    "choices", StringArrayMeta("Possible choices for this attribute"), REQUIRED,
-    "initialValue", StringMeta("Initial value of attribute"), REQUIRED,
-)
-class ChoicePart(AttributePart):
-    def get_initial_value(self):
-        return self.params.initialValue
+with Anno("Possible choices for this attribute"):
+    Choices = Array[str]
+with Anno("Initial value of the created attribute"):
+    Value = str
 
-    def create_meta(self, description, tags):
-        return ChoiceMeta(
-            choices=self.params.choices, description=description, tags=tags)
+
+class ChoicePart(Part):
+    """Create a single choice Attribute on the Block"""
+    def __init__(self,
+                 name,  # type: Name
+                 description,  # type: Description
+                 choices,  # type: Choices
+                 value,  # type: Value
+                 writeable=False,  # type: Writeable
+                 config=True,  # type: Config
+                 group=None,  # type: Group
+                 widget=None,  # type: AWidget
+                 ):
+        # type: (...) -> None
+        super(ChoicePart, self).__init__(name)
+        meta = ChoiceMeta(description, choices)
+        set_tags(meta, writeable, config, group, widget)
+        self.attr = meta.create_attribute_model(value)
+        self.writeable_func = self.attr.set_value if writeable else None
+
+    def setup(self, registrar):
+        # type: (Registrar) -> None
+        registrar.add_attribute_model(self.name, self.attr, self.writeable_func)
+

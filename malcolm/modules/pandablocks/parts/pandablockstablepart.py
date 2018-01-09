@@ -1,7 +1,7 @@
 from malcolm.compat import OrderedDict
 from malcolm.core import Table, snake_to_camel, camel_to_title
-from malcolm.tags import widget
-from malcolm.modules.builtin.vmetas import NumberArrayMeta, BooleanArrayMeta
+from malcolm.core.tags import widget
+from malcolm.core.vmetas import BooleanArrayMeta, NumberArrayMeta
 from .pandablocksfieldpart import PandABlocksFieldPart
 
 

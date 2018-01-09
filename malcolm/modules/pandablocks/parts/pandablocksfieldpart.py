@@ -1,5 +1,5 @@
 from malcolm.core import Part, snake_to_camel
-from malcolm.modules.builtin.vmetas import BooleanMeta
+from malcolm.core.vmetas import BooleanMeta
 
 
 class PandABlocksFieldPart(Part):

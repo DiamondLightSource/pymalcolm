@@ -6,7 +6,7 @@ from malcolm.modules.ADPandABlocks.parts import PandABlocksDriverPart, \
     PandABlocksChildPart
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.builtin.parts import StringPart, ChoicePart
-from malcolm.modules.builtin.vmetas import StringMeta, StringArrayMeta
+from malcolm.core.vmetas import StringArrayMeta, StringMeta
 from malcolm.modules.pandablocks.controllers import PandABlocksManagerController
 from malcolm.modules.scanning.controllers import RunnableController
 

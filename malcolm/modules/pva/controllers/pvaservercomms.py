@@ -114,8 +114,8 @@ class PvaImplementation(Loggable):
 
     def _request_response(self, request_cls, path, **kwargs):
         queue = Queue()
-        request = request_cls(
-            path=[self._mri] + path, callback=queue.put, **kwargs)
+        request = request_cls(path=[self._mri] + path, **kwargs)
+        request.set_callback(queue.put)
         self._controller.handle_request(request)
         response = queue.get()
         if isinstance(response, Error):

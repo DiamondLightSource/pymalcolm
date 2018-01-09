@@ -1,7 +1,7 @@
 from malcolm.core import method_also_takes, method_takes
 from malcolm.modules.ADCore.parts import DetectorDriverPart, configure_args
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
-from malcolm.modules.builtin.vmetas import NumberMeta
+from malcolm.core.vmetas import NumberMeta
 from malcolm.modules.scanning.controllers import RunnableController
 
 

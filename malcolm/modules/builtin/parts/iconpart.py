@@ -1,26 +1,28 @@
-from malcolm.core import method_takes, create_class_params
-from malcolm.modules.builtin.vmetas import StringMeta
-from .attributepart import AttributePart
+from annotypes import Anno
+
+from malcolm.core import Part, Registrar, Widget
+from malcolm.core.vmetas import StringMeta
+from ..util import set_tags
 
 
-@method_takes(
-    "svg", StringMeta("If given, path to svg for initial value"), "")
-class IconPart(AttributePart):
+with Anno("If given, path to svg for initial value"):
+    Svg = str
+
+
+class IconPart(Part):
     """Part representing a the icon a GUI should display"""
-    def __init__(self, params):
+    def __init__(self, svg=""):
+        # type: (Svg) -> None
+        super(IconPart, self).__init__("icon")
+        meta = StringMeta("SVG icon for the Block")
+        set_tags(meta, widget=Widget.ICON)
         try:
-            with open(params.svg) as f:
-                self.svg_text = f.read()
+            with open(svg) as f:
+                svg_text = f.read()
         except IOError:
-            self.svg_text = "<svg/>"
-        params = create_class_params(
-            super(IconPart, self), name="icon",
-            description="SVG icon for Block", widget="icon", writeable=False,
-            config=False)
-        super(IconPart, self).__init__(params)
+            svg_text = "<svg/>"
+        self.attr = meta.create_attribute_model(svg_text)
 
-    def get_initial_value(self):
-        return self.svg_text
-
-    def create_meta(self, description, tags):
-        return StringMeta(description=description, tags=tags)
+    def setup(self, registrar):
+        # type: (Registrar) -> None
+        registrar.add_attribute_model(self.name, self.attr)

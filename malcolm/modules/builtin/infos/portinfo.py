@@ -1,9 +1,12 @@
-from malcolm.core import Info
-from malcolm.tags import port_types
+from annotypes import Anno
 
+from malcolm.core import Info, Port
+
+
+with Anno("The name of the ")
 
 class PortInfo(Info):
-    """Info about a port and its value in a class
+    """Info about a port and its value in a class"""
 
     Args:
         name (str): The name of the attribute
@@ -24,3 +27,4 @@ class PortInfo(Info):
             "Type should be in %s, got %r" % (port_types, type)
         self.type = type
         self.extra = extra
+

@@ -1,8 +1,8 @@
 from malcolm.core import method_also_takes, method_takes
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
-from malcolm.modules.builtin.vmetas import NumberMeta
+from malcolm.core.vmetas import NumberMeta
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.tags import widget, config
+from malcolm.core.tags import widget, config_tag
 from .detectordriverpart import DetectorDriverPart, configure_args
 
 
@@ -21,7 +21,7 @@ class ExposureDetectorDriverPart(DetectorDriverPart):
         # read out
         meta = NumberMeta(
             "float64", "Time taken to readout detector",
-            tags=[widget("textinput"), config()])
+            tags=[widget("textinput"), config_tag()])
         self.readout_time = meta.create_attribute_model(self.params.readoutTime)
         yield "readoutTime", self.readout_time, self.readout_time.set_value
 

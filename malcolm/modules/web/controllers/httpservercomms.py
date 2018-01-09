@@ -4,7 +4,7 @@ from tornado.web import Application
 
 from malcolm.modules.builtin.controllers.servercomms import ServerComms
 from malcolm.core import Hook, method_also_takes, Process
-from malcolm.modules.builtin.vmetas import NumberMeta
+from malcolm.core.vmetas import NumberMeta
 from malcolm.modules.web.infos import HandlerInfo
 
 
@@ -43,7 +43,7 @@ class HTTPServerComms(ServerComms):
     def do_init(self):
         super(HTTPServerComms, self).do_init()
         self._loop = IOLoop()
-        part_info = self.run_hook(
+        part_info = self.run_hooks(
             self.ReportHandlers, self.create_part_contexts(), self._loop)
         handler_infos = HandlerInfo.filter_values(part_info)
         handlers = []
@@ -78,4 +78,4 @@ class HTTPServerComms(ServerComms):
     @Process.Publish
     def publish(self, published):
         if self._spawned:
-            self.run_hook(self.Publish, self.create_part_contexts(), published)
+            self.run_hooks(self.Publish, self.create_part_contexts(), published)

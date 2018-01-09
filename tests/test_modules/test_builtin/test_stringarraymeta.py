@@ -1,6 +1,6 @@
 import unittest
 
-from malcolm.modules.builtin.vmetas import StringArrayMeta
+from malcolm.core.vmetas import StringArrayMeta
 
 
 class TestStringArrayMeta(unittest.TestCase):

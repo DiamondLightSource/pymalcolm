@@ -7,7 +7,7 @@ from malcolm.core.part import Part
 from malcolm.core.context import Context
 from malcolm.core.methodmodel import OPTIONAL, REQUIRED, method_takes, \
     method_returns
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 class MyController(Controller):

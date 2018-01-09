@@ -7,7 +7,7 @@ from vdsgen.subframevdsgenerator import SubFrameVDSGenerator
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.core import method_takes, REQUIRED, Part
 from malcolm.modules.ADCore.infos import DatasetProducedInfo
-from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
+from malcolm.core.vmetas import NumberMeta, StringMeta
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 # Number of points too look ahead of the current id index to account for dropped frames

@@ -3,7 +3,7 @@ from mock import Mock
 
 from malcolm.modules.builtin import parameters
 from malcolm.core import REQUIRED
-from malcolm.modules.builtin.vmetas import NumberMeta, StringMeta
+from malcolm.core.vmetas import NumberMeta, StringMeta
 
 
 class TestParameters(unittest.TestCase):

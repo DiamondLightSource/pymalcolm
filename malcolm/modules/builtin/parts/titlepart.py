@@ -1,31 +1,31 @@
-from malcolm.core import method_takes, REQUIRED, create_class_params
-from malcolm.modules.builtin.vmetas import StringMeta
-from .attributepart import AttributePart
+from annotypes import Anno
+
+from malcolm.core import Part, Registrar, Widget, TitleChanged
+from malcolm.core.vmetas import StringMeta
+from ..util import set_tags
 
 
-@method_takes(
-    "initialValue", StringMeta("Initial value of Block label"), REQUIRED)
-class TitlePart(AttributePart):
-    """Part representing a the title a GUI should display"""
-    def __init__(self, params):
-        self.initial_value = params.initialValue
-        params = create_class_params(
-            super(TitlePart, self), name="label",
-            description="Label for created block", widget="title",
-            writeable=True, config=True)
-        super(TitlePart, self).__init__(params)
+with Anno("Initial value of Block label"):
+    Value = str
 
-    def get_initial_value(self):
-        self.controller.set_label(self.initial_value)
-        return self.initial_value
 
-    def create_meta(self, description, tags):
-        return StringMeta(description=description, tags=tags)
+class TitlePart(Part):
+    """Part representing a the title of the Block a GUI should display"""
+    def __init__(self, value):
+        # type: (Value) -> None
+        super(TitlePart, self).__init__("label")
+        meta = StringMeta("Label for the block")
+        set_tags(meta, writeable=True, widget=Widget.TITLE)
+        self.attr = meta.create_attribute_model()
+        self.registrar = None
+        self.initial_value = value
 
-    def get_writeable_func(self):
-        return self.set_label
+    def setup(self, registrar):
+        # type: (Registrar) -> None
+        self.registrar = registrar
+        registrar.add_attribute_model(self.name, self.attr, self.set_label)
+        self.set_label(self.initial_value)
 
     def set_label(self, value):
-        with self.controller.changes_squashed:
-            self.controller.set_label(value)
-            self.attr.set_value(value)
+        self.attr.set_value(value)
+        self.registrar.report_changed(TitleChanged, value)

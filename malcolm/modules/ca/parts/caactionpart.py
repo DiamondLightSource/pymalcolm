@@ -1,65 +1,78 @@
-from malcolm.modules.builtin.controllers import StatefulController
-from malcolm.core import Part, method_takes, REQUIRED, MethodModel
-from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta, BooleanMeta
-from .catoolshelper import CaToolsHelper
+from annotypes import Anno
+
+from malcolm.modules.builtin.controllers import InitHook, ResetHook
+from malcolm.core import Part, Registrar
+from ..util import CaToolsHelper, Name, Description, Pv
 
 
-@method_takes(
-    "name", StringMeta("Name of the created method"), REQUIRED,
-    "description", StringMeta("desc of created method"), REQUIRED,
-    "pv", StringMeta("full pv to write to when method called"), REQUIRED,
-    "statusPv", StringMeta("Status pv to see if successful"), "",
-    "goodStatus", StringMeta("Good value for status pv"), "",
-    "messagePv", StringMeta("PV containing error message if unsuccessful"), "",
-    "value", NumberMeta("int32", "value to write to pv when method called"), 1,
-    "wait", BooleanMeta("Wait for caput callback?"), True)
+with Anno("Status pv to see if successful"):
+    StatusPv = str
+with Anno("Good value for status pv"):
+    GoodStatus = str
+with Anno("PV containing error message if unsuccessful"):
+    MessagePv = str
+with Anno("Value to write to pv when method called"):
+    Value = int
+with Anno("Wait for caput callback?"):
+    Wait = bool
+
+
 class CAActionPart(Part):
     """Group a number of PVs together that represent a method like acquire()"""
-    def __init__(self, params):
-        """
-        Args:
-            params (Map): The params to initialize with
-        """
+    def __init__(self,
+                 name,  # type: Name
+                 description,  # type: Description
+                 pv="",  # type: Pv
+                 statusPv="",  # type: StatusPv
+                 goodStatus="",  # type: GoodStatus
+                 messagePv="",  # type: MessagePv
+                 value=1,  # type: Value
+                 wait=True,  # type: Wait
+                 ):
+        # type: (...) -> None
+        super(CAActionPart, self).__init__(name)
         self.method = None
-        self.params = params
         self.catools = CaToolsHelper.instance()
-        super(CAActionPart, self).__init__(params.name)
+        self.description = description
+        self.pv = pv
+        self.statusPv = statusPv
+        self.goodStatus = goodStatus
+        self.messagePv = messagePv
+        self.value = value
+        self.wait = wait
 
-    def create_method_models(self):
-        # Method instance
-        self.method = MethodModel(self.params.description)
-        # TODO: set widget tag?
-        yield self.params.name, self.method, self.caput
+    def setup(self, registrar):
+        # type: (Registrar) -> None
+        self.method = registrar.add_method_model(
+            self.caput, self.name, self.description)
+        registrar.attach_to_hook(self.connect_pvs, InitHook, ResetHook)
 
-    @StatefulController.Reset
     def connect_pvs(self, _):
-        pvs = [self.params.pv]
-        if self.params.statusPv:
-            pvs.append(self.params.statusPv)
+        pvs = [self.pv]
+        if self.statusPv:
+            pvs.append(self.statusPv)
+        if self.messagePv:
+            pvs.append(self.messagePv)
         ca_values = self.catools.caget(pvs)
         # check connection is ok
         for i, v in enumerate(ca_values):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
 
     def caput(self):
-        if self.params.wait:
-            cmd = "caput -c -w 1000"
-        else:
-            cmd = "caput"
-        self.log.info("%s %s %s", cmd, self.params.pv, self.params.value)
+        self.log.info("caput %s %s", self.pv, self.value)
         self.catools.caput(
-            self.params.pv, self.params.value,
-            wait=self.params.wait, timeout=None)
-        if self.params.statusPv:
+            self.pv, self.value,
+            wait=self.wait, timeout=None)
+        if self.statusPv:
             status = self.catools.caget(
-                self.params.statusPv,
+                self.statusPv,
                 datatype=self.catools.DBR_STRING)
-            if self.params.messagePv:
+            if self.messagePv:
                 message = " %s:" % self.catools.caget(
-                    self.params.messagePv,
+                    self.messagePv,
                     datatype=self.catools.DBR_CHAR_STR)
             else:
                 message = ""
-            assert status == self.params.goodStatus, \
-                "Status %s:%s while performing '%s %s %s'" % (
-                    status, message, cmd, self.params.pv, self.params.value)
+            assert status == self.goodStatus, \
+                "Status %s:%s while performing 'caput %s %s'" % (
+                    status, message, self.pv, self.value)

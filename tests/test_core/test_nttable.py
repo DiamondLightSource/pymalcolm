@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import unittest
 
-from malcolm.modules.builtin.vmetas import TableMeta, StringArrayMeta
+from malcolm.core.vmetas import StringArrayMeta, TableMeta
 from malcolm.core import Table, NTTable, Alarm, TimeStamp
 
 
@@ -40,7 +40,7 @@ class TestSerialization(unittest.TestCase):
         value.foo = ["foo1", "foo2"]
         value.bar = ["bar1", "bar2"]
         o = meta.create_attribute_model(value)
-        o.set_timeStamp(self.serialized["timeStamp"])
+        o.set_ts(self.serialized["timeStamp"])
         assert o.to_dict() == self.serialized
 
     def test_from_dict(self):

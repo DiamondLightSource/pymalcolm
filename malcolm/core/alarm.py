@@ -1,51 +1,61 @@
+from enum import Enum
+
 import numpy as np
+from annotypes import Anno
 
 from malcolm.compat import str_
 from .serializable import Serializable, deserialize_object
 
 
-def sort_names(d):
-    name_d = dict((k, v) for k, v in d.items() if isinstance(v, int))
-    return list(sorted(name_d, key=name_d.__getitem__))
-
-
-class AlarmSeverity(object):
+class AlarmSeverity(Enum):
     NO_ALARM, MINOR_ALARM, MAJOR_ALARM, INVALID_ALARM, UNDEFINED_ALARM = \
-        range(5)
-    names = sort_names(locals())
+        np.arange(5, dtype=np.int32)
 
 
-class AlarmStatus(object):
+class AlarmStatus(Enum):
     NO_STATUS, DEVICE_STATUS, DRIVER_STATUS, RECORD_STATUS, DB_STATUS, \
-        CONF_STATUS, UNDEFINED_STATUS, CLIENT_STATUS = range(8)
-    names = sort_names(locals())
+        CONF_STATUS, UNDEFINED_STATUS, CLIENT_STATUS = \
+        np.arange(8, dtype=np.int32)
+
+
+with Anno("The alarm severity"):
+    AAlarmSeverity = AlarmSeverity
+with Anno("The alarm status"):
+    AAlarmStatus = AlarmStatus
+with Anno("A descriptive alarm message"):
+    AMessage = str
 
 
 @Serializable.register_subclass("alarm_t")
 class Alarm(Serializable):
 
-    endpoints = ["severity", "status", "message"]
-    __slots__ = endpoints
+    __slots__ = ["severity", "status", "message"]
 
-    def __init__(self, severity=AlarmSeverity.NO_ALARM,
-                 status=AlarmStatus.NO_STATUS, message=""):
-        # Set initial values
-        assert int(severity) in range(len(AlarmSeverity.names)), \
+    def __init__(self,
+                 severity=AlarmSeverity.NO_ALARM,  # type: AAlarmSeverity
+                 status=AlarmStatus.NO_STATUS,  # type: AAlarmStatus
+                 message="",  # type: AMessage
+                 ):
+        # type: (...) -> None
+        assert isinstance(severity, AlarmSeverity), \
             "Expected AlarmSeverity.*_ALARM, got %r" % severity
-        self.severity = np.int32(severity)
-        assert int(status) in range(len(AlarmStatus.names)), \
+        self.severity = severity
+        assert isinstance(status, AlarmStatus), \
             "Expected AlarmStatus.*_STATUS, got %r" % status
-        self.status = np.int32(status)
+        self.status = status
         self.message = deserialize_object(message, str_)
 
     @classmethod
     def major(cls, message):
+        # type: (str) -> Alarm
         return cls(
             AlarmSeverity.MAJOR_ALARM, AlarmStatus.DEVICE_STATUS, message)
 
     @classmethod
     def invalid(cls, message):
+        # type: (str) -> Alarm
         return cls(
             AlarmSeverity.INVALID_ALARM, AlarmStatus.DEVICE_STATUS, message)
+
 
 Alarm.ok = Alarm()

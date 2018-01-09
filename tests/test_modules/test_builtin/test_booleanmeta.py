@@ -1,6 +1,6 @@
 import unittest
 
-from malcolm.modules.builtin.vmetas import BooleanMeta
+from malcolm.core.vmetas import BooleanMeta
 
 
 class TestValidate(unittest.TestCase):

@@ -4,7 +4,7 @@ from malcolm.modules.web.controllers import HTTPServerComms
 from malcolm.core import method_takes, Part, json_decode, deserialize_object, \
     Request, json_encode, Subscribe, Unsubscribe, Delta, Update
 from malcolm.modules.web.infos import HandlerInfo
-from malcolm.modules.builtin.vmetas import StringMeta
+from malcolm.core.vmetas import StringMeta
 
 
 class MalcWebSocketHandler(WebSocketHandler):  # pylint:disable=abstract-method

@@ -2,32 +2,35 @@ from __future__ import print_function
 
 import time
 
-from malcolm.core import Part, method_takes, method_returns, REQUIRED
-from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
+from annotypes import Anno, add_call_types
+
+from malcolm.core import Part
 
 
-@method_takes(
-    "name", StringMeta("Name of the Part within the controller"), REQUIRED)
+with Anno("The name of the person to greet"):
+    Name = str
+with Anno("Time to wait before returning"):
+    Sleep = float
+with Anno("The manufactured greeting"):
+    Greeting = str
+
+
 class HelloPart(Part):
     """Defines greet and error `Method` objects on a `Block`"""
-    def __init__(self, params):
-        super(HelloPart, self).__init__(params.name)
 
-    @method_takes(
-        "name", StringMeta("a name"), REQUIRED,
-        "sleep", NumberMeta("float64", "Time to wait before returning"), 0,
-    )
-    @method_returns(
-        "greeting", StringMeta(description="a greeting"), REQUIRED
-    )
-    def greet(self, parameters, return_map):
+    def setup(self, registrar):
+        registrar.add_method_model(self.greet)
+        registrar.add_method_model(self.error)
+
+    @add_call_types
+    def greet(self, name, sleep):
+        # type: (Name, Sleep) -> Greeting
         """Optionally sleep <sleep> seconds, then return a greeting to <name>"""
         print("Manufacturing greeting...")
-        time.sleep(parameters.sleep)
-        return_map.greeting = "Hello %s" % parameters.name
-        return return_map
+        time.sleep(sleep)
+        greeting = "Hello %s" % name
+        return greeting
 
-    @method_takes()
     def error(self):
         """Raise an error"""
         raise RuntimeError("You called method error()")
