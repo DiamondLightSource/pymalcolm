@@ -1,48 +1,41 @@
-from malcolm.core import method_takes, REQUIRED, OPTIONAL
-from malcolm.core.vmetas import NumberMeta, StringMeta
+from annotypes import Anno, add_call_types
 
-
-def args_for_takes(params, meta_cls, *meta_args):
-    meta_args += (params.description,)
-    meta = meta_cls(*meta_args)
-    if hasattr(params, "default"):
-        return [params.name, meta, params.default]
-    else:
-        return [params.name, meta, REQUIRED]
+import numpy as np
 
 
 default_desc = "Default value for parameter. If not specified, parameter is " \
                "required"
 
-@method_takes(
-    "name", StringMeta(
-        "Specify that this class will take a parameter name"), REQUIRED,
-    "description", StringMeta(
-        "Description of this parameter"), REQUIRED,
-    "default", StringMeta(default_desc), OPTIONAL)
-def string(params):
+with Anno("Specify that this class will take a parameter name"):
+    AName = str
+with Anno("Description of this parameter"):
+    ADescription = str
+with Anno(default_desc):
+    AStringDefault = str
+with Anno(default_desc):
+    AFloat64Default = np.float64
+with Anno(default_desc):
+    AInt32Default = np.int32
+with Anno("The Anno representing the parameter"):
+    AAnno = Anno
+
+
+@add_call_types
+def string(name, description, default=None):
+    # type: (AName, ADescription, AStringDefault) -> AAnno
     """Add a string parameter to be passed when instantiating this YAML file"""
-    return args_for_takes(params, StringMeta)
+    return Anno(description, name=name, typ=str, default=default)
 
 
-@method_takes(
-    "name", StringMeta(
-        "Specify that this class will take a parameter name"), REQUIRED,
-    "description", StringMeta(
-        "Description of this parameter"), REQUIRED,
-    "default", NumberMeta("float64", default_desc), OPTIONAL)
-def float64(params):
+@add_call_types
+def float64(name, description, default=None):
+    # type: (AName, ADescription, AFloat64Default) -> AAnno
     """Add a float64 parameter to be passed when instantiating this YAML file"""
-    return args_for_takes(params, NumberMeta, "float64")
+    return Anno(description, name=name, typ=float, default=default)
 
 
-@method_takes(
-    "name", StringMeta(
-        "Specify that this class will take a parameter name"), REQUIRED,
-    "description", StringMeta(
-        "Description of this parameter"), REQUIRED,
-    "default", NumberMeta("int32", default_desc), OPTIONAL)
-def int32(params):
+@add_call_types
+def int32(name, description, default=None):
+    # type: (AName, ADescription, AInt32Default) -> AAnno
     """Add an int32 parameter to be passed when instantiating this YAML file"""
-    return args_for_takes(params, NumberMeta, "int32")
-
+    return Anno(description, name=name, typ=int, default=default)

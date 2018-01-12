@@ -1,7 +1,7 @@
 import unittest
 from mock import MagicMock
 
-from malcolm.core.process import Process
+from malcolm.core import Process
 from malcolm.core.controller import Controller
 
 

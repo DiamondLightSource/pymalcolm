@@ -7,7 +7,7 @@ from malcolm.core.errors import ResponseError, TimeoutError, BadValueError, \
     AbortedError
 from malcolm.core.request import Put, Post, Subscribe, Unsubscribe
 from malcolm.core.response import Error, Return, Update
-from malcolm.core.process import Process
+from malcolm.core import Process
 from malcolm.core.future import Future
 from malcolm.compat import maybe_import_cothread
 

@@ -39,8 +39,8 @@ class WebsocketClientComms(ClientComms):
         self.remote_blocks = meta.create_attribute_model()
         yield "remoteBlocks", self.remote_blocks, None
 
-    def do_init(self):
-        super(WebsocketClientComms, self).do_init()
+    def start_init(self):
+        super(WebsocketClientComms, self).start_init()
         self.loop = IOLoop()
         self._request_lookup = {}
         self._subscription_keys = {}

@@ -1,22 +1,23 @@
 # Make a nice namespace
 from .alarm import Alarm, AlarmSeverity, AlarmStatus
 from .context import Context
-from .controller import Controller, ABORT_TIMEOUT, TitleChanged
+from .controller import Controller, AMri, ADescription, AUseCothread
+from .define import Define
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
     UnexpectedError, YamlError
 from .future import Future
-from .hook import Hook, APart
+from .hook import Hook
 from .importer import Importer
 from .info import Info
 from .loggable import Loggable
 from .models import BlockModel, AttributeModel, MethodModel, \
     BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, \
     ChoiceMeta, NumberArrayMeta, NumberMeta, StringArrayMeta, StringMeta, \
-    TableMeta, VMeta, VArrayMeta
-from .part import Part, AName
-from .process import Process
+    TableMeta, VMeta, VArrayMeta, AMetaDescription
+from .part import Part, PartRegistrar, APartName
+from .process import Process, ProcessPublishHook, ProcessStartHook, \
+    ProcessStopHook
 from .queue import Queue
-from .registrar import Registrar
 from .request import Request, Subscribe, Unsubscribe, Get, Put, Post
 from .response import Response, Delta, Update, Return, Error
 from .serializable import Serializable, deserialize_object, serialize_object, \

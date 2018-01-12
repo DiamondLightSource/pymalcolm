@@ -3,19 +3,17 @@ import gc
 from mock import MagicMock, patch
 
 from malcolm.core.controller import Controller
-from malcolm.core.process import Process
-from malcolm.core.hook import Hook
-from malcolm.core.part import Part
 from malcolm.core.alarm import Alarm, AlarmSeverity
 from malcolm.core.context import Context
-from malcolm.core.model import Model
+from malcolm.core.models import Model
 from malcolm.core.queue import Queue
 from malcolm.core.request import Post, Subscribe, Put, Get, Unsubscribe
 from malcolm.core.response import Return, Update, Error
 from malcolm.core.errors import AbortedError
 from malcolm.core.mapmeta import MapMeta
 from malcolm.core.methodmodel import MethodModel, OPTIONAL
-from malcolm.core import method_takes, method_returns, BlockModel
+from malcolm.core import method_takes, method_returns, BlockModel, Part, \
+    Process, Hook
 from malcolm.core.vmetas import StringMeta
 
 

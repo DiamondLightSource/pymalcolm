@@ -1,7 +1,7 @@
 import unittest
 from mock import Mock, MagicMock
 
-from malcolm.core.model import Model
+from malcolm.core.models import Model
 
 
 class MyModel(Model):

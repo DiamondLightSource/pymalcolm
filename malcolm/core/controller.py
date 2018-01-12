@@ -1,112 +1,67 @@
 from contextlib import contextmanager
-import inspect
-import weakref
-import time
 
-from annotypes import TYPE_CHECKING
+from annotypes import TYPE_CHECKING, Anno, Sequence
 
 from malcolm.compat import OrderedDict
-from .tags import widget
-from .alarm import Alarm
-from .attributemodels import AttributeModel
-from malcolm.core.views import make_block_view
-from malcolm.core import BlockModel, Attribute, Method, Block
-from .changed import Changed
 from .context import Context
-from .errors import UnexpectedError, AbortedError, WrongThreadError
-from .hook import Hook, get_hook_decorated
+from .errors import UnexpectedError, WrongThreadError
+from .hook import Hookable, start_hooks, wait_hooks, Hook
 from .info import Info
-from .loggable import Loggable
-from .map import Map
-from .methodmodel import MethodModel, get_method_decorated
-from .model import Model
+from .models import BlockModel, AttributeModel, MethodModel
 from .notifier import Notifier
-from .request import Get, Subscribe, Unsubscribe, Put, Post
+from .part import PartRegistrar, Part, FieldRegistry, InfoRegistry
 from .queue import Queue
+from .request import Get, Subscribe, Unsubscribe, Put, Post
 from .rlock import RLock
-from .serializable import serialize_object, deserialize_object, camel_to_title
-from .spawned import Spawned
-from .view import make_view
-from .vmetas import StringMeta
+from .serializable import serialize_object, camel_to_title
+from .views import make_view
 
 if TYPE_CHECKING:
     from typing import List, Dict, Tuple
+    from .process import Process
 
-
+# How long should we wait for spawned functions to complete after abort
 ABORT_TIMEOUT = 5.0
 
-# TODO: hook this in
-class TitleChanged(Changed):
-    def report(self, part, value):
-        self.controller.set_label(value)
+
+with Anno("The Malcolm Resource Identifier for the Block produced"):
+    AMri = str
+with Anno("Description of the Block produced by the controller"):
+    ADescription = str
+with Anno("Whether the Controller should use cothread for its spawns"):
+    AUseCothread = bool
 
 
-class Controller(Loggable):
-    use_cothread = True
+class Controller(Hookable):
+    process = None
 
-    # Attributes
-    health = None
-
-    def __init__(self, process, mri, parts, description=""):
+    def __init__(self, mri, description="", use_cothread=True):
+        # type: (AMri, ADescription, AUseCothread) -> None
         super(Controller, self).__init__(mri=mri)
-        self.process = process
         self.mri = mri
+        self.use_cothread = use_cothread
         self._request_queue = Queue()
-        # {Part: Alarm} for current faults
-        self._faults = {}
-        # {Hook: name}
-        self._hook_names = {}
-        # {Hook: {Part: func_name}}
-        self._hooked_func_names = {}
-        self._find_hooks()
-        # {part_name: (field_name, Model, setter)
-        self.part_fields = OrderedDict()
-        # {name: Part}
-        self.parts = OrderedDict()
+        self.parts = OrderedDict()  # type: Dict[str, Part]
         self._lock = RLock(self.use_cothread)
         self._block = BlockModel()
         self._block.meta.set_description(description)
-        self.set_label(mri)
-        for part in parts:
-            self.add_part(part)
+        self._block.meta.set_label(mri)
         self._notifier = Notifier(mri, self._lock, self._block)
         self._block.set_notifier_path(self._notifier, [mri])
         self._write_functions = {}
-        self._add_block_fields()
+        self.field_registry = FieldRegistry()
+        self.info_registry = InfoRegistry()
 
-    def set_label(self, label):
-        """Set the label of the Block Meta object"""
-        self._block.meta.set_label(label)
+    def setup(self, process):
+        # type: (Process) -> None
+        self.process = process
+        self.add_initial_part_fields()
 
     def add_part(self, part):
         assert part.name not in self.parts, \
             "Part %r already exists in Controller %r" % (part.name, self.mri)
-        part.attach_to_controller(self)
-        # Check part hooks into one of our hooks
-        for func_name, part_hook, _ in get_hook_decorated(part):
-            assert part_hook in self._hook_names, \
-                "Part %s func %s not hooked into %s" % (
-                    part.name, func_name, self)
-            self._hooked_func_names[part_hook][part] = func_name
-        part_fields = list(part.create_attribute_models()) + \
-                      list(part.create_method_models())
+        part.setup(PartRegistrar(self.field_registry, part))
         self.parts[part.name] = part
-        self.part_fields[part.name] = part_fields
-
-    def _find_hooks(self):
-        for name, member in inspect.getmembers(self, Hook.isinstance):
-            assert member not in self._hook_names, \
-                "Hook %s already in %s as %s" % (
-                    self, name, self._hook_names[member])
-            self._hook_names[member] = name
-            self._hooked_func_names[member] = {}
-
-    def _add_block_fields(self):
-        for iterable in (self.create_attribute_models(),
-                         self.create_method_models(),
-                         self.initial_part_fields()):
-            for name, child, writeable_func in iterable:
-                self.add_block_field(name, child, writeable_func)
 
     def add_block_field(self, name, child, writeable_func):
         if writeable_func:
@@ -119,38 +74,16 @@ class Controller(Loggable):
         elif isinstance(child, MethodModel):
             if writeable_func:
                 child.set_writeable(True)
-                for k, v in child.takes.elements.items():
-                    v.set_writeable(True)
             if not child.label:
                 child.set_label(camel_to_title(name))
         else:
             raise ValueError("Invalid block field %r" % child)
         self._block.set_endpoint_data(name, child)
 
-    def create_method_models(self):
-        """Provide MethodModel instances to be attached to BlockModel
-
-        Yields:
-            tuple: (string name, MethodModel, callable post_function).
-        """
-        return get_method_decorated(self)
-
-    def create_attribute_models(self):
-        """Provide AttributeModel instances to be attached to BlockModel
-
-        Yields:
-            tuple: (string name, AttributeModel, callable put_function).
-        """
-        # Create read-only attribute to show error texts
-        meta = StringMeta(
-            "Displays OK or an error message", tags=[widget("textupdate")])
-        self.health = meta.create_attribute_model()
-        yield "health", self.health, None
-
-    def initial_part_fields(self):
-        for part_fields in self.part_fields.values():
-            for data in part_fields:
-                yield data
+    def add_initial_part_fields(self):
+        for part_fields in self.field_registry.fields.values():
+            for name, child, writeable_func in part_fields:
+                self.add_block_field(name, child, writeable_func)
 
     def spawn(self, func, *args, **kwargs):
         """Spawn a function in the right thread"""
@@ -169,25 +102,6 @@ class Controller(Loggable):
     @property
     def changes_squashed(self):
         return self._notifier.changes_squashed
-
-    def update_health(self, part, alarm=None):
-        """Set the health attribute. Called from part"""
-        if alarm is not None:
-            alarm = deserialize_object(alarm, Alarm)
-        with self.changes_squashed:
-            if alarm is None or not alarm.severity:
-                self._faults.pop(part, None)
-            else:
-                self._faults[part] = alarm
-            if self._faults:
-                # Sort them by severity
-                faults = sorted(self._faults.values(), key=lambda a: a.severity)
-                alarm = faults[-1]
-                text = faults[-1].message
-            else:
-                alarm = None
-                text = "OK"
-            self.health.set_value(text, alarm=alarm)
 
     def make_view(self, context, data=None, child_name=None):
         """Make a child View of data[child_name]"""
@@ -241,7 +155,7 @@ class Controller(Loggable):
         for cb, response in responses:
             try:
                 cb(response)
-            except Exception as e:
+            except Exception:
                 self.log.exception("Exception notifying %s", response)
                 raise
 
@@ -285,114 +199,49 @@ class Controller(Loggable):
         else:
             param_dict = {}
 
-        method = self._block[method_name]
+        method = self._block[method_name]  # type: MethodModel
         assert method.writeable, \
             "Method %s is not writeable" % method_name
-        args = method.prepare_call_args(**param_dict)
+        for k, v in param_dict.items():
+            param_dict[k] = method.takes.elements[k].validate(v)
         post_function = self._write_functions[method_name]
 
         with self.lock_released:
-            result = post_function(*args)
+            result = post_function(**param_dict)
 
-        result = self.validate_result(method_name, result)
         ret = [request.return_response(result)]
         return ret
 
-    def validate_result(self, method_name, result):
-        with self._lock:
-            method = self._block[method_name]
-            # Prepare output map
-            if method.returns.elements:
-                result = Map(method.returns, result)
-                result.check_valid()
-        return result
-
     def create_part_contexts(self):
         part_contexts = OrderedDict()
-        for part_name, part in self.parts.items():
+        for part in self.parts.values():
             part_contexts[part] = Context(self.process)
         return part_contexts
 
     def run_hooks(self, hooks):
-        # type: (List[Hook]) -> Dict[str, List[Info]]
-        hook_queue, hook_spawned = self.start_hooks(hooks)
-        return_dict = self.wait_hooks(hook_queue, hook_spawned)
-        return return_dict
+        # type: (Sequence[Hook]) -> Dict[str, List[Info]]
+        return self.wait_hooks(*self.start_hooks(hooks))
 
     def start_hooks(self, hooks):
-        # type: (List[Hook]) -> Tuple[Queue, Dict[Hook, Spawned]]
-        # This queue will hold (part, result) tuples
-        hook_queue = Queue()
-
+        # type: (Sequence[Hook]) -> Tuple[Queue, List[Hook]]
         # Hooks might be a generator, so convert to a list
         hooks = list(hooks)
         if not hooks:
-            # If we didn't get any then there's nothing to do
-            return hook_queue, {}
-
-        # Check that this is a hook we expected to run
-        hook_type = type(hooks[0])
-        assert hook_type in self.registry.runnable_hooks, \
-            "Hook %s doesn't appear in controller hooks %s" % (
-                hook_type, self.registry.runnable_hooks)
+            return {}
         self.log.debug("%s: Starting hook", hooks[0].name)
-
-        hook_spawned = OrderedDict()
-
-        # now start them off
+        for hook in hooks:
+            hook.set_spawn(self.spawn)
         # Take the lock so that no hook abort can come in between now and
         # the spawn of the context
         with self._lock:
-            for hook in hooks:
-                # context might have been aborted but have nothing servicing
-                # the queue, we still want the legitimate messages on the queue
-                # so just tell it to ignore stops it got before now
-                hook.context.ignore_stops_before_now()
-                try:
-                    func, call_types = self.registry.get_hooked(hook.part, self)
-                except KeyError:
-                    # No hooked function
-                    pass
-                else:
-                    hook_spawned[hook] = self.spawn(
-                        hook.run, func, call_types, hook_queue)
-
+            hook_queue, hook_spawned = start_hooks(hooks)
         return hook_queue, hook_spawned
 
     def wait_hooks(self, hook_queue, hook_spawned):
-        # type: (Queue, Dict[Hook, Spawned]) -> Dict[str, List[Info]]
-        # Wait for them all to finish
-        return_dict = OrderedDict()
-        for hook in hook_spawned:
-            return_dict[hook.part.name] = None
-        start = time.time()
-        while hook_spawned:
-            hook, ret = hook_queue.get()
-            spawned = hook_spawned.pop(hook)
-
-            # Wait for the process to terminate
-            spawned.wait()
-            return_dict[hook.part.name] = ret
-            duration = time.time() - start
-            if hook_spawned:
-                self.log.debug(
-                    "%s: Part %s returned %r after %ss. Still waiting for %s",
-                    hook.name, hook.part.name, ret, duration,
-                    [h.part.name for h in hook_spawned])
-            else:
-                self.log.debug(
-                    "%s: Part %s returned %r after %ss. Returning...",
-                    hook.name, hook.part.name, ret, duration)
-
-            if isinstance(ret, Exception):
-                if not isinstance(ret, AbortedError):
-                    # If AbortedError, all tasks have already been stopped.
-                    # Got an error, so stop and wait all hook runners
-                    for h in hook_spawned:
-                        h.context.stop()
-                # Wait for them to finish
-                for h in hook_spawned.values():
-                    h.wait(timeout=ABORT_TIMEOUT)
-                raise ret
-
+        # type: (Queue, List[Hook]) -> Dict[str, List[Info]]
+        if hook_spawned:
+            return_dict = wait_hooks(hook_queue, hook_spawned, ABORT_TIMEOUT)
+        else:
+            self.log.debug("No Parts hooked")
+            return_dict = {}
         return return_dict

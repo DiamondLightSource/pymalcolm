@@ -57,5 +57,9 @@ class Alarm(Serializable):
         return cls(
             AlarmSeverity.INVALID_ALARM, AlarmStatus.DEVICE_STATUS, message)
 
+    def is_ok(self):
+        # type: () -> bool
+        return self.severity == AlarmSeverity.NO_ALARM
+
 
 Alarm.ok = Alarm()

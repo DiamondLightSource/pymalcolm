@@ -1,37 +1,50 @@
 from multiprocessing.pool import ThreadPool
-import inspect
+
+from annotypes import Anno, Array, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict, maybe_import_cothread, \
     get_pool_num_threads
 from .context import Context
-from .hook import Hook, get_hook_decorated
-from .loggable import Loggable
-from .spawned import Spawned
-from .rlock import RLock
+from .controller import Controller
 from .errors import WrongThreadError
+from .hook import Hook, start_hooks
+from .loggable import Loggable
+from .rlock import RLock
+from .spawned import Spawned
+from .views import Block
+
+if TYPE_CHECKING:
+    from typing import List
 
 
 # Clear spawned handles after how many spawns?
 SPAWN_CLEAR_COUNT = 1000
 
 
+class ProcessStartHook(Hook):
+    """Called at start() to start all child controllers"""
+
+
+with Anno("The list of currently published Controller mris"):
+    APublished = Array[str]
+
+
+class ProcessPublishHook(Hook):
+    """Called when a new block is added"""
+    def __init__(self, published):
+        self.published = APublished(published)
+        super(ProcessPublishHook, self).__init__()
+
+
+class ProcessStopHook(Hook):
+    """Called at stop() to gracefully stop all child controllers"""
+
+
 class Process(Loggable):
     """Hosts a number of Controllers and provides spawn capabilities"""
 
-    Init = Hook()
-    """Called at start() to start all child controllers"""
-
-    Publish = Hook()
-    """Called when a new block is added
-
-    Args:
-        published (list): [mri] list of published Controller mris
-    """
-
-    Halt = Hook()
-    """Called at stop() to gracefully stop all child controllers"""
-
     def __init__(self, name):
+        # type: (str) -> None
         super(Process, self).__init__(process=name)
         self.name = name
         self._cothread = maybe_import_cothread()
@@ -42,17 +55,6 @@ class Process(Loggable):
         self._spawn_count = 0
         self._thread_pool = None
         self._lock = RLock()
-        self._hooked_func_names = {}
-        self._hook_names = {}
-        self._find_hooks()
-
-    def _find_hooks(self):
-        for name, member in inspect.getmembers(self, Hook.isinstance):
-            assert member not in self._hook_names, \
-                "Hook %s already in %s as %s" % (
-                    self, name, self._hook_names[member])
-            self._hook_names[member] = name
-            self._hooked_func_names[member] = {}
 
     def start(self, timeout=None):
         """Start the process going
@@ -63,24 +65,23 @@ class Process(Loggable):
         """
         assert not self.started, "Process already started"
         self.started = True
-        self._run_hook(self.Init, timeout=timeout)
-        self._run_hook(
-            self.Publish, args=(self._published,), timeout=timeout)
+        self._run_hook(ProcessStartHook, timeout=timeout)
+        self._run_hook(ProcessPublishHook, timeout=timeout,
+                       published=self._published)
 
-    def _run_hook(self, hook, controller_list=None, args=(), timeout=None):
+    def _run_hook(self, hook, controller_list=None, timeout=None, **kwargs):
         # Run the given hook waiting til all hooked functions are complete
         # but swallowing any errors
         if controller_list is None:
             controller_list = self._controllers.values()
-
-        spawned = []
-        for controller in controller_list:
-            func_name = self._hooked_func_names[hook].get(controller, None)
-            if func_name:
-                func = getattr(controller, func_name)
-                spawned.append(controller.spawn(func, *args))
-        for s in spawned:
-            s.wait(timeout)
+        hooks = [hook(**kwargs).set_spawn(controller.spawn)
+                 for controller in controller_list]
+        hook_queue, hook_spawned = start_hooks(hooks)
+        while hook_spawned:
+            hook, ret = hook_queue.get()
+            hook_spawned.remove(hook)
+            # Wait for the process to terminate
+            hook.spawned.wait(timeout)
 
     def stop(self, timeout=None):
         """Stop the process and wait for it to finish
@@ -91,7 +92,7 @@ class Process(Loggable):
         """
         assert self.started, "Process not started"
         # Allow every controller a chance to clean up
-        self._run_hook(self.Halt, timeout=timeout)
+        self._run_hook(ProcessStopHook, timeout=timeout)
         for s in self._spawned:
             self.log.debug("Waiting for %s", s._function)
             s.wait(timeout=timeout)
@@ -165,16 +166,12 @@ class Process(Loggable):
             assert mri not in self._controllers, \
                 "Controller already exists for %s" % mri
             self._controllers[mri] = controller
-            for func_name, hook, _ in get_hook_decorated(controller):
-                assert hook in self._hook_names, \
-                    "Controller %s func %s not hooked into %s" % (
-                        mri, func_name, self)
-                self._hooked_func_names[hook][controller] = func_name
+            controller.setup(self)
             if publish:
                 self._published.append(mri)
         if self.started:
-            self._run_hook(self.Init, [controller], timeout=timeout)
-            self._run_hook(self.Publish, args=(self._published,),
+            self._run_hook(ProcessStartHook, [controller], timeout=timeout)
+            self._run_hook(ProcessPublishHook, args=(self._published,),
                            timeout=timeout)
 
     def remove_controller(self, mri, timeout=None):
@@ -190,28 +187,21 @@ class Process(Loggable):
     def _remove_controller(self, mri, timeout):
         with self._lock:
             controller = self._controllers.pop(mri)
-            for d in self._hooked_func_names.values():
-                d.pop(controller, None)
             if mri in self._published:
                 self._published.remove(mri)
         if self.started:
-            self._run_hook(self.Publish, args=(self._published,),
-                           timeout=timeout)
-            self._run_hook(self.Halt, [controller], timeout=timeout)
+            self._run_hook(ProcessPublishHook, timeout=timeout,
+                           published=self._published)
+            self._run_hook(ProcessStopHook, [controller], timeout=timeout)
 
     @property
     def mri_list(self):
+        # type: () -> List[str]
         return list(self._controllers)
 
     def get_controller(self, mri):
-        """Get controller from mri
-
-        Args:
-            mri (str): The malcolm resource id for the controller
-
-        Returns:
-            Controller: the controller
-        """
+        # type: (str) -> Controller
+        """Get controller which can make views for this mri"""
         try:
             return self._controllers[mri]
         except KeyError:

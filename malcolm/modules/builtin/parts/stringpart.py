@@ -1,8 +1,8 @@
 from annotypes import Anno
 
-from malcolm.core import Part, Registrar
+from malcolm.core import Part, PartRegistrar
 from malcolm.core.vmetas import StringMeta
-from ..util import set_tags, Name, Description, Writeable, Config, Group, AWidget
+from ..util import set_tags, Name, Description, AWriteable, AConfig, AGroup, AWidget
 
 
 with Anno("Initial value of the created attribute"):
@@ -14,9 +14,9 @@ class StringPart(Part):
     def __init__(self,
                  name,  # type: Name
                  description,  # type: Description
-                 writeable=False,  # type: Writeable
-                 config=True,  # type: Config
-                 group=None,  # type: Group
+                 writeable=False,  # type: AWriteable
+                 config=True,  # type: AConfig
+                 group=None,  # type: AGroup
                  widget=None,  # type: AWidget
                  value="",  # type: Value
                  ):
@@ -28,5 +28,5 @@ class StringPart(Part):
         self.writeable_func = self.attr.set_value if writeable else None
 
     def setup(self, registrar):
-        # type: (Registrar) -> None
+        # type: (PartRegistrar) -> None
         registrar.add_attribute_model(self.name, self.attr, self.writeable_func)

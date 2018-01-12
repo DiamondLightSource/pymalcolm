@@ -1,9 +1,8 @@
 from annotypes import Anno
 
-from malcolm.core import Part, Registrar
-from malcolm.core.vmetas import NumberMeta
-from ..util import set_tags, Name, Description, Writeable, Config, Group, AWidget
-
+from malcolm.core import Part, PartRegistrar, NumberMeta, APartName, \
+    AMetaDescription
+from ..util import set_tags, AWriteable, AConfig, AGroup, AWidget
 
 with Anno("Initial value of the created attribute"):
     Value = float
@@ -12,11 +11,11 @@ with Anno("Initial value of the created attribute"):
 class Float64Part(Part):
     """Create a single float64 Attribute on the Block"""
     def __init__(self,
-                 name,  # type: Name
-                 description,  # type: Description
-                 writeable=False,  # type: Writeable
-                 config=True,  # type: Config
-                 group=None,  # type: Group
+                 name,  # type: APartName
+                 description,  # type: AMetaDescription
+                 writeable=False,  # type: AWriteable
+                 config=True,  # type: AConfig
+                 group=None,  # type: AGroup
                  widget=None,  # type: AWidget
                  value=0.0,  # type: Value
                  ):
@@ -28,5 +27,5 @@ class Float64Part(Part):
         self.writeable_func = self.attr.set_value if writeable else None
 
     def setup(self, registrar):
-        # type: (Registrar) -> None
+        # type: (PartRegistrar) -> None
         registrar.add_attribute_model(self.name, self.attr, self.writeable_func)

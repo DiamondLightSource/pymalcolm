@@ -1,6 +1,6 @@
 from malcolm.core import Post, Subscribe, Put, Controller, method_takes, \
-    REQUIRED, Alarm, Process, Unsubscribe, Delta, Queue
-from malcolm.core.vmetas import StringMeta
+    REQUIRED, Alarm, Process, Unsubscribe, Delta, Queue, StringMeta
+
 
 
 @method_takes(
@@ -19,8 +19,8 @@ class ProxyController(Controller):
 
     @Process.Init
     def init(self):
-        subscribe = Subscribe(
-            path=[self.params.mri], delta=True, callback=self.handle_response)
+        subscribe = Subscribe(path=[self.params.mri], delta=True)
+        subscribe.set_callback(self.handle_response)
         self.client_comms.send_to_server(subscribe)
         # Wait until connected
         self._first_response_queue.get(timeout=5)

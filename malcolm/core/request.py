@@ -1,29 +1,29 @@
 import logging
 
-from annotypes import Anno, Array, Any, TYPE_CHECKING, Mapping
+from annotypes import Anno, Array, Any, TYPE_CHECKING, Mapping, Union, Sequence
+
+from .response import Return, Error, Update, Delta, Response
+from .serializable import Serializable, serialize_object
 
 if TYPE_CHECKING:
     from typing import Callable, Tuple, List
-
-from malcolm.compat import OrderedDict, str_
-from .response import Return, Error, Update, Delta, Response
-from .serializable import Serializable, deserialize_object, serialize_object
 
 # Create a module level logger
 log = logging.getLogger(__name__)
 
 
 with Anno("ID that should be used for any responses"):
-    Id = int
+    AId = int
 with Anno("Path to target Block substructure"):
-    Path = Array[str_]
+    APath = Array[str]
 with Anno("Value to put"):
-    Value = Any
+    AValue = Any
 with Anno("Parameters to use in a method Post"):
-    Parameters = Mapping[str_, Any]
+    AParameters = Mapping[str, Any]
 with Anno("Notify of differences only"):
-    Differences = bool
+    ADifferences = bool
 
+UPath = Union[APath, Sequence[str], str]
 Callback = Callable[[Response], None]
 
 
@@ -32,7 +32,7 @@ class Request(Serializable):
     __slots__ = ["id", "callback"]
 
     def __init__(self, id=0):
-        # type: (Id) -> None
+        # type: (AId) -> None
         self.id = id
 
         def callback(value):
@@ -72,9 +72,9 @@ class PathRequest(Request):
     __slots__ = ["path"]
 
     def __init__(self, id=0, path=None):
-        # type: (Id, Path) -> None
+        # type: (AId, UPath) -> None
         super(PathRequest, self).__init__(id)
-        self.path = path if path else []
+        self.path = APath(path)
 
 
 @Serializable.register_subclass("malcolm:core/Get:1.0")
@@ -89,7 +89,7 @@ class Put(PathRequest):
     __slots__ = ["value"]
 
     def __init__(self, id=0, path=None, value=None):
-        # type: (Id, Path, Value) -> None
+        # type: (AId, UPath, AValue) -> None
         super(Put, self).__init__(id, path)
         self.value = serialize_object(value)
 
@@ -100,12 +100,11 @@ class Post(PathRequest):
     __slots__ = ["parameters"]
 
     def __init__(self, id=0, path=None, parameters=None):
-        # type: (Id, Path, Parameters) -> None
+        # type: (AId, UPath, AParameters) -> None
         super(Post, self).__init__(id, path)
         if parameters is not None:
-            parameters = OrderedDict(
-                (deserialize_object(k, str_), serialize_object(v))
-                for k, v in parameters.items())
+            for k, v in parameters.items():
+                parameters[k] = serialize_object(v)
         self.parameters = parameters
 
 
@@ -115,7 +114,7 @@ class Subscribe(PathRequest):
     __slots__ = ["delta"]
 
     def __init__(self, id=0, path=None, delta=False):
-        # type: (Id, Path, Differences) -> None
+        # type: (AId, UPath, ADifferences) -> None
         super(Subscribe, self).__init__(id, path)
         self.delta = delta
 
@@ -126,7 +125,7 @@ class Subscribe(PathRequest):
         return self.callback, response
 
     def delta_response(self, changes):
-        # type: (List[List[List[str_], Any]]) -> Tuple[Callback, Delta]
+        # type: (List[List[List[str], Any]]) -> Tuple[Callback, Delta]
         """"Create a Delta Response object to handle the request"""
         response = Delta(id=self.id, changes=changes)
         return self.callback, response

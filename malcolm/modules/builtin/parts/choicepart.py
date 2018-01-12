@@ -1,26 +1,26 @@
 from annotypes import Anno, Array
 
-from malcolm.core import Part, Registrar
-from malcolm.core.vmetas import ChoiceMeta
-from ..util import set_tags, Name, Description, Writeable, Config, Group, AWidget
+from malcolm.core import Part, PartRegistrar, ChoiceMeta, APartName, \
+    AMetaDescription
+from ..util import set_tags, AWriteable, AConfig, AGroup, AWidget
 
 
 with Anno("Possible choices for this attribute"):
-    Choices = Array[str]
+    AChoices = Array[str]
 with Anno("Initial value of the created attribute"):
-    Value = str
+    AValue = str
 
 
 class ChoicePart(Part):
     """Create a single choice Attribute on the Block"""
     def __init__(self,
-                 name,  # type: Name
-                 description,  # type: Description
-                 choices,  # type: Choices
-                 value,  # type: Value
-                 writeable=False,  # type: Writeable
-                 config=True,  # type: Config
-                 group=None,  # type: Group
+                 name,  # type: APartName
+                 description,  # type: AMetaDescription
+                 choices,  # type: AChoices
+                 value,  # type: AValue
+                 writeable=False,  # type: AWriteable
+                 config=True,  # type: AConfig
+                 group=None,  # type: AGroup
                  widget=None,  # type: AWidget
                  ):
         # type: (...) -> None
@@ -31,6 +31,6 @@ class ChoicePart(Part):
         self.writeable_func = self.attr.set_value if writeable else None
 
     def setup(self, registrar):
-        # type: (Registrar) -> None
+        # type: (PartRegistrar) -> None
         registrar.add_attribute_model(self.name, self.attr, self.writeable_func)
 

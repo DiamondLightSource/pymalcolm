@@ -1,30 +1,112 @@
-from annotypes import Array, Anno, Union, Sequence, Mapping, Any, \
-    TYPE_CHECKING, to_array
+import inspect
+
+from annotypes import Array, Anno, Union, Sequence, Mapping, Any, to_array, \
+    Optional, TYPE_CHECKING
 import numpy as np
+from enum import Enum
 
 from malcolm.compat import OrderedDict, str_
 from .alarm import Alarm
-from .model import Model
+from .notifier import DummyNotifier, Notifier
 from .serializable import Serializable, deserialize_object, camel_to_title
 from .table import Table
 from .tags import Widget
 from .timestamp import TimeStamp
 
-if not TYPE_CHECKING:
-    from typing import Type
+if TYPE_CHECKING:
+    from typing import Tuple, Type, List
+
+
+class Model(Serializable):
+    notifier = DummyNotifier()
+    path = []
+    __slots__ = []
+
+    def set_notifier_path(self, notifier, path):
+        """Sets the notifier, and the path from the path from block root
+
+        Args:
+            notifier (Notifier): The Notifier to tell when endpoint data changes
+            path (list): The absolute path to get to this object
+        """
+        # type: (Union[Notifier, DummyNotifier], List[str]) -> None
+        self.notifier = notifier
+        self.path = path
+        # Tell all our children too
+        for name, ct in self.call_types.items():
+            if ct.is_mapping:
+                child = getattr(self, name)
+                if isinstance(ct.typ[1], Model) and child:
+                    for k, v in getattr(self, name).items():
+                        v.set_notifier_path(notifier, self.path + [name, k])
+            elif isinstance(ct.typ, Model):
+                assert not ct.is_array, \
+                    "Can't deal with Arrays of Models %s" % ct
+                child = getattr(self, name)
+                child.set_notifier_path(notifier, self.path + [name])
+
+    def set_endpoint_data(self, name, value):
+        # type: (str_, Any) -> Any
+        try:
+            ct = self.call_types[name]
+        except KeyError:
+            raise ValueError("Endpoint %r not defined for %r" % (name, self))
+        else:
+            if ct.is_array:
+                # Check we have the right type
+                assert isinstance(value, Array), \
+                    "Expected Array, got %s" % (value,)
+                assert ct.typ == value.typ, \
+                    "Expected Array[%s], got %s" % (ct.typ, value.typ)
+            elif ct.is_mapping:
+                # Check it is the right type
+                ktype, vtype = ct.typ
+                for k, v in value.items():
+                    assert isinstance(k, ktype), \
+                        "Expected %s, got %s" % (ktype, k)
+                    assert isinstance(v, vtype), \
+                        "Expected %s, got %s" % (vtype, v)
+                # If we are setting structures of Models then sort notification
+                if issubclass(ct.typ[1], Model):
+                    # If we have old Models then stop them notifying
+                    child = getattr(self, name)
+                    if child:
+                        for k, v in child.items():
+                            v.set_notifier_path(Model.notifier, [])
+                    for k, v in value.items():
+                        v.set_notifier_path(self.notifier,
+                                            self.path + [name, k])
+            else:
+                # If we are setting a Model then sort notification
+                if issubclass(ct.typ, Model):
+                    # If we have an old Model then stop it notifying
+                    child = getattr(self, name)
+                    if child:
+                        child.set_notifier_path(Model.notifier, [])
+                    value.set_notifier_path(self.notifier, self.path)
+                # Make sure it is the right typ
+                assert isinstance(value, ct.typ), \
+                    "Expected %s, got %s" % (ct.typ, value)
+            with self.notifier.changes_squashed:
+                # Actually set the attribute
+                setattr(self, name, value)
+                # Tell the notifier what changed
+                self.notifier.add_squashed_change(self.path + [name], value)
+            return value
+
 
 # Types used when deserializing to the class
 with Anno("Description of what this element represents"):
-    Description = str
+    AMetaDescription = str
 with Anno("Generic text tags for client tools to interpret"):
-    Tags = Array[str]
+    ATags = Array[str]
 with Anno("Whether this element is currently writeable"):
-    Writeable = bool
+    AWriteable = bool
 with Anno("A human readable label for the element"):
-    Label = str
+    ALabel = str
 
 # A more permissive union to allow a wider range of set_* args
-UTags = Union[Tags, Sequence[str], str]
+UTags = Union[ATags, Sequence[str], str]
 
 
 class Meta(Model):
@@ -32,32 +114,33 @@ class Meta(Model):
     __slots__ = ["description", "tags", "writeable", "label"]
 
     def __init__(self, description="", tags=(), writeable=False, label=""):
-        # type: (Description, UTags, Writeable, Label) -> None
+        # type: (AMetaDescription, UTags, AWriteable, ALabel) -> None
         self.description = self.set_description(description)
         self.tags = self.set_tags(tags)
         self.writeable = self.set_writeable(writeable)
         self.label = self.set_label(label)
 
     def set_description(self, description):
-        # type: (Description) -> Description
+        # type: (AMetaDescription) -> AMetaDescription
         return self.set_endpoint_data("description", description)
 
     def set_tags(self, tags):
-        # type: (UTags) -> Tags
-        return self.set_endpoint_data("tags", Tags(tags))
+        # type: (UTags) -> ATags
+        return self.set_endpoint_data("tags", ATags(tags))
 
     def set_writeable(self, writeable):
-        # type: (Writeable) -> Writeable
+        # type: (AWriteable) -> AWriteable
         return self.set_endpoint_data("writeable", writeable)
 
     def set_label(self, label):
-        # type: (Label) -> Label
+        # type: (ALabel) -> ALabel
         return self.set_endpoint_data("label", label)
 
 
 class VMeta(Meta):
     """Abstract base class for validating the values of Attributes"""
     attribute_class = None
+    _annotype_lookup = {}  # type: Mapping[Tuple[type, bool, bool], Type[VMeta]]
     __slots__ = []
 
     def validate(self, value):
@@ -98,10 +181,44 @@ class VMeta(Meta):
         """Abstract function to return the default widget type"""
         raise NotImplementedError(self)
 
+    @classmethod
+    def from_annotype(cls, anno, writeable, **kwargs):
+        # type: (Anno, bool, **Any) -> VMeta
+        """Return an instance of this class from an Anno"""
+        ret = cls(description=anno.description, writeable=writeable, **kwargs)
+        ret.set_tags((ret.default_widget()))
+        return ret
+
+    @classmethod
+    def register_annotype_converter(cls, types, is_array=False, is_mapping=False):
+        # type: (Union[Sequence[type], type], bool, bool) -> Any
+        """Register this class as a converter for Anno instances"""
+        if not isinstance(types, Sequence):
+            types = [types]
+
+        def decorator(subclass):
+            for typ in types:
+                cls._annotype_lookup[(typ, is_array, is_mapping)] = subclass
+            return subclass
+
+        return decorator
+
+    @classmethod
+    def lookup_annotype_converter(cls, anno):
+        # type: (Anno) -> Type[VMeta]
+        """Look up a vmeta based on an Anno"""
+        for typ in inspect.getmro(anno.typ):
+            key = (typ, anno.is_array, anno.is_mapping)
+            try:
+                return cls._annotype_lookup[key]
+            except KeyError:
+                pass
+        raise KeyError(anno)
+
 
 # Types used when deserializing to the class
 with Anno("The current value of the Attribute"):
-    Value = Any
+    AValue = Any
 with Anno("The current alarm status"):
     AAlarm = Alarm
 with Anno("The time when the value was last updated"):
@@ -117,7 +234,7 @@ class AttributeModel(Model):
     __slots__ = ["value", "alarm", "timeStamp", "meta"]
 
     def __init__(self, value=None, alarm=None, timeStamp=None, meta=None):
-        # type: (Value, AAlarm, ATimeStamp, AVMeta) -> None
+        # type: (AValue, AAlarm, ATimeStamp, AVMeta) -> None
         self.meta = self.set_meta(meta)
         self.value = self.set_value(value, set_alarm_ts=False)
         self.alarm = self.set_alarm(alarm)
@@ -219,6 +336,7 @@ class NTScalar(AttributeModel):
 
 
 @Serializable.register_subclass("malcolm:core/BooleanMeta:1.0")
+@VMeta.register_annotype_converter(bool)
 class BooleanMeta(VMeta):
     """Meta object containing information for a boolean"""
     attribute_class = NTScalar
@@ -242,10 +360,13 @@ class BooleanMeta(VMeta):
 
 
 with Anno("Choices of valid strings"):
-    Choices = Array[str_]
+    AChoices = Array[str]
+
+UChoices = Union[AChoices, Sequence[str], str]
 
 
 @Serializable.register_subclass("malcolm:core/ChoiceMeta:1.0")
+@VMeta.register_annotype_converter(Enum)
 class ChoiceMeta(VMeta):
     """Meta object containing information for a enum"""
     attribute_class = NTScalar
@@ -253,14 +374,13 @@ class ChoiceMeta(VMeta):
 
     def __init__(self, description="", choices=(), tags=(), writeable=False,
                  label=""):
-        # type: (Description, Choices, Tags, Writeable, Label) -> None
+        # type: (AMetaDescription, UChoices, UTags, AWriteable, ALabel) -> None
         super(ChoiceMeta, self).__init__(description, tags, writeable, label)
         self.choices = self.set_choices(choices)
 
     def set_choices(self, choices):
-        # type: (Choices) -> Choices
-        choices = Choices(choices)
-        return self.set_endpoint_data("choices", choices)
+        # type: (UChoices) -> AChoices
+        return self.set_endpoint_data("choices", AChoices(choices))
 
     def validate(self, value):
         # type: (Any) -> str_
@@ -274,6 +394,8 @@ class ChoiceMeta(VMeta):
             return value
         elif isinstance(value, int) and value < len(self.choices):
             return self.choices[value]
+        # elif isinstance(value, Enum) and value.name in self.choices:
+        #     return value.name
         else:
             raise ValueError(
                 "%s is not a valid value in %s" % (value, self.choices))
@@ -289,22 +411,33 @@ class ChoiceMeta(VMeta):
         else:
             return Widget.TEXTUPDATE
 
+    @classmethod
+    def from_annotype(cls, anno, writeable, **kwargs):
+        # type: (Anno, bool, **Any) -> VMeta
+        return super(ChoiceMeta, cls).from_annotype(
+            anno, writeable, choices=list(anno.typ.__members__))
+
 
 with Anno("Numpy dtype string"):
-    Dtype = str_
+    ADtype = str_
+
+
+_dtype_strings = ["int8", "uint8", "int16", "uint16", "int32", "uint32", "int64",
+           "uint64", "float32", "float64"]
+_dtype_string_lookup = {getattr(np, dtype): dtype for dtype in _dtype_strings}
+_dtype_string_lookup.update({int: "int64", float: "float64"})
 
 
 @Serializable.register_subclass("malcolm:core/NumberMeta:1.0")
+@VMeta.register_annotype_converter(list(_dtype_string_lookup))
 class NumberMeta(VMeta):
     """Meta object containing information for a numerical value"""
     attribute_class = NTScalar
     __slots__ = ["dtype"]
-    _dtypes = ["int8", "uint8", "int16", "uint16", "int32", "uint32", "int64",
-               "uint64", "float32", "float64"]
 
     def __init__(self, dtype="float64", description="", tags=(),
                  writeable=False, label=""):
-        # type: (Dtype, Description, Tags, Writeable, Label) -> None
+        # type: (ADtype, AMetaDescription, ATags, AWriteable, ALabel) -> None
         super(NumberMeta, self).__init__(description, tags, writeable, label)
         # like np.float64
         self._np_dtype = None
@@ -312,8 +445,8 @@ class NumberMeta(VMeta):
         self.dtype = self.set_dtype(dtype)
 
     def set_dtype(self, dtype):
-        # type: (Dtype) -> Dtype
-        assert dtype in self._dtypes, \
+        # type: (ADtype) -> ADtype
+        assert dtype in _dtype_strings, \
             "Expected dtype to be in %s, got %s" % (self._dtypes, dtype)
         self._np_dtype = getattr(np, dtype)
         return self.set_endpoint_data("dtype", dtype)
@@ -337,8 +470,15 @@ class NumberMeta(VMeta):
         else:
             return Widget.TEXTUPDATE
 
+    @classmethod
+    def from_annotype(cls, anno, writeable, **kwargs):
+        # type: (Anno, bool, **Any) -> VMeta
+        return super(NumberMeta, cls).from_annotype(
+            anno, writeable, dtype=_dtype_string_lookup[anno.typ])
+
 
 @Serializable.register_subclass("malcolm:core/StringMeta:1.0")
+@VMeta.register_annotype_converter(str)
 class StringMeta(VMeta):
     """Meta object containing information for a string"""
     attribute_class = NTScalar
@@ -371,6 +511,7 @@ class VArrayMeta(VMeta):
 
 
 @Serializable.register_subclass("malcolm:core/BooleanArrayMeta:1.0")
+@VMeta.register_annotype_converter(bool, is_array=True)
 class BooleanArrayMeta(VArrayMeta):
     """Meta object containing information for a boolean array"""
 
@@ -392,6 +533,7 @@ class BooleanArrayMeta(VArrayMeta):
 
 
 @Serializable.register_subclass("malcolm:core/ChoiceArrayMeta:1.0")
+@VMeta.register_annotype_converter(Enum, is_array=True)
 class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
     """Meta object containing information for a choice array"""
 
@@ -415,6 +557,7 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
 
 
 @Serializable.register_subclass("malcolm:core/NumberArrayMeta:1.0")
+@VMeta.register_annotype_converter(list(_dtype_string_lookup), is_array=True)
 class NumberArrayMeta(NumberMeta, VArrayMeta):
     """Meta object containing information for an array of numerical values"""
     def validate(self, value):
@@ -428,6 +571,7 @@ class NumberArrayMeta(NumberMeta, VArrayMeta):
 
 
 @Serializable.register_subclass("malcolm:core/StringArrayMeta:1.0")
+@VMeta.register_annotype_converter(str, is_array=True)
 class StringArrayMeta(VArrayMeta):
     """Meta object containing information for a string array"""
 
@@ -449,28 +593,35 @@ class StringArrayMeta(VArrayMeta):
 
 
 with Anno("Elements that should appear in the table instance"):
-    TElements = Mapping[str_, VArrayMeta]
+    ATElements = Mapping[str_, VArrayMeta]
 
 
 @Serializable.register_subclass("malcolm:core/TableMeta:1.0")
+@VMeta.register_annotype_converter(Table)
 class TableMeta(VMeta):
     __slots__ = ["elements"]
     attribute_class = NTTable
 
     def __init__(self, description="", tags=(), writeable=False, label="",
                  elements=None):
-        # type: (Description, Tags, Writeable, Label, TElements) -> None
-        super(TableMeta, self).__init__(description, tags, writeable, label)
+        # type: (AMetaDescription, ATags, AWriteable, ALabel, ATElements) -> None
         self.elements = self.set_elements(elements if elements else {})
+        super(TableMeta, self).__init__(description, tags, writeable, label)
 
     def set_elements(self, elements):
-        # type: (TElements) -> TElements
+        # type: (ATElements) -> ATElements
         """Set the elements dict from a serialized dict"""
         deserialized = OrderedDict()
         for k, v in elements.items():
             if k != "typeid":
                 deserialized[k] = deserialize_object(v, VArrayMeta)
         return self.set_endpoint_data("elements", deserialized)
+
+    def set_writeable(self, writeable):
+        # type: (AWriteable) -> AWriteable
+        for v in self.elements.values():
+            v.set_writeable(writeable)
+        return super(TableMeta, self).set_writeable(writeable)
 
     def validate(self, value):
         if value is None:
@@ -528,15 +679,27 @@ class TableMeta(VMeta):
         # type: () -> Widget
         return Widget.TABLE
 
+    @classmethod
+    def from_annotype(cls, anno, writeable, **kwargs):
+        # type: (Anno, bool, **Any) -> VMeta
+        assert isinstance(anno.typ, Table), \
+            "Expected Table, got %s" % anno.typ
+        elements = OrderedDict()
+        for k, ct in anno.typ.call_types.items():
+            subclass = cls.lookup_annotype_converter(ct)
+            elements[k] = subclass.from_annotype(ct, writeable)
+        return super(TableMeta, cls).from_annotype(
+            anno, writeable, elements=elements)
+
 
 # Types used when deserializing to the class
 with Anno("Meta objects that are used to describe the elements in the map"):
-    Elements = Mapping[str_, VMeta]
+    AElements = Mapping[str_, VMeta]
 with Anno("The required elements in the map"):
-    Required = Array[str_]
+    ARequired = Array[str_]
 
 # A more permissive union to allow a wider range of set_* args
-URequired = Union[Required, Sequence[str_], str_]
+URequired = Union[ARequired, Sequence[str_], str_]
 
 
 @Serializable.register_subclass("malcolm:core/MapMeta:1.0")
@@ -545,19 +708,25 @@ class MapMeta(Meta):
     __slots__ = ["elements", "required"]
 
     def __init__(self,
-                 elements=None,  # type: Optional[Elements]
-                 description="",  # type: Description
+                 elements=None,  # type: Optional[AElements]
+                 description="",  # type: AMetaDescription
                  tags=(),  # type: UTags
-                 writeable=False,   # type: Writeable
-                 label="",  # type: Label
+                 writeable=False,   # type: AWriteable
+                 label="",  # type: ALabel
                  required=()  # type: URequired
                  ):
-        super(MapMeta, self).__init__(description, tags, writeable, label)
         self.elements = self.set_elements(elements if elements else {})
         self.required = self.set_required(required)
+        super(MapMeta, self).__init__(description, tags, writeable, label)
+
+    def set_writeable(self, writeable):
+        # type: (AWriteable) -> AWriteable
+        for v in self.elements.values():
+            v.set_writeable(writeable)
+        return super(MapMeta, self).set_writeable(writeable)
 
     def set_elements(self, elements):
-        # type: (Elements) -> Elements
+        # type: (AElements) -> AElements
         deserialized = OrderedDict()
         for k, v in elements.items():
             if k != "typeid":
@@ -568,20 +737,20 @@ class MapMeta(Meta):
         return self.set_endpoint_data("elements", deserialized)
 
     def set_required(self, required):
-        # type: (Required) -> Required
+        # type: (ARequired) -> ARequired
         for r in required:
             assert r in self.elements, \
                 "Expected one of %r, got %r" % (list(self.elements), r)
-        return self.set_endpoint_data("required", Required(required))
+        return self.set_endpoint_data("required", ARequired(required))
 
 
 # Types used when deserializing to the class
 with Anno("Meta for describing the arguments that should be passed"):
-    Takes = MapMeta
+    ATakes = MapMeta
 with Anno("The required elements in the map"):
-    Defaults = Mapping[str_, Any]
+    ADefaults = Mapping[str_, Any]
 with Anno("Meta for describing the arguments that will be returned"):
-    Returns = MapMeta
+    AReturns = MapMeta
 
 
 @Serializable.register_subclass("malcolm:core/Method:1.0")
@@ -590,43 +759,48 @@ class MethodModel(Meta):
     __slots__ = ["takes", "returns", "defaults"]
 
     def __init__(self,
-                 takes=None,  # type: Optional[Takes]
-                 defaults=None,  # type: Optional[Defaults]
-                 description="",  # type: Description
+                 takes=None,  # type: Optional[ATakes]
+                 defaults=None,  # type: Optional[ADefaults]
+                 description="",  # type: AMetaDescription
                  tags=(),  # type: UTags
-                 writeable=False,  # type: Writeable
-                 label="",  # type: Label
-                 returns=None,  # type: Optional[Returns]
+                 writeable=False,  # type: AWriteable
+                 label="",  # type: ALabel
+                 returns=None,  # type: Optional[AReturns]
                  ):
-        super(MethodModel, self).__init__(description, tags, writeable, label)
         self.takes = self.set_takes(takes if takes else MapMeta())
         self.returns = self.set_returns(returns if returns else MapMeta())
         self.defaults = self.set_defaults(defaults if defaults else {})
+        super(MethodModel, self).__init__(description, tags, writeable, label)
+
+    def set_writeable(self, writeable):
+        # type: (AWriteable) -> AWriteable
+        self.takes.set_writeable(writeable)
+        return super(MethodModel, self).set_writeable(writeable)
 
     def set_takes(self, takes):
-        # type: (Takes) -> Takes
+        # type: (ATakes) -> ATakes
         takes = deserialize_object(takes, MapMeta)
         return self.set_endpoint_data("takes", takes)
 
     def set_defaults(self, defaults):
-        # type: (Defaults) -> Defaults
+        # type: (ADefaults) -> ADefaults
         for k, v in defaults.items():
             if k != "typeid":
                 defaults[k] = self.takes.elements[k].validate(v)
         return self.set_endpoint_data("defaults", defaults)
 
     def set_returns(self, returns):
-        # type: (Returns) -> Returns
+        # type: (AReturns) -> AReturns
         returns = deserialize_object(returns, MapMeta)
         return self.set_endpoint_data("returns", returns)
 
 
 # Types used when deserializing to the class
 with Anno("The list of fields currently in the Block"):
-    Fields = Array[str]
+    AFields = Array[str]
 
 # A more permissive union to allow a wider range of set_* args
-UFields = Union[Fields, Sequence[str], str]
+UFields = Union[AFields, Sequence[str], str]
 
 
 @Serializable.register_subclass("malcolm:core/BlockMeta:1.0")
@@ -634,10 +808,10 @@ class BlockMeta(Meta):
     __slots__ = ["fields"]
 
     def __init__(self,
-                 description="",  # type: Description
+                 description="",  # type: AMetaDescription
                  tags=(),  # type: UTags
-                 writeable=False,  # type: Writeable
-                 label="",  # type: Label
+                 writeable=False,  # type: AWriteable
+                 label="",  # type: ALabel
                  fields=(),  # type: UFields
                  ):
         # type: (...) -> None
@@ -645,8 +819,8 @@ class BlockMeta(Meta):
         self.fields = self.set_fields(fields)
 
     def set_fields(self, fields):
-        # type: (UFields) -> Fields
-        return self.set_endpoint_data("fields", Fields(fields))
+        # type: (UFields) -> AFields
+        return self.set_endpoint_data("fields", AFields(fields))
 
 
 @Serializable.register_subclass("malcolm:core/Block:1.0")

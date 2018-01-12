@@ -26,12 +26,12 @@ class RunnableStates(ManagerStates):
         # Set transitions for normal states
         self.set_allowed(self.READY, self.CONFIGURING)
         self.set_allowed(self.CONFIGURING, self.ARMED)
-        self.set_allowed(self.ARMED, [
-            self.RUNNING, self.SEEKING, self.RESETTING])
-        self.set_allowed(self.RUNNING, [self.POSTRUN, self.SEEKING])
-        self.set_allowed(self.POSTRUN, [self.READY, self.ARMED])
-        self.set_allowed(self.SEEKING, [self.ARMED, self.PAUSED])
-        self.set_allowed(self.PAUSED, [self.SEEKING, self.RUNNING])
+        self.set_allowed(self.ARMED,
+                         self.RUNNING, self.SEEKING, self.RESETTING)
+        self.set_allowed(self.RUNNING, self.POSTRUN, self.SEEKING)
+        self.set_allowed(self.POSTRUN, self.READY, self.ARMED)
+        self.set_allowed(self.SEEKING, self.ARMED, self.PAUSED)
+        self.set_allowed(self.PAUSED, self.SEEKING, self.RUNNING)
 
         # Add Abort to all normal states
         normal_states = [
@@ -261,7 +261,7 @@ class RunnableController(ManagerController):
             self.params.axesToMove)
         yield "axesToMove", self.axes_to_move, self.set_axes_to_move
 
-    def do_init(self):
+    def start_init(self):
         self.part_contexts = {}
         # Populate configure args from any child method hooked to Configure.
         # If we have runnablechildparts, they will call update_configure_args
@@ -271,7 +271,7 @@ class RunnableController(ManagerController):
         for part, func_name in self._hooked_func_names[self.Configure].items():
             if func_name in part.method_models:
                 self.update_configure_args(part, part.method_models[func_name])
-        super(RunnableController, self).do_init()
+        super(RunnableController, self).start_init()
 
     def do_reset(self):
         super(RunnableController, self).do_reset()

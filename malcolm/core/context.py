@@ -1,6 +1,8 @@
 import weakref
 import time
 
+from annotypes import TYPE_CHECKING
+
 from malcolm.compat import maybe_import_cothread
 from .future import Future
 from .request import Put, Post, Subscribe, Unsubscribe
@@ -8,18 +10,25 @@ from .response import Update, Return, Error
 from .queue import Queue
 from .errors import TimeoutError, AbortedError, ResponseError, BadValueError
 
+if TYPE_CHECKING:
+    from typing import Callable, Any, List
+    from .process import Process
+
 
 class When(object):
     def __init__(self, condition_satisfied):
+        # type: (Callable[[Any], bool]) -> None
         self.condition_satisfied = condition_satisfied
-        self.future = None
-        self.context = None
+        self.future = None  # type: Future
+        self.context = None  # type: Context
 
     def set_future_context(self, future, context):
+        # type: (Future, Context) -> None
         self.future = future
         self.context = context
 
     def check_condition(self, value):
+        # type: (Any) -> None
         if self.future:
             try:
                 satisfied = self.condition_satisfied(value)
@@ -39,10 +48,7 @@ class Context(object):
     STOP = object()
 
     def __init__(self, process):
-        """
-        Args:
-            process (Process): The process to use to find child Block
-        """
+        # type: (Process) -> None
         self._q = self.make_queue()
         # Func to call just before requests are dispatched
         self._notify_dispatch_request = None
@@ -57,10 +63,12 @@ class Context(object):
         self._cothread = maybe_import_cothread()
 
     def make_queue(self):
+        # type: () -> Queue
         return Queue()
 
     @property
     def mri_list(self):
+        # type: () -> List[str]
         return self._process.mri_list
 
     def get_controller(self, mri):
@@ -344,9 +352,10 @@ class Context(object):
             self._pending_unsubscribes.pop(future, None)
             result = response.value
             # Deserialize if this was a method
-            if isinstance(request, Post) and result is not None:
-                controller = self.get_controller(request.path[0])
-                result = controller.validate_result(request.path[1], result)
+            #if isinstance(request, Post) and result is not None:
+            #    controller = self.get_controller(request.path[0])
+            #    result = controller.deserialize_method_return(
+            #        request.path[1], result)
             future.set_result(result)
             try:
                 futures.remove(future)

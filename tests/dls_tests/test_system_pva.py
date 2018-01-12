@@ -13,7 +13,7 @@ import unittest
 def p1(q):
     import logging
     logging.basicConfig(level=logging.DEBUG)
-    from malcolm.core import Process, call_with_params, Context
+    from malcolm.core import call_with_params, Context
     from malcolm.blocks.demo import hello_block, counter_block
     from malcolm.blocks.pva import pva_server_block
     process = Process("proc")
@@ -83,6 +83,7 @@ class TestSystemPVACommsServerAndClient(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    from malcolm.core import Queue
+    from malcolm.core import Queue, Process
+
     q = Queue()
     p1(q)

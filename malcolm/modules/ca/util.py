@@ -1,13 +1,13 @@
 import threading
 import time
 
-from annotypes import Anno, TYPE_CHECKING, add_call_types
+from annotypes import Anno, TYPE_CHECKING
 
-from malcolm.core import Queue, VMeta, Alarm, AlarmStatus, TimeStamp, \
-    Loggable, Registrar
 from malcolm.compat import maybe_import_cothread
+from malcolm.core import Queue, VMeta, Alarm, AlarmStatus, TimeStamp, \
+    Loggable
 from malcolm.modules.builtin.util import set_tags, Name, Description, AWidget, \
-    Group, Config, InPort
+    AGroup, AConfig, AInPort
 from malcolm.modules.builtin.controllers import InitHook, ResetHook, DisableHook
 
 if TYPE_CHECKING:
@@ -35,10 +35,10 @@ class CAAttribute(Loggable):
                  rbvSuff="",  # type: RbvSuff
                  minDelta=0.05,  # type: MinDelta
                  timeout=5.0,  # type: Timeout
-                 inport=None,  # type: InPort
+                 inport=None,  # type: AInPort
                  widget=None,  # type: AWidget
-                 group=None,  # type: Group
-                 config=True,  # type: Config
+                 group=None,  # type: AGroup
+                 config=True,  # type: AConfig
                  on_connect=None,  # type: Callable
                  ):
         # type: (...) -> None
@@ -64,7 +64,6 @@ class CAAttribute(Loggable):
         self._update_after = 0
         super(CAAttribute, self).__init__(pv=pv, rbv=rbv)
 
-    @add_call_types
     def reconnect(self):
         # release old monitor
         self.disconnect()
@@ -86,7 +85,6 @@ class CAAttribute(Loggable):
             format=self.catools.FORMAT_TIME, datatype=self.datatype,
             notify_disconnect=True)
 
-    @add_call_types
     def disconnect(self):
         if self.monitor is not None:
             self.monitor.close()
@@ -139,10 +137,12 @@ class CAAttribute(Loggable):
             value = self.attr.meta.validate(value)
             self.attr.set_value_alarm_ts(value, alarm, ts)
 
-    def attach_hooks(self, registrar):
-        # type: (Registrar) -> None
-        registrar.attach_to_hook(self.disconnect, DisableHook)
-        registrar.attach_to_hook(self.reconnect, InitHook, ResetHook)
+    def run_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, DisableHook):
+            hook.run(self.disconnect)
+        elif isinstance(hook, (InitHook, ResetHook)):
+            hook.run(self.reconnect)
 
 
 def _import_cothread(q):

@@ -1,7 +1,12 @@
+from annotypes import TYPE_CHECKING
+
 from malcolm.compat import OrderedDict
 from .context import Context
-from .controller import Controller
-from .models import BlockModel, MethodModel, AttributeModel, Model
+from .models import BlockModel, MethodModel, AttributeModel
+from malcolm.core.models import Model
+
+if TYPE_CHECKING:
+    from .controller import Controller
 
 
 class View(object):

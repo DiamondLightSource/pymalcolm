@@ -1,9 +1,9 @@
 import unittest
 from mock import MagicMock
 
-from malcolm.core.hook import Hook, get_hook_decorated
+from malcolm.core.hook import get_hook_decorated
 from malcolm.core.vmetas import StringMeta
-from malcolm.core import method_returns, REQUIRED
+from malcolm.core import method_returns, REQUIRED, Hook
 
 
 class DummyController(object):

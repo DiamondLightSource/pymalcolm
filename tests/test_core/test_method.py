@@ -1,9 +1,7 @@
 import unittest
 
 from malcolm.core.controller import Controller
-from malcolm.core.process import Process
-from malcolm.core.hook import Hook
-from malcolm.core.part import Part
+from malcolm.core import Part, Process, Hook
 from malcolm.core.context import Context
 from malcolm.core.methodmodel import OPTIONAL, REQUIRED, method_takes, \
     method_returns

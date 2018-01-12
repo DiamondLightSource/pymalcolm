@@ -1,4 +1,4 @@
-from malcolm.core.serializable import Serializable
+from .serializable import Serializable
 
 
 @Serializable.register_subclass("malcolm:core/Table:1.0")
@@ -24,7 +24,3 @@ class Table(Serializable):
             for key, data in zip(cls.call_types, row):
                 attrs[key].append(data)
         return cls(**attrs)
-
-    @classmethod
-    def to_meta(cls):
-        

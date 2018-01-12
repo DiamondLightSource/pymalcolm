@@ -181,7 +181,8 @@ def make_process():
         locals_d["profiler"] = Profiler(args.profiledir)
         #locals_d["profiler"].start()
 
-    from malcolm.core import Process, call_with_params, Context, Queue
+    from malcolm.core import call_with_params, Context, Queue
+    from malcolm.core import Process
     from malcolm.modules.builtin.blocks import proxy_block
     from malcolm.yamlutil import make_include_creator
 

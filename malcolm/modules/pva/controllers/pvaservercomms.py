@@ -14,7 +14,7 @@ class PvaServerComms(ServerComms):
     _published = ()
     _endpoints = None
 
-    def do_init(self):
+    def start_init(self):
         self._start_pva_server()
 
     @Process.Publish

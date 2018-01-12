@@ -1,7 +1,7 @@
-from malcolm.core import Part, Registrar
+from malcolm.core import Part, PartRegistrar
 from malcolm.core.vmetas import NumberMeta
 from ..util import CaToolsHelper, CAAttribute, Name, Description, Pv, Rbv, \
-    RbvSuff, MinDelta, Timeout, InPort, AWidget, Group, Config
+    RbvSuff, MinDelta, Timeout, AInPort, AWidget, AGroup, AConfig
 
 
 class CADoublePart(Part):
@@ -14,10 +14,10 @@ class CADoublePart(Part):
                  rbvSuff="",  # type: RbvSuff
                  minDelta=0.05,  # type: MinDelta
                  timeout=5.0,  # type: Timeout
-                 inport=None,  # type: InPort
+                 inport=None,  # type: AInPort
                  widget=None,  # type: AWidget
-                 group=None,  # type: Group
-                 config=True,  # type: Config
+                 group=None,  # type: AGroup
+                 config=True,  # type: AConfig
                  ):
         # type: (...) -> None
         super(CADoublePart, self).__init__(name)
@@ -27,6 +27,6 @@ class CADoublePart(Part):
             pv, rbv, rbvSuff, minDelta, timeout, inport, widget, group, config)
 
     def setup(self, registrar):
-        # type: (Registrar) -> None
+        # type: (PartRegistrar) -> None
         self.ca.attach_hooks(registrar)
         registrar.add_attribute_model(self.name, self.caa.attr, self.caa.caput)

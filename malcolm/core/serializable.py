@@ -9,7 +9,7 @@ from enum import Enum
 from malcolm.compat import OrderedDict
 
 if TYPE_CHECKING:
-    from typing import Type
+    from typing import Type, Union, Sequence
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -98,7 +98,7 @@ T = TypeVar("T")
 
 
 def deserialize_object(ob, type_check=None):
-    # type: (Any, Type[T]) -> T
+    # type: (Any, Union[Type[T], Sequence[Type[T]]]) -> T
     if isinstance(ob, dict):
         subclass = Serializable.lookup_subclass(ob)
         ob = subclass.from_dict(ob)
@@ -141,7 +141,8 @@ class Serializable(WithCallTypes):
         """
 
         d = OrderedDict()
-        d["typeid"] = self.typeid
+        if self.typeid:
+            d["typeid"] = self.typeid
 
         for k in self.call_types:
             # check_camel_case(k)

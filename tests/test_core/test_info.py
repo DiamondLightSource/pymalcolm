@@ -1,7 +1,7 @@
 import unittest
 
 from malcolm.compat import OrderedDict
-from malcolm.core.info import Info
+from malcolm.core import Info
 
 
 class MyInfo(Info):

@@ -159,10 +159,10 @@ class ManagerController(StatefulController):
         self.modified = modified_meta.create_attribute_model()
         yield "modified", self.modified, None
 
-    def do_init(self):
+    def start_init(self):
         # This will do an initial poll of the exportable parts,
         # so don't update here
-        super(ManagerController, self).do_init()
+        super(ManagerController, self).start_init()
         # List the configDir and add to choices
         self._set_layout_names()
         # This will trigger all parts to report their layout, making sure
@@ -292,9 +292,9 @@ class ManagerController(StatefulController):
         for name, child, writeable_func in self._current_part_fields:
             self.add_block_field(name, child, writeable_func)
 
-    def initial_part_fields(self):
+    def add_initial_part_fields(self):
         # Don't return any fields to start with, these will be added on load()
-        return iter(())
+        pass
 
     def _get_current_part_fields(self):
         # Clear out the current subscriptions

@@ -1,7 +1,7 @@
 from annotypes import Anno
 
 from malcolm.modules.builtin.controllers import InitHook, ResetHook
-from malcolm.core import Part, Registrar
+from malcolm.core import Part, PartRegistrar
 from ..util import CaToolsHelper, Name, Description, Pv
 
 
@@ -42,7 +42,7 @@ class CAActionPart(Part):
         self.wait = wait
 
     def setup(self, registrar):
-        # type: (Registrar) -> None
+        # type: (PartRegistrar) -> None
         self.method = registrar.add_method_model(
             self.caput, self.name, self.description)
         registrar.attach_to_hook(self.connect_pvs, InitHook, ResetHook)

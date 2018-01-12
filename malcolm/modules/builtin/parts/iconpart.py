@@ -1,6 +1,6 @@
 from annotypes import Anno
 
-from malcolm.core import Part, Registrar, Widget
+from malcolm.core import Part, PartRegistrar, Widget
 from malcolm.core.vmetas import StringMeta
 from ..util import set_tags
 
@@ -24,5 +24,5 @@ class IconPart(Part):
         self.attr = meta.create_attribute_model(svg_text)
 
     def setup(self, registrar):
-        # type: (Registrar) -> None
+        # type: (PartRegistrar) -> None
         registrar.add_attribute_model(self.name, self.attr)

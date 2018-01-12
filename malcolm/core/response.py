@@ -1,17 +1,16 @@
 from annotypes import Anno, Any
 
-from malcolm.compat import str_
-
 from .serializable import Serializable, serialize_object
 
+
 with Anno("ID that the Request was sent with"):
-    Id = int
+    AId = int
 with Anno("Return value of the request"):
-    Value = Any
+    AValue = Any
 with Anno("Error message"):
-    Message = str_
+    AMessage = str
 with Anno("List of [[path], value] pairs for changed values"):
-    Changes = Any
+    AChanges = Any
 
 
 class Response(Serializable):
@@ -20,7 +19,7 @@ class Response(Serializable):
     __slots__ = ["id"]
 
     def __init__(self, id=0):
-        # type: (Id) -> None
+        # type: (AId) -> None
         self.id = id
 
 
@@ -31,7 +30,7 @@ class Return(Response):
     __slots__ = ["value"]
 
     def __init__(self, id=0, value=None):
-        # type: (Id, Value) -> None
+        # type: (AId, AValue) -> None
         super(Return, self).__init__(id)
         # Make sure it's serialized
         self.value = serialize_object(value)
@@ -44,7 +43,7 @@ class Error(Response):
     __slots__ = ["message"]
 
     def __init__(self, id=0, message=""):
-        # type: (Id, Message) -> None
+        # type: (AId, AMessage) -> None
         super(Error, self).__init__(id)
         self.message = message
 
@@ -56,7 +55,7 @@ class Update(Response):
     __slots__ = ["value"]
 
     def __init__(self, id=0, value=None):
-        # type: (Id, Value) -> None
+        # type: (AId, AValue) -> None
         super(Update, self).__init__(id)
         # Should already be serialized
         self.value = value
@@ -69,7 +68,7 @@ class Delta(Response):
     __slots__ = ["changes"]
 
     def __init__(self, id=0, changes=None):
-        # type: (Id, Changes) -> None
+        # type: (AId, AChanges) -> None
         super(Delta, self).__init__(id)
         # Should already be serialized"""
         self.changes = changes

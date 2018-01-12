@@ -1,7 +1,6 @@
 from annotypes import Anno
 
-from malcolm.core import Part, Registrar, Widget, TitleChanged
-from malcolm.core.vmetas import StringMeta
+from malcolm.core import Part, PartRegistrar, Widget, TitleInfo, StringMeta
 from ..util import set_tags
 
 
@@ -21,11 +20,11 @@ class TitlePart(Part):
         self.initial_value = value
 
     def setup(self, registrar):
-        # type: (Registrar) -> None
+        # type: (PartRegistrar) -> None
         self.registrar = registrar
         registrar.add_attribute_model(self.name, self.attr, self.set_label)
         self.set_label(self.initial_value)
 
     def set_label(self, value):
         self.attr.set_value(value)
-        self.registrar.report_changed(TitleChanged, value)
+        self.registrar.report_changed(TitleInfo(value))

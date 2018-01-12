@@ -1,6 +1,18 @@
+from contextlib import contextmanager
+
 from .serializable import serialize_object
 from .loggable import Loggable
 from .request import Subscribe, Unsubscribe
+
+
+class DummyNotifier(object):
+    @property
+    @contextmanager
+    def changes_squashed(self):
+        yield
+
+    def add_squashed_change(self, path, data=None):
+        pass
 
 
 class Notifier(Loggable):
