@@ -13,8 +13,8 @@ class PvaClientComms(ClientComms):
     _monitors = None
     _send_queue = None
 
-    def start_init(self):
-        super(PvaClientComms, self).start_init()
+    def do_init(self):
+        super(PvaClientComms, self).do_init()
         self._monitors = {}
         self._send_queue = Queue()
 

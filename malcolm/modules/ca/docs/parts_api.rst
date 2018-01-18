@@ -9,7 +9,7 @@ parts
     Commonly a group of pvs are used to represent a method call like this::
 
         caput(pv, wait=True)
-        assert caget(statusPv) == goodStatus
+        assert caget(status_pv) == good_status
 
     This `Part` wraps up this design pattern as a Malcolm method
 

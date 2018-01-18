@@ -5,41 +5,46 @@ from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.compat import maybe_import_cothread
 from malcolm.core import Queue, VMeta, Alarm, AlarmStatus, TimeStamp, \
-    Loggable
-from malcolm.modules.builtin.util import set_tags, Name, Description, AWidget, \
-    AGroup, AConfig, AInPort
-from malcolm.modules.builtin.controllers import InitHook, ResetHook, DisableHook
+    Loggable, APartName, AMetaDescription, Hook
+from malcolm.modules.builtin.util import set_tags, AWidget, AGroup, AConfig, \
+    AInPort
+from malcolm.modules.builtin.hooks import InitHook, ResetHook, DisableHook
 
 if TYPE_CHECKING:
     from typing import Callable, Any
 
 
+# Store them here for re-export
+APartName = APartName
+AMetaDescription = AMetaDescription
+
+
 with Anno("Full pv of demand and default for rbv"):
-    Pv = str
+    APv = str
 with Anno("Override for rbv"):
-    Rbv = str
+    ARbv = str
 with Anno("Set rbv to pv + rbv_suff"):
-    RbvSuff = str
+    ARbvSuff = str
 with Anno("Minimum time between attribute updates in seconds"):
-    MinDelta = float
+    AMinDelta = float
 with Anno("Max time to wait for puts to complete, <0 is forever"):
-    Timeout = float
+    ATimeout = float
 
 
 class CAAttribute(Loggable):
     def __init__(self,
                  meta,  # type: VMeta
                  datatype,  # type: Any
-                 pv="",  # type: Pv
-                 rbv="",  # type: Rbv
-                 rbvSuff="",  # type: RbvSuff
-                 minDelta=0.05,  # type: MinDelta
-                 timeout=5.0,  # type: Timeout
+                 pv="",  # type: APv
+                 rbv="",  # type: ARbv
+                 rbv_suff="",  # type: ARbvSuff
+                 min_delta=0.05,  # type: AMinDelta
+                 timeout=5.0,  # type: ATimeout
                  inport=None,  # type: AInPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=True,  # type: AConfig
-                 on_connect=None,  # type: Callable
+                 on_connect=None,  # type: Callable[[Any], None]
                  ):
         # type: (...) -> None
         writeable = bool(pv)
@@ -47,14 +52,14 @@ class CAAttribute(Loggable):
         if not rbv and not pv:
             raise ValueError('Must pass pv or rbv')
         if not rbv:
-            if rbvSuff:
-                rbv = pv + rbvSuff
+            if rbv_suff:
+                rbv = pv + rbv_suff
             else:
                 rbv = pv
         self.pv = pv
         self.rbv = rbv
         self.datatype = datatype
-        self.minDelta = minDelta
+        self.min_delta = min_delta
         self.timeout = timeout
         self.on_connect = on_connect
         self.attr = meta.create_attribute_model()
@@ -110,16 +115,16 @@ class CAAttribute(Loggable):
         delta = now - self._update_after
         self._update_value(value)
         # See how long to sleep for to make sure we don't get more than one
-        # update at < minDelta interval
-        if delta > self.minDelta:
-            # If we were more than minDelta late then reset next update time
-            self._update_after = now + self.minDelta
+        # update at < min_delta interval
+        if delta > self.min_delta:
+            # If we were more than min_delta late then reset next update time
+            self._update_after = now + self.min_delta
         elif delta < 0:
             # If delta is less than zero sleep for a bit
             self.catools.cothread.Sleep(-delta)
         else:
             # If we were within the delta window just increment next update
-            self._update_after += self.minDelta
+            self._update_after += self.min_delta
 
     def _update_value(self, value):
         if not value.ok:
@@ -137,7 +142,7 @@ class CAAttribute(Loggable):
             value = self.attr.meta.validate(value)
             self.attr.set_value_alarm_ts(value, alarm, ts)
 
-    def run_hook(self, hook):
+    def on_hook(self, hook):
         # type: (Hook) -> None
         if isinstance(hook, DisableHook):
             hook.run(self.disconnect)

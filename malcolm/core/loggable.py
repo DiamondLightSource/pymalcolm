@@ -15,11 +15,9 @@ class FieldFilter(object):
 
 class Loggable(object):
     """Utility class that provides a named logger for a class instance"""
+    log = None  # type: logging.Logger
 
-    def __init__(self, **fields):
-        self.log = self.set_logger_extra(**fields)
-
-    def set_logger_extra(self, **fields):
+    def set_logger(self, **fields):
         """Change the name of the logger that log.* should call
 
         Args:

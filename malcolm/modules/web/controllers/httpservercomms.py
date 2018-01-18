@@ -40,8 +40,8 @@ class HTTPServerComms(ServerComms):
         published (list): [mri] list of published Controller mris
     """
 
-    def start_init(self):
-        super(HTTPServerComms, self).start_init()
+    def do_init(self):
+        super(HTTPServerComms, self).do_init()
         self._loop = IOLoop()
         part_info = self.run_hooks(
             self.ReportHandlers, self.create_part_contexts(), self._loop)

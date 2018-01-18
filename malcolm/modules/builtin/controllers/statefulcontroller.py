@@ -1,43 +1,18 @@
 from annotypes import TYPE_CHECKING
 
+from malcolm.compat import OrderedDict
 from malcolm.core import Alarm, MethodModel, AttributeModel, ProcessStartHook, \
-    ProcessStopHook, StateSet, ChoiceMeta, Hook, Queue, Widget
+    ProcessStopHook, ChoiceMeta, Hook, Widget, Context, Part, Request
+from malcolm.modules.builtin.util import StatefulStates
 from .basiccontroller import BasicController, AMri, ADescription, AUseCothread
 from ..hooks import InitHook, ResetHook, DisableHook, HaltHook
+from ..infos import HealthInfo, NotifyDispatchInfo
 
 if TYPE_CHECKING:
-    from typing import Union, List, Tuple, Dict
+    from typing import Union, Dict, Callable
     Field = Union[AttributeModel, MethodModel]
     ChildrenWriteable = Dict[str, Dict[Field, bool]]
-
-
-class StatefulStates(StateSet):
-    """The most basic Malcolm state machine"""
-
-    RESETTING = "Resetting"
-    DISABLED = "Disabled"
-    DISABLING = "Disabling"
-    FAULT = "Fault"
-    READY = "Ready"
-
-    def __init__(self):
-        super(StatefulStates, self).__init__()
-        self.create_block_transitions()
-        self.create_error_disable_transitions()
-
-    def create_block_transitions(self):
-        self.set_allowed(self.RESETTING, self.READY)
-
-    def create_error_disable_transitions(self):
-        block_states = self.possible_states[:]
-
-        # Set transitions for standard states
-        for state in block_states:
-            self.set_allowed(state, self.FAULT)
-            self.set_allowed(state, self.DISABLING)
-        self.set_allowed(self.FAULT, self.RESETTING, self.DISABLING)
-        self.set_allowed(self.DISABLING, self.FAULT, self.DISABLED)
-        self.set_allowed(self.DISABLED, self.RESETTING)
+    NotifyDispatchCallbacks = Dict[object, Callable[[Request], None]]
 
 
 ss = StatefulStates
@@ -46,68 +21,67 @@ ss = StatefulStates
 class StatefulController(BasicController):
     """A controller that implements `StatefulStates`"""
     # The stateSet that this controller implements
-    stateSet = ss()
+    state_set = ss()
 
     def __init__(self, mri, description="", use_cothread=True):
         # type: (AMri, ADescription, AUseCothread) -> None
         super(StatefulController, self).__init__(mri, description, use_cothread)
         self._children_writeable = {}  # type: ChildrenWriteable
+        self._notify_dispatch_callbacks = {}  # type: NotifyDispatchCallbacks
         self.state = ChoiceMeta(
-            "StateMachine State of Block", self.stateSet.possible_states,
+            "StateMachine State of Block", self.state_set.possible_states,
             tags=[Widget.TEXTUPDATE.tag()]).create_attribute_model(ss.DISABLING)
         self.field_registry.add_attribute_model("state", self.state)
         self.field_registry.add_method_model(self.disable)
         self.set_writeable_in(self.field_registry.add_method_model(self.reset),
                               ss.DISABLED, ss.FAULT)
+        self.info_registry.add_reportable(
+            NotifyDispatchInfo, self.update_notify_dispatch)
         self.transition(ss.DISABLED)
 
     def set_writeable_in(self, field, *states):
         # Field has defined when it should be writeable, just check that
         # this is valid for this stateSet
         for state in states:
-            assert state in self.stateSet.possible_states, \
+            assert state in self.state_set.possible_states, \
                 "State %s is not one of the valid states %s" % \
-                (state, self.stateSet.possible_states)
-        for state in self.stateSet.possible_states:
+                (state, self.state_set.possible_states)
+        for state in self.state_set.possible_states:
             state_writeable = self._children_writeable.setdefault(state, {})
             state_writeable[field] = state in states
+
+    def create_part_contexts(self):
+        # type: () -> Dict[Part, Context]
+        part_contexts = OrderedDict()
+        for part in self.parts.values():
+            context = Context(self.process)
+            try:
+                context.set_notify_dispatch_request(
+                    self._notify_dispatch_callbacks[part])
+            except KeyError:
+                # The part doesn't want to be notified
+                pass
+            part_contexts[part] = context
+        return part_contexts
+
+    def update_notify_dispatch(self, reporter, info):
+        # type: (object, NotifyDispatchInfo) -> None
+        """The reporter wants to be notified by the context"""
+        self._notify_dispatch_callbacks[reporter] = info.notify_dispatch
 
     def on_hook(self, hook):
         # type: (Hook) -> None
         if isinstance(hook, ProcessStartHook):
-            # Don't spawn yet, as we might not have anything to do...
-            self.transition(ss.RESETTING)
-            hook_queue, hook_spawned = self.start_init()
-            if hook_spawned:
-                # Now we need to spawn to wait for parts to complete
-                hook.run(self._try_wait_init, hook_queue, hook_spawned)
-            else:
-                # No parts spawned, just transition to ready
-                self.transition(ss.READY)
+            hook.run(self.do_init)
         elif isinstance(hook, ProcessStopHook):
             hook.run(self.halt)
 
-    def start_init(self):
-        # type: () -> Tuple[Queue, List[Hook]]
-        hook_queue, hook_spawned = self.start_hooks(
-            InitHook(part, context)
-            for part, context in self.create_part_contexts().items()
-        )
-        return hook_queue, hook_spawned
+    def init(self):
+        self.try_stateful_function(ss.RESETTING, ss.READY, self.do_init)
 
-    def _try_wait_init(self, hook_queue, hook_spawned):
-        # type: (Queue, List[Hook]) -> None
-        try:
-            self.wait_init(hook_queue, hook_spawned)
-            self.transition(ss.READY)
-        except Exception as e:  # pylint:disable=broad-except
-            self.log.exception("Exception running do_init")
-            self.go_to_error_state(e)
-            raise
-
-    def wait_init(self, hook_queue, hook_spawned):
-        # type: (Queue, List[Hook]) -> None
-        self.wait_hooks(hook_queue, hook_spawned)
+    def do_init(self):
+        self.run_hooks(InitHook(part, context)
+                       for part, context in self.create_part_contexts().items())
 
     def halt(self):
         self.run_hooks(HaltHook(part, context)
@@ -141,7 +115,7 @@ class StatefulController(BasicController):
         """
         with self.changes_squashed:
             initial_state = self.state.value
-            if self.stateSet.transition_allowed(
+            if self.state_set.transition_allowed(
                     initial_state=initial_state, target_state=state):
                 self.log.debug(
                     "Transitioning from %s to %s", initial_state, state)
@@ -151,7 +125,7 @@ class StatefulController(BasicController):
                     alarm = Alarm.major(message)
                 else:
                     alarm = Alarm()
-                self.update_health(self, alarm)
+                self.update_health(self, HealthInfo(alarm))
                 self.state.set_value(state)
                 self.state.set_alarm(alarm)
                 for child, writeable in self._children_writeable[state].items():
@@ -183,15 +157,15 @@ class StatefulController(BasicController):
         if writeable_func is None:
             return
         # If we have already registered an explicit set then we are done
-        for state in self.stateSet.possible_states:
+        for state in self.state_set.possible_states:
             state_writeable = self._children_writeable.get(state, {})
             if child in state_writeable:
                 return
         # Field is writeable but has not defined when it should be
         # writeable, so calculate it from the possible states
         states = [
-            state for state in self.stateSet.possible_states
+            state for state in self.state_set.possible_states
             if state not in (ss.DISABLING, ss.DISABLED)]
-        for state in self.stateSet.possible_states:
+        for state in self.state_set.possible_states:
             state_writeable = self._children_writeable.setdefault(state, {})
             state_writeable[child] = state in states

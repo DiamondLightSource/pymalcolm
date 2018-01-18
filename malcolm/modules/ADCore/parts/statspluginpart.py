@@ -4,7 +4,7 @@ from xml.etree import cElementTree as ET
 from malcolm.compat import et_to_string, OrderedDict
 from malcolm.core import REQUIRED, method_takes, method_also_takes
 from malcolm.modules.ADCore.infos import CalculatedNDAttributeDatasetInfo
-from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.builtin.parts import ChildPart
 from malcolm.core.vmetas import ChoiceMeta, StringMeta
 from malcolm.modules.scanning.controllers import RunnableController
 
@@ -25,7 +25,7 @@ statistics["net"] = "NET"  # Sum of all elements not in background region
 
 @method_also_takes(
     "statistic", ChoiceMeta("Which statistic to capture", statistics), "sum")
-class StatsPluginPart(StatefulChildPart):
+class StatsPluginPart(ChildPart):
     """Part for controlling a `stats_plugin_block` in a Device"""
     # The NDAttributes file we write to say what to capture
     attributes_filename = None

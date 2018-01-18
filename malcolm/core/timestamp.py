@@ -22,6 +22,9 @@ class TimeStamp(Serializable):
 
     __slots__ = ["secondsPastEpoch", "nanoseconds", "userTag"]
 
+    # noinspection PyPep8Naming
+    # secondsPastEpoch and userTag are camelCase to maintain compatibility with
+    # EPICS normative types
     def __init__(self, secondsPastEpoch=None, nanoseconds=None, userTag=zero32):
         # type: (ASecondsPastEpoch, ANanoseconds, AUserTag) -> None
         # Set initial values

@@ -1,7 +1,7 @@
 import time
 import logging
 
-from annotypes import TYPE_CHECKING, Anno, WithCallTypes, Any
+from annotypes import TYPE_CHECKING, Anno, WithCallTypes, Any, Generic, TypeVar
 
 from malcolm.compat import OrderedDict
 from .errors import AbortedError
@@ -11,9 +11,7 @@ from .spawned import Spawned
 from .info import Info
 
 if TYPE_CHECKING:
-    from typing import Callable, List, Dict, Tuple, Optional
-    Hooked = Callable[..., Optional[List[Info]]]
-
+    from typing import Callable, List, Dict, Tuple
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -31,9 +29,12 @@ class Hookable(Loggable, WithCallTypes):
 with Anno("The child that the hook is being passed to"):
     AHookable = Hookable
 
+T = TypeVar("T")
 
-class Hook(WithCallTypes):
+
+class Hook(WithCallTypes, Generic[T]):
     """Something that children can register with to be called"""
+
     def __init__(self, child, **kwargs):
         # type: (AHookable, **Any) -> None
         self.child = child
@@ -56,17 +57,24 @@ class Hook(WithCallTypes):
         self._queue = queue
         return self
 
+    def prepare(self):
+        # type: () -> None
+        """Override this if we need to prepare before running"""
+        pass
+
     def run(self, func, *args):
-        # type: (Hooked) -> None
+        # type: (Callable[..., T], *Any) -> None
+        self.prepare()
         call_types = getattr(func, "call_types", {})  # type: Dict[str, Anno]
+        # TODO: should we check the return types here?
         kwargs = {k: self._kwargs[k] for k in call_types}
         self.spawned = self._spawn(self._run, func, args, kwargs)
 
     def _run(self, func, args, kwargs):
-        # type: (Hooked, Tuple, Dict[str, Any]) -> None
+        # type: (Callable[..., T], Tuple, Dict[str, Any]) -> None
         try:
-            infos = func(*args, **kwargs)
-            result = self.validate_infos(infos)
+            result = func(*args, **kwargs)
+            result = self.validate_return(result)
         except AbortedError as e:
             log.info("%s: %s has been aborted", self.child, func)
             result = e
@@ -77,19 +85,16 @@ class Hook(WithCallTypes):
         self._queue.put((self, result))
 
     def stop(self):
-        """Override this if we can stop"""
         # type: () -> None
+        """Override this if we can stop"""
         raise RuntimeError("%s cannot be stopped" % self.name)
 
-    def validate_infos(self, infos=None):
-        # type: (Optional[List[Info]]) -> List[Info]
-        """Override this to validate the return from the function"""
-        if infos is None:
-            return []
-        assert isinstance(infos, list), "Expected [Info], got %s" % (infos,)
-        for info in infos:
-            assert isinstance(info, Info), "Expected Info, got %s" % (infos,)
-        return infos
+    def validate_return(self, ret):
+        # type: (T) -> None
+        """Override this if the function is expected to return something to
+        to validate its value"""
+        assert not ret, "Expected no return, got %s" % (ret,)
+        return None
 
 
 def start_hooks(hooks):

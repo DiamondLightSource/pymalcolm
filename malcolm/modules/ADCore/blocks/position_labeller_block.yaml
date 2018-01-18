@@ -30,7 +30,7 @@
     name: xml
     description: Filename of xml or xml text
     pv: $(prefix):Filename
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
     config: False
 
@@ -38,7 +38,7 @@
     name: idStart
     description: First uid value to look for
     pv: $(prefix):IDStart
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CALongPart:

@@ -20,29 +20,29 @@
     name: imageMode
     description: Whether to take 1, many, or unlimited images at start
     pv: $(prefix):TriggerMode
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: combo
 
 - ca.parts.CALongPart:
     name: numImages
     description: Number of images to take if imageMode=Multiple
     pv: $(prefix):TriggerCount
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: postCount
     description: How many samples to take after each trigger
     pv: $(prefix):POSTCOUNT
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAActionPart:
     name: start
     description: Demand for starting acquisition
     pv: $(prefix):Capture
-    statusPv: $(prefix):Mode_RBV
-    goodStatus: Idle
+    status_pv: $(prefix):Mode_RBV
+    good_status: Idle
 
 - ca.parts.CAActionPart:
     name: stop

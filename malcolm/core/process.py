@@ -7,21 +7,22 @@ from malcolm.compat import OrderedDict, maybe_import_cothread, \
 from .context import Context
 from .controller import Controller
 from .errors import WrongThreadError
-from .hook import Hook, start_hooks
+from .hook import Hook, start_hooks, AHookable
 from .loggable import Loggable
 from .rlock import RLock
 from .spawned import Spawned
 from .views import Block
 
 if TYPE_CHECKING:
-    from typing import List
+    from typing import List, Callable, Dict, Any, Tuple, TypeVar
+    T = TypeVar("T")
 
 
 # Clear spawned handles after how many spawns?
 SPAWN_CLEAR_COUNT = 1000
 
 
-class ProcessStartHook(Hook):
+class ProcessStartHook(Hook[None]):
     """Called at start() to start all child controllers"""
 
 
@@ -29,14 +30,15 @@ with Anno("The list of currently published Controller mris"):
     APublished = Array[str]
 
 
-class ProcessPublishHook(Hook):
+class ProcessPublishHook(Hook[None]):
     """Called when a new block is added"""
-    def __init__(self, published):
+    def __init__(self, child, published):
+        # type: (AHookable, APublished) -> None
+        super(ProcessPublishHook, self).__init__(child)
         self.published = APublished(published)
-        super(ProcessPublishHook, self).__init__()
 
 
-class ProcessStopHook(Hook):
+class ProcessStopHook(Hook[None]):
     """Called at stop() to gracefully stop all child controllers"""
 
 
@@ -45,7 +47,7 @@ class Process(Loggable):
 
     def __init__(self, name):
         # type: (str) -> None
-        super(Process, self).__init__(process=name)
+        self.set_logger(name=name)
         self.name = name
         self._cothread = maybe_import_cothread()
         self._controllers = OrderedDict()  # mri -> Controller
@@ -74,7 +76,7 @@ class Process(Loggable):
         # but swallowing any errors
         if controller_list is None:
             controller_list = self._controllers.values()
-        hooks = [hook(**kwargs).set_spawn(controller.spawn)
+        hooks = [hook(controller, **kwargs).set_spawn(controller.spawn)
                  for controller in controller_list]
         hook_queue, hook_spawned = start_hooks(hooks)
         while hook_spawned:
@@ -106,6 +108,7 @@ class Process(Loggable):
             self._thread_pool = None
 
     def spawn(self, function, args, kwargs, use_cothread):
+        # type: (Callable[..., Any], Tuple, Dict, bool) -> Spawned
         """Runs the function in a worker thread, returning a Result object
 
         Args:
@@ -118,10 +121,12 @@ class Process(Loggable):
             Spawned: Something you can call wait(timeout) on to see when it's
                 finished executing
         """
-        return self._call_in_right_thread(
+        ret = self._call_in_right_thread(
             self._spawn, function, args, kwargs, use_cothread)
+        return ret
 
     def _call_in_right_thread(self, func, *args):
+        # type: (Callable[..., T], *Any) -> T
         try:
             return func(*args)
         except WrongThreadError:
@@ -129,6 +134,7 @@ class Process(Loggable):
             return self._cothread.CallbackResult(func, *args)
 
     def _spawn(self, function, args, kwargs, use_cothread):
+        # type: (Callable[..., Any], Tuple, Dict, bool) -> Spawned
         with self._lock:
             assert self.started, "Can't spawn before process started"
             if self._thread_pool is None:
@@ -144,10 +150,12 @@ class Process(Loggable):
         return spawned
 
     def _clear_spawn_list(self):
+        # type: () -> None
         self._spawn_count = 0
         self._spawned = [s for s in self._spawned if not s.ready()]
 
     def add_controller(self, mri, controller, publish=True, timeout=None):
+        # type: (str, Controller, bool, float) -> None
         """Add a controller to be hosted by this process
 
         Args:
@@ -162,6 +170,7 @@ class Process(Loggable):
             self._add_controller, mri, controller, publish, timeout)
 
     def _add_controller(self, mri, controller, publish, timeout):
+        # type: (str, Controller, bool, float) -> None
         with self._lock:
             assert mri not in self._controllers, \
                 "Controller already exists for %s" % mri
@@ -175,6 +184,7 @@ class Process(Loggable):
                            timeout=timeout)
 
     def remove_controller(self, mri, timeout=None):
+        # type: (str, float) -> None
         """Remove a controller that is hosted by this process
 
         Args:
@@ -185,6 +195,7 @@ class Process(Loggable):
         self._call_in_right_thread(self._remove_controller, mri, timeout)
 
     def _remove_controller(self, mri, timeout):
+        # type: (str, float) -> None
         with self._lock:
             controller = self._controllers.pop(mri)
             if mri in self._published:
@@ -201,21 +212,15 @@ class Process(Loggable):
 
     def get_controller(self, mri):
         # type: (str) -> Controller
-        """Get controller which can make views for this mri"""
+        """Get controller which can make Block views for this mri"""
         try:
             return self._controllers[mri]
         except KeyError:
             raise ValueError("No controller registered for mri %r" % mri)
 
     def block_view(self, mri):
-        """Get a Block view from a Controller
-
-        Args:
-            mri (str): The malcolm resource id for the block
-
-        Returns:
-            Block: the block view
-        """
+        # type: (str) -> Block
+        """Get a Block view from a Controller with given mri"""
         controller = self.get_controller(mri)
         context = Context(self)
         block = controller.make_view(context)

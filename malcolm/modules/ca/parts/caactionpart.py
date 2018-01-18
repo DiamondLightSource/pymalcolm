@@ -2,7 +2,7 @@ from annotypes import Anno
 
 from malcolm.modules.builtin.controllers import InitHook, ResetHook
 from malcolm.core import Part, PartRegistrar
-from ..util import CaToolsHelper, Name, Description, Pv
+from ..util import CaToolsHelper, APartName, AMetaDescription, APv
 
 
 with Anno("Status pv to see if successful"):
@@ -20,12 +20,12 @@ with Anno("Wait for caput callback?"):
 class CAActionPart(Part):
     """Group a number of PVs together that represent a method like acquire()"""
     def __init__(self,
-                 name,  # type: Name
-                 description,  # type: Description
-                 pv="",  # type: Pv
-                 statusPv="",  # type: StatusPv
-                 goodStatus="",  # type: GoodStatus
-                 messagePv="",  # type: MessagePv
+                 name,  # type: APartName
+                 description,  # type: AMetaDescription
+                 pv="",  # type: APv
+                 status_pv="",  # type: StatusPv
+                 good_status="",  # type: GoodStatus
+                 message_pv="",  # type: MessagePv
                  value=1,  # type: Value
                  wait=True,  # type: Wait
                  ):
@@ -35,9 +35,9 @@ class CAActionPart(Part):
         self.catools = CaToolsHelper.instance()
         self.description = description
         self.pv = pv
-        self.statusPv = statusPv
-        self.goodStatus = goodStatus
-        self.messagePv = messagePv
+        self.status_pv = status_pv
+        self.good_status = good_status
+        self.message_pv = message_pv
         self.value = value
         self.wait = wait
 
@@ -49,10 +49,10 @@ class CAActionPart(Part):
 
     def connect_pvs(self, _):
         pvs = [self.pv]
-        if self.statusPv:
-            pvs.append(self.statusPv)
-        if self.messagePv:
-            pvs.append(self.messagePv)
+        if self.status_pv:
+            pvs.append(self.status_pv)
+        if self.message_pv:
+            pvs.append(self.message_pv)
         ca_values = self.catools.caget(pvs)
         # check connection is ok
         for i, v in enumerate(ca_values):
@@ -63,16 +63,16 @@ class CAActionPart(Part):
         self.catools.caput(
             self.pv, self.value,
             wait=self.wait, timeout=None)
-        if self.statusPv:
+        if self.status_pv:
             status = self.catools.caget(
-                self.statusPv,
+                self.status_pv,
                 datatype=self.catools.DBR_STRING)
-            if self.messagePv:
+            if self.message_pv:
                 message = " %s:" % self.catools.caget(
-                    self.messagePv,
+                    self.message_pv,
                     datatype=self.catools.DBR_CHAR_STR)
             else:
                 message = ""
-            assert status == self.goodStatus, \
+            assert status == self.good_status, \
                 "Status %s:%s while performing 'caput %s %s'" % (
                     status, message, self.pv, self.value)

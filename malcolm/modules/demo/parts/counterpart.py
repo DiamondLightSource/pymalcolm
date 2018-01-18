@@ -1,18 +1,18 @@
-from malcolm.core import Part, AttributeModel, config_tag
-from malcolm.core.vmetas import NumberMeta
+from malcolm.core import Part, config_tag, NumberMeta
 
 
 class CounterPart(Part):
     """Defines a counter `Attribute` with zero and increment `Method` objects"""
-    counter = None  # type: AttributeModel
+    counter = None
     """Holds the current counter value"""
 
     def setup(self, registrar):
         # Create writeable attribute for current counter value
-        meta = NumberMeta("float64", "A counter", tags=[config_tag()])
-        attr = meta.create_attribute_model()
-        self.counter = registrar.add_attribute_model(
-            "counter", attr, attr.set_value)
+        self.counter = NumberMeta(
+            "float64", "The current value of the counter", tags=[config_tag()]
+        ).create_attribute_model()
+        registrar.add_attribute_model(
+            "counter", self.counter, self.counter.set_value)
         registrar.add_method_model(self.zero)
         registrar.add_method_model(self.increment)
 

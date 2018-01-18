@@ -3,8 +3,8 @@ from mock import Mock
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, Process
-from malcolm.modules.builtin.controllers import StatefulController, \
-    StatefulStates
+from malcolm.modules.builtin.controllers import StatefulController
+from malcolm.modules.builtin.util import StatefulStates
 
 
 class TestStates(unittest.TestCase):

@@ -21,7 +21,7 @@ class TestCAPart(unittest.TestCase):
                 name="attrname",
                 description="desc",
                 pv="pv",
-                rbvSuff="2"
+                rbv_suff="2"
             )
 
         class MyCAPart(CAPart):

@@ -1,7 +1,7 @@
 from .basiccontroller import BasicController
-from .statefulcontroller import StatefulController, StatefulStates, InitHook, \
-    ResetHook, DisableHook, HaltHook, AContext
-from .managercontroller import ManagerController, ManagerStates
+from .statefulcontroller import StatefulController
+from .managercontroller import ManagerController, AConfigDir, AInitialDesign, \
+    ADescription, AUseCothread, AUseGit
 from .clientcomms import ClientComms
 from .proxycontroller import ProxyController
 from .servercomms import ServerComms

@@ -7,7 +7,7 @@ import numpy as np
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import method_takes, REQUIRED, method_also_takes, TimeoutError
-from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.builtin.parts import ChildPart
 from malcolm.core.vmetas import NumberMeta, StringArrayMeta
 from malcolm.modules.pmac.infos import MotorInfo
 from malcolm.modules.scanning.controllers import RunnableController
@@ -58,7 +58,7 @@ configure_args = (
 @method_also_takes(
     "minTurnaround", NumberMeta(
         "float64", "Min time for any gaps between frames"), 0.0)
-class PmacTrajectoryPart(StatefulChildPart):
+class PmacTrajectoryPart(ChildPart):
     # Axis information stored from validate
     # {scannable_name: MotorInfo}
     axis_mapping = None
@@ -185,7 +185,7 @@ class PmacTrajectoryPart(StatefulChildPart):
         child.pointsScanned.subscribe_value(
             self.update_step, update_completed_steps, child)
         child.executeProfile()
-        # Now wait for up to 2*minDelta time to make sure any
+        # Now wait for up to 2*min_delta time to make sure any
         # update_completed_steps come in
         traj_end = len(self.completed_steps_lookup)
         try:

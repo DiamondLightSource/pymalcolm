@@ -1,19 +1,19 @@
-from malcolm.core import Part, PartRegistrar
-from malcolm.core.vmetas import ChoiceMeta
-from ..util import CaToolsHelper, CAAttribute, Name, Description, Pv, Rbv, \
-    RbvSuff, MinDelta, Timeout, AInPort, AWidget, AGroup, AConfig
+from malcolm.core import Part, PartRegistrar, ChoiceMeta, Hook
+from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
+    APv, ARbv, ARbvSuff, AMinDelta, ATimeout, AInPort, AWidget, AGroup, AConfig
 
 
 class CAChoicePart(Part):
     """Defines a choice `Attribute` that talks to a DBR_ENUM mbbo PV"""
+
     def __init__(self,
-                 name,  # type: Name
-                 description,  # type: Description
-                 pv="",  # type: Pv
-                 rbv="",  # type: Rbv
-                 rbvSuff="",  # type: RbvSuff
-                 minDelta=0.05,  # type: MinDelta
-                 timeout=5.0,  # type: Timeout
+                 name,  # type: APartName
+                 description,  # type: AMetaDescription
+                 pv="",  # type: APv
+                 rbv="",  # type: ARbv
+                 rbv_suff="",  # type: ARbvSuff
+                 min_delta=0.05,  # type: AMinDelta
+                 timeout=5.0,  # type: ATimeout
                  inport=None,  # type: AInPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
@@ -24,7 +24,7 @@ class CAChoicePart(Part):
         catools = CaToolsHelper.instance()
         self.meta = ChoiceMeta(description)
         self.caa = CAAttribute(
-            self.meta, catools.DBR_ENUM, pv, rbv, rbvSuff, minDelta, timeout,
+            self.meta, catools.DBR_ENUM, pv, rbv, rbv_suff, min_delta, timeout,
             inport, widget, group, config, self.on_connect)
 
     def on_connect(self, value):
@@ -40,5 +40,8 @@ class CAChoicePart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        self.ca.attach_hooks(registrar)
         registrar.add_attribute_model(self.name, self.caa.attr, self.caput)
+
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        self.caa.on_hook(hook)

@@ -27,16 +27,16 @@
     name: cs
     description: Co-ordinate system name that should be trajectory scanned
     pv: $(prefix):ProfileCsName
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: combo
 
 - ca.parts.CAActionPart:
     name: buildProfile
     description: command to build the profile once times and positions are set
     pv: $(prefix):ProfileBuild
-    statusPv: $(prefix):ProfileBuildStatus_RBV
-    messagePv: $(prefix):ProfileBuildMessage_RBV
-    goodStatus: Success
+    status_pv: $(prefix):ProfileBuildStatus_RBV
+    message_pv: $(prefix):ProfileBuildMessage_RBV
+    good_status: Success
 
 - ca.parts.CAStringPart:
     name: buildMessage
@@ -48,9 +48,9 @@
     name: executeProfile
     description: command to execute the profile once built
     pv: $(prefix):ProfileExecute
-    statusPv: $(prefix):ProfileExecuteStatus_RBV
-    messagePv: $(prefix):ProfileExecuteMessage_RBV
-    goodStatus: Success
+    status_pv: $(prefix):ProfileExecuteStatus_RBV
+    message_pv: $(prefix):ProfileExecuteMessage_RBV
+    good_status: Success
 
 - ca.parts.CAStringPart:
     name: executeMessage
@@ -62,9 +62,9 @@
     name: appendProfile
     description: command to append the profile once built
     pv: $(prefix):ProfileAppend
-    statusPv: $(prefix):ProfileAppendStatus_RBV
-    messagePv: $(prefix):ProfileAppendMessage_RBV
-    goodStatus: Success
+    status_pv: $(prefix):ProfileAppendStatus_RBV
+    message_pv: $(prefix):ProfileAppendMessage_RBV
+    good_status: Success
 
 - ca.parts.CAStringPart:
     name: appendMessage
@@ -114,14 +114,14 @@
     name: numPoints
     description: Number of points in scan
     pv: $(prefix):ProfileNumPoints
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CALongPart:
     name: pointsToBuild
     description: Number of points to build or append
     pv: $(prefix):ProfilePointsToBuild
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
@@ -141,14 +141,14 @@
     name: resolutionA
     description: Encoder resolution for CoordSys axis A
     pv: $(prefix):A:Resolution
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: offsetA
     description: User offset for CoordSys axis A
     pv: $(prefix):A:Offset
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
@@ -168,7 +168,7 @@
     name: resolutionB
     description: Encoder resolution for CoordSys axis B
     pv: $(prefix):B:Resolution
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
@@ -176,7 +176,7 @@
     description: User offset for CoordSys axis B
     pv: $(prefix):B:Offset
     widget: textinput
-    rbvSuff: _RBV
+    rbv_suff: _RBV
 
 - ca.parts.CAChoicePart:
     name: useC
@@ -195,14 +195,14 @@
     name: resolutionC
     description: Encoder resolution for CoordSys axis C
     pv: $(prefix):C:Resolution
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: offsetC
     description: User offset for CoordSys axis C
     pv: $(prefix):C:Offset
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
@@ -222,14 +222,14 @@
     name: resolutionU
     description: Encoder resolution for CoordSys axis U
     pv: $(prefix):U:Resolution
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: offsetU
     description: User offset for CoordSys axis U
     pv: $(prefix):U:Offset
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
@@ -249,14 +249,14 @@
     name: resolutionV
     description: Encoder resolution for CoordSys axis V
     pv: $(prefix):V:Resolution
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: offsetV
     description: User offset for CoordSys axis V
     pv: $(prefix):V:Offset
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
@@ -276,14 +276,14 @@
     name: resolutionW
     description: Encoder resolution for CoordSys axis W
     pv: $(prefix):W:Resolution
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: offsetW
     description: User offset for CoordSys axis W
     pv: $(prefix):W:Offset
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
@@ -303,14 +303,14 @@
     name: resolutionX
     description: Encoder resolution for CoordSys axis X
     pv: $(prefix):X:Resolution
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: offsetX
     description: User offset for CoordSys axis X
     pv: $(prefix):X:Offset
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
@@ -330,14 +330,14 @@
     name: resolutionY
     description: Encoder resolution for CoordSys axis Y
     pv: $(prefix):Y:Resolution
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: offsetY
     description: User offset for CoordSys axis Y
     pv: $(prefix):Y:Offset
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
@@ -357,12 +357,12 @@
     name: resolutionZ
     description: Encoder resolution for CoordSys axis Z
     pv: $(prefix):Z:Resolution
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: offsetZ
     description: User offset for CoordSys axis Z
     pv: $(prefix):Z:Offset
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput

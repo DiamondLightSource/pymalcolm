@@ -1,16 +1,11 @@
-from annotypes import Anno, TYPE_CHECKING, WithCallTypes
+from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
+from .queue import Queue
 from .hook import Hookable
 from .info import Info
-from .models import MethodModel, VMeta, MapMeta, AttributeModel
-
-with Anno("The name of the Part within the Controller"):
-    APartName = str
-
-if TYPE_CHECKING:
-    from typing import Callable, Optional
-
+from .spawned import Spawned
+from .models import MethodModel, AttributeModel
 
 if TYPE_CHECKING:
     from typing import Union, List, Tuple, Dict, Callable, Optional, Type
@@ -18,11 +13,21 @@ if TYPE_CHECKING:
     FieldDict = Dict[object, List[Tuple[str, Field, Callable]]]
     Callback = Callable[[object, Info], None]
 
+with Anno("The name of the Part within the Controller"):
+    APartName = str
+
 
 class FieldRegistry(object):
     def __init__(self):
         # type: () -> None
         self.fields = OrderedDict()  # type: FieldDict
+
+    def get_field(self, name):
+        # type: (str) -> Field
+        for _, (n, field, _) in self.fields.items():
+            if n == name:
+                return field
+        raise ValueError("No field named %s found" % (name,))
 
     def add_method_model(self,
                          func,  # type: Callable
@@ -34,23 +39,7 @@ class FieldRegistry(object):
         """Register a function to be added to the block"""
         if name is None:
             name = func.__name__
-        if description is None:
-            description = func.__doc__
-        method = MethodModel(description=description)
-        takes_elements = OrderedDict()
-        for k, anno in getattr(func, "call_types", {}).items():
-            cls = VMeta.lookup_annotype_converter(anno)
-            takes_elements[k] = cls.from_annotype(anno, writeable=True)
-        method.set_takes(MapMeta(elements=takes_elements))
-        returns_elements = OrderedDict()
-        return_type = getattr(func, "return_type", None)  # type: Anno
-        if return_type:
-            assert isinstance(return_type.typ, WithCallTypes), \
-                "Expected return typ WithCallTypes, got %s" % (return_type.typ,)
-            for k, anno in return_type.typ.call_types.items():
-                cls = VMeta.lookup_annotype_converter(return_type)
-                returns_elements[k] = cls.from_annotype(anno, writeable=False)
-        method.set_returns(MapMeta(elements=returns_elements))
+        method = MethodModel.from_callable(func, description)
         self._add_field(owner, name, method, func)
         return method
 
@@ -71,19 +60,32 @@ class FieldRegistry(object):
 
 
 class InfoRegistry(object):
-    def __init__(self):
-        # type: () -> None
-        self.reportable_infos = {}  # type: Dict[Type[Info], Callback]
+    def __init__(self, spawn):
+        # type: (Callable[..., Spawned]) -> None
+        self._reportable_infos = {}  # type: Dict[Type[Info], Callback]
+        self._spawn = spawn
+        self._report_queue = Queue()
 
     def add_reportable(self, info, callback):
         # type: (Type[Info], Callback) -> None
-        self.reportable_infos[info] = callback
+        self._reportable_infos[info] = callback
+
+    def report(self, reporter, info):
+        # type: (object, Info) -> None
+        callback = self._reportable_infos[type(info)]
+        self._report_queue.put((callback, reporter, info))
+        # Spawn in case we are coming from a non-cothread to cothread thread
+        self._spawn(self._report).wait()
+
+    def _report(self):
+        callback, reporter, info = self._report_queue.get()
+        callback(reporter, info)
 
 
 class Part(Hookable):
     def __init__(self, name):
         # type: (APartName) -> None
-        super(Part, self).__init__(name=name)
+        self.set_logger(name=name)
         self.name = name
 
     def setup(self, registrar):
@@ -94,10 +96,11 @@ class Part(Hookable):
 
 class PartRegistrar(object):
     def __init__(self, field_registry, info_registry, part):
-        # type: (FieldRegistry, InfoRegistry, Part) -> None
+        # type: (FieldRegistry, InfoRegistry, Part]) -> None
         self._field_registry = field_registry
         self._info_registry = info_registry
         self._part = part
+        self._info_queue = Queue()
 
     def add_method_model(self,
                          func,  # type: Callable
@@ -120,5 +123,4 @@ class PartRegistrar(object):
 
     def report(self, info):
         # type: (Info) -> None
-        callback = self._info_registry.reportable_infos[type(info)]
-        callback(self._part, info)
+        self._info_registry.report(self._part, info)

@@ -1,7 +1,6 @@
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, Widget
-from malcolm.core.vmetas import StringMeta
+from malcolm.core import Part, PartRegistrar, StringMeta, Widget
 from ..util import set_tags
 
 

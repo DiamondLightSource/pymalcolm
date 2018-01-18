@@ -1,9 +1,7 @@
-from annotypes import WithCallTypes
-
 from malcolm.compat import OrderedDict
 
 
-class Info(WithCallTypes):
+class Info(object):
     """Base class that should be inherited from when a part needs to return
     something from a hooked function"""
 

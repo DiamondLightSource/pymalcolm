@@ -30,7 +30,7 @@
     name: arrayCallbacks
     description: Whether to produce images or not
     pv: $(prefix):XBUF:ArrayCallbacks
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: checkbox
 
 - ca.parts.CALongPart:
@@ -49,14 +49,14 @@
     name: collectMode
     description: set spectra or mapping
     pv: $(prefix):CollectMode
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: combo
 
 - ca.parts.CAChoicePart:
     name: pixelAdvanceMode
     description: pixel mode
     pv: $(prefix):PixelAdvanceMode
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: combo
 
 - ca.parts.CAChoicePart:
@@ -69,21 +69,21 @@
     name: ignoreGate
     description: Ignore Gate
     pv: $(prefix):IgnoreGate
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: combo
 
 - ca.parts.CALongPart:
     name: pixelsPerRun
     description: Pixels Per Run
     pv: $(prefix):PixelsPerRun
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
     name: autoPixelsPerBuffer
     description: Auto pixels per buffer
     pv: $(prefix):AutoPixelsPerBuffer
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: combo
 
 - ca.parts.CALongPart:
@@ -97,42 +97,42 @@
     name: dxp1MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP1:MaxEnergy
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: dxp2MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP2:MaxEnergy
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CADoublePart:
     name: dxp3MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP3:MaxEnergy
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
     
 - ca.parts.CADoublePart:
     name: dxp4MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP4:MaxEnergy
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CALongPart:
     name: pixelsPerBuffer
     description: Pixels Per Buffer
     pv: $(prefix):PixelsPerBuffer
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - ca.parts.CAChoicePart:
     name: inputLogicPolarity
     description: Input Logic Polarity
     pv: $(prefix):InputLogicPolarity
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: combo
 
 

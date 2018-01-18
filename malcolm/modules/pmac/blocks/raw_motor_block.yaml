@@ -29,7 +29,7 @@
     name: csPort
     description: CS asyn port name
     pv: $(prefix):CsPort
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
     inport: CS
 
@@ -37,7 +37,7 @@
     name: csAxis
     description: CS axis definition (like X, B, 0 or I)
     pv: $(prefix):CsAxis
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput
 
 - builtin.parts.StringPart:

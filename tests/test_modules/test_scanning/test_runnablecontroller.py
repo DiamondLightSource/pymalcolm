@@ -10,7 +10,8 @@ from malcolm.modules.scanning.parts import RunnableChildPart
 from malcolm.modules.demo.blocks import ticker_block
 from malcolm.compat import OrderedDict
 from malcolm.modules.scanning.controllers import \
-    RunnableController, RunnableStates
+    RunnableController
+from malcolm.modules.scanning.util import RunnableStates
 from malcolm.core.vmetas import StringMeta
 
 

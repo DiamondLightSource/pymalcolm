@@ -39,8 +39,8 @@ class WebsocketClientComms(ClientComms):
         self.remote_blocks = meta.create_attribute_model()
         yield "remoteBlocks", self.remote_blocks, None
 
-    def start_init(self):
-        super(WebsocketClientComms, self).start_init()
+    def do_init(self):
+        super(WebsocketClientComms, self).do_init()
         self.loop = IOLoop()
         self._request_lookup = {}
         self._subscription_keys = {}
@@ -95,7 +95,7 @@ class WebsocketClientComms(ClientComms):
 
     def _report_fault(self):
         with self._lock:
-            self.transition(self.stateSet.FAULT, "Server disconnected")
+            self.transition(self.state_set.FAULT, "Server disconnected")
             self.stop_io_loop()
 
     def do_disable(self):

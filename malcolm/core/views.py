@@ -6,6 +6,7 @@ from .models import BlockModel, MethodModel, AttributeModel
 from malcolm.core.models import Model
 
 if TYPE_CHECKING:
+    from typing import Any
     from .controller import Controller
 
 
@@ -97,6 +98,9 @@ class Attribute(View):
     def alarm(self):
         return self._controller.make_view(self._context, self._data, "alarm")
 
+    # noinspection PyPep8Naming
+    # timeStamp is camelCase to maintain compatibility with EPICS normative
+    # types
     @property
     def timeStamp(self):
         return self._controller.make_view(
@@ -215,6 +219,7 @@ class Block(View):
 
 
 def make_view(controller, context, data):
+    # type: (Controller, Context, Any) -> Any
     """Make a View subclass containing properties specific for given data
 
     Args:

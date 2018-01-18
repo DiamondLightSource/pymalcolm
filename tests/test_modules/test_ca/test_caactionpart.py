@@ -48,16 +48,16 @@ class TestCAActionPart(unittest.TestCase):
 
     def test_caput_status_pv_ok(self, catools):
         p = self.create_part(dict(
-            name="mname", description="desc", pv="pv", statusPv="spv",
-            goodStatus="All Good"))
+            name="mname", description="desc", pv="pv", status_pv="spv",
+            good_status="All Good"))
         p.catools.caput.reset_mock()
         p.catools.caget.return_value = "All Good"
         p.caput()
 
     def test_caput_status_pv_no_good(self, catools):
         p = self.create_part(dict(
-            name="mname", description="desc", pv="pv", statusPv="spv",
-            goodStatus="All Good"))
+            name="mname", description="desc", pv="pv", status_pv="spv",
+            good_status="All Good"))
         p.catools.caput.reset_mock()
         p.catools.caget.return_value = "No Good"
         with self.assertRaises(AssertionError) as cm:
@@ -67,8 +67,8 @@ class TestCAActionPart(unittest.TestCase):
 
     def test_caput_status_pv_message(self, catools):
         p = self.create_part(dict(
-            name="mname", description="desc", pv="pv", statusPv="spv",
-            goodStatus="All Good", messagePv="mpv"))
+            name="mname", description="desc", pv="pv", status_pv="spv",
+            good_status="All Good", message_pv="mpv"))
         p.catools.caput.reset_mock()
         p.catools.caget.side_effect = ["No Good", "Bad things happened"]
         with self.assertRaises(AssertionError) as cm:

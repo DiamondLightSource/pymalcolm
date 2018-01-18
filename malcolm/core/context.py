@@ -11,7 +11,7 @@ from .queue import Queue
 from .errors import TimeoutError, AbortedError, ResponseError, BadValueError
 
 if TYPE_CHECKING:
-    from typing import Callable, Any, List
+    from typing import Callable, Any, List, Union
     from .process import Process
 
 
@@ -277,6 +277,7 @@ class Context(object):
         return future
 
     def wait_all_futures(self, futures, timeout=None):
+        # type: (Union[List[Future], Future, None], float) -> None
         """Services all futures until the list 'futures' are all done
         then returns. Calls relevant subscription callbacks as they
         come off the queue and raises an exception on abort

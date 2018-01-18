@@ -4,7 +4,8 @@ import os
 
 from malcolm.compat import OrderedDict
 from malcolm.modules.builtin.controllers import StatefulController, \
-    ManagerController, ManagerStates
+    ManagerController
+from malcolm.modules.builtin.util import ManagerStates
 from malcolm.core import Process, Part, Table, Context, call_with_params
 from malcolm.core.vmetas import StringMeta
 from malcolm.modules.builtin.parts import ChildPart

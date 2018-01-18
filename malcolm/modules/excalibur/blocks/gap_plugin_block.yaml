@@ -17,5 +17,5 @@
     name: fillValue
     description: Fill value for gaps
     pv: $(prefix):GapFillConstant
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: textinput

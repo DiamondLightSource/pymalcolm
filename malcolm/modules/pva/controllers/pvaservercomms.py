@@ -14,7 +14,7 @@ class PvaServerComms(ServerComms):
     _published = ()
     _endpoints = None
 
-    def start_init(self):
+    def do_init(self):
         self._start_pva_server()
 
     @Process.Publish
@@ -96,7 +96,7 @@ class PvaServerComms(ServerComms):
 
 class PvaImplementation(Loggable):
     def __init__(self, mri, controller, request):
-        super(PvaImplementation, self).__init__(mri=mri)
+        self.set_logger(mri=mri)
         self._mri = mri
         self._controller = controller
         self._request = request

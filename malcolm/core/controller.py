@@ -1,24 +1,28 @@
 from contextlib import contextmanager
 
-from annotypes import TYPE_CHECKING, Anno, Sequence
+from annotypes import TYPE_CHECKING, Anno, Sequence, overload
 
 from malcolm.compat import OrderedDict
 from .context import Context
 from .errors import UnexpectedError, WrongThreadError
 from .hook import Hookable, start_hooks, wait_hooks, Hook
 from .info import Info
-from .models import BlockModel, AttributeModel, MethodModel
+from .models import BlockModel, AttributeModel, MethodModel, Model
 from .notifier import Notifier
 from .part import PartRegistrar, Part, FieldRegistry, InfoRegistry
 from .queue import Queue
-from .request import Get, Subscribe, Unsubscribe, Put, Post
+from .request import Get, Subscribe, Unsubscribe, Put, Post, Request
+from .response import Response
 from .rlock import RLock
 from .serializable import serialize_object, camel_to_title
-from .views import make_view
+from .spawned import Spawned
+from .views import make_view, Block
 
 if TYPE_CHECKING:
-    from typing import List, Dict, Tuple
+    from typing import List, Dict, Tuple, Union, Callable, Any
     from .process import Process
+    Field = Union[AttributeModel, MethodModel]
+    CallbackResponses = List[Tuple[Callable[[Response], None], Response]]
 
 # How long should we wait for spawned functions to complete after abort
 ABORT_TIMEOUT = 5.0
@@ -37,7 +41,7 @@ class Controller(Hookable):
 
     def __init__(self, mri, description="", use_cothread=True):
         # type: (AMri, ADescription, AUseCothread) -> None
-        super(Controller, self).__init__(mri=mri)
+        self.set_logger(mri=mri)
         self.mri = mri
         self.use_cothread = use_cothread
         self._request_queue = Queue()
@@ -50,7 +54,7 @@ class Controller(Hookable):
         self._block.set_notifier_path(self._notifier, [mri])
         self._write_functions = {}
         self.field_registry = FieldRegistry()
-        self.info_registry = InfoRegistry()
+        self.info_registry = InfoRegistry(self.spawn)
 
     def setup(self, process):
         # type: (Process) -> None
@@ -58,34 +62,36 @@ class Controller(Hookable):
         self.add_initial_part_fields()
 
     def add_part(self, part):
+        # type: (Part) -> None
         assert part.name not in self.parts, \
             "Part %r already exists in Controller %r" % (part.name, self.mri)
-        part.setup(PartRegistrar(self.field_registry, part))
+        part.setup(PartRegistrar(
+            self.field_registry, self.info_registry, part, self.spawn))
         self.parts[part.name] = part
 
     def add_block_field(self, name, child, writeable_func):
-        if writeable_func:
-            self._write_functions[name] = writeable_func
+        # type: (str, Field, Callable[..., Any]) -> None
         if isinstance(child, AttributeModel):
-            if writeable_func:
-                child.meta.set_writeable(True)
-            if not child.meta.label:
-                child.meta.set_label(camel_to_title(name))
+            meta = child.meta
         elif isinstance(child, MethodModel):
-            if writeable_func:
-                child.set_writeable(True)
-            if not child.label:
-                child.set_label(camel_to_title(name))
+            meta = child
         else:
             raise ValueError("Invalid block field %r" % child)
+        if writeable_func:
+            self._write_functions[name] = writeable_func
+            meta.set_writeable(True)
+        if not meta.label:
+            meta.set_label(camel_to_title(name))
         self._block.set_endpoint_data(name, child)
 
     def add_initial_part_fields(self):
+        # type: () -> None
         for part_fields in self.field_registry.fields.values():
             for name, child, writeable_func in part_fields:
                 self.add_block_field(name, child, writeable_func)
 
     def spawn(self, func, *args, **kwargs):
+        # type: (Callable[..., Any], *Any, **Any) -> Spawned
         """Spawn a function in the right thread"""
         spawned = self.process.spawn(func, args, kwargs, self.use_cothread)
         return spawned
@@ -103,16 +109,28 @@ class Controller(Hookable):
     def changes_squashed(self):
         return self._notifier.changes_squashed
 
+    @overload
+    def make_view(self, context):
+        # type: (Context) -> Block
+        pass
+
+    @overload
+    def make_view(self, context, data=None, child_name=None):
+        # type: (Context, Model, str) -> Any
+        pass
+
     def make_view(self, context, data=None, child_name=None):
         """Make a child View of data[child_name]"""
         try:
-            return self._make_view(context, data, child_name)
+            ret = self._make_view(context, data, child_name)
         except WrongThreadError:
             # called from wrong thread, spawn it again
             result = self.spawn(self._make_view, context, data, child_name)
-            return result.get()
+            ret = result.get()
+        return ret
 
     def _make_view(self, context, data=None, child_name=None):
+        # type: (Context, Model, str) -> Any
         """Called in cothread's thread"""
         with self._lock:
             if data is None:
@@ -123,6 +141,7 @@ class Controller(Hookable):
         return child_view
 
     def handle_request(self, request):
+        # type: (Request) -> Spawned
         """Spawn a new thread that handles Request"""
         # Put data on the queue, so if spawns are handled out of order we
         # still get the most up to date data
@@ -130,6 +149,7 @@ class Controller(Hookable):
         return self.spawn(self._handle_request)
 
     def _handle_request(self):
+        # type: (Request) -> None
         responses = []
         with self._lock:
             # We spawned just above, so there is definitely something on the
@@ -160,6 +180,7 @@ class Controller(Hookable):
                 raise
 
     def _handle_get(self, request):
+        # type: (Get) -> CallbackResponses
         """Called with the lock taken"""
         data = self._block
         for endpoint in request.path[1:]:
@@ -172,11 +193,13 @@ class Controller(Hookable):
                     typ = type(data)
                 raise UnexpectedError(
                     "Object of type %r has no attribute %r" % (typ, endpoint))
+        # Important to serialize now with the lock so we get a consistent set
         serialized = serialize_object(data)
         ret = [request.return_response(serialized)]
         return ret
 
     def _handle_put(self, request):
+        # type: (Put) -> CallbackResponses
         """Called with the lock taken"""
         attribute_name = request.path[1]
 
@@ -184,14 +207,17 @@ class Controller(Hookable):
         assert attribute.meta.writeable, \
             "Attribute %s is not writeable" % attribute_name
         put_function = self._write_functions[attribute_name]
+        value = attribute.meta.validate(request.value)
 
         with self.lock_released:
-            result = put_function(request.value)
+            result = put_function(value)
 
+        # Don't need to serialize as the result is None, at the moment...
         ret = [request.return_response(result)]
         return ret
 
     def _handle_post(self, request):
+        # type: (Post) -> CallbackResponses
         """Called with the lock taken"""
         method_name = request.path[1]
         if request.parameters:
@@ -209,14 +235,9 @@ class Controller(Hookable):
         with self.lock_released:
             result = post_function(**param_dict)
 
+        # Don't need to serialize as the result should be immutable
         ret = [request.return_response(result)]
         return ret
-
-    def create_part_contexts(self):
-        part_contexts = OrderedDict()
-        for part in self.parts.values():
-            part_contexts[part] = Context(self.process)
-        return part_contexts
 
     def run_hooks(self, hooks):
         # type: (Sequence[Hook]) -> Dict[str, List[Info]]
@@ -227,7 +248,7 @@ class Controller(Hookable):
         # Hooks might be a generator, so convert to a list
         hooks = list(hooks)
         if not hooks:
-            return {}
+            return Queue(), []
         self.log.debug("%s: Starting hook", hooks[0].name)
         for hook in hooks:
             hook.set_spawn(self.spawn)

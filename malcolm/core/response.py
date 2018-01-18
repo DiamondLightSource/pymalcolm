@@ -32,7 +32,8 @@ class Return(Response):
     def __init__(self, id=0, value=None):
         # type: (AId, AValue) -> None
         super(Return, self).__init__(id)
-        # Make sure it's serialized
+        # TODO: we used to serialize here, but I think its unnecessary
+        # This will be serialized by to_dict() if needed
         self.value = serialize_object(value)
 
 
@@ -70,7 +71,7 @@ class Delta(Response):
     def __init__(self, id=0, changes=None):
         # type: (AId, AChanges) -> None
         super(Delta, self).__init__(id)
-        # Should already be serialized"""
+        # Should already be serialized
         self.changes = changes
 
     def apply_changes_to(self, d):

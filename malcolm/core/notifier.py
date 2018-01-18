@@ -1,8 +1,20 @@
 from contextlib import contextmanager
 
+from annotypes import TYPE_CHECKING
+
 from .serializable import serialize_object
 from .loggable import Loggable
 from .request import Subscribe, Unsubscribe
+from .response import Response
+from .rlock import RLock
+from .models import BlockModel
+
+
+if TYPE_CHECKING:
+    from typing import List, Tuple, Callable, Any, Dict
+    Callback = Callable[[Response], None]
+    CallbackResponses = List[Tuple[Callback, Response]]
+    SubscriptionKeys = Dict[Tuple[Callback, int], Subscribe]
 
 
 class DummyNotifier(object):
@@ -12,6 +24,7 @@ class DummyNotifier(object):
         yield
 
     def add_squashed_change(self, path, data=None):
+        # type: (List[str], Any) -> None
         pass
 
 
@@ -19,43 +32,32 @@ class Notifier(Loggable):
     """Object that can service callbacks on given endpoints"""
 
     def __init__(self, mri, lock, block):
-        super(Notifier, self).__init__(mri=mri)
+        # type: (str, RLock, BlockModel) -> None
+        self.set_logger(mri=mri)
         self._tree = NotifierNode(block)
         self._lock = lock
         # Incremented every time we do with changes_squashed
         self._squashed_count = 0
-        self._squashed_changes = []
-        # {Subscribe.generator_key(): Subscribe}
-        self._subscription_keys = {}
+        self._squashed_changes = []  # type: List[List]
+        self._subscription_keys = {}  # type: SubscriptionKeys
 
     def handle_subscribe(self, request):
-        """Handle a Subscribe request from outside. Called with lock taken
-
-        Args:
-            request (Subscribe): Request to respond to
-
-        Returns:
-            list: [(callback, Response)] that need to be called
-        """
+        # type: (Subscribe) -> CallbackResponses
+        """Handle a Subscribe request from outside. Called with lock taken"""
         ret = self._tree.handle_subscribe(request, request.path[1:])
         self._subscription_keys[request.generate_key()] = request
         return ret
 
     def handle_unsubscribe(self, request):
-        """Handle a Unsubscribe request from outside. Called with lock taken
-
-        Args:
-            request (Unsubscribe): Request to respond to
-
-        Returns:
-            list: [(callback, Response)] that need to be called
-        """
+        # type: (Unsubscribe) -> CallbackResponses
+        """Handle a Unsubscribe request from outside. Called with lock taken"""
         subscribe = self._subscription_keys.pop(request.generate_key())
         ret = self._tree.handle_unsubscribe(subscribe, subscribe.path[1:])
         return ret
 
     @property
     def changes_squashed(self):
+        # type: () -> Notifier
         """Context manager to allow multiple calls to notify_change() to be
         made and all changes squashed into one consistent set. E.g:
 
@@ -66,6 +68,7 @@ class Notifier(Loggable):
         return self
 
     def add_squashed_change(self, path, data=None):
+        # type: (List[str], Any) -> None
         """Call setter, then notify subscribers of change
 
         Args:
@@ -99,6 +102,7 @@ class Notifier(Loggable):
             self._callback_responses(responses)
 
     def _callback_responses(self, responses):
+        # type: (CallbackResponses) -> None
         for cb, response in responses:
             try:
                 cb(response)
@@ -113,17 +117,15 @@ class NotifierNode(object):
         "delta_requests", "update_requests", "children", "parent", "data"]
 
     def __init__(self, data, parent=None):
-        # [Subscribe]
-        self.delta_requests = []
-        self.update_requests = []
-        # {name: NotifierNode}
-        self.children = {}
-        # Leaf
+        # type: (Any, NotifierNode) -> None
+        self.delta_requests = []  # type: List[Subscribe]
+        self.update_requests = []  # type: List[Subscribe]
+        self.children = {}  # type: Dict[str, NotifierNode]
         self.parent = parent
-        # object
         self.data = data
 
     def notify_changes(self, changes):
+        # type: (List[List]) -> CallbackResponses
         """Set our data and notify anyone listening
 
         Args:
@@ -159,6 +161,7 @@ class NotifierNode(object):
         return ret
 
     def _add_child_change(self, change, child_changes):
+        # type: (List, List[List]) -> None
         path = change[0]
         if path:
             # This is for one of our children
@@ -179,6 +182,7 @@ class NotifierNode(object):
                 child_changes.setdefault(name, []).append(child_change)
 
     def _update_data(self, data):
+        # type: (Any) -> Dict[str, List]
         """Set our data and notify any subscribers of children what has changed
 
         Args:
@@ -202,6 +206,7 @@ class NotifierNode(object):
         return child_change_dict
 
     def handle_subscribe(self, request, path):
+        # type: (Subscribe, List[str]) -> CallbackResponses
         """Add to the list of request to notify, and notify the initial value of
         the data held
 
@@ -232,10 +237,12 @@ class NotifierNode(object):
         return ret
 
     def handle_unsubscribe(self, request, path):
+        # type: (Subscribe, List[str]) -> CallbackResponses
         """Remove from the notifier list and send a return
 
         Args:
             request (Subscribe): The original subscribe request
+            path (list): The relative path from ourself
 
         Returns:
             list: [(callback, Response)] that need to be called

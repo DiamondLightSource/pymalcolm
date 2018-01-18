@@ -1,7 +1,7 @@
 import inspect
 
 from annotypes import Array, Anno, Union, Sequence, Mapping, Any, to_array, \
-    Optional, TYPE_CHECKING
+    Optional, TYPE_CHECKING, WithCallTypes, NO_DEFAULT
 import numpy as np
 from enum import Enum
 
@@ -14,7 +14,7 @@ from .tags import Widget
 from .timestamp import TimeStamp
 
 if TYPE_CHECKING:
-    from typing import Tuple, Type, List
+    from typing import Tuple, Type, List, Dict, Callable
 
 
 class Model(Serializable):
@@ -186,11 +186,12 @@ class VMeta(Meta):
         # type: (Anno, bool, **Any) -> VMeta
         """Return an instance of this class from an Anno"""
         ret = cls(description=anno.description, writeable=writeable, **kwargs)
-        ret.set_tags((ret.default_widget()))
+        ret.set_tags([ret.default_widget().tag()])
         return ret
 
     @classmethod
-    def register_annotype_converter(cls, types, is_array=False, is_mapping=False):
+    def register_annotype_converter(cls, types, is_array=False,
+                                    is_mapping=False):
         # type: (Union[Sequence[type], type], bool, bool) -> Any
         """Register this class as a converter for Anno instances"""
         if not isinstance(types, Sequence):
@@ -233,6 +234,9 @@ class AttributeModel(Model):
     """Data Model for an Attribute"""
     __slots__ = ["value", "alarm", "timeStamp", "meta"]
 
+    # noinspection PyPep8Naming
+    # timeStamp is camelCase to maintain compatibility with EPICS normative
+    # types
     def __init__(self, value=None, alarm=None, timeStamp=None, meta=None):
         # type: (AValue, AAlarm, ATimeStamp, AVMeta) -> None
         self.meta = self.set_meta(meta)
@@ -362,7 +366,7 @@ class BooleanMeta(VMeta):
 with Anno("Choices of valid strings"):
     AChoices = Array[str]
 
-UChoices = Union[AChoices, Sequence[str], str]
+UChoices = Union[AChoices, Sequence[Enum], Sequence[str]]
 
 
 @Serializable.register_subclass("malcolm:core/ChoiceMeta:1.0")
@@ -376,27 +380,44 @@ class ChoiceMeta(VMeta):
                  label=""):
         # type: (AMetaDescription, UChoices, UTags, AWriteable, ALabel) -> None
         super(ChoiceMeta, self).__init__(description, tags, writeable, label)
+        self.choices_lookup = {}  # type: Dict[Any, Union[str, Enum]]
         self.choices = self.set_choices(choices)
 
     def set_choices(self, choices):
         # type: (UChoices) -> AChoices
+        # Calculate a lookup from all possible entries to the choice value
+        choices_lookup = {}  # type: Dict[Any, Union[str, Enum]]
+        for i, choice in enumerate(choices):
+            if isinstance(choice, Enum):
+                # Our choice value must be a string
+                assert isinstance(choice.value, str), \
+                    "Expected Enum choice to have str value, got %s" % (choice,)
+                # Map the Enum instance and str to the Enum instance
+                choices_lookup[choice.value] = choice
+                choices_lookup[choice] = choice
+            else:
+                assert isinstance(choice, str), \
+                    "Expected string choice, got %s" % (choice,)
+                # Map the string to itself
+                choices_lookup[choice] = choice
+            # Map the index to the choice
+            choices_lookup[i] = choice
+        if choices:
+            # Map the default value to the first choice
+            choices_lookup[None] = choices[0]
+        else:
+            # There are no choices, so the default value is the empty string
+            choices_lookup[None] = ""
+        self.choices_lookup = choices_lookup
         return self.set_endpoint_data("choices", AChoices(choices))
 
     def validate(self, value):
-        # type: (Any) -> str_
+        # type: (Any) -> Union[str, Enum]
         """Check if the value is valid returns it"""
-        if value is None:
-            if self.choices:
-                return self.choices[0]
-            else:
-                return ""
-        elif value in self.choices:
-            return value
-        elif isinstance(value, int) and value < len(self.choices):
-            return self.choices[value]
-        # elif isinstance(value, Enum) and value.name in self.choices:
-        #     return value.name
-        else:
+        # Our lookup table contains all the possible values
+        try:
+            return self.choices_lookup[value]
+        except KeyError:
             raise ValueError(
                 "%s is not a valid value in %s" % (value, self.choices))
 
@@ -437,7 +458,7 @@ class NumberMeta(VMeta):
 
     def __init__(self, dtype="float64", description="", tags=(),
                  writeable=False, label=""):
-        # type: (ADtype, AMetaDescription, ATags, AWriteable, ALabel) -> None
+        # type: (ADtype, AMetaDescription, UTags, AWriteable, ALabel) -> None
         super(NumberMeta, self).__init__(description, tags, writeable, label)
         # like np.float64
         self._np_dtype = None
@@ -542,13 +563,16 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
         """Check if the value is valid returns it"""
         if value is None:
             return Array[str]()
-        if isinstance(value, str_):
-            raise ValueError("Expected iterable of strings, got %r" % value)
         else:
+            ret = []
             for i, choice in enumerate(value):
-                if choice not in self.choices:
-                    raise ValueError("%s is not a valid value for element %s" %
-                                     (choice, i))
+                # Our lookup table contains all the possible values
+                try:
+                    ret.append(self.choices_lookup[value])
+                except KeyError:
+                    raise ValueError(
+                        "%s is not a valid value in %s for element %s" % (
+                            value, self.choices, i))
             return to_array(Array[str], value)
 
     def doc_type_string(self):
@@ -593,7 +617,7 @@ class StringArrayMeta(VArrayMeta):
 
 
 with Anno("Elements that should appear in the table instance"):
-    ATElements = Mapping[str_, VArrayMeta]
+    ATableElements = Mapping[str_, VArrayMeta]
 
 
 @Serializable.register_subclass("malcolm:core/TableMeta:1.0")
@@ -602,20 +626,55 @@ class TableMeta(VMeta):
     __slots__ = ["elements"]
     attribute_class = NTTable
 
-    def __init__(self, description="", tags=(), writeable=False, label="",
-                 elements=None):
-        # type: (AMetaDescription, ATags, AWriteable, ALabel, ATElements) -> None
+    def __init__(self,
+                 description="",  # type: AMetaDescription
+                 tags=(),  # type: ATags
+                 writeable=False,  # type: AWriteable
+                 label="",  # type: ALabel
+                 elements=None,  # type: ATableElements
+                 ):
+        # type: (...) -> None
+        self.table_cls = None  # type: Type[Table]
         self.elements = self.set_elements(elements if elements else {})
         super(TableMeta, self).__init__(description, tags, writeable, label)
 
     def set_elements(self, elements):
-        # type: (ATElements) -> ATElements
+        # type: (ATableElements) -> ATableElements
         """Set the elements dict from a serialized dict"""
         deserialized = OrderedDict()
         for k, v in elements.items():
             if k != "typeid":
                 deserialized[k] = deserialize_object(v, VArrayMeta)
-        return self.set_endpoint_data("elements", deserialized)
+        ret = self.set_endpoint_data("elements", deserialized)
+        self.set_table_cls(self.table_cls)
+        return ret
+
+    def set_table_cls(self, table_cls=None):
+        # type: (Type[Table]) -> None
+        if table_cls is None or table_cls.__name__ == "TableSubclass":
+            # Either autogenerated by this function or not set, so make one
+
+            class TableSubclass(Table):
+                pass
+
+            table_cls = TableSubclass
+            for k, meta in self.elements.items():
+                # We can distinguish the type by asking for the default
+                # validate value
+                default_array = meta.validate(None)  # type: Array
+                anno = Anno(meta.description, default_array.typ, k)
+                anno.is_array = True
+                anno.is_mapping = False
+                table_cls.call_types[k] = anno
+        else:
+            # User supplied, check it matches element names
+            assert issubclass(table_cls, Table), \
+                "Expecting table subclass, got %s" % (table_cls,)
+            missing = set(self.elements) - set(table_cls.call_types)
+            assert not missing, "Supplied Table missing fields %s" % (missing,)
+            extra = set(table_cls.call_types) - set(self.elements)
+            assert not extra, "Supplied Table has extra fields %s" % (extra,)
+        self.table_cls = table_cls
 
     def set_writeable(self, writeable):
         # type: (AWriteable) -> AWriteable
@@ -625,48 +684,30 @@ class TableMeta(VMeta):
 
     def validate(self, value):
         if value is None:
-            value = {}
-        if isinstance(value, Table):
-            # We already have a table instance, check it has the right
-            # call_type args
-            missing = set(self.elements) - set(value.call_types)
-            assert not missing, "Supplied table missing fields %s" % (missing,)
-            extra = set(value.call_types) - set(self.elements)
-            assert not extra, "Supplied table has extra fields %s" % (extra,)
-            for field, anno in value.call_types.items():
-                assert anno.is_array, "Anno %s isn't an array" % (anno,)
-                meta = self.elements[field]
-                if anno.typ == bool:
-                    assert isinstance(meta, BooleanArrayMeta), \
-                        "Expected BooleanArrayMeta for %s, got %s" % (
-                            field, meta)
-                elif anno.typ == str:
-                    assert isinstance(meta, StringArrayMeta), \
-                        "Expected StringArrayMeta for %s, got %s" % (
-                            field, meta)
-                else:
-                    assert isinstance(meta, NumberArrayMeta), \
-                        "Expected NumberArrayMeta for %s, got %s" % (
-                            field, meta)
-                    assert np.dtype(meta.dtype) == anno.typ, \
-                        "Expected dtype %s for %s, got %s" % (
-                            meta.dtype, field, anno.typ)
-        else:
-            # We need to make a table class and instantiate it ourselves
+            # Create an empty table
+            args = {}
+            for k, meta in self.elements.items():
+                args[k] = meta.validate(None)
+            value = self.table_cls(**args)
+        elif isinstance(value, Table):
+            # We already have a table instance, check it is the right type
+            assert isinstance(value, self.table_cls), \
+                "Expected %s, got %s" % (self.table_cls, value)
+        elif isinstance(value, dict):
+            # We need to make a table instance ourselves
             keys = set(value)
             keys.remove("typeid")
             missing = set(self.elements) - keys
             assert not missing, "Supplied table missing fields %s" % (missing,)
             extra = keys - set(self.elements)
             assert not extra, "Supplied table has extra fields %s" % (extra,)
-
-            class TableInstance(Table):
-                pass
-
-            for field, meta in self.elements.items():
-                setattr(TableInstance, field, meta.validate(value[field]))
-
-            value = TableInstance()
+            args = {}
+            for k, meta in self.elements.items():
+                args[k] = meta.validate(value[k])
+            value = self.table_cls(**args)
+        else:
+            raise ValueError(
+                "Expected Table instance or serialized, got %s" % (value,))
         # Check column lengths
         value.validate_column_lengths()
         return value
@@ -680,16 +721,26 @@ class TableMeta(VMeta):
         return Widget.TABLE
 
     @classmethod
+    def from_table(cls, table_cls, description, widget=None, writeable=False):
+        # type: (Type[Table], str, Widget, bool) -> TableMeta
+        elements = OrderedDict()
+        for k, ct in table_cls.call_types.items():
+            subclass = cls.lookup_annotype_converter(ct)
+            elements[k] = subclass.from_annotype(ct, writeable=writeable)
+        ret = cls(
+            description=description, elements=elements, writeable=writeable)
+        if widget is None:
+            widget = ret.default_widget()
+        ret.set_tags([widget.tag()])
+        ret.set_table_cls(table_cls)
+        return ret
+
+    @classmethod
     def from_annotype(cls, anno, writeable, **kwargs):
         # type: (Anno, bool, **Any) -> VMeta
-        assert isinstance(anno.typ, Table), \
+        assert issubclass(anno.typ, Table), \
             "Expected Table, got %s" % anno.typ
-        elements = OrderedDict()
-        for k, ct in anno.typ.call_types.items():
-            subclass = cls.lookup_annotype_converter(ct)
-            elements[k] = subclass.from_annotype(ct, writeable)
-        return super(TableMeta, cls).from_annotype(
-            anno, writeable, elements=elements)
+        return cls.from_table(anno.typ, anno.description, writeable=writeable)
 
 
 # Types used when deserializing to the class
@@ -785,14 +836,51 @@ class MethodModel(Meta):
     def set_defaults(self, defaults):
         # type: (ADefaults) -> ADefaults
         for k, v in defaults.items():
-            if k != "typeid":
-                defaults[k] = self.takes.elements[k].validate(v)
+            defaults[k] = self.takes.elements[k].validate(v)
         return self.set_endpoint_data("defaults", defaults)
 
     def set_returns(self, returns):
         # type: (AReturns) -> AReturns
         returns = deserialize_object(returns, MapMeta)
         return self.set_endpoint_data("returns", returns)
+
+    @classmethod
+    def from_callable(cls, func, description=None):
+        # type: (Callable, str) -> MethodModel
+        """Return an instance of this class from a Callable"""
+        if description is None:
+            description = func.__doc__
+        method = cls(description=description)
+        takes_elements = OrderedDict()
+        defaults = OrderedDict()
+        takes_required = []
+        for k, anno in getattr(func, "call_types", {}).items():
+            scls = VMeta.lookup_annotype_converter(anno)
+            takes_elements[k] = scls.from_annotype(anno, writeable=True)
+            if anno.default is NO_DEFAULT:
+                takes_required.append(k)
+            elif anno.default is not None:
+                defaults[k] = anno.default
+        takes = MapMeta(elements=takes_elements, required=takes_required)
+        method.set_takes(takes)
+        method.set_defaults(defaults)
+        returns_elements = OrderedDict()
+        returns_required = []
+        return_type = getattr(func, "return_type", None)  # type: Anno
+        if return_type is None or return_type.typ is None:
+            call_types = {}
+        elif isinstance(return_type.typ, WithCallTypes):
+            call_types = return_type.typ.call_types
+        else:
+            call_types = {"return": return_type}
+        for k, anno in call_types.items():
+            scls = VMeta.lookup_annotype_converter(anno)
+            returns_elements[k] = scls.from_annotype(anno, writeable=False)
+            if anno.default is not None:
+                returns_required.append(k)
+        returns = MapMeta(elements=returns_elements, required=returns_required)
+        method.set_returns(returns)
+        return method
 
 
 # Types used when deserializing to the class

@@ -12,7 +12,7 @@
     name: arrayCallbacks
     description: Whether to produce images or not
     pv: $(prefix):ArrayCallbacks
-    rbvSuff: _RBV
+    rbv_suff: _RBV
     widget: checkbox
 
 - ca.parts.CALongPart:

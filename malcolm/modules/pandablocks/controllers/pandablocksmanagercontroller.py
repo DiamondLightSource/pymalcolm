@@ -50,11 +50,11 @@ class PandABlocksManagerController(ManagerController):
         self._stop_queue = None
         self._poll_spawned = None
 
-    def start_init(self):
+    def do_init(self):
         # start the poll loop and make block parts first to fill in our parts
         # before calling _set_block_children()
         self.start_poll_loop()
-        super(PandABlocksManagerController, self).start_init()
+        super(PandABlocksManagerController, self).do_init()
 
     def start_poll_loop(self):
         # queue to listen for stop events

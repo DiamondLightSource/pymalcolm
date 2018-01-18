@@ -1,52 +1,69 @@
 import time
 
-from annotypes import Anno
+from annotypes import Anno, add_call_types
 
-from malcolm.modules.scanning.controllers import \
-    RunnableController
-from malcolm.core import REQUIRED, method_takes
-from malcolm.modules.builtin.parts import ChildPart
-from malcolm.core.vmetas import NumberMeta, StringArrayMeta
-from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
+from malcolm.core import Part, APartName, PartRegistrar
+from malcolm.modules.builtin.parts import ChildPart, AMri
+from malcolm.modules.scanning.hooks import ConfigureHook, PostRunArmedHook, \
+    SeekHook, RunHook, ResumeHook, ACompletedSteps, AStepsToDo, AContext
+from malcolm.modules.scanning.infos import ConfigureParamsInfo, RunProgressInfo
+from malcolm.modules.scanning.util import ConfigureParams, AGenerator, \
+    UAxesToMove
 
 
+with Anno("If >0, raise an exception at the end of this step"):
+    AExceptionStep = int
 
-"name", StringMeta("Name of the Part within the controller"), REQUIRED,
-"mri", StringMeta("Malcolm resource id of child object"), REQUIRED)
+
+class ScanTickerParams(ConfigureParams):
+    # This will be serialized, so maintain camelCase for axesToMove
+    # noinspection PyPep8Naming
+    def __init__(self, generator, axesToMove, exceptionStep=0):
+        # type: (AGenerator, UAxesToMove, AExceptionStep) -> None
+        super(ScanTickerParams, self).__init__(generator, axesToMove)
+        self.exceptionStep = exceptionStep
+
+
+with Anno("Configuration parameters passed in"):
+    AScanTickerParams = ScanTickerParams
+
 
 class ScanTickerPart(Part):
     """Provides control of a `counter_block` within a `RunnableController`"""
-    # Generator instance
-    generator = None
-    # Where to start
-    completed_steps = None
-    # How many steps to do
-    steps_to_do = None
-    # When to blow up
-    exception_step = None
-
 
     def __init__(self, name, mri):
+        # type: (APartName, AMri) -> None
+        super(ScanTickerPart, self).__init__(name)
+        self.mri = mri
         self.cp = ChildPart(name, mri)
-        #super(ScanTickerPart, self).__init__(self, name, mri)
+        # Generator instance
+        self.generator = None  # type: AGenerator
+        # Where to start
+        self.completed_steps = None  # type: int
+        # How many steps to do
+        self.steps_to_do = None  # type: int
+        # When to blow up
+        self.exception_step = None  # type: int
+        # The registrar object we get at setup
+        self.registrar = None  # type: PartRegistrar
 
     def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        self.registrar = registrar
         self.cp.setup(registrar)
-        #super(ScanTickerPart, self).setup(registrar)
+        registrar.report(ConfigureParamsInfo(ScanTickerParams))
 
+    def on_hook(self, hook):
+        if isinstance(hook, (ConfigureHook, PostRunArmedHook, SeekHook)):
+            hook.run(self.configure)
+        elif isinstance(hook, (RunHook, ResumeHook)):
+            hook.run(self.run)
+        else:
+            self.cp.on_hook(hook)
 
-    @RunnableController.Configure
-    @RunnableController.PostRunArmed
-    @RunnableController.Seek
-    @method_takes(
-        "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-        "axesToMove", StringArrayMeta(
-            "List of axes in inner dimension of generator that should be moved"
-        ), REQUIRED,
-        "exceptionStep", NumberMeta(
-            "int32", "If >0, raise an exception at the end of this step"), 0)
-    def configure(self, context, completed_steps, steps_to_do, part_info,
-                  params):
+    @add_call_types
+    def configure(self, completed_steps, steps_to_do, params):
+        # type: (ACompletedSteps, AStepsToDo, AScanTickerParams) -> None
         # If we are being asked to move
         if self.name in params.axesToMove:
             # Just store the generator and place we need to start
@@ -58,9 +75,9 @@ class ScanTickerPart(Part):
             # Flag nothing to do
             self.generator = None
 
-    @RunnableController.Run
-    @RunnableController.Resume
-    def run(self, context, update_completed_steps):
+    @add_call_types
+    def run(self, context):
+        # type: (AContext) -> None
         # Start time so everything is relative
         point_time = time.time()
         if self.generator:
@@ -79,7 +96,7 @@ class ScanTickerPart(Part):
                 self.log.debug("%s Sleeping %s", self.name, wait_time)
                 context.sleep(wait_time)
                 # Update the point as being complete
-                update_completed_steps(i + 1, self)
+                self.registrar.report(RunProgressInfo(i + 1))
                 # If this is the exception step then blow up
                 assert i + 1 != self.exception_step, \
                     "Raising exception at step %s" % self.exception_step

@@ -2,7 +2,7 @@ from xml.etree import cElementTree as ET
 
 from malcolm.compat import et_to_string
 from malcolm.core import method_takes, REQUIRED
-from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 from malcolm.modules.ADCore.infos import UniqueIdInfo
@@ -17,7 +17,7 @@ POSITIONS_PER_XML = 1000
 N_LOAD_AHEAD = 4
 
 
-class PositionLabellerPart(StatefulChildPart):
+class PositionLabellerPart(ChildPart):
     """Part for controlling a `position_labeller_block` in a Device"""
     # Stored generator for positions
     generator = None

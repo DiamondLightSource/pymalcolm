@@ -24,3 +24,9 @@ class Table(Serializable):
             for key, data in zip(cls.call_types, row):
                 attrs[key].append(data)
         return cls(**attrs)
+
+    def rows(self):
+        self.validate_column_lengths()
+        data = [getattr(self, a) for a in self.call_types]
+        for row in zip(*data):
+            yield row

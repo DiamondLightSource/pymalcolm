@@ -1,9 +1,9 @@
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.pmac.infos import MotorInfo
 
 
-class RawMotorPart(StatefulChildPart):
+class RawMotorPart(ChildPart):
     @RunnableController.ReportStatus
     def report_cs_info(self, context):
         child = context.block_view(self.params.mri)

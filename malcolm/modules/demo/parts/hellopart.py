@@ -1,5 +1,4 @@
 from __future__ import print_function
-
 import time
 
 from annotypes import Anno, add_call_types
@@ -8,11 +7,11 @@ from malcolm.core import Part
 
 
 with Anno("The name of the person to greet"):
-    Name = str
+    AName = str
 with Anno("Time to wait before returning"):
-    Sleep = float
+    ASleep = float
 with Anno("The manufactured greeting"):
-    Greeting = str
+    AGreeting = str
 
 
 class HelloPart(Part):
@@ -24,7 +23,7 @@ class HelloPart(Part):
 
     @add_call_types
     def greet(self, name, sleep):
-        # type: (Name, Sleep) -> Greeting
+        # type: (AName, ASleep) -> AGreeting
         """Optionally sleep <sleep> seconds, then return a greeting to <name>"""
         print("Manufacturing greeting...")
         time.sleep(sleep)

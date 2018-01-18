@@ -1,20 +1,34 @@
-from malcolm.core import method_takes
+from malcolm.core import Part, PartRegistrar, Hook
 from malcolm.modules.ADCore.infos import DatasetProducedInfo
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.scanning.parts import RunnableChildPart
+from malcolm.modules.scanning.hooks import ValidateHook, ConfigureHook
+from malcolm.modules.scanning.parts.runnablechildpart import \
+    RunnableChildPart, APartName, AMri
 
 
-class DatasetRunnableChildPart(RunnableChildPart):
+class DatasetRunnableChildPart(Part):
     """Part controlling a configure/run child Block with a dataset table"""
-    def update_part_configure_args(self, response, without=()):
-        # Decorate validate and configure with the sum of its parts
-        super(DatasetRunnableChildPart, self).update_part_configure_args(
-            response, without=without + ("formatName",))
+
+    def __init__(self, name, mri):
+        # type: (APartName, AMri) -> None
+        super(DatasetRunnableChildPart, self).__init__(name)
+        self.rcp = RunnableChildPart(
+            name, mri, ignore_configure_args=["formatName"])
 
     def _params_with_format_name(self, params):
+        # type: (ConfigureParams)
         new_params = dict(formatName=self.name)
         new_params.update(params)
         return new_params
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        self.rcp.setup(registrar)
+
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, ValidateHook):
+            hook.run(self.validate)
 
     # Method will be filled in by update_configure_validate_args
     @RunnableController.Validate

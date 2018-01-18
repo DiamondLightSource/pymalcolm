@@ -1,6 +1,7 @@
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, Widget, TitleInfo, StringMeta
+from malcolm.core import Part, PartRegistrar, Widget, StringMeta
+from ..infos import TitleInfo
 from ..util import set_tags
 
 
@@ -16,7 +17,7 @@ class TitlePart(Part):
         meta = StringMeta("Label for the block")
         set_tags(meta, writeable=True, widget=Widget.TITLE)
         self.attr = meta.create_attribute_model()
-        self.registrar = None
+        self.registrar = None  # type: PartRegistrar
         self.initial_value = value
 
     def setup(self, registrar):
@@ -27,4 +28,4 @@ class TitlePart(Part):
 
     def set_label(self, value):
         self.attr.set_value(value)
-        self.registrar.report_changed(TitleInfo(value))
+        self.registrar.report(TitleInfo(value))

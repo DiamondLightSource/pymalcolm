@@ -1,66 +1,125 @@
-from annotypes import Anno
+from annotypes import TYPE_CHECKING
 
-from malcolm.core import Info, Alarm
+from malcolm.core import Info, Alarm, Port, Request
 
-
-with Anno("The title of the block"):
-    ATitle = str
+if TYPE_CHECKING:
+    from typing import Callable, List
 
 
 class TitleInfo(Info):
-    """Used to tell the Controller the title of the block has changed"""
+    """Used to tell the Controller the title of the Block should change
+
+    Args:
+        title: The new title of the Block
+    """
     def __init__(self, title):
-        # type: (ATitle) -> None
+        # type: (str) -> None
         self.title = title
 
 
-with Anno("The alarm that should be used for the health of the block"):
-    AAlarm = Alarm
-
-
 class HealthInfo(Info):
-    """Used to tell the Controller a part has an alarm or not"""
+    """Used to tell the Controller a part has an alarm or not
+
+    Args:
+        alarm: The alarm that should be used for the health of the block
+    """
     def __init__(self, alarm):
-        # type: (AAlarm) -> None
+        # type: (Alarm) -> None
         self.alarm = alarm
+
+
+class PortInfo(Info):
+    """Info about a port to be used by other child parts for connection
+
+    Args:
+        name: The name of the attribute
+        port: The type of the port
+    """
+    def __init__(self, name, port):
+        # type: (str, Port) -> None
+        self.name = name
+        self.port = port
+
+
+class InPortInfo(PortInfo):
+    """Info about an inport from the attribute tag
+
+    Args:
+        name: The name of the attribute
+        port: The type of the port
+        disconnected_value: The value that will be set when the inport is
+            disconnected, E.g. '' or 'ZERO'
+        value: Initial value of the attribute
+    """
+    def __init__(self, name, port, disconnected_value, value):
+        # type: (str, Port, str, Any) -> None
+        super(InPortInfo, self).__init__(name, port)
+        self.disconnected_value = disconnected_value
+        self.value = value
+
+
+class OutPortInfo(PortInfo):
+    """Info about an outport from the attribute tag
+
+    Args:
+        name: The name of the attribute
+        port: The type of the port
+        connected_value: The value that an inport will be set to when connected
+            to this outport, E.g. 'PCOMP1.OUT' or 'DET.STATS'
+    """
+    def __init__(self, name, port, connected_value):
+        # type: (str, Port, str) -> None
+        super(OutPortInfo, self).__init__(name, port)
+        self.connected_value = connected_value
 
 
 class LayoutInfo(Info):
     """Info about the position and visibility of a child block in a layout
 
     Args:
-        mri (str): Malcolm full name of child block
-        x (float): X Coordinate of child block
-        y (float): Y Coordinate of child block
-        visible (bool): Whether child block is visible
+        mri: Malcolm full name of child block
+        x: X Coordinate of child block
+        y: Y Coordinate of child block
+        visible: Whether child block is visible
     """
     def __init__(self, mri, x, y, visible):
+        # type: (str, float, float, bool) -> None
         self.mri = mri
         self.x = x
         self.y = y
         self.visible = visible
 
 
-class PortInfo(Info):
-    """Info about a port and its value in a class
+class PartExportableInfo(Info):
+    """Info about the exportable fields and port infos for a Part
 
     Args:
-        name (str): The name of the attribute
-        value: Initial value
-        direction (str): Direction of the port e.g. "in" or "out"
-        type (str): Type of the port, e.g. "bool" or "NDArray"
-        extra (str): For outports, value that will be set when port is selected,
-            e.g. "PCOMP1.OUT" or "DET.STATS". For inports, value that will be
-            set when port is disconnected, e.g. "" or "ZERO"
+        names: The list of fields that the Part thinks are exportable
+        port_infos: The list of PortInfo objects that the Part exposes
     """
-    def __init__(self, name, value, direction, type, extra):
-        self.name = name
-        self.value = value
-        assert direction in ("in", "out"), \
-            "Direction should be 'in' or 'out', got %r" % direction
-        self.direction = direction
-        assert type in port_types, \
-            "Type should be in %s, got %r" % (port_types, type)
-        self.type = type
-        self.extra = extra
+    def __init__(self, names, port_infos):
+        # type: (List[str], List[PortInfo]) -> None
+        self.names = names
+        self.port_infos = port_infos
 
+
+class PartModifiedInfo(Info):
+    """Info about whether the part was modified or not
+
+    Args:
+        alarm: An alarm with a message showing the attributes modified
+    """
+    def __init__(self, alarm=None):
+        # type: (Alarm) -> None
+        self.alarm = alarm
+
+
+class NotifyDispatchInfo(Info):
+    """Tell the Context to call this before dispatching a request
+
+    Args:
+        notify_dispatch: The function to call
+    """
+    def __init__(self, notify_dispatch):
+        # type: (Callable[[Request], None]) -> None
+        self.notify_dispatch = notify_dispatch

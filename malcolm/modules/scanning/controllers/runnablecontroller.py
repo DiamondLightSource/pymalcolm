@@ -1,277 +1,123 @@
-from malcolm.core import method_takes, REQUIRED, method_also_takes, \
-    method_writeable_in, Hook, AbortedError, MethodModel, Queue, \
-    call_with_params, Context, ABORT_TIMEOUT, TimeoutError, method_returns
-from malcolm.modules.builtin.controllers import ManagerStates, \
-    ManagerController
-from malcolm.core.vmetas import NumberMeta, StringArrayMeta
-from malcolm.modules.scanning.infos import ParameterTweakInfo
-from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
-from malcolm.core.tags import widget, config_tag
+from annotypes import Anno, Array, TYPE_CHECKING, add_call_types
+from scanpointgenerator import CompoundGenerator
 
+from malcolm.core import AbortedError, MethodModel, Queue, \
+    Context, TimeoutError, AMri, NumberMeta, StringArrayMeta, Widget, \
+    config_tag, Part, ABORT_TIMEOUT
+from malcolm.modules.builtin.controllers import ManagerController, \
+    AConfigDir, AInitialDesign, ADescription, AUseCothread, AUseGit
+from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
+from ..util import RunnableStates, AGenerator, AAxesToMove, ConfigureParams, \
+    UAxesToMove
+from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
+    RunHook, PostRunArmedHook, PostRunReadyHook, ResumeHook, ReportStatusHook, \
+    AbortHook, PauseHook, SeekHook, ControllerHook
 
-class RunnableStates(ManagerStates):
-    """A state set listing the valid transitions for a `RunnableController`"""
+if TYPE_CHECKING:
+    from typing import Dict, Tuple, List, Any, Iterable, Type, Callable
 
-    CONFIGURING = "Configuring"
-    ARMED = "Armed"
-    RUNNING = "Running"
-    POSTRUN = "PostRun"
-    PAUSED = "Paused"
-    SEEKING = "Seeking"
-    ABORTING = "Aborting"
-    ABORTED = "Aborted"
-
-    def create_block_transitions(self):
-        super(RunnableStates, self).create_block_transitions()
-        # Set transitions for normal states
-        self.set_allowed(self.READY, self.CONFIGURING)
-        self.set_allowed(self.CONFIGURING, self.ARMED)
-        self.set_allowed(self.ARMED,
-                         self.RUNNING, self.SEEKING, self.RESETTING)
-        self.set_allowed(self.RUNNING, self.POSTRUN, self.SEEKING)
-        self.set_allowed(self.POSTRUN, self.READY, self.ARMED)
-        self.set_allowed(self.SEEKING, self.ARMED, self.PAUSED)
-        self.set_allowed(self.PAUSED, self.SEEKING, self.RUNNING)
-
-        # Add Abort to all normal states
-        normal_states = [
-            self.READY, self.CONFIGURING, self.ARMED, self.RUNNING,
-            self.POSTRUN, self.PAUSED, self.SEEKING]
-        for state in normal_states:
-            self.set_allowed(state, self.ABORTING)
-
-        # Set transitions for aborted states
-        self.set_allowed(self.ABORTING, self.ABORTED)
-        self.set_allowed(self.ABORTED, self.RESETTING)
-
+    PartContextParams = Iterable[Tuple[Part, Context, ConfigureParams]]
+    PartConfigureParams = Dict[Part, ConfigureParams]
 
 ss = RunnableStates
 
-
-configure_args = (
-    "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-    "axesToMove", StringArrayMeta(
-        "List of axes in inner dimension of generator that should be moved"),
-    []
-)
-validate_args = configure_args[:-1] + (REQUIRED,)
+with Anno("Default value for configure() axesToMove"):
+    AInitialAxesToMove = Array[str]
+with Anno("The validated configure parameters"):
+    AConfigureParams = ConfigureParams
+with Anno("Step to mark as the last completed step, -1 for current"):
+    ACompletedSteps = int
 
 
-@method_also_takes(
-    "axesToMove", StringArrayMeta("Default value for configure() axesToMove"),
-    []
-)
 class RunnableController(ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # The stateSet that this controller implements
-    stateSet = ss()
+    state_set = ss()
 
-    Validate = Hook()
-    """Called at validate() to check parameters are valid
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        part_info (dict): {part_name: [Info]} returned from ReportStatus
-        params (Map): Any configuration parameters asked for by part validate()
-            method_takes() decorator
-
-    Returns:
-        [`ParameterTweakInfo`] - any parameters tweaks that have occurred
-            to make them compatible with this part. If any are returned,
-            Validate will be re-run with the modified parameters.
-    """
-
-    ReportStatus = Hook()
-    """Called before Validate, Configure, PostRunArmed and Seek hooks to report
-    the current configuration of all parts
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-
-    Returns:
-        [`Info`] - any configuration Info objects relevant to other parts
-    """
-
-    Configure = Hook()
-    """Called at configure() to configure child block for a run
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        completed_steps (int): Number of steps already completed
-        steps_to_do (int): Number of steps we should configure for
-        part_info (dict): {part_name: [Info]} returned from ReportStatus
-        params (Map): Any configuration parameters asked for by part configure()
-            method_takes() decorator
-
-    Returns:
-        [`Info`] - any Info objects that need to be passed to other parts for
-            storing in attributes
-    """
-
-    PostConfigure = Hook()
-    """Called at the end of configure() to store configuration info calculated
-     in the Configure hook
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        part_info (dict): {part_name: [Info]} returned from Configure hook
-    """
-
-    Run = Hook()
-    """Called at run() to start the configured steps running
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        update_completed_steps (callable): If part can report progress, this
-            part should call update_completed_steps(completed_steps, self) with
-            the integer step value each time progress is updated
-    """
-
-    PostRunArmed = Hook()
-    """Called at the end of run() when there are more steps to be run
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        completed_steps (int): Number of steps already completed
-        steps_to_do (int): Number of steps we should configure for
-        part_info (dict): {part_name: [Info]} returned from ReportStatus
-        params (Map): Any configuration parameters asked for by part configure()
-            method_takes() decorator
-    """
-
-    PostRunReady = Hook()
-    """Called at the end of run() when there are no more steps to be run
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-    """
-
-    Pause = Hook()
-    """Called at pause() to pause the current scan before Seek is called
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-    """
-
-    Seek = Hook()
-    """Called at seek() or at the end of pause() to reconfigure for a different
-    number of completed_steps
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        completed_steps (int): Number of steps already completed
-        steps_to_do (int): Number of steps we should configure for
-        part_info (dict): {part_name: [Info]} returned from ReportStatus
-        params (Map): Any configuration parameters asked for by part configure()
-            method_takes() decorator
-    """
-
-    Resume = Hook()
-    """Called at resume() to continue a paused scan
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        update_completed_steps (callable): If part can report progress, this
-            part should call update_completed_steps(completed_steps, self) with
-            the integer step value each time progress is updated
-    """
-
-    Abort = Hook()
-    """Called at abort() to stop the current scan
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-    """
-
-    # Attributes
-    completed_steps = None
-    configured_steps = None
-    total_steps = None
-    axes_to_move = None
-
-    # Params passed to configure()
-    configure_params = None
-    
-    # Shared contexts between Configure, Run, Pause, Seek, Resume
-    part_contexts = None
-
-    # Configure method_models
-    # {part: configure_method_model}
-    configure_method_models = None
-
-    # Stored for pause
-    steps_per_run = 0
-
-    # Progress reporting dict
-    # {part: completed_steps for that part}
-    progress_updates = None
-
-    # Queue so that do_run can wait to see why it was aborted and resume if
-    # needed
-    resume_queue = None
-
-    # Queue so we can wait for aborts to complete
-    abort_queue = None
-
-    @method_writeable_in(ss.FAULT, ss.DISABLED, ss.ABORTED, ss.ARMED)
-    def reset(self):
-        # Override reset to work from aborted too
-        super(RunnableController, self).reset()
-
-    def create_attribute_models(self):
-        for data in super(RunnableController, self).create_attribute_models():
-            yield data
+    def __init__(self,
+                 mri,  # type: AMri
+                 config_dir,  # type: AConfigDir
+                 axes_to_move=None,  # type: AInitialAxesToMove
+                 initial_design="",  # type: AInitialDesign
+                 description="",  # type: ADescription
+                 use_cothread=True,  # type: AUseCothread
+                 use_git=True,  # type: AUseGit
+                 ):
+        super(RunnableController, self).__init__(
+            mri, config_dir, initial_design, description, use_cothread, use_git)
+        # Shared contexts between Configure, Run, Pause, Seek, Resume
+        self.part_contexts = {}  # type: Dict[Part, Context]
+        # Any custom ConfigureParams subclasses requested by Parts
+        self.part_configure_params = {}  # type: PartConfigureParams
+        # Params passed to configure()
+        self.configure_params = None  # type: ConfigureParams
+        # This is the ConfigureParams subclass we should use in configure()
+        self.configure_params_cls = ConfigureParams
+        # Progress reporting dict of completed_steps for each part
+        self.progress_updates = None  # type: Dict[Part, int]
+        # Queue so that do_run can wait to see why it was aborted and resume if
+        # needed
+        self.resume_queue = None  # type: Queue
+        # Queue so we can wait for aborts to complete
+        self.abort_queue = None  # type: Queue
+        # Stored for pause
+        self.steps_per_run = 0  # type: int
         # Create sometimes writeable attribute for the current completed scan
         # step
-        completed_steps_meta = NumberMeta(
+        self.completed_steps = NumberMeta(
             "int32", "Readback of number of scan steps",
-            tags=[widget("textinput")])
-        completed_steps_meta.set_writeable_in(ss.PAUSED, ss.ARMED)
-        self.completed_steps = completed_steps_meta.create_attribute_model(0)
-        yield "completedSteps", self.completed_steps, self.set_completed_steps
+            tags=[Widget.TEXTINPUT.tag()]
+        ).create_attribute_model(0)
+        self.field_registry.add_attribute_model(
+            "completedSteps", self.completed_steps, self.pause)
+        self.set_writeable_in(self.completed_steps, ss.PAUSED, ss.ARMED)
         # Create read-only attribute for the number of configured scan steps
-        configured_steps_meta = NumberMeta(
+        self.configured_steps = NumberMeta(
             "int32", "Number of steps currently configured",
-            tags=[widget("textupdate")])
-        self.configured_steps = configured_steps_meta.create_attribute_model(0)
-        yield "configuredSteps", self.configured_steps, None
+            tags=[Widget.TEXTUPDATE.tag()]
+        ).create_attribute_model(0)
+        self.field_registry.add_attribute_model(
+            "configuredSteps", self.configured_steps)
         # Create read-only attribute for the total number scan steps
-        total_steps_meta = NumberMeta(
+        self.total_steps = NumberMeta(
             "int32", "Readback of number of scan steps",
-            tags=[widget("textupdate")])
-        self.total_steps = total_steps_meta.create_attribute_model(0)
-        yield "totalSteps", self.total_steps, None
+            tags=[Widget.TEXTUPDATE.tag()]
+        ).create_attribute_model(0)
+        self.field_registry.add_attribute_model("totalSteps", self.total_steps)
         # Create sometimes writeable attribute for the default axis names
-        axes_to_move_meta = StringArrayMeta(
+        self.axes_to_move = StringArrayMeta(
             "Default axis names to scan for configure()",
-            tags=[widget("table"), config_tag()])
-        axes_to_move_meta.set_writeable_in(ss.READY)
-        self.axes_to_move = axes_to_move_meta.create_attribute_model(
-            self.params.axesToMove)
-        yield "axesToMove", self.axes_to_move, self.set_axes_to_move
-
-    def start_init(self):
-        self.part_contexts = {}
-        # Populate configure args from any child method hooked to Configure.
-        # If we have runnablechildparts, they will call update_configure_args
-        # during do_init
-        self.configure_method_models = {}
-        # Look for all parts that hook into Configure
-        for part, func_name in self._hooked_func_names[self.Configure].items():
-            if func_name in part.method_models:
-                self.update_configure_args(part, part.method_models[func_name])
-        super(RunnableController, self).start_init()
+            tags=[Widget.TABLE.tag(), config_tag()]
+        ).create_attribute_model(axes_to_move)
+        self.field_registry.add_attribute_model(
+            "axesToMove", self.axes_to_move, self.set_axes_to_move)
+        self.set_writeable_in(self.axes_to_move, ss.READY)
+        # Create the method models
+        self.field_registry.add_method_model(self.validate)
+        configure_model = self.field_registry.add_method_model(self.configure)
+        self.set_writeable_in(configure_model, ss.READY)
+        configure_model.defaults["axesToMove"] = axes_to_move
+        self.set_writeable_in(
+            self.field_registry.add_method_model(self.run), ss.ARMED)
+        self.set_writeable_in(
+            self.field_registry.add_method_model(self.abort),
+            ss.READY, ss.CONFIGURING, ss.ARMED, ss.RUNNING, ss.POSTRUN,
+            ss.PAUSED, ss.SEEKING)
+        self.set_writeable_in(
+            self.field_registry.add_method_model(self.pause),
+            ss.ARMED, ss.PAUSED, ss.RUNNING)
+        self.set_writeable_in(
+            self.field_registry.add_method_model(self.resume), ss.PAUSED)
+        # Override reset to work from aborted too
+        self.set_writeable_in(
+            self.field_registry.get_field("reset"),
+            ss.FAULT, ss.DISABLED, ss.ABORTED, ss.ARMED)
+        # Allow Parts to report their status
+        self.info_registry.add_reportable(
+            RunProgressInfo, self.update_completed_steps)
+        # Allow Parts to request extra items from configure
+        self.info_registry.add_reportable(
+            ConfigureParamsInfo, self.update_configure_params)
 
     def do_reset(self):
         super(RunnableController, self).do_reset()
@@ -279,49 +125,83 @@ class RunnableController(ManagerController):
         self.completed_steps.set_value(0)
         self.total_steps.set_value(0)
 
-    def update_configure_args(self, part, configure_model):
+    def update_configure_params(self, part=None, info=None):
+        # type: (Part, ConfigureParamsInfo) -> None
         """Tell controller part needs different things passed to Configure"""
         with self.changes_squashed:
             # Update the dict
-            self.configure_method_models[part] = configure_model
-            method_models = list(self.configure_method_models.values())
+            if part:
+                self.part_configure_params[part] = info.params
 
-            # Update takes with the things we need
-            default_configure = MethodModel.from_dict(
-                RunnableController.configure.MethodModel.to_dict())
-            default_configure.defaults["axesToMove"] = self.axes_to_move.value
-            method_models.append(default_configure)
+            # Create a new ConfigureParams subclass from the union of all the
+            # call_types
+            class ConfigureParamsSubclass(ConfigureParams):
+                # This will be serialized, so maintain camelCase for axesToMove
+                # noinspection PyPep8Naming
+                def __init__(self, generator,
+                             axesToMove=self.axes_to_move.value, **kwargs):
+                    # type: (AGenerator, UAxesToMove) -> None
+                    super(ConfigureParamsSubclass, self).__init__(
+                        generator, axesToMove)
+                    self.__dict__.update(kwargs)
 
-            # Decorate validate and configure with the sum of its parts
-            self._block.validate.recreate_from_others(method_models)
-            self._block.validate.set_returns(self._block.validate.takes)
-            self._block.configure.recreate_from_others(method_models)
+            # Store it and update its call_types
+            self.configure_params_cls = ConfigureParamsSubclass
+            for part in self.parts.values():
+                for k, anno in self.part_configure_params.get(part, {}).items():
+                    ConfigureParamsSubclass.call_types[k] = anno
+
+            # Update the configure and validate methods with these args
+            configure_model = MethodModel.from_callable(ConfigureParamsSubclass)
+            self._block.validate.set_takes(configure_model.takes)
+            self._block.validate.set_defaults(configure_model.defaults)
+            self._block.validate.set_returns(configure_model.takes)
+            self._block.configure.set_takes(configure_model.takes)
+            self._block.configure.set_defaults(configure_model.defaults)
 
     def set_axes_to_move(self, value):
-        self.axes_to_move.set_value(value)
+        with self.changes_squashed:
+            self.axes_to_move.set_value(value)
+            self.update_configure_params()
 
-    @method_takes(*configure_args)
-    @method_returns(*validate_args)
-    def validate(self, params, returns):
+    def _part_params(self, part_contexts=None, params=None):
+        # type: (Dict[Part, Context]) -> PartContextParams
+        if part_contexts is None:
+            part_contexts = self.part_contexts
+        if params is None:
+            params = self.configure_params
+        for part, context in part_contexts.items():
+            args = {}
+            param_cls = self.part_configure_params.get(part, ConfigureParams)
+            for k in param_cls.call_types:
+                args[k] = getattr(params, k)
+            yield part, context, param_cls(**args)
+
+    def validate(self, generator, axes_to_move, **kwargs):
+        # type: (AGenerator, AAxesToMove, **Any) -> AConfigureParams
         """Validate configuration parameters and return validated parameters.
 
         Doesn't take device state into account so can be run in any state
         """
         iterations = 10
+        # The validated parameters we will eventually return
+        params = self.configure_params_cls(generator, axes_to_move, **kwargs)
         # Make some tasks just for validate
         part_contexts = self.create_part_contexts()
         # Get any status from all parts
-        status_part_info = self.run_hooks(self.ReportStatus, part_contexts)
+        status_part_info = self.run_hooks(
+            ReportStatusHook(p, c) for p, c in part_contexts.items())
         while iterations > 0:
             # Try up to 10 times to get a valid set of parameters
             iterations -= 1
             # Validate the params with all the parts
             validate_part_info = self.run_hooks(
-                self.Validate, part_contexts, status_part_info, **params)
+                ValidateHook(p, c, status_part_info, ps)
+                for p, c, ps in self._part_params(part_contexts, params))
             tweaks = ParameterTweakInfo.filter_values(validate_part_info)
             if tweaks:
                 for tweak in tweaks:
-                    params[tweak.parameter] = tweak.value
+                    setattr(params, tweak.parameter, tweak.value)
                     self.log.debug(
                         "Tweaking %s to %s", tweak.parameter, tweak.value)
             else:
@@ -336,9 +216,9 @@ class RunnableController(ManagerController):
             self.part_contexts[self].sleep(0)
             self.transition(state)
 
-    @method_takes(*configure_args)
-    @method_writeable_in(ss.READY)
-    def configure(self, params):
+    @add_call_types
+    def configure(self, generator, axes_to_move=AAxesToMove(), **kwargs):
+        # type: (AGenerator, AAxesToMove, **Any) -> None
         """Validate the params then configure the device ready for run().
 
         Try to prepare the device as much as possible so that run() is quick to
@@ -349,7 +229,7 @@ class RunnableController(ManagerController):
         return in Aborted state. If something goes wrong it will return in Fault
         state. If the user disables then it will return in Disabled state.
         """
-        self.validate(params, params)
+        params = self.validate(generator, axes_to_move, **kwargs)
         try:
             self.transition(ss.CONFIGURING)
             self.do_configure(params)
@@ -362,14 +242,9 @@ class RunnableController(ManagerController):
             raise
 
     def do_configure(self, params):
+        # type: (ConfigureParams) -> None
         # These are the part tasks that abort() and pause() will operate on
         self.part_contexts = self.create_part_contexts()
-        # Tell these contexts to notify their parts that about things they
-        # modify so it doesn't screw up the modified led
-        for part, context in self.part_contexts.items():
-            # TODO: should be able to use a "Changed" on the registrar object
-            # self.we_modified.add(request.path[-2])
-            context.set_notify_dispatch_request(part.notify_dispatch_request)
         # So add one for ourself too so we can be aborted
         self.part_contexts[self] = Context(self.process)
         # Store the params for use in seek()
@@ -386,16 +261,18 @@ class RunnableController(ManagerController):
         self.steps_per_run = self._get_steps_per_run(
             params.generator, params.axesToMove)
         # Get any status from all parts
-        part_info = self.run_hooks(self.ReportStatus, self.part_contexts)
+        part_info = self.run_hooks(ReportStatusHook(p, c)
+                                   for p, c in self.part_contexts.items())
         # Run the configure command on all parts, passing them info from
         # ReportStatus. Parts should return any reporting info for PostConfigure
         completed_steps = 0
         steps_to_do = self.steps_per_run
         part_info = self.run_hooks(
-            self.Configure, self.part_contexts, completed_steps, steps_to_do,
-            part_info, **self.configure_params)
+            ConfigureHook(p, c, completed_steps, steps_to_do, part_info, ps)
+            for p, c, ps in self._part_params())
         # Take configuration info and reflect it as attribute updates
-        self.run_hooks(self.PostConfigure, self.part_contexts, part_info)
+        self.run_hooks(PostConfigureHook(p, c, part_info)
+                       for p, c in self.part_contexts.items())
         # Update the completed and configured steps
         self.configured_steps.set_value(steps_to_do)
         # Reset the progress of all child parts
@@ -403,6 +280,7 @@ class RunnableController(ManagerController):
         self.resume_queue = Queue()
 
     def _get_steps_per_run(self, generator, axes_to_move):
+        # type: (CompoundGenerator, List[str]) -> int
         steps = 1
         axes_set = set(axes_to_move)
         for dim in reversed(generator.dimensions):
@@ -418,8 +296,9 @@ class RunnableController(ManagerController):
             steps *= dim.size
         return steps
 
-    @method_writeable_in(ss.ARMED)
+    @add_call_types
     def run(self):
+        # type: () -> None
         """Run a device where configure() has already be called
 
         Normally it will return in Ready state. If setup for multiple-runs with
@@ -434,7 +313,7 @@ class RunnableController(ManagerController):
             next_state = ss.READY
         try:
             self.transition(ss.RUNNING)
-            hook = self.Run
+            hook = RunHook
             going = True
             while going:
                 try:
@@ -445,7 +324,7 @@ class RunnableController(ManagerController):
                     should_resume = self.resume_queue.get()
                     if should_resume:
                         # we need to resume
-                        hook = self.Resume
+                        hook = ResumeHook
                         self.log.debug("Resuming run")
                     else:
                         # we don't need to resume, just drop out
@@ -460,32 +339,36 @@ class RunnableController(ManagerController):
             raise
 
     def do_run(self, hook):
-        self.run_hooks(hook, self.part_contexts, self.update_completed_steps)
+        # type: (Type[ControllerHook]) -> None
+        self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
         self.abortable_transition(ss.POSTRUN)
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             steps_to_do = self.steps_per_run
-            part_info = self.run_hooks(self.ReportStatus, self.part_contexts)
+            part_info = self.run_hooks(
+                ReportStatusHook(p, c) for p, c in self.part_contexts.items())
             self.completed_steps.set_value(completed_steps)
             self.run_hooks(
-                self.PostRunArmed, self.part_contexts, completed_steps,
-                steps_to_do, part_info, **self.configure_params)
+                PostRunArmedHook(
+                    p, c, completed_steps, steps_to_do, part_info, ps)
+                for p, c, ps in self._part_params())
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
-            self.run_hooks(self.PostRunReady, self.part_contexts)
+            self.run_hooks(
+                PostRunReadyHook(p, c) for p, c in self.part_contexts.items())
 
-    def update_completed_steps(self, completed_steps, part):
+    def update_completed_steps(self, part, completed_steps):
+        # type: (object, RunProgressInfo) -> None
         with self._lock:
             # Update
-            self.progress_updates[part] = completed_steps
+            self.progress_updates[part] = completed_steps.steps
             min_completed_steps = min(self.progress_updates.values())
             if min_completed_steps > self.completed_steps.value:
                 self.completed_steps.set_value(min_completed_steps)
 
-    @method_writeable_in(
-        ss.READY, ss.CONFIGURING, ss.ARMED, ss.RUNNING, ss.POSTRUN, ss.PAUSED,
-        ss.SEEKING)
+    @add_call_types
     def abort(self):
+        # type: () -> None
         """Abort the current operation and block until aborted
 
         Normally it will return in Aborted state. If something goes wrong it
@@ -498,9 +381,12 @@ class RunnableController(ManagerController):
         self.try_aborting_function(ss.ABORTING, ss.ABORTED, self.do_abort)
 
     def do_abort(self):
-        self.run_hooks(self.Abort, self.create_part_contexts())
+        # type: () -> None
+        self.run_hooks(
+            AbortHook(p, c) for p, c in self.create_part_contexts().items())
 
     def try_aborting_function(self, start_state, end_state, func, *args):
+        # type: (str, str, Callable[..., None], *Any) -> None
         try:
             # To make the running function fail we need to stop any running
             # contexts (if running a hook) or make transition() fail with
@@ -531,21 +417,13 @@ class RunnableController(ManagerController):
             self.go_to_error_state(e)
             raise
 
-    def set_completed_steps(self, completed_steps):
-        """Seek a Armed or Paused scan back to another value
-
-        Normally it will return in the state it started in. If the user aborts
-        then it will return in Aborted state. If something goes wrong it will
-        return in Fault state. If the user disables then it will return in
-        Disabled state.
-        """
-        call_with_params(self.pause, completedSteps=completed_steps)
-
-    @method_writeable_in(ss.ARMED, ss.PAUSED, ss.RUNNING)
-    @method_takes("completedSteps", NumberMeta(
-        "int32", "Step to mark as the last completed step, -1 for current"), -1)
-    def pause(self, params):
-        """Pause a run() so that resume() can be called later.
+    # Allow camelCase as this will be serialized
+    # noinspection PyPep8Naming
+    @add_call_types
+    def pause(self, completedSteps=-1):
+        # type: (ACompletedSteps) -> None
+        """Pause a run() so that resume() can be called later, or seek within
+        an Armed or Paused state.
 
         The original call to run() will not be interrupted by pause(), it will
         with until the scan completes or is aborted.
@@ -555,10 +433,10 @@ class RunnableController(ManagerController):
         state. If the user disables then it will return in Disabled state.
         """
         current_state = self.state.value
-        if params.completedSteps < 0:
+        if completedSteps < 0:
             completed_steps = self.completed_steps.value
         else:
-            completed_steps = params.completedSteps
+            completed_steps = completedSteps
         if current_state == ss.RUNNING:
             next_state = ss.PAUSED
         else:
@@ -569,18 +447,22 @@ class RunnableController(ManagerController):
             ss.SEEKING, next_state, self.do_pause, completed_steps)
 
     def do_pause(self, completed_steps):
-        self.run_hooks(self.Pause, self.create_part_contexts())
+        # type: (int) -> None
+        self.run_hooks(
+            PauseHook(p, c) for p, c in self.create_part_contexts().items())
         in_run_steps = completed_steps % self.steps_per_run
         steps_to_do = self.steps_per_run - in_run_steps
-        part_info = self.run_hooks(self.ReportStatus, self.part_contexts)
+        part_info = self.run_hooks(
+            ReportStatusHook(p, c) for p, c in self.part_contexts.items())
         self.completed_steps.set_value(completed_steps)
         self.run_hooks(
-            self.Seek, self.part_contexts, completed_steps,
-            steps_to_do, part_info, **self.configure_params)
+            SeekHook(p, c, completed_steps, steps_to_do, part_info, params)
+            for p, c, params in self._part_params())
         self.configured_steps.set_value(completed_steps + steps_to_do)
 
-    @method_writeable_in(ss.PAUSED)
+    @add_call_types
     def resume(self):
+        # type: () -> None
         """Resume a paused scan.
 
         Normally it will return in Running state. If something goes wrong it
@@ -591,6 +473,7 @@ class RunnableController(ManagerController):
         # self.run will now take over
 
     def do_disable(self):
+        # type: () -> None
         # Abort anything that is currently running, but don't wait
         for context in self.part_contexts.values():
             context.stop()

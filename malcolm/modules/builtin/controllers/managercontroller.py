@@ -2,89 +2,56 @@ import os
 import subprocess
 
 import numpy as np
+from annotypes import TYPE_CHECKING, Anno
 
 from malcolm.compat import OrderedDict
-from malcolm.core import method_writeable_in, method_takes, Hook, Table, \
-    json_encode, json_decode, method_also_takes, REQUIRED, Unsubscribe, \
-    Subscribe, deserialize_object, Delta, Context, AttributeModel, Alarm, \
-    AlarmSeverity, AlarmStatus
-from malcolm.modules.builtin.infos import LayoutInfo
-from malcolm.core.vmetas import BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, \
-    ChoiceMeta, NumberArrayMeta, StringArrayMeta, StringMeta, TableMeta
-from malcolm.core.tags import widget, config_tag
-from .statefulcontroller import StatefulController, StatefulStates, AContext
+from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
+    deserialize_object, Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
+    AlarmStatus, Part, Queue, BooleanMeta, config_tag, Widget, ChoiceMeta, \
+    TableMeta
+from malcolm.modules.builtin.util import ManagerStates
+from ..hooks import LayoutHook, LoadHook, SaveHook
+from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo
+from ..util import LayoutTable, ExportTable
+from .statefulcontroller import StatefulController, AMri, \
+    ADescription, AUseCothread
 
-
-class ManagerStates(StatefulStates):
-    SAVING = "Saving"
-    LOADING = "Loading"
-
-    def create_block_transitions(self):
-        super(ManagerStates, self).create_block_transitions()
-        self.set_allowed(self.READY, self.SAVING)
-        self.set_allowed(self.SAVING, self.READY)
-        self.set_allowed(self.READY, self.LOADING)
-        self.set_allowed(self.LOADING, self.READY)
+if TYPE_CHECKING:
+    from typing import Tuple
 
 
 ss = ManagerStates
 
 
+with Anno("Directory to write save/load config to"):
+    AConfigDir = str
+with Anno("Design to load at init"):
+    AInitialDesign = str
+with Anno("Use git to manage to saved config files"):
+    AUseGit = bool
+with Anno("Name of design to save, if different from current design"):
+    ASaveDesign = str
 
 
-Layout = Hook()
-"""
-
-Args:
-    context (Context): The context that should be used to perform operations
-        on child blocks
-    part_info (dict): {part_name: [Info]} returned from Layout hook
-    layout_table (Table): A possibly partial set of changes to the layout
-        table that should be acted on
-
-Returns:
-    [`LayoutInfo`] - the child layout resulting from this change
-"""
-
-Load = Hook()
-"""Called at load() or revert() to load child settings from a structure
-
-Args:
-    context (Context): The context that should be used to perform operations
-        on child blocks
-    structure (dict): {part_name: part_structure} where part_structure is
-        the return from Save hook
-"""
-
-Save = Hook()
-"""Called at save() to serialize child settings into a dict structure
-
-Args:
-    context (Context): The context that should be used to perform operations
-        on child blocks
-
-Returns:
-    dict: serialized version of the child that could be loaded from
-"""
-
-
-@method_also_takes(
-    "configDir", StringMeta("Directory to write save/load config to"), REQUIRED,
-    "initialDesign", StringMeta("Design to load at init"), "",
-    "useGit", BooleanMeta("Use git to manage to saved config files"), True,
-)
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
-    stateSet = ss()
+    state_set = ss()
 
-    # Attributes
-    layout = None
-    design = None
-    exports = None
-    modified = None
-
-    def __init__(self, process, parts, params):
-        super(ManagerController, self).__init__(process, parts, params)
+    def __init__(self,
+                 mri,  # type: AMri
+                 config_dir,  # type: AConfigDir
+                 initial_design="",  # type: AInitialDesign
+                 description="",  # type: ADescription
+                 use_cothread=True,  # type: AUseCothread
+                 use_git=True,  # type: AUseGit
+                 ):
+        # type: (...) -> None
+        super(ManagerController, self).__init__(mri, description, use_cothread)
+        assert os.path.isdir(self.config_dir), \
+            "%s is not a directory" % self.config_dir
+        self.config_dir = config_dir
+        self.initial_design = initial_design
+        self.use_git = use_git
         # last saved layout and exports
         self.saved_visibility = None
         self.saved_exports = None
@@ -100,101 +67,88 @@ class ManagerController(StatefulController):
         self.part_modified = {}
         # Whether to do updates
         self._do_update = True
+        # The reportable infos we are listening for
+        self.info_registry.add_reportable(
+            PartModifiedInfo, self.update_modified)
+        # Update queue of exportable fields
+        self.info_registry.add_reportable(
+            PartExportableInfo, self.update_exportable)
+        # Create a layout table attribute for setting block positions
+        self.layout = TableMeta.from_table(
+            LayoutTable, "Layout of child blocks", Widget.FLOWGRAPH
+        ).create_attribute_model()
+        self.set_writeable_in(self.layout, ss.READY)
+        self.field_registry.add_attribute_model(
+            "layout", self.layout, self.set_layout)
+        # Create a design attribute for loading an existing layout
+        self.design = ChoiceMeta(
+            "Design name to load", tags=[config_tag(), Widget.COMBO.tag()]
+        ).create_attribute_model()
+        self.field_registry.add_attribute_model(
+            "design", self.design, self.set_design)
+        self.set_writeable_in(self.design, ss.READY)
+        # Create an export table for mirroring exported fields
+        self.exports = TableMeta.from_table(
+            LayoutTable, "Exported fields of child blocks"
+        ).create_attribute_model()
+        self.set_writeable_in(self.exports, ss.READY)
+        self.field_registry.add_attribute_model(
+            "exports", self.exports, self.set_exports)
+        # Create read-only indicator for when things are modified
+        self.modified = BooleanMeta(
+            "Whether the design is modified", tags=[Widget.LED.tag()]
+        ).create_attribute_model()
+        self.field_registry.add_attribute_model("modified", self.modified)
+        # Create the save method
+        self.set_writeable_in(
+            self.field_registry.add_method_model(self.save), ss.READY)
 
     def _run_git_cmd(self, *args):
         # Run git command, don't care if it fails, logging the output
-        if self.params.useGit:
+        if self.use_git and os.path.isdir(
+                os.path.join(self.config_dir, ".git")):
             try:
                 output = subprocess.check_output(
-                    ("git",) + args, cwd=self.params.configDir)
+                    ("git",) + args, cwd=self.config_dir)
             except subprocess.CalledProcessError as e:
                 self.log.warning("Git command failed: %s\n%s", e, e.output)
             else:
                 self.log.debug("Git command completed: %s", output)
 
-    def create_attribute_models(self):
-        for data in super(ManagerController, self).create_attribute_models():
-            yield data
-        assert os.path.isdir(self.params.configDir), \
-            "%s is not a directory" % self.params.configDir
-        if not os.path.isdir(os.path.join(self.params.configDir, ".git")):
-            # Try and make it a git repo, don't care if it fails
-            self._run_git_cmd("init")
-            self._run_git_cmd("commit", "--allow-empty", "-m", "Created repo")
-        # Create writeable attribute table for the layout info we need
-        elements = OrderedDict()
-        elements["name"] = StringArrayMeta("Name of layout part")
-        elements["mri"] = StringArrayMeta("Malcolm full name of child block")
-        elements["x"] = NumberArrayMeta(
-            "float64", "X Coordinate of child block")
-        elements["y"] = NumberArrayMeta(
-            "float64", "Y Coordinate of child block")
-        elements["visible"] = BooleanArrayMeta("Whether child block is visible")
-        layout_table_meta = TableMeta(
-            "Layout of child blocks", elements=elements,
-            tags=[widget("flowgraph")])
-        layout_table_meta.set_writeable_in(ss.READY)
-        self.layout = layout_table_meta.create_attribute_model()
-        yield "layout", self.layout, self.set_layout
-        # Create writeable attribute for loading an existing layout
-        design_meta = ChoiceMeta(
-            "Design name to load", tags=[config_tag(), widget("combo")])
-        design_meta.set_writeable_in(ss.READY)
-        self.design = design_meta.create_attribute_model()
-        yield "design", self.design, self.set_design
-        # Create writeable attribute table for the exported fields
-        elements = OrderedDict()
-        elements["name"] = ChoiceArrayMeta("Name of exported block.field")
-        elements["exportName"] = StringArrayMeta(
-            "Name of the field within current block")
-        exports_table_meta = TableMeta(
-            "Exported fields of child blocks", tags=[widget("table")],
-            elements=elements)
-        exports_table_meta.set_writeable_in(ss.READY)
-        self.exports = exports_table_meta.create_attribute_model()
-        yield "exports", self.exports, self.set_exports
-        # Create read-only indicator for when things are modified
-        modified_meta = BooleanMeta(
-            "Whether the design is modified", tags=[widget("led")])
-        self.modified = modified_meta.create_attribute_model()
-        yield "modified", self.modified, None
-
-    def start_init(self):
-        # This will do an initial poll of the exportable parts,
-        # so don't update here
-        super(ManagerController, self).start_init()
+    def do_init(self):
+        super(ManagerController, self).do_init()
+        # Try and make it a git repo, don't care if it fails
+        self._run_git_cmd("init")
+        self._run_git_cmd("commit", "--allow-empty", "-m", "Created repo")
         # List the configDir and add to choices
         self._set_layout_names()
         # This will trigger all parts to report their layout, making sure
         # the layout table has a valid value. This will also call
         # self._update_block_endpoints()
-        self.set_layout(Table(self.layout.meta))
+        self.set_layout(LayoutTable([], [], [], [], []))
         # If given a default config, load this
-        if self.params.initialDesign:
-            self.do_load(self.params.initialDesign)
+        if self.initial_design:
+            self.do_load(self.initial_design)
 
     def set_layout(self, value):
         """Set the layout table value. Called on attribute put"""
-        # If it isn't a table, make it one
-        if not isinstance(value, Table):
-            value = Table(self.layout.meta, value)
         # Can't do this with changes_squashed as it will call update_modified
-        # from another thread and deadlock
+        # from another thread and deadlock. Need RLock.is_owned() from update_*
         part_info = self.run_hooks(
-            self.Layout, self.create_part_contexts(only_visible=False),
-            self.port_info, value)
+            LayoutHook(p, c, self.port_info, value)
+            for p, c in self.create_part_contexts(only_visible=False).items())
         with self.changes_squashed:
-            layout_table = Table(self.layout.meta)
             layout_parts = LayoutInfo.filter_parts(part_info)
+            layout_table = LayoutTable(
+                name=list(layout_parts),
+                mri=[i.mri for i in layout_parts.values()],
+                x=[i.x for i in layout_parts.values()],
+                y=[i.y for i in layout_parts.values()],
+                visible=[i.visible for i in layout_parts.values()])
             for name, layout_infos in layout_parts.items():
                 assert len(layout_infos) == 1, \
                     "%s returned more than 1 layout infos" % name
                 layout_parts[name] = layout_infos[0]
-            layout_table.name = list(layout_parts)
-            layout_table.mri = [i.mri for i in layout_parts.values()]
-            layout_table.x = [i.x for i in layout_parts.values()]
-            layout_table.y = [i.y for i in layout_parts.values()]
-            layout_table.visible = [i.visible for i in layout_parts.values()]
             try:
                 np.testing.assert_equal(
                     layout_table.visible, self.layout.value.visible)
@@ -220,11 +174,12 @@ class ManagerController(StatefulController):
             self.update_modified()
             self._update_block_endpoints()
 
-    def update_modified(self, part=None, alarm=None):
+    def update_modified(self, part=None, info=None):
+        # type: (Part, PartModifiedInfo) -> None
         with self.changes_squashed:
-            # Update the alarm for the given part
             if part:
-                self.part_modified[part] = alarm
+                # Update the alarm for the given part
+                self.part_modified[part] = info.alarm
             # Find the modified alarms for each visible part
             message_list = []
             only_modified_by_us = True
@@ -261,11 +216,12 @@ class ManagerController(StatefulController):
             else:
                 self.modified.set_value(False)
 
-    def update_exportable(self, part=None, fields=None, port_infos=None):
+    def update_exportable(self, part=None, info=None):
+        # type: (Part, PartExportableInfo) -> None
         with self.changes_squashed:
             if part:
-                self.part_exportable[part] = fields
-                self.port_info[part.name] = port_infos
+                self.part_exportable[part] = info.fields
+                self.port_info[part.name] = info.port_infos
             # Find the exportable fields for each visible part
             names = []
             for part in self.parts.values():
@@ -300,7 +256,8 @@ class ManagerController(StatefulController):
         # Clear out the current subscriptions
         for subscription in self._subscriptions:
             controller = self.process.get_controller(subscription.path[0])
-            unsubscribe = Unsubscribe(subscription.id, subscription.callback)
+            unsubscribe = Unsubscribe(subscription.id)
+            unsubscribe.set_callback(subscription.callback)
             controller.handle_request(unsubscribe)
         self._subscriptions = []
 
@@ -323,9 +280,8 @@ class ManagerController(StatefulController):
                     yield data
 
         # Add exported fields from visible parts
-        for name, export_name in zip(
-                self.exports.value.name, self.exports.value.exportName):
-            part_name, attr_name = name.rsplit(".", 1)
+        for source, export_name in self.exports.value.rows():
+            part_name, attr_name = source.rsplit(".", 1)
             part = self.parts[part_name]
             # If part is visible, get its mri
             mri = mris.get(part_name, None)
@@ -365,7 +321,8 @@ class ManagerController(StatefulController):
                             ob = ob[p]
                         getattr(ob, "set_%s" % cp[-1])(value)
 
-        subscription = Subscribe(path=path, delta=True, callback=update_field)
+        subscription = Subscribe(path=path, delta=True)
+        subscription.set_callback(update_field)
         self._subscriptions.append(subscription)
         # When we have waited for the subscription, the first update_field
         # will have been called
@@ -381,15 +338,10 @@ class ManagerController(StatefulController):
                     part_contexts.pop(self.parts[part_name])
         return part_contexts
 
-    @method_writeable_in(ss.READY)
-    @method_takes(
-        "design", StringMeta(
-            "Name of design to save, if different from current design",
-            tags=[widget("textinput")]), "")
-    def save(self, params):
+    def save(self, design=""):
+        # type: (ASaveDesign) -> None
         """Save the current design to file"""
-        self.try_stateful_function(
-            ss.SAVING, ss.READY, self.do_save, params.design)
+        self.try_stateful_function(ss.SAVING, ss.READY, self.do_save, design)
 
     def do_save(self, design=""):
         if not design:
@@ -397,38 +349,32 @@ class ManagerController(StatefulController):
         assert design, "Please specify save design name when saving from new"
         structure = OrderedDict()
         # Add the layout table
-        part_layouts = {}
-        for name, x, y, visible in sorted(
-                zip(self.layout.value.name, self.layout.value.x,
-                    self.layout.value.y, self.layout.value.visible)):
+        part_layouts = OrderedDict()
+        for name, mri, x, y, visible in self.layout.value.rows():
             layout_structure = OrderedDict()
             layout_structure["x"] = x
             layout_structure["y"] = y
             layout_structure["visible"] = visible
             part_layouts[name] = layout_structure
-        structure["layout"] = OrderedDict()
-        for part_name in self.parts:
-            if part_name in part_layouts:
-                structure["layout"][part_name] = part_layouts[part_name]
+        structure["layout"] = part_layouts
         # Add the exports table
         structure["exports"] = OrderedDict()
-        for name, export_name in sorted(
-                zip(self.exports.value.name, self.exports.value.exportName)):
-            structure["exports"][name] = export_name
+        for source, export in self.exports.value.rows():
+            structure["exports"][source] = export
         # Add any structure that a child part wants to save
         part_structures = self.run_hooks(
-            self.Save, self.create_part_contexts(only_visible=False))
-        for part_name, part_structure in sorted(part_structures.items()):
+            SaveHook(p, c)
+            for p, c in self.create_part_contexts(only_visible=False))
+        for part_name, part_structure in part_structures.items():
             structure[part_name] = part_structure
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
         with open(filename, "w") as f:
             f.write(text)
-        if os.path.isdir(os.path.join(self.params.configDir, ".git")):
-            # Try and commit the file to git, don't care if it fails
-            self._run_git_cmd("add", filename)
-            msg = "Saved %s %s" % (self.mri, design)
-            self._run_git_cmd("commit", "--allow-empty", "-m", msg, filename)
+        # Try and commit the file to git, don't care if it fails
+        self._run_git_cmd("add", filename)
+        msg = "Saved %s %s" % (self.mri, design)
+        self._run_git_cmd("commit", "--allow-empty", "-m", msg, filename)
         self._mark_clean(design)
 
     def _set_layout_names(self, extra_name=None):
@@ -456,7 +402,7 @@ class ManagerController(StatefulController):
         return filename
 
     def _make_config_dir(self):
-        dir_name = os.path.join(self.params.configDir, self.mri)
+        dir_name = os.path.join(self.config_dir, self.mri)
         try:
             os.mkdir(dir_name)
         except OSError:
@@ -478,21 +424,24 @@ class ManagerController(StatefulController):
         else:
             structure = {}
         # Set the layout table
-        layout_table = Table(self.layout.meta)
-        for part_name, part_structure in structure.get("layout", {}).items():
-            layout_table.append([
-                part_name, "", part_structure["x"], part_structure["y"],
-                part_structure["visible"]])
-        self.set_layout(layout_table)
+        name, mri, x, y, visible = [], [], [], [], []
+        for part_name, d in structure.get("layout", {}).items():
+            name.append(part_name)
+            mri.append("")
+            x.append(d["x"])
+            y.append(d["y"])
+            visible.append(d["visible"])
+        self.set_layout(LayoutTable(name, mri, x, y, visible))
         # Set the exports table
-        exports_table = Table(self.exports.meta)
-        for name, export_name in structure.get("exports", {}).items():
-            exports_table.append([name, export_name])
-        self.exports.set_value(exports_table)
+        source, export = [], []
+        for source_name, export_name in structure.get("exports", {}).items():
+            source.append(source_name)
+            export.append(export_name)
+        self.exports.set_value(ExportTable(source, export))
         # Run the load hook to get parts to load their own structure
-        self.run_hooks(self.Load,
-                       self.create_part_contexts(only_visible=False),
-                       structure)
+        self.run_hooks(
+            LoadHook(p, c, structure.get(p.name, {}))
+            for p, c in self.create_part_contexts(only_visible=False))
         self._mark_clean(design)
 
     def _mark_clean(self, design):

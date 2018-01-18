@@ -7,7 +7,7 @@ from malcolm.core import method_takes, REQUIRED
 from malcolm.modules.ADCore.infos import CalculatedNDAttributeDatasetInfo, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
     attribute_dataset_types, UniqueIdInfo
-from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.builtin.parts import ChildPart
 from malcolm.core.vmetas import StringMeta
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
@@ -15,7 +15,7 @@ from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 SUFFIXES = "NXY3456789"
 
 
-class HDFWriterPart(StatefulChildPart):
+class HDFWriterPart(ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
     # Attributes
     datasets = None

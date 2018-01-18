@@ -31,11 +31,13 @@ class Request(Serializable):
     """Request object that registers a callback for when action is complete."""
     __slots__ = ["id", "callback"]
 
+    # Allow id to shadow builtin id so id is a key in the serialized dict
+    # noinspection PyShadowingBuiltins
     def __init__(self, id=0):
         # type: (AId) -> None
         self.id = id
 
-        def callback(value):
+        def callback(_):
             # type: (Response) -> None
             pass
 
@@ -71,6 +73,8 @@ class Request(Serializable):
 class PathRequest(Request):
     __slots__ = ["path"]
 
+    # Allow id to shadow builtin id so id is a key in the serialized dict
+    # noinspection PyShadowingBuiltins
     def __init__(self, id=0, path=None):
         # type: (AId, UPath) -> None
         super(PathRequest, self).__init__(id)
@@ -88,6 +92,8 @@ class Put(PathRequest):
     """Create a Put Request object"""
     __slots__ = ["value"]
 
+    # Allow id to shadow builtin id so id is a key in the serialized dict
+    # noinspection PyShadowingBuiltins
     def __init__(self, id=0, path=None, value=None):
         # type: (AId, UPath, AValue) -> None
         super(Put, self).__init__(id, path)
@@ -99,6 +105,8 @@ class Post(PathRequest):
     """Create a Post Request object"""
     __slots__ = ["parameters"]
 
+    # Allow id to shadow builtin id so id is a key in the serialized dict
+    # noinspection PyShadowingBuiltins
     def __init__(self, id=0, path=None, parameters=None):
         # type: (AId, UPath, AParameters) -> None
         super(Post, self).__init__(id, path)
@@ -113,6 +121,8 @@ class Subscribe(PathRequest):
     """Create a Subscribe Request object"""
     __slots__ = ["delta"]
 
+    # Allow id to shadow builtin id so id is a key in the serialized dict
+    # noinspection PyShadowingBuiltins
     def __init__(self, id=0, path=None, delta=False):
         # type: (AId, UPath, ADifferences) -> None
         super(Subscribe, self).__init__(id, path)

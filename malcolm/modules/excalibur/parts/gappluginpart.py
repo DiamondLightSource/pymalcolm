@@ -1,10 +1,10 @@
 from malcolm.core import method_takes
-from malcolm.modules.builtin.parts import StatefulChildPart
+from malcolm.modules.builtin.parts import ChildPart
 from malcolm.core.vmetas import NumberMeta
 from malcolm.modules.scanning.controllers import RunnableController
 
 
-class GapPluginPart(StatefulChildPart):
+class GapPluginPart(ChildPart):
     """Gap plugin for setting the fill value"""
     @RunnableController.Configure
     @method_takes(

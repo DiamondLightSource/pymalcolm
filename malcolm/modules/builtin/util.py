@@ -1,7 +1,7 @@
-from annotypes import Anno
+from annotypes import Anno, Array, Union, Sequence
 
-from malcolm.core import VMeta, Widget, group_tag, config_tag, Port
-
+from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
+    StateSet
 
 with Anno("Is the attribute writeable?"):
     AWriteable = bool
@@ -37,3 +37,86 @@ def set_tags(meta,  # type: VMeta
     if inport:
         tags.append(inport.inport_tag(disconnected_value=""))
     meta.set_tags(tags)
+
+
+with Anno("Names of the layout parts"):
+    ANameArray = Array[str]
+with Anno("Malcolm full names of child blocks"):
+    AMriArray = Array[str]
+with Anno("X Coordinates of child blocks"):
+    AXArray = Array[float]
+with Anno("Y Coordinates of child blocks"):
+    AYArray = Array[float]
+with Anno("Whether child blocks are visible"):
+    AVisibleArray = Array[bool]
+UNameArray = Union(ANameArray, Sequence[str])
+UMriArray = Union(AMriArray, Sequence[str])
+UXArray = Union(AXArray, Sequence[float])
+UYArray = Union(AYArray, Sequence[float])
+UVisibleArray = Union(AVisibleArray, Sequence[bool])
+
+
+class LayoutTable(Table):
+    def __init__(self, name, mri, x, y, visible):
+        # type: (UNameArray, UMriArray, UXArray, UYArray, UVisibleArray) -> None
+        self.name = ANameArray(name)
+        self.mri = AMriArray(mri)
+        self.x = AXArray(x)
+        self.y = AYArray(y)
+        self.visible = AVisibleArray(visible)
+
+
+with Anno("Name of the block.field to export"):
+    ASourceNameArray = Array[str]
+with Anno("Name of the field to export as"):
+    AExportNameArray = Array[str]
+USourceNameArray = Union[ASourceNameArray, Sequence[str]]
+UExportNameArray = Union[AExportNameArray, Sequence[str]]
+
+
+class ExportTable(Table):
+    def __init__(self, source, export):
+        # type: (USourceNameArray, UExportNameArray) -> None
+        self.source = USourceNameArray(source)
+        self.export = UExportNameArray(export)
+
+
+class StatefulStates(StateSet):
+    """The most basic Malcolm state machine"""
+
+    RESETTING = "Resetting"
+    DISABLED = "Disabled"
+    DISABLING = "Disabling"
+    FAULT = "Fault"
+    READY = "Ready"
+
+    def __init__(self):
+        super(StatefulStates, self).__init__()
+        self.create_block_transitions()
+        self.create_error_disable_transitions()
+
+    def create_block_transitions(self):
+        self.set_allowed(self.RESETTING, self.READY)
+
+    def create_error_disable_transitions(self):
+        block_states = self.possible_states[:]
+
+        # Set transitions for standard states
+        for state in block_states:
+            self.set_allowed(state, self.FAULT)
+            self.set_allowed(state, self.DISABLING)
+        self.set_allowed(self.FAULT, self.RESETTING, self.DISABLING)
+        self.set_allowed(self.DISABLING, self.FAULT, self.DISABLED)
+        self.set_allowed(self.DISABLED, self.RESETTING)
+
+
+class ManagerStates(StatefulStates):
+    SAVING = "Saving"
+    LOADING = "Loading"
+
+    def create_block_transitions(self):
+        super(ManagerStates, self).create_block_transitions()
+        self.set_allowed(self.READY, self.SAVING)
+        self.set_allowed(self.SAVING, self.READY)
+        self.set_allowed(self.READY, self.LOADING)
+        self.set_allowed(self.LOADING, self.READY)
