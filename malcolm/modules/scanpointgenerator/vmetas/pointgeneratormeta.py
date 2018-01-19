@@ -1,12 +1,16 @@
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import NTUnion, Serializable, VMeta
+from malcolm.core import NTUnion, Serializable, VMeta, Widget
 
 
 @Serializable.register_subclass("malcolm:core/PointGeneratorMeta:1.0")
+@VMeta.register_annotype_converter(CompoundGenerator)
 class PointGeneratorMeta(VMeta):
 
     attribute_class = NTUnion
+
+    def default_widget(self):
+        return Widget.NONE
 
     def validate(self, value):
         if value is None:

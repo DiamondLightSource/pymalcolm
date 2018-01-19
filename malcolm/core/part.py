@@ -4,6 +4,7 @@ from malcolm.compat import OrderedDict
 from .queue import Queue
 from .hook import Hookable
 from .info import Info
+from .serializable import check_camel_case
 from .spawned import Spawned
 from .models import MethodModel, AttributeModel
 
@@ -55,6 +56,7 @@ class FieldRegistry(object):
 
     def _add_field(self, owner, name, model, writeable_func):
         # type: (object, str, Field, Callable) -> None
+        check_camel_case(name)
         part_fields = self.fields.setdefault(owner, [])
         part_fields.append((name, model, writeable_func))
 
@@ -83,6 +85,8 @@ class InfoRegistry(object):
 
 
 class Part(Hookable):
+    registrar = None  # type: PartRegistrar
+
     def __init__(self, name):
         # type: (APartName) -> None
         self.set_logger(name=name)

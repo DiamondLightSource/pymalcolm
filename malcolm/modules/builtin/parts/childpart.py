@@ -7,11 +7,11 @@ from malcolm.compat import OrderedDict
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
     Unsubscribe, Alarm, AlarmSeverity, AlarmStatus, APartName, PartRegistrar, \
     Hook, Port, Controller, config_tag, Response, Put
-from malcolm.modules.builtin.util import StatefulStates
 from ..infos import PortInfo, LayoutInfo, OutPortInfo, InPortInfo, \
     PartExportableInfo, PartModifiedInfo, NotifyDispatchInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
     AContext, APortMap, ALayoutTable, LoadHook, SaveHook, AStructure
+from ..util import StatefulStates
 
 if TYPE_CHECKING:
     from typing import Dict, Any, Set, List, Type, TypeVar
@@ -51,7 +51,6 @@ class ChildPart(Part):
         self.we_modified = set()  # type: Set[str]
         # {attr_name: PortInfo}
         self.port_infos = {}  # type: Dict[str, PortInfo]
-        self.registrar = None  # type: PartRegistrar
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -70,19 +69,19 @@ class ChildPart(Part):
     def on_hook(self, hook):
         # type: (Hook) -> None
         if isinstance(hook, InitHook):
-            hook.run(self.init)
+            hook(self.init)
         elif isinstance(hook, HaltHook):
-            hook.run(self.halt)
+            hook(self.halt)
         elif isinstance(hook, LayoutHook):
-            hook.run(self.layout)
+            hook(self.layout)
         elif isinstance(hook, LoadHook):
-            hook.run(self.load)
+            hook(self.load)
         elif isinstance(hook, SaveHook):
-            hook.run(self.save)
+            hook(self.save)
         elif isinstance(hook, DisableHook):
-            hook.run(self.disable)
+            hook(self.disable)
         elif isinstance(hook, ResetHook):
-            hook.run(self.reset)
+            hook(self.reset)
 
     @add_call_types
     def init(self, context):
@@ -104,6 +103,7 @@ class ChildPart(Part):
 
     @add_call_types
     def disable(self, context):
+        # type: (AContext) -> None
         # TODO: do we actually want to disable children on disable?
         child = context.block_view(self.mri)
         if "disable" in child and child.disable.writeable:
@@ -111,6 +111,7 @@ class ChildPart(Part):
 
     @add_call_types
     def reset(self, context):
+        # type: (AContext) -> None
         child = context.block_view(self.mri)
         if "reset" in child and child.reset.writeable:
             child.reset()

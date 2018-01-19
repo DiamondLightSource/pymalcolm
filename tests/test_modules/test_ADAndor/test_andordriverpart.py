@@ -3,7 +3,7 @@ from mock import MagicMock, ANY, call
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import call_with_params, Context, Process
 from malcolm.modules.ADAndor.parts import AndorDriverPart
-from malcolm.modules.ADAndor.blocks import andor_detector_driver_block
+from malcolm.modules.ADAndor.blocks import andor_driver_block
 from malcolm.testutil import ChildTestCase
 
 
@@ -13,7 +13,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         self.process = Process("Process")
         self.context = Context(self.process)
         self.child = self.create_child_block(
-            andor_detector_driver_block, self.process,
+            andor_driver_block, self.process,
             mri="mri", prefix="prefix")
         self.o = call_with_params(
             AndorDriverPart, readoutTime=0.002, name="m", mri="mri")

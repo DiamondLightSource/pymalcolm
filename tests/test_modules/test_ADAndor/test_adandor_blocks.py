@@ -8,4 +8,4 @@ class TestADAndorBlocks(ChildTestCase):
     def test_andor_detector_runnable_block(self):
         self.create_child_block(
             andor_detector_runnable_block, Mock(),
-            mriPrefix="mriPrefix", pvPrefix="pvPrefix", configDir="/tmp")
+            mri_prefix="mri_prefix", pv_prefix="pv_prefix", config_dir="/tmp")

@@ -21,12 +21,9 @@
     description: Exposure time for each frame
     pv: $(prefix):AcquireTime
     rbv_suff: _RBV
-    widget: textinput
 
 - ca.parts.CADoublePart:
     name: acquirePeriod
     description: Duration of each frame including readout
     pv: $(prefix):AcquirePeriod
     rbv_suff: _RBV
-    widget: textinput
-

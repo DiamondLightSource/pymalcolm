@@ -1,4 +1,12 @@
+from annotypes import TYPE_CHECKING, TypeVar
+
 from malcolm.compat import OrderedDict
+
+if TYPE_CHECKING:
+    from typing import Type, Dict, List, Union, Sequence
+    PartInfo = Dict[str, Union[None, Sequence]]
+
+T = TypeVar("T")
 
 
 class Info(object):
@@ -7,6 +15,7 @@ class Info(object):
 
     @classmethod
     def filter_parts(cls, part_info):
+        # type: (Type[T], PartInfo) -> Dict[str, List[T]]
         """Filter the part_info dict looking for instances of our class
 
         Args:
@@ -27,6 +36,7 @@ class Info(object):
 
     @classmethod
     def filter_values(cls, part_info):
+        # type: (Type[T], PartInfo) -> List[T]
         """Filter the part_info dict list looking for instances of our class
 
         Args:

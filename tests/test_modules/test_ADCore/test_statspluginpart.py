@@ -20,7 +20,7 @@ class TestStatsPluginPart(ChildTestCase):
         self.process.start()
 
     def test_report_info(self):
-        infos = self.o.report_info(ANY)
+        infos = self.o.report_status(ANY)
         assert len(infos) == 1
         assert infos[0].name == "sum"
         assert infos[0].attr == "STATS_TOTAL"

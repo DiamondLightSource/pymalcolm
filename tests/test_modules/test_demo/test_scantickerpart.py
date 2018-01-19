@@ -38,7 +38,7 @@ class TestScanTickerPart(unittest.TestCase):
     def test_run(self):
         self.prepare_half_run()
         update_completed_steps = MagicMock()
-        self.o.run(self.context, update_completed_steps)
+        self.o.__call__(self.context, update_completed_steps)
         assert self.context.mock_calls == [
             call.block_view("mri"),
             call.block_view().counter.put_value(0),

@@ -1,12 +1,21 @@
-from malcolm.modules.ADCore.parts import DetectorDriverPart
-from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
-from malcolm.modules.scanning.controllers import RunnableController
+from annotypes import add_call_types, Any
+
+from malcolm.modules import ADCore, scanning
 
 
-class XmapDriverPart(DetectorDriverPart):
-    # No numImages or imageMode so no superclass call
-    def setup_detector(self, child, completed_steps, steps_to_do, params=None):
-        fs = child.put_attribute_values_async(dict(
+class XmapDriverPart(ADCore.parts.DetectorDriverPart):
+    """Part for using xmap_driver_block in a scan"""
+
+    @add_call_types
+    def configure(self,
+                  context,  # type: scanning.hooks.AContext
+                  completed_steps,  # type: scanning.hooks.ACompletedSteps
+                  steps_to_do,  # type: scanning.hooks.AStepsToDo
+                  generator,  # type: scanning.hooks.AGenerator
+                  **kwargs  # type: **Any
+                  ):
+        super(XmapDriverPart, self).configure(
+            context, completed_steps, steps_to_do, generator,
             collectMode="MCA mapping",
             pixelAdvanceMode="Gate",
             presetMode="No preset",
@@ -19,13 +28,4 @@ class XmapDriverPart(DetectorDriverPart):
             dxp2MaxEnergy=4.096,
             dxp3MaxEnergy=4.096,
             dxp4MaxEnergy=4.096,
-            inputLogicPolarity="Normal",
-            arrayCounter=completed_steps,
-            arrayCallbacks=True))
-        return fs
-
-    @RunnableController.ReportStatus
-    def report_configuration(self, context):
-        infos = super(XmapDriverPart, self).report_configuration(
-            context) + [NDArrayDatasetInfo(rank=2)]
-        return infos
+            inputLogicPolarity="Normal")

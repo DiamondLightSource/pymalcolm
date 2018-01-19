@@ -21,7 +21,7 @@ class TestBuiltin(unittest.TestCase):
     def test_ticker_block(self):
         process = Mock()
         controller = call_with_params(
-            ticker_block, process, mri="my_mri", configDir="/tmp")
+            ticker_block, process, mri="my_mri", config_dir="/tmp")
         assert list(controller.block_view()) == [
              'meta',
              'health',

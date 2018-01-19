@@ -13,28 +13,23 @@
     description: Whether to produce images or not
     pv: $(prefix):ArrayCallbacks
     rbv_suff: _RBV
-    widget: checkbox
 
 - ca.parts.CALongPart:
     name: arrayCounter
     description: Reset unique id for next frame
     pv: $(prefix):ArrayCounter
-    widget: textinput
 
 - ca.parts.CALongPart:
     name: arrayCounterReadback
     description: Current unique id number for frame
     rbv: $(prefix):ArrayCounter_RBV
-    widget: textupdate
 
 - ca.parts.CALongPart:
     name: uniqueId
     description: Current unique id number for frame
     rbv: $(prefix):UniqueId_RBV
-    widget: textupdate
 
 - ca.parts.CACharArrayPart:
     name: attributesFile
     description: Filename for NDAttributes
     pv: $(prefix):NDAttributesFile
-    widget: textinput

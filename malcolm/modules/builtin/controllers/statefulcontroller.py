@@ -72,9 +72,9 @@ class StatefulController(BasicController):
     def on_hook(self, hook):
         # type: (Hook) -> None
         if isinstance(hook, ProcessStartHook):
-            hook.run(self.do_init)
+            hook(self.do_init)
         elif isinstance(hook, ProcessStopHook):
-            hook.run(self.halt)
+            hook(self.halt)
 
     def init(self):
         self.try_stateful_function(ss.RESETTING, ss.READY, self.do_init)

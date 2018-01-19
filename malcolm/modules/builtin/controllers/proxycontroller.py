@@ -26,9 +26,9 @@ class ProxyController(BasicController):
     def on_hook(self, hook):
         # type: (Hook) -> None
         if isinstance(hook, ProcessStartHook):
-            hook.run(self.init)
+            hook(self.init)
         elif isinstance(hook, ProcessStopHook):
-            hook.run(self.halt)
+            hook(self.halt)
 
     def init(self):
         self.client_comms = self.process.get_controller(self.comms)

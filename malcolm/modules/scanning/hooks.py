@@ -1,11 +1,10 @@
-from annotypes import Mapping, Sequence, Anno, Array, Union
+from annotypes import Mapping, Sequence, Anno, Array, Union, Any
 
 from malcolm.modules.builtin.hooks import ControllerHook, APart, AContext
 from .infos import ParameterTweakInfo, Info
-from .util import ConfigureParams
+from .util import AGenerator, AAxesToMove
 
-with Anno("Configuration parameters passed in"):
-    AConfigureParams = ConfigureParams
+
 with Anno("The Infos returned from other Parts"):
     APartInfo = Mapping[str, Array[Info]]
 with Anno("Infos about current Part status to be passed to other parts"):
@@ -20,9 +19,22 @@ UParameterTweakInfos = Union[AParameterTweakInfos, Sequence[ParameterTweakInfo],
 class ValidateHook(ControllerHook[UParameterTweakInfos]):
     """Called at validate() to check parameters are valid"""
 
-    def __init__(self, part, context, part_info, params):
-        # type: (APart, AContext, APartInfo, AConfigureParams) -> None
-        super(ValidateHook, self).__init__(**locals())
+    # Allow CamelCase for axesToMove as it must match ConfigureParams which
+    # will become a configure argument, so must be camelCase to match EPICS
+    # normative types conventions
+    # noinspection PyPep8Naming
+    def __init__(self,
+                 part,  # type: APart
+                 context,  # type: AContext
+                 part_info,  # type: APartInfo
+                 generator,  # type: AGenerator
+                 axesToMove,  # type: AAxesToMove
+                 **kwargs  # type: **Any
+                 ):
+        # type: (...) -> None
+        kwargs.update(locals())
+        kwargs.pop("kwargs")
+        super(ValidateHook, self).__init__(**kwargs)
 
     def validate_return(self, ret):
         # type: (UParameterTweakInfos) -> AParameterTweakInfos
@@ -51,16 +63,24 @@ with Anno("Number of steps we should configure for"):
 class ConfigureHook(ControllerHook[UInfos]):
     """Called at configure() to configure child block for a run"""
 
+    # Allow CamelCase for axesToMove as it must match ConfigureParams which
+    # will become a configure argument, so must be camelCase to match EPICS
+    # normative types conventions
+    # noinspection PyPep8Naming
     def __init__(self,
                  part,  # type: APart
                  context,  # type: AContext
                  completed_steps,  # type: ACompletedSteps
                  steps_to_do,  # type: AStepsToDo
                  part_info,  # type: APartInfo
-                 params,  # type: AConfigureParams
+                 generator,  # type: AGenerator
+                 axesToMove,  # type: AAxesToMove
+                 **kwargs  # type: **Any
                  ):
         # type: (...) -> None
-        super(ConfigureHook, self).__init__(**locals())
+        kwargs.update(locals())
+        kwargs.pop("kwargs")
+        super(ConfigureHook, self).__init__(**kwargs)
 
     def validate_return(self, ret):
         # type: (UInfos) -> AInfos
@@ -85,16 +105,24 @@ class RunHook(ControllerHook[None]):
 class PostRunArmedHook(ControllerHook[None]):
     """Called at the end of run() when there are more steps to be run"""
 
+    # Allow CamelCase for axesToMove as it must match ConfigureParams which
+    # will become a configure argument, so must be camelCase to match EPICS
+    # normative types conventions
+    # noinspection PyPep8Naming
     def __init__(self,
                  part,  # type: APart
                  context,  # type: AContext
                  completed_steps,  # type: ACompletedSteps
                  steps_to_do,  # type: AStepsToDo
                  part_info,  # type: APartInfo
-                 params,  # type: AConfigureParams
+                 generator,  # type: AGenerator
+                 axesToMove,  # type: AAxesToMove
+                 **kwargs  # type: **Any
                  ):
         # type: (...) -> None
-        super(PostRunArmedHook, self).__init__(**locals())
+        kwargs.update(locals())
+        kwargs.pop("kwargs")
+        super(PostRunArmedHook, self).__init__(**kwargs)
 
 
 class PostRunReadyHook(ControllerHook[None]):
@@ -109,16 +137,24 @@ class SeekHook(ControllerHook[None]):
     """Called at seek() or at the end of pause() to reconfigure for a different
     number of completed_steps"""
 
+    # Allow CamelCase for axesToMove as it must match ConfigureParams which
+    # will become a configure argument, so must be camelCase to match EPICS
+    # normative types conventions
+    # noinspection PyPep8Naming
     def __init__(self,
                  part,  # type: APart
                  context,  # type: AContext
                  completed_steps,  # type: ACompletedSteps
                  steps_to_do,  # type: AStepsToDo
                  part_info,  # type: APartInfo
-                 params,  # type: AConfigureParams
+                 generator,  # type: AGenerator
+                 axesToMove,  # type: AAxesToMove
+                 **kwargs  # type: **Any
                  ):
         # type: (...) -> None
-        super(SeekHook, self).__init__(**locals())
+        kwargs.update(locals())
+        kwargs.pop("kwargs")
+        super(SeekHook, self).__init__(kwargs)
 
 
 class ResumeHook(ControllerHook[None]):

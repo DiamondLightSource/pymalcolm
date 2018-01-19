@@ -14,7 +14,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
     def setUp(self, mock_client):
         self.process = Mock()
         self.o = call_with_params(
-            PandABlocksManagerController, self.process, [], mri="P", configDir="/tmp")
+            PandABlocksManagerController, self.process, [], mri="P", config_dir="/tmp")
         blocks_data = OrderedDict()
         fields = OrderedDict()
         fields["INP"] = FieldData("pos_mux", "", "Input A", ["ZERO", "COUNTER.OUT"])

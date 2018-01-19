@@ -1,35 +1,35 @@
 - builtin.parameters.string:
-    name: mriPrefix
+    name: mri_prefix
     description: Malcolm resource id of the Block and prefix for children
 
 - builtin.parameters.string:
-    name: pvPrefix
+    name: pv_prefix
     description: PV prefix for driver and all plugins
 
 - builtin.parameters.string:
-    name: configDir
+    name: config_dir
     description: Where to store saved configs
 
 - scanning.controllers.RunnableController:
-    mri: $(mriPrefix)
-    configDir: $(configDir)
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
 
-- excalibur.blocks.fem_detector_driver_block:
-    mri: $(mriPrefix):FEM
-    prefix: $(pvPrefix):FEM
+- xspress3.blocks.xspress3_driver_block:
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix)
 
-- excalibur.parts.FemDriverPart:
-    name: FEM
-    mri: $(mriPrefix):FEM
+- xspress3.parts.Xspress3DriverPart:
+    name: Xspress3A
+    mri: $(mri_prefix):DRV
 
 - ADCore.blocks.stats_plugin_block:
-    mri: $(mriPrefix):STAT
-    prefix: $(pvPrefix):STAT
+    mri: $(mri_prefix):STAT
+    prefix: $(pv_prefix):STAT
 
 - ADCore.parts.StatsPluginPart:
     name: STAT
-    mri: $(mriPrefix):STAT
+    mri: $(mri_prefix):STAT
 
 - ADCore.includes.filewriting_collection:
-    pvPrefix: $(pvPrefix)
-    mriPrefix: $(mriPrefix)
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)

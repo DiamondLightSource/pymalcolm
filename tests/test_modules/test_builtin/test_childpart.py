@@ -55,7 +55,7 @@ class TestChildPart(unittest.TestCase):
         # create a root block for the child blocks to reside in
         parts = [self.p1, self.p2, self.p3]
         self.c = call_with_params(
-            ManagerController, self.p, parts, mri='mainBlock', configDir="/tmp")
+            ManagerController, self.p, parts, mri='mainBlock', config_dir="/tmp")
         self.p.add_controller('mainBlock', self.c)
 
         # Start the process

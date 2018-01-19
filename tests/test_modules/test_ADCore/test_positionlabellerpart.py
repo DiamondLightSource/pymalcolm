@@ -61,7 +61,7 @@ class TestPositionLabellerPart(ChildTestCase):
         # Say that we've returned from start
         self.o.start_future = Future(None)
         self.o.start_future.set_result(None)
-        self.o.run(self.context, update)
+        self.o.__call__(self.context, update)
         assert update.mock_calls == []
         assert self.child.handled_requests.mock_calls == []
 

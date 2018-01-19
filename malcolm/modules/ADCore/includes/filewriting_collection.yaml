@@ -1,26 +1,26 @@
 - builtin.parameters.string:
-    name: pvPrefix
+    name: pv_prefix
     description: PV prefix for all the other plugins
 
 - builtin.parameters.string:
-    name: mriPrefix
+    name: mri_prefix
     description: Malcolm resource id prefix for all created blocks
 
 - ADCore.parts.DatasetTablePart:
     name: DSET
 
 - ADCore.blocks.position_labeller_block:
-    mri: $(mriPrefix):POS
-    prefix: $(pvPrefix):POS
+    mri: $(mri_prefix):POS
+    prefix: $(pv_prefix):POS
 
 - ADCore.parts.PositionLabellerPart:
     name: POS
-    mri: $(mriPrefix):POS
+    mri: $(mri_prefix):POS
 
 - ADCore.blocks.hdf_writer_block:
-    mri: $(mriPrefix):HDF5
-    prefix: $(pvPrefix):HDF5
+    mri: $(mri_prefix):HDF5
+    prefix: $(pv_prefix):HDF5
 
 - ADCore.parts.HDFWriterPart:
     name: HDF5
-    mri: $(mriPrefix):HDF5
+    mri: $(mri_prefix):HDF5

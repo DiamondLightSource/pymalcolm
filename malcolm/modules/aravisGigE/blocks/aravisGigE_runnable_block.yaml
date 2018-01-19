@@ -1,46 +1,46 @@
 - builtin.parameters.string:
-    name: mriPrefix
+    name: mri_prefix
     description: Malcolm resource id of the Block and prefix for children
 
 - builtin.parameters.string:
-    name: pvPrefix
+    name: pv_prefix
     description: PV prefix for driver and all plugins
 
 - builtin.parameters.string:
-    name: configDir
+    name: config_dir
     description: Where to store saved configs
 
 - builtin.defines.docstring:
     value: |
       Device block corresponding to ADAndor + stat + pos + hdf writer.
 
-      - Detector driver should have pv prefix $(pvPrefix):DET
-      - Pos should have pv prefix $(pvPrefix):POS
-      - Stat should have pv prefix $(pvPrefix):STAT
-      - HDF should have pv prefix $(pvPrefix):HDF5
+      - Detector driver should have pv prefix $(pv_prefix):DET
+      - Pos should have pv prefix $(pv_prefix):POS
+      - Stat should have pv prefix $(pv_prefix):STAT
+      - HDF should have pv prefix $(pv_prefix):HDF5
 
 - scanning.controllers.RunnableController:
-    mri: $(mriPrefix)
-    configDir: $(configDir)
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
     description: $(docstring)
 
-- ADAndor.blocks.andor_detector_driver_block:
-    mri: $(mriPrefix):DRV
-    prefix: $(pvPrefix):DET
+- aravisGigE.blocks.aravisGigE_driver_block:
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix):DET
 
-- ADCore.parts.ExposureDetectorDriverPart:
+- ADCore.parts.DetectorDriverPart:
     name: DRV
-    mri: $(mriPrefix):DRV
-    readoutTime: 200e-6
+    mri: $(mri_prefix):DRV
+    initial_readout_time: 200e-6
 
 - ADCore.blocks.stats_plugin_block:
-    mri: $(mriPrefix):STAT
-    prefix: $(pvPrefix):STAT
+    mri: $(mri_prefix):STAT
+    prefix: $(pv_prefix):STAT
 
 - ADCore.parts.StatsPluginPart:
     name: STAT
-    mri: $(mriPrefix):STAT
+    mri: $(mri_prefix):STAT
 
 - ADCore.includes.filewriting_collection:
-    pvPrefix: $(pvPrefix)
-    mriPrefix: $(mriPrefix)
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)

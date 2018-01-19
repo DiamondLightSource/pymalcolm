@@ -58,7 +58,7 @@ class TestSimDetectorDriverPart(ChildTestCase):
         self.o.start_future = MagicMock()
         self.o.done_when_reaches = MagicMock()
         self.o.completed_offset = 0
-        self.o.run(self.context, update_completed_steps)
+        self.o.__call__(self.context, update_completed_steps)
         assert self.child.handled_requests.mock_calls == [
             call.post('start')]
 

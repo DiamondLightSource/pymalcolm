@@ -58,7 +58,7 @@ class TestRunnableController(unittest.TestCase):
 
         # Make a ticker_block block to act as our child
         self.c_child = call_with_params(
-            ticker_block, self.p, mri="childBlock", configDir="/tmp")
+            ticker_block, self.p, mri="childBlock", config_dir="/tmp")
         self.b_child = self.context.block_view("childBlock")
 
         # Make an empty part for our parent
@@ -70,7 +70,7 @@ class TestRunnableController(unittest.TestCase):
 
         # create a root block for the RunnableController block to reside in
         self.c = call_with_params(RunnableController, self.p, [part1, part2],
-                                  mri='mainBlock', configDir="/tmp",
+                                  mri='mainBlock', config_dir="/tmp",
                                   axesToMove=["x"])
         self.p.add_controller('mainBlock', self.c)
         self.b = self.context.block_view("mainBlock")
@@ -130,7 +130,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.b_child.modified.alarm.message == \
             "x.counter.value = 31.0 not 0.0"
         self.prepare_half_run()
-        self.b.run()
+        self.b.__call__()
         # x counter now at 2, child should be modified by us
         assert self.b_child.modified.value is True
         assert self.b_child.modified.alarm.severity == AlarmSeverity.NO_ALARM
@@ -184,37 +184,37 @@ class TestRunnableController(unittest.TestCase):
         self.checkSteps(2, 0, 6)
         self.checkState(self.ss.ARMED)
 
-        self.b.run()
+        self.b.__call__()
         self.checkState(self.ss.ARMED)
         self.checkSteps(4, 2, 6)
 
-        self.b.run()
+        self.b.__call__()
         self.checkState(self.ss.ARMED)
         self.checkSteps(6, 4, 6)
 
-        self.b.run()
+        self.b.__call__()
         self.checkState(self.ss.READY)
 
     def test_abort(self):
         self.prepare_half_run()
-        self.b.run()
+        self.b.__call__()
         self.b.abort()
         self.checkState(self.ss.ABORTED)
 
     def test_pause_seek_resume(self):
         self.prepare_half_run()
         self.checkSteps(configured=2, completed=0, total=6)
-        self.b.run()
+        self.b.__call__()
         self.checkState(self.ss.ARMED)
         self.checkSteps(4, 2, 6)
         self.b.pause(completedSteps=1)
         self.checkState(self.ss.ARMED)
         self.checkSteps(2, 1, 6)
-        self.b.run()
+        self.b.__call__()
         self.checkSteps(4, 2, 6)
         self.b.completedSteps.put_value(5)
         self.checkSteps(6, 5, 6)
-        self.b.run()
+        self.b.__call__()
         self.checkState(self.ss.READY)
 
     def test_resume_in_run(self):
@@ -239,7 +239,7 @@ class TestRunnableController(unittest.TestCase):
     def test_run_exception(self):
         self.prepare_half_run(exception=1)
         with self.assertRaises(ResponseError):
-            self.b.run()
+            self.b.__call__()
         self.checkState(self.ss.FAULT)
 
     def test_run_stop(self):
@@ -304,7 +304,7 @@ class TestRunnableControllerCollectsAllParams(unittest.TestCase):
         # create a root block for the RunnableController block to reside in
         self.c = call_with_params(RunnableController, self.p,
                                   [PartTester1("1"), PartTester2("2")],
-                                  mri='mainBlock', configDir="/tmp",
+                                  mri='mainBlock', config_dir="/tmp",
                                   axesToMove=["x"])
         self.p.add_controller('mainBlock', self.c)
         self.b = self.context.block_view("mainBlock")
@@ -319,7 +319,7 @@ class TestRunnableControllerCollectsAllParams(unittest.TestCase):
         # create a root block for the RunnableController block to reside in
         self.c = call_with_params(RunnableController, self.p,
                                   [PartTester1("1"), PartTester3("2")],
-                                  mri='mainBlock', configDir="/tmp",
+                                  mri='mainBlock', config_dir="/tmp",
                                   axesToMove=["x"])
         self.p.add_controller('mainBlock', self.c)
         self.b = self.context.block_view("mainBlock")
@@ -334,7 +334,7 @@ class TestRunnableControllerCollectsAllParams(unittest.TestCase):
         # create a root block for the RunnableController block to reside in
         self.c = call_with_params(RunnableController, self.p,
                                   [PartTester1("1"), PartTester4("2")],
-                                  mri='mainBlock', configDir="/tmp",
+                                  mri='mainBlock', config_dir="/tmp",
                                   axesToMove=["x"])
         self.p.add_controller('mainBlock', self.c)
         self.b = self.context.block_view("mainBlock")

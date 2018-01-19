@@ -1,35 +1,35 @@
 - builtin.parameters.string:
-    name: mriPrefix
+    name: mri_prefix
     description: Malcolm resource id of the Block and prefix for children
 
 - builtin.parameters.string:
-    name: pvPrefix
+    name: pv_prefix
     description: PV prefix for driver and all plugins
 
 - builtin.parameters.string:
-    name: configDir
+    name: config_dir
     description: Where to store saved configs
 
 - scanning.controllers.RunnableController:
-    mri: $(mriPrefix)
-    configDir: $(configDir)
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
 
-- xmap.blocks.xmap_detector_driver_block:
-    mri: $(mriPrefix)-DRV
-    prefix: $(pvPrefix)
+- xmap.blocks.xmap_driver_block:
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix)
 
 - xmap.parts.XmapDriverPart:
     name: DRV
-    mri: $(mriPrefix)-DRV
+    mri: $(mri_prefix):DRV
 
 - ADCore.blocks.stats_plugin_block:
-    mri: $(mriPrefix)-STAT
-    prefix: $(pvPrefix):STAT1
+    mri: $(mri_prefix):STAT
+    prefix: $(pv_prefix):STAT1
 
 - ADCore.parts.StatsPluginPart:
     name: STAT
-    mri: $(mriPrefix)-STAT
+    mri: $(mri_prefix):STAT
 
 - ADCore.includes.filewriting_collection:
-    pvPrefix: $(pvPrefix)
-    mriPrefix: $(mriPrefix)
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)

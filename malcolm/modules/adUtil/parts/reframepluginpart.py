@@ -1,35 +1,43 @@
-from malcolm.core import method_also_takes, method_takes
-from malcolm.modules.ADCore.parts import DetectorDriverPart, configure_args
-from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
-from malcolm.core.vmetas import NumberMeta
-from malcolm.modules.scanning.controllers import RunnableController
+from annotypes import Anno, add_call_types, Any
+
+from malcolm.core import Hook
+from malcolm.modules import ADCore, scanning
+
+with Anno("Sample frequency of ADC signal in Hz"):
+    ASampleFreq = float
 
 
-@method_also_takes(
-    "sampleFreq", NumberMeta(
-        "int32", "Sample frequency of ADC signal in Hz"), 10000)
-class ReframePluginPart(DetectorDriverPart):
+class ReframePluginPart(ADCore.parts.DetectorDriverPart):
+    def __init__(self, name, mri, sample_freq=10000.0):
+        # type: (ADCore.parts.APartName, ADCore.parts.AMri, ASampleFreq) -> None
+        super(ReframePluginPart, self).__init__(name, mri)
+        self.sample_freq = sample_freq
 
-    @RunnableController.ReportStatus
-    def report_configuration(self, context):
-        infos = super(ReframePluginPart, self).report_configuration(
-            context) + [NDArrayDatasetInfo(rank=2)]
-        return infos
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, scanning.hooks.ValidateHook):
+            hook(self.validate)
 
-    @RunnableController.Validate
-    @method_takes(*configure_args)
-    def validate(self, context, part_info, params):
-        exposure = params.generator.duration
+    @add_call_types
+    def validate(self, generator):
+        # type: (scanning.hooks.AGenerator) -> None
+        exposure = generator.duration
         assert exposure > 0, \
-            "Duration %s for generator must be >0 to signify constant exposure"\
+            "Duration %s for generator must be >0 to signify fixed exposure" \
             % exposure
-        nsamples = int(exposure * self.params.sampleFreq) - 1
+        nsamples = int(exposure * self.sample_freq) - 1
         assert nsamples > 0, \
             "Duration %s for generator gives < 1 ADC sample" % exposure
 
-    def setup_detector(self, child, completed_steps, steps_to_do, params=None):
-        fs = super(ReframePluginPart, self).setup_detector(
-            child, completed_steps, steps_to_do, params)
-        nsamples = int(params.generator.duration * self.params.sampleFreq) - 1
-        fs.append(child.postCount.put_value_async(nsamples))
-        return fs
+    @add_call_types
+    def configure(self,
+                  context,  # type: scanning.hooks.AContext
+                  completed_steps,  # type: scanning.hooks.ACompletedSteps
+                  steps_to_do,  # type: scanning.hooks.AStepsToDo
+                  generator,  # type: scanning.hooks.AGenerator
+                  **kwargs  # type: **Any
+                  ):
+        nsamples = int(generator.duration * self.sample_freq) - 1
+        kwargs["postCount"] = nsamples
+        super(ReframePluginPart, self).configure(
+            context, completed_steps, steps_to_do, generator, **kwargs)

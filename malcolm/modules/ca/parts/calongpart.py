@@ -28,7 +28,7 @@ class CALongPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        registrar.add_attribute_model(self.name, self.caa.attr, self.caa.caput)
+        self.caa.setup(registrar, self.name)
 
     def on_hook(self, hook):
         # type: (Hook) -> None

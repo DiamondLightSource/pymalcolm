@@ -2,7 +2,7 @@ from mock import MagicMock, ANY, call
 
 from malcolm.core import Context, call_with_params, Process
 from malcolm.modules.xmap.parts import XmapDriverPart
-from malcolm.modules.xmap.blocks import xmap_detector_driver_block
+from malcolm.modules.xmap.blocks import xmap_driver_block
 from malcolm.testutil import ChildTestCase
 
 
@@ -12,7 +12,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
         self.process = Process("Process")
         self.context = Context(self.process)
         self.child = self.create_child_block(
-            xmap_detector_driver_block, self.process,
+            xmap_driver_block, self.process,
             mri="mri", prefix="prefix")
         self.o = call_with_params(XmapDriverPart, name="m", mri="mri")
         list(self.o.create_attribute_models())

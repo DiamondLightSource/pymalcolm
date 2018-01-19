@@ -193,7 +193,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
 
     def test_run(self):
         update = Mock()
-        self.o.run(self.context, update)
+        self.o.__call__(self.context, update)
         assert self.child.handled_requests.mock_calls == [
             call.post('executeProfile')]
 

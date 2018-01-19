@@ -1,7 +1,7 @@
 from annotypes import Anno
 
-from malcolm.modules.builtin.controllers import InitHook, ResetHook
-from malcolm.core import Part, PartRegistrar
+from malcolm.core import Part, PartRegistrar, Hook
+from malcolm.modules import builtin
 from ..util import CaToolsHelper, APartName, AMetaDescription, APv
 
 
@@ -45,7 +45,12 @@ class CAActionPart(Part):
         # type: (PartRegistrar) -> None
         self.method = registrar.add_method_model(
             self.caput, self.name, self.description)
-        registrar.attach_to_hook(self.connect_pvs, InitHook, ResetHook)
+
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, (builtin.hooks.InitHook,
+                             builtin.hooks.ResetHook)):
+            hook(self.connect_pvs)
 
     def connect_pvs(self, _):
         pvs = [self.pv]

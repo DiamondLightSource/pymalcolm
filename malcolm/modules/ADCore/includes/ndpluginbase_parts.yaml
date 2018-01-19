@@ -10,7 +10,6 @@
     description: Array inport name
     pv: $(prefix):NDArrayPort
     rbv_suff: _RBV
-    widget: textinput
     inport: NDArray
 
 - ca.parts.CABooleanPart:
@@ -18,4 +17,3 @@
     description: Enable plugin to run when we get a new frame
     pv: $(prefix):EnableCallbacks
     rbv_suff: _RBV
-    widget: checkbox

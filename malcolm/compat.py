@@ -34,6 +34,7 @@ except ImportError:
 
 
 def et_to_string(element):
+    # type: (ET.Element) -> str
     xml = '<?xml version="1.0" ?>'
     try:
         xml += ET.tostring(element, encoding="unicode")

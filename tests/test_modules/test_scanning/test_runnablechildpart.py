@@ -26,20 +26,20 @@ class TestRunnableChildPart(unittest.TestCase):
         # Make a fast child
         c1 = call_with_params(RunnableController, self.p,
                               [WaitingPart("p", 0.01)],
-                              mri="fast", configDir="/tmp")
+                              mri="fast", config_dir="/tmp")
         self.p.add_controller("fast", c1)
 
         # And a slow one
         c2 = call_with_params(RunnableController,  self.p,
                               [WaitingPart("p", 1.0)],
-                              mri="slow", configDir="/tmp")
+                              mri="slow", config_dir="/tmp")
         self.p.add_controller("slow", c2)
 
         # And a top level one
         p1 = call_with_params(RunnableChildPart, name="FAST", mri="fast")
         p2 = call_with_params(RunnableChildPart, name="SLOW", mri="slow")
         c3 = call_with_params(RunnableController, self.p, [p1, p2],
-                              mri="top", configDir="/tmp")
+                              mri="top", config_dir="/tmp")
         self.p.add_controller("top", c3)
         self.b = self.context.block_view("top")
         self.bf = self.context.block_view("fast")
@@ -64,7 +64,7 @@ class TestRunnableChildPart(unittest.TestCase):
         assert self.b.totalSteps.value == 6
         assert self.b.configuredSteps.value == 1
         # Do one step
-        self.b.run()
+        self.b.__call__()
         assert self.b.completedSteps.value == 1
         assert self.b.totalSteps.value == 6
         assert self.b.configuredSteps.value == 2

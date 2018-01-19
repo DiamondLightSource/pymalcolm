@@ -62,8 +62,10 @@ class Hook(WithCallTypes, Generic[T]):
         """Override this if we need to prepare before running"""
         pass
 
-    def run(self, func, *args):
+    def __call__(self, func, *args):
         # type: (Callable[..., T], *Any) -> None
+        assert not self.spawned, \
+            "Hook has already spawned a function, cannot run another"
         self.prepare()
         call_types = getattr(func, "call_types", {})  # type: Dict[str, Anno]
         # TODO: should we check the return types here?

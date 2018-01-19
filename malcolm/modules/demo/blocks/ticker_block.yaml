@@ -4,7 +4,7 @@
     description: Malcolm resource id of the Block
 
 - builtin.parameters.string:
-    name: configDir
+    name: config_dir
     description: Where to store saved configs
 
 - builtin.defines.docstring:
@@ -14,7 +14,7 @@
 
 - scanning.controllers.RunnableController:
     mri: $(mri)
-    configDir: $(configDir)
+    config_dir: $(config_dir)
     description: $(docstring)
 
 # Add the Counter blocks

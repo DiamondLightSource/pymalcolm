@@ -1,0 +1,87 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- scanning.controllers.RunnableController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+
+- excalibur.blocks.fem_runnable_block:
+    mri_prefix: $(mri_prefix):1
+    pv_prefix: $(pv_prefix):1
+    config_dir: $(config_dir)
+
+- excalibur.blocks.fem_runnable_block:
+    mri_prefix: $(mri_prefix):2
+    pv_prefix: $(pv_prefix):2
+    config_dir: $(config_dir)
+
+- excalibur.blocks.fem_runnable_block:
+    mri_prefix: $(mri_prefix):3
+    pv_prefix: $(pv_prefix):3
+    config_dir: $(config_dir)
+
+- excalibur.blocks.fem_runnable_block:
+    mri_prefix: $(mri_prefix):4
+    pv_prefix: $(pv_prefix):4
+    config_dir: $(config_dir)
+
+- excalibur.blocks.fem_runnable_block:
+    mri_prefix: $(mri_prefix):5
+    pv_prefix: $(pv_prefix):5
+    config_dir: $(config_dir)
+
+- excalibur.blocks.fem_runnable_block:
+    mri_prefix: $(mri_prefix):6
+    pv_prefix: $(pv_prefix):6
+    config_dir: $(config_dir)
+
+- excalibur.parts.FemChildPart:
+    name: FEM1
+    mri: $(mri_prefix):1
+
+- excalibur.parts.FemChildPart:
+    name: FEM2
+    mri: $(mri_prefix):2
+
+- excalibur.parts.FemChildPart:
+    name: FEM3
+    mri: $(mri_prefix):3
+
+- excalibur.parts.FemChildPart:
+    name: FEM4
+    mri: $(mri_prefix):4
+
+- excalibur.parts.FemChildPart:
+    name: FEM5
+    mri: $(mri_prefix):5
+
+- excalibur.parts.FemChildPart:
+    name: FEM6
+    mri: $(mri_prefix):6
+
+- excalibur.blocks.excalibur_driver_block:
+    mri: $(mri_prefix):MASTER
+    prefix: $(pv_prefix):CONFIG:ACQUIRE
+
+- excalibur.parts.ExcaliburDriverPart:
+    name: CONFIG
+    mri: $(mri_prefix):MASTER
+    readoutTime: 12e-6
+
+- excalibur.parts.VDSWrapperPart:
+    name: VDS
+    dataType: int32
+    stripeHeight: 259
+    stripeWidth: 2069
+
+- ADCore.parts.DatasetTablePart:
+    name: DSET

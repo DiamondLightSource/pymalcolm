@@ -3,7 +3,7 @@ from mock import MagicMock, ANY, call
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import call_with_params, Context, Process
 from malcolm.modules.xspress3.parts import Xspress3DriverPart
-from malcolm.modules.xspress3.blocks import xspress3_detector_driver_block
+from malcolm.modules.xspress3.blocks import xspress3_driver_block
 from malcolm.testutil import ChildTestCase
 
 
@@ -13,7 +13,7 @@ class TestXspress3DetectorDriverPart(ChildTestCase):
         self.process = Process("Process")
         self.context = Context(self.process)
         self.child = self.create_child_block(
-            xspress3_detector_driver_block, self.process,
+            xspress3_driver_block, self.process,
             mri="mri", prefix="prefix")
         self.o = call_with_params(
             Xspress3DriverPart, readoutTime=0.002, name="m", mri="mri")

@@ -1,45 +1,51 @@
 import re
 
-from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.ADCore.infos import NDAttributeDatasetInfo
-from malcolm.modules.builtin.parts import ChildPart
+from annotypes import add_call_types
+
+from malcolm.core import Hook
+from malcolm.modules import scanning, ADCore, builtin
 
 
-class PandABlocksChildPart(ChildPart):
-    # Stored futures
-    start_future = None
+def is_capture_field(child, attr_name):
+    if attr_name.endswith("Capture"):
+        attr = child[attr_name]
+        if attr.value.lower() != "no":
+            return True
 
-    def _is_capture_field(self, child, attr_name):
-        if attr_name.endswith("Capture"):
-            attr = child[attr_name]
-            if attr.value.lower() != "no":
-                return True
 
-    def _dataset_info(self, child, attr_name):
-        dataset_name_attr = attr_name + "DatasetName"
-        dataset_type_attr = attr_name + "DatasetType"
-        if dataset_name_attr in child and dataset_type_attr in child:
-            dataset_name = child[dataset_name_attr].value
-            if dataset_name == "":
-                return
-            assert "." not in dataset_name, \
-                "Dataset name should not contain '.'"
-            dataset_type = child[dataset_type_attr].value
-            uppercase_attr = re.sub("([A-Z])", r"_\1", attr_name).upper()
-            return NDAttributeDatasetInfo(
-                name=dataset_name,
-                type=dataset_type,
-                rank=2,
-                attr="%s.%s" % (self.name, uppercase_attr))
+def dataset_info(name, child, attr_name):
+    dataset_name_attr = attr_name + "DatasetName"
+    dataset_type_attr = attr_name + "DatasetType"
+    if dataset_name_attr in child and dataset_type_attr in child:
+        dataset_name = child[dataset_name_attr].value
+        if dataset_name == "":
+            return
+        assert "." not in dataset_name, \
+            "Dataset name should not contain '.'"
+        dataset_type = child[dataset_type_attr].value
+        uppercase_attr = re.sub("([A-Z])", r"_\1", attr_name).upper()
+        return ADCore.infos.NDAttributeDatasetInfo(
+            name=dataset_name,
+            type=dataset_type,
+            rank=2,
+            attr="%s.%s" % (name, uppercase_attr))
 
-    @RunnableController.ReportStatus
-    def report_configuration(self, context):
+
+class PandABlocksChildPart(builtin.parts.ChildPart):
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, scanning.hooks.ReportStatusHook):
+            hook(self.report_status)
+
+    @add_call_types
+    def report_status(self, context):
+        # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
         ret = []
-        child = context.block_view(self.params.mri)
+        child = context.block_view(self.mri)
         for attr_name in child:
-            if self._is_capture_field(child, attr_name):
-                dataset_info = self._dataset_info(
-                    child, attr_name[:-len("Capture")])
-                if dataset_info:
-                    ret.append(dataset_info)
+            if is_capture_field(child, attr_name):
+                info = dataset_info(
+                    self.name, child, attr_name[:-len("Capture")])
+                if info:
+                    ret.append(info)
         return ret

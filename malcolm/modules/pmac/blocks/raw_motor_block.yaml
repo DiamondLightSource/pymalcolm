@@ -30,7 +30,6 @@
     description: CS asyn port name
     pv: $(prefix):CsPort
     rbv_suff: _RBV
-    widget: textinput
     inport: CS
 
 - ca.parts.CAStringPart:
@@ -38,18 +37,15 @@
     description: CS axis definition (like X, B, 0 or I)
     pv: $(prefix):CsAxis
     rbv_suff: _RBV
-    widget: textinput
 
 - builtin.parts.StringPart:
     name: scannable
     description: Scannable name for motor
-    widget: textinput
     writeable: True
     initialValue: $(scannable)
 
 - builtin.parts.Float64Part:
     name: velocitySettle
     description: Time in seconds for motor to settle at constant velocity
-    widget: textinput
     writeable: True
     initialValue: $(velocitySettle)

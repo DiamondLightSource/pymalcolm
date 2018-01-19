@@ -14,4 +14,4 @@ class TestZebraBlocks(ChildTestCase):
     def test_zebra_runnable_block(self):
         self.create_child_block(
             zebra_runnable_block, Mock(),
-            mriPrefix="mriPrefix", pvPrefix="pvPrefix", configDir="/tmp")
+            mri_prefix="mri_prefix", pv_prefix="pv_prefix", config_dir="/tmp")

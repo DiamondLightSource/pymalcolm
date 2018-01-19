@@ -16,8 +16,8 @@ from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Any, Iterable, Type, Callable
 
-    PartContextParams = Iterable[Tuple[Part, Context, ConfigureParams]]
-    PartConfigureParams = Dict[Part, ConfigureParams]
+    PartContextParams = Iterable[Tuple[Part, Context, Dict[str, Any]]]
+    PartConfigureParams = Dict[Part, ConfigureParamsInfo]
 
 ss = RunnableStates
 
@@ -25,7 +25,7 @@ with Anno("Default value for configure() axesToMove"):
     AInitialAxesToMove = Array[str]
 with Anno("The validated configure parameters"):
     AConfigureParams = ConfigureParams
-with Anno("Step to mark as the last completed step, -1 for current"):
+with Anno("Step to mark as the last completed step, 0 for current"):
     ACompletedSteps = int
 
 
@@ -37,7 +37,7 @@ class RunnableController(ManagerController):
     def __init__(self,
                  mri,  # type: AMri
                  config_dir,  # type: AConfigDir
-                 axes_to_move=None,  # type: AInitialAxesToMove
+                 initial_axes_to_move=None,  # type: AInitialAxesToMove
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
                  use_cothread=True,  # type: AUseCothread
@@ -88,7 +88,7 @@ class RunnableController(ManagerController):
         self.axes_to_move = StringArrayMeta(
             "Default axis names to scan for configure()",
             tags=[Widget.TABLE.tag(), config_tag()]
-        ).create_attribute_model(axes_to_move)
+        ).create_attribute_model(initial_axes_to_move)
         self.field_registry.add_attribute_model(
             "axesToMove", self.axes_to_move, self.set_axes_to_move)
         self.set_writeable_in(self.axes_to_move, ss.READY)
@@ -131,7 +131,7 @@ class RunnableController(ManagerController):
         with self.changes_squashed:
             # Update the dict
             if part:
-                self.part_configure_params[part] = info.params
+                self.part_configure_params[part] = info
 
             # Create a new ConfigureParams subclass from the union of all the
             # call_types
@@ -146,18 +146,35 @@ class RunnableController(ManagerController):
                     self.__dict__.update(kwargs)
 
             # Store it and update its call_types
+            configure_model = MethodModel.from_callable(ConfigureParams)
+            required = list(configure_model.takes.required)
             self.configure_params_cls = ConfigureParamsSubclass
+            ignored = tuple(ConfigureHook.call_types)
             for part in self.parts.values():
-                for k, anno in self.part_configure_params.get(part, {}).items():
-                    ConfigureParamsSubclass.call_types[k] = anno
+                try:
+                    info = self.part_configure_params[part]
+                except KeyError:
+                    continue
+                for k, meta in info.metas.items():
+                    if k not in ignored:
+                        # We don't use this apart from its presence,
+                        # so no need to fill in description, typ, etc.
+                        ConfigureParamsSubclass.call_types[k] = Anno("")
+                        configure_model.takes.elements[k] = meta
+                for k in info.required:
+                    if k not in required and k not in ignored:
+                        required.append(k)
+                for k, value in info.defaults.items():
+                    if k not in ignored:
+                        configure_model.defaults[k] = value
+            configure_model.takes.set_required(required)
 
-            # Update the configure and validate methods with these args
-            configure_model = MethodModel.from_callable(ConfigureParamsSubclass)
+            # Update methods from the new metas
+            self._block.configure.set_takes(configure_model.takes)
+            self._block.configure.set_defaults(configure_model.defaults)
             self._block.validate.set_takes(configure_model.takes)
             self._block.validate.set_defaults(configure_model.defaults)
             self._block.validate.set_returns(configure_model.takes)
-            self._block.configure.set_takes(configure_model.takes)
-            self._block.configure.set_defaults(configure_model.defaults)
 
     def set_axes_to_move(self, value):
         with self.changes_squashed:
@@ -175,7 +192,7 @@ class RunnableController(ManagerController):
             param_cls = self.part_configure_params.get(part, ConfigureParams)
             for k in param_cls.call_types:
                 args[k] = getattr(params, k)
-            yield part, context, param_cls(**args)
+            yield part, context, args
 
     def validate(self, generator, axes_to_move, **kwargs):
         # type: (AGenerator, AAxesToMove, **Any) -> AConfigureParams
@@ -196,8 +213,8 @@ class RunnableController(ManagerController):
             iterations -= 1
             # Validate the params with all the parts
             validate_part_info = self.run_hooks(
-                ValidateHook(p, c, status_part_info, ps)
-                for p, c, ps in self._part_params(part_contexts, params))
+                ValidateHook(p, c, status_part_info, **kwargs)
+                for p, c, kwargs in self._part_params(part_contexts, params))
             tweaks = ParameterTweakInfo.filter_values(validate_part_info)
             if tweaks:
                 for tweak in tweaks:
@@ -268,8 +285,8 @@ class RunnableController(ManagerController):
         completed_steps = 0
         steps_to_do = self.steps_per_run
         part_info = self.run_hooks(
-            ConfigureHook(p, c, completed_steps, steps_to_do, part_info, ps)
-            for p, c, ps in self._part_params())
+            ConfigureHook(p, c, completed_steps, steps_to_do, part_info, **kw)
+            for p, c, kw in self._part_params())
         # Take configuration info and reflect it as attribute updates
         self.run_hooks(PostConfigureHook(p, c, part_info)
                        for p, c in self.part_contexts.items())
@@ -350,8 +367,8 @@ class RunnableController(ManagerController):
             self.completed_steps.set_value(completed_steps)
             self.run_hooks(
                 PostRunArmedHook(
-                    p, c, completed_steps, steps_to_do, part_info, ps)
-                for p, c, ps in self._part_params())
+                    p, c, completed_steps, steps_to_do, part_info, **kwargs)
+                for p, c, kwargs in self._part_params())
             self.configured_steps.set_value(completed_steps + steps_to_do)
         else:
             self.run_hooks(
@@ -420,7 +437,7 @@ class RunnableController(ManagerController):
     # Allow camelCase as this will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def pause(self, completedSteps=-1):
+    def pause(self, completedSteps=0):
         # type: (ACompletedSteps) -> None
         """Pause a run() so that resume() can be called later, or seek within
         an Armed or Paused state.
@@ -433,7 +450,7 @@ class RunnableController(ManagerController):
         state. If the user disables then it will return in Disabled state.
         """
         current_state = self.state.value
-        if completedSteps < 0:
+        if completedSteps <= 0:
             completed_steps = self.completed_steps.value
         else:
             completed_steps = completedSteps
@@ -456,8 +473,8 @@ class RunnableController(ManagerController):
             ReportStatusHook(p, c) for p, c in self.part_contexts.items())
         self.completed_steps.set_value(completed_steps)
         self.run_hooks(
-            SeekHook(p, c, completed_steps, steps_to_do, part_info, params)
-            for p, c, params in self._part_params())
+            SeekHook(p, c, completed_steps, steps_to_do, part_info, **kwargs)
+            for p, c, kwargs in self._part_params())
         self.configured_steps.set_value(completed_steps + steps_to_do)
 
     @add_call_types

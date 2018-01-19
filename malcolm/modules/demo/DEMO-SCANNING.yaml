@@ -12,24 +12,24 @@
     value: 6065
 
 - builtin.defines.string:
-    name: configDir
+    name: config_dir
     value: $(yamldir)/saved_designs
 
 # Create some Blocks
 - ADSimDetector.blocks.sim_detector_runnable_block:
-    mriPrefix: DETECTOR
-    configDir: $(configDir)
-    pvPrefix: $(hostname)-AD-SIM-01
-    drvSuffix: CAM
-    initialDesign: demo_design
+    mri_prefix: DETECTOR
+    config_dir: $(config_dir)
+    pv_prefix: $(hostname)-AD-SIM-01
+    drv_suffix: CAM
+    initial_design: demo_design
 
 - demo.blocks.ticker_block:
     mri: TICKER
-    configDir: $(configDir)
+    config_dir: $(config_dir)
 
 - demo.blocks.scan_block:
     mri: SCAN
-    configDir: $(configDir)
+    config_dir: $(config_dir)
     det: DETECTOR
     motors: TICKER
 

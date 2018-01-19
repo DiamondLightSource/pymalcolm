@@ -18,7 +18,7 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
         self.process = Mock()
         self.o = call_with_params(
             PandABlocksRunnableController, self.process, [], mri="P",
-            configDir="/tmp", areaDetectorPrefix="PV:")
+            config_dir="/tmp", areaDetectorPrefix="PV:")
         blocks_data = OrderedDict()
         fields = OrderedDict()
         fields["TS"] = FieldData("ext_out", "", "Timestamp", ["No", "Capture"])

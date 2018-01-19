@@ -173,7 +173,7 @@ Let's have a look at the Process definition
 
 It looks quite similar to the one from the `generator_tutorial`, starting off
 with the defines that are needed to talk to our simulated areaDetector plus
-a new one that defines a configDir variable that can be shared between our
+a new one that defines a config_dir variable that can be shared between our
 Blocks. After that come the Blocks, with simDetector and ticker Blocks that we
 have seen in previous tutorials, then our scan_block to sit on top.
 

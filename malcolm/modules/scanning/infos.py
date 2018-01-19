@@ -1,10 +1,10 @@
-from annotypes import TYPE_CHECKING
+from annotypes import TYPE_CHECKING, Anno, NO_DEFAULT
 
-from malcolm.core import Info
-from .util import ConfigureParams
+from malcolm.core import Info, VMeta
+from malcolm.compat import OrderedDict
 
 if TYPE_CHECKING:
-    from typing import Type, Any
+    from typing import Any, Dict, List, Callable
 
 
 class ParameterTweakInfo(Info):
@@ -21,15 +21,34 @@ class ParameterTweakInfo(Info):
 
 
 class ConfigureParamsInfo(Info):
-    """Info about the ConfigureParam that should be passed to the Part in
-    configure(). Otherwise a ConfigureParam instance will be used
+    """Info about the parameters that should be passed to the Part in configure
 
     Args:
-        params: The ConfigureParams subclass to use
+        metas: Metas for the extra parameters
+        required: List of required parameters
+        defaults: Default values for parameters
     """
-    def __init__(self, params):
-        # type: (Type[ConfigureParams]) -> None
-        self.params = params
+    def __init__(self, metas, required, defaults):
+        # type: (Dict[str, VMeta], List[str], Dict[str, Any]) -> None
+        self.metas = metas
+        self.required = required
+        self.defaults = defaults
+
+    @classmethod
+    def from_configure(cls, func):
+        # type: (Callable) -> ConfigureParamsInfo
+        call_types = func.get("call_types", {})  # type: Dict[str, Anno]
+        metas = OrderedDict()
+        required = []
+        defaults = OrderedDict()
+        for k, anno in call_types.items():
+            scls = VMeta.lookup_annotype_converter(anno)
+            metas[k] = scls.from_annotype(anno, writeable=True)
+            if anno.default is NO_DEFAULT:
+                required.append(k)
+            elif anno.default is not None:
+                defaults[k] = anno.default
+        return cls(metas, required, defaults)
 
 
 class RunProgressInfo(Info):

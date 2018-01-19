@@ -24,115 +24,97 @@
     name: acquiring
     description: If detector is currently acquiring
     rbv: $(prefix):Acquiring
-    widget: led
 
 - ca.parts.CABooleanPart:
     name: arrayCallbacks
     description: Whether to produce images or not
     pv: $(prefix):XBUF:ArrayCallbacks
     rbv_suff: _RBV
-    widget: checkbox
 
 - ca.parts.CALongPart:
     name: arrayCounter
     description: Reset unique id for next frame
     pv: $(prefix):XBUF:ArrayCounter
-    widget: textinput
 
 - ca.parts.CALongPart:
     name: arrayCounterReadback
     description: Current unique id number for frame
     rbv: $(prefix):XBUF:ArrayCounter_RBV
-    widget: textupdate
 
 - ca.parts.CAChoicePart:
     name: collectMode
     description: set spectra or mapping
     pv: $(prefix):CollectMode
     rbv_suff: _RBV
-    widget: combo
 
 - ca.parts.CAChoicePart:
     name: pixelAdvanceMode
     description: pixel mode
     pv: $(prefix):PixelAdvanceMode
     rbv_suff: _RBV
-    widget: combo
 
 - ca.parts.CAChoicePart:
     name: presetMode
     description: Preset Mode
     pv: $(prefix):PresetMode
-    widget: combo
 
 - ca.parts.CAChoicePart:
     name: ignoreGate
     description: Ignore Gate
     pv: $(prefix):IgnoreGate
     rbv_suff: _RBV
-    widget: combo
 
 - ca.parts.CALongPart:
     name: pixelsPerRun
     description: Pixels Per Run
     pv: $(prefix):PixelsPerRun
     rbv_suff: _RBV
-    widget: textinput
 
 - ca.parts.CAChoicePart:
     name: autoPixelsPerBuffer
     description: Auto pixels per buffer
     pv: $(prefix):AutoPixelsPerBuffer
     rbv_suff: _RBV
-    widget: combo
 
 - ca.parts.CALongPart:
     name: binsInSpectrum
     description: bins in spectrum
     pv: $(prefix):MCA1.NUSE
     rbv: $(prefix):MCA1:NBINS
-    widget: textinput
 
 - ca.parts.CADoublePart:
     name: dxp1MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP1:MaxEnergy
     rbv_suff: _RBV
-    widget: textinput
 
 - ca.parts.CADoublePart:
     name: dxp2MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP2:MaxEnergy
     rbv_suff: _RBV
-    widget: textinput
 
 - ca.parts.CADoublePart:
     name: dxp3MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP3:MaxEnergy
     rbv_suff: _RBV
-    widget: textinput
-    
+
 - ca.parts.CADoublePart:
     name: dxp4MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP4:MaxEnergy
     rbv_suff: _RBV
-    widget: textinput
 
 - ca.parts.CALongPart:
     name: pixelsPerBuffer
     description: Pixels Per Buffer
     pv: $(prefix):PixelsPerBuffer
     rbv_suff: _RBV
-    widget: textinput
 
 - ca.parts.CAChoicePart:
     name: inputLogicPolarity
     description: Input Logic Polarity
     pv: $(prefix):InputLogicPolarity
     rbv_suff: _RBV
-    widget: combo
-
 

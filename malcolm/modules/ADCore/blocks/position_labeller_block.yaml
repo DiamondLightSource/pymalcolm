@@ -31,7 +31,6 @@
     description: Filename of xml or xml text
     pv: $(prefix):Filename
     rbv_suff: _RBV
-    widget: textinput
     config: False
 
 - ca.parts.CALongPart:
@@ -39,13 +38,11 @@
     description: First uid value to look for
     pv: $(prefix):IDStart
     rbv_suff: _RBV
-    widget: textinput
 
 - ca.parts.CALongPart:
     name: qty
     description: Number of positions left in the buffer
     rbv: $(prefix):Qty_RBV
-    widget: textupdate
 
 - ca.parts.CAActionPart:
     name: start
@@ -63,4 +60,3 @@
     name: running
     description: If detector is currently acquiring
     rbv: $(prefix):Running_RBV
-    widget: led

@@ -52,7 +52,7 @@ class TestManagerController(unittest.TestCase):
         # create a root block for the ManagerController block to reside in
         parts = [part1, part2]
         self.c = call_with_params(
-            ManagerController, self.p, parts, mri='mainBlock', configDir="/tmp")
+            ManagerController, self.p, parts, mri='mainBlock', config_dir="/tmp")
         self.p.add_controller("mainBlock", self.c)
 
         # check that do_initial_reset works asynchronously

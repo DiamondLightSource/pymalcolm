@@ -1,7 +1,7 @@
 # Create some Blocks
 - demo.blocks.ticker_block:
     mri: TICKER
-    configDir: /tmp
+    config_dir: /tmp
 
 # Add a webserver
 - web.blocks.web_server_block:

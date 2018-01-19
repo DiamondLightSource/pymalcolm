@@ -30,7 +30,7 @@ class CALongArrayPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        registrar.add_attribute_model(self.name, self.caa.attr, self.caput)
+        self.caa.setup(registrar, self.name, self.caput)
 
     def caput(self, value):
         if isinstance(value, Array):

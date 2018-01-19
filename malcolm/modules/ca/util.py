@@ -5,7 +5,7 @@ from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.compat import maybe_import_cothread
 from malcolm.core import Queue, VMeta, Alarm, AlarmStatus, TimeStamp, \
-    Loggable, APartName, AMetaDescription, Hook
+    Loggable, APartName, AMetaDescription, Hook, PartRegistrar
 from malcolm.modules.builtin.util import set_tags, AWidget, AGroup, AConfig, \
     AInPort
 from malcolm.modules.builtin.hooks import InitHook, ResetHook, DisableHook
@@ -47,6 +47,7 @@ class CAAttribute(Loggable):
                  on_connect=None,  # type: Callable[[Any], None]
                  ):
         # type: (...) -> None
+        self.set_logger(pv=pv, rbv=rbv)
         writeable = bool(pv)
         set_tags(meta, writeable, config, group, widget, inport)
         if not rbv and not pv:
@@ -67,7 +68,6 @@ class CAAttribute(Loggable):
         self.monitor = None
         self.catools = CaToolsHelper.instance()
         self._update_after = 0
-        super(CAAttribute, self).__init__(pv=pv, rbv=rbv)
 
     def reconnect(self):
         # release old monitor
@@ -142,12 +142,21 @@ class CAAttribute(Loggable):
             value = self.attr.meta.validate(value)
             self.attr.set_value_alarm_ts(value, alarm, ts)
 
+    def setup(self, registrar, name, writeable_func=None):
+        # type: (PartRegistrar, str, Callable[[Any], None]) -> None
+        if self.pv:
+            if writeable_func is None:
+                writeable_func = self.caput
+        else:
+            writeable_func = None
+        registrar.add_attribute_model(name, self.attr, writeable_func)
+
     def on_hook(self, hook):
         # type: (Hook) -> None
         if isinstance(hook, DisableHook):
-            hook.run(self.disconnect)
+            hook(self.disconnect)
         elif isinstance(hook, (InitHook, ResetHook)):
-            hook.run(self.reconnect)
+            hook(self.reconnect)
 
 
 def _import_cothread(q):

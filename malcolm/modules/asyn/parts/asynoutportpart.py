@@ -1,30 +1,46 @@
-from malcolm.modules.builtin.controllers import StatefulController
-from malcolm.core import method_takes, REQUIRED
-from malcolm.modules.ca.parts import CAStringPart
-from malcolm.core.tags import port_types, outport, widget
-from malcolm.core.vmetas import ChoiceMeta, StringMeta
+from annotypes import Anno, Any
+
+from malcolm.core import Part, PartRegistrar, StringMeta, Hook, Port
+from malcolm.modules import ca
 
 
-@method_takes(
-    "name", StringMeta("Name of the created attribute"), REQUIRED,
-    "description", StringMeta("Desc of created attribute"), REQUIRED,
-    "rbv", StringMeta("Full pv of demand and default for rbv"), REQUIRED,
-    "outport", ChoiceMeta("Outport type", port_types), REQUIRED)
-class AsynOutportPart(CAStringPart):
-    def __init__(self, params):
-        args = CAStringPart.MethodModel.prepare_call_args(
-            name=params.name, description=params.description, rbv=params.rbv)
-        super(AsynOutportPart, self).__init__(*args)
+with Anno("Outport type"):
+    AOutport = Port
 
-    def create_tags(self):
-        tags = super(AsynOutportPart, self).create_tags()
-        tags.append(widget("textupdate"))
-        return tags
 
-    @StatefulController.Reset
-    def reset(self, context=None):
-        super(AsynOutportPart, self).reset(context)
+class AsynOutportPart(Part):
+    """Defines a string `Attribute` representing a asyn port that should be
+    depicted as an outport on a Block"""
+
+    def __init__(self,
+                 name,  # type: ca.util.APartName
+                 description,  # type: ca.util.AMetaDescription
+                 rbv,  # type: ca.util.ARbv
+                 outport,  # type: AOutport
+                 group=None  # type: ca.util.AGroup
+                 ):
+        # type: (...) -> None
+        super(AsynOutportPart, self).__init__(name)
+        self.outport = outport
+        self.meta = StringMeta(description)
+        catools = ca.util.CaToolsHelper.instance()
+        self.caa = ca.util.CAAttribute(
+            self.meta, catools.DBR_STRING, rbv=rbv, group=group,
+            on_connect=self.update_tags)
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        self.caa.setup(registrar, self.name)
+
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        self.caa.on_hook(hook)
+
+    def update_tags(self, value):
+        # type: (Any) -> None
         # Add the outport tags
-        tags = [t for t in self.attr.meta.tags if not t.startswith("outport:")]
-        tags.append(outport(self.outport_type, self.attr.value))
-        self.attr.meta.set_tags(tags)
+        old_tags = self.meta.tags
+        new_tags = [t for t in old_tags if not t.startswith("outport:")]
+        new_tags.append(self.outport.outport_tag(connected_value=value))
+        if old_tags != new_tags:
+            self.meta.set_tags(new_tags)

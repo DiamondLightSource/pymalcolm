@@ -14,7 +14,7 @@ from .loggable import Loggable
 from .models import BlockModel, AttributeModel, MethodModel, \
     BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, \
     ChoiceMeta, NumberArrayMeta, NumberMeta, StringArrayMeta, StringMeta, \
-    TableMeta, VMeta, VArrayMeta, AMetaDescription
+    TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion
 from .part import Part, PartRegistrar, APartName
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
     ProcessStopHook
@@ -22,7 +22,7 @@ from .queue import Queue
 from .request import Request, Subscribe, Unsubscribe, Get, Put, Post
 from .response import Response, Delta, Update, Return, Error
 from .serializable import Serializable, deserialize_object, serialize_object, \
-    json_decode, json_encode, snake_to_camel, camel_to_title
+    json_decode, json_encode, snake_to_camel, camel_to_title, check_camel_case
 from .spawned import Spawned
 from .stateset import StateSet
 from .table import Table

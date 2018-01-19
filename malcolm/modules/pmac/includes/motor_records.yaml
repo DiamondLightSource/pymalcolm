@@ -6,40 +6,33 @@
     name: demand
     description: set the demand position of the motor
     pv: $(prefix)
-    widget: textinput
 
 - ca.parts.CADoublePart:
     name: readback
     description: set the target position of the motor or get current position
     rbv: $(prefix).RBV
-    widget: textupdate
 
 - ca.parts.CALongPart:
     name: doneMoving
     description: set to zero when motor is stationary
     rbv: $(prefix).DMOV
-    widget: led
 
 - ca.parts.CADoublePart:
     name: accelerationTime
     description: time taken to accelerate to velocity
     pv: $(prefix).ACCL
-    widget: textinput
 
 - ca.parts.CADoublePart:
     name: maxVelocity
     description: maximum velocity
     pv: $(prefix).VMAX
-    widget: textinput
 
 - ca.parts.CADoublePart:
     name: resolution
     description: Motor resolution
     rbv: $(prefix).ERES
-    widget: textupdate
 
 - ca.parts.CADoublePart:
     name: offset
     description: User offset
     pv: $(prefix).OFF
-    widget: textinput

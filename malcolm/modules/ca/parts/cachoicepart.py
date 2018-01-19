@@ -40,7 +40,7 @@ class CAChoicePart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        registrar.add_attribute_model(self.name, self.caa.attr, self.caput)
+        self.caa.setup(registrar, self.name, self.caput)
 
     def on_hook(self, hook):
         # type: (Hook) -> None

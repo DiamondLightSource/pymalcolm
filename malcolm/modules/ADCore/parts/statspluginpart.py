@@ -1,76 +1,81 @@
 import os
 from xml.etree import cElementTree as ET
 
-from malcolm.compat import et_to_string, OrderedDict
-from malcolm.core import REQUIRED, method_takes, method_also_takes
-from malcolm.modules.ADCore.infos import CalculatedNDAttributeDatasetInfo
-from malcolm.modules.builtin.parts import ChildPart
-from malcolm.core.vmetas import ChoiceMeta, StringMeta
-from malcolm.modules.scanning.controllers import RunnableController
+from annotypes import Anno, add_call_types
+
+from malcolm.compat import et_to_string
+from malcolm.core import APartName, Hook
+from malcolm.modules import builtin, scanning
+from ..infos import CalculatedNDAttributeDatasetInfo
+from ..util import StatisticsName
+
+with Anno("Which statistic to capture"):
+    AStatisticsName = StatisticsName
+with Anno("Directory to write data to"):
+    AFileDir = str
 
 
-statistics = OrderedDict()
-
-statistics["min"] = "MIN_VALUE"  # Minimum counts in any element
-statistics["min_x"] = "MIN_X"  # X position of minimum counts
-statistics["min_y"] = "MIN_Y"  # Y position of minimum counts
-statistics["max"] = "MAX_VALUE"  # Maximum counts in any element
-statistics["max_x"] = "MAX_X"  # X position of maximum counts
-statistics["max_y"] = "MAX_Y"  # Y position of maximum counts
-statistics["mean"] = "MEAN_VALUE"  # Mean counts of all elements
-statistics["sigma"] = "SIGMA_VALUE"  # Sigma of all elements
-statistics["sum"] = "TOTAL"  # Sum of all elements
-statistics["net"] = "NET"  # Sum of all elements not in background region
-
-
-@method_also_takes(
-    "statistic", ChoiceMeta("Which statistic to capture", statistics), "sum")
-class StatsPluginPart(ChildPart):
+class StatsPluginPart(builtin.parts.ChildPart):
     """Part for controlling a `stats_plugin_block` in a Device"""
-    # The NDAttributes file we write to say what to capture
-    attributes_filename = None
 
-    @RunnableController.ReportStatus
-    def report_info(self, _):
-        statistic, _, attr = self._get_statistic_source_attr()
-        return [CalculatedNDAttributeDatasetInfo(name=statistic, attr=attr)]
+    def __init__(self, name, mri, statistic=StatisticsName.SUM):
+        # type: (APartName, builtin.parts.AMri, AStatisticsName) -> None
+        super(StatsPluginPart, self).__init__(name, mri)
+        self.statistic = statistic
+        # The NDAttributes file we write to say what to capture
+        self.attributes_filename = None  # type: str
 
-    def _get_statistic_source_attr(self):
-        statistic = self.params.statistic
-        source = statistics[statistic]
-        attr = "STATS_%s" % source
-        return statistic, source, attr
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, scanning.hooks.ReportStatusHook):
+            hook(self.report_status)
+        elif isinstance(hook, scanning.hooks.ConfigureHook):
+            hook(self.configure)
+        elif isinstance(hook, scanning.hooks.PostRunReadyHook):
+            hook(self.post_run_ready)
+        else:
+            super(StatsPluginPart, self).on_hook(hook)
+
+    @add_call_types
+    def report_status(self):
+        # type: () -> scanning.hooks.UInfos
+        return [CalculatedNDAttributeDatasetInfo(
+            name=self.statistic.name.lower(), attr=self.statistic_attr())]
+
+    def statistic_attr(self):
+        # type: () -> str
+        return "STATS_%s" % self.statistic.value
 
     def _make_attributes_xml(self):
         # Make a root element with an NXEntry
         root_el = ET.Element("Attributes")
-        statistic, source, attr = self._get_statistic_source_attr()
         ET.SubElement(
             root_el, "Attribute", addr="0", datatype="DOUBLE", type="PARAM",
-            description="%s of the array" % statistic.title(), name=attr,
-            source=source)
+            description="%s of the array" % self.statistic.name.title(),
+            name=self.statistic_attr(), source=self.statistic.value)
         xml = et_to_string(root_el)
         return xml
 
-    @RunnableController.Configure
-    @method_takes(
-        "fileDir", StringMeta("File directory to write data to"), REQUIRED)
-    def configure(self, context, completed_steps, steps_to_do, part_info,
-                  params):
-        child = context.block_view(self.params.mri)
+    # Allow CamelCase as these parameters will be serialized
+    # noinspection PyPep8Naming
+    @add_call_types
+    def configure(self, context, fileDir):
+        # type: (scanning.hooks.AContext, AFileDir) -> None
+        child = context.block_view(self.mri)
         fs = child.put_attribute_values_async(dict(
             enableCallbacks=True,
             computeStatistics=True))
         xml = self._make_attributes_xml()
         self.attributes_filename = os.path.join(
-            params.fileDir, "%s-attributes.xml" % self.params.mri)
+            fileDir, "%s-attributes.xml" % self.mri)
         with open(self.attributes_filename, "w") as f:
             f.write(xml)
         fs.append(
             child.attributesFile.put_value_async(self.attributes_filename))
         context.wait_all_futures(fs)
 
-    @RunnableController.PostRunReady
-    def post_run_ready(self, context):
+    @add_call_types
+    def post_run_ready(self):
+        # type: () -> None
         # Delete the attribute XML file
         os.remove(self.attributes_filename)

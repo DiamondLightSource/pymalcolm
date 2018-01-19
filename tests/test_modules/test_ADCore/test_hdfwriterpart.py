@@ -235,7 +235,7 @@ class TestHDFWriterPart(ChildTestCase):
         self.o.array_future.set_result(None)
         # run waits for this value
         self.child.parts["uniqueId"].attr.set_value(self.o.done_when_reaches)
-        self.o.run(self.context, update)
+        self.o.__call__(self.context, update)
         assert self.child.handled_requests.mock_calls == []
         assert update.mock_calls == [call(38, self.o)]
 

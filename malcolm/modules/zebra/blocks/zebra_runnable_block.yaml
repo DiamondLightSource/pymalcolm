@@ -1,27 +1,28 @@
 - builtin.parameters.string:
-    name: mriPrefix
+    name: mri_prefix
     description: Malcolm resource id of the Block and prefix for children
 
 - builtin.parameters.string:
-    name: pvPrefix
+    name: pv_prefix
     description: PV prefix for driver and all plugins
 
 - builtin.parameters.string:
-    name: configDir
+    name: config_dir
     description: Where to store saved configs
 
 - scanning.controllers.RunnableController:
-    mri: $(mriPrefix)
-    configDir: $(configDir)
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
 
 - ADCore.parts.DetectorDriverPart:
     name: DRV
-    mri: $(mriPrefix):DRV
+    mri: $(mri_prefix):DRV
 
 - zebra.blocks.zebra_driver_block:
-    mri: $(mriPrefix):DRV
-    prefix: $(pvPrefix)
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix)
+    main_dataset_useful: False
 
 - ADCore.includes.filewriting_collection:
-    pvPrefix: $(pvPrefix)
-    mriPrefix: $(mriPrefix)
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)

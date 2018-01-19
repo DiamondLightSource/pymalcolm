@@ -2,12 +2,12 @@ import os
 import subprocess
 
 import numpy as np
-from annotypes import TYPE_CHECKING, Anno
+from annotypes import Anno
 
 from malcolm.compat import OrderedDict
 from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
     deserialize_object, Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
-    AlarmStatus, Part, Queue, BooleanMeta, config_tag, Widget, ChoiceMeta, \
+    AlarmStatus, Part, BooleanMeta, config_tag, Widget, ChoiceMeta, \
     TableMeta
 from malcolm.modules.builtin.util import ManagerStates
 from ..hooks import LayoutHook, LoadHook, SaveHook
@@ -15,9 +15,6 @@ from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo
 from ..util import LayoutTable, ExportTable
 from .statefulcontroller import StatefulController, AMri, \
     ADescription, AUseCothread
-
-if TYPE_CHECKING:
-    from typing import Tuple
 
 
 ss = ManagerStates
@@ -120,7 +117,7 @@ class ManagerController(StatefulController):
         # Try and make it a git repo, don't care if it fails
         self._run_git_cmd("init")
         self._run_git_cmd("commit", "--allow-empty", "-m", "Created repo")
-        # List the configDir and add to choices
+        # List the config_dir and add to choices
         self._set_layout_names()
         # This will trigger all parts to report their layout, making sure
         # the layout table has a valid value. This will also call

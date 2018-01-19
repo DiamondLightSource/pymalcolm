@@ -1,22 +1,22 @@
 - builtin.parameters.string:
-    name: mriPrefix
+    name: mri_prefix
     description: Malcolm resource id of the Block and prefix for children
 
 - builtin.parameters.string:
-    name: pvPrefix
+    name: pv_prefix
     description: PV prefix for driver and all plugins
 
 - builtin.parameters.string:
-    name: configDir
+    name: config_dir
     description: Where to store saved configs
 
 - builtin.parameters.string:
-    name: initialDesign
+    name: initial_design
     description: Design to load at init
     default:
 
 - builtin.parameters.string:
-    name: drvSuffix
+    name: drv_suffix
     description: PV suffix for detector driver
     default: DET
 
@@ -24,34 +24,35 @@
     value: |
       Device Block corresponding to SimDetector + stat + pos + hdf writer.
 
-      - Detector driver should have pv prefix $(pvPrefix):$(drvSuffix)
-      - Pos should have pv prefix $(pvPrefix):POS
-      - Stat should have pv prefix $(pvPrefix):STAT
-      - HDF should have pv prefix $(pvPrefix):HDF5
+      - Detector driver should have pv prefix $(pv_prefix):$(drv_suffix)
+      - Pos should have pv prefix $(pv_prefix):POS
+      - Stat should have pv prefix $(pv_prefix):STAT
+      - HDF should have pv prefix $(pv_prefix):HDF5
 
 - scanning.controllers.RunnableController:
-    mri: $(mriPrefix)
-    configDir: $(configDir)
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
     description: $(docstring)
-    initialDesign: $(initialDesign)
+    initial_design: $(initial_design)
 
 - ADSimDetector.blocks.sim_detector_driver_block:
-    mri: $(mriPrefix):DRV
-    prefix: $(pvPrefix):$(drvSuffix)
+    mri: $(mri_prefix):DRV
+    prefix: $(pv_prefix):$(drv_suffix)
 
-- ADSimDetector.parts.SimDetectorDriverPart:
+- ADCore.parts.DetectorDriverPart:
     name: DRV
-    mri: $(mriPrefix):DRV
-    readoutTime: 40e-6
+    mri: $(mri_prefix):DRV
+    initial_readout_time: 40e-6
+    is_hardware_triggered: False
 
 - ADCore.blocks.stats_plugin_block:
-    mri: $(mriPrefix):STAT
-    prefix: $(pvPrefix):STAT
+    mri: $(mri_prefix):STAT
+    prefix: $(pv_prefix):STAT
 
 - ADCore.parts.StatsPluginPart:
     name: STAT
-    mri: $(mriPrefix):STAT
+    mri: $(mri_prefix):STAT
 
 - ADCore.includes.filewriting_collection:
-    pvPrefix: $(pvPrefix)
-    mriPrefix: $(mriPrefix)
+    pv_prefix: $(pv_prefix)
+    mri_prefix: $(mri_prefix)

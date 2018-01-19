@@ -23,12 +23,12 @@ class CAStringPart(Part):
         super(CAStringPart, self).__init__(name)
         catools = CaToolsHelper.instance()
         self.caa = CAAttribute(
-            StringMeta(description), catools.DBR_LONG, pv, rbv, rbv_suff,
+            StringMeta(description), catools.DBR_STRING, pv, rbv, rbv_suff,
             min_delta, timeout, inport, widget, group, config)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        registrar.add_attribute_model(self.name, self.caa.attr, self.caa.caput)
+        self.caa.setup(registrar, self.name)
 
     def on_hook(self, hook):
         # type: (Hook) -> None

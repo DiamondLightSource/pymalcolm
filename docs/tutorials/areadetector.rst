@@ -240,7 +240,7 @@ when we `save()` the Device Block, it will write the current value of all these
 Attributes of all its child Hardware Blocks to a JSON `design_` file.
 
 The keen eyed will notice that the top level `RunnableController` has
-``configDir`` and ``initialDesign`` parameters. The first we set to
+``config_dir`` and ``initial_design`` parameters. The first we set to
 ``$(yamldir)/saved_designs`` which tells us where to save and load designs from.
 The second we set to ``demo_design`` which is the name design we should load at
 init.

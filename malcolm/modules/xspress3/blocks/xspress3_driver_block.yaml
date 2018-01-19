@@ -17,4 +17,4 @@
     description: Number of points before xspress3 will reset buffers
     pv: $(prefix):PointsPerRow
     rbv_suff: _RBV
-    widget: textinput
+
