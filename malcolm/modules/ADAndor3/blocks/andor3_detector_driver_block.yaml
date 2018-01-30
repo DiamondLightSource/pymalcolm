@@ -17,7 +17,7 @@
     prefix: $(prefix)
 
 # Unsure if this is unique to Andor cameras or can go higher up the AD hierarchy.
-- ca.parts.CALongPart:
+- ca.parts.CADoublePart:
     name: readoutTime
     description: |
       Time taken to read out each frame from the sCMOS.
