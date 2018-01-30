@@ -1,7 +1,7 @@
-from annotypes import Anno, Array, Union, Sequence
+from annotypes import Anno, Array, Union, Sequence, Any
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import Serializable
+from malcolm.core import Serializable, VMeta, NTUnion, Widget
 from malcolm.modules.builtin.util import ManagerStates
 
 with Anno("Generator instance providing specification for scan"):
@@ -14,9 +14,19 @@ UAxesToMove = Union[AAxesToMove, Sequence[str]]
 class ConfigureParams(Serializable):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
-    def __init__(self, generator, axesToMove):
-        # type: (AGenerator, UAxesToMove) -> None
+    def __init__(self, generator, axesToMove=None, **kwargs):
+        # type: (AGenerator, UAxesToMove, **Any) -> None
+        if kwargs:
+            # Got some additional args to report
+            self.call_types = self.call_types.copy()
+            for k in kwargs:
+                # We don't use this apart from its presence,
+                # so no need to fill in description, typ, etc.
+                self.call_types[k] = Anno("")
+            self.__dict__.update(kwargs)
         self.generator = generator
+        if axesToMove is None:
+            axesToMove = generator.axes
         self.axesToMove = AAxesToMove(axesToMove)
 
 
@@ -54,3 +64,27 @@ class RunnableStates(ManagerStates):
         # Set transitions for aborted states
         self.set_allowed(self.ABORTING, self.ABORTED)
         self.set_allowed(self.ABORTED, self.RESETTING)
+
+
+@Serializable.register_subclass("malcolm:core/PointGeneratorMeta:1.0")
+@VMeta.register_annotype_converter(CompoundGenerator)
+class PointGeneratorMeta(VMeta):
+
+    attribute_class = NTUnion
+
+    def default_widget(self):
+        return Widget.NONE
+
+    def validate(self, value):
+        if value is None:
+            return CompoundGenerator([], [], [])
+        elif isinstance(value, CompoundGenerator):
+            return value
+        elif isinstance(value, dict):
+            return CompoundGenerator.from_dict(value)
+        else:
+            raise TypeError(
+                "Value %s must be a Generator object or dictionary" % value)
+
+    def doc_type_string(self):
+        return "CompoundGenerator"

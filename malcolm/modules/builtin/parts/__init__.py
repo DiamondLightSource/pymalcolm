@@ -1,4 +1,4 @@
-from .childpart import ChildPart, APartName, AMri
+from .childpart import ChildPart, APartName, AMri, AInitialVisibility
 from .choicepart import ChoicePart
 from .float64part import Float64Part
 from .grouppart import GroupPart

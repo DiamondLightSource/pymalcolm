@@ -1,13 +1,13 @@
 import unittest
-from mock import MagicMock, call, ANY
+from mock import MagicMock, call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.modules.demo.parts import ScanTickerPart
-from malcolm.core import call_with_params, Context
+from malcolm.core import Context, PartRegistrar
 
 
-class AlmostFloat:
+class AlmostFloat(object):
     def __init__(self, val, delta):
         self.val = val
         self.delta = delta
@@ -20,15 +20,16 @@ class TestScanTickerPart(unittest.TestCase):
 
     def setUp(self):
         self.context = MagicMock(spec=Context)
-        self.o = call_with_params(ScanTickerPart, name="AxisTwo", mri="mri")
+        self.registrar = MagicMock(spec=PartRegistrar)
+        self.o = ScanTickerPart(name="AxisTwo", mri="mri")
+        self.o.setup(self.registrar)
 
     def prepare_half_run(self):
         line1 = LineGenerator('AxisOne', 'mm', 0, 2, 3)
         line2 = LineGenerator('AxisTwo', 'mm', 0, 2, 2)
         compound = CompoundGenerator([line1, line2], [], [], 1.0)
         compound.prepare()
-        call_with_params(self.o.configure, ANY, 0, 2, MagicMock(),
-                         generator=compound, axesToMove=['AxisTwo'])
+        self.o.configure(0, 2, generator=compound, axesToMove=['AxisTwo'])
 
     def test_configure(self):
         self.prepare_half_run()
@@ -37,11 +38,14 @@ class TestScanTickerPart(unittest.TestCase):
 
     def test_run(self):
         self.prepare_half_run()
-        update_completed_steps = MagicMock()
-        self.o.__call__(self.context, update_completed_steps)
+        self.registrar.reset_mock()
+        self.o.run(self.context)
         assert self.context.mock_calls == [
             call.block_view("mri"),
             call.block_view().counter.put_value(0),
             call.sleep(AlmostFloat(1.0, delta=0.05)),
             call.block_view().counter.put_value(2),
             call.sleep(AlmostFloat(2.0, delta=0.1))]
+        assert self.registrar.report.call_count == 2
+        assert self.registrar.report.call_args_list[0][0][0].steps == 1
+        assert self.registrar.report.call_args_list[1][0][0].steps == 2

@@ -8,7 +8,7 @@ from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.core import method_takes, REQUIRED, Part
 from malcolm.modules.ADCore.infos import DatasetProducedInfo
 from malcolm.core.vmetas import NumberMeta, StringMeta
-from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
+from malcolm.modules.scanning.util import PointGeneratorMeta
 
 # Number of points too look ahead of the current id index to account for dropped frames
 NUM_LOOKAHEAD = 100

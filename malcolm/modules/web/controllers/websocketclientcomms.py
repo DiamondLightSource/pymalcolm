@@ -1,52 +1,59 @@
+from annotypes import Anno, TYPE_CHECKING
 from tornado import gen
 from tornado.ioloop import IOLoop
-from tornado.websocket import websocket_connect
+from tornado.websocket import websocket_connect, WebSocketClientConnection
 
-from malcolm.modules.builtin.controllers import ClientComms
-from malcolm.core import Subscribe, deserialize_object, method_also_takes, \
+from malcolm.core import Subscribe, deserialize_object, \
     json_decode, json_encode, Response, Error, Unsubscribe, Update, Return, \
-    Queue, TimeoutError
-from malcolm.core.vmetas import NumberMeta, StringArrayMeta, StringMeta
-from malcolm.core.tags import widget
+    Queue, TimeoutError, Spawned, Request, StringArrayMeta, Widget
+from malcolm.modules import builtin
+
+if TYPE_CHECKING:
+    from typing import Dict, Tuple, Callable
+    Key = Tuple[Callable[[Response], None], int]
+
+with Anno("Hostname of malcolm websocket server"):
+    AHostname = str
+with Anno("Port number to run up under"):
+    APort = int
+with Anno("Time to wait for connection"):
+    AConnectTimeout = float
 
 
-@method_also_takes(
-    "hostname", StringMeta("Hostname of malcolm websocket server"), "localhost",
-    "port", NumberMeta("int32", "Port number to run up under"), 8080,
-    "connectTimeout", NumberMeta("float64", "Time to wait for connection"), 5.0)
-class WebsocketClientComms(ClientComms):
+class WebsocketClientComms(builtin.controllers.ClientComms):
     """A class for a client to communicate with the server"""
-    use_cothread = False
-    # Attribute
-    remote_blocks = None
 
-    loop = None
-    _conn = None
-    _spawned = None
-    _connected_queue = None
-    # {new_id: (request, old_id}
-    _request_lookup = None
-    # {Subscribe.generator_key(): Subscribe}
-    _subscription_keys = {}
-    _next_id = 1
-
-    def create_attribute_models(self):
-        for y in super(WebsocketClientComms, self).create_attribute_models():
-            yield y
+    def __init__(self,
+                 mri,  # type: builtin.controllers.AMri
+                 hostname="localhost",  # type: AHostname
+                 port=8080,  # type: APort
+                 connect_timeout=5.0  # type: AConnectTimeout
+                 ):
+        # type: (...) -> None
+        super(WebsocketClientComms, self).__init__(mri, use_cothread=False)
+        self.hostname = hostname
+        self.port = port
+        self.connect_timeout = connect_timeout
+        self.loop = IOLoop()
+        self._connected_queue = Queue()
+        self._spawned = None  # type: Spawned
+        # {new_id: (request, old_id}
+        self._request_lookup = None  # type: Dict[int, Tuple[Request, int]]
+        # {Subscribe.generator_key(): Subscribe}
+        self._subscription_keys = {}  # type: Dict[Key, Subscribe]
+        self._next_id = 1
+        self._conn = None  # type: WebSocketClientConnection
         # Create read-only attribute for the remotely reachable blocks
-        meta = StringArrayMeta(
-            "Remotely reachable blocks", tags=[widget("table")])
-        self.remote_blocks = meta.create_attribute_model()
-        yield "remoteBlocks", self.remote_blocks, None
+        self.remote_blocks = StringArrayMeta(
+            "Remotely reachable blocks", tags=[Widget.TABLE.tag()]
+        ).create_attribute_model()
+        self.field_registry.add_attribute_model(
+            "remoteBlocks", self.remote_blocks)
 
     def do_init(self):
         super(WebsocketClientComms, self).do_init()
-        self.loop = IOLoop()
-        self._request_lookup = {}
-        self._subscription_keys = {}
-        self._connected_queue = Queue()
-        root_subscribe = Subscribe(
-            id=0, path=[".", "blocks"], callback=self._update_remote_blocks)
+        root_subscribe = Subscribe(id=0, path=[".", "blocks"])
+        root_subscribe.set_callback(self._update_remote_blocks)
         self._subscription_keys[root_subscribe.generate_key()] = root_subscribe
         self._request_lookup[0] = (root_subscribe, 0)
         self.start_io_loop()

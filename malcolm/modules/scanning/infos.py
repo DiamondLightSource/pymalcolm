@@ -37,7 +37,7 @@ class ConfigureParamsInfo(Info):
     @classmethod
     def from_configure(cls, func):
         # type: (Callable) -> ConfigureParamsInfo
-        call_types = func.get("call_types", {})  # type: Dict[str, Anno]
+        call_types = getattr(func, "call_types", {})  # type: Dict[str, Anno]
         metas = OrderedDict()
         required = []
         defaults = OrderedDict()

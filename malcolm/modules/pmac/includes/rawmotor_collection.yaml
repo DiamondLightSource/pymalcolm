@@ -7,7 +7,7 @@
     description: The root PV for the all records
 
 - builtin.parameters.string:
-    name: motorPrefix
+    name: motor_prefix
     description: the root PV for the motor record (will eventually be prefix)
 
 - builtin.parameters.string:
@@ -17,7 +17,7 @@
 - pmac.blocks.raw_motor_block:
     mri: $(mri)
     prefix: $(prefix)
-    motorPrefix: $(motorPrefix)
+    motor_prefix: $(motor_prefix)
     scannable: $(scannable)
 
 - pmac.parts.RawMotorPart:

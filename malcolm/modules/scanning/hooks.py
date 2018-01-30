@@ -32,9 +32,9 @@ class ValidateHook(ControllerHook[UParameterTweakInfos]):
                  **kwargs  # type: **Any
                  ):
         # type: (...) -> None
-        kwargs.update(locals())
-        kwargs.pop("kwargs")
-        super(ValidateHook, self).__init__(**kwargs)
+        super(ValidateHook, self).__init__(
+            part, context, part_info=part_info, generator=generator,
+            axesToMove=axesToMove, **kwargs)
 
     def validate_return(self, ret):
         # type: (UParameterTweakInfos) -> AParameterTweakInfos
@@ -78,9 +78,10 @@ class ConfigureHook(ControllerHook[UInfos]):
                  **kwargs  # type: **Any
                  ):
         # type: (...) -> None
-        kwargs.update(locals())
-        kwargs.pop("kwargs")
-        super(ConfigureHook, self).__init__(**kwargs)
+        super(ConfigureHook, self).__init__(
+            part, context, completed_steps=completed_steps,
+            steps_to_do=steps_to_do, part_info=part_info, generator=generator,
+            axesToMove=axesToMove, **kwargs)
 
     def validate_return(self, ret):
         # type: (UInfos) -> AInfos
@@ -95,7 +96,8 @@ class PostConfigureHook(ControllerHook[None]):
 
     def __init__(self, part, context, part_info):
         # type: (APart, AContext, APartInfo) -> None
-        super(PostConfigureHook, self).__init__(**locals())
+        super(PostConfigureHook, self).__init__(
+            part, context, part_info=part_info)
 
 
 class RunHook(ControllerHook[None]):
@@ -120,9 +122,10 @@ class PostRunArmedHook(ControllerHook[None]):
                  **kwargs  # type: **Any
                  ):
         # type: (...) -> None
-        kwargs.update(locals())
-        kwargs.pop("kwargs")
-        super(PostRunArmedHook, self).__init__(**kwargs)
+        super(PostRunArmedHook, self).__init__(
+            part, context, completed_steps=completed_steps,
+            steps_to_do=steps_to_do, part_info=part_info, generator=generator,
+            axesToMove=axesToMove, **kwargs)
 
 
 class PostRunReadyHook(ControllerHook[None]):
@@ -152,9 +155,10 @@ class SeekHook(ControllerHook[None]):
                  **kwargs  # type: **Any
                  ):
         # type: (...) -> None
-        kwargs.update(locals())
-        kwargs.pop("kwargs")
-        super(SeekHook, self).__init__(kwargs)
+        super(SeekHook, self).__init__(
+            part, context, completed_steps=completed_steps,
+            steps_to_do=steps_to_do, part_info=part_info, generator=generator,
+            axesToMove=axesToMove, **kwargs)
 
 
 class ResumeHook(ControllerHook[None]):

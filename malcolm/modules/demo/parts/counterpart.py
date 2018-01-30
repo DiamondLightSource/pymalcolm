@@ -1,4 +1,4 @@
-from malcolm.core import Part, config_tag, NumberMeta
+from malcolm.core import Part, config_tag, NumberMeta, PartRegistrar
 
 
 class CounterPart(Part):
@@ -7,6 +7,7 @@ class CounterPart(Part):
     """Holds the current counter value"""
 
     def setup(self, registrar):
+        # type: (PartRegistrar) -> None
         # Create writeable attribute for current counter value
         self.counter = NumberMeta(
             "float64", "The current value of the counter", tags=[config_tag()]

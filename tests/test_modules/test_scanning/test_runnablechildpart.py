@@ -1,19 +1,32 @@
 import unittest
 
+from annotypes import add_call_types, Anno
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.core import call_with_params, Part, Process, Context
+from malcolm.core import Part, Process, Context, APartName
+from malcolm.modules.builtin.hooks import AContext
+from malcolm.modules.scanning.hooks import RunHook
 from malcolm.modules.scanning.parts import RunnableChildPart
 from malcolm.modules.scanning.controllers import RunnableController
 
 
+with Anno("How long to wait"):
+    AWait = float
+
+
 class WaitingPart(Part):
     def __init__(self, name, wait):
+        # type: (APartName, AWait) -> None
         super(WaitingPart, self).__init__(name)
         self.wait = wait
 
-    @RunnableController.Run
-    def run(self, context, update_completed_steps):
+    def on_hook(self, hook):
+        if isinstance(hook, RunHook):
+            hook(self.run)
+
+    @add_call_types
+    def run(self, context):
+        # type: (AContext) -> None
         context.sleep(self.wait)
 
 
@@ -24,23 +37,22 @@ class TestRunnableChildPart(unittest.TestCase):
         self.context = Context(self.p)
 
         # Make a fast child
-        c1 = call_with_params(RunnableController, self.p,
-                              [WaitingPart("p", 0.01)],
-                              mri="fast", config_dir="/tmp")
-        self.p.add_controller("fast", c1)
+        c1 = RunnableController(mri="fast", config_dir="/tmp")
+        c1.add_part(WaitingPart("p", 0.01))
+        self.p.add_controller(c1)
 
         # And a slow one
-        c2 = call_with_params(RunnableController,  self.p,
-                              [WaitingPart("p", 1.0)],
-                              mri="slow", config_dir="/tmp")
-        self.p.add_controller("slow", c2)
+        c2 = RunnableController(mri="slow", config_dir="/tmp")
+        c2.add_part(WaitingPart("p", 1.0))
+        self.p.add_controller(c2)
 
         # And a top level one
-        p1 = call_with_params(RunnableChildPart, name="FAST", mri="fast")
-        p2 = call_with_params(RunnableChildPart, name="SLOW", mri="slow")
-        c3 = call_with_params(RunnableController, self.p, [p1, p2],
-                              mri="top", config_dir="/tmp")
-        self.p.add_controller("top", c3)
+        c3 = RunnableController(mri="top", config_dir="/tmp")
+        c3.add_part(RunnableChildPart(name="FAST", mri="fast"))
+        c3.add_part(RunnableChildPart(name="SLOW", mri="slow"))
+        self.p.add_controller(c3)
+
+        # Some blocks to interface to them
         self.b = self.context.block_view("top")
         self.bf = self.context.block_view("fast")
         self.bs = self.context.block_view("slow")
@@ -59,12 +71,12 @@ class TestRunnableChildPart(unittest.TestCase):
 
     def test_not_paused_when_resume(self):
         # Set it up to do 6 steps
-        self.b.configure(generator=self.make_generator())
+        self.b.configure(generator=self.make_generator(), axesToMove=())
         assert self.b.completedSteps.value == 0
         assert self.b.totalSteps.value == 6
         assert self.b.configuredSteps.value == 1
         # Do one step
-        self.b.__call__()
+        self.b.run()
         assert self.b.completedSteps.value == 1
         assert self.b.totalSteps.value == 6
         assert self.b.configuredSteps.value == 2

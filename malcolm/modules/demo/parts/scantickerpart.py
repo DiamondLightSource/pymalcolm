@@ -15,7 +15,7 @@ class ScanTickerPart(builtin.parts.ChildPart):
 
     def __init__(self, name, mri):
         # type: (APartName, builtin.parts.AMri) -> None
-        super(ScanTickerPart, self).__init__(name, mri)
+        super(ScanTickerPart, self).__init__(name, mri, initial_visibility=True)
         # Generator instance
         self.generator = None  # type: scanning.hooks.AGenerator
         # Where to start

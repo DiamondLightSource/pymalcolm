@@ -37,11 +37,11 @@ class Alarm(Serializable):
                  message="",  # type: AMessage
                  ):
         # type: (...) -> None
-        assert isinstance(severity, AlarmSeverity), \
-            "Expected AlarmSeverity.*_ALARM, got %r" % severity
+        if not isinstance(severity, AlarmSeverity):
+            severity = AlarmSeverity(severity)
         self.severity = severity
-        assert isinstance(status, AlarmStatus), \
-            "Expected AlarmStatus.*_STATUS, got %r" % status
+        if not isinstance(status, AlarmStatus):
+            status = AlarmStatus(status)
         self.status = status
         self.message = deserialize_object(message, str_)
 

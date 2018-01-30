@@ -1,13 +1,14 @@
 from multiprocessing.pool import ThreadPool
 
-from annotypes import Anno, Array, TYPE_CHECKING
+from annotypes import Anno, Array, TYPE_CHECKING, Union, Sequence
 
 from malcolm.compat import OrderedDict, maybe_import_cothread, \
     get_pool_num_threads
 from .context import Context
 from .controller import Controller
 from .errors import WrongThreadError
-from .hook import Hook, start_hooks, AHookable
+from .hook import Hook, start_hooks, AHookable, wait_hooks
+from .info import Info
 from .loggable import Loggable
 from .rlock import RLock
 from .spawned import Spawned
@@ -15,6 +16,7 @@ from .views import Block
 
 if TYPE_CHECKING:
     from typing import List, Callable, Dict, Any, Tuple, TypeVar
+
     T = TypeVar("T")
 
 
@@ -22,12 +24,14 @@ if TYPE_CHECKING:
 SPAWN_CLEAR_COUNT = 1000
 
 
-class ProcessStartHook(Hook[None]):
-    """Called at start() to start all child controllers"""
-
-
 with Anno("The list of currently published Controller mris"):
     APublished = Array[str]
+
+
+class UnpublishedInfo(Info):
+    def __init__(self, mri):
+        # type: (str) -> None
+        self.mri = mri
 
 
 class ProcessPublishHook(Hook[None]):
@@ -36,6 +40,22 @@ class ProcessPublishHook(Hook[None]):
         # type: (AHookable, APublished) -> None
         super(ProcessPublishHook, self).__init__(child)
         self.published = APublished(published)
+
+
+with Anno("Each of these reports that the controller should not be published"):
+    AUnpublishedInfos = Array[UnpublishedInfo]
+UUnpublishedInfos = Union[AUnpublishedInfos, Sequence[UnpublishedInfo],
+                          UnpublishedInfo, None]
+
+
+class ProcessStartHook(Hook[None]):
+    """Called at start() to start all child controllers"""
+
+    def validate_return(self, ret):
+        # type: (UUnpublishedInfos) -> AUnpublishedInfos
+        """Check that all returns are UnpublishedInfo objects indicating
+        that the controller shouldn't be published via any server comms"""
+        return AUnpublishedInfos(ret)
 
 
 class ProcessStopHook(Hook[None]):
@@ -47,7 +67,7 @@ class Process(Loggable):
 
     def __init__(self, name):
         # type: (str) -> None
-        self.set_logger(name=name)
+        self.set_logger(process_name=name)
         self.name = name
         self._cothread = maybe_import_cothread()
         self._controllers = OrderedDict()  # mri -> Controller
@@ -67,9 +87,21 @@ class Process(Loggable):
         """
         assert not self.started, "Process already started"
         self.started = True
-        self._run_hook(ProcessStartHook, timeout=timeout)
-        self._run_hook(ProcessPublishHook, timeout=timeout,
-                       published=self._published)
+        self._start_controllers(self._controllers.values(), timeout)
+
+    def _start_controllers(self, controller_list, timeout=None):
+        # type: (List[Controller], float) -> None
+        # Start just the given controller_list
+        infos = self._run_hook(ProcessStartHook, controller_list,
+                               timeout=timeout)
+        unpublished = set(
+            info.mri for info in UnpublishedInfo.filter_values(infos))
+        to_publish = [c.mri for c in controller_list if c not in unpublished]
+        if to_publish:
+            with self._lock:
+                self._published += to_publish
+            self._run_hook(ProcessPublishHook,
+                           timeout=timeout, published=self._published)
 
     def _run_hook(self, hook, controller_list=None, timeout=None, **kwargs):
         # Run the given hook waiting til all hooked functions are complete
@@ -79,11 +111,8 @@ class Process(Loggable):
         hooks = [hook(controller, **kwargs).set_spawn(controller.spawn)
                  for controller in controller_list]
         hook_queue, hook_spawned = start_hooks(hooks)
-        while hook_spawned:
-            hook, ret = hook_queue.get()
-            hook_spawned.remove(hook)
-            # Wait for the process to terminate
-            hook.spawned.wait(timeout)
+        return wait_hooks(
+            hook_queue, hook_spawned, timeout, exception_check=False)
 
     def stop(self, timeout=None):
         """Stop the process and wait for it to finish
@@ -154,56 +183,27 @@ class Process(Loggable):
         self._spawn_count = 0
         self._spawned = [s for s in self._spawned if not s.ready()]
 
-    def add_controller(self, mri, controller, publish=True, timeout=None):
-        # type: (str, Controller, bool, float) -> None
+    def add_controller(self, controller, timeout=None):
+        # type: (Controller, float) -> None
         """Add a controller to be hosted by this process
 
         Args:
-            mri (str): The malcolm resource id for the controller
             controller (Controller): Its controller
-            publish (bool): Whether to notify other controllers about its
-                existence
             timeout (float): Maximum amount of time to wait for each spawned
                 object. None means forever
         """
         self._call_in_right_thread(
-            self._add_controller, mri, controller, publish, timeout)
+            self._add_controller, controller, timeout)
 
-    def _add_controller(self, mri, controller, publish, timeout):
-        # type: (str, Controller, bool, float) -> None
+    def _add_controller(self, controller, timeout):
+        # type: (Controller, float) -> None
         with self._lock:
-            assert mri not in self._controllers, \
-                "Controller already exists for %s" % mri
-            self._controllers[mri] = controller
+            assert controller.mri not in self._controllers, \
+                "Controller already exists for %s" % controller.mri
+            self._controllers[controller.mri] = controller
             controller.setup(self)
-            if publish:
-                self._published.append(mri)
         if self.started:
-            self._run_hook(ProcessStartHook, [controller], timeout=timeout)
-            self._run_hook(ProcessPublishHook, args=(self._published,),
-                           timeout=timeout)
-
-    def remove_controller(self, mri, timeout=None):
-        # type: (str, float) -> None
-        """Remove a controller that is hosted by this process
-
-        Args:
-            mri (str): The malcolm resource id for the controller
-            timeout (float): Maximum amount of time to wait for each spawned
-                object. None means forever
-        """
-        self._call_in_right_thread(self._remove_controller, mri, timeout)
-
-    def _remove_controller(self, mri, timeout):
-        # type: (str, float) -> None
-        with self._lock:
-            controller = self._controllers.pop(mri)
-            if mri in self._published:
-                self._published.remove(mri)
-        if self.started:
-            self._run_hook(ProcessPublishHook, timeout=timeout,
-                           published=self._published)
-            self._run_hook(ProcessStopHook, [controller], timeout=timeout)
+            self._start_controllers([controller], timeout)
 
     @property
     def mri_list(self):

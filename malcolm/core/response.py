@@ -34,7 +34,7 @@ class Return(Response):
         super(Return, self).__init__(id)
         # TODO: we used to serialize here, but I think its unnecessary
         # This will be serialized by to_dict() if needed
-        self.value = serialize_object(value)
+        self.value = value
 
 
 @Serializable.register_subclass("malcolm:core/Error:1.0")

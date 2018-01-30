@@ -42,6 +42,7 @@ class Controller(Hookable):
     def __init__(self, mri, description="", use_cothread=True):
         # type: (AMri, ADescription, AUseCothread) -> None
         self.set_logger(mri=mri)
+        self.name = mri
         self.mri = mri
         self.use_cothread = use_cothread
         self._request_queue = Queue()
@@ -54,11 +55,12 @@ class Controller(Hookable):
         self._block.set_notifier_path(self._notifier, [mri])
         self._write_functions = {}
         self.field_registry = FieldRegistry()
-        self.info_registry = InfoRegistry(self.spawn)
+        self.info_registry = InfoRegistry()
 
     def setup(self, process):
         # type: (Process) -> None
         self.process = process
+        self.info_registry.set_spawn(self.spawn)
         self.add_initial_part_fields()
 
     def add_part(self, part):
@@ -66,7 +68,7 @@ class Controller(Hookable):
         assert part.name not in self.parts, \
             "Part %r already exists in Controller %r" % (part.name, self.mri)
         part.setup(PartRegistrar(
-            self.field_registry, self.info_registry, part, self.spawn))
+            self.field_registry, self.info_registry, part))
         self.parts[part.name] = part
 
     def add_block_field(self, name, child, writeable_func):
@@ -110,7 +112,7 @@ class Controller(Hookable):
         return self._notifier.changes_squashed
 
     @overload
-    def make_view(self, context):
+    def make_view(self, context=None):
         # type: (Context) -> Block
         pass
 
@@ -119,7 +121,7 @@ class Controller(Hookable):
         # type: (Context, Model, str) -> Any
         pass
 
-    def make_view(self, context, data=None, child_name=None):
+    def make_view(self, context=None, data=None, child_name=None):
         """Make a child View of data[child_name]"""
         try:
             ret = self._make_view(context, data, child_name)
@@ -129,10 +131,12 @@ class Controller(Hookable):
             ret = result.get()
         return ret
 
-    def _make_view(self, context, data=None, child_name=None):
+    def _make_view(self, context, data, child_name):
         # type: (Context, Model, str) -> Any
         """Called in cothread's thread"""
         with self._lock:
+            if context is None:
+                context = Context(self.process)
             if data is None:
                 child = self._block
             else:

@@ -3,16 +3,14 @@ import time
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.core import Process, Part, call_with_params, \
-    Context, ResponseError, AlarmStatus, AlarmSeverity, method_takes, \
-    method_also_takes, REQUIRED
+from malcolm.core import Process, Part, Context, ResponseError, AlarmStatus, \
+    AlarmSeverity
 from malcolm.modules.scanning.parts import RunnableChildPart
 from malcolm.modules.demo.blocks import ticker_block
 from malcolm.compat import OrderedDict
 from malcolm.modules.scanning.controllers import \
     RunnableController
 from malcolm.modules.scanning.util import RunnableStates
-from malcolm.core.vmetas import StringMeta
 
 
 class TestRunnableStates(unittest.TestCase):
@@ -57,24 +55,25 @@ class TestRunnableController(unittest.TestCase):
         self.context = Context(self.p)
 
         # Make a ticker_block block to act as our child
-        self.c_child = call_with_params(
-            ticker_block, self.p, mri="childBlock", config_dir="/tmp")
+        for c in ticker_block(mri="childBlock", config_dir="/tmp"):
+            self.p.add_controller(c)
         self.b_child = self.context.block_view("childBlock")
 
         # Make an empty part for our parent
         part1 = Part("part1")
 
         # Make a RunnableChildPart to control the ticker_block
-        part2 = call_with_params(
-            RunnableChildPart, mri='childBlock', name='part2')
+        part2 = RunnableChildPart(
+            mri='childBlock', name='part2', initial_visibility=True)
 
         # create a root block for the RunnableController block to reside in
-        self.c = call_with_params(RunnableController, self.p, [part1, part2],
-                                  mri='mainBlock', config_dir="/tmp",
-                                  axesToMove=["x"])
-        self.p.add_controller('mainBlock', self.c)
+        self.c = RunnableController(mri='mainBlock', config_dir="/tmp",
+                                    initial_available_axes=["x"])
+        self.c.add_part(part1)
+        self.c.add_part(part2)
+        self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
-        self.ss = self.c.stateSet
+        self.ss = self.c.state_set
 
         # start the process off
         self.checkState(self.ss.DISABLED)
@@ -86,7 +85,7 @@ class TestRunnableController(unittest.TestCase):
 
     def checkState(self, state, child=True, parent=True):
         if child:
-            assert self.c_child.state.value == state
+            assert self.b_child.state.value == state
         if parent:
             assert self.c.state.value == state
 
@@ -102,7 +101,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.c.completed_steps.value == 0
         assert self.c.configured_steps.value == 0
         assert self.c.total_steps.value == 0
-        assert self.c.axes_to_move.value == ("x",)
+        assert self.c.available_axes.value == ["x"]
         assert list(self.b.configure.takes.elements) == \
                ["generator", "axesToMove", "exceptionStep"]
 
@@ -111,10 +110,6 @@ class TestRunnableController(unittest.TestCase):
         self.checkState(self.ss.DISABLED)
         self.c.reset()
         self.checkState(self.ss.READY)
-
-    def test_set_axes_to_move(self):
-        self.c.set_axes_to_move(['y'])
-        assert self.c.axes_to_move.value == ('y',)
 
     def test_modify_child(self):
         # Save an initial setting for the child
@@ -128,15 +123,15 @@ class TestRunnableController(unittest.TestCase):
         assert self.b_child.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b_child.modified.alarm.message == \
-            "x.counter.value = 31.0 not 0.0"
+               "x.counter.value = 31.0 not 0.0"
         self.prepare_half_run()
-        self.b.__call__()
+        self.b.run()
         # x counter now at 2, child should be modified by us
         assert self.b_child.modified.value is True
         assert self.b_child.modified.alarm.severity == AlarmSeverity.NO_ALARM
         assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b_child.modified.alarm.message == \
-            "(We modified) x.counter.value = 2.0 not 0.0"
+               "(We modified) x.counter.value = 2.0 not 0.0"
         assert x.counter.value == 2.0
         x.counter.put_value(0.0)
         # x counter now at 0, child should be unmodified
@@ -157,7 +152,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.b.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b.modified.alarm.message == \
-            "part2.design.value = 'new_child' not 'init_child'"
+               "part2.design.value = 'new_child' not 'init_child'"
         # Do a configure, and check we get set back
         self.prepare_half_run()
         assert self.b_child.design.value == "init_child"
@@ -170,7 +165,7 @@ class TestRunnableController(unittest.TestCase):
         compound = CompoundGenerator([line1, line2], [], [])
         actual = self.b.validate(generator=compound, axesToMove=['x'])
         assert actual["generator"].to_dict() == compound.to_dict()
-        assert actual["axesToMove"] == ('x',)
+        assert actual["axesToMove"] == ['x']
 
     def prepare_half_run(self, duration=0.01, exception=0):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
@@ -184,37 +179,37 @@ class TestRunnableController(unittest.TestCase):
         self.checkSteps(2, 0, 6)
         self.checkState(self.ss.ARMED)
 
-        self.b.__call__()
+        self.b.run()
         self.checkState(self.ss.ARMED)
         self.checkSteps(4, 2, 6)
 
-        self.b.__call__()
+        self.b.run()
         self.checkState(self.ss.ARMED)
         self.checkSteps(6, 4, 6)
 
-        self.b.__call__()
+        self.b.run()
         self.checkState(self.ss.READY)
 
     def test_abort(self):
         self.prepare_half_run()
-        self.b.__call__()
+        self.b.run()
         self.b.abort()
         self.checkState(self.ss.ABORTED)
 
     def test_pause_seek_resume(self):
         self.prepare_half_run()
         self.checkSteps(configured=2, completed=0, total=6)
-        self.b.__call__()
+        self.b.run()
         self.checkState(self.ss.ARMED)
         self.checkSteps(4, 2, 6)
         self.b.pause(completedSteps=1)
         self.checkState(self.ss.ARMED)
         self.checkSteps(2, 1, 6)
-        self.b.__call__()
+        self.b.run()
         self.checkSteps(4, 2, 6)
         self.b.completedSteps.put_value(5)
         self.checkSteps(6, 5, 6)
-        self.b.__call__()
+        self.b.run()
         self.checkState(self.ss.READY)
 
     def test_resume_in_run(self):
@@ -234,12 +229,12 @@ class TestRunnableController(unittest.TestCase):
         self.checkSteps(4, 2, 6)
         # This test fails on Travis sometimes, looks like the docker container
         # just gets starved
-        #self.assertAlmostEqual(now - then, 0.5, delta=0.1)
+        # self.assertAlmostEqual(now - then, 0.5, delta=0.1)
 
     def test_run_exception(self):
         self.prepare_half_run(exception=1)
         with self.assertRaises(ResponseError):
-            self.b.__call__()
+            self.b.run()
         self.checkState(self.ss.FAULT)
 
     def test_run_stop(self):
@@ -251,99 +246,6 @@ class TestRunnableController(unittest.TestCase):
             f.result()
         self.checkState(self.ss.ABORTED)
 
-
-class PartTester1(Part):
-
-    @RunnableController.Configure
-    @method_takes(
-        "size", StringMeta("Size of the thing"), REQUIRED)
-    def configure(self, params):
-        pass
-
-
-class PartTester2(Part):
-
-    def configure(self):
-        pass
-
-
-class PartTester3(Part):
-
-    @RunnableController.Configure
-    def configure(self):
-        pass
-
-
-class PartTester4(Part):
-
-    @RunnableController.Configure
-    @method_takes()
-    def configure(self):
-        pass
-
-
-class RunnableControllerTester(RunnableController):
-
-    def __init__(self, process, parts, params):
-        super(RunnableControllerTester, self).__init__(process, parts, params)
-
-        self.add_part(PartTester1("1"))
-        self.add_part(PartTester2("2"))
-
-
-class TestRunnableControllerCollectsAllParams(unittest.TestCase):
-
-    def setUp(self):
-        self.p = Process('process1')
-        self.context = Context(self.p)
-
-    def tearDown(self):
-        self.p.stop(timeout=1)
-
-    def test_no_hook_passes(self):
-        # create a root block for the RunnableController block to reside in
-        self.c = call_with_params(RunnableController, self.p,
-                                  [PartTester1("1"), PartTester2("2")],
-                                  mri='mainBlock', config_dir="/tmp",
-                                  axesToMove=["x"])
-        self.p.add_controller('mainBlock', self.c)
-        self.b = self.context.block_view("mainBlock")
-
-        # start the process off
-        self.p.start()
-
-        takes = list(self.b.configure.takes.elements)
-        self.assertEqual(takes, ["size", "generator", "axesToMove"])
-
-    def test_hook_fails(self):
-        # create a root block for the RunnableController block to reside in
-        self.c = call_with_params(RunnableController, self.p,
-                                  [PartTester1("1"), PartTester3("2")],
-                                  mri='mainBlock', config_dir="/tmp",
-                                  axesToMove=["x"])
-        self.p.add_controller('mainBlock', self.c)
-        self.b = self.context.block_view("mainBlock")
-
-        # start the process off
-        self.p.start()
-
-        takes = list(self.b.configure.takes.elements)
-        self.assertEqual(takes, ["size", "generator", "axesToMove"])
-
-    def test_hook_plus_method_takes_nothing_passes(self):
-        # create a root block for the RunnableController block to reside in
-        self.c = call_with_params(RunnableController, self.p,
-                                  [PartTester1("1"), PartTester4("2")],
-                                  mri='mainBlock', config_dir="/tmp",
-                                  axesToMove=["x"])
-        self.p.add_controller('mainBlock', self.c)
-        self.b = self.context.block_view("mainBlock")
-
-        # start the process off
-        self.p.start()
-
-        takes = list(self.b.configure.takes.elements)
-        self.assertEqual(takes, ["size", "generator", "axesToMove"])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

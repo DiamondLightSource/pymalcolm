@@ -6,20 +6,25 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
     Unsubscribe, Alarm, AlarmSeverity, AlarmStatus, APartName, PartRegistrar, \
-    Hook, Port, Controller, config_tag, Response, Put
+    Hook, Port, Controller, config_tag, Response, Put, ABORT_TIMEOUT
 from ..infos import PortInfo, LayoutInfo, OutPortInfo, InPortInfo, \
     PartExportableInfo, PartModifiedInfo, NotifyDispatchInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
-    AContext, APortMap, ALayoutTable, LoadHook, SaveHook, AStructure
+    AContext, APortMap, ALayoutTable, LoadHook, SaveHook, AStructure, \
+    ULayoutInfos
 from ..util import StatefulStates
 
 if TYPE_CHECKING:
     from typing import Dict, Any, Set, List, Type, TypeVar
+
     TP = TypeVar("TP", bound=PortInfo)
 
 
 with Anno("Malcolm resource id of child object"):
     AMri = str
+with Anno("Whether the part is initially visible with no config loaded, None "
+          "means only if child in/outports are connected to another Block"):
+    AInitialVisibility = bool
 
 
 port_tag_re = re.compile(r"(in|out)port:(.*):(.*)")
@@ -29,15 +34,15 @@ ss = StatefulStates
 
 
 class ChildPart(Part):
-    def __init__(self, name, mri):
-        # type: (APartName, AMri) -> None
+    def __init__(self, name, mri, initial_visibility=None):
+        # type: (APartName, AMri, AInitialVisibility) -> None
         super(ChildPart, self).__init__(name)
         self.mri = mri  # type: str
         self.x = 0.0  # type: float
         self.y = 0.0  # type: float
-        self.visible = None  # type: bool
+        self.visible = initial_visibility  # type: bool
         # {part_name: visible} saying whether part_name is visible
-        self.part_visible = {}  # type: Dict[str, bool]
+        self.part_visibility = {}  # type: Dict[str, bool]
         # {attr_name: attr_value} of last saved/loaded structure
         self.saved_structure = {}  # type: Dict[str, Any]
         # {attr_name: modified_message} of current values
@@ -91,7 +96,7 @@ class ChildPart(Part):
             # save state
             context.when_matches(
                 [self.mri, "state", "value"], ss.READY,
-                [ss.FAULT, ss.DISABLED])
+                [ss.FAULT, ss.DISABLED], timeout=ABORT_TIMEOUT)
         # Save what we have
         self.save(context)
         # Monitor the child configure for changes
@@ -119,31 +124,34 @@ class ChildPart(Part):
     @add_call_types
     def halt(self):
         # type: () -> None
-        unsubscribe = Unsubscribe(callback=self.update_part_exportable)
+        unsubscribe = Unsubscribe()
+        unsubscribe.set_callback(self.update_part_exportable)
         self.child_controller.handle_request(unsubscribe)
 
     @add_call_types
-    def layout(self, context, port_map, layout_table):
-        # type: (AContext, APortMap, ALayoutTable) -> List[LayoutInfo]
-        # if this is the first call, we need to calculate if we are visible
-        # or not
-        if self.visible is None:
-            self.visible = self.child_connected(port_map)
-        for i, name in enumerate(layout_table.name):
-            x = layout_table.x[i]
-            y = layout_table.y[i]
-            visible = layout_table.visible[i]
+    def layout(self, context, ports, layout):
+        # type: (AContext, APortMap, ALayoutTable) -> ULayoutInfos
+        first_call = not self.part_visibility
+        for i, name in enumerate(layout.name):
+            visible = layout.visible[i]
             if name == self.name:
                 if self.visible and not visible:
-                    self.sever_inports(context, port_map)
-                self.x = x
-                self.y = y
+                    self.sever_inports(context, ports)
+                self.x = layout.x[i]
+                self.y = layout.y[i]
                 self.visible = visible
             else:
-                was_visible = self.part_visible.get(name, True)
+                was_visible = self.part_visibility.get(name, False)
                 if was_visible and not visible:
-                    self.sever_inports(context, port_map, name)
-                self.part_visible[name] = visible
+                    self.sever_inports(context, ports, name)
+                self.part_visibility[name] = visible
+        # If this is the first call work out which parts are visible if not
+        # specified in the initial layout table
+        if first_call:
+            self.calculate_part_visibility(ports)
+        # If not specified then take our own visibility from this same dict
+        if self.visible is None:
+            self.visible = self.part_visibility.get(self.name, False)
         ret = LayoutInfo(
             mri=self.mri, x=self.x, y=self.y, visible=self.visible)
         return [ret]
@@ -184,7 +192,7 @@ class ChildPart(Part):
     def update_part_exportable(self, response):
         # type: (Response) -> None
         # Get a child context to check if we have a config field
-        child = self.child_controller.block_view()
+        child = self.child_controller.make_view()
         spawned = []
         if response.value:
             new_fields = response.value
@@ -195,7 +203,8 @@ class ChildPart(Part):
         for subscribe in self.config_subscriptions.values():
             attr_name = subscribe.path[-2]
             if attr_name not in new_fields:
-                unsubscribe = Unsubscribe(subscribe.id, subscribe.callback)
+                unsubscribe = Unsubscribe(subscribe.id)
+                unsubscribe.set_callback(subscribe.callback)
                 spawned.append(
                     self.child_controller.handle_request(unsubscribe))
                 self.port_infos.pop(attr_name, None)
@@ -211,10 +220,10 @@ class ChildPart(Part):
                     if match:
                         d, port, extra = match.groups()
                         if d == "out":
-                            info = OutPortInfo(name=field, port=Port[port],
+                            info = OutPortInfo(name=field, port=Port(port),
                                                connected_value=extra)
                         else:
-                            info = InPortInfo(name=field, port=Port[port],
+                            info = InPortInfo(name=field, port=Port(port),
                                               disconnected_value=extra,
                                               value=attr.value)
                         self.port_infos[field] = info
@@ -276,42 +285,42 @@ class ChildPart(Part):
             alarm = None
         self.registrar.report(PartModifiedInfo(alarm))
 
-    def _get_flowgraph_ports(self, port_map, typ):
+    def _get_flowgraph_ports(self, ports, typ):
         # type: (APortMap, Type[TP]) -> Dict[str, TP]
-        ports = {}
-        for port_info in port_map.get(self.name, []):
+        ret = {}
+        for port_info in ports.get(self.name, []):
             if isinstance(port_info, typ):
-                ports[port_info.name] = port_info
-        return ports
+                ret[port_info.name] = port_info
+        return ret
 
     def _outport_lookup(self, info_list):
         # type: (List[PortInfo]) -> Dict[str, Port]
         outport_lookup = {}
         for info in info_list:
             if isinstance(info, OutPortInfo):
-                outport_lookup[info.connected_value] = info.type
+                outport_lookup[info.connected_value] = info.port
         return outport_lookup
 
-    def sever_inports(self, context, port_map, connected_to=None):
+    def sever_inports(self, context, ports, connected_to=None):
         # type: (AContext, APortMap, str) -> None
         """Conditionally sever inports of the child. If connected_to is then
         None then sever all, otherwise restrict to connected_to's outports
 
         Args:
             context (Context): The context to use
-            port_map (dict): {part_name: [PortInfo]}
+            ports (dict): {part_name: [PortInfo]}
             connected_to (str): Restrict severing to this part
         """
         # Find the outports to connect to
         if connected_to:
             # Calculate a lookup of the outport "name" to type
             outport_lookup = self._outport_lookup(
-                port_map.get(connected_to, []))
+                ports.get(connected_to, []))
         else:
             outport_lookup = True
 
         # Find our inports
-        inports = self._get_flowgraph_ports(port_map, OutPortInfo)
+        inports = self._get_flowgraph_ports(ports, InPortInfo)
 
         # If we have inports that need to be disconnected then do so
         if inports and outport_lookup:
@@ -319,40 +328,32 @@ class ChildPart(Part):
             attribute_values = {}
             for name, port_info in inports.items():
                 if outport_lookup is True or outport_lookup.get(
-                        child[name].value, None) == port_info.type:
-                    attribute_values[name] = port_info.extra
+                        child[name].value, None) == port_info.port:
+                    attribute_values[name] = port_info.disconnected_value
             child.put_attribute_values(attribute_values)
 
-    def child_connected(self, port_map):
-        # type: (APortMap) -> bool
-        """Calculate if anything is connected to us or we are connected to
-        anything else
+    def calculate_part_visibility(self, ports):
+        # type: (APortMap) -> None
+        """Calculate what is connected to what
 
         Args:
-            port_map: {part_name: [PortInfo]} from other ports
-
-        Returns:
-            True if we are connected or have nothing to connect
+            ports: {part_name: [PortInfo]} from other ports
         """
-        has_ports = False
-        # See if our inports are connected to anything
-        inports = self._get_flowgraph_ports(port_map, InPortInfo)
-        for name, inport_info in inports.items():
-            has_ports = True
-            if inport_info.value != inport_info.disconnected_value:
-                return True
-        # Calculate a lookup of outport "name" to their types
-        outport_lookup = self._outport_lookup(port_map.get(self.name, []))
-        if outport_lookup:
-            has_ports = True
-        # See if anything is connected to one of our outports
-        for inport_info in InPortInfo.filter_values(port_map):
-            if outport_lookup.get(inport_info.value, None) == inport_info.type:
-                return True
-        # If we have ports and they haven't been connected to anything then
-        # we are disconnected
-        if has_ports:
-            return False
-        # otherwise, treat a block with no ports as connected
-        else:
-            return True
+        # Calculate a lookup of outport connected_value to part_name
+        outport_lookup = {}
+        for part_name, port_infos in ports.items():
+            for port_info in port_infos:
+                if isinstance(port_info, OutPortInfo):
+                    outport_lookup[port_info.connected_value] = part_name
+        # Look through all the inports, and set both ends of the connection
+        # to visible if they aren't specified
+        for part_name, port_infos in ports.items():
+            for port_info in port_infos:
+                if isinstance(port_info, InPortInfo):
+                    if port_info.value != port_info.disconnected_value:
+                        conn_part = outport_lookup.get(port_info.value, None)
+                        if conn_part:
+                            if conn_part not in self.part_visibility:
+                                self.part_visibility[conn_part] = True
+                            if part_name not in self.part_visibility:
+                                self.part_visibility[part_name] = True

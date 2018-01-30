@@ -1,4 +1,5 @@
 from annotypes import Anno, Array, Union, Sequence
+import numpy as np
 
 from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
     StateSet
@@ -24,6 +25,7 @@ def set_tags(meta,  # type: VMeta
              ):
     # type: (...) -> None
     tags = []
+    meta.set_writeable(writeable)
     if widget is None:
         widget = meta.default_widget()
     if widget is not Widget.NONE:
@@ -44,16 +46,16 @@ with Anno("Names of the layout parts"):
 with Anno("Malcolm full names of child blocks"):
     AMriArray = Array[str]
 with Anno("X Coordinates of child blocks"):
-    AXArray = Array[float]
+    AXArray = Array[np.float64]
 with Anno("Y Coordinates of child blocks"):
-    AYArray = Array[float]
+    AYArray = Array[np.float64]
 with Anno("Whether child blocks are visible"):
     AVisibleArray = Array[bool]
-UNameArray = Union(ANameArray, Sequence[str])
-UMriArray = Union(AMriArray, Sequence[str])
-UXArray = Union(AXArray, Sequence[float])
-UYArray = Union(AYArray, Sequence[float])
-UVisibleArray = Union(AVisibleArray, Sequence[bool])
+UNameArray = Union[ANameArray, Sequence[str]]
+UMriArray = Union[AMriArray, Sequence[str]]
+UXArray = Union[AXArray, Sequence[float]]
+UYArray = Union[AYArray, Sequence[float]]
+UVisibleArray = Union[AVisibleArray, Sequence[bool]]
 
 
 class LayoutTable(Table):
@@ -77,8 +79,8 @@ UExportNameArray = Union[AExportNameArray, Sequence[str]]
 class ExportTable(Table):
     def __init__(self, source, export):
         # type: (USourceNameArray, UExportNameArray) -> None
-        self.source = USourceNameArray(source)
-        self.export = UExportNameArray(export)
+        self.source = ASourceNameArray(source)
+        self.export = AExportNameArray(export)
 
 
 class StatefulStates(StateSet):

@@ -3,7 +3,7 @@ from annotypes import TYPE_CHECKING
 from malcolm.core import Info, Alarm, Port, Request
 
 if TYPE_CHECKING:
-    from typing import Callable, List
+    from typing import Callable, List, Any
 
 
 class TitleInfo(Info):

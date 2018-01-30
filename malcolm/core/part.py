@@ -25,9 +25,10 @@ class FieldRegistry(object):
 
     def get_field(self, name):
         # type: (str) -> Field
-        for _, (n, field, _) in self.fields.items():
-            if n == name:
-                return field
+        for fields in self.fields.values():
+            for (n, field, _) in fields:
+                if n == name:
+                    return field
         raise ValueError("No field named %s found" % (name,))
 
     def add_method_model(self,
@@ -62,11 +63,17 @@ class FieldRegistry(object):
 
 
 class InfoRegistry(object):
-    def __init__(self, spawn):
+    def __init__(self):
         # type: (Callable[..., Spawned]) -> None
         self._reportable_infos = {}  # type: Dict[Type[Info], Callback]
-        self._spawn = spawn
+        self._spawn = None
         self._report_queue = Queue()
+
+    def set_spawn(self, spawn):
+        # type: (Callable[..., Spawned]) -> None
+        """Called once the Controller has been attached to a Process so that
+        reports become asynchronous"""
+        self._spawn = spawn
 
     def add_reportable(self, info, callback):
         # type: (Type[Info], Callback) -> None
@@ -76,8 +83,12 @@ class InfoRegistry(object):
         # type: (object, Info) -> None
         callback = self._reportable_infos[type(info)]
         self._report_queue.put((callback, reporter, info))
-        # Spawn in case we are coming from a non-cothread to cothread thread
-        self._spawn(self._report).wait()
+        if self._spawn:
+            # Spawn in case we are coming from a non-cothread to cothread thread
+            self._spawn(self._report).wait()
+        else:
+            # No process yet, just run directly
+            self._report()
 
     def _report(self):
         callback, reporter, info = self._report_queue.get()
@@ -89,22 +100,27 @@ class Part(Hookable):
 
     def __init__(self, name):
         # type: (APartName) -> None
-        self.set_logger(name=name)
+        self.set_logger(part_name=name)
         self.name = name
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         """Use the given Registrar to populate the hooks and fields"""
-        raise NotImplementedError()
+        return
 
 
 class PartRegistrar(object):
     def __init__(self, field_registry, info_registry, part):
-        # type: (FieldRegistry, InfoRegistry, Part]) -> None
+        # type: (FieldRegistry, InfoRegistry, Part) -> None
         self._field_registry = field_registry
         self._info_registry = info_registry
         self._part = part
         self._info_queue = Queue()
+
+    def get_fields(self):
+        # type: () -> List[Tuple[str, Field, Callable]]
+        """Get the field list that we have added"""
+        return self._field_registry.fields[self]
 
     def add_method_model(self,
                          func,  # type: Callable
@@ -113,8 +129,8 @@ class PartRegistrar(object):
                          ):
         # type: (...) -> MethodModel
         """Register a function to be added to the block"""
-        return self._registry.add_method_model(
-            self._part, func, name, description)
+        return self._field_registry.add_method_model(
+            func, name, description, self._part)
 
     def add_attribute_model(self,
                             name,  # type: str
@@ -122,8 +138,8 @@ class PartRegistrar(object):
                             writeable_func=None,  # type: Optional[Callable]
                             ):
         # type: (...) -> AttributeModel
-        return self._registry.add_attribute_model(
-            self._part, name, attr, writeable_func)
+        return self._field_registry.add_attribute_model(
+            name, attr, writeable_func, self._part)
 
     def report(self, info):
         # type: (Info) -> None

@@ -1,17 +1,18 @@
 import unittest
 
-from malcolm.core import call_with_params, Controller, Process
+from malcolm.core import Process
+from malcolm.modules.builtin.controllers import BasicController
 from malcolm.modules.builtin.parts import TitlePart
 
 
 class TestTitlePart(unittest.TestCase):
 
     def setUp(self):
-        self.o = call_with_params(
-            TitlePart, initialValue="My label")
+        self.o = TitlePart(value="My label")
         self.p = Process("proc")
-        self.c = Controller(self.p, "mri", [self.o])
-        self.p.add_controller("mri", self.c)
+        self.c = BasicController("mri")
+        self.c.add_part(self.o)
+        self.p.add_controller(self.c)
         self.p.start()
         self.b = self.p.block_view(self.c.mri)
 
@@ -21,8 +22,8 @@ class TestTitlePart(unittest.TestCase):
     def test_init(self):
         assert self.o.name == "label"
         assert self.o.attr.value == "My label"
-        assert self.o.attr.meta.tags == (
-            "widget:title", "config")
+        assert self.o.attr.meta.tags == [
+            "widget:title", "config"]
         assert self.b.meta.label == "My label"
 
     def test_setter(self):

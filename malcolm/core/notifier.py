@@ -7,10 +7,9 @@ from .loggable import Loggable
 from .request import Subscribe, Unsubscribe
 from .response import Response
 from .rlock import RLock
-from .models import BlockModel
-
 
 if TYPE_CHECKING:
+    from .models import BlockModel
     from typing import List, Tuple, Callable, Any, Dict
     Callback = Callable[[Response], None]
     CallbackResponses = List[Tuple[Callback, Response]]

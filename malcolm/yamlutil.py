@@ -2,50 +2,71 @@ import logging
 import os
 import importlib
 
+from annotypes import add_call_types, Any, TYPE_CHECKING, Anno
 from ruamel import yaml
 
 from malcolm.compat import str_
-from malcolm.core import method_takes, call_with_params, YamlError
+from malcolm.core import YamlError, Controller, Part, Define
+
+if TYPE_CHECKING:
+    from typing import List, Dict, Tuple, Callable
 
 # Create a module level logger
 log = logging.getLogger(__name__)
 
+with Anno("Any return argument"):
+    AAny = Any
+
 
 def _create_takes_arguments(sections):
+    # type: (Dict[str, List[Section]]) -> List[Anno]
     takes_arguments = []
     for parameter_section in sections["parameters"]:
-        takes_arguments += parameter_section.instantiate({})
+        takes_arguments.append(parameter_section.instantiate({}))
     return takes_arguments
 
 
-def _create_blocks_and_parts(process, sections, params):
+def _create_blocks_and_parts(sections,  # type: Dict[str, List[Section]]
+                             params  # type: Dict[str, str]
+                             ):
+    # type: (...) -> Tuple[List[Controller], List[Part]]
+    controllers = []
     parts = []
 
     # Any child blocks
     for section in sections["blocks"]:
-        section.instantiate(params, process)
+        controllers += section.instantiate(params)
 
     # Do the includes first
     for section in sections["includes"]:
-        parts += section.instantiate(params, process)
+        new_c, new_p = section.instantiate(params)
+        controllers += new_c
+        parts += new_p
 
     # Add any parts in
     for section in sections["parts"]:
         parts.append(section.instantiate(params))
 
-    return parts
+    return controllers, parts
 
 
-def _create_defines(sections, yamlname, yamldir, params):
+def _create_defines(sections,  # type: Dict[str, List[Section]]
+                    yamlname,  # type: str
+                    yamldir,  # type: str
+                    params  # type: Dict[str, str]
+                    ):
+    # type: (...) -> Dict[str, str]
     defines = dict(yamlname=yamlname, yamldir=yamldir, docstring="")
     if params:
         defines.update(params)
     for section in sections["defines"]:
-        defines.update(section.instantiate(defines))
+        define = section.instantiate(defines)  # type: Define
+        defines[define.name] = define.value
     return defines
 
 
 def check_yaml_names(globals_d):
+    # type: (Dict[str, Any]) -> List[str]
     all_list = []
     for k, v in sorted(globals_d.items()):
         if hasattr(v, "yamlname"):
@@ -57,6 +78,7 @@ def check_yaml_names(globals_d):
 
 
 def make_include_creator(yaml_path, filename=None):
+    # type: (str, str) -> Callable[..., Tuple[List[Controller], List[Part]]]
     sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
     yamldir = os.path.dirname(yaml_path)
 
@@ -65,11 +87,15 @@ def make_include_creator(yaml_path, filename=None):
         "Expected exactly 0 controller, got %s" % (sections["controllers"],)
 
     # Add any parameters to the takes arguments
-    @method_takes(*_create_takes_arguments(sections))
-    def include_creator(process, params=None):
+    @add_call_types
+    def include_creator(**kwargs):
+        # type: () -> AAny
         # Create the param dict of the static defined arguments
-        defines = _create_defines(sections, yamlname, yamldir, params)
-        return _create_blocks_and_parts(process, sections, defines)
+        defines = _create_defines(sections, yamlname, yamldir, kwargs)
+        return _create_blocks_and_parts(sections, defines)
+
+    for anno in _create_takes_arguments(sections):
+        include_creator.call_types[anno.name] = anno
 
     include_creator.__doc__ = docstring
     include_creator.__name__ = yamlname
@@ -79,6 +105,7 @@ def make_include_creator(yaml_path, filename=None):
 
 
 def make_block_creator(yaml_path, filename=None):
+    # type: (str, str) -> Callable[..., List[Controller]]
     """Make a collection function that will create a list of blocks
 
     Args:
@@ -103,17 +130,22 @@ def make_block_creator(yaml_path, filename=None):
     controller_section = sections["controllers"][0]
 
     # Add any parameters to the takes arguments
-    @method_takes(*_create_takes_arguments(sections))
-    def block_creator(process, params=None):
+    @add_call_types
+    def block_creator(**kwargs):
+        # type: (**Any) -> AAny
         # Create the param dict of the static defined arguments
-        defines = _create_defines(sections, yamlname, yamldir, params)
-        parts = _create_blocks_and_parts(process, sections, defines)
+        defines = _create_defines(sections, yamlname, yamldir, kwargs)
+        controllers, parts = _create_blocks_and_parts(sections, defines)
 
         # Make the controller
-        controller = controller_section.instantiate(defines, process, parts)
-        process.add_controller(controller.mri, controller)
+        controller = controller_section.instantiate(defines)
+        for part in parts:
+            controller.add_part(part)
+        controllers.append(controller)
+        return controllers
 
-        return controller
+    for anno in _create_takes_arguments(sections):
+        block_creator.call_types[anno.name] = anno
 
     block_creator.__doc__ = docstring
     block_creator.__name__ = yamlname
@@ -133,16 +165,15 @@ class Section(object):
             # dictify yaml's intermediate dict like object
             self.param_dict = dict(param_dict)
 
-    def instantiate(self, substitutions, *args):
+    def instantiate(self, substitutions):
         """Keep recursing down from base using dotted name, then call it with
         self.params and args
 
         Args:
             substitutions (dict): Substitutions to make to self.param_dict
-            *args: Any other args to pass to the callable
 
         Returns:
-            object: The found object called with (*args, map_from_d)
+            The found object called with (*args, map_from_d)
 
         E.g. if ob is malcolm.parts, and name is "ca.CADoublePart", then the
         object will be malcolm.parts.ca.CADoublePart
@@ -161,7 +192,7 @@ class Section(object):
             raise ImportError("%s:%d:\nPackage %r has no ident %r" % (
                 self.filename, self.lineno, pkg, ident))
         try:
-            ret = call_with_params(ob, *args, **param_dict)
+            ret = ob(**param_dict)
         except YamlError as e:
             raise YamlError("%s:%d:\n%s" % (self.filename, self.lineno, e))
         else:

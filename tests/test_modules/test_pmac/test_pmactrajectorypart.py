@@ -16,7 +16,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.context = Context(self.process)
         self.child = self.create_child_block(
             pmac_trajectory_block, self.process, mri="PMAC:TRAJ",
-            prefix="PV:PRE", statPrefix="PV:STAT")
+            prefix="PV:PRE", stat_prefix="PV:STAT")
         self.child.parts["i10"].attr.set_value(1705244)
         self.o = call_with_params(
             PmacTrajectoryPart, name="pmac", mri="PMAC:TRAJ")

@@ -1,12 +1,18 @@
-from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.builtin.parts import ChildPart
-from malcolm.modules.pmac.infos import MotorInfo
+from annotypes import add_call_types
+
+from malcolm.modules import builtin, scanning
+from ..infos import MotorInfo
 from .pmactrajectorypart import cs_axis_names
 
 
-class CompoundMotorPart(ChildPart):
-    @RunnableController.ReportStatus
-    def report_cs_info(self, context):
+class CompoundMotorPart(builtin.parts.ChildPart):
+    def on_hook(self, hook):
+        if isinstance(hook, scanning.hooks.ReportStatusHook):
+            hook(self.report_status)
+
+    @add_call_types
+    def report_status(self, context):
+        # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
         child = context.block_view(self.params.mri)
         max_velocity = child.maxVelocity.value
         acceleration = float(max_velocity) / child.accelerationTime.value
@@ -27,4 +33,4 @@ class CompoundMotorPart(ChildPart):
             scannable=child.scannable.value,
             velocity_settle=child.velocitySettle.value
         )
-        return [motor_info]
+        return motor_info

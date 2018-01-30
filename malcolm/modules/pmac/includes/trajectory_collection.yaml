@@ -7,20 +7,20 @@
     description: the root PV for the trajectory scan template
 
 - builtin.parameters.string:
-    name: statPrefix
+    name: stat_prefix
     description: the root PV for the pmacStatus template
 
 - builtin.parameters.float64:
-    name: minTurnaround
+    name: initial_min_turnaround
     description: Minimum turnaround time
     default: 0.0
 
 - pmac.blocks.pmac_trajectory_block:
     mri: $(mri)
     prefix: $(prefix)
-    statPrefix: $(statPrefix)
+    stat_prefix: $(stat_prefix)
 
 - pmac.parts.PmacTrajectoryPart:
     name: $(mri)
     mri: $(mri)
-    minTurnaround: $(minTurnaround)
+    initial_min_turnaround: $(initial_min_turnaround)

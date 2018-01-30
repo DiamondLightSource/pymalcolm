@@ -1,12 +1,20 @@
-from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.scanning.parts import RunnableChildPart
+from annotypes import add_call_types
+
+from malcolm.core import Hook
+from malcolm.modules import scanning
 
 
-class PmacRunnableChildPart(RunnableChildPart):
+class PmacRunnableChildPart(scanning.parts.RunnableChildPart):
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, scanning.hooks.PauseHook):
+            hook(self.pause)
+
     # TODO: not sure if this is still needed to reset triggers on pause?
     # Think it probably is because we need to reset triggers before rearming
     # detectors
-    @RunnableController.Pause
+    @add_call_types
     def pause(self, context):
-        child = context.block_view(self.params.mri)
+        # type: (scanning.hooks.AContext) -> None
+        child = context.block_view(self.mri)
         child.pause()

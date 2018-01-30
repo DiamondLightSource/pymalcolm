@@ -1,23 +1,26 @@
 from annotypes import Anno
 
-from malcolm.core import Post, Subscribe, Put, Hook, Alarm, Unsubscribe, Delta, \
-    Queue, ProcessStopHook, ProcessStartHook, deserialize_object
+from malcolm.core import Post, Subscribe, Put, Hook, Alarm, Unsubscribe, \
+    Delta, Queue, ProcessStopHook, ProcessStartHook, deserialize_object, \
+    Response, UnpublishedInfo, UUnpublishedInfos
 from .basiccontroller import BasicController, AMri
 from ..infos import HealthInfo
 
-
 with Anno("Malcolm resource id of client comms"):
     AComms = str
+with Anno("Whether to re-publish this block via server comms"):
+    APublish = bool
 
 
 class ProxyController(BasicController):
     """Sync a local block with a given remote block"""
 
-    def __init__(self, mri, comms):
-        # type: (AMri, AComms) -> None
+    def __init__(self, mri, comms, publish=False):
+        # type: (AMri, AComms, APublish) -> None
         super(ProxyController, self).__init__(mri)
-        self.client_comms = None
         self.comms = comms
+        self.publish = publish
+        self.client_comms = None
         self.update_health(self, HealthInfo(Alarm.invalid("Uninitialized")))
         self._response_queue = Queue()
         self._notify_response = True
@@ -31,15 +34,19 @@ class ProxyController(BasicController):
             hook(self.halt)
 
     def init(self):
+        # type: () -> UUnpublishedInfos
         self.client_comms = self.process.get_controller(self.comms)
         subscribe = Subscribe(path=[self.params.mri], delta=True)
         subscribe.set_callback(self.handle_response)
         self.client_comms.send_to_server(subscribe)
         # Wait until connected
         self._first_response_queue.get(timeout=5)
+        if not self.publish:
+            return UnpublishedInfo(self.mri)
 
     def halt(self):
-        unsubscribe = Unsubscribe(callback=self.handle_response)
+        unsubscribe = Unsubscribe()
+        unsubscribe.set_callback(self.handle_response)
         self.client_comms.send_to_server(unsubscribe)
 
     def handle_request(self, request):
@@ -50,15 +57,16 @@ class ProxyController(BasicController):
             return super(ProxyController, self).handle_request(request)
 
     def handle_response(self, response):
+        # type: (Response) -> None
         self._response_queue.put(response)
-        return self.spawn(self._handle_response)
+        self.spawn(self._handle_response)
 
     def _handle_response(self):
         with self.changes_squashed:
             if self._notify_response:
                 self._first_response_queue.put(True)
                 self._notify_response = False
-            response = self._response_queue.get(timeout=0)
+            response = self._response_queue.get(timeout=0)  # type: Response
             if not isinstance(response, Delta):
                 # Return or Error is the end of our subscription, log and ignore
                 self.log.debug("Proxy got response %r", response)

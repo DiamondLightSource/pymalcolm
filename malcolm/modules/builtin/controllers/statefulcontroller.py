@@ -20,7 +20,7 @@ ss = StatefulStates
 
 class StatefulController(BasicController):
     """A controller that implements `StatefulStates`"""
-    # The stateSet that this controller implements
+    # The state_set that this controller implements
     state_set = ss()
 
     def __init__(self, mri, description="", use_cothread=True):
@@ -41,7 +41,7 @@ class StatefulController(BasicController):
 
     def set_writeable_in(self, field, *states):
         # Field has defined when it should be writeable, just check that
-        # this is valid for this stateSet
+        # this is valid for this state_set
         for state in states:
             assert state in self.state_set.possible_states, \
                 "State %s is not one of the valid states %s" % \
@@ -72,7 +72,7 @@ class StatefulController(BasicController):
     def on_hook(self, hook):
         # type: (Hook) -> None
         if isinstance(hook, ProcessStartHook):
-            hook(self.do_init)
+            hook(self.init)
         elif isinstance(hook, ProcessStopHook):
             hook(self.halt)
 

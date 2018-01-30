@@ -1,12 +1,14 @@
+from annotypes import Anno, add_call_types
 from tornado.web import RequestHandler, asynchronous
 
-from malcolm.core import method_takes, Part, json_decode, json_encode, Get, \
-    Post, Return, Error
-from malcolm.core.vmetas import StringMeta
-from malcolm.modules.web.controllers import HTTPServerComms
-from malcolm.modules.web.infos import HandlerInfo
+from malcolm.core import Part, json_decode, json_encode, Get, Post, Return, \
+    Error, APartName, Hook
+from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos
+from ..infos import HandlerInfo
 
 
+# For some reason tornado doesn't make us implement all abstract methods
+# noinspection PyAbstractClass
 class RestfulHandler(RequestHandler):
     _server_part = None
     _loop = None
@@ -39,7 +41,8 @@ class RestfulHandler(RequestHandler):
             self.set_status(500, message)
             self.write_error(500)
 
-    # curl --data 'parameters={"name": "me"}' http://localhost:8888/blocks/hello/say_hello
+    # curl --data 'parameters={"name": "me"}' \
+    #     http://localhost:8080/blocks/hello/say_hello
     @asynchronous
     def post(self, endpoint_str):
         # called from tornado thread
@@ -50,20 +53,27 @@ class RestfulHandler(RequestHandler):
         self._server_part.on_request(request)
 
 
-@method_takes(
-    "name", StringMeta(
-        "Name of the subdomain to respond to queries on"), "rest")
-class RestfulServerPart(Part):
-    def __init__(self, params):
-        self.params = params
-        super(RestfulServerPart, self).__init__(params.name)
+with Anno("Part name and subdomain name to respond to queries on"):
+    AName = str
 
-    @HTTPServerComms.ReportHandlers
-    def report_handlers(self, context, loop):
-        regexp = r"/%s/(.*)" % self.params.name
+
+class RestfulServerPart(Part):
+    def __init__(self, name="rest"):
+        # type: (AName) -> None
+        super(RestfulServerPart, self).__init__(name)
+
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, ReportHandlersHook):
+            hook(self.report_handlers)
+
+    @add_call_types
+    def report_handlers(self, loop):
+        # type: (ALoop) -> UHandlerInfos
+        regexp = r"/%s/(.*)" % self.name
         info = HandlerInfo(
             regexp, RestfulHandler, server_part=self, loop=loop)
-        return [info]
+        return info
 
     def on_request(self, request):
         # called from tornado thread

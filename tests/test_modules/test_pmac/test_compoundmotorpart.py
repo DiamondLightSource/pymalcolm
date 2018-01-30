@@ -27,7 +27,7 @@ class TestRawMotorPart(ChildTestCase):
         self.process.stop(timeout=1)
 
     def test_report(self):
-        returns = self.o.report_cs_info(self.context)[0]
+        returns = self.o.report_status(self.context)[0]
         assert returns.cs_axis == "B"
         assert returns.cs_port == "CS_PORT"
         assert returns.acceleration == 10.0

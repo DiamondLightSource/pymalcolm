@@ -173,6 +173,13 @@ class Block(View):
                 # Add _async versions of method
                 self._make_async_method(endpoint)
 
+    def __getattr__(self, item):
+        # type: (str) -> View
+        # Get the child of self._data. Needs to be done by the controller to
+        # make sure lock is taken and we get consistent data
+        child = self._controller.make_view(self._context, self._data, item)
+        return child
+
     @property
     def mri(self):
         return self._data.path[0]

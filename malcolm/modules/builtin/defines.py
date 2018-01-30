@@ -42,7 +42,7 @@ def int32(name, value):
 
 @add_call_types
 def docstring(value):
-    # type: (AName, AStringValue) -> ADefine
+    # type: (AStringValue) -> ADefine
     """Define the docstring for the YAML file"""
     return Define("docstring", value)
 
@@ -96,9 +96,10 @@ with Anno("The path of a python package dir to insert as "
 def module_path(name, path):
     # type: (AModuleName, AModulePath) -> ADefine
     """Load an external malcolm module (e.g. ADCore/etc/malcolm)"""
+    define = Define(name, path)
     importer = Importer()
     assert os.path.isdir(path), "%r doesn't exist" % path
     name = "malcolm.modules.%s" % name
     importer.import_package_from_path(name, path)
     importer.import_special_subpackages(name, path)
-    return Define(name, path)
+    return define

@@ -20,7 +20,7 @@ include_yaml = """
 - builtin.parts.StringPart:
     name: scannable
     description: Scannable name for motor
-    initialValue: $(something)
+    value: $(something)
 """
 
 block_yaml = """
@@ -34,7 +34,7 @@ block_yaml = """
 - builtin.parts.StringPart:
     name: scannable
     description: Scannable name for motor
-    initialValue: $(something)
+    value: $(something)
 """
 
 
@@ -60,7 +60,7 @@ class TestYamlUtil(unittest.TestCase):
         part = parts[0]
         self.assertIsInstance(part, StringPart)
         assert part.name == "scannable"
-        assert part.params.initialValue == "blah"
+        assert part.params.value == "blah"
 
     def test_make_block(self):
         with patch("malcolm.yamlutil.open",
@@ -74,7 +74,7 @@ class TestYamlUtil(unittest.TestCase):
         process.add_controller.assert_called_once_with("some_mri", controller)
         assert len(controller.parts) == 1
         self.assertIsInstance(controller.parts["scannable"], StringPart)
-        assert controller.parts["scannable"].params.initialValue == (
+        assert controller.parts["scannable"].params.value == (
                          "blah")
 
     def test_check_names_good(self):

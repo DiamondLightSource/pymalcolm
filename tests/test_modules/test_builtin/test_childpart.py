@@ -1,31 +1,32 @@
 import unittest
 
-from malcolm.core import Part, Process, Table, call_with_params, Context
+from malcolm.core import Part, Process, Table, Context, StringMeta, \
+    PartRegistrar, Port
 from malcolm.modules.builtin.controllers import BasicController, \
     ManagerController
+from malcolm.modules.builtin.infos import InPortInfo, OutPortInfo
 from malcolm.modules.builtin.parts import ChildPart
-from malcolm.core.vmetas import StringMeta
+from malcolm.modules.builtin.util import LayoutTable
 
-sm = ManagerController.stateSet
+sm = ManagerController.state_set
 
 
 class PortsPart(Part):
 
-    def create_attribute_models(self):
-        for data in super(PortsPart, self).create_attribute_models():
-            yield data
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(PortsPart, self).setup(registrar)
         # note 3rd part of inport tag is its disconnected value
         in_tag = "inport:int32:"
         in_name = "inportConnector"
-        in_port = StringMeta(in_name, [in_tag, "config"]).create_attribute_model()
-        in_port.meta.set_writeable_in(sm.READY)
-        yield in_name, in_port, in_port.set_value
+        in_port = StringMeta(in_name,
+                             [in_tag, "config"]).create_attribute_model()
+        registrar.add_attribute_model(in_name, in_port, in_port.set_value)
 
         out_name = "outportConnector"
         out_tag = "outport:int32:%s" % self.name
         out_port = StringMeta(in_name, [out_tag]).create_attribute_model()
-        out_port.meta.set_writeable_in(sm.READY)
-        yield out_name, out_port, out_port.set_value
+        registrar.add_attribute_model(out_name, out_port, out_port.set_value)
 
 
 class TestChildPart(unittest.TestCase):
@@ -34,12 +35,11 @@ class TestChildPart(unittest.TestCase):
         assert self.c.state.value == state
 
     def makeChildBlock(self, blockMri):
-        controller = call_with_params(
-            BasicController, self.p, [
-                PortsPart(name='Connector%s' % blockMri[-1])], mri=blockMri)
-        part = call_with_params(
-            ChildPart, mri=blockMri, name='part%s' % blockMri)
-        self.p.add_controller(blockMri, controller)
+        controller = BasicController(blockMri)
+        controller.add_part(PortsPart(name='Connector%s' % blockMri[-1]))
+        part = ChildPart(
+            mri=blockMri, name='part%s' % blockMri, initial_visibility=True)
+        self.p.add_controller(controller)
         return part, controller
 
     def setUp(self):
@@ -53,10 +53,10 @@ class TestChildPart(unittest.TestCase):
         self.c3._block.inportConnector.set_value('Connector2')
 
         # create a root block for the child blocks to reside in
-        parts = [self.p1, self.p2, self.p3]
-        self.c = call_with_params(
-            ManagerController, self.p, parts, mri='mainBlock', config_dir="/tmp")
-        self.p.add_controller('mainBlock', self.c)
+        self.c = ManagerController(mri='mainBlock', config_dir="/tmp")
+        for part in [self.p1, self.p2, self.p3]:
+            self.c.add_part(part)
+        self.p.add_controller(self.c)
 
         # Start the process
         # check that do_initial_reset works asynchronously
@@ -71,7 +71,7 @@ class TestChildPart(unittest.TestCase):
         for controller in (self.c1, self.c2, self.c3):
             b = self.p.block_view(controller.mri)
             assert b.outportConnector.value == ''
-        assert self.c.exports.meta.elements["name"].choices == (
+        assert self.c.exports.meta.elements["source"].choices == [
             'partchild1.health',
             'partchild1.inportConnector',
             'partchild1.outportConnector',
@@ -80,28 +80,32 @@ class TestChildPart(unittest.TestCase):
             'partchild2.outportConnector',
             'partchild3.health',
             'partchild3.inportConnector',
-            'partchild3.outportConnector')
+            'partchild3.outportConnector'
+        ]
         assert len(self.c.port_info) == 3
         port_info = self.c.port_info["partchild1"]
         assert len(port_info) == 2
-        assert port_info[0].direction == "in"
-        assert port_info[0].type == "int32"
-        assert port_info[0].value == "Connector3"
-        assert port_info[0].extra == ""
-        assert port_info[1].direction == "out"
-        assert port_info[1].type == "int32"
-        assert port_info[1].value == ""
-        assert port_info[1].extra == "Connector1"
+        info_in = port_info[0]
+        assert isinstance(info_in, InPortInfo)
+        assert info_in.name == "inportConnector"
+        assert info_in.port == Port.INT32
+        assert info_in.value == "Connector3"
+        assert info_in.disconnected_value == ""
+        info_out = port_info[1]
+        assert isinstance(info_out, OutPortInfo)
+        assert info_out.name == "outportConnector"
+        assert info_out.port == Port.INT32
+        assert info_out.connected_value == "Connector1"
 
     def test_layout(self):
         b = self.p.block_view("mainBlock")
 
-        new_layout = Table(self.c.layout.meta)
-        new_layout.name = ["partchild1", "partchild2", "partchild3"]
-        new_layout.mri = ["part1", "part2", "part3"]
-        new_layout.x = [10, 11, 12]
-        new_layout.y = [20, 21, 22]
-        new_layout.visible = [True, True, True]
+        new_layout = LayoutTable(
+            name=["partchild1", "partchild2", "partchild3"],
+            mri=["part1", "part2", "part3"],
+            x=[10, 11, 12],
+            y=[20, 21, 22],
+            visible=[True, True, True])
         b.layout.put_value(new_layout)
         assert self.c.parts['partchild1'].x == 10
         assert self.c.parts['partchild1'].y == 20
@@ -121,8 +125,8 @@ class TestChildPart(unittest.TestCase):
 
     def test_sever_all_inports(self):
         b = self.p.block_view("mainBlock")
-        b1, b2, b3 = (self.c1.block_view(), self.c2.block_view(),
-                      self.c3.block_view())
+        b1, b2, b3 = (self.c1.make_view(), self.c2.make_view(),
+                      self.c3.make_view())
         new_layout = dict(
             name=["partchild1"], mri=[""], x=[0], y=[0], visible=[False])
         b.layout.put_value(new_layout)
@@ -131,7 +135,7 @@ class TestChildPart(unittest.TestCase):
         assert b3.inportConnector.value == 'Connector2'
 
     def test_load_save(self):
-        b1 = self.c1.block_view()
+        b1 = self.c1.make_view()
         context = Context(self.p)
         structure1 = self.p1.save(context)
         expected = dict(inportConnector="Connector3")
@@ -140,6 +144,5 @@ class TestChildPart(unittest.TestCase):
         structure2 = self.p1.save(context)
         expected = dict(inportConnector="blah")
         assert structure2 == expected
-        self.p1.load(context, dict(
-            partchild1=dict(inportConnector="blah_again")))
+        self.p1.load(context, dict(inportConnector="blah_again"))
         assert b1.inportConnector.value == "blah_again"

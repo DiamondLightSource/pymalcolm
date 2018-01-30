@@ -11,7 +11,7 @@
     description: The scannable name for GDA of this motor
 
 - builtin.parameters.float64:
-    name: velocitySettle
+    name: initial_velocity_settle
     description: Time in seconds for motor to settle at constant velocity
     default: 0.0
 
@@ -31,10 +31,10 @@
     name: scannable
     description: Scannable name for motor
     writeable: True
-    initialValue: $(scannable)
+    value: $(scannable)
 
 - builtin.parts.Float64Part:
     name: velocitySettle
     description: Time in seconds for motor to settle at constant velocity
     writeable: True
-    initialValue: $(velocitySettle)
+    value: $(initial_velocity_settle)

@@ -32,7 +32,7 @@ with Anno("The child that the hook is being passed to"):
 T = TypeVar("T")
 
 
-class Hook(WithCallTypes, Generic[T]):
+class Hook(Generic[T], WithCallTypes):
     """Something that children can register with to be called"""
 
     def __init__(self, child, **kwargs):
@@ -62,27 +62,31 @@ class Hook(WithCallTypes, Generic[T]):
         """Override this if we need to prepare before running"""
         pass
 
-    def __call__(self, func, *args):
-        # type: (Callable[..., T], *Any) -> None
+    def __call__(self, func, extra_keys=None):
+        # type: (Callable[..., T], List[str]) -> None
+        """Spawn the function, passing kwargs specified by func.call_types or
+        keys if given"""
         assert not self.spawned, \
             "Hook has already spawned a function, cannot run another"
         self.prepare()
-        call_types = getattr(func, "call_types", {})  # type: Dict[str, Anno]
+        keys = list(getattr(func, "call_types", {}))  # type: List[str]
+        if extra_keys:
+            keys += extra_keys
         # TODO: should we check the return types here?
-        kwargs = {k: self._kwargs[k] for k in call_types}
-        self.spawned = self._spawn(self._run, func, args, kwargs)
+        kwargs = {k: self._kwargs[k] for k in keys}
+        self.spawned = self._spawn(self._run, func, kwargs)
 
-    def _run(self, func, args, kwargs):
-        # type: (Callable[..., T], Tuple, Dict[str, Any]) -> None
+    def _run(self, func, kwargs):
+        # type: (Callable[..., T], Dict[str, Any]) -> None
         try:
-            result = func(*args, **kwargs)
+            result = func(**kwargs)
             result = self.validate_return(result)
         except AbortedError as e:
             log.info("%s: %s has been aborted", self.child, func)
             result = e
         except Exception as e:  # pylint:disable=broad-except
-            log.exception("%s: %s(*%s, **%s) raised exception %s",
-                          self.child, func, args, kwargs, e)
+            log.exception("%s: %s(**%s) raised exception %s",
+                          self.child, func, kwargs, e)
             result = e
         self._queue.put((self, result))
 
@@ -113,7 +117,7 @@ def start_hooks(hooks):
     return hook_queue, hook_spawned
 
 
-def wait_hooks(hook_queue, hook_spawned, timeout=None):
+def wait_hooks(hook_queue, hook_spawned, timeout=None, exception_check=True):
     # type: (Queue, List[Hook], float) -> Dict[str, List[Info]]
     # Wait for them all to finish
     return_dict = OrderedDict()
@@ -138,7 +142,7 @@ def wait_hooks(hook_queue, hook_spawned, timeout=None):
                 "%s: Child %s returned %r after %ss. Returning...",
                 hook.name, hook.child.name, ret, duration)
 
-        if isinstance(ret, Exception):
+        if exception_check and isinstance(ret, Exception):
             if not isinstance(ret, AbortedError):
                 # If AbortedError, all tasks have already been stopped.
                 # Got an error, so stop and wait all hook runners

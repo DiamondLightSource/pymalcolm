@@ -109,7 +109,7 @@ class PandABlocksMaker(object):
         self._add_part("icon", part)
         label = self.block_data.description + " " + \
             self.block_name[len(block_type):]
-        part = call_with_params(TitlePart, initialValue=label)
+        part = call_with_params(TitlePart, value=label)
         self._add_part("label", part)
 
     def _make_scale_offset(self, field_name):

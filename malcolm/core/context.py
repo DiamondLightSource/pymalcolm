@@ -148,7 +148,8 @@ class Context(object):
         Returns:
              Future: A single Future which will resolve to the result
         """
-        request = Put(self._get_next_id(), path, value, self._q.put)
+        request = Put(self._get_next_id(), path, value)
+        request.set_callback(self._q.put)
         future = self._dispatch_request(request)
         return future
 
@@ -216,7 +217,8 @@ class Context(object):
         self._pending_unsubscribes[future] = subscribe
         # Clear out the subscription
         self._subscriptions.pop(subscribe.id)
-        request = Unsubscribe(subscribe.id, self._q.put)
+        request = Unsubscribe(subscribe.id)
+        request.set_callback(self._q.put)
         controller = self.get_controller(subscribe.path[0])
         controller.handle_request(request)
 

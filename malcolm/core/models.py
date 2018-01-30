@@ -50,7 +50,8 @@ class Model(Serializable):
         try:
             ct = self.call_types[name]
         except KeyError:
-            raise ValueError("Endpoint %r not defined for %r" % (name, self))
+            raise ValueError("%r not in %r.call_types %r" % (
+                name, self, self.call_types))
         else:
             if ct.is_array:
                 # Check we have the right type
@@ -58,18 +59,21 @@ class Model(Serializable):
                     "Expected Array, got %s" % (value,)
                 assert ct.typ == value.typ, \
                     "Expected Array[%s], got %s" % (ct.typ, value.typ)
+                assert not issubclass(ct.typ, Model), \
+                    "Can't handle Array[Model] at the moment"
             elif ct.is_mapping:
                 # Check it is the right type
                 ktype, vtype = ct.typ
                 for k, v in value.items():
                     assert isinstance(k, ktype), \
                         "Expected %s, got %s" % (ktype, k)
-                    assert isinstance(v, vtype), \
-                        "Expected %s, got %s" % (vtype, v)
+                    if vtype != Any:
+                        assert isinstance(v, vtype), \
+                            "Expected %s, got %s" % (vtype, v)
                 # If we are setting structures of Models then sort notification
                 if issubclass(ct.typ[1], Model):
                     # If we have old Models then stop them notifying
-                    child = getattr(self, name)
+                    child = getattr(self, name, {})
                     if child:
                         for k, v in child.items():
                             v.set_notifier_path(Model.notifier, [])
@@ -80,13 +84,14 @@ class Model(Serializable):
                 # If we are setting a Model then sort notification
                 if issubclass(ct.typ, Model):
                     # If we have an old Model then stop it notifying
-                    child = getattr(self, name)
+                    child = getattr(self, name, None)
                     if child:
                         child.set_notifier_path(Model.notifier, [])
                     value.set_notifier_path(self.notifier, self.path)
                 # Make sure it is the right typ
-                assert isinstance(value, ct.typ), \
-                    "Expected %s, got %s" % (ct.typ, value)
+                if ct.typ != Any:
+                    assert isinstance(value, ct.typ), \
+                        "Expected %s, got %s" % (ct.typ, value)
             with self.notifier.changes_squashed:
                 # Actually set the attribute
                 setattr(self, name, value)
@@ -165,7 +170,7 @@ class VMeta(Meta):
         Returns:
             AttributeModel: The created attribute model instance
         """
-        attr = self.attribute_class(self, initial_value)
+        attr = self.attribute_class(meta=self, value=initial_value)
         return attr
 
     def doc_type_string(self):
@@ -186,7 +191,9 @@ class VMeta(Meta):
         # type: (Anno, bool, **Any) -> VMeta
         """Return an instance of this class from an Anno"""
         ret = cls(description=anno.description, writeable=writeable, **kwargs)
-        ret.set_tags([ret.default_widget().tag()])
+        widget = ret.default_widget()
+        if widget != Widget.NONE:
+            ret.set_tags([widget.tag()])
         return ret
 
     @classmethod
@@ -289,12 +296,16 @@ class AttributeModel(Model):
         # type: (Alarm) -> Alarm
         if alarm is None:
             alarm = Alarm.ok
+        else:
+            alarm = deserialize_object(alarm, Alarm)
         return self.set_endpoint_data("alarm", alarm)
 
     def set_ts(self, ts=None):
         # type: (TimeStamp) -> TimeStamp
         if ts is None:
             ts = TimeStamp()
+        else:
+            ts = deserialize_object(ts, TimeStamp)
         return self.set_endpoint_data("timeStamp", ts)
 
 
@@ -440,7 +451,7 @@ class ChoiceMeta(VMeta):
 
 
 with Anno("Numpy dtype string"):
-    ADtype = str_
+    ADtype = str
 
 
 _dtype_strings = ["int8", "uint8", "int16", "uint16", "int32", "uint32", "int64",
@@ -461,7 +472,7 @@ class NumberMeta(VMeta):
         # type: (ADtype, AMetaDescription, UTags, AWriteable, ALabel) -> None
         super(NumberMeta, self).__init__(description, tags, writeable, label)
         # like np.float64
-        self._np_dtype = None
+        self._np_type = None  # type: type
         # like "float64"
         self.dtype = self.set_dtype(dtype)
 
@@ -469,7 +480,7 @@ class NumberMeta(VMeta):
         # type: (ADtype) -> ADtype
         assert dtype in _dtype_strings, \
             "Expected dtype to be in %s, got %s" % (self._dtypes, dtype)
-        self._np_dtype = getattr(np, dtype)
+        self._np_type = getattr(np, dtype)
         return self.set_endpoint_data("dtype", dtype)
 
     def validate(self, value):
@@ -477,7 +488,7 @@ class NumberMeta(VMeta):
         """Check if the value is valid returns it"""
         if value is None:
             value = 0
-        cast = self._np_dtype(value)
+        cast = self._np_type(value)
         return cast
 
     def doc_type_string(self):
@@ -559,7 +570,7 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
     """Meta object containing information for a choice array"""
 
     def validate(self, value):
-        # type: (Any) -> Array[str_]
+        # type: (Any) -> Array[str]
         """Check if the value is valid returns it"""
         if value is None:
             return Array[str]()
@@ -587,7 +598,7 @@ class NumberArrayMeta(NumberMeta, VArrayMeta):
     def validate(self, value):
         # type: (Any) -> Array
         """Check if the value is valid returns it"""
-        return to_array(Array[self.dtype], value)
+        return to_array(Array[self._np_type], value)
 
     def doc_type_string(self):
         # type: () -> str
@@ -602,7 +613,7 @@ class StringArrayMeta(VArrayMeta):
     def validate(self, value):
         # type: (Any) -> Array
         """Check if the value is valid returns it"""
-        return to_array(Array[str_], value)
+        return to_array(Array[str], value)
 
     def doc_type_string(self):
         # type: () -> str
@@ -617,7 +628,7 @@ class StringArrayMeta(VArrayMeta):
 
 
 with Anno("Elements that should appear in the table instance"):
-    ATableElements = Mapping[str_, VArrayMeta]
+    ATableElements = Mapping[str, VArrayMeta]
 
 
 @Serializable.register_subclass("malcolm:core/TableMeta:1.0")
@@ -695,8 +706,7 @@ class TableMeta(VMeta):
                 "Expected %s, got %s" % (self.table_cls, value)
         elif isinstance(value, dict):
             # We need to make a table instance ourselves
-            keys = set(value)
-            keys.remove("typeid")
+            keys = set(x for x in value if x != "typeid")
             missing = set(self.elements) - keys
             assert not missing, "Supplied table missing fields %s" % (missing,)
             extra = keys - set(self.elements)
@@ -745,12 +755,12 @@ class TableMeta(VMeta):
 
 # Types used when deserializing to the class
 with Anno("Meta objects that are used to describe the elements in the map"):
-    AElements = Mapping[str_, VMeta]
+    AElements = Mapping[str, VMeta]
 with Anno("The required elements in the map"):
-    ARequired = Array[str_]
+    ARequired = Array[str]
 
 # A more permissive union to allow a wider range of set_* args
-URequired = Union[ARequired, Sequence[str_], str_]
+URequired = Union[ARequired, Sequence[str], str]
 
 
 @Serializable.register_subclass("malcolm:core/MapMeta:1.0")
@@ -766,6 +776,7 @@ class MapMeta(Meta):
                  label="",  # type: ALabel
                  required=()  # type: URequired
                  ):
+        # type: (...) -> None
         self.elements = self.set_elements(elements if elements else {})
         self.required = self.set_required(required)
         super(MapMeta, self).__init__(description, tags, writeable, label)
@@ -799,7 +810,7 @@ class MapMeta(Meta):
 with Anno("Meta for describing the arguments that should be passed"):
     ATakes = MapMeta
 with Anno("The required elements in the map"):
-    ADefaults = Mapping[str_, Any]
+    ADefaults = Mapping[str, Any]
 with Anno("Meta for describing the arguments that will be returned"):
     AReturns = MapMeta
 
@@ -818,6 +829,7 @@ class MethodModel(Meta):
                  label="",  # type: ALabel
                  returns=None,  # type: Optional[AReturns]
                  ):
+        # type: (...) -> None
         self.takes = self.set_takes(takes if takes else MapMeta())
         self.returns = self.set_returns(returns if returns else MapMeta())
         self.defaults = self.set_defaults(defaults if defaults else {})
@@ -849,7 +861,10 @@ class MethodModel(Meta):
         # type: (Callable, str) -> MethodModel
         """Return an instance of this class from a Callable"""
         if description is None:
-            description = func.__doc__
+            if func.__doc__ is None:
+                description = ""
+            else:
+                description = func.__doc__
         method = cls(description=description)
         takes_elements = OrderedDict()
         defaults = OrderedDict()
@@ -869,7 +884,7 @@ class MethodModel(Meta):
         return_type = getattr(func, "return_type", None)  # type: Anno
         if return_type is None or return_type.typ is None:
             call_types = {}
-        elif isinstance(return_type.typ, WithCallTypes):
+        elif issubclass(return_type.typ, WithCallTypes):
             call_types = return_type.typ.call_types
         else:
             call_types = {"return": return_type}
@@ -916,23 +931,25 @@ class BlockModel(Model):
     """Data Model for a Block"""
 
     def __init__(self):
+        # type: () -> None
         # Make a new call_types dict so we don't modify for all instances
         self.call_types = OrderedDict()
         self.meta = self.set_endpoint_data("meta", BlockMeta())
 
     def set_endpoint_data(self, name, value):
-        # type: (str_, Any) -> Any
+        # type: (str, Union[AttributeModel, MethodModel, BlockMeta]) -> Any
         name = deserialize_object(name, str_)
         if name == "meta":
             value = deserialize_object(value, BlockMeta)
         else:
             value = deserialize_object(value, (AttributeModel, MethodModel))
         with self.notifier.changes_squashed:
-            if name in self.endpoints:
+            if name in self.call_types:
                 # Stop the old Model notifying
                 getattr(self, name).set_notifier_path(Model.notifier, [])
             else:
-                self.call_types[name] = None
+                anno = Anno("Field", typ=type(value))
+                self.call_types[name] = anno
             value.set_notifier_path(self.notifier, self.path + [name])
             setattr(self, name, value)
             # Tell the notifier what changed
@@ -944,7 +961,7 @@ class BlockModel(Model):
         self.meta.set_fields([x for x in self.call_types if x != "meta"])
 
     def remove_endpoint(self, name):
-        # type: (str_) -> None
+        # type: (str) -> None
         with self.notifier.changes_squashed:
             getattr(self, name).set_notifier_path(Model.notifier, [])
             self.call_types.pop(name)

@@ -1,19 +1,19 @@
 # Treat all division as float division even in python2
 from __future__ import division
-
 from collections import Counter
 
 import numpy as np
 from scanpointgenerator import CompoundGenerator
+from annotypes import add_call_types, TYPE_CHECKING, Anno
 
-from malcolm.core import method_takes, REQUIRED, method_also_takes, TimeoutError
+from malcolm.core import TimeoutError, config_tag, NumberMeta, PartRegistrar, \
+    Widget, Hook
+from malcolm.modules import builtin, scanning
 from malcolm.modules.builtin.parts import ChildPart
-from malcolm.core.vmetas import NumberMeta, StringArrayMeta
-from malcolm.modules.pmac.infos import MotorInfo
-from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.scanning.infos import ParameterTweakInfo
-from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
-from malcolm.core.tags import widget, config_tag
+from ..infos import MotorInfo
+
+if TYPE_CHECKING:
+    from typing import Dict, List
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
@@ -46,68 +46,88 @@ PROFILE_POINTS = 10000
 # All possible PMAC CS axis assignment
 cs_axis_names = list("ABCUVWXYZ")
 
-# Args for configure and validate
-configure_args = (
-    "generator", PointGeneratorMeta("Generator instance"), REQUIRED,
-    "axesToMove", StringArrayMeta(
-        "List of axes in inner dimension of generator that should be moved"),
-    []
-)
+with Anno("Initial value for min time for any gaps between frames"):
+    AMinTurnaround = float
 
 
-@method_also_takes(
-    "minTurnaround", NumberMeta(
-        "float64", "Min time for any gaps between frames"), 0.0)
 class PmacTrajectoryPart(ChildPart):
-    # Axis information stored from validate
-    # {scannable_name: MotorInfo}
-    axis_mapping = None
-    # Lookup of the completed_step value for each point
-    completed_steps_lookup = []
-    # If we are currently loading then block loading more points
-    loading = False
-    # Where we have generated into profile
-    end_index = 0
-    # Where we should stop loading points
-    steps_up_to = 0
-    # Profile points that haven't been sent yet
-    # {time_array/velocity_mode/trajectory/user_programs: [elements]}
-    profile = {}
-    # Stored generator for positions
-    generator = None
-    # Min turnaround time
-    min_turnaround = None
-
-    def create_attribute_models(self):
-        for data in super(PmacTrajectoryPart, self).create_attribute_models():
-            yield data
-        # Create writeable attribute for the minimum time to leave when there
-        # is a gap between frames
-        meta = NumberMeta(
+    def __init__(self,
+                 name,  # type: builtin.parts.APartName
+                 mri,  # type: builtin.parts.AMri
+                 initial_min_turnaround=0.0  # type: AMinTurnaround
+                 ):
+        # type: (...) -> None
+        super(PmacTrajectoryPart, self).__init__(name, mri)
+        # Axis information stored from validate
+        self.axis_mapping = None  # type: Dict[str, MotorInfo]
+        # Lookup of the completed_step value for each point
+        self.completed_steps_lookup = []  # type: List[int]
+        # If we are currently loading then block loading more points
+        self.loading = False
+        # Where we have generated into profile
+        self.end_index = 0
+        # Where we should stop loading points
+        self.steps_up_to = 0
+        # Profile points that haven't been sent yet
+        # {time_array/velocity_mode/trajectory/user_programs: [elements]}
+        self.profile = {}
+        # Stored generator for positions
+        self.generator = None  # type: CompoundGenerator
+        # Attribute info
+        self.min_turnaround = NumberMeta(
             "float64", "Min time for any gaps between frames",
-            tags=[widget("textinput"), config_tag()])
-        self.min_turnaround = meta.create_attribute_model(
-            self.params.minTurnaround)
-        yield "minTurnaround", self.min_turnaround, \
-              self.min_turnaround.set_value
+            tags=[Widget.TEXTINPUT.tag(), config_tag()]
+        ).create_attribute_model(initial_min_turnaround)
 
-    @RunnableController.Reset
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(PmacTrajectoryPart, self).setup(registrar)
+        registrar.add_attribute_model("minTurnaround", self.min_turnaround,
+                                      self.min_turnaround.set_value)
+        registrar.report(scanning.infos.ConfigureParamsInfo.from_configure(
+            self.configure))
+
+    @add_call_types
     def reset(self, context):
+        # type: (builtin.hooks.AContext) -> None
         super(PmacTrajectoryPart, self).reset(context)
         self.abort(context)
         self.reset_triggers(context)
 
-    @RunnableController.Validate
-    @method_takes(*configure_args)
-    def validate(self, context, part_info, params):
-        self._make_axis_mapping(part_info, params.axesToMove)
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, scanning.hooks.ValidateHook):
+            hook(self.validate)
+        elif isinstance(hook, (scanning.hooks.ConfigureHook,
+                               scanning.hooks.PostRunArmedHook,
+                               scanning.hooks.SeekHook)):
+            hook(self.configure)
+        elif isinstance(hook, (scanning.hooks.RunHook,
+                               scanning.hooks.ResumeHook)):
+            hook(self.run)
+        elif isinstance(hook, scanning.hooks.AbortHook):
+            hook(self.abort)
+        elif isinstance(hook, scanning.hooks.PauseHook):
+            hook(self.pause)
+
+    # Allow CamelCase as arguments will be serialized
+    # noinspection PyPep8Naming
+    @add_call_types
+    def validate(self,
+                 context,  # type: scanning.hooks.AContext
+                 part_info,  # type: scanning.hooks.APartInfo
+                 generator,  # type: scanning.hooks.AGenerator
+                 axesToMove,  # type: scanning.hooks.AAxesToMove
+                 ):
+        # type: (...) -> scanning.hooks.UParameterTweakInfos
+        self._make_axis_mapping(part_info, axesToMove)
         # Find the duration
-        child = context.block_view(self.params.mri)
-        assert params.generator.duration > 0, \
+        child = context.block_view(self.mri)
+        assert generator.duration > 0, \
             "Can only do fixed duration at the moment"
         servo_freq = 8388608000. / child.i10.value
         # convert half an exposure to multiple of servo ticks, rounding down
-        ticks = np.floor(servo_freq * 0.5 * params.generator.duration)
+        ticks = np.floor(servo_freq * 0.5 * generator.duration)
         if not np.isclose(servo_freq, 3200):
             # + 0.002 for some observed jitter in the servo frequency if I10
             # isn't a whole number (any frequency apart from 3.2 kHz)
@@ -116,13 +136,13 @@ class PmacTrajectoryPart(ChildPart):
         micros = np.ceil(ticks / servo_freq * 1e6)
         # back to duration
         duration = 2 * float(micros) / 1e6
-        if duration != params.generator.duration:
+        if duration != generator.duration:
             new_generator = CompoundGenerator(
-                generators=params.generator.generators,
-                excluders=params.generator.excluders,
-                mutators=params.generator.mutators,
+                generators=generator.generators,
+                excluders=generator.excluders,
+                mutators=generator.mutators,
                 duration=duration)
-            return [ParameterTweakInfo("generator", new_generator)]
+            return scanning.infos.ParameterTweakInfo("generator", new_generator)
 
     def _make_axis_mapping(self, part_info, axes_to_move):
         cs_ports = set()
@@ -149,18 +169,24 @@ class PmacTrajectoryPart(ChildPart):
             "CS axis defs %s have more that one raw motor attached" % overlap
         return cs_ports.pop(), axis_mapping
 
-    @RunnableController.Configure
-    @RunnableController.PostRunArmed
-    @RunnableController.Seek
-    @method_takes(*configure_args)
-    def configure(self, context, completed_steps, steps_to_do, part_info,
-                  params):
+    # Allow CamelCase as arguments will be serialized
+    # noinspection PyPep8Naming
+    @add_call_types
+    def configure(self,
+                  context,  # type: scanning.hooks.AContext
+                  completed_steps,  # type: scanning.hooks.ACompletedSteps
+                  steps_to_do,  # type: scanning.hooks.AStepsToDo
+                  part_info,  # type: scanning.hooks.APartInfo
+                  generator,  # type: scanning.hooks.AGenerator
+                  axesToMove,  # type: scanning.hooks.AAxesToMove
+                  ):
+        # type: (...) -> None
         context.unsubscribe_all()
-        child = context.block_view(self.params.mri)
+        child = context.block_view(self.mri)
         child.numPoints.put_value(4000000)
-        self.generator = params.generator
+        self.generator = generator
         cs_port, self.axis_mapping = self._make_axis_mapping(
-            part_info, params.axesToMove)
+            part_info, axesToMove)
         # Set the right CS to move
         child.cs.put_value(cs_port)
         self.completed_steps_lookup = []
@@ -177,13 +203,12 @@ class PmacTrajectoryPart(ChildPart):
         # Max size of array
         child.buildProfile()
 
-    @RunnableController.Run
-    @RunnableController.Resume
-    def run(self, context, update_completed_steps):
+    @add_call_types
+    def run(self, context):
+        # type: (scanning.hooks.AContext) -> None
         self.loading = False
-        child = context.block_view(self.params.mri)
-        child.pointsScanned.subscribe_value(
-            self.update_step, update_completed_steps, child)
+        child = context.block_view(self.mri)
+        child.pointsScanned.subscribe_value(self.update_step, child)
         child.executeProfile()
         # Now wait for up to 2*min_delta time to make sure any
         # update_completed_steps come in
@@ -192,23 +217,27 @@ class PmacTrajectoryPart(ChildPart):
             child.when_value_matches("pointsScanned", traj_end, timeout=0.1)
         except TimeoutError:
             raise ValueError("PMAC %r didn't report %s steps in time" % (
-                self.params.mri, traj_end))
+                self.mri, traj_end))
 
-    @RunnableController.Abort
+    @add_call_types
     def abort(self, context):
-        child = context.block_view(self.params.mri)
+        # type: (scanning.hooks.AContext) -> None
+        child = context.block_view(self.mri)
         child.abortProfile()
 
-    @RunnableController.Pause
+    @add_call_types
     def pause(self, context):
+        # type: (scanning.hooks.AContext) -> None
         self.abort(context)
+        # Wait for the motors to stop moving as this is not a caput callback
         context.sleep(0.5)
         self.reset_triggers(context)
 
-    def update_step(self, scanned, update_completed_steps, child):
+    def update_step(self, scanned, child):
         if scanned > 0:
             completed_steps = self.completed_steps_lookup[scanned - 1]
-            update_completed_steps(completed_steps, self)
+            self.registrar.report(scanning.infos.RunProgressInfo(
+                completed_steps))
             # Keep PROFILE_POINTS trajectory points in front
             if not self.loading and self.end_index < self.steps_up_to and \
                     len(self.completed_steps_lookup) - scanned < PROFILE_POINTS:
@@ -361,7 +390,7 @@ class PmacTrajectoryPart(ChildPart):
 
     def reset_triggers(self, context):
         """Just call a Move to the run up position ready to start the scan"""
-        child = context.block_view(self.params.mri)
+        child = context.block_view(self.mri)
         child.numPoints.put_value(10)
         self.write_profile_points(child,
                                   time_array=[0.1],

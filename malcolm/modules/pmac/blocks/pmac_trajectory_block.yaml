@@ -7,7 +7,7 @@
     description: The root PV for the trajectory scan template
 
 - builtin.parameters.string:
-    name: statPrefix
+    name: stat_prefix
     description: The root PV for the pmacStatus template
 
 - builtin.defines.docstring:
@@ -20,7 +20,7 @@
 - ca.parts.CALongPart:
     name: i10
     description: Value of i10 (servo ticks)
-    rbv: $(statPrefix):I10
+    rbv: $(stat_prefix):I10
 
 - ca.parts.CAChoicePart:
     name: cs

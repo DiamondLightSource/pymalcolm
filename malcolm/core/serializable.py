@@ -3,7 +3,7 @@ import logging
 import json
 
 import numpy as np
-from annotypes import WithCallTypes, TypeVar, Any, TYPE_CHECKING
+from annotypes import WithCallTypes, TypeVar, Any, TYPE_CHECKING, Array
 from enum import Enum
 
 from malcolm.compat import OrderedDict
@@ -29,6 +29,8 @@ def json_decode(s):
 
 def serialize_hook(o):
     o = serialize_object(o)
+    if isinstance(o, Array):
+        return serialize_hook(o.seq)
     if isinstance(o, (np.number, np.bool_)):
         return o.tolist()
     elif isinstance(o, np.ndarray):

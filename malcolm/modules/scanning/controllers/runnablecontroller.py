@@ -1,4 +1,5 @@
-from annotypes import Anno, Array, TYPE_CHECKING, add_call_types
+from annotypes import Anno, Array, TYPE_CHECKING, add_call_types, Sequence, \
+    Union, Any
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import AbortedError, MethodModel, Queue, \
@@ -7,42 +8,61 @@ from malcolm.core import AbortedError, MethodModel, Queue, \
 from malcolm.modules.builtin.controllers import ManagerController, \
     AConfigDir, AInitialDesign, ADescription, AUseCothread, AUseGit
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
-from ..util import RunnableStates, AGenerator, AAxesToMove, ConfigureParams, \
-    UAxesToMove
+from ..util import RunnableStates, AGenerator, AAxesToMove, ConfigureParams
 from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
     RunHook, PostRunArmedHook, PostRunReadyHook, ResumeHook, ReportStatusHook, \
     AbortHook, PauseHook, SeekHook, ControllerHook
 
 if TYPE_CHECKING:
-    from typing import Dict, Tuple, List, Any, Iterable, Type, Callable
+    from typing import Dict, Tuple, List, Iterable, Type, Callable
 
     PartContextParams = Iterable[Tuple[Part, Context, Dict[str, Any]]]
     PartConfigureParams = Dict[Part, ConfigureParamsInfo]
 
 ss = RunnableStates
 
-with Anno("Default value for configure() axesToMove"):
-    AInitialAxesToMove = Array[str]
+with Anno("Initial value for set of axes that can be specified in axesToMove"):
+    AAvailableAxes = Array[str]
 with Anno("The validated configure parameters"):
     AConfigureParams = ConfigureParams
 with Anno("Step to mark as the last completed step, 0 for current"):
     ACompletedSteps = int
+UAvailableAxes = Union[AAvailableAxes, Sequence[str], str, None]
+
+
+def get_steps_per_run(generator, axes_to_move):
+    # type: (CompoundGenerator, List[str]) -> int
+    steps = 1
+    axes_set = set(axes_to_move)
+    for dim in reversed(generator.dimensions):
+        # If the axes_set is empty then we are done
+        if not axes_set:
+            break
+        # Consume the axes that this generator scans
+        for axis in dim.axes:
+            assert axis in axes_set, \
+                "Axis %s is not in %s" % (axis, axes_to_move)
+            axes_set.remove(axis)
+        # Now multiply by the dimensions to get the number of steps
+        steps *= dim.size
+    return steps
 
 
 class RunnableController(ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
-    # The stateSet that this controller implements
+    # The state_set that this controller implements
     state_set = ss()
 
     def __init__(self,
                  mri,  # type: AMri
                  config_dir,  # type: AConfigDir
-                 initial_axes_to_move=None,  # type: AInitialAxesToMove
+                 initial_available_axes=None,  # type: UAvailableAxes
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
                  use_cothread=True,  # type: AUseCothread
                  use_git=True,  # type: AUseGit
                  ):
+        # type: (...) -> None
         super(RunnableController, self).__init__(
             mri, config_dir, initial_design, description, use_cothread, use_git)
         # Shared contexts between Configure, Run, Pause, Seek, Resume
@@ -51,8 +71,6 @@ class RunnableController(ManagerController):
         self.part_configure_params = {}  # type: PartConfigureParams
         # Params passed to configure()
         self.configure_params = None  # type: ConfigureParams
-        # This is the ConfigureParams subclass we should use in configure()
-        self.configure_params_cls = ConfigureParams
         # Progress reporting dict of completed_steps for each part
         self.progress_updates = None  # type: Dict[Part, int]
         # Queue so that do_run can wait to see why it was aborted and resume if
@@ -85,18 +103,18 @@ class RunnableController(ManagerController):
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model("totalSteps", self.total_steps)
         # Create sometimes writeable attribute for the default axis names
-        self.axes_to_move = StringArrayMeta(
-            "Default axis names to scan for configure()",
+        self.available_axes = StringArrayMeta(
+            "Set of axes that can be specified in axesToMove at configure",
             tags=[Widget.TABLE.tag(), config_tag()]
-        ).create_attribute_model(initial_axes_to_move)
+        ).create_attribute_model(initial_available_axes)
         self.field_registry.add_attribute_model(
-            "axesToMove", self.axes_to_move, self.set_axes_to_move)
-        self.set_writeable_in(self.axes_to_move, ss.READY)
+            "availableAxes", self.available_axes, self.available_axes.set_value)
+        self.set_writeable_in(self.available_axes, ss.READY)
         # Create the method models
         self.field_registry.add_method_model(self.validate)
         configure_model = self.field_registry.add_method_model(self.configure)
         self.set_writeable_in(configure_model, ss.READY)
-        configure_model.defaults["axesToMove"] = axes_to_move
+        configure_model.defaults["axesToMove"] = initial_available_axes
         self.set_writeable_in(
             self.field_registry.add_method_model(self.run), ss.ARMED)
         self.set_writeable_in(
@@ -133,22 +151,13 @@ class RunnableController(ManagerController):
             if part:
                 self.part_configure_params[part] = info
 
-            # Create a new ConfigureParams subclass from the union of all the
-            # call_types
-            class ConfigureParamsSubclass(ConfigureParams):
-                # This will be serialized, so maintain camelCase for axesToMove
-                # noinspection PyPep8Naming
-                def __init__(self, generator,
-                             axesToMove=self.axes_to_move.value, **kwargs):
-                    # type: (AGenerator, UAxesToMove) -> None
-                    super(ConfigureParamsSubclass, self).__init__(
-                        generator, axesToMove)
-                    self.__dict__.update(kwargs)
+            # If no process yet, so don't do this yet
+            if self.process is None:
+                return
 
             # Store it and update its call_types
-            configure_model = MethodModel.from_callable(ConfigureParams)
+            configure_model = MethodModel.from_callable(self.configure)
             required = list(configure_model.takes.required)
-            self.configure_params_cls = ConfigureParamsSubclass
             ignored = tuple(ConfigureHook.call_types)
             for part in self.parts.values():
                 try:
@@ -157,9 +166,6 @@ class RunnableController(ManagerController):
                     continue
                 for k, meta in info.metas.items():
                     if k not in ignored:
-                        # We don't use this apart from its presence,
-                        # so no need to fill in description, typ, etc.
-                        ConfigureParamsSubclass.call_types[k] = Anno("")
                         configure_model.takes.elements[k] = meta
                 for k in info.required:
                     if k not in required and k not in ignored:
@@ -176,33 +182,38 @@ class RunnableController(ManagerController):
             self._block.validate.set_defaults(configure_model.defaults)
             self._block.validate.set_returns(configure_model.takes)
 
-    def set_axes_to_move(self, value):
-        with self.changes_squashed:
-            self.axes_to_move.set_value(value)
-            self.update_configure_params()
+    def update_block_endpoints(self):
+        super(RunnableController, self).update_block_endpoints()
+        self.update_configure_params()
 
     def _part_params(self, part_contexts=None, params=None):
-        # type: (Dict[Part, Context]) -> PartContextParams
+        # type: (Dict[Part, Context], ConfigureParams) -> PartContextParams
         if part_contexts is None:
             part_contexts = self.part_contexts
         if params is None:
             params = self.configure_params
         for part, context in part_contexts.items():
             args = {}
-            param_cls = self.part_configure_params.get(part, ConfigureParams)
-            for k in param_cls.call_types:
+            for k in params.call_types:
                 args[k] = getattr(params, k)
             yield part, context, args
 
-    def validate(self, generator, axes_to_move, **kwargs):
+    # This will be serialized, so maintain camelCase for axesToMove
+    # noinspection PyPep8Naming
+    @add_call_types
+    def validate(self, generator, axesToMove=None, **kwargs):
         # type: (AGenerator, AAxesToMove, **Any) -> AConfigureParams
         """Validate configuration parameters and return validated parameters.
 
         Doesn't take device state into account so can be run in any state
         """
         iterations = 10
+        # We will return this, so make sure we fill in defaults
+        for k, default in self._block.configure.defaults.items():
+            if k not in kwargs:
+                kwargs[k] = default
         # The validated parameters we will eventually return
-        params = self.configure_params_cls(generator, axes_to_move, **kwargs)
+        params = ConfigureParams(generator, axesToMove, **kwargs)
         # Make some tasks just for validate
         part_contexts = self.create_part_contexts()
         # Get any status from all parts
@@ -233,8 +244,10 @@ class RunnableController(ManagerController):
             self.part_contexts[self].sleep(0)
             self.transition(state)
 
+    # This will be serialized, so maintain camelCase for axesToMove
+    # noinspection PyPep8Naming
     @add_call_types
-    def configure(self, generator, axes_to_move=AAxesToMove(), **kwargs):
+    def configure(self, generator, axesToMove=None, **kwargs):
         # type: (AGenerator, AAxesToMove, **Any) -> None
         """Validate the params then configure the device ready for run().
 
@@ -246,7 +259,7 @@ class RunnableController(ManagerController):
         return in Aborted state. If something goes wrong it will return in Fault
         state. If the user disables then it will return in Disabled state.
         """
-        params = self.validate(generator, axes_to_move, **kwargs)
+        params = self.validate(generator, axesToMove, **kwargs)
         try:
             self.transition(ss.CONFIGURING)
             self.do_configure(params)
@@ -275,7 +288,7 @@ class RunnableController(ManagerController):
         self.configured_steps.set_value(0)
         # TODO: We can be cleverer about this and support a different number
         # of steps per run for each run by examining the generator structure
-        self.steps_per_run = self._get_steps_per_run(
+        self.steps_per_run = get_steps_per_run(
             params.generator, params.axesToMove)
         # Get any status from all parts
         part_info = self.run_hooks(ReportStatusHook(p, c)
@@ -295,23 +308,6 @@ class RunnableController(ManagerController):
         # Reset the progress of all child parts
         self.progress_updates = {}
         self.resume_queue = Queue()
-
-    def _get_steps_per_run(self, generator, axes_to_move):
-        # type: (CompoundGenerator, List[str]) -> int
-        steps = 1
-        axes_set = set(axes_to_move)
-        for dim in reversed(generator.dimensions):
-            # If the axes_set is empty then we are done
-            if not axes_set:
-                break
-            # Consume the axes that this generator scans
-            for axis in dim.axes:
-                assert axis in axes_set, \
-                    "Axis %s is not in %s" % (axis, axes_to_move)
-                axes_set.remove(axis)
-            # Now multiply by the dimensions to get the number of steps
-            steps *= dim.size
-        return steps
 
     @add_call_types
     def run(self):

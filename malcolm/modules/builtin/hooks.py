@@ -1,6 +1,6 @@
 import weakref
 
-from annotypes import Anno, Any, Mapping, Sequence, Array, Union
+from annotypes import Anno, Any, Mapping, Sequence, Array, Union, TypeVar
 
 from malcolm.core import Hook, Part, Context
 from .infos import PortInfo, LayoutInfo
@@ -11,15 +11,19 @@ with Anno("The part that has attached to the Hook"):
 with Anno("Context that should be used to perform operations on child blocks"):
     AContext = Context
 
+T = TypeVar("T")
 
-class ControllerHook(Hook):
+
+class ControllerHook(Hook[T]):
     """A hook that takes Part and Context for use in controllers"""
 
     def __init__(self, part, context, **kwargs):
         # type: (APart, AContext, **Any) -> None
+        # Pass a weak reference to our children
         super(ControllerHook, self).__init__(
-            part, context=self.context, **kwargs)
-        self.context = weakref.proxy(context)
+            part, context=weakref.proxy(context), **kwargs)
+        # But hold a strong reference here to stop it disappearing
+        self.context = context
 
     def prepare(self):
         # type: () -> None
@@ -64,7 +68,8 @@ class LayoutHook(ControllerHook[ULayoutInfos]):
 
     def __init__(self, part, context, ports, layout):
         # type: (APart, AContext, APortMap, ALayoutTable) -> None
-        super(LayoutHook, self).__init__(**locals())
+        super(LayoutHook, self).__init__(
+            part, context, ports=ports, layout=layout)
 
     def validate_return(self, ret):
         # type: (ULayoutInfos) -> ALayoutInfos
@@ -81,7 +86,7 @@ class LoadHook(ControllerHook[None]):
 
     def __init__(self, part, context, structure):
         # type: (APart, AContext, AStructure) -> None
-        super(LoadHook, self).__init__(**locals())
+        super(LoadHook, self).__init__(part, context, structure=structure)
 
 
 class SaveHook(ControllerHook[AStructure]):

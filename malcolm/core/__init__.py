@@ -17,7 +17,7 @@ from .models import BlockModel, AttributeModel, MethodModel, \
     TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion
 from .part import Part, PartRegistrar, APartName
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
-    ProcessStopHook
+    ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos
 from .queue import Queue
 from .request import Request, Subscribe, Unsubscribe, Get, Put, Post
 from .response import Response, Delta, Update, Return, Error

@@ -3,7 +3,7 @@ from annotypes import add_call_types, Anno, Union, Array, Sequence, Any
 from malcolm.core import BadValueError, serialize_object, APartName, \
     Delta, deserialize_object, Subscribe, MethodModel, Unsubscribe, \
     Future, PartRegistrar
-from malcolm.modules import builtin
+from malcolm.modules.builtin.parts import ChildPart, AMri, AInitialVisibility
 from ..hooks import ConfigureHook, PostRunArmedHook, \
     SeekHook, RunHook, ResumeHook, ACompletedSteps, AContext, ValidateHook, \
     UParameterTweakInfos, PostRunReadyHook, AbortHook
@@ -17,12 +17,17 @@ UIgnoreConfigureArgs = Union[AIgnoreConfigureArgs, Sequence[str], str]
 ss = RunnableStates
 
 
-class RunnableChildPart(builtin.parts.ChildPart):
+class RunnableChildPart(ChildPart):
     """Part controlling a child Block that exposes a configure/run interface"""
 
-    def __init__(self, name, mri, ignore_configure_args=()):
-        # type: (APartName, builtin.parts.AMri, UIgnoreConfigureArgs) -> None
-        super(RunnableChildPart, self).__init__(name, mri)
+    def __init__(self,
+                 name,  # type: APartName
+                 mri,  # type: AMri
+                 initial_visibility=False,  # type: AInitialVisibility
+                 ignore_configure_args=(),  # type: UIgnoreConfigureArgs
+                 ):
+        # type: (...) -> None
+        super(RunnableChildPart, self).__init__(name, mri, initial_visibility)
         self.ignore_configure_args = AIgnoreConfigureArgs(ignore_configure_args)
         # Stored between runs
         self.run_future = None  # type: Future
@@ -59,9 +64,9 @@ class RunnableChildPart(builtin.parts.ChildPart):
 
     def on_hook(self, hook):
         if isinstance(hook, ValidateHook):
-            hook(self.validate)
+            hook(self.validate, self.serialized_configure["takes"]["elements"])
         elif isinstance(hook, ConfigureHook):
-            hook(self.configure)
+            hook(self.configure, self.serialized_configure["takes"]["elements"])
         elif isinstance(hook, (RunHook, ResumeHook)):
             hook(self.run)
         elif isinstance(hook, (PostRunArmedHook, PostRunReadyHook)):
@@ -79,8 +84,8 @@ class RunnableChildPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         returns = child.validate(**kwargs)
         ret = []
-        for k, v in returns.items():
-            if serialize_object(kwargs[k]) != serialize_object(v):
+        for k, v in serialize_object(returns).items():
+            if serialize_object(kwargs[k]) != v:
                 ret.append(ParameterTweakInfo(k, v))
         return ret
 

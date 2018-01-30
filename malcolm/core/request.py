@@ -7,6 +7,7 @@ from .serializable import Serializable, serialize_object
 
 if TYPE_CHECKING:
     from typing import Callable, Tuple, List
+    Callback = Callable[[Response], None]
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -22,9 +23,7 @@ with Anno("Parameters to use in a method Post"):
     AParameters = Mapping[str, Any]
 with Anno("Notify of differences only"):
     ADifferences = bool
-
 UPath = Union[APath, Sequence[str], str]
-Callback = Callable[[Response], None]
 
 
 class Request(Serializable):

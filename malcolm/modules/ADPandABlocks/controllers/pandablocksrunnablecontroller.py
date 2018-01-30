@@ -46,7 +46,7 @@ class PandABlocksRunnableController(PandABlocksManagerController,
                     ChoicePart, name=attr_name, widget="combo",
                     description="Type of the captured dataset in HDF file",
                     writeable=True, choices=attribute_dataset_types,
-                    initialValue=initial))
+                    value=initial))
         if mri.endswith("PCAP"):
             new_parts += call_with_params(
                 adbase_parts, self.process,

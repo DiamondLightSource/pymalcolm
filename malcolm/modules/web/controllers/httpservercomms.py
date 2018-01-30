@@ -1,50 +1,40 @@
+from annotypes import Anno, add_call_types
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 
-from malcolm.modules.builtin.controllers.servercomms import ServerComms
-from malcolm.core import Hook, method_also_takes, Process
-from malcolm.core.vmetas import NumberMeta
-from malcolm.modules.web.infos import HandlerInfo
+from malcolm.core import Hook, Spawned, ProcessPublishHook, APublished
+from malcolm.modules import builtin
+from ..infos import HandlerInfo
+from ..hooks import ReportHandlersHook, PublishHook
 
 
-@method_also_takes(
-    "port", NumberMeta("int32", "Port number to run up under"), 8080)
-class HTTPServerComms(ServerComms):
+with Anno("TCP port number to run up under"):
+    APort = int
+
+class HTTPServerComms(builtin.controllers.ServerComms):
     """A class for communication between browser and server"""
-    _loop = None
-    _server = None
-    _spawned = None
-    _application = None
-    use_cothread = False
 
-    ReportHandlers = Hook()
-    """Called at init() to get all the handlers that should make the application
+    def __init__(self, mri, port=8080):
+        # type: (builtin.controllers.AMri, APort) -> None
+        super(HTTPServerComms, self).__init__(mri, use_cothread=False)
+        self.port = port
+        self._loop = None  # type: IOLoop
+        self._server = None  # type: HTTPServer
+        self._spawned = None  # type: Spawned
+        self._application = None  # type: Application
 
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        loop (IOLoop): The IO loop that the server is running under
-
-    Returns:
-        [`HandlerInfo`] - any handlers and their regexps that need to form part
-            of the tornado Application
-    """
-
-    Publish = Hook()
-    """Called when a new block is added
-
-    Args:
-        context (Context): The context that should be used to perform operations
-            on child blocks
-        published (list): [mri] list of published Controller mris
-    """
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, ProcessPublishHook):
+            hook(self.publish)
 
     def do_init(self):
         super(HTTPServerComms, self).do_init()
         self._loop = IOLoop()
         part_info = self.run_hooks(
-            self.ReportHandlers, self.create_part_contexts(), self._loop)
+            ReportHandlersHook(part, self._loop)
+            for part in self.parts.values())
         handler_infos = HandlerInfo.filter_values(part_info)
         handlers = []
         for handler_info in handler_infos:
@@ -75,7 +65,9 @@ class HTTPServerComms(ServerComms):
         super(HTTPServerComms, self).do_reset()
         self.start_io_loop()
 
-    @Process.Publish
+    @add_call_types
     def publish(self, published):
+        # type: (APublished) -> None
         if self._spawned:
-            self.run_hooks(self.Publish, self.create_part_contexts(), published)
+            self.run_hooks(PublishHook(part, published)
+                           for part in self.parts.values())

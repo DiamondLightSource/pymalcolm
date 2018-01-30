@@ -2,13 +2,14 @@ import os
 import subprocess
 
 import numpy as np
-from annotypes import Anno
+from annotypes import Anno, add_call_types, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
 from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
     deserialize_object, Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
     AlarmStatus, Part, BooleanMeta, config_tag, Widget, ChoiceMeta, \
-    TableMeta
+    TableMeta, serialize_object
+from malcolm.modules.builtin.infos import PortInfo
 from malcolm.modules.builtin.util import ManagerStates
 from ..hooks import LayoutHook, LoadHook, SaveHook
 from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo
@@ -16,6 +17,8 @@ from ..util import LayoutTable, ExportTable
 from .statefulcontroller import StatefulController, AMri, \
     ADescription, AUseCothread
 
+if TYPE_CHECKING:
+    from typing import Dict, List
 
 ss = ManagerStates
 
@@ -44,8 +47,7 @@ class ManagerController(StatefulController):
                  ):
         # type: (...) -> None
         super(ManagerController, self).__init__(mri, description, use_cothread)
-        assert os.path.isdir(self.config_dir), \
-            "%s is not a directory" % self.config_dir
+        assert os.path.isdir(config_dir), "%s is not a directory" % config_dir
         self.config_dir = config_dir
         self.initial_design = initial_design
         self.use_git = use_git
@@ -57,11 +59,13 @@ class ManagerController(StatefulController):
         # [Subscribe]
         self._subscriptions = []
         # {part_name: [PortInfo]}
-        self.port_info = {}
+        self.port_info = {}  # type: Dict[str, List[PortInfo]]
         # {part: [attr_name]}
         self.part_exportable = {}
         # {part: Alarm}
         self.part_modified = {}
+        # The attributes our part has published
+        self.our_config_attributes = {}  # type: Dict[str, AttributeModel]]
         # Whether to do updates
         self._do_update = True
         # The reportable infos we are listening for
@@ -86,8 +90,11 @@ class ManagerController(StatefulController):
         self.set_writeable_in(self.design, ss.READY)
         # Create an export table for mirroring exported fields
         self.exports = TableMeta.from_table(
-            LayoutTable, "Exported fields of child blocks"
+            ExportTable, "Exported fields of child blocks"
         ).create_attribute_model()
+        # Overwrite the sources meta to be a ChoiceMeta
+        self.exports.meta.elements["source"] = ChoiceMeta(
+            "Name of the block.field to export", tags=[Widget.COMBO.tag()])
         self.set_writeable_in(self.exports, ss.READY)
         self.field_registry.add_attribute_model(
             "exports", self.exports, self.set_exports)
@@ -119,13 +126,14 @@ class ManagerController(StatefulController):
         self._run_git_cmd("commit", "--allow-empty", "-m", "Created repo")
         # List the config_dir and add to choices
         self._set_layout_names()
-        # This will trigger all parts to report their layout, making sure
-        # the layout table has a valid value. This will also call
-        # self._update_block_endpoints()
-        self.set_layout(LayoutTable([], [], [], [], []))
         # If given a default config, load this
         if self.initial_design:
             self.do_load(self.initial_design)
+        else:
+            # This will trigger all parts to report their layout, making sure
+            # the layout table has a valid value. This will also call
+            # self._update_block_endpoints()
+            self.set_layout(LayoutTable([], [], [], [], []))
 
     def set_layout(self, value):
         """Set the layout table value. Called on attribute put"""
@@ -136,16 +144,15 @@ class ManagerController(StatefulController):
             for p, c in self.create_part_contexts(only_visible=False).items())
         with self.changes_squashed:
             layout_parts = LayoutInfo.filter_parts(part_info)
-            layout_table = LayoutTable(
-                name=list(layout_parts),
-                mri=[i.mri for i in layout_parts.values()],
-                x=[i.x for i in layout_parts.values()],
-                y=[i.y for i in layout_parts.values()],
-                visible=[i.visible for i in layout_parts.values()])
-            for name, layout_infos in layout_parts.items():
-                assert len(layout_infos) == 1, \
-                    "%s returned more than 1 layout infos" % name
-                layout_parts[name] = layout_infos[0]
+            name, mri, x, y, visible = [], [], [], [], []
+            for part_name, layout_infos in layout_parts.items():
+                for layout_info in layout_infos:
+                    name.append(part_name)
+                    mri.append(layout_info.mri)
+                    x.append(layout_info.x)
+                    y.append(layout_info.y)
+                    visible.append(layout_info.visible)
+            layout_table = LayoutTable(name, mri, x, y, visible)
             try:
                 np.testing.assert_equal(
                     layout_table.visible, self.layout.value.visible)
@@ -163,13 +170,13 @@ class ManagerController(StatefulController):
                 self.update_exportable()
                 # Part visibility changed, might have attributes or methods
                 # that we need to hide or show
-                self._update_block_endpoints()
+                self.update_block_endpoints()
 
     def set_exports(self, value):
         with self.changes_squashed:
             self.exports.set_value(value)
             self.update_modified()
-            self._update_block_endpoints()
+            self.update_block_endpoints()
 
     def update_modified(self, part=None, info=None):
         # type: (Part, PartModifiedInfo) -> None
@@ -186,7 +193,7 @@ class ManagerController(StatefulController):
                     alarm = self.part_modified.get(self.parts[part_name], None)
                     if alarm:
                         # Part flagged as been modified, is it by us?
-                        if alarm.severity:
+                        if alarm.severity != AlarmSeverity.NO_ALARM:
                             only_modified_by_us = False
                         message_list.append(alarm.message)
             # Add in any modification messages from the layout and export tables
@@ -217,7 +224,7 @@ class ManagerController(StatefulController):
         # type: (Part, PartExportableInfo) -> None
         with self.changes_squashed:
             if part:
-                self.part_exportable[part] = info.fields
+                self.part_exportable[part] = info.names
                 self.port_info[part.name] = info.port_infos
             # Find the exportable fields for each visible part
             names = []
@@ -226,16 +233,16 @@ class ManagerController(StatefulController):
                 for attr_name in fields:
                     names.append("%s.%s" % (part.name, attr_name))
             changed_names = set(names).symmetric_difference(
-                self.exports.meta.elements["name"].choices)
+                self.exports.meta.elements["source"].choices)
             changed_exports = changed_names.intersection(
-                self.exports.value.name)
-            self.exports.meta.elements["name"].set_choices(names)
+                self.exports.value.source)
+            self.exports.meta.elements["source"].set_choices(names)
             # Update the block endpoints if anything currently exported is
             # added or deleted
             if changed_exports:
-                self._update_block_endpoints()
+                self.update_block_endpoints()
 
-    def _update_block_endpoints(self):
+    def update_block_endpoints(self):
         if self._current_part_fields:
             for name, child, _ in self._current_part_fields:
                 self._block.remove_endpoint(name)
@@ -246,8 +253,21 @@ class ManagerController(StatefulController):
             self.add_block_field(name, child, writeable_func)
 
     def add_initial_part_fields(self):
-        # Don't return any fields to start with, these will be added on load()
-        pass
+        # Only add our own fields to start with, the rest will be added on load
+        for name, child, writeable_func in self.field_registry.fields[None]:
+            self.add_block_field(name, child, writeable_func)
+        for part in self.parts.values():
+            for name, field, writeable_func in self.field_registry.fields.get(
+                    part, []):
+                if isinstance(field, AttributeModel) and \
+                        config_tag() in field.meta.tags:
+                    # Strip off the "config" tags from attributes
+                    assert writeable_func == field.set_value, \
+                        "Can't save %s with writeable_func %s" % (
+                            name, writeable_func)
+                    field.meta.set_tags(
+                        [x for x in field.meta.tags if x != config_tag()])
+                    self.our_config_attributes[name] = field
 
     def _get_current_part_fields(self):
         # Clear out the current subscriptions
@@ -271,9 +291,9 @@ class ManagerController(StatefulController):
                 invisible.add(part_name)
 
         # Add fields from parts that aren't invisible
-        for part_name in self.parts:
+        for part_name, part in self.parts.items():
             if part_name not in invisible:
-                for data in self.part_fields[part_name]:
+                for data in self.field_registry.fields.get(part, []):
                     yield data
 
         # Add exported fields from visible parts
@@ -335,6 +355,7 @@ class ManagerController(StatefulController):
                     part_contexts.pop(self.parts[part_name])
         return part_contexts
 
+    @add_call_types
     def save(self, design=""):
         # type: (ASaveDesign) -> None
         """Save the current design to file"""
@@ -345,25 +366,26 @@ class ManagerController(StatefulController):
             design = self.design.value
         assert design, "Please specify save design name when saving from new"
         structure = OrderedDict()
+        attributes = structure.setdefault("attributes", OrderedDict())
         # Add the layout table
-        part_layouts = OrderedDict()
+        layout = attributes.setdefault("layout", OrderedDict())
         for name, mri, x, y, visible in self.layout.value.rows():
             layout_structure = OrderedDict()
             layout_structure["x"] = x
             layout_structure["y"] = y
             layout_structure["visible"] = visible
-            part_layouts[name] = layout_structure
-        structure["layout"] = part_layouts
+            layout[name] = layout_structure
         # Add the exports table
-        structure["exports"] = OrderedDict()
+        exports = attributes.setdefault("exports", OrderedDict())
         for source, export in self.exports.value.rows():
-            structure["exports"][source] = export
+            exports[source] = export
+        # Add other attributes
+        for name, attribute in self.our_config_attributes.items():
+            attributes[name] = serialize_object(attribute.value)
         # Add any structure that a child part wants to save
-        part_structures = self.run_hooks(
+        structure["children"] = self.run_hooks(
             SaveHook(p, c)
-            for p, c in self.create_part_contexts(only_visible=False))
-        for part_name, part_structure in part_structures.items():
-            structure[part_name] = part_structure
+            for p, c in self.create_part_contexts(only_visible=False).items())
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
         with open(filename, "w") as f:
@@ -420,9 +442,12 @@ class ManagerController(StatefulController):
             structure = json_decode(text)
         else:
             structure = {}
+        # Attributes and Children used to be merged, support this
+        attributes = structure.get("attributes", structure)
+        children = structure.get("children", structure)
         # Set the layout table
         name, mri, x, y, visible = [], [], [], [], []
-        for part_name, d in structure.get("layout", {}).items():
+        for part_name, d in attributes.get("layout", {}).items():
             name.append(part_name)
             mri.append("")
             x.append(d["x"])
@@ -431,14 +456,18 @@ class ManagerController(StatefulController):
         self.set_layout(LayoutTable(name, mri, x, y, visible))
         # Set the exports table
         source, export = [], []
-        for source_name, export_name in structure.get("exports", {}).items():
+        for source_name, export_name in attributes.get("exports", {}).items():
             source.append(source_name)
             export.append(export_name)
         self.exports.set_value(ExportTable(source, export))
+        # Set other attributes
+        for name, attr in self.our_config_attributes.items():
+            if name in attributes:
+                attr.set_value(attributes[name])
         # Run the load hook to get parts to load their own structure
         self.run_hooks(
-            LoadHook(p, c, structure.get(p.name, {}))
-            for p, c in self.create_part_contexts(only_visible=False))
+            LoadHook(p, c, children.get(p.name, {}))
+            for p, c in self.create_part_contexts(only_visible=False).items())
         self._mark_clean(design)
 
     def _mark_clean(self, design):
@@ -450,4 +479,4 @@ class ManagerController(StatefulController):
             self.update_modified()
             self._set_layout_names(design)
             self.design.set_value(design)
-            self._update_block_endpoints()
+            self.update_block_endpoints()

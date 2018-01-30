@@ -1,27 +1,30 @@
 import unittest
 
-from malcolm.core import call_with_params
+from malcolm.core import Controller
 from malcolm.modules.builtin.parts import ChoicePart
 
 
 class TestChoicePart(unittest.TestCase):
 
     def setUp(self):
-        self.o = call_with_params(
-            ChoicePart, name="cp", description="desc", choices=["a", "b"],
-            initialValue="a", writeable=True)
-        self.setter = list(self.o.create_attribute_models())[0][2]
+        self.o = ChoicePart(name="cp", description="desc", choices=["a", "b"],
+                            value="a", writeable=True)
+        self.c = Controller("mri")
+        self.c.add_part(self.o)
 
     def test_init(self):
         assert self.o.name == "cp"
         assert self.o.attr.value == "a"
         assert self.o.attr.meta.description == "desc"
-        assert self.o.attr.meta.choices == ("a", "b")
-        assert self.o.attr.meta.tags == ("config",)
+        assert self.o.attr.meta.choices == ["a", "b"]
+        assert self.o.attr.meta.tags == ["widget:combo", "config"]
+        assert self.c.field_registry.fields[self.o] == [(
+            "cp", self.o.attr, self.o.attr.set_value
+        )]
 
     def test_setter(self):
         assert self.o.attr.value == "a"
-        self.setter("b")
+        self.o.attr.set_value("b")
         assert self.o.attr.value == "b"
         with self.assertRaises(ValueError):
-            self.setter("c")
+            self.o.attr.set_value("c")
