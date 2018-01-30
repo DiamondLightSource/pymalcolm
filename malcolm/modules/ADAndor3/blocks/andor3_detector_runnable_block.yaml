@@ -1,0 +1,51 @@
+- builtin.parameters.string:
+    name: mriPrefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pvPrefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- builtin.parameters.string:
+    name: initialDesign
+    default:
+    description: Location to load design from
+
+- builtin.defines.docstring:
+    value: |
+      Device block corresponding to Andor3 + pos + hdf writer.
+
+      - Detector driver should have pv prefix $(pvPrefix):DET
+      - Pos should have pv prefix $(pvPrefix):POS
+      - HDF should have pv prefix $(pvPrefix):HDF5
+
+- scanning.controllers.RunnableController:
+    mri: $(mriPrefix)
+    configDir: $(configDir)
+    initialDesign: $(initialDesign)
+    description: $(docString)
+
+- ADAndor3.blocks.andor3_detector_driver_block:
+    mri: $(mriPrefix):DRV
+    prefix: $(pvPrefix):DET
+
+- ADCore.parts.ExposureDetectorDriverPart:
+    name: DRV
+    mri: $(mriPrefix):DRV
+    readoutTime: 0.0101211 # Correct readout time for 280 Mhz rate... will need to make it variable.
+
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mriPrefix):STAT
+    prefix: $(pvPrefix):STAT
+
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix):STAT
+
+- ADCore.includes.filewriting_collection:
+    pvPrefix: $(pvPrefix)
+    mriPrefix: $(mriPrefix)
