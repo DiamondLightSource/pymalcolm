@@ -13,7 +13,7 @@ class Andor3DriverPart(DetectorDriverPart):
         fs.append(child.exposure.put_value_async(exposure))
 
         # Logic here:
-        #   -   The camera does not set it's exposure time to the exact demand value
+        #   -   The camera does not set its exposure time to the exact demand value
         #       due to the fact it takes a set amount of time to read out each row.
         #   -   We cannot calculate this time exactly, it varies depending on the
         #       model and configuration of the detector, but it can be up to O(1ms).
@@ -24,8 +24,8 @@ class Andor3DriverPart(DetectorDriverPart):
         #       is set to the demand value or less.
         #   -   If the acquire period is larger than the duration by d, then the
         #       minimum span between possible discrete acquire periods
-        #       (and, therfore, exposure times) should be less than 2d.
-        #   -   So, if that happens, we subtract 2d.
+        #       (and, therefore, exposure times) should be less than 2d.
+        #   -   So, if that happens, we subtract 2d from the exposure time.
         #   -   A better solution might be to simply increase the duration value
         #       for the whole scan, based on the acquire period, but we can't
         #       control that from here.
