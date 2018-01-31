@@ -33,10 +33,9 @@
     mri: $(mriPrefix):DRV
     prefix: $(pvPrefix):DET
 
-- ADCore.parts.ExposureDetectorDriverPart:
+- ADAndor3.parts.Andor3DriverPart:
     name: DRV
     mri: $(mriPrefix):DRV
-    readoutTime: 0.0101211 # Correct readout time for 280 Mhz rate... will need to make it variable.
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mriPrefix):STAT
