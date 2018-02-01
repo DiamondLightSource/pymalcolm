@@ -1,4 +1,5 @@
-from malcolm.modules.ADCore.parts import DetectorDriverPart, ExposureDetectorDriverPart
+from malcolm.modules.ADCore.parts \
+    import DetectorDriverPart, ExposureDetectorDriverPart
 from malcolm.modules.scanning.controllers import RunnableController
 from numpy import float64
 
@@ -14,19 +15,20 @@ class Andor3DriverPart(DetectorDriverPart):
 
         child.wait_all_futures(fs)
         # Need to reset acquirePeriod as it's sometimes wrong
-        fs = child.acquirePeriod.put_value_async(
-            child.exposure.value + self.readout_time.value)
+        fs = child.acquirePeriod.put_value_async(exposure + readout_time)
 
         # Logic here:
-        #   -   The camera does not set its exposure time to the exact demand value
-        #       due to the fact it takes a set amount of time to read out each row.
-        #   -   We cannot calculate this time exactly, it varies depending on the
-        #       model and configuration of the detector, but it can be up to O(1ms).
+        #   -   The camera does not set its exposure time to the exact demand
+        #       value due to the fact it takes a set amount of time to read
+        #       out each row.
+        #   -   We cannot calculate this time exactly, it varies depending on
+        #       the model and configuration of the detector, but it can be up
+        #       to O(0.1ms).
         #   -   The camera automatically sets the acquire period to the
         #       exposure + readout time.
-        #   -   If the truncation results in the acquire period being larger than
-        #       the duration, duty cycles will overlap. We must ensure the exposure
-        #       is set to the demand value or less.
+        #   -   If the truncation results in the acquire period being larger
+        #       than the duration, duty cycles will overlap. We must ensure
+        #       the exposure is set to the demand value or less.
         #   -   If the acquire period is larger than the duration by d, then the
         #       minimum span between possible discrete acquire periods
         #       (and, therefore, exposure times) should be less than 2d.
