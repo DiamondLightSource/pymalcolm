@@ -47,4 +47,5 @@ class TestAndor3DetectorDriverPart(ChildTestCase):
             call.put('arrayCounter', 0),
             call.put('numImages', 6000000),
             call.put('exposure', 0.098),
+            call.put('acquirePeriod', 0.1),
             call.post('start')]
