@@ -4,6 +4,12 @@ from malcolm.modules.scanning.controllers import RunnableController
 from numpy import float64
 
 class Andor3DriverPart(DetectorDriverPart):
+    @RunnableController.ReportStatus
+    def report_configuration(self, context):
+        infos = super(Andor3DriverPart, self).report_configuration(
+            context) + [NDArrayDatasetInfo(rank=2)]
+        return infos
+
     def setup_detector(self, child, completed_steps, steps_to_do, params=None):
         fs = super(Andor3DriverPart, self).setup_detector(
             child, completed_steps, steps_to_do, params)
