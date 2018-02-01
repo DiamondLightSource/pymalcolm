@@ -1,5 +1,6 @@
 from malcolm.modules.ADCore.parts \
     import DetectorDriverPart, ExposureDetectorDriverPart
+from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
 from malcolm.modules.scanning.controllers import RunnableController
 from numpy import float64
 
