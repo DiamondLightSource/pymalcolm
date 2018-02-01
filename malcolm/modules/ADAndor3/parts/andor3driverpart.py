@@ -12,6 +12,11 @@ class Andor3DriverPart(DetectorDriverPart):
         exposure = duration - readout_time
         fs.append(child.exposure.put_value_async(exposure))
 
+        child.wait_all_futures(fs)
+        # Need to reset acquirePeriod as it's sometimes wrong
+        fs = child.acquirePeriod.put_value_async(
+            child.exposure.value + self.readout_time.value)
+
         # Logic here:
         #   -   The camera does not set its exposure time to the exact demand value
         #       due to the fact it takes a set amount of time to read out each row.
