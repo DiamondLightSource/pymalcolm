@@ -40,7 +40,7 @@ class Andor3DriverPart(DetectorDriverPart):
         camera_duty_cycle_overlap = child.acquirePeriod.value - duration
         if camera_duty_cycle_overlap > 0:
             exposure -= camera_duty_cycle_overlap * 2
-            fs.append(child.exposure.put_value_async(exposure))
+            fs = child.exposure.put_value_async(exposure)
 
         # Can't put this in validate as we don't have access to the detector
         # from there, and readout_time comes from a PV.
