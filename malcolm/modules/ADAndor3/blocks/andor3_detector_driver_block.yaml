@@ -24,3 +24,10 @@
       The detector automatically limits the acquire period to the exposure + the readout time.
     rbv: $(prefix):ReadoutTime # Should really be changed in the support module to ReadoutTime_RBV
     widget: textupdate
+
+- ca.parts.CAChoicePart:
+    name: shutterMode
+    description: The Andor shutter mode on the camera, either rolling or global.
+    pv: $(prefix):A3ShutterMode
+    rbvSuff: _RBV
+    widget: combo
