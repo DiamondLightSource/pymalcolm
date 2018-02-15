@@ -2,9 +2,9 @@ import logging
 
 import numpy as np
 import pvaccess
+from annotypes import Array
 
 from malcolm.compat import str_, OrderedDict, long_
-from malcolm.core import StringArray
 
 # Create a module level logger
 log = logging.getLogger(__name__)
@@ -19,9 +19,11 @@ pva_dtypes = {
     np.int32: pvaccess.INT,
     np.uint32: pvaccess.UINT,
     np.int64: pvaccess.LONG,
+    int: pvaccess.LONG,
     np.uint64: pvaccess.ULONG,
     np.float32: pvaccess.FLOAT,
-    np.float64: pvaccess.DOUBLE
+    np.float64: pvaccess.DOUBLE,
+    float: pvaccess.DOUBLE,
 }
 
 
@@ -49,9 +51,10 @@ def dict_to_pv_object(dict_in, empty_allowed=True):
 
 def value_for_pva_set(value, empty_allowed=False):
     # Turn it into something that pvaccess can just set
-    if isinstance(value, StringArray):
-        value = list(value)
-    elif isinstance(value, (np.number, np.ndarray)):
+    if isinstance(value, Array):
+        value = value.seq
+
+    if isinstance(value, (np.number, np.ndarray)):
         value = value.tolist()
     elif isinstance(value, dict):
         dict_set = OrderedDict()
@@ -64,7 +67,7 @@ def value_for_pva_set(value, empty_allowed=False):
             value = dict_set
         else:
             value = None
-    elif isinstance(value, list):
+    elif isinstance(value, (list, tuple)):
         if [x for x in value if isinstance(x, dict)]:
             value = [dict_to_pv_object(v) for v in value]
     return value
@@ -88,8 +91,14 @@ def pva_structure_from_value(value, empty_allowed=False):
         assert len(value.shape) == 1, \
             "Expected 1d array, got {}".format(value.shape)
         structure = [pva_dtypes[value.dtype.type]]
-    elif isinstance(value, StringArray):
-        structure = [pvaccess.STRING]
+    elif isinstance(value, Array):
+        if value.typ == str:
+            structure = [pvaccess.STRING]
+        elif value.typ in pva_dtypes:
+            structure = [pva_dtypes[value.typ]]
+        else:
+            # Variant arrays should be handled below
+            return pva_structure_from_value(list(value.seq))
     elif isinstance(value, list):
         # if not empty then determine its type
         structures = set()

@@ -1,24 +1,39 @@
-from malcolm.core import method_also_takes, REQUIRED, call_with_params, \
-    snake_to_camel
+from annotypes import Anno
+
+from malcolm.core import snake_to_camel
 from malcolm.modules.ADCore.includes import adbase_parts
-from malcolm.modules.ADCore.infos import attribute_dataset_types
-from malcolm.modules.ADPandABlocks.parts import PandABlocksDriverPart, \
-    PandABlocksChildPart
+from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.builtin.parts import StringPart, ChoicePart
-from malcolm.core.vmetas import StringArrayMeta, StringMeta
-from malcolm.modules.pandablocks.controllers import PandABlocksManagerController
+from malcolm.modules.pandablocks.controllers import \
+    PandABlocksManagerController, AMri, AConfigDir, AHostname, APort, \
+    AInitialDesign, ADescription, AUseCothread, AUseGit
 from malcolm.modules.scanning.controllers import RunnableController
+from ..parts import PandABlocksDriverPart, PandABlocksChildPart
 
 
-@method_also_takes(
-    "areaDetectorPrefix", StringMeta(
-        "Prefix for areaDetector records"), REQUIRED,
-    "axesToMove", StringArrayMeta("Default value for configure() axesToMove"),
-    []
-)
+with Anno("Prefix for areaDetector records"):
+    APrefix = str
+
 class PandABlocksRunnableController(PandABlocksManagerController,
                                     RunnableController):
+    def __init__(self,
+                 mri,  # type: AMri
+                 config_dir,  # type: AConfigDir
+                 prefix,  # type: APrefix
+                 hostname="localhost",  # type: AHostname
+                 port=8888,  # type: APort
+                 initial_design="",  # type: AInitialDesign
+                 description="",  # type: ADescription
+                 use_cothread=True,  # type: AUseCothread
+                 use_git=True,  # type: AUseGit
+                 ):
+        # type: (...) -> None
+        super(PandABlocksRunnableController, self).__init__(
+            mri, config_dir, hostname, port, initial_design, description,
+            use_cothread, use_git)
+        self.prefix = prefix
+
     def _make_child_controller(self, parts, mri):
         # Add some extra parts to determine the dataset name and type for
         # any CAPTURE field part
@@ -30,10 +45,10 @@ class PandABlocksRunnableController(PandABlocksManagerController,
                 part_name = existing_part.name.replace(
                     ".CAPTURE", ".DATASET_NAME")
                 attr_name = snake_to_camel(part_name.replace(".", "_"))
-                new_parts.append(call_with_params(
-                    StringPart, name=attr_name, widget="textinput",
+                new_parts.append(StringPart(
+                    name=attr_name,
                     description="Name of the captured dataset in HDF file",
-                    writeable=True, config=True))
+                    writeable=True))
                 # Make a choice part to hold the type of the dataset
                 part_name = existing_part.name.replace(
                     ".CAPTURE", ".DATASET_TYPE")
@@ -42,17 +57,18 @@ class PandABlocksRunnableController(PandABlocksManagerController,
                     initial = "position"
                 else:
                     initial = "monitor"
-                new_parts.append(call_with_params(
-                    ChoicePart, name=attr_name, widget="combo",
+                new_parts.append(ChoicePart(
+                    name=attr_name,
                     description="Type of the captured dataset in HDF file",
-                    writeable=True, choices=attribute_dataset_types,
+                    writeable=True, choices=list(AttributeDatasetType),
                     value=initial))
         if mri.endswith("PCAP"):
-            new_parts += call_with_params(
-                adbase_parts, self.process,
-                prefix=self.params.areaDetectorPrefix)
-            controller = call_with_params(
-                StatefulController, self.process, new_parts, mri=mri)
+            cs, ps = adbase_parts(prefix=self.prefix)
+            controller = StatefulController(mri=mri)
+            for p in new_parts + ps:
+                controller.add_part(p)
+            for c in cs:
+                self.process.add_controller(c)
         else:
             controller = super(PandABlocksRunnableController, self).\
                 _make_child_controller(new_parts, mri)
@@ -63,5 +79,5 @@ class PandABlocksRunnableController(PandABlocksManagerController,
             part_cls = PandABlocksDriverPart
         else:
             part_cls = PandABlocksChildPart
-        part = call_with_params(part_cls, name=block_name, mri=mri)
+        part = part_cls(name=block_name, mri=mri)
         return part

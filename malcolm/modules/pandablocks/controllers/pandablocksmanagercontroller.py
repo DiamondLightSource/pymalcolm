@@ -3,29 +3,42 @@ import os
 import operator
 from xml.etree import cElementTree as ET
 
+from annotypes import Anno
+
 from malcolm.compat import OrderedDict, maybe_import_cothread, et_to_string
-from malcolm.core import method_also_takes, Queue, TimeoutError, \
-    call_with_params
+from malcolm.core import Queue, TimeoutError, BooleanMeta, TableMeta
 from malcolm.modules.builtin.controllers import BasicController, \
-    ManagerController
+    ManagerController, AMri, AConfigDir, AInitialDesign, ADescription, \
+    AUseCothread, AUseGit
 from malcolm.modules.builtin.parts import ChildPart
-from malcolm.core.vmetas import BooleanMeta, NumberMeta, StringMeta, TableMeta
-from malcolm.modules.pandablocks.parts.pandablocksmaker import \
-    PandABlocksMaker, SVG_DIR
-from .pandablocksclient import PandABlocksClient
+from ..parts.pandablocksmaker import PandABlocksMaker, SVG_DIR
+from ..pandablocksclient import PandABlocksClient
 
 
 LUT_CONSTANTS = dict(
     A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
 
 
-@method_also_takes(
-    "hostname", StringMeta("Hostname of the box"), "localhost",
-    "port", NumberMeta("uint32", "Port number of the server client"), 8888)
+with Anno("Hostname of the box"):
+    AHostname = str
+with Anno("Port number of the TCP server control port"):
+    APort = int
+
+
 class PandABlocksManagerController(ManagerController):
-    def __init__(self, process, parts, params):
+    def __init__(self,
+                 mri,  # type: AMri
+                 config_dir,  # type: AConfigDir
+                 hostname="localhost",  # type: AHostname
+                 port=8888,  # type: APort
+                 initial_design="",  # type: AInitialDesign
+                 description="",  # type: ADescription
+                 use_cothread=True,  # type: AUseCothread
+                 use_git=True,  # type: AUseGit
+                 ):
+        # type: (...) -> None
         super(PandABlocksManagerController, self).__init__(
-            process, parts, params)
+            mri, config_dir, initial_design, description, use_cothread, use_git)
         # {block_name: BlockData}
         self._blocks_data = {}
         # {block_name: {field_name: Part}}
@@ -45,7 +58,7 @@ class PandABlocksManagerController(ManagerController):
         # changes left over from last time
         self.changes = OrderedDict()
         # The PandABlock client that does the comms
-        self.client = PandABlocksClient(params.hostname, params.port, Queue)
+        self.client = PandABlocksClient(hostname, port, Queue)
         # Filled in on reset
         self._stop_queue = None
         self._poll_spawned = None
@@ -129,23 +142,24 @@ class PandABlocksManagerController(ManagerController):
         assert not self.changes, "There are still changes %s" % self.changes
 
     def _make_child_controller(self, parts, mri):
-        controller = call_with_params(
-            BasicController, self.process, parts, mri=mri)
+        controller = BasicController(mri=mri)
+        for part in parts:
+            controller.add_part(part)
         return controller
 
     def _make_corresponding_part(self, block_name, mri):
-        part = call_with_params(ChildPart, name=block_name, mri=mri)
+        part = ChildPart(name=block_name, mri=mri)
         return part
 
     def _make_parts(self, block_name, block_data):
-        mri = "%s:%s" % (self.params.mri, block_name)
+        mri = "%s:%s" % (self.mri, block_name)
 
         # Defer creation of parts to a block maker
         maker = PandABlocksMaker(self.client, block_name, block_data)
 
         # Make the child controller and add it to the process
         controller = self._make_child_controller(maker.parts.values(), mri)
-        self.process.add_controller(mri, controller)
+        self.process.add_controller(controller)
 
         # Store the parts so we can update them with the poller
         self._blocks_parts[block_name] = maker.parts

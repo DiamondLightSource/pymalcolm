@@ -1,30 +1,43 @@
-from malcolm.core import Part, snake_to_camel
-from malcolm.core.vmetas import BooleanMeta
+from annotypes import Anno, Any
+
+from malcolm.core import Part, snake_to_camel, BooleanMeta, VMeta, PartRegistrar
+from malcolm.modules.pandablocks.pandablocksclient import PandABlocksClient
+
+
+with Anno("Client for setting and getting field"):
+    AClient = PandABlocksClient
+with Anno("Meta object to create attribute from"):
+    AMeta = VMeta
+with Anno("Name of Block in TCP server"):
+    ABlockName = str
+with Anno("Name of Field in TCP server"):
+    AFieldName = str
+with Anno("Initial value of attribute"):
+    AInitialValue = Any
 
 
 class PandABlocksFieldPart(Part):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, client, meta, block_name, field_name, writeable,
+    def __init__(self, client, meta, block_name, field_name,
                  initial_value=None):
+        # type: (AClient, AMeta, ABlockName, AFieldName, AInitialValue) -> None
         super(PandABlocksFieldPart, self).__init__(field_name)
         self.client = client
         self.meta = meta
         self.block_name = block_name
         self.field_name = field_name
-        self.writeable = writeable
-        self.initial_value = initial_value
-        self.attr = None
+        self.attr = self.meta.create_attribute_model(initial_value)
 
-    def create_attribute_models(self):
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
         attr_name = snake_to_camel(self.field_name.replace(".", "_"))
-        self.attr = self.meta.create_attribute_model(self.initial_value)
-        if self.writeable:
+        if self.meta.writeable:
             writeable_func = self.set_field
         else:
             writeable_func = None
-        yield attr_name, self.attr, writeable_func
+        registrar.add_attribute_model(attr_name, self.attr, writeable_func)
 
     def set_field(self, value):
         # TODO: goes in the server

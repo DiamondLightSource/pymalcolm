@@ -1,14 +1,9 @@
 import unittest
-import functools
-from mock import Mock, patch
-
-from malcolm.core import call_with_params
+from mock import MagicMock as Mock, patch
 
 
 class ChildTestCase(unittest.TestCase):
-    @patch("malcolm.modules.ca.parts.capart.CAPart.reset", Mock)
-    @patch("malcolm.modules.ca.parts.catoolshelper.CaToolsHelper._instance",
-           Mock)
+    @patch("malcolm.modules.ca.util.CaToolsHelper._instance", Mock())
     def create_child_block(self, child_block, process, **params):
         """Creates an instance of child_block with CA calls mocked out.
 
@@ -23,7 +18,14 @@ class ChildTestCase(unittest.TestCase):
                 a call.post(method_name, params) for anything the child is
                 asked to handle
         """
-        child = call_with_params(child_block, process, **params)
+        controllers = child_block(**params)
+        for controller in controllers:
+            for part in controller.parts.values():
+                if hasattr(part, "caa"):
+                    # We have a ca attribute, mock it out
+                    part.caa = Mock()
+            process.add_controller(controller)
+        child = controllers[-1]
         child.handled_requests = Mock(return_value=None)
 
         def handle_put(request):
@@ -39,3 +41,8 @@ class ChildTestCase(unittest.TestCase):
         child._handle_put = handle_put
         child._handle_post = handle_post
         return child
+
+    def set_attributes(self, child, **params):
+        """Set the child's attributes to the give parameter values"""
+        for k, v in params.items():
+            child._block[k].set_value(v)

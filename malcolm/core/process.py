@@ -38,8 +38,7 @@ class ProcessPublishHook(Hook[None]):
     """Called when a new block is added"""
     def __init__(self, child, published):
         # type: (AHookable, APublished) -> None
-        super(ProcessPublishHook, self).__init__(child)
-        self.published = APublished(published)
+        super(ProcessPublishHook, self).__init__(child, published=published)
 
 
 with Anno("Each of these reports that the controller should not be published"):
@@ -96,7 +95,8 @@ class Process(Loggable):
                                timeout=timeout)
         unpublished = set(
             info.mri for info in UnpublishedInfo.filter_values(infos))
-        to_publish = [c.mri for c in controller_list if c not in unpublished]
+        to_publish = [c.mri for c in controller_list
+                      if c.mri not in unpublished]
         if to_publish:
             with self._lock:
                 self._published += to_publish

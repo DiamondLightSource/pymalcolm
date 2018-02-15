@@ -13,7 +13,7 @@ class CompoundMotorPart(builtin.parts.ChildPart):
     @add_call_types
     def report_status(self, context):
         # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
-        child = context.block_view(self.params.mri)
+        child = context.block_view(self.mri)
         max_velocity = child.maxVelocity.value
         acceleration = float(max_velocity) / child.accelerationTime.value
 

@@ -73,7 +73,12 @@ class Hook(Generic[T], WithCallTypes):
         if extra_keys:
             keys += extra_keys
         # TODO: should we check the return types here?
-        kwargs = {k: self._kwargs[k] for k in keys}
+        kwargs = {}
+        for k in keys:
+            assert k in self._kwargs, \
+                "Hook requested argument %r not in %r" % (
+                    k, list(self._kwargs))
+            kwargs[k] = self._kwargs[k]
         self.spawned = self._spawn(self._run, func, kwargs)
 
     def _run(self, func, kwargs):
@@ -130,7 +135,6 @@ def wait_hooks(hook_queue, hook_spawned, timeout=None, exception_check=True):
         hook_spawned.remove(hook)
         # Wait for the process to terminate
         hook.spawned.wait(timeout)
-        return_dict[hook.child.name] = ret
         duration = time.time() - start
         if hook_spawned:
             log.debug(
@@ -142,15 +146,18 @@ def wait_hooks(hook_queue, hook_spawned, timeout=None, exception_check=True):
                 "%s: Child %s returned %r after %ss. Returning...",
                 hook.name, hook.child.name, ret, duration)
 
-        if exception_check and isinstance(ret, Exception):
-            if not isinstance(ret, AbortedError):
-                # If AbortedError, all tasks have already been stopped.
-                # Got an error, so stop and wait all hook runners
+        if isinstance(ret, Exception):
+            if exception_check:
+                if not isinstance(ret, AbortedError):
+                    # If AbortedError, all tasks have already been stopped.
+                    # Got an error, so stop and wait all hook runners
+                    for h in hook_spawned:
+                        h.stop()
+                # Wait for them to finish
                 for h in hook_spawned:
-                    h.stop()
-            # Wait for them to finish
-            for h in hook_spawned:
-                h.spawned.wait(timeout)
-            raise ret
+                    h.spawned.wait(timeout)
+                raise ret
+        else:
+            return_dict[hook.child.name] = ret
 
     return return_dict

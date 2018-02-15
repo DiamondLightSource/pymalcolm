@@ -2,32 +2,46 @@ from collections import OrderedDict
 import unittest
 
 import numpy as np
+from annotypes import Anno, Array, Mapping, Union, Sequence, Any
 
 from malcolm.core.serializable import Serializable, deserialize_object, \
-    repr_object, json_encode
-from malcolm.core.vmetas import StringMeta
+    json_encode, serialize_object
+from malcolm.core.models import StringMeta
+
+
+with Anno("A Boo"):
+    ABoo = int
+with Anno("A Bar"):
+    ABar = Mapping[str, Any]
+with Anno("A Not Camel"):
+    ANotCamel = Array[int]
+UNotCamel = Union[ANotCamel, Sequence[int]]
 
 
 @Serializable.register_subclass("foo:1.0")
 class DummySerializable(Serializable):
-    endpoints = ["boo", "bar", "NOT_CAMEL"]
     boo = None
     bar = None
     NOT_CAMEL = None
 
     def __init__(self, boo, bar, NOT_CAMEL):
+        # type: (ABoo, ABar, UNotCamel) -> None
         self.set_boo(boo)
         self.set_bar(bar)
-        self.set_NOT_CAMEL(NOT_CAMEL)
+        self.set_not(NOT_CAMEL)
 
     def set_boo(self, boo):
         self.boo = boo
 
     def set_bar(self, bar):
-        self.bar = bar
+        d = OrderedDict()
+        for k, v in bar.items():
+            if k != "typeid":
+                d[k] = deserialize_object(v)
+        self.bar = d
 
-    def set_NOT_CAMEL(self, c):
-        self.NOT_CAMEL = c
+    def set_not(self, c):
+        self.NOT_CAMEL = ANotCamel(c)
 
 
 @Serializable.register_subclass("empty:1.0")
@@ -38,7 +52,7 @@ class EmptySerializable(Serializable):
 class TestSerialization(unittest.TestCase):
 
     def test_to_dict(self):
-        d = {'a':42, 'b':42}
+        d = {'a': 42, 'b': 42}
         l = [42, 42]
         s = DummySerializable(3, d, l)
         expected = OrderedDict(typeid="foo:1.0")
@@ -54,66 +68,28 @@ class TestSerialization(unittest.TestCase):
         a = EmptySerializable()
         d = a.to_dict()
         b = deserialize_object(d)
-        assert a == b
+        assert a.to_dict() == b.to_dict()
 
     def test_to_dict_children(self):
-        a = StringMeta()
-        b = EmptySerializable()
-        s = DummySerializable(a, b, 0)
+        children = OrderedDict()
+        children["a"] = StringMeta().to_dict()
+        children["b"] = EmptySerializable().to_dict()
+        s = DummySerializable(3, children, [])
         expected = OrderedDict(typeid="foo:1.0")
-        expected["boo"] = a
-        expected["bar"] = b
-        expected["NOT_CAMEL"] = 0
+        expected["boo"] = 3
+        expected["bar"] = children
+        expected["NOT_CAMEL"] = []
 
         assert expected == s.to_dict()
 
         n = DummySerializable.from_dict(expected)
         assert n.to_dict() == expected
 
-    def test_eq_etc(self):
-        s1 = DummySerializable(3, "foo", 3)
-        s2 = DummySerializable(3, "foo", 3)
-        assert s1 == s2
-        assert not s1 != s2
-
-        assert s1.__repr__() == \
-            "<DummySerializable boo=3 bar='foo' NOT_CAMEL=3>"
-
-        with self.assertRaises(KeyError):
-            x = s1["boo2"]
-
-        s2.boo2 = "Anything"
-
-        with self.assertRaises(KeyError):
-            x = s2["boo2"]
-
-        s2.endpoints = s2.endpoints + ["boo2"]
-        assert s2["boo2"] == "Anything"
-
-        with self.assertRaises(KeyError):
-            delattr(s2, "boo2")
-            x = s2["boo2"]
-
-        assert len(s1) == 3
-        s3 = EmptySerializable()
-        assert len(s3) == 0
-        for endpoints in s3:
-            assert False, "unexpected iteration over EmptySerializable"
-
-        endpoints = []
-        for endpoint in s1:
-            endpoints.append(endpoint)
-        assert endpoints == ["boo", "bar", "NOT_CAMEL"]
-
-    def test_repr(self):
-        s1 = DummySerializable("bat", [DummySerializable(1, 2, 3)],
-                               dict(s=DummySerializable(4, 5, 6)))
-        assert repr_object(s1) == \
-            "<DummySerializable boo='bat' " \
-            "bar=[<DummySerializable boo=1 bar=2 NOT_CAMEL=3>] " \
-            "NOT_CAMEL={'s': <DummySerializable boo=4 bar=5 NOT_CAMEL=6>}>"
-
     def test_json_numpy_array(self):
-        s1 = DummySerializable(3, "foo", np.array([3, 4]))
+        s1 = DummySerializable(3, {}, np.array([3, 4]))
         assert json_encode(s1) == \
-            '{"typeid": "foo:1.0", "boo": 3, "bar": "foo", "NOT_CAMEL": [3, 4]}'
+            '{"typeid": "foo:1.0", "boo": 3, "bar": {}, "NOT_CAMEL": [3, 4]}'
+
+    def test_exception_serialize(self):
+        s = json_encode(serialize_object({"message": ValueError("Bad result")}))
+        assert s == '{"message": "ValueError: Bad result"}'

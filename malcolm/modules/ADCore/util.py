@@ -1,5 +1,6 @@
 from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
 from enum import Enum
+import numpy as np
 
 from malcolm.core import Table, Future, Context, TimeoutError, PartRegistrar
 from malcolm.modules import scanning
@@ -42,17 +43,17 @@ with Anno("Filenames of HDF files relative to fileDir"):
 with Anno("Types of dataset"):
     ATypeArray = Array[DatasetType]
 with Anno("Rank (number of dimensions) of the dataset"):
-    ARankArray = Array[int]
+    ARankArray = Array[np.int32]
 with Anno("Dataset paths within HDF files"):
     APathArray = Array[str]
 with Anno("UniqueID array paths within HDF files"):
     AUniqueIDArray = Array[str]
-UNameArray = Union(ANameArray, Sequence[str])
-UFilenameArray = Union(AFilenameArray, Sequence[str])
-UTypeArray = Union(ATypeArray, Sequence[DatasetType])
-URankArray = Union(ARankArray, Sequence[int])
-UPathArray = Union(APathArray, Sequence[str])
-UUniqueIDArray = Union(AUniqueIDArray, Sequence[str])
+UNameArray = Union[ANameArray, Sequence[str]]
+UFilenameArray = Union[AFilenameArray, Sequence[str]]
+UTypeArray = Union[ATypeArray, Sequence[DatasetType]]
+URankArray = Union[ARankArray, Sequence[np.int32]]
+UPathArray = Union[APathArray, Sequence[str]]
+UUniqueIDArray = Union[AUniqueIDArray, Sequence[str]]
 
 
 class DatasetTable(Table):
@@ -106,7 +107,7 @@ class ADBaseActions(object):
                 imageMode="Multiple",
                 numImages=steps_to_do,
                 arrayCallbacks=True).items():
-            if k in child:
+            if k not in kwargs and k in child:
                 kwargs[k] = v
         fs = child.put_attribute_values_async(kwargs)
         return fs

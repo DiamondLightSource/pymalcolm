@@ -181,16 +181,17 @@ def make_process():
         locals_d["profiler"] = Profiler(args.profiledir)
         #locals_d["profiler"].start()
 
-    from malcolm.core import call_with_params, Context, Queue
-    from malcolm.core import Process
+    from malcolm.core import Context, Queue, Process
     from malcolm.modules.builtin.blocks import proxy_block
     from malcolm.yamlutil import make_include_creator
 
     if args.yaml:
         proc_name = os.path.basename(args.yaml).split(".")[-2]
         proc = Process(proc_name)
-        assembly = make_include_creator(args.yaml)
-        call_with_params(assembly, proc)
+        controllers, parts = make_include_creator(args.yaml)
+        assert not parts, "%s defines parts" % (args.yaml,)
+        for controller in controllers:
+            proc.add_controller(controller)
         proc_name = "%s - imalcolm" % proc_name
     else:
         proc = Process("Process")
@@ -202,17 +203,16 @@ def make_process():
         if args.client.startswith("ws://"):
             from malcolm.modules.web.controllers import WebsocketClientComms
             hostname, port = args.client[5:].split(":")
-            comms = call_with_params(
-                WebsocketClientComms, proc, [],
+            comms = WebsocketClientComms(
                 mri="%s:%s" % (hostname, port), hostname=hostname,
                 port=int(port))
         elif args.client == "pva":
             from malcolm.modules.pva.controllers import PvaClientComms
-            comms = call_with_params(PvaClientComms, proc, [], mri="pva")
+            comms = PvaClientComms(mri="pva")
         else:
             raise ValueError(
                 "Don't know how to create client to %s" % args.client)
-        proc.add_controller(comms.mri, comms)
+        proc.add_controller(comms)
 
     class UserContext(Context):
         def make_queue(self):
@@ -226,7 +226,7 @@ def make_process():
                 raise
 
         def make_proxy(self, comms, mri):
-            call_with_params(proxy_block, proc, comms=comms, mri=mri)
+            proc.add_controller(proxy_block(comms=comms, mri=mri)[-1])
 
     locals_d["self"] = UserContext(proc)
     if qt_thread:

@@ -51,11 +51,9 @@ class DetectorDriverPart(ChildPart):
     def on_hook(self, hook):
         # type: (Hook) -> None
         if isinstance(hook, scanning.hooks.ReportStatusHook):
-            if self.main_dataset_useful:
-                hook(self.report_status)
+            hook(self.report_status)
         elif isinstance(hook, scanning.hooks.ValidateHook):
-            if hasattr(self, "readout_time"):
-                hook(self.validate)
+            hook(self.validate)
         elif isinstance(hook, (scanning.hooks.ConfigureHook,
                                scanning.hooks.PostRunArmedHook,
                                scanning.hooks.SeekHook)):
@@ -72,20 +70,22 @@ class DetectorDriverPart(ChildPart):
     @add_call_types
     def report_status(self):
         # type: () -> scanning.hooks.UInfos
-        return NDArrayDatasetInfo(rank=2)
+        if self.main_dataset_useful:
+            return NDArrayDatasetInfo(rank=2)
 
     @add_call_types
     def validate(self, generator):
         # type: (scanning.hooks.AGenerator) -> None
         exposure = generator.duration
         assert exposure > 0, \
-            "Duration %s for generator must be >0 to signify constant exposure" \
-            % exposure
-        # TODO: should really get this from an Info from pmac trajectory part...
-        exposure -= self.readout_time.value
-        assert exposure > 0.0, \
-            "Exposure time %s too small when readoutTime taken into account" % (
-                exposure)
+            "Duration %s for generator must be >0 to signify constant " \
+            "exposure" % (exposure,)
+
+        if hasattr(self, "readout_time"):
+            exposure -= self.readout_time.value
+            assert exposure > 0.0, \
+                "Exposure time %s too small when readoutTime taken into " \
+                "account" % (exposure,)
 
     @add_call_types
     def configure(self,

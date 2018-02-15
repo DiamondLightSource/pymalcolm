@@ -36,7 +36,7 @@ class ProxyController(BasicController):
     def init(self):
         # type: () -> UUnpublishedInfos
         self.client_comms = self.process.get_controller(self.comms)
-        subscribe = Subscribe(path=[self.params.mri], delta=True)
+        subscribe = Subscribe(path=[self.mri], delta=True)
         subscribe.set_callback(self.handle_response)
         self.client_comms.send_to_server(subscribe)
         # Wait until connected

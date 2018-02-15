@@ -11,12 +11,7 @@ class TestPandaABoxDriverPart(unittest.TestCase):
         self.child = MagicMock()
         self.context = MagicMock(spec=Context)
         self.context.block_view.return_value = self.child
-        self.params = MagicMock()
-        self.params.name = "drv"
-        self.params.mri = "mri"
-        self.params.readoutTime = 0.002
-        self.o = PandABlocksDriverPart(self.params)
-        list(self.o.create_attribute_models())
+        self.o = PandABlocksDriverPart(name="drv", mri="mri")
 
     def test_abort(self):
         self.o.abort(self.context)

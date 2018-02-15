@@ -1,9 +1,14 @@
-from annotypes import Mapping, Sequence, Anno, Array, Union, Any
+from annotypes import Mapping, Sequence, Anno, Array, Union, Any, \
+    TYPE_CHECKING, NO_DEFAULT
 
+from malcolm.compat import OrderedDict
+from malcolm.core import VMeta
 from malcolm.modules.builtin.hooks import ControllerHook, APart, AContext
-from .infos import ParameterTweakInfo, Info
+from .infos import ParameterTweakInfo, Info, ConfigureParamsInfo
 from .util import AGenerator, AAxesToMove
 
+if TYPE_CHECKING:
+    from typing import Dict, Callable
 
 with Anno("The Infos returned from other Parts"):
     APartInfo = Mapping[str, Array[Info]]
@@ -82,6 +87,24 @@ class ConfigureHook(ControllerHook[UInfos]):
             part, context, completed_steps=completed_steps,
             steps_to_do=steps_to_do, part_info=part_info, generator=generator,
             axesToMove=axesToMove, **kwargs)
+
+    @classmethod
+    def create_info(cls, configure_func):
+        # type: (Callable) -> ConfigureParamsInfo
+        call_types = getattr(configure_func, "call_types",
+                             {})  # type: Dict[str, Anno]
+        metas = OrderedDict()
+        required = []
+        defaults = OrderedDict()
+        for k, anno in call_types.items():
+            if k not in cls.call_types:
+                scls = VMeta.lookup_annotype_converter(anno)
+                metas[k] = scls.from_annotype(anno, writeable=True)
+                if anno.default is NO_DEFAULT:
+                    required.append(k)
+                elif anno.default is not None:
+                    defaults[k] = anno.default
+        return ConfigureParamsInfo(metas, required, defaults)
 
     def validate_return(self, ret):
         # type: (UInfos) -> AInfos

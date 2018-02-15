@@ -1,4 +1,4 @@
-from malcolm.core import call_with_params, Context, Process
+from malcolm.core import Context, Process
 from malcolm.modules.pmac.parts import RawMotorPart
 from malcolm.modules.pmac.blocks import raw_motor_block
 from malcolm.testutil import ChildTestCase
@@ -12,15 +12,15 @@ class TestRawMotorPart(ChildTestCase):
         child = self.create_child_block(
             raw_motor_block, self.process, mri="mri", prefix="PV:PRE",
             motor_prefix="MOT:PRE", scannable="scan")
-        child.parts["maxVelocity"].attr.set_value(5.0)
-        child.parts["accelerationTime"].attr.set_value(0.5)
-        child.parts["readback"].attr.set_value(12.3)
-        child.parts["offset"].attr.set_value(4.5)
-        child.parts["resolution"].attr.set_value(0.001)
-        child.parts["csPort"].attr.set_value("CS1")
-        child.parts["csAxis"].attr.set_value("Y")
-        self.o = call_with_params(RawMotorPart, name="part", mri="mri")
-        list(self.o.create_attribute_models())
+        self.set_attributes(child,
+                            maxVelocity=5.0,
+                            accelerationTime=0.5,
+                            readback=12.3,
+                            offset=4.5,
+                            resolution=0.001,
+                            csPort="CS1",
+                            csAxis="Y")
+        self.o = RawMotorPart(name="part", mri="mri")
         self.process.start()
 
     def tearDown(self):
@@ -28,7 +28,7 @@ class TestRawMotorPart(ChildTestCase):
         self.process.stop(timeout=1)
 
     def test_report(self):
-        returns = self.o.report_status(self.context)[0]
+        returns = self.o.report_status(self.context)
         assert returns.cs_axis == "Y"
         assert returns.cs_port == "CS1"
         assert returns.acceleration == 10.0

@@ -2,7 +2,7 @@ import unittest
 from mock import MagicMock, patch
 
 from malcolm.gui.guimodel import GuiModel, BlockItem
-from malcolm.core import Process, call_with_params
+from malcolm.core import Process
 from malcolm.modules.demo.blocks import hello_block
 
 
@@ -18,10 +18,10 @@ class TestBlockModel(unittest.TestCase):
         mock_received.emit.side_effect = emit
 
         self.process = Process("proc")
-        self.controller = call_with_params(
-            hello_block, self.process, mri="hello_block")
+        self.controller = hello_block(mri="hello_block")[0]
+        self.process.add_controller(self.controller)
         self.process.start()
-        self.m = GuiModel(self.process, self.controller.block_view())
+        self.m = GuiModel(self.process, self.controller.make_view())
 
     def tearDown(self):
         self.process.stop(timeout=1)
@@ -41,8 +41,8 @@ class TestBlockModel(unittest.TestCase):
     def test_update_root(self):
         b_item = self.m.root_item
         assert [x.endpoint[-1] for x in b_item.children] == (
-                         ["health", "error", "greet"])
-        m_item = b_item.children[2]
+                         ["health", "greet", "error"])
+        m_item = b_item.children[1]
         assert m_item.endpoint == ('hello_block', 'greet')
         assert len(m_item.children) == 2
         n_item = m_item.children[0]

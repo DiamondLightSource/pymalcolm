@@ -20,7 +20,7 @@ class PortsPart(Part):
         in_tag = "inport:int32:"
         in_name = "inportConnector"
         in_port = StringMeta(in_name,
-                             [in_tag, "config"]).create_attribute_model()
+                             [in_tag, "config:1"]).create_attribute_model()
         registrar.add_attribute_model(in_name, in_port, in_port.set_value)
 
         out_name = "outportConnector"

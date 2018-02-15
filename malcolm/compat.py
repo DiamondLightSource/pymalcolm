@@ -60,6 +60,20 @@ def get_pool_num_threads():
     return num_threads
 
 
+# Exception handling from future.utils
+if sys.version_info < (3,):
+    exec('''
+def raise_with_traceback(exc, traceback=Ellipsis):
+    if traceback == Ellipsis:
+        _, _, traceback = sys.exc_info()
+    raise exc, None, traceback
+''')
+else:
+    def raise_with_traceback(exc, traceback=Ellipsis):
+        if traceback == Ellipsis:
+            _, _, traceback = sys.exc_info()
+        raise exc.with_traceback(traceback)
+
 try:
     # Python2
     from thread import get_ident as get_thread_ident

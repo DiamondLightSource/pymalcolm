@@ -23,7 +23,7 @@ class TestAttributeItem(unittest.TestCase):
         request = self.item.set_value(value)
         assert AttributeItem.RUNNING == self.item.get_state()
         assert (
-            list(self.item.endpoint + ("value",))) == request.path
+            self.item.endpoint + ("value",)) == request.path
         assert value.__str__.return_value == request.value
 
     def test_handle_response_error(self):

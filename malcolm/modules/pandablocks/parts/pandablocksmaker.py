@@ -1,11 +1,9 @@
 import os
 
 from malcolm.compat import OrderedDict
-from malcolm.core import call_with_params
 from malcolm.modules.builtin.parts import GroupPart, IconPart, TitlePart
-from malcolm.core.tags import widget, group_tag, inport, outport, config_tag
-from malcolm.core.vmetas import BooleanMeta, ChoiceMeta, NumberMeta, StringMeta, \
-    TableMeta
+from malcolm.core import Widget, group_tag, Port, config_tag, \
+    BooleanMeta, ChoiceMeta, NumberMeta, StringMeta, TableMeta
 from .pandablocksactionpart import PandABlocksActionPart
 from .pandablocksfieldpart import PandABlocksFieldPart
 from .pandablockstablepart import PandABlocksTablePart
@@ -17,36 +15,35 @@ SVG_DIR = os.path.join(os.path.dirname(__file__), "..", "icons")
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
     if subtyp == "enum":
         if writeable:
-            widget_type = "combo"
+            widget = Widget.COMBO
         else:
-            widget_type = "textupdate"
-        tags.append(widget(widget_type))
-        meta = ChoiceMeta(description, labels, tags)
+            widget = Widget.TEXTUPDATE
+        meta = ChoiceMeta(description, labels)
     elif subtyp == "bit":
         if writeable:
-            widget_type = "checkbox"
+            widget = Widget.CHECKBOX
         else:
-            widget_type = "led"
-        tags.append(widget(widget_type))
-        meta = BooleanMeta(description, tags)
+            widget = Widget.LED
+        meta = BooleanMeta(description)
     else:
         if writeable:
-            widget_type = "textinput"
+            widget = Widget.TEXTINPUT
         else:
-            widget_type = "textupdate"
-        tags.append(widget(widget_type))
+            widget = Widget.TEXTUPDATE
         if subtyp == "uint":
-            meta = NumberMeta("uint32", description, tags)
+            meta = NumberMeta("uint32", description)
         elif subtyp == "int":
-            meta = NumberMeta("int32", description, tags)
+            meta = NumberMeta("int32", description)
         elif subtyp == "scalar":
-            meta = NumberMeta("float64", description, tags)
+            meta = NumberMeta("float64", description)
         elif subtyp == "lut":
-            meta = StringMeta(description, tags)
+            meta = StringMeta(description)
         elif subtyp in ("pos", "relative_pos"):
-            meta = NumberMeta("float64", description, tags)
+            meta = NumberMeta("float64", description)
         else:
             raise ValueError("Unknown subtype %r" % subtyp)
+    tags.append(widget.tag())
+    meta.set_tags(tags)
     return meta
 
 
@@ -105,106 +102,107 @@ class PandABlocksMaker(object):
     def _make_icon_label(self):
         block_type = self.block_name.rstrip("0123456789")
         svg_name = block_type + ".svg"
-        part = call_with_params(IconPart, svg=os.path.join(SVG_DIR, svg_name))
+        part = IconPart(svg=os.path.join(SVG_DIR, svg_name))
         self._add_part("icon", part)
         label = self.block_data.description + " " + \
             self.block_name[len(block_type):]
-        part = call_with_params(TitlePart, value=label)
+        part = TitlePart(value=label)
         self._add_part("label", part)
 
     def _make_scale_offset(self, field_name):
-        group_tag = self._make_group("outputs")
+        group = self._make_group("outputs")
         meta = StringMeta("Units for position fields on this block",
-                          tags=[group_tag, widget("textinput")])
+                          tags=[group, Widget.TEXTINPUT.tag()])
         self._make_field_part(field_name + ".UNITS", meta, writeable=True)
         meta = NumberMeta("float64", "Scale for block position fields",
-                          tags=[group_tag, widget("textinput")])
+                          tags=[group, Widget.TEXTINPUT.tag()])
         self._make_field_part(field_name + ".SCALE", meta, writeable=True)
         meta = NumberMeta("float64", "Offset for block position fields",
-                          tags=[group_tag, widget("textinput")])
+                          tags=[group, Widget.TEXTINPUT.tag()])
         self._make_field_part(field_name + ".OFFSET", meta, writeable=True)
 
     def _make_time_parts(self, field_name, field_data, writeable):
         description = field_data.description
         if writeable:
-            widget_tag = widget("textupdate")
-            group_tag = self._make_group("parameters")
+            widget = Widget.TEXTUPDATE
+            group = self._make_group("parameters")
         else:
-            widget_tag = widget("textinput")
-            group_tag = self._make_group("readbacks")
-        meta = NumberMeta("float64", description, [group_tag, widget_tag])
-        self._make_field_part(field_name, meta, writeable)
+            widget = Widget.TEXTINPUT
+            group = self._make_group("readbacks")
+        meta = NumberMeta("float64", description, [group, widget.tag()])
+        # We must change time units before value, so restore value in 2nd
+        # iteration
+        self._make_field_part(field_name, meta, writeable, iteration=2)
         meta = ChoiceMeta(description + " time units", ["s", "ms", "us"],
-                          tags=[group_tag, widget("combo")])
+                          tags=[group, Widget.COMBO.tag()])
         self._make_field_part(field_name + ".UNITS", meta, writeable=True)
 
     def _make_param_part(self, field_name, field_data, writeable):
         if writeable:
-            group_tag = self._make_group("parameters")
+            group = self._make_group("parameters")
         else:
-            group_tag = self._make_group("readbacks")
+            group = self._make_group("readbacks")
         meta = make_meta(field_data.field_subtype, field_data.description,
-                         [group_tag], writeable, field_data.labels)
+                         [group], writeable, field_data.labels)
         self._make_field_part(field_name, meta, writeable)
 
     def _make_action_part(self, field_name, field_data):
-        group_tag = self._make_group("parameters")
+        group = self._make_group("parameters")
         part = PandABlocksActionPart(
             self.client, self.block_name, field_name,
-            field_data.description, [group_tag])
+            field_data.description, [group])
         self._add_part(field_name, part)
 
     def _make_out(self, field_name, field_data, typ):
-        group_tag = self._make_group("outputs")
+        group = self._make_group("outputs")
         if typ == "bit":
-            outport_type = "bool"
+            outport = Port.BOOL
         else:
-            outport_type = "int32"
-        flow_tag = outport(
-            outport_type, "%s.%s" % (self.block_name, field_name))
+            outport = Port.INT32
+        flow_tag = outport.outport_tag("%s.%s" % (self.block_name, field_name))
         meta = make_meta(typ, field_data.description,
-                         tags=[group_tag, flow_tag], writeable=False)
+                         tags=[group, flow_tag], writeable=False)
         self._make_field_part(field_name, meta, writeable=False)
 
     def _make_data_delay(self, field_name):
-        group_tag = self._make_group("outputs")
+        group = self._make_group("outputs")
         meta = NumberMeta(
             "uint8", "How many FPGA ticks to delay data capture",
-            tags=[group_tag, widget("textinput")])
+            tags=[group, Widget.TEXTINPUT.tag()])
         self._make_field_part(field_name + ".DATA_DELAY", meta, writeable=True)
 
     def _make_out_capture(self, field_name, field_data):
-        group_tag = self._make_group("outputs")
+        group = self._make_group("outputs")
         meta = ChoiceMeta("Capture %s in PCAP?" % field_name,
-                          field_data.labels, tags=[group_tag, widget("combo")])
+                          field_data.labels, tags=[group, Widget.COMBO.tag()])
         self._make_field_part(field_name + ".CAPTURE", meta, writeable=True)
 
     def _make_mux(self, field_name, field_data, typ):
-        group_tag = self._make_group("inputs")
+        group = self._make_group("inputs")
         if typ == "bit":
-            inport_type = "bool"
+            inport = Port.BOOL
         else:
-            inport_type = "int32"
+            inport = Port.INT32
         meta = ChoiceMeta(field_data.description, field_data.labels, tags=[
-            group_tag, inport(inport_type, "ZERO"), widget("combo")])
+            group, inport.inport_tag("ZERO"), Widget.COMBO.tag()])
         self._make_field_part(field_name, meta, writeable=True)
         meta = make_meta(typ, "%s current value" % field_name,
-                         tags=[group_tag], writeable=False)
+                         tags=[group], writeable=False)
         self._make_field_part(field_name + ".CURRENT", meta, writeable=False)
 
     def _make_mux_delay(self, field_name):
-        group_tag = self._make_group("inputs")
+        group = self._make_group("inputs")
         meta = NumberMeta(
             "uint8", "How many FPGA ticks to delay input",
-            tags=[group_tag, widget("textinput")])
+            tags=[group, Widget.TEXTINPUT.tag()])
         self._make_field_part(field_name + ".DELAY", meta, writeable=True)
 
     def _make_table(self, field_name, field_data):
-        group_tag = self._make_group("parameters")
-        tags = [widget("table"), group_tag, config_tag()]
-        meta = TableMeta(field_data.description, tags)
+        group = self._make_group("parameters")
+        tags = [Widget.TABLE.tag(), group, config_tag()]
+        meta = TableMeta(field_data.description, tags, writeable=True)
         part = PandABlocksTablePart(self.client, meta,
-                                    self.block_name, field_name, writeable=True)
+                                    self.block_name, field_name)
         self._add_part(field_name, part)
 
     def _add_part(self, field_name, part):
@@ -212,19 +210,18 @@ class PandABlocksMaker(object):
             "Already have a field %r" % field_name
         self.parts[field_name] = part
 
-    def _make_field_part(self, field_name, meta, writeable, initial_value=None):
+    def _make_field_part(self, field_name, meta, writeable, initial_value=None,
+                         iteration=1):
         if writeable:
-            meta.set_tags(meta.tags + (config_tag(),))
+            meta.set_tags(list(meta.tags) + [config_tag(iteration)])
+            meta.set_writeable(True)
         part = PandABlocksFieldPart(self.client, meta,
-                                    self.block_name, field_name, writeable,
-                                    initial_value)
+                                    self.block_name, field_name, initial_value)
         self._add_part(field_name, part)
 
     def _make_group(self, attr_name):
         if attr_name not in self.parts:
-            part = call_with_params(
-                GroupPart, name=attr_name,
-                description="All %s attributes" % attr_name)
+            part = GroupPart(attr_name, "All %s attributes" % attr_name)
             self._add_part(attr_name, part)
-        group_tag = group_tag(attr_name)
-        return group_tag
+        group = group_tag(attr_name)
+        return group

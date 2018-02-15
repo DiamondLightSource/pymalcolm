@@ -1,6 +1,5 @@
 from annotypes import add_call_types
 
-from malcolm.compat import OrderedDict
 from malcolm.core import Part, Hook, PartRegistrar, APartName, TableMeta
 from malcolm.modules import scanning
 from ..infos import DatasetProducedInfo
@@ -30,10 +29,14 @@ class DatasetTablePart(Part):
     def post_configure(self, part_info):
         # type: (scanning.hooks.APartInfo) -> None
         # Update the dataset table
-        rows = OrderedDict()
+        name, filename, typ, rank, path, uid = [], [], [], [], [], []
         for i in DatasetProducedInfo.filter_values(part_info):
-            if i.name not in rows:
-                row = [i.name, i.filename, i.type, i.rank, i.path, i.uniqueid]
-                rows[i.name] = row
-        datasets_table = DatasetTable.from_rows(rows)
+            if i.name not in name:
+                name.append(i.name)
+                filename.append(i.filename)
+                typ.append(i.type)
+                rank.append(i.rank)
+                path.append(i.path)
+                uid.append(i.uniqueid)
+        datasets_table = DatasetTable(name, filename, typ, rank, path, uid)
         self.datasets.set_value(datasets_table)

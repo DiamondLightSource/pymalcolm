@@ -2,7 +2,7 @@ from collections import OrderedDict
 import unittest
 from mock import call, Mock
 
-from malcolm.modules.pandablocks.controllers.pandablocksclient import \
+from malcolm.modules.pandablocks.pandablocksclient import \
     PandABlocksClient, FieldData, BlockData
 
 

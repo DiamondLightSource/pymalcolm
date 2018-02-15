@@ -1,10 +1,9 @@
-from annotypes import TYPE_CHECKING, Anno, NO_DEFAULT
+from annotypes import TYPE_CHECKING
 
 from malcolm.core import Info, VMeta
-from malcolm.compat import OrderedDict
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Callable
+    from typing import Any, Dict, List
 
 
 class ParameterTweakInfo(Info):
@@ -33,22 +32,6 @@ class ConfigureParamsInfo(Info):
         self.metas = metas
         self.required = required
         self.defaults = defaults
-
-    @classmethod
-    def from_configure(cls, func):
-        # type: (Callable) -> ConfigureParamsInfo
-        call_types = getattr(func, "call_types", {})  # type: Dict[str, Anno]
-        metas = OrderedDict()
-        required = []
-        defaults = OrderedDict()
-        for k, anno in call_types.items():
-            scls = VMeta.lookup_annotype_converter(anno)
-            metas[k] = scls.from_annotype(anno, writeable=True)
-            if anno.default is NO_DEFAULT:
-                required.append(k)
-            elif anno.default is not None:
-                defaults[k] = anno.default
-        return cls(metas, required, defaults)
 
 
 class RunProgressInfo(Info):

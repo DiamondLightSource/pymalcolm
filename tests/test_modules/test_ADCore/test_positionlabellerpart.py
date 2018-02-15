@@ -1,11 +1,10 @@
-from mock import MagicMock, call, ANY
+from mock import MagicMock, call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.core import Context, call_with_params, Process, Future
+from malcolm.core import Context, Process, Future
 from malcolm.modules.ADCore.blocks import position_labeller_block
 from malcolm.modules.ADCore.parts import PositionLabellerPart
-from malcolm.modules.ADCore.infos import UniqueIdInfo
 from malcolm.testutil import ChildTestCase
 
 
@@ -17,22 +16,22 @@ class TestPositionLabellerPart(ChildTestCase):
         self.child = self.create_child_block(
             position_labeller_block, self.process,
             mri="BLOCK-POS", prefix="prefix")
-        self.o = call_with_params(
-            PositionLabellerPart, name="m", mri="BLOCK-POS")
-        list(self.o.create_attribute_models())
+        self.o = PositionLabellerPart(name="m", mri="BLOCK-POS")
         self.process.start()
 
+    def tearDown(self):
+        self.process.stop(2)
+
     def test_configure(self):
-        params = MagicMock()
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        params.generator = CompoundGenerator([ys, xs], [], [])
-        params.generator.prepare()
+        generator = CompoundGenerator([ys, xs], [], [])
+        generator.prepare()
         completed_steps = 2
         steps_to_do = 4
-        part_info = {"anything": [UniqueIdInfo(30)]}
+        self.o.done_when_reaches = 30
         self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info, params)
+            self.context, completed_steps, steps_to_do, generator)
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
 <dimensions>
@@ -47,22 +46,19 @@ class TestPositionLabellerPart(ChildTestCase):
 <position FilePluginClose="1" d0="1" d1="0" />
 </positions>
 </pos_layout>""".replace("\n", "")
-        # Need to wait for the spawned mock start call to run
-        self.o.start_future.result()
         assert self.child.handled_requests.mock_calls == [
             call.post('delete'),
             call.put('enableCallbacks', True),
             call.put('idStart', 31),
             call.put('xml', expected_xml),
             call.post('start')]
+        assert self.o.done_when_reaches == 34
 
     def test_run(self):
-        update = MagicMock()
         # Say that we've returned from start
         self.o.start_future = Future(None)
         self.o.start_future.set_result(None)
-        self.o.__call__(self.context, update)
-        assert update.mock_calls == []
+        self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == []
 
     def test_load_more_positions(self):

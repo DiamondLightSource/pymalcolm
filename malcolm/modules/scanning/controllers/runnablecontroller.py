@@ -1,10 +1,8 @@
-from annotypes import Anno, Array, TYPE_CHECKING, add_call_types, Sequence, \
-    Union, Any
+from annotypes import Anno, TYPE_CHECKING, add_call_types, Any
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import AbortedError, MethodModel, Queue, \
-    Context, TimeoutError, AMri, NumberMeta, StringArrayMeta, Widget, \
-    config_tag, Part, ABORT_TIMEOUT
+from malcolm.core import AbortedError, MethodModel, Queue, Context, \
+    TimeoutError, AMri, NumberMeta, Widget, Part, ABORT_TIMEOUT
 from malcolm.modules.builtin.controllers import ManagerController, \
     AConfigDir, AInitialDesign, ADescription, AUseCothread, AUseGit
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
@@ -21,13 +19,10 @@ if TYPE_CHECKING:
 
 ss = RunnableStates
 
-with Anno("Initial value for set of axes that can be specified in axesToMove"):
-    AAvailableAxes = Array[str]
 with Anno("The validated configure parameters"):
     AConfigureParams = ConfigureParams
 with Anno("Step to mark as the last completed step, 0 for current"):
     ACompletedSteps = int
-UAvailableAxes = Union[AAvailableAxes, Sequence[str], str, None]
 
 
 def get_steps_per_run(generator, axes_to_move):
@@ -56,7 +51,6 @@ class RunnableController(ManagerController):
     def __init__(self,
                  mri,  # type: AMri
                  config_dir,  # type: AConfigDir
-                 initial_available_axes=None,  # type: UAvailableAxes
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
                  use_cothread=True,  # type: AUseCothread
@@ -102,19 +96,10 @@ class RunnableController(ManagerController):
             tags=[Widget.TEXTUPDATE.tag()]
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model("totalSteps", self.total_steps)
-        # Create sometimes writeable attribute for the default axis names
-        self.available_axes = StringArrayMeta(
-            "Set of axes that can be specified in axesToMove at configure",
-            tags=[Widget.TABLE.tag(), config_tag()]
-        ).create_attribute_model(initial_available_axes)
-        self.field_registry.add_attribute_model(
-            "availableAxes", self.available_axes, self.available_axes.set_value)
-        self.set_writeable_in(self.available_axes, ss.READY)
         # Create the method models
         self.field_registry.add_method_model(self.validate)
-        configure_model = self.field_registry.add_method_model(self.configure)
-        self.set_writeable_in(configure_model, ss.READY)
-        configure_model.defaults["axesToMove"] = initial_available_axes
+        self.set_writeable_in(
+            self.field_registry.add_method_model(self.configure), ss.READY)
         self.set_writeable_in(
             self.field_registry.add_method_model(self.run), ss.ARMED)
         self.set_writeable_in(

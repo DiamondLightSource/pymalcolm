@@ -6,13 +6,12 @@ from malcolm.core import Alarm, MethodModel, AttributeModel, ProcessStartHook, \
 from malcolm.modules.builtin.util import StatefulStates
 from .basiccontroller import BasicController, AMri, ADescription, AUseCothread
 from ..hooks import InitHook, ResetHook, DisableHook, HaltHook
-from ..infos import HealthInfo, NotifyDispatchInfo
+from ..infos import HealthInfo
 
 if TYPE_CHECKING:
     from typing import Union, Dict, Callable
     Field = Union[AttributeModel, MethodModel]
     ChildrenWriteable = Dict[str, Dict[Field, bool]]
-    NotifyDispatchCallbacks = Dict[object, Callable[[Request], None]]
 
 
 ss = StatefulStates
@@ -27,7 +26,6 @@ class StatefulController(BasicController):
         # type: (AMri, ADescription, AUseCothread) -> None
         super(StatefulController, self).__init__(mri, description, use_cothread)
         self._children_writeable = {}  # type: ChildrenWriteable
-        self._notify_dispatch_callbacks = {}  # type: NotifyDispatchCallbacks
         self.state = ChoiceMeta(
             "StateMachine State of Block", self.state_set.possible_states,
             tags=[Widget.TEXTUPDATE.tag()]).create_attribute_model(ss.DISABLING)
@@ -35,8 +33,6 @@ class StatefulController(BasicController):
         self.field_registry.add_method_model(self.disable)
         self.set_writeable_in(self.field_registry.add_method_model(self.reset),
                               ss.DISABLED, ss.FAULT)
-        self.info_registry.add_reportable(
-            NotifyDispatchInfo, self.update_notify_dispatch)
         self.transition(ss.DISABLED)
 
     def set_writeable_in(self, field, *states):
@@ -54,20 +50,8 @@ class StatefulController(BasicController):
         # type: () -> Dict[Part, Context]
         part_contexts = OrderedDict()
         for part in self.parts.values():
-            context = Context(self.process)
-            try:
-                context.set_notify_dispatch_request(
-                    self._notify_dispatch_callbacks[part])
-            except KeyError:
-                # The part doesn't want to be notified
-                pass
-            part_contexts[part] = context
+            part_contexts[part] = Context(self.process)
         return part_contexts
-
-    def update_notify_dispatch(self, reporter, info):
-        # type: (object, NotifyDispatchInfo) -> None
-        """The reporter wants to be notified by the context"""
-        self._notify_dispatch_callbacks[reporter] = info.notify_dispatch
 
     def on_hook(self, hook):
         # type: (Hook) -> None

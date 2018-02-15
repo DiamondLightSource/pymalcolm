@@ -31,7 +31,9 @@ def serialize_hook(o):
     o = serialize_object(o)
     if isinstance(o, Array):
         return serialize_hook(o.seq)
-    if isinstance(o, (np.number, np.bool_)):
+    elif isinstance(o, Exception):
+        return "%s: %s" % (type(o).__name__, o)
+    elif isinstance(o, (np.number, np.bool_)):
         return o.tolist()
     elif isinstance(o, np.ndarray):
         assert len(o.shape) == 1, "Expected 1d array, got {}".format(o.shape)

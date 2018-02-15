@@ -4,8 +4,7 @@ import json
 from tornado.websocket import websocket_connect
 from tornado import gen
 
-from malcolm.core import Process, call_with_params, Queue, Context, \
-    ResponseError
+from malcolm.core import Process, Queue, ResponseError
 from malcolm.modules.builtin.blocks import proxy_block
 from malcolm.modules.demo.blocks import hello_block, counter_block
 from malcolm.modules.web.blocks import web_server_block, websocket_client_block
@@ -16,9 +15,10 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
     def setUp(self):
         self.process = Process("proc")
-        self.hello = call_with_params(hello_block, self.process, mri="hello")
-        self.server = call_with_params(
-            web_server_block, self.process, mri="server", port=self.socket)
+        self.hello = hello_block(mri="hello")[-1]
+        self.process.add_controller(self.hello)
+        self.server = web_server_block(mri="server", port=self.socket)[-1]
+        self.process.add_controller(self.server)
         self.result = Queue()
         self.process.start()
 
@@ -48,10 +48,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Return:1.0",
             id=0,
-            value=dict(
-                typeid='malcolm:core/Map:1.0',
-                greeting="Hello me",
-            )
+            value="Hello me"
         )
 
 
@@ -60,16 +57,16 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
 
     def setUp(self):
         self.process = Process("proc")
-        self.hello = call_with_params(hello_block, self.process, mri="hello")
-        self.counter = call_with_params(
-            counter_block, self.process, mri="counter")
-        self.server = call_with_params(
-            web_server_block, self.process, mri="server", port=self.socket)
+        for controller in \
+                hello_block(mri="hello") \
+                + counter_block(mri="counter") \
+                + web_server_block(mri="server", port=self.socket):
+            self.process.add_controller(controller)
         self.process.start()
         self.process2 = Process("proc2")
-        self.client = call_with_params(
-            websocket_client_block, self.process2, mri="client",
-            port=self.socket)
+        for controller in \
+                websocket_client_block(mri="client", port=self.socket):
+            self.process2.add_controller(controller)
         self.process2.start()
 
     def tearDown(self):
@@ -78,22 +75,22 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.process2.stop(timeout=1)
 
     def test_server_hello_with_malcolm_client(self):
-        call_with_params(
-            proxy_block, self.process2, mri="hello", comms="client")
+        self.process2.add_controller(
+            proxy_block(mri="hello", comms="client")[-1])
         block2 = self.process2.block_view("hello")
         ret = block2.greet("me2")
-        assert ret == dict(greeting="Hello me2")
+        assert ret == "Hello me2"
         with self.assertRaises(ResponseError):
             block2.error()
 
     def test_server_counter_with_malcolm_client(self):
-        call_with_params(
-            proxy_block, self.process2, mri="counter", comms="client")
+        self.process2.add_controller(
+            proxy_block(mri="counter", comms="client")[-1])
         block2 = self.process2.block_view("counter")
         assert block2.counter.value == 0
         block2.increment()
         assert block2.counter.value == 1
         block2.zero()
         assert block2.counter.value == 0
-        assert self.client.remote_blocks.value == (
-            "hello", "counter", "server")
+        assert self.process2.block_view("client").remoteBlocks.value == [
+            "hello", "counter", "server"]

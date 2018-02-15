@@ -1,20 +1,19 @@
 from collections import OrderedDict
 import unittest
-from mock import call, Mock, patch, ANY, MagicMock
+from mock import call, patch, ANY, MagicMock
 from xml.etree import cElementTree as ET
 
-from malcolm.core import call_with_params
 from malcolm.modules.pandablocks.controllers import PandABlocksManagerController
-from malcolm.modules.pandablocks.controllers.pandablocksclient import \
+from malcolm.modules.pandablocks.pandablocksclient import \
     FieldData, BlockData
 
 
 class PandABlocksManagerControllerTest(unittest.TestCase):
     @patch("malcolm.modules.pandablocks.controllers.pandablocksmanagercontroller.PandABlocksClient")
     def setUp(self, mock_client):
-        self.process = Mock()
-        self.o = call_with_params(
-            PandABlocksManagerController, self.process, [], mri="P", config_dir="/tmp")
+        self.o = PandABlocksManagerController(mri="P", config_dir="/tmp")
+        self.process = MagicMock()
+        self.o.setup(self.process)
         blocks_data = OrderedDict()
         fields = OrderedDict()
         fields["INP"] = FieldData("pos_mux", "", "Input A", ["ZERO", "COUNTER.OUT"])
@@ -53,17 +52,22 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         self.o.handle_changes({})
 
     def _blocks(self):
-        pcomp = self.process.add_controller.call_args_list[0][0][1].block_view()
-        counter = self.process.add_controller.call_args_list[1][0][
-            1].block_view()
-        ttlin = self.process.add_controller.call_args_list[2][0][1].block_view()
-        return pcomp, counter, ttlin
+        pcomp = self.process.add_controller.call_args_list[0][0][0]
+        assert pcomp.mri == "P:PCOMP"
+        counter = self.process.add_controller.call_args_list[1][0][0]
+        assert counter.mri == "P:COUNTER"
+        ttlin = self.process.add_controller.call_args_list[2][0][0]
+        assert ttlin.mri == "P:TTLIN"
+        # Using a mock, so setup these controllers
+        for c in (pcomp, counter, ttlin):
+            c.setup(self.process)
+        return pcomp.make_view(), counter.make_view(), ttlin.make_view()
 
     def test_initial_changes(self):
         assert self.process.mock_calls == [
-            call.add_controller('P:PCOMP', ANY),
-            call.add_controller('P:COUNTER', ANY),
-            call.add_controller('P:TTLIN', ANY)]
+            call.add_controller(ANY),
+            call.add_controller(ANY),
+            call.add_controller(ANY)]
         pcomp, counter, ttlin = self._blocks()
         assert pcomp.inp.value == "ZERO"
         assert pcomp.inpCurrent.value == 0.0

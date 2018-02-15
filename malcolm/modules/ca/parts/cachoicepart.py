@@ -31,11 +31,9 @@ class CAChoicePart(Part):
         self.meta.set_choices(value.enums)
 
     def caput(self, value):
-        try:
-            value = self.attr.meta.choices.index(value)
-        except ValueError:
-            # Already have the index
-            pass
+        # Turn the string value int the index of the choice list. We are
+        # passed a validated value, so it is guaranteed to be in choices
+        value = self.meta.choices.index(value)
         self.caa.caput(value)
 
     def setup(self, registrar):

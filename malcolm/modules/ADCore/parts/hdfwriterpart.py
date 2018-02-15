@@ -343,7 +343,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
              context,  # type: scanning.hooks.AContext
              completed_steps,  # type: scanning.hooks.ACompletedSteps
              steps_to_do,  # type: scanning.hooks.AStepsToDo
-             part_info,  # type: scanning.hooks.APartInfo
              ):
         # type: (...) -> None
         # This is rewinding or setting up for another batch, so the detector

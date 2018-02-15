@@ -1,7 +1,7 @@
 import pvaccess
 
-from malcolm.core import Loggable, Process, Queue, Get, Put, Post, Subscribe, \
-    Error, ResponseError, Map
+from malcolm.core import Loggable, Queue, Get, Put, Post, Subscribe, \
+    Error, ResponseError, ProcessPublishHook, Hook
 from malcolm.modules.builtin.controllers import ServerComms
 from .pvautil import dict_to_pv_object, value_for_pva_set, strip_tuples
 
@@ -17,7 +17,13 @@ class PvaServerComms(ServerComms):
     def do_init(self):
         self._start_pva_server()
 
-    @Process.Publish
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, ProcessPublishHook):
+            hook(self.publish)
+        else:
+            super(PvaServerComms, self).on_hook(hook)
+
     def publish(self, published):
         # Administer endpoints
         self._published = published
@@ -138,7 +144,7 @@ class PvaImplementation(Loggable):
 
     def _pv_error_structure(self, exception):
         """Make an error structure in lieu of actually being able to raise"""
-        error = Error(message=str(exception)).to_dict()
+        error = Error(message=exception).to_dict()
         error.pop("id")
         return dict_to_pv_object(error)
 
@@ -188,7 +194,7 @@ class PvaRpcImplementation(PvaImplementation):
                 pv_object = dict_to_pv_object(response.value)
             else:
                 # We need to return something, otherwise we get a timeout...
-                pv_object = dict_to_pv_object(dict(typeid=Map.typeid))
+                pv_object = dict_to_pv_object(dict(typeid="structure"))
             self.log.debug("Return from method %r of %r:\n%s",
                            self._mri, method_name, pv_object.toDict())
             return pv_object
@@ -208,8 +214,8 @@ class PvaMonitorImplementation(PvaGetImplementation):
         self.getPVStructure()
         self._do_update = False
         path, _ = self._dict_to_path_value(self._request)
-        request = Subscribe(path=[self._mri] + path, delta=True,
-                            callback=self._on_response)
+        request = Subscribe(path=[self._mri] + path, delta=True)
+        request.set_callback(self._on_response)
         self._controller.handle_request(request)
 
     def getUpdater(self):

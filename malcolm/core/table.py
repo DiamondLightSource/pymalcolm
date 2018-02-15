@@ -23,10 +23,11 @@ class Table(Serializable):
         for row in rows:
             for key, data in zip(cls.call_types, row):
                 attrs[key].append(data)
+        attrs = {k: cls.call_types[k](v) for k, v in attrs.items()}
         return cls(**attrs)
 
     def rows(self):
         self.validate_column_lengths()
         data = [getattr(self, a) for a in self.call_types]
         for row in zip(*data):
-            yield row
+            yield list(row)

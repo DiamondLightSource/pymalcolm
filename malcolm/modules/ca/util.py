@@ -43,7 +43,7 @@ class CAAttribute(Loggable):
                  inport=None,  # type: AInPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
-                 config=True,  # type: AConfig
+                 config=1,  # type: AConfig
                  on_connect=None,  # type: Callable[[Any], None]
                  ):
         # type: (...) -> None
@@ -74,7 +74,7 @@ class CAAttribute(Loggable):
         self.disconnect()
         # make the connection in cothread's thread, use caget for initial value
         pvs = [self.rbv]
-        if self.pv:
+        if self.pv and self.pv != self.rbv:
             pvs.append(self.pv)
         ca_values = self.catools.caget(
             pvs, format=self.catools.FORMAT_CTRL, datatype=self.datatype)

@@ -48,8 +48,10 @@ class TestRunnableChildPart(unittest.TestCase):
 
         # And a top level one
         c3 = RunnableController(mri="top", config_dir="/tmp")
-        c3.add_part(RunnableChildPart(name="FAST", mri="fast"))
-        c3.add_part(RunnableChildPart(name="SLOW", mri="slow"))
+        c3.add_part(
+            RunnableChildPart(name="FAST", mri="fast", initial_visibility=True))
+        c3.add_part(
+            RunnableChildPart(name="SLOW", mri="slow", initial_visibility=True))
         self.p.add_controller(c3)
 
         # Some blocks to interface to them

@@ -50,7 +50,7 @@ class TestMethodItem(unittest.TestCase):
         p2.reset_value.assert_called_once_with()
         assert self.item.get_state() == self.item.RUNNING
         assert request.parameters == dict(p1=43, p2=1)
-        assert request.path == ["endpoint"]
+        assert request.path == ("endpoint",)
         self.assertIsInstance(request, Post)
 
     def test_handle_response_error(self):

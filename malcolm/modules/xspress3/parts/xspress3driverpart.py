@@ -19,6 +19,7 @@ class Xspress3DriverPart(ADCore.parts.DetectorDriverPart):
                   generator,  # type: scanning.hooks.AGenerator
                   **kwargs  # type: **Any
                   ):
+        # type: (...) -> None
         # TODO: set self.is_hardware_triggered from pv
         if steps_to_do > XSPRESS3_BUFFER:
             # Set the PointsPerRow from the innermost dimension

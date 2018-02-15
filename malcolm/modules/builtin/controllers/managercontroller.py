@@ -7,8 +7,8 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 from malcolm.compat import OrderedDict
 from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
     deserialize_object, Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
-    AlarmStatus, Part, BooleanMeta, config_tag, Widget, ChoiceMeta, \
-    TableMeta, serialize_object
+    AlarmStatus, Part, BooleanMeta, get_config_tag, Widget, ChoiceArrayMeta, \
+    TableMeta, serialize_object, ChoiceMeta, config_tag, Put, Request
 from malcolm.modules.builtin.infos import PortInfo
 from malcolm.modules.builtin.util import ManagerStates
 from ..hooks import LayoutHook, LoadHook, SaveHook
@@ -18,7 +18,7 @@ from .statefulcontroller import StatefulController, AMri, \
     ADescription, AUseCothread
 
 if TYPE_CHECKING:
-    from typing import Dict, List
+    from typing import Dict, List, Set
 
 ss = ManagerStates
 
@@ -62,8 +62,8 @@ class ManagerController(StatefulController):
         self.port_info = {}  # type: Dict[str, List[PortInfo]]
         # {part: [attr_name]}
         self.part_exportable = {}
-        # {part: Alarm}
-        self.part_modified = {}
+        self.context_modified = {}  # type: Dict[Part, Set[str]]
+        self.part_modified = {}  # type: Dict[Part, PartModifiedInfo]
         # The attributes our part has published
         self.our_config_attributes = {}  # type: Dict[str, AttributeModel]]
         # Whether to do updates
@@ -92,8 +92,8 @@ class ManagerController(StatefulController):
         self.exports = TableMeta.from_table(
             ExportTable, "Exported fields of child blocks"
         ).create_attribute_model()
-        # Overwrite the sources meta to be a ChoiceMeta
-        self.exports.meta.elements["source"] = ChoiceMeta(
+        # Overwrite the sources meta to be a ChoiceArrayMeta
+        self.exports.meta.elements["source"] = ChoiceArrayMeta(
             "Name of the block.field to export", tags=[Widget.COMBO.tag()])
         self.set_writeable_in(self.exports, ss.READY)
         self.field_registry.add_attribute_model(
@@ -154,8 +154,9 @@ class ManagerController(StatefulController):
                     visible.append(layout_info.visible)
             layout_table = LayoutTable(name, mri, x, y, visible)
             try:
+                # Compare the Array seq to get at the numpy array
                 np.testing.assert_equal(
-                    layout_table.visible, self.layout.value.visible)
+                    layout_table.visible.seq, self.layout.value.visible.seq)
             except AssertionError:
                 visibility_changed = True
             else:
@@ -183,23 +184,28 @@ class ManagerController(StatefulController):
         with self.changes_squashed:
             if part:
                 # Update the alarm for the given part
-                self.part_modified[part] = info.alarm
+                self.part_modified[part] = info
             # Find the modified alarms for each visible part
             message_list = []
             only_modified_by_us = True
             for part_name, visible in zip(
                     self.layout.value.name, self.layout.value.visible):
-                if visible:
-                    alarm = self.part_modified.get(self.parts[part_name], None)
-                    if alarm:
-                        # Part flagged as been modified, is it by us?
-                        if alarm.severity != AlarmSeverity.NO_ALARM:
+                part = self.parts[part_name]
+                info = self.part_modified.get(part, None)
+                if visible and info:
+                    for name, message in sorted(info.modified.items()):
+                        # Attribute flagged as been modified, is it by the
+                        # context we passed to the part?
+                        if name in self.context_modified.get(part, {}):
+                            message = "(We modified) %s" % (message,)
+                        else:
                             only_modified_by_us = False
-                        message_list.append(alarm.message)
+                        message_list.append(message)
             # Add in any modification messages from the layout and export tables
             try:
+                # Compare the Array seq to get at the numpy array
                 np.testing.assert_equal(
-                    self.layout.value.visible, self.saved_visibility)
+                    self.layout.value.visible.seq, self.saved_visibility)
             except AssertionError:
                 message_list.append("layout changed")
                 only_modified_by_us = False
@@ -252,6 +258,16 @@ class ManagerController(StatefulController):
         for name, child, writeable_func in self._current_part_fields:
             self.add_block_field(name, child, writeable_func)
 
+    def notify_dispatch_request(self, request, part):
+        # type: (Request, Part) -> None
+        """Will be called when a context passed to a hooked function is about
+        to dispatch a request"""
+        if isinstance(request, Put):
+            # This means the context we were passed has just made a Put request
+            # so mark the field as "we_modified" so it doesn't screw up the
+            # modified led
+            self.context_modified.setdefault(part, set()).add(request.path[-2])
+
     def add_initial_part_fields(self):
         # Only add our own fields to start with, the rest will be added on load
         for name, child, writeable_func in self.field_registry.fields[None]:
@@ -259,15 +275,16 @@ class ManagerController(StatefulController):
         for part in self.parts.values():
             for name, field, writeable_func in self.field_registry.fields.get(
                     part, []):
-                if isinstance(field, AttributeModel) and \
-                        config_tag() in field.meta.tags:
-                    # Strip off the "config" tags from attributes
-                    assert writeable_func == field.set_value, \
-                        "Can't save %s with writeable_func %s" % (
-                            name, writeable_func)
-                    field.meta.set_tags(
-                        [x for x in field.meta.tags if x != config_tag()])
-                    self.our_config_attributes[name] = field
+                if isinstance(field, AttributeModel):
+                    tag = get_config_tag(field.meta.tags)
+                    if tag:
+                        # Strip off the "config" tags from attributes
+                        assert writeable_func == field.set_value, \
+                            "Can't save %s with writeable_func %s" % (
+                                name, writeable_func)
+                        field.meta.set_tags(
+                            [x for x in field.meta.tags if x != tag])
+                        self.our_config_attributes[name] = field
 
     def _get_current_part_fields(self):
         # Clear out the current subscriptions
@@ -351,8 +368,13 @@ class ManagerController(StatefulController):
         if only_visible:
             for part_name, visible in zip(
                     self.layout.value.name, self.layout.value.visible):
+                part = self.parts[part_name]
                 if not visible:
-                    part_contexts.pop(self.parts[part_name])
+                    part_contexts.pop(part)
+                else:
+                    part_contexts[part].set_notify_dispatch_request(
+                        self.notify_dispatch_request, part)
+
         return part_contexts
 
     @add_call_types
@@ -414,7 +436,7 @@ class ManagerController(StatefulController):
             name (str): Filename without dir or extension
 
         Returns:
-            str: Full path including extensio
+            str: Full path including extension
         """
         dir_name = self._make_config_dir()
         filename = os.path.join(dir_name, name.split(".json")[0] + ".json")
@@ -475,7 +497,7 @@ class ManagerController(StatefulController):
             self.saved_visibility = self.layout.value.visible
             self.saved_exports = self.exports.value.to_dict()
             # Now we are clean, modified should clear
-            self.part_modified = OrderedDict()
+            self.part_modified = {}
             self.update_modified()
             self._set_layout_names(design)
             self.design.set_value(design)

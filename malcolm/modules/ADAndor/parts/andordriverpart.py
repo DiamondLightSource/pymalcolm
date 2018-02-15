@@ -10,8 +10,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                  mri,  # type: ADCore.parts.AMri
                  ):
         # type: (...) -> None
-        super(AndorDriverPart, self).__init__(
-            name, mri, initial_readout_time=13e-3)
+        super(AndorDriverPart, self).__init__(name, mri)
 
     @add_call_types
     def configure(self,
@@ -22,9 +21,13 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
-        # TODO: set self.is_hardware_triggered from pv
-        super(AndorDriverPart, self).configure(
-            context, completed_steps, steps_to_do, generator, **kwargs)
-        child = context.block_view(self.mri)
+        self.actions.setup_detector(
+            context, completed_steps, steps_to_do, imageMode="Fixed",
+            exposure=generator.duration - 13e-3, **kwargs)
         # Need to reset acquirePeriod as it's sometimes wrong
+        child = context.block_view(self.mri)
         child.acquirePeriod.put_value(generator.duration)
+        # Start now if we are hardware triggered
+        # self.is_hardware_triggered = child.triggerMode == "Hardware"
+        if self.is_hardware_triggered:
+            self.actions.arm_detector(context)

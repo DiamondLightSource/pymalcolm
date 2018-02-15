@@ -1,4 +1,5 @@
 from annotypes import Anno, Array, Sequence, Union
+from enum import Enum
 
 from malcolm.core import Part, PartRegistrar, ChoiceMeta, APartName, \
     AMetaDescription
@@ -9,7 +10,7 @@ with Anno("Possible choices for this attribute"):
     AChoices = Array[str]
 with Anno("Initial value of the created attribute"):
     AValue = str
-UChoices = Union[AChoices, Sequence[str], str]
+UChoices = Union[AChoices, Sequence[Enum], Sequence[str], str]
 
 
 class ChoicePart(Part):
@@ -20,7 +21,7 @@ class ChoicePart(Part):
                  choices,  # type: UChoices
                  value,  # type: AValue
                  writeable=False,  # type: AWriteable
-                 config=True,  # type: AConfig
+                 config=1,  # type: AConfig
                  group=None,  # type: AGroup
                  widget=None,  # type: AWidget
                  ):

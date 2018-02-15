@@ -1,4 +1,6 @@
 import unittest
+
+from annotypes import Array
 from mock import patch, MagicMock
 from collections import OrderedDict
 import sys
@@ -10,7 +12,6 @@ if "pvaccess" not in sys.modules:
     sys.modules["pvaccess"] = MagicMock()
 import pvaccess
 
-from malcolm.core import StringArray
 from malcolm.modules.pva.controllers.pvautil import pva_structure_from_value, \
     dict_to_pv_object
 
@@ -54,7 +55,7 @@ class TestPVAUtil(unittest.TestCase):
         val_dict["val3"] = True
         val_dict["val4"] = np.int64(0)
         val_dict["val5"] = np.float64(0.5)
-        val_dict["val6"] = StringArray('', '')
+        val_dict["val6"] = Array[str](('', ''))
         val_dict["val7"] = np.array([5, 1], dtype=np.int32)
         val_dict["val8"] = [True, False]
         val_dict["val9"] = np.array([0, 1], dtype=np.int64)
@@ -95,7 +96,7 @@ class TestPVAUtil(unittest.TestCase):
     def test_dict_to_pv(self):
         val_dict = OrderedDict()
         val_dict["typeid"] = "type1"
-        val_dict["val1"] = StringArray('', '')
+        val_dict["val1"] = Array[str](['', ''])
         val_dict["val2"] = np.array((1, 2))
         val_dict["val3"] = dict(a=43)
         val_dict["val4"] = [True, False]

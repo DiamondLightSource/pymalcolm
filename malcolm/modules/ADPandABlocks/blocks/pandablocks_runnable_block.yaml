@@ -25,7 +25,7 @@
     config_dir: $(config_dir)
     hostname: $(hostname)
     port: $(port)
-    areaDetectorPrefix: $(pv_prefix):DRV
+    prefix: $(pv_prefix):DRV
 
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)

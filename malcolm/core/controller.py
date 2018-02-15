@@ -153,7 +153,7 @@ class Controller(Hookable):
         return self.spawn(self._handle_request)
 
     def _handle_request(self):
-        # type: (Request) -> None
+        # type: () -> None
         responses = []
         with self._lock:
             # We spawned just above, so there is definitely something on the
@@ -232,12 +232,12 @@ class Controller(Hookable):
         method = self._block[method_name]  # type: MethodModel
         assert method.writeable, \
             "Method %s is not writeable" % method_name
-        for k, v in param_dict.items():
-            param_dict[k] = method.takes.elements[k].validate(v)
+        args = method.validate(param_dict)
+
         post_function = self._write_functions[method_name]
 
         with self.lock_released:
-            result = post_function(**param_dict)
+            result = post_function(**args)
 
         # Don't need to serialize as the result should be immutable
         ret = [request.return_response(result)]

@@ -1,13 +1,14 @@
 import os
 import sys
+
+from annotypes import Anno, add_call_types, Any
+
 sys.path.append(os.path.dirname(__file__))
 
 import unittest
 from mock import Mock, ANY, patch, mock_open
 
-from malcolm.core import method_takes, REQUIRED
 from malcolm.modules.builtin.controllers import BasicController
-from malcolm.core.vmetas import StringMeta
 from malcolm.modules.builtin.parts import StringPart
 from malcolm.yamlutil import make_block_creator, Section, check_yaml_names, \
     make_include_creator
@@ -16,6 +17,7 @@ include_yaml = """
 - builtin.parameters.string:
     name: something
     description: my description
+    default: nothing
 
 - builtin.parts.StringPart:
     name: scannable
@@ -30,22 +32,27 @@ block_yaml = """
 
 - builtin.controllers.BasicController:
     mri: some_mri
-
+    
 - builtin.parts.StringPart:
     name: scannable
     description: Scannable name for motor
     value: $(something)
 """
 
+with Anno("Description"):
+    ADesc = str
+with Anno("Thing"):
+    AThing = str
+
 
 class TestYamlUtil(unittest.TestCase):
 
-    def test_all_yamls(self):
+    def test_existing_yaml(self):
         from malcolm.modules.demo.blocks import hello_block
-        process = Mock()
-        controller = hello_block(process, dict(mri="h"))
-        assert isinstance(controller, BasicController)
-        process.add_controller.assert_called_once_with("h", controller)
+        controllers = hello_block(mri="h")
+        assert len(controllers) == 1
+        assert isinstance(controllers[0], BasicController)
+        assert len(controllers[0].parts) == 1
 
     def test_make_include(self):
         with patch("malcolm.yamlutil.open",
@@ -54,13 +61,13 @@ class TestYamlUtil(unittest.TestCase):
                 "/tmp/__init__.py", "include.yaml")
         assert include_creator.__name__ == "include"
         m.assert_called_once_with("/tmp/include.yaml")
-        process = Mock()
-        parts = include_creator(process, dict(something="blah"))
+        controllers, parts = include_creator()
+        assert len(controllers) == 0
         assert len(parts) == 1
         part = parts[0]
         self.assertIsInstance(part, StringPart)
         assert part.name == "scannable"
-        assert part.params.value == "blah"
+        assert part.attr.value == "nothing"
 
     def test_make_block(self):
         with patch("malcolm.yamlutil.open",
@@ -69,13 +76,12 @@ class TestYamlUtil(unittest.TestCase):
                 "/tmp/__init__.py", "block.yaml")
         assert block_creator.__name__ == "block"
         m.assert_called_once_with("/tmp/block.yaml")
-        process = Mock()
-        controller = block_creator(process, dict(something="blah"))
-        process.add_controller.assert_called_once_with("some_mri", controller)
-        assert len(controller.parts) == 1
-        self.assertIsInstance(controller.parts["scannable"], StringPart)
-        assert controller.parts["scannable"].params.value == (
-                         "blah")
+        controllers = block_creator(something="blah")
+        assert len(controllers) == 1
+        parts = controllers[0].parts
+        assert len(parts) == 1
+        self.assertIsInstance(parts["scannable"], StringPart)
+        assert parts["scannable"].attr.value == "blah"
 
     def test_check_names_good(self):
         d = dict(
@@ -96,19 +102,17 @@ class TestYamlUtil(unittest.TestCase):
 
     @patch("importlib.import_module")
     def test_instantiate(self, mock_import):
-        @method_takes(
-            "desc", StringMeta("description"), REQUIRED,
-            "foo", StringMeta("optional thing"), "thing"
-        )
-        def f(extra, params):
-            return extra, 2, params.desc, params.foo
+        @add_call_types
+        def f(desc, foo="thing"):
+            # type: (ADesc, AThing) -> Any
+            return 2, desc, foo
 
         mock_import.return_value = Mock(MyPart=f)
 
         section = Section("f", 1, "mymodule.parts.MyPart", dict(desc="my name"))
-        result = section.instantiate({}, "extra")
+        result = section.instantiate({})
         mock_import.assert_called_once_with("malcolm.modules.mymodule.parts")
-        assert result == ("extra", 2, "my name", "thing")
+        assert result == (2, "my name", "thing")
 
     def test_split_into_sections(self):
         filename = "/tmp/yamltest.yaml"

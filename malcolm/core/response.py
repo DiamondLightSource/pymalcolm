@@ -1,14 +1,14 @@
 from annotypes import Anno, Any
 
-from .serializable import Serializable, serialize_object
+from .serializable import Serializable
 
 
 with Anno("ID that the Request was sent with"):
     AId = int
 with Anno("Return value of the request"):
     AValue = Any
-with Anno("Error message"):
-    AMessage = str
+with Anno("Error message exception"):
+    AMessage = Exception
 with Anno("List of [[path], value] pairs for changed values"):
     AChanges = Any
 

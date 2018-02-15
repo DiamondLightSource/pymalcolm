@@ -1,10 +1,25 @@
 import os
 import subprocess
+import imp
+import importlib
 
 from annotypes import Anno, add_call_types
 import numpy as np
 
-from malcolm.core import Define, Importer
+from malcolm.core import Define
+
+
+def import_package_from_path(name, path):
+    dirname, basename = os.path.abspath(path).rsplit(os.sep, 1)
+    file, pathname, description = imp.find_module(basename, [dirname])
+    try:
+        mod = imp.load_module(name, file, pathname, description)
+    finally:
+        if file is not None:
+            file.close()
+    parent_name, attr_name = name.rsplit(".", 1)
+    parent = importlib.import_module(parent_name)
+    setattr(parent, attr_name, mod)
 
 
 with Anno("The name of the defined parameter"):
@@ -97,9 +112,7 @@ def module_path(name, path):
     # type: (AModuleName, AModulePath) -> ADefine
     """Load an external malcolm module (e.g. ADCore/etc/malcolm)"""
     define = Define(name, path)
-    importer = Importer()
     assert os.path.isdir(path), "%r doesn't exist" % path
     name = "malcolm.modules.%s" % name
-    importer.import_package_from_path(name, path)
-    importer.import_special_subpackages(name, path)
+    import_package_from_path(name, path)
     return define

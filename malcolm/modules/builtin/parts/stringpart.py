@@ -14,7 +14,7 @@ class StringPart(Part):
                  name,  # type: APartName
                  description,  # type: AMetaDescription
                  writeable=False,  # type: AWriteable
-                 config=True,  # type: AConfig
+                 config=1,  # type: AConfig
                  group=None,  # type: AGroup
                  widget=None,  # type: AWidget
                  value="",  # type: Value

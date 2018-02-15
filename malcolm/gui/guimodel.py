@@ -22,7 +22,7 @@ class GuiModel(QAbstractItemModel):
         self.send_request(Subscribe(path=[self.block.mri], delta=True)).wait()
 
     def send_request(self, request, item=None):
-        request.set_id(self.id_)
+        request.id = self.id_
         request.set_callback(self.response_received.emit)
         self.item_lookup[self.id_] = item
         self.id_ += 1

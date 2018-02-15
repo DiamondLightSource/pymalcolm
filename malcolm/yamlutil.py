@@ -1,21 +1,19 @@
 import logging
 import os
 import importlib
+import inspect
 
-from annotypes import add_call_types, Any, TYPE_CHECKING, Anno
+from annotypes import add_call_types, Any, TYPE_CHECKING, Anno, NO_DEFAULT
 from ruamel import yaml
 
-from malcolm.compat import str_
-from malcolm.core import YamlError, Controller, Part, Define
+from malcolm.compat import str_, raise_with_traceback
+from malcolm.core import YamlError, Controller, Part, Define, MethodModel
 
 if TYPE_CHECKING:
     from typing import List, Dict, Tuple, Callable
 
 # Create a module level logger
 log = logging.getLogger(__name__)
-
-with Anno("Any return argument"):
-    AAny = Any
 
 
 def _create_takes_arguments(sections):
@@ -56,7 +54,13 @@ def _create_defines(sections,  # type: Dict[str, List[Section]]
                     params  # type: Dict[str, str]
                     ):
     # type: (...) -> Dict[str, str]
+    # Start with some
     defines = dict(yamlname=yamlname, yamldir=yamldir, docstring="")
+    # Add in the parameter defaults
+    for section in sections["parameters"]:
+        parameter = section.instantiate(defines)  # type: Anno
+        if parameter.default is not NO_DEFAULT:
+            defines[parameter.name] = parameter.default
     if params:
         defines.update(params)
     for section in sections["defines"]:
@@ -89,7 +93,7 @@ def make_include_creator(yaml_path, filename=None):
     # Add any parameters to the takes arguments
     @add_call_types
     def include_creator(**kwargs):
-        # type: () -> AAny
+        # type: (**Any) -> Any
         # Create the param dict of the static defined arguments
         defines = _create_defines(sections, yamlname, yamldir, kwargs)
         return _create_blocks_and_parts(sections, defines)
@@ -132,7 +136,7 @@ def make_block_creator(yaml_path, filename=None):
     # Add any parameters to the takes arguments
     @add_call_types
     def block_creator(**kwargs):
-        # type: (**Any) -> AAny
+        # type: (**Any) -> Any
         # Create the param dict of the static defined arguments
         defines = _create_defines(sections, yamlname, yamldir, kwargs)
         controllers, parts = _create_blocks_and_parts(sections, defines)
@@ -183,18 +187,26 @@ class Section(object):
         pkg = "malcolm.modules.%s" % pkg
         try:
             ob = importlib.import_module(pkg)
-        except ImportError:
-            raise ImportError("%s:%d:\nCan't import %r" % (
-                self.filename, self.lineno, pkg))
+        except ImportError as e:
+            raise_with_traceback(
+                ImportError("\n%s:%d:\n%s" % (
+                    self.filename, self.lineno, e)))
         try:
             ob = getattr(ob, ident)
         except AttributeError:
-            raise ImportError("%s:%d:\nPackage %r has no ident %r" % (
-                self.filename, self.lineno, pkg, ident))
+            raise_with_traceback(
+                ImportError("\n%s:%d:\nPackage %r has no ident %r" % (
+                    self.filename, self.lineno, pkg, ident)))
         try:
-            ret = ob(**param_dict)
-        except YamlError as e:
-            raise YamlError("%s:%d:\n%s" % (self.filename, self.lineno, e))
+            model = MethodModel.from_callable(ob, returns=False)
+            args = model.validate(param_dict)
+            ret = ob(**args)
+        except Exception as e:
+            sourcefile = inspect.getsourcefile(ob)
+            lineno = inspect.getsourcelines(ob)[1]
+            raise_with_traceback(
+                YamlError("\n%s:%d:\n%s:%d:\n%s" % (
+                    self.filename, self.lineno, sourcefile, lineno, e)))
         else:
             return ret
 

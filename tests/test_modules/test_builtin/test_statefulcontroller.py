@@ -1,10 +1,13 @@
 import unittest
 
+import gc
+from annotypes import add_call_types
+
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, Process
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.builtin.hooks import ResetHook, DisableHook, InitHook, \
-    HaltHook
+    HaltHook, SaveHook, AContext, AStructure
 from malcolm.modules.builtin.util import StatefulStates
 
 
@@ -34,6 +37,8 @@ class TestStates(unittest.TestCase):
 
 class MyPart(Part):
     reset_done, disable_done, started, halted = False, False, False, False
+    context = None
+    exception = None
 
     def on_hook(self, hook):
         if isinstance(hook, ResetHook):
@@ -44,14 +49,26 @@ class MyPart(Part):
             self.started = True
         elif isinstance(hook, HaltHook):
             self.halted = True
+        elif isinstance(hook, SaveHook):
+            hook(self.func)
+
+    @add_call_types
+    def func(self, context):
+        # type: (AContext) -> AStructure
+        if self.exception:
+            raise self.exception
+        self.context = context
+        return dict(foo="bar" + self.name)
 
 
 class TestStatefulController(unittest.TestCase):
     def setUp(self):
         self.process = Process("proc")
         self.part = MyPart("testpart")
+        self.part2 = MyPart("testpart2")
         self.o = StatefulController("MyMRI")
         self.o.add_part(self.part)
+        self.o.add_part(self.part2)
         self.process.add_controller(self.o)
         self.b = self.process.block_view("MyMRI")
 
@@ -97,7 +114,34 @@ class TestStatefulController(unittest.TestCase):
         assert self.part.reset_done
         assert self.b.state.value == "Ready"
 
+    def test_run_hook(self):
+        self.start_process()
+        part_contexts = self.o.create_part_contexts()
+        result = self.o.run_hooks(
+            SaveHook(p, c) for p, c in part_contexts.items())
+        assert list(result) == ["testpart", "testpart2"]
+        assert result["testpart"] == dict(foo="bartestpart")
+        assert result["testpart2"] == dict(foo="bartestpart2")
+        # The part.context is a weakref, so compare on one of its strong
+        # methods instead
+        assert self.part.context.sleep == part_contexts[self.part].sleep
+        del part_contexts
+        gc.collect()
+        with self.assertRaises(ReferenceError):
+            self.part.context.sleep(0)
 
+    def test_run_hook_raises(self):
+        self.start_process()
 
+        class MyException(Exception):
+            pass
+
+        self.part.exception = MyException()
+        with self.assertRaises(Exception) as cm:
+            self.o.run_hooks(
+                SaveHook(p, c)
+                for p, c in self.o.create_part_contexts().items())
+        self.assertIs(self.part.context, None)
+        self.assertIs(cm.exception, self.part.exception)
 
 

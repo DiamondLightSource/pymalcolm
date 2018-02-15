@@ -31,7 +31,7 @@ class ScanTickerPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(ScanTickerPart, self).setup(registrar)
         # Tell the controller to expose some extra configure parameters
-        registrar.report(scanning.infos.ConfigureParamsInfo.from_configure(
+        registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
 
     def on_hook(self, hook):

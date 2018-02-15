@@ -14,6 +14,7 @@ class XmapDriverPart(ADCore.parts.DetectorDriverPart):
                   generator,  # type: scanning.hooks.AGenerator
                   **kwargs  # type: **Any
                   ):
+        # type: (...) -> None
         super(XmapDriverPart, self).configure(
             context, completed_steps, steps_to_do, generator,
             collectMode="MCA mapping",

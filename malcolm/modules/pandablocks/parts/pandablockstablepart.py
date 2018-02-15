@@ -1,17 +1,16 @@
 from malcolm.compat import OrderedDict
-from malcolm.core import Table, snake_to_camel, camel_to_title
-from malcolm.core.tags import widget
-from malcolm.core.vmetas import BooleanArrayMeta, NumberArrayMeta
-from .pandablocksfieldpart import PandABlocksFieldPart
+from malcolm.core import Table, snake_to_camel, camel_to_title, Widget, \
+    BooleanArrayMeta, NumberArrayMeta
+from .pandablocksfieldpart import PandABlocksFieldPart, AClient, AMeta, \
+    ABlockName, AFieldName
 
 
 class PandABlocksTablePart(PandABlocksFieldPart):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
-    def __init__(self, client, meta, block_name, field_name, writeable):
-        super(PandABlocksTablePart, self).__init__(
-            client, meta, block_name, field_name, writeable)
+    def __init__(self, client, meta, block_name, field_name):
+        # type: (AClient, AMeta, ABlockName, AFieldName) -> None
         # Fill in the meta object with the correct headers
         columns = OrderedDict()
         self.fields = OrderedDict()
@@ -22,7 +21,7 @@ class PandABlocksTablePart(PandABlocksFieldPart):
                 raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
             if nbits == 1:
                 column_meta = BooleanArrayMeta(field_name)
-                widget_tag = widget("checkbox")
+                widget = Widget.CHECKBOX
             else:
                 if nbits <= 8:
                     dtype = "uint8"
@@ -35,13 +34,16 @@ class PandABlocksTablePart(PandABlocksFieldPart):
                 else:
                     raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
                 column_meta = NumberArrayMeta(dtype, field_name)
-                widget_tag = widget("textinput")
+                widget = Widget.TEXTINPUT
             column_name = snake_to_camel(field_name)
             column_meta.set_label(camel_to_title(column_name))
-            column_meta.set_tags([widget_tag])
+            column_meta.set_tags([widget.tag()])
             columns[column_name] = column_meta
             self.fields[column_name] = (bits_hi, bits_lo)
         meta.set_elements(columns)
+        # Superclass will make the attribute for us
+        super(PandABlocksTablePart, self).__init__(
+            client, meta, block_name, field_name)
 
     def set_field(self, value):
         int_values = self.list_from_table(value)
@@ -72,10 +74,9 @@ class PandABlocksTablePart(PandABlocksFieldPart):
         return int_values
 
     def table_from_list(self, int_values):
-        table = Table(self.meta)
+        rows = []
         if self.fields:
             nconsume = self._calc_nconsume()
-
             for i in range(int(len(int_values) / nconsume)):
                 int_value = 0
                 for c in range(nconsume):
@@ -85,6 +86,7 @@ class PandABlocksTablePart(PandABlocksFieldPart):
                     mask = 2 ** (bits_hi + 1) - 1
                     field_value = (int_value & mask) >> bits_lo
                     row.append(field_value)
-                table.append(row)
+                rows.append(row)
+        table = self.meta.table_cls.from_rows(rows)
         return table
 

@@ -17,7 +17,7 @@ class ReportHandlersHook(Hook):
     """
     def __init__(self, part, loop):
         # type: (APart, ALoop) -> None
-        super(ReportHandlersHook, self).__init__(**locals())
+        super(ReportHandlersHook, self).__init__(part, loop=loop)
 
     def validate_return(self, ret):
         # type: (UHandlerInfos) -> AHandlerInfos
@@ -28,4 +28,4 @@ class PublishHook(Hook):
     """Called when a new block is added"""
     def __init__(self, part, published):
         # type: (APart, APublished) -> None
-        super(PublishHook, self).__init__(**locals())
+        super(PublishHook, self).__init__(part, published=published)

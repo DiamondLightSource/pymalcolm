@@ -49,6 +49,9 @@ class Spawned(object):
                 "Exception calling %s(*%s, **%s)",
                 self._function, self._args, self._kwargs, exc_info=True)
             self._result = e
+        # We finished running the function, so remove the reference to it
+        # in case it's stopping garbage collection
+        self._function = None
         self._result_queue.put(None)
 
     def wait(self, timeout=None):

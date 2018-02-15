@@ -22,7 +22,7 @@ class HelloPart(Part):
         registrar.add_method_model(self.error)
 
     @add_call_types
-    def greet(self, name, sleep):
+    def greet(self, name, sleep=0):
         # type: (AName, ASleep) -> AGreeting
         """Optionally sleep <sleep> seconds, then return a greeting to <name>"""
         print("Manufacturing greeting...")

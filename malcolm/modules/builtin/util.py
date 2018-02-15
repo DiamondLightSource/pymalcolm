@@ -1,13 +1,13 @@
 from annotypes import Anno, Array, Union, Sequence
-import numpy as np
 
 from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
     StateSet
 
 with Anno("Is the attribute writeable?"):
     AWriteable = bool
-with Anno("If writeable, should this field be loaded/saved?"):
-    AConfig = True
+with Anno("If writeable, which iteration should this field be loaded/saved in?"
+          " 0 means do not restore"):
+    AConfig = int
 with Anno("If given, which GUI group should we attach to"):
     AGroup = str
 with Anno("If given, use this widget instead of the default"):
@@ -18,7 +18,7 @@ with Anno("If given, mark this as an inport of the given type"):
 
 def set_tags(meta,  # type: VMeta
              writeable=False,  # type: AWriteable
-             config=True,  # type: AConfig
+             config=1,  # type: AConfig
              group=None,  # type: AGroup
              widget=None,  # type: AWidget
              inport=None,  # type: AInPort
@@ -32,7 +32,7 @@ def set_tags(meta,  # type: VMeta
         tags.append(widget.tag())
     if config and writeable:
         # We only allow config tags on writeable functions
-        tags.append(config_tag())
+        tags.append(config_tag(config))
     if group:
         # If we have a group then add the tag
         tags.append(group_tag(group))
@@ -46,9 +46,9 @@ with Anno("Names of the layout parts"):
 with Anno("Malcolm full names of child blocks"):
     AMriArray = Array[str]
 with Anno("X Coordinates of child blocks"):
-    AXArray = Array[np.float64]
+    AXArray = Array[float]
 with Anno("Y Coordinates of child blocks"):
-    AYArray = Array[np.float64]
+    AYArray = Array[float]
 with Anno("Whether child blocks are visible"):
     AVisibleArray = Array[bool]
 UNameArray = Union[ANameArray, Sequence[str]]

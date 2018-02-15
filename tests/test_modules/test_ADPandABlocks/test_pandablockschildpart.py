@@ -3,6 +3,7 @@ import unittest
 from mock import MagicMock, Mock
 
 from malcolm.core import Context
+from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.ADPandABlocks.parts import PandABlocksChildPart
 
 
@@ -22,33 +23,30 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.child["encoderValue3DatasetType"] = Mock(value="position")
         self.context = MagicMock(spec=Context)
         self.context.block_view.return_value = self.child
-        self.params = MagicMock(mri="P:INENC1")
-        self.params.name = "INENC1"
-        self.o = PandABlocksChildPart(self.params)
-        list(self.o.create_attribute_models())
+        self.o = PandABlocksChildPart(mri="P:INENC1", name="INENC1")
 
     def test_report_configuration(self):
-        dataset_infos = self.o.report_configuration(self.context)
+        dataset_infos = self.o.report_status(self.context)
         assert len(dataset_infos) == 1
         assert dataset_infos[0].name == "x2"
-        assert dataset_infos[0].type == "position"
+        assert dataset_infos[0].type == AttributeDatasetType.POSITION
         assert dataset_infos[0].rank == 2
         assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3"
 
     def test_counter_configuration(self):
         self.child["encoderValue3DatasetType"] = Mock(value="monitor")
-        dataset_infos = self.o.report_configuration(self.context)
+        dataset_infos = self.o.report_status(self.context)
         assert len(dataset_infos) == 1
         assert dataset_infos[0].name == "x2"
-        assert dataset_infos[0].type == "monitor"
+        assert dataset_infos[0].type == AttributeDatasetType.MONITOR
         assert dataset_infos[0].rank == 2
         assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3"
 
     def test_counter_configuration_detector(self):
         self.child["encoderValue3DatasetType"] = Mock(value="detector")
-        dataset_infos = self.o.report_configuration(self.context)
+        dataset_infos = self.o.report_status(self.context)
         assert len(dataset_infos) == 1
         assert dataset_infos[0].name == "x2"
-        assert dataset_infos[0].type == "detector"
+        assert dataset_infos[0].type == AttributeDatasetType.DETECTOR
         assert dataset_infos[0].rank == 2
         assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3"

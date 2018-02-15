@@ -6,16 +6,16 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
     Unsubscribe, Alarm, AlarmSeverity, AlarmStatus, APartName, PartRegistrar, \
-    Hook, Port, Controller, config_tag, Response, Put, ABORT_TIMEOUT
+    Hook, Port, Controller, Response, ABORT_TIMEOUT, get_config_tag
 from ..infos import PortInfo, LayoutInfo, OutPortInfo, InPortInfo, \
-    PartExportableInfo, PartModifiedInfo, NotifyDispatchInfo
+    PartExportableInfo, PartModifiedInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
     AContext, APortMap, ALayoutTable, LoadHook, SaveHook, AStructure, \
     ULayoutInfos
 from ..util import StatefulStates
 
 if TYPE_CHECKING:
-    from typing import Dict, Any, Set, List, Type, TypeVar
+    from typing import Dict, Any, Set, List, Type, TypeVar, Tuple
 
     TP = TypeVar("TP", bound=PortInfo)
 
@@ -51,25 +51,8 @@ class ChildPart(Part):
         self.child_controller = None  # type: Controller
         # {id: Subscribe} for subscriptions to config tagged fields
         self.config_subscriptions = {}  # type: Dict[int, Subscribe]
-        # set(attribute_name) where the attribute is a config tagged field
-        # we are modifying
-        self.we_modified = set()  # type: Set[str]
         # {attr_name: PortInfo}
         self.port_infos = {}  # type: Dict[str, PortInfo]
-
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
-        self.registrar = registrar
-        self.registrar.report(NotifyDispatchInfo(self.notify_dispatch_request))
-
-    def notify_dispatch_request(self, request):
-        """Will be called when a context passed to a hooked function is about
-        to dispatch a request"""
-        if isinstance(request, Put):
-            # This means the context we were passed has just made a Put request
-            # so mark the field as "we_modified" so it doesn't screw up the
-            # modified led
-            self.we_modified.add(request.path[-2])
 
     def on_hook(self, hook):
         # type: (Hook) -> None
@@ -160,22 +143,32 @@ class ChildPart(Part):
     def load(self, context, structure):
         # type: (AContext, AStructure) -> None
         child = context.block_view(self.mri)
-        params = {}
+        iterations = {}  # type: Dict[int, Dict[str, Tuple[Attribute, Any]]]
         for k, v in structure.items():
             try:
                 attr = getattr(child, k)
             except AttributeError:
                 self.log.warning("Cannot restore non-existant attr %s" % k)
             else:
-                try:
-                    np.testing.assert_equal(serialize_object(attr.value), v)
-                except AssertionError:
-                    params[k] = v
+                tag = get_config_tag(attr.meta.tags)
+                if tag:
+                    iteration = int(tag.split(":")[1])
+                    iterations.setdefault(iteration, {})[k] = (attr, v)
+                else:
+                    self.log.warning("Attr %s is not config tagged" % k)
         # Do this first so that any callbacks that happen in the put know
         # not to notify controller
         self.saved_structure = structure
-        if params:
-            child.put_attribute_values(params)
+        for _, params in sorted(iterations.items()):
+            # Call each iteration as a separate operation, only putting the
+            # ones that need to change
+            to_set = {}
+            for k, (attr, v) in params.items():
+                try:
+                    np.testing.assert_equal(serialize_object(attr.value), v)
+                except AssertionError:
+                    to_set[k] = v
+            child.put_attribute_values(to_set)
 
     @add_call_types
     def save(self, context):
@@ -184,7 +177,7 @@ class ChildPart(Part):
         part_structure = OrderedDict()
         for k in child:
             attr = getattr(child, k)
-            if isinstance(attr, Attribute) and "config" in attr.meta.tags:
+            if isinstance(attr, Attribute) and get_config_tag(attr.meta.tags):
                 part_structure[k] = serialize_object(attr.value)
         self.saved_structure = part_structure
         return part_structure
@@ -227,7 +220,7 @@ class ChildPart(Part):
                                               disconnected_value=extra,
                                               value=attr.value)
                         self.port_infos[field] = info
-            if isinstance(attr, Attribute) and config_tag() in attr.meta.tags:
+            if isinstance(attr, Attribute) and get_config_tag(attr.meta.tags):
                 if self.config_subscriptions:
                     new_id = max(self.config_subscriptions) + 1
                 else:
@@ -262,28 +255,17 @@ class ChildPart(Part):
         except AssertionError:
             message = "%s.%s.value = %r not %r" % (
                 self.name, name, response.value, original_value)
-            if name in self.we_modified:
-                message = "(We modified) " + message
-            self.modified_messages[name] = message
         else:
-            self.modified_messages.pop(name, None)
-        message_list = []
-        only_modified_by_us = True
-        # Tell the controller what has changed
-        for name, message in self.modified_messages.items():
-            if name not in self.we_modified:
-                only_modified_by_us = False
-            message_list.append(message)
-        if message_list:
-            if only_modified_by_us:
-                severity = AlarmSeverity.NO_ALARM
+            message = None
+        last_message = self.modified_messages.get(name, None)
+        if message != last_message:
+            # Tell the controller if something has changed
+            if message:
+                self.modified_messages[name] = message
             else:
-                severity = AlarmSeverity.MINOR_ALARM
-            alarm = Alarm(
-                severity, AlarmStatus.CONF_STATUS, "\n".join(message_list))
-        else:
-            alarm = None
-        self.registrar.report(PartModifiedInfo(alarm))
+                self.modified_messages.pop(name, None)
+            info = PartModifiedInfo(self.modified_messages.copy())
+            self.registrar.report(info)
 
     def _get_flowgraph_ports(self, ports, typ):
         # type: (APortMap, Type[TP]) -> Dict[str, TP]
@@ -341,19 +323,19 @@ class ChildPart(Part):
         """
         # Calculate a lookup of outport connected_value to part_name
         outport_lookup = {}
-        for part_name, port_infos in ports.items():
+        for part_name, port_infos in OutPortInfo.filter_parts(ports).items():
             for port_info in port_infos:
-                if isinstance(port_info, OutPortInfo):
-                    outport_lookup[port_info.connected_value] = part_name
+                outport_lookup[port_info.connected_value] = (
+                    part_name, port_info.port)
         # Look through all the inports, and set both ends of the connection
         # to visible if they aren't specified
-        for part_name, port_infos in ports.items():
+        for part_name, port_infos in InPortInfo.filter_parts(ports).items():
             for port_info in port_infos:
-                if isinstance(port_info, InPortInfo):
-                    if port_info.value != port_info.disconnected_value:
-                        conn_part = outport_lookup.get(port_info.value, None)
-                        if conn_part:
-                            if conn_part not in self.part_visibility:
-                                self.part_visibility[conn_part] = True
-                            if part_name not in self.part_visibility:
-                                self.part_visibility[part_name] = True
+                if port_info.value != port_info.disconnected_value:
+                    conn_part, port = outport_lookup.get(
+                        port_info.value, (None, None))
+                    if conn_part and port == port_info.port:
+                        if conn_part not in self.part_visibility:
+                            self.part_visibility[conn_part] = True
+                        if part_name not in self.part_visibility:
+                            self.part_visibility[part_name] = True

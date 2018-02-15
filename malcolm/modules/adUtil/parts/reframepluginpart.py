@@ -37,7 +37,8 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
                   generator,  # type: scanning.hooks.AGenerator
                   **kwargs  # type: **Any
                   ):
+        # type: (...) -> None
         nsamples = int(generator.duration * self.sample_freq) - 1
-        kwargs["postCount"] = nsamples
         super(ReframePluginPart, self).configure(
-            context, completed_steps, steps_to_do, generator, **kwargs)
+            context, completed_steps, steps_to_do, generator,
+            postCount=nsamples, **kwargs)

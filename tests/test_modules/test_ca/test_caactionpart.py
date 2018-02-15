@@ -1,7 +1,8 @@
 import unittest
-from mock import patch, ANY
+from mock import patch, ANY, Mock
 
-from malcolm.core import call_with_params
+from malcolm.core import Process
+from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.ca.parts import CAActionPart
 
 
@@ -20,23 +21,24 @@ class TestCAActionPart(unittest.TestCase):
                 pv="pv",
             )
 
-        p = call_with_params(CAActionPart, **params)
-        self.yielded = list(p.create_method_models())
+        p = CAActionPart(**params)
+        p.setup(Mock())
         return p
 
     def test_init(self, catools):
         p = self.create_part()
-        assert p.params.pv == "pv"
-        assert p.params.value == 1
-        assert p.params.wait == True
-        assert p.method.description == "desc"
-        assert self.yielded == [("mname", ANY, p.caput)]
+        assert p.pv == "pv"
+        assert p.value == 1
+        assert p.wait is True
+        assert p.description == "desc"
+        p.registrar.add_method_model.assert_called_once_with(
+            p.caput, "mname", "desc")
 
     def test_reset(self, catools):
         p = self.create_part()
         p.catools.caget.reset_mock()
         p.catools.caget.return_value = [caint(4)]
-        p.connect_pvs("unused context object")
+        p.connect_pvs()
         p.catools.caget.assert_called_with(["pv"])
 
     def test_caput(self, catools):
@@ -63,15 +65,23 @@ class TestCAActionPart(unittest.TestCase):
         with self.assertRaises(AssertionError) as cm:
             p.caput()
         assert str(cm.exception) == \
-            "Status No Good: while performing 'caput -c -w 1000 pv 1'"
+            "Status No Good: while performing 'caput pv 1'"
 
     def test_caput_status_pv_message(self, catools):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", status_pv="spv",
             good_status="All Good", message_pv="mpv"))
+        p.catools.caget.side_effect = [caint(4)]
+        c = StatefulController("mri")
+        c.add_part(p)
+        proc = Process("proc")
+        proc.add_controller(c)
+        proc.start()
+        self.addCleanup(proc.stop)
+        b = proc.block_view("mri")
         p.catools.caput.reset_mock()
         p.catools.caget.side_effect = ["No Good", "Bad things happened"]
         with self.assertRaises(AssertionError) as cm:
-            p.caput()
+            b.mname()
         assert str(cm.exception) == "Status No Good: Bad things happened: " \
-            "while performing 'caput -c -w 1000 pv 1'"
+            "while performing 'caput pv 1'"

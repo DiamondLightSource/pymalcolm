@@ -19,10 +19,16 @@ class MyWarning(Exception):
 class TestContext(unittest.TestCase):
     def setUp(self):
         self.process = Process("proc")
-        self.controller = MagicMock()
-        self.process.add_controller("block", self.controller)
+        self.controller = MagicMock(mri="block")
+        self.process.add_controller(self.controller)
         self.o = Context(self.process)
         self.cothread = maybe_import_cothread()
+
+    def assert_handle_request_called_with(self, *requests):
+        assert self.controller.handle_request.call_count == len(requests)
+        for i, request in enumerate(requests):
+            actual = self.controller.handle_request.call_args_list[i][0][0]
+            assert request.to_dict() == actual.to_dict()
 
     def test_aborts_timeout_zero(self):
         self.o.ignore_stops_before_now()
@@ -40,35 +46,32 @@ class TestContext(unittest.TestCase):
     def test_put(self):
         self.o._q.put(Return(1, None))
         self.o.put(["block", "attr", "value"], 32)
-        self.controller.handle_request.assert_called_once_with(
+        self.assert_handle_request_called_with(
             Put(1, ["block", "attr", "value"], 32))
 
     def test_put_failure(self):
-        self.o._q.put(Error(1, "Test Exception"))
+        self.o._q.put(Error(1, ResponseError("Test Exception")))
         with self.assertRaises(ResponseError) as cm:
             self.o.put(["block", "attr", "value"], 32)
         assert str(cm.exception) == "Test Exception"
 
     def test_post(self):
-        self.controller.validate_result.return_value = 22
         self.o._q.put(Return(1, dict(a=2)))
         result = self.o.post(["block", "method"], dict(b=32))
-        self.controller.handle_request.assert_called_once_with(
+        self.assert_handle_request_called_with(
             Post(1, ["block", "method"], dict(b=32)))
-        self.controller.validate_result.assert_called_once_with(
-            "method", dict(a=2))
-        assert result == 22
+        assert result == dict(a=2)
 
     def test_post_failure(self):
-        self.o._q.put(Error(1, "Test Exception"))
-        with self.assertRaises(ResponseError) as cm:
+        self.o._q.put(Error(1, ValueError("Test Exception")))
+        with self.assertRaises(ValueError) as cm:
             self.o.post(["block", "method"], dict(b=32))
         assert str(cm.exception) == "Test Exception"
 
     def test_subscribe(self):
         cb = MagicMock()
         f = self.o.subscribe(["block", "attr", "value"], cb, self.o, 'arg2')
-        self.controller.handle_request.assert_called_once_with(
+        self.assert_handle_request_called_with(
             Subscribe(1, ["block", "attr", "value"]))
         self.o._q.put(Update(1, "value1"))
         with self.assertRaises(TimeoutError):
@@ -123,15 +126,15 @@ class TestContext(unittest.TestCase):
         start = time.time()
         self.o.sleep(0.05)
         end = time.time()
-        self.assertAlmostEqual(end-start, 0.05, delta=0.01)
+        self.assertAlmostEqual(end - start, 0.05, delta=0.01)
 
     def test_when_matches(self):
         self.o._q.put(Update(1, "value1"))
         self.o._q.put(Return(1))
         self.o.when_matches(["block", "attr", "value"], "value1", timeout=0.01)
-        assert self.controller.handle_request.call_args_list == [
-            call(Subscribe(1, ["block", "attr", "value"])),
-            call(Unsubscribe(1))]
+        self.assert_handle_request_called_with(
+            Subscribe(1, ["block", "attr", "value"]),
+            Unsubscribe(1))
 
     def test_when_matches_func(self):
         self.o._q.put(Update(1, "value1"))
@@ -141,18 +144,18 @@ class TestContext(unittest.TestCase):
             return value.startswith("v")
 
         self.o.when_matches(["block", "attr", "value"], f, timeout=0.01)
-        assert self.controller.handle_request.call_args_list == [
-            call(Subscribe(1, ["block", "attr", "value"])),
-            call(Unsubscribe(1))]
+        self.assert_handle_request_called_with(
+            Subscribe(1, ["block", "attr", "value"]),
+            Unsubscribe(1))
 
     def test_when_not_matches(self):
         self.o._q.put(Update(1, "value2"))
         with self.assertRaises(BadValueError):
             self.o.when_matches(
                 ["block", "attr", "value"], "value1", ["value2"], timeout=0.01)
-        assert self.controller.handle_request.call_args_list == [
-            call(Subscribe(1, ["block", "attr", "value"])),
-            call(Unsubscribe(1))]
+        self.assert_handle_request_called_with(
+            Subscribe(1, ["block", "attr", "value"]),
+            Unsubscribe(1))
 
     def test_ignore_stops_before_now(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32)]

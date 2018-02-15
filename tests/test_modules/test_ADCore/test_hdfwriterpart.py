@@ -1,13 +1,14 @@
 import os
-from mock import MagicMock, call, ANY
+from mock import MagicMock, call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
 
-from malcolm.core import Context, call_with_params, Process, Future
+from malcolm.core import Context, Process, Future
 from malcolm.modules.ADCore.blocks import hdf_writer_block
 from malcolm.modules.ADCore.parts import HDFWriterPart
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo, \
-    CalculatedNDAttributeDatasetInfo, NDAttributeDatasetInfo, UniqueIdInfo
+    CalculatedNDAttributeDatasetInfo, NDAttributeDatasetInfo
+from malcolm.modules.ADCore.util import AttributeDatasetType, DatasetType
 from malcolm.testutil import ChildTestCase
 
 
@@ -20,93 +21,95 @@ class TestHDFWriterPart(ChildTestCase):
         self.child = self.create_child_block(
             hdf_writer_block, self.process,
             mri="BLOCK-HDF5", prefix="prefix")
-        self.o = call_with_params(
-            HDFWriterPart, name="m", mri="BLOCK-HDF5")
-        list(self.o.create_attribute_models())
+        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
         self.process.start()
 
+    def tearDown(self):
+        self.process.stop(2)
+
     def test_configure(self):
-        params = MagicMock()
         energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
         spiral = SpiralGenerator(
             ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
-        params.generator = CompoundGenerator([energy, spiral], [], [], 0.1)
-        params.fileDir = "/tmp"
-        params.formatName = "xspress3"
-        params.fileTemplate = "thing-%s.h5"
-        params.generator.prepare()
+        generator = CompoundGenerator([energy, spiral], [], [], 0.1)
+        generator.prepare()
+        fileDir = "/tmp"
+        formatName = "xspress3"
+        fileTemplate = "thing-%s.h5"
         completed_steps = 0
         steps_to_do = 38
         part_info = {
             "DET": [NDArrayDatasetInfo(2)],
             "PANDA": [
-                NDAttributeDatasetInfo("I0", "detector", "COUNTER1.COUNTER", 2),
-                NDAttributeDatasetInfo("It", "monitor", "COUNTER2.COUNTER", 2),
-                NDAttributeDatasetInfo("t1x", "position", "INENC1.VAL", 2)],
+                NDAttributeDatasetInfo(
+                    "I0", AttributeDatasetType.DETECTOR, "COUNTER1.COUNTER", 2),
+                NDAttributeDatasetInfo(
+                    "It", AttributeDatasetType.MONITOR, "COUNTER2.COUNTER", 2),
+                NDAttributeDatasetInfo(
+                    "t1x", AttributeDatasetType.POSITION, "INENC1.VAL", 2)],
             "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
         }
         infos = self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info, params)
+            self.context, completed_steps, steps_to_do, part_info, generator,
+            fileDir, formatName, fileTemplate)
         assert len(infos) == 8
         assert infos[0].name == "xspress3.data"
         assert infos[0].filename == "thing-xspress3.h5"
-        assert infos[0].type == "primary"
+        assert infos[0].type == DatasetType.PRIMARY
         assert infos[0].rank == 4
         assert infos[0].path == "/entry/detector/detector"
         assert infos[0].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[1].name == "xspress3.sum"
         assert infos[1].filename == "thing-xspress3.h5"
-        assert infos[1].type == "secondary"
+        assert infos[1].type == DatasetType.SECONDARY
         assert infos[1].rank == 4
         assert infos[1].path == "/entry/sum/sum"
         assert infos[1].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[2].name == "I0.data"
         assert infos[2].filename == "thing-xspress3.h5"
-        assert infos[2].type == "primary"
+        assert infos[2].type == DatasetType.PRIMARY
         assert infos[2].rank == 4
         assert infos[2].path == "/entry/I0/I0"
         assert infos[2].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[3].name == "It.data"
         assert infos[3].filename == "thing-xspress3.h5"
-        assert infos[3].type == "monitor"
+        assert infos[3].type == DatasetType.MONITOR
         assert infos[3].rank == 4
         assert infos[3].path == "/entry/It/It"
         assert infos[3].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[4].name == "t1x.value"
         assert infos[4].filename == "thing-xspress3.h5"
-        assert infos[4].type == "position_value"
+        assert infos[4].type == DatasetType.POSITION_VALUE
         assert infos[4].rank == 4
         assert infos[4].path == "/entry/t1x/t1x"
         assert infos[4].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[5].name == "energy.value_set"
         assert infos[5].filename == "thing-xspress3.h5"
-        assert infos[5].type == "position_set"
+        assert infos[5].type == DatasetType.POSITION_SET
         assert infos[5].rank == 1
         assert infos[5].path == "/entry/detector/energy_set"
         assert infos[5].uniqueid == ""
 
         assert infos[6].name == "x.value_set"
         assert infos[6].filename == "thing-xspress3.h5"
-        assert infos[6].type == "position_set"
+        assert infos[6].type == DatasetType.POSITION_SET
         assert infos[6].rank == 1
         assert infos[6].path == "/entry/detector/x_set"
         assert infos[6].uniqueid == ""
 
         assert infos[7].name == "y.value_set"
         assert infos[7].filename == "thing-xspress3.h5"
-        assert infos[7].type == "position_set"
+        assert infos[7].type == DatasetType.POSITION_SET
         assert infos[7].rank == 1
         assert infos[7].path == "/entry/detector/y_set"
         assert infos[7].uniqueid == ""
 
         expected_xml_filename = "/tmp/BLOCK-HDF5-layout.xml"
-        # Need to wait for the spawned mock start call to run
-        self.o.start_future.result()
         assert self.child.handled_requests.mock_calls == [
             call.put('positionMode', True),
             call.put('arrayCounter', 0),
@@ -227,23 +230,24 @@ class TestHDFWriterPart(ChildTestCase):
         assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_run(self):
-        update = MagicMock()
         self.o.done_when_reaches = 38
         self.o.completed_offset = 0
         # Say that we're getting the first frame
         self.o.array_future = Future(None)
         self.o.array_future.set_result(None)
+        self.o.registrar = MagicMock()
         # run waits for this value
-        self.child.parts["uniqueId"].attr.set_value(self.o.done_when_reaches)
-        self.o.__call__(self.context, update)
+        self.child.field_registry.get_field("uniqueId").set_value(self.o.done_when_reaches)
+        self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == []
-        assert update.mock_calls == [call(38, self.o)]
+        assert self.o.registrar.report.called_once
+        assert self.o.registrar.report.call_args_list[0][0][0].steps == 38
 
     def test_seek(self):
+        self.o.done_when_reaches = 10
         completed_steps = 4
         steps_to_do = 3
-        part_infos = {"anything": [UniqueIdInfo(10)]}
-        self.o.seek(self.context, completed_steps, steps_to_do, part_infos)
+        self.o.seek(self.context, completed_steps, steps_to_do)
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCounter', 0)]
         assert self.o.done_when_reaches == 13

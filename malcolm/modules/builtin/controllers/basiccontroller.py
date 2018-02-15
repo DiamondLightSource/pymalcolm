@@ -19,20 +19,22 @@ class BasicController(Controller):
     def update_title(self, _, info):
         # type: (object, TitleInfo) -> None
         """Set the label of the Block Meta object"""
-        self._block.meta.set_label(info.title)
+        with self._lock:
+            self._block.meta.set_label(info.title)
 
     def update_health(self, reporter, info):
         # type: (object, HealthInfo) -> None
         """Set the health attribute. Called from part"""
-        alarm = info.alarm
         with self.changes_squashed:
+            alarm = info.alarm
             if alarm.is_ok():
                 self._faults.pop(reporter, None)
             else:
                 self._faults[reporter] = alarm
             if self._faults:
                 # Sort them by severity
-                faults = sorted(self._faults.values(), key=lambda a: a.severity)
+                faults = sorted(self._faults.values(),
+                                key=lambda a: a.severity.value)
                 alarm = faults[-1]
                 text = faults[-1].message
             else:

@@ -1,6 +1,6 @@
 import unittest
 import os
-from mock import MagicMock
+from mock import MagicMock, ANY
 
 from malcolm.compat import OrderedDict
 from malcolm.core import json_decode
@@ -21,7 +21,8 @@ class TestRequest(unittest.TestCase):
 
     def setUp(self):
         self.callback = MagicMock()
-        self.o = Request(32, self.callback)
+        self.o = Request(32)
+        self.o.set_callback(self.callback)
 
     def test_init(self):
         assert self.o.id == 32
@@ -30,18 +31,18 @@ class TestRequest(unittest.TestCase):
     def test_respond_with_return(self):
         cb, response = self.o.return_response(value=5)
         assert cb == self.callback
-        assert response == Return(id=32, value=5)
+        assert response.to_dict() == Return(id=32, value=5).to_dict()
 
     def test_respond_with_error(self):
         cb, response = self.o.error_response(
             exception=ValueError("Test Error"))
         assert cb == self.callback
-        assert response == Error(id=32, message="ValueError: Test Error")
+        assert response.to_dict() == \
+               Error(id=32, message=ANY).to_dict()
+        assert str(response.message) == "Test Error"
 
     def test_setters(self):
-        self.o.set_id(123)
-        assert 123 == self.o.id
-        self.o.set_callback(None)
+        self.o.set_callback(MagicMock())
         self.o.callback(888)
         self.callback.assert_not_called()
 
@@ -51,7 +52,8 @@ class TestGet(unittest.TestCase):
     def setUp(self):
         self.callback = MagicMock()
         self.path = ["BL18I:XSPRESS3", "state", "value"]
-        self.o = Get(32, self.path, self.callback)
+        self.o = Get(32, self.path)
+        self.o.set_callback(self.callback)
 
     def test_init(self):
         assert self.o.typeid == "malcolm:core/Get:1.0"
@@ -60,8 +62,7 @@ class TestGet(unittest.TestCase):
         assert self.path == self.o.path
 
     def test_setters(self):
-        self.o.set_path(["BL18I:XSPRESS3"])
-        assert self.o.path == ["BL18I:XSPRESS3"]
+        self.o.path = ["BL18I:XSPRESS3"]
         assert get_doc_json("get_xspress3") == self.o.to_dict()
 
     def test_doc_state(self):
@@ -74,7 +75,8 @@ class TestPut(unittest.TestCase):
         self.callback = MagicMock()
         self.path = ["BL18I:XSPRESS3:HDF", "filePath", "value"]
         self.value = "/path/to/file.h5"
-        self.o = Put(35, self.path, self.value, self.callback)
+        self.o = Put(35, self.path, self.value)
+        self.o.set_callback(self.callback)
 
     def test_init(self):
         assert self.o.typeid == "malcolm:core/Put:1.0"
@@ -82,10 +84,6 @@ class TestPut(unittest.TestCase):
         assert self.o.callback == self.callback
         assert self.path == self.o.path
         assert self.value == self.o.value
-
-    def test_setters(self):
-        self.o.set_value("7")
-        assert self.o.value == "7"
 
     def test_doc(self):
         assert get_doc_json("put_hdf_file_path") == self.o.to_dict()
@@ -99,7 +97,8 @@ class TestPost(unittest.TestCase):
         self.parameters = OrderedDict()
         self.parameters["filePath"] = "/path/to/file.h5"
         self.parameters["exposure"] = 0.1
-        self.o = Post(2, self.path, self.parameters, self.callback)
+        self.o = Post(2, self.path, self.parameters)
+        self.o.set_callback(self.callback)
 
     def test_init(self):
         assert self.o.typeid == "malcolm:core/Post:1.0"
@@ -107,10 +106,6 @@ class TestPost(unittest.TestCase):
         assert self.o.callback == self.callback
         assert self.path == self.o.path
         assert self.parameters == self.o.parameters
-
-    def test_setters(self):
-        self.o.set_parameters(dict(arg1=2, arg2=False))
-        assert self.o.parameters == dict(arg1=2, arg2=False)
 
     def test_doc(self):
         assert get_doc_json("post_xspress3_configure") == self.o.to_dict()
@@ -122,7 +117,8 @@ class TestSubscribe(unittest.TestCase):
         self.callback = MagicMock()
         self.path = ["BL18I:XSPRESS3"]
         self.delta = True
-        self.o = Subscribe(11, self.path, self.delta, self.callback)
+        self.o = Subscribe(11, self.path, self.delta)
+        self.o.set_callback(self.callback)
 
     def test_init(self):
         assert self.o.typeid == "malcolm:core/Subscribe:1.0"
@@ -134,19 +130,17 @@ class TestSubscribe(unittest.TestCase):
     def test_respond_with_update(self):
         cb, response = self.o.update_response(value=5)
         assert cb == self.callback
-        assert response == Update(id=11, value=5)
+        assert response.to_dict() == Update(id=11, value=5).to_dict()
 
     def test_respond_with_delta(self):
         changes = [[["path"], "value"]]
         cb, response = self.o.delta_response(changes)
         assert cb == self.callback
-        assert response == Delta(id=11, changes=changes)
+        assert response.to_dict() == Delta(id=11, changes=changes).to_dict()
 
     def test_setters(self):
-        self.o.set_delta(False)
-        assert not self.o.delta
-        self.o.set_path(["BL18I:XSPRESS3", "state", "value"])
-        self.o.set_id(19)
+        self.o.path = ["BL18I:XSPRESS3", "state", "value"]
+        self.o.id = 19
         d = self.o.to_dict()
         del d["delta"]
         assert get_doc_json("subscribe_xspress3_state_value") == d
@@ -159,9 +153,11 @@ class TestUnsubscribe(unittest.TestCase):
 
     def setUp(self):
         self.callback = MagicMock()
-        self.subscribe = Subscribe(32, callback=self.callback)
+        self.subscribe = Subscribe(32)
+        self.subscribe.set_callback(self.callback)
         self.subscribes = {self.subscribe.generate_key(): self.subscribe}
-        self.o = Unsubscribe(32, self.callback)
+        self.o = Unsubscribe(32)
+        self.o.set_callback(self.callback)
 
     def test_init(self):
         assert self.o.typeid == "malcolm:core/Unsubscribe:1.0"

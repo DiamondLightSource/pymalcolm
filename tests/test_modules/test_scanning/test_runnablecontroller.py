@@ -4,7 +4,7 @@ import time
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Process, Part, Context, ResponseError, AlarmStatus, \
-    AlarmSeverity
+    AlarmSeverity, AbortedError
 from malcolm.modules.scanning.parts import RunnableChildPart
 from malcolm.modules.demo.blocks import ticker_block
 from malcolm.compat import OrderedDict
@@ -67,8 +67,7 @@ class TestRunnableController(unittest.TestCase):
             mri='childBlock', name='part2', initial_visibility=True)
 
         # create a root block for the RunnableController block to reside in
-        self.c = RunnableController(mri='mainBlock', config_dir="/tmp",
-                                    initial_available_axes=["x"])
+        self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
         self.c.add_part(part1)
         self.c.add_part(part2)
         self.p.add_controller(self.c)
@@ -101,7 +100,6 @@ class TestRunnableController(unittest.TestCase):
         assert self.c.completed_steps.value == 0
         assert self.c.configured_steps.value == 0
         assert self.c.total_steps.value == 0
-        assert self.c.available_axes.value == ["x"]
         assert list(self.b.configure.takes.elements) == \
                ["generator", "axesToMove", "exceptionStep"]
 
@@ -233,7 +231,7 @@ class TestRunnableController(unittest.TestCase):
 
     def test_run_exception(self):
         self.prepare_half_run(exception=1)
-        with self.assertRaises(ResponseError):
+        with self.assertRaises(AssertionError):
             self.b.run()
         self.checkState(self.ss.FAULT)
 
@@ -242,10 +240,7 @@ class TestRunnableController(unittest.TestCase):
         f = self.b.run_async()
         self.context.sleep(0.1)
         self.b.abort()
-        with self.assertRaises(ResponseError):
+        with self.assertRaises(AbortedError):
             f.result()
         self.checkState(self.ss.ABORTED)
 
-
-if __name__ == "__main__":
-    unittest.main(verbosity=2)

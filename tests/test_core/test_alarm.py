@@ -12,8 +12,8 @@ class TestAlarm(unittest.TestCase):
         assert o.message == ""
 
     def test_names(self):
-        assert AlarmStatus.names[2] == "DRIVER_STATUS"
+        assert AlarmStatus.DRIVER_STATUS.name == "DRIVER_STATUS"
 
     def test_bad_number(self):
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             Alarm(33, 33, "")

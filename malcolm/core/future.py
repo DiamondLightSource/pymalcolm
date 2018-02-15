@@ -82,5 +82,7 @@ class Future(object):
 
         Should only be used by Task and unit tests.
         """
+        assert isinstance(exception, Exception), \
+            "%r should be an Exception" % exception
         self._exception = exception
         self._state = self.FINISHED

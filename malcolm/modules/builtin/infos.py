@@ -3,7 +3,7 @@ from annotypes import TYPE_CHECKING
 from malcolm.core import Info, Alarm, Port, Request
 
 if TYPE_CHECKING:
-    from typing import Callable, List, Any
+    from typing import Callable, List, Any, Dict
 
 
 class TitleInfo(Info):
@@ -107,19 +107,22 @@ class PartModifiedInfo(Info):
     """Info about whether the part was modified or not
 
     Args:
-        alarm: An alarm with a message showing the attributes modified
+        modified: {attr_name: message} for all attributes that have been
+            modified from the saved value
     """
-    def __init__(self, alarm=None):
-        # type: (Alarm) -> None
-        self.alarm = alarm
+    def __init__(self, modified):
+        # type: (Dict[str, str]) -> None
+        self.modified = modified
 
 
-class NotifyDispatchInfo(Info):
-    """Tell the Context to call this before dispatching a request
+class RequestInfo(Info):
+    """Info saying that the part has received a request that needs servicing
 
     Args:
-        notify_dispatch: The function to call
+        request: The request that needs servicing, with callback filled in
+        mri: The mri of the controller that should handle it
     """
-    def __init__(self, notify_dispatch):
-        # type: (Callable[[Request], None]) -> None
-        self.notify_dispatch = notify_dispatch
+    def __init__(self, request, mri):
+        # type: (Request) -> None
+        self.request = request
+        self.mri = mri

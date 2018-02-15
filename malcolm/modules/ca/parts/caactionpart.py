@@ -31,7 +31,6 @@ class CAActionPart(Part):
                  ):
         # type: (...) -> None
         super(CAActionPart, self).__init__(name)
-        self.method = None
         self.catools = CaToolsHelper.instance()
         self.description = description
         self.pv = pv
@@ -43,8 +42,8 @@ class CAActionPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        self.method = registrar.add_method_model(
-            self.caput, self.name, self.description)
+        super(CAActionPart, self).setup(registrar)
+        registrar.add_method_model(self.caput, self.name, self.description)
 
     def on_hook(self, hook):
         # type: (Hook) -> None
@@ -52,7 +51,7 @@ class CAActionPart(Part):
                              builtin.hooks.ResetHook)):
             hook(self.connect_pvs)
 
-    def connect_pvs(self, _):
+    def connect_pvs(self):
         pvs = [self.pv]
         if self.status_pv:
             pvs.append(self.status_pv)

@@ -72,11 +72,11 @@ class TestManagerController(unittest.TestCase):
         assert self.c.layout.value.y == [0.0]
         assert self.c.layout.value.visible == [True]
         assert self.c.design.value == ""
-        assert self.c.exports.value.source == ()
+        assert self.c.exports.value.source == []
         assert self.c.exports.meta.elements["source"].choices == \
                ['part2.health', 'part2.state', 'part2.disable', 'part2.reset',
                 'part2.attr']
-        assert self.c.exports.value.export == ()
+        assert self.c.exports.value.export == []
         assert self.c.modified.value is False
         assert self.c.modified.alarm.message == ""
 
@@ -155,8 +155,8 @@ class TestManagerController(unittest.TestCase):
 
         # save the layout, modify and restore it
         self.b.save(design='testSaveLayout')
-        assert self.c.modified.value == False
-        self.check_expected_save(10, 20, "false")
+        assert self.c.modified.value is False
+        self.check_expected_save(10.0, 20.0, "false")
         self.c.parts['part2'].x = 30
         self.c.set_design('testSaveLayout')
         assert self.c.parts['part2'].x == 10

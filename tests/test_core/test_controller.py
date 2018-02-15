@@ -1,47 +1,37 @@
 import unittest
 import gc
+
+from annotypes import add_call_types, Anno
 from mock import MagicMock, patch
 
-from malcolm.core.controller import Controller
-from malcolm.core.alarm import Alarm, AlarmSeverity
-from malcolm.core.context import Context
-from malcolm.core.models import Model
-from malcolm.core.queue import Queue
-from malcolm.core.request import Post, Subscribe, Put, Get, Unsubscribe
-from malcolm.core.response import Return, Update, Error
-from malcolm.core.errors import AbortedError
-from malcolm.core.mapmeta import MapMeta
-from malcolm.core.methodmodel import MethodModel, OPTIONAL
-from malcolm.core import method_takes, method_returns, BlockModel, Part, \
-    Process, Hook
-from malcolm.core.vmetas import StringMeta
+from malcolm.core import Controller, Part, Hook, PartRegistrar, StringMeta, \
+    Process, Queue, Get, Return, Put, Error, Post, Subscribe, Update, \
+    Unsubscribe
 
+with Anno("The return value"):
+    AWorld = str
 
-class MyController(Controller):
-    TestHook = Hook()
 
 
 class MyPart(Part):
-    context = None
+    my_attribute = None
     exception = None
+    context = None
 
-    @MyController.TestHook
-    def func(self, context):
-        if self.exception:
-            raise self.exception
-        self.context = context
-        return dict(foo="bar")
+    @add_call_types
+    def method(self):
+        # type: () -> AWorld
+        return 'world'
 
-    @method_takes()
-    @method_returns('ret', StringMeta(), OPTIONAL)
-    def my_method(self, returns=MapMeta()):
-        returns.ret = 'world'
-        return returns
-
-    def create_attribute_models(self):
-        meta = StringMeta(description="MyString")
-        self.myAttribute = meta.create_attribute_model(initial_value='hello_block')
-        yield "myAttribute", self.myAttribute, self.myAttribute.set_value
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        # create_attribute_models(self):
+        self.my_attribute = StringMeta(
+            description="MyString"
+        ).create_attribute_model('hello_block')
+        registrar.add_attribute_model(
+            "myAttribute", self.my_attribute, self.my_attribute.set_value)
+        registrar.add_method_model(self.method)
 
 
 class TestController(unittest.TestCase):
@@ -50,9 +40,9 @@ class TestController(unittest.TestCase):
     def setUp(self):
         self.process = Process("proc")
         self.part = MyPart("test_part")
-        self.part2 = MyPart("test_part2")
-        self.o = MyController(self.process, "mri", [self.part, self.part2])
-        self.context = Context(self.process)
+        self.o = Controller("mri")
+        self.o.add_part(self.part)
+        self.process.add_controller(self.o)
         self.process.start()
 
     def tearDown(self):
@@ -62,140 +52,70 @@ class TestController(unittest.TestCase):
         assert self.o.mri == "mri"
         assert self.o.process == self.process
 
-    def test_run_hook(self):
-        context = MagicMock()
-        context2 = MagicMock()
-        part_contexts = {self.part: context, self.part2: context2}
-        result = self.o.run_hooks(self.o.TestHook, part_contexts)
-        assert result == (
-                          dict(test_part=dict(foo="bar"),
-                               test_part2=dict(foo="bar")))
-        self.assertIs(self.part.context.anything, context.anything)
-        del context
-        del part_contexts
-        gc.collect()
-        with self.assertRaises(ReferenceError):
-            self.part.context.anything
-
-    def test_run_hook_raises(self):
-        class MyException(Exception):
-            pass
-        context = MagicMock()
-        context2 = MagicMock()
-        self.part.exception = MyException()
-        part_contexts = {self.part: context, self.part2: context2}
-        with self.assertRaises(Exception) as cm:
-            self.o.run_hooks(self.o.TestHook, part_contexts)
-        self.assertIs(self.part.context, None)
-        self.assertIs(cm.exception, self.part.exception)
-
-    def test_run_hook_aborted(self):
-        context = MagicMock()
-        context2 = MagicMock()
-        part_contexts = {self.part: context, self.part2: context2}
-        with patch.object(Queue, 'get',
-                          return_value=(self.part, AbortedError())):
-            with self.assertRaises(AbortedError):
-                self.o.run_hooks(self.o.TestHook, part_contexts)
-
-    def test_set_health(self):
-        self.o.update_health(self.part,
-                             Alarm(severity=AlarmSeverity.MINOR_ALARM))
-        self.o.update_health(self.part2,
-                             Alarm(severity=AlarmSeverity.MAJOR_ALARM))
-        assert self.o.health.alarm.severity == AlarmSeverity.MAJOR_ALARM
-
-        self.o.update_health(self.part,
-                             Alarm(severity=AlarmSeverity.UNDEFINED_ALARM))
-        self.o.update_health(self.part2,
-                             Alarm(severity=AlarmSeverity.INVALID_ALARM))
-        assert self.o.health.alarm.severity == AlarmSeverity.UNDEFINED_ALARM
-
-        self.o.update_health(self.part)
-        self.o.update_health(self.part2)
-        assert self.o.health.value == "OK"
-
     def test_make_view(self):
-        method_view = self.o._make_appropriate_view(self.context, self.part.my_method)
-        attribute_view = self.o._make_appropriate_view(self.context, self.part.myAttribute)
-        dict_view = self.o._make_appropriate_view(self.context,
-                                                  {'a': self.part.myAttribute, 'm':self.part.my_method})
-        list_view = self.o._make_appropriate_view(self.context,
-                                                  [self.part.myAttribute, self.part.my_method])
-
-        model = Model()
-        model_view = self.o._make_appropriate_view(self.context, model)
-
-        none_view = self.o._make_appropriate_view(self.context, None)
-
-        block_data = BlockModel()
-        block_data.set_endpoint_data("attr", StringMeta().create_attribute_model())
-        block_data.set_endpoint_data("method", MethodModel())
-        block_data.set_notifier_path(MagicMock(), ["block"])
-        block_view = self.o._make_appropriate_view(self.context, block_data)
-
-        # Todo check create_part_contexts worked
-        self.o.create_part_contexts()
-
-        # using __call__
-        assert method_view().ret == 'world'
+        b = self.process.block_view("mri")
+        method_view = b.method
+        attribute_view = b.myAttribute
+        dict_view = b.method.returns.elements
+        list_view = b.method.returns.required
+        assert method_view() == 'world'
         assert attribute_view.value == "hello_block"
-        assert dict_view['a'].value == "hello_block"
-        assert list_view[0].value == "hello_block"
+        assert dict_view['return'].description == "The return value"
+        assert list_view[0] == "return"
 
     def test_handle_request(self):
         q = Queue()
 
-        request = Get(id=41, path=["mri", "myAttribute"],
-                      callback=q.put)
+        request = Get(id=41, path=["mri", "myAttribute"])
+        request.set_callback(q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
         assert response.id == 41
         assert response.value["value"] == "hello_block"
-        # It's part2 that will get the attribute as it was defined second
-        self.part2.myAttribute.meta.writeable = False
-        request = Put(id=42, path=["mri", "myAttribute"],
-                      value='hello_block', callback=q.put)
+        self.part.my_attribute.meta.writeable = False
+        request = Put(id=42, path=["mri", "myAttribute"], value='hello_block2')
+        request.set_callback(q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Error)  # not writeable
         assert response.id == 42
 
-        self.part2.myAttribute.meta.writeable = True
+        self.part.my_attribute.meta.writeable = True
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
         assert response.id == 42
-        assert response.value == "hello_block"
+        assert response.value == "hello_block2"
 
-        request = Post(id=43, path=["mri", "my_method"],
-                      callback=q.put)
+        request = Post(id=43, path=["mri", "method"])
+        request.set_callback(q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)
         assert response.id == 43
-        assert response.value['ret'] == "world"
+        assert response.value == "world"
 
         # cover the controller._handle_post path for parameters
-        request = Post(id=43, path=["mri", "my_method"],
-                      parameters={'dummy': 1}, callback=q.put)
+        request = Post(id=43, path=["mri", "method"], parameters={'dummy': 1})
+        request.set_callback(q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
-        self.assertIsInstance(response, Return)
+        self.assertIsInstance(response, Error)
         assert response.id == 43
-        assert response.value['ret'] == "world"
+        assert str(response.message) == "Method passed argument 'dummy' which is not in []"
 
-        request = Subscribe(id=44, path=["mri", "myAttribute"],
-                            delta=False, callback=q.put)
+        request = Subscribe(id=44, path=["mri", "myAttribute"], delta=False)
+        request.set_callback(q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Update)
         assert response.id == 44
         assert response.value["typeid"] == "epics:nt/NTScalar:1.0"
-        assert response.value["value"] == "hello_block"
+        assert response.value["value"] == "hello_block2"
 
-        request = Unsubscribe(id=44, callback=q.put)
+        request = Unsubscribe(id=44)
+        request.set_callback(q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Return)

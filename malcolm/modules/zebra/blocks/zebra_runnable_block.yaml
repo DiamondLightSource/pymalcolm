@@ -17,11 +17,11 @@
 - ADCore.parts.DetectorDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
+    main_dataset_useful: False
 
 - zebra.blocks.zebra_driver_block:
     mri: $(mri_prefix):DRV
     prefix: $(pv_prefix)
-    main_dataset_useful: False
 
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)

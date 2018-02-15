@@ -12,6 +12,7 @@ from ..hooks import ReportHandlersHook, PublishHook
 with Anno("TCP port number to run up under"):
     APort = int
 
+
 class HTTPServerComms(builtin.controllers.ServerComms):
     """A class for communication between browser and server"""
 
@@ -28,6 +29,8 @@ class HTTPServerComms(builtin.controllers.ServerComms):
         # type: (Hook) -> None
         if isinstance(hook, ProcessPublishHook):
             hook(self.publish)
+        else:
+            super(HTTPServerComms, self).on_hook(hook)
 
     def do_init(self):
         super(HTTPServerComms, self).do_init()
@@ -47,7 +50,7 @@ class HTTPServerComms(builtin.controllers.ServerComms):
     def start_io_loop(self):
         if self._spawned is None:
             self._server = HTTPServer(self._application)
-            self._server.listen(int(self.params.port))
+            self._server.listen(int(self.port))
             self._spawned = self.spawn(self._loop.start)
 
     def stop_io_loop(self):

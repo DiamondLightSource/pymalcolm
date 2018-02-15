@@ -8,7 +8,6 @@ from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
     UnexpectedError, YamlError
 from .future import Future
 from .hook import Hook
-from .importer import Importer
 from .info import Info
 from .loggable import Loggable
 from .models import BlockModel, AttributeModel, MethodModel, \
@@ -26,7 +25,7 @@ from .serializable import Serializable, deserialize_object, serialize_object, \
 from .spawned import Spawned
 from .stateset import StateSet
 from .table import Table
-from .tags import Widget, Port, group_tag, config_tag
+from .tags import Widget, Port, group_tag, config_tag, get_config_tag
 from .timestamp import TimeStamp
 from .views import Attribute, Method, Block
 

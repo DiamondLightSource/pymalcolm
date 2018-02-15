@@ -84,8 +84,8 @@ class PmacTrajectoryPart(ChildPart):
         super(PmacTrajectoryPart, self).setup(registrar)
         registrar.add_attribute_model("minTurnaround", self.min_turnaround,
                                       self.min_turnaround.set_value)
-        registrar.report(scanning.infos.ConfigureParamsInfo.from_configure(
-            self.configure))
+        registrar.report(
+            scanning.hooks.ConfigureHook.create_info(self.configure))
 
     @add_call_types
     def reset(self, context):

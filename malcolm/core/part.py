@@ -106,7 +106,7 @@ class Part(Hookable):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         """Use the given Registrar to populate the hooks and fields"""
-        return
+        self.registrar = registrar
 
 
 class PartRegistrar(object):

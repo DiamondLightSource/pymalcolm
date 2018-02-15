@@ -8,7 +8,7 @@ from .future import Future
 from .request import Put, Post, Subscribe, Unsubscribe
 from .response import Update, Return, Error
 from .queue import Queue
-from .errors import TimeoutError, AbortedError, ResponseError, BadValueError
+from .errors import TimeoutError, AbortedError, BadValueError
 
 if TYPE_CHECKING:
     from typing import Callable, Any, List, Union
@@ -52,6 +52,7 @@ class Context(object):
         self._q = self.make_queue()
         # Func to call just before requests are dispatched
         self._notify_dispatch_request = None
+        self._notify_args = ()
         self._process = process
         self._next_id = 1
         self._futures = {}  # dict {int id: Future)}
@@ -93,7 +94,7 @@ class Context(object):
         self._next_id += 1
         return new_id
 
-    def set_notify_dispatch_request(self, notify_dispatch_request):
+    def set_notify_dispatch_request(self, notify_dispatch_request, *args):
         """Set function to call just before requests are dispatched
 
         Args:
@@ -101,6 +102,7 @@ class Context(object):
                 with request as single arg just before request is dispatched
         """
         self._notify_dispatch_request = notify_dispatch_request
+        self._notify_args = args
 
     def _dispatch_request(self, request):
         future = Future(weakref.proxy(self))
@@ -108,7 +110,7 @@ class Context(object):
         self._requests[future] = request
         controller = self.get_controller(request.path[0])
         if self._notify_dispatch_request:
-            self._notify_dispatch_request(request)
+            self._notify_dispatch_request(request, *self._notify_args)
         controller.handle_request(request)
         # Yield control to allow the request to be handled
         if self._cothread:
@@ -233,7 +235,11 @@ class Context(object):
 
     def __del__(self):
         # Unsubscribe from anything that is still active
-        self.unsubscribe_all()
+        try:
+            self.unsubscribe_all()
+        except ValueError:
+            # Controller has already gone, probably during tearDown
+            pass
 
     def when_matches(self, path, good_value, bad_values=None, timeout=None):
         """Resolve when an path value equals value
@@ -367,10 +373,10 @@ class Context(object):
         elif isinstance(response, Error):
             future = self._futures.pop(response.id)
             del self._requests[future]
-            future.set_exception(ResponseError(response.message))
+            future.set_exception(response.message)
             try:
                 futures.remove(future)
             except KeyError:
                 pass
             else:
-                raise future.exception()
+                raise response.message

@@ -5,7 +5,8 @@ from tornado.websocket import websocket_connect, WebSocketClientConnection
 
 from malcolm.core import Subscribe, deserialize_object, \
     json_decode, json_encode, Response, Error, Unsubscribe, Update, Return, \
-    Queue, TimeoutError, Spawned, Request, StringArrayMeta, Widget
+    Queue, TimeoutError, Spawned, Request, StringArrayMeta, Widget, \
+    ResponseError
 from malcolm.modules import builtin
 
 if TYPE_CHECKING:
@@ -38,7 +39,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         self._connected_queue = Queue()
         self._spawned = None  # type: Spawned
         # {new_id: (request, old_id}
-        self._request_lookup = None  # type: Dict[int, Tuple[Request, int]]
+        self._request_lookup = {}  # type: Dict[int, Tuple[Request, int]]
         # {Subscribe.generator_key(): Subscribe}
         self._subscription_keys = {}  # type: Dict[Key, Subscribe]
         self._next_id = 1
@@ -69,7 +70,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
             self.loop.add_callback(self.recv_loop)
             self._spawned = self.spawn(self.loop.start)
             try:
-                self._connected_queue.get(self.params.connectTimeout)
+                self._connected_queue.get(self.connect_timeout)
             except TimeoutError:
                 self.stop_io_loop()
                 raise
@@ -82,9 +83,9 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
 
     @gen.coroutine
     def recv_loop(self):
-        url = "ws://%(hostname)s:%(port)d/ws" % self.params
+        url = "ws://%s:%d/ws" % (self.hostname, self.port)
         self._conn = yield websocket_connect(
-            url, self.loop, connect_timeout=self.params.connectTimeout - 0.5)
+            url, self.loop, connect_timeout=self.connect_timeout - 0.5)
         self._connected_queue.put(True)
         for request in self._subscription_keys.values():
             self._send_request(request)
@@ -94,7 +95,8 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
                 for request, old_id in self._request_lookup.values():
                     if not isinstance(request, Subscribe):
                         # Respond with an error
-                        response = Error(old_id, message="Server disconnected")
+                        response = Error(
+                            old_id, ResponseError("Server disconnected"))
                         request.callback(response)
                 self.spawn(self._report_fault)
                 return
@@ -127,9 +129,12 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
                 request, old_id = self._request_lookup.pop(response.id)
                 if request.generate_key() in self._subscription_keys:
                     self._subscription_keys.pop(request.generate_key())
+                if isinstance(response, Error):
+                    # Make the message an exception so it can be raised
+                    response.message = ResponseError(response.message)
             else:
                 request, old_id = self._request_lookup[response.id]
-            response.set_id(old_id)
+            response.id = old_id
             # TODO: should we spawn here?
             request.callback(response)
         except Exception:
@@ -158,7 +163,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
             new_id = self._next_id
             self._next_id += 1
             self._request_lookup[new_id] = (request, request.id)
-        request.set_id(new_id)
+        request.id = new_id
         self._send_request(request)
 
     def _send_request(self, request):

@@ -3,6 +3,7 @@ from tornado.websocket import WebSocketHandler, WebSocketError
 
 from malcolm.core import Hook, Part, json_decode, deserialize_object, \
     Request, json_encode, Subscribe, Unsubscribe, Delta, Update
+from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos, PublishHook, \
     APublished
@@ -41,7 +42,7 @@ with Anno("Part name and subdomain name to host websocket on"):
 
 
 class WebsocketServerPart(Part):
-    def __init__(self, name):
+    def __init__(self, name="ws"):
         # type: (AName) -> None
         super(WebsocketServerPart, self).__init__(name)
         # {id: Subscribe}
@@ -65,10 +66,10 @@ class WebsocketServerPart(Part):
         return info
 
     @add_call_types
-    def publish(self, publish):
+    def publish(self, published):
         # type: (APublished) -> None
         # called from any thread
-        self._published = publish
+        self._published = published
         for request in self._subscription_keys.values():
             if request.path[0] == ".":
                 self._notify_published(request)
@@ -95,8 +96,7 @@ class WebsocketServerPart(Part):
                 return
         else:
             mri = request.path[0]
-        controller = self.process.get_controller(mri)
-        controller.handle_request(request)
+        self.registrar.report(builtin.infos.RequestInfo(request, mri))
 
     def on_response(self, response, write_message):
         # called from tornado thread
@@ -104,17 +104,17 @@ class WebsocketServerPart(Part):
         try:
             write_message(message)
         except WebSocketError:
+            # The websocket is dead. If the reponse was a Delta or Update, then
+            # unsubscribe so the local controller doesn't keep on trying to
+            # respond
             if isinstance(response, (Delta, Update)):
-                request = self._subscription_keys[response.id]
-                unsubscribe = Unsubscribe(request.id)
-                controller = self.process.get_controller(request.path[0])
-                controller.handle_request(unsubscribe)
+                subscribe = self._subscription_keys[response.id]
+                unsubscribe = Unsubscribe(subscribe.id)
+                unsubscribe.set_callback(subscribe.callback)
+                self.registrar.report(
+                    builtin.infos.RequestInfo(unsubscribe, subscribe.path[0]))
 
     def _notify_published(self, request):
         # called from any thread
         cb, response = request.update_response(self._published)
         cb(response)
-
-
-
-

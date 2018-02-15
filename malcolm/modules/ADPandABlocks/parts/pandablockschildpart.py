@@ -4,6 +4,7 @@ from annotypes import add_call_types
 
 from malcolm.core import Hook
 from malcolm.modules import scanning, ADCore, builtin
+from malcolm.modules.ADCore.util import AttributeDatasetType
 
 
 def is_capture_field(child, attr_name):
@@ -22,7 +23,7 @@ def dataset_info(name, child, attr_name):
             return
         assert "." not in dataset_name, \
             "Dataset name should not contain '.'"
-        dataset_type = child[dataset_type_attr].value
+        dataset_type = AttributeDatasetType(child[dataset_type_attr].value)
         uppercase_attr = re.sub("([A-Z])", r"_\1", attr_name).upper()
         return ADCore.infos.NDAttributeDatasetInfo(
             name=dataset_name,
