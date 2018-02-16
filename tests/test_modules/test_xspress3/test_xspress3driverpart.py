@@ -19,7 +19,6 @@ class TestXspress3DetectorDriverPart(ChildTestCase):
         self.process.start()
 
     def tearDown(self):
-        del self.context
         self.process.stop(timeout=2)
 
     def test_configure(self):
@@ -31,6 +30,9 @@ class TestXspress3DetectorDriverPart(ChildTestCase):
         steps_to_do = 2000*3000
         self.o.configure(
             self.context, completed_steps, steps_to_do, generator)
+        # Wait for the start_future so the post gets through to our child
+        # even on non-cothread systems
+        self.o.actions.start_future.result(timeout=1)
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),

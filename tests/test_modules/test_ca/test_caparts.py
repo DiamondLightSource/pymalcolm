@@ -117,7 +117,8 @@ class TestCAParts(unittest.TestCase):
         class Initial(np.ndarray):
             ok = True
             severity = 0
-        initial = Initial(dtype=np.float64, shape=(3,)) + np.arange(3) + 1.2
+        initial = Initial(dtype=np.float64, shape=(3,))
+        initial[:] = np.arange(3) + 1.2
 
         catools.caget.side_effect = [[initial]]
         b = self.create_block(CADoubleArrayPart(

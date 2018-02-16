@@ -46,6 +46,9 @@ class TestPositionLabellerPart(ChildTestCase):
 <position FilePluginClose="1" d0="1" d1="0" />
 </positions>
 </pos_layout>""".replace("\n", "")
+        # Wait for the start_future so the post gets through to our child
+        # even on non-cothread systems
+        self.o.start_future.result(timeout=1)
         assert self.child.handled_requests.mock_calls == [
             call.post('delete'),
             call.put('enableCallbacks', True),
