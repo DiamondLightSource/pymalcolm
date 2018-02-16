@@ -4,9 +4,8 @@ import inspect
 from tornado.options import options
 from plop.viewer import IndexHandler, ViewFlatHandler
 
-from malcolm.core import method_takes, Part
-from malcolm.core.vmetas import StringMeta
-from malcolm.modules.web.controllers import HTTPServerComms
+from malcolm.core import Part, APartName, Hook
+from malcolm.modules.web.hooks import ReportHandlersHook
 from malcolm.modules.web.infos import HandlerInfo
 
 
@@ -28,19 +27,21 @@ class MalcolmViewHandler(ViewFlatHandler):
             return f.read()
 
 
-@method_takes(
-    "name", StringMeta("Name of the Part within the controller"), "profiles")
 class ProfilingViewerPart(Part):
     # This will be written by imalcolm
     profiledir = None
 
-    def __init__(self, params):
-        self.params = params
+    def __init__(self, name="profiles"):
+        # type: (APartName) -> None
+        super(ProfilingViewerPart, self).__init__(name)
         options.datadir = self.profiledir
-        super(ProfilingViewerPart, self).__init__(params.name)
 
-    @HTTPServerComms.ReportHandlers
-    def report_handlers(self, context, loop):
+    def on_hook(self, hook):
+        # type: (Hook) -> None
+        if isinstance(hook, ReportHandlersHook):
+            hook(self.report_handlers)
+
+    def report_handlers(self):
         infos = [
             HandlerInfo("/%s" % self.params.name, MalcolmIndexHandler),
             HandlerInfo("/view", MalcolmViewHandler)]

@@ -29,6 +29,8 @@ class When(object):
 
     def check_condition(self, value):
         # type: (Any) -> None
+        # Need to check if we have a future as we might be called while the
+        # unsubscribe is taking place
         if self.future:
             try:
                 satisfied = self.condition_satisfied(value)

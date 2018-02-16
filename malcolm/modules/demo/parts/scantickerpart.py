@@ -24,8 +24,6 @@ class ScanTickerPart(builtin.parts.ChildPart):
         self.steps_to_do = None  # type: int
         # When to blow up
         self.exception_step = None  # type: int
-        # The registrar object we get at setup
-        self.registrar = None  # type: PartRegistrar
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

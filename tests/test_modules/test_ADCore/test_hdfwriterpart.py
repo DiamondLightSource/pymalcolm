@@ -9,6 +9,7 @@ from malcolm.modules.ADCore.parts import HDFWriterPart
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo, \
     CalculatedNDAttributeDatasetInfo, NDAttributeDatasetInfo
 from malcolm.modules.ADCore.util import AttributeDatasetType, DatasetType
+from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.testutil import ChildTestCase
 
 
@@ -26,6 +27,14 @@ class TestHDFWriterPart(ChildTestCase):
 
     def tearDown(self):
         self.process.stop(2)
+
+    def test_init(self):
+        c = RunnableController("mri", "/tmp")
+        c.add_part(self.o)
+        self.process.add_controller(c)
+        b = c.make_view()
+        assert list(b.configure.takes.elements) == [
+            'generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate']
 
     def test_configure(self):
         energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)

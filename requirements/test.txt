@@ -7,7 +7,6 @@ cothread==2.14
 ruamel.yaml
 plop==0.3.0
 pytest>=3
-pytest-catchlog
 pytest-cov
 h5py==2.7.1
 git+https://github.com/dls-controls/vds-gen.git@0-2#egg=vds-gen

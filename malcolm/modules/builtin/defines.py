@@ -78,6 +78,7 @@ with Anno("The shell command to run to get the value from"):
     ACmd = str
 
 
+@add_call_types
 def cmd_string(name, cmd):
     # type: (AName, ACmd) -> ADefine
     """Define a string parameter coming from a shell command to be used within

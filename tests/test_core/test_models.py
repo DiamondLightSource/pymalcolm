@@ -46,10 +46,10 @@ class TestNTScalar(unittest.TestCase):
     def setUp(self):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "epics:nt/NTScalar:1.0"
-        self.serialized["meta"] = StringMeta("desc").to_dict()
         self.serialized["value"] = "some string"
         self.serialized["alarm"] = Alarm().to_dict()
         self.serialized["timeStamp"] = TimeStamp().to_dict()
+        self.serialized["meta"] = StringMeta("desc").to_dict()
 
     def test_to_dict(self):
         a = StringMeta("desc").create_attribute_model()
@@ -425,10 +425,10 @@ class TestNTTable(unittest.TestCase):
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "epics:nt/NTTable:1.0"
         self.serialized["labels"] = ["Foo", "bar"]
-        self.serialized["meta"] = meta
         self.serialized["value"] = value
         self.serialized["alarm"] = Alarm().to_dict()
         self.serialized["timeStamp"] = TimeStamp().to_dict()
+        self.serialized["meta"] = meta
 
     def test_to_dict(self):
         elements = OrderedDict()
@@ -669,11 +669,11 @@ class TestTableMeta(unittest.TestCase):
         self.sam = StringArrayMeta()
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/TableMeta:1.0"
-        self.serialized["elements"] = dict(c1=self.sam.to_dict())
         self.serialized["description"] = "desc"
         self.serialized["tags"] = []
         self.serialized["writeable"] = True
         self.serialized["label"] = "Name"
+        self.serialized["elements"] = dict(c1=self.sam.to_dict())
 
     def test_set_elements(self):
         tm = self.tm

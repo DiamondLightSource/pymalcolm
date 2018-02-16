@@ -6,7 +6,7 @@ from annotypes import add_call_types, Anno, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator, Dimension
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Hook, Future, Info, Block
+from malcolm.core import APartName, Hook, Future, Info, Block, PartRegistrar
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, DatasetType, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
@@ -242,6 +242,13 @@ class HDFWriterPart(builtin.parts.ChildPart):
         super(HDFWriterPart, self).reset(context)
         self.abort(context)
 
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(HDFWriterPart, self).setup(registrar)
+        # Tell the controller to expose some extra configure parameters
+        registrar.report(scanning.hooks.ConfigureHook.create_info(
+            self.configure))
+
     def on_hook(self, hook):
         # type: (Hook) -> None
         if isinstance(hook, scanning.hooks.ConfigureHook):
@@ -332,7 +339,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.start_future = child.start_async()
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
-            "arrayCounter", greater_than_zero)
+            "arrayCounterReadback", greater_than_zero)
         # Return the dataset information
         dataset_infos = list(create_dataset_infos(
             formatName, part_info, generator, filename))
@@ -354,16 +361,18 @@ class HDFWriterPart(builtin.parts.ChildPart):
         child.arrayCounter.put_value(0)
         # Start a future waiting for the first array
         self.array_future = child.when_value_matches_async(
-            "arrayCounter", greater_than_zero)
+            "arrayCounterReadback", greater_than_zero)
 
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
+        self.log.warning("Waiting for first array")
         context.wait_all_futures(self.array_future)
         context.unsubscribe_all()
         child = context.block_view(self.mri)
         child.uniqueId.subscribe_value(self.update_completed_steps)
         # TODO: what happens if we miss the last frame?
+        self.log.warning("Waiting for uniqueId")
         child.when_value_matches("uniqueId", self.done_when_reaches)
 
     @add_call_types

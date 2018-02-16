@@ -131,7 +131,7 @@ class ADBaseActions(object):
         # Now wait to make sure any update_completed_steps come in
         try:
             child.when_value_matches(
-                "arrayCounter", self.done_when_reaches, timeout=5.0)
+                "arrayCounterReadback", self.done_when_reaches, timeout=5.0)
         except TimeoutError:
             raise TimeoutError(
                 "Detector %r arrayCounter didn't reach %s frames in time" % (

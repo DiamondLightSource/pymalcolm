@@ -42,7 +42,8 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
             call.add_controller(ANY),
             call.add_controller(ANY)]
         pcap, inenc = self._blocks()
-        assert not hasattr(pcap, "ts")
+        with self.assertRaises(Exception):
+            pcap.ts
         assert pcap.tsCapture.value == "No"
         assert pcap.tsDatasetName.value == ""
         assert pcap.tsDatasetType.value.value == "monitor"

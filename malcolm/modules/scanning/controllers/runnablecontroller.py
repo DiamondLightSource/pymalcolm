@@ -3,6 +3,7 @@ from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import AbortedError, MethodModel, Queue, Context, \
     TimeoutError, AMri, NumberMeta, Widget, Part, ABORT_TIMEOUT
+from malcolm.compat import OrderedDict
 from malcolm.modules.builtin.controllers import ManagerController, \
     AConfigDir, AInitialDesign, ADescription, AUseCothread, AUseGit
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
@@ -136,29 +137,54 @@ class RunnableController(ManagerController):
             if part:
                 self.part_configure_params[part] = info
 
-            # If no process yet, so don't do this yet
+            # No process yet, so don't do this yet
             if self.process is None:
                 return
 
-            # Store it and update its call_types
+            # Get the model of our configure method as the starting point
             configure_model = MethodModel.from_callable(self.configure)
-            required = list(configure_model.takes.required)
+
+            # These will not be inserted as the already exist
             ignored = tuple(ConfigureHook.call_types)
+
+            # Re-calculate the following
+            required = []
+            takes_elements = OrderedDict()
+            defaults = OrderedDict()
+
+            # First do the required arguments
+            for k in configure_model.takes.required:
+                required.append(k)
+                takes_elements[k] = configure_model.takes.elements[k]
             for part in self.parts.values():
                 try:
                     info = self.part_configure_params[part]
                 except KeyError:
                     continue
-                for k, meta in info.metas.items():
-                    if k not in ignored:
-                        configure_model.takes.elements[k] = meta
                 for k in info.required:
                     if k not in required and k not in ignored:
                         required.append(k)
-                for k, value in info.defaults.items():
-                    if k not in ignored:
-                        configure_model.defaults[k] = value
+                        takes_elements[k] = info.metas[k]
+
+            # Now the default and optional
+            for k in configure_model.takes.elements:
+                if k not in required:
+                    takes_elements[k] = configure_model.takes.elements[k]
+            for part in self.parts.values():
+                try:
+                    info = self.part_configure_params[part]
+                except KeyError:
+                    continue
+                for k in info.metas:
+                    if k not in required and k not in ignored:
+                        takes_elements[k] = info.metas[k]
+                        if k in info.defaults:
+                            defaults[k] = info.defaults[k]
+
+            # Set the values
+            configure_model.takes.set_elements(takes_elements)
             configure_model.takes.set_required(required)
+            configure_model.set_defaults(defaults)
 
             # Update methods from the new metas
             self._block.configure.set_takes(configure_model.takes)

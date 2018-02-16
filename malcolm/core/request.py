@@ -57,7 +57,7 @@ class Request(Serializable):
         # type: (Exception) -> Tuple[Callback, Error]
         """Create an Error Response object to signal an error"""
         response = Error(id=self.id, message=exception)
-        log.info("Exception raised for request %s", self, exc_info=True)
+        log.exception("Exception raised for request %s", self)
         return self.callback, response
 
     def generate_key(self):
