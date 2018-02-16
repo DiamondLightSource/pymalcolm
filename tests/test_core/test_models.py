@@ -2,14 +2,13 @@ from collections import OrderedDict
 import unittest
 
 import numpy as np
-from annotypes import Anno
-from mock import MagicMock, Mock
+from mock import Mock
 
-from malcolm.core import BlockModel, Table, Serializable, StringMeta, Alarm, \
+from malcolm.core import BlockModel, Serializable, StringMeta, Alarm, \
     AlarmSeverity, AlarmStatus, TimeStamp, VMeta, TableMeta, StringArrayMeta, \
     NumberMeta, NumberArrayMeta, MethodModel, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta, BooleanArrayMeta
-from malcolm.core.models import NTTable, MapMeta, Model, BlockMeta, NTScalar, \
+from malcolm.core.models import NTTable, MapMeta, BlockMeta, NTScalar, \
     Meta
 
 
@@ -413,11 +412,11 @@ class TestNTTable(unittest.TestCase):
         elements["bar"] = StringArrayMeta().to_dict()
         meta = OrderedDict()
         meta["typeid"] = "malcolm:core/TableMeta:1.0"
-        meta["elements"] = elements
         meta["description"] = "desc"
         meta["tags"] = []
         meta["writeable"] = True
         meta["label"] = "my label"
+        meta["elements"] = elements
         value = OrderedDict()
         value["typeid"] = "malcolm:core/Table:1.0"
         value["foo"] = ["foo1", "foo2"]
