@@ -1,9 +1,12 @@
 from annotypes import Anno, add_call_types, Any
 
-from malcolm.core import APartName, PartRegistrar, Hook, NumberMeta, \
-    Widget, config_tag
+from malcolm.core import APartName, PartRegistrar, NumberMeta, Widget, \
+    config_tag
 from malcolm.modules.builtin.parts import AMri, ChildPart
-from malcolm.modules import scanning
+from malcolm.modules.scanning.hooks import ReportStatusHook, ValidateHook, \
+    ConfigureHook, PostRunArmedHook, SeekHook, RunHook, ResumeHook, PauseHook, \
+    AbortHook, AContext, UInfos, AStepsToDo, ACompletedSteps
+from malcolm.modules.scanning.util import AGenerator
 from ..infos import NDArrayDatasetInfo
 from ..util import ADBaseActions
 
@@ -34,6 +37,13 @@ class DetectorDriverPart(ChildPart):
                 "float64", "Time taken to readout detector",
                 tags=[Widget.TEXTINPUT.tag(), config_tag()]
             ).create_attribute_model(initial_readout_time)
+        # Hooks
+        self.register_hooked(ReportStatusHook, self.report_status)
+        self.register_hooked(ValidateHook, self.validate)
+        self.register_hooked((ConfigureHook, PostRunArmedHook, SeekHook),
+                             self.configure)
+        self.register_hooked((RunHook, ResumeHook), self.run)
+        self.register_hooked((PauseHook, AbortHook), self.abort)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -44,38 +54,19 @@ class DetectorDriverPart(ChildPart):
 
     @add_call_types
     def reset(self, context):
-        # type: (scanning.hooks.AContext) -> None
+        # type: (AContext) -> None
         super(DetectorDriverPart, self).reset(context)
         self.actions.abort_detector(context)
 
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, scanning.hooks.ReportStatusHook):
-            hook(self.report_status)
-        elif isinstance(hook, scanning.hooks.ValidateHook):
-            hook(self.validate)
-        elif isinstance(hook, (scanning.hooks.ConfigureHook,
-                               scanning.hooks.PostRunArmedHook,
-                               scanning.hooks.SeekHook)):
-            hook(self.configure)
-        elif isinstance(hook, (scanning.hooks.RunHook,
-                               scanning.hooks.ResumeHook)):
-            hook(self.run)
-        elif isinstance(hook, (scanning.hooks.PauseHook,
-                               scanning.hooks.AbortHook)):
-            hook(self.abort)
-        else:
-            super(DetectorDriverPart, self).on_hook(hook)
-
     @add_call_types
     def report_status(self):
-        # type: () -> scanning.hooks.UInfos
+        # type: () -> UInfos
         if self.main_dataset_useful:
             return NDArrayDatasetInfo(rank=2)
 
     @add_call_types
     def validate(self, generator):
-        # type: (scanning.hooks.AGenerator) -> None
+        # type: (AGenerator) -> None
         exposure = generator.duration
         assert exposure > 0, \
             "Duration %s for generator must be >0 to signify constant " \
@@ -89,10 +80,10 @@ class DetectorDriverPart(ChildPart):
 
     @add_call_types
     def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  generator,  # type: scanning.hooks.AGenerator
+                  context,  # type: AContext
+                  completed_steps,  # type: ACompletedSteps
+                  steps_to_do,  # type: AStepsToDo
+                  generator,  # type: AGenerator
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
@@ -106,7 +97,7 @@ class DetectorDriverPart(ChildPart):
 
     @add_call_types
     def run(self, context):
-        # type: (scanning.hooks.AContext) -> None
+        # type: (AContext) -> None
         if not self.is_hardware_triggered:
             # Start now if we are software triggered
             self.actions.arm_detector(context)
@@ -114,5 +105,5 @@ class DetectorDriverPart(ChildPart):
 
     @add_call_types
     def abort(self, context):
-        # type: (scanning.hooks.AContext) -> None
+        # type: (AContext) -> None
         self.actions.abort_detector(context)

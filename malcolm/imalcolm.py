@@ -75,21 +75,21 @@ def make_process():
                 "stream": "ext://sys.stdout"
             },
 
-            # "local_file_handler": {
-            #     "class": "logging.handlers.RotatingFileHandler",
-            #     "level": "DEBUG",
-            #     "formatter": "extended",
-            #     "filename": "/tmp/debug.log",
-            #     "maxBytes": 100048576,
-            #     "backupCount": 4,
-            #     "encoding": "utf8"
-            # },
+            "local_file_handler": {
+                "class": "logging.handlers.RotatingFileHandler",
+                "level": "DEBUG",
+                "formatter": "extended",
+                "filename": "/tmp/malcolm-debug.log",
+                "maxBytes": 100048576,
+                "backupCount": 4,
+                "encoding": "utf8"
+            },
 
             "graylog_gelf": {
-                "class": "pygelf.GelfUdpHandler",
+                "class": "pygelf.GelfTcpHandler",
                 # Obviously a DLS-specific configuration: the graylog server
                 # address and port
-                "host": "cs04r-sc-serv-14.diamond.ac.uk",
+                "host": "graylog2.diamond.ac.uk",
                 "port": 12202,
                 "debug": True,
                 "level": "DEBUG",
@@ -119,7 +119,7 @@ def make_process():
 
         "root": {
             "level": "DEBUG",
-            "handlers": ["graylog_gelf", "console"],
+            "handlers": ["graylog_gelf", "console", "local_file_handler"],
         }
     }
 
@@ -179,7 +179,7 @@ def make_process():
             os.mkdir(args.profiledir)
         ProfilingViewerPart.profiledir = args.profiledir
         locals_d["profiler"] = Profiler(args.profiledir)
-        # locals_d["profiler"].start()
+        locals_d["profiler"].start()
 
     from malcolm.core import Context, Queue, Process
     from malcolm.modules.builtin.blocks import proxy_block
@@ -254,7 +254,7 @@ gui(self.block_view("COUNTER"))
 
 or
 
-self.make_proxy("localhost:8080", "HELLO")
+self.make_proxy("localhost:8008", "HELLO")
 print self.block_view("HELLO").greet("me")
 """ % (locals_d["self"].mri_list,)
 

@@ -2,7 +2,6 @@ import re
 import logging
 import json
 
-import numpy as np
 from annotypes import WithCallTypes, TypeVar, Any, TYPE_CHECKING, Array
 from enum import Enum
 
@@ -30,15 +29,16 @@ def json_decode(s):
 def serialize_hook(o):
     o = serialize_object(o)
     if isinstance(o, Array):
-        return serialize_hook(o.seq)
+        # Unwrap the array as it might be a list, tuple or numpy array
+        o = o.seq
+    if hasattr(o, "tolist"):
+        # Numpy bools, numbers and arrays all have a tolist function
+        return o.tolist()
     elif isinstance(o, Exception):
+        # Exceptions should be stringified
         return "%s: %s" % (type(o).__name__, o)
-    elif isinstance(o, (np.number, np.bool_)):
-        return o.tolist()
-    elif isinstance(o, np.ndarray):
-        assert len(o.shape) == 1, "Expected 1d array, got {}".format(o.shape)
-        return o.tolist()
     else:
+        # Everything else should be serializable already
         return o
 
 

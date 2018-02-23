@@ -1,15 +1,16 @@
 from annotypes import add_call_types
 
-from malcolm.core import Hook
+from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
 from ..infos import MotorInfo
 
 
 class RawMotorPart(builtin.parts.ChildPart):
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(Hook, scanning.hooks.ReportStatusHook):
-            hook(self.report_status)
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(RawMotorPart, self).setup(registrar)
+        self.register_hooked(scanning.hooks.ReportStatusHook,
+                             self.report_status)
 
     @add_call_types
     def report_status(self, context):

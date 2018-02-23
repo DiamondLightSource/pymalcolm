@@ -1,7 +1,8 @@
 import time
 import logging
 
-from annotypes import TYPE_CHECKING, Anno, WithCallTypes, Any, Generic, TypeVar
+from annotypes import TYPE_CHECKING, Anno, WithCallTypes, Any, Generic, \
+    TypeVar, Sequence
 
 from malcolm.compat import OrderedDict
 from .errors import AbortedError
@@ -11,25 +12,50 @@ from .spawned import Spawned
 from .info import Info
 
 if TYPE_CHECKING:
-    from typing import Callable, List, Dict, Tuple
+    from typing import Callable, List, Dict, Tuple, Type, Union, Optional
 
 # Create a module level logger
 log = logging.getLogger(__name__)
 
 
+T = TypeVar("T")
+if TYPE_CHECKING:
+    Hooked = Callable[..., T]
+    ArgsGen = Callable[(), List[str]]
+
+
 class Hookable(Loggable, WithCallTypes):
     name = None  # type: str
+    hooked = None  # type: Dict[Type[Hook], Tuple[Hooked, ArgsGen]]
+
+    def register_hooked(self,
+                        hooks,  # type: Union[Type[Hook], Sequence[Type[Hook]]]
+                        func,  # type: Hooked
+                        args_gen=None  # type: Optional[ArgsGen]
+                        ):
+        # type: (Type[Hook], Callable, Optional[Callable]) -> None
+        if self.hooked is None:
+            self.hooked = {}
+        if args_gen is None:
+            args_gen = getattr(func, "call_types", {}).keys
+        if not isinstance(hooks, Sequence):
+            hooks = [hooks]
+        for hook_cls in hooks:
+            self.hooked[hook_cls] = (func, args_gen)
 
     def on_hook(self, hook):
         # type: (Hook) -> None
         """Takes a hook, and optionally calls hook.run on a function"""
-        return
+        try:
+            func, args_gen = self.hooked[type(hook)]
+        except (KeyError, TypeError):
+            return
+        else:
+            hook(func, args_gen())
 
 
 with Anno("The child that the hook is being passed to"):
     AHookable = Hookable
-
-T = TypeVar("T")
 
 
 class Hook(Generic[T], WithCallTypes):
@@ -62,16 +88,15 @@ class Hook(Generic[T], WithCallTypes):
         """Override this if we need to prepare before running"""
         pass
 
-    def __call__(self, func, extra_keys=None):
-        # type: (Callable[..., T], List[str]) -> None
+    def __call__(self, func, keys=None):
+        # type: (Callable[..., T], Sequence[str]) -> None
         """Spawn the function, passing kwargs specified by func.call_types or
         keys if given"""
+        if keys is None:
+            keys = getattr(func, "call_types", {}).keys()
         assert not self.spawned, \
             "Hook has already spawned a function, cannot run another"
         self.prepare()
-        keys = list(getattr(func, "call_types", {}))  # type: List[str]
-        if extra_keys:
-            keys += extra_keys
         # TODO: should we check the return types here?
         kwargs = {}
         for k in keys:
@@ -122,8 +147,9 @@ def start_hooks(hooks):
     return hook_queue, hook_spawned
 
 
-def wait_hooks(hook_queue, hook_spawned, timeout=None, exception_check=True):
-    # type: (Queue, List[Hook], float) -> Dict[str, List[Info]]
+def wait_hooks(logger, hook_queue, hook_spawned, timeout=None,
+               exception_check=True):
+    # type: (logging.Logger, Queue, List[Hook], float) -> Dict[str, List[Info]]
     # Wait for them all to finish
     return_dict = OrderedDict()
     for hook in hook_spawned:
@@ -137,12 +163,12 @@ def wait_hooks(hook_queue, hook_spawned, timeout=None, exception_check=True):
         hook.spawned.wait(timeout)
         duration = time.time() - start
         if hook_spawned:
-            log.debug(
+            logger.debug(
                 "%s: Child %s returned %r after %ss. Still waiting for %s",
                 hook.name, hook.child.name, ret, duration,
                 [h.child.name for h in hook_spawned])
         else:
-            log.debug(
+            logger.debug(
                 "%s: Child %s returned %r after %ss. Returning...",
                 hook.name, hook.child.name, ret, duration)
 

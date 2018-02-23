@@ -166,6 +166,9 @@ class ManagerController(StatefulController):
                 # First write of table, set layout and exports saves
                 self.saved_visibility = layout_table.visible
                 self.saved_exports = self.exports.value.to_dict()
+                # Force visibility changed so we update_block_endpoints
+                # even if there weren't any visible
+                visibility_changed = True
             if visibility_changed:
                 self.update_modified()
                 self.update_exportable()
@@ -279,9 +282,6 @@ class ManagerController(StatefulController):
                     tag = get_config_tag(field.meta.tags)
                     if tag:
                         # Strip off the "config" tags from attributes
-                        assert writeable_func == field.set_value, \
-                            "Can't save %s with writeable_func %s" % (
-                                name, writeable_func)
                         field.meta.set_tags(
                             [x for x in field.meta.tags if x != tag])
                         self.our_config_attributes[name] = field
@@ -483,9 +483,10 @@ class ManagerController(StatefulController):
             export.append(export_name)
         self.exports.set_value(ExportTable(source, export))
         # Set other attributes
-        for name, attr in self.our_config_attributes.items():
-            if name in attributes:
-                attr.set_value(attributes[name])
+        our_values = {k: v for k, v in attributes.items()
+                      if k in self.our_config_attributes}
+        block = self.make_view()
+        block.put_attribute_values(our_values)
         # Run the load hook to get parts to load their own structure
         self.run_hooks(
             LoadHook(p, c, children.get(p.name, {}))

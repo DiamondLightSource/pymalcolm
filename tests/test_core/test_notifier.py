@@ -132,12 +132,17 @@ class TestNotifier(unittest.TestCase):
         # subscribe once and check initial response
         r1 = Subscribe(path=["b"], delta=True)
         r1.set_callback(Mock())
+        r2 = Subscribe(path=["b"])
+        r2.set_callback(Mock())
         self.handle_subscribe(r1)
+        self.handle_subscribe(r2)
         expected = OrderedDict()
         expected["attr"] = dict(value=32)
         expected["attr2"] = dict(value="st")
         self.assert_called_with(r1.callback, Delta(changes=[[[], expected]]))
+        self.assert_called_with(r2.callback, Update(value=expected))
         r1.callback.reset_mock()
+        r2.callback.reset_mock()
         # squash two changes together
         with self.o.changes_squashed:
             self.block.attr["value"] = 33
@@ -148,3 +153,7 @@ class TestNotifier(unittest.TestCase):
             assert self.block.attr2.value == "tr"
         self.assert_called_with(r1.callback, Delta(
             changes=[[["attr", "value"], 33], [["attr2", "value"], "tr"]]))
+        expected["attr"]["value"] = 33
+        expected["attr2"]["value"] = "tr"
+        self.assert_called_with(r2.callback, Update(value=expected))
+

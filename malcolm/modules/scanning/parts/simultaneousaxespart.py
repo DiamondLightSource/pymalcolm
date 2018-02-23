@@ -18,10 +18,8 @@ class SimultaneousAxesPart(Part):
             "Set of axes that can be specified in axesToMove at configure",
             tags=[Widget.TABLE.tag(), config_tag()]
         ).create_attribute_model(value)
-
-    def on_hook(self, hook):
-        if isinstance(hook, ValidateHook):
-            hook(self.validate)
+        # Hooks
+        self.register_hooked(ValidateHook, self.validate)
 
     @add_call_types
     def validate(self, generator):

@@ -20,10 +20,9 @@ class ChildTestCase(unittest.TestCase):
         """
         controllers = child_block(**params)
         for controller in controllers:
-            for part in controller.parts.values():
-                if hasattr(part, "caa"):
-                    # We have a ca attribute, mock it out
-                    part.caa = Mock()
+            # We've already setup the CAParts and added to the block, so we
+            # can safely delete them so they don't try to connect
+            controller.parts = {}
             process.add_controller(controller)
         child = controllers[-1]
         child.handled_requests = Mock(return_value=None)

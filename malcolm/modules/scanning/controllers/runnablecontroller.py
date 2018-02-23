@@ -240,9 +240,11 @@ class RunnableController(ManagerController):
             tweaks = ParameterTweakInfo.filter_values(validate_part_info)
             if tweaks:
                 for tweak in tweaks:
-                    setattr(params, tweak.parameter, tweak.value)
+                    deserialized = self._block.configure.takes.elements[
+                        tweak.parameter].validate(tweak.value)
+                    setattr(params, tweak.parameter, deserialized)
                     self.log.debug(
-                        "Tweaking %s to %s", tweak.parameter, tweak.value)
+                        "Tweaking %s to %s", tweak.parameter, deserialized)
             else:
                 # Consistent set, just return the params
                 return params

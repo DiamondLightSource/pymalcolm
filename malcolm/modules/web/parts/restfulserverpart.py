@@ -2,7 +2,7 @@ from annotypes import Anno, add_call_types
 from tornado.web import RequestHandler, asynchronous
 
 from malcolm.core import Part, json_decode, json_encode, Get, Post, Return, \
-    Error, APartName, Hook
+    Error, Hook
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos
 from ..infos import HandlerInfo
 
@@ -61,11 +61,8 @@ class RestfulServerPart(Part):
     def __init__(self, name="rest"):
         # type: (AName) -> None
         super(RestfulServerPart, self).__init__(name)
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, ReportHandlersHook):
-            hook(self.report_handlers)
+        # Hooks
+        self.register_hooked(ReportHandlersHook, self.report_handlers)
 
     @add_call_types
     def report_handlers(self, loop):

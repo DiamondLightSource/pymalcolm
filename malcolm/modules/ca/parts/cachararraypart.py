@@ -28,8 +28,4 @@ class CACharArrayPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        self.caa.setup(registrar, self.name)
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        self.caa.on_hook(hook)
+        self.caa.setup(registrar, self.name, self.register_hooked)

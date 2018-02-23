@@ -5,7 +5,7 @@ from annotypes import TYPE_CHECKING
 from .serializable import serialize_object
 from .loggable import Loggable
 from .request import Subscribe, Unsubscribe
-from .response import Response
+from .response import Response, Update
 from .rlock import RLock
 
 if TYPE_CHECKING:
@@ -94,7 +94,7 @@ class Notifier(Loggable):
             if self._squashed_count == 0:
                 changes = self._squashed_changes
                 self._squashed_changes = []
-                # TODO: squash intermediate changes here?
+                # TODO: squash intermediate deltas here?
                 responses += self._tree.notify_changes(changes)
         finally:
             self._lock.release()
@@ -160,7 +160,7 @@ class NotifierNode(object):
         return ret
 
     def _add_child_change(self, change, child_changes):
-        # type: (List, List[List]) -> None
+        # type: (List, Dict[str, List]) -> None
         path = change[0]
         if path:
             # This is for one of our children

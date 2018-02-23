@@ -36,6 +36,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             'OUT.UNITS',
             'OUT.SCALE',
             'OUT.OFFSET',
+            'OUT.SCALED',
             'OUT.CAPTURE',
             'OUT.DATA_DELAY']
 
@@ -56,7 +57,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         assert val.block_name == "ADDER1"
         assert val.meta.writeable == False
         self.assertIsInstance(val.meta, NumberMeta)
-        assert val.meta.dtype == "float64"
+        assert val.meta.dtype == "int32"
         assert val.meta.tags == [
             "group:inputs", "widget:textupdate"]
 
@@ -77,7 +78,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         assert out.field_name == "OUT"
         assert out.meta.writeable == False
         self.assertIsInstance(out.meta, NumberMeta)
-        assert out.meta.dtype == "float64"
+        assert out.meta.dtype == "int32"
         assert out.meta.tags == [
             "group:outputs", "outport:int32:ADDER1.OUT",
             "widget:textupdate"]
@@ -125,6 +126,14 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         assert data_delay.meta.dtype == "uint8"
         assert data_delay.meta.tags == [
             "group:outputs", "widget:textinput", "config:1"]
+
+        scale = o.parts["OUT.SCALED"]
+        assert scale.block_name == "ADDER1"
+        assert scale.meta.writeable == False
+        self.assertIsInstance(scale.meta, NumberMeta)
+        assert scale.meta.dtype == "float64"
+        assert scale.meta.tags == [
+            "group:outputs", "widget:textupdate"]
 
     def test_block_fields_pulse(self):
         fields = OrderedDict()

@@ -14,6 +14,7 @@ from ..infos import CalculatedNDAttributeDatasetInfo, DatasetType, \
 
 if TYPE_CHECKING:
     from typing import Iterator, List, Dict
+
     PartInfo = Dict[str, List[Info]]
 
 SUFFIXES = "NXY3456789"
@@ -235,6 +236,15 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.uniqueid_offset = 0
         # The HDF5 layout file we write to say where the datasets go
         self.layout_filename = None  # type: str
+        # Hooks
+        self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
+        self.register_hooked((scanning.hooks.PostRunArmedHook,
+                              scanning.hooks.SeekHook), self.seek)
+        self.register_hooked((scanning.hooks.RunHook,
+                              scanning.hooks.ResumeHook), self.run)
+        self.register_hooked(scanning.hooks.PostRunReadyHook,
+                             self.post_run_ready)
+        self.register_hooked(scanning.hooks.AbortHook, self.abort)
 
     @add_call_types
     def reset(self, context):
@@ -248,23 +258,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, scanning.hooks.ConfigureHook):
-            hook(self.configure)
-        elif isinstance(hook, (scanning.hooks.PostRunArmedHook,
-                               scanning.hooks.SeekHook)):
-            hook(self.seek)
-        elif isinstance(hook, (scanning.hooks.RunHook,
-                               scanning.hooks.ResumeHook)):
-            hook(self.run)
-        elif isinstance(hook, scanning.hooks.PostRunReadyHook):
-            hook(self.post_run_ready)
-        elif isinstance(hook, scanning.hooks.AbortHook):
-            hook(self.abort)
-        else:
-            super(HDFWriterPart, self).on_hook(hook)
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
@@ -366,13 +359,11 @@ class HDFWriterPart(builtin.parts.ChildPart):
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
-        self.log.warning("Waiting for first array")
         context.wait_all_futures(self.array_future)
         context.unsubscribe_all()
         child = context.block_view(self.mri)
         child.uniqueId.subscribe_value(self.update_completed_steps)
         # TODO: what happens if we miss the last frame?
-        self.log.warning("Waiting for uniqueId")
         child.when_value_matches("uniqueId", self.done_when_reaches)
 
     @add_call_types
@@ -393,4 +384,3 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # type: (int) -> None
         completed_steps = value + self.uniqueid_offset
         self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
-

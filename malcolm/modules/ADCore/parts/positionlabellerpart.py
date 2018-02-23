@@ -17,7 +17,7 @@ N_LOAD_AHEAD = 4
 
 if TYPE_CHECKING:
     from typing import Tuple
-    
+
 
 class PositionLabellerPart(builtin.parts.ChildPart):
     """Part for controlling a `position_labeller_block` in a scan"""
@@ -37,6 +37,13 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.loading = False
         # When arrayCounter gets to here we are done
         self.done_when_reaches = 0
+        self.register_hooked((scanning.hooks.ConfigureHook,
+                              scanning.hooks.PostRunArmedHook,
+                              scanning.hooks.SeekHook), self.configure)
+        self.register_hooked((scanning.hooks.RunHook,
+                              scanning.hooks.ResumeHook), self.run)
+        self.register_hooked((scanning.hooks.AbortHook,
+                              scanning.hooks.PauseHook), self.abort)
 
     @add_call_types
     def reset(self, context):
@@ -44,23 +51,8 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         super(PositionLabellerPart, self).reset(context)
         self.abort(context)
 
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, (scanning.hooks.ConfigureHook,
-                               scanning.hooks.PostRunArmedHook,
-                               scanning.hooks.SeekHook)):
-            hook(self.configure)
-        elif isinstance(hook, (scanning.hooks.RunHook,
-                               scanning.hooks.ResumeHook)):
-            hook(self.run)
-        elif isinstance(hook, (scanning.hooks.AbortHook,
-                               scanning.hooks.PauseHook)):
-            hook(self.abort)
-        else:
-            super(PositionLabellerPart, self).on_hook(hook)
-
     @add_call_types
-    def configure(self,                  
+    def configure(self,
                   context,  # type: scanning.hooks.AContext
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
@@ -113,7 +105,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
     def load_more_positions(self, number_left, child):
         # type: (int, Any) -> None
         if not self.loading and self.end_index < self.steps_up_to and \
-                        number_left < POSITIONS_PER_XML * N_LOAD_AHEAD:
+                number_left < POSITIONS_PER_XML * N_LOAD_AHEAD:
             self.loading = True
             xml, self.end_index = self._make_xml(self.end_index)
             child.xml.put_value(xml)
@@ -156,4 +148,3 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         xml_length = len(xml)
         assert xml_length < XML_MAX_SIZE, "XML size %d too big" % xml_length
         return xml, end_index
-

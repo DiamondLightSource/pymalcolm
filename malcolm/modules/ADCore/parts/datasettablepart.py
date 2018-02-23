@@ -1,6 +1,6 @@
 from annotypes import add_call_types
 
-from malcolm.core import Part, Hook, PartRegistrar, APartName, TableMeta
+from malcolm.core import Part, PartRegistrar, APartName, TableMeta
 from malcolm.modules import scanning
 from ..infos import DatasetProducedInfo
 from ..util import DatasetTable
@@ -15,15 +15,12 @@ class DatasetTablePart(Part):
         self.datasets = TableMeta.from_table(
             DatasetTable, "Datasets produced in HDF file"
         ).create_attribute_model()
+        self.register_hooked(scanning.hooks.PostConfigureHook,
+                             self.post_configure)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         registrar.add_attribute_model("datasets", self.datasets)
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, scanning.hooks.PostConfigureHook):
-            hook(self.post_configure)
 
     @add_call_types
     def post_configure(self, part_info):

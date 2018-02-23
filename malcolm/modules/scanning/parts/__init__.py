@@ -1,4 +1,4 @@
-from .runnablechildpart import RunnableChildPart, AMri
+from .runnablechildpart import RunnableChildPart, AMri, AInitialVisibility
 from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes
 
 # Expose all the classes

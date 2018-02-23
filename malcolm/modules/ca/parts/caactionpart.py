@@ -4,7 +4,6 @@ from malcolm.core import Part, PartRegistrar, Hook
 from malcolm.modules import builtin
 from ..util import CaToolsHelper, APartName, AMetaDescription, APv
 
-
 with Anno("Status pv to see if successful"):
     StatusPv = str
 with Anno("Good value for status pv"):
@@ -19,6 +18,7 @@ with Anno("Wait for caput callback?"):
 
 class CAActionPart(Part):
     """Group a number of PVs together that represent a method like acquire()"""
+
     def __init__(self,
                  name,  # type: APartName
                  description,  # type: AMetaDescription
@@ -39,17 +39,14 @@ class CAActionPart(Part):
         self.message_pv = message_pv
         self.value = value
         self.wait = wait
+        # Hooks
+        self.register_hooked((builtin.hooks.InitHook,
+                              builtin.hooks.ResetHook), self.connect_pvs)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(CAActionPart, self).setup(registrar)
         registrar.add_method_model(self.caput, self.name, self.description)
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, (builtin.hooks.InitHook,
-                             builtin.hooks.ResetHook)):
-            hook(self.connect_pvs)
 
     def connect_pvs(self):
         pvs = [self.pv]

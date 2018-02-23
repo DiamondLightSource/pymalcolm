@@ -5,8 +5,8 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
-    Unsubscribe, Alarm, AlarmSeverity, AlarmStatus, APartName, PartRegistrar, \
-    Hook, Port, Controller, Response, ABORT_TIMEOUT, get_config_tag
+    Unsubscribe, APartName, Hook, Port, Controller, Response, ABORT_TIMEOUT, \
+    get_config_tag
 from ..infos import PortInfo, LayoutInfo, OutPortInfo, InPortInfo, \
     PartExportableInfo, PartModifiedInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
@@ -15,7 +15,7 @@ from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
 from ..util import StatefulStates
 
 if TYPE_CHECKING:
-    from typing import Dict, Any, Set, List, Type, TypeVar, Tuple
+    from typing import Dict, Any, List, Type, TypeVar, Tuple
 
     TP = TypeVar("TP", bound=PortInfo)
 
@@ -25,6 +25,8 @@ with Anno("Malcolm resource id of child object"):
 with Anno("Whether the part is initially visible with no config loaded, None "
           "means only if child in/outports are connected to another Block"):
     AInitialVisibility = bool
+with Anno("If the child is a StatefulController then this should be True"):
+    AStateful = bool
 
 
 port_tag_re = re.compile(r"(in|out)port:(.*):(.*)")
@@ -34,10 +36,11 @@ ss = StatefulStates
 
 
 class ChildPart(Part):
-    def __init__(self, name, mri, initial_visibility=None):
-        # type: (APartName, AMri, AInitialVisibility) -> None
+    def __init__(self, name, mri, initial_visibility=None, stateful=True):
+        # type: (APartName, AMri, AInitialVisibility, AStateful) -> None
         super(ChildPart, self).__init__(name)
-        self.mri = mri  # type: str
+        self.stateful = stateful
+        self.mri = mri
         self.x = 0.0  # type: float
         self.y = 0.0  # type: float
         self.visible = initial_visibility  # type: bool
@@ -53,28 +56,20 @@ class ChildPart(Part):
         self.config_subscriptions = {}  # type: Dict[int, Subscribe]
         # {attr_name: PortInfo}
         self.port_infos = {}  # type: Dict[str, PortInfo]
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, InitHook):
-            hook(self.init)
-        elif isinstance(hook, HaltHook):
-            hook(self.halt)
-        elif isinstance(hook, LayoutHook):
-            hook(self.layout)
-        elif isinstance(hook, LoadHook):
-            hook(self.load)
-        elif isinstance(hook, SaveHook):
-            hook(self.save)
-        elif isinstance(hook, DisableHook):
-            hook(self.disable)
-        elif isinstance(hook, ResetHook):
-            hook(self.reset)
+        # Hooks
+        self.register_hooked(InitHook, self.init)
+        self.register_hooked(HaltHook, self.halt)
+        self.register_hooked(LayoutHook, self.layout)
+        self.register_hooked(LoadHook, self.load)
+        self.register_hooked(SaveHook, self.save)
+        self.register_hooked(DisableHook, self.disable)
+        self.register_hooked(ResetHook, self.reset)
 
     @add_call_types
     def init(self, context):
         # type: (AContext) -> None
-        if "state" in context.block_view(self.mri):
+        self.child_controller = context.get_controller(self.mri)
+        if self.stateful:
             # Wait for a while until the child is ready as it changes the
             # save state
             context.when_matches(
@@ -82,8 +77,6 @@ class ChildPart(Part):
                 [ss.FAULT, ss.DISABLED], timeout=ABORT_TIMEOUT)
         # Save what we have
         self.save(context)
-        # Monitor the child configure for changes
-        self.child_controller = context.get_controller(self.mri)
         subscribe = Subscribe(path=[self.mri, "meta", "fields"])
         subscribe.set_callback(self.update_part_exportable)
         # Wait for the first update to come in
@@ -94,14 +87,14 @@ class ChildPart(Part):
         # type: (AContext) -> None
         # TODO: do we actually want to disable children on disable?
         child = context.block_view(self.mri)
-        if "disable" in child and child.disable.writeable:
+        if self.stateful and child.disable.writeable:
             child.disable()
 
     @add_call_types
     def reset(self, context):
         # type: (AContext) -> None
         child = context.block_view(self.mri)
-        if "reset" in child and child.reset.writeable:
+        if self.stateful and child.reset.writeable:
             child.reset()
 
     @add_call_types
@@ -159,6 +152,7 @@ class ChildPart(Part):
         # Do this first so that any callbacks that happen in the put know
         # not to notify controller
         self.saved_structure = structure
+        # TODO: only load design if visible and not at init
         for _, params in sorted(iterations.items()):
             # Call each iteration as a separate operation, only putting the
             # ones that need to change

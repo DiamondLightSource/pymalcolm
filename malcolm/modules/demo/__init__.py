@@ -1,1 +1,1 @@
-from . import blocks, parts
+from . import parts

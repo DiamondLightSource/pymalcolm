@@ -21,13 +21,8 @@ class FileServerPart(Part):
         # type: (APartName, APath) -> None
         super(FileServerPart, self).__init__(name)
         self.path = path
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, ReportHandlersHook):
-            hook(self.report_handlers)
-        else:
-            super(FileServerPart, self).on_hook(hook)
+        # Hooks
+        self.register_hooked(ReportHandlersHook, self.report_handlers)
 
     @add_call_types
     def report_handlers(self):

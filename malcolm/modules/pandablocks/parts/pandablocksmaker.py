@@ -14,35 +14,21 @@ SVG_DIR = os.path.join(os.path.dirname(__file__), "..", "icons")
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
     if subtyp == "enum":
-        if writeable:
-            widget = Widget.COMBO
-        else:
-            widget = Widget.TEXTUPDATE
         meta = ChoiceMeta(description, labels)
     elif subtyp == "bit":
-        if writeable:
-            widget = Widget.CHECKBOX
-        else:
-            widget = Widget.LED
         meta = BooleanMeta(description)
+    elif subtyp in ("uint", ""):
+        meta = NumberMeta("uint32", description)
+    elif subtyp in ("int", "pos"):
+        meta = NumberMeta("int32", description)
+    elif subtyp == "scalar":
+        meta = NumberMeta("float64", description)
+    elif subtyp == "lut":
+        meta = StringMeta(description)
     else:
-        if writeable:
-            widget = Widget.TEXTINPUT
-        else:
-            widget = Widget.TEXTUPDATE
-        if subtyp == "uint":
-            meta = NumberMeta("uint32", description)
-        elif subtyp == "int":
-            meta = NumberMeta("int32", description)
-        elif subtyp == "scalar":
-            meta = NumberMeta("float64", description)
-        elif subtyp == "lut":
-            meta = StringMeta(description)
-        elif subtyp in ("pos", "relative_pos"):
-            meta = NumberMeta("float64", description)
-        else:
-            raise ValueError("Unknown subtype %r" % subtyp)
-    tags.append(widget.tag())
+        raise ValueError("Unknown subtype %r" % subtyp)
+    meta.set_writeable(writeable)
+    tags.append(meta.default_widget().tag())
     meta.set_tags(tags)
     return meta
 
@@ -85,8 +71,7 @@ class PandABlocksMaker(object):
             self._make_out(field_name, field_data, "pos")
             self._make_scale_offset(field_name)
             self._make_out_capture(field_name, field_data)
-            if subtyp != "adc":
-                self._make_data_delay(field_name)
+            self._make_data_delay(field_name)
         elif typ == "ext_out":
             self._make_out_capture(field_name, field_data)
         elif typ == "bit_mux":
@@ -120,6 +105,9 @@ class PandABlocksMaker(object):
         meta = NumberMeta("float64", "Offset for block position fields",
                           tags=[group, Widget.TEXTINPUT.tag()])
         self._make_field_part(field_name + ".OFFSET", meta, writeable=True)
+        meta = NumberMeta("float64", "Current scaled value of position field",
+                          tags=[group, Widget.TEXTUPDATE.tag()])
+        self._make_field_part(field_name + ".SCALED", meta, writeable=False)
 
     def _make_time_parts(self, field_name, field_data, writeable):
         description = field_data.description

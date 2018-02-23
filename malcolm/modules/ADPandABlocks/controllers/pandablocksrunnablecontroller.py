@@ -15,6 +15,7 @@ from ..parts import PandABlocksDriverPart, PandABlocksChildPart
 with Anno("Prefix for areaDetector records"):
     APrefix = str
 
+
 class PandABlocksRunnableController(PandABlocksManagerController,
                                     RunnableController):
     def __init__(self,
@@ -76,8 +77,8 @@ class PandABlocksRunnableController(PandABlocksManagerController,
 
     def _make_corresponding_part(self, block_name, mri):
         if block_name == "PCAP":
-            part_cls = PandABlocksDriverPart
+            part = PandABlocksDriverPart(name=block_name, mri=mri)
         else:
-            part_cls = PandABlocksChildPart
-        part = part_cls(name=block_name, mri=mri)
+            part = PandABlocksChildPart(
+                name=block_name, mri=mri, stateful=False)
         return part

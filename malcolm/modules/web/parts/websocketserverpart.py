@@ -1,7 +1,7 @@
 from annotypes import Anno, add_call_types
 from tornado.websocket import WebSocketHandler, WebSocketError
 
-from malcolm.core import Hook, Part, json_decode, deserialize_object, \
+from malcolm.core import Part, json_decode, deserialize_object, \
     Request, json_encode, Subscribe, Unsubscribe, Delta, Update
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
@@ -49,13 +49,9 @@ class WebsocketServerPart(Part):
         self._subscription_keys = {}
         # [mri]
         self._published = []
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, ReportHandlersHook):
-            hook(self.report_handlers)
-        elif isinstance(hook, PublishHook):
-            hook(self.publish)
+        # Hooks
+        self.register_hooked(ReportHandlersHook, self.report_handlers)
+        self.register_hooked(PublishHook, self.publish)
 
     @add_call_types
     def report_handlers(self, loop):
@@ -76,6 +72,7 @@ class WebsocketServerPart(Part):
 
     def on_request(self, request):
         # called from tornado thread
+        self.log.info("Request: %s", request)
         if isinstance(request, Subscribe):
             if request.path[0] == ".":
                 # special entries
@@ -104,15 +101,19 @@ class WebsocketServerPart(Part):
         try:
             write_message(message)
         except WebSocketError:
-            # The websocket is dead. If the reponse was a Delta or Update, then
+            # The websocket is dead. If the response was a Delta or Update, then
             # unsubscribe so the local controller doesn't keep on trying to
             # respond
             if isinstance(response, (Delta, Update)):
-                subscribe = self._subscription_keys[response.id]
-                unsubscribe = Unsubscribe(subscribe.id)
-                unsubscribe.set_callback(subscribe.callback)
-                self.registrar.report(
-                    builtin.infos.RequestInfo(unsubscribe, subscribe.path[0]))
+                # Websocket is dead so we can clear the subscription key.
+                # Subsequent updates may come in before the unsubscribe, but
+                # ignore them as we can't do anything about it
+                subscribe = self._subscription_keys.pop(response.id, None)
+                if subscribe:
+                    unsubscribe = Unsubscribe(subscribe.id)
+                    unsubscribe.set_callback(subscribe.callback)
+                    self.registrar.report(builtin.infos.RequestInfo(
+                        unsubscribe, subscribe.path[0]))
 
     def _notify_published(self, request):
         # called from any thread

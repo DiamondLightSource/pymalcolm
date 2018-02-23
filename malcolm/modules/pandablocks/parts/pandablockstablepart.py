@@ -15,12 +15,15 @@ class PandABlocksTablePart(PandABlocksFieldPart):
         columns = OrderedDict()
         self.fields = OrderedDict()
         fields = client.get_table_fields(block_name, field_name)
-        for field_name, (bits_hi, bits_lo) in fields.items():
+        if not fields:
+            # Didn't put any metadata in, make some up
+            fields["VALUE"] = (31, 0)
+        for column_name, (bits_hi, bits_lo) in fields.items():
             nbits = bits_hi - bits_lo + 1
             if nbits < 1:
                 raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
             if nbits == 1:
-                column_meta = BooleanArrayMeta(field_name)
+                column_meta = BooleanArrayMeta(column_name)
                 widget = Widget.CHECKBOX
             else:
                 if nbits <= 8:
@@ -33,9 +36,9 @@ class PandABlocksTablePart(PandABlocksFieldPart):
                     dtype = "uint64"
                 else:
                     raise ValueError("Bad bits %s:%s" % (bits_hi, bits_lo))
-                column_meta = NumberArrayMeta(dtype, field_name)
+                column_meta = NumberArrayMeta(dtype, column_name)
                 widget = Widget.TEXTINPUT
-            column_name = snake_to_camel(field_name)
+            column_name = snake_to_camel(column_name)
             column_meta.set_label(camel_to_title(column_name))
             column_meta.set_tags([widget.tag()])
             columns[column_name] = column_meta

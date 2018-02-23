@@ -1,7 +1,8 @@
 import pvaccess
+from annotypes import add_call_types
 
 from malcolm.core import Loggable, Queue, Get, Put, Post, Subscribe, \
-    Error, ResponseError, ProcessPublishHook, Hook
+    Error, ResponseError, ProcessPublishHook, Hook, APublished
 from malcolm.modules.builtin.controllers import ServerComms
 from .pvautil import dict_to_pv_object, value_for_pva_set, strip_tuples
 
@@ -24,7 +25,9 @@ class PvaServerComms(ServerComms):
         else:
             super(PvaServerComms, self).on_hook(hook)
 
+    @add_call_types
     def publish(self, published):
+        # type: (APublished) -> None
         # Administer endpoints
         self._published = published
         if self._pva_server:

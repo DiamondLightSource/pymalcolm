@@ -15,40 +15,43 @@ if TYPE_CHECKING:
 # Create a module level logger
 log = logging.getLogger(__name__)
 
+SECTION_NAMES = [
+    "parameters", "controllers", "parts", "blocks", "includes", "defines"]
+
 
 def _create_takes_arguments(sections):
-    # type: (Dict[str, List[Section]]) -> List[Anno]
+    # type: (List[Section]) -> List[Anno]
     takes_arguments = []
-    for parameter_section in sections["parameters"]:
-        takes_arguments.append(parameter_section.instantiate({}))
+    for section in sections:
+        if section.section == "parameters":
+            takes_arguments.append(section.instantiate({}))
     return takes_arguments
 
 
-def _create_blocks_and_parts(sections,  # type: Dict[str, List[Section]]
+def _create_blocks_and_parts(sections,  # type: List[Section]
                              params  # type: Dict[str, str]
                              ):
     # type: (...) -> Tuple[List[Controller], List[Part]]
     controllers = []
     parts = []
 
-    # Any child blocks
-    for section in sections["blocks"]:
-        controllers += section.instantiate(params)
-
-    # Do the includes first
-    for section in sections["includes"]:
-        new_c, new_p = section.instantiate(params)
-        controllers += new_c
-        parts += new_p
-
-    # Add any parts in
-    for section in sections["parts"]:
-        parts.append(section.instantiate(params))
+    for section in sections:
+        if section.section == "blocks":
+            # Any child blocks
+            controllers += section.instantiate(params)
+        elif section.section == "includes":
+            # Includes can have child blocks and/or lists of parts
+            new_c, new_p = section.instantiate(params)
+            controllers += new_c
+            parts += new_p
+        elif section.section == "parts":
+            # A single part
+            parts.append(section.instantiate(params))
 
     return controllers, parts
 
 
-def _create_defines(sections,  # type: Dict[str, List[Section]]
+def _create_defines(sections,  # type: List[Section]
                     yamlname,  # type: str
                     yamldir,  # type: str
                     params  # type: Dict[str, str]
@@ -57,15 +60,17 @@ def _create_defines(sections,  # type: Dict[str, List[Section]]
     # Start with some
     defines = dict(yamlname=yamlname, yamldir=yamldir, docstring="")
     # Add in the parameter defaults
-    for section in sections["parameters"]:
-        parameter = section.instantiate(defines)  # type: Anno
-        if parameter.default is not NO_DEFAULT:
-            defines[parameter.name] = parameter.default
+    for section in sections:
+        if section.section == "parameters":
+            parameter = section.instantiate(defines)  # type: Anno
+            if parameter.default is not NO_DEFAULT:
+                defines[parameter.name] = parameter.default
     if params:
         defines.update(params)
-    for section in sections["defines"]:
-        define = section.instantiate(defines)  # type: Define
-        defines[define.name] = define.value
+    for section in sections:
+        if section.section == "defines":
+            define = section.instantiate(defines)  # type: Define
+            defines[define.name] = define.value
     return defines
 
 
@@ -87,8 +92,9 @@ def make_include_creator(yaml_path, filename=None):
     yamldir = os.path.dirname(yaml_path)
 
     # Check we don't have any controllers
-    assert len(sections["controllers"]) == 0, \
-        "Expected exactly 0 controller, got %s" % (sections["controllers"],)
+    controller_sections = [s for s in sections if s.section == "controllers"]
+    assert len(controller_sections) == 0, \
+        "Expected exactly 0 controllers, got %s" % (controller_sections,)
 
     # Add any parameters to the takes arguments
     @add_call_types
@@ -129,9 +135,10 @@ def make_block_creator(yaml_path, filename=None):
     yamldir = os.path.dirname(yaml_path)
 
     # Check we have only one controller
-    assert len(sections["controllers"]) == 1, \
-        "Expected exactly 1 controller, got %s" % (sections["controllers"],)
-    controller_section = sections["controllers"][0]
+    controller_sections = [s for s in sections if s.section == "controllers"]
+    assert len(controller_sections) == 1, \
+        "Expected exactly 1 controller, got %s" % (controller_sections,)
+    controller_section = controller_sections[0]
 
     # Add any parameters to the takes arguments
     @add_call_types
@@ -163,6 +170,17 @@ class Section(object):
         self.filename = filename
         self.lineno = lineno
         self.name = name
+        # Check the name
+        split = name.split(".")
+        if len(split) != 3:
+            raise YamlError(
+                "%s:%d: Expected something like 'builtin.parts.ChildPart'. "
+                "Got %r" % (filename, lineno, name))
+        section = split[1]
+        if section not in SECTION_NAMES:
+            raise YamlError("%s:%d: Unknown section name %s" % (
+                filename, lineno, name))
+        self.section = section
         if param_dict is None:
             self.param_dict = {}
         else:
@@ -221,17 +239,7 @@ class Section(object):
 
         Returns:
             tuple: (sections, yamlname, docstring) where sections is a
-                dictionary containing sections sub dictionaries lists. E.g.
-                {
-                    "parameters": [
-                        Section(name="builtin.parameters.string",
-                            params={"name": "something"})
-                    ],
-                    "controllers": [
-                        Section(name="builtin.controllers.ManagerController",
-                            params={"mri": "something")
-                    ]
-                }
+                list of created sections
         """
         if filename:
             # different filename to support passing __file__
@@ -245,28 +253,16 @@ class Section(object):
         # First separate them into their relevant sections
         ds = yaml.load(text, Loader=yaml.RoundTripLoader)
         docstring = None
-        sections = dict(
-            parameters=[], controllers=[], parts=[], blocks=[], includes=[],
-            defines=[])
+        sections = []
         for d in ds:
             assert len(d) == 1, \
                 "Expected section length 1, got %d" % len(d)
             lineno = d._yaml_line_col.line + 1
             name = list(d)[0]
-            split = name.split(".")
-            if len(split) != 3:
-                raise ImportError(
-                    "%s:%d: Expected something like 'builtin.parts.ChildPart'. "
-                    "Got %r" % (yaml_path, lineno, name))
-            section = split[1]
-            if section in sections:
-                sections[section].append(cls(
-                    yaml_path, lineno, name, d[name]))
-                if name == "builtin.defines.docstring":
-                    docstring = d[name]["value"]
-            else:
-                raise ImportError("%s:%d: Unknown section name %s" % (
-                    yaml_path, lineno, name))
+            sections.append(cls(
+                yaml_path, lineno, name, d[name]))
+            if name == "builtin.defines.docstring":
+                docstring = d[name]["value"]
 
         return sections, yamlname, docstring
 

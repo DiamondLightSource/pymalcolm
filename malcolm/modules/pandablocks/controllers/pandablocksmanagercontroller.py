@@ -18,6 +18,8 @@ from ..pandablocksclient import PandABlocksClient
 LUT_CONSTANTS = dict(
     A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
 
+# Time between polls for *CHANGES
+POLL_PERIOD = 0.5
 
 with Anno("Hostname of the box"):
     AHostname = str
@@ -45,13 +47,6 @@ class PandABlocksManagerController(ManagerController):
         self._blocks_parts = OrderedDict()
         # src_attr -> [dest_attr]
         self._listening_attrs = {}
-        # (block_name, src_field_name) -> [dest_field_name]
-        self._scale_offset_fields = {}
-        # full_src_field -> [full_dest_field]
-        self._mirrored_fields = {}
-        # fields that need to inherit UNITS, SCALE and OFFSET from upstream
-        self._inherit_scale = {}
-        self._inherit_offset = {}
         # lut elements to be displayed or not
         # {fnum: {id: visible}}
         self._lut_elements = {}
@@ -95,10 +90,10 @@ class PandABlocksManagerController(ManagerController):
         super(PandABlocksManagerController, self).do_reset()
 
     def _poll_loop(self):
-        """At 10Hz poll for changes"""
+        """At POLL_PERIOD poll for changes"""
         next_poll = time.time()
         while True:
-            next_poll += 0.1
+            next_poll += POLL_PERIOD
             timeout = next_poll - time.time()
             if timeout < 0:
                 timeout = 0
@@ -148,7 +143,7 @@ class PandABlocksManagerController(ManagerController):
         return controller
 
     def _make_corresponding_part(self, block_name, mri):
-        part = ChildPart(name=block_name, mri=mri)
+        part = ChildPart(name=block_name, mri=mri, stateful=False)
         return part
 
     def _make_parts(self, block_name, block_data):
@@ -164,48 +159,15 @@ class PandABlocksManagerController(ManagerController):
         # Store the parts so we can update them with the poller
         self._blocks_parts[block_name] = maker.parts
 
-        # setup param pos on a block with pos_out to inherit SCALE OFFSET UNITS
-        pos_fields = []
-        pos_out_fields = []
-        pos_mux_inp_fields = []
-        for field_name, field_data in block_data.fields.items():
-            if field_name == "INP" and field_data.field_type == "pos_mux":
-                pos_mux_inp_fields.append(field_name)
-            elif field_data.field_type == "pos_out":
-                pos_out_fields.append(field_name)
-            elif field_data.field_subtype in ("pos", "relative_pos"):
-                pos_fields.append(field_name)
-
-        # Make sure pos_fields can get SCALE from somewhere
-        if pos_fields:
-            sources = pos_mux_inp_fields + pos_out_fields
-            assert len(sources) == 1, \
-                "Expected one source of SCALE and OFFSET for %s, got %s" % (
-                    pos_fields, sources)
-            for field_name in pos_fields:
-                self._map_scale_offset(block_name, sources[0], field_name)
-
         # Make the corresponding part for us
         child_part = self._make_corresponding_part(block_name, mri)
         self.add_part(child_part)
-
-    def _map_scale_offset(self, block_name, src_field, dest_field):
-        self._scale_offset_fields.setdefault(
-            (block_name, src_field), []).append(dest_field)
-        if src_field == "INP":
-            # mapping based on what it is connected to, defer
-            return
-        for suff in ("SCALE", "OFFSET", "UNITS"):
-            full_src_field = "%s.%s.%s" % (block_name, src_field, suff)
-            full_dest_field = "%s.%s.%s" % (block_name, dest_field, suff)
-            self._mirrored_fields.setdefault(full_src_field, []).append(
-                full_dest_field)
 
     def _set_lut_icon(self, block_name):
         icon_attr = self._blocks_parts[block_name]["icon"].attr
         with open(os.path.join(SVG_DIR, "LUT.svg")) as f:
             svg_text = f.read()
-        fnum = int(self.client.get_field(block_name, "FUNC.RAW"))
+        fnum = int(self.client.get_field(block_name, "FUNC.RAW"), 0)
         invis = self._get_lut_icon_elements(fnum)
         # https://stackoverflow.com/a/8998773
         ET.register_namespace('', "http://www.w3.org/2000/svg")
@@ -274,11 +236,26 @@ class PandABlocksManagerController(ManagerController):
     def handle_changes(self, changes):
         for k, v in changes.items():
             self.changes[k] = v
+        block_changes = OrderedDict()
         for full_field, val in list(self.changes.items()):
-            # If we have a mirrored field then fire off a request
-            for dest_field in self._mirrored_fields.get(full_field, []):
-                self.client.send("%s=%s\n" % (dest_field, val))
             block_name, field_name = full_field.split(".", 1)
+            block_changes.setdefault(block_name, []).append((
+                field_name, full_field, val))
+        for block_name, field_changes in block_changes.items():
+            # Squash changes
+            block_mri = "%s:%s" % (self.mri, block_name)
+            try:
+                block_controller = self.process.get_controller(block_mri)
+            except ValueError:
+                self.log.debug("Block %s not known", block_name)
+                for _, full_field, _ in field_changes:
+                    self.changes.pop(full_field)
+            else:
+                with block_controller.changes_squashed:
+                    self.do_field_changes(block_name, field_changes)
+
+    def do_field_changes(self, block_name, field_changes):
+        for field_name, full_field, val in field_changes:
             ret = self.update_attribute(block_name, field_name, val)
             if ret is not None:
                 self.changes[full_field] = ret
@@ -290,9 +267,6 @@ class PandABlocksManagerController(ManagerController):
 
     def update_attribute(self, block_name, field_name, val):
         ret = None
-        if block_name not in self._blocks_parts:
-            self.log.debug("Block %s not known", block_name)
-            return
         parts = self._blocks_parts[block_name]
         if field_name not in parts:
             self.log.debug("Block %s has no field %s", block_name, field_name)
@@ -323,44 +297,17 @@ class PandABlocksManagerController(ManagerController):
             current_part = parts[field_name + ".CURRENT"]
             current_attr = current_part.attr
             self._update_current_attr(current_attr, val)
-            if field_data.field_type == "pos_mux" and field_name == "INP":
-                # all param pos fields should inherit scale and offset
-                for dest_field_name in self._scale_offset_fields.get(
-                        (block_name, field_name), []):
-                    self._update_scale_offset_mapping(
-                        block_name, dest_field_name, val)
+
+        # if we changed a pos_out, its SCALE or OFFSET, update its scaled value
+        root_field_name = field_name.split(".")[0]
+        field_data = self._blocks_data[block_name].fields[root_field_name]
+        if field_data.field_type == "pos_out":
+            scale = parts[root_field_name + ".SCALE"].attr.value
+            offset = parts[root_field_name + ".OFFSET"].attr.value
+            value = parts[root_field_name].attr.value
+            scaled = value * scale + offset
+            parts[root_field_name + ".SCALED"].attr.set_value(scaled)
         return ret
-
-    def _update_scale_offset_mapping(self, block_name, field_name, mux_val):
-        # Find the fields that depend on this input
-        field_data = self._blocks_data[block_name].fields.get(field_name, None)
-        if field_data.field_subtype == "relative_pos":
-            suffs = ("SCALE", "UNITS")
-        else:
-            suffs = ("SCALE", "OFFSET", "UNITS")
-
-        for suff in suffs:
-            full_src_field = "%s.%s" % (mux_val, suff)
-            full_dest_field = "%s.%s.%s" % (block_name, field_name, suff)
-
-            # Remove mirrored fields that are already in lists
-            for field_list in self._mirrored_fields.values():
-                try:
-                    field_list.remove(full_dest_field)
-                except ValueError:
-                    pass
-
-            self._mirrored_fields.setdefault(full_src_field, []).append(
-                full_dest_field)
-            # update it to the right value
-            if mux_val == "ZERO":
-                value = dict(SCALE=1, OFFSET=0, UNITS="")[suff]
-            else:
-                mon_block_name, mon_field_name = mux_val.split(".", 1)
-                mon_parts = self._blocks_parts[mon_block_name]
-                src_attr = mon_parts["%s.%s" % (mon_field_name, suff)].attr
-                value = src_attr.value
-            self.client.send("%s=%s\n" % (full_dest_field, value))
 
     def _update_current_attr(self, current_attr, mux_val):
         # Remove the old current_attr from all lists

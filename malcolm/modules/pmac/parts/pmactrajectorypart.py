@@ -34,11 +34,11 @@ CURRENT_TO_NEXT = 2
 ZERO_VELOCITY = 3
 
 # user programs
-NO_PROGRAM = 0       # Do nothing
-TRIG_CAPTURE = 4     # Capture 1, Frame 0, Detector 0
+NO_PROGRAM = 0  # Do nothing
+TRIG_CAPTURE = 4  # Capture 1, Frame 0, Detector 0
 TRIG_DEAD_FRAME = 2  # Capture 0, Frame 1, Detector 0
 TRIG_LIVE_FRAME = 3  # Capture 0, Frame 1, Detector 1
-TRIG_ZERO = 8        # Capture 0, Frame 0, Detector 0
+TRIG_ZERO = 8  # Capture 0, Frame 0, Detector 0
 
 # How many profile points to write each time
 PROFILE_POINTS = 10000
@@ -57,7 +57,8 @@ class PmacTrajectoryPart(ChildPart):
                  initial_min_turnaround=0.0  # type: AMinTurnaround
                  ):
         # type: (...) -> None
-        super(PmacTrajectoryPart, self).__init__(name, mri)
+        super(PmacTrajectoryPart, self).__init__(
+            name, mri, initial_visibility=True)
         # Axis information stored from validate
         self.axis_mapping = None  # type: Dict[str, MotorInfo]
         # Lookup of the completed_step value for each point
@@ -78,6 +79,15 @@ class PmacTrajectoryPart(ChildPart):
             "float64", "Min time for any gaps between frames",
             tags=[Widget.TEXTINPUT.tag(), config_tag()]
         ).create_attribute_model(initial_min_turnaround)
+        # Hooks
+        self.register_hooked(scanning.hooks.ValidateHook, self.validate)
+        self.register_hooked((scanning.hooks.ConfigureHook,
+                              scanning.hooks.PostRunArmedHook,
+                              scanning.hooks.SeekHook), self.configure)
+        self.register_hooked((scanning.hooks.RunHook,
+                              scanning.hooks.ResumeHook), self.run)
+        self.register_hooked(scanning.hooks.AbortHook, self.abort)
+        self.register_hooked(scanning.hooks.PauseHook, self.pause)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -93,22 +103,6 @@ class PmacTrajectoryPart(ChildPart):
         super(PmacTrajectoryPart, self).reset(context)
         self.abort(context)
         self.reset_triggers(context)
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, scanning.hooks.ValidateHook):
-            hook(self.validate)
-        elif isinstance(hook, (scanning.hooks.ConfigureHook,
-                               scanning.hooks.PostRunArmedHook,
-                               scanning.hooks.SeekHook)):
-            hook(self.configure)
-        elif isinstance(hook, (scanning.hooks.RunHook,
-                               scanning.hooks.ResumeHook)):
-            hook(self.run)
-        elif isinstance(hook, scanning.hooks.AbortHook):
-            hook(self.abort)
-        elif isinstance(hook, scanning.hooks.PauseHook):
-            hook(self.pause)
 
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
@@ -130,7 +124,8 @@ class PmacTrajectoryPart(ChildPart):
         ticks = np.floor(servo_freq * 0.5 * generator.duration)
         if not np.isclose(servo_freq, 3200):
             # + 0.002 for some observed jitter in the servo frequency if I10
-            # isn't a whole number (any frequency apart from 3.2 kHz)
+            # isn't a whole number of 1/4 us move timer ticks
+            # (any frequency apart from 3.2 kHz)
             ticks += 0.002
         # convert to integer number of microseconds, rounding up
         micros = np.ceil(ticks / servo_freq * 1e6)
@@ -283,7 +278,7 @@ class PmacTrajectoryPart(ChildPart):
                         v1s[axis_name], v2s[axis_name], distances[axis_name],
                         min_time)
                 assert time_arrays[axis_name][-1] >= min_time or np.isclose(
-                        time_arrays[axis_name][-1], min_time), \
+                    time_arrays[axis_name][-1], min_time), \
                     "Time %s velocity %s for %s takes less time than %s" % (
                         time_arrays[axis_name], velocity_arrays[axis_name],
                         axis_name, min_time)

@@ -17,8 +17,8 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         blocks_data = OrderedDict()
         fields = OrderedDict()
         fields["INP"] = FieldData("pos_mux", "", "Input A", ["ZERO", "COUNTER.OUT"])
-        fields["START"] = FieldData("param", "pos", "Start position", [])
-        fields["STEP"] = FieldData("param", "relative_pos", "Step position", [])
+        fields["START"] = FieldData("param", "", "Start position", [])
+        fields["STEP"] = FieldData("param", "", "Step position", [])
         fields["OUT"] = FieldData("bit_out", "", "Output", [])
         blocks_data["PCOMP"] = BlockData(1, "", fields)
         fields = OrderedDict()
@@ -36,9 +36,6 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         changes["PCOMP.INP"] = "ZERO"
         for field_name in ("START", "STEP"):
             changes["PCOMP.%s" % field_name] = "0"
-            changes["PCOMP.%s.SCALE" % field_name] = "1"
-            changes["PCOMP.%s.OFFSET" % field_name] = "0"
-            changes["PCOMP.%s.UNITS" % field_name] = ""
         changes["PCOMP.OUT"] = "0"
         changes["COUNTER.INP"] = "ZERO"
         changes["COUNTER.INP.DELAY"] = "0"
@@ -67,7 +64,22 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         assert self.process.mock_calls == [
             call.add_controller(ANY),
             call.add_controller(ANY),
-            call.add_controller(ANY)]
+            call.add_controller(ANY),
+            call.get_controller('P:PCOMP'),
+            call.get_controller().changes_squashed.__enter__(),
+            call.get_controller().changes_squashed.__exit__(None, None, None),
+            call.get_controller('P:COUNTER'),
+            call.get_controller().changes_squashed.__enter__(),
+            call.get_controller().changes_squashed.__exit__(None, None, None),
+            call.get_controller('P:TTLIN'),
+            call.get_controller().changes_squashed.__enter__(),
+            call.get_controller().changes_squashed.__exit__(None, None, None),
+            call.get_controller('P:PCOMP'),
+            call.get_controller().changes_squashed.__enter__(),
+            call.get_controller().changes_squashed.__exit__(None, None, None),
+            call.get_controller('P:TTLIN'),
+            call.get_controller().changes_squashed.__enter__(),
+            call.get_controller().changes_squashed.__exit__(None, None, None)]
         pcomp, counter, ttlin = self._blocks()
         assert pcomp.inp.value == "ZERO"
         assert pcomp.inpCurrent.value == 0.0
@@ -85,60 +97,30 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
 
     def test_rewiring(self):
         pcomp, counter, ttlin = self._blocks()
-        self.o.handle_changes({"COUNTER.OUT": 32.0})
-        assert counter.out.value== 32.0
+        self.o.handle_changes({"COUNTER.OUT": 32})
+        assert counter.out.value== 32
         self.o.handle_changes({"PCOMP.INP": "COUNTER.OUT"})
         assert pcomp.inp.value == "COUNTER.OUT"
-        assert pcomp.inpCurrent.value == 32.0
+        assert pcomp.inpCurrent.value == 32
         self.o.handle_changes({"PCOMP.INP": "ZERO"})
         assert pcomp.inp.value == "ZERO"
-        assert pcomp.inpCurrent.value == 0.0
+        assert pcomp.inpCurrent.value == 0
 
-    def test_scale_offset_following(self):
+    def test_scale_offset(self):
         pcomp, counter, ttlin = self._blocks()
-        assert self.client.send.call_args_list == [
-            call('PCOMP.START.SCALE=1\n'),
-            call('PCOMP.START.OFFSET=0\n'),
-            call('PCOMP.START.UNITS=\n'),
-            call('PCOMP.STEP.SCALE=1\n'),
-            call('PCOMP.STEP.UNITS=\n'),
-            call('COUNTER.START.SCALE=1\n'),
-            call('COUNTER.START.OFFSET=0\n'),
-            call('COUNTER.START.UNITS=\n'),
-        ]
-        self.client.send.reset_mock()
-        self.o.handle_changes({"PCOMP.INP": "COUNTER.OUT"})
-        assert pcomp.inp.value == "COUNTER.OUT"
-        assert pcomp.inpCurrent.value == 0.0
-        assert self.client.send.call_args_list == [
-            call('PCOMP.START.SCALE=1.0\n'),
-            call('PCOMP.START.OFFSET=0.0\n'),
-            call('PCOMP.START.UNITS=\n'),
-            call('PCOMP.STEP.SCALE=1.0\n'),
-            call('PCOMP.STEP.UNITS=\n')
-        ]
-        self.client.send.reset_mock()
-        self.o.handle_changes({"COUNTER.OUT.OFFSET": "5.2"})
-        assert self.client.send.call_args_list == [
-            call('COUNTER.START.OFFSET=5.2\n'),
-            call('PCOMP.START.OFFSET=5.2\n')
-        ]
-        self.client.send.reset_mock()
-        self.o.handle_changes({"COUNTER.OUT.SCALE": "0.2"})
-        assert self.client.send.call_args_list == [
-            call('COUNTER.START.SCALE=0.2\n'),
-            call('PCOMP.START.SCALE=0.2\n'),
-            call('PCOMP.STEP.SCALE=0.2\n'),
-        ]
-        self.client.send.reset_mock()
-        self.o.handle_changes({"PCOMP.INP": "ZERO"})
-        assert self.client.send.call_args_list == [
-            call('PCOMP.START.SCALE=1\n'),
-            call('PCOMP.START.OFFSET=0\n'),
-            call('PCOMP.START.UNITS=\n'),
-            call('PCOMP.STEP.SCALE=1\n'),
-            call('PCOMP.STEP.UNITS=\n')
-        ]
+        assert counter.out.value == 0.0
+        assert counter.outScale.value == 1.0
+        assert counter.outOffset.value == 0.0
+        assert counter.outScaled.value == 0.0
+        self.o.handle_changes({"COUNTER.OUT": 30})
+        assert counter.out.value == 30
+        assert counter.outScaled.value == 30.0
+        self.o.handle_changes({"COUNTER.OUT.SCALE": 0.1})
+        assert counter.out.value == 30
+        assert counter.outScaled.value == 3.0
+        self.o.handle_changes({"COUNTER.OUT.OFFSET": 5.1})
+        assert counter.out.value == 30
+        assert counter.outScaled.value == 8.1
 
     def test_lut(self):
         # LUT symbol

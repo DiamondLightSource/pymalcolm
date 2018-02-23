@@ -62,7 +62,10 @@ class PandABlocksClient(object):
         self._send_queue.put((self.STOP, None))    
         self._send_spawned.wait()
         import socket
-        self._socket.shutdown(socket.SHUT_RD)
+        try:
+            self._socket.shutdown(socket.SHUT_RD)
+        except:
+            pass
         self._recv_spawned.wait()
         self._socket.close()
         self._socket = None
@@ -188,9 +191,6 @@ class PandABlocksClient(object):
         block_numbers = self._get_block_numbers()
         block_names = list(block_numbers)
 
-        # TODO: goes in server
-        block_names = [n for n in block_names if n != "POSITIONS"]
-
         # Queue up info about each block
         desc_queues = self.parameterized_send("*DESC.%s?\n", block_names)
         field_queues = self.parameterized_send("%s.*?\n", block_names)
@@ -212,17 +212,6 @@ class PandABlocksClient(object):
                 if len(split) == 3:
                     split.append("")
                 field_name, index, field_type, field_subtype = split
-                # TODO: goes in server
-                if block_name == "BITS" and field_name in ("ONE", "ZERO"):
-                    continue
-                # TODO: goes in server
-                if field_subtype == "position":
-                    if block_name.startswith("PCOMP") and field_name in (
-                            "STEP", "WIDTH"):
-                        field_subtype = "relative_pos"
-                    else:
-                        field_subtype = "pos"
-
                 unsorted_fields[field_name] = (
                     int(index), field_type, field_subtype)
 
@@ -257,12 +246,6 @@ class PandABlocksClient(object):
                     labels = self.recv(enum_queues[field_name + ".CAPTURE"])
                 else:
                     labels = []
-                # TODO: goes in server
-                for i, label in enumerate(labels):
-                    if label in ("POSITIONS.ZERO", "BITS.ZERO"):
-                        labels[i] = "ZERO"
-                    elif label == "BITS.ONE":
-                        labels[i] = "ONE"
                 description = self.recv(field_desc_queues[field_name])[4:]
                 fields[field_name] = FieldData(
                     field_type, field_subtype, description, labels)
@@ -286,11 +269,6 @@ class PandABlocksClient(object):
             else:
                 log.warning("Can't parse line %r of changes", line)
                 continue
-            # TODO: Goes in server
-            if val in ("POSITIONS.ZERO", "BITS.ZERO"):
-                val = "ZERO"
-            elif val == "BITS.ONE":
-                val = "ONE"
             changes[field] = val
         for field, q in table_queues.items():
             changes[field] = self.recv(q)
@@ -299,10 +277,12 @@ class PandABlocksClient(object):
     def get_table_fields(self, block, field):
         fields = OrderedDict()
         for line in self.send_recv("%s.%s.FIELDS?\n" % (block, field)):
-            bits_str, name = line.split(" ", 1)
-            name = name.strip()
-            bits = tuple(int(x) for x in bits_str.split(":"))
-            fields[name] = bits
+            if not line.startswith("-"):
+                split = line.split()
+                bits_str = split[0]
+                name = split[1].strip()
+                bits = tuple(int(x) for x in bits_str.split(":"))
+                fields[name] = bits
         return fields
 
     def get_field(self, block, field):

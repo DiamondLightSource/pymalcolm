@@ -25,13 +25,9 @@ class ProxyController(BasicController):
         self._response_queue = Queue()
         self._notify_response = True
         self._first_response_queue = Queue()
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, ProcessStartHook):
-            hook(self.init)
-        elif isinstance(hook, ProcessStopHook):
-            hook(self.halt)
+        # Hooks
+        self.register_hooked(ProcessStartHook, self.init)
+        self.register_hooked(ProcessStopHook, self.halt)
 
     def init(self):
         # type: () -> UUnpublishedInfos

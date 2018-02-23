@@ -112,7 +112,7 @@ class Process(Loggable):
                  for controller in controller_list]
         hook_queue, hook_spawned = start_hooks(hooks)
         return wait_hooks(
-            hook_queue, hook_spawned, timeout, exception_check=False)
+            self.log, hook_queue, hook_spawned, timeout, exception_check=False)
 
     def stop(self, timeout=None):
         """Stop the process and wait for it to finish

@@ -5,7 +5,6 @@ from annotypes import Anno, add_call_types
 from malcolm.core import APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
 
-
 with Anno("If >0, raise an exception at the end of this step"):
     AExceptionStep = int
 
@@ -15,7 +14,8 @@ class ScanTickerPart(builtin.parts.ChildPart):
 
     def __init__(self, name, mri):
         # type: (APartName, builtin.parts.AMri) -> None
-        super(ScanTickerPart, self).__init__(name, mri, initial_visibility=True)
+        super(ScanTickerPart, self).__init__(
+            name, mri, initial_visibility=True, stateful=False)
         # Generator instance
         self.generator = None  # type: scanning.hooks.AGenerator
         # Where to start
@@ -24,6 +24,12 @@ class ScanTickerPart(builtin.parts.ChildPart):
         self.steps_to_do = None  # type: int
         # When to blow up
         self.exception_step = None  # type: int
+        # Hooks
+        self.register_hooked((scanning.hooks.ConfigureHook,
+                              scanning.hooks.PostRunArmedHook,
+                              scanning.hooks.SeekHook), self.configure)
+        self.register_hooked((scanning.hooks.RunHook,
+                              scanning.hooks.ResumeHook), self.run)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -31,18 +37,6 @@ class ScanTickerPart(builtin.parts.ChildPart):
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
-
-    def on_hook(self, hook):
-        if isinstance(hook, (scanning.hooks.ConfigureHook,
-                             scanning.hooks.PostRunArmedHook,
-                             scanning.hooks.SeekHook)):
-            hook(self.configure)
-        elif isinstance(hook, (scanning.hooks.RunHook,
-                               scanning.hooks.ResumeHook)):
-            if self.generator:
-                hook(self.run)
-        else:
-            super(ScanTickerPart, self).on_hook(hook)
 
     # Allow CamelCase for arguments as they will be serialized by parent
     # noinspection PyPep8Naming
@@ -70,6 +64,8 @@ class ScanTickerPart(builtin.parts.ChildPart):
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
+        if not self.generator:
+            return
         # Start time so everything is relative
         point_time = time.time()
         child = context.block_view(self.mri)

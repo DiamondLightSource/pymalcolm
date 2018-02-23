@@ -11,7 +11,11 @@ from malcolm.modules.builtin.util import set_tags, AWidget, AGroup, AConfig, \
 from malcolm.modules.builtin.hooks import InitHook, ResetHook, DisableHook
 
 if TYPE_CHECKING:
-    from typing import Callable, Any
+    from typing import Callable, Any, Union, Type, Sequence, Optional, List
+
+    Hooks = Union[Type[Hook], Sequence[Type[Hook]]]
+    ArgsGen = Callable[(), List[str]]
+    Register = Callable[(Hooks, Callable, Optional[ArgsGen]), None]
 
 
 # Store them here for re-export
@@ -142,21 +146,16 @@ class CAAttribute(Loggable):
             value = self.attr.meta.validate(value)
             self.attr.set_value_alarm_ts(value, alarm, ts)
 
-    def setup(self, registrar, name, writeable_func=None):
-        # type: (PartRegistrar, str, Callable[[Any], None]) -> None
+    def setup(self, registrar, name, register_hooked, writeable_func=None):
+        # type: (PartRegistrar, str, Register, Callable[[Any], None]) -> None
         if self.pv:
             if writeable_func is None:
                 writeable_func = self.caput
         else:
             writeable_func = None
         registrar.add_attribute_model(name, self.attr, writeable_func)
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, DisableHook):
-            hook(self.disconnect)
-        elif isinstance(hook, (InitHook, ResetHook)):
-            hook(self.reconnect)
+        register_hooked(DisableHook, self.disconnect)
+        register_hooked((InitHook, ResetHook), self.reconnect)
 
 
 def _import_cothread(q):

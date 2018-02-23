@@ -265,7 +265,8 @@ class Controller(Hookable):
     def wait_hooks(self, hook_queue, hook_spawned):
         # type: (Queue, List[Hook]) -> Dict[str, List[Info]]
         if hook_spawned:
-            return_dict = wait_hooks(hook_queue, hook_spawned, ABORT_TIMEOUT)
+            return_dict = wait_hooks(
+                self.log, hook_queue, hook_spawned, ABORT_TIMEOUT)
         else:
             self.log.debug("No Parts hooked")
             return_dict = {}

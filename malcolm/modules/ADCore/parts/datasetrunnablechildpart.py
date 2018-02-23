@@ -1,17 +1,19 @@
 from annotypes import add_call_types, Any
 
 from malcolm.core import APartName
+from malcolm.modules.scanning.parts import RunnableChildPart, AMri, \
+    AInitialVisibility
 from malcolm.modules import scanning
 from ..infos import DatasetProducedInfo
 
 
-class DatasetRunnableChildPart(scanning.parts.RunnableChildPart):
+class DatasetRunnableChildPart(RunnableChildPart):
     """Part controlling a configure/run child Block with a dataset table"""
 
-    def __init__(self, name, mri):
-        # type: (APartName, scanning.parts.AMri) -> None
+    def __init__(self, name, mri, initial_visibility=False):
+        # type: (APartName, AMri, AInitialVisibility) -> None
         super(DatasetRunnableChildPart, self).__init__(
-            name, mri, ignore_configure_args="formatName")
+            name, mri, initial_visibility, ignore_configure_args="formatName")
 
     @add_call_types
     def validate(self,

@@ -35,6 +35,21 @@ class RunnableChildPart(ChildPart):
         self.serialized_configure = MethodModel().to_dict()
         # The registrar object we get at setup
         self.registrar = None  # type: PartRegistrar
+        # Hooks
+        self.register_hooked(ValidateHook, self.validate, self.configure_args)
+        self.register_hooked(ConfigureHook, self.configure, self.configure_args)
+        self.register_hooked((RunHook, ResumeHook), self.run)
+        self.register_hooked((PostRunArmedHook, PostRunReadyHook),
+                             self.post_run)
+        self.register_hooked(SeekHook, self.seek)
+        self.register_hooked(AbortHook, self.abort)
+
+    def configure_args(self):
+        args = ["context"]
+        for x in self.serialized_configure["takes"]["elements"]:
+            if x not in self.ignore_configure_args:
+                args.append(x)
+        return args
 
     @add_call_types
     def init(self, context):
@@ -62,21 +77,6 @@ class RunnableChildPart(ChildPart):
             child.abort()
         super(RunnableChildPart, self).reset(context)
 
-    def on_hook(self, hook):
-        if isinstance(hook, ValidateHook):
-            hook(self.validate, self.serialized_configure["takes"]["elements"])
-        elif isinstance(hook, ConfigureHook):
-            hook(self.configure, self.serialized_configure["takes"]["elements"])
-        elif isinstance(hook, (RunHook, ResumeHook)):
-            hook(self.run)
-        elif isinstance(hook, (PostRunArmedHook, PostRunReadyHook)):
-            hook(self.post_run)
-        elif isinstance(hook, SeekHook):
-            hook(self.seek)
-        elif isinstance(hook, AbortHook):
-            hook(self.abort)
-        else:
-            super(RunnableChildPart, self).on_hook(hook)
 
     @add_call_types
     def validate(self, context, **kwargs):

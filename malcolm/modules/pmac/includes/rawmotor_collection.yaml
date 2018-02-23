@@ -23,3 +23,5 @@
 - pmac.parts.RawMotorPart:
     name: $(mri)
     mri: $(mri)
+    initial_visibility: True
+

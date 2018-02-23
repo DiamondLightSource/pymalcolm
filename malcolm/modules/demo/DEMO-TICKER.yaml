@@ -6,4 +6,3 @@
 # Add a webserver
 - web.blocks.web_server_block:
     mri: WEB
-    port: 8080

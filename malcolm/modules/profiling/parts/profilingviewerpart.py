@@ -35,14 +35,11 @@ class ProfilingViewerPart(Part):
         # type: (APartName) -> None
         super(ProfilingViewerPart, self).__init__(name)
         options.datadir = self.profiledir
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, ReportHandlersHook):
-            hook(self.report_handlers)
+        # Hooks
+        self.register_hooked(ReportHandlersHook, self.report_handlers)
 
     def report_handlers(self):
         infos = [
-            HandlerInfo("/%s" % self.params.name, MalcolmIndexHandler),
+            HandlerInfo("/%s" % self.name, MalcolmIndexHandler),
             HandlerInfo("/view", MalcolmViewHandler)]
         return infos

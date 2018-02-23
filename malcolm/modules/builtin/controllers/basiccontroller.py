@@ -12,7 +12,7 @@ class BasicController(Controller):
         self.info_registry.add_reportable(TitleInfo, self.update_title)
         self.info_registry.add_reportable(HealthInfo, self.update_health)
         self.health = StringMeta(
-            "Displays OK or an error message", tags=[Widget.TEXTINPUT.tag()]
+            "Displays OK or an error message", tags=[Widget.TEXTUPDATE.tag()]
         ).create_attribute_model()
         self.field_registry.add_attribute_model("health", self.health)
 

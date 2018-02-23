@@ -1,93 +1,98 @@
 {
-  "layout": {
+  "attributes": {
+    "layout": {
+      "DRV": {
+        "x": 0.0, 
+        "y": 0.0, 
+        "visible": true
+      }, 
+      "STAT": {
+        "x": 0.0, 
+        "y": 0.0, 
+        "visible": true
+      }, 
+      "POS": {
+        "x": 0.0, 
+        "y": 0.0, 
+        "visible": true
+      }, 
+      "HDF5": {
+        "x": 0.0, 
+        "y": 0.0, 
+        "visible": true
+      }
+    }, 
+    "exports": {}, 
+    "readoutTime": 4.0000000000000003e-05
+  }, 
+  "children": {
     "DRV": {
-      "x": 0.0, 
-      "y": 0.0, 
-      "visible": true
-    }, 
-    "HDF5": {
-      "x": 0.0, 
-      "y": 0.0, 
-      "visible": true
-    }, 
-    "POS": {
-      "x": 0.0, 
-      "y": 0.0, 
-      "visible": true
+      "arrayCallbacks": true, 
+      "arrayCounter": 0, 
+      "attributesFile": "", 
+      "imageMode": "Multiple", 
+      "numImages": 30, 
+      "triggerMode": "Internal", 
+      "exposure": 0.49996000000000002, 
+      "acquirePeriod": 0.0050000000000000001, 
+      "gainX": 1.0, 
+      "gainY": 1.0
     }, 
     "STAT": {
-      "x": 0.0, 
-      "y": 0.0, 
-      "visible": true
+      "arrayCallbacks": true, 
+      "arrayCounter": 2571, 
+      "attributesFile": "/tmp/DETECTOR:STAT-attributes.xml", 
+      "inp": "ADSIM.POS", 
+      "enableCallbacks": true, 
+      "computeStatistics": true
+    }, 
+    "POS": {
+      "arrayCallbacks": true, 
+      "arrayCounter": 2571, 
+      "attributesFile": "", 
+      "inp": "ADSIM.CAM", 
+      "enableCallbacks": true, 
+      "idStart": 1
+    }, 
+    "HDF5": {
+      "arrayCallbacks": false, 
+      "arrayCounter": 0, 
+      "attributesFile": "", 
+      "inp": "ADSIM.stat", 
+      "enableCallbacks": true, 
+      "fileWriteMode": "Stream", 
+      "swmrMode": true, 
+      "positionMode": true, 
+      "dimAttDatasets": true, 
+      "lazyOpen": true, 
+      "numCapture": 0, 
+      "flushDataPerNFrames": 2, 
+      "flushAttrPerNFrames": 2, 
+      "xml": "/tmp/DETECTOR:HDF5-layout.xml", 
+      "filePath": "/tmp/", 
+      "fileName": "det", 
+      "fileTemplate": "%s%s.h5", 
+      "numExtraDims": 1, 
+      "posNameDimN": "d1", 
+      "posNameDimX": "d0", 
+      "posNameDimY": "", 
+      "posNameDim3": "", 
+      "posNameDim4": "", 
+      "posNameDim5": "", 
+      "posNameDim6": "", 
+      "posNameDim7": "", 
+      "posNameDim8": "", 
+      "posNameDim9": "", 
+      "extraDimSizeN": 5, 
+      "extraDimSizeX": 6, 
+      "extraDimSizeY": 1, 
+      "extraDimSize3": 1, 
+      "extraDimSize4": 1, 
+      "extraDimSize5": 1, 
+      "extraDimSize6": 1, 
+      "extraDimSize7": 1, 
+      "extraDimSize8": 1, 
+      "extraDimSize9": 1
     }
-  }, 
-  "exports": {}, 
-  "DRV": {
-    "arrayCallbacks": true, 
-    "arrayCounter": 0, 
-    "attributesFile": "", 
-    "imageMode": "Multiple", 
-    "numImages": 30, 
-    "triggerMode": "Internal", 
-    "exposure": 0.49996000000000002, 
-    "acquirePeriod": 0.0050000000000000001, 
-    "gainX": 1.0, 
-    "gainY": 1.0
-  }, 
-  "HDF5": {
-    "arrayCallbacks": false, 
-    "arrayCounter": 0, 
-    "attributesFile": "", 
-    "inp": "ADSIM.stat", 
-    "enableCallbacks": true, 
-    "fileWriteMode": "Stream", 
-    "swmrMode": true, 
-    "positionMode": true, 
-    "dimAttDatasets": true, 
-    "lazyOpen": true, 
-    "numCapture": 0, 
-    "flushDataPerNFrames": 2, 
-    "flushAttrPerNFrames": 2, 
-    "xml": "/tmp/DETECTOR:HDF5-layout.xml", 
-    "filePath": "/tmp/", 
-    "fileName": "det", 
-    "fileTemplate": "%s%s.h5", 
-    "numExtraDims": 1, 
-    "posNameDimN": "d1", 
-    "posNameDimX": "d0", 
-    "posNameDimY": "", 
-    "posNameDim3": "", 
-    "posNameDim4": "", 
-    "posNameDim5": "", 
-    "posNameDim6": "", 
-    "posNameDim7": "", 
-    "posNameDim8": "", 
-    "posNameDim9": "", 
-    "extraDimSizeN": 5, 
-    "extraDimSizeX": 6, 
-    "extraDimSizeY": 1, 
-    "extraDimSize3": 1, 
-    "extraDimSize4": 1, 
-    "extraDimSize5": 1, 
-    "extraDimSize6": 1, 
-    "extraDimSize7": 1, 
-    "extraDimSize8": 1, 
-    "extraDimSize9": 1
-  }, 
-  "POS": {
-    "arrayCallbacks": true, 
-    "arrayCounter": 2571, 
-    "attributesFile": "", 
-    "inp": "ADSIM.CAM", 
-    "enableCallbacks": true, 
-    "idStart": 1
-  }, 
-  "STAT": {
-    "arrayCallbacks": true, 
-    "arrayCounter": 2571, 
-    "attributesFile": "/tmp/DETECTOR:STAT-attributes.xml", 
-    "inp": "ADSIM.POS", 
-    "enableCallbacks": true, 
-    "computeStatistics": true
   }
 }

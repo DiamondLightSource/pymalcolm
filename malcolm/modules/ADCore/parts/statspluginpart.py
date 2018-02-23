@@ -24,17 +24,12 @@ class StatsPluginPart(builtin.parts.ChildPart):
         self.statistic = statistic
         # The NDAttributes file we write to say what to capture
         self.attributes_filename = None  # type: str
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, scanning.hooks.ReportStatusHook):
-            hook(self.report_status)
-        elif isinstance(hook, scanning.hooks.ConfigureHook):
-            hook(self.configure)
-        elif isinstance(hook, scanning.hooks.PostRunReadyHook):
-            hook(self.post_run_ready)
-        else:
-            super(StatsPluginPart, self).on_hook(hook)
+        # Hooks
+        self.register_hooked(scanning.hooks.ReportStatusHook,
+                             self.report_status)
+        self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
+        self.register_hooked(scanning.hooks.PostRunReadyHook,
+                             self.post_run_ready)
 
     @add_call_types
     def report_status(self):

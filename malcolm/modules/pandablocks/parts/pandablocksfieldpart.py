@@ -40,17 +40,7 @@ class PandABlocksFieldPart(Part):
         registrar.add_attribute_model(attr_name, self.attr, writeable_func)
 
     def set_field(self, value):
-        # TODO: goes in the server
-        if hasattr(self.meta, "choices"):
-            if len(self.meta.choices) <= 32:
-                if value == "ZERO":
-                    value = "POSITIONS.ZERO"
-            else:
-                if value == "ZERO":
-                    value = "BITS.ZERO"
-                elif value == "ONE":
-                    value = "BITS.ONE"
-        elif isinstance(self.meta, BooleanMeta):
+        if isinstance(self.meta, BooleanMeta):
             value = int(value)
         self.client.set_field(self.block_name, self.field_name, value)
 

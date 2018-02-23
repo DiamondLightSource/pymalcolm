@@ -30,7 +30,7 @@ class CADoubleArrayPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        self.caa.setup(registrar, self.name, self.caput)
+        self.caa.setup(registrar, self.name, self.register_hooked, self.caput)
 
     def caput(self, value):
         if isinstance(value, Array):
@@ -38,7 +38,3 @@ class CADoubleArrayPart(Part):
             # a numpy array
             value = value.seq
         self.caa.caput(value)
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        self.caa.on_hook(hook)

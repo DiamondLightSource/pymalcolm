@@ -18,3 +18,4 @@
 - pmac.parts.CompoundMotorPart:
     name: $(mri)
     mri: $(mri)
+    initial_visibility: True

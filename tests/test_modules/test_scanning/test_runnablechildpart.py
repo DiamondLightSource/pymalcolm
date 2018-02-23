@@ -19,10 +19,7 @@ class WaitingPart(Part):
         # type: (APartName, AWait) -> None
         super(WaitingPart, self).__init__(name)
         self.wait = wait
-
-    def on_hook(self, hook):
-        if isinstance(hook, RunHook):
-            hook(self.run)
+        self.register_hooked(RunHook, self.run)
 
     @add_call_types
     def run(self, context):

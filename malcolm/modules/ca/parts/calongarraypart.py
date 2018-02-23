@@ -1,6 +1,6 @@
 from annotypes import Array
 
-from malcolm.core import Part, PartRegistrar, NumberArrayMeta, Hook
+from malcolm.core import Part, PartRegistrar, NumberArrayMeta
 from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
     APv, ARbv, ARbvSuff, AMinDelta, ATimeout, AInPort, AWidget, AGroup, AConfig
 
@@ -30,7 +30,7 @@ class CALongArrayPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        self.caa.setup(registrar, self.name, self.caput)
+        self.caa.setup(registrar, self.name, self.register_hooked, self.caput)
 
     def caput(self, value):
         if isinstance(value, Array):
@@ -38,7 +38,3 @@ class CALongArrayPart(Part):
             # a numpy array
             value = value.seq
         self.caa.caput(value)
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        self.caa.on_hook(hook)

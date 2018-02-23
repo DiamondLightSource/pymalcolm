@@ -2,7 +2,7 @@ import re
 
 from annotypes import add_call_types
 
-from malcolm.core import Hook
+from malcolm.core import Hook, PartRegistrar
 from malcolm.modules import scanning, ADCore, builtin
 from malcolm.modules.ADCore.util import AttributeDatasetType
 
@@ -33,10 +33,11 @@ def dataset_info(name, child, attr_name):
 
 
 class PandABlocksChildPart(builtin.parts.ChildPart):
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, scanning.hooks.ReportStatusHook):
-            hook(self.report_status)
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(PandABlocksChildPart, self).setup(registrar)
+        self.register_hooked(scanning.hooks.ReportStatusHook,
+                             self.report_status)
 
     @add_call_types
     def report_status(self, context):

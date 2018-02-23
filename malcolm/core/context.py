@@ -195,7 +195,7 @@ class Context(object):
         Returns:
             Future: A single Future which will resolve to the result
         """
-        request = Subscribe(self._get_next_id(), path, False)
+        request = Subscribe(self._get_next_id(), path, delta=False)
         request.set_callback(self._q.put)
         # If self is in args, then make weak version of it
         saved_args = []
@@ -359,14 +359,9 @@ class Context(object):
                 func(response.value, *args)
         elif isinstance(response, Return):
             future = self._futures.pop(response.id)
-            request = self._requests.pop(future)
+            del self._requests[future]
             self._pending_unsubscribes.pop(future, None)
             result = response.value
-            # Deserialize if this was a method
-            #if isinstance(request, Post) and result is not None:
-            #    controller = self.get_controller(request.path[0])
-            #    result = controller.deserialize_method_return(
-            #        request.path[1], result)
             future.set_result(result)
             try:
                 futures.remove(future)

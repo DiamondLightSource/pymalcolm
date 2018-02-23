@@ -38,7 +38,8 @@ class TestChildPart(unittest.TestCase):
         controller = BasicController(blockMri)
         controller.add_part(PortsPart(name='Connector%s' % blockMri[-1]))
         part = ChildPart(
-            mri=blockMri, name='part%s' % blockMri, initial_visibility=True)
+            mri=blockMri, name='part%s' % blockMri, stateful=False,
+            initial_visibility=True)
         self.p.add_controller(controller)
         return part, controller
 

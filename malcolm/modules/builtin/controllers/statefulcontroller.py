@@ -34,6 +34,8 @@ class StatefulController(BasicController):
         self.set_writeable_in(self.field_registry.add_method_model(self.reset),
                               ss.DISABLED, ss.FAULT)
         self.transition(ss.DISABLED)
+        self.register_hooked(ProcessStartHook, self.init)
+        self.register_hooked(ProcessStopHook, self.halt)
 
     def set_writeable_in(self, field, *states):
         # Field has defined when it should be writeable, just check that
@@ -52,13 +54,6 @@ class StatefulController(BasicController):
         for part in self.parts.values():
             part_contexts[part] = Context(self.process)
         return part_contexts
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, ProcessStartHook):
-            hook(self.init)
-        elif isinstance(hook, ProcessStopHook):
-            hook(self.halt)
 
     def init(self):
         self.try_stateful_function(ss.RESETTING, ss.READY, self.do_init)
