@@ -16,13 +16,15 @@
 - ADCore.includes.adbase_parts:
     prefix: $(prefix)
 
-# Unsure if this is unique to Andor cameras or can go higher up the AD hierarchy.
+# Unsure if this is unique to Andor cameras or can go higher up the AD
+# hierarchy.
 - ca.parts.CADoublePart:
     name: readoutTime
     description: |
       Time taken to read out each frame from the sCMOS.
-      The detector automatically limits the acquire period to the exposure + the readout time.
-    rbv: $(prefix):ReadoutTime # Should really be changed in the support module to ReadoutTime_RBV
+      The detector automatically limits the acquire period to the
+      exposure + the readout time.
+    rbv: $(prefix):ReadoutTime
     widget: textupdate
 
 - ca.parts.CAChoicePart:
