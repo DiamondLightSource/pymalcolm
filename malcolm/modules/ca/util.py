@@ -80,11 +80,8 @@ class CAAttribute(Loggable):
         pvs = [self.rbv]
         if self.pv and self.pv != self.rbv:
             pvs.append(self.pv)
-        ca_values = self.catools.caget(
+        ca_values = self.catools.checking_caget(
             pvs, format=self.catools.FORMAT_CTRL, datatype=self.datatype)
-        # check connection is ok
-        for i, v in enumerate(ca_values):
-            assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
         if self.on_connect:
             self.on_connect(ca_values[0])
         self._update_value(ca_values[0])
@@ -214,6 +211,13 @@ class CaToolsHelper(object):
         else:
             return self.cothread.CallbackResult(
                 self.catools.camonitor, *args, **kwargs)
+
+    def checking_caget(self, values, *args, **kwargs):
+        ca_values = self.caget(values, *args, **kwargs)
+        # check connection is ok
+        for i, v in enumerate(ca_values):
+            assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
+        return ca_values
 
     @classmethod
     def instance(cls):

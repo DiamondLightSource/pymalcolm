@@ -1,0 +1,31 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: the root PV for the trajectory scan template
+
+- builtin.parameters.float64:
+    name: initial_min_turnaround
+    description: Minimum turnaround time
+    default: 0.0
+
+- pmac.blocks.brick_block:
+    mri: $(mri_prefix):CONTROLLER
+    prefix: $(prefix)
+
+- pmac.parts.BrickPart:
+    name: CONTROLLER
+    mri: $(mri_prefix):CONTROLLER
+    initial_visibility: True
+
+- pmac.blocks.pmac_trajectory_block:
+    mri: $(mri_prefix):TRAJ
+    prefix: $(prefix)
+
+- pmac.parts.PmacTrajectoryPart:
+    name: TRAJ
+    mri: $(mri_prefix):TRAJ
+    initial_min_turnaround: $(initial_min_turnaround)
+

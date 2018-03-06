@@ -6,7 +6,7 @@ scanpointgenerator>=2.1.0
 cothread==2.14
 ruamel.yaml
 plop==0.3.0
-pytest>=3
+pytest>=3.2.0
 pytest-cov
 h5py==2.7.1
 git+https://github.com/dls-controls/vds-gen.git@0-2#egg=vds-gen

@@ -13,9 +13,8 @@
 - pmac.blocks.compound_motor_block:
     mri: $(mri)
     prefix: $(prefix)
-    scannable: $(scannable)
 
-- pmac.parts.CompoundMotorPart:
-    name: $(mri)
+- pmac.parts.MotorPart:
+    name: $(scannable)
     mri: $(mri)
-    initial_visibility: True
+    compound: True

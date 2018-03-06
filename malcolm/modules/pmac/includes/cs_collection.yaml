@@ -1,0 +1,19 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: Malcolm resource id prefix of the controller
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the all records, without the CS number
+
+- builtin.parameters.int32:
+    name: CS
+    description: The CS number
+
+- pmac.blocks.cs_block:
+    mri: $(mri_prefix):CS$(CS)
+    prefix: $(prefix):CS$(CS)
+
+- pmac.parts.CSPart:
+    name: CS$(CS)
+    mri: $(mri_prefix):CS$(CS)

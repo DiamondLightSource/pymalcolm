@@ -1,5 +1,5 @@
 from malcolm.core import Context, Process
-from malcolm.modules.pmac.parts import CompoundMotorPart
+from malcolm.modules.pmac.parts import MotorPart
 from malcolm.modules.pmac.blocks import compound_motor_block
 from malcolm.testutil import ChildTestCase
 
@@ -10,16 +10,15 @@ class TestCompoundPart(ChildTestCase):
         self.process = Process("Process")
         self.context = Context(self.process)
         child = self.create_child_block(
-            compound_motor_block, self.process, mri="my_mri", prefix="PV:PRE",
-            scannable="scan")
+            compound_motor_block, self.process, mri="my_mri", prefix="PV:PRE")
         self.set_attributes(child,
                             maxVelocity=5.0,
                             accelerationTime=0.5,
                             readback=12.3,
                             offset=4.5,
                             resolution=0.001,
-                            outLink="@asyn(CS_PORT,2)")
-        self.o = CompoundMotorPart(name="part", mri="my_mri")
+                            cs="CS_PORT,B")
+        self.o = MotorPart(name="scan", mri="my_mri", compound=True)
         self.process.start()
 
     def tearDown(self):

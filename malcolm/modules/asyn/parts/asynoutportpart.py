@@ -1,6 +1,6 @@
 from annotypes import Anno, Any
 
-from malcolm.core import Part, PartRegistrar, StringMeta, Hook, Port
+from malcolm.core import Part, PartRegistrar, StringMeta, Port
 from malcolm.modules import ca
 
 

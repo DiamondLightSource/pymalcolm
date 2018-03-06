@@ -37,6 +37,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.loading = False
         # When arrayCounter gets to here we are done
         self.done_when_reaches = 0
+        # Hooks
         self.register_hooked((scanning.hooks.ConfigureHook,
                               scanning.hooks.PostRunArmedHook,
                               scanning.hooks.SeekHook), self.configure)

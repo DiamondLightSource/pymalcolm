@@ -1,9 +1,8 @@
 from annotypes import add_call_types
-from mock import MagicMock
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import Context, Process, Part
-from malcolm.modules.pmac.parts import RawMotorPart
+from malcolm.modules.pmac.parts import MotorPart
 from malcolm.modules.pmac.blocks import raw_motor_block
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.hooks import ValidateHook, APartInfo
@@ -15,18 +14,17 @@ class TestRawMotorPart(ChildTestCase):
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
-        child = self.create_child_block(
+        self.child = self.create_child_block(
             raw_motor_block, self.process, mri="mri", prefix="PV:PRE",
-            motor_prefix="MOT:PRE", scannable="scan")
-        self.set_attributes(child,
+            motor_prefix="MOT:PRE")
+        self.set_attributes(self.child,
                             maxVelocity=5.0,
                             accelerationTime=0.5,
                             readback=12.3,
                             offset=4.5,
                             resolution=0.001,
-                            csPort="CS1",
-                            csAxis="Y")
-        self.o = RawMotorPart(name="part", mri="mri", initial_visibility=True)
+                            cs="CS1,Y")
+        self.o = MotorPart(name="scan", mri="mri")
         self.process.start()
 
     def tearDown(self):
@@ -37,6 +35,18 @@ class TestRawMotorPart(ChildTestCase):
         returns = self.o.report_status(self.context)
         assert returns.cs_axis == "Y"
         assert returns.cs_port == "CS1"
+        assert returns.acceleration == 10.0
+        assert returns.resolution == 0.001
+        assert returns.offset == 4.5
+        assert returns.max_velocity == 5.0
+        assert returns.current_position == 12.3
+        assert returns.scannable == "scan"
+
+    def test_not_in_cs(self):
+        self.set_attributes(self.child, cs="")
+        returns = self.o.report_status(self.context)
+        assert returns.cs_axis == ""
+        assert returns.cs_port == ""
         assert returns.acceleration == 10.0
         assert returns.resolution == 0.001
         assert returns.offset == 4.5
@@ -64,6 +74,6 @@ class TestRawMotorPart(ChildTestCase):
         self.process.add_controller(c)
         c.make_view().validate(CompoundGenerator([], [], []))
         assert len(ValidatePart.data) == 1
-        assert list(ValidatePart.data[0]) == ["part"]
-        assert len(ValidatePart.data[0]["part"]) == 1
+        assert list(ValidatePart.data[0]) == ["scan"]
+        assert len(ValidatePart.data[0]["scan"]) == 1
 

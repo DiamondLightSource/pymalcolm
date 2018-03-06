@@ -33,16 +33,15 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 0
 
-        catools.caget.side_effect = [[Initial(0), Initial(0)]]
+        catools.checking_caget.side_effect = [[Initial(0), Initial(0)]]
         b = self.create_block(CABooleanPart(
                 name="attrname", description="desc", pv="pv", rbv_suff="2"))
         assert b.attrname.value is False
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
-        catools.caget.assert_called_once_with(
+        catools.checking_caget.assert_called_once_with(
             ["pv2", 'pv'], datatype=catools.DBR_LONG,
             format=catools.FORMAT_CTRL)
-        catools.caget.reset_mock()
 
         class Update(int):
             ok = True
@@ -64,12 +63,12 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 1
 
-        catools.caget.side_effect = [[Initial("long_and_bad_string")]]
+        catools.checking_caget.side_effect = [[Initial("long_and_bad_string")]]
         b = self.create_block(CACharArrayPart(
             name="cattr", description="desc", rbv="pvr"))
         assert b.cattr.value == "long_and_bad_string"
         assert b.cattr.alarm.severity == AlarmSeverity.MINOR_ALARM
-        catools.caget.assert_called_once_with(
+        catools.checking_caget.assert_called_once_with(
             ["pvr"], datatype=catools.DBR_CHAR_STR, format=catools.FORMAT_CTRL)
 
     def test_cachoice(self, catools):
@@ -79,16 +78,15 @@ class TestCAParts(unittest.TestCase):
             severity = 0
             enums = ["a", "b", "c"]
 
-        catools.caget.side_effect = [[Initial(1), Initial(2)]]
+        catools.checking_caget.side_effect = [[Initial(1), Initial(2)]]
         b = self.create_block(CAChoicePart(
             name="attrname", description="desc", pv="pv", rbv="rbv"))
         assert b.attrname.value is "b"
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
-        catools.caget.assert_called_once_with(
+        catools.checking_caget.assert_called_once_with(
             ["rbv", 'pv'], datatype=catools.DBR_ENUM,
             format=catools.FORMAT_CTRL)
-        catools.caget.reset_mock()
 
         class Update(int):
             ok = True
@@ -120,17 +118,16 @@ class TestCAParts(unittest.TestCase):
         initial = Initial(dtype=np.float64, shape=(3,))
         initial[:] = np.arange(3) + 1.2
 
-        catools.caget.side_effect = [[initial]]
+        catools.checking_caget.side_effect = [[initial]]
         b = self.create_block(CADoubleArrayPart(
             name="attrname", description="desc", pv="pv",
             timeout=-1))
         assert list(b.attrname.value) == [1.2, 2.2, 3.2]
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
-        catools.caget.assert_called_once_with(
+        catools.checking_caget.assert_called_once_with(
             ["pv"], datatype=catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
-        catools.caget.reset_mock()
 
         class Update(np.ndarray):
             ok = False
@@ -151,13 +148,13 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 0
 
-        catools.caget.side_effect = [[Initial(5.2)]]
+        catools.checking_caget.side_effect = [[Initial(5.2)]]
         b = self.create_block(CADoublePart(
             name="attrname", description="desc", rbv="pv"))
         assert b.attrname.value == 5.2
         assert b.attrname.meta.description == "desc"
         assert not b.attrname.meta.writeable
-        catools.caget.assert_called_once_with(
+        catools.checking_caget.assert_called_once_with(
             ['pv'], datatype=catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
 
@@ -182,17 +179,16 @@ class TestCAParts(unittest.TestCase):
         initial = Initial(dtype=np.int32, shape=(4,))
         initial[:] = [5, 6, 7, 8]
 
-        catools.caget.side_effect = [[initial]]
+        catools.checking_caget.side_effect = [[initial]]
         b = self.create_block(CALongArrayPart(
             name="attrname", description="desc", pv="pv",
             widget=Widget.TEXTINPUT))
         assert list(b.attrname.value) == [5, 6, 7, 8]
         assert b.attrname.meta.tags == ["widget:textinput", 'config:1']
         assert b.attrname.meta.writeable
-        catools.caget.assert_called_once_with(
+        catools.checking_caget.assert_called_once_with(
             ["pv"], datatype=catools.DBR_LONG,
             format=catools.FORMAT_CTRL)
-        catools.caget.reset_mock()
 
         class Update(np.ndarray):
             ok = True
@@ -216,13 +212,13 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 0
 
-        catools.caget.side_effect = [[Initial(3)]]
+        catools.checking_caget.side_effect = [[Initial(3)]]
         b = self.create_block(CALongPart(
             name="attrname", description="desc", pv="pv"))
         assert b.attrname.value == 3
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
-        catools.caget.assert_called_once_with(
+        catools.checking_caget.assert_called_once_with(
             ['pv'], datatype=catools.DBR_LONG,
             format=catools.FORMAT_CTRL)
 
@@ -232,13 +228,13 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 0
 
-        catools.caget.side_effect = [[Initial("thing")]]
+        catools.checking_caget.side_effect = [[Initial("thing")]]
         b = self.create_block(CAStringPart(
             name="attrname", description="desc", rbv="pv"))
         assert b.attrname.value == "thing"
         assert b.attrname.meta.description == "desc"
         assert not b.attrname.meta.writeable
-        catools.caget.assert_called_once_with(
+        catools.checking_caget.assert_called_once_with(
             ['pv'], datatype=catools.DBR_STRING,
             format=catools.FORMAT_CTRL)
 

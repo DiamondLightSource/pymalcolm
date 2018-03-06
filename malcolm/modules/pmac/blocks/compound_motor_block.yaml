@@ -6,10 +6,6 @@
     name: prefix
     description: the root PV for the motor record
 
-- builtin.parameters.string:
-    name: scannable
-    description: The scannable name for GDA of this motor
-
 - builtin.parameters.float64:
     name: initial_velocity_settle
     description: Time in seconds for motor to settle at constant velocity
@@ -21,17 +17,9 @@
 - pmac.includes.motor_records:
     prefix: $(prefix)
 
-# TODO: this should be an outlink, but has wrong type, maybe push down?
-- ca.parts.CAStringPart:
-    name: outLink
-    description: asyn out link
+- pmac.parts.CompoundMotorCSPart:
+    name: cs
     rbv: $(prefix).OUT
-
-- builtin.parts.StringPart:
-    name: scannable
-    description: Scannable name for motor
-    writeable: True
-    value: $(scannable)
 
 - builtin.parts.Float64Part:
     name: velocitySettle

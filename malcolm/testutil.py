@@ -1,6 +1,13 @@
 import unittest
 from mock import MagicMock as Mock, patch
 
+from annotypes import TYPE_CHECKING, Union, Sequence
+
+from malcolm.core import Hook, Part
+
+if TYPE_CHECKING:
+    from typing import List, Any, Type, Callable, Optional
+
 
 class ChildTestCase(unittest.TestCase):
     @patch("malcolm.modules.ca.util.CaToolsHelper._instance", Mock())
@@ -44,4 +51,22 @@ class ChildTestCase(unittest.TestCase):
     def set_attributes(self, child, **params):
         """Set the child's attributes to the give parameter values"""
         for k, v in params.items():
-            child._block[k].set_value(v)
+            attr = child._block[k]
+            if hasattr(attr.meta, "choices"):
+                # Make sure the value is in choices
+                if v not in attr.meta.choices:
+                    attr.meta.set_choices(list(attr.meta.choices) + [v])
+            attr.set_value(v)
+
+    def assert_hooked(self,
+                      part,  # type: Part
+                      hooks,  # type: Union[Type[Hook], Sequence[Type[Hook]]]
+                      func,  # type: Callable[..., Any]
+                      args_gen=None  # type: Optional[Callable[(), List[str]]]
+                      ):
+        if args_gen is None:
+            args_gen = getattr(func, "call_types", {}).keys
+        if not isinstance(hooks, Sequence):
+            hooks = [hooks]
+        for hook in hooks:
+            assert part.hooked[hook] == (func, args_gen)

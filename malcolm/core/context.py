@@ -13,6 +13,7 @@ from .errors import TimeoutError, AbortedError, BadValueError
 if TYPE_CHECKING:
     from typing import Callable, Any, List, Union
     from .process import Process
+    from .views import Block
 
 
 class When(object):
@@ -79,6 +80,7 @@ class Context(object):
         return controller
 
     def block_view(self, mri):
+        # type: (str) -> Block
         """Get a view of a block
 
         Args:

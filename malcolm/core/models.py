@@ -303,8 +303,9 @@ class AttributeModel(Model):
             # Assume they are of the right format
             self.value = value
             self.notifier.add_squashed_change(self.path + ["value"], value)
-            self.alarm = alarm
-            self.notifier.add_squashed_change(self.path + ["alarm"], alarm)
+            if alarm is not self.alarm:
+                self.alarm = alarm
+                self.notifier.add_squashed_change(self.path + ["alarm"], alarm)
             self.timeStamp = ts
             self.notifier.add_squashed_change(self.path + ["timeStamp"], ts)
 

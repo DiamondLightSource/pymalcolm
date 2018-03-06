@@ -112,10 +112,10 @@ class PandABlocksMaker(object):
     def _make_time_parts(self, field_name, field_data, writeable):
         description = field_data.description
         if writeable:
-            widget = Widget.TEXTUPDATE
+            widget = Widget.TEXTINPUT
             group = self._make_group("parameters")
         else:
-            widget = Widget.TEXTINPUT
+            widget = Widget.TEXTUPDATE
             group = self._make_group("readbacks")
         meta = NumberMeta("float64", description, [group, widget.tag()])
         # We must change time units before value, so restore value in 2nd

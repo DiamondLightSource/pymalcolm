@@ -1,0 +1,75 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the CS Controller records (including :CS)
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+
+- ca.parts.CAChoicePart:
+    name: deferMoves
+    description: Defer moves for this CS
+    pv: $(prefix):DeferMoves
+
+- ca.parts.CADoublePart:
+    name: csMoveTime
+    description: Time to do a single deferred move
+    pv: $(prefix):CsMoveTime
+    rbv_suff: _RBV
+
+- pmac.parts.CSOutlinksPart:
+    name: port
+    rbv: $(prefix):Port
+
+- ca.parts.CAActionPart:
+    name: abort
+    description: Abort the current CS move
+    pv: $(prefix):Abort
+
+- ca.parts.CADoublePart:
+    name: demandA
+    description: set the demand position of CS Motor A
+    pv: $(prefix):M1:DirectDemand
+
+- ca.parts.CADoublePart:
+    name: demandB
+    description: set the demand position of CS Motor B
+    pv: $(prefix):M2:DirectDemand
+
+- ca.parts.CADoublePart:
+    name: demandC
+    description: set the demand position of CS Motor C
+    pv: $(prefix):M3:DirectDemand
+
+- ca.parts.CADoublePart:
+    name: demandU
+    description: set the demand position of CS Motor U
+    pv: $(prefix):M4:DirectDemand
+
+- ca.parts.CADoublePart:
+    name: demandV
+    description: set the demand position of CS Motor V
+    pv: $(prefix):M5:DirectDemand
+
+- ca.parts.CADoublePart:
+    name: demandW
+    description: set the demand position of CS Motor W
+    pv: $(prefix):M6:DirectDemand
+
+- ca.parts.CADoublePart:
+    name: demandX
+    description: set the demand position of CS Motor X
+    pv: $(prefix):M7:DirectDemand
+
+- ca.parts.CADoublePart:
+    name: demandY
+    description: set the demand position of CS Motor Y
+    pv: $(prefix):M8:DirectDemand
+
+- ca.parts.CADoublePart:
+    name: demandZ
+    description: set the demand position of CS Motor Z
+    pv: $(prefix):M9:DirectDemand

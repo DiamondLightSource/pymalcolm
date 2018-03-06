@@ -1,16 +1,16 @@
 # Treat all division as float division even in python2
 from __future__ import division
-from collections import Counter
 
 import numpy as np
 from scanpointgenerator import CompoundGenerator
 from annotypes import add_call_types, TYPE_CHECKING, Anno
 
 from malcolm.core import TimeoutError, config_tag, NumberMeta, PartRegistrar, \
-    Widget, Hook
+    Widget
 from malcolm.modules import builtin, scanning
 from malcolm.modules.builtin.parts import ChildPart
-from ..infos import MotorInfo
+from ..infos import MotorInfo, ControllerInfo
+from malcolm.modules.pmac.infos import cs_axis_names
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -43,8 +43,6 @@ TRIG_ZERO = 8  # Capture 0, Frame 0, Detector 0
 # How many profile points to write each time
 PROFILE_POINTS = 10000
 
-# All possible PMAC CS axis assignment
-cs_axis_names = list("ABCUVWXYZ")
 
 with Anno("Initial value for min time for any gaps between frames"):
     AMinTurnaround = float
@@ -94,8 +92,6 @@ class PmacTrajectoryPart(ChildPart):
         super(PmacTrajectoryPart, self).setup(registrar)
         registrar.add_attribute_model("minTurnaround", self.min_turnaround,
                                       self.min_turnaround.set_value)
-        registrar.report(
-            scanning.hooks.ConfigureHook.create_info(self.configure))
 
     @add_call_types
     def reset(self, context):
@@ -108,18 +104,21 @@ class PmacTrajectoryPart(ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def validate(self,
-                 context,  # type: scanning.hooks.AContext
                  part_info,  # type: scanning.hooks.APartInfo
                  generator,  # type: scanning.hooks.AGenerator
                  axesToMove,  # type: scanning.hooks.AAxesToMove
                  ):
         # type: (...) -> scanning.hooks.UParameterTweakInfos
-        self._make_axis_mapping(part_info, axesToMove)
+        # Make an axis mapping just to check they are all in the same CS
+        MotorInfo.cs_axis_mapping(part_info, axesToMove)
         # Find the duration
-        child = context.block_view(self.mri)
         assert generator.duration > 0, \
             "Can only do fixed duration at the moment"
-        servo_freq = 8388608000. / child.i10.value
+        controller_infos = ControllerInfo.filter_values(part_info)
+        assert len(controller_infos) == 1, \
+            "Expected a single Controller for i10 value, got %s" % (
+                controller_infos,)
+        servo_freq = controller_infos[0].servo_freq()
         # convert half an exposure to multiple of servo ticks, rounding down
         ticks = np.floor(servo_freq * 0.5 * generator.duration)
         if not np.isclose(servo_freq, 3200):
@@ -139,31 +138,6 @@ class PmacTrajectoryPart(ChildPart):
                 duration=duration)
             return scanning.infos.ParameterTweakInfo("generator", new_generator)
 
-    def _make_axis_mapping(self, part_info, axes_to_move):
-        cs_ports = set()
-        # dict {name: MotorInfo}
-        axis_mapping = {}
-        for motor_info in MotorInfo.filter_values(part_info):
-            if motor_info.scannable in axes_to_move:
-                assert motor_info.cs_axis in cs_axis_names, \
-                    "Can only scan 1-1 mappings, %r is %r" % \
-                    (motor_info.scannable, motor_info.cs_axis)
-                cs_ports.add(motor_info.cs_port)
-                axis_mapping[motor_info.scannable] = motor_info
-        missing = list(set(axes_to_move) - set(axis_mapping))
-        assert not missing, \
-            "Some scannables %s are not in the CS mapping %s" % (
-                missing, axis_mapping)
-        assert len(cs_ports) == 1, \
-            "Requested axes %s are in multiple CS numbers %s" % (
-                axes_to_move, list(cs_ports))
-        cs_axis_counts = Counter([x.cs_axis for x in axis_mapping.values()])
-        # Any cs_axis defs that are used for more that one raw motor
-        overlap = [k for k, v in cs_axis_counts.items() if v > 1]
-        assert not overlap, \
-            "CS axis defs %s have more that one raw motor attached" % overlap
-        return cs_ports.pop(), axis_mapping
-
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     @add_call_types
@@ -180,20 +154,15 @@ class PmacTrajectoryPart(ChildPart):
         child = context.block_view(self.mri)
         child.numPoints.put_value(4000000)
         self.generator = generator
-        cs_port, self.axis_mapping = self._make_axis_mapping(
+        cs_port, self.axis_mapping = MotorInfo.cs_axis_mapping(
             part_info, axesToMove)
         # Set the right CS to move
         child.cs.put_value(cs_port)
-        self.completed_steps_lookup = []
-        self.profile = dict(time_array=[], velocity_mode=[], user_programs=[],
-                            trajectory={name: [] for name in self.axis_mapping})
-        future = self.move_to_start(child, completed_steps)
         self.steps_up_to = completed_steps + steps_to_do
         self.completed_steps_lookup = []
         self.profile = dict(time_array=[], velocity_mode=[], user_programs=[],
                             trajectory={name: [] for name in self.axis_mapping})
         self.calculate_generator_profile(completed_steps, do_run_up=True)
-        context.wait_all_futures(future)
         self.profile = self.write_profile_points(child, **self.profile)
         # Max size of array
         child.buildProfile()
@@ -291,40 +260,6 @@ class PmacTrajectoryPart(ChildPart):
                 iterations -= 1
         raise ValueError("Can't get a consistent time in 5 iterations")
 
-    def move_to_start(self, child, start_index):
-        """Move to the run up position ready to start the scan"""
-        first_point = self.generator.get_point(start_index)
-        zero_velocities = {}
-        current_positions = {}
-        distances = {}
-
-        for axis_name, velocity in self.point_velocities(first_point).items():
-            motor_info = self.axis_mapping[axis_name]
-            acceleration_distance = motor_info.ramp_distance(0, velocity)
-            zero_velocities[axis_name] = 0
-            start_pos = first_point.lower[axis_name] - acceleration_distance
-            current_positions[axis_name] = motor_info.current_position
-            distances[axis_name] = start_pos - motor_info.current_position
-
-        # Work out the velocity profiles of how to move to the start
-        time_arrays, velocity_arrays = self.make_consistent_velocity_profiles(
-            zero_velocities, zero_velocities, distances)
-
-        # If the reported move is tiny, we don't have to try and move
-        if max(ts[-1] for ts in time_arrays.values()) < 0.01:
-            return []
-
-        # Work out the Position trajectories from these velocity profiles
-        self.calculate_profile_from_velocities(
-            time_arrays, velocity_arrays, current_positions, 0)
-
-        # Write the profiles, checking there are no left over points
-        profile = self.write_profile_points(child, **self.profile)
-        assert not profile["time_array"], "Leftover points %s" % profile
-        child.buildProfile()
-        future = child.executeProfile_async()
-        return future
-
     def write_profile_points(self, child, time_array, velocity_mode,
                              user_programs, trajectory):
         """Build profile using given data
@@ -370,16 +305,18 @@ class PmacTrajectoryPart(ChildPart):
             time_array_ticks.append(ticks)
 
         # Set the trajectories
+        # Cast to np arrays as it saves on the serialization
         attr_dict = dict(
-            timeArray=time_array_ticks,
-            velocityMode=velocity_mode[:PROFILE_POINTS],
-            userPrograms=user_programs[:PROFILE_POINTS],
+            timeArray=np.array(time_array_ticks, np.int32),
+            velocityMode=np.array(velocity_mode[:PROFILE_POINTS], np.int32),
+            userPrograms=np.array(user_programs[:PROFILE_POINTS], np.int32),
             pointsToBuild=len(time_array_ticks)
         )
         for axis_name, axis_points in trajectory.items():
             motor_info = self.axis_mapping[axis_name]
             cs_axis = motor_info.cs_axis
-            attr_dict["positions%s" % cs_axis] = axis_points[:PROFILE_POINTS]
+            attr_dict["positions%s" % cs_axis] = np.array(
+                axis_points[:PROFILE_POINTS], np.float64)
         child.put_attribute_values(attr_dict)
         return profile
 

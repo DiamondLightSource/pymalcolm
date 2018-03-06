@@ -165,7 +165,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(delay.meta, NumberMeta)
         assert delay.meta.dtype == "float64"
         assert delay.meta.tags == [
-            "group:parameters", "widget:textupdate", "config:2"]
+            "group:parameters", "widget:textinput", "config:2"]
 
         units = o.parts["DELAY.UNITS"]
         assert units.block_name == "PULSE2"

@@ -12,6 +12,7 @@ from malcolm.modules.builtin.controllers import BasicController, \
     AUseCothread, AUseGit
 from malcolm.modules.builtin.parts import ChildPart
 from ..parts.pandablocksmaker import PandABlocksMaker, SVG_DIR
+from ..parts.pandablocksactionpart import PandABlocksActionPart
 from ..pandablocksclient import PandABlocksClient
 
 
@@ -19,7 +20,7 @@ LUT_CONSTANTS = dict(
     A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
 
 # Time between polls for *CHANGES
-POLL_PERIOD = 0.5
+POLL_PERIOD = 1.0
 
 with Anno("Hostname of the box"):
     AHostname = str
@@ -138,6 +139,11 @@ class PandABlocksManagerController(ManagerController):
 
     def _make_child_controller(self, parts, mri):
         controller = BasicController(mri=mri)
+        if mri.endswith("PCAP"):
+            parts.append(PandABlocksActionPart(
+                self.client, "*PCAP", "ARM", "Arm position capture", []))
+            parts.append(PandABlocksActionPart(
+                self.client, "*PCAP", "DISARM", "Disarm position capture", []))
         for part in parts:
             controller.add_part(part)
         return controller

@@ -54,7 +54,7 @@ class Port(Enum):
     BOOL = "bool"  # Boolean
     INT32 = "int32"  # 32-bit signed integer
     NDARRAY = "NDArray"  # areaDetector NDArray port
-    CS = "CS"  # Motor co-ordinate system
+    MOTOR = "motor"  # motor record connection to CS or controller
 
     def inport_tag(self, disconnected_value):
         return "inport:%s:%s" % (self.value, disconnected_value)

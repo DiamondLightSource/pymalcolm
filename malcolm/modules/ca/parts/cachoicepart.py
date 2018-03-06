@@ -1,4 +1,4 @@
-from malcolm.core import Part, PartRegistrar, ChoiceMeta, Hook
+from malcolm.core import Part, PartRegistrar, ChoiceMeta
 from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
     APv, ARbv, ARbvSuff, AMinDelta, ATimeout, AInPort, AWidget, AGroup, AConfig
 

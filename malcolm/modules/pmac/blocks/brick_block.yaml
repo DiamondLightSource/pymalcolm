@@ -1,0 +1,21 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: prefix
+    description: The root PV for the Controller records
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+
+- ca.parts.CALongPart:
+    name: i10
+    description: Value of i10 (servo ticks)
+    rbv: $(prefix):I10
+
+# TODO: should be a bit field when we have one
+- ca.parts.CALongPart:
+    name: generalPurposeOutputs
+    description: Current value of GPIO Output bits
+    rbv: $(prefix):GPIO_OP_BITS
