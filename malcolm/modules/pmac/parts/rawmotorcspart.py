@@ -62,16 +62,18 @@ class RawMotorCSPart(Part):
         self.monitors = []
 
     def _update_value(self, value, index):
-        if not value.ok:
-            value = None
-        if index == 0 and value == 0:
-            self.port = ""
-        elif index == 0:
-            self.port = self.port_choices[value]
-        elif str(value) in cs_axis_names + ["I"]:
-            self.axis = value
+        if index == 0:
+            if not value.ok:
+                self.port = None
+            elif value == 0:
+                self.port = ""
+            else:
+                self.port = self.port_choices[value]
         else:
-            self.axis = None
+            if value.ok and str(value) in cs_axis_names + ["I"]:
+                self.axis = value
+            else:
+                self.axis = None
         if self.port is None or self.axis is None:
             # Bad value or PV disconnected
             self.attr.set_value(None, alarm=Alarm.invalid("Bad PV value"))
