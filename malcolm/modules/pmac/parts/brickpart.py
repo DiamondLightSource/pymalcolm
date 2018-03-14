@@ -18,6 +18,6 @@ class BrickPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         outputs = child.generalPurposeOutputs.value
         # Turn the uint16 into a 16 element bool array
-        outputs_list = [bool((outputs >> i) & 1) for i in range(16)]
+        outputs_list = [(outputs >> i) & 1 for i in range(16)]
         controller_info = ControllerInfo(child.i10.value, outputs_list)
         return controller_info

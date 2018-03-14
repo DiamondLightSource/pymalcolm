@@ -134,8 +134,10 @@ class ADBaseActions(object):
                 "arrayCounterReadback", self.done_when_reaches, timeout=5.0)
         except TimeoutError:
             raise TimeoutError(
-                "Detector %r arrayCounter didn't reach %s frames in time" % (
-                    self.mri, self.done_when_reaches))
+                "Detector %r arrayCounter didn't reach %s frames in time "
+                "(value after timeout is %s)" % (
+                    self.mri, self.done_when_reaches,
+                    child.arrayCounterReadback.value))
 
     def abort_detector(self, context):
         # type: (Context) -> None

@@ -57,3 +57,22 @@ class Info(object):
         for info_list in cls.filter_parts(part_info).values():
             filtered += info_list
         return filtered
+
+    @classmethod
+    def filter_single_value(cls, part_info):
+        # type: (Type[T], PartInfo) -> T
+        """Filter the part_info dict list looking for a single instance of our
+        class
+
+        Args:
+            part_info (dict): {part_name: [Info] or None} as returned from
+                Controller.run_hook()
+
+        Returns:
+            info subclass of cls
+        """
+        filtered = cls.filter_values(part_info)
+        assert len(filtered) == 1, \
+            "Expected a single %s, got %s of them" % (
+                cls.__name__, len(filtered))
+        return filtered[0]

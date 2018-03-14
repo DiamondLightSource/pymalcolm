@@ -13,7 +13,7 @@ from ..infos import MotorInfo, ControllerInfo
 from malcolm.modules.pmac.infos import cs_axis_names
 
 if TYPE_CHECKING:
-    from typing import Dict, List
+    from typing import Dict, List, Tuple
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
@@ -33,12 +33,23 @@ PREV_TO_CURRENT = 1
 CURRENT_TO_NEXT = 2
 ZERO_VELOCITY = 3
 
-# user programs
+# GPIO triggers, 1 indexed
+GPIO_LIVE_FRAME = 1
+GPIO_DEAD_FRAME = 2
+GPIO_CAPTURE = 3
+
+# Map requested GPIO 1..3 settings to a user program
 NO_PROGRAM = 0  # Do nothing
-TRIG_CAPTURE = 4  # Capture 1, Frame 0, Detector 0
-TRIG_DEAD_FRAME = 2  # Capture 0, Frame 1, Detector 0
-TRIG_LIVE_FRAME = 3  # Capture 0, Frame 1, Detector 1
-TRIG_ZERO = 8  # Capture 0, Frame 0, Detector 0
+GPIO_PROGRAMS = {
+    (1, 0, 0): 1,
+    (0, 1, 0): 2,
+    (1, 1, 0): 3,
+    (0, 0, 1): 4,
+    (1, 0, 1): 5,
+    (0, 1, 1): 6,
+    (1, 1, 1): 7,
+    (0, 0, 0): 8,
+}  # type: Dict[Tuple[int, int, int], int]
 
 # How many profile points to write each time
 PROFILE_POINTS = 10000
@@ -72,6 +83,8 @@ class PmacTrajectoryPart(ChildPart):
         self.profile = {}
         # Stored generator for positions
         self.generator = None  # type: CompoundGenerator
+        # Last GPIO user program run
+        self.last_gpio = None  # type: Tuple[int, int, int]
         # Attribute info
         self.min_turnaround = NumberMeta(
             "float64", "Min time for any gaps between frames",
@@ -84,8 +97,8 @@ class PmacTrajectoryPart(ChildPart):
                               scanning.hooks.SeekHook), self.configure)
         self.register_hooked((scanning.hooks.RunHook,
                               scanning.hooks.ResumeHook), self.run)
-        self.register_hooked(scanning.hooks.AbortHook, self.abort)
-        self.register_hooked(scanning.hooks.PauseHook, self.pause)
+        self.register_hooked((scanning.hooks.AbortHook,
+                              scanning.hooks.PauseHook), self.abort)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -98,7 +111,6 @@ class PmacTrajectoryPart(ChildPart):
         # type: (builtin.hooks.AContext) -> None
         super(PmacTrajectoryPart, self).reset(context)
         self.abort(context)
-        self.reset_triggers(context)
 
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
@@ -114,11 +126,8 @@ class PmacTrajectoryPart(ChildPart):
         # Find the duration
         assert generator.duration > 0, \
             "Can only do fixed duration at the moment"
-        controller_infos = ControllerInfo.filter_values(part_info)
-        assert len(controller_infos) == 1, \
-            "Expected a single Controller for i10 value, got %s" % (
-                controller_infos,)
-        servo_freq = controller_infos[0].servo_freq()
+        controller_info = ControllerInfo.filter_single_value(part_info)
+        servo_freq = controller_info.servo_freq()
         # convert half an exposure to multiple of servo ticks, rounding down
         ticks = np.floor(servo_freq * 0.5 * generator.duration)
         if not np.isclose(servo_freq, 3200):
@@ -156,6 +165,9 @@ class PmacTrajectoryPart(ChildPart):
         self.generator = generator
         cs_port, self.axis_mapping = MotorInfo.cs_axis_mapping(
             part_info, axesToMove)
+        # Work out the "last GPIO program" from the GPIO bits
+        controller_info = ControllerInfo.filter_single_value(part_info)
+        self.last_gpio = tuple(controller_info.outputs[:3])
         # Set the right CS to move
         child.cs.put_value(cs_port)
         self.steps_up_to = completed_steps + steps_to_do
@@ -180,22 +192,18 @@ class PmacTrajectoryPart(ChildPart):
         try:
             child.when_value_matches("pointsScanned", traj_end, timeout=0.1)
         except TimeoutError:
-            raise ValueError("PMAC %r didn't report %s steps in time" % (
-                self.mri, traj_end))
+            raise ValueError(
+                "PMAC %r didn't report %s steps in time "
+                "(value after timeout is %s)" % (
+                    self.mri, traj_end, child.pointsScanned.value))
 
     @add_call_types
     def abort(self, context):
         # type: (scanning.hooks.AContext) -> None
         child = context.block_view(self.mri)
         child.abortProfile()
-
-    @add_call_types
-    def pause(self, context):
-        # type: (scanning.hooks.AContext) -> None
-        self.abort(context)
-        # Wait for the motors to stop moving as this is not a caput callback
-        context.sleep(0.5)
-        self.reset_triggers(context)
+        # Wait for 2 x minDelta for GPIO status PV to update
+        context.sleep(0.1)
 
     def update_step(self, scanned, child):
         if scanned > 0:
@@ -320,18 +328,6 @@ class PmacTrajectoryPart(ChildPart):
         child.put_attribute_values(attr_dict)
         return profile
 
-    def reset_triggers(self, context):
-        """Just call a Move to the run up position ready to start the scan"""
-        child = context.block_view(self.mri)
-        child.numPoints.put_value(10)
-        self.write_profile_points(child,
-                                  time_array=[0.1],
-                                  velocity_mode=[ZERO_VELOCITY],
-                                  user_programs=[TRIG_ZERO],
-                                  trajectory={})
-        child.buildProfile()
-        child.executeProfile()
-
     def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,
                                           current_positions, completed_steps):
         trajectory = {}
@@ -344,7 +340,7 @@ class PmacTrajectoryPart(ChildPart):
         self.profile["time_array"] += [interval] * num_intervals
         self.profile["velocity_mode"] += \
             [PREV_TO_NEXT] * (num_intervals - 1) + [CURRENT_TO_NEXT]
-        self.profile["user_programs"] += [TRIG_ZERO] * num_intervals
+        self.profile["user_programs"] += [NO_PROGRAM] * num_intervals
         self.completed_steps_lookup += [completed_steps] * num_intervals
 
         # Do this for each velocity array
@@ -371,7 +367,7 @@ class PmacTrajectoryPart(ChildPart):
                 self.profile["trajectory"][axis_name].append(
                     position + part_position)
 
-    def add_profile_point(self, time_point, velocity_point, user_point,
+    def add_profile_point(self, time_point, velocity_point, user_gpio,
                           completed_step, axis_points):
 
         # Add padding if the move time exceeds the max pmac move time
@@ -399,10 +395,22 @@ class PmacTrajectoryPart(ChildPart):
 
         # Set the requested point
         self.profile["velocity_mode"].append(velocity_point)
+        if user_gpio:
+            user_point = self.toggle_gpio(user_gpio)
+        else:
+            user_point = NO_PROGRAM
         self.profile["user_programs"].append(user_point)
         self.completed_steps_lookup.append(completed_step)
         for k, v in axis_points.items():
             self.profile["trajectory"][k].append(v)
+
+    def toggle_gpio(self, gpio):
+        # type: (int) -> int
+        current_gpio = list(self.last_gpio)
+        current_gpio[gpio - 1] ^= 1  # toggle given gpio number
+        self.last_gpio = tuple(current_gpio)  # type: Tuple[int, int, int]
+        program = GPIO_PROGRAMS[self.last_gpio]
+        return program
 
     def calculate_generator_profile(self, start_index, do_run_up=False):
         # If we are doing the first build, do_run_up will be passed to flag
@@ -421,7 +429,7 @@ class PmacTrajectoryPart(ChildPart):
 
             # Add lower bound
             self.add_profile_point(
-                run_up_time, CURRENT_TO_NEXT, TRIG_LIVE_FRAME, start_index,
+                run_up_time, CURRENT_TO_NEXT, GPIO_LIVE_FRAME, start_index,
                 axis_points)
 
         for i in range(start_index, self.steps_up_to):
@@ -429,25 +437,32 @@ class PmacTrajectoryPart(ChildPart):
 
             # Add position
             self.add_profile_point(
-                point.duration / 2.0, PREV_TO_NEXT, TRIG_CAPTURE, i,
+                point.duration / 2.0, PREV_TO_NEXT, GPIO_CAPTURE, i,
                 {name: point.positions[name] for name in self.axis_mapping})
 
             # If there will be more frames, insert next live frame
             if i + 1 < self.steps_up_to:
-                self.add_profile_point(
-                    point.duration / 2.0, PREV_TO_NEXT, TRIG_LIVE_FRAME, i + 1,
-                    {name: point.upper[name] for name in self.axis_mapping})
-
                 # Check if we need to insert the lower bound of next_point
                 next_point = self.generator.get_point(i + 1)
+                points_joined = self.points_joined(point, next_point)
 
-                # Check if we need to insert a gap
-                if not self.points_joined(point, next_point):
+                if points_joined:
+                    user_point = GPIO_LIVE_FRAME
+                    velocity_point = PREV_TO_NEXT
+                else:
+                    user_point = GPIO_DEAD_FRAME
+                    velocity_point = PREV_TO_CURRENT
+
+                self.add_profile_point(
+                    point.duration / 2.0, velocity_point, user_point, i + 1,
+                    {name: point.upper[name] for name in self.axis_mapping})
+
+                if not points_joined:
                     self.insert_gap(point, next_point, i + 1)
             else:
                 # No more frames, dead frame to finish
                 self.add_profile_point(
-                    point.duration / 2.0, PREV_TO_CURRENT, TRIG_DEAD_FRAME,
+                    point.duration / 2.0, PREV_TO_CURRENT, GPIO_DEAD_FRAME,
                     i + 1,
                     {name: point.upper[name] for name in self.axis_mapping})
 
@@ -470,7 +485,7 @@ class PmacTrajectoryPart(ChildPart):
             axis_points[axis_name] = point.upper[axis_name] + tail_off
 
         # Do the last move
-        self.add_profile_point(tail_off_time, ZERO_VELOCITY, TRIG_ZERO,
+        self.add_profile_point(tail_off_time, ZERO_VELOCITY, NO_PROGRAM,
                                self.steps_up_to, axis_points)
         self.end_index = self.steps_up_to
 
@@ -482,10 +497,6 @@ class PmacTrajectoryPart(ChildPart):
         return True
 
     def insert_gap(self, point, next_point, completed_steps):
-        # Change last point to be dead frame
-        self.profile["velocity_mode"][-1] = PREV_TO_CURRENT
-        self.profile["user_programs"][-1] = TRIG_DEAD_FRAME
-
         # Work out the start and end velocities for each axis
         start_velocities = self.point_velocities(point)
         end_velocities = self.point_velocities(next_point)
@@ -508,4 +519,4 @@ class PmacTrajectoryPart(ChildPart):
 
         # Change the last point to be a live frame
         self.profile["velocity_mode"][-1] = CURRENT_TO_NEXT
-        self.profile["user_programs"][-1] = TRIG_LIVE_FRAME
+        self.profile["user_programs"][-1] = self.toggle_gpio(GPIO_LIVE_FRAME)

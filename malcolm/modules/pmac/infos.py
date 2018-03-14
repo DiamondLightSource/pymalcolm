@@ -18,7 +18,7 @@ cs_axis_names = list("ABCUVWXYZ")
 
 class ControllerInfo(Info):
     def __init__(self, i10, outputs):
-        # type: (int, Sequence[bool]) -> None
+        # type: (int, Sequence[int]) -> None
         self.i10 = i10
         self.outputs = outputs
 
