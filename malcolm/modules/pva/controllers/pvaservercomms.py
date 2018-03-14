@@ -40,31 +40,37 @@ class PvaServerComms(ServerComms):
                 # Add new blocks
                 for mri in published:
                     if mri not in self._endpoints:
-                        self._add_new_pva_channel(mri)
+                        self._add_new_pva_channels(mri)
 
-    def _add_new_pva_channel(self, mri):
+    def _add_new_pva_channels(self, mri):
+        controller = self.process.get_controller(mri)
+        self._add_new_pva_channel(mri, controller)
+        b = controller.make_view()
+        for field in b:
+            self._add_new_pva_channel(mri, controller, field)
+
+    def _add_new_pva_channel(self, mri, controller, field=None):
         """Create a new PVA endpoint for the block name
 
         Args:
             mri (str): The name of the block to create the PVA endpoint
         """
-        controller = self.process.get_controller(mri)
 
         def _get(pv_request):
             try:
-                return PvaGetImplementation(mri, controller, pv_request)
+                return PvaGetImplementation(mri, controller, field, pv_request)
             except Exception:
                 self.log.exception("Error doing Get")
 
         def _put(pv_request):
             try:
-                return PvaPutImplementation(mri, controller, pv_request)
+                return PvaPutImplementation(mri, controller, field, pv_request)
             except Exception:
                 self.log.exception("Error doing Put")
 
         def _rpc(pv_request):
             try:
-                rpc = PvaRpcImplementation(mri, controller, pv_request)
+                rpc = PvaRpcImplementation(mri, controller, field, pv_request)
                 return rpc.execute
             except Exception:
                 self.log.exception("Error doing Rpc")
@@ -72,7 +78,7 @@ class PvaServerComms(ServerComms):
         def _monitor(pv_request):
             try:
                 return PvaMonitorImplementation(
-                    mri, controller, pv_request)
+                    mri, controller, field, pv_request)
             except Exception:
                 self.log.exception("Error doing Monitor")
 
@@ -84,8 +90,10 @@ class PvaServerComms(ServerComms):
         # TODO: There is no way to eliminate dead monitors
         # TODO: Monitors do not support deltas
         endpoint.registerEndpointMonitor(_monitor)
+        self._endpoints.setdefault(mri, []).append(endpoint)
+        if field:
+            mri += ".%s" % field
         self._pva_server.registerEndpoint(mri, endpoint)
-        self._endpoints[mri] = endpoint
 
     def _start_pva_server(self):
         if self._pva_server is None:
@@ -93,7 +101,7 @@ class PvaServerComms(ServerComms):
             # {mri: Endpoint}
             self._endpoints = {}
             for mri in self._published:
-                self._add_new_pva_channel(mri)
+                self._add_new_pva_channels(mri)
             self._spawned = self.spawn(self._pva_server.startListener)
 
     def _stop_pva_server(self):
@@ -104,17 +112,20 @@ class PvaServerComms(ServerComms):
 
 
 class PvaImplementation(Loggable):
-    def __init__(self, mri, controller, request):
+    def __init__(self, mri, controller, field, pv_request):
         self.set_logger(mri=mri)
         self._mri = mri
         self._controller = controller
-        self._request = request
+        self._field = field
+        self._request = pv_request
 
     def _dict_to_path_value(self, pv_request):
         value = pv_request.toDict()
         if "field" in value:
             value = value["field"]
         path = []
+        if self._field:
+            path.append(self._field)
         while isinstance(value, dict) and len(value) == 1:
             endpoint = list(value)[0]
             value = value[endpoint]
@@ -128,7 +139,7 @@ class PvaImplementation(Loggable):
         self._controller.handle_request(request)
         response = queue.get()
         if isinstance(response, Error):
-            raise ResponseError(response.message)
+            raise response.message
         else:
             return response
 
@@ -140,6 +151,9 @@ class PvaImplementation(Loggable):
         # asked to get ["block", "attr", "value"], we should provide
         # {"attr": {"value": 32}}
         response_dict = response.value
+        if self._field:
+            # One level down
+            path = path[1:]
         for endpoint in reversed(path):
             response_dict = {endpoint: response_dict}
         pv_structure = dict_to_pv_object(response_dict)
@@ -161,8 +175,9 @@ class PvaGetImplementation(PvaImplementation):
                 self._pv_structure = self._get_pv_structure(self._request)
             except Exception as e:
                 # TODO: pvaPy should really allow us to raise here
-                # Return a malcolm error structure instead...
-                self._pv_structure = self._pv_error_structure(e)
+                self.log.exception("Bad get")
+                # Return an empty structure, as anything else crashes pvaPy!
+                self._pv_structure = {}
         return self._pv_structure
 
     def get(self):
@@ -187,7 +202,10 @@ class PvaRpcImplementation(PvaImplementation):
 
     def execute(self, args):
         try:
-            method_name = self._request["method"]
+            if self._field:
+                method_name = self._field
+            else:
+                method_name = self._request["method"]
             self.log.debug("Execute method %r of %r with args:\n%s",
                            self._mri, method_name, args.toDict())
             path = [method_name]
@@ -210,9 +228,9 @@ class PvaRpcImplementation(PvaImplementation):
 
 
 class PvaMonitorImplementation(PvaGetImplementation):
-    def __init__(self, mri, controller, request):
+    def __init__(self, mri, controller, field, request):
         super(PvaMonitorImplementation, self).__init__(
-            mri, controller, request)
+            mri, controller, field, request)
         self._mu = pvaccess.MonitorServiceUpdater()
         self.getPVStructure()
         self._do_update = False
