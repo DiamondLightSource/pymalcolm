@@ -68,33 +68,40 @@ class ProxyController(BasicController):
                 self.log.debug("Proxy got response %r", response)
                 return
             for change in response.changes:
-                path = change[0]
-                if len(path) == 0:
-                    assert len(change) == 2, \
-                        "Can't delete root block with change %r" % (change,)
-                    self._regenerate_block(change[1])
-                elif len(path) == 1 and path[0] not in ("health", "meta"):
-                    if len(change) == 1:
-                        # Delete a field
-                        self._block.remove_endpoint(path[1])
-                    else:
-                        # Change a single field of the block
-                        self._block.set_endpoint_data(path[1], change[1])
-                elif path[0] not in ("health", "meta"):
-                    # Update a child of the block
-                    assert len(change) == 2, \
-                        "Can't delete entries in Attributes or Methods"
-                    ob = self._block
-                    for p in path[:-1]:
-                        ob = ob[p]
-                    getattr(ob, "set_%s" % path[-1])(change[1])
-                elif len(path) == 2 and path[:1] == ["health", "alarm"]:
-                    # If we got an alarm update for health
-                    assert len(change) == 2, "Can't delete health alarm"
-                    alarm = deserialize_object(change[1], Alarm)
-                    self.update_health(self, HealthInfo(alarm))
-                else:
-                    raise ValueError("Bad response %s" % response)
+                try:
+                    self._handle_change(change)
+                except Exception:
+                    self.log.exception("Error handling %s", response)
+                    raise
+
+    def _handle_change(self, change):
+        path = change[0]
+        if len(path) == 0:
+            assert len(change) == 2, \
+                "Can't delete root block with change %r" % (change,)
+            self._regenerate_block(change[1])
+        elif len(path) == 1 and path[0] not in ("health", "meta"):
+            if len(change) == 1:
+                # Delete a field
+                self._block.remove_endpoint(path[1])
+            else:
+                # Change a single field of the block
+                self._block.set_endpoint_data(path[1], change[1])
+        elif path[0] not in ("health", "meta"):
+            # Update a child of the block
+            assert len(change) == 2, \
+                "Can't delete entries in Attributes or Methods"
+            ob = self._block
+            for p in path[:-1]:
+                ob = ob[p]
+            getattr(ob, "set_%s" % path[-1])(change[1])
+        elif len(path) == 2 and path[:1] == ["health", "alarm"]:
+            # If we got an alarm update for health
+            assert len(change) == 2, "Can't delete health alarm"
+            alarm = deserialize_object(change[1], Alarm)
+            self.update_health(self, HealthInfo(alarm))
+        else:
+            raise ValueError("Bad change %s" % (change,))
 
     def _regenerate_block(self, d):
         for field in list(self._block):
