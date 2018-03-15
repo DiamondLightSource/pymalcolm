@@ -8,8 +8,8 @@ from pkg_resources import require
 
 require("numpy", "scanpointgenerator")
 
-from malcolm.controllers.pva.pvautil import dict_to_pv_object
-from malcolm.core import StringArray
+from annotypes import Array
+from malcolm.modules.pva.controllers.pvautil import dict_to_pv_object
 from malcolm.compat import OrderedDict
 
 import numpy as np
@@ -23,6 +23,7 @@ import unittest
 class PVAUtilTest(unittest.TestCase):
     def setUp(self):
         self.d = OrderedDict([
+            ('typeid', 'anything'),
             ('generator', OrderedDict([
                 ('excluders', []),
                 ('generators', [
@@ -45,10 +46,10 @@ class PVAUtilTest(unittest.TestCase):
                      'typeid': 'scanpointgenerator:mutator/FixedDurationMutator:1.0'}
                 ])
             ])),
-            ('empty', StringArray()),
+            ('empty', Array[str]()),
             ('go', np.array([False, True])),
             ('stop', np.array([1, 2])),
-            ('axesToMove', StringArray('SampleX', 'SampleY')),
+            ('axesToMove', Array[str](['SampleX', 'SampleY'])),
             ('fileDir2', '/dls/i08/data/2017/cm16789-1/nexus/i08-4352'),
             ('fileDir', '/dls/i08/data/2017/cm16789-1/nexus/i08-4351')])
 
@@ -64,6 +65,8 @@ class PVAUtilTest(unittest.TestCase):
         #self.assertEquals(d.getScalarArray("go"), [False, True])
         assert d.getScalarArray("stop") == [1, 2]
         assert d.getScalarArray("empty") == []
+        print d
+        raise Exception("Bad")
 
 
 if __name__ == "__main__":
