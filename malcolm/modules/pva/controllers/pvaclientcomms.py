@@ -51,7 +51,7 @@ class PvaClientComms(ClientComms):
 
     def _response_from_dict(self, request, d):
         if d.get("typeid", "") == Error.typeid:
-            response = Error(request.id, d["message"])
+            response = Error(request.id, UnexpectedError(d["message"]))
         else:
             response = Return(request.id, d)
         return response
