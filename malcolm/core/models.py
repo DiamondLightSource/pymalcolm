@@ -813,28 +813,22 @@ URequired = Union[ARequired, Sequence[str], str]
 
 
 @Serializable.register_subclass("malcolm:core/MapMeta:1.0")
-class MapMeta(Meta):
+class MapMeta(Model):
     """An object containing a set of ScalarMeta objects"""
     __slots__ = ["elements", "required"]
 
     def __init__(self,
                  elements=None,  # type: Optional[AElements]
-                 description="",  # type: AMetaDescription
-                 tags=(),  # type: UTags
-                 writeable=False,   # type: AWriteable
-                 label="",  # type: ALabel
                  required=()  # type: URequired
                  ):
         # type: (...) -> None
         self.elements = self.set_elements(elements if elements else {})
         self.required = self.set_required(required)
-        super(MapMeta, self).__init__(description, tags, writeable, label)
 
     def set_writeable(self, writeable):
-        # type: (AWriteable) -> AWriteable
+        # type: (AWriteable) -> None
         for v in self.elements.values():
             v.set_writeable(writeable)
-        return super(MapMeta, self).set_writeable(writeable)
 
     def set_elements(self, elements):
         # type: (AElements) -> AElements
@@ -897,7 +891,8 @@ class MethodModel(Meta):
     def set_defaults(self, defaults):
         # type: (ADefaults) -> ADefaults
         for k, v in defaults.items():
-            defaults[k] = self.takes.elements[k].validate(v)
+            if k != "typeid":
+                defaults[k] = self.takes.elements[k].validate(v)
         return self.set_endpoint_data("defaults", defaults)
 
     def set_returns(self, returns):
