@@ -119,6 +119,8 @@ class PvaImplementation(Loggable):
         self._controller = controller
         self._field = field
         self._request = pv_request
+        self.log.debug(
+            "Mri %r field %r got request %s", mri, field, pv_request.toDict())
 
     def _dict_to_path_value(self, pv_request):
         value = pv_request.toDict()
