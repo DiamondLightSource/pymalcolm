@@ -2,7 +2,8 @@ import pvaccess
 from annotypes import add_call_types
 
 from malcolm.core import Loggable, Queue, Get, Put, Post, Subscribe, \
-    Error, ResponseError, ProcessPublishHook, Hook, APublished
+    Error, ProcessPublishHook, Hook, APublished
+from malcolm.core.serializable import serialize_hook
 from malcolm.modules.builtin.controllers import ServerComms
 from .pvautil import dict_to_pv_object, value_for_pva_set, strip_tuples
 
@@ -161,7 +162,7 @@ class PvaImplementation(Loggable):
 
     def _pv_error_structure(self, exception):
         """Make an error structure in lieu of actually being able to raise"""
-        error = Error(message=exception).to_dict()
+        error = Error(message=serialize_hook(exception)).to_dict()
         error.pop("id")
         return dict_to_pv_object(error)
 
@@ -175,9 +176,10 @@ class PvaGetImplementation(PvaImplementation):
                 self._pv_structure = self._get_pv_structure(self._request)
             except Exception as e:
                 # TODO: pvaPy should really allow us to raise here
-                self.log.exception("Bad get")
-                # Return an empty structure, as anything else crashes pvaPy!
-                self._pv_structure = {}
+                self.log.exception("Bad get %s", self._request.toDict())
+                # Can't raise an error, so send a bad structure as next best
+                # thing
+                self._pv_structure = self._pv_error_structure(e)
         return self._pv_structure
 
     def get(self):
@@ -187,7 +189,7 @@ class PvaGetImplementation(PvaImplementation):
 
 class PvaPutImplementation(PvaGetImplementation):
     def put(self, put_request):
-        self.log.debug("Put to %r value:\n%s", self._mri, put_request.toDict())
+        self.log.error("Put to %r value:\n%s", self._mri, put_request.toDict())
         self.getPVStructure()
         try:
             path, value = self._dict_to_path_value(put_request)
@@ -210,12 +212,20 @@ class PvaRpcImplementation(PvaImplementation):
                            self._mri, method_name, args.toDict())
             path = [method_name]
             parameters = strip_tuples(args.toDict(True))
+            parameters.pop("typeid", None)
             response = self._request_response(Post, path, parameters=parameters)
-            if response.value:
+            if isinstance(response.value, dict):
                 pv_object = dict_to_pv_object(response.value)
+            elif response.value is not None:
+                # TODO: it might be better to just send the value without
+                # the intermediate dictionary...
+                pv_object = dict_to_pv_object({"return": response.value})
             else:
-                # We need to return something, otherwise we get a timeout...
-                pv_object = dict_to_pv_object(dict(typeid="structure"))
+                # We need to return something, otherwise we get an error on the
+                # client side:
+                # Callable python service object must return instance of
+                # PvObject.
+                pv_object = pvaccess.PvObject({})
             self.log.debug("Return from method %r of %r:\n%s",
                            self._mri, method_name, pv_object.toDict())
             return pv_object
@@ -249,8 +259,10 @@ class PvaMonitorImplementation(PvaGetImplementation):
             delta (Delta): The response
         """
         for change in delta.changes:
-            field_path = ".".join(
-                self._dict_to_path_value(self._request)[0] + change[0])
+            path, _ = self._dict_to_path_value(self._request)
+            if self._field:
+                path = path[1:]
+            field_path = ".".join(path + change[0])
             if field_path and self._pv_structure.hasField(field_path):
                 new_value = value_for_pva_set(change[1])
                 # Don't update on the first change if all is the same
