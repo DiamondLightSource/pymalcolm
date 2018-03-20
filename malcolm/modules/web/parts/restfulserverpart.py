@@ -2,7 +2,8 @@ from annotypes import Anno, add_call_types
 from tornado.web import RequestHandler, asynchronous
 
 from malcolm.core import Part, json_decode, json_encode, Get, Post, Return, \
-    Error, Hook
+    Error
+from malcolm.modules import builtin
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos
 from ..infos import HandlerInfo
 
@@ -21,7 +22,8 @@ class RestfulHandler(RequestHandler):
     def get(self, endpoint_str):
         # called from tornado thread
         path = endpoint_str.split("/")
-        request = Get(path=path, callback=self.on_response)
+        request = Get(path=path)
+        request.set_callback(self.on_response)
         self._server_part.on_request(request)
 
     def on_response(self, response):
@@ -74,5 +76,5 @@ class RestfulServerPart(Part):
 
     def on_request(self, request):
         # called from tornado thread
-        controller = self.get_controller(request.path[0])
-        controller.handle_request(request)
+        mri = request.path[0]
+        self.registrar.report(builtin.infos.RequestInfo(request, mri))
