@@ -21,6 +21,7 @@
 - xspress3.parts.Xspress3DriverPart:
     name: Xspress3A
     mri: $(mriPrefix)-DRV
+    readoutTime: 6e-4
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mriPrefix)-STAT
