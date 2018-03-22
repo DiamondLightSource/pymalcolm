@@ -10,8 +10,8 @@ from malcolm.modules.ADCore.infos import DatasetProducedInfo
 from malcolm.modules.builtin.vmetas import StringMeta, NumberMeta
 from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
-# Number of points to look ahead of the current id index to account for dropped frames
-NUM_DROPPED = 10
+#import cProfile
+
 
 @method_takes(
     "name", StringMeta("Name of part"), REQUIRED,
@@ -38,7 +38,7 @@ class VDSWrapperPart(Part):
         self.params = params
         super(VDSWrapperPart, self).__init__(params.name)
 
-        self.current_idx = None
+        self.current_id = None
         self.done_when_reaches = None
         self.generator = None
         self.fems = [1, 2, 3, 4, 5, 6]
@@ -79,14 +79,14 @@ class VDSWrapperPart(Part):
             path=data_path,
             uniqueid=uniqueid_path)
 
-        # And the sum
-        yield DatasetProducedInfo(
-            name="EXCALIBUR.sum",
-            filename=filename,
-            type="secondary",
-            rank=2 + generator_rank,
-            path=sum_path,
-            uniqueid=uniqueid_path)
+        # # And the sum
+        # yield DatasetProducedInfo(
+        #     name="EXCALIBUR.sum",
+        #     filename=filename,
+        #     type="secondary",
+        #     rank=2 + generator_rank,
+        #     path=sum_path,
+        #     uniqueid=uniqueid_path)
 
         # Add any setpoint dimensions
         for axis in generator.axes:
@@ -108,7 +108,7 @@ class VDSWrapperPart(Part):
                   params):
         print "Configure"
         self.generator = params.generator
-        self.current_idx = completed_steps
+        self.current_id = completed_steps
         self.done_when_reaches = completed_steps + steps_to_do
         self.vds_path = os.path.join(params.fileDir,
                                      params.fileTemplate % self.OUTPUT_FILE)
@@ -168,108 +168,127 @@ class VDSWrapperPart(Part):
 
         return dataset_infos
 
-    @RunnableController.PostRunArmed
-    @RunnableController.Seek
-    def seek(self, context, completed_steps, steps_to_do, part_info):
-        self.current_idx = completed_steps
-        self.done_when_reaches = completed_steps + steps_to_do
-
-    @RunnableController.Run
-    @RunnableController.Resume
-    def run(self, context, update_completed_steps):
-        self.log.info("VDS part running")
-        if not self.raw_datasets:
-            for path_ in self.raw_paths:
-                self.log.info("Waiting for file %s to be created", path_)
-                while not os.path.exists(path_):
-                    context.sleep(1)
-                self.raw_datasets.append(
-                    h5.File(path_, self.READ, libver="latest", swmr=True))
-            for dataset in self.raw_datasets:
-                self.log.info("Waiting for id in file %s", dataset)
-                while self.ID not in dataset:
-                    context.sleep(0.1)
-            # here I should grab the handles to the vds dataset, id and all the swmr datasets and ids.
-            if self.vds.id.valid and self.ID in self.vds:
-                self.vds.swmr_mode = True
-                self.vds_sum = self.vds[self.SUM]
-                self.vds_id = self.vds[self.ID]
-                self.fems_sum = [ix[self.SUM] for ix in self.raw_datasets] 
-                self.fems_id = [ix[self.ID] for ix in self.raw_datasets]
-            else:
-                self.log.warning("File %s does not exist or does not have a "
-                             "UniqueIDArray, returning 0", file_)
-                return 0
-            
-            self.previous_idx = 0
-        # does this on every run
-        try:
-            self.log.info("Monitoring raw files until ID reaches %s",
-                          self.done_when_reaches)
-            while self.current_idx < self.done_when_reaches: # monitor the output of the vds id. When it counts up then we have finished.
-                context.sleep(0.1)  # Allow while loop to be aborted
-                self.maybe_update_datasets()
-
-        except Exception as error:
-            self.log.exception("Error in run. Message:\n%s", error.message)
-            self.close_files()
-            raise
+    # @RunnableController.PostRunArmed
+    # @RunnableController.Seek
+    # def seek(self, context, completed_steps, steps_to_do, part_info):
+    #     self.current_id = completed_steps
+    #     self.done_when_reaches = completed_steps + steps_to_do
+    #
+    # @RunnableController.Run
+    # @RunnableController.Resume
+    # def run(self, context, update_completed_steps):
+    #     self.log.info("VDS part running")
+    #     if not self.raw_datasets:
+    #         for path_ in self.raw_paths:
+    #             self.log.info("Waiting for file %s to be created", path_)
+    #             while not os.path.exists(path_):
+    #                 context.sleep(1)
+    #             self.raw_datasets.append(
+    #                 h5.File(path_, self.READ, libver="latest", swmr=True))
+    #         for dataset in self.raw_datasets:
+    #             self.log.info("Waiting for id in file %s", dataset)
+    #             while self.ID not in dataset:
+    #                 context.sleep(0.1)
+    #         # here I should grab the handles to the vds dataset, id and all the swmr datasets and ids.
+    #         if self.vds.id.valid and self.ID in self.vds:
+    #             self.vds.swmr_mode = True
+    #             self.vds_sum = self.vds[self.SUM]
+    #             self.vds_id = self.vds[self.ID]
+    #             self.fems_sum = [ix[self.SUM] for ix in self.raw_datasets]
+    #             self.fems_id = [ix[self.ID] for ix in self.raw_datasets]
+    #         else:
+    #             self.log.warning("File %s does not exist or does not have a "
+    #                          "UniqueIDArray, returning 0", file_)
+    #             return 0
+    #
+    #         self.previous_idx = 0
+    #     # does this on every run
+    #     try:
+    #         self.log.info("Monitoring raw files until ID reaches %s",
+    #                       self.done_when_reaches)
+    #         while self.current_id < self.done_when_reaches: # monitor the output of the vds id. When it counts up then we have finished.
+    #             context.sleep(0.1)  # Allow while loop to be aborted
+    #             #cProfile.runctx('self.maybe_update_datasets()', globals(), locals(), filename="/dls/tmp/qvr31998/VDSstats")
+    #             self.maybe_update_datasets()
+    #
+    #     except Exception as error:
+    #         self.log.exception("Error in run. Message:\n%s", error.message)
+    #         self.close_files()
+    #         raise
         
     def maybe_update_datasets(self):
-        self.log.info("VDS: updating")
-        shapes = []
+        #self.log.info("VDS: updating")
+        id_shapes = []
+        sum_shapes = []
 
-        self.log.info("VDS: fems ids: %s", self.fems_id)
+        #self.log.info("VDS: fems ids: %s", self.fems_id)
         # First update the id datasets and store their shapes
         for id in self.fems_id:
             id.refresh()
-            shapes.append(np.array(id.shape))
+            id_shapes.append(np.array(id.shape))
 
+        # Only refresh once, this should move to resize_vds when we are guaranteed id updates AFTER sum
+        for s in self.fems_sum:
+            s.refresh()
+            sum_shapes.append(np.array(s.shape))
 
-        self.log.info("Shapes: %s", shapes)
+        #self.log.info("Shapes: %s", shapes)
         # Now iterate through the indexes, updating ids and sums if needed
-        missed = 0
-        for index in self.get_indexes_to_check():
-            ids = []
+        ###TODO: This doesn't seem to actually iterate - just does the last one. 
+        indexes = self.get_indexes_to_check()
+        self.log.info("VDS: Indexes to checK: %s", indexes)
+        need_updates = True
+        
+        for index in indexes:
+            # For some reason, at certain point all the ids come back as zeroes.
             for i, id in enumerate(self.fems_id):
-                if not self.index_in_range(index, shapes[i]):
+                if not self.index_in_range(index, id_shapes[i]):
+                    self.log.info("VDS: ID Index out of range: %s", index)
                     return
-                ids.append(id[index])
-            min_id = min(ids)
-            if min_id > self.current_idx:
-                self.update_sum(index)
-                self.update_id(index, min_id)
-                self.current_idx = min_id
-                self.log.info("ID reached: %s", self.current_idx)        
-            elif missed > NUM_DROPPED:
-                return
-            else:
-                missed += 1
+                elif not self.index_in_range(index, sum_shapes[i]):
+                    self.log.info("VDS: SUM Index out of range: %s", index)
+                    return
+                else:
+                    fem_id = id[index]
+                    if fem_id == 0:
+                        self.log.info("VDS: FEM%d not written data %s yet", i + 1, index)
+                        return
+                    else:
+                        assert fem_id == self.current_id + 1, \
+                            "VDS: FEM%d wrote %d in index %s when expecting %s" % (
+                                i + 1, fem_id, index, self.current_id + 1)
+
+            #self.log.info("VDS: processing id: %s", self.current_id + 1)
+            #self.log.info("VDS: index %s", index)
+            if need_updates:
+                self.resize_vds(id_shapes[0])
+                need_updates = False
+            self.update_id_sum(index)
+            self.current_id += 1
+            #self.log.info("ID reached: %s", self.current_id)
+        self.flush_id_sum()
+
+    def resize_vds(self, shape):
+        self.vds_sum.resize(shape)
+        self.vds_id.resize(shape)  # source and target are now the same shape
+
+    def update_id_sum(self, index):
+        self.vds_sum[index] = sum(s[index] for s in self.fems_sum)
+        self.vds_id[index] = self.current_id + 1
+
+    def flush_id_sum(self):
+        self.vds_sum.flush()
+        self.vds_id.flush() # flush to disc
 
     def index_in_range(self, index, shape):
         # check the given index is valid for the shape of the array
         in_range = index < np.array(shape)[:len(index)]
         return np.all(in_range) 
 
-    def update_id(self, index, min_id):
-        self.vds_id.resize(self.fems_id[0].shape) # source and target are now the same shape
-        self.vds_id[index] = min_id
-        self.vds_id.flush() # flush to disc
-
-    def update_sum(self, index):
-        sums = []
-        self.log.info("VDS: Updating sum for %s", index) 
-        for s in self.fems_sum:
-            s.refresh()
-            sums.append(s[index])
-        self.log.info("VDS: Sums - %s", sums)
-        self.vds_sum.resize(self.fems_sum[0].shape)
-        self.vds_sum[index] = sum(sums)
-        self.log.info("VDS: Sum should be %s", self.vds_sum[index])
-        self.vds_sum.flush()
-
     def get_indexes_to_check(self):
         # returns the indexes that we should check for updates
-        for idx in range(self.current_idx, self.done_when_reaches):
-            yield tuple(self.generator.get_point(idx).indexes)
-
+        #self.log.info("VDS:Checking in range %s, %s", self.current_id, self.done_when_reaches)
+        for idx in range(self.current_id, self.done_when_reaches):
+            index = tuple(self.generator.get_point(idx).indexes)
+            #self.log.info("VDS: Yielding %s", index)
+            yield index
