@@ -15,7 +15,11 @@ class Andor3DriverPart(DetectorDriverPart):
             child, completed_steps, steps_to_do, params)
 
         duration = params.generator.duration
-        readout_time = child.readoutTime.value
+        # Period of time to use as a buffer in readout time, andor3 detectors
+        # are not timed precisely so cannot have their exporsure time
+        # set reliably to the maximum possible value.
+        time_margin = 0.001
+        readout_time = child.readoutTime.value + time_margin
         exposure = duration - readout_time
         fs.append(child.exposure.put_value_async(exposure))
         child.wait_all_futures(fs)
