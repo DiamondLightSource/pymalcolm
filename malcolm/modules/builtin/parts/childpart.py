@@ -190,7 +190,7 @@ class ChildPart(Part):
                 self.y = y
                 self.visible = visible
             else:
-                was_visible = self.part_visible.get(name, True)
+                was_visible = self.part_visible.get(name, False)
                 if was_visible and not visible:
                     self.sever_inports(context, part_info, name)
                 self.part_visible[name] = visible

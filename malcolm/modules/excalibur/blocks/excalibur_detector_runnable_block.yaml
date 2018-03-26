@@ -85,3 +85,12 @@
 
 - ADCore.parts.DatasetTablePart:
     name: DSET
+
+- excalibur.blocks.excalibur_munge_block:
+   mri: $(mriPrefix):MUNGE
+   prefix: $(pvPrefix):MUNGE
+
+- excalibur.parts.ExcaliburFileMungePart:
+    name: MUNGE
+    mri: $(mriPrefix):MUNGE
+
