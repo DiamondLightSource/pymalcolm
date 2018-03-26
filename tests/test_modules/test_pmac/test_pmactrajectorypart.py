@@ -33,12 +33,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         )
 
     def resolutions_and_use_call(self, useB=True):
-        offset = [call.put('offsetA', 0.0)]
-        resolution = [call.put('resolutionA', 0.001)]
-        if useB:
-            offset.append(call.put('offsetB', 0.0))
-            resolution.append(call.put('resolutionB', 0.001))
-        return offset + resolution + [
+        return [
             call.put('useA', True),
             call.put('useB', useB),
             call.put('useC', False),

@@ -294,8 +294,6 @@ class PmacTrajectoryPart(ChildPart):
             motor_info = self.axis_mapping[axis_name]
             cs_axis = motor_info.cs_axis
             use.append(cs_axis)
-            attr_dict["resolution%s" % cs_axis] = motor_info.resolution
-            attr_dict["offset%s" % cs_axis] = motor_info.offset
         for cs_axis in cs_axis_names:
             attr_dict["use%s" % cs_axis] = cs_axis in use
         child.put_attribute_values(attr_dict)

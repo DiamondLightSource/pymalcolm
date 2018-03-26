@@ -114,18 +114,6 @@
     pv: $(prefix):A:Positions
     config: False
 
-- ca.parts.CADoublePart:
-    name: resolutionA
-    description: Encoder resolution for CoordSys axis A
-    pv: $(prefix):A:Resolution
-    rbv_suff: _RBV
-
-- ca.parts.CADoublePart:
-    name: offsetA
-    description: User offset for CoordSys axis A
-    pv: $(prefix):A:Offset
-    rbv_suff: _RBV
-
 - ca.parts.CAChoicePart:
     name: useB
     description: is this axis is used in the trajectory scan? yes/no
@@ -136,18 +124,6 @@
     description: a list of positions for CoordSys axis B
     pv: $(prefix):B:Positions
     config: False
-
-- ca.parts.CADoublePart:
-    name: resolutionB
-    description: Encoder resolution for CoordSys axis B
-    pv: $(prefix):B:Resolution
-    rbv_suff: _RBV
-
-- ca.parts.CADoublePart:
-    name: offsetB
-    description: User offset for CoordSys axis B
-    pv: $(prefix):B:Offset
-    rbv_suff: _RBV
 
 - ca.parts.CAChoicePart:
     name: useC
@@ -160,18 +136,6 @@
     pv: $(prefix):C:Positions
     config: False
 
-- ca.parts.CADoublePart:
-    name: resolutionC
-    description: Encoder resolution for CoordSys axis C
-    pv: $(prefix):C:Resolution
-    rbv_suff: _RBV
-
-- ca.parts.CADoublePart:
-    name: offsetC
-    description: User offset for CoordSys axis C
-    pv: $(prefix):C:Offset
-    rbv_suff: _RBV
-
 - ca.parts.CAChoicePart:
     name: useU
     description: is this axis is used in the trajectory scan? yes/no
@@ -182,18 +146,6 @@
     description: a list of positions for CoordSys axis U
     pv: $(prefix):U:Positions
     config: False
-
-- ca.parts.CADoublePart:
-    name: resolutionU
-    description: Encoder resolution for CoordSys axis U
-    pv: $(prefix):U:Resolution
-    rbv_suff: _RBV
-
-- ca.parts.CADoublePart:
-    name: offsetU
-    description: User offset for CoordSys axis U
-    pv: $(prefix):U:Offset
-    rbv_suff: _RBV
 
 - ca.parts.CAChoicePart:
     name: useV
@@ -206,18 +158,6 @@
     pv: $(prefix):V:Positions
     config: False
 
-- ca.parts.CADoublePart:
-    name: resolutionV
-    description: Encoder resolution for CoordSys axis V
-    pv: $(prefix):V:Resolution
-    rbv_suff: _RBV
-
-- ca.parts.CADoublePart:
-    name: offsetV
-    description: User offset for CoordSys axis V
-    pv: $(prefix):V:Offset
-    rbv_suff: _RBV
-
 - ca.parts.CAChoicePart:
     name: useW
     description: is this axis is used in the trajectory scan? yes/no
@@ -228,18 +168,6 @@
     description: a list of positions for CoordSys axis W
     pv: $(prefix):W:Positions
     config: False
-
-- ca.parts.CADoublePart:
-    name: resolutionW
-    description: Encoder resolution for CoordSys axis W
-    pv: $(prefix):W:Resolution
-    rbv_suff: _RBV
-
-- ca.parts.CADoublePart:
-    name: offsetW
-    description: User offset for CoordSys axis W
-    pv: $(prefix):W:Offset
-    rbv_suff: _RBV
 
 - ca.parts.CAChoicePart:
     name: useX
@@ -252,18 +180,6 @@
     pv: $(prefix):X:Positions
     config: False
 
-- ca.parts.CADoublePart:
-    name: resolutionX
-    description: Encoder resolution for CoordSys axis X
-    pv: $(prefix):X:Resolution
-    rbv_suff: _RBV
-
-- ca.parts.CADoublePart:
-    name: offsetX
-    description: User offset for CoordSys axis X
-    pv: $(prefix):X:Offset
-    rbv_suff: _RBV
-
 - ca.parts.CAChoicePart:
     name: useY
     description: is this axis is used in the trajectory scan? yes/no
@@ -274,18 +190,6 @@
     description: a list of positions for CoordSys axis Y
     pv: $(prefix):Y:Positions
     config: False
-
-- ca.parts.CADoublePart:
-    name: resolutionY
-    description: Encoder resolution for CoordSys axis Y
-    pv: $(prefix):Y:Resolution
-    rbv_suff: _RBV
-
-- ca.parts.CADoublePart:
-    name: offsetY
-    description: User offset for CoordSys axis Y
-    pv: $(prefix):Y:Offset
-    rbv_suff: _RBV
 
 - ca.parts.CAChoicePart:
     name: useZ
@@ -298,14 +202,4 @@
     pv: $(prefix):Z:Positions
     config: False
 
-- ca.parts.CADoublePart:
-    name: resolutionZ
-    description: Encoder resolution for CoordSys axis Z
-    pv: $(prefix):Z:Resolution
-    rbv_suff: _RBV
 
-- ca.parts.CADoublePart:
-    name: offsetZ
-    description: User offset for CoordSys axis Z
-    pv: $(prefix):Z:Offset
-    rbv_suff: _RBV
