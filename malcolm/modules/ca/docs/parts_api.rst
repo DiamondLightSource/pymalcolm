@@ -9,27 +9,13 @@ parts
     Commonly a group of pvs are used to represent a method call like this::
 
         caput(pv, wait=True)
-        assert caget(status_pv) == good_status
+        assert caget(status_pv) == good_status, \
+            "Action failed with message: %s" % caget(message_pv)
 
-    This `Part` wraps up this design pattern as a Malcolm method
+    This `Part` wraps up this design pattern as a Malcolm `Method`
 
-.. autoclass:: CABooleanPart
+
+.. automodule:: malcolm.modules.ca.parts
     :members:
+    :exclude-members: CAActionPart
 
-.. autoclass:: CACharArrayPart
-    :members:
-
-.. autoclass:: CAChoicePart
-    :members:
-
-.. autoclass:: CADoubleArrayPart
-    :members:
-
-.. autoclass:: CADoublePart
-    :members:
-
-.. autoclass:: CALongPart
-    :members:
-
-.. autoclass:: CAStringPart
-    :members:

@@ -7,8 +7,8 @@ class NDArrayDatasetInfo(Info):
     """Declare the NDArray data this produces as being a useful dataset to store
     to file
 
-     Args:
-         rank: The rank of the dataset, e.g. 2 for a 2D detector
+    Args:
+        rank: The rank of the dataset, e.g. 2 for a 2D detector
     """
     def __init__(self, rank):
         # type: (int) -> None
@@ -24,6 +24,7 @@ class CalculatedNDAttributeDatasetInfo(Info):
         attr: NDAttribute name to get data from
     """
     def __init__(self, name, attr):
+        # type: (str, str) -> None
         self.name = name
         self.attr = attr
 

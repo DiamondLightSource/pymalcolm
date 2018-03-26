@@ -123,6 +123,6 @@ class RequestInfo(Info):
         mri: The mri of the controller that should handle it
     """
     def __init__(self, request, mri):
-        # type: (Request) -> None
+        # type: (Request, str) -> None
         self.request = request
         self.mri = mri

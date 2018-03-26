@@ -43,15 +43,15 @@ def generate_docs():
                 documents = []
             dirs = sorted(os.listdir(module_root))
             # Make any parameters and defines docs
-            for fname in ["parameters.py", "defines.py"]:
+            for fname in ["parameters.py", "defines.py", "hooks.py", "infos.py",
+                          "util.py"]:
                 docname = "%s_api" % fname[:-3]
                 if fname in dirs and docname not in documents:
                     # Make document for module
                     section = "malcolm.modules.%s.%s" % (modulename, fname[:-3])
                     make_automodule_doc(section, docs_build)
                     documents.append(docname)
-            for dirname in ["blocks", "includes", "controllers", "parts",
-                            "infos", "vmetas"]:
+            for dirname in ["blocks", "includes", "controllers", "parts"]:
                 docname = "%s_api" % dirname
                 if dirname in dirs and docname not in documents:
                     # Make document for module
@@ -69,8 +69,8 @@ def generate_docs():
 def make_automodule_doc(section, docs_build):
     docname = section.rsplit(".")[-1]
     with open(os.path.join(docs_build, docname + "_api.rst"), "w") as f:
-        f.write(docname + "\n")
-        f.write("=" * len(docname) + "\n\n")
+        f.write(section + "\n")
+        f.write("=" * len(section) + "\n\n")
         f.write(".. automodule:: %s\n" % section)
         f.write("    :members:\n")
 
@@ -84,7 +84,7 @@ def make_index_doc(modulename, docs_build, doc_dirs):
         f.write("    :maxdepth: 1\n")
         f.write("    :caption: malcolm.modules.%s\n\n" % modulename)
         for doc in doc_dirs:
-            f.write("    %s\n" % doc)
+            f.write("    %s <%s>\n" % (doc[:-4], doc))
 
 
 if __name__ == "__main__":

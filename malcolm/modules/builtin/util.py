@@ -84,8 +84,6 @@ class ExportTable(Table):
 
 
 class StatefulStates(StateSet):
-    """The most basic Malcolm state machine"""
-
     RESETTING = "Resetting"
     DISABLED = "Disabled"
     DISABLING = "Disabling"

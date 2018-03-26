@@ -34,7 +34,6 @@ Contents
     :caption: API
 
     api/core_api
-    api/tags_api
     build/modules_api
 
 * :ref:`genindex`

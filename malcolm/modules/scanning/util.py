@@ -31,8 +31,6 @@ class ConfigureParams(Serializable):
 
 
 class RunnableStates(ManagerStates):
-    """A state set listing the valid transitions for a `RunnableController`"""
-
     CONFIGURING = "Configuring"
     ARMED = "Armed"
     RUNNING = "Running"
@@ -85,6 +83,3 @@ class PointGeneratorMeta(VMeta):
         else:
             raise TypeError(
                 "Value %s must be a Generator object or dictionary" % value)
-
-    def doc_type_string(self):
-        return "CompoundGenerator"

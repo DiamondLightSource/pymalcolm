@@ -15,8 +15,7 @@ class TestRawMotorPart(ChildTestCase):
         self.process = Process("Process")
         self.context = Context(self.process)
         self.child = self.create_child_block(
-            raw_motor_block, self.process, mri="mri", prefix="PV:PRE",
-            motor_prefix="MOT:PRE")
+            raw_motor_block, self.process, mri="mri", prefix="PV:PRE")
         self.set_attributes(self.child,
                             maxVelocity=5.0,
                             accelerationTime=0.5,

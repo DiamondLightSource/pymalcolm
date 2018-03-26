@@ -5,7 +5,7 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
-    Unsubscribe, APartName, Hook, Port, Controller, Response, ABORT_TIMEOUT, \
+    Unsubscribe, APartName, Port, Controller, Response, ABORT_TIMEOUT, \
     get_config_tag
 from ..infos import PortInfo, LayoutInfo, OutPortInfo, InPortInfo, \
     PartExportableInfo, PartModifiedInfo

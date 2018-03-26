@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # malcolm documentation build configuration file
-
+import inspect
 import os
 import re
 import sys
@@ -32,6 +32,7 @@ else:
     require("ruamel.yaml")
 
 from mock import MagicMock
+from annotypes import make_annotations
 
 # Mock out failing imports
 MOCK_MODULES = [
@@ -47,32 +48,58 @@ sys.path.append(os.path.dirname(__file__))
 
 # Autodoc event handlers
 def skip_member(app, what, name, obj, skip, options):
-    # Override @method_takes to always be documented
-    if hasattr(obj, "MethodModel") and hasattr(obj.MethodModel, "takes") and \
-            obj.MethodModel.takes.elements:
+    # Override @add_call_types to always be documented
+    if hasattr(obj, "call_types") or hasattr(obj, "return_type"):
         return False
 
 
 def process_docstring(app, what, name, obj, options, lines):
-    # Add some documentation for @method_takes decorated members
-    if hasattr(obj, "MethodModel") and hasattr(obj.MethodModel, "takes") and \
-            obj.MethodModel.takes.elements:
-        # Add a new docstring
-        lines.append("params:")
-        for param, vmeta in obj.MethodModel.takes.elements.items():
-            lines.append(
-                "    - %s (%s):" % (param, vmeta.doc_type_string()))
-            description = vmeta.description.strip()
-            if not description[-1] in ".?!,":
-                description += "."
-            if param in obj.MethodModel.takes.required:
-                default = "Required"
-            elif param in obj.MethodModel.defaults:
-                default = "Default=%r" % (obj.MethodModel.defaults[param],)
-            else:
-                default = "Optional"
-            lines.append("        %s %s" % (description, default))
-        lines.append("")
+    # Work out if we need to work out the call types and return types
+    needs_call_types = True
+    needs_return_type = True
+    for line in lines:
+        strip = line.strip()
+        if strip.startswith(":type"):
+            needs_call_types = False
+        elif strip.startswith(":rtype"):
+            needs_return_type = False
+    # If we have annotated with @add_call_types, or this is a WithCallTypes
+    # instance, and we need call_types and return_type, make them
+    if needs_call_types and hasattr(obj, "call_types"):
+        for k, anno in obj.call_types.items():
+            lines.append(":param %s: %s" % (k, anno.description))
+            typ = getattr(anno.typ, "__name__", None)
+            if typ:
+                lines.append(":type %s: %s" % (k, typ))
+        needs_call_types = False
+    if needs_return_type and hasattr(obj, "return_type"):
+        # If we have a return type and it isn't the object itself
+        rt = obj.return_type
+        if rt and rt.typ != obj:
+            typ = getattr(rt.typ, "__name__", None)
+            if typ:
+                # Don't include the return description if no type given
+                lines.append(":returns: %s" % rt.description)
+                lines.append(":rtype: %s" % typ)
+        needs_return_type = False
+    # If we have a type comment but no call_types or return_type, process it
+    if needs_call_types or needs_return_type:
+        if inspect.isclass(obj):
+            obj = obj.__init__
+        if inspect.isfunction(obj) or inspect.ismethod(obj):
+            try:
+                annotations = make_annotations(obj)
+            except Exception as e:
+                raise ValueError("Can't make annotations for %s, %s" % (obj, e))
+        else:
+            annotations = None
+        if annotations:
+            for k, v in annotations.items():
+                if k == "return":
+                    if v and needs_return_type:
+                        lines.append(":rtype: %s" % v)
+                elif needs_call_types:
+                    lines.append(":type %s: %s" % (k, v))
 
 
 def setup(app):

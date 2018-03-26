@@ -1,7 +1,8 @@
-controllers
-===========
+util
+====
 
-.. module:: malcolm.modules.scanning.controllers
+.. automodule:: malcolm.modules.scanning.util
+    :members:
 
 .. autoclass:: RunnableStates
     :members:
@@ -62,7 +63,5 @@ controllers
         Disabling -> Disabled
         Disabled -> Resetting [label="reset()"]
 
-.. autoclass:: RunnableController
-    :members:
 
 

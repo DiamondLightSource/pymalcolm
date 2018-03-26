@@ -3,10 +3,10 @@ import os
 import importlib
 import inspect
 
-from annotypes import add_call_types, Any, TYPE_CHECKING, Anno, NO_DEFAULT
+from annotypes import Any, TYPE_CHECKING, Anno, NO_DEFAULT
 from ruamel import yaml
 
-from malcolm.compat import str_, raise_with_traceback
+from malcolm.compat import str_, raise_with_traceback, OrderedDict
 from malcolm.core import YamlError, Controller, Part, Define, MethodModel
 
 if TYPE_CHECKING:
@@ -25,7 +25,9 @@ def _create_takes_arguments(sections):
     for section in sections:
         if section.section == "parameters":
             takes_arguments.append(section.instantiate({}))
-    return takes_arguments
+    annos = [x for x in takes_arguments if x.default is NO_DEFAULT] + \
+            [x for x in takes_arguments if x.default is not NO_DEFAULT]
+    return annos
 
 
 def _create_blocks_and_parts(sections,  # type: List[Section]
@@ -97,21 +99,38 @@ def make_include_creator(yaml_path, filename=None):
         "Expected exactly 0 controllers, got %s" % (controller_sections,)
 
     # Add any parameters to the takes arguments
-    @add_call_types
-    def include_creator(**kwargs):
-        # type: (**Any) -> Any
+    def include_creator(kwargs):
         # Create the param dict of the static defined arguments
         defines = _create_defines(sections, yamlname, yamldir, kwargs)
         return _create_blocks_and_parts(sections, defines)
 
-    for anno in _create_takes_arguments(sections):
-        include_creator.call_types[anno.name] = anno
+    creator = creator_with_nice_signature(
+        include_creator, sections, yamlname, yaml_path, docstring)
+    return creator
 
-    include_creator.__doc__ = docstring
-    include_creator.__name__ = yamlname
-    include_creator.yamlname = yamlname
 
-    return include_creator
+# Add any parameters to the takes arguments
+def creator_with_nice_signature(creator, sections, yamlname, yaml_path,
+                                docstring):
+    takes = _create_takes_arguments(sections)
+    args = []
+    for anno in takes:
+        if anno.default is NO_DEFAULT:
+            args.append(anno.name)
+        else:
+            args.append("%s=%r" % (anno.name, anno.default))
+    func = """
+def %s(%s):
+    return creator(locals())""" % (yamlname, ", ".join(args))
+    # Copied from decorator pypi module
+    code = compile(func, yaml_path, 'single')
+    exec(code, locals())
+    ret = locals()[yamlname]
+    ret.return_type = Anno("Any return value", Any, "return")
+    ret.call_types = OrderedDict((anno.name, anno) for anno in takes)
+    ret.__doc__ = docstring
+    ret.yamlname = yamlname
+    return ret
 
 
 def make_block_creator(yaml_path, filename=None):
@@ -140,14 +159,10 @@ def make_block_creator(yaml_path, filename=None):
         "Expected exactly 1 controller, got %s" % (controller_sections,)
     controller_section = controller_sections[0]
 
-    # Add any parameters to the takes arguments
-    @add_call_types
-    def block_creator(**kwargs):
-        # type: (**Any) -> Any
+    def block_creator(kwargs):
         # Create the param dict of the static defined arguments
         defines = _create_defines(sections, yamlname, yamldir, kwargs)
         controllers, parts = _create_blocks_and_parts(sections, defines)
-
         # Make the controller
         controller = controller_section.instantiate(defines)
         for part in parts:
@@ -155,14 +170,9 @@ def make_block_creator(yaml_path, filename=None):
         controllers.append(controller)
         return controllers
 
-    for anno in _create_takes_arguments(sections):
-        block_creator.call_types[anno.name] = anno
-
-    block_creator.__doc__ = docstring
-    block_creator.__name__ = yamlname
-    block_creator.yamlname = yamlname
-
-    return block_creator
+    creator = creator_with_nice_signature(
+        block_creator, sections, yamlname, yaml_path, docstring)
+    return creator
 
 
 class Section(object):

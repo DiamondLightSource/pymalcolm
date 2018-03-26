@@ -3,7 +3,7 @@ import os
 from annotypes import Anno, add_call_types
 from tornado.web import StaticFileHandler
 
-from malcolm.core import Part, APartName, Hook
+from malcolm.core import Part, APartName
 from ..hooks import ReportHandlersHook, UHandlerInfos
 from ..infos import HandlerInfo
 

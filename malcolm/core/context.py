@@ -48,6 +48,8 @@ class When(object):
 
 
 class Context(object):
+    """Helper allowing Future style access to Block Attributes and Methods"""
+
     STOP = object()
 
     def __init__(self, process):
@@ -84,7 +86,7 @@ class Context(object):
         """Get a view of a block
 
         Args:
-            mri (str): The mri of the controller hosting the block
+            mri: The mri of the controller hosting the block
 
         Returns:
             Block: The block we control

@@ -14,6 +14,7 @@ from .models import BlockModel, AttributeModel, MethodModel, \
     BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, \
     ChoiceMeta, NumberArrayMeta, NumberMeta, StringArrayMeta, StringMeta, \
     TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion
+from .moduleutil import submodule_all
 from .part import Part, PartRegistrar, APartName
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
     ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos
@@ -29,5 +30,5 @@ from .tags import Widget, Port, group_tag, config_tag, get_config_tag
 from .timestamp import TimeStamp
 from .views import Attribute, Method, Block
 
-# Expose all the classes
-__all__ = sorted(k for k, v in globals().items() if type(v) == type)
+# Make a nice namespace
+__all__ = submodule_all(globals())

@@ -1,18 +1,7 @@
-controllers
-===========
+util
+====
 
-.. module:: malcolm.modules.builtin.controllers
-
-.. autoclass:: ServerComms
-    :members:
-
-.. autoclass:: ClientComms
-    :members:
-
-.. autoclass:: BasicController
-    :members:
-
-.. autoclass:: ProxyController
+.. automodule:: malcolm.modules.builtin.util
     :members:
 
 .. autoclass:: StatefulStates
@@ -45,9 +34,6 @@ controllers
         Disabling -> Fault [label="on_error"]
         Disabling -> Disabled
         Disabled -> Resetting [label="reset()"]
-
-.. autoclass:: StatefulController
-    :members:
 
 .. autoclass:: ManagerStates
     :members:
@@ -84,5 +70,3 @@ controllers
         Disabling -> Disabled
         Disabled -> Resetting [label="reset()"]
 
-.. autoclass:: ManagerController
-    :members:

@@ -33,6 +33,7 @@ def get_config_tag(tags):
 
 
 class Widget(Enum):
+    """Enum with all the known widget tags to appear on Attribute Metas"""
     NONE = ""  # Force no widget
     TEXTINPUT = "textinput"  # Editable text input box
     TEXTUPDATE = "textupdate"  # Read only text update
@@ -51,6 +52,8 @@ class Widget(Enum):
 
 
 class Port(Enum):
+    """Enum with all the known flowgraph port tags to appear on Attribute
+    Metas"""
     BOOL = "bool"  # Boolean
     INT32 = "int32"  # 32-bit signed integer
     NDARRAY = "NDArray"  # areaDetector NDArray port
