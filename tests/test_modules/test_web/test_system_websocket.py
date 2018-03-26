@@ -86,9 +86,12 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
     def test_server_counter_with_malcolm_client(self):
         self.process2.add_controller(
             proxy_block(mri="counter", comms="client")[-1])
+        block1 = self.process.block_view("counter")
         block2 = self.process2.block_view("counter")
         assert block2.counter.value == 0
         block2.increment()
+        assert block2.counter.timeStamp.to_time() == \
+               block1.counter.timeStamp.to_time()
         assert block2.counter.value == 1
         block2.zero()
         assert block2.counter.value == 0

@@ -94,7 +94,13 @@ class ProxyController(BasicController):
             ob = self._block
             for p in path[:-1]:
                 ob = ob[p]
-            getattr(ob, "set_%s" % path[-1])(change[1])
+            # special case attribute values and timeStamps
+            if len(path) == 2 and path[-1] == "value":
+                ob.set_value(change[1], set_alarm_ts=False)
+            elif len(path) == 2 and path[-1] == "timeStamp":
+                ob.set_ts(change[1])
+            else:
+                getattr(ob, "set_%s" % path[-1])(change[1])
         elif len(path) == 2 and path[:1] == ["health", "alarm"]:
             # If we got an alarm update for health
             assert len(change) == 2, "Can't delete health alarm"
