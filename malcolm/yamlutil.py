@@ -120,15 +120,16 @@ def creator_with_nice_signature(creator, sections, yamlname, yaml_path,
         else:
             args.append("%s=%r" % (anno.name, anno.default))
     func = """
-def %s(%s):
-    return creator(locals())""" % (yamlname, ", ".join(args))
+def creator_from_yaml(%s):
+    return creator(locals())""" % (", ".join(args))
     # Copied from decorator pypi module
     code = compile(func, yaml_path, 'single')
     exec(code, locals())
-    ret = locals()[yamlname]
+    ret = locals()["creator_from_yaml"]
     ret.return_type = Anno("Any return value", Any, "return")
     ret.call_types = OrderedDict((anno.name, anno) for anno in takes)
     ret.__doc__ = docstring
+    ret.__name__ = yamlname
     ret.yamlname = yamlname
     return ret
 
