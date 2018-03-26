@@ -15,6 +15,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         self.child = self.create_child_block(
             andor_detector_driver_block, self.process,
             mri="mri", prefix="prefix")
+        choices = ["Fixed", "Continuous"]
+        self.child.parts["imageMode"].attr.meta.set_choices(choices)
         self.o = call_with_params(
             AndorDriverPart, readoutTime=0.002, name="m", mri="mri")
         list(self.o.create_attribute_models())
@@ -42,7 +44,6 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
-            call.put('imageMode', 'Multiple'),
             call.put('numImages', 6000000),
             call.put('exposure', 0.098),
             call.put('acquirePeriod', 0.1),

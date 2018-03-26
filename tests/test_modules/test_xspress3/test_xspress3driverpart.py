@@ -15,6 +15,8 @@ class TestXspress3DetectorDriverPart(ChildTestCase):
         self.child = self.create_child_block(
             xspress3_detector_driver_block, self.process,
             mri="mri", prefix="prefix")
+        choices = ["Single", "Multiple", "Continuous"]
+        self.child.parts["imageMode"].attr.meta.set_choices(choices)
         self.o = call_with_params(
             Xspress3DriverPart, readoutTime=0.002, name="m", mri="mri")
         list(self.o.create_attribute_models())

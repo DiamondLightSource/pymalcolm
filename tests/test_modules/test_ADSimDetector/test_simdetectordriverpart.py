@@ -16,6 +16,8 @@ class TestSimDetectorDriverPart(ChildTestCase):
         self.child = self.create_child_block(
             sim_detector_driver_block, self.process,
             mri="mri", prefix="prefix")
+        choices = ["Single", "Multiple", "Continuous"]
+        self.child.parts["imageMode"].attr.meta.set_choices(choices)
         self.o = call_with_params(
             SimDetectorDriverPart, name="m", mri="mri")
         list(self.o.create_attribute_models())
