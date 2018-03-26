@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import pvaccess
 from annotypes import Array
+from enum import Enum
 
 from malcolm.compat import str_, OrderedDict, long_
 
@@ -52,10 +53,15 @@ def dict_to_pv_object(dict_in, empty_allowed=True):
 def value_for_pva_set(value, empty_allowed=False):
     # Turn it into something that pvaccess can just set
     if isinstance(value, Array):
-        value = value.seq
+        if issubclass(value.typ, Enum):
+            value = [v.value for v in value.seq]
+        else:
+            value = value.seq
 
     if isinstance(value, (np.number, np.ndarray)):
         value = value.tolist()
+    elif isinstance(value, Enum):
+        value = value.value
     elif isinstance(value, dict):
         dict_set = OrderedDict()
         for k, v in value.items():
@@ -79,7 +85,7 @@ def pva_structure_from_value(value, empty_allowed=False):
         structure = pvaccess.PvObject({})
     elif isinstance(value, str_):
         structure = pvaccess.STRING
-    elif isinstance(value, bool):
+    elif isinstance(value, (bool, np.bool_)):
         structure = pvaccess.BOOLEAN
     elif isinstance(value, (int, long_)):
         structure = pvaccess.LONG
@@ -91,11 +97,15 @@ def pva_structure_from_value(value, empty_allowed=False):
         assert len(value.shape) == 1, \
             "Expected 1d array, got {}".format(value.shape)
         structure = [pva_dtypes[value.dtype.type]]
+    elif isinstance(value, Enum):
+        structure = pvaccess.STRING
     elif isinstance(value, Array):
         if value.typ == str:
             structure = [pvaccess.STRING]
         elif value.typ in pva_dtypes:
             structure = [pva_dtypes[value.typ]]
+        elif issubclass(value.typ, Enum):
+            structure = [pvaccess.STRING]
         else:
             # Variant arrays should be handled below
             return pva_structure_from_value(list(value.seq))
