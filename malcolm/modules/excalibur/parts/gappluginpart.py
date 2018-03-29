@@ -1,15 +1,19 @@
-from malcolm.core import method_takes
-from malcolm.modules.builtin.parts import ChildPart
-from malcolm.core.vmetas import NumberMeta
-from malcolm.modules.scanning.controllers import RunnableController
+from malcolm.core import PartRegistrar
+from malcolm.modules import builtin, scanning
+from ..util import AFillValue
 
 
-class GapPluginPart(ChildPart):
+class GapPluginPart(builtin.parts.ChildPart):
     """Gap plugin for setting the fill value"""
-    @RunnableController.Configure
-    @method_takes(
-        "fillValue", NumberMeta("int32", "Fill value for stripe spacing"), 0)
-    def configure(self, context, completed_steps, steps_to_do, part_info,
-                  params):
-        child = context.block_view(self.params.mri)
-        child.fillValue.put_value(params.fillValue)
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(GapPluginPart, self).setup(registrar)
+        self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
+        # Tell the controller to expose some extra configure parameters
+        registrar.report(scanning.hooks.ConfigureHook.create_info(
+            self.configure))
+
+    def configure(self, context, fill_value=0):
+        # type: (scanning.hooks.AContext, AFillValue) -> None
+        child = context.block_view(self.mri)
+        child.fillValue.put_value(fill_value)

@@ -77,7 +77,6 @@ class RunnableChildPart(ChildPart):
             child.abort()
         super(RunnableChildPart, self).reset(context)
 
-
     @add_call_types
     def validate(self, context, **kwargs):
         # type: (AContext, **Any) -> UParameterTweakInfos

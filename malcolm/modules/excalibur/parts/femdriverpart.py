@@ -1,13 +1,15 @@
-from malcolm.modules.builtin.parts import ChildPart
-from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.ADCore.infos import NDArrayDatasetInfo, UniqueIdInfo
+from malcolm.modules import scanning, builtin, ADCore
 
 
-class FemDriverPart(ChildPart):
+class FemDriverPart(builtin.parts.ChildPart):
+    def setup(self, registrar):
+        super(FemDriverPart, self).setup(registrar)
+        # Hooks
+        self.register_hooked(scanning.hooks.ReportStatusHook,
+                             self.report_status)
+
     # Only need to report that we will make a dataset, top level will do all
     # control
-    @RunnableController.ReportStatus
-    def report_configuration(self, context):
-        child = context.block_view(self.params.mri)
-        return [
-            NDArrayDatasetInfo(rank=2), UniqueIdInfo(child.arrayCounter.value)]
+    def report_status(self):
+        # type: () -> scanning.hooks.UInfos
+        return ADCore.infos.NDArrayDatasetInfo(rank=2)

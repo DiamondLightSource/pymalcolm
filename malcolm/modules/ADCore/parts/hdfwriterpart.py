@@ -6,7 +6,7 @@ from annotypes import add_call_types, Anno, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator, Dimension
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Hook, Future, Info, Block, PartRegistrar
+from malcolm.core import APartName, Future, Info, Block, PartRegistrar
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, DatasetType, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \

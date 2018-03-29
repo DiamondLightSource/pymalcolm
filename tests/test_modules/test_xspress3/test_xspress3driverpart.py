@@ -36,7 +36,7 @@ class TestXspress3DetectorDriverPart(ChildTestCase):
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
-            call.put('exposure', 0.09993),
+            call.put('exposure', 0.0994),
             call.put('imageMode', 'Multiple'),
             call.put('numImages', 6000000),
             call.put('pointsPerRow', 15000),
