@@ -43,4 +43,5 @@ class PandABlocksFieldPart(Part):
         if isinstance(self.meta, BooleanMeta):
             value = int(value)
         self.client.set_field(self.block_name, self.field_name, value)
+        # self.attr.set_value(value)
 

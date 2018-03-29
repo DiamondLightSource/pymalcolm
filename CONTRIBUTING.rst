@@ -19,6 +19,7 @@ To get the source source code and run the unit tests, run::
     $ cd pymalcolm
     $ virtualenv --no-site-packages -p /path/to/python2.7 venv27
     $ . venv27/bin/activate
+    $ pip install 'pip>=9.0.1'
     $ pip install -r requirements/test.txt
     $ pytest tests
 

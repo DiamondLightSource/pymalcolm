@@ -3,6 +3,7 @@ from .femchildpart import FemChildPart
 from .femdriverpart import FemDriverPart
 from .gappluginpart import GapPluginPart
 from .vdswrapperpart import VDSWrapperPart
+from .excaliburfilemungepart import ExcaliburFileMungePart
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

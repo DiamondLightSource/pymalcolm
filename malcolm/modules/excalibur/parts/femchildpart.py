@@ -15,3 +15,8 @@ class FemChildPart(DatasetRunnableChildPart):
         # Throw away the dataset info the superclass returns
         super(FemChildPart, self).configure(
             context, completed_steps, steps_to_do, part_info, params)
+        # Sleep after configuration - recommended to allow at least 1s after starting Excalibur before taking first frame
+        # following testing on J13. Otherwise FEM1 may not be ready and will drop a frame.
+        print("Sleeping...")
+        context.sleep(1.0)
+        print("Slept")

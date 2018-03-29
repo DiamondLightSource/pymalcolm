@@ -9,7 +9,7 @@ class Xspress3DriverPart(ADCore.parts.DetectorDriverPart):
     def __init__(self, name, mri):
         # type: (ADCore.parts.APartName, ADCore.parts.AMri) -> None
         super(Xspress3DriverPart, self).__init__(
-            name, mri, initial_readout_time=7e-5)
+            name, mri, initial_readout_time=6e-4)
 
     @add_call_types
     def configure(self,

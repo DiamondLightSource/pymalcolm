@@ -28,13 +28,11 @@
     pv: $(prefix):TriggerCount
     rbv_suff: _RBV
 
-
 - ca.parts.CADoublePart:
     name: postCount
     description: How many samples to take after each trigger
     pv: $(prefix):POSTCOUNT
     rbv_suff: _RBV
-
 
 - ca.parts.CAActionPart:
     name: start

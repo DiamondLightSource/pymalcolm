@@ -1,0 +1,55 @@
+- builtin.parameters.string:
+    name: mriPrefix
+    description: Malcolm resource id of the Block and prefix for children
+
+- builtin.parameters.string:
+    name: pvPrefix
+    description: PV prefix for driver and all plugins
+
+- builtin.parameters.string:
+    name: configDir
+    description: Where to store saved configs
+
+- builtin.defines.docstring:
+    value: |
+      Device block corresponding to dtacq + reframe + stat + pos + hdf writer.
+
+      - Detector driver should have pv prefix $(pvPrefix):ADC
+      - Reframe plugin should have pv prefix $(pvPrefix):TRIG
+      - Pos should have pv prefix $(pvPrefix):POS
+      - Stat should have pv prefix $(pvPrefix):STAT
+      - HDF should have pv prefix $(pvPrefix):HDF5
+
+- scanning.controllers.RunnableController:
+    mri: $(mriPrefix)
+    configDir: $(configDir)
+    description: $(docstring)
+
+- dtacq.blocks.dtacq_driver_block:
+    mri: $(mriPrefix):DRV
+    prefix: $(pvPrefix):ADC
+
+#- ADCore.parts.ExposureDetectorDriverPart:
+#    name: DRV
+#    mri: $(mriPrefix):DRV
+#    readoutTime: 200e-6
+
+- adUtil.blocks.reframe_plugin_block:
+    mri: $(mriPrefix):TRIG
+    prefix: $(pvPrefix):TRIG
+
+- adUtil.parts.ReframePluginPart:
+    name: TRIG
+    mri: $(mriPrefix):TRIG
+
+- ADCore.blocks.stats_plugin_block:
+    mri: $(mriPrefix):STAT
+    prefix: $(pvPrefix):STAT
+
+- ADCore.parts.StatsPluginPart:
+    name: STAT
+    mri: $(mriPrefix):STAT
+
+- ADCore.includes.filewriting_collection:
+    pvPrefix: $(pvPrefix)
+    mriPrefix: $(mriPrefix)
