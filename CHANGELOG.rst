@@ -9,13 +9,26 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 Changed:
 
+- Nothing yet
+
+`2-2`_ - 2018-03-29
+-------------------
+
+Changed:
+
 - Split arrayCounter into arrayCounter and arrayCounterReadback on ADCore ndarraybase_parts
 
 Fixed:
 
 - Made RunnableChildPart handle a resume on a child that was Armed not Paused
 - Made VDS depend on h5py 2.7.1 and vds-gen 0.2
+- Removed flaky sum datasets of VDS
 - Fix a regression where Xmap would not report its DET and sum datasets
+
+Added:
+
+- dtacq support
+
 
 `2-1`_ - 2017-08-30
 -------------------
@@ -68,7 +81,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-1...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-2...HEAD
+.. _2-2: https://github.com/dls-controls/pymalcolm/compare/2-1...2-2
 .. _2-1: https://github.com/dls-controls/pymalcolm/compare/2-0a6...2-1
 .. _2-0a6: https://github.com/dls-controls/pymalcolm/compare/2-0a5...2-0a6
 .. _2-0a5: https://github.com/dls-controls/pymalcolm/compare/2-0a4...2-0a5
