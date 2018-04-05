@@ -16,8 +16,6 @@
 - ADCore.includes.adbase_parts:
     prefix: $(prefix)
 
-# Unsure if this is unique to Andor cameras or can go higher up the AD
-# hierarchy.
 - ca.parts.CADoublePart:
     name: readoutTime
     description: |
@@ -25,4 +23,11 @@
       The detector automatically limits the acquire period to the
       exposure + the readout time.
     rbv: $(prefix):ReadoutTime
+    widget: textupdate
+
+- ca.parts.CADoublePart:
+    name: AoiHeight
+    description: |
+      Height (number of pixel rows) recorded by the detector.
+    rbv: $(prefix):SizeY
     widget: textupdate
