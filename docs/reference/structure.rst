@@ -34,8 +34,7 @@ A Block looks like this::
     malcolm:core/Block:1.0
         BlockMeta   meta
         Attribute   health      // HealthMeta
-        {Attribute  <attribute-name>}0+
-        {Method <method-name>}0+
+        {Attribute | Method  <field-name>}0+
 
 
     BlockMeta :=
@@ -60,7 +59,7 @@ An Attribute looks like this::
     Attribute := Scalar | ScalarArray | Table | PointGenerator
 
 
-    NTScalar :=
+    Scalar :=
 
     epics:nt/NTScalar:1.0 // Conformant but optional fields -> meta
         scalar_t    value
@@ -203,8 +202,6 @@ A Method looks like this::
     malcolm:core/MapMeta:1.0
         structure   elements            // Metadata for each element in map
             {ArgumentMeta <elname>}0+
-        string      description         // Description of what the map is for
-        string[]    tags           :opt // e.g. "widget:group"
         string[]    required       :opt // These fields will always be present
 
 The ``takes`` structure describes the arguments that should be passed to the
