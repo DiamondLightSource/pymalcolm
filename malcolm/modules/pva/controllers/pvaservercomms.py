@@ -2,8 +2,8 @@ import pvaccess
 from annotypes import add_call_types
 
 from malcolm.core import Loggable, Queue, Get, Put, Post, Subscribe, \
-    Error, ProcessPublishHook, Hook, APublished
-from malcolm.core.serializable import serialize_hook
+    Error, ProcessPublishHook, Hook, APublished, serialize_object, \
+    serialize_hook
 from malcolm.modules.builtin.controllers import ServerComms
 from .pvautil import dict_to_pv_object, value_for_pva_set, strip_tuples
 
@@ -216,12 +216,13 @@ class PvaRpcImplementation(PvaImplementation):
             parameters = strip_tuples(args.toDict(True))
             parameters.pop("typeid", None)
             response = self._request_response(Post, path, parameters=parameters)
-            if isinstance(response.value, dict):
-                pv_object = dict_to_pv_object(response.value)
-            elif response.value is not None:
+            response_value = serialize_object(response.value)
+            if isinstance(response_value, dict):
+                pv_object = dict_to_pv_object(response_value)
+            elif response_value is not None:
                 # TODO: it might be better to just send the value without
                 # the intermediate dictionary...
-                pv_object = dict_to_pv_object({"return": response.value})
+                pv_object = dict_to_pv_object({"return": response_value})
             else:
                 # We need to return something, otherwise we get an error on the
                 # client side:
