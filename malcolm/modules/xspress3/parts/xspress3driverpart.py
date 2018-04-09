@@ -6,16 +6,12 @@ XSPRESS3_BUFFER = 16384
 
 
 class Xspress3DriverPart(ADCore.parts.DetectorDriverPart):
-    def __init__(self, name, mri):
-        # type: (ADCore.parts.APartName, ADCore.parts.AMri) -> None
-        super(Xspress3DriverPart, self).__init__(
-            name, mri, initial_readout_time=6e-4)
-
     @add_call_types
     def configure(self,
                   context,  # type: scanning.hooks.AContext
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
+                  part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
                   **kwargs  # type: **Any
                   ):
@@ -32,4 +28,5 @@ class Xspress3DriverPart(ADCore.parts.DetectorDriverPart):
             # TODO: this goes in config
             triggerMode="Hardware"))
         return super(Xspress3DriverPart, self).configure(
-            context, completed_steps, steps_to_do, generator, **kwargs)
+            context, completed_steps, steps_to_do, part_info, generator,
+            **kwargs)

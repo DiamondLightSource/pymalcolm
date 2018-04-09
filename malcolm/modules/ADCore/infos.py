@@ -3,6 +3,30 @@ from malcolm.core import Info
 from .util import DatasetType, AttributeDatasetType
 
 
+class ExposureDeadtimeInfo(Info):
+    """Detector exposure time should be generator.duration - deadtime
+
+    Args:
+        readout_time: The per frame readout time of the detector
+        frequency_accuracy: The crystal accuracy in ppm
+    """
+    def __init__(self, readout_time, frequency_accuracy):
+        # type: (float, float) -> None
+        self.readout_time = readout_time
+        self.frequency_accuracy = frequency_accuracy
+
+    def calculate_exposure(self, duration):
+        # type: (float) -> float
+        """Calculate the exposure to set the detector to given the duration of
+        the frame and the readout_time and frequency_accuracy"""
+        exposure = duration - self.frequency_accuracy * duration / 1000000.0 - \
+            self.readout_time
+        assert exposure > 0.0, \
+            "Exposure time %s too small when deadtime taken into account" % (
+                exposure,)
+        return exposure
+
+
 class NDArrayDatasetInfo(Info):
     """Declare the NDArray data this produces as being a useful dataset to store
     to file

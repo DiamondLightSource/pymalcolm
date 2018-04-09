@@ -25,7 +25,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
         steps_to_do = 456
         self.o.post_configure = MagicMock()
         self.o.configure(
-            self.context, completed_steps, steps_to_do, MagicMock())
+            self.context, completed_steps, steps_to_do, {}, MagicMock())
         # Wait for the start_future so the post gets through to our child
         # even on non-cothread systems
         self.o.actions.start_future.result(timeout=1)

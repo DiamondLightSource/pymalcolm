@@ -22,7 +22,8 @@ from .queue import Queue
 from .request import Request, Subscribe, Unsubscribe, Get, Put, Post
 from .response import Response, Delta, Update, Return, Error
 from .serializable import Serializable, deserialize_object, serialize_object, \
-    json_decode, json_encode, snake_to_camel, camel_to_title, check_camel_case
+    json_decode, json_encode, snake_to_camel, camel_to_title, \
+    check_camel_case, serialize_hook
 from .spawned import Spawned
 from .stateset import StateSet
 from .table import Table

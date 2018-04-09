@@ -3,6 +3,7 @@ import inspect
 from annotypes import TYPE_CHECKING, TypeVar
 
 from malcolm.compat import OrderedDict
+from .errors import BadValueError
 
 if TYPE_CHECKING:
     from typing import Type, Dict, List, Union, Sequence
@@ -72,7 +73,7 @@ class Info(object):
             info subclass of cls
         """
         filtered = cls.filter_values(part_info)
-        assert len(filtered) == 1, \
-            "Expected a single %s, got %s of them" % (
-                cls.__name__, len(filtered))
+        if len(filtered) != 1:
+            raise BadValueError("Expected a single %s, got %s of them" % (
+                cls.__name__, len(filtered)))
         return filtered[0]

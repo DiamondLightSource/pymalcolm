@@ -11,12 +11,13 @@ class XmapDriverPart(ADCore.parts.DetectorDriverPart):
                   context,  # type: scanning.hooks.AContext
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
+                  part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
         super(XmapDriverPart, self).configure(
-            context, completed_steps, steps_to_do, generator,
+            context, completed_steps, steps_to_do, part_info, generator,
             collectMode="MCA mapping",
             pixelAdvanceMode="Gate",
             presetMode="No preset",

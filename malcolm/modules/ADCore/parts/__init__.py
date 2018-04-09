@@ -1,7 +1,9 @@
 from .datasetrunnablechildpart import DatasetRunnableChildPart
 from .datasettablepart import DatasetTablePart
 from .detectordriverpart import DetectorDriverPart, APartName, AMri, \
-    AHardwareTriggered, AInitialReadoutTime, AMainDatasetUseful
+    AHardwareTriggered, AMainDatasetUseful
+from .exposuredeadtimepart import ExposureDeadtimePart, AInitialAccuracy, \
+    AInitialReadoutTime
 from .hdfwriterpart import HDFWriterPart, AFileDir, AFileTemplate, AFormatName
 from .positionlabellerpart import PositionLabellerPart
 from .statspluginpart import StatsPluginPart

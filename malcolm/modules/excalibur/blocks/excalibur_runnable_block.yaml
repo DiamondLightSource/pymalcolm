@@ -75,13 +75,16 @@
 - excalibur.parts.ExcaliburDriverPart:
     name: CONFIG
     mri: $(mri_prefix):MASTER
-    readoutTime: 12e-6
+
+- ADCore.parts.ExposureDeadtimePart:
+    name: DEADTIME
+    initial_readout_time: 12e-6
 
 - excalibur.parts.VDSWrapperPart:
     name: VDS
-    dataType: int32
-    stripeHeight: 259
-    stripeWidth: 2069
+    data_type: int32
+    stripe_height: 259
+    stripe_width: 2069
 
 - ADCore.parts.DatasetTablePart:
     name: DSET

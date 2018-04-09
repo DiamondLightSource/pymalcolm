@@ -11,6 +11,8 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         # type: (ADCore.parts.APartName, ADCore.parts.AMri, ASampleFreq) -> None
         super(ReframePluginPart, self).__init__(name, mri)
         self.sample_freq = sample_freq
+        # Hooks
+        self.register_hooked(scanning.hooks.ValidateHook, self.validate)
 
     @add_call_types
     def validate(self, generator):
@@ -28,11 +30,12 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
                   context,  # type: scanning.hooks.AContext
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
+                  part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
         nsamples = int(generator.duration * self.sample_freq) - 1
         super(ReframePluginPart, self).configure(
-            context, completed_steps, steps_to_do, generator,
+            context, completed_steps, steps_to_do, part_info, generator,
             postCount=nsamples, **kwargs)
