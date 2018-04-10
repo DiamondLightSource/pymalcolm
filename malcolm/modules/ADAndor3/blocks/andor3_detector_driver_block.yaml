@@ -26,8 +26,8 @@
     widget: textupdate
 
 - ca.parts.CADoublePart:
-    name: aoiHeight
+    name: arrayHeight
     description: |
       Height (number of pixel rows) recorded by the detector.
-    rbv: $(prefix):SizeY
+    rbv: $(prefix):ArraySizeY_RBV
     widget: textupdate
