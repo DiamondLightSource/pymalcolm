@@ -1,3 +1,5 @@
+import numpy as np
+
 from malcolm.modules.ADCore.parts import DetectorDriverPart
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo
 from malcolm.modules.scanning.controllers import RunnableController
@@ -15,16 +17,25 @@ class Andor3DriverPart(DetectorDriverPart):
             child, completed_steps, steps_to_do, params)
 
         duration = params.generator.duration
-        # Period of time to use as a buffer in readout time, andor3 detectors
-        # are not timed precisely so cannot have their exporsure time
-        # set reliably to the maximum possible value.
-        time_margin = 0.001
-        readout_time = child.readoutTime.value + time_margin
-        exposure = duration - readout_time
-        fs.append(child.exposure.put_value_async(exposure))
-        child.wait_all_futures(fs)
+        readout_time = child.readoutTime.value
 
-        # Need to reset acquirePeriod as it's sometimes wrong
+        # On the detector, the exposure time can only be set to a multiple of
+        # row_readout_time, the time taken to read out a row of pixels.
+        # Use of the floor function ensures that exposure time is set to the
+        # largest possible value under the target. The readout time is
+        # subtracted once because of rounding errors.
+        #
+        # Note: row_readout_time can only be calculated like this when the
+        # camera is not in overlap mode
+        row_readout_time = readout_time / child.arrayHeight.value
+        ideal_exposure = duration - readout_time
+        exposure = \
+            (np.floor(ideal_exposure / row_readout_time) - 1) * row_readout_time
+        fs.append(child.exposure.put_value_async(exposure))
+
+        # Need to reset acquirePeriod after setting exposure as it's
+        # sometimes wrong
+        child.wait_all_futures(fs)
         fs = child.acquirePeriod.put_value_async(exposure + readout_time)
 
         return fs

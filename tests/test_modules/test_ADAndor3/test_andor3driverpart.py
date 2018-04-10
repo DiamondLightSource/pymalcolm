@@ -36,8 +36,9 @@ class TestAndor3DetectorDriverPart(ChildTestCase):
         completed_steps = 0
         steps_to_do = 2000*3000
         part_info = ANY
-        # Need a known value for the readout time
+        # Need a known value for the readout time and array height
         self.child.parts["readoutTime"].attr.set_value(0.002)
+        self.child.parts["arrayHeight"].attr.set_value(270)
         self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, params)
         # Need to wait for the spawned mock start call to run
@@ -46,6 +47,6 @@ class TestAndor3DetectorDriverPart(ChildTestCase):
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
             call.put('numImages', 6000000),
-            call.put('exposure', 0.098),
-            call.put('acquirePeriod', 0.1),
+            call.put('exposure', 0.09799259259259259),
+            call.put('acquirePeriod', 0.09999259259259259),
             call.post('start')]
