@@ -31,6 +31,9 @@
 - ADCore.parts.DetectorDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
+
+- ADCore.parts.ExposureDeadtimePart:
+    name: DEADTIME
     initial_readout_time: 200e-6
 
 - ADCore.blocks.stats_plugin_block:
