@@ -9,7 +9,7 @@ from malcolm.modules.excalibur.parts import VDSWrapperPart
 
 class TestExcaliburVDSWrapperPart(unittest.TestCase):
 
-    EXCALIBUR_FILE_PATH = 'data/test-EXCALIBUR.h5'
+    EXCALIBUR_FILE_PATH = file_dir = os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data'), 'test-EXCALIBUR.h5')
 
     def setUp(self):
         self.o = VDSWrapperPart("Excalibur_Test", "int32", 259, 2069)
@@ -31,9 +31,11 @@ class TestExcaliburVDSWrapperPart(unittest.TestCase):
         compound = CompoundGenerator([line1, line2], [], [])
         compound.prepare()
 
+        file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
+
         # Call configure to create the VDS
         # TODO This should work with relative paths but doesn't due to VDS bug (it's ok in this test though)
-        self.o.configure(compound, 'data/', fileTemplate="test-%s.h5")
+        self.o.configure(compound, file_dir, fileTemplate="test-%s.h5")
 
         # Open the created VDS file and dataset to check values
         vds_file = h5py.File(self.EXCALIBUR_FILE_PATH, "r")
