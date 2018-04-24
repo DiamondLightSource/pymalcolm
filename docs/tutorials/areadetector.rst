@@ -94,7 +94,7 @@ diagram:
 
 .. note::
 
-    There is a separation and hence and interface between `part_` and child
+    There is a separation and hence an interface between `part_` and child
     `block_`. The interface goes in the child Block, and the logic goes in the
     controlling Part. This is desirable because we could potentially have many
     possible logic Parts that could control the same kind of child Block, and
