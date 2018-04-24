@@ -46,11 +46,11 @@ class VDSWrapperPart(Part):
     CREATE = "w"
     APPEND = "a"
     READ = "r"
+    NUM_VDS_AXES = 2
 
     required_nodes = ["/entry/detector", "/entry/sum", "/entry/NDAttributes"]
     set_bases = ["/entry/detector", "/entry/sum"]
-    default_node_tree = ["/entry/detector/axes", "/entry/detector/signal",
-                         "/entry/sum/axes", "/entry/sum/signal"]
+    default_node_tree = ["/entry/sum/axes", "/entry/sum/signal"]
 
     def __init__(self, name, data_type, stripe_height, stripe_width):
         # type: (APartName, ADataType, AStripeHeight, AStripeWidth) -> None
@@ -86,13 +86,28 @@ class VDSWrapperPart(Part):
         for axis in generator.axes:
             for base in self.set_bases:
                 node_tree.append(base + "/{}_set".format(axis))
-                node_tree.append(base + "/{}_set_indices".format(axis))
+
+        pad_dims = []
+        for d in generator.dimensions:
+            if len(d.axes) == 1:
+                pad_dims.append("%s_set" % d.axes[0])
+            else:
+                pad_dims.append(".")
+
+        pad_dims += ["."] * self.NUM_VDS_AXES
 
         with h5.File(vds_path, self.CREATE, libver="latest") as vds:
             for node in self.required_nodes:
                 vds.require_group(node)
             for node in node_tree:
                 vds[node] = h5.ExternalLink(raw_file_path, node)
+
+            vds["/entry/detector"].attrs["axes"] = ",".join(pad_dims)
+            vds["/entry/detector"].attrs["signal"] = "detector"
+            for i, d in enumerate(generator.dimensions):
+                for axis in d.axes:
+                    name = "%s_set_indices" % axis
+                    vds["/entry/detector"].attrs[name] = str(i)
 
         # Create the VDS using vdsgen
         files = [fileTemplate % self.RAW_FILE_TEMPLATE.format(fem)
