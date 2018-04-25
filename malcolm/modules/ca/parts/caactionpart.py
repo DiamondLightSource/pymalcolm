@@ -1,6 +1,6 @@
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, Hook
+from malcolm.core import Part, PartRegistrar
 from malcolm.modules import builtin
 from ..util import CaToolsHelper, APartName, AMetaDescription, APv
 

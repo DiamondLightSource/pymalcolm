@@ -8,11 +8,13 @@ from .serializable import Serializable, deserialize_object
 
 
 class AlarmSeverity(Enum):
+    """An alarm severity"""
     NO_ALARM, MINOR_ALARM, MAJOR_ALARM, INVALID_ALARM, UNDEFINED_ALARM = \
         np.arange(5, dtype=np.int32)
 
 
 class AlarmStatus(Enum):
+    """An alarm status"""
     NO_STATUS, DEVICE_STATUS, DRIVER_STATUS, RECORD_STATUS, DB_STATUS, \
         CONF_STATUS, UNDEFINED_STATUS, CLIENT_STATUS = \
         np.arange(8, dtype=np.int32)
@@ -28,6 +30,7 @@ with Anno("A descriptive alarm message"):
 
 @Serializable.register_subclass("alarm_t")
 class Alarm(Serializable):
+    """Model representing a alarm state with severity, status and message"""
 
     __slots__ = ["severity", "status", "message"]
 
