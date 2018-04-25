@@ -9,7 +9,7 @@ from malcolm.modules.excalibur.parts import VDSWrapperPart
 
 class TestExcaliburVDSWrapperPart(unittest.TestCase):
 
-    EXCALIBUR_FILE_PATH = file_dir = os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data'), 'test-EXCALIBUR.h5')
+    EXCALIBUR_FILE_PATH = os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data'), 'test-EXCALIBUR.h5')
 
     def setUp(self):
         self.o = VDSWrapperPart("Excalibur_Test", "int32", 259, 2069)

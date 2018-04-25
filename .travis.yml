@@ -29,6 +29,8 @@ install:
   - ci/install_pyqt.sh
   - python -c "import PyQt4;print(PyQt4)"
   - pip install "setuptools>=36"
+  - pip uninstall h5py
+  - pip install --no-cache-dir h5py
   - pip install -r requirements/test.txt
   - pip install coveralls
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages  
