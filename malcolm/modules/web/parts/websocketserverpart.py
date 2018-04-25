@@ -1,8 +1,8 @@
 from annotypes import Anno, add_call_types
 from tornado.websocket import WebSocketHandler, WebSocketError
 
-from malcolm.core import Part, json_decode, deserialize_object, \
-    Request, json_encode, Subscribe, Unsubscribe, Delta, Update
+from malcolm.core import Part, json_decode, deserialize_object, Request, \
+    json_encode, Subscribe, Unsubscribe, Delta, Update, Error
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos, PublishHook, \
@@ -21,10 +21,27 @@ class MalcWebSocketHandler(WebSocketHandler):
 
     def on_message(self, message):
         # called in tornado's thread
-        d = json_decode(message)
-        request = deserialize_object(d, Request)
-        request.set_callback(self.on_response)
-        self._server_part.on_request(request)
+        msg_id = -1
+        try:
+            try:
+                d = json_decode(message)
+            except Exception as e:
+                raise Exception("Failed to decode JSON message: %s(%s)" % (type(e).__name__, str(e)))
+            try:
+                msg_id = d['id']
+                request = deserialize_object(d, Request)
+            except Exception as e:  # only thrown if no id and/or invalid or no typeid field
+                raise Exception("Bad malcolm JSON message: %s(%s)" % (type(e).__name__, str(e)))
+            try:
+                request.set_callback(self.on_response)
+                self._server_part.on_request(request)
+            except Exception as e:
+                raise Exception("Error handling request: %s(%s)" % (type(e).__name__, str(e)))
+
+        except Exception as e:
+            error = Error(msg_id, e)
+            error_message = error.to_dict()
+            self.write_message(error_message)
 
     def on_response(self, response):
         # called from any thread

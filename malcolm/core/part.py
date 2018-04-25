@@ -85,7 +85,7 @@ class InfoRegistry(object):
         self._report_queue.put((callback, reporter, info))
         if self._spawn:
             # Spawn in case we are coming from a non-cothread to cothread thread
-            self._spawn(self._report).wait()
+            self._spawn(self._report).get()
         else:
             # No process yet, just run directly
             self._report()

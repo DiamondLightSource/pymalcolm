@@ -4,6 +4,7 @@ coverage>=3.7.1
 tornado>=4.1
 scanpointgenerator>=2.1.0
 cothread==2.14
+enum34
 ruamel.yaml
 plop==0.3.0
 pytest>=3.2.0
