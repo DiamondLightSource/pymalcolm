@@ -34,7 +34,7 @@ class TestExcaliburVDSWrapperPart(unittest.TestCase):
         file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 
         # Call configure to create the VDS
-        # TODO This should work with relative paths but doesn't due to VDS bug (it's ok in this test though)
+        # TODO This should work with relative paths but doesn't due to VDS bug
         self.o.configure(compound, file_dir, fileTemplate="test-%s.h5")
 
         # Open the created VDS file and dataset to check values

@@ -29,7 +29,7 @@ install:
   - ci/install_pyqt.sh
   - python -c "import PyQt4;print(PyQt4)"
   - pip install "setuptools>=36"
-  - pip uninstall h5py
+  - pip uninstall -y h5py
   - pip install --no-cache-dir h5py
   - pip install -r requirements/test.txt
   - pip install coveralls
