@@ -36,7 +36,7 @@ from annotypes import make_annotations
 
 # Mock out failing imports
 MOCK_MODULES = [
-    "scanpointgenerator", "pvaccess", "plop", "plop.viewer", "h5py"]
+    "scanpointgenerator", "pvaccess", "plop", "plop.viewer", "h5py", "vdsgen"]
 
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 

@@ -552,7 +552,7 @@ class StringMeta(VMeta):
     __slots__ = []
 
     def validate(self, value):
-        # type: (Any) -> str_
+        # type: (Any) -> str
         """Check if the value is valid returns it"""
         if value is None:
             return ""
@@ -916,7 +916,7 @@ class MethodModel(Meta):
 
     @classmethod
     def from_callable(cls, func, description=None, returns=True):
-        # type: (Callable, str) -> MethodModel
+        # type: (Callable, str, bool) -> MethodModel
         """Return an instance of this class from a Callable"""
         if description is None:
             if func.__doc__ is None:
