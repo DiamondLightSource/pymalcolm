@@ -8,6 +8,7 @@ python:
 env:
   - PYMALCOLM_USE_COTHREAD=YES
   - PYMALCOLM_USE_COTHREAD=NO
+  - HDF5_ROOT=$HOME/hdf5-1.10.1
 
 addons:
   apt:
@@ -16,9 +17,13 @@ addons:
       - libqt4-dev
       - libhdf5-serial-dev
 
+before_install:
+  - bash .travis-install-hdf5.sh
+
 cache:
   directories:
     - $HOME/.cache/pip
+    - $HOME/hdf5-1.10.1
     - ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
     - ${VIRTUAL_ENV}/bin
 
@@ -29,8 +34,7 @@ install:
   - ci/install_pyqt.sh
   - python -c "import PyQt4;print(PyQt4)"
   - pip install "setuptools>=36"
-  - pip uninstall -y h5py
-  - HDF5_VERSION=1.10.0 pip install --no-cache-dir --no-binary=h5py h5py
+  - HDF5_DIR=$HDF5_ROOT pip install --user h5py
   - pip install -r requirements/test.txt
   - pip install coveralls
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages  
