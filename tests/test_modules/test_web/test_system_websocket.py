@@ -26,21 +26,65 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.process.stop(timeout=1)
 
     @gen.coroutine
-    def send_message(self):
+    def send_message(self, req=None):
         conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
-        req = dict(
-            typeid="malcolm:core/Post:1.0",
-            id=0,
-            path=["hello", "greet"],
-            parameters=dict(
-                name="me"
+
+        if not req:
+            req = dict(
+                typeid="malcolm:core/Post:1.0",
+                id=0,
+                path=["hello", "greet"],
+                parameters=dict(
+                    name="me"
+                )
             )
-        )
+
         conn.write_message(json.dumps(req))
         resp = yield conn.read_message()
         resp = json.loads(resp)
         self.result.put(resp)
         conn.close()
+
+
+    @gen.coroutine
+    def send_bad_json_message(self, error_type):
+        # 0 = no ID, 1 = bad typeID, 2 = no typeID, 3 = bad path, 4 = no path
+        req = [dict(
+            typeid="malcolm:core/Post:1.0",
+            path=["hello", "greet"],
+            parameters=dict(
+                name="me"
+                )
+            ),
+            dict(
+                typeid="NotATypeID",
+                id=0,
+                path=["hello", "greet"],
+                parameters=dict(
+                    name="me"
+                )
+            ),
+            dict(
+                id=0,
+                path=["hello", "greet"],
+                parameters=dict(
+                    name="me"
+                )
+            ),
+            dict(
+                typeid="malcolm:core/Post:1.0",
+                id=0,
+                path=["goodbye", "insult"],
+                parameters=dict(
+                    name="me"
+                )
+            ),
+            dict(
+                typeid="malcolm:core/Post:1.0",
+                id=0
+            )
+            ]
+        self.send_message(req[error_type])
 
     def test_server_and_simple_client(self):
         self.server._loop.add_callback(self.send_message)
@@ -49,6 +93,52 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             typeid="malcolm:core/Return:1.0",
             id=0,
             value="Hello me"
+        )
+
+    def test_error_server_and_simple_client_nonJSON(self):
+        self.server._loop.add_callback(self.send_message, "I am not JSON!")
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=-1,
+            message="ValueError: Error decoding JSON object (didn't return OrderedDict)"
+        )
+
+    def test_error_server_and_simple_client(self):
+        self.server._loop.add_callback(self.send_bad_json_message, 0)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=-1,
+            message="KeyError: 'id field not present in JSON message'"
+        )
+        self.server._loop.add_callback(self.send_bad_json_message, 1)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message='KeyError: "u\'NotATypeID\' not a valid malcolm message subclass"'
+        )
+        self.server._loop.add_callback(self.send_bad_json_message, 2)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message="KeyError: 'typeid field not present in JSON message'"
+        )
+        self.server._loop.add_callback(self.send_bad_json_message, 3)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message="ValueError: No controller registered for mri u'goodbye'"
+        )
+        self.server._loop.add_callback(self.send_bad_json_message, 4)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message='ValueError: No path supplied'
         )
 
 

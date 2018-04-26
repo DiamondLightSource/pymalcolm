@@ -187,7 +187,9 @@ class Controller(Hookable):
         # type: (Get) -> CallbackResponses
         """Called with the lock taken"""
         data = self._block
-        for endpoint in request.path[1:]:
+
+        for point in range(1, len(request.path)):
+            endpoint = request.path[point]
             try:
                 data = data[endpoint]
             except KeyError:
@@ -196,7 +198,7 @@ class Controller(Hookable):
                 else:
                     typ = type(data)
                 raise UnexpectedError(
-                    "Object of type %r has no attribute %r" % (typ, endpoint))
+                    "Object %s of type %r has no attribute %r" % (request.path[:point], typ, endpoint))
         # Important to serialize now with the lock so we get a consistent set
         serialized = serialize_object(data)
         ret = [request.return_response(serialized)]

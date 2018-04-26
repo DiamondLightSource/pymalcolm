@@ -2,7 +2,7 @@ from annotypes import Anno, add_call_types
 from tornado.websocket import WebSocketHandler, WebSocketError
 
 from malcolm.core import Part, json_decode, deserialize_object, Request, \
-    json_encode, Subscribe, Unsubscribe, Delta, Update, Error
+    json_encode, Subscribe, Unsubscribe, Delta, Update, Error, UnexpectedError
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos, PublishHook, \
@@ -23,25 +23,22 @@ class MalcWebSocketHandler(WebSocketHandler):
         # called in tornado's thread
         msg_id = -1
         try:
-            try:
-                d = json_decode(message)
-            except Exception as e:
-                raise Exception("Failed to decode JSON message: %s(%s)" % (type(e).__name__, str(e)))
+            d = json_decode(message)
+
             try:
                 msg_id = d['id']
-                request = deserialize_object(d, Request)
-            except Exception as e:  # only thrown if no id and/or invalid or no typeid field
-                raise Exception("Bad malcolm JSON message: %s(%s)" % (type(e).__name__, str(e)))
-            try:
-                request.set_callback(self.on_response)
-                self._server_part.on_request(request)
-            except Exception as e:
-                raise Exception("Error handling request: %s(%s)" % (type(e).__name__, str(e)))
+            except KeyError:
+                raise KeyError('id field not present in JSON message')
+
+            request = deserialize_object(d, Request)
+            request.set_callback(self.on_response)
+            self._server_part.on_request(request)
 
         except Exception as e:
+            self._server_part.log.exception("%s: %s" % (type(e).__name__, str(e)))
             error = Error(msg_id, e)
             error_message = error.to_dict()
-            self.write_message(error_message)
+            self.write_message(json_encode(error_message))
 
     def on_response(self, response):
         # called from any thread
@@ -89,6 +86,8 @@ class WebsocketServerPart(Part):
 
     def on_request(self, request):
         # called from tornado thread
+        if not request.path:
+            raise ValueError("No path supplied")
         self.log.info("Request: %s", request)
         if isinstance(request, Subscribe):
             if request.path[0] == ".":

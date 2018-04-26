@@ -22,8 +22,12 @@ def json_encode(o, indent=None):
 
 
 def json_decode(s):
-    o = json.loads(s, object_pairs_hook=OrderedDict)
-    return o
+    try:
+        o = json.loads(s, object_pairs_hook=OrderedDict)
+        assert isinstance(o, OrderedDict), "didn't return OrderedDict"
+        return o
+    except Exception as e:
+            raise ValueError("Error decoding JSON object (%s)" % str(e))
 
 
 def serialize_hook(o):
@@ -108,7 +112,7 @@ def deserialize_object(ob, type_check=None):
         ob = subclass.from_dict(ob)
     if type_check is not None:
         assert isinstance(ob, type_check), \
-            "Expected %s, got %r" % (type_check, ob)
+            "Expected %s, got %r" % (type_check, subclass)
     return ob
 
 
@@ -173,8 +177,10 @@ class Serializable(WithCallTypes):
                     (v, cls, cls.typeid)
             elif k not in ignore:
                 filtered[k] = v
-
-        inst = cls(**filtered)
+        try:
+            inst = cls(**filtered)
+        except TypeError as e:
+            raise TypeError("%s method %s" % (cls.typeid, str(e)))
         return inst
 
     @classmethod
@@ -200,6 +206,12 @@ class Serializable(WithCallTypes):
         Returns:
             Serializable subclass
         """
-        typeid = d["typeid"]
-        subclass = cls._subcls_lookup[typeid]
-        return subclass
+        try:
+            typeid = d["typeid"]
+        except KeyError:
+            raise KeyError("typeid field not present in JSON message")
+        try:
+            subclass = cls._subcls_lookup[typeid]
+            return subclass
+        except KeyError as e:
+            raise KeyError('%s not a valid malcolm message subclass' % str(e))
