@@ -9,7 +9,8 @@ from malcolm.modules.excalibur.parts import VDSWrapperPart
 
 class TestExcaliburVDSWrapperPart(unittest.TestCase):
 
-    EXCALIBUR_FILE_PATH = os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data'), 'test-EXCALIBUR.h5')
+    EXCALIBUR_FILE_PATH = \
+        os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), u'data'), u'test-EXCALIBUR.h5')
 
     def setUp(self):
         self.o = VDSWrapperPart("Excalibur_Test", "int32", 259, 2069)
@@ -26,12 +27,12 @@ class TestExcaliburVDSWrapperPart(unittest.TestCase):
 
     def test_configure(self):
         # Create a generator to match the test data
-        line1 = LineGenerator('stage1_y', 'mm', -0.755, -0.754, 2)
-        line2 = LineGenerator('stage1_x', 'mm', 11.45, 11.451, 2)
+        line1 = LineGenerator(u'stage1_y', u'mm', -0.755, -0.754, 2)
+        line2 = LineGenerator(u'stage1_x', u'mm', 11.45, 11.451, 2)
         compound = CompoundGenerator([line1, line2], [], [])
         compound.prepare()
 
-        file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
+        file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), u'data')
 
         # Call configure to create the VDS
         # TODO This should work with relative paths but doesn't due to VDS bug
