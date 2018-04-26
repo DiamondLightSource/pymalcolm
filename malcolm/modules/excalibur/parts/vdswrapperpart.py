@@ -110,8 +110,12 @@ class VDSWrapperPart(Part):
                     vds["/entry/detector"].attrs[name] = str(i)
 
         # Create the VDS using vdsgen
-        files = [str.encode(str(fileTemplate)) % self.RAW_FILE_TEMPLATE.format(fem)
+        files = [fileTemplate % self.RAW_FILE_TEMPLATE.format(fem)
                  for fem in self.fems]
+
+        # Encode string for Python 2 and 3 compatibility
+        files = [str.encode(str(fem_file)) for fem_file in files]
+
         shape = generator.shape + (self.stripe_height, self.stripe_width)
         fgen = SubFrameVDSGenerator(
             str.encode(str(fileDir)),
