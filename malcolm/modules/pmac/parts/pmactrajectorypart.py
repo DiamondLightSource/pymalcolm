@@ -56,8 +56,9 @@ configure_args = (
 
 
 @method_also_takes(
-    "minTurnaround", NumberMeta(
-        "float64", "Min time for any gaps between frames"), 0.0)
+    "settle", NumberMeta(
+        "float64", "Default settle time when axis point is at zero velocity"), 
+        0.0)
 class PmacTrajectoryPart(StatefulChildPart):
     # Axis information stored from validate
     # {scannable_name: MotorInfo}
@@ -75,8 +76,8 @@ class PmacTrajectoryPart(StatefulChildPart):
     profile = {}
     # Stored generator for positions
     generator = None
-    # Min turnaround time
-    min_turnaround = None
+    # Settle time when axis point is at zero velocity
+    settle = None
 
     def create_attribute_models(self):
         for data in super(PmacTrajectoryPart, self).create_attribute_models():
@@ -84,12 +85,10 @@ class PmacTrajectoryPart(StatefulChildPart):
         # Create writeable attribute for the minimum time to leave when there
         # is a gap between frames
         meta = NumberMeta(
-            "float64", "Min time for any gaps between frames",
+            "float64", "Settle time when axis point is at zero velocity",
             tags=[widget("textinput"), config()])
-        self.min_turnaround = meta.create_attribute_model(
-            self.params.minTurnaround)
-        yield "minTurnaround", self.min_turnaround, \
-              self.min_turnaround.set_value
+        self.settle = meta.create_attribute_model(self.params.settle)
+        yield "settle", self.settle, self.settle.set_value
 
     @RunnableController.Reset
     def reset(self, context):
@@ -117,11 +116,9 @@ class PmacTrajectoryPart(StatefulChildPart):
         # back to duration
         duration = 2 * float(micros) / 1e6
         if duration != params.generator.duration:
-            new_generator = CompoundGenerator(
-                generators=params.generator.generators,
-                excluders=params.generator.excluders,
-                mutators=params.generator.mutators,
-                duration=duration)
+            serialized = params.generator.to_dict()
+            serialized["duration"] = duration
+            new_generator = CompoundGenerator.from_dict(serialized)
             return [ParameterTweakInfo("generator", new_generator)]
 
     def _make_axis_mapping(self, part_info, axes_to_move):
@@ -538,8 +535,15 @@ class PmacTrajectoryPart(StatefulChildPart):
         # Work out the velocity profiles of how to move to the start
         time_arrays, velocity_arrays = \
             self.make_consistent_velocity_profiles(
-                start_velocities, end_velocities, distances,
-                self.min_turnaround.value)
+                start_velocities, end_velocities, distances)
+                
+        # If the next point has a zero velocity and told to add a settle time
+        # then do so here
+        if max(end_velocities.values()) == 0 and self.settle.value:
+            for axis_name, a in time_arrays.items():
+                # add a time at v=0 self.settle in the future
+                a.append(a[-1] + self.settle.value)
+                velocity_arrays[axis_name].append(0.0)
 
         # Work out the Position trajectories from these profiles
         self.calculate_profile_from_velocities(
