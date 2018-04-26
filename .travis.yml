@@ -8,7 +8,7 @@ python:
 env:
   global:
     - HDF5_ROOT=$HOME/hdf5-1.10.2
-  matris:
+  matrix:
     - PYMALCOLM_USE_COTHREAD=YES
     - PYMALCOLM_USE_COTHREAD=NO
 
