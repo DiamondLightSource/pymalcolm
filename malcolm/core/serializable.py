@@ -112,7 +112,7 @@ def deserialize_object(ob, type_check=None):
         ob = subclass.from_dict(ob)
     if type_check is not None:
         assert isinstance(ob, type_check), \
-            "Expected %s, got %r" % (type_check, subclass)
+            "Expected %s, got %r" % (type_check, type(ob))
     return ob
 
 
@@ -180,7 +180,8 @@ class Serializable(WithCallTypes):
         try:
             inst = cls(**filtered)
         except TypeError as e:
-            raise TypeError("%s method %s" % (cls.typeid, str(e)))
+            # raise TypeError("%s(**%s) raised error: %s" % (type(cls), filtered, str(e)))
+            raise TypeError("%s raised error: %s" % (cls.typeid, str(e)))
         return inst
 
     @classmethod
@@ -209,9 +210,11 @@ class Serializable(WithCallTypes):
         try:
             typeid = d["typeid"]
         except KeyError:
-            raise KeyError("typeid field not present in JSON message")
-        try:
-            subclass = cls._subcls_lookup[typeid]
+            raise KeyError("typeid field not present in dictionary ( d = %s )" % d)
+
+        subclass = cls._subcls_lookup.get(typeid, None)
+        if not subclass:
+            raise KeyError('%s not a valid typeid' % typeid)
+        else:
             return subclass
-        except KeyError as e:
-            raise KeyError('%s not a valid malcolm message subclass' % str(e))
+

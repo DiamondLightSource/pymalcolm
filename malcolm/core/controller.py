@@ -188,8 +188,7 @@ class Controller(Hookable):
         """Called with the lock taken"""
         data = self._block
 
-        for point in range(1, len(request.path)):
-            endpoint = request.path[point]
+        for i, endpoint in enumerate(request.path[1:]):
             try:
                 data = data[endpoint]
             except KeyError:
@@ -198,7 +197,7 @@ class Controller(Hookable):
                 else:
                     typ = type(data)
                 raise UnexpectedError(
-                    "Object %s of type %r has no attribute %r" % (request.path[:point], typ, endpoint))
+                    "Object %s of type %r has no attribute %r" % (request.path[:i+1], typ, endpoint))
         # Important to serialize now with the lock so we get a consistent set
         serialized = serialize_object(data)
         ret = [request.return_response(serialized)]

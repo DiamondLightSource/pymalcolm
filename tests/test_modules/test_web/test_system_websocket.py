@@ -26,68 +26,35 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.process.stop(timeout=1)
 
     @gen.coroutine
-    def send_message(self, req=None):
+    def send_message(self, req):
         conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
-
-        if not req:
-            req = dict(
-                typeid="malcolm:core/Post:1.0",
-                id=0,
-                path=["hello", "greet"],
-                parameters=dict(
-                    name="me"
-                )
-            )
-
         conn.write_message(json.dumps(req))
         resp = yield conn.read_message()
         resp = json.loads(resp)
         self.result.put(resp)
         conn.close()
 
-
     @gen.coroutine
-    def send_bad_json_message(self, error_type):
-        # 0 = no ID, 1 = bad typeID, 2 = no typeID, 3 = bad path, 4 = no path
-        req = [dict(
-            typeid="malcolm:core/Post:1.0",
-            path=["hello", "greet"],
-            parameters=dict(
-                name="me"
-                )
-            ),
-            dict(
-                typeid="NotATypeID",
-                id=0,
-                path=["hello", "greet"],
-                parameters=dict(
-                    name="me"
-                )
-            ),
-            dict(
-                id=0,
-                path=["hello", "greet"],
-                parameters=dict(
-                    name="me"
-                )
-            ),
-            dict(
-                typeid="malcolm:core/Post:1.0",
-                id=0,
-                path=["goodbye", "insult"],
-                parameters=dict(
-                    name="me"
-                )
-            ),
-            dict(
-                typeid="malcolm:core/Post:1.0",
-                id=0
-            )
-            ]
-        self.send_message(req[error_type])
+    def send_non_JSON_message(self):
+        conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
+        conn.write_message("I am not JSON!")
+        resp = yield conn.read_message()
+        resp = json.loads(resp)
+        self.result.put(resp)
+        conn.close()
 
     def test_server_and_simple_client(self):
-        self.server._loop.add_callback(self.send_message)
+        self.server._loop.add_callback(self.send_message,
+                                       dict(
+                                            typeid="malcolm:core/Post:1.0",
+                                            id=0,
+                                            path=["hello", "greet"],
+                                            parameters=dict(
+                                                name="me"
+                                            )
+                                       )
+        )
+
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Return:1.0",
@@ -95,8 +62,8 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             value="Hello me"
         )
 
-    def test_error_server_and_simple_client_nonJSON(self):
-        self.server._loop.add_callback(self.send_message, "I am not JSON!")
+    def test_error_server_and_simple_client_badJSON(self):
+        self.server._loop.add_callback(self.send_message, "I am JSON (but not a dict)")
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -104,36 +71,84 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             message="ValueError: Error decoding JSON object (didn't return OrderedDict)"
         )
 
+        self.server._loop.add_callback(self.send_non_JSON_message)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=-1,
+            message="ValueError: Error decoding JSON object (No JSON object could be decoded)"
+        )
+
     def test_error_server_and_simple_client(self):
-        self.server._loop.add_callback(self.send_bad_json_message, 0)
+        self.server._loop.add_callback(self.send_message,
+                                       dict(
+                                           typeid="malcolm:core/Post:1.0",
+                                           path=["hello", "greet"],
+                                           parameters=dict(
+                                               name="me"
+                                                )
+                                           )
+                                       )
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=-1,
             message="KeyError: 'id field not present in JSON message'"
         )
-        self.server._loop.add_callback(self.send_bad_json_message, 1)
+        self.server._loop.add_callback(self.send_message,
+                                       dict(
+                                           typeid="NotATypeID",
+                                           id=0,
+                                           path=["hello", "greet"],
+                                           parameters=dict(
+                                               name="me"
+                                                )
+                                           )
+                                       )
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=0,
-            message='KeyError: "u\'NotATypeID\' not a valid malcolm message subclass"'
+            message="KeyError: u'NotATypeID not a valid typeid'"
         )
-        self.server._loop.add_callback(self.send_bad_json_message, 2)
+        self.server._loop.add_callback(self.send_message,
+                                       dict(
+                                           id=0,
+                                           path=["hello", "greet"],
+                                           parameters=dict(
+                                               name="me"
+                                                )
+                                           )
+                                       )
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=0,
-            message="KeyError: 'typeid field not present in JSON message'"
+            message='''KeyError: "typeid field not present in dictionary ( d = OrderedDict([(u\'path\',''' +
+            ''' [u\'hello\', u\'greet\']), (u\'id\', 0), (u\'parameters\', OrderedDict([(u\'name\', u\'me\')]))]) )"'''
         )
-        self.server._loop.add_callback(self.send_bad_json_message, 3)
+        self.server._loop.add_callback(self.send_message,
+                                       dict(
+                                           typeid="malcolm:core/Post:1.0",
+                                           id=0,
+                                           path=["goodbye", "insult"],
+                                           parameters=dict(
+                                               name="me"
+                                                )
+                                           )
+                                       )
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=0,
             message="ValueError: No controller registered for mri u'goodbye'"
         )
-        self.server._loop.add_callback(self.send_bad_json_message, 4)
+        self.server._loop.add_callback(self.send_message,
+                                       dict(
+                                           typeid="malcolm:core/Post:1.0",
+                                           id=0
+                                           )
+                                       )
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",

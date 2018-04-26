@@ -77,7 +77,7 @@ class PathRequest(Request):
         # type: (AId, UPath) -> None
         super(PathRequest, self).__init__(id)
         if path:
-            assert isinstance(path, list), "Path must be given as a list"
+            assert isinstance(path, (list, tuple)), "Path must be given as a list or tuple"
         self.path = APath(path)
 
 
