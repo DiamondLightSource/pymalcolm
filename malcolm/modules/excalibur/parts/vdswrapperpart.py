@@ -115,7 +115,7 @@ class VDSWrapperPart(Part):
 
         shape = generator.shape + (self.stripe_height, self.stripe_width)
         fgen = SubFrameVDSGenerator(
-            str.encode(str(fileDir)),
+            fileDir,
             files=files,
             output=str.encode(str(fileTemplate % formatName)),
             source=dict(shape=shape, dtype=self.data_type),
