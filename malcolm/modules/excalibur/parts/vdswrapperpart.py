@@ -118,7 +118,7 @@ class VDSWrapperPart(Part):
             files=files,
             output=fileTemplate % formatName,
             source=dict(shape=shape, dtype=self.data_type),
-            source_node="/entry/detector/detector",
+            source_node=str.encode(str("/entry/detector/detector")),
             target_node="/entry/detector/detector",
             stripe_spacing=0,
             module_spacing=121,
