@@ -26,18 +26,11 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.process.stop(timeout=1)
 
     @gen.coroutine
-    def send_message(self, req):
+    def send_message(self, req, convert_json=True):
         conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
-        conn.write_message(json.dumps(req))
-        resp = yield conn.read_message()
-        resp = json.loads(resp)
-        self.result.put(resp)
-        conn.close()
-
-    @gen.coroutine
-    def send_non_JSON_message(self):
-        conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
-        conn.write_message("I am not JSON!")
+        if convert_json:
+            req = json.dumps(req)
+        conn.write_message(req)
         resp = yield conn.read_message()
         resp = json.loads(resp)
         self.result.put(resp)
@@ -52,8 +45,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
                                             parameters=dict(
                                                 name="me"
                                             )
-                                       )
-        )
+                                       ))
 
         resp = self.result.get(timeout=2)
         assert resp == dict(
@@ -71,7 +63,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             message="ValueError: Error decoding JSON object (didn't return OrderedDict)"
         )
 
-        self.server._loop.add_callback(self.send_non_JSON_message)
+        self.server._loop.add_callback(self.send_message, "I am not JSON", convert_json=False)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -79,7 +71,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             message="ValueError: Error decoding JSON object (No JSON object could be decoded)"
         )
 
-    def test_error_server_and_simple_client(self):
+    def test_error_server_and_simple_client_no_id(self):
         self.server._loop.add_callback(self.send_message,
                                        dict(
                                            typeid="malcolm:core/Post:1.0",
@@ -93,8 +85,10 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=-1,
-            message="KeyError: 'id field not present in JSON message'"
+            message="KeyError: id field not present in JSON message"
         )
+
+    def test_error_server_and_simple_client_bad_type(self):
         self.server._loop.add_callback(self.send_message,
                                        dict(
                                            typeid="NotATypeID",
@@ -109,8 +103,10 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=0,
-            message="KeyError: u'NotATypeID not a valid typeid'"
+            message="KeyError: u'NotATypeID' not a valid typeid"
         )
+
+    def test_error_server_and_simple_client_no_type(self):
         self.server._loop.add_callback(self.send_message,
                                        dict(
                                            id=0,
@@ -124,9 +120,11 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=0,
-            message='''KeyError: "typeid field not present in dictionary ( d = OrderedDict([(u\'path\',''' +
-            ''' [u\'hello\', u\'greet\']), (u\'id\', 0), (u\'parameters\', OrderedDict([(u\'name\', u\'me\')]))]) )"'''
+            message="KeyError: typeid field not present in dictionary " +
+                    "( d.keys() = [u'path', u'id', u'parameters'] )"
         )
+
+    def test_error_server_and_simple_client_bad_path_controller(self):
         self.server._loop.add_callback(self.send_message,
                                        dict(
                                            typeid="malcolm:core/Post:1.0",
@@ -143,6 +141,27 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             id=0,
             message="ValueError: No controller registered for mri u'goodbye'"
         )
+
+    def test_error_server_and_simple_client_bad_path_attribute(self):
+        self.server._loop.add_callback(self.send_message,
+                                       dict(
+                                           typeid="malcolm:core/Get:1.0",
+                                           id=0,
+                                           path=["hello", "insult"],
+                                           parameters=dict(
+                                               name="me"
+                                                )
+                                           )
+                                       )
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message="TypeError: malcolm:core/Get:1.0 raised error: " +
+            "__init__() got an unexpected keyword argument 'parameters'"
+        )
+
+    def test_error_server_and_simple_client_no_path(self):
         self.server._loop.add_callback(self.send_message,
                                        dict(
                                            typeid="malcolm:core/Post:1.0",

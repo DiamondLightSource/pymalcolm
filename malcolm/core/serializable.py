@@ -27,7 +27,7 @@ def json_decode(s):
         assert isinstance(o, OrderedDict), "didn't return OrderedDict"
         return o
     except Exception as e:
-            raise ValueError("Error decoding JSON object (%s)" % str(e))
+        raise ValueError("Error decoding JSON object (%s)" % e.message)
 
 
 def serialize_hook(o):
@@ -40,7 +40,7 @@ def serialize_hook(o):
         return o.tolist()
     elif isinstance(o, Exception):
         # Exceptions should be stringified
-        return "%s: %s" % (type(o).__name__, o)
+        return "%s: %s" % (type(o).__name__, o.message)
     else:
         # Everything else should be serializable already
         return o
@@ -181,7 +181,7 @@ class Serializable(WithCallTypes):
             inst = cls(**filtered)
         except TypeError as e:
             # raise TypeError("%s(**%s) raised error: %s" % (type(cls), filtered, str(e)))
-            raise TypeError("%s raised error: %s" % (cls.typeid, str(e)))
+            raise TypeError("%s raised error: %s" % (cls.typeid, e.message))
         return inst
 
     @classmethod
@@ -210,11 +210,11 @@ class Serializable(WithCallTypes):
         try:
             typeid = d["typeid"]
         except KeyError:
-            raise KeyError("typeid field not present in dictionary ( d = %s )" % d)
+            raise KeyError("typeid field not present in dictionary ( d.keys() = %s )" % d.keys())
 
         subclass = cls._subcls_lookup.get(typeid, None)
         if not subclass:
-            raise KeyError('%s not a valid typeid' % typeid)
+            raise KeyError("%r not a valid typeid" % typeid)
         else:
             return subclass
 
