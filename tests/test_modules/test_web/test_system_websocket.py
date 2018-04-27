@@ -8,6 +8,7 @@ from malcolm.core import Process, Queue, ResponseError
 from malcolm.modules.builtin.blocks import proxy_block
 from malcolm.modules.demo.blocks import hello_block, counter_block
 from malcolm.modules.web.blocks import web_server_block, websocket_client_block
+from sys import version_info
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):
@@ -65,11 +66,20 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
         self.server._loop.add_callback(self.send_message, "I am not JSON", convert_json=False)
         resp = self.result.get(timeout=2)
-        assert resp == dict(
-            typeid="malcolm:core/Error:1.0",
-            id=-1,
-            message="ValueError: Error decoding JSON object (No JSON object could be decoded)"
-        )
+        if version_info[0] == 2:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=-1,
+                message="ValueError: Error decoding JSON object (No JSON object could be decoded)"
+            )
+        elif version_info[0] == 3:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=-1,
+                message="'ValueError: Error decoding JSON object (Expecting value: line 1 column 1 (char 0))"
+            )
+        else:
+            raise Exception("Got bad python version info")
 
     def test_error_server_and_simple_client_no_id(self):
         self.server._loop.add_callback(self.send_message,
@@ -117,12 +127,23 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
                                            )
                                        )
         resp = self.result.get(timeout=2)
-        assert resp == dict(
-            typeid="malcolm:core/Error:1.0",
-            id=0,
-            message="FieldError: typeid field not present in dictionary " +
-                    "( d.keys() = [u'path', u'id', u'parameters'] )"
-        )
+
+        if version_info[0] == 2:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=0,
+                message="FieldError: typeid field not present in dictionary " +
+                        "( d.keys() = [u'path', u'id', u'parameters'] )"
+            )
+        elif version_info[0] == 3:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=0,
+                message="FieldError: typeid field not present in dictionary " +
+                        "( d.keys() = odict_keys(['parameters', 'path', 'id']) )"
+            )
+        else:
+            raise Exception("Got bad python version info")
 
     def test_error_server_and_simple_client_bad_path_controller(self):
         self.server._loop.add_callback(self.send_message,

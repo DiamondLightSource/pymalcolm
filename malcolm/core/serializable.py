@@ -217,4 +217,3 @@ class Serializable(WithCallTypes):
             raise FieldError("'%s' not a valid typeid" % typeid)
         else:
             return subclass
-
