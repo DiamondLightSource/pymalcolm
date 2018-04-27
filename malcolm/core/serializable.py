@@ -210,7 +210,7 @@ class Serializable(WithCallTypes):
         try:
             typeid = d["typeid"]
         except KeyError:
-            raise FieldError("typeid field not present in dictionary ( d.keys() = %s )" % dict(d).keys())
+            raise FieldError("typeid field not present in dictionary ( d.keys() = %s )" % list(dict(d).keys()))
 
         subclass = cls._subcls_lookup.get(typeid, None)
         if not subclass:
