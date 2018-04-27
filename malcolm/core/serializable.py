@@ -27,7 +27,11 @@ def json_decode(s):
         assert isinstance(o, OrderedDict), "didn't return OrderedDict"
         return o
     except Exception as e:
-        raise ValueError("Error decoding JSON object (%s)" % e.message)
+        if hasattr(e, 'message'):
+            msg = e.message
+        else:
+            msg = str(e)
+        raise ValueError("Error decoding JSON object (%s)" % msg)
 
 
 def serialize_hook(o):
@@ -40,7 +44,11 @@ def serialize_hook(o):
         return o.tolist()
     elif isinstance(o, Exception):
         # Exceptions should be stringified
-        return "%s: %s" % (type(o).__name__, o.message)
+        if hasattr(o, 'message'):
+            msg = o.message
+        else:
+            msg = str(e)
+        return "%s: %s" % (type(o).__name__, msg)
     else:
         # Everything else should be serializable already
         return o
@@ -181,7 +189,11 @@ class Serializable(WithCallTypes):
             inst = cls(**filtered)
         except TypeError as e:
             # raise TypeError("%s(**%s) raised error: %s" % (type(cls), filtered, str(e)))
-            raise TypeError("%s raised error: %s" % (cls.typeid, e.message))
+            if hasattr(e, 'message'):
+                msg = e.message
+            else:
+                msg = str(e)
+            raise TypeError("%s raised error: %s" % (cls.typeid, msg))
         return inst
 
     @classmethod
