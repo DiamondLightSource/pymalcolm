@@ -47,7 +47,7 @@ def serialize_hook(o):
         if hasattr(o, 'message'):
             msg = o.message
         else:
-            msg = str(e)
+            msg = str(o)
         return "%s: %s" % (type(o).__name__, msg)
     else:
         # Everything else should be serializable already
