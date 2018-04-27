@@ -226,7 +226,7 @@ class Serializable(WithCallTypes):
 
         subclass = cls._subcls_lookup.get(typeid, None)
         if not subclass:
-            raise KeyError("%r not a valid typeid" % typeid)
+            raise KeyError("'%s' not a valid typeid" % typeid)
         else:
             return subclass
 

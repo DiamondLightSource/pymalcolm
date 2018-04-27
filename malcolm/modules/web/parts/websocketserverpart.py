@@ -39,7 +39,7 @@ class MalcWebSocketHandler(WebSocketHandler):
                 msg = e.message
             else:
                 msg = str(e)
-            self._server_part.log.exception("%s: %s" % (type(e).__name__, msg))
+            self._server_part.log.exception((type(e).__name__ + msg))
             error = Error(msg_id, e)
             error_message = error.to_dict()
             self.write_message(json_encode(error_message))

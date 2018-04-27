@@ -216,7 +216,7 @@ class Process(Loggable):
         try:
             return self._controllers[mri]
         except KeyError:
-            raise ValueError("No controller registered for mri %r" % mri)
+            raise ValueError("No controller registered for mri '%s'" % mri)
 
     def block_view(self, mri):
         # type: (str) -> Block
