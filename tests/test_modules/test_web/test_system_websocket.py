@@ -76,7 +76,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             assert resp == dict(
                 typeid="malcolm:core/Error:1.0",
                 id=-1,
-                message="'ValueError: Error decoding JSON object (Expecting value: line 1 column 1 (char 0))"
+                message="ValueError: Error decoding JSON object (Expecting value: line 1 column 1 (char 0))"
             )
         else:
             raise Exception("Got bad python version info")
@@ -128,22 +128,22 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
                                        )
         resp = self.result.get(timeout=2)
 
-        if version_info[0] == 2:
-            assert resp == dict(
-                typeid="malcolm:core/Error:1.0",
-                id=0,
-                message="FieldError: typeid field not present in dictionary " +
-                        "( d.keys() = [u'path', u'id', u'parameters'] )"
-            )
-        elif version_info[0] == 3:
-            assert resp == dict(
-                typeid="malcolm:core/Error:1.0",
-                id=0,
-                message="FieldError: typeid field not present in dictionary " +
-                        "( d.keys() = odict_keys(['parameters', 'path', 'id']) )"
-            )
-        else:
-            raise Exception("Got bad python version info")
+        #if version_info[0] == 2:
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message="FieldError: typeid field not present in dictionary " +
+                    "( d.keys() = [u'path', u'id', u'parameters'] )"
+        )
+        #elif version_info[0] == 3:
+        #    assert resp == dict(
+        #        typeid="malcolm:core/Error:1.0",
+        #        id=0,
+        #        message="FieldError: typeid field not present in dictionary " +
+        #                "( d.keys() = odict_keys(['parameters', 'path', 'id']) )"
+        #    )
+        #else:
+        #    raise Exception("Got bad python version info")
 
     def test_error_server_and_simple_client_bad_path_controller(self):
         self.server._loop.add_callback(self.send_message,
