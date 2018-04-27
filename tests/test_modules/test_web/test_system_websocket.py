@@ -140,7 +140,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
                 typeid="malcolm:core/Error:1.0",
                 id=0,
                 message="FieldError: typeid field not present in dictionary " +
-                        "( d.keys() = ['path', 'id', 'parameters'] )"
+                        "( d.keys() = ['id', 'path', 'parameters'] )"
             )
         else:
             raise Exception("Got bad python version info")
