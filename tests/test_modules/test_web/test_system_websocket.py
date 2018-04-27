@@ -85,7 +85,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=-1,
-            message="KeyError: id field not present in JSON message"
+            message="FieldError: id field not present in JSON message"
         )
 
     def test_error_server_and_simple_client_bad_type(self):
@@ -103,7 +103,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=0,
-            message="KeyError: 'NotATypeID' not a valid typeid"
+            message="FieldError: 'NotATypeID' not a valid typeid"
         )
 
     def test_error_server_and_simple_client_no_type(self):
@@ -120,7 +120,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=0,
-            message="KeyError: typeid field not present in dictionary " +
+            message="FieldError: typeid field not present in dictionary " +
                     "( d.keys() = [u'path', u'id', u'parameters'] )"
         )
 

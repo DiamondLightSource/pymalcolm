@@ -3,6 +3,7 @@ from tornado.websocket import WebSocketHandler, WebSocketError
 
 from malcolm.core import Part, json_decode, deserialize_object, Request, \
     json_encode, Subscribe, Unsubscribe, Delta, Update, Error, UnexpectedError
+from malcolm.core.errors import FieldError
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos, PublishHook, \
@@ -28,18 +29,14 @@ class MalcWebSocketHandler(WebSocketHandler):
             try:
                 msg_id = d['id']
             except KeyError:
-                raise KeyError('id field not present in JSON message')
+                raise FieldError('id field not present in JSON message')
 
             request = deserialize_object(d, Request)
             request.set_callback(self.on_response)
             self._server_part.on_request(request)
 
         except Exception as e:
-            if hasattr(e, 'message'):
-                msg = e.message
-            else:
-                msg = str(e)
-            self._server_part.log.exception((type(e).__name__ + msg))
+            self._server_part.log.exception("Error handling message from client")
             error = Error(msg_id, e)
             error_message = error.to_dict()
             self.write_message(json_encode(error_message))

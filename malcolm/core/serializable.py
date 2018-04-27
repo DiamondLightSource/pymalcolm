@@ -6,7 +6,7 @@ from annotypes import WithCallTypes, TypeVar, Any, TYPE_CHECKING, Array
 from enum import Enum
 
 from malcolm.compat import OrderedDict
-
+from malcolm.core.errors import FieldError
 if TYPE_CHECKING:
     from typing import Type, Union, Sequence
 
@@ -27,11 +27,7 @@ def json_decode(s):
         assert isinstance(o, OrderedDict), "didn't return OrderedDict"
         return o
     except Exception as e:
-        if hasattr(e, 'message'):
-            msg = e.message
-        else:
-            msg = str(e)
-        raise ValueError("Error decoding JSON object (%s)" % msg)
+        raise ValueError("Error decoding JSON object (%s)" % str(e))
 
 
 def serialize_hook(o):
@@ -44,11 +40,7 @@ def serialize_hook(o):
         return o.tolist()
     elif isinstance(o, Exception):
         # Exceptions should be stringified
-        if hasattr(o, 'message'):
-            msg = o.message
-        else:
-            msg = str(o)
-        return "%s: %s" % (type(o).__name__, msg)
+        return "%s: %s" % (type(o).__name__, str(o))
     else:
         # Everything else should be serializable already
         return o
@@ -189,11 +181,7 @@ class Serializable(WithCallTypes):
             inst = cls(**filtered)
         except TypeError as e:
             # raise TypeError("%s(**%s) raised error: %s" % (type(cls), filtered, str(e)))
-            if hasattr(e, 'message'):
-                msg = e.message
-            else:
-                msg = str(e)
-            raise TypeError("%s raised error: %s" % (cls.typeid, msg))
+            raise TypeError("%s raised error: %s" % (cls.typeid, str(e)))
         return inst
 
     @classmethod
@@ -222,11 +210,11 @@ class Serializable(WithCallTypes):
         try:
             typeid = d["typeid"]
         except KeyError:
-            raise KeyError("typeid field not present in dictionary ( d.keys() = %s )" % d.keys())
+            raise FieldError("typeid field not present in dictionary ( d.keys() = %s )" % d.keys())
 
         subclass = cls._subcls_lookup.get(typeid, None)
         if not subclass:
-            raise KeyError("'%s' not a valid typeid" % typeid)
+            raise FieldError("'%s' not a valid typeid" % typeid)
         else:
             return subclass
 
