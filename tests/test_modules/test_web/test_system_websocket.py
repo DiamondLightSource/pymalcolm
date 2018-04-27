@@ -76,7 +76,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             assert resp == dict(
                 typeid="malcolm:core/Error:1.0",
                 id=-1,
-                message="'ValueError: Error decoding JSON object (Expecting value: line 1 column 1 (char 0))"
+                message="ValueError: Error decoding JSON object (Expecting value: line 1 column 1 (char 0))"
             )
         else:
             raise Exception("Got bad python version info")
