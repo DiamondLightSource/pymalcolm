@@ -39,16 +39,12 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         conn.close()
 
     def test_server_and_simple_client(self):
-        self.server._loop.add_callback(self.send_message,
-                                       OrderedDict(
-                                            typeid="malcolm:core/Post:1.0",
-                                            id=0,
-                                            path=["hello", "greet"],
-                                            parameters=dict(
-                                                name="me"
-                                            )
-                                       ))
-
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Post:1.0"
+        msg['id'] = 0
+        msg['path'] = ("hello", "greet")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Return:1.0",
@@ -83,15 +79,11 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             raise Exception("Got bad python version info")
 
     def test_error_server_and_simple_client_no_id(self):
-        self.server._loop.add_callback(self.send_message,
-                                       OrderedDict(
-                                           typeid="malcolm:core/Post:1.0",
-                                           path=["hello", "greet"],
-                                           parameters=dict(
-                                               name="me"
-                                                )
-                                           )
-                                       )
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Post:1.0"
+        msg['path'] = ("hello", "greet")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -100,16 +92,12 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         )
 
     def test_error_server_and_simple_client_bad_type(self):
-        self.server._loop.add_callback(self.send_message,
-                                       OrderedDict(
-                                           typeid="NotATypeID",
-                                           id=0,
-                                           path=["hello", "greet"],
-                                           parameters=dict(
-                                               name="me"
-                                                )
-                                           )
-                                       )
+        msg = OrderedDict()
+        msg['typeid'] = "NotATypeID"
+        msg['id'] = 0
+        msg['path'] = ("hello", "greet")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -118,15 +106,11 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         )
 
     def test_error_server_and_simple_client_no_type(self):
-        self.server._loop.add_callback(self.send_message,
-                                       OrderedDict(
-                                           id=0,
-                                           path=["hello", "greet"],
-                                           parameters=dict(
-                                               name="me"
-                                                )
-                                           )
-                                       )
+        msg = OrderedDict()
+        msg['id'] = 0
+        msg['path'] = ("hello", "greet")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
         resp = self.result.get(timeout=2)
 
         if version_info[0] == 2:
@@ -134,7 +118,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
                 typeid="malcolm:core/Error:1.0",
                 id=0,
                 message="FieldError: typeid field not present in dictionary " +
-                       "( d.keys() = [u'path', u'id', u'parameters'] )"
+                       "( d.keys() = [u'id', u'path', u'parameters'] )"
             )
         elif version_info[0] == 3:
             assert resp == dict(
@@ -147,16 +131,12 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             raise Exception("Got bad python version info")
 
     def test_error_server_and_simple_client_bad_path_controller(self):
-        self.server._loop.add_callback(self.send_message,
-                                       OrderedDict(
-                                           typeid="malcolm:core/Post:1.0",
-                                           id=0,
-                                           path=["goodbye", "insult"],
-                                           parameters=dict(
-                                               name="me"
-                                                )
-                                           )
-                                       )
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Post:1.0"
+        msg['id'] = 0
+        msg['path'] = ("goodbye", "insult")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -164,17 +144,13 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             message="ValueError: No controller registered for mri 'goodbye'"
         )
 
-    def test_error_server_and_simple_client_bad_path_attribute(self):
-        self.server._loop.add_callback(self.send_message,
-                                       OrderedDict(
-                                           typeid="malcolm:core/Get:1.0",
-                                           id=0,
-                                           path=["hello", "insult"],
-                                           parameters=dict(
-                                               name="me"
-                                                )
-                                           )
-                                       )
+    def test_error_server_and_simple_client_superfluous_params(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Get:1.0"
+        msg['id'] = 0
+        msg['path'] = ("hello", "meta")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -183,13 +159,31 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             "__init__() got an unexpected keyword argument 'parameters'"
         )
 
+    def test_error_server_and_simple_client_bad_path_attribute(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Get:1.0"
+        msg['id'] = 0
+        msg['path'] = ("hello", "meat")
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        if version_info[0] == 2:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=0,
+                message="UnexpectedError: Object [u'hello'] of type 'malcolm:core/Block:1.0' has no attribute u'meat'"
+            )
+        elif version_info[0] == 3:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=0,
+                message="UnexpectedError: Object ['hello'] of type 'malcolm:core/Block:1.0' has no attribute 'meat'"
+            )
+
     def test_error_server_and_simple_client_no_path(self):
-        self.server._loop.add_callback(self.send_message,
-                                       OrderedDict(
-                                           typeid="malcolm:core/Post:1.0",
-                                           id=0
-                                           )
-                                       )
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Post:1.0"
+        msg['id'] = 0
+        self.server._loop.add_callback(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
