@@ -15,4 +15,4 @@ class ServerComms(StatefulController):
     def update_request_received(self, _, info):
         # type: (Part, RequestInfo) -> None
         controller = self.process.get_controller(info.mri)
-        controller.handle_request(info.request)
+        controller.handle_request(info.request).get()

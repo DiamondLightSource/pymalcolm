@@ -36,3 +36,8 @@ class WrongThreadError(MalcolmException):
 class YamlError(MalcolmException):
     """When instantiating some YAML raises an error"""
     pass
+
+
+class FieldError(MalcolmException):
+    """Basically a KeyError but doesn't include quotation marks in error message"""
+    pass

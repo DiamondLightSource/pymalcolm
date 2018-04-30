@@ -4,10 +4,12 @@ import json
 from tornado.websocket import websocket_connect
 from tornado import gen
 
+from malcolm.compat import OrderedDict
 from malcolm.core import Process, Queue, ResponseError
 from malcolm.modules.builtin.blocks import proxy_block
 from malcolm.modules.demo.blocks import hello_block, counter_block
 from malcolm.modules.web.blocks import web_server_block, websocket_client_block
+from sys import version_info
 
 
 class TestSystemWSCommsServerOnly(unittest.TestCase):
@@ -26,29 +28,167 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.process.stop(timeout=1)
 
     @gen.coroutine
-    def send_message(self):
+    def send_message(self, req, convert_json=True):
         conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
-        req = dict(
-            typeid="malcolm:core/Post:1.0",
-            id=0,
-            path=["hello", "greet"],
-            parameters=dict(
-                name="me"
-            )
-        )
-        conn.write_message(json.dumps(req))
+        if convert_json:
+            req = json.dumps(req)
+        conn.write_message(req)
         resp = yield conn.read_message()
         resp = json.loads(resp)
         self.result.put(resp)
         conn.close()
 
     def test_server_and_simple_client(self):
-        self.server._loop.add_callback(self.send_message)
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Post:1.0"
+        msg['id'] = 0
+        msg['path'] = ("hello", "greet")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Return:1.0",
             id=0,
             value="Hello me"
+        )
+
+    def test_error_server_and_simple_client_badJSON(self):
+        self.server._loop.add_callback(self.send_message, "I am JSON (but not a dict)")
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=-1,
+            message="ValueError: Error decoding JSON object (didn't return OrderedDict)"
+        )
+
+        self.server._loop.add_callback(self.send_message, "I am not JSON", convert_json=False)
+        resp = self.result.get(timeout=2)
+        if version_info[0] == 2:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=-1,
+                message="ValueError: Error decoding JSON object (No JSON object could be decoded)"
+            )
+        elif version_info[0] == 3:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=-1,
+                message="ValueError: Error decoding JSON object (Expecting value: line 1 column 1 (char 0))"
+            )
+        else:
+            raise Exception("Got bad python version info")
+
+    def test_error_server_and_simple_client_no_id(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Post:1.0"
+        msg['path'] = ("hello", "greet")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=-1,
+            message="FieldError: id field not present in JSON message"
+        )
+
+    def test_error_server_and_simple_client_bad_type(self):
+        msg = OrderedDict()
+        msg['typeid'] = "NotATypeID"
+        msg['id'] = 0
+        msg['path'] = ("hello", "greet")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message="FieldError: 'NotATypeID' not a valid typeid"
+        )
+
+    def test_error_server_and_simple_client_no_type(self):
+        msg = OrderedDict()
+        msg['id'] = 0
+        msg['path'] = ("hello", "greet")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+
+        if version_info[0] == 2:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=0,
+                message="FieldError: typeid field not present in dictionary " +
+                       "( d.keys() = [u'id', u'path', u'parameters'] )"
+            )
+        elif version_info[0] == 3:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=0,
+                message="FieldError: typeid field not present in dictionary " +
+                        "( d.keys() = ['id', 'path', 'parameters'] )"
+            )
+        else:
+            raise Exception("Got bad python version info")
+
+    def test_error_server_and_simple_client_bad_path_controller(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Post:1.0"
+        msg['id'] = 0
+        msg['path'] = ("goodbye", "insult")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message="ValueError: No controller registered for mri 'goodbye'"
+        )
+
+    def test_error_server_and_simple_client_superfluous_params(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Get:1.0"
+        msg['id'] = 0
+        msg['path'] = ("hello", "meta")
+        msg['parameters'] = dict(name="me")
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message="TypeError: malcolm:core/Get:1.0 raised error: " +
+            "__init__() got an unexpected keyword argument 'parameters'"
+        )
+
+    def test_error_server_and_simple_client_bad_path_attribute(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Get:1.0"
+        msg['id'] = 0
+        msg['path'] = ("hello", "meat")
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        if version_info[0] == 2:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=0,
+                message="UnexpectedError: Object [u'hello'] of type 'malcolm:core/Block:1.0' has no attribute u'meat'"
+            )
+        elif version_info[0] == 3:
+            assert resp == dict(
+                typeid="malcolm:core/Error:1.0",
+                id=0,
+                message="UnexpectedError: Object ['hello'] of type 'malcolm:core/Block:1.0' has no attribute 'meat'"
+            )
+
+    def test_error_server_and_simple_client_no_path(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Post:1.0"
+        msg['id'] = 0
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message='ValueError: No path supplied'
         )
 
 

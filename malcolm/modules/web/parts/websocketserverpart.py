@@ -1,8 +1,9 @@
 from annotypes import Anno, add_call_types
 from tornado.websocket import WebSocketHandler, WebSocketError
 
-from malcolm.core import Part, json_decode, deserialize_object, \
-    Request, json_encode, Subscribe, Unsubscribe, Delta, Update
+from malcolm.core import Part, json_decode, deserialize_object, Request, \
+    json_encode, Subscribe, Unsubscribe, Delta, Update, Error, UnexpectedError
+from malcolm.core.errors import FieldError
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos, PublishHook, \
@@ -21,10 +22,24 @@ class MalcWebSocketHandler(WebSocketHandler):
 
     def on_message(self, message):
         # called in tornado's thread
-        d = json_decode(message)
-        request = deserialize_object(d, Request)
-        request.set_callback(self.on_response)
-        self._server_part.on_request(request)
+        msg_id = -1
+        try:
+            d = json_decode(message)
+
+            try:
+                msg_id = d['id']
+            except KeyError:
+                raise FieldError('id field not present in JSON message')
+
+            request = deserialize_object(d, Request)
+            request.set_callback(self.on_response)
+            self._server_part.on_request(request)
+
+        except Exception as e:
+            self._server_part.log.exception("Error handling message from client")
+            error = Error(msg_id, e)
+            error_message = error.to_dict()
+            self.write_message(json_encode(error_message))
 
     def on_response(self, response):
         # called from any thread
@@ -72,6 +87,8 @@ class WebsocketServerPart(Part):
 
     def on_request(self, request):
         # called from tornado thread
+        if not request.path:
+            raise ValueError("No path supplied")
         self.log.info("Request: %s", request)
         if isinstance(request, Subscribe):
             if request.path[0] == ".":

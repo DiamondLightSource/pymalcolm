@@ -76,7 +76,10 @@ class PathRequest(Request):
     def __init__(self, id=0, path=None):
         # type: (AId, UPath) -> None
         super(PathRequest, self).__init__(id)
+        if path:
+            assert isinstance(path, (list, tuple)), "Path must be given as a list or tuple"
         self.path = APath(path)
+
 
 
 @Serializable.register_subclass("malcolm:core/Get:1.0")
