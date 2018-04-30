@@ -6,7 +6,7 @@ from annotypes import WithCallTypes, TypeVar, Any, TYPE_CHECKING, Array
 from enum import Enum
 
 from malcolm.compat import OrderedDict
-from malcolm.core.errors import FieldError
+from .errors import FieldError
 if TYPE_CHECKING:
     from typing import Type, Union, Sequence
 

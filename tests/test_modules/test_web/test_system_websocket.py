@@ -4,6 +4,7 @@ import json
 from tornado.websocket import websocket_connect
 from tornado import gen
 
+from malcolm.compat import OrderedDict
 from malcolm.core import Process, Queue, ResponseError
 from malcolm.modules.builtin.blocks import proxy_block
 from malcolm.modules.demo.blocks import hello_block, counter_block
@@ -39,7 +40,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
     def test_server_and_simple_client(self):
         self.server._loop.add_callback(self.send_message,
-                                       dict(
+                                       OrderedDict(
                                             typeid="malcolm:core/Post:1.0",
                                             id=0,
                                             path=["hello", "greet"],
@@ -83,7 +84,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
     def test_error_server_and_simple_client_no_id(self):
         self.server._loop.add_callback(self.send_message,
-                                       dict(
+                                       OrderedDict(
                                            typeid="malcolm:core/Post:1.0",
                                            path=["hello", "greet"],
                                            parameters=dict(
@@ -100,7 +101,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
     def test_error_server_and_simple_client_bad_type(self):
         self.server._loop.add_callback(self.send_message,
-                                       dict(
+                                       OrderedDict(
                                            typeid="NotATypeID",
                                            id=0,
                                            path=["hello", "greet"],
@@ -118,7 +119,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
     def test_error_server_and_simple_client_no_type(self):
         self.server._loop.add_callback(self.send_message,
-                                       dict(
+                                       OrderedDict(
                                            id=0,
                                            path=["hello", "greet"],
                                            parameters=dict(
@@ -147,7 +148,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
     def test_error_server_and_simple_client_bad_path_controller(self):
         self.server._loop.add_callback(self.send_message,
-                                       dict(
+                                       OrderedDict(
                                            typeid="malcolm:core/Post:1.0",
                                            id=0,
                                            path=["goodbye", "insult"],
@@ -165,7 +166,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
     def test_error_server_and_simple_client_bad_path_attribute(self):
         self.server._loop.add_callback(self.send_message,
-                                       dict(
+                                       OrderedDict(
                                            typeid="malcolm:core/Get:1.0",
                                            id=0,
                                            path=["hello", "insult"],
@@ -184,7 +185,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
 
     def test_error_server_and_simple_client_no_path(self):
         self.server._loop.add_callback(self.send_message,
-                                       dict(
+                                       OrderedDict(
                                            typeid="malcolm:core/Post:1.0",
                                            id=0
                                            )
