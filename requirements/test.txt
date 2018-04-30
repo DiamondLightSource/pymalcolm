@@ -9,6 +9,6 @@ plop==0.3.0
 pytest>=3.2.0
 pytest-cov
 h5py==2.7.1
-vsdgen>=0-2-3
+vdsgen>=0-2-3
 annotypes>=0.8
 enum34
