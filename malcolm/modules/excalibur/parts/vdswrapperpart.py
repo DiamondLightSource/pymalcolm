@@ -112,15 +112,14 @@ class VDSWrapperPart(Part):
         # Create the VDS using vdsgen
         files = [fileTemplate % self.RAW_FILE_TEMPLATE.format(fem)
                  for fem in self.fems]
-
         shape = generator.shape + (self.stripe_height, self.stripe_width)
         fgen = SubFrameVDSGenerator(
             fileDir,
             files=files,
-            output=str.encode(str(fileTemplate % formatName)),
+            output=fileTemplate % formatName,
             source=dict(shape=shape, dtype=self.data_type),
-            source_node=str.encode(str("/entry/detector/detector")),
-            target_node=str.encode(str("/entry/detector/detector")),
+            source_node="/entry/detector/detector",
+            target_node="/entry/detector/detector",
             stripe_spacing=0,
             module_spacing=121,
             fill_value=fillValue,
