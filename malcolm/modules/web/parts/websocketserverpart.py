@@ -3,6 +3,7 @@ from tornado.websocket import WebSocketHandler, WebSocketError
 
 from malcolm.core import Part, json_decode, deserialize_object, Request, \
     json_encode, Subscribe, Unsubscribe, Delta, Update, Error, UnexpectedError
+from malcolm.core.request import PathRequest
 from malcolm.core.errors import FieldError
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
@@ -87,8 +88,9 @@ class WebsocketServerPart(Part):
 
     def on_request(self, request):
         # called from tornado thread
-        if not request.path:
-            raise ValueError("No path supplied")
+        if isinstance(request, PathRequest):
+            if not request.path:
+                raise ValueError("No path supplied")
         self.log.info("Request: %s", request)
         if isinstance(request, Subscribe):
             if request.path[0] == ".":
