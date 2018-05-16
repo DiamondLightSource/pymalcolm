@@ -2,29 +2,27 @@ import pvaccess
 from annotypes import add_call_types
 
 from malcolm.core import Loggable, Queue, Get, Put, Post, Subscribe, \
-    Error, ProcessPublishHook, Hook, APublished, serialize_object, \
+    Error, ProcessPublishHook, APublished, serialize_object, \
     serialize_hook
-from malcolm.modules.builtin.controllers import ServerComms
+from malcolm.modules import builtin
 from .pvautil import dict_to_pv_object, value_for_pva_set, strip_tuples
 
 
-class PvaServerComms(ServerComms):
+class PvaServerComms(builtin.controllers.ServerComms):
     """A class for communication between pva client and server"""
-    use_cothread = False
-    _pva_server = None
-    _spawned = None
-    _published = ()
-    _endpoints = None
+
+    def __init__(self, mri):
+        # type: (builtin.controllers.AMri) -> None
+        super(PvaServerComms, self).__init__(mri, use_cothread=False)
+        self._pva_server = None
+        self._spawned = None
+        self._published = ()
+        self._endpoints = None
+        # Hooks
+        self.register_hooked(ProcessPublishHook, self.publish)
 
     def do_init(self):
         self._start_pva_server()
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, ProcessPublishHook):
-            hook(self.publish)
-        else:
-            super(PvaServerComms, self).on_hook(hook)
 
     @add_call_types
     def publish(self, published):
