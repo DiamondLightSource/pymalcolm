@@ -10,7 +10,6 @@ from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos, PublishHook, \
     APublished
 
-
 # For some reason tornado doesn't make us implement all abstract methods
 # noinspection PyAbstractClass
 class MalcWebSocketHandler(WebSocketHandler):
@@ -45,7 +44,7 @@ class MalcWebSocketHandler(WebSocketHandler):
     def on_response(self, response):
         # called from any thread
         self._loop.add_callback(
-            self._server_part.on_response, response, self.write_message)
+            self._server_part.on_response, response, self.write_message, self.on_response)
 
     # http://stackoverflow.com/q/24851207
     # TODO: remove this when the web gui is hosted from the box
@@ -98,12 +97,12 @@ class WebsocketServerPart(Part):
                 assert request.path[1] == "blocks", \
                     "Don't know how to subscribe to %s" % (request.path,)
                 self._notify_published(request)
-            self._subscription_keys[request.id] = request
+            self._subscription_keys[request.generate_key()] = request
             if request.path[0] == ".":
                 return
 
         if isinstance(request, Unsubscribe):
-            subscribe = self._subscription_keys.pop(request.id)
+            subscribe = self._subscription_keys.pop(request.generate_key())
             mri = subscribe.path[0]
             if mri == ".":
                 # service requests on ourself
@@ -114,7 +113,7 @@ class WebsocketServerPart(Part):
             mri = request.path[0]
         self.registrar.report(builtin.infos.RequestInfo(request, mri))
 
-    def on_response(self, response, write_message):
+    def on_response(self, response, write_message, response_callback):
         # called from tornado thread
         message = json_encode(response)
         try:
@@ -127,10 +126,11 @@ class WebsocketServerPart(Part):
                 # Websocket is dead so we can clear the subscription key.
                 # Subsequent updates may come in before the unsubscribe, but
                 # ignore them as we can't do anything about it
-                subscribe = self._subscription_keys.pop(response.id, None)
+                subscribe = self._subscription_keys.pop((response_callback, response.id), None)
                 if subscribe:
-                    unsubscribe = Unsubscribe(subscribe.id)
-                    unsubscribe.set_callback(subscribe.callback)
+                    self.log.exception('WebSocket Error; unsubscribing from stale handle')
+                    unsubscribe = Unsubscribe(response.id)
+                    unsubscribe.set_callback(response_callback)
                     self.registrar.report(builtin.infos.RequestInfo(
                         unsubscribe, subscribe.path[0]))
 
