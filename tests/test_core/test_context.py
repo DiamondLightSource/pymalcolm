@@ -183,3 +183,24 @@ class TestContext(unittest.TestCase):
         self.o.stop()
         with self.assertRaises(AbortedError):
             self.o.wait_all_futures(fs, 0)
+
+    def test_timeout_bad(self):
+        future = self.o.put_async(["block", "attr", "value"], 32)
+        with self.assertRaises(TimeoutError):
+            self.o.wait_all_futures(future, timeout=0.01)
+
+    def test_timeout_good(self):
+        future = self.o.put_async(["block", "attr", "value"], 32)
+        self.o._q.put(Return(1))
+        self.o.wait_all_futures(future, timeout=0.01)
+
+    def test_event_timeout_bad(self):
+        future = self.o.put_async(["block", "attr", "value"], 32)
+        with self.assertRaises(TimeoutError):
+            self.o.wait_all_futures(future, event_timeout=0.01)
+
+    def test_event_timeout_good(self):
+        future = self.o.put_async(["block", "attr", "value"], 32)
+        self.o._q.put(Return(1))
+        self.o.wait_all_futures(future, event_timeout=0.01)
+

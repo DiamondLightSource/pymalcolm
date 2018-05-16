@@ -77,7 +77,7 @@ class TestStatefulController(unittest.TestCase):
         self.addCleanup(self.stop_process)
 
     def stop_process(self):
-        if self.process.started:
+        if self.process.state:
             self.process.stop(timeout=1)
 
     def test_process_init(self, ):

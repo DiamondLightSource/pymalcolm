@@ -62,7 +62,8 @@ class TestBlock(unittest.TestCase):
         self.context.put_async.assert_called_once_with(
             ["block", "attr", "value"], 43)
         self.context.wait_all_futures.assert_called_once_with(
-            [self.context.put_async.return_value], timeout=None)
+            [self.context.put_async.return_value],
+            timeout=None, event_timeout=None)
 
     def test_async_call(self):
         self.o.method_async(a=3)

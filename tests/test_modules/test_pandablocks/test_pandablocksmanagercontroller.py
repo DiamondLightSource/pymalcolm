@@ -62,9 +62,9 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
 
     def test_initial_changes(self):
         assert self.process.mock_calls == [
-            call.add_controller(ANY),
-            call.add_controller(ANY),
-            call.add_controller(ANY),
+            call.add_controller(ANY, timeout=5),
+            call.add_controller(ANY, timeout=5),
+            call.add_controller(ANY, timeout=5),
             call.get_controller('P:PCOMP'),
             call.get_controller().changes_squashed.__enter__(),
             call.get_controller().changes_squashed.__exit__(None, None, None),
