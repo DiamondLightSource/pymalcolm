@@ -231,7 +231,7 @@ def make_process():
     locals_d["self"] = UserContext(proc)
     if qt_thread:
         qt_thread.start()
-    proc.start()
+    proc.start(timeout=60)
     locals_d["process"] = proc
     return locals_d
 
