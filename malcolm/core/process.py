@@ -23,6 +23,11 @@ if TYPE_CHECKING:
 # Clear spawned handles after how many spawns?
 SPAWN_CLEAR_COUNT = 1000
 
+# States for how far in start procedure we've got
+STOPPED = 0
+STARTING = 1
+STARTED = 2
+
 
 with Anno("The list of currently published Controller mris"):
     APublished = Array[str]
@@ -70,8 +75,8 @@ class Process(Loggable):
         self.name = name
         self._cothread = maybe_import_cothread()
         self._controllers = OrderedDict()  # mri -> Controller
-        self._published = []  # [mri] for publishable controllers
-        self.started = False
+        self._unpublished = set()  # [mri] for unpublishable controllers
+        self.state = STOPPED
         self._spawned = []
         self._spawn_count = 0
         self._thread_pool = None
@@ -84,24 +89,34 @@ class Process(Loggable):
             timeout (float): Maximum amount of time to wait for each spawned
                 process. None means forever
         """
-        assert not self.started, "Process already started"
-        self.started = True
-        self._start_controllers(self._controllers.values(), timeout)
+        assert not self.state, "Process already started"
+        self.state = STARTING
+        should_publish = self._start_controllers(
+            self._controllers.values(), timeout)
+        if should_publish:
+            self._publish_controllers(timeout)
+        self.state = STARTED
 
     def _start_controllers(self, controller_list, timeout=None):
-        # type: (List[Controller], float) -> None
+        # type: (List[Controller], float) -> bool
         # Start just the given controller_list
         infos = self._run_hook(ProcessStartHook, controller_list,
                                timeout=timeout)
-        unpublished = set(
+        new_unpublished = set(
             info.mri for info in UnpublishedInfo.filter_values(infos))
-        to_publish = [c.mri for c in controller_list
-                      if c.mri not in unpublished]
-        if to_publish:
-            with self._lock:
-                self._published += to_publish
-            self._run_hook(ProcessPublishHook,
-                           timeout=timeout, published=self._published)
+        with self._lock:
+            self._unpublished |= new_unpublished
+        if len(controller_list) > len(new_unpublished):
+            return True
+        else:
+            return False
+
+    def _publish_controllers(self, timeout):
+        # New controllers to publish
+        published = [mri for mri in self._controllers
+                     if mri not in self._unpublished]
+        self._run_hook(ProcessPublishHook,
+                       timeout=timeout, published=published)
 
     def _run_hook(self, hook, controller_list=None, timeout=None, **kwargs):
         # Run the given hook waiting til all hooked functions are complete
@@ -121,7 +136,7 @@ class Process(Loggable):
             timeout (float): Maximum amount of time to wait for each spawned
                 object. None means forever
         """
-        assert self.started, "Process not started"
+        assert self.state == STARTED, "Process not started"
         # Allow every controller a chance to clean up
         self._run_hook(ProcessStopHook, timeout=timeout)
         for s in self._spawned:
@@ -129,8 +144,8 @@ class Process(Loggable):
             s.wait(timeout=timeout)
         self._spawned = []
         self._controllers = OrderedDict()
-        self._published = []
-        self.started = False
+        self._unpublished = set()
+        self.state = STOPPED
         if self._thread_pool:
             self._thread_pool.close()
             self._thread_pool.join()
@@ -165,7 +180,7 @@ class Process(Loggable):
     def _spawn(self, function, args, kwargs, use_cothread):
         # type: (Callable[..., Any], Tuple, Dict, bool) -> Spawned
         with self._lock:
-            assert self.started, "Can't spawn before process started"
+            assert self.state, "Can't spawn before process started"
             if self._thread_pool is None:
                 if not self._cothread or not use_cothread:
                     self._thread_pool = ThreadPool(get_pool_num_threads())
@@ -202,8 +217,10 @@ class Process(Loggable):
                 "Controller already exists for %s" % controller.mri
             self._controllers[controller.mri] = controller
             controller.setup(self)
-        if self.started:
-            self._start_controllers([controller], timeout)
+        if self.state:
+            should_publish = self._start_controllers([controller], timeout)
+            if self.state == STARTED and should_publish:
+                self._publish_controllers(timeout)
 
     @property
     def mri_list(self):

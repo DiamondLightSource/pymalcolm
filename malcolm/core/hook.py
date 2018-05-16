@@ -150,6 +150,8 @@ def start_hooks(hooks):
 def wait_hooks(logger, hook_queue, hook_spawned, timeout=None,
                exception_check=True):
     # type: (logging.Logger, Queue, List[Hook], float) -> Dict[str, List[Info]]
+    # timeout is time to wait for spawned processes to complete on abort,
+    # not time for them to run for
     # Wait for them all to finish
     return_dict = OrderedDict()
     for hook in hook_spawned:
