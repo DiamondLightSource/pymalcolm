@@ -69,7 +69,7 @@ class TestBlockMeta(unittest.TestCase):
         self.serialized["typeid"] = "malcolm:core/BlockMeta:1.0"
         self.serialized["description"] = "desc"
         self.serialized["tags"] = []
-        self.serialized["writeable"] = False
+        self.serialized["writeable"] = True
         self.serialized["label"] = ""
         self.serialized["fields"] = []
 
@@ -81,7 +81,7 @@ class TestBlockMeta(unittest.TestCase):
         m = BlockMeta.from_dict(self.serialized)
         assert m.description == "desc"
         assert m.tags == []
-        assert m.writeable == False
+        assert m.writeable is True
         assert m.label == ""
 
 

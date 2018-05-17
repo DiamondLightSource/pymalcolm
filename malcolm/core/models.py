@@ -973,7 +973,7 @@ class BlockMeta(Meta):
     def __init__(self,
                  description="",  # type: AMetaDescription
                  tags=(),  # type: UTags
-                 writeable=False,  # type: AWriteable
+                 writeable=True,  # type: AWriteable
                  label="",  # type: ALabel
                  fields=(),  # type: UFields
                  ):
