@@ -209,6 +209,7 @@ class Controller(Hookable):
         attribute_name = request.path[1]
 
         attribute = self._block[attribute_name]
+
         assert attribute.meta.writeable, \
             "Attribute %s is not writeable" % attribute_name
         put_function = self._write_functions[attribute_name]
