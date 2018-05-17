@@ -38,7 +38,7 @@ class TestContext(unittest.TestCase):
         self.o.stop()
         with self.assertRaises(AbortedError) as cm:
             self.o.sleep(0)
-        assert cm.exception.message == "Aborted waiting for []"
+        assert str(cm.exception) == "Aborted waiting for []"
 
     def test_block_view(self):
         self.o.block_view("block")
@@ -156,7 +156,7 @@ class TestContext(unittest.TestCase):
         with self.assertRaises(BadValueError) as cm:
             self.o.when_matches(
                 ["block", "attr", "value"], "value1", ["value2"], timeout=0.01)
-        assert cm.exception.message == \
+        assert str(cm.exception) == \
             "Waiting for 'value1', got 'value2'"
 
         self.assert_handle_request_called_with(
@@ -190,14 +190,14 @@ class TestContext(unittest.TestCase):
         self.o.stop()
         with self.assertRaises(AbortedError) as cm:
             self.o.wait_all_futures(fs, 0)
-        assert cm.exception.message == \
+        assert str(cm.exception) == \
             "Aborted waiting for [block.attr.value.put_value(32)]"
 
     def test_timeout_bad(self):
         future = self.o.put_async(["block", "attr", "value"], 32)
         with self.assertRaises(TimeoutError) as cm:
             self.o.wait_all_futures(future, timeout=0.01)
-        assert cm.exception.message == \
+        assert str(cm.exception) == \
             "Timeout waiting for [block.attr.value.put_value(32)]"
 
     def test_timeout_good(self):
@@ -209,7 +209,7 @@ class TestContext(unittest.TestCase):
         future = self.o.put_async(["block", "attr", "value"], 32)
         with self.assertRaises(TimeoutError) as cm:
             self.o.wait_all_futures(future, event_timeout=0.01)
-        assert cm.exception.message == \
+        assert str(cm.exception) == \
             "Timeout waiting for [block.attr.value.put_value(32)]"
 
     def test_event_timeout_good(self):
