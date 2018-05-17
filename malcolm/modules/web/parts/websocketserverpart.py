@@ -1,10 +1,8 @@
 from annotypes import Anno, add_call_types
 from tornado.websocket import WebSocketHandler, WebSocketError
 
-from malcolm.core import Part, json_decode, deserialize_object, Request, \
-    json_encode, Subscribe, Unsubscribe, Delta, Update, Error, Response
-from malcolm.core.request import PathRequest
-from malcolm.core.errors import FieldError
+from malcolm.core import Part, json_decode, deserialize_object, Request, PathRequest,\
+    json_encode, Subscribe, Unsubscribe, Delta, Update, Error, Response, FieldError
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos, PublishHook, \
@@ -95,7 +93,7 @@ class WebsocketServerPart(Part):
         self.log.info("Request: %s", request)
         if isinstance(request, Subscribe):
             if request.generate_key() in self._subscription_keys.keys():
-                raise Exception("duplicate subscription ID on client")
+                raise FieldError("duplicate subscription ID on client")
             if request.path[0] == ".":
                 # special entries
                 assert request.path[1] == "blocks", \
