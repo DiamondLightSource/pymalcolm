@@ -3,7 +3,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 
-from malcolm.core import Hook, Spawned, ProcessPublishHook, APublished
+from malcolm.core import Spawned, ProcessPublishHook, APublished
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, PublishHook
@@ -24,13 +24,8 @@ class HTTPServerComms(builtin.controllers.ServerComms):
         self._server = None  # type: HTTPServer
         self._spawned = None  # type: Spawned
         self._application = None  # type: Application
-
-    def on_hook(self, hook):
-        # type: (Hook) -> None
-        if isinstance(hook, ProcessPublishHook):
-            hook(self.publish)
-        else:
-            super(HTTPServerComms, self).on_hook(hook)
+        # Hooks
+        self.register_hooked(ProcessPublishHook, self.publish)
 
     def do_init(self):
         super(HTTPServerComms, self).do_init()

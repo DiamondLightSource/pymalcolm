@@ -1,7 +1,7 @@
 mock>=2.0.0
 nose>=1.3.0
 coverage>=3.7.1
-tornado>=4.1
+tornado>=4.1,<5.0
 scanpointgenerator>=2.1.0
 cothread==2.14
 enum34
@@ -10,5 +10,6 @@ plop==0.3.0
 pytest>=3.2.0
 pytest-cov
 h5py==2.7.1
-git+https://github.com/dls-controls/vds-gen.git@0-2-1#egg=vds-gen
-annotypes>=0.5
+vdsgen>=0-2-3
+annotypes>=0.8
+enum34

@@ -129,15 +129,8 @@ class ADBaseActions(object):
             self.update_completed_steps, registrar)
         context.wait_all_futures(self.start_future)
         # Now wait to make sure any update_completed_steps come in
-        try:
-            child.when_value_matches(
-                "arrayCounterReadback", self.done_when_reaches, timeout=5.0)
-        except TimeoutError:
-            raise TimeoutError(
-                "Detector %r arrayCounter didn't reach %s frames in time "
-                "(value after timeout is %s)" % (
-                    self.mri, self.done_when_reaches,
-                    child.arrayCounterReadback.value))
+        child.when_value_matches(
+            "arrayCounterReadback", self.done_when_reaches, timeout=5.0)
 
     def abort_detector(self, context):
         # type: (Context) -> None

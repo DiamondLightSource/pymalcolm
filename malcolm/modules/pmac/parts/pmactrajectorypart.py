@@ -189,13 +189,7 @@ class PmacTrajectoryPart(ChildPart):
         # Now wait for up to 2*min_delta time to make sure any
         # update_completed_steps come in
         traj_end = len(self.completed_steps_lookup)
-        try:
-            child.when_value_matches("pointsScanned", traj_end, timeout=0.1)
-        except TimeoutError:
-            raise ValueError(
-                "PMAC %r didn't report %s steps in time "
-                "(value after timeout is %s)" % (
-                    self.mri, traj_end, child.pointsScanned.value))
+        child.when_value_matches("pointsScanned", traj_end, timeout=0.1)
 
     @add_call_types
     def abort(self, context):

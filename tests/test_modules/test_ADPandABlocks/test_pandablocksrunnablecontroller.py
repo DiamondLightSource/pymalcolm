@@ -39,8 +39,8 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
 
     def test_initial_changes(self):
         assert self.process.mock_calls == [
-            call.add_controller(ANY),
-            call.add_controller(ANY)]
+            call.add_controller(ANY, timeout=5),
+            call.add_controller(ANY, timeout=5)]
         pcap, inenc = self._blocks()
         with self.assertRaises(Exception):
             pcap.ts

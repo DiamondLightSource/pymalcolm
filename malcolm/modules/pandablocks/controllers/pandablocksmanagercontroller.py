@@ -160,7 +160,7 @@ class PandABlocksManagerController(ManagerController):
 
         # Make the child controller and add it to the process
         controller = self._make_child_controller(maker.parts.values(), mri)
-        self.process.add_controller(controller)
+        self.process.add_controller(controller, timeout=5)
 
         # Store the parts so we can update them with the poller
         self._blocks_parts[block_name] = maker.parts

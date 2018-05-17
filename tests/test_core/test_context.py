@@ -36,8 +36,9 @@ class TestContext(unittest.TestCase):
         self.o.ignore_stops_before_now()
         self.o.ignore_stops_before_now()
         self.o.stop()
-        with self.assertRaises(AbortedError):
+        with self.assertRaises(AbortedError) as cm:
             self.o.sleep(0)
+        assert cm.exception.message == "Aborted waiting for []"
 
     def test_block_view(self):
         self.o.block_view("block")
@@ -108,8 +109,10 @@ class TestContext(unittest.TestCase):
     def test_many_puts(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32),
               self.o.put_async(["block", "attr2", "value"], 32)]
-        with self.assertRaises(TimeoutError):
+        with self.assertRaises(TimeoutError) as cm:
             self.o.wait_all_futures(fs, 0.01)
+        assert str(cm.exception) == \
+            "Timeout waiting for [block.attr.value.put_value(32), block.attr2.value.put_value(32)]"
         assert [f.done() for f in fs] == [False, False]
         self.o._q.put(Return(2, None))
         assert [f.done() for f in fs] == [False, False]
@@ -150,9 +153,12 @@ class TestContext(unittest.TestCase):
 
     def test_when_not_matches(self):
         self.o._q.put(Update(1, "value2"))
-        with self.assertRaises(BadValueError):
+        with self.assertRaises(BadValueError) as cm:
             self.o.when_matches(
                 ["block", "attr", "value"], "value1", ["value2"], timeout=0.01)
+        assert cm.exception.message == \
+            "Waiting for 'value1', got 'value2'"
+
         self.assert_handle_request_called_with(
             Subscribe(1, ["block", "attr", "value"]),
             Unsubscribe(1))
@@ -173,13 +179,41 @@ class TestContext(unittest.TestCase):
     def test_futures_exception(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32)]
 
-        fs[0]._exception = BadValueError
+        fs[0]._exception = BadValueError()
         fs[0]._state = Future.FINISHED
-        with self.assertRaises(BadValueError):
+        with self.assertRaises(BadValueError) as cm:
             self.o.wait_all_futures(fs, 0)
+        assert cm.exception is fs[0]._exception
 
     def test_futures_remaining_paths(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32)]
         self.o.stop()
-        with self.assertRaises(AbortedError):
+        with self.assertRaises(AbortedError) as cm:
             self.o.wait_all_futures(fs, 0)
+        assert cm.exception.message == \
+            "Aborted waiting for [block.attr.value.put_value(32)]"
+
+    def test_timeout_bad(self):
+        future = self.o.put_async(["block", "attr", "value"], 32)
+        with self.assertRaises(TimeoutError) as cm:
+            self.o.wait_all_futures(future, timeout=0.01)
+        assert cm.exception.message == \
+            "Timeout waiting for [block.attr.value.put_value(32)]"
+
+    def test_timeout_good(self):
+        future = self.o.put_async(["block", "attr", "value"], 32)
+        self.o._q.put(Return(1))
+        self.o.wait_all_futures(future, timeout=0.01)
+
+    def test_event_timeout_bad(self):
+        future = self.o.put_async(["block", "attr", "value"], 32)
+        with self.assertRaises(TimeoutError) as cm:
+            self.o.wait_all_futures(future, event_timeout=0.01)
+        assert cm.exception.message == \
+            "Timeout waiting for [block.attr.value.put_value(32)]"
+
+    def test_event_timeout_good(self):
+        future = self.o.put_async(["block", "attr", "value"], 32)
+        self.o._q.put(Return(1))
+        self.o.wait_all_futures(future, event_timeout=0.01)
+
