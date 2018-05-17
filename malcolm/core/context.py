@@ -17,22 +17,34 @@ if TYPE_CHECKING:
 
 
 class When(object):
-    def __init__(self, condition_satisfied):
+    def __init__(self, good_value, bad_values):
         # type: (Callable[[Any], bool]) -> None
+        if callable(good_value):
+            def condition_satisfied(value):
+                return good_value(value)
+        else:
+            def condition_satisfied(value):
+                if bad_values and value in bad_values:
+                    raise BadValueError(
+                        "Waiting for %r, got %r" % (good_value, value))
+                return value == good_value
+            condition_satisfied.__name__ = "equals_%s" % good_value
         self.condition_satisfied = condition_satisfied
         self.future = None  # type: Future
         self.context = None  # type: Context
+        self.last = None
 
     def set_future_context(self, future, context):
         # type: (Future, Context) -> None
         self.future = future
         self.context = context
 
-    def check_condition(self, value):
+    def __call__(self, value):
         # type: (Any) -> None
         # Need to check if we have a future as we might be called while the
         # unsubscribe is taking place
         if self.future:
+            self.last = value
             try:
                 satisfied = self.condition_satisfied(value)
             except Exception:
@@ -285,18 +297,8 @@ class Context(object):
             Future: a single Future that will resolve when the path matches
             good_value or bad_values
         """
-        if callable(good_value):
-            def condition_satisfied(value):
-                return good_value(value)
-        else:
-            def condition_satisfied(value):
-                if bad_values and value in bad_values:
-                    raise BadValueError(
-                        "Waiting for %r, got %r" % (good_value, value))
-                return value == good_value
-
-        when = When(condition_satisfied)
-        future = self.subscribe(path, when.check_condition)
+        when = When(good_value, bad_values)
+        future = self.subscribe(path, when)
         when.set_future_context(future, weakref.proxy(self))
         return future
 
@@ -325,14 +327,14 @@ class Context(object):
             else:
                 futures = []
 
-        filtered_futures = set()
+        filtered_futures = []
 
         for f in futures:
             if f.done():
                 if f.exception() is not None:
                     raise f.exception()
             else:
-                filtered_futures.add(f)
+                filtered_futures.append(f)
 
         while filtered_futures:
             if event_timeout is not None:
@@ -352,13 +354,42 @@ class Context(object):
         until = time.time() + seconds
         try:
             while True:
-                self._service_futures(set(), until)
+                self._service_futures([], until)
         except TimeoutError:
             return
 
+    def _describe_futures(self, futures):
+        descriptions = []
+        for future in futures:
+            request = self._requests.get(future, None)
+            if isinstance(request, Put):
+                path = ".".join(request.path)
+                descriptions.append("%s.put_value(%s)" % (path, request.value))
+            elif isinstance(request, Subscribe):
+                path = ".".join(request.path)
+                func, _ = self._subscriptions[request.id]
+                if isinstance(func, When):
+                    descriptions.append("When(%s, %s, last=%s)" % (
+                        path, func.condition_satisfied.__name__, func.last))
+                else:
+                    descriptions.append("Subscribe(%s)" % path)
+            elif isinstance(request, Post):
+                path = ".".join(request.path)
+                if request.parameters:
+                    params = "..."
+                else:
+                    params = ""
+                descriptions.append("%s(%s)" % (path, params))
+            else:
+                descriptions.append(str(request))
+        if descriptions:
+            return "[" + ", ".join(descriptions) + "]"
+        else:
+            return "[]"
+
     def _service_futures(self, futures, until=None):
         """Args:
-            futures (set): The futures to service
+            futures (list): The futures to service
             until (float): Timestamp to wait until
         """
         if until is None:
@@ -367,17 +398,22 @@ class Context(object):
             timeout = until - time.time()
             if timeout < 0:
                 timeout = 0
-        response = self._q.get(timeout)
+        try:
+            response = self._q.get(timeout)
+        except TimeoutError:
+            raise TimeoutError(
+                "Timeout waiting for %s" % self._describe_futures(futures))
         if response is self._sentinel_stop:
             self._sentinel_stop = None
         elif response is self.STOP:
             if self._sentinel_stop is None:
                 # This is a stop we should listen to...
-                raise AbortedError()
+                raise AbortedError(
+                    "Aborted waiting for %s" % self._describe_futures(futures))
         elif isinstance(response, Update):
             # This is an update for a subscription
             if response.id in self._subscriptions:
-                (func, args) = self._subscriptions[response.id]
+                func, args = self._subscriptions[response.id]
                 func(response.value, *args)
         elif isinstance(response, Return):
             future = self._futures.pop(response.id)
@@ -387,7 +423,7 @@ class Context(object):
             future.set_result(result)
             try:
                 futures.remove(future)
-            except KeyError:
+            except ValueError:
                 pass
         elif isinstance(response, Error):
             future = self._futures.pop(response.id)
@@ -395,7 +431,7 @@ class Context(object):
             future.set_exception(response.message)
             try:
                 futures.remove(future)
-            except KeyError:
+            except ValueError:
                 pass
             else:
                 raise response.message
