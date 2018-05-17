@@ -20,7 +20,7 @@ with Anno(frequency_accuracy_desc):
 class ExposureDeadtimePart(Part):
     def __init__(self,
                  name,  # type: APartName
-                 initial_readout_time,  # type: AInitialReadoutTime
+                 initial_readout_time=0.0,  # type: AInitialReadoutTime
                  initial_frequency_accuracy=50.0  # type: AInitialAccuracy
                  ):
         # type: (...) -> None
