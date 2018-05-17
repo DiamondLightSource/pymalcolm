@@ -5,7 +5,7 @@ from .controller import Controller, AMri, ADescription, AUseCothread, \
     ABORT_TIMEOUT
 from .define import Define
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
-    UnexpectedError, YamlError
+    UnexpectedError, YamlError, FieldError
 from .future import Future
 from .hook import Hook
 from .info import Info
@@ -19,7 +19,7 @@ from .part import Part, PartRegistrar, APartName
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
     ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos
 from .queue import Queue
-from .request import Request, Subscribe, Unsubscribe, Get, Put, Post
+from .request import Request, PathRequest, Subscribe, Unsubscribe, Get, Put, Post
 from .response import Response, Delta, Update, Return, Error
 from .serializable import Serializable, deserialize_object, serialize_object, \
     json_decode, json_encode, snake_to_camel, camel_to_title, \

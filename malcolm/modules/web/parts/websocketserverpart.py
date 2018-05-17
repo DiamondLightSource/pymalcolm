@@ -1,9 +1,8 @@
 from annotypes import Anno, add_call_types
 from tornado.websocket import WebSocketHandler, WebSocketError
 
-from malcolm.core import Part, json_decode, deserialize_object, Request, \
-    json_encode, Subscribe, Unsubscribe, Delta, Update, Error, UnexpectedError
-from malcolm.core.errors import FieldError
+from malcolm.core import Part, json_decode, deserialize_object, Request, PathRequest,\
+    json_encode, Subscribe, Unsubscribe, Delta, Update, Error, Response, FieldError
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, ALoop, UHandlerInfos, PublishHook, \
@@ -44,7 +43,7 @@ class MalcWebSocketHandler(WebSocketHandler):
     def on_response(self, response):
         # called from any thread
         self._loop.add_callback(
-            self._server_part.on_response, response, self.write_message)
+            self._server_part.on_response, response, self)
 
     # http://stackoverflow.com/q/24851207
     # TODO: remove this when the web gui is hosted from the box
@@ -86,22 +85,26 @@ class WebsocketServerPart(Part):
                 self._notify_published(request)
 
     def on_request(self, request):
+        # type: (Request) -> None
         # called from tornado thread
-        if not request.path:
-            raise ValueError("No path supplied")
+        if isinstance(request, PathRequest):
+            if not request.path:
+                raise ValueError("No path supplied")
         self.log.info("Request: %s", request)
         if isinstance(request, Subscribe):
+            if request.generate_key() in self._subscription_keys.keys():
+                raise FieldError("duplicate subscription ID on client")
             if request.path[0] == ".":
                 # special entries
                 assert request.path[1] == "blocks", \
                     "Don't know how to subscribe to %s" % (request.path,)
                 self._notify_published(request)
-            self._subscription_keys[request.id] = request
+            self._subscription_keys[request.generate_key()] = request
             if request.path[0] == ".":
                 return
 
         if isinstance(request, Unsubscribe):
-            subscribe = self._subscription_keys.pop(request.id)
+            subscribe = self._subscription_keys.pop(request.generate_key())
             mri = subscribe.path[0]
             if mri == ".":
                 # service requests on ourself
@@ -112,11 +115,12 @@ class WebsocketServerPart(Part):
             mri = request.path[0]
         self.registrar.report(builtin.infos.RequestInfo(request, mri))
 
-    def on_response(self, response, write_message):
+    def on_response(self, response, websocket):
+        # type: (Response, MalcWebSocketHandler) -> None
         # called from tornado thread
         message = json_encode(response)
         try:
-            write_message(message)
+            websocket.write_message(message)
         except WebSocketError:
             # The websocket is dead. If the response was a Delta or Update, then
             # unsubscribe so the local controller doesn't keep on trying to
@@ -125,14 +129,16 @@ class WebsocketServerPart(Part):
                 # Websocket is dead so we can clear the subscription key.
                 # Subsequent updates may come in before the unsubscribe, but
                 # ignore them as we can't do anything about it
-                subscribe = self._subscription_keys.pop(response.id, None)
+                subscribe = self._subscription_keys.pop((websocket.on_response, response.id), None)
                 if subscribe:
-                    unsubscribe = Unsubscribe(subscribe.id)
-                    unsubscribe.set_callback(subscribe.callback)
+                    self.log.exception('WebSocket Error; unsubscribing from stale handle')
+                    unsubscribe = Unsubscribe(response.id)
+                    unsubscribe.set_callback(websocket.on_response)
                     self.registrar.report(builtin.infos.RequestInfo(
                         unsubscribe, subscribe.path[0]))
 
     def _notify_published(self, request):
+        # type: (Request) -> None
         # called from any thread
         cb, response = request.update_response(self._published)
         cb(response)
