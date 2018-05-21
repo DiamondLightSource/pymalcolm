@@ -15,9 +15,14 @@ class Andor3DriverPart(DetectorDriverPart):
     def setup_detector(self, child, completed_steps, steps_to_do, params=None):
         fs = super(Andor3DriverPart, self).setup_detector(
             child, completed_steps, steps_to_do, params)
-
         duration = params.generator.duration
         readout_time = child.readoutTime.value
+
+        # TODO: Should have separate validate method that can access
+        # readout time
+        assert duration >= readout_time, \
+            "Cannot expose detector in given duration, %f because its " \
+            "readout time %f is too large" % (duration, readout_time)
 
         # On the detector, the exposure time can only be set to a multiple of
         # row_readout_time, the time taken to read out a row of pixels.
