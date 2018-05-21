@@ -31,3 +31,10 @@
       Height (number of pixel rows) recorded by the detector.
     rbv: $(prefix):ArraySizeY_RBV
     widget: textupdate
+
+- ca.parts.CAChoicePart:
+    name: shutterMode
+    description: The Andor shutter mode on the camera.
+    pv: $(prefix):A3ShutterMode
+    rbvSuff: _RBV
+    widget: combo
