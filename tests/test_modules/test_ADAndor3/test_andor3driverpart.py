@@ -36,9 +36,13 @@ class TestAndor3DetectorDriverPart(ChildTestCase):
         completed_steps = 0
         steps_to_do = 2000*3000
         part_info = ANY
-        # Need a known value for the readout time and array height
+        # Need a known value for the readout time, array height and
+        # shutter mode
         self.child.parts["readoutTime"].attr.set_value(0.002)
         self.child.parts["arrayHeight"].attr.set_value(270)
+        choices = ["Rolling", "Global"]
+        self.child.parts["shutterMode"].attr.meta.set_choices(choices)
+        self.child.parts["shutterMode"].attr.set_value("Rolling")
         self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, params)
         # Need to wait for the spawned mock start call to run

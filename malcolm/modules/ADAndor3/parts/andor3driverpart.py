@@ -28,14 +28,21 @@ class Andor3DriverPart(DetectorDriverPart):
         # row_readout_time, the time taken to read out a row of pixels.
         # Use of the floor function ensures that exposure time is set to the
         # largest possible value under the target. The readout time is
-        # subtracted once because of rounding errors.
+        # subtracted because the camera has additional dead time that is given
+        # in "rows" in the Andor Neo hardware guide (page 57).
         #
         # Note: row_readout_time can only be calculated like this when the
         # camera is not in overlap mode
         row_readout_time = readout_time / child.arrayHeight.value
         ideal_exposure = duration - readout_time
+        extra_rows = {
+            "Rolling": 1,
+            "Global": 4
+        }[child.shutterMode.value]
         exposure = \
-            (np.floor(ideal_exposure / row_readout_time) - 1) * row_readout_time
+            (np.floor(ideal_exposure / row_readout_time) - extra_rows) \
+            * row_readout_time
+
         fs.append(child.exposure.put_value_async(exposure))
 
         # Need to reset acquirePeriod after setting exposure as it's
