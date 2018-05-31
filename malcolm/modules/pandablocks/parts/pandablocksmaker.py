@@ -21,7 +21,7 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
         meta = NumberMeta("uint32", description)
     elif subtyp in ("int", "pos"):
         meta = NumberMeta("int32", description)
-    elif subtyp == "scalar":
+    elif subtyp in ("scalar", "xadc"):
         meta = NumberMeta("float64", description)
     elif subtyp == "lut":
         meta = StringMeta(description)
@@ -63,7 +63,7 @@ class PandABlocksMaker(object):
             self._make_time_parts(field_name, field_data, writeable)
         elif typ == "write" and subtyp == "action":
             self._make_action_part(field_name, field_data)
-        elif typ in ("param", "read", "write"):
+        elif typ in ("param", "read", "write", "xadc"):
             self._make_param_part(field_name, field_data, writeable)
         elif typ == "bit_out":
             self._make_out(field_name, field_data, "bit")
@@ -82,7 +82,7 @@ class PandABlocksMaker(object):
         elif typ == "table":
             self._make_table(field_name, field_data)
         else:
-            raise ValueError("Unknown type %r subtype %r" % (type, subtyp))
+            raise ValueError("Unknown type %r subtype %r" % (typ, subtyp))
 
     def _make_icon_label(self):
         block_type = self.block_name.rstrip("0123456789")
@@ -130,7 +130,11 @@ class PandABlocksMaker(object):
             group = self._make_group("parameters")
         else:
             group = self._make_group("readbacks")
-        meta = make_meta(field_data.field_subtype, field_data.description,
+        if field_data.field_type == "xadc":
+            subtype = "xadc"
+        else:
+            subtype = field_data.field_subtype
+        meta = make_meta(subtype, field_data.description,
                          [group], writeable, field_data.labels)
         self._make_field_part(field_name, meta, writeable)
 
