@@ -106,7 +106,6 @@ class VDSWrapperPart(Part):
         "fillValue", NumberMeta("int32", "Fill value for stripe spacing"), 0)
     def configure(self, context, completed_steps, steps_to_do, part_info,
                   params):
-        print "Configure"
         self.generator = params.generator
         self.current_id = completed_steps
         self.done_when_reaches = completed_steps + steps_to_do
@@ -152,7 +151,6 @@ class VDSWrapperPart(Part):
             fill_value=params.fillValue,
             log_level=1 # DEBUG
         )
-        print fgen        
         fgen.generate_vds()
 
         # Store required attributes
