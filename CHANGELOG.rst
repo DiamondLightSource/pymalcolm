@@ -11,6 +11,19 @@ Changed:
 
 - Nothing yet
 
+`2-3`_ - 2018-05-31
+-------------------
+
+Added:
+
+- event_timeout to future waiting functions
+
+Fixed:
+
+- HDF writer only waits up to 60s for new frames to tick before timing out
+- Make hardware step scanning work
+
+
 `2-2`_ - 2018-03-29
 -------------------
 
@@ -81,7 +94,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-2...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-3...HEAD
+.. _2-3: https://github.com/dls-controls/pymalcolm/compare/2-2...2-3
 .. _2-2: https://github.com/dls-controls/pymalcolm/compare/2-1...2-2
 .. _2-1: https://github.com/dls-controls/pymalcolm/compare/2-0a6...2-1
 .. _2-0a6: https://github.com/dls-controls/pymalcolm/compare/2-0a5...2-0a6
