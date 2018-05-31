@@ -45,3 +45,14 @@ script:
 # submit coverage
 after_script:
   - coveralls
+
+deploy:
+  provider: pypi
+  user: dls_controls
+  password:
+    secure: SElMrsOY3gsaDmM3189epJ+6IPumQ3RcSJsqNRtBpETthC6mH0+49usZucFEJZbXpF+dEQHyRsyABF05M2kUKWlruFO6h9GckV2Bu8KNjmEPkCp4frToqgbm6/y7gbVE3KhlIq7qTLIxmz37oREqJIEgw9XPHbULKy3t6ZcZgmejghINecPwigRsYHcgGQXNcuMhjPAygun8vt1QSGk+FbSvnHJ5hVbn8pmr884QUWii+mM6C/xUUvYzUs81scx/z003hOT7kZUt3/+9q/DhqocV/sT1WPAPeF2G8FygfOQbceJhBNEo+rk//yPoUAHQP8kD2ZhHLN0K0z/xEZ2fAF3slkfi9TAVmazh7TOcwzpJz6TaiJCTIngAFiyY3JHQGW3gvznXsqGAayRkg6O4iYqAT9FcyfoXx9y4F2appxq9aQfR5rT6PXcgq+Zi43uFHYcnjmC3wpTBBCCTPc4CtQ5V4gsEQApxYS7W8450ydSW1l/QLTeLw8J+hJBrUXqTfldw/oZove1zOcHVONeqGidavjrpgPu1/+2Xh5PHKbxSHpWIm9SnSII8HJo9PfEmKI7WHnCVEt/2bLUhs8agK3ppoH9qY+xJFqBnVVpMiNSXfACmqSiL9iqrqJRZe24pyXeif1GOi4ohkPzZZnY01hdMCI7KrEy1cB1x7U/rkr4=
+
+  on:
+    tags: true
+    # As we are doing a source dist, only deploy for one python
+    python: "3.6"
