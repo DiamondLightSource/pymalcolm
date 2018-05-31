@@ -47,7 +47,7 @@ APACHE License. (see `LICENSE`_)
     :target: https://travis-ci.org/dls-controls/pymalcolm
     :alt: Build Status
 
-.. |coverage| image:: https://coveralls.io/repos/dls-controls/pymalcolm/badge.svg?branch=master&service=github
+.. |coverage| image:: https://coveralls.io/repos/github/dls-controls/pymalcolm/badge.svg?branch=master
     :target: https://coveralls.io/github/dls-controls/pymalcolm?branch=master
     :alt: Test coverage
 
