@@ -14,6 +14,10 @@ from malcolm.modules.scanpointgenerator.vmetas import PointGeneratorMeta
 
 SUFFIXES = "NXY3456789"
 
+# If the HDF writer doesn't get new frames in this time (seconds), consider it
+# stalled and raise
+FRAME_TIMEOUT = 60
+
 
 class HDFWriterPart(StatefulChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
@@ -206,7 +210,8 @@ class HDFWriterPart(StatefulChildPart):
         child.uniqueId.subscribe_value(
             self.update_completed_steps, update_completed_steps)
         # TODO: what happens if we miss the last frame?
-        child.when_value_matches("uniqueId", self.done_when_reaches)
+        child.when_value_matches(
+            "uniqueId", self.done_when_reaches, event_timeout=FRAME_TIMEOUT)
 
     @RunnableController.PostRunReady
     def post_run_ready(self, context):
