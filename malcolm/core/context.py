@@ -120,7 +120,7 @@ class Context(Loggable):
         """Stops any wait_all_futures call with an AbortedError"""
         self._q.put(self.STOP)
 
-    def put(self, path, value, timeout=None):
+    def put(self, path, value, timeout=None, event_timeout=None):
         """"Puts a value to a path and returns when it completes
 
         Args:
@@ -128,9 +128,12 @@ class Context(Loggable):
             value (object): The value to set
             timeout (float): time in seconds to wait for responses, wait forever
                 if None
+            event_timeout: maximum time in seconds to wait between each response
+                event, wait forever if None
         """
         future = self.put_async(path, value)
-        self.wait_all_futures(future, timeout=timeout)
+        self.wait_all_futures(
+            future, timeout=timeout, event_timeout=event_timeout)
 
     def put_async(self, path, value):
         """"Puts a value to a path and returns immediately
@@ -146,7 +149,7 @@ class Context(Loggable):
         future = self._dispatch_request(request)
         return future
 
-    def post(self, path, params=None, timeout=None):
+    def post(self, path, params=None, timeout=None, event_timeout=None):
         """Synchronously calls a method
 
         Args:
@@ -154,12 +157,15 @@ class Context(Loggable):
             params (dict): parameters for the call
             timeout (float): time in seconds to wait for responses, wait
                 forever if None
+            event_timeout: maximum time in seconds to wait between each response
+                event, wait forever if None
 
         Returns:
             the result from 'method'
         """
         future = self.post_async(path, params)
-        self.wait_all_futures(future, timeout=timeout)
+        self.wait_all_futures(
+            future, timeout=timeout, event_timeout=event_timeout)
         return future.result()
 
     def post_async(self, path, params=None):
@@ -225,7 +231,8 @@ class Context(Loggable):
         # Unsubscribe from anything that is still active
         self.unsubscribe_all()
 
-    def when_matches(self, path, good_value, bad_values=None, timeout=None):
+    def when_matches(self, path, good_value, bad_values=None, timeout=None,
+                     event_timeout=None):
         """Resolve when an path value equals value
 
         Args:
@@ -234,9 +241,12 @@ class Context(Loggable):
             bad_values (list): values to raise an error on
             timeout (float): time in seconds to wait for responses, wait
                 forever if None
+            event_timeout: maximum time in seconds to wait between each response
+                event, wait forever if None
         """
         future = self.when_matches_async(path, good_value, bad_values)
-        self.wait_all_futures(future, timeout)
+        self.wait_all_futures(
+            future, timeout=timeout, event_timeout=event_timeout)
 
     def when_matches_async(self, path, good_value, bad_values=None):
         """Wait for an attribute to become a given value
@@ -268,21 +278,23 @@ class Context(Loggable):
         when.set_future_context(future, weakref.proxy(self))
         return future
 
-    def wait_all_futures(self, futures, timeout=None):
+    def wait_all_futures(self, futures, timeout=None, event_timeout=None):
         """Services all futures until the list 'futures' are all done
         then returns. Calls relevant subscription callbacks as they
         come off the queue and raises an exception on abort
 
         Args:
-            futures (list): a `Future` or list of all futures that the caller
+            futures: a `Future` or list of all futures that the caller
                 wants to wait for
-            timeout (float): time in seconds to wait for responses, wait
+            timeout: maximum total time in seconds to wait for responses, wait
                 forever if None
+            event_timeout: maximum time in seconds to wait between each response
+                event, wait forever if None
         """
         if timeout is None:
-            until = None
+            end = None
         else:
-            until = time.time() + timeout
+            end = time.time() + timeout
 
         if not isinstance(futures, list):
             if futures:
@@ -300,6 +312,12 @@ class Context(Loggable):
                 filtered_futures.add(f)
 
         while filtered_futures:
+            if event_timeout is not None:
+                until = time.time() + event_timeout
+                if end is not None:
+                    until = min(until, end)
+            else:
+                until = end
             self._service_futures(filtered_futures, until)
 
     def sleep(self, seconds):

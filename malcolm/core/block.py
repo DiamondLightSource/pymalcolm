@@ -38,22 +38,25 @@ class Block(View):
             futures.append(future)
         return futures
 
-    def put_attribute_values(self, params, timeout=None):
+    def put_attribute_values(self, params, timeout=None, event_timeout=None):
         futures = self.put_attribute_values_async(params)
-        self._context.wait_all_futures(futures, timeout=timeout)
+        self._context.wait_all_futures(
+            futures, timeout=timeout, event_timeout=event_timeout)
 
     def when_value_matches(self, attr, good_value, bad_values=None,
-                           timeout=None):
+                           timeout=None, event_timeout=None):
         future = self.when_value_matches_async(attr, good_value, bad_values)
-        self._context.wait_all_futures(future, timeout)
+        self._context.wait_all_futures(
+            future, timeout=timeout, event_timeout=event_timeout)
 
     def when_value_matches_async(self, attr, good_value, bad_values=None):
         path = self._data.path + [attr, "value"]
         future = self._context.when_matches_async(path, good_value, bad_values)
         return future
 
-    def wait_all_futures(self, futures, timeout=None):
-        self._context.wait_all_futures(futures, timeout)
+    def wait_all_futures(self, futures, timeout=None, event_timeout=None):
+        self._context.wait_all_futures(
+            futures, timeout=timeout, event_timeout=event_timeout)
 
 
 def make_block_view(controller, context, data):
