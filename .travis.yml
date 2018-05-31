@@ -54,5 +54,6 @@ deploy:
 
   on:
     tags: true
-    # As we are doing a source dist, only deploy for one python
+    # As we are doing a source dist, only deploy for one python in matrix
     python: "3.6"
+    condition: $PYMALCOLM_USE_COTHREAD = YES
