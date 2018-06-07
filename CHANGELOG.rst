@@ -11,6 +11,14 @@ Changed:
 
 - Nothing yet
 
+`2-3-1`_ - 2018-06-07
+---------------------
+
+Fixed:
+
+- Graylog config for DLS logging to point to graylog2
+
+
 `2-3`_ - 2018-05-31
 -------------------
 
@@ -94,7 +102,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-3...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-3-1...HEAD
+.. _2-3-1: https://github.com/dls-controls/pymalcolm/compare/2-3...2-3-1
 .. _2-3: https://github.com/dls-controls/pymalcolm/compare/2-2...2-3
 .. _2-2: https://github.com/dls-controls/pymalcolm/compare/2-1...2-2
 .. _2-1: https://github.com/dls-controls/pymalcolm/compare/2-0a6...2-1
