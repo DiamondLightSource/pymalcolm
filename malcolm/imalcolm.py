@@ -86,10 +86,10 @@ def make_process():
             # },
 
             "graylog_gelf": {
-                "class": "pygelf.GelfUdpHandler",
+                "class": "pygelf.GelfTcpHandler",
                 # Obviously a DLS-specific configuration: the graylog server
                 # address and port
-                "host": "cs04r-sc-serv-14.diamond.ac.uk",
+                "host": "graylog2.diamond.ac.uk",
                 "port": 12202,
                 "debug": True,
                 "level": "DEBUG",
