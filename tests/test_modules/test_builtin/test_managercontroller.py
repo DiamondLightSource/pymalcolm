@@ -70,6 +70,10 @@ class TestManagerController(unittest.TestCase):
         assert self.c.layout.value.mri == ["childBlock"]
         assert self.c.layout.value.presentation == [""]
         assert self.c.layout.value.visible == [True]
+        assert self.c.layout.meta.elements["name"].writeable is False
+        assert self.c.layout.meta.elements["mri"].writeable is False
+        assert self.c.layout.meta.elements["visible"].writeable is True
+        assert self.c.layout.meta.elements["presentation"].writeable is True
         assert self.c.design.value == ""
         assert self.c.exports.value.source == []
         assert self.c.exports.meta.elements["source"].choices == \

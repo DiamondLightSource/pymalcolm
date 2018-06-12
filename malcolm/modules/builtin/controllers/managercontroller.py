@@ -76,7 +76,8 @@ class ManagerController(StatefulController):
             PartExportableInfo, self.update_exportable)
         # Create a layout table attribute for setting block positions
         self.layout = TableMeta.from_table(
-            LayoutTable, "Layout of child blocks", Widget.FLOWGRAPH
+            LayoutTable, "Layout of child blocks", Widget.FLOWGRAPH,
+            writeable=["visible", "presentation"]
         ).create_attribute_model()
         self.set_writeable_in(self.layout, ss.READY)
         self.field_registry.add_attribute_model(
@@ -90,7 +91,8 @@ class ManagerController(StatefulController):
         self.set_writeable_in(self.design, ss.READY)
         # Create an export table for mirroring exported fields
         self.exports = TableMeta.from_table(
-            ExportTable, "Exported fields of child blocks"
+            ExportTable, "Exported fields of child blocks",
+            writeable=list(ExportTable.call_types)
         ).create_attribute_model()
         # Overwrite the sources meta to be a ChoiceArrayMeta
         self.exports.meta.elements["source"] = ChoiceArrayMeta(
