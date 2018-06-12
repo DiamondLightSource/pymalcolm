@@ -20,7 +20,6 @@ class TestAttribute(unittest.TestCase):
     def test_init(self):
         self.assertIsInstance(self.o, Attribute)
         assert hasattr(self.o, "meta")
-        assert hasattr(self.o, "subscribe_meta")
         assert hasattr(self.o, "value")
         assert hasattr(self.o, "subscribe_value")
 
@@ -119,13 +118,9 @@ class TestView(unittest.TestCase):
 
     def test_init(self):
         assert hasattr(self.o, "description")
-        assert hasattr(self.o, "subscribe_description")
         assert hasattr(self.o, "tags")
-        assert hasattr(self.o, "subscribe_tags")
         assert hasattr(self.o, "writeable")
-        assert hasattr(self.o, "subscribe_writeable")
         assert hasattr(self.o, "label")
-        assert hasattr(self.o, "subscribe_label")
 
     def test_get_view(self):
         v = self.o.description
@@ -137,11 +132,3 @@ class TestView(unittest.TestCase):
         data2 = {"a": 2}
         o2 = make_view(self.controller, self.context, data2)
         assert o2 == data2
-
-    def test_subscribe_view(self):
-        cb = Mock()
-        f = self.o.subscribe_label(cb)
-        self.context.subscribe.assert_called_once_with(
-            ["block", "meta", "label"], cb)
-        assert f == self.context.subscribe.return_value
-

@@ -23,9 +23,6 @@ class View(object):
         object.__setattr__(self, "_controller", controller)
         object.__setattr__(self, "_context", context)
         object.__setattr__(self, "_data", data)
-        for endpoint in data:
-            # Add _subscribe methods for each endpoint
-            self._make_subscribe_method(endpoint)
 
     def __iter__(self):
         return iter(self._data)
@@ -41,14 +38,6 @@ class View(object):
 
     def __setattr__(self, name, value):
         raise NameError("Cannot set attribute %s on view" % name)
-
-    def _make_subscribe_method(self, endpoint):
-        # Make subscribe_endpoint method
-        def subscribe_child(callback, *args):
-            return self._context.subscribe(
-                self._data.path + [endpoint], callback, *args)
-
-        object.__setattr__(self, "subscribe_%s" % endpoint, subscribe_child)
 
 
 def _make_get_property(cls, endpoint):
@@ -93,6 +82,10 @@ class Attribute(View):
     def put_value_async(self, value):
         fs = self._context.put_async(self._data.path + ["value"], value)
         return fs
+
+    def subscribe_value(self, callback, *args):
+        return self._context.subscribe(
+            self._data.path + ["value"], callback, *args)
 
     @property
     def alarm(self):
