@@ -28,4 +28,3 @@
     name: TRAJ
     mri: $(mri_prefix):TRAJ
     initial_min_turnaround: $(initial_min_turnaround)
-

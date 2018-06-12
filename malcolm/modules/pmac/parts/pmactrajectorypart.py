@@ -140,11 +140,9 @@ class PmacTrajectoryPart(ChildPart):
         # back to duration
         duration = 2 * float(micros) / 1e6
         if duration != generator.duration:
-            new_generator = CompoundGenerator(
-                generators=generator.generators,
-                excluders=generator.excluders,
-                mutators=generator.mutators,
-                duration=duration)
+            serialized = generator.to_dict()
+            serialized["duration"] = duration
+            new_generator = CompoundGenerator.from_dict(serialized)
             return scanning.infos.ParameterTweakInfo("generator", new_generator)
 
     # Allow CamelCase as arguments will be serialized
