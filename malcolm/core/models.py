@@ -832,11 +832,6 @@ class MapMeta(Model):
         self.elements = self.set_elements(elements if elements else {})
         self.required = self.set_required(required)
 
-    def set_writeable(self, writeable):
-        # type: (AWriteable) -> None
-        for v in self.elements.values():
-            v.set_writeable(writeable)
-
     def set_elements(self, elements):
         # type: (AElements) -> AElements
         deserialized = OrderedDict()
@@ -884,11 +879,6 @@ class MethodModel(Meta):
         self.returns = self.set_returns(returns if returns else MapMeta())
         self.defaults = self.set_defaults(defaults if defaults else {})
         super(MethodModel, self).__init__(description, tags, writeable, label)
-
-    def set_writeable(self, writeable):
-        # type: (AWriteable) -> AWriteable
-        self.takes.set_writeable(writeable)
-        return super(MethodModel, self).set_writeable(writeable)
 
     def set_takes(self, takes):
         # type: (ATakes) -> ATakes
