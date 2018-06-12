@@ -71,6 +71,11 @@ class TestManagerController(unittest.TestCase):
         assert self.c.layout.value.x == [0.0]
         assert self.c.layout.value.y == [0.0]
         assert self.c.layout.value.visible == [True]
+        assert self.c.layout.meta.elements["name"].writeable is False
+        assert self.c.layout.meta.elements["mri"].writeable is False
+        assert self.c.layout.meta.elements["x"].writeable is True
+        assert self.c.layout.meta.elements["y"].writeable is True
+        assert self.c.layout.meta.elements["visible"].writeable is True
         assert self.c.design.value == ""
         assert self.c.exports.value.source == []
         assert self.c.exports.meta.elements["source"].choices == \

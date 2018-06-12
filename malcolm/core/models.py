@@ -743,12 +743,6 @@ class TableMeta(VMeta):
             assert not extra, "Supplied Table has extra fields %s" % (extra,)
         self.table_cls = table_cls
 
-    def set_writeable(self, writeable):
-        # type: (AWriteable) -> AWriteable
-        for v in self.elements.values():
-            v.set_writeable(writeable)
-        return super(TableMeta, self).set_writeable(writeable)
-
     def validate(self, value):
         if value is None:
             # Create an empty table
@@ -780,14 +774,23 @@ class TableMeta(VMeta):
         return Widget.TABLE
 
     @classmethod
-    def from_table(cls, table_cls, description, widget=None, writeable=False):
-        # type: (Type[Table], str, Widget, bool) -> TableMeta
+    def from_table(cls, table_cls, description, widget=None, writeable=()):
+        """Create a TableMeta object, using a Table subclass as the spec
+
+        Args:
+            table_cls: The Table class to read __init__ args from
+            description: The description of the created Meta
+            widget: The widget of the created Meta
+            writeable: A list of the writeable field names. If there are any
+                writeable fields then the whole Meta is writeable
+            """
+        # type: (Type[Table], str, Widget, List[str]) -> TableMeta
         elements = OrderedDict()
         for k, ct in table_cls.call_types.items():
             subclass = cls.lookup_annotype_converter(ct)
-            elements[k] = subclass.from_annotype(ct, writeable=writeable)
-        ret = cls(
-            description=description, elements=elements, writeable=writeable)
+            elements[k] = subclass.from_annotype(ct, writeable=k in writeable)
+        ret = cls(description=description, elements=elements,
+                  writeable=bool(writeable))
         if widget is None:
             widget = ret.default_widget()
         ret.set_tags([widget.tag()])
