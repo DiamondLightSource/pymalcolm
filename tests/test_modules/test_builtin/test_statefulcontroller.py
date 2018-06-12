@@ -96,6 +96,8 @@ class TestStatefulController(unittest.TestCase):
         self.start_process()
         assert list(self.b) == ['meta', 'health', 'state', 'disable', 'reset']
         assert self.b.state.value == "Ready"
+        assert self.b.disable.writeable is True
+        assert self.b.reset.writeable is False
 
     def test_reset_fails_from_ready(self):
         self.start_process()

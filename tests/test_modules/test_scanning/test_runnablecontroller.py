@@ -173,9 +173,17 @@ class TestRunnableController(unittest.TestCase):
             generator=compound, axesToMove=['x'], exceptionStep=exception)
 
     def test_configure_run(self):
+        assert self.b.configure.writeable is True
+        assert self.b.configure.takes.elements["generator"].writeable is True
+        assert self.b.validate.takes.elements["generator"].writeable is True
+        assert self.b.validate.returns.elements["generator"].writeable is False
         self.prepare_half_run()
         self.checkSteps(2, 0, 6)
         self.checkState(self.ss.ARMED)
+        assert self.b.configure.writeable is False
+        assert self.b.configure.takes.elements["generator"].writeable is True
+        assert self.b.validate.takes.elements["generator"].writeable is True
+        assert self.b.validate.returns.elements["generator"].writeable is False
 
         self.b.run()
         self.checkState(self.ss.ARMED)
