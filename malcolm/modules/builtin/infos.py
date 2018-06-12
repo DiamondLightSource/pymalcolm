@@ -78,16 +78,14 @@ class LayoutInfo(Info):
 
     Args:
         mri: Malcolm full name of child block
-        x: X Coordinate of child block
-        y: Y Coordinate of child block
         visible: Whether child block is visible
+        presentation: GUI presentation information for child block
     """
-    def __init__(self, mri, x, y, visible):
-        # type: (str, float, float, bool) -> None
+    def __init__(self, mri, visible, presentation):
+        # type: (str, bool, str) -> None
         self.mri = mri
-        self.x = x
-        self.y = y
         self.visible = visible
+        self.presentation = presentation
 
 
 class PartExportableInfo(Info):

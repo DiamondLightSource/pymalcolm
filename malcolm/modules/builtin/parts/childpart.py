@@ -41,9 +41,8 @@ class ChildPart(Part):
         super(ChildPart, self).__init__(name)
         self.stateful = stateful
         self.mri = mri
-        self.x = 0.0  # type: float
-        self.y = 0.0  # type: float
         self.visible = initial_visibility  # type: bool
+        self.presentation = ""  # type: str
         # {part_name: visible} saying whether part_name is visible
         self.part_visibility = {}  # type: Dict[str, bool]
         # {attr_name: attr_value} of last saved/loaded structure
@@ -113,9 +112,8 @@ class ChildPart(Part):
             if name == self.name:
                 if self.visible and not visible:
                     self.sever_inports(context, ports)
-                self.x = layout.x[i]
-                self.y = layout.y[i]
                 self.visible = visible
+                self.presentation = layout.presentation[i]
             else:
                 was_visible = self.part_visibility.get(name, False)
                 if was_visible and not visible:
@@ -129,7 +127,7 @@ class ChildPart(Part):
         if self.visible is None:
             self.visible = self.part_visibility.get(self.name, False)
         ret = LayoutInfo(
-            mri=self.mri, x=self.x, y=self.y, visible=self.visible)
+            mri=self.mri, visible=self.visible, presentation=self.presentation)
         return [ret]
 
     @add_call_types

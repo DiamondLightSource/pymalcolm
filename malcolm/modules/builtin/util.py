@@ -45,27 +45,28 @@ with Anno("Names of the layout parts"):
     ANameArray = Array[str]
 with Anno("Malcolm full names of child blocks"):
     AMriArray = Array[str]
-with Anno("X Coordinates of child blocks"):
-    AXArray = Array[float]
-with Anno("Y Coordinates of child blocks"):
-    AYArray = Array[float]
 with Anno("Whether child blocks are visible"):
     AVisibleArray = Array[bool]
+with Anno("Presentation information for how the GUI should draw the block"):
+    APresentationArray = Array[str]
 UNameArray = Union[ANameArray, Sequence[str]]
 UMriArray = Union[AMriArray, Sequence[str]]
-UXArray = Union[AXArray, Sequence[float]]
-UYArray = Union[AYArray, Sequence[float]]
 UVisibleArray = Union[AVisibleArray, Sequence[bool]]
+UPresentationArray = Union[APresentationArray, Sequence[str]]
 
 
 class LayoutTable(Table):
-    def __init__(self, name, mri, x, y, visible):
-        # type: (UNameArray, UMriArray, UXArray, UYArray, UVisibleArray) -> None
+    def __init__(self,
+                 name,  # type: UNameArray
+                 mri,  # type: UMriArray
+                 visible,  # type: UVisibleArray
+                 presentation  # type: UPresentationArray
+                 ):
+        # type: () -> None
         self.name = ANameArray(name)
         self.mri = AMriArray(mri)
-        self.x = AXArray(x)
-        self.y = AYArray(y)
         self.visible = AVisibleArray(visible)
+        self.presentation = APresentationArray(presentation)
 
 
 with Anno("Name of the block.field to export"):

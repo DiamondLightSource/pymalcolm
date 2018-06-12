@@ -7,7 +7,7 @@ from malcolm.modules.builtin.controllers import StatefulController, \
     ManagerController
 from malcolm.modules.builtin.util import ManagerStates, LayoutTable, ExportTable
 from malcolm.core import Process, Part, Table, Context, PartRegistrar, \
-    StringMeta, config_tag, Widget
+    StringMeta, config_tag, Widget, json_decode, json_encode
 from malcolm.modules.builtin.parts import ChildPart
 
 
@@ -68,8 +68,7 @@ class TestManagerController(unittest.TestCase):
     def test_init(self):
         assert self.c.layout.value.name == ["part2"]
         assert self.c.layout.value.mri == ["childBlock"]
-        assert self.c.layout.value.x == [0.0]
-        assert self.c.layout.value.y == [0.0]
+        assert self.c.layout.value.presentation == [""]
         assert self.c.layout.value.visible == [True]
         assert self.c.design.value == ""
         assert self.c.exports.value.source == []
@@ -80,15 +79,14 @@ class TestManagerController(unittest.TestCase):
         assert self.c.modified.value is False
         assert self.c.modified.alarm.message == ""
 
-    def check_expected_save(self, x=0.0, y=0.0, visible="true",
+    def check_expected_save(self, visible="true", presentation='""',
                             attr="defaultv"):
         expected = [x.strip() for x in ("""{
           "attributes": {
              "layout": {
                "part2": {
-                 "x": %s,
-                 "y": %s,
-                 "visible": %s
+                 "visible": %s,
+                 "presentation": %s  
                }
              },
              "exports": {},
@@ -99,7 +97,7 @@ class TestManagerController(unittest.TestCase):
                "attr": "%s"
              }
           }
-        }""" % (x, y, visible, attr)).splitlines()]
+        }""" % (visible, presentation, attr)).splitlines()]
         with open("/tmp/mainBlock/testSaveLayout.json") as f:
             actual = [x.strip() for x in f.readlines()]
         assert actual == expected
@@ -133,22 +131,23 @@ class TestManagerController(unittest.TestCase):
         new_layout = dict(
             name=["part2"],
             mri=["anything"],
-            x=[10],
-            y=[20],
+            presentation=['{"x": 10.0, "y": 20.0}'],
             visible=[True])
         self.b.layout.put_value(new_layout)
 
     def test_move_child_block_dict(self):
-        assert self.b.layout.value.x == [0]
+        assert self.b.layout.value.presentation == [""]
         self.move_child_block()
-        assert self.b.layout.value.x == [10]
+        assert json_decode(self.b.layout.value.presentation[0])["x"] == 10
+        self.b.save(design='testSaveLayout')
+        self.check_expected_save("true", '{\n"x": 10.0,\n"y": 20.0\n}')
 
     def test_set_and_load_layout(self):
         new_layout = LayoutTable(
-            name=["part2"], mri=["anything"], x=[10], y=[20], visible=[False])
+            name=["part2"], mri=["anything"], visible=[False],
+            presentation=[""])
         self.c.set_layout(new_layout)
-        assert self.c.parts['part2'].x == 10
-        assert self.c.parts['part2'].y == 20
+        assert self.c.parts['part2'].presentation == ""
         assert self.c.parts['part2'].visible == False
         assert self.c.modified.value == True
         assert self.c.modified.alarm.message == "layout changed"
@@ -156,10 +155,10 @@ class TestManagerController(unittest.TestCase):
         # save the layout, modify and restore it
         self.b.save(design='testSaveLayout')
         assert self.c.modified.value is False
-        self.check_expected_save(10.0, 20.0, "false")
-        self.c.parts['part2'].x = 30
+        self.check_expected_save("false")
+        self.c.parts['part2'].presentation = "blah"
         self.c.set_design('testSaveLayout')
-        assert self.c.parts['part2'].x == 10
+        assert self.c.parts['part2'].presentation == ""
 
     def test_set_export_parts(self):
         context = Context(self.p)

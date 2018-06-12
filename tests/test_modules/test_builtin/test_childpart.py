@@ -104,18 +104,15 @@ class TestChildPart(unittest.TestCase):
         new_layout = LayoutTable(
             name=["partchild1", "partchild2", "partchild3"],
             mri=["part1", "part2", "part3"],
-            x=[10, 11, 12],
-            y=[20, 21, 22],
-            visible=[True, True, True])
+            visible=[True, True, True],
+            presentation=["", '{"x": 11}', '{"x": 12, "y": 22}']
+        )
         b.layout.put_value(new_layout)
-        assert self.c.parts['partchild1'].x == 10
-        assert self.c.parts['partchild1'].y == 20
+        assert self.c.parts['partchild1'].presentation == ""
         assert self.c.parts['partchild1'].visible == True
-        assert self.c.parts['partchild2'].x == 11
-        assert self.c.parts['partchild2'].y == 21
+        assert self.c.parts['partchild2'].presentation == '{"x": 11}'
         assert self.c.parts['partchild2'].visible == True
-        assert self.c.parts['partchild3'].x == 12
-        assert self.c.parts['partchild3'].y == 22
+        assert self.c.parts['partchild3'].presentation == '{"x": 12, "y": 22}'
         assert self.c.parts['partchild3'].visible == True
 
         new_layout.visible = [True, False, True]
@@ -129,7 +126,7 @@ class TestChildPart(unittest.TestCase):
         b1, b2, b3 = (self.c1.make_view(), self.c2.make_view(),
                       self.c3.make_view())
         new_layout = dict(
-            name=["partchild1"], mri=[""], x=[0], y=[0], visible=[False])
+            name=["partchild1"], mri=[""], presentation=[""], visible=[False])
         b.layout.put_value(new_layout)
         assert b1.inportConnector.value == ''
         assert b2.inportConnector.value == ''

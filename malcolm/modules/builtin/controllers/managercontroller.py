@@ -4,7 +4,7 @@ import subprocess
 import numpy as np
 from annotypes import Anno, add_call_types, TYPE_CHECKING
 
-from malcolm.compat import OrderedDict
+from malcolm.compat import OrderedDict, str_
 from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
     deserialize_object, Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
     AlarmStatus, Part, BooleanMeta, get_config_tag, Widget, ChoiceArrayMeta, \
@@ -133,7 +133,7 @@ class ManagerController(StatefulController):
             # This will trigger all parts to report their layout, making sure
             # the layout table has a valid value. This will also call
             # self._update_block_endpoints()
-            self.set_layout(LayoutTable([], [], [], [], []))
+            self.set_layout(LayoutTable([], [], [], []))
 
     def set_layout(self, value):
         """Set the layout table value. Called on attribute put"""
@@ -144,15 +144,14 @@ class ManagerController(StatefulController):
             for p, c in self.create_part_contexts(only_visible=False).items())
         with self.changes_squashed:
             layout_parts = LayoutInfo.filter_parts(part_info)
-            name, mri, x, y, visible = [], [], [], [], []
+            name, mri, visible, presentation = [], [], [], []
             for part_name, layout_infos in layout_parts.items():
                 for layout_info in layout_infos:
                     name.append(part_name)
                     mri.append(layout_info.mri)
-                    x.append(layout_info.x)
-                    y.append(layout_info.y)
                     visible.append(layout_info.visible)
-            layout_table = LayoutTable(name, mri, x, y, visible)
+                    presentation.append(layout_info.presentation)
+            layout_table = LayoutTable(name, mri, visible, presentation)
             try:
                 # Compare the Array seq to get at the numpy array
                 np.testing.assert_equal(
@@ -391,11 +390,14 @@ class ManagerController(StatefulController):
         attributes = structure.setdefault("attributes", OrderedDict())
         # Add the layout table
         layout = attributes.setdefault("layout", OrderedDict())
-        for name, mri, x, y, visible in self.layout.value.rows():
+        for name, mri, visible, presentation in self.layout.value.rows():
             layout_structure = OrderedDict()
-            layout_structure["x"] = x
-            layout_structure["y"] = y
             layout_structure["visible"] = visible
+            try:
+                presentation = json_decode(presentation)
+            except ValueError:
+                pass
+            layout_structure["presentation"] = presentation
             layout[name] = layout_structure
         # Add the exports table
         exports = attributes.setdefault("exports", OrderedDict())
@@ -468,14 +470,18 @@ class ManagerController(StatefulController):
         attributes = structure.get("attributes", structure)
         children = structure.get("children", structure)
         # Set the layout table
-        name, mri, x, y, visible = [], [], [], [], []
+        name, mri, visible, presentation = [], [], [], []
         for part_name, d in attributes.get("layout", {}).items():
             name.append(part_name)
             mri.append("")
-            x.append(d["x"])
-            y.append(d["y"])
             visible.append(d["visible"])
-        self.set_layout(LayoutTable(name, mri, x, y, visible))
+            # Presentation in the LayoutTable is a string, but it might
+            # be an object in the file
+            src_presentation = d.get("presentation", "")
+            if not isinstance(src_presentation, str_):
+                src_presentation = json_encode(src_presentation)
+            presentation.append(src_presentation)
+        self.set_layout(LayoutTable(name, mri, visible, presentation))
         # Set the exports table
         source, export = [], []
         for source_name, export_name in attributes.get("exports", {}).items():
