@@ -37,6 +37,10 @@ class Model(Serializable):
             path (list): The absolute path to get to this object
         """
         # type: (Union[Notifier, DummyNotifier], List[str]) -> None
+        # This function should either change from the DummyNotifier or to
+        # the DummyNotifier, never between two valid notifiers
+        assert self.notifier is Model.notifier or notifier is Model.notifier, \
+            "Already have a notifier %s path %s" % (self.notifier, self.path)
         self.notifier = notifier
         self.path = path
         # Tell all our children too

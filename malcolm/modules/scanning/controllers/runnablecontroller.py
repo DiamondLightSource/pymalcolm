@@ -4,6 +4,7 @@ from scanpointgenerator import CompoundGenerator
 from malcolm.core import AbortedError, MethodModel, Queue, Context, \
     TimeoutError, AMri, NumberMeta, Widget, Part, ABORT_TIMEOUT
 from malcolm.compat import OrderedDict
+from malcolm.core.models import MapMeta
 from malcolm.modules.builtin.controllers import ManagerController, \
     AConfigDir, AInitialDesign, ADescription, AUseCothread, AUseGit
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
@@ -189,9 +190,15 @@ class RunnableController(ManagerController):
             # Update methods from the new metas
             self._block.configure.set_takes(configure_model.takes)
             self._block.configure.set_defaults(configure_model.defaults)
-            self._block.validate.set_takes(configure_model.takes)
-            self._block.validate.set_defaults(configure_model.defaults)
-            self._block.validate.set_returns(configure_model.takes)
+
+            # Now make a validate model with returns
+            validate_model = MethodModel.from_dict(configure_model.to_dict())
+            returns = MapMeta.from_dict(validate_model.takes.to_dict())
+            for v in returns.elements.values():
+                v.set_writeable(False)
+            self._block.validate.set_takes(validate_model.takes)
+            self._block.validate.set_defaults(validate_model.defaults)
+            self._block.validate.set_returns(returns)
 
     def update_block_endpoints(self):
         super(RunnableController, self).update_block_endpoints()
