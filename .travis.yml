@@ -15,12 +15,10 @@ env:
 addons:
   apt:
     packages:
-      - qt4-qmake
-      - libqt4-dev
       - libhdf5-serial-dev
 
 before_install:
-  - bash .travis-install-hdf5.sh
+  - bash ci/install-hdf5.sh
 
 cache:
   directories:
@@ -33,14 +31,11 @@ install:
   - env
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
-  - ci/install_pyqt.sh
-  - python -c "import PyQt4;print(PyQt4)"
   - pip install "setuptools>=36"
   - HDF5_DIR=$HDF5_ROOT pip install --no-binary=h5py h5py
   - pip install -r requirements/test.txt
   - pip install coveralls
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages  
-  - ldd ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages/PyQt4/*.so
   - ls -al ${VIRTUAL_ENV}/bin
   - python setup.py bdist_egg
   

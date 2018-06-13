@@ -3,7 +3,7 @@ from multiprocessing.pool import ThreadPool
 from annotypes import Anno, Array, TYPE_CHECKING, Union, Sequence
 
 from malcolm.compat import OrderedDict, maybe_import_cothread, \
-    get_pool_num_threads
+    get_pool_num_threads, str_
 from .context import Context
 from .controller import Controller
 from .errors import WrongThreadError
@@ -70,7 +70,7 @@ class Process(Loggable):
     """Hosts a number of Controllers and provides spawn capabilities"""
 
     def __init__(self, name):
-        # type: (str) -> None
+        # type: (str_) -> None
         self.set_logger(process_name=name)
         self.name = name
         self._cothread = maybe_import_cothread()
