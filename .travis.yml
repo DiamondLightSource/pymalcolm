@@ -6,9 +6,6 @@ python:
   - "3.6"
 
 env:
-  global:
-    - HDF5_ROOT=$HOME/hdf5-1.10.2
-  matrix:
     - PYMALCOLM_USE_COTHREAD=YES
     - PYMALCOLM_USE_COTHREAD=NO
 
@@ -17,13 +14,9 @@ addons:
     packages:
       - libhdf5-serial-dev
 
-before_install:
-  - bash ci/install-hdf5.sh
-
 cache:
   directories:
     - $HOME/.cache/pip
-    - $HOME/hdf5-1.10.2
     - ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
     - ${VIRTUAL_ENV}/bin
 
@@ -32,7 +25,6 @@ install:
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
   - pip install "setuptools>=36"
-  - HDF5_DIR=$HDF5_ROOT pip install -v --no-binary=h5py h5py
   - pip install -r requirements/test.txt
   - pip install coveralls
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages  
