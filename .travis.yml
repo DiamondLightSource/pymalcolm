@@ -33,7 +33,7 @@ install:
   - ls -al ${VIRTUAL_ENV}/bin
   - pip install "setuptools>=36"
   - HDF5_DIR=$HDF5_ROOT pip install --no-binary=h5py h5py
-  - pip install -r requirements/test.txt
+  - pip install -v -r requirements/test.txt
   - pip install coveralls
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages  
   - ls -al ${VIRTUAL_ENV}/bin
