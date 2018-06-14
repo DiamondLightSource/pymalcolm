@@ -129,9 +129,11 @@ class WebsocketServerPart(Part):
                 # Websocket is dead so we can clear the subscription key.
                 # Subsequent updates may come in before the unsubscribe, but
                 # ignore them as we can't do anything about it
-                subscribe = self._subscription_keys.pop((websocket.on_response, response.id), None)
+                subscribe = self._subscription_keys.pop(
+                    (websocket.on_response, response.id), None)
                 if subscribe:
-                    self.log.exception('WebSocket Error; unsubscribing from stale handle')
+                    self.log.info(
+                        'WebSocket Error; unsubscribing from stale handle')
                     unsubscribe = Unsubscribe(response.id)
                     unsubscribe.set_callback(websocket.on_response)
                     self.registrar.report(builtin.infos.RequestInfo(
