@@ -1,6 +1,7 @@
-<svg version="1.1" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
- <ellipse transform="matrix(-26.333,0,0,14.364,-1100.5,-442.73)" cx="-43.5" cy="35" rx="1.5" ry="2.75" d="m -42,35 c 0,1.518783 -0.671573,2.75 -1.5,2.75 -0.828427,0 -1.5,-1.231217 -1.5,-2.75 0,-1.518783 0.671573,-2.75 1.5,-2.75 0.828427,0 1.5,1.231217 1.5,2.75 z" fill="#e6e6e6" stroke="#000" stroke-width=".051418"/>
- <ellipse transform="matrix(-1.6667 0 0 .90909 -27.5 28.182)" cx="-43.5" cy="35" rx="1.5" ry="2.75" d="m -42,35 c 0,1.518783 -0.671573,2.75 -1.5,2.75 -0.828427,0 -1.5,-1.231217 -1.5,-2.75 0,-1.518783 0.671573,-2.75 1.5,-2.75 0.828427,0 1.5,1.231217 1.5,2.75 z"/>
- <ellipse transform="translate(0,50)" cx="180" rx="0" ry="0" stroke="#000"/>
- <path d="m45 30v30l15-10" fill="none" stroke="#000" stroke-width="1px"/>
+<svg version="1.1" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+ <ellipse transform="matrix(1 0 0 .99997 .013935 29.99)" cx="180" rx="0" ry="0" stroke="#000"/>
+ <path d="m80 15h-10v-10h-10v10h-10v-10h-10v10h-10v-10h-10v10h-10" fill="none" stroke="#000" stroke-linecap="square" stroke-width="1px"/>
+ <path d="m80 35h-10v-10h-15v10h-15v-10h-15v10h-15" fill="none" stroke="#000" stroke-linecap="square" stroke-width="1px"/>
+ <path d="m80 55h-70" fill="none" stroke="#000" stroke-linecap="square" stroke-width="1px"/>
+ <path d="m80 65h-2v10h-4v-10h-4v10h-4v-10h-4v10h-4m0 0v-10h-4v10h-4v-10h-4v10h-4v-10h-4v10h-4m0 0v-10h-4v10h-4v-10h-4v10h-4v-10h-4v10h-4" fill="none" stroke="#000" stroke-linecap="square" stroke-width="1px"/>
 </svg>

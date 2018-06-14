@@ -1,11 +1,11 @@
-<svg version="1.1" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+<svg version="1.1" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
  <path d="m50 30h-20" fill="none" stroke="#000" stroke-width="1px"/>
  <path d="m50 50h-20" fill="none" stroke="#000" stroke-width="1px"/>
  <path d="m50 70h-20" fill="none" stroke="#000" stroke-width="1px"/>
  <path d="m50 90h-20" fill="none" stroke="#000" stroke-width="1px"/>
  <path d="m50 110h-20" fill="none" stroke="#000" stroke-width="1px"/>
  <path d="m50 130h-20" fill="none" stroke="#000" stroke-width="1px"/>
- <rect transform="scale(-1,1)" x="-65" y="20" width="20" height="120" fill="#e6e6e6" stroke="#000"/>
+ <rect transform="scale(-1,1)" x="-65" y="21" width="20" height="118" fill="#e6e6e6" stroke="#000"/>
  <path d="m75 37h-17c-5 0-8 5-8 10v66c0 5 3 10 8 10h17" fill="#e6e6e6" fill-rule="evenodd" stroke="#000" stroke-width="1px"/>
  <path d="m75 37c-5 0-8 5-8 10v66c0 5 3 10 8 10 3 0 5-2 5-5v-76c0-3.001-2-5-5-5z" fill="#e6e6e6" fill-rule="evenodd" stroke="#000" stroke-width="1px"/>
  <ellipse transform="translate(0,90)" cx="70" cy="-10" rx="1.5" ry="2.75" d="m 71.5,-10 c 0,1.5187831 -0.671573,2.75 -1.5,2.75 -0.828427,0 -1.5,-1.2312169 -1.5,-2.75 0,-1.518783 0.671573,-2.75 1.5,-2.75 0.828427,0 1.5,1.231217 1.5,2.75 z"/>
