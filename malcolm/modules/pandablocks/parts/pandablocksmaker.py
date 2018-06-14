@@ -175,7 +175,9 @@ class PandABlocksMaker(object):
             inport = Port.BOOL
         else:
             inport = Port.INT32
-        meta = ChoiceMeta(field_data.description, field_data.labels, tags=[
+        labels = [x for x in field_data.labels if x in ("ZERO", "ONE")] + \
+            sorted(x for x in field_data.labels if x not in ("ZERO", "ONE"))
+        meta = ChoiceMeta(field_data.description, labels, tags=[
             group, inport.inport_tag("ZERO"), Widget.COMBO.tag()])
         self._make_field_part(field_name, meta, writeable=True)
         meta = make_meta(typ, "%s current value" % field_name,
