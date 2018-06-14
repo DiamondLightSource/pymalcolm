@@ -20,7 +20,7 @@ LUT_CONSTANTS = dict(
     A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
 
 # Time between polls for *CHANGES
-POLL_PERIOD = 1.0
+POLL_PERIOD = 0.1
 
 with Anno("Hostname of the box"):
     AHostname = str
