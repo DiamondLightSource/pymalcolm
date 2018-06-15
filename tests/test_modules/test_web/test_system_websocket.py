@@ -52,6 +52,34 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             value="Hello me"
         )
 
+    def test_blocks_delta(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Subscribe:1.0"
+        msg['id'] = 0
+        msg['path'] = (".", "blocks")
+        msg['delta'] = True
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Delta:1.0",
+            id=0,
+            changes=[[[], ["hello", "server"]]]
+        )
+
+    def test_blocks_update(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Subscribe:1.0"
+        msg['id'] = 0
+        msg['path'] = (".", "blocks")
+        msg['delta'] = False
+        self.server._loop.add_callback(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Update:1.0",
+            id=0,
+            value=["hello", "server"]
+        )
+
     def test_error_server_and_simple_client_badJSON(self):
         self.server._loop.add_callback(self.send_message, "I am JSON (but not a dict)")
         resp = self.result.get(timeout=2)

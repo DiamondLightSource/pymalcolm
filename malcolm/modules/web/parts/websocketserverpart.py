@@ -96,7 +96,7 @@ class WebsocketServerPart(Part):
                 raise FieldError("duplicate subscription ID on client")
             if request.path[0] == ".":
                 # special entries
-                assert request.path[1] == "blocks", \
+                assert len(request.path) == 2 and request.path[1] == "blocks", \
                     "Don't know how to subscribe to %s" % (request.path,)
                 self._notify_published(request)
             self._subscription_keys[request.generate_key()] = request
@@ -140,7 +140,10 @@ class WebsocketServerPart(Part):
                         unsubscribe, subscribe.path[0]))
 
     def _notify_published(self, request):
-        # type: (Request) -> None
+        # type: (Subscribe) -> None
         # called from any thread
-        cb, response = request.update_response(self._published)
+        if request.delta:
+            cb, response = request.delta_response([[[], self._published]])
+        else:
+            cb, response = request.update_response(self._published)
         cb(response)
