@@ -26,7 +26,7 @@ install:
   - ls -al ${VIRTUAL_ENV}/bin
   - pip install "setuptools>=36"
   - pip install -r requirements/test.txt
-  - pip install coveralls
+  - pip install codecov
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages  
   - ls -al ${VIRTUAL_ENV}/bin
   - python setup.py bdist_egg
@@ -37,7 +37,7 @@ script:
 
 # submit coverage
 after_script:
-  - coveralls
+  - codecov --token=0fc7b8ca-201c-4f0f-938b-ac26f79d26ed
 
 deploy:
   provider: pypi
