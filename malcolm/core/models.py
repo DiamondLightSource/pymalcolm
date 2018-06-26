@@ -10,7 +10,7 @@ from .alarm import Alarm
 from .notifier import DummyNotifier, Notifier
 from .serializable import Serializable, deserialize_object, camel_to_title
 from .table import Table
-from .tags import Widget
+from .tags import Widget, method_return_unpacked
 from .timestamp import TimeStamp
 
 if TYPE_CHECKING:
@@ -921,6 +921,7 @@ class MethodModel(Meta):
             else:
                 description = func.__doc__
         method = cls(description=description)
+        tags = []
         takes_elements = OrderedDict()
         defaults = OrderedDict()
         takes_required = []
@@ -943,6 +944,7 @@ class MethodModel(Meta):
             elif issubclass(return_type.typ, WithCallTypes):
                 call_types = return_type.typ.call_types
             else:
+                tags.append(method_return_unpacked())
                 call_types = {"return": return_type}
             for k, anno in call_types.items():
                 scls = VMeta.lookup_annotype_converter(anno)
@@ -952,6 +954,7 @@ class MethodModel(Meta):
             returns = MapMeta(
                 elements=returns_elements, required=returns_required)
             method.set_returns(returns)
+        method.set_tags(tags)
         return method
 
 

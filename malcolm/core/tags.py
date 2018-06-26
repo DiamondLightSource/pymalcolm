@@ -5,6 +5,17 @@ if TYPE_CHECKING:
     from typing import Sequence, Union
 
 
+def method_return_unpacked():
+    """This method has a single element returns, and when called will return
+    this single element unpacked rather than in a single element map
+
+    E.g.
+       hello.greet("me") -> "Hello me" not {"return": "Hello me"}
+    """
+    tag = "method:return:unpacked"
+    return tag
+
+
 def group_tag(group_name):
     # type: (str) -> str
     """Marks this field as belonging to a group"""

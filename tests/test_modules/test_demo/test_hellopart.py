@@ -22,3 +22,14 @@ class TestHelloPart(unittest.TestCase):
         expected = "Hello test_name"
         response = b.greet("test_name", 0)
         assert expected == response
+
+    def test_method_meta(self):
+        b = self.p.block_view("mri")
+        method = b.greet
+        assert list(method.to_dict()) == [
+            'typeid', 'takes', 'defaults', 'description', 'tags', 'writeable', 'label', 'returns']
+        assert method.defaults == dict(sleep=0.0)
+        assert list(method.takes["elements"]) == ["name", "sleep"]
+        assert list(method.returns["elements"]) == ["return"]
+        assert method.tags == ["method:return:unpacked"]
+        assert method.writeable
