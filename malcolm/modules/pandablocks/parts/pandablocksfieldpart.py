@@ -43,5 +43,6 @@ class PandABlocksFieldPart(Part):
         if isinstance(self.meta, BooleanMeta):
             value = int(value)
         self.client.set_field(self.block_name, self.field_name, value)
-        # self.attr.set_value(value)
+        # TODO: need to discard the next delta if it sends the same value
+        self.attr.set_value(value)
 
