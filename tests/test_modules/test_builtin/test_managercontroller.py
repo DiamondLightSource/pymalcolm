@@ -119,11 +119,12 @@ class TestManagerController(unittest.TestCase):
         c = Context(self.p)
         l = []
         c.subscribe(["mainBlock", "design", "meta"], l.append)
-        c.sleep(0)
+        # Wait for long enough for the other process to get a look in
+        c.sleep(0.1)
         assert len(l) == 1
         assert l.pop()["choices"] == [""]
-        self.c.save(design="testSaveLayout")
-        c.sleep(0)
+        b = c.block_view("mainBlock")
+        b.save(design="testSaveLayout")
         assert len(l) == 3
         assert l[0]["writeable"] == False
         assert l[1]["choices"] == ["", "testSaveLayout"]
