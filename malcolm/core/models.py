@@ -47,10 +47,10 @@ class Model(Serializable):
         for name, ct in self.call_types.items():
             if ct.is_mapping:
                 child = getattr(self, name)
-                if isinstance(ct.typ[1], Model) and child:
+                if issubclass(ct.typ[1], Model) and child:
                     for k, v in getattr(self, name).items():
                         v.set_notifier_path(notifier, self.path + [name, k])
-            elif isinstance(ct.typ, Model):
+            elif issubclass(ct.typ, Model):
                 assert not ct.is_array, \
                     "Can't deal with Arrays of Models %s" % ct
                 child = getattr(self, name)

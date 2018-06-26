@@ -1,3 +1,4 @@
+import shutil
 import unittest
 from mock import MagicMock, call
 import os
@@ -6,7 +7,7 @@ from malcolm.compat import OrderedDict
 from malcolm.modules.builtin.controllers import StatefulController, \
     ManagerController
 from malcolm.modules.builtin.util import ManagerStates, LayoutTable, ExportTable
-from malcolm.core import Process, Part, Table, Context, PartRegistrar, \
+from malcolm.core import Process, Part, Context, PartRegistrar, \
     StringMeta, config_tag, Widget
 from malcolm.modules.builtin.parts import ChildPart
 
@@ -51,6 +52,8 @@ class TestManagerController(unittest.TestCase):
         self.p.add_controller(self.c_child)
 
         # create a root block for the ManagerController block to reside in
+        if os.path.isdir("/tmp/mainBlock"):
+            shutil.rmtree("/tmp/mainBlock")
         self.c = ManagerController('mainBlock', config_dir="/tmp")
         self.c.add_part(MyPart("part1"))
         self.c.add_part(ChildPart("part2", mri="childBlock", initial_visibility=True))
@@ -111,7 +114,21 @@ class TestManagerController(unittest.TestCase):
 
     def test_save(self):
         self.c._run_git_cmd = MagicMock()
+        assert self.c.design.value == ""
+        assert self.c.design.meta.choices == [""]
+        c = Context(self.p)
+        l = []
+        c.subscribe(["mainBlock", "design", "meta"], l.append)
+        c.sleep(0)
+        assert len(l) == 1
+        assert l.pop()["choices"] == [""]
         self.c.save(design="testSaveLayout")
+        c.sleep(0)
+        assert len(l) == 3
+        assert l[0]["writeable"] == False
+        assert l[1]["choices"] == ["", "testSaveLayout"]
+        assert l[2]["writeable"] == True
+        assert self.c.design.meta.choices == ["", "testSaveLayout"]
         self.check_expected_save()
         assert self.c.state.value == "Ready"
         assert self.c.design.value == 'testSaveLayout'
