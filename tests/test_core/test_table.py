@@ -1,6 +1,7 @@
 import unittest
 from collections import OrderedDict
 
+import numpy
 from annotypes import Anno, Array
 
 from malcolm.core import Table
@@ -50,3 +51,10 @@ class TestTable(unittest.TestCase):
 
     def test_roundtrip(self):
         assert MyTable.from_dict(self.serialized).to_dict() == self.serialized
+
+    def test_equal(self):
+        numpy.testing.assert_equal(self.t.to_dict(), self.t.to_dict())
+
+    def test_not_equal(self):
+        t2 = MyTable(AA(["x", "y", "z"]), AB(numpy.arange(3) + 1)).to_dict()
+        numpy.testing.assert_equal(self.t.to_dict(), t2)

@@ -2,7 +2,9 @@ from collections import OrderedDict
 import unittest
 from mock import Mock
 
-from malcolm.core import Table, BooleanArrayMeta, NumberArrayMeta, TableMeta
+from malcolm.core import Table, BooleanArrayMeta, NumberArrayMeta, TableMeta, \
+    ChoiceArrayMeta
+from malcolm.modules.pandablocks.pandablocksclient import TableFieldData
 from malcolm.modules.pandablocks.parts.pandablockstablepart import \
     PandABlocksTablePart
 
@@ -11,10 +13,10 @@ class PandABoxTablePartTest(unittest.TestCase):
     def setUp(self):
         self.client = Mock()
         fields = OrderedDict()
-        fields["NREPEATS"] = (7, 0)
-        fields["INPUT_MASK"] = (32, 32)
-        fields["TRIGGER_MASK"] = (48, 48)
-        fields["TIME_PH_A"] = (95, 64)
+        fields["NREPEATS"] = TableFieldData(7, 0, "Num Repeats", None)
+        fields["SWITCH"] = TableFieldData(34, 32, "Choices", ["A", "b", "CC"])
+        fields["TRIGGER_MASK"] = TableFieldData(48, 48, "Trigger Mask", None)
+        fields["TIME_PH_A"] = TableFieldData(95, 64, "Time Phase A", None)
         self.client.get_table_fields.return_value = fields
         self.meta = TableMeta("Seq table", writeable=True)
         self.o = PandABlocksTablePart(
@@ -23,24 +25,29 @@ class PandABoxTablePartTest(unittest.TestCase):
 
     def test_init(self):
         assert list(self.meta.elements) == [
-            "nrepeats", "inputMask", "triggerMask", "timePhA"]
+            "nrepeats", "switch", "triggerMask", "timePhA"]
         self.assertIsInstance(self.meta.elements["nrepeats"], NumberArrayMeta)
         assert self.meta.elements["nrepeats"].dtype == "uint8"
         assert self.meta.elements["nrepeats"].tags == ["widget:textinput"]
-        self.assertIsInstance(self.meta.elements["inputMask"], BooleanArrayMeta)
-        assert self.meta.elements["inputMask"].tags == ["widget:checkbox"]
+        assert self.meta.elements["nrepeats"].description == "Num Repeats"
+        self.assertIsInstance(self.meta.elements["switch"], ChoiceArrayMeta)
+        assert self.meta.elements["switch"].tags == ["widget:combo"]
+        assert self.meta.elements["switch"].description == "Choices"
+        assert self.meta.elements["switch"].choices == ["A", "b", "CC"]
         self.assertIsInstance(self.meta.elements["triggerMask"],
                               BooleanArrayMeta)
         assert self.meta.elements["triggerMask"].tags == ["widget:checkbox"]
+        assert self.meta.elements["triggerMask"].description == "Trigger Mask"
         self.assertIsInstance(self.meta.elements["timePhA"], NumberArrayMeta)
         assert self.meta.elements["timePhA"].dtype == "uint32"
         assert self.meta.elements["timePhA"].tags == ["widget:textinput"]
+        assert self.meta.elements["timePhA"].description == "Time Phase A"
 
     def test_list_from_table(self):
         table = self.meta.table_cls.from_rows([
-            [32, True, True, 4294967295],
-            [0, True, False, 1],
-            [0, False, False, 0]
+            [32, "b", True, 4294967295],
+            [0, "b", False, 1],
+            [0, "A", False, 0]
         ])
         l = self.o.list_from_table(table)
         assert l == (
@@ -54,7 +61,7 @@ class PandABoxTablePartTest(unittest.TestCase):
              0, 0x0, 0]
         table = self.o.table_from_list(l)
         assert list(table.nrepeats) == [32, 0, 0]
-        assert list(table.inputMask) == [True, True, False]
+        assert list(table.switch) == ["b", "b", "A"]
         assert list(table.triggerMask) == [True, False, False]
         assert list(table.timePhA) == [4294967295, 1, 0]
 

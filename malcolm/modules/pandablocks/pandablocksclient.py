@@ -5,9 +5,18 @@ import logging
 log = logging.getLogger(__name__)
 
 
-BlockData = namedtuple("BlockData", "number,description,fields")
-FieldData = namedtuple("FieldData",
-                       "field_type,field_subtype,description,labels")
+BlockData = namedtuple(
+    "BlockData", "number,description,fields")
+FieldData = namedtuple(
+    "FieldData", "field_type,field_subtype,description,labels")
+TableFieldData = namedtuple(
+    "TableFieldData", "bits_hi,bits_lo,description,labels")
+
+
+def strip_ok(resp):
+    assert resp.startswith("OK ="), "Expected 'OK =val', got %r" % resp
+    value = resp[4:]
+    return value
 
 
 class PandABlocksClient(object):
@@ -198,7 +207,7 @@ class PandABlocksClient(object):
         # Create BlockData for each block
         for block_name in block_names:
             number = block_numbers[block_name]
-            description = self.recv(desc_queues[block_name])[4:]
+            description = strip_ok(self.recv(desc_queues[block_name]))
             fields = OrderedDict()
             blocks[block_name] = BlockData(number, description, fields)
 
@@ -246,7 +255,7 @@ class PandABlocksClient(object):
                     labels = self.recv(enum_queues[field_name + ".CAPTURE"])
                 else:
                     labels = []
-                description = self.recv(field_desc_queues[field_name])[4:]
+                description = strip_ok(self.recv(field_desc_queues[field_name]))
                 fields[field_name] = FieldData(
                     field_type, field_subtype, description, labels)
 
@@ -276,13 +285,29 @@ class PandABlocksClient(object):
 
     def get_table_fields(self, block, field):
         fields = OrderedDict()
+        enum_queues = {}
         for line in self.send_recv("%s.%s.FIELDS?\n" % (block, field)):
-            if not line.startswith("-"):
-                split = line.split()
-                bits_str = split[0]
-                name = split[1].strip()
-                bits = tuple(int(x) for x in bits_str.split(":"))
-                fields[name] = bits
+            split = line.split()
+            name = split[1].strip()
+            # Field is an enum, get its values
+            if len(split) > 2 and split[2] == "enum":
+                enum_queues[name] = self.send(
+                    "*ENUMS.%s.%s[].%s?\n" % (block, field, name))
+            fields[name] = split[0]
+
+        # Request description for each field
+        # TODO: reinstate this when the server supports numbered *DESC
+        # desc_queues = self.parameterized_send(
+        #    "*DESC.%s.%s[].%%s?\n" % (block, field), list(fields))
+        for name, bits_str in fields.items():
+            bits_hi, bits_lo = [int(x) for x in bits_str.split(":")]
+            #description = strip_ok(self.recv(desc_queues[name]))
+            description = name
+            if name in enum_queues:
+                labels = self.recv(enum_queues[name])
+            else:
+                labels = None
+            fields[name] = TableFieldData(bits_hi, bits_lo, description, labels)
         return fields
 
     def get_field(self, block, field):
@@ -292,9 +317,7 @@ class PandABlocksClient(object):
             raise ValueError("Error getting %s.%s: %s" % (
                 block, field, e))
         else:
-            assert resp.startswith("OK ="), "Expected 'OK =val', got %r" % resp
-            value = resp[4:]
-            return value
+            return strip_ok(resp)
 
     def set_field(self, block, field, value):
         try:

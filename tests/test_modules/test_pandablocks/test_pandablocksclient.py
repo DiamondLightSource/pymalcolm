@@ -142,19 +142,34 @@ class PandABoxControlTest(unittest.TestCase):
 """)
 
     def test_table_fields(self):
-        messages = """!31:0    REPEATS
+        messages = ["""!31:0    REPEATS
 !32:32   USE_INPA
-!64:54   STUFF
-!37:37   INPB
+!64:54  STUFF
+!38:37   INPB enum
 .
-"""
+""", """!None
+!First
+!Second
+.
+""", "OK =Repeats\n", "OK =Use\n", "OK =Stuff\n", "OK =Inp B\n"]
         self.start(messages)
         fields = self.c.get_table_fields("SEQ1", "TABLE")
         self.c.stop()
-        self.socket.send.assert_called_once_with("SEQ1.TABLE.FIELDS?\n")
+        assert self.socket.send.call_args_list == [
+            call("SEQ1.TABLE.FIELDS?\n"),
+            call("*ENUMS.SEQ1.TABLE[].INPB?\n"),
+#            call("*DESC.SEQ1.TABLE[].REPEATS?\n"),
+#            call("*DESC.SEQ1.TABLE[].USE_INPA?\n"),
+#            call("*DESC.SEQ1.TABLE[].STUFF?\n"),
+#            call("*DESC.SEQ1.TABLE[].INPB?\n"),
+        ]
         expected = OrderedDict()
-        expected["REPEATS"] = (31, 0)
-        expected["USE_INPA"] = (32, 32)
-        expected["STUFF"] = (64, 54)
-        expected["INPB"] = (37, 37)
+#        expected["REPEATS"] = (31, 0, "Repeats", None)
+#        expected["USE_INPA"] = (32, 32, "Use", None)
+#        expected["STUFF"] = (64, 54, "Stuff", None)
+#        expected["INPB"] = (38, 37, "Inp B", ["None", "First", "Second"])
+        expected["REPEATS"] = (31, 0, "REPEATS", None)
+        expected["USE_INPA"] = (32, 32, "USE_INPA", None)
+        expected["STUFF"] = (64, 54, "STUFF", None)
+        expected["INPB"] = (38, 37, "INPB", ["None", "First", "Second"])
         assert fields == expected
