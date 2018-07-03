@@ -54,7 +54,7 @@ class PandABlocksMaker(object):
         typ = field_data.field_type
         subtyp = field_data.field_subtype
 
-        if typ == "read":
+        if typ in ("read", "xadc"):
             writeable = False
         else:
             writeable = True
