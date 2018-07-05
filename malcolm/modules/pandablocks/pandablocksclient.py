@@ -296,13 +296,11 @@ class PandABlocksClient(object):
             fields[name] = split[0]
 
         # Request description for each field
-        # TODO: reinstate this when the server supports numbered *DESC
-        # desc_queues = self.parameterized_send(
-        #    "*DESC.%s.%s[].%%s?\n" % (block, field), list(fields))
+        desc_queues = self.parameterized_send(
+            "*DESC.%s.%s[].%%s?\n" % (block, field), list(fields))
         for name, bits_str in fields.items():
             bits_hi, bits_lo = [int(x) for x in bits_str.split(":")]
-            #description = strip_ok(self.recv(desc_queues[name]))
-            description = name
+            description = strip_ok(self.recv(desc_queues[name]))
             if name in enum_queues:
                 labels = self.recv(enum_queues[name])
             else:
