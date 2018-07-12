@@ -205,7 +205,8 @@ class PandABlocksClient(object):
         field_queues = self.parameterized_send("%s.*?\n", block_names)
 
         # Create BlockData for each block
-        for block_name in block_names:
+        # TODO: we sort here while server gives these in hash table order
+        for block_name in sorted(block_names):
             number = block_numbers[block_name]
             description = strip_ok(self.recv(desc_queues[block_name]))
             fields = OrderedDict()
