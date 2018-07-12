@@ -17,4 +17,4 @@
 
 - profiling.parts.ProfilingViewerPart:
 
-- web.parts.FileServerPart:
+- web.parts.GuiServerPart:

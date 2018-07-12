@@ -15,4 +15,4 @@
 
 - web.parts.WebsocketServerPart:
 
-- web.parts.FileServerPart:
+- web.parts.GuiServerPart:
