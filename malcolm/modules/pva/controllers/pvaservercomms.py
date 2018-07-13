@@ -76,14 +76,25 @@ class BlockHandler(object):
     def put(self, pv, op):
         # type: (SharedPV, ServerOperation) -> None
         path = [self.controller.mri]
-        value = op.value().todict()
+        changed_set = op.value().changedSet()
+        assert len(changed_set) == 1, \
+            "Can only do a Put to a single field, got %s" % list(changed_set)
+        changed = list(changed_set)[0]
         if self.field is not None:
             # Only accept a Put to "value"
+            assert changed == "value", \
+                "Can only put to value of %s.%s, not %s" % (
+                    self.controller.mri, self.field, changed)
             path += [self.field, "value"]
+            value = op.value().value
         else:
             # Get the path and string "value" from the put value
-            for _ in range(2):
-                value, path = pop_dict_wrapper(value, path)
+            split = changed.split(".")
+            assert len(split) == 2 and split[1] == "value", \
+                "Can only put to value of %s.%s, not %s" % (
+                    self.controller.mri, split[0], split[1])
+            path += list(split)
+            value = op.value()[split[0]].value
         put = Put(path=path, value=value)
 
         def handle_put_response(response):
@@ -130,6 +141,7 @@ class BlockHandler(object):
     def _update_value(self, delta):
         # type: (Delta) -> None
         # Called with the lock taken
+        self.value.unmark()
         for change in delta.changes:
             if len(change) == 1 or change[0] == []:
                 # This is a delete or update of the root, can't do this in pva,

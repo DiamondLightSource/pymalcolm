@@ -361,9 +361,12 @@ class SystemClientServer(unittest.TestCase):
     # Equivalent to:
     #   pvget TESTCOUNTER -r meta.fields
     def testGetSubfield(self):
-        request = convert_dict_to_value(dict(meta=dict(fields={})))
-        counter = self.ctxt.get("TESTCOUNTER", request)
-        self.assertEqual(counter.getID(), "structure")
+        counter = self.ctxt.get("TESTCOUNTER", "meta.fields")
+        if PVAPY:
+            # PvaPy clears the typeid for a substructure
+            self.assertEqual(counter.getID(), "structure")
+        else:
+            self.assertEqual(counter.getID(), "malcolm:core/Block:1.0")
         self.assertEqual(len(counter.items()), 1)
         self.assertEqual(len(counter.meta.items()), 1)
         self.assertEqual(len(counter.meta.fields), 4)
@@ -373,17 +376,16 @@ class SystemClientServer(unittest.TestCase):
     # Equivalent to:
     #   pvget TESTCOUNTER -r junk.thing
     def testGetBadSubfield(self):
-        request = convert_dict_to_value(dict(junk=dict(thing={})))
         if PVAPY:
             # Currently only returns an error structure as pvaPy can't raise
             # exceptions
-            error = self.ctxt.get("TESTCOUNTER", request)
+            error = self.ctxt.get("TESTCOUNTER", "junk.thing")
             self.assertEqual(error.getID(), "malcolm:core/Error:1.0")
             self.assertEqual(error.message, "UnexpectedError: Object ['TESTCOUNTER'] of type 'malcolm:core/Block:1.0' has no attribute 'junk'")
         else:
             # TODO: What is the right error to get here?
             with self.assertRaises(KeyError):
-                self.ctxt.get("TESTCOUNTER", request)
+                self.ctxt.get("TESTCOUNTER", "junk.thing")
 
     # Equivalent to:
     #   pvget BADCHANNEL -r ""
@@ -394,8 +396,7 @@ class SystemClientServer(unittest.TestCase):
     # Equivalent to:
     #   pvget TESTCOUNTER.meta -r fields
     def testGetDottedSubfield(self):
-        request = convert_dict_to_value(dict(fields={}))
-        meta = self.ctxt.get("TESTCOUNTER.meta", request)
+        meta = self.ctxt.get("TESTCOUNTER.meta", "fields")
         self.assertEqual(meta.getID(), "structure")
         self.assertEqual(len(meta.items()), 1)
         self.assertEqual(len(meta.fields), 4)
@@ -431,21 +432,23 @@ class SystemClientServer(unittest.TestCase):
     # Should be equivalent to (except pvput doesn't do the right thing):
     #   pvput TESTCOUNTER -r "counter.value" 5
     def testPut(self):
-        request = convert_dict_to_value(dict(counter=dict(value={})))
         self.assertCounter(0)
-        self.ctxt.put("TESTCOUNTER", 5, request)
+        def put_value_5(V):
+            V.counter.value = 5
+        self.ctxt.put("TESTCOUNTER", put_value_5, "counter.value")
         self.assertCounter(5)
-        self.ctxt.put("TESTCOUNTER", 0, request)
+        def put_value_0(V):
+            V.counter.value = 0
+        self.ctxt.put("TESTCOUNTER", put_value_0, "counter.value")
         self.assertCounter(0)
 
     # Equivalent to:
     #   pvput TESTCOUNTER.counter 5
     def testPutDotted(self):
         self.assertCounter(0)
-        # TODO: pvput defaults the request to "value", should p4p do the same?
-        self.ctxt.put("TESTCOUNTER.counter", 5, convert_dict_to_value(dict(value={})))
+        self.ctxt.put("TESTCOUNTER.counter", 5, "value")
         self.assertCounter(5)
-        self.ctxt.put("TESTCOUNTER.counter", dict(value=0))
+        self.ctxt.put("TESTCOUNTER.counter", 0, "value")
         self.assertCounter(0)
 
     # Equivalent to:
@@ -457,7 +460,7 @@ class SystemClientServer(unittest.TestCase):
         counter = q.get()
         self.assertStructureWithoutTsEqual(str(counter), str(counter_expected))
         self.assertTrue(counter.asSet().issuperset({
-            "meta", "meta.fields", "counter", "zero"}))
+            "meta.fields", "counter.value", "zero.description"}))
         self.ctxt.put("TESTCOUNTER.counter", 5, "value")
         counter = q.get()
         self.assertEqual(counter.counter.value, 5)
@@ -466,11 +469,9 @@ class SystemClientServer(unittest.TestCase):
             self.assertTrue(counter.asSet().issuperset({
                 "meta", "meta.fields", "counter", "zero"}))
         else:
-            # TODO: timeStamp userTag didn't change value, but timeStamp did,
-            # should it be in the bitset?
             self.assertEqual(counter.asSet(),
-                             {"counter.value", "counter.timeStamp",
-                              "counter.timeStamp.secondsPastEpoch"
+                             {"counter.value", "counter.timeStamp.userTag",
+                              "counter.timeStamp.secondsPastEpoch",
                               "counter.timeStamp.nanoseconds"})
         self.ctxt.put("TESTCOUNTER.counter", 0, "value")
         counter = q.get()
@@ -485,7 +486,11 @@ class SystemClientServer(unittest.TestCase):
         m = self.ctxt.monitor("TESTCOUNTER", q.put, request)
         self.addCleanup(m.close)
         counter = q.get()
-        self.assertEqual(counter.getID(), "structure")
+        if PVAPY:
+            # PvaPy clears the typeid for a substructure
+            self.assertEqual(counter.getID(), "structure")
+        else:
+            self.assertEqual(counter.getID(), "malcolm:core/Block:1.0")
         self.assertEqual(counter.asSet(), {"meta", "meta.fields"})
         self.assertEqual(counter.meta.fields,
                          ["health", "counter", "zero", "increment"])
@@ -498,10 +503,10 @@ class SystemClientServer(unittest.TestCase):
         q = Queue()
         m = self.ctxt.monitor("TESTCOUNTER.counter", q.put)
         self.addCleanup(m.close)
-        counter = q.get()
+        counter = q.get()  # type: Value
         self.assertEqual(counter.getID(), "epics:nt/NTScalar:1.0")
         self.assertTrue(counter.asSet().issuperset({
-            "value", "alarm", "timeStamp"}))
+            "value", "alarm.severity", "timeStamp.userTag"}))
         self.ctxt.put("TESTCOUNTER.counter", 5, "value")
         counter = q.get()
         self.assertEqual(counter.value, 5)
@@ -510,11 +515,9 @@ class SystemClientServer(unittest.TestCase):
             self.assertTrue(counter.asSet().issuperset({
                 "value", "alarm", "timeStamp"}))
         else:
-            # TODO: timeStamp userTag didn't change value, but timeStamp did,
-            # should it be in the bitset?
             self.assertEqual(counter.asSet(),
-                             {"value", "timeStamp",
-                              "timeStamp.secondsPastEpoch"
+                             {"value", "timeStamp.userTag",
+                              "timeStamp.secondsPastEpoch",
                               "timeStamp.nanoseconds"})
         self.ctxt.put("TESTCOUNTER.counter", 0, "value")
         counter = q.get()
