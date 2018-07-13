@@ -429,17 +429,13 @@ class SystemClientServer(unittest.TestCase):
         counter = self.ctxt.get("TESTCOUNTER.counter").value
         self.assertEqual(counter, value)
 
-    # Should be equivalent to (except pvput doesn't do the right thing):
-    #   pvput TESTCOUNTER -r "counter.value" 5
+    # Equivalent to:
+    #   pvput TESTCOUNTER -r "counter.value" counter.value=5
     def testPut(self):
         self.assertCounter(0)
-        def put_value_5(V):
-            V.counter.value = 5
-        self.ctxt.put("TESTCOUNTER", put_value_5, "counter.value")
+        self.ctxt.put("TESTCOUNTER", {"counter.value": 5}, "counter.value")
         self.assertCounter(5)
-        def put_value_0(V):
-            V.counter.value = 0
-        self.ctxt.put("TESTCOUNTER", put_value_0, "counter.value")
+        self.ctxt.put("TESTCOUNTER", {"counter.value": 0}, "counter.value")
         self.assertCounter(0)
 
     # Equivalent to:
@@ -536,6 +532,8 @@ class SystemClientServer(unittest.TestCase):
         self.ctxt.rpc("TESTCOUNTER", NOTHING, method)
         self.assertCounter(0)
 
+    # Equivalent to:
+    #   eget -z -s "TESTCOUNTER.zero"
     def testRpcDotted(self):
         self.ctxt.rpc("TESTCOUNTER.zero", NOTHING)
         self.assertCounter(0)
@@ -551,11 +549,15 @@ class SystemClientServer(unittest.TestCase):
         result = self.ctxt.rpc("TESTHELLO", args, method)
         self.assertEqual(dict(result.items()), {"return": "Hello world"})
 
+    # Equivalent to:
+    #   eget -z -s "TESTCOUNTER.zero"
     def testRpcArgumentsDotted(self):
         args = Value(Type([("name", "s")]), dict(name="me"))
         result = self.ctxt.rpc("TESTHELLO.greet", args)
         self.assertEqual(dict(result.items()), {"return": "Hello me"})
 
+    # Equivalent to:
+    #    eget -z -s "TESTHELLO.greet" -a name=me
     def testRpcError(self):
         if PVAPY:
             # This doesn't raise on the pvaPy server as it cannot return errors
@@ -566,5 +568,6 @@ class SystemClientServer(unittest.TestCase):
         else:
             with self.assertRaises(RuntimeError) as cm:
                 self.ctxt.rpc("TESTHELLO.error", NOTHING)
-            self.assertEqual(str(cm.exception), "RuntimeError: You called method error()")
+            self.assertEqual(str(cm.exception),
+                             "RuntimeError: You called method error()")
 
