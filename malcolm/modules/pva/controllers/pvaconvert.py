@@ -1,6 +1,6 @@
 from annotypes import TYPE_CHECKING, Array
 from enum import Enum
-from p4p.wrapper import Type, Value
+from p4p import Type, Value
 import numpy as np
 
 from malcolm.compat import str_, long_
@@ -79,14 +79,3 @@ def update_path(value, path, update):
         value = value[p]
     _, update = convert_to_type_tuple_value(update)
     value[path[-1]] = update
-
-
-def pop_dict_wrapper(d, path):
-    # type: (Dict, List[str]) -> (Dict, List[str])
-    """Take dict with a single entry, putting it's value on path and
-    returning its contents"""
-    assert isinstance(d, dict) and len(d) == 1, \
-        "Expected single element dict, got %s" % (d,)
-    key, value = list(d.items())[0]
-    path = path + [key]
-    return value, path

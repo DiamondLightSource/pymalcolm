@@ -1,14 +1,14 @@
 from annotypes import add_call_types, TYPE_CHECKING
-from p4p.server import Server, DynamicProvider
+from p4p import Value
+from p4p.server import Server, DynamicProvider, ServerOperation
 from p4p.server.raw import SharedPV
-from p4p._p4p import ServerOperation, Value
 
 from malcolm.core import Subscribe, Error, APublished, Controller, Delta, \
     Return, stringify_error, Response, Put, Post, Unsubscribe, \
     ProcessPublishHook, method_return_unpacked, Method
 from malcolm.core.rlock import RLock
 from malcolm.modules import builtin
-from .pvaconvert import convert_dict_to_value, update_path, pop_dict_wrapper
+from .pvaconvert import convert_dict_to_value, update_path
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -59,10 +59,12 @@ class BlockHandler(object):
             # type: (Response) -> None
             if isinstance(response, Return):
                 if add_wrapper:
-                    value = convert_dict_to_value({"return": response.value})
+                    # Method gave us return unpacked (bare string or other type)
+                    # so we must wrap it in a structure to send it
+                    ret = {"return": response.value}
                 else:
-                    value = response.value
-                op.done(value)
+                    ret = response.value
+                op.done(convert_dict_to_value(ret))
             else:
                 if isinstance(response, Error):
                     message = stringify_error(response.message)
@@ -154,12 +156,14 @@ class BlockHandler(object):
                 update_path(self.value, path, update)
         self.pv.post(self.value)
 
+    # Need camelCase as called by p4p Server
+    # noinspection PyPep8Naming
     def onFirstConnect(self, pv):
         # type: (SharedPv) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
-        self.controller.spawn(self._onFirstConnect, pv)
+        self.controller.spawn(self._on_first_connect, pv)
 
-    def _onFirstConnect(self, pv):
+    def _on_first_connect(self, pv):
         # type: (SharedPv) -> None
         # Store the PV, but don't open it now, let the first Delta do this
         with self._lock:
@@ -171,12 +175,14 @@ class BlockHandler(object):
         request.set_callback(self.handle)
         self.controller.handle_request(request)
 
+    # Need camelCase as called by p4p Server
+    # noinspection PyPep8Naming
     def onLastDisconnect(self, pv=None):
         # type: (SharedPv) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
-        self.controller.spawn(self._onLastDisconnect, pv)
+        self.controller.spawn(self._on_last_disconnect, pv)
 
-    def _onLastDisconnect(self, pv=None):
+    def _on_last_disconnect(self, pv=None):
         # type: (SharedPv) -> None
         # No-one listening, unsubscribe
         with self._lock:
@@ -202,7 +208,8 @@ class PvaServerComms(builtin.controllers.ServerComms):
         # Hooks
         self.register_hooked(ProcessPublishHook, self.publish)
 
-    # Called by PVA server
+    # Need camelCase as called by p4p Server
+    # noinspection PyPep8Naming
     def testChannel(self, channel_name):
         if channel_name in self._published:
             # Someone is asking for a Block
@@ -215,7 +222,8 @@ class PvaServerComms(builtin.controllers.ServerComms):
             # We don't have it
             return False
 
-    # Called by PVA server
+    # Need camelCase as called by p4p Server
+    # noinspection PyPep8Naming
     def makeChannel(self, channel_name, src):
         self.log.debug("Making PV %s for %s", channel_name, src)
         if channel_name in self._published:
