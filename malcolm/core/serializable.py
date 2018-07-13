@@ -16,6 +16,11 @@ log = logging.getLogger(__name__)
 CAMEL_RE = re.compile(r"[a-z][a-z0-9]*([A-Z][a-z0-9]*)*$")
 
 
+def stringify_error(e):
+    # type: (Exception) -> str
+    return "%s: %s" % (type(e).__name__, str(e))
+
+
 def json_encode(o, indent=None):
     s = json.dumps(o, default=serialize_hook, indent=indent)
     return s
@@ -40,7 +45,7 @@ def serialize_hook(o):
         return o.tolist()
     elif isinstance(o, Exception):
         # Exceptions should be stringified
-        return "%s: %s" % (type(o).__name__, str(o))
+        return stringify_error(o)
     else:
         # Everything else should be serializable already
         return o
