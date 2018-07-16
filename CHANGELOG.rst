@@ -8,11 +8,21 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 -------------
 
 Added:
-- Web gui (malcolmjs 0.4)
+- Web gui (malcolmjs 1.0)
+
+`3-0a1`_ - 2018-07-16
+---------------------
 
 Changed:
 
-- Nothing yet
+- All yaml keys are snake_case rather than camelCase
+- Default webserver port is now 8008
+- axesToMove attribute has changed to simultaneousAxes
+- Load save more explicit with initial_visibility on ChildParts
+- Python classes now use `annotypes`_ for type introspection
+- Hook decorators are replaced by a more explicit Part.register_hooked()
+- DetectorDriverPart refactored to give a better interface
+
 
 `2-3-1`_ - 2018-06-07
 ---------------------
@@ -105,7 +115,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/2-3-1...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a1...HEAD
+.. _3-0a1: https://github.com/dls-controls/pymalcolm/compare/2-3-1...3-0a1
 .. _2-3-1: https://github.com/dls-controls/pymalcolm/compare/2-3...2-3-1
 .. _2-3: https://github.com/dls-controls/pymalcolm/compare/2-2...2-3
 .. _2-2: https://github.com/dls-controls/pymalcolm/compare/2-1...2-2
@@ -116,3 +127,4 @@ Added:
 .. _2-0a3: https://github.com/dls-controls/pymalcolm/compare/2-0a2...2-0a3
 .. _2-0a2: https://github.com/dls-controls/pymalcolm/compare/2-0a1...2-0a2
 
+.. _annotypes: https://github.com/dls-controls/annotypes
