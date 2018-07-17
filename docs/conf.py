@@ -30,6 +30,8 @@ else:
     require("mock")
     require("numpy")
     require("ruamel.yaml")
+    require("annotypes")
+
 
 from mock import MagicMock
 from annotypes import make_annotations

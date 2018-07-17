@@ -253,11 +253,10 @@ if __name__ == "__main__":
     from pkg_resources import require
 
     require("tornado", "numpy", "ruamel.yaml", "cothread==2.14", "vdsgen==0.2",
-            "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py==2.7.1")
+            "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py==2.7.1",
+            "annotypes>=0.9")
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
-    sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "annotypes"))
-    #sys.path.append(
-    #    "/home/tmc43/virtualenvs/pymalcolm/lib/python2.7/site-packages")
+    #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "annotypes"))
     sys.path.append(
         "/dls_sw/work/R3.14.12.3/support/pvaPy/lib/python/2.7/linux-x86_64")
 
