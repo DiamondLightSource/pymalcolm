@@ -33,43 +33,52 @@
     name: demandA
     description: set the demand position of CS Motor A
     pv: $(prefix):M1:DirectDemand
+    timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandB
     description: set the demand position of CS Motor B
     pv: $(prefix):M2:DirectDemand
+    timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandC
     description: set the demand position of CS Motor C
     pv: $(prefix):M3:DirectDemand
+    timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandU
     description: set the demand position of CS Motor U
     pv: $(prefix):M4:DirectDemand
+    timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandV
     description: set the demand position of CS Motor V
     pv: $(prefix):M5:DirectDemand
+    timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandW
     description: set the demand position of CS Motor W
     pv: $(prefix):M6:DirectDemand
+    timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandX
     description: set the demand position of CS Motor X
     pv: $(prefix):M7:DirectDemand
+    timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandY
     description: set the demand position of CS Motor Y
     pv: $(prefix):M8:DirectDemand
+    timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandZ
     description: set the demand position of CS Motor Z
     pv: $(prefix):M9:DirectDemand
+    timeout: -1

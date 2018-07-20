@@ -10,6 +10,9 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 Added:
 - Web gui (malcolmjs 1.0)
 
+Fixed:
+- PMAC move to start uses the right timeout (instead of fixed 5 seconds)
+
 `3-0a2`_ - 2018-07-17
 ---------------------
 

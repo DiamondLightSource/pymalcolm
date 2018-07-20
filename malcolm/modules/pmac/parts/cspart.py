@@ -58,12 +58,19 @@ class CSPart(ChildPart):
         child.csMoveTime.put_value(0)
         first_point = generator.get_point(completed_steps)
         start_positions = {}
+        move_to_start_time = 0.0
         for axis_name, velocity in self.point_velocities(first_point).items():
-            motor_info = self.axis_mapping[axis_name]
+            motor_info = self.axis_mapping[axis_name]  # type: MotorInfo
             acceleration_distance = motor_info.ramp_distance(0, velocity)
             start_pos = first_point.lower[axis_name] - acceleration_distance
             start_positions["demand" + motor_info.cs_axis] = start_pos
-        # Start them off moving
+            # Time profile that the move is likely to take
+            # NOTE: this is only accurate if pmac max velocity in linear motion
+            # prog is set to same speed as motor record VMAX
+            times, _ = motor_info.make_velocity_profile(
+                0, 0, motor_info.current_position - start_pos, 0)
+            move_to_start_time = max(times[-1], move_to_start_time)
+        # Start them off moving, can't wait forever
         fs = child.put_attribute_values_async(
             {attr: value for attr, value in start_positions.items()})
         # Wait for the demand to have been received by the PV
@@ -72,7 +79,7 @@ class CSPart(ChildPart):
         # Start the move
         child.deferMoves.put_value(0)
         # Wait for the moves to complete
-        context.wait_all_futures(fs)
+        context.wait_all_futures(fs, timeout=move_to_start_time + 1.0)
 
     @add_call_types
     def abort(self, context):
