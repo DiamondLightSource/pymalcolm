@@ -2,7 +2,7 @@ from annotypes import Anno, Array, Union, Sequence, add_call_types
 
 from malcolm.core import Part, StringArrayMeta, Widget, config_tag, \
     PartRegistrar, APartName
-from ..hooks import ValidateHook, AGenerator
+from ..hooks import ValidateHook, AAxesToMove
 
 
 with Anno("Initial value for set of axes that can be moved at the same time"):
@@ -21,13 +21,14 @@ class SimultaneousAxesPart(Part):
         # Hooks
         self.register_hooked(ValidateHook, self.validate)
 
+    # This will be serialized, so maintain camelCase for axesToMove
+    # noinspection PyPep8Naming
     @add_call_types
-    def validate(self, generator):
-        # type: (AGenerator) -> None
-        assert not set(generator.axes) - set(self.attr.value), \
+    def validate(self, axesToMove):
+        # type: (AAxesToMove) -> None
+        assert not set(axesToMove) - set(self.attr.value), \
             "Can only move %s simultaneously, requested %s" % (
-                list(self.attr.value), generator.axes)
-        assert generator.axes
+                list(self.attr.value), axesToMove)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

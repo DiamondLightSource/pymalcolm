@@ -12,6 +12,7 @@ Added:
 
 Fixed:
 - PMAC move to start uses the right timeout (instead of fixed 5 seconds)
+- SimultaneousAxes now works from axesToMove instead of generator axes
 
 `3-0a2`_ - 2018-07-17
 ---------------------

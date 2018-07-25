@@ -18,25 +18,19 @@ class TestSimultaneousAxesPart(unittest.TestCase):
 
     def setUp(self):
         self.o = SimultaneousAxesPart(value=["x", "y"])
-
-    def test_controller(self):
         self.process = Process("proc")
         self.process.start()
         self.addCleanup(self.process.stop, 2)
         c = RunnableController("mri", "/tmp")
         c.add_part(self.o)
         self.process.add_controller(c)
-        b = c.make_view()
-        b.simultaneousAxes.put_value(["x", "z"])
-        with self.assertRaises(AssertionError):
-            b.validate(make_generator())
+        self.b = c.make_view()
 
     def test_good(self):
-        gen = make_generator()
-        self.o.validate(gen)
+        self.b.simultaneousAxes.put_value(["x", "y"])
+        self.b.validate(make_generator(), ["x", "y"])
 
     def test_bad(self):
-        self.o.attr.set_value(["x", "z"])
-        gen = make_generator()
+        self.b.simultaneousAxes.put_value(["x", "z"])
         with self.assertRaises(AssertionError):
-            self.o.validate(gen)
+            self.b.validate(make_generator(), ["x", "y"])
