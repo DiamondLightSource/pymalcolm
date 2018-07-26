@@ -5,7 +5,7 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
-    Unsubscribe, APartName, Port, Controller, Response, ABORT_TIMEOUT, \
+    Unsubscribe, APartName, Port, Controller, Response, DEFAULT_TIMEOUT, \
     get_config_tag
 from ..infos import PortInfo, LayoutInfo, OutPortInfo, InPortInfo, \
     PartExportableInfo, PartModifiedInfo
@@ -74,7 +74,7 @@ class ChildPart(Part):
             # save state
             context.when_matches(
                 [self.mri, "state", "value"], ss.READY,
-                [ss.FAULT, ss.DISABLED], timeout=ABORT_TIMEOUT)
+                [ss.FAULT, ss.DISABLED], timeout=DEFAULT_TIMEOUT)
         # Save what we have
         self.save(context)
         subscribe = Subscribe(path=[self.mri, "meta", "fields"])

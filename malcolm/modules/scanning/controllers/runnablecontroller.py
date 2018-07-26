@@ -2,7 +2,7 @@ from annotypes import Anno, TYPE_CHECKING, add_call_types, Any
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import AbortedError, MethodModel, Queue, Context, \
-    TimeoutError, AMri, NumberMeta, Widget, Part, ABORT_TIMEOUT
+    TimeoutError, AMri, NumberMeta, Widget, Part, DEFAULT_TIMEOUT
 from malcolm.compat import OrderedDict
 from malcolm.core.models import MapMeta
 from malcolm.modules.builtin.controllers import ManagerController, \
@@ -433,7 +433,7 @@ class RunnableController(ManagerController):
             if original_state not in (ss.READY, ss.ARMED, ss.PAUSED):
                 # Something was running, let it finish aborting
                 try:
-                    self.abort_queue.get(timeout=ABORT_TIMEOUT)
+                    self.abort_queue.get(timeout=DEFAULT_TIMEOUT)
                 except TimeoutError:
                     self.log.warning("Timeout waiting while %s" % start_state)
             with self._lock:

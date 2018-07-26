@@ -17,4 +17,6 @@ class TestPandaABoxDriverPart(unittest.TestCase):
         self.o.abort(self.context)
         assert self.context.mock_calls == [
             call.block_view("mri"),
-            call.block_view().stop()]
+            call.block_view().stop(),
+            call.block_view().when_value_matches(
+                'acquiring', False, timeout=10.0)]

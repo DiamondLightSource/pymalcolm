@@ -5,7 +5,7 @@ from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.compat import maybe_import_cothread
 from malcolm.core import Queue, VMeta, Alarm, AlarmStatus, TimeStamp, \
-    Loggable, APartName, AMetaDescription, Hook, PartRegistrar
+    Loggable, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
 from malcolm.modules.builtin.util import set_tags, AWidget, AGroup, AConfig, \
     AInPort
 from malcolm.modules.builtin.hooks import InitHook, ResetHook, DisableHook
@@ -43,7 +43,7 @@ class CAAttribute(Loggable):
                  rbv="",  # type: ARbv
                  rbv_suff="",  # type: ARbvSuff
                  min_delta=0.05,  # type: AMinDelta
-                 timeout=5.0,  # type: ATimeout
+                 timeout=DEFAULT_TIMEOUT,  # type: ATimeout
                  inport=None,  # type: AInPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup

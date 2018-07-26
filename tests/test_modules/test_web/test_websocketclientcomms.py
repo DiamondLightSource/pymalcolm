@@ -13,5 +13,5 @@ class TestWebsocketClientComms(unittest.TestCase):
     def test_init(self):
         assert self.o.hostname == "localhost"
         assert self.o.port == 8080
-        assert self.o.connect_timeout == 5.0
+        assert self.o.connect_timeout == 10.0
         assert self.o.mri == "mri"

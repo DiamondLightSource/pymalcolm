@@ -1,4 +1,4 @@
-from malcolm.core import Part, PartRegistrar, BooleanMeta, Hook
+from malcolm.core import Part, PartRegistrar, BooleanMeta, DEFAULT_TIMEOUT
 from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
     APv, ARbv, ARbvSuff, AMinDelta, ATimeout, AInPort, AWidget, AGroup, AConfig
 
@@ -13,7 +13,7 @@ class CABooleanPart(Part):
                  rbv="",  # type: ARbv
                  rbv_suff="",  # type: ARbvSuff
                  min_delta=0.05,  # type: AMinDelta
-                 timeout=5.0,  # type: ATimeout
+                 timeout=DEFAULT_TIMEOUT,  # type: ATimeout
                  inport=None,  # type: AInPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup

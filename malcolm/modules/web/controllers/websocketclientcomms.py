@@ -6,7 +6,7 @@ from tornado.websocket import websocket_connect, WebSocketClientConnection
 from malcolm.core import Subscribe, deserialize_object, \
     json_decode, json_encode, Response, Error, Unsubscribe, Update, Return, \
     Queue, TimeoutError, Spawned, Request, StringArrayMeta, Widget, \
-    ResponseError
+    ResponseError, DEFAULT_TIMEOUT
 from malcolm.modules import builtin
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
                  mri,  # type: builtin.controllers.AMri
                  hostname="localhost",  # type: AHostname
                  port=8080,  # type: APort
-                 connect_timeout=5.0  # type: AConnectTimeout
+                 connect_timeout=DEFAULT_TIMEOUT  # type: AConnectTimeout
                  ):
         # type: (...) -> None
         super(WebsocketClientComms, self).__init__(mri, use_cothread=False)

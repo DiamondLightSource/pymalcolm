@@ -3,6 +3,7 @@ from __future__ import division
 
 from annotypes import add_call_types, TYPE_CHECKING, Anno
 
+from malcolm.core import DEFAULT_TIMEOUT
 from malcolm.modules import builtin, scanning
 from malcolm.modules.builtin.parts import ChildPart
 from ..infos import MotorInfo
@@ -79,7 +80,8 @@ class CSPart(ChildPart):
         # Start the move
         child.deferMoves.put_value(0)
         # Wait for the moves to complete
-        context.wait_all_futures(fs, timeout=move_to_start_time + 5.0)
+        context.wait_all_futures(
+            fs, timeout=move_to_start_time + DEFAULT_TIMEOUT)
 
     @add_call_types
     def abort(self, context):

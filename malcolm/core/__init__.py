@@ -2,7 +2,7 @@
 from .alarm import Alarm, AlarmSeverity, AlarmStatus
 from .context import Context
 from .controller import Controller, AMri, ADescription, AUseCothread, \
-    ABORT_TIMEOUT
+    DEFAULT_TIMEOUT
 from .define import Define
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
     UnexpectedError, YamlError, FieldError

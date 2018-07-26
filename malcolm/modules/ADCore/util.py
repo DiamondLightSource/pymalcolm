@@ -2,7 +2,7 @@ from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
 from enum import Enum
 import numpy as np
 
-from malcolm.core import Table, Future, Context, TimeoutError, PartRegistrar
+from malcolm.core import Table, Future, Context, PartRegistrar, DEFAULT_TIMEOUT
 from malcolm.modules import scanning
 
 if TYPE_CHECKING:
@@ -132,7 +132,8 @@ class ADBaseActions(object):
         # it 5 seconds to timeout just in case there are any stray frames that
         # haven't made it through yet
         child.when_value_matches(
-            "arrayCounterReadback", self.done_when_reaches, timeout=5.0)
+            "arrayCounterReadback", self.done_when_reaches,
+            timeout=DEFAULT_TIMEOUT)
 
     def abort_detector(self, context):
         # type: (Context) -> None
@@ -142,7 +143,7 @@ class ADBaseActions(object):
         # The detector might take a while to actually stop so use the
         # acquiring pv (which is the same asyn parameter as the busy record
         # that stop() pokes) to check that it has finished
-        child.when_value_matches("acquiring", False, timeout=5.0)
+        child.when_value_matches("acquiring", False, timeout=DEFAULT_TIMEOUT)
 
     def update_completed_steps(self, value, registrar):
         # type: (int, PartRegistrar) -> None

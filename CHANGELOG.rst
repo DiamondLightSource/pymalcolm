@@ -16,6 +16,7 @@ Fixed:
   velocities, and a min_time. A floating point rounding error was previously
   making it return less than min_time
 - Make all areaDetectors wait on stop() for the acquire light to go out
+- Updated DEFAULT_TIMEOUT to 10s
 
 `3-0a3`_ - 2018-07-25
 ---------------------

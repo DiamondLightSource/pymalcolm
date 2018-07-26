@@ -51,7 +51,7 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [Update(1)]
         b.attrname.put_value(True)
         catools.caput.assert_called_once_with(
-            "pv", 1, datatype=catools.DBR_LONG, timeout=5.0, wait=True)
+            "pv", 1, datatype=catools.DBR_LONG, timeout=10.0, wait=True)
         catools.caget.assert_called_once_with(
             "pv2", datatype=catools.DBR_LONG, format=catools.FORMAT_TIME)
         assert b.attrname.value is True
@@ -96,7 +96,7 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [Update(0)]
         b.attrname.put_value("c")
         catools.caput.assert_called_once_with(
-            "pv", 2, datatype=catools.DBR_ENUM, timeout=5.0, wait=True)
+            "pv", 2, datatype=catools.DBR_ENUM, timeout=10.0, wait=True)
         catools.caget.assert_called_once_with(
             "rbv", datatype=catools.DBR_ENUM, format=catools.FORMAT_TIME)
         assert b.attrname.value is "a"
@@ -108,7 +108,7 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [Update(1)]
         b.attrname.put_value(1)
         catools.caput.assert_called_once_with(
-            "pv", 1, datatype=catools.DBR_ENUM, timeout=5.0, wait=True)
+            "pv", 1, datatype=catools.DBR_ENUM, timeout=10.0, wait=True)
         assert b.attrname.value is "b"
 
     def test_cadoublearray(self, catools):
@@ -199,7 +199,7 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [update]
         b.attrname.put_value([4, 4.2])
         catools.caput.assert_called_once_with(
-            "pv", ANY, datatype=catools.DBR_LONG, timeout=5.0, wait=True)
+            "pv", ANY, datatype=catools.DBR_LONG, timeout=10.0, wait=True)
         assert list(catools.caput.call_args[0][1]) == [4, 4]
         catools.caget.assert_called_once_with(
             "pv", datatype=catools.DBR_LONG, format=catools.FORMAT_TIME)

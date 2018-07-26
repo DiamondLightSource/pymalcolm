@@ -24,8 +24,9 @@ if TYPE_CHECKING:
     Field = Union[AttributeModel, MethodModel]
     CallbackResponses = List[Tuple[Callable[[Response], None], Response]]
 
-# How long should we wait for spawned functions to complete after abort
-ABORT_TIMEOUT = 5.0
+# This is a good default value for a timeout. It is used to wait for abort
+# below, and is imported in a number of other Controller subclasses
+DEFAULT_TIMEOUT = 10.0
 
 
 with Anno("The Malcolm Resource Identifier for the Block produced"):
@@ -268,7 +269,7 @@ class Controller(Hookable):
         # type: (Queue, List[Hook]) -> Dict[str, List[Info]]
         if hook_spawned:
             return_dict = wait_hooks(
-                self.log, hook_queue, hook_spawned, ABORT_TIMEOUT)
+                self.log, hook_queue, hook_spawned, DEFAULT_TIMEOUT)
         else:
             self.log.debug("No Parts hooked")
             return_dict = {}
