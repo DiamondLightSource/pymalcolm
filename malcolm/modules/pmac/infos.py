@@ -140,7 +140,7 @@ class MotorInfo(Info):
 
         # If middle segment needs to be negative time then we need to cap
         # vm and spend no time at vm
-        if tm <= 0:
+        if tm < 0:
             # Solve the quadratic to work out how long to spend accelerating
             vm = np.sqrt(
                 (2 * acceleration * distance + v1 * v1 + v2 * v2) / 2)

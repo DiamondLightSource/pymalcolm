@@ -222,3 +222,18 @@ class TestMotorPVT(unittest.TestCase):
             v1, v2, distance, 0.0)
         assert time_array == [0.0, 0.25, 0.75, 0.875, 1.375, 1.625]
         assert velocity_array == [v1, 0, 1, 1, 0, v2]
+
+    def test_small_distance(self):
+        # 0_|
+        #   | \__/
+        # From I14 at the top of a spiral scan
+        v1 = 0.0
+        v2 = 0.0
+        distance = -7.0649411427099997e-05
+        min_time = 0.11896513748900001
+        self.o.acceleration = 0.02
+        self.o.max_velocity = 0.01
+        time_array, velocity_array = self.o.make_velocity_profile(
+            v1, v2, distance, min_time)
+        assert time_array == [0.0, 0.059482568744500003, min_time]
+        assert velocity_array == [v1, -0.00118965137489, v2]

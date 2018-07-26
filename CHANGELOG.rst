@@ -12,6 +12,9 @@ Added:
 
 Fixed:
 - PMAC trajectory pause waits for long enough to get GPIO signals
+- MotorInfo.make_velocity_profile now works with small distances, zero
+  velocities, and a min_time. A floating point rounding error was previously
+  making it return less than min_time
 
 `3-0a3`_ - 2018-07-25
 ---------------------
