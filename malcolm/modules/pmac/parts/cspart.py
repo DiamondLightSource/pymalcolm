@@ -79,7 +79,7 @@ class CSPart(ChildPart):
         # Start the move
         child.deferMoves.put_value(0)
         # Wait for the moves to complete
-        context.wait_all_futures(fs, timeout=move_to_start_time + 1.0)
+        context.wait_all_futures(fs, timeout=move_to_start_time + 5.0)
 
     @add_call_types
     def abort(self, context):

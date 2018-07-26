@@ -10,6 +10,9 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 Added:
 - Web gui (malcolmjs 1.0)
 
+Fixed:
+- PMAC trajectory pause waits for long enough to get GPIO signals
+
 `3-0a3`_ - 2018-07-25
 ---------------------
 

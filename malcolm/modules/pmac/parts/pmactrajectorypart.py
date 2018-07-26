@@ -194,8 +194,6 @@ class PmacTrajectoryPart(ChildPart):
         # type: (scanning.hooks.AContext) -> None
         child = context.block_view(self.mri)
         child.abortProfile()
-        # Wait for 2 x minDelta for GPIO status PV to update
-        context.sleep(0.1)
 
     def update_step(self, scanned, child):
         if scanned > 0:
