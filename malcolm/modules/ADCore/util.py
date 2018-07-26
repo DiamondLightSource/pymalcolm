@@ -128,7 +128,9 @@ class ADBaseActions(object):
         child.arrayCounterReadback.subscribe_value(
             self.update_completed_steps, registrar)
         context.wait_all_futures(self.start_future)
-        # Now wait to make sure any update_completed_steps come in
+        # Now wait to make sure any update_completed_steps come in. Give
+        # it 5 seconds to timeout just in case there are any stray frames that
+        # haven't made it through yet
         child.when_value_matches(
             "arrayCounterReadback", self.done_when_reaches, timeout=5.0)
 
@@ -136,6 +138,11 @@ class ADBaseActions(object):
         # type: (Context) -> None
         child = context.block_view(self.mri)
         child.stop()
+        # Stop is a put to a busy record which returns immediately
+        # The detector might take a while to actually stop so use the
+        # acquiring pv (which is the same asyn parameter as the busy record
+        # that stop() pokes) to check that it has finished
+        child.when_value_matches("acquiring", False, timeout=5.0)
 
     def update_completed_steps(self, value, registrar):
         # type: (int, PartRegistrar) -> None
