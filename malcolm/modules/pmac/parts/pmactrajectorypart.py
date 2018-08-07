@@ -5,8 +5,7 @@ import numpy as np
 from scanpointgenerator import CompoundGenerator
 from annotypes import add_call_types, TYPE_CHECKING, Anno
 
-from malcolm.core import TimeoutError, config_tag, NumberMeta, PartRegistrar, \
-    Widget
+from malcolm.core import config_tag, NumberMeta, PartRegistrar, Widget
 from malcolm.modules import builtin, scanning
 from malcolm.modules.builtin.parts import ChildPart
 from ..infos import MotorInfo, ControllerInfo
@@ -196,6 +195,9 @@ class PmacTrajectoryPart(ChildPart):
         child.abortProfile()
 
     def update_step(self, scanned, child):
+        # scanned is an index into the completed_steps_lookup, so a
+        # "how far through the pmac trajectory" rather than a generator
+        # scan step
         if scanned > 0:
             completed_steps = self.completed_steps_lookup[scanned - 1]
             self.registrar.report(scanning.infos.RunProgressInfo(
@@ -207,17 +209,18 @@ class PmacTrajectoryPart(ChildPart):
                 self.calculate_generator_profile(self.end_index)
                 self.profile = self.write_profile_points(child, **self.profile)
                 child.appendProfile()
+                self.loading = False
 
-                # If we got to the end, there might be some leftover points that
-                # need to be appended to finish
-                if self.end_index == self.steps_up_to and \
-                        self.profile["time_array"]:
-                    self.profile = self.write_profile_points(
-                        child, **self.profile)
-                    assert not self.profile["time_array"], \
-                        "Why do we still have points? %s" % self.profile
-                    child.appendProfile()
-
+            # If we got to the end, there might be some leftover points that
+            # need to be appended to finish
+            if not self.loading and self.end_index == self.steps_up_to and \
+                    self.profile["time_array"]:
+                self.loading = True
+                self.calculate_generator_profile(self.end_index)
+                self.profile = self.write_profile_points(child, **self.profile)
+                assert not self.profile["time_array"], \
+                    "Why do we still have points? %s" % self.profile
+                child.appendProfile()
                 self.loading = False
 
     def point_velocities(self, point):
@@ -284,6 +287,8 @@ class PmacTrajectoryPart(ChildPart):
             motor_info = self.axis_mapping[axis_name]
             cs_axis = motor_info.cs_axis
             use.append(cs_axis)
+        # TODO: this is being sent every time, we only really need to send
+        # it on the first put
         for cs_axis in cs_axis_names:
             attr_dict["use%s" % cs_axis] = cs_axis in use
         child.put_attribute_values(attr_dict)
@@ -455,7 +460,10 @@ class PmacTrajectoryPart(ChildPart):
                     {name: point.upper[name] for name in self.axis_mapping})
 
             # Check if we have exceeded the points number and need to write
-            if len(self.profile["time_array"]) >= PROFILE_POINTS:
+            # Strictly less than so we always add one more point to the time
+            # array so we can always stretch points in a subsequent add with
+            # the values already in the profiles
+            if len(self.profile["time_array"]) > PROFILE_POINTS:
                 self.end_index = i + 1
                 return
 
