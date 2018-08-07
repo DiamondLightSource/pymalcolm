@@ -17,6 +17,7 @@ Fixed:
   making it return less than min_time
 - Make all areaDetectors wait on stop() for the acquire light to go out
 - Updated DEFAULT_TIMEOUT to 10s
+- Fixed pmac so that stretched pulses on a PROFILE_POINTS boundary work
 
 `3-0a3`_ - 2018-07-25
 ---------------------
