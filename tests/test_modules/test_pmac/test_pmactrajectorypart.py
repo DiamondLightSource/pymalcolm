@@ -120,7 +120,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.post('buildProfile')
         ]
         assert self.o.completed_steps_lookup == [
-            0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 6, 6]
+            0, 0, 1, 1, 2, 2, 3, 3,
+            3, 3, 4, 4, 5, 5, 6, 6]
         assert self.o.last_gpio == (0, 0, 0)
 
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.PROFILE_POINTS", 4)
@@ -202,7 +203,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('positionsA', pytest.approx([
                 0.625, 0.5625, 0.5, 0.4375, 0.375, 0.3125, 0.25, 0.1875,
                 0.125, 0.0625, 0.0, -0.0625, -0.125, -0.12506377551020409])),
-            call.put('timeArray',pytest.approx([
+            call.put('timeArray', pytest.approx([
                 7143, 3500000, 3500000, 3500000, 3500000, 3500000, 3500000,
                 3500000, 3500000, 3500000, 3500000, 3500000, 3500000, 7143])),
             call.put('userPrograms', pytest.approx([
@@ -211,6 +212,59 @@ class TestPMACTrajectoryPart(ChildTestCase):
                 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3])),
             call.post('buildProfile')
         ]
+        assert self.o.completed_steps_lookup == (
+            [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
+
+    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.PROFILE_POINTS", 9)
+    def test_split_in_a_long_step_lookup(self):
+        self.do_configure(
+            axes_to_scan=["x"], completed_steps=3, x_pos=0.62506,
+            duration=14.0, outputs=[1, 0, 0] + [0]*13)
+        # The last 6 calls show what trajectory we are building, ignore the
+        # first 11 which are just the useX calls and cs selection
+        assert self.child.handled_requests.mock_calls[-6:] == [
+            call.put('pointsToBuild', 9),
+            call.put('positionsA', pytest.approx([
+                0.625, 0.5625, 0.5, 0.4375, 0.375, 0.3125, 0.25, 0.1875,
+                0.125])),
+            call.put('timeArray', pytest.approx([
+                7143, 3500000, 3500000, 3500000, 3500000, 3500000, 3500000,
+                3500000, 3500000])),
+            call.put('userPrograms', pytest.approx([
+                8, 0, 4, 0, 5, 0, 1, 0, 8])),
+            call.put('velocityMode', pytest.approx([
+                2, 0, 0, 0, 0, 0, 0, 0, 0])),
+            call.post('buildProfile')
+        ]
+        # The completed steps works on complete (not split) steps, so we expect
+        # the last value to be the end of step 6, even though it doesn't
+        # actually appear in the velocity arrays
+        assert self.o.completed_steps_lookup == (
+            [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6])
+        # Mock out the registrar that would have been registered when we
+        # attached to a controller
+        self.o.registrar = Mock()
+        # Now call update step and get it to generate the next lot of points
+        # scanned can be any index into completed_steps_lookup so that there
+        # are less than PROFILE_POINTS left to go in it
+        self.o.update_step(
+            scanned=2, child=self.process.block_view("PMAC:TRAJ"))
+        # Expect the rest of the points
+        assert self.child.handled_requests.mock_calls[-6:] == [
+            call.put('pointsToBuild', 5),
+            call.put('positionsA', pytest.approx([
+                0.0625, 0.0, -0.0625, -0.125, -0.12506377551020409])),
+            call.put('timeArray',pytest.approx([
+                3500000, 3500000, 3500000, 3500000, 7143])),
+            call.put('userPrograms', pytest.approx([
+                0, 4, 0, 6, 0])),
+            call.put('velocityMode', pytest.approx([
+                0, 0, 0, 1, 3])),
+            call.post('appendProfile')
+        ]
+        assert self.o.registrar.report.call_count == 1
+        assert self.o.registrar.report.call_args[0][0].steps == 3
+        # And for the rest of the lookup table to be added
         assert self.o.completed_steps_lookup == (
             [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
 
