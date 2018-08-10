@@ -20,3 +20,4 @@ class TestPandaABoxDriverPart(unittest.TestCase):
             call.block_view().stop(),
             call.block_view().when_value_matches(
                 'acquiring', False, timeout=10.0)]
+

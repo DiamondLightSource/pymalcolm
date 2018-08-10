@@ -34,10 +34,8 @@ class BrickPart(builtin.parts.ChildPart):
     @add_call_types
     def resync(self, context):
         # type: (scanning.hooks.AContext) -> None
-        # The GPIO is polled in the medium loop, so wait for it to update.
-        # Need this so that report status is accurate, but report status
-        # needs to be quick so can't do it there
-        # TODO: replace this with a poll now button
-        # child = context.block_view(self.mri)
-        # Medium loop is every 2s so 3s should be enough
-        context.sleep(3.0)
+        # The GPIO is polled in the medium loop, so force a poll now so that
+        # report status is accurate, but report status needs to be quick so
+        # can't do it there
+        child = context.block_view(self.mri)
+        child.pollAllNow()

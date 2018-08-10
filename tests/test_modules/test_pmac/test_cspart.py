@@ -1,7 +1,6 @@
-from mock import Mock, call, patch
+from mock import call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
-import pytest
 
 from malcolm.core import Context, Process
 from malcolm.modules.pmac.parts import CSPart

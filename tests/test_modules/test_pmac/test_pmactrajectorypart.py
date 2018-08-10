@@ -143,7 +143,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.o.registrar.report.assert_called_once()
         assert self.o.registrar.report.call_args[0][0].steps == 1
         assert not self.o.loading
-        assert self.child.handled_requests.mock_calls == self.resolutions_and_use_call() + [
+        assert self.child.handled_requests.mock_calls == [
             call.put('pointsToBuild', 4),
             call.put('positionsA', pytest.approx([
                 0.375, 0.5, 0.625, 0.6375])),

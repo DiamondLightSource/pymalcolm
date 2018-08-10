@@ -165,10 +165,15 @@ class PmacTrajectoryPart(ChildPart):
         # Work out the "last GPIO program" from the GPIO bits
         controller_info = ControllerInfo.filter_single_value(part_info)
         self.last_gpio = tuple(controller_info.outputs[:3])
-        # Set the right CS to move
-        child.cs.put_value(cs_port)
+        # Set how far we should be going, and the lookup
         self.steps_up_to = completed_steps + steps_to_do
         self.completed_steps_lookup = []
+        # Work out which axes should be used
+        use = [info.cs_axis for info in self.axis_mapping.values()]
+        attr_dict = dict(cs=cs_port)
+        for cs_axis in cs_axis_names:
+            attr_dict["use%s" % cs_axis] = cs_axis in use
+        child.put_attribute_values(attr_dict)
         self.profile = dict(time_array=[], velocity_mode=[], user_programs=[],
                             trajectory={name: [] for name in self.axis_mapping})
         self.calculate_generator_profile(completed_steps, do_run_up=True)
@@ -278,20 +283,6 @@ class PmacTrajectoryPart(ChildPart):
             velocity_mode=velocity_mode[PROFILE_POINTS:],
             user_programs=user_programs[PROFILE_POINTS:],
             trajectory={k: v[PROFILE_POINTS:] for k, v in trajectory.items()})
-
-        # Work out which axes should be used and set their resolutions and
-        # offsets
-        use = []
-        attr_dict = dict()
-        for axis_name in trajectory:
-            motor_info = self.axis_mapping[axis_name]
-            cs_axis = motor_info.cs_axis
-            use.append(cs_axis)
-        # TODO: this is being sent every time, we only really need to send
-        # it on the first put
-        for cs_axis in cs_axis_names:
-            attr_dict["use%s" % cs_axis] = cs_axis in use
-        child.put_attribute_values(attr_dict)
 
         # Process the time in ticks
         overflow = 0.0
