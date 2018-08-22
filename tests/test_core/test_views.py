@@ -6,7 +6,7 @@ from mock import Mock
 from malcolm.core import Attribute, StringMeta, BlockModel, Process, \
     MethodModel, Part, Controller
 from malcolm.core.models import BlockMeta
-from malcolm.core.views import make_view, View
+from malcolm.core.views import make_view
 
 
 class TestAttribute(unittest.TestCase):
@@ -75,7 +75,7 @@ with Anno("A Param"):
 
 class MyPart(Part):
     def setup(self, registrar):
-        registrar.add_method_model(self.my_method)
+        registrar.add_method_model(self.my_method, "myMethod")
 
     @add_call_types
     def my_method(self, param1, param2):
@@ -98,12 +98,12 @@ class TestMethod(unittest.TestCase):
         self.process.stop(timeout=1)
 
     def test_post(self):
-        method_view = self.block.my_method
+        method_view = self.block.myMethod
         result = method_view.post(param1='testPost', param2='y')
         assert result == 'testPosty'
 
     def test_post_async(self):
-        method_view = self.block.my_method
+        method_view = self.block.myMethod
         f = method_view.post_async('testAsync', 'y')
         assert f.result() == 'testAsyncy'
 

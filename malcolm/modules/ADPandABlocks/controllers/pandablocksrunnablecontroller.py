@@ -41,9 +41,10 @@ class PandABlocksRunnableController(PandABlocksManagerController,
         new_parts = []
         for existing_part in parts:
             new_parts.append(existing_part)
-            if existing_part.name.endswith(".CAPTURE"):
+            if hasattr(existing_part, "field_name") and \
+                    existing_part.field_name.endswith(".CAPTURE"):
                 # Add capture dataset name and type
-                part_name = existing_part.name.replace(
+                part_name = existing_part.field_name.replace(
                     ".CAPTURE", ".DATASET_NAME")
                 attr_name = snake_to_camel(part_name.replace(".", "_"))
                 new_parts.append(StringPart(
@@ -51,7 +52,7 @@ class PandABlocksRunnableController(PandABlocksManagerController,
                     description="Name of the captured dataset in HDF file",
                     writeable=True))
                 # Make a choice part to hold the type of the dataset
-                part_name = existing_part.name.replace(
+                part_name = existing_part.field_name.replace(
                     ".CAPTURE", ".DATASET_TYPE")
                 attr_name = snake_to_camel(part_name.replace(".", "_"))
                 if "INENC" in mri:

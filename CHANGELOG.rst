@@ -18,6 +18,8 @@ Fixed:
 - Make all areaDetectors wait on stop() for the acquire light to go out
 - Updated DEFAULT_TIMEOUT to 10s
 - Fixed pmac so that stretched pulses on a PROFILE_POINTS boundary work
+- Added pollNow() for pmac GPIOs (requires pmac 2-1 or later)
+- Enforce camelCaseFields and Alphanumeric + underscore + dash Part names
 
 `3-0a3`_ - 2018-07-25
 ---------------------

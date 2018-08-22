@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 # Create a module level logger
 log = logging.getLogger(__name__)
 
-camel_re = re.compile(r"[a-z][a-z0-9]*([A-Z][a-z0-9]*)*")
+CAMEL_RE = re.compile(r"[a-z][a-z0-9]*([A-Z][a-z0-9]*)*$")
 
 
 def json_encode(o, indent=None):
@@ -44,12 +44,6 @@ def serialize_hook(o):
     else:
         # Everything else should be serializable already
         return o
-
-
-def check_camel_case(name):
-    match = camel_re.match(name)
-    if not match:
-        log.warning("String %r is not camelCase", name)
 
 
 def camel_to_title(name):

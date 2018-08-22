@@ -459,7 +459,7 @@ class RunnableController(ManagerController):
         an Armed or Paused state.
 
         The original call to run() will not be interrupted by pause(), it will
-        with until the scan completes or is aborted.
+        wait until the scan completes or is aborted.
 
         Normally it will return in Paused state. If the user aborts then it will
         return in Aborted state. If something goes wrong it will return in Fault

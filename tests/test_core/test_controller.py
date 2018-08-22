@@ -1,16 +1,13 @@
 import unittest
-import gc
 
 from annotypes import add_call_types, Anno
-from mock import MagicMock, patch
 
-from malcolm.core import Controller, Part, Hook, PartRegistrar, StringMeta, \
+from malcolm.core import Controller, Part, PartRegistrar, StringMeta, \
     Process, Queue, Get, Return, Put, Error, Post, Subscribe, Update, \
     Unsubscribe
 
 with Anno("The return value"):
     AWorld = str
-
 
 
 class MyPart(Part):
@@ -25,7 +22,6 @@ class MyPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        # create_attribute_models(self):
         self.my_attribute = StringMeta(
             description="MyString"
         ).create_attribute_model('hello_block')

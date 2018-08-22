@@ -23,7 +23,8 @@ class PandABlocksFieldPart(Part):
     def __init__(self, client, meta, block_name, field_name,
                  initial_value=None):
         # type: (AClient, AMeta, ABlockName, AFieldName, AInitialValue) -> None
-        super(PandABlocksFieldPart, self).__init__(field_name)
+        part_name = field_name.replace(".", "_")
+        super(PandABlocksFieldPart, self).__init__(part_name)
         self.client = client
         self.meta = meta
         self.block_name = block_name

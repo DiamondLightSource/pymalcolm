@@ -1,10 +1,12 @@
+import re
+
 from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
 from .queue import Queue
 from .hook import Hookable
 from .info import Info
-from .serializable import check_camel_case
+from .serializable import CAMEL_RE
 from .spawned import Spawned
 from .models import MethodModel, AttributeModel
 
@@ -16,6 +18,11 @@ if TYPE_CHECKING:
 
 with Anno("The name of the Part within the Controller"):
     APartName = str
+
+
+# Part names are alphanumeric with underscores and dashes. Dots not allowed as
+# web gui uses dot as "something that can't appear in field or part names"
+PART_NAME_RE = re.compile("[a-zA-Z_\-0-9]*$")
 
 
 class FieldRegistry(object):
@@ -57,7 +64,8 @@ class FieldRegistry(object):
 
     def _add_field(self, owner, name, model, writeable_func):
         # type: (object, str, Field, Callable) -> None
-        check_camel_case(name)
+        assert CAMEL_RE.match(name), \
+            "Field %r published by %s is not camelCase" % (name, owner)
         part_fields = self.fields.setdefault(owner, [])
         part_fields.append((name, model, writeable_func))
 
@@ -100,6 +108,9 @@ class Part(Hookable):
 
     def __init__(self, name):
         # type: (APartName) -> None
+        assert PART_NAME_RE.match(name), \
+            "Expected Alphanumeric part name (dashes and underscores allowed)" \
+            + " got %r" % name
         self.set_logger(part_name=name)
         self.name = name
 
