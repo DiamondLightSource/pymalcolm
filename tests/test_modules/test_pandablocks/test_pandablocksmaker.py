@@ -37,8 +37,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             'OUT.SCALE',
             'OUT.OFFSET',
             'OUT.SCALED',
-            'OUT.CAPTURE',
-            'OUT.DATA_DELAY']
+            'OUT.CAPTURE']
 
         group = o.parts["inputs"]
         assert group.name == "inputs"
@@ -117,15 +116,6 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         assert capture.meta.tags == [
             "group:outputs", "widget:combo", "config:1"]
         assert capture.meta.choices == ["No", "Capture"]
-
-        data_delay = o.parts["OUT.DATA_DELAY"]
-        assert data_delay.block_name == "ADDER1"
-        assert data_delay.field_name == "OUT.DATA_DELAY"
-        assert data_delay.meta.writeable == True
-        self.assertIsInstance(data_delay.meta, NumberMeta)
-        assert data_delay.meta.dtype == "uint8"
-        assert data_delay.meta.tags == [
-            "group:outputs", "widget:textinput", "config:1"]
 
         scale = o.parts["OUT.SCALED"]
         assert scale.block_name == "ADDER1"

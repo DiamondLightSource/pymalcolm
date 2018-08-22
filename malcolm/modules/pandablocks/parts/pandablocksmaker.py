@@ -71,7 +71,6 @@ class PandABlocksMaker(object):
             self._make_out(field_name, field_data, "pos")
             self._make_scale_offset(field_name)
             self._make_out_capture(field_name, field_data)
-            self._make_data_delay(field_name)
         elif typ == "ext_out":
             self._make_out_capture(field_name, field_data)
         elif typ == "bit_mux":
@@ -155,13 +154,6 @@ class PandABlocksMaker(object):
         meta = make_meta(typ, field_data.description,
                          tags=[group, flow_tag], writeable=False)
         self._make_field_part(field_name, meta, writeable=False)
-
-    def _make_data_delay(self, field_name):
-        group = self._make_group("outputs")
-        meta = NumberMeta(
-            "uint8", "How many FPGA ticks to delay data capture",
-            tags=[group, Widget.TEXTINPUT.tag()])
-        self._make_field_part(field_name + ".DATA_DELAY", meta, writeable=True)
 
     def _make_out_capture(self, field_name, field_data):
         group = self._make_group("outputs")
