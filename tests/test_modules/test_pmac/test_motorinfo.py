@@ -14,7 +14,8 @@ class TestMotorPVT(unittest.TestCase):
             max_velocity=1,
             current_position=32.0,
             scannable="t1x",
-            velocity_settle=0.0
+            velocity_settle=0.0,
+            units="mm"
         )
 
     def test_turnaround(self):

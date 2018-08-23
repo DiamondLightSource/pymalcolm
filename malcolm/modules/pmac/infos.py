@@ -29,8 +29,19 @@ class ControllerInfo(Info):
 
 
 class MotorInfo(Info):
-    def __init__(self, cs_axis, cs_port, acceleration, resolution, offset,
-                 max_velocity, current_position, scannable, velocity_settle):
+    def __init__(self,
+                 cs_axis,  # type: str
+                 cs_port,  # type: str
+                 acceleration,   # type: float
+                 resolution,  # type: float
+                 offset,  # type: float
+                 max_velocity,  # type: float
+                 current_position,  # type: float
+                 scannable,  # type: str
+                 velocity_settle,  # type: float
+                 units  # type: str
+                 ):
+        # type: (...) -> None
         self.cs_axis = cs_axis
         self.cs_port = cs_port
         self.acceleration = acceleration
@@ -40,6 +51,7 @@ class MotorInfo(Info):
         self.current_position = current_position
         self.scannable = scannable
         self.velocity_settle = velocity_settle
+        self.units = units
 
     def acceleration_time(self, v1, v2):
         # The time taken to ramp from v1 to pad_velocity

@@ -51,6 +51,11 @@ class CSPart(ChildPart):
         child = context.block_view(self.mri)
         cs_port, self.axis_mapping = MotorInfo.cs_axis_mapping(
             part_info, axesToMove)
+        # Check units for everything in the axis mapping
+        for axis_name, motor_info in sorted(self.axis_mapping.items()):
+            assert motor_info.units == generator.units[axis_name], \
+                "%s: Expected scan units of %r, got %r" % (
+                    axis_name, motor_info.units, generator.units[axis_name])
         # See if we are the CS that should do the moving
         if cs_port != child.port.value:
             return

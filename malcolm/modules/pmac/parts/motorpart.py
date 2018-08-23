@@ -42,6 +42,7 @@ class MotorPart(builtin.parts.ChildPart):
             max_velocity=max_velocity,
             current_position=child.readback.value,
             scannable=self.name,
-            velocity_settle=child.velocitySettle.value
+            velocity_settle=child.velocitySettle.value,
+            units=child.units.value
         )
         return motor_info

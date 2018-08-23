@@ -36,3 +36,8 @@
     name: offset
     description: User offset
     pv: $(prefix).OFF
+
+- ca.parts.CAStringPart:
+    name: units
+    description: Engineering units
+    pv: $(prefix).EGU

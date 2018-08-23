@@ -56,6 +56,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
                 current_position=x_pos,
                 scannable="x",
                 velocity_settle=0.0,
+                units="mm"
             )],
             ypart=[MotorInfo(
                 cs_axis="B",
@@ -67,6 +68,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
                 current_position=y_pos,
                 scannable="y",
                 velocity_settle=0.0,
+                units="mm"
             )],
             brick=[ControllerInfo(i10=1705244, outputs=outputs)]
         )

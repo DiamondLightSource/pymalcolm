@@ -23,7 +23,7 @@ class TestCSPart(ChildTestCase):
     def tearDown(self):
         self.process.stop(timeout=1)
 
-    def make_part_info(self, x_pos=0.5, y_pos=0.0):
+    def make_part_info(self, x_pos=0.5, y_pos=0.0, units="mm"):
         part_info = dict(
             xpart=[MotorInfo(
                 cs_axis="A",
@@ -35,6 +35,7 @@ class TestCSPart(ChildTestCase):
                 current_position=x_pos,
                 scannable="x",
                 velocity_settle=0.0,
+                units=units
             )],
             ypart=[MotorInfo(
                 cs_axis="B",
@@ -46,13 +47,14 @@ class TestCSPart(ChildTestCase):
                 current_position=y_pos,
                 scannable="y",
                 velocity_settle=0.0,
+                units=units
             )],
         )
         return part_info
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
-                     y_pos=0.0, duration=1.0):
-        part_info = self.make_part_info(x_pos, y_pos)
+                     y_pos=0.0, duration=1.0, units="mm"):
+        part_info = self.make_part_info(x_pos, y_pos, units)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], duration)
@@ -60,6 +62,11 @@ class TestCSPart(ChildTestCase):
         self.o.configure(
             self.context, completed_steps, part_info,
             generator, axes_to_scan)
+
+    def test_bad_units(self):
+        with self.assertRaises(AssertionError) as cm:
+            self.do_configure(["x", "y"], units="m")
+        assert str(cm.exception) == "x: Expected scan units of 'm', got 'mm'"
 
     def test_configure(self):
         # Pretend to respond on demand values before they are actually set
