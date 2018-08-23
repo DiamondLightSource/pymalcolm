@@ -130,7 +130,7 @@ class ManagerController(StatefulController):
         self._set_layout_names()
         # If given a default config, load this
         if self.initial_design:
-            self.do_load(self.initial_design)
+            self.do_load(self.initial_design, init=True)
         else:
             # This will trigger all parts to report their layout, making sure
             # the layout table has a valid value. This will also call
@@ -284,8 +284,10 @@ class ManagerController(StatefulController):
                     tag = get_config_tag(field.meta.tags)
                     if tag:
                         # Strip off the "config" tags from attributes
-                        field.meta.set_tags(
-                            [x for x in field.meta.tags if x != tag])
+                        no_config = [x for x in field.meta.tags if x != tag]
+                        assert not get_config_tag(no_config), \
+                            "Field %s has more than one config tag" % field
+                        field.meta.set_tags(no_config)
                         self.our_config_attributes[name] = field
 
     def _get_current_part_fields(self):
@@ -458,7 +460,15 @@ class ManagerController(StatefulController):
         self.try_stateful_function(
             ss.LOADING, ss.READY, self.do_load, value)
 
-    def do_load(self, design):
+    def do_load(self, design, init=False):
+        # type: (str, bool) -> None
+        """Load a design name, running the child LoadHooks.
+
+        Args:
+            design: Name of the design json file, without extension
+            init: Passed to the LoadHook to tell the children if this is being
+                run at Init or not
+        """
         if design:
             filename = self._validated_config_filename(design)
             with open(filename, "r") as f:
@@ -491,16 +501,19 @@ class ManagerController(StatefulController):
         block.put_attribute_values(our_values)
         # Run the load hook to get parts to load their own structure
         self.run_hooks(
-            LoadHook(p, c, children.get(p.name, {}))
+            LoadHook(p, c, children.get(p.name, {}), init)
             for p, c in self.create_part_contexts(only_visible=False).items())
-        self._mark_clean(design)
+        self._mark_clean(design, init)
 
-    def _mark_clean(self, design):
+    def _mark_clean(self, design, init=False):
         with self.changes_squashed:
             self.saved_visibility = self.layout.value.visible
             self.saved_exports = self.exports.value.to_dict()
             # Now we are clean, modified should clear
-            self.part_modified = {}
+            if not init:
+                # Don't clear at init, because some things may not be
+                # clean at init
+                self.part_modified = {}
             self.update_modified()
             self._set_layout_names(design)
             self.design.set_value(design)

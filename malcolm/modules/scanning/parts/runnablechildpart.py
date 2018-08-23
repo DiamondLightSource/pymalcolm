@@ -3,6 +3,7 @@ from annotypes import add_call_types, Anno, Union, Array, Sequence, Any
 from malcolm.core import BadValueError, serialize_object, APartName, \
     Delta, deserialize_object, Subscribe, MethodModel, Unsubscribe, \
     Future, PartRegistrar
+from malcolm.modules.builtin.hooks import AStructure, AInit
 from malcolm.modules.builtin.parts import ChildPart, AMri, AInitialVisibility
 from ..hooks import ConfigureHook, PostRunArmedHook, \
     SeekHook, RunHook, ResumeHook, ACompletedSteps, AContext, ValidateHook, \
@@ -35,6 +36,8 @@ class RunnableChildPart(ChildPart):
         self.serialized_configure = MethodModel().to_dict()
         # The registrar object we get at setup
         self.registrar = None  # type: PartRegistrar
+        # The design we last loaded/saved
+        self.design = None
         # Hooks
         self.register_hooked(ValidateHook, self.validate, self.configure_args)
         self.register_hooked(ConfigureHook, self.configure, self.configure_args)
@@ -76,6 +79,24 @@ class RunnableChildPart(ChildPart):
         if child.abort.writeable:
             child.abort()
         super(RunnableChildPart, self).reset(context)
+
+    @add_call_types
+    def load(self, context, structure, init=False):
+        # type: (AContext, AStructure, AInit) -> None
+        if init:
+            # At init pop out the design so it doesn't get restored here
+            # This stops child devices (like a detector) getting told to
+            # go to multiple conflicting designs at startup
+            design = structure.pop("design", "")
+            super(RunnableChildPart, self).load(context, structure)
+            # Now put it back in the saved structure
+            self.saved_structure["design"] = design
+            # We might not have cleared the changes so report here
+            child = context.block_view(self.mri)
+            self.send_modified_info_if_not_equal(
+                "design", child.design.value)
+        else:
+            super(RunnableChildPart, self).load(context, structure)
 
     @add_call_types
     def validate(self, context, **kwargs):

@@ -256,7 +256,7 @@ class Controller(Hookable):
         hooks = list(hooks)
         if not hooks:
             return Queue(), []
-        self.log.debug("%s: Starting hook", hooks[0].name)
+        self.log.debug("%s: %s: Starting hook", self.mri, hooks[0].name)
         for hook in hooks:
             hook.set_spawn(self.spawn)
         # Take the lock so that no hook abort can come in between now and
@@ -271,6 +271,6 @@ class Controller(Hookable):
             return_dict = wait_hooks(
                 self.log, hook_queue, hook_spawned, DEFAULT_TIMEOUT)
         else:
-            self.log.debug("No Parts hooked")
+            self.log.debug("%s: No Parts hooked", self.mri)
             return_dict = {}
         return return_dict

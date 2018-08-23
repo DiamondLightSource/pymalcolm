@@ -97,7 +97,8 @@ class StatefulController(BasicController):
             if self.state_set.transition_allowed(
                     initial_state=initial_state, target_state=state):
                 self.log.debug(
-                    "Transitioning from %s to %s", initial_state, state)
+                    "%s: Transitioning from %s to %s",
+                    self.mri, initial_state, state)
                 if state == ss.DISABLED:
                     alarm = Alarm.invalid("Disabled")
                 elif state == ss.FAULT:

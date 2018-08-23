@@ -10,6 +10,8 @@ with Anno("The part that has attached to the Hook"):
     APart = Part
 with Anno("Context that should be used to perform operations on child blocks"):
     AContext = Context
+with Anno("Whether this operation is taking place at init"):
+    AInit = bool
 
 T = TypeVar("T")
 
@@ -84,9 +86,10 @@ with Anno("The serialized structure to load"):
 class LoadHook(ControllerHook[None]):
     """Called at load() to load child settings from a structure"""
 
-    def __init__(self, part, context, structure):
-        # type: (APart, AContext, AStructure) -> None
-        super(LoadHook, self).__init__(part, context, structure=structure)
+    def __init__(self, part, context, structure, init):
+        # type: (APart, AContext, AStructure, AInit) -> None
+        super(LoadHook, self).__init__(
+            part, context, structure=structure, init=init)
 
 
 class SaveHook(ControllerHook[AStructure]):

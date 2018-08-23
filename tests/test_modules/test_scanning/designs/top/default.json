@@ -1,0 +1,25 @@
+{
+  "attributes": {
+    "layout": {
+      "FAST": {
+        "x": 0.0, 
+        "y": 0.0, 
+        "visible": true
+      }, 
+      "SLOW": {
+        "x": 0.0, 
+        "y": 0.0, 
+        "visible": true
+      }
+    }, 
+    "exports": {}
+  }, 
+  "children": {
+    "FAST": {
+      "design": "fast"
+    }, 
+    "SLOW": {
+      "design": "slow"
+    }
+  }
+}

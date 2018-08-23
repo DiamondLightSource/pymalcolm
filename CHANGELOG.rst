@@ -20,6 +20,7 @@ Fixed:
 - Fixed pmac so that stretched pulses on a PROFILE_POINTS boundary work
 - Added pollNow() for pmac GPIOs (requires pmac 2-1 or later)
 - Enforce camelCaseFields and Alphanumeric + underscore + dash Part names
+- Don't load child runnable block designs at init
 
 `3-0a3`_ - 2018-07-25
 ---------------------

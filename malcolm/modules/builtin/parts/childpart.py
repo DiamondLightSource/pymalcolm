@@ -3,10 +3,10 @@ import re
 import numpy as np
 from annotypes import Anno, add_call_types, TYPE_CHECKING
 
-from malcolm.compat import OrderedDict
+from malcolm.compat import OrderedDict, clean_repr
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
     Unsubscribe, APartName, Port, Controller, Response, DEFAULT_TIMEOUT, \
-    get_config_tag
+    get_config_tag, Update, Return
 from ..infos import PortInfo, LayoutInfo, OutPortInfo, InPortInfo, \
     PartExportableInfo, PartModifiedInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
@@ -148,12 +148,12 @@ class ChildPart(Part):
                     iteration = int(tag.split(":")[1])
                     iterations.setdefault(iteration, {})[k] = (attr, v)
                 else:
-                    self.log.warning("Attr %s is not config tagged" % k)
+                    self.log.warning(
+                        "Attr %s is not config tagged, not restoring" % k)
         # Do this first so that any callbacks that happen in the put know
         # not to notify controller
         self.saved_structure = structure
-        # TODO: only load design if visible and not at init
-        for _, params in sorted(iterations.items()):
+        for name, params in sorted(iterations.items()):
             # Call each iteration as a separate operation, only putting the
             # ones that need to change
             to_set = {}
@@ -181,10 +181,15 @@ class ChildPart(Part):
         # Get a child context to check if we have a config field
         child = self.child_controller.make_view()
         spawned = []
-        if response.value:
+        if isinstance(response, Update):
             new_fields = response.value
-        else:
+        elif isinstance(response, Return):
+            # We got a return with None, so clear out all of the
+            # config_subscriptions
             new_fields = []
+        else:
+            self.log.warning("Got unexpected response %s", response)
+            return
 
         # Remove any existing subscription that is not in the new fields
         for subscribe in self.config_subscriptions.values():
@@ -241,14 +246,21 @@ class ChildPart(Part):
 
     def update_part_modified(self, response):
         # type: (Response) -> None
-        subscribe = self.config_subscriptions[response.id]
-        name = subscribe.path[-2]
+        if isinstance(response, Update):
+            subscribe = self.config_subscriptions[response.id]
+            name = subscribe.path[-2]
+            self.send_modified_info_if_not_equal(name, response.value)
+        elif not isinstance(response, Return):
+            self.log.warning("Got unexpected response %r", response)
+
+    def send_modified_info_if_not_equal(self, name, new_value):
         original_value = self.saved_structure[name]
         try:
-            np.testing.assert_equal(original_value, response.value)
+            np.testing.assert_equal(original_value, new_value)
         except AssertionError:
-            message = "%s.%s.value = %r not %r" % (
-                self.name, name, response.value, original_value)
+            message = "%s.%s.value = %s not %s" % (
+                self.name, name, clean_repr(new_value),
+                clean_repr(original_value))
         else:
             message = None
         last_message = self.modified_messages.get(name, None)

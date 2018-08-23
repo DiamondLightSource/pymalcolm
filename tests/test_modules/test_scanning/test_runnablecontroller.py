@@ -3,7 +3,7 @@ import time
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.core import Process, Part, Context, ResponseError, AlarmStatus, \
+from malcolm.core import Process, Part, Context, AlarmStatus, \
     AlarmSeverity, AbortedError
 from malcolm.modules.scanning.parts import RunnableChildPart
 from malcolm.modules.demo.blocks import ticker_block
@@ -121,7 +121,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.b_child.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b_child.modified.alarm.message == \
-               "x.counter.value = 31.0 not 0.0"
+            "x.counter.value = 31.0 not 0.0"
         self.prepare_half_run()
         self.b.run()
         # x counter now at 2, child should be modified by us
@@ -129,7 +129,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.b_child.modified.alarm.severity == AlarmSeverity.NO_ALARM
         assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b_child.modified.alarm.message == \
-               "(We modified) x.counter.value = 2.0 not 0.0"
+            "(We modified) x.counter.value = 2.0 not 0.0"
         assert x.counter.value == 2.0
         x.counter.put_value(0.0)
         # x counter now at 0, child should be unmodified
@@ -150,7 +150,17 @@ class TestRunnableController(unittest.TestCase):
         assert self.b.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b.modified.alarm.message == \
-               "part2.design.value = 'new_child' not 'init_child'"
+            "part2.design.value = 'new_child' not 'init_child'"
+        # Load the child again
+        self.b_child.design.put_value("new_child")
+        assert self.b.modified.value is True
+        # And check that loading parent resets it
+        self.b.design.put_value("init_parent")
+        assert self.b.modified.value is False
+        assert self.b_child.design.value == "init_child"
+        # Put back
+        self.b_child.design.put_value("new_child")
+        assert self.b.modified.value is True
         # Do a configure, and check we get set back
         self.prepare_half_run()
         assert self.b_child.design.value == "init_child"

@@ -4,24 +4,31 @@ import sys
 from xml.etree import cElementTree as ET
 import os
 
-try:
+if sys.version_info < (3,):
     # python 2
-    import Queue as queue  # noqa
-except ImportError:
+    import Queue as queue
+else:
     # python 3
-    import queue  # noqa
+    import queue
 
-try:
+if sys.version_info < (3,):
     # python 2
     str_ = basestring
-except NameError:
+
+    def clean_repr(x):
+        if isinstance(x, unicode):
+            return repr(x)[1:]
+        else:
+            return repr(x)
+else:
     # python 3
     str_ = str
+    clean_repr = repr
 
-try:
+if sys.version_info < (3,):
     # python 2
     long_ = long  # pylint:disable=invalid-name
-except NameError:
+else:
     # python 3
     long_ = int  # pylint:disable=invalid-name
 
