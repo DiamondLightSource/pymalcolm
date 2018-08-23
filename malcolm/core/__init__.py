@@ -5,7 +5,7 @@ from .controller import Controller, AMri, ADescription, AUseCothread, \
     DEFAULT_TIMEOUT
 from .define import Define
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
-    UnexpectedError, YamlError, FieldError
+    UnexpectedError, YamlError, FieldError, NotWriteableError
 from .future import Future
 from .hook import Hook
 from .info import Info

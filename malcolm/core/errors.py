@@ -39,5 +39,10 @@ class YamlError(MalcolmException):
 
 
 class FieldError(MalcolmException):
-    """Basically a KeyError but doesn't include quotation marks in error message"""
+    """Basically a KeyError but without quotation marks in error message"""
     pass
+
+
+class NotWriteableError(MalcolmException):
+    """The field is not currently writeable, so cannot Put or Post to it"""
+

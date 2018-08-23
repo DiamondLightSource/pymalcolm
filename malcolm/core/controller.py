@@ -4,7 +4,7 @@ from annotypes import TYPE_CHECKING, Anno, Sequence, overload
 
 from malcolm.compat import OrderedDict
 from .context import Context
-from .errors import UnexpectedError, WrongThreadError
+from .errors import UnexpectedError, WrongThreadError, NotWriteableError
 from .hook import Hookable, start_hooks, wait_hooks, Hook
 from .info import Info
 from .models import BlockModel, AttributeModel, MethodModel, Model
@@ -204,15 +204,26 @@ class Controller(Hookable):
         ret = [request.return_response(serialized)]
         return ret
 
+    def check_field_writeable(self, field):
+        if isinstance(field, AttributeModel):
+            if not field.meta.writeable:
+                raise NotWriteableError(
+                    "Attribute %s is not writeable" % field.path)
+        elif isinstance(field, MethodModel):
+            if not field.writeable:
+                raise NotWriteableError(
+                    "Method %s is not writeable" % field.path)
+
     def _handle_put(self, request):
         # type: (Put) -> CallbackResponses
         """Called with the lock taken"""
         attribute_name = request.path[1]
 
         attribute = self._block[attribute_name]
+        assert isinstance(attribute, AttributeModel), \
+            "Cannot Put to %s which is a %s" % (attribute.path, type(attribute))
+        self.check_field_writeable(attribute)
 
-        assert attribute.meta.writeable, \
-            "Attribute %s is not writeable" % attribute_name
         put_function = self._write_functions[attribute_name]
         value = attribute.meta.validate(request.value)
 
@@ -232,12 +243,13 @@ class Controller(Hookable):
         else:
             param_dict = {}
 
-        method = self._block[method_name]  # type: MethodModel
-        assert method.writeable, \
-            "Method %s is not writeable" % method_name
-        args = method.validate(param_dict)
+        method = self._block[method_name]
+        assert isinstance(method, MethodModel), \
+            "Cannot Post to %s which is a %s" % (method.path, type(method))
+        self.check_field_writeable(method)
 
         post_function = self._write_functions[method_name]
+        args = method.validate(param_dict)
 
         with self.lock_released:
             result = post_function(**args)

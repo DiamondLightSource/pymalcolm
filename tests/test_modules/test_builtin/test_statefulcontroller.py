@@ -4,7 +4,7 @@ import gc
 from annotypes import add_call_types
 
 from malcolm.compat import OrderedDict
-from malcolm.core import Part, Process
+from malcolm.core import Part, Process, NotWriteableError
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.builtin.hooks import ResetHook, DisableHook, InitHook, \
     HaltHook, SaveHook, AContext, AStructure
@@ -111,6 +111,10 @@ class TestStatefulController(unittest.TestCase):
         self.b.disable()
         assert self.part.disable_done
         assert self.b.state.value == "Disabled"
+        with self.assertRaises(NotWriteableError) as cm:
+            self.b.disable()
+        assert str(cm.exception) == \
+            "Method ['MyMRI', 'disable'] is not writeable in state Disabled"
         assert not self.part.reset_done
         self.b.reset()
         assert self.part.reset_done

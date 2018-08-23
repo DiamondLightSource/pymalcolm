@@ -2,7 +2,8 @@ from annotypes import TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Alarm, MethodModel, AttributeModel, ProcessStartHook, \
-    ProcessStopHook, ChoiceMeta, Hook, Widget, Context, Part, Request
+    ProcessStopHook, ChoiceMeta, Hook, Widget, Context, Part, Request, \
+    NotWriteableError
 from malcolm.modules.builtin.util import StatefulStates
 from .basiccontroller import BasicController, AMri, ADescription, AUseCothread
 from ..hooks import InitHook, ResetHook, DisableHook, HaltHook
@@ -84,6 +85,13 @@ class StatefulController(BasicController):
     def go_to_error_state(self, exception):
         if self.state.value != ss.FAULT:
             self.transition(ss.FAULT, str(exception))
+
+    def check_field_writeable(self, field):
+        try:
+            super(StatefulController, self).check_field_writeable(field)
+        except NotWriteableError as e:
+            msg = "%s in state %s" % (e, self.state.value)
+            raise NotWriteableError(msg)
 
     def transition(self, state, message=""):
         """Change to a new state if the transition is allowed
