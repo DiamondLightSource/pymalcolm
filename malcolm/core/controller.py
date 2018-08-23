@@ -198,7 +198,8 @@ class Controller(Hookable):
                 else:
                     typ = type(data)
                 raise UnexpectedError(
-                    "Object %s of type %r has no attribute %r" % (request.path[:i+1], typ, endpoint))
+                    "Object %s of type %r has no attribute %r" % (
+                        request.path[:i+1], typ, endpoint))
         # Important to serialize now with the lock so we get a consistent set
         serialized = serialize_object(data)
         ret = [request.return_response(serialized)]
@@ -230,7 +231,14 @@ class Controller(Hookable):
         with self.lock_released:
             result = put_function(value)
 
-        # Don't need to serialize as the result is None, at the moment...
+        if request.get and result is None:
+            # We asked for a Get, and didn't get given a return, so do return
+            # the current value. Don't serialize here as value is immutable
+            # (as long as we don't try too hard to break the rules)
+            result = self._block[attribute_name].value
+        elif not request.get:
+            # We didn't ask for a Get, so throw result away
+            result = None
         ret = [request.return_response(result)]
         return ret
 

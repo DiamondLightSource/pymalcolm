@@ -19,6 +19,8 @@ with Anno("Path to target Block substructure"):
     APath = Array[str]
 with Anno("Value to put"):
     AValue = Any
+with Anno("If set then return the current value in Return when Put completes"):
+    AGet = bool
 with Anno("Parameters to use in a method Post"):
     AParameters = Mapping[str, Any]
 with Anno("Notify of differences only"):
@@ -91,14 +93,15 @@ class Get(PathRequest):
 @Serializable.register_subclass("malcolm:core/Put:1.0")
 class Put(PathRequest):
     """Create a Put Request object"""
-    __slots__ = ["value"]
+    __slots__ = ["value", "get"]
 
     # Allow id to shadow builtin id so id is a key in the serialized dict
     # noinspection PyShadowingBuiltins
-    def __init__(self, id=0, path=None, value=None):
-        # type: (AId, UPath, AValue) -> None
+    def __init__(self, id=0, path=None, value=None, get=False):
+        # type: (AId, UPath, AValue, AGet) -> None
         super(Put, self).__init__(id, path)
         self.value = serialize_object(value)
+        self.get = get
 
 
 @Serializable.register_subclass("malcolm:core/Post:1.0")

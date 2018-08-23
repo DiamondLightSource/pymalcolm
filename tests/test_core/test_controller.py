@@ -70,7 +70,8 @@ class TestController(unittest.TestCase):
         assert response.id == 41
         assert response.value["value"] == "hello_block"
         self.part.my_attribute.meta.writeable = False
-        request = Put(id=42, path=["mri", "myAttribute"], value='hello_block2')
+        request = Put(
+            id=42, path=["mri", "myAttribute"], value='hello_block2', get=True)
         request.set_callback(q.put)
         self.o.handle_request(request)
         response = q.get(timeout=.1)

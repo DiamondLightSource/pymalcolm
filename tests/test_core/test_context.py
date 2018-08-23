@@ -45,10 +45,11 @@ class TestContext(unittest.TestCase):
         self.controller.make_view.assert_called_once_with(ANY)
 
     def test_put(self):
-        self.o._q.put(Return(1, None))
-        self.o.put(["block", "attr", "value"], 32)
+        self.o._q.put(Return(1, 33))
+        ret = self.o.put(["block", "attr", "value"], 32)
         self.assert_handle_request_called_with(
             Put(1, ["block", "attr", "value"], 32))
+        assert ret == 33
 
     def test_put_failure(self):
         self.o._q.put(Error(1, ResponseError("Test Exception")))

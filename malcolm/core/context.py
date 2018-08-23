@@ -156,10 +156,14 @@ class Context(object):
                 if None
             event_timeout: maximum time in seconds to wait between each response
                 event, wait forever if None
+
+        Returns:
+            The value after the put completes
         """
         future = self.put_async(path, value)
         self.wait_all_futures(
             future, timeout=timeout, event_timeout=event_timeout)
+        return future.result()
 
     def put_async(self, path, value):
         """"Puts a value to a path and returns immediately
