@@ -23,7 +23,7 @@ class TestTitlePart(unittest.TestCase):
         assert self.o.name == "label"
         assert self.o.attr.value == "My label"
         assert self.o.attr.meta.tags == [
-            "widget:title", "config:1"]
+            "widget:textinput", "config:1"]
         assert self.b.meta.label == "My label"
 
     def test_setter(self):

@@ -48,6 +48,7 @@ class Widget(Enum):
     NONE = ""  # Force no widget
     TEXTINPUT = "textinput"  # Editable text input box
     TEXTUPDATE = "textupdate"  # Read only text update
+    MULTILINETEXTUPDATE = "multilinetextupdate"  # Multi line text update
     LED = "led"  # On/Off LED indicator
     COMBO = "combo"  # Select from a number of choice values
     ICON = "icon"  # This field gives the URL for an icon for the whole Block
@@ -55,7 +56,7 @@ class Widget(Enum):
     TABLE = "table"  # Table of rows. A list is a single column table
     CHECKBOX = "checkbox"  # A box that can be checked or not
     FLOWGRAPH = "flowgraph"  # Boxes with lines for child block connections
-    TITLE = "title"  # This widget should be used as the title of the page
+    TREE = "tree"  # A nested tree of object models editor
 
     def tag(self):
         assert self != Widget.NONE, "Widget.NONE has no widget tag"

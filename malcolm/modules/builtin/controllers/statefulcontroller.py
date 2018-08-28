@@ -2,15 +2,14 @@ from annotypes import TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Alarm, MethodModel, AttributeModel, ProcessStartHook, \
-    ProcessStopHook, ChoiceMeta, Hook, Widget, Context, Part, Request, \
-    NotWriteableError
+    ProcessStopHook, ChoiceMeta, Widget, Context, Part, NotWriteableError
 from malcolm.modules.builtin.util import StatefulStates
 from .basiccontroller import BasicController, AMri, ADescription, AUseCothread
 from ..hooks import InitHook, ResetHook, DisableHook, HaltHook
 from ..infos import HealthInfo
 
 if TYPE_CHECKING:
-    from typing import Union, Dict, Callable
+    from typing import Union, Dict
     Field = Union[AttributeModel, MethodModel]
     ChildrenWriteable = Dict[str, Dict[Field, bool]]
 
@@ -29,7 +28,9 @@ class StatefulController(BasicController):
         self._children_writeable = {}  # type: ChildrenWriteable
         self.state = ChoiceMeta(
             "StateMachine State of Block", self.state_set.possible_states,
-            tags=[Widget.TEXTUPDATE.tag()]).create_attribute_model(ss.DISABLING)
+            tags=[Widget.MULTILINETEXTUPDATE.tag()]
+            # Start DISABLING so we can immediately go to DISABLED
+        ).create_attribute_model(ss.DISABLING)
         self.field_registry.add_attribute_model("state", self.state)
         self.field_registry.add_method_model(self.disable)
         self.set_writeable_in(self.field_registry.add_method_model(self.reset),

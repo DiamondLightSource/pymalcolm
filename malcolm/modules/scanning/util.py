@@ -70,8 +70,11 @@ class PointGeneratorMeta(VMeta):
 
     attribute_class = NTUnion
 
+    def doc_type_string(self):
+        return "CompoundGenerator"
+
     def default_widget(self):
-        return Widget.NONE
+        return Widget.TREE
 
     def validate(self, value):
         if value is None:
