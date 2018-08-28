@@ -34,9 +34,9 @@ class TestCSOutlinksPart(unittest.TestCase):
             'a', 'b', 'c', 'u', 'v', 'w', 'x', 'y', 'z', 'i']
         assert self.b.cs.value == "BRICK1CS1"
         assert self.b.a.value == ""
-        assert self.b.a.meta.tags == ["sourceport:motor:BRICK1CS1,A"]
+        assert self.b.a.meta.tags == ["sourcePort:motor:BRICK1CS1,A"]
         assert self.b.v.value == ""
-        assert self.b.v.meta.tags == ["sourceport:motor:BRICK1CS1,V"]
+        assert self.b.v.meta.tags == ["sourcePort:motor:BRICK1CS1,V"]
         assert self.b.i.value == ""
-        assert self.b.i.meta.tags == ["sourceport:motor:BRICK1CS1,I"]
+        assert self.b.i.meta.tags == ["sourcePort:motor:BRICK1CS1,I"]
 

@@ -24,8 +24,9 @@ Fixed:
 - Error message when a Field is not writeable now shows current state
 - Check generator units match axis units in pmac cs part
 - Added "get" option to Put to allow current value to be returned
-- out/inports are now source/destinationports
+- out/inports are now source/sinkPorts
 - Added widget:tree and widget:multilinetextupdate and removed widget:title
+- rbv_suff is now rbv_suffix
 
 `3-0a3`_ - 2018-07-25
 ---------------------

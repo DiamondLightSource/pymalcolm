@@ -42,7 +42,7 @@ class CAPartsTest(unittest.TestCase):
             name="pv",
             description="a test pv",
             pv="%s:CAM:AcquireTime" % self.prefix,
-            rbv_suff="_RBV")
+            rbv_suffix="_RBV")
 
         for i in range(1, 6):
             f = i / 2.0
@@ -57,7 +57,7 @@ class CAPartsTest(unittest.TestCase):
             name="pv",
             description="a test pv",
             pv="%s:CAM:DataType" % self.prefix,
-            rbv_suff="_RBV")
+            rbv_suffix="_RBV")
 
         for i in [1, 5]:
             p.caput(i)
@@ -74,7 +74,7 @@ class CAPartsTest(unittest.TestCase):
             name="pv",
             description="a test pv",
             pv="%s:CAM:BinX" % self.prefix,
-            rbv_suff="_RBV")
+            rbv_suffix="_RBV")
 
         for i in range(1, 6):
             f = i / 2.0
@@ -89,7 +89,7 @@ class CAPartsTest(unittest.TestCase):
             name="pv",
             description="a test pv",
             pv="%s:ROI:Name" % self.prefix,
-            rbv_suff="_RBV")
+            rbv_suffix="_RBV")
 
         for s in ["Hello", "World", "Again"]:
             p.caput(s)
@@ -115,7 +115,7 @@ class CAPartsTest(unittest.TestCase):
             name="pv",
             description="a test pv",
             pv="%s:CAM:NDAttributesFile" % self.prefix,
-            rbv_suff="")
+            rbv_suffix="")
 
         for s in ['Testing', '1111', '2222']:
             p.caput(s)

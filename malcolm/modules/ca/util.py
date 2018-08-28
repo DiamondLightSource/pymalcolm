@@ -7,7 +7,7 @@ from malcolm.compat import maybe_import_cothread
 from malcolm.core import Queue, VMeta, Alarm, AlarmStatus, TimeStamp, \
     Loggable, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
 from malcolm.modules.builtin.util import set_tags, AWidget, AGroup, AConfig, \
-    ADestinationPort
+    ASinkPort
 from malcolm.modules.builtin.hooks import InitHook, ResetHook, DisableHook
 
 if TYPE_CHECKING:
@@ -27,8 +27,8 @@ with Anno("Full pv of demand and default for rbv"):
     APv = str
 with Anno("Override for rbv"):
     ARbv = str
-with Anno("Set rbv to pv + rbv_suff"):
-    ARbvSuff = str
+with Anno("Set rbv to pv + rbv_suffix"):
+    ARbvSuffix = str
 with Anno("Minimum time between attribute updates in seconds"):
     AMinDelta = float
 with Anno("Max time to wait for puts to complete, <0 is forever"):
@@ -41,10 +41,10 @@ class CAAttribute(Loggable):
                  datatype,  # type: Any
                  pv="",  # type: APv
                  rbv="",  # type: ARbv
-                 rbv_suff="",  # type: ARbvSuff
+                 rbv_suffix="",  # type: ARbvSuffix
                  min_delta=0.05,  # type: AMinDelta
                  timeout=DEFAULT_TIMEOUT,  # type: ATimeout
-                 inport=None,  # type: ADestinationPort
+                 sink_port=None,  # type: ASinkPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
@@ -53,12 +53,12 @@ class CAAttribute(Loggable):
         # type: (...) -> None
         self.set_logger(pv=pv, rbv=rbv)
         writeable = bool(pv)
-        set_tags(meta, writeable, config, group, widget, inport)
+        set_tags(meta, writeable, config, group, widget, sink_port)
         if not rbv and not pv:
             raise ValueError('Must pass pv or rbv')
         if not rbv:
-            if rbv_suff:
-                rbv = pv + rbv_suff
+            if rbv_suffix:
+                rbv = pv + rbv_suffix
             else:
                 rbv = pv
         self.pv = pv

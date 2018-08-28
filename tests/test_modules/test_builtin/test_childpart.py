@@ -1,10 +1,10 @@
 import unittest
 
-from malcolm.core import Part, Process, Table, Context, StringMeta, \
-    PartRegistrar, Port
+from malcolm.core import Part, Process, Context, StringMeta, \
+    PartRegistrar, config_tag, Port
 from malcolm.modules.builtin.controllers import BasicController, \
     ManagerController
-from malcolm.modules.builtin.infos import InPortInfo, OutPortInfo
+from malcolm.modules.builtin.infos import SinkPortInfo, SourcePortInfo
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import LayoutTable
 
@@ -16,17 +16,17 @@ class PortsPart(Part):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(PortsPart, self).setup(registrar)
-        # note 3rd part of inport tag is its disconnected value
-        in_tag = "inport:int32:"
-        in_name = "inportConnector"
-        in_port = StringMeta(in_name,
-                             [in_tag, "config:1"]).create_attribute_model()
-        registrar.add_attribute_model(in_name, in_port, in_port.set_value)
+        attr = StringMeta(
+            tags=[Port.INT32.sink_port_tag(""), config_tag(1)]
+        ).create_attribute_model()
+        registrar.add_attribute_model(
+            "sinkportConnector", attr, attr.set_value)
 
-        out_name = "outportConnector"
-        out_tag = "outport:int32:%s" % self.name
-        out_port = StringMeta(in_name, [out_tag]).create_attribute_model()
-        registrar.add_attribute_model(out_name, out_port, out_port.set_value)
+        attr = StringMeta(
+            tags=[Port.INT32.source_port_tag(self.name)]
+        ).create_attribute_model()
+        registrar.add_attribute_model(
+            "sourceportConnector", attr, attr.set_value)
 
 
 class TestChildPart(unittest.TestCase):
@@ -34,11 +34,11 @@ class TestChildPart(unittest.TestCase):
     def checkState(self, state):
         assert self.c.state.value == state
 
-    def makeChildBlock(self, blockMri):
-        controller = BasicController(blockMri)
-        controller.add_part(PortsPart(name='Connector%s' % blockMri[-1]))
+    def makeChildBlock(self, block_mri):
+        controller = BasicController(block_mri)
+        controller.add_part(PortsPart(name='Connector%s' % block_mri[-1]))
         part = ChildPart(
-            mri=blockMri, name='part%s' % blockMri, stateful=False,
+            mri=block_mri, name='part%s' % block_mri, stateful=False,
             initial_visibility=True)
         self.p.add_controller(controller)
         return part, controller
@@ -49,9 +49,9 @@ class TestChildPart(unittest.TestCase):
         self.p1, self.c1 = self.makeChildBlock('child1')
         self.p2, self.c2 = self.makeChildBlock('child2')
         self.p3, self.c3 = self.makeChildBlock('child3')
-        self.c1._block.inportConnector.set_value('Connector3')
-        self.c2._block.inportConnector.set_value('Connector1')
-        self.c3._block.inportConnector.set_value('Connector2')
+        self.c1._block.sinkportConnector.set_value('Connector3')
+        self.c2._block.sinkportConnector.set_value('Connector1')
+        self.c3._block.sinkportConnector.set_value('Connector2')
 
         # create a root block for the child blocks to reside in
         self.c = ManagerController(mri='mainBlock', config_dir="/tmp")
@@ -71,30 +71,30 @@ class TestChildPart(unittest.TestCase):
     def test_init(self):
         for controller in (self.c1, self.c2, self.c3):
             b = self.p.block_view(controller.mri)
-            assert b.outportConnector.value == ''
+            assert b.sourceportConnector.value == ''
         assert self.c.exports.meta.elements["source"].choices == [
             'partchild1.health',
-            'partchild1.inportConnector',
-            'partchild1.outportConnector',
+            'partchild1.sinkportConnector',
+            'partchild1.sourceportConnector',
             'partchild2.health',
-            'partchild2.inportConnector',
-            'partchild2.outportConnector',
+            'partchild2.sinkportConnector',
+            'partchild2.sourceportConnector',
             'partchild3.health',
-            'partchild3.inportConnector',
-            'partchild3.outportConnector'
+            'partchild3.sinkportConnector',
+            'partchild3.sourceportConnector'
         ]
         assert len(self.c.port_info) == 3
         port_info = self.c.port_info["partchild1"]
         assert len(port_info) == 2
         info_in = port_info[0]
-        assert isinstance(info_in, InPortInfo)
-        assert info_in.name == "inportConnector"
+        assert isinstance(info_in, SinkPortInfo)
+        assert info_in.name == "sinkportConnector"
         assert info_in.port == Port.INT32
         assert info_in.value == "Connector3"
         assert info_in.disconnected_value == ""
         info_out = port_info[1]
-        assert isinstance(info_out, OutPortInfo)
-        assert info_out.name == "outportConnector"
+        assert isinstance(info_out, SourcePortInfo)
+        assert info_out.name == "sourceportConnector"
         assert info_out.port == Port.INT32
         assert info_out.connected_value == "Connector1"
 
@@ -124,26 +124,26 @@ class TestChildPart(unittest.TestCase):
         assert self.c.parts['partchild2'].visible == False
         assert self.c.parts['partchild3'].visible == True
 
-    def test_sever_all_inports(self):
+    def test_sever_all_sink_ports(self):
         b = self.p.block_view("mainBlock")
         b1, b2, b3 = (self.c1.make_view(), self.c2.make_view(),
                       self.c3.make_view())
         new_layout = dict(
             name=["partchild1"], mri=[""], x=[0], y=[0], visible=[False])
         b.layout.put_value(new_layout)
-        assert b1.inportConnector.value == ''
-        assert b2.inportConnector.value == ''
-        assert b3.inportConnector.value == 'Connector2'
+        assert b1.sinkportConnector.value == ''
+        assert b2.sinkportConnector.value == ''
+        assert b3.sinkportConnector.value == 'Connector2'
 
     def test_load_save(self):
         b1 = self.c1.make_view()
         context = Context(self.p)
         structure1 = self.p1.save(context)
-        expected = dict(inportConnector="Connector3")
+        expected = dict(sinkportConnector="Connector3")
         assert structure1 == expected
-        b1.inportConnector.put_value("blah")
+        b1.sinkportConnector.put_value("blah")
         structure2 = self.p1.save(context)
-        expected = dict(inportConnector="blah")
+        expected = dict(sinkportConnector="blah")
         assert structure2 == expected
-        self.p1.load(context, dict(inportConnector="blah_again"))
-        assert b1.inportConnector.value == "blah_again"
+        self.p1.load(context, dict(sinkportConnector="blah_again"))
+        assert b1.sinkportConnector.value == "blah_again"

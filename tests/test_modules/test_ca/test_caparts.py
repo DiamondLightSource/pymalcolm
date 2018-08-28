@@ -35,7 +35,7 @@ class TestCAParts(unittest.TestCase):
 
         catools.checking_caget.side_effect = [[Initial(0), Initial(0)]]
         b = self.create_block(CABooleanPart(
-                name="attrname", description="desc", pv="pv", rbv_suff="2"))
+                name="attrname", description="desc", pv="pv", rbv_suffix="2"))
         assert b.attrname.value is False
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable

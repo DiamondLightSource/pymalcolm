@@ -29,7 +29,7 @@
     name: arrayCallbacks
     description: Whether to produce images or not
     pv: $(prefix):XBUF:ArrayCallbacks
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: arrayCounter
@@ -45,13 +45,13 @@
     name: collectMode
     description: set spectra or mapping
     pv: $(prefix):CollectMode
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAChoicePart:
     name: pixelAdvanceMode
     description: pixel mode
     pv: $(prefix):PixelAdvanceMode
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAChoicePart:
     name: presetMode
@@ -62,19 +62,19 @@
     name: ignoreGate
     description: Ignore Gate
     pv: $(prefix):IgnoreGate
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: pixelsPerRun
     description: Pixels Per Run
     pv: $(prefix):PixelsPerRun
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAChoicePart:
     name: autoPixelsPerBuffer
     description: Auto pixels per buffer
     pv: $(prefix):AutoPixelsPerBuffer
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: binsInSpectrum
@@ -86,35 +86,35 @@
     name: dxp1MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP1:MaxEnergy
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CADoublePart:
     name: dxp2MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP2:MaxEnergy
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CADoublePart:
     name: dxp3MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP3:MaxEnergy
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CADoublePart:
     name: dxp4MaxEnergy
     description: MCA Max Energy
     pv: $(prefix):DXP4:MaxEnergy
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: pixelsPerBuffer
     description: Pixels Per Buffer
     pv: $(prefix):PixelsPerBuffer
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAChoicePart:
     name: inputLogicPolarity
     description: Input Logic Polarity
     pv: $(prefix):InputLogicPolarity
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 

@@ -17,4 +17,4 @@
     name: fillValue
     description: Fill value for gaps
     pv: $(prefix):GapFillConstant
-    rbv_suff: _RBV
+    rbv_suffix: _RBV

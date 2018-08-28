@@ -23,11 +23,11 @@
     name: gainX
     description: Gain in the X direction for generating image
     pv: $(prefix):GainX
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CADoublePart:
     name: gainY
     description: Gain in the Y direction for generating image
     pv: $(prefix):GainY
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 

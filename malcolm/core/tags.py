@@ -1,8 +1,10 @@
+import re
+
 from enum import Enum
 from annotypes import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Sequence, Union
+    from typing import Sequence, Union, Tuple
 
 
 def method_return_unpacked():
@@ -63,6 +65,9 @@ class Widget(Enum):
         return "widget:%s" % self.value
 
 
+port_tag_re = re.compile(r"(source|sink)Port:(.*):(.*)")
+
+
 class Port(Enum):
     """Enum with all the known flowgraph port tags to appear on Attribute
     Metas"""
@@ -71,27 +76,45 @@ class Port(Enum):
     NDARRAY = "NDArray"  # areaDetector NDArray port
     MOTOR = "motor"  # motor record connection to CS or controller
 
-    def destinationport_tag(self, disconnected_value):
-        """Add a tag indicating this is a Source Port of the given type
+    def sink_port_tag(self, disconnected_value):
+        """Add a tag indicating this is a Sink Port of the given type
 
         Args:
             disconnected_value: What value should the Attribute be set to
                 when the port is disconnected
         """
-        return "destinationport:%s:%s" % (self.value, disconnected_value)
+        return "sinkPort:%s:%s" % (self.value, disconnected_value)
 
-    def sourceport_tag(self, connected_value):
-        """Add a tag indicating this is a Destination Port of the given type
+    def source_port_tag(self, connected_value):
+        """Add a tag indicating this is a Source Port of the given type
 
         Args:
-            connected_value: What value should a Destination Port be set to if
+            connected_value: What value should a Sink Port be set to if
                 it is connected to this port
         """
-        return "sourceport:%s:%s" % (self.value, connected_value)
+        return "sourcePort:%s:%s" % (self.value, connected_value)
 
-    def with_sourceport_tag(self, tags, connected_value):
+    def with_source_port_tag(self, tags, connected_value):
         """Add a Source Port tag to the tags list, removing any other Source
         Ports"""
-        new_tags = [t for t in tags if not t.startswith("sourceport:")]
-        new_tags.append(self.sourceport_tag(connected_value))
+        new_tags = [t for t in tags if not t.startswith("sourcePort:")]
+        new_tags.append(self.source_port_tag(connected_value))
         return new_tags
+
+    @classmethod
+    def port_tag_details(cls, tags):
+        # type: (Sequence[str]) -> Union[Tuple[bool, Port, str], None]
+        """Search tags for port info, returning it
+
+        Args:
+            tags: A list of tags to check
+
+        Returns:
+            None or (is_source, port, connected_value|disconnected_value)
+            where port is one of the Enum entries of Port
+        """
+        for tag in tags:
+            match = port_tag_re.match(tag)
+            if match:
+                source_sink, port, extra = match.groups()
+                return source_sink == "source", cls(port), extra

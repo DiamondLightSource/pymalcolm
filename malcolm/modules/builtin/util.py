@@ -12,8 +12,8 @@ with Anno("If given, which GUI group should we attach to"):
     AGroup = str
 with Anno("If given, use this widget instead of the default"):
     AWidget = Widget
-with Anno("If given, mark this as a Destination Port of the given type"):
-    ADestinationPort = Port
+with Anno("If given, mark this as a Sink Port of the given type"):
+    ASinkPort = Port
 
 
 def set_tags(meta,  # type: VMeta
@@ -21,7 +21,7 @@ def set_tags(meta,  # type: VMeta
              config=1,  # type: AConfig
              group=None,  # type: AGroup
              widget=None,  # type: AWidget
-             destinationport=None,  # type: ADestinationPort
+             sink_port=None,  # type: ASinkPort
              ):
     # type: (...) -> None
     tags = []
@@ -36,8 +36,8 @@ def set_tags(meta,  # type: VMeta
     if group:
         # If we have a group then add the tag
         tags.append(group_tag(group))
-    if destinationport:
-        tags.append(destinationport.destinationport_tag(disconnected_value=""))
+    if sink_port:
+        tags.append(sink_port.sink_port_tag(disconnected_value=""))
     meta.set_tags(tags)
 
 

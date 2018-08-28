@@ -24,4 +24,4 @@
     name: computeStatistics
     description: Compute min, max, mean, tot, sigma, net
     pv: $(prefix):ComputeStatistics
-    rbv_suff: _RBV
+    rbv_suffix: _RBV

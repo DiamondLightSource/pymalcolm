@@ -10,7 +10,7 @@ with Anno("PV prefix for CSPort and CSAxis records"):
 
 class RawMotorCSPart(Part):
     """Defines a string `Attribute` representing a asyn port that should be
-    depicted as an outport on a Block"""
+    depicted as a Source Port on a Block"""
 
     def __init__(self, name, prefix, group=None):
         # type: (ca.util.APartName, APrefix, ca.util.AGroup) -> None
@@ -19,7 +19,7 @@ class RawMotorCSPart(Part):
         self.rbvs = [prefix + ":CsPort_RBV", prefix + ":CsAxis_RBV"]
         meta = ChoiceMeta("CS Axis")
         builtin.util.set_tags(
-            meta, writeable=True, group=group, destinationport=Port.MOTOR)
+            meta, writeable=True, group=group, sink_port=Port.MOTOR)
         self.attr = meta.create_attribute_model()
         self.catools = ca.util.CaToolsHelper.instance()
         # Subscriptions

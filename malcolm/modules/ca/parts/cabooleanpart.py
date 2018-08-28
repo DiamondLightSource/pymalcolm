@@ -1,6 +1,7 @@
 from malcolm.core import Part, PartRegistrar, BooleanMeta, DEFAULT_TIMEOUT
 from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
-    APv, ARbv, ARbvSuff, AMinDelta, ATimeout, ADestinationPort, AWidget, AGroup, AConfig
+    APv, ARbv, ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, \
+    AGroup, AConfig
 
 
 class CABooleanPart(Part):
@@ -11,10 +12,10 @@ class CABooleanPart(Part):
                  description,  # type: AMetaDescription
                  pv="",  # type: APv
                  rbv="",  # type: ARbv
-                 rbv_suff="",  # type: ARbvSuff
+                 rbv_suffix="",  # type: ARbvSuffix
                  min_delta=0.05,  # type: AMinDelta
                  timeout=DEFAULT_TIMEOUT,  # type: ATimeout
-                 inport=None,  # type: ADestinationPort
+                 sink_port=None,  # type: ASinkPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=True,  # type: AConfig
@@ -23,8 +24,8 @@ class CABooleanPart(Part):
         super(CABooleanPart, self).__init__(name)
         catools = CaToolsHelper.instance()
         self.caa = CAAttribute(
-            BooleanMeta(description), catools.DBR_LONG, pv, rbv, rbv_suff,
-            min_delta, timeout, inport, widget, group, config)
+            BooleanMeta(description), catools.DBR_LONG, pv, rbv, rbv_suffix,
+            min_delta, timeout, sink_port, widget, group, config)
 
     def caput(self, value):
         self.caa.caput(int(value))

@@ -24,203 +24,203 @@
     name: fileWriteMode
     description: Write single, capture then write, or stream as captured
     pv: $(prefix):FileWriteMode
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CABooleanPart:
     name: swmrMode
     description: Whether to write single writer multiple reader files
     pv: $(prefix):SWMRMode
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CABooleanPart:
     name: positionMode
     description: Whether to write in block got from attributes PosName<dim>
     pv: $(prefix):PositionMode
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CABooleanPart:
     name: dimAttDatasets
     description: Whether to write attributes in same dimensionality as data
     pv: $(prefix):DimAttDatasets
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CABooleanPart:
     name: lazyOpen
     description: If true then don't require a dummy frame to get dims
     pv: $(prefix):LazyOpen
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: numCapture
     description: Number of frames to capture
     pv: $(prefix):NumCapture
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: flushDataPerNFrames
     description: Number of frames to capture between HDF dataset flushes
     pv: $(prefix):NumFramesFlush
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: flushAttrPerNFrames
     description: Number of frames to capture between HDF attribute flushes
     pv: $(prefix):NDAttributeChunk
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CACharArrayPart:
     name: xml
     description: XML for layout
     pv: $(prefix):XMLFileName
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 # Filename
 - ca.parts.CACharArrayPart:
     name: filePath
     description: Directory to write files into
     pv: $(prefix):FilePath
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CACharArrayPart:
     name: fileName
     description: Filename within directory
     pv: $(prefix):FileName
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CACharArrayPart:
     name: fileTemplate
     description: File template of full file path
     pv: $(prefix):FileTemplate
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 # Dimensionality
 - ca.parts.CALongPart:
     name: numExtraDims
     description: How many extra dimensions. 0=(N,..), 1=(X,N,..), 2=(Y,X,N,..)
     pv: $(prefix):NumExtraDims
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 # Where to get dimensional indexes
 - ca.parts.CAStringPart:
     name: posNameDimN
     description: NDAttribute that position labeller will write DimN index into
     pv: $(prefix):PosNameDimN
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: posNameDimX
     description: NDAttribute that position labeller will write DimX index into
     pv: $(prefix):PosNameDimX
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: posNameDimY
     description: NDAttribute that position labeller will write DimY index into
     pv: $(prefix):PosNameDimY
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: posNameDim3
     description: NDAttribute that position labeller will write Dim3 index into
     pv: $(prefix):PosNameDim3
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: posNameDim4
     description: NDAttribute that position labeller will write Dim4 index into
     pv: $(prefix):PosNameDim4
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: posNameDim5
     description: NDAttribute that position labeller will write Dim5 index into
     pv: $(prefix):PosNameDim5
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: posNameDim6
     description: NDAttribute that position labeller will write Dim6 index into
     pv: $(prefix):PosNameDim6
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: posNameDim7
     description: NDAttribute that position labeller will write Dim7 index into
     pv: $(prefix):PosNameDim7
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: posNameDim8
     description: NDAttribute that position labeller will write Dim8 index into
     pv: $(prefix):PosNameDim8
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: posNameDim9
     description: NDAttribute that position labeller will write Dim9 index into
     pv: $(prefix):PosNameDim9
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 # Size of dimension
 - ca.parts.CALongPart:
     name: extraDimSizeN
     description: Size of HDF extra dimension N
     pv: $(prefix):ExtraDimSizeN
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: extraDimSizeX
     description: Size of HDF extra dimension X
     pv: $(prefix):ExtraDimSizeX
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: extraDimSizeY
     description: Size of HDF extra dimension Y
     pv: $(prefix):ExtraDimSizeY
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: extraDimSize3
     description: Size of HDF extra dimension 3
     pv: $(prefix):ExtraDimSize3
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: extraDimSize4
     description: Size of HDF extra dimension 4
     pv: $(prefix):ExtraDimSize4
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: extraDimSize5
     description: Size of HDF extra dimension 5
     pv: $(prefix):ExtraDimSize5
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: extraDimSize6
     description: Size of HDF extra dimension 6
     pv: $(prefix):ExtraDimSize6
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: extraDimSize7
     description: Size of HDF extra dimension 7
     pv: $(prefix):ExtraDimSize7
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: extraDimSize8
     description: Size of HDF extra dimension 8
     pv: $(prefix):ExtraDimSize8
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: extraDimSize9
     description: Size of HDF extra dimension 9
     pv: $(prefix):ExtraDimSize9
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAActionPart:
     name: start

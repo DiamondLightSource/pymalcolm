@@ -30,14 +30,14 @@
     name: xml
     description: Filename of xml or xml text
     pv: $(prefix):Filename
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
     config: False
 
 - ca.parts.CALongPart:
     name: idStart
     description: First uid value to look for
     pv: $(prefix):IDStart
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: qty

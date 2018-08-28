@@ -37,11 +37,11 @@ class CSSourcePortsPart(Part):
     def update_tags(self, value):
         # type: (Any) -> None
         self.caa.attr.set_value(value)
-        # Add the motor outport tags
+        # Add the motor Source Port tags
         for k, v in self.axis_attrs.items():
             # Add the Source Port tags
             old_tags = v.meta.tags
-            new_tags = Port.MOTOR.with_sourceport_tag(
+            new_tags = Port.MOTOR.with_source_port_tag(
                 old_tags, connected_value="%s,%s" % (value, k))
             if old_tags != new_tags:
                 v.meta.set_tags(new_tags)

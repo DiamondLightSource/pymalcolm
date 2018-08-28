@@ -36,7 +36,7 @@ class AsynSourcePortPart(Part):
         # type: (Any) -> None
         # Add the Source Port tags
         old_tags = self.meta.tags
-        new_tags = self.port_type.with_sourceport_tag(
+        new_tags = self.port_type.with_source_port_tag(
             old_tags, connected_value=value)
         if old_tags != new_tags:
             self.meta.set_tags(new_tags)

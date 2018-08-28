@@ -6,14 +6,14 @@
     prefix: $(prefix)
 
 - ca.parts.CAStringPart:
-    name: inp
-    description: Array inport name
+    name: input
+    description: Port name of connect to for source of NDArrays
     pv: $(prefix):NDArrayPort
-    rbv_suff: _RBV
-    inport: NDArray
+    rbv_suffix: _RBV
+    sink_port: NDArray
 
 - ca.parts.CABooleanPart:
     name: enableCallbacks
     description: Enable plugin to run when we get a new frame
     pv: $(prefix):EnableCallbacks
-    rbv_suff: _RBV
+    rbv_suffix: _RBV

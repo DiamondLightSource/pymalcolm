@@ -18,7 +18,7 @@
     name: csMoveTime
     description: Time to do a single deferred move
     pv: $(prefix):CsMoveTime
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - pmac.parts.CSSourcePortsPart:
     name: port

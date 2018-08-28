@@ -2,7 +2,8 @@ from annotypes import Array
 
 from malcolm.core import Part, PartRegistrar, NumberArrayMeta, DEFAULT_TIMEOUT
 from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
-    APv, ARbv, ARbvSuff, AMinDelta, ATimeout, ADestinationPort, AWidget, AGroup, AConfig
+    APv, ARbv, ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, \
+    AGroup, AConfig
 
 
 class CALongArrayPart(Part):
@@ -13,10 +14,10 @@ class CALongArrayPart(Part):
                  description,  # type: AMetaDescription
                  pv="",  # type: APv
                  rbv="",  # type: ARbv
-                 rbv_suff="",  # type: ARbvSuff
+                 rbv_suffix="",  # type: ARbvSuffix
                  min_delta=0.05,  # type: AMinDelta
                  timeout=DEFAULT_TIMEOUT,  # type: ATimeout
-                 inport=None,  # type: ADestinationPort
+                 sink_port=None,  # type: ASinkPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=True,  # type: AConfig
@@ -26,7 +27,7 @@ class CALongArrayPart(Part):
         catools = CaToolsHelper.instance()
         self.caa = CAAttribute(
             NumberArrayMeta("int32", description), catools.DBR_LONG, pv, rbv,
-            rbv_suff, min_delta, timeout, inport, widget, group, config)
+            rbv_suffix, min_delta, timeout, sink_port, widget, group, config)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

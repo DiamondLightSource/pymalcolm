@@ -1,5 +1,3 @@
-import re
-
 import numpy as np
 from annotypes import Anno, add_call_types, TYPE_CHECKING
 
@@ -7,7 +5,7 @@ from malcolm.compat import OrderedDict, clean_repr
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
     Unsubscribe, APartName, Port, Controller, Response, DEFAULT_TIMEOUT, \
     get_config_tag, Update, Return
-from ..infos import PortInfo, LayoutInfo, OutPortInfo, InPortInfo, \
+from ..infos import PortInfo, LayoutInfo, SourcePortInfo, SinkPortInfo, \
     PartExportableInfo, PartModifiedInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
     AContext, APortMap, ALayoutTable, LoadHook, SaveHook, AStructure, \
@@ -23,13 +21,10 @@ if TYPE_CHECKING:
 with Anno("Malcolm resource id of child object"):
     AMri = str
 with Anno("Whether the part is initially visible with no config loaded, None "
-          "means only if child in/outports are connected to another Block"):
+          "means only if child Source/Sink Ports connect to another Block"):
     AInitialVisibility = bool
 with Anno("If the child is a StatefulController then this should be True"):
     AStateful = bool
-
-
-port_tag_re = re.compile(r"(in|out)port:(.*):(.*)")
 
 
 ss = StatefulStates
@@ -112,14 +107,14 @@ class ChildPart(Part):
             visible = layout.visible[i]
             if name == self.name:
                 if self.visible and not visible:
-                    self.sever_inports(context, ports)
+                    self.sever_sink_ports(context, ports)
                 self.x = layout.x[i]
                 self.y = layout.y[i]
                 self.visible = visible
             else:
                 was_visible = self.part_visibility.get(name, False)
                 if was_visible and not visible:
-                    self.sever_inports(context, ports, name)
+                    self.sever_sink_ports(context, ports, name)
                 self.part_visibility[name] = visible
         # If this is the first call work out which parts are visible if not
         # specified in the initial layout table
@@ -207,18 +202,17 @@ class ChildPart(Part):
         for field in set(new_fields) - existing_fields:
             attr = getattr(child, field)
             if isinstance(attr, Attribute):
-                for tag in attr.meta.tags:
-                    match = port_tag_re.match(tag)
-                    if match:
-                        d, port, extra = match.groups()
-                        if d == "out":
-                            info = OutPortInfo(name=field, port=Port(port),
-                                               connected_value=extra)
-                        else:
-                            info = InPortInfo(name=field, port=Port(port),
-                                              disconnected_value=extra,
-                                              value=attr.value)
-                        self.port_infos[field] = info
+                port_info = Port.port_tag_details(attr.meta.tags)
+                if port_info:
+                    is_source, port, extra = port_info
+                    if is_source:
+                        info = SourcePortInfo(
+                            name=field, port=port, connected_value=extra)
+                    else:
+                        info = SinkPortInfo(
+                            name=field, port=port, disconnected_value=extra,
+                            value=attr.value)
+                    self.port_infos[field] = info
             if isinstance(attr, Attribute) and get_config_tag(attr.meta.tags):
                 if self.config_subscriptions:
                     new_id = max(self.config_subscriptions) + 1
@@ -281,41 +275,42 @@ class ChildPart(Part):
                 ret[port_info.name] = port_info
         return ret
 
-    def _outport_lookup(self, info_list):
+    def _source_port_lookup(self, info_list):
         # type: (List[PortInfo]) -> Dict[str, Port]
-        outport_lookup = {}
+        source_port_lookup = {}
         for info in info_list:
-            if isinstance(info, OutPortInfo):
-                outport_lookup[info.connected_value] = info.port
-        return outport_lookup
+            if isinstance(info, SourcePortInfo):
+                source_port_lookup[info.connected_value] = info.port
+        return source_port_lookup
 
-    def sever_inports(self, context, ports, connected_to=None):
+    def sever_sink_ports(self, context, ports, connected_to=None):
         # type: (AContext, APortMap, str) -> None
-        """Conditionally sever inports of the child. If connected_to is then
-        None then sever all, otherwise restrict to connected_to's outports
+        """Conditionally sever Sink Ports of the child. If connected_to
+        is then None then sever all, otherwise restrict to connected_to's
+        Source Ports
 
         Args:
             context (Context): The context to use
             ports (dict): {part_name: [PortInfo]}
             connected_to (str): Restrict severing to this part
         """
-        # Find the outports to connect to
+        # Find the Source Ports to connect to
         if connected_to:
-            # Calculate a lookup of the outport "name" to type
-            outport_lookup = self._outport_lookup(
+            # Calculate a lookup of the Source Port "name" to type
+            source_port_lookup = self._source_port_lookup(
                 ports.get(connected_to, []))
         else:
-            outport_lookup = True
+            source_port_lookup = True
 
-        # Find our inports
-        inports = self._get_flowgraph_ports(ports, InPortInfo)
+        # Find our Sink Ports
+        sink_ports = self._get_flowgraph_ports(ports, SinkPortInfo)
 
-        # If we have inports that need to be disconnected then do so
-        if inports and outport_lookup:
+        # If we have Sunk Ports that need to be disconnected then do so
+        if sink_ports and source_port_lookup:
             child = context.block_view(self.mri)
             attribute_values = {}
-            for name, port_info in inports.items():
-                if outport_lookup is True or outport_lookup.get(
+            for name, port_info in sink_ports.items():
+                if source_port_lookup is True or source_port_lookup.get(
                         child[name].value, None) == port_info.port:
                     attribute_values[name] = port_info.disconnected_value
             child.put_attribute_values(attribute_values)
@@ -327,18 +322,19 @@ class ChildPart(Part):
         Args:
             ports: {part_name: [PortInfo]} from other ports
         """
-        # Calculate a lookup of outport connected_value to part_name
-        outport_lookup = {}
-        for part_name, port_infos in OutPortInfo.filter_parts(ports).items():
+        # Calculate a lookup of Source Port connected_value to part_name
+        source_port_lookup = {}
+        for part_name, port_infos in SourcePortInfo.filter_parts(ports).items():
             for port_info in port_infos:
-                outport_lookup[port_info.connected_value] = (
+                source_port_lookup[port_info.connected_value] = (
                     part_name, port_info.port)
-        # Look through all the inports, and set both ends of the connection
-        # to visible if they aren't specified
-        for part_name, port_infos in InPortInfo.filter_parts(ports).items():
+        # Look through all the Sink Ports, and set both ends of the
+        # connection to visible if they aren't specified
+        for part_name, port_infos in SinkPortInfo.filter_parts(
+                ports).items():
             for port_info in port_infos:
                 if port_info.value != port_info.disconnected_value:
-                    conn_part, port = outport_lookup.get(
+                    conn_part, port = source_port_lookup.get(
                         port_info.value, (None, None))
                     if conn_part and port == port_info.port:
                         if conn_part not in self.part_visibility:

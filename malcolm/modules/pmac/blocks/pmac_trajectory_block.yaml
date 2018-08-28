@@ -17,7 +17,7 @@
     name: cs
     description: Co-ordinate system name that should be trajectory scanned
     pv: $(prefix):ProfileCsName
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAActionPart:
     name: buildProfile
@@ -95,13 +95,13 @@
     name: numPoints
     description: Number of points in scan
     pv: $(prefix):ProfileNumPoints
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: pointsToBuild
     description: Number of points to build or append
     pv: $(prefix):ProfilePointsToBuild
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CAChoicePart:
     name: useA

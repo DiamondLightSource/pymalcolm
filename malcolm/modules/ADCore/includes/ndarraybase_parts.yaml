@@ -12,7 +12,7 @@
     name: arrayCallbacks
     description: Whether to produce images or not
     pv: $(prefix):ArrayCallbacks
-    rbv_suff: _RBV
+    rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: arrayCounter

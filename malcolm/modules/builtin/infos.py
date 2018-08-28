@@ -41,35 +41,35 @@ class PortInfo(Info):
         self.port = port
 
 
-class InPortInfo(PortInfo):
-    """Info about an inport from the attribute tag
+class SinkPortInfo(PortInfo):
+    """Info about a Sink Port from the attribute tag
 
     Args:
         name: The name of the attribute
         port: The type of the port
-        disconnected_value: The value that will be set when the inport is
-            disconnected, E.g. '' or 'ZERO'
+        disconnected_value: The value that will be set when the Sink
+            port is disconnected, E.g. '' or 'ZERO'
         value: Initial value of the attribute
     """
     def __init__(self, name, port, disconnected_value, value):
         # type: (str, Port, str, Any) -> None
-        super(InPortInfo, self).__init__(name, port)
+        super(SinkPortInfo, self).__init__(name, port)
         self.disconnected_value = disconnected_value
         self.value = value
 
 
-class OutPortInfo(PortInfo):
-    """Info about an outport from the attribute tag
+class SourcePortInfo(PortInfo):
+    """Info about a Source Port from the attribute tag
 
     Args:
         name: The name of the attribute
         port: The type of the port
-        connected_value: The value that an inport will be set to when connected
-            to this outport, E.g. 'PCOMP1.OUT' or 'DET.STATS'
+        connected_value: The value that a Sink Port will be set to when
+            connected to this Source Port, E.g. 'PCOMP1.OUT' or 'DET.STATS'
     """
     def __init__(self, name, port, connected_value):
         # type: (str, Port, str) -> None
-        super(OutPortInfo, self).__init__(name, port)
+        super(SourcePortInfo, self).__init__(name, port)
         self.connected_value = connected_value
 
 
