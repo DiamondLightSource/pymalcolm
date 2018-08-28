@@ -20,7 +20,7 @@
     pv: $(prefix):CsMoveTime
     rbv_suff: _RBV
 
-- pmac.parts.CSOutlinksPart:
+- pmac.parts.CSSourcePortsPart:
     name: port
     rbv: $(prefix):Port
 
@@ -29,56 +29,67 @@
     description: Abort the current CS move
     pv: $(prefix):Abort
 
+# No timeouts on the following parts because they take an arbitrary motor move
+# time to go
 - ca.parts.CADoublePart:
     name: demandA
     description: set the demand position of CS Motor A
     pv: $(prefix):M1:DirectDemand
+    config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandB
     description: set the demand position of CS Motor B
     pv: $(prefix):M2:DirectDemand
+    config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandC
     description: set the demand position of CS Motor C
     pv: $(prefix):M3:DirectDemand
+    config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandU
     description: set the demand position of CS Motor U
     pv: $(prefix):M4:DirectDemand
+    config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandV
     description: set the demand position of CS Motor V
     pv: $(prefix):M5:DirectDemand
+    config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandW
     description: set the demand position of CS Motor W
     pv: $(prefix):M6:DirectDemand
+    config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandX
     description: set the demand position of CS Motor X
     pv: $(prefix):M7:DirectDemand
+    config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandY
     description: set the demand position of CS Motor Y
     pv: $(prefix):M8:DirectDemand
+    config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandZ
     description: set the demand position of CS Motor Z
     pv: $(prefix):M9:DirectDemand
+    config: False
     timeout: -1

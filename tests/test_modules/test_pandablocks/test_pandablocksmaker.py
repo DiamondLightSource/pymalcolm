@@ -49,7 +49,8 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         assert inpa.meta.writeable == True
         self.assertIsInstance(inpa.meta, ChoiceMeta)
         assert inpa.meta.tags == [
-            "group:inputs", "inport:int32:ZERO", "widget:combo", "config:1"]
+            "group:inputs", "destinationport:int32:ZERO", "widget:combo", 
+            "config:1"]
         assert inpa.meta.choices == ["A.OUT", "B.OUT"]
 
         val = o.parts["INPA.CURRENT"]
@@ -79,7 +80,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         self.assertIsInstance(out.meta, NumberMeta)
         assert out.meta.dtype == "int32"
         assert out.meta.tags == [
-            "group:outputs", "outport:int32:ADDER1.OUT",
+            "group:outputs", "sourceport:int32:ADDER1.OUT",
             "widget:textupdate"]
 
         units = o.parts["OUT.UNITS"]
@@ -172,7 +173,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         assert inp.meta.writeable == True
         self.assertIsInstance(inp.meta, ChoiceMeta)
         assert inp.meta.tags == [
-            "group:inputs", "inport:bool:ZERO", "widget:combo", "config:1"]
+            "group:inputs", "destinationport:bool:ZERO", "widget:combo", "config:1"]
         assert inp.meta.choices == ["X.OUT", "Y.OUT"]
 
         val = o.parts["INP.CURRENT"]
@@ -197,7 +198,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         assert out.meta.writeable == False
         self.assertIsInstance(out.meta, BooleanMeta)
         assert out.meta.tags == [
-            "group:outputs", "outport:bool:PULSE2.OUT", "widget:led"]
+            "group:outputs", "sourceport:bool:PULSE2.OUT", "widget:led"]
 
         err = o.parts["ERR_PERIOD"]
         assert err.block_name == "PULSE2"

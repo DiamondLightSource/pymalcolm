@@ -1,4 +1,4 @@
-from .asynoutportpart import AsynOutportPart
+from .asynsourceportpart import AsynSourcePortPart
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

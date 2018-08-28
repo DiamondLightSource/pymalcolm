@@ -70,8 +70,27 @@ class Port(Enum):
     NDARRAY = "NDArray"  # areaDetector NDArray port
     MOTOR = "motor"  # motor record connection to CS or controller
 
-    def inport_tag(self, disconnected_value):
-        return "inport:%s:%s" % (self.value, disconnected_value)
+    def destinationport_tag(self, disconnected_value):
+        """Add a tag indicating this is a Source Port of the given type
 
-    def outport_tag(self, connected_value):
-        return "outport:%s:%s" % (self.value, connected_value)
+        Args:
+            disconnected_value: What value should the Attribute be set to
+                when the port is disconnected
+        """
+        return "destinationport:%s:%s" % (self.value, disconnected_value)
+
+    def sourceport_tag(self, connected_value):
+        """Add a tag indicating this is a Destination Port of the given type
+
+        Args:
+            connected_value: What value should a Destination Port be set to if
+                it is connected to this port
+        """
+        return "sourceport:%s:%s" % (self.value, connected_value)
+
+    def with_sourceport_tag(self, tags, connected_value):
+        """Add a Source Port tag to the tags list, removing any other Source
+        Ports"""
+        new_tags = [t for t in tags if not t.startswith("sourceport:")]
+        new_tags.append(self.sourceport_tag(connected_value))
+        return new_tags

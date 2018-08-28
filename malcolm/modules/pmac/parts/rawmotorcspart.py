@@ -19,7 +19,7 @@ class RawMotorCSPart(Part):
         self.rbvs = [prefix + ":CsPort_RBV", prefix + ":CsAxis_RBV"]
         meta = ChoiceMeta("CS Axis")
         builtin.util.set_tags(
-            meta, writeable=True, group=group, inport=Port.MOTOR)
+            meta, writeable=True, group=group, destinationport=Port.MOTOR)
         self.attr = meta.create_attribute_model()
         self.catools = ca.util.CaToolsHelper.instance()
         # Subscriptions

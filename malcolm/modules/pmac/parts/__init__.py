@@ -1,6 +1,6 @@
 from .brickpart import BrickPart
 from .compoundmotorcspart import CompoundMotorCSPart
-from .csoutlinkspart import CSOutlinksPart
+from .cssourceportspart import CSSourcePortsPart
 from .cspart import CSPart
 from .motorpart import MotorPart
 from .pmacrunnablechildpart import PmacRunnableChildPart

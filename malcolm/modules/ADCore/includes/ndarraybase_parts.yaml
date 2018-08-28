@@ -2,11 +2,11 @@
     name: prefix
     description: The root PV for the all records
 
-- asyn.parts.AsynOutportPart:
+- asyn.parts.AsynSourcePortPart:
     name: out
-    description: Array outport name
+    description: Array Source Port Name
     rbv: $(prefix):PortName_RBV
-    outport: NDArray
+    port_type: NDArray
 
 - ca.parts.CABooleanPart:
     name: arrayCallbacks

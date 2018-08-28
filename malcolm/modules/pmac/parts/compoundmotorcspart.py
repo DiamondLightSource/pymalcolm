@@ -13,7 +13,7 @@ class CompoundMotorCSPart(Part):
         # type: (ca.util.APartName, ca.util.ARbv, ca.util.AGroup) -> None
         super(CompoundMotorCSPart, self).__init__(name)
         meta = StringMeta("CS Axis")
-        builtin.util.set_tags(meta, group=group, inport=Port.MOTOR)
+        builtin.util.set_tags(meta, group=group, destinationport=Port.MOTOR)
         self.rbv = rbv
         self.attr = meta.create_attribute_model()
         self.catools = ca.util.CaToolsHelper.instance()

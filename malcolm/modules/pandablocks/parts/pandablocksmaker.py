@@ -147,10 +147,11 @@ class PandABlocksMaker(object):
     def _make_out(self, field_name, field_data, typ):
         group = self._make_group("outputs")
         if typ == "bit":
-            outport = Port.BOOL
+            sourceport = Port.BOOL
         else:
-            outport = Port.INT32
-        flow_tag = outport.outport_tag("%s.%s" % (self.block_name, field_name))
+            sourceport = Port.INT32
+        flow_tag = sourceport.sourceport_tag(
+            "%s.%s" % (self.block_name, field_name))
         meta = make_meta(typ, field_data.description,
                          tags=[group, flow_tag], writeable=False)
         self._make_field_part(field_name, meta, writeable=False)
@@ -164,13 +165,14 @@ class PandABlocksMaker(object):
     def _make_mux(self, field_name, field_data, typ):
         group = self._make_group("inputs")
         if typ == "bit":
-            inport = Port.BOOL
+            destinationport = Port.BOOL
         else:
-            inport = Port.INT32
+            destinationport = Port.INT32
         labels = [x for x in field_data.labels if x in ("ZERO", "ONE")] + \
             sorted(x for x in field_data.labels if x not in ("ZERO", "ONE"))
         meta = ChoiceMeta(field_data.description, labels, tags=[
-            group, inport.inport_tag("ZERO"), Widget.COMBO.tag()])
+            group, destinationport.destinationport_tag("ZERO"),
+            Widget.COMBO.tag()])
         self._make_field_part(field_name, meta, writeable=True)
         meta = make_meta(typ, "%s current value" % field_name,
                          tags=[group], writeable=False)

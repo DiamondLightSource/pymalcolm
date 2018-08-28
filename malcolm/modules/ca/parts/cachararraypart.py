@@ -1,6 +1,6 @@
 from malcolm.core import Part, PartRegistrar, StringMeta, DEFAULT_TIMEOUT
 from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
-    APv, ARbv, ARbvSuff, AMinDelta, ATimeout, AInPort, AWidget, AGroup, AConfig
+    APv, ARbv, ARbvSuff, AMinDelta, ATimeout, ADestinationPort, AWidget, AGroup, AConfig
 
 
 class CACharArrayPart(Part):
@@ -14,7 +14,7 @@ class CACharArrayPart(Part):
                  rbv_suff="",  # type: ARbvSuff
                  min_delta=0.05,  # type: AMinDelta
                  timeout=DEFAULT_TIMEOUT,  # type: ATimeout
-                 inport=None,  # type: AInPort
+                 inport=None,  # type: ADestinationPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=True,  # type: AConfig
