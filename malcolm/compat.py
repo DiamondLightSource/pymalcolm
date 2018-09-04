@@ -32,12 +32,71 @@ else:
     # python 3
     long_ = int  # pylint:disable=invalid-name
 
-try:
-    # ruamel exists
-    from ruamel.ordereddict import ordereddict as OrderedDict
-except ImportError:
-    # fallback to slower collections
-    from collections import OrderedDict
+
+class InsertionOrderedDict(dict):
+    # Don't accept keyword args as they have no insertion order
+    def __init__(self, seq=None):
+        super(InsertionOrderedDict, self).__init__()
+        self._keys = []
+        if seq:
+            for k, v in seq:
+                self[k] = v
+
+    def keys(self):
+        return self._keys
+
+    def values(self):
+        return [self[k] for k in self._keys]
+
+    def iteritems(self):
+        return ((k, self[k]) for k in self._keys)
+
+    def items(self):
+        return [(k, self[k]) for k in self._keys]
+
+    def pop(self, key, *args):
+        try:
+            ret = super(InsertionOrderedDict, self).pop(key)
+        except KeyError:
+            if args:
+                return args[0]
+            else:
+                raise
+        else:
+            self._keys.remove(key)
+            return ret
+
+    def __setitem__(self, key, value):
+        try:
+            self[key]
+        except KeyError:
+            self._keys.append(key)
+        super(InsertionOrderedDict, self).__setitem__(key, value)
+
+    def __iter__(self):
+        return iter(self._keys)
+
+    def setdefault(self, k, d=None):
+        try:
+            return self[k]
+        except KeyError:
+            self._keys.append(k)
+            super(InsertionOrderedDict, self).__setitem__(k, d)
+            return d
+
+    def update(self, d):
+        for k, v in d.items():
+            self[k] = v
+
+
+if os.environ.get("PYMALCOLM_FULL_ORDEREDDICT", "YES")[0].upper() == "Y":
+    try:
+        # ruamel exists
+        from ruamel.ordereddict import ordereddict as OrderedDict
+    except ImportError:
+        OrderedDict = InsertionOrderedDict
+else:
+    OrderedDict = InsertionOrderedDict
 
 
 def et_to_string(element):
