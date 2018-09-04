@@ -1,7 +1,7 @@
 import unittest
 
 from malcolm.core import Process, Post, Subscribe, Return, \
-    Update, Controller, Queue, TimeoutError, Put
+    Update, Controller, Queue, TimeoutError, Put, Error
 from malcolm.modules.demo.parts import HelloPart, CounterPart
 
 
@@ -26,6 +26,23 @@ class TestHelloDemoSystem(unittest.TestCase):
         self.assertIsInstance(response, Return)
         assert response.id == 44
         assert response.value == "Hello thing"
+
+    def test_concurrent(self):
+        q = Queue()
+        request = Post(id=44, path=["hello_block", "greet"],
+                       parameters=dict(name="me", sleep=2))
+        request.set_callback(q.put)
+        self.controller.handle_request(request)
+        request = Post(id=45, path=["hello_block", "error"])
+        request.set_callback(q.put)
+        self.controller.handle_request(request)
+        response = q.get(timeout=1.0)
+        self.assertIsInstance(response, Error)
+        assert response.id == 45
+        response = q.get(timeout=3.0)
+        self.assertIsInstance(response, Return)
+        assert response.id == 44
+        assert response.value == "Hello me"
 
 
 class TestCounterDemoSystem(unittest.TestCase):

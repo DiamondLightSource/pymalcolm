@@ -5,7 +5,7 @@ from tornado.websocket import websocket_connect
 from tornado import gen
 
 from malcolm.compat import OrderedDict
-from malcolm.core import Process, Queue, ResponseError
+from malcolm.core import Process, Queue, ResponseError, Post, json_encode
 from malcolm.modules.builtin.blocks import proxy_block
 from malcolm.modules.demo.blocks import hello_block, counter_block
 from malcolm.modules.web.blocks import web_server_block, websocket_client_block
@@ -28,15 +28,22 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         self.process.stop(timeout=1)
 
     @gen.coroutine
-    def send_message(self, req, convert_json=True):
+    def send_messages(self, messages, convert_json=True):
         conn = yield websocket_connect("ws://localhost:%s/ws" % self.socket)
-        if convert_json:
-            req = json.dumps(req)
-        conn.write_message(req)
-        resp = yield conn.read_message()
-        resp = json.loads(resp)
-        self.result.put(resp)
+        num = len(messages)
+        for msg in messages:
+            if convert_json:
+                msg = json_encode(msg)
+            conn.write_message(msg)
+        for _ in range(num):
+            resp = yield conn.read_message()
+            resp = json.loads(resp)
+            self.result.put(resp)
         conn.close()
+
+    @gen.coroutine
+    def send_message(self, req, convert_json=True):
+        yield self.send_messages([req], convert_json)
 
     def test_server_and_simple_client(self):
         msg = OrderedDict()
@@ -46,6 +53,24 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg['parameters'] = dict(name="me")
         self.server._loop.add_callback(self.send_message, msg)
         resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Return:1.0",
+            id=0,
+            value="Hello me"
+        )
+
+    def test_concurrency(self):
+        msg1 = Post(id=0, path=["hello", "greet"],
+                    parameters=dict(name="me", sleep=2)).to_dict()
+        msg2 = Post(id=1, path=["hello", "error"]).to_dict()
+        self.server._loop.add_callback(self.send_messages, [msg1, msg2])
+        resp = self.result.get(timeout=1)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=1,
+            message="RuntimeError: You called method error()"
+        )
+        resp = self.result.get(timeout=3)
         assert resp == dict(
             typeid="malcolm:core/Return:1.0",
             id=0,

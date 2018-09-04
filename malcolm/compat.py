@@ -1,6 +1,7 @@
 import threading
 import logging
 import sys
+import time
 from xml.etree import cElementTree as ET
 import os
 
@@ -116,6 +117,14 @@ def maybe_import_cothread():
         except ImportError:
             cothread = None
         return cothread
+
+
+def sleep(seconds):
+    cothread = maybe_import_cothread()
+    if cothread:
+        cothread.Sleep(seconds)
+    else:
+        time.sleep(seconds)
 
 
 def get_pool_num_threads():
