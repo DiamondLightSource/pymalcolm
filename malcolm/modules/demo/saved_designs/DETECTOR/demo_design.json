@@ -2,28 +2,29 @@
   "attributes": {
     "layout": {
       "DRV": {
-        "x": 0.0, 
+        "x": 0.0,
         "y": 0.0, 
         "visible": true
       }, 
       "STAT": {
-        "x": 0.0, 
-        "y": 0.0, 
+        "x": 0.0,
+        "y": 0.0,
         "visible": true
       }, 
       "POS": {
-        "x": 0.0, 
+        "x": 0.0,
         "y": 0.0, 
         "visible": true
       }, 
       "HDF5": {
-        "x": 0.0, 
-        "y": 0.0, 
+        "x": 0.0,
+        "y": 0.0,
         "visible": true
       }
     }, 
     "exports": {}, 
-    "readoutTime": 4.0000000000000003e-05
+    "readoutTime": 4.0000000000000003e-05, 
+    "frequencyAccuracy": 50.0
   }, 
   "children": {
     "DRV": {
@@ -42,7 +43,7 @@
       "arrayCallbacks": true, 
       "arrayCounter": 2571, 
       "attributesFile": "/tmp/DETECTOR:STAT-attributes.xml", 
-      "inp": "ADSIM.POS", 
+      "input": "ADSIM.POS", 
       "enableCallbacks": true, 
       "computeStatistics": true
     }, 
@@ -50,7 +51,7 @@
       "arrayCallbacks": true, 
       "arrayCounter": 2571, 
       "attributesFile": "", 
-      "inp": "ADSIM.CAM", 
+      "input": "ADSIM.CAM", 
       "enableCallbacks": true, 
       "idStart": 1
     }, 
@@ -58,7 +59,7 @@
       "arrayCallbacks": false, 
       "arrayCounter": 0, 
       "attributesFile": "", 
-      "inp": "ADSIM.stat", 
+      "input": "ADSIM.POS", 
       "enableCallbacks": true, 
       "fileWriteMode": "Stream", 
       "swmrMode": true, 

@@ -96,7 +96,8 @@ class ManagerController(StatefulController):
         ).create_attribute_model()
         # Overwrite the sources meta to be a ChoiceArrayMeta
         self.exports.meta.elements["source"] = ChoiceArrayMeta(
-            "Name of the block.field to export", tags=[Widget.COMBO.tag()])
+            "Name of the block.field to export",
+            writeable=True, tags=[Widget.COMBO.tag()])
         self.set_writeable_in(self.exports, ss.READY)
         self.field_registry.add_attribute_model(
             "exports", self.exports, self.set_exports)
