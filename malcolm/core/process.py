@@ -27,6 +27,7 @@ SPAWN_CLEAR_COUNT = 1000
 STOPPED = 0
 STARTING = 1
 STARTED = 2
+STOPPING = 3
 
 
 with Anno("The list of currently published Controller mris"):
@@ -89,7 +90,7 @@ class Process(Loggable):
             timeout (float): Maximum amount of time to wait for each spawned
                 process. None means forever
         """
-        assert not self.state, "Process already started"
+        assert self.state == STOPPED, "Process already started"
         self.state = STARTING
         should_publish = self._start_controllers(
             self._controllers.values(), timeout)
@@ -101,7 +102,7 @@ class Process(Loggable):
         # type: (List[Controller], float) -> bool
         # Start just the given controller_list
         infos = self._run_hook(ProcessStartHook, controller_list,
-                               timeout=timeout)
+                               timeout=timeout, user_facing=True)
         new_unpublished = set(
             info.mri for info in UnpublishedInfo.filter_values(infos))
         with self._lock:
@@ -118,14 +119,15 @@ class Process(Loggable):
         self._run_hook(ProcessPublishHook,
                        timeout=timeout, published=published)
 
-    def _run_hook(self, hook, controller_list=None, timeout=None, **kwargs):
+    def _run_hook(self, hook, controller_list=None, timeout=None,
+                  user_facing=False, **kwargs):
         # Run the given hook waiting til all hooked functions are complete
         # but swallowing any errors
         if controller_list is None:
             controller_list = self._controllers.values()
         hooks = [hook(controller, **kwargs).set_spawn(controller.spawn)
                  for controller in controller_list]
-        hook_queue, hook_spawned = start_hooks(hooks)
+        hook_queue, hook_spawned = start_hooks(hooks, user_facing)
         return wait_hooks(
             self.log, hook_queue, hook_spawned, timeout, exception_check=False)
 
@@ -137,6 +139,7 @@ class Process(Loggable):
                 object. None means forever
         """
         assert self.state == STARTED, "Process not started"
+        self.state = STOPPING
         # Allow every controller a chance to clean up
         self._run_hook(ProcessStopHook, timeout=timeout)
         for s in self._spawned:
@@ -180,7 +183,7 @@ class Process(Loggable):
     def _spawn(self, function, args, kwargs, use_cothread):
         # type: (Callable[..., Any], Tuple, Dict, bool) -> Spawned
         with self._lock:
-            assert self.state, "Can't spawn before process started"
+            assert self.state != STOPPED, "Can't spawn when process stopped"
             if self._thread_pool is None:
                 if not self._cothread or not use_cothread:
                     self._thread_pool = ThreadPool(get_pool_num_threads())

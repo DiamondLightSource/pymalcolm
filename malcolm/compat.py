@@ -129,7 +129,7 @@ def sleep(seconds):
 
 def get_pool_num_threads():
     if maybe_import_cothread():
-        num_threads = 8
+        num_threads = 16
     else:
         num_threads = 128
     return num_threads

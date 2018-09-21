@@ -23,11 +23,12 @@ from .request import Request, PathRequest, Subscribe, Unsubscribe, Get, Put, Pos
 from .response import Response, Delta, Update, Return, Error
 from .serializable import Serializable, deserialize_object, serialize_object, \
     json_decode, json_encode, snake_to_camel, camel_to_title, \
-    CAMEL_RE, serialize_hook
+    CAMEL_RE, serialize_hook, stringify_error
 from .spawned import Spawned
 from .stateset import StateSet
 from .table import Table
-from .tags import Widget, Port, group_tag, config_tag, get_config_tag
+from .tags import Widget, Port, group_tag, config_tag, get_config_tag, \
+    method_return_unpacked
 from .timestamp import TimeStamp
 from .views import Attribute, Method, Block
 

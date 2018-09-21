@@ -246,10 +246,6 @@ class Controller(Hookable):
         # type: (Post) -> CallbackResponses
         """Called with the lock taken"""
         method_name = request.path[1]
-        if request.parameters:
-            param_dict = request.parameters
-        else:
-            param_dict = {}
 
         method = self._block[method_name]
         assert isinstance(method, MethodModel), \
@@ -257,7 +253,7 @@ class Controller(Hookable):
         self.check_field_writeable(method)
 
         post_function = self._write_functions[method_name]
-        args = method.validate(param_dict)
+        args = method.validate(request.parameters)
 
         with self.lock_released:
             result = post_function(**args)

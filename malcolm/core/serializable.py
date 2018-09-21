@@ -16,6 +16,11 @@ log = logging.getLogger(__name__)
 CAMEL_RE = re.compile(r"[a-z][a-z0-9]*([A-Z][a-z0-9]*)*$")
 
 
+def stringify_error(e):
+    # type: (Exception) -> str
+    return "%s: %s" % (type(e).__name__, str(e))
+
+
 def json_encode(o, indent=None):
     s = json.dumps(o, default=serialize_hook, indent=indent)
     return s
@@ -40,7 +45,7 @@ def serialize_hook(o):
         return o.tolist()
     elif isinstance(o, Exception):
         # Exceptions should be stringified
-        return "%s: %s" % (type(o).__name__, str(o))
+        return stringify_error(o)
     else:
         # Everything else should be serializable already
         return o
@@ -174,7 +179,6 @@ class Serializable(WithCallTypes):
         try:
             inst = cls(**filtered)
         except TypeError as e:
-            # raise TypeError("%s(**%s) raised error: %s" % (type(cls), filtered, str(e)))
             raise TypeError("%s raised error: %s" % (cls.typeid, str(e)))
         return inst
 
@@ -204,7 +208,7 @@ class Serializable(WithCallTypes):
         try:
             typeid = d["typeid"]
         except KeyError:
-            raise FieldError("typeid field not present in dictionary ( d.keys() = %s )" % list(d))
+            raise FieldError("typeid not present in keys %s" % list(d))
 
         subclass = cls._subcls_lookup.get(typeid, None)
         if not subclass:

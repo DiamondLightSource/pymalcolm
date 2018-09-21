@@ -1,11 +1,202 @@
-import pvaccess
-from annotypes import add_call_types
+from annotypes import add_call_types, TYPE_CHECKING
+from p4p import Value
+from p4p.server import Server, DynamicProvider, ServerOperation
+from p4p.server.raw import SharedPV, Handler
 
-from malcolm.core import Loggable, Queue, Get, Put, Post, Subscribe, \
-    Error, ProcessPublishHook, APublished, serialize_object, \
-    serialize_hook
+from malcolm.core import Subscribe, Error, APublished, Controller, Delta, \
+    Return, stringify_error, Response, Put, Post, Unsubscribe, \
+    ProcessPublishHook, method_return_unpacked, Method, serialize_object
+from malcolm.core.rlock import RLock
 from malcolm.modules import builtin
-from .pvautil import dict_to_pv_object, value_for_pva_set, strip_tuples
+from .pvaconvert import convert_dict_to_value, update_path, \
+    convert_value_to_dict
+
+if TYPE_CHECKING:
+    from typing import Optional, Dict, List
+
+
+class BlockHandler(Handler):
+    def __init__(self, controller, field=None):
+        # type: (Controller, str) -> None
+        self.controller = controller
+        # Lock to control access to self.pv
+        self._lock = RLock(controller.use_cothread)
+        self.field = field
+        self.pv = None  # type: Optional[SharedPV]
+        self.value = None  # type: Value
+
+    def rpc(self, pv, op):
+        # type: (SharedPV, ServerOperation) -> None
+        value = op.value()
+        if value.getID() == "epics:nt/NTURI:1.0":
+            # We got an NTURI, get path from path and parameters from query
+            assert value.scheme == "pva", \
+                "Can only handle NTURI with scheme=pva"
+            prefix = self.controller.mri + "."
+            assert value.path.startswith(prefix), \
+                "NTURI path '%s' doesn't start with '%s'" % (value.path, prefix)
+            method = value.path[len(prefix):]
+            parameters = convert_value_to_dict(value.query)
+        else:
+            # We got something else, take path from pvRequest method and our mri
+            # and parameters from the full value
+            if self.field is not None:
+                # We already know the method name
+                method = self.field
+            else:
+                # Get the path and string "value" from the put value
+                method = op.pvRequest().get("method")
+                assert method, "No 'method' in pvRequest:\n%s" % op.pvRequest()
+            parameters = convert_value_to_dict(value)
+        path = [self.controller.mri, method]
+        view = self.controller.make_view()[method]
+        assert isinstance(view, Method), \
+            "%s.%s is not a Method so cannot do RPC" % tuple(path)
+        add_wrapper = method_return_unpacked() in view.tags
+
+        post = Post(path=path, parameters=parameters)
+
+        def handle_post_response(response):
+            # type: (Response) -> None
+            if isinstance(response, Return):
+                if add_wrapper:
+                    # Method gave us return unpacked (bare string or other type)
+                    # so we must wrap it in a structure to send it
+                    ret = {"return": response.value}
+                else:
+                    ret = response.value
+                serialized = serialize_object(ret)
+                op.done(convert_dict_to_value(serialized))
+            else:
+                if isinstance(response, Error):
+                    message = stringify_error(response.message)
+                else:
+                    message = "BadResponse: %s" % response.to_dict()
+                op.done(error=message)
+
+        post.set_callback(handle_post_response)
+        self.controller.handle_request(post).get()
+
+    def put(self, pv, op):
+        # type: (SharedPV, ServerOperation) -> None
+        path = [self.controller.mri]
+        changed_set = op.value().changedSet()
+        assert len(changed_set) == 1, \
+            "Can only do a Put to a single field, got %s" % list(changed_set)
+        changed = list(changed_set)[0]
+        if self.field is not None:
+            # Only accept a Put to "value"
+            assert changed == "value", \
+                "Can only put to value of %s.%s, not %s" % (
+                    self.controller.mri, self.field, changed)
+            path += [self.field, "value"]
+            op_value = op.value()
+        else:
+            # Get the path and string "value" from the put value
+            split = changed.split(".")
+            assert len(split) == 2 and split[1] == "value", \
+                "Can only put to value of %s.%s, not %s" % (
+                    self.controller.mri, split[0], split[1])
+            path += list(split)
+            op_value = op.value()[split[0]]
+        value = convert_value_to_dict(op_value)["value"]
+        put = Put(path=path, value=value)
+
+        def handle_put_response(response):
+            # type: (Response) -> None
+            if isinstance(response, Return):
+                op.done()
+            else:
+                if isinstance(response, Error):
+                    message = stringify_error(response.message)
+                else:
+                    message = "BadResponse: %s" % response.to_dict()
+                op.done(error=message)
+
+        put.set_callback(handle_put_response)
+        self.controller.handle_request(put).get()
+
+    def handle(self, response):
+        # type: (Response) -> None
+        # Called from whatever thread the child block could be in, so
+        # must already be a good thread to take the lock
+        with self._lock:
+            if self.pv and isinstance(response, Delta):
+                # We got a delta, create or update value and notify
+                if not self.pv.isOpen():
+                    # Open it with the value
+                    # TODO: at the moment this fires because we didn't close
+                    # and wait for unsubscribe at tearDown
+                    self._create_initial_value(response)
+                else:
+                    # Update it with values
+                    self._update_value(response)
+            elif self.pv and self.pv.isOpen():
+                # We got a return or error, close the connection to clients
+                self.pv.close()
+                self.pv = None
+
+    def _create_initial_value(self, delta):
+        # type: (Delta) -> None
+        # Called with the lock taken
+        assert len(delta.changes) == 1 and len(delta.changes[0]) == 2 and \
+            delta.changes[0][0] == [], "Expected root update, got %s" % (
+                delta.changes,)
+        self.value = convert_dict_to_value(delta.changes[0][1])
+        self.pv.open(self.value)
+
+    def _update_value(self, delta):
+        # type: (Delta) -> None
+        # Called with the lock taken
+        self.value.unmark()
+        for change in delta.changes:
+            if len(change) == 1 or change[0] == []:
+                # This is a delete or update of the root, can't do this in pva,
+                # so force a reconnect
+                self.onLastDisconnect(self.pv)
+            else:
+                # Path will have at least one element
+                path, update = change
+                # TODO: try catch with disconnect here, reopen with new value
+                update_path(self.value, path, update)
+        self.pv.post(self.value)
+
+    # Need camelCase as called by p4p Server
+    # noinspection PyPep8Naming
+    def onFirstConnect(self, pv):
+        # type: (SharedPV) -> None
+        # Called from pvAccess thread, so spawn in the right (co)thread
+        self.controller.spawn(self._on_first_connect, pv).get(timeout=1)
+
+    def _on_first_connect(self, pv):
+        # type: (SharedPV) -> None
+        # Store the PV, but don't open it now, let the first Delta do this
+        with self._lock:
+            self.pv = pv
+        path = [self.controller.mri]
+        if self.field is not None:
+            path.append(self.field)
+        request = Subscribe(path=path, delta=True)
+        request.set_callback(self.handle)
+        # No need to wait for first update here
+        self.controller.handle_request(request)
+
+    # Need camelCase as called by p4p Server
+    # noinspection PyPep8Naming
+    def onLastDisconnect(self, pv):
+        # type: (SharedPV) -> None
+        # Called from pvAccess thread, so spawn in the right (co)thread
+        self.controller.spawn(self._on_last_disconnect, pv).get(timeout=1)
+
+    def _on_last_disconnect(self, pv):
+        # type: (SharedPV) -> None
+        # No-one listening, unsubscribe
+        with self._lock:
+            self.pv.close()
+            self.pv = None
+        request = Unsubscribe()
+        request.set_callback(self.handle)
+        self.controller.handle_request(request).get(timeout=1)
 
 
 class PvaServerComms(builtin.controllers.ServerComms):
@@ -13,269 +204,90 @@ class PvaServerComms(builtin.controllers.ServerComms):
 
     def __init__(self, mri):
         # type: (builtin.controllers.AMri) -> None
-        super(PvaServerComms, self).__init__(mri, use_cothread=False)
+        super(PvaServerComms, self).__init__(mri, use_cothread=True)
         self._pva_server = None
-        self._spawned = None
+        self._provider = None
         self._published = ()
-        self._endpoints = None
+        self._pvs = {}  # type: Dict[str, List[SharedPV]]
         # Hooks
         self.register_hooked(ProcessPublishHook, self.publish)
 
+    # Need camelCase as called by p4p Server
+    # noinspection PyPep8Naming
+    def testChannel(self, channel_name):
+        # type: (str) -> bool
+        if channel_name in self._published:
+            # Someone is asking for a Block
+            return True
+        elif "." in channel_name:
+            # Someone is asking for the field of a Block
+            mri, field = channel_name.rsplit(".", 1)
+            return mri in self._published
+        else:
+            # We don't have it
+            return False
+
+    # Need camelCase as called by p4p Server
+    # noinspection PyPep8Naming
+    def makeChannel(self, channel_name, src):
+        # type: (str, str) -> SharedPV
+        self.log.debug("Making PV %s for %s", channel_name, src)
+        if channel_name in self._published:
+            # Someone is asking for a Block
+            mri = channel_name
+            field = None
+        elif "." in channel_name:
+            # Someone is asking for the field of a Block
+            mri, field = channel_name.rsplit(".", 1)
+        else:
+            raise NameError("Bad channel %s" % channel_name)
+        controller = self.process.get_controller(mri)
+        handler = BlockHandler(controller, field)
+        # We want any client passing a pvRequest field() to ONLY receive that
+        # field. The default behaviour of p4p is to send a masked version of
+        # the full structure. The mapperMode option allows us to tell p4p to
+        # send a slice instead
+        # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
+        pv = SharedPV(handler, options={'mapperMode': 'Slice'})
+        self._pvs.setdefault(mri, []).append(pv)
+        return pv
+
     def do_init(self):
-        self._start_pva_server()
+        super(PvaServerComms, self).do_init()
+        if self._pva_server is None:
+            self.log.info("Starting PVA server")
+            self._provider = DynamicProvider("PvaServerComms", self)
+            self._pva_server = Server(providers=[self._provider])
+            self.log.info("Started PVA server")
+
+    def do_disable(self):
+        super(PvaServerComms, self).do_disable()
+        if self._pva_server is not None:
+            self.log.info("Stopping PVA server")
+            # Stop the server
+            self._pva_server.stop()
+            # Disconnect everyone
+            self.disconnect_pv_clients(list(self._pvs))
+            # Get rid of the server reference so we can't stop again
+            self._pva_server = None
+            self.log.info("Stopped PVA server")
 
     @add_call_types
     def publish(self, published):
         # type: (APublished) -> None
-        # Administer endpoints
         self._published = published
         if self._pva_server:
             with self._lock:
+                mris = [mri for mri in self._pvs if mri not in published]
                 # Delete blocks we no longer have
-                for mri in self._endpoints:
-                    if mri not in published:
-                        # TODO: delete endpoint here when we can
-                        pass
-                # Add new blocks
-                for mri in published:
-                    if mri not in self._endpoints:
-                        self._add_new_pva_channels(mri)
+                self.disconnect_pv_clients(mris)
 
-    def _add_new_pva_channels(self, mri):
-        controller = self.process.get_controller(mri)
-        self._add_new_pva_channel(mri, controller)
-        b = controller.make_view()
-        for field in b:
-            self._add_new_pva_channel(mri, controller, field)
+    def disconnect_pv_clients(self, mris):
+        # type: (List[str]) -> None
+        """Disconnect anyone listening to any of the given mris"""
+        for mri in mris:
+            for pv in self._pvs.pop(mri, ()):
+                # Close pv with force destroy on, this will call
+                # onLastDisconnect
+                pv.close(True)
 
-    def _add_new_pva_channel(self, mri, controller, field=None):
-        """Create a new PVA endpoint for the block name
-
-        Args:
-            mri (str): The name of the block to create the PVA endpoint
-        """
-
-        def _get(pv_request):
-            try:
-                return PvaGetImplementation(mri, controller, field, pv_request)
-            except Exception:
-                self.log.exception("Error doing Get")
-
-        def _put(pv_request):
-            try:
-                return PvaPutImplementation(mri, controller, field, pv_request)
-            except Exception:
-                self.log.exception("Error doing Put")
-
-        def _rpc(pv_request):
-            try:
-                rpc = PvaRpcImplementation(mri, controller, field, pv_request)
-                return rpc.execute
-            except Exception:
-                self.log.exception("Error doing Rpc")
-
-        def _monitor(pv_request):
-            try:
-                return PvaMonitorImplementation(
-                    mri, controller, field, pv_request)
-            except Exception:
-                self.log.exception("Error doing Monitor")
-
-        endpoint = pvaccess.Endpoint()
-        endpoint.registerEndpointGet(_get)
-        endpoint.registerEndpointPut(_put)
-        # TODO: There is no way to eliminate dead RPC connections
-        endpoint.registerEndpointRPC(_rpc)
-        # TODO: There is no way to eliminate dead monitors
-        # TODO: Monitors do not support deltas
-        endpoint.registerEndpointMonitor(_monitor)
-        self._endpoints.setdefault(mri, []).append(endpoint)
-        if field:
-            mri += ".%s" % field
-        self._pva_server.registerEndpoint(mri, endpoint)
-
-    def _start_pva_server(self):
-        if self._pva_server is None:
-            self._pva_server = pvaccess.PvaServer()
-            # {mri: Endpoint}
-            self._endpoints = {}
-            for mri in self._published:
-                self._add_new_pva_channels(mri)
-            self._spawned = self.spawn(self._pva_server.startListener)
-
-    def _stop_pva_server(self):
-        if self._pva_server is not None:
-            self._pva_server.shutdown()
-            self._pva_server = None
-            self._spawned.wait(10)
-
-
-class PvaImplementation(Loggable):
-    def __init__(self, mri, controller, field, pv_request):
-        self.set_logger(mri=mri)
-        self._mri = mri
-        self._controller = controller
-        self._field = field
-        self._request = pv_request
-        self.log.debug(
-            "Mri %r field %r got request %s", mri, field, pv_request.toDict())
-
-    def _dict_to_path_value(self, pv_request):
-        value = pv_request.toDict()
-        if "field" in value:
-            value = value["field"]
-        path = []
-        if self._field:
-            path.append(self._field)
-        while isinstance(value, dict) and len(value) == 1:
-            endpoint = list(value)[0]
-            value = value[endpoint]
-            path.append(endpoint)
-        return path, value
-
-    def _request_response(self, request_cls, path, **kwargs):
-        queue = Queue()
-        request = request_cls(path=[self._mri] + path, **kwargs)
-        request.set_callback(queue.put)
-        self._controller.handle_request(request)
-        response = queue.get()
-        if isinstance(response, Error):
-            raise response.message
-        else:
-            return response
-
-    def _get_pv_structure(self, pv_request):
-        # TODO: do we need to take this or should we use self._request?
-        path, _ = self._dict_to_path_value(pv_request)
-        response = self._request_response(Get, path)
-        # We are expected to provide all the levels in the dict. E.g. if
-        # asked to get ["block", "attr", "value"], we should provide
-        # {"attr": {"value": 32}}
-        response_dict = response.value
-        if self._field:
-            # One level down
-            path = path[1:]
-        for endpoint in reversed(path):
-            response_dict = {endpoint: response_dict}
-        pv_structure = dict_to_pv_object(response_dict)
-        return pv_structure
-
-    def _pv_error_structure(self, exception):
-        """Make an error structure in lieu of actually being able to raise"""
-        error = Error(message=serialize_hook(exception)).to_dict()
-        error.pop("id")
-        return dict_to_pv_object(error)
-
-
-class PvaGetImplementation(PvaImplementation):
-    _pv_structure = None
-
-    def getPVStructure(self):
-        if self._pv_structure is None:
-            try:
-                self._pv_structure = self._get_pv_structure(self._request)
-            except Exception as e:
-                # TODO: pvaPy should really allow us to raise here
-                self.log.exception("Bad get %s", self._request.toDict())
-                # Can't raise an error, so send a bad structure as next best
-                # thing
-                self._pv_structure = self._pv_error_structure(e)
-        return self._pv_structure
-
-    def get(self):
-        # No-op as getPvStructure gets values too
-        pass
-
-
-class PvaPutImplementation(PvaGetImplementation):
-    def put(self, put_request):
-        self.log.error("Put to %r value:\n%s", self._mri, put_request.toDict())
-        self.getPVStructure()
-        try:
-            path, value = self._dict_to_path_value(put_request)
-            self._request_response(Put, path, value=value)
-        except Exception:
-            self.log.exception(
-                "Exception while putting to %r value:\n%s",
-                self._mri, put_request.toDict())
-
-
-class PvaRpcImplementation(PvaImplementation):
-
-    def execute(self, args):
-        try:
-            if self._field:
-                method_name = self._field
-            else:
-                method_name = self._request["method"]
-            self.log.debug("Execute method %r of %r with args:\n%s",
-                           self._mri, method_name, args.toDict())
-            path = [method_name]
-            parameters = strip_tuples(args.toDict(True))
-            parameters.pop("typeid", None)
-            response = self._request_response(Post, path, parameters=parameters)
-            response_value = serialize_object(response.value)
-            if isinstance(response_value, dict):
-                pv_object = dict_to_pv_object(response_value)
-            elif response_value is not None:
-                # TODO: it might be better to just send the value without
-                # the intermediate dictionary...
-                pv_object = dict_to_pv_object({"return": response_value})
-            else:
-                # We need to return something, otherwise we get an error on the
-                # client side:
-                # Callable python service object must return instance of
-                # PvObject.
-                pv_object = pvaccess.PvObject({})
-            self.log.debug("Return from method %r of %r:\n%s",
-                           self._mri, method_name, pv_object.toDict())
-            return pv_object
-        except Exception as e:
-            self.log.exception(
-                "Exception while executing method of %r with args:\n%s",
-                self._mri, args.toDict())
-            error = self._pv_error_structure(e)
-            return error
-
-
-class PvaMonitorImplementation(PvaGetImplementation):
-    def __init__(self, mri, controller, field, request):
-        super(PvaMonitorImplementation, self).__init__(
-            mri, controller, field, request)
-        self._mu = pvaccess.MonitorServiceUpdater()
-        self.getPVStructure()
-        self._do_update = False
-        path, _ = self._dict_to_path_value(self._request)
-        request = Subscribe(path=[self._mri] + path, delta=True)
-        request.set_callback(self._on_response)
-        self._controller.handle_request(request)
-
-    def getUpdater(self):
-        return self._mu
-
-    def _on_response(self, delta):
-        """Handle Delta response to Subscribe
-
-        Args:
-            delta (Delta): The response
-        """
-        for change in delta.changes:
-            path, _ = self._dict_to_path_value(self._request)
-            if self._field:
-                path = path[1:]
-            field_path = ".".join(path + change[0])
-            if field_path and self._pv_structure.hasField(field_path):
-                new_value = value_for_pva_set(change[1])
-                # Don't update on the first change if all is the same
-                if not self._do_update:
-                    if self._pv_structure[field_path] == new_value:
-                        continue
-                    else:
-                        self._do_update = True
-                self._pv_structure[field_path] = new_value
-        if self._do_update is False:
-            # First update gave us not changes, but unconditionally update from
-            # now on
-            self._do_update = True
-        else:
-            self._mu.update()

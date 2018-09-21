@@ -8,7 +8,9 @@ from malcolm.compat import OrderedDict
 from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
     deserialize_object, Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
     AlarmStatus, Part, BooleanMeta, get_config_tag, Widget, ChoiceArrayMeta, \
-    TableMeta, serialize_object, ChoiceMeta, config_tag, Put, Request
+    TableMeta, serialize_object, ChoiceMeta, config_tag, Put, Request, CAMEL_RE, \
+    camel_to_title
+from malcolm.core.tags import without_group_tags
 from malcolm.modules.builtin.infos import PortInfo
 from malcolm.modules.builtin.util import ManagerStates
 from ..hooks import LayoutHook, LoadHook, SaveHook
@@ -180,6 +182,10 @@ class ManagerController(StatefulController):
                 self.update_block_endpoints()
 
     def set_exports(self, value):
+        # Validate
+        for export_name in value.export:
+            assert CAMEL_RE.match(export_name), \
+                "Field %r is not camelCase" % export_name
         with self.changes_squashed:
             self.exports.set_value(value)
             self.update_modified()
@@ -327,12 +333,14 @@ class ManagerController(StatefulController):
             if mri and attr_name in self.part_exportable.get(part, []):
                 if not export_name:
                     export_name = attr_name
-                export, setter = self._make_export_field(mri, attr_name)
+                export, setter = self._make_export_field(
+                    mri, attr_name, export_name)
                 yield export_name, export, setter
 
-    def _make_export_field(self, mri, attr_name):
+    def _make_export_field(self, mri, attr_name, export_name):
         controller = self.process.get_controller(mri)
         path = [mri, attr_name]
+        label = camel_to_title(export_name)
         ret = {}
 
         def update_field(response):
@@ -342,23 +350,28 @@ class ManagerController(StatefulController):
                 return
             if not ret:
                 # First call, create the initial object
-                ret["export"] = deserialize_object(response.changes[0][1])
+                export = deserialize_object(response.changes[0][1])
                 context = Context(self.process)
-                if isinstance(ret["export"], AttributeModel):
+                if isinstance(export, AttributeModel):
                     def setter(v):
                         context.put(path, v)
+                    # Strip out group tags
+                    # TODO: need to strip out port tags too...
+                    export.meta.set_tags(without_group_tags(export.meta.tags))
+                    # Regenerate label
+                    export.meta.set_label(label)
                 else:
                     def setter(*args):
                         context.post(path, *args)
+                    # Regenerate label
+                    export.set_label(label)
+                ret["export"] = export
                 ret["setter"] = setter
             else:
                 # Subsequent calls, update it
                 with self.changes_squashed:
-                    for cp, value in response.changes:
-                        ob = ret["export"]
-                        for p in cp[:-1]:
-                            ob = ob[p]
-                        getattr(ob, "set_%s" % cp[-1])(value)
+                    for change in response.changes:
+                        ret["export"].apply_change(*change)
 
         subscription = Subscribe(path=path, delta=True)
         subscription.set_callback(update_field)
