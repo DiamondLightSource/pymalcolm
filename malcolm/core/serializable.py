@@ -179,7 +179,6 @@ class Serializable(WithCallTypes):
         try:
             inst = cls(**filtered)
         except TypeError as e:
-            # raise TypeError("%s(**%s) raised error: %s" % (type(cls), filtered, str(e)))
             raise TypeError("%s raised error: %s" % (cls.typeid, str(e)))
         return inst
 
@@ -209,7 +208,7 @@ class Serializable(WithCallTypes):
         try:
             typeid = d["typeid"]
         except KeyError:
-            raise FieldError("typeid field not present in dictionary ( d.keys() = %s )" % list(d))
+            raise FieldError("typeid not present in keys %s" % list(d))
 
         subclass = cls._subcls_lookup.get(typeid, None)
         if not subclass:

@@ -1,20 +1,21 @@
 from annotypes import add_call_types, TYPE_CHECKING
 from p4p import Value
 from p4p.server import Server, DynamicProvider, ServerOperation
-from p4p.server.raw import SharedPV
+from p4p.server.raw import SharedPV, Handler
 
 from malcolm.core import Subscribe, Error, APublished, Controller, Delta, \
     Return, stringify_error, Response, Put, Post, Unsubscribe, \
-    ProcessPublishHook, method_return_unpacked, Method
+    ProcessPublishHook, method_return_unpacked, Method, serialize_object
 from malcolm.core.rlock import RLock
 from malcolm.modules import builtin
-from .pvaconvert import convert_dict_to_value, update_path
+from .pvaconvert import convert_dict_to_value, update_path, \
+    convert_value_to_dict
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict, List
 
 
-class BlockHandler(object):
+class BlockHandler(Handler):
     def __init__(self, controller, field=None):
         # type: (Controller, str) -> None
         self.controller = controller
@@ -35,7 +36,7 @@ class BlockHandler(object):
             assert value.path.startswith(prefix), \
                 "NTURI path '%s' doesn't start with '%s'" % (value.path, prefix)
             method = value.path[len(prefix):]
-            parameters = op.value().query.todict()
+            parameters = convert_value_to_dict(value.query)
         else:
             # We got something else, take path from pvRequest method and our mri
             # and parameters from the full value
@@ -46,7 +47,7 @@ class BlockHandler(object):
                 # Get the path and string "value" from the put value
                 method = op.pvRequest().get("method")
                 assert method, "No 'method' in pvRequest:\n%s" % op.pvRequest()
-            parameters = op.value().todict()
+            parameters = convert_value_to_dict(value)
         path = [self.controller.mri, method]
         view = self.controller.make_view()[method]
         assert isinstance(view, Method), \
@@ -64,7 +65,8 @@ class BlockHandler(object):
                     ret = {"return": response.value}
                 else:
                     ret = response.value
-                op.done(convert_dict_to_value(ret))
+                serialized = serialize_object(ret)
+                op.done(convert_dict_to_value(serialized))
             else:
                 if isinstance(response, Error):
                     message = stringify_error(response.message)
@@ -73,7 +75,7 @@ class BlockHandler(object):
                 op.done(error=message)
 
         post.set_callback(handle_post_response)
-        self.controller.handle_request(post)
+        self.controller.handle_request(post).get()
 
     def put(self, pv, op):
         # type: (SharedPV, ServerOperation) -> None
@@ -88,7 +90,7 @@ class BlockHandler(object):
                 "Can only put to value of %s.%s, not %s" % (
                     self.controller.mri, self.field, changed)
             path += [self.field, "value"]
-            value = op.value().value
+            op_value = op.value()
         else:
             # Get the path and string "value" from the put value
             split = changed.split(".")
@@ -96,7 +98,8 @@ class BlockHandler(object):
                 "Can only put to value of %s.%s, not %s" % (
                     self.controller.mri, split[0], split[1])
             path += list(split)
-            value = op.value()[split[0]].value
+            op_value = op.value()[split[0]]
+        value = convert_value_to_dict(op_value)["value"]
         put = Put(path=path, value=value)
 
         def handle_put_response(response):
@@ -111,7 +114,7 @@ class BlockHandler(object):
                 op.done(error=message)
 
         put.set_callback(handle_put_response)
-        self.controller.handle_request(put)
+        self.controller.handle_request(put).get()
 
     def handle(self, response):
         # type: (Response) -> None
@@ -122,6 +125,8 @@ class BlockHandler(object):
                 # We got a delta, create or update value and notify
                 if not self.pv.isOpen():
                     # Open it with the value
+                    # TODO: at the moment this fires because we didn't close
+                    # and wait for unsubscribe at tearDown
                     self._create_initial_value(response)
                 else:
                     # Update it with values
@@ -152,19 +157,19 @@ class BlockHandler(object):
             else:
                 # Path will have at least one element
                 path, update = change
-                # TODO: try catch with disconnect here
+                # TODO: try catch with disconnect here, reopen with new value
                 update_path(self.value, path, update)
         self.pv.post(self.value)
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
     def onFirstConnect(self, pv):
-        # type: (SharedPv) -> None
+        # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
-        self.controller.spawn(self._on_first_connect, pv)
+        self.controller.spawn(self._on_first_connect, pv).get(timeout=1)
 
     def _on_first_connect(self, pv):
-        # type: (SharedPv) -> None
+        # type: (SharedPV) -> None
         # Store the PV, but don't open it now, let the first Delta do this
         with self._lock:
             self.pv = pv
@@ -173,26 +178,25 @@ class BlockHandler(object):
             path.append(self.field)
         request = Subscribe(path=path, delta=True)
         request.set_callback(self.handle)
+        # No need to wait for first update here
         self.controller.handle_request(request)
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
-    def onLastDisconnect(self, pv=None):
-        # type: (SharedPv) -> None
+    def onLastDisconnect(self, pv):
+        # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
-        self.controller.spawn(self._on_last_disconnect, pv)
+        self.controller.spawn(self._on_last_disconnect, pv).get(timeout=1)
 
-    def _on_last_disconnect(self, pv=None):
-        # type: (SharedPv) -> None
+    def _on_last_disconnect(self, pv):
+        # type: (SharedPV) -> None
         # No-one listening, unsubscribe
         with self._lock:
-            if self.pv.isOpen():
-                self.pv.close()
+            self.pv.close()
             self.pv = None
-            self.value = None
         request = Unsubscribe()
         request.set_callback(self.handle)
-        self.controller.handle_request(request)
+        self.controller.handle_request(request).get(timeout=1)
 
 
 class PvaServerComms(builtin.controllers.ServerComms):
@@ -204,13 +208,14 @@ class PvaServerComms(builtin.controllers.ServerComms):
         self._pva_server = None
         self._provider = None
         self._published = ()
-        self._handlers = {}
+        self._pvs = {}  # type: Dict[str, List[SharedPV]]
         # Hooks
         self.register_hooked(ProcessPublishHook, self.publish)
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
     def testChannel(self, channel_name):
+        # type: (str) -> bool
         if channel_name in self._published:
             # Someone is asking for a Block
             return True
@@ -225,6 +230,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
     def makeChannel(self, channel_name, src):
+        # type: (str, str) -> SharedPV
         self.log.debug("Making PV %s for %s", channel_name, src)
         if channel_name in self._published:
             # Someone is asking for a Block
@@ -237,25 +243,33 @@ class PvaServerComms(builtin.controllers.ServerComms):
             raise NameError("Bad channel %s" % channel_name)
         controller = self.process.get_controller(mri)
         handler = BlockHandler(controller, field)
-        pv = SharedPV(handler)
-        self._handlers.setdefault(mri, []).append(handler)
+        # We want any client passing a pvRequest field() to ONLY receive that
+        # field. The default behaviour of p4p is to send a masked version of
+        # the full structure. The mapperMode option allows us to tell p4p to
+        # send a slice instead
+        # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
+        pv = SharedPV(handler, options={'mapperMode': 'Slice'})
+        self._pvs.setdefault(mri, []).append(pv)
         return pv
 
     def do_init(self):
         super(PvaServerComms, self).do_init()
         if self._pva_server is None:
-            self.log.info("Started PVA server")
+            self.log.info("Starting PVA server")
             self._provider = DynamicProvider("PvaServerComms", self)
             self._pva_server = Server(providers=[self._provider])
+            self.log.info("Started PVA server")
 
     def do_disable(self):
         super(PvaServerComms, self).do_disable()
         if self._pva_server is not None:
+            self.log.info("Stopping PVA server")
+            # Stop the server
             self._pva_server.stop()
+            # Disconnect everyone
+            self.disconnect_pv_clients(list(self._pvs))
+            # Get rid of the server reference so we can't stop again
             self._pva_server = None
-            self._provider = None
-            # the pva server will call onLastDisconnect for us
-            self._handlers = {}
             self.log.info("Stopped PVA server")
 
     @add_call_types
@@ -264,9 +278,16 @@ class PvaServerComms(builtin.controllers.ServerComms):
         self._published = published
         if self._pva_server:
             with self._lock:
+                mris = [mri for mri in self._pvs if mri not in published]
                 # Delete blocks we no longer have
-                for mri in self._handlers:
-                    if mri not in published:
-                        for handler in self._handlers.pop(mri, ()):
-                            handler.onLastDisconnect()
+                self.disconnect_pv_clients(mris)
+
+    def disconnect_pv_clients(self, mris):
+        # type: (List[str]) -> None
+        """Disconnect anyone listening to any of the given mris"""
+        for mri in mris:
+            for pv in self._pvs.pop(mri, ()):
+                # Close pv with force destroy on, this will call
+                # onLastDisconnect
+                pv.close(True)
 

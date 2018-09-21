@@ -133,10 +133,10 @@ class Hook(Generic[T], WithCallTypes):
         return None
 
 
-def start_hooks(hooks):
+def start_hooks(hooks, user_facing=False):
     # type: (List[Hook]) -> Tuple[Queue, List[Hook]]
     # This queue will hold (part, result) tuples
-    hook_queue = Queue()
+    hook_queue = Queue(user_facing)
     hook_spawned = []
     # now start them off
     for hook in hooks:

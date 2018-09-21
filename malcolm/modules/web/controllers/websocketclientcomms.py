@@ -46,7 +46,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         self._conn = None  # type: WebSocketClientConnection
         # Create read-only attribute for the remotely reachable blocks
         self.remote_blocks = StringArrayMeta(
-            "Remotely reachable blocks", tags=[Widget.TABLE.tag()]
+            "Remotely reachable blocks", tags=[Widget.TEXTINPUT.tag()]
         ).create_attribute_model()
         self.field_registry.add_attribute_model(
             "remoteBlocks", self.remote_blocks)

@@ -12,4 +12,4 @@ pytest-cov
 h5py>=2.8.0
 vdsgen>=0.3
 annotypes>=0.9
-enum34
+p4p

@@ -46,6 +46,7 @@ class PandABlocksTablePart(PandABlocksFieldPart):
             column_meta.set_label(camel_to_title(column_name))
             column_meta.set_tags([widget.tag()])
             column_meta.set_description(field_data.description)
+            column_meta.set_writeable(True)
             columns[column_name] = column_meta
             self.field_data[column_name] = field_data
         meta.set_elements(columns)

@@ -4,7 +4,7 @@ from enum import Enum
 from annotypes import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Sequence, Union, Tuple
+    from typing import Sequence, Union, Tuple, List
 
 
 def method_return_unpacked():
@@ -23,6 +23,13 @@ def group_tag(group_name):
     """Marks this field as belonging to a group"""
     tag = "group:%s" % group_name
     return tag
+
+
+def without_group_tags(tags):
+    # type: (Sequence[str]) -> List[str]
+    """Return a new list of tags without any group tags"""
+    new_tags = [x for x in tags if not x.startswith("group:")]
+    return new_tags
 
 
 def config_tag(iteration=1):

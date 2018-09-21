@@ -1,5 +1,6 @@
 from annotypes import add_call_types, Anno, Union, Array, Sequence, Any
 
+from malcolm.compat import OrderedDict
 from malcolm.core import BadValueError, serialize_object, APartName, \
     Delta, deserialize_object, Subscribe, MethodModel, Unsubscribe, \
     Future, PartRegistrar
@@ -32,8 +33,8 @@ class RunnableChildPart(ChildPart):
         self.ignore_configure_args = AIgnoreConfigureArgs(ignore_configure_args)
         # Stored between runs
         self.run_future = None  # type: Future
-        # The serialized configure method
-        self.serialized_configure = MethodModel().to_dict()
+        # The configure method model of our child
+        self.configure_model = MethodModel()
         # The registrar object we get at setup
         self.registrar = None  # type: PartRegistrar
         # The design we last loaded/saved
@@ -49,7 +50,7 @@ class RunnableChildPart(ChildPart):
 
     def configure_args(self):
         args = ["context"]
-        for x in self.serialized_configure["takes"]["elements"]:
+        for x in self.configure_model.takes.elements:
             if x not in self.ignore_configure_args:
                 args.append(x)
         return args
@@ -180,16 +181,27 @@ class RunnableChildPart(ChildPart):
                 "update_part_configure_args got response %r", response)
             return
 
-        response.apply_changes_to(self.serialized_configure)
-        configure_model = deserialize_object(
-            self.serialized_configure, MethodModel)  # type: MethodModel
-        for k in self.ignore_configure_args:
-            configure_model.takes.elements.pop(k, None)
-            configure_model.defaults.pop(k, None)
-        required = [x for x in configure_model.takes.required
-                    if x not in self.ignore_configure_args]
+        for change in response.changes:
+            if change[0]:
+                # Update
+                self.configure_model.apply_change(*change)
+            else:
+                # Replace
+                # TODO: should we make apply_change handle this?
+                self.configure_model = deserialize_object(change[1])
+        # Extract the bits we need
+        metas = OrderedDict()
+        defaults = OrderedDict()
+        required = []
+        for k, meta in self.configure_model.takes.elements.items():
+            if k not in self.ignore_configure_args:
+                # Copy the meta so it belongs to the Controller we report to
+                # TODO: should we pass the serialized version?
+                metas[k] = deserialize_object(meta.to_dict())
+                if k in self.configure_model.defaults:
+                    defaults[k] = self.configure_model.defaults[k]
+                if k in self.configure_model.takes.required:
+                    required.append(k)
 
         # Notify the controller that we have some new parameters to take
-        self.registrar.report(ConfigureParamsInfo(
-            metas=configure_model.takes.elements, required=required,
-            defaults=configure_model.defaults))
+        self.registrar.report(ConfigureParamsInfo(metas, required, defaults))

@@ -102,7 +102,7 @@ class Process(Loggable):
         # type: (List[Controller], float) -> bool
         # Start just the given controller_list
         infos = self._run_hook(ProcessStartHook, controller_list,
-                               timeout=timeout)
+                               timeout=timeout, user_facing=True)
         new_unpublished = set(
             info.mri for info in UnpublishedInfo.filter_values(infos))
         with self._lock:
@@ -119,14 +119,15 @@ class Process(Loggable):
         self._run_hook(ProcessPublishHook,
                        timeout=timeout, published=published)
 
-    def _run_hook(self, hook, controller_list=None, timeout=None, **kwargs):
+    def _run_hook(self, hook, controller_list=None, timeout=None,
+                  user_facing=False, **kwargs):
         # Run the given hook waiting til all hooked functions are complete
         # but swallowing any errors
         if controller_list is None:
             controller_list = self._controllers.values()
         hooks = [hook(controller, **kwargs).set_spawn(controller.spawn)
                  for controller in controller_list]
-        hook_queue, hook_spawned = start_hooks(hooks)
+        hook_queue, hook_spawned = start_hooks(hooks, user_facing)
         return wait_hooks(
             self.log, hook_queue, hook_spawned, timeout, exception_check=False)
 

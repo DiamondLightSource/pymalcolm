@@ -113,6 +113,18 @@ class Model(Serializable):
                 self.notifier.add_squashed_change(self.path + [name], value)
             return value
 
+    def apply_change(self, path, *args):
+        # type: (List[str], Any) -> None
+        """Take a single change from a Delta and apply it to this model"""
+        if len(path) > 1:
+            # This is for a child
+            self[path[0]].apply_change(path[1:], *args)
+        else:
+            # This is for us
+            assert len(path) == 1 and len(args) == 1, \
+                "Cannot process change %s" % ([self.path + path] + list(args))
+            getattr(self, "set_%s" % path[0])(args[0])
+
 
 # Types used when deserializing to the class
 with Anno("Description of what this element represents"):
@@ -329,6 +341,14 @@ class AttributeModel(Model):
             ts = deserialize_object(ts, TimeStamp)
         return self.set_endpoint_data("timeStamp", ts)
 
+    def apply_change(self, path, *args):
+        if path == ["value"] and args:
+            self.set_value(args[0], set_alarm_ts=False)
+        elif path == ["timeStamp"] and args:
+            self.set_ts(args[0])
+        else:
+            super(AttributeModel, self).apply_change(path, *args)
+
 
 @Serializable.register_subclass("epics:nt/NTTable:1.0")
 class NTTable(AttributeModel):
@@ -346,7 +366,7 @@ class NTTable(AttributeModel):
                 labels.append(column_meta.label)
             else:
                 labels.append(column_name)
-        d["labels"] = labels
+        d["labels"] = Array[str](labels)
         d.update(super(NTTable, self).to_dict())
         return d
 
@@ -413,6 +433,7 @@ class ChoiceMeta(VMeta):
         # type: (AMetaDescription, UChoices, UTags, AWriteable, ALabel) -> None
         super(ChoiceMeta, self).__init__(description, tags, writeable, label)
         self.choices_lookup = {}  # type: Dict[Any, Union[str, Enum]]
+        # Used for ChoiceMetaArray subclass only for producing Arrays
         self.enum_cls = None
         self.choices = self.set_choices(choices)
 
@@ -427,11 +448,11 @@ class ChoiceMeta(VMeta):
             if enum_typ is not None:
                 assert isinstance(choice, enum_typ), \
                     "Expected %s choice, got %s" % (enum_typ, choice)
-            else:
+            elif not isinstance(choice, str_):
                 enum_typ = type(choice)
             if isinstance(choice, Enum):
                 # Our choice value must be a string
-                assert isinstance(choice.value, str), \
+                assert isinstance(choice.value, str_), \
                     "Expected Enum choice to have str value, got %r with " \
                     "value %r" % (choice, choice.value)
                 # Map the Enum instance and str to the Enum instance
@@ -439,7 +460,7 @@ class ChoiceMeta(VMeta):
                 choices_lookup[choice] = choice
                 str_choices.append(choice.value)
             else:
-                assert isinstance(choice, str), \
+                assert isinstance(choice, str_), \
                     "Expected string choice, got %s" % (choice,)
                 # Map the string to itself
                 choices_lookup[choice] = choice
@@ -897,8 +918,10 @@ class MethodModel(Meta):
         returns = deserialize_object(returns, MapMeta)
         return self.set_endpoint_data("returns", returns)
 
-    def validate(self, param_dict):
+    def validate(self, param_dict=None):
         # type: (Dict[str, Any]) -> Dict[str, Any]
+        if param_dict is None:
+            param_dict = {}
         args = {}
         for k, v in param_dict.items():
             assert k in self.takes.elements, \

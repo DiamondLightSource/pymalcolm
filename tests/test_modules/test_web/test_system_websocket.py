@@ -170,8 +170,8 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             assert resp == dict(
                 typeid="malcolm:core/Error:1.0",
                 id=0,
-                message="FieldError: typeid field not present in dictionary " +
-                       "( d.keys() = [u'id', u'path', u'parameters'] )"
+                message="FieldError: typeid not present in keys " +
+                       "[u'id', u'path', u'parameters']"
             )
         elif version_info[0] == 3:
             assert resp == dict(

@@ -2,7 +2,8 @@ from annotypes import Anno
 
 from malcolm.core import Post, Subscribe, Put, Hook, Alarm, Unsubscribe, \
     Delta, Queue, ProcessStopHook, ProcessStartHook, deserialize_object, \
-    Response, UnpublishedInfo, UUnpublishedInfos
+    Response, UnpublishedInfo, UUnpublishedInfos, MethodModel, serialize_object
+from malcolm.core.models import NTScalar, BlockMeta
 from .basiccontroller import BasicController, AMri
 from ..infos import HealthInfo
 
@@ -21,7 +22,8 @@ class ProxyController(BasicController):
         self.comms = comms
         self.publish = publish
         self.client_comms = None
-        self.update_health(self, HealthInfo(Alarm.invalid("Uninitialized")))
+        self.health.set_value(
+            "Uninitialized", alarm=Alarm.invalid("Uninitialized"))
         self._response_queue = Queue()
         self._notify_response = True
         self._first_response_queue = Queue()
@@ -45,12 +47,18 @@ class ProxyController(BasicController):
         unsubscribe.set_callback(self.handle_response)
         self.client_comms.send_to_server(unsubscribe)
 
-    def handle_request(self, request):
-        # Forward Puts and Posts to the client_comms
-        if isinstance(request, (Put, Post)):
-            return self.client_comms.send_to_server(request)
-        else:
-            return super(ProxyController, self).handle_request(request)
+    def _handle_put(self, request):
+        attribute = self._block[request.path[1]]
+        request.value = serialize_object(attribute.meta.validate(request.value))
+        self.client_comms.send_to_server(request)
+        return []
+
+    def _handle_post(self, request):
+        method = self._block[request.path[1]]
+        request.parameters = serialize_object(
+            method.validate(request.parameters))
+        self.client_comms.send_to_server(request)
+        return []
 
     def handle_response(self, response):
         # type: (Response) -> None
@@ -87,27 +95,8 @@ class ProxyController(BasicController):
             else:
                 # Change a single field of the block
                 self._block.set_endpoint_data(path[1], change[1])
-        elif path[0] not in ("health", "meta"):
-            # Update a child of the block
-            assert len(change) == 2, \
-                "Can't delete entries in Attributes or Methods"
-            ob = self._block
-            for p in path[:-1]:
-                ob = ob[p]
-            # special case attribute values and timeStamps
-            if len(path) == 2 and path[-1] == "value":
-                ob.set_value(change[1], set_alarm_ts=False)
-            elif len(path) == 2 and path[-1] == "timeStamp":
-                ob.set_ts(change[1])
-            else:
-                getattr(ob, "set_%s" % path[-1])(change[1])
-        elif len(path) == 2 and path[:1] == ["health", "alarm"]:
-            # If we got an alarm update for health
-            assert len(change) == 2, "Can't delete health alarm"
-            alarm = deserialize_object(change[1], Alarm)
-            self.update_health(self, HealthInfo(alarm))
         else:
-            raise ValueError("Bad change %s" % (change,))
+            self._block.apply_change(path, *change[1:])
 
     def _regenerate_block(self, d):
         for field in list(self._block):
@@ -115,11 +104,18 @@ class ProxyController(BasicController):
                 self._block.remove_endpoint(field)
         for field, value in d.items():
             if field == "health":
-                alarm = deserialize_object(value["alarm"], Alarm)
-                self.update_health(self, HealthInfo(alarm))
+                # Update health attribute
+                value = deserialize_object(value)  # type: NTScalar
+                self.health.set_value(
+                    value=value.value,
+                    alarm=value.alarm,
+                    ts=value.timeStamp)
             elif field == "meta":
-                # TODO: set meta
-                pass
+                value = deserialize_object(value)  # type: BlockMeta
+                meta = self._block.meta  # type: BlockMeta
+                for k in meta.call_types:
+                    getattr(meta, "set_%s" % k)(value[k])
             elif field != "typeid":
                 # No need to set writeable_functions as the server will do it
                 self._block.set_endpoint_data(field, value)
+
