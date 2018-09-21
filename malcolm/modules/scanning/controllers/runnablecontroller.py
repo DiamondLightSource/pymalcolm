@@ -261,7 +261,9 @@ class RunnableController(ManagerController):
         with self._lock:
             # We might have been aborted just now, so this will fail
             # with an AbortedError if we were
-            self.part_contexts[self].sleep(0)
+            self_ctx = self.part_contexts.get(self, None)
+            if self_ctx:
+                self_ctx.sleep(0)
             self.transition(state)
 
     # This will be serialized, so maintain camelCase for axesToMove
@@ -440,7 +442,9 @@ class RunnableController(ManagerController):
                 # Now we've waited for a while we can remove the error state
                 # for transition in case a hook triggered it rather than a
                 # transition
-                self.part_contexts[self].ignore_stops_before_now()
+                self_ctx = self.part_contexts.get(self, None)
+                if self_ctx:
+                    self_ctx.ignore_stops_before_now()
             func(*args)
             self.abortable_transition(end_state)
         except AbortedError:

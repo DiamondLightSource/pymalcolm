@@ -167,6 +167,10 @@ class TestRunnableController(unittest.TestCase):
         assert self.b_child.modified.value is False
         assert self.b.modified.value is False
 
+    def test_abort(self):
+        self.b.abort()
+        self.checkState(self.ss.ABORTED)
+
     def test_validate(self):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
         line2 = LineGenerator('x', 'mm', 0, 2, 2)
