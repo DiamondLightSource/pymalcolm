@@ -7,6 +7,12 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
+Nothing yet
+
+
+`3-0a4`_ - 2018-09-24
+---------------------
+
 Added:
 - Web gui (malcolmjs 1.1.0)
 
@@ -151,7 +157,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a3...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a4...HEAD
+.. _3-0a4: https://github.com/dls-controls/pymalcolm/compare/3-0a3...3-0a4
 .. _3-0a3: https://github.com/dls-controls/pymalcolm/compare/3-0a2...3-0a3
 .. _3-0a2: https://github.com/dls-controls/pymalcolm/compare/3-0a1...3-0a2
 .. _3-0a1: https://github.com/dls-controls/pymalcolm/compare/2-3-1...3-0a1
