@@ -135,7 +135,7 @@ class ChildPart(Part):
         for k, v in structure.items():
             try:
                 attr = getattr(child, k)
-            except AttributeError:
+            except KeyError:
                 self.log.warning("Cannot restore non-existant attr %s" % k)
             else:
                 tag = get_config_tag(attr.meta.tags)
