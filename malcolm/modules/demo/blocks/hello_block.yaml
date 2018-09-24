@@ -1,8 +1,11 @@
-# Define the parameters this Block will take
+# The mri parameters should be passed when instantiating this Block. It is
+# available for use in this file as $(mri)
 - builtin.parameters.string:
     name: mri
     description: Malcolm resource id of the Block
 
+# Define the docstring that appears in the docs for this Block, and put it in
+# the $(docstring) variable for use in this file
 - builtin.defines.docstring:
     value: Hardware Block with a greet() Method
 

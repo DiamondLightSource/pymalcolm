@@ -57,11 +57,11 @@ Let's run it now::
     Welcome to iMalcolm.
 
     self.mri_list:
-        ['localhost:8080']
+        ['HELLO', 'HELLO2', 'COUNTER', 'WEB']
 
     Try:
     hello = self.block_view("HELLO")
-    print hello.greet("me")
+    hello.greet("me")
 
     or
 
@@ -70,7 +70,7 @@ Let's run it now::
     or
 
     self.make_proxy("localhost:8080", "HELLO")
-    print self.block_view("HELLO").greet("me")
+    self.block_view("HELLO").greet("me")
 
 
     In [1]:
@@ -81,22 +81,22 @@ Process and call a Method on it::
 
     In [1]: hello = self.block_view("HELLO")
 
-    In [2]: print hello.greet("me")
+    In [2]: hello.greet("me")
     Manufacturing greeting...
-    Map({'greeting': 'Hello me'})
+    Out[2]: 'Hello me'
 
     In [3]:
 
 So what happened there? 
 
 Well we called a Method on a Block, which printed
-"Manufacturing greeting..." to stdout, then returned a `Map` containing
-the promised greeting. You can also specify an optional argument "sleep" to
-make it sleep for a bit before returning the greeting::
+"Manufacturing greeting..." to stdout, then returned the promised greeting.
+You can also specify an optional argument "sleep" to make it sleep for a bit
+before returning the greeting::
 
-    In [3]: print hello.greet("me again", sleep=2)
+    In [3]: hello.greet("me again", sleep=2)
     Manufacturing greeting...
-    Map({'greeting': 'Hello me again'})
+    Out[3]: 'Hello me again'
 
     In [4]:
 
@@ -109,7 +109,7 @@ Well if we start a second imalcolm session we can tell it to connect to the
 first session, get the HELLO block from the first Process, and run a Method
 on it::
 
-    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py -c ws://localhost:8080
+    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py -c ws://localhost:8008
     Loading...
     Python 2.7.3 (default, Nov  9 2013, 21:59:00)
     Type "copyright", "credits" or "license" for more information.
@@ -128,7 +128,7 @@ on it::
 
     Try:
     hello = self.block_view("HELLO")
-    print hello.greet("me")
+    hello.greet("me")
 
     or
 
@@ -137,13 +137,13 @@ on it::
     or
 
     self.make_proxy("localhost:8080", "HELLO")
-    print self.block_view("HELLO").greet("me")
+    self.block_view("HELLO").greet("me")
 
 
     In [1]: self.make_proxy("localhost:8080", "HELLO")
 
-    In [2]: print self.block_view("HELLO").greet("me")
-    Map({'greeting': 'Hello me'})
+    In [2]: self.block_view("HELLO").greet("me")
+    Out[2]: u'Hello me'
 
     In [3]:
 
@@ -190,7 +190,7 @@ diagram below.
     }
 
     g2 -> g1 [style=dashed label="Post\n{name:'me'}"]
-    g1 -> g2 [style=dashed label="Return\n{greeting:'Hello me'}"]
+    g1 -> g2 [style=dashed label="Return\n'Hello me'"]
 
 You can quit those imalcolm sessions now by pressing CTRL-D or typing exit.
 
@@ -208,12 +208,11 @@ called a `part_`. This is how they fit together:
 
 .. digraph:: controllers_and_parts
 
+    newrank=true
     bgcolor=transparent
     node [fontname=Arial fontsize=10 shape=Mrecord style=filled fillcolor="#8BC4E9"]
     graph [fontname=Arial fontsize=11]
     edge [fontname=Arial fontsize=10 arrowhead=none]
-
-    Process
 
     subgraph cluster_control {
         label="Control"
@@ -259,6 +258,7 @@ Here's a diagram showing who created those Methods and Attributes:
 
 .. digraph:: hello_controllers_and_parts
 
+    newrank=true
     bgcolor=transparent
     node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]
     graph [fontname=Arial fontsize=11]
@@ -287,6 +287,7 @@ Here's a diagram showing who created those Methods and Attributes:
     }
 
     {rank=same;controller block}
+    {rank=same;hello greet error}
 
     controller -> health [style=dashed]
     hello -> greet [style=dashed]
@@ -311,11 +312,31 @@ when we define a Part. Let's take a look at our
 
 .. py:currentmodule:: malcolm.core
 
-The class we define is called ``HelloPart`` and it subclasses from
-`Part`. It has a single method called ``greet`` that has some
-`decorators`_ on it and contains the actual business logic. In Python,
+After the imports, you will see three ``with Anno()`` statements. Each of these
+defines a named type variable that can be used by the ``annotypes`` library to
+infer runtime types of various parameters. The first argument to ``Anno()``
+gives a description that can be used for documentation, and the body of the
+``with`` statement defines a single variable (starting with ``A`` by convention)
+that will be used to give a type to some code below. These annotypes can be
+imported and used between files to make sure that the description only has
+to be defined once.
+
+The class we define is called ``HelloPart`` and it subclasses from `Part`. It
+implements `Part.setup` so that it can register two methods with the
+
+
+
+It has a a method called ``greet`` that has a
+`decorator`_ on it and contains the actual business logic. In Python,
 decorators can be stacked many deep and can modify the function or class they
-are attached to.
+are attached to. It also has a special `type comment`_ that tells some IDEs like
+PyCharm what type the arguments and return value are.
+
+The decorator and type comment work together to annotate the function at runtime
+with a special ``call_types`` variable that Malcolm uses to validate and
+provide introspection information about the Method.
+
+
 
 Let's take a closer look at those decorators. 
 
@@ -364,3 +385,8 @@ that we could now add "greeting" functionality to another Block just by
 adding it to the instantiated parts. In the next tutorial we will read more
 about adding functionality using Parts.
 
+.. _decorator:
+    https://realpython.com/blog/python/primer-on-python-decorators/
+
+.. _type comment:
+    https://www.python.org/dev/peps/pep-0484/#suggested-syntax-for-python-2-7-and-straddling-code

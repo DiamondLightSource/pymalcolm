@@ -8,13 +8,17 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 -------------
 
 Added:
-- Web gui (malcolmjs 1.0)
+- Web gui (malcolmjs 1.1.0)
+
+Changed:
+- PVAccess library from pvaPy to p4p. This means that monitor deltas and RPC
+errors now work as expected
 
 Fixed:
 - PMAC trajectory pause waits for long enough to get GPIO signals
 - MotorInfo.make_velocity_profile now works with small distances, zero
-  velocities, and a min_time. A floating point rounding error was previously
-  making it return less than min_time
+velocities, and a min_time. A floating point rounding error was previously
+making it return less than min_time
 - Make all areaDetectors wait on stop() for the acquire light to go out
 - Updated DEFAULT_TIMEOUT to 10s
 - Fixed pmac so that stretched pulses on a PROFILE_POINTS boundary work

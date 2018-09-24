@@ -290,9 +290,6 @@ rst_epilog = """
 .. _IPython:
     https://ipython.org
 
-.. _decorators:
-    https://realpython.com/blog/python/primer-on-python-decorators/
-
 .. _Scan Point Generator:
     http://scanpointgenerator.readthedocs.org/en/latest/writing.html
 

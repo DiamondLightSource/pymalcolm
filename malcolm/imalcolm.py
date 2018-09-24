@@ -214,7 +214,7 @@ self.mri_list:
 
 Try:
 hello = self.block_view("HELLO")
-print hello.greet("me")
+hello.greet("me")
 
 or
 
@@ -223,7 +223,7 @@ gui(self.block_view("COUNTER"))
 or
 
 self.make_proxy("localhost:8008", "HELLO")
-print self.block_view("HELLO").greet("me")
+self.block_view("HELLO").greet("me")
 """ % (locals_d["self"].mri_list,)
 
     try:
