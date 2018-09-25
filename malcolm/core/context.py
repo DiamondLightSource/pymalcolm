@@ -2,12 +2,12 @@ import weakref
 import time
 
 from annotypes import TYPE_CHECKING
+import cothread
 
-from malcolm.compat import maybe_import_cothread
 from .future import Future
 from .request import Put, Post, Subscribe, Unsubscribe
 from .response import Update, Return, Error
-from .queue import Queue
+from .concurrency import Queue
 from .errors import TimeoutError, AbortedError, BadValueError
 
 if TYPE_CHECKING:
@@ -78,7 +78,6 @@ class Context(object):
         self._pending_unsubscribes = {}  # dict {Future: Subscribe}
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
-        self._cothread = maybe_import_cothread()
 
     def make_queue(self):
         # type: () -> Queue
@@ -131,10 +130,7 @@ class Context(object):
             self._notify_dispatch_request(request, *self._notify_args)
         controller.handle_request(request)
         # Yield control to allow the request to be handled
-        if self._cothread:
-            self._cothread.Yield()
-        else:
-            time.sleep(0)
+        cothread.Yield()
         return future
 
     def ignore_stops_before_now(self):

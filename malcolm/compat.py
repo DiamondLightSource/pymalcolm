@@ -1,16 +1,10 @@
 import threading
 import logging
 import sys
-import time
 from xml.etree import cElementTree as ET
 import os
 
-if sys.version_info < (3,):
-    # python 2
-    import Queue as queue
-else:
-    # python 3
-    import queue
+import cothread
 
 if sys.version_info < (3,):
     # python 2
@@ -108,31 +102,6 @@ def et_to_string(element):
     except LookupError:
         xml += ET.tostring(element)
     return xml
-
-
-def maybe_import_cothread():
-    if os.environ.get("PYMALCOLM_USE_COTHREAD", "YES")[0].upper() == "Y":
-        try:
-            import cothread
-        except ImportError:
-            cothread = None
-        return cothread
-
-
-def sleep(seconds):
-    cothread = maybe_import_cothread()
-    if cothread:
-        cothread.Sleep(seconds)
-    else:
-        time.sleep(seconds)
-
-
-def get_pool_num_threads():
-    if maybe_import_cothread():
-        num_threads = 16
-    else:
-        num_threads = 128
-    return num_threads
 
 
 # Exception handling from future.utils

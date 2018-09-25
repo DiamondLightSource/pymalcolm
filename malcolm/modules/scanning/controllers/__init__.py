@@ -1,5 +1,5 @@
 from .runnablecontroller import RunnableController, AMri, AConfigDir, \
-    AInitialDesign, ADescription, AUseCothread, AUseGit
+    AInitialDesign, ADescription, AUseGit
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

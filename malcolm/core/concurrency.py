@@ -1,45 +1,35 @@
 import logging
-from multiprocessing.pool import ThreadPool
+import signal
 
 from annotypes import TYPE_CHECKING
+from cothread import RLock, Sleep, EventQueue, Timedout, Spawn
 
-from malcolm.compat import maybe_import_cothread, get_thread_ident
-from .queue import Queue
+from .errors import TimeoutError
 
 if TYPE_CHECKING:
-    from typing import Callable, TypeVar, Tuple, Dict, Any, Union
+    from typing import TypeVar, Callable, Any, Tuple, Dict, Union
     T = TypeVar("T")
 
 
-# Create a module level logger
+# Make a module level logger
 log = logging.getLogger(__name__)
+
+# Re-export
+sleep = Sleep
+RLock = RLock
 
 
 class Spawned(object):
     NO_RESULT = object()
 
-    def __init__(self, func, args, kwargs, use_cothread=True, thread_pool=None):
-        # type: (Callable[..., Any], Tuple, Dict, bool, ThreadPool) -> None
-        self.cothread = maybe_import_cothread()
-        if use_cothread and not self.cothread:
-            use_cothread = False
+    def __init__(self, func, args, kwargs):
+        # type: (Callable[..., Any], Tuple, Dict) -> None
         self._result_queue = Queue()
         self._result = self.NO_RESULT  # type: Union[T, Exception]
         self._function = func
         self._args = args
         self._kwargs = kwargs
-
-        if use_cothread:
-            if self.cothread.scheduler_thread_id != get_thread_ident():
-                # Spawning cothread from real thread
-                self.cothread.Callback(
-                    self.cothread.Spawn, self.catching_function)
-            else:
-                # Spawning cothread from cothread
-                self.cothread.Spawn(self.catching_function)
-        else:
-            # Spawning real thread
-            thread_pool.apply_async(self.catching_function)
+        Spawn(self.catching_function)
 
     def catching_function(self):
         try:
@@ -52,6 +42,8 @@ class Spawned(object):
         # We finished running the function, so remove the reference to it
         # in case it's stopping garbage collection
         self._function = None
+        self._args = None
+        self._kwargs = None
         self._result_queue.put(None)
 
     def wait(self, timeout=None):
@@ -72,3 +64,33 @@ class Spawned(object):
         if isinstance(self._result, Exception):
             raise self._result
         return self._result
+
+
+class Queue(object):
+    """Wrapper around cothread EventQueue"""
+    INTERRUPTED = object()
+
+    def __init__(self, user_facing=False):
+        self.user_facing = user_facing
+        self._event_queue = EventQueue()
+        if user_facing:
+            # Install a signal handler that will make sure we are the
+            # thing that is interrupted
+            def signal_exception(signum, frame):
+                self._event_queue.Signal(self.INTERRUPTED)
+
+            signal.signal(signal.SIGINT, signal_exception)
+
+    def get(self, timeout=None):
+        try:
+            ret = self._event_queue.Wait(timeout=timeout)
+        except Timedout:
+            raise TimeoutError("Queue().get() timed out")
+        else:
+            if ret is self.INTERRUPTED:
+                raise KeyboardInterrupt()
+            else:
+                return ret
+
+    def put(self, value):
+        self._event_queue.Signal(value)

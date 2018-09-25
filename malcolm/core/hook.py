@@ -5,10 +5,9 @@ from annotypes import TYPE_CHECKING, Anno, WithCallTypes, Any, Generic, \
     TypeVar, Sequence
 
 from malcolm.compat import OrderedDict
+from .concurrency import Queue, Spawned
 from .errors import AbortedError
 from .loggable import Loggable
-from .queue import Queue
-from .spawned import Spawned
 from .info import Info
 
 if TYPE_CHECKING:
@@ -133,10 +132,10 @@ class Hook(Generic[T], WithCallTypes):
         return None
 
 
-def start_hooks(hooks, user_facing=False):
+def start_hooks(hooks):
     # type: (List[Hook]) -> Tuple[Queue, List[Hook]]
     # This queue will hold (part, result) tuples
-    hook_queue = Queue(user_facing)
+    hook_queue = Queue()
     hook_spawned = []
     # now start them off
     for hook in hooks:

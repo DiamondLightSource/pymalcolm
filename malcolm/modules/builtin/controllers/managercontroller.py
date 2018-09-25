@@ -16,8 +16,7 @@ from malcolm.modules.builtin.util import ManagerStates
 from ..hooks import LayoutHook, LoadHook, SaveHook
 from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo
 from ..util import LayoutTable, ExportTable
-from .statefulcontroller import StatefulController, AMri, \
-    ADescription, AUseCothread
+from .statefulcontroller import StatefulController, AMri, ADescription
 
 if TYPE_CHECKING:
     from typing import Dict, List, Set
@@ -44,11 +43,10 @@ class ManagerController(StatefulController):
                  config_dir,  # type: AConfigDir
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
-                 use_cothread=True,  # type: AUseCothread
                  use_git=True,  # type: AUseGit
                  ):
         # type: (...) -> None
-        super(ManagerController, self).__init__(mri, description, use_cothread)
+        super(ManagerController, self).__init__(mri, description)
         assert os.path.isdir(config_dir), "%s is not a directory" % config_dir
         self.config_dir = config_dir
         self.initial_design = initial_design

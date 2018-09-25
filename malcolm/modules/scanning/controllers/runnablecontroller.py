@@ -6,7 +6,7 @@ from malcolm.core import AbortedError, MethodModel, Queue, Context, \
 from malcolm.compat import OrderedDict
 from malcolm.core.models import MapMeta
 from malcolm.modules.builtin.controllers import ManagerController, \
-    AConfigDir, AInitialDesign, ADescription, AUseCothread, AUseGit
+    AConfigDir, AInitialDesign, ADescription, AUseGit
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, AAxesToMove, ConfigureParams
 from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
@@ -55,12 +55,11 @@ class RunnableController(ManagerController):
                  config_dir,  # type: AConfigDir
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
-                 use_cothread=True,  # type: AUseCothread
                  use_git=True,  # type: AUseGit
                  ):
         # type: (...) -> None
         super(RunnableController, self).__init__(
-            mri, config_dir, initial_design, description, use_cothread, use_git)
+            mri, config_dir, initial_design, description, use_git)
         # Shared contexts between Configure, Run, Pause, Seek, Resume
         self.part_contexts = {}  # type: Dict[Part, Context]
         # Any custom ConfigureParams subclasses requested by Parts

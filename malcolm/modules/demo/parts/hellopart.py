@@ -2,8 +2,7 @@ from __future__ import print_function
 
 from annotypes import Anno, add_call_types
 
-from malcolm.core import Part
-from malcolm.compat import sleep as sleep_for
+from malcolm.core import Part, sleep as sleep_for
 
 
 with Anno("The name of the person to greet"):
