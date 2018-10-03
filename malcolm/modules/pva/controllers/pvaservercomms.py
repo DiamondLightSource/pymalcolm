@@ -74,7 +74,9 @@ class BlockHandler(Handler):
                 else:
                     ret = response.value
                 serialized = serialize_object(ret)
-                op.done(convert_dict_to_value(serialized))
+                v = convert_dict_to_value(serialized)
+                self.controller.log.debug("Calling op.done with %s", v)
+                op.done(v)
             else:
                 if isinstance(response, Error):
                     message = stringify_error(response.message)
