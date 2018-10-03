@@ -1,8 +1,8 @@
 from annotypes import add_call_types, TYPE_CHECKING
 from p4p import Value
 from p4p.server import Server, DynamicProvider, ServerOperation
-from p4p.server.raw import SharedPV, Handler
 
+from malcolm.compat import maybe_import_cothread
 from malcolm.core import Subscribe, Error, APublished, Controller, Delta, \
     Return, stringify_error, Response, Put, Post, Unsubscribe, \
     ProcessPublishHook, method_return_unpacked, Method, serialize_object
@@ -13,6 +13,14 @@ from .pvaconvert import convert_dict_to_value, update_path, \
 
 if TYPE_CHECKING:
     from typing import Optional, Dict, List
+
+
+cothread = maybe_import_cothread()
+
+if cothread:
+    from p4p.server.cothread import Handler, SharedPV
+else:
+    from p4p.server.thread import Handler, SharedPV
 
 
 class BlockHandler(Handler):
@@ -66,7 +74,9 @@ class BlockHandler(Handler):
                 else:
                     ret = response.value
                 serialized = serialize_object(ret)
-                op.done(convert_dict_to_value(serialized))
+                v = convert_dict_to_value(serialized)
+                self.controller.log.debug("Calling op.done with %s", v)
+                op.done(v)
             else:
                 if isinstance(response, Error):
                     message = stringify_error(response.message)
@@ -231,6 +241,10 @@ class PvaServerComms(builtin.controllers.ServerComms):
     # noinspection PyPep8Naming
     def makeChannel(self, channel_name, src):
         # type: (str, str) -> SharedPV
+        return self.spawn(self._makeChannel, channel_name, src).get(timeout=1)
+
+    def _makeChannel(self, channel_name, src):
+        # type: (str, str) -> SharedPV
         self.log.debug("Making PV %s for %s", channel_name, src)
         if channel_name in self._published:
             # Someone is asking for a Block
@@ -248,7 +262,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
         # the full structure. The mapperMode option allows us to tell p4p to
         # send a slice instead
         # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
-        pv = SharedPV(handler, options={'mapperMode': 'Slice'})
+        pv = SharedPV(handler=handler, options={'mapperMode': 'Slice'})
         self._pvs.setdefault(mri, []).append(pv)
         return pv
 

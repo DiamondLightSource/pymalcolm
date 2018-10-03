@@ -140,6 +140,7 @@ class Process(Loggable):
         self._controllers = OrderedDict()
         self._unpublished = set()
         self.state = STOPPED
+        self.log.debug("Done process.stop()")
 
     def spawn(self, function, *args, **kwargs):
         # type: (Callable[..., Any], *Any, **Any) -> Spawned

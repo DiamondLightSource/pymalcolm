@@ -188,6 +188,7 @@ class PmacTrajectoryPart(ChildPart):
         child = context.block_view(self.mri)
         child.pointsScanned.subscribe_value(self.update_step, child)
         child.executeProfile()
+        # TODO: when should we transition to postRun?
         # Now wait for up to 2*min_delta time to make sure any
         # update_completed_steps come in
         traj_end = len(self.completed_steps_lookup)

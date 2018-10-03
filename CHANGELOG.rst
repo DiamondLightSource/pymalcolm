@@ -14,13 +14,16 @@ Nothing yet
 ---------------------
 
 Added:
+
 - Web gui (malcolmjs 1.1.0)
 
 Changed:
+
 - PVAccess library from pvaPy to p4p. This means that monitor deltas and RPC
 errors now work as expected
 
 Fixed:
+
 - PMAC trajectory pause waits for long enough to get GPIO signals
 - MotorInfo.make_velocity_profile now works with small distances, zero
 velocities, and a min_time. A floating point rounding error was previously
@@ -42,6 +45,7 @@ making it return less than min_time
 ---------------------
 
 Fixed:
+
 - PMAC move to start uses the right timeout (instead of fixed 5 seconds)
 - SimultaneousAxes now works from axesToMove instead of generator axes
 
