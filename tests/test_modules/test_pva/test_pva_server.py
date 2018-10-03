@@ -1,5 +1,8 @@
 from __future__ import print_function
 
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
+
 import difflib
 import unittest
 
@@ -310,12 +313,8 @@ class TestPVAServer(unittest.TestCase):
         cothread = maybe_import_cothread()
         if cothread:
             from p4p.client.cothread import Context
-            # TODO: remove this when the context clearup works on cothread
-            self.addCleanup(cothread.Sleep, 1)
         else:
             from p4p.client.thread import Context
-            import time
-            self.addCleanup(time.sleep, 1)
         return Context("pva", *args, **kwargs)
 
     def assertStructureWithoutTsEqual(self, first, second):

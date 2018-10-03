@@ -150,9 +150,11 @@ class Process(Loggable):
         self._unpublished = set()
         self.state = STOPPED
         if self._thread_pool:
+            self.log.debug("Waiting for thread pool")
             self._thread_pool.close()
             self._thread_pool.join()
             self._thread_pool = None
+        self.log.debug("Done process.stop()")
 
     def spawn(self, function, args, kwargs, use_cothread):
         # type: (Callable[..., Any], Tuple, Dict, bool) -> Spawned
