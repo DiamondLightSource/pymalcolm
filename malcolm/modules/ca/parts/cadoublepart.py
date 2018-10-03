@@ -1,7 +1,8 @@
+from cothread import catools
+
 from malcolm.core import Part, PartRegistrar, NumberMeta, DEFAULT_TIMEOUT
-from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
-    APv, ARbv, ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, \
-    AGroup, AConfig
+from ..util import CAAttribute, APartName, AMetaDescription, APv, ARbv, \
+    ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, AGroup, AConfig
 
 
 class CADoublePart(Part):
@@ -22,7 +23,6 @@ class CADoublePart(Part):
                  ):
         # type: (...) -> None
         super(CADoublePart, self).__init__(name)
-        catools = CaToolsHelper.instance()
         self.caa = CAAttribute(
             NumberMeta("float64", description), catools.DBR_DOUBLE, pv, rbv,
             rbv_suffix, min_delta, timeout, sink_port, widget, group, config)

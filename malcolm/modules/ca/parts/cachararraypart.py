@@ -1,7 +1,8 @@
+from cothread import catools
+
 from malcolm.core import Part, PartRegistrar, StringMeta, DEFAULT_TIMEOUT
-from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
-    APv, ARbv, ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, \
-    AGroup, AConfig
+from ..util import CAAttribute, APartName, AMetaDescription, APv, ARbv, \
+    ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, AGroup, AConfig
 
 
 class CACharArrayPart(Part):
@@ -22,7 +23,6 @@ class CACharArrayPart(Part):
                  ):
         # type: (...) -> None
         super(CACharArrayPart, self).__init__(name)
-        catools = CaToolsHelper.instance()
         self.caa = CAAttribute(
             StringMeta(description), catools.DBR_CHAR_STR, pv, rbv, rbv_suffix,
             min_delta, timeout, sink_port, widget, group, config)

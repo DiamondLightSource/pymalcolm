@@ -1,4 +1,5 @@
 from annotypes import Any
+from cothread import catools
 
 from malcolm.core import Part, PartRegistrar, StringMeta, Port, Alarm
 from malcolm.modules import ca, builtin
@@ -16,13 +17,12 @@ class CompoundMotorCSPart(Part):
         builtin.util.set_tags(meta, group=group, sink_port=Port.MOTOR)
         self.rbv = rbv
         self.attr = meta.create_attribute_model()
-        self.catools = ca.util.CaToolsHelper.instance()
         # Subscriptions
         self.monitor = None
         # Hooks
         self.register_hooked(builtin.hooks.DisableHook, self.disconnect)
         self.register_hooked((builtin.hooks.InitHook,
-                              builtin.hooks.DisableHook), self.reconnect)
+                              builtin.hooks.ResetHook), self.reconnect)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -32,13 +32,13 @@ class CompoundMotorCSPart(Part):
         # release old monitors
         self.disconnect()
         # make sure we can connect to the pvs
-        ca_values = self.catools.checking_caget(
-            [self.rbv], format=self.catools.FORMAT_CTRL)
+        ca_values = ca.util.assert_connected(catools.caget(
+            [self.rbv], format=catools.FORMAT_CTRL))
         # Set initial value
         self._update_value(ca_values[0])
         # Setup monitor on rbv
-        self.monitor = self.catools.camonitor(
-            self.rbv, self._update_value, format=self.catools.FORMAT_TIME,
+        self.monitor = catools.camonitor(
+            self.rbv, self._update_value, format=catools.FORMAT_TIME,
             notify_disconnect=True)
 
     def disconnect(self):

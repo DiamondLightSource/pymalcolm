@@ -1,9 +1,9 @@
 from annotypes import Array
+from cothread import catools
 
 from malcolm.core import Part, PartRegistrar, NumberArrayMeta, DEFAULT_TIMEOUT
-from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
-    APv, ARbv, ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, \
-    AGroup, AConfig
+from ..util import CAAttribute, APartName, AMetaDescription, APv, ARbv, \
+    ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, AGroup, AConfig
 
 
 class CADoubleArrayPart(Part):
@@ -24,7 +24,6 @@ class CADoubleArrayPart(Part):
                  ):
         # type: (...) -> None
         super(CADoubleArrayPart, self).__init__(name)
-        catools = CaToolsHelper.instance()
         self.caa = CAAttribute(
             NumberArrayMeta("float64", description), catools.DBR_DOUBLE, pv,
             rbv, rbv_suffix, min_delta, timeout, sink_port, widget, group, config)

@@ -1,11 +1,11 @@
 from annotypes import Anno
 
-from malcolm.core import Post, Subscribe, Put, Hook, Alarm, Unsubscribe, \
-    Delta, Queue, ProcessStopHook, ProcessStartHook, deserialize_object, \
-    Response, UnpublishedInfo, UUnpublishedInfos, MethodModel, serialize_object
+from malcolm.core import Subscribe, Alarm, Unsubscribe, Delta, Queue, \
+    ProcessStopHook, ProcessStartHook, deserialize_object, Response, \
+    UnpublishedInfo, UUnpublishedInfos, serialize_object
 from malcolm.core.models import NTScalar, BlockMeta
 from .basiccontroller import BasicController, AMri
-from ..infos import HealthInfo
+
 
 with Anno("Malcolm resource id of client comms"):
     AComms = str

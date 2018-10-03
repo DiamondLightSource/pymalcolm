@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class ChildTestCase(unittest.TestCase):
-    @patch("malcolm.modules.ca.util.CaToolsHelper._instance", Mock())
+    @patch("cothread.catools.caget", Mock())
     def create_child_block(self, child_block, process, **params):
         """Creates an instance of child_block with CA calls mocked out.
 

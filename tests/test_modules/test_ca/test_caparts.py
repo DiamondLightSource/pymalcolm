@@ -2,6 +2,7 @@ import unittest
 from mock import patch, ANY
 
 import numpy as np
+import cothread.catools as real_catools
 
 from malcolm.core import AlarmSeverity, Process, Widget
 from malcolm.modules.builtin.controllers import StatefulController
@@ -10,7 +11,7 @@ from malcolm.modules.ca.parts import CABooleanPart, CACharArrayPart, \
     CALongPart, CAStringPart
 
 
-@patch("malcolm.modules.ca.util.CaToolsHelper._instance")
+@patch("malcolm.modules.ca.util.catools")
 class TestCAParts(unittest.TestCase):
 
     def setUp(self):
@@ -33,15 +34,16 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 0
 
-        catools.checking_caget.side_effect = [[Initial(0), Initial(0)]]
+        catools.caget.side_effect = [[Initial(0), Initial(0)]]
         b = self.create_block(CABooleanPart(
                 name="attrname", description="desc", pv="pv", rbv_suffix="2"))
         assert b.attrname.value is False
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
-        catools.checking_caget.assert_called_once_with(
-            ["pv2", 'pv'], datatype=catools.DBR_LONG,
+        catools.caget.assert_called_once_with(
+            ["pv2", 'pv'], datatype=real_catools.DBR_LONG,
             format=catools.FORMAT_CTRL)
+        catools.caget.reset_mock()
 
         class Update(int):
             ok = True
@@ -51,9 +53,9 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [Update(1)]
         b.attrname.put_value(True)
         catools.caput.assert_called_once_with(
-            "pv", 1, datatype=catools.DBR_LONG, timeout=10.0, wait=True)
+            "pv", 1, datatype=real_catools.DBR_LONG, timeout=10.0, wait=True)
         catools.caget.assert_called_once_with(
-            "pv2", datatype=catools.DBR_LONG, format=catools.FORMAT_TIME)
+            "pv2", datatype=real_catools.DBR_LONG, format=catools.FORMAT_TIME)
         assert b.attrname.value is True
         assert b.attrname.alarm.is_ok()
         assert b.attrname.timeStamp.to_time() == 34.000004355
@@ -63,13 +65,13 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 1
 
-        catools.checking_caget.side_effect = [[Initial("long_and_bad_string")]]
+        catools.caget.side_effect = [[Initial("long_and_bad_string")]]
         b = self.create_block(CACharArrayPart(
             name="cattr", description="desc", rbv="pvr"))
         assert b.cattr.value == "long_and_bad_string"
         assert b.cattr.alarm.severity == AlarmSeverity.MINOR_ALARM
-        catools.checking_caget.assert_called_once_with(
-            ["pvr"], datatype=catools.DBR_CHAR_STR, format=catools.FORMAT_CTRL)
+        catools.caget.assert_called_once_with(
+            ["pvr"], datatype=real_catools.DBR_CHAR_STR, format=catools.FORMAT_CTRL)
 
     def test_cachoice(self, catools):
 
@@ -78,15 +80,16 @@ class TestCAParts(unittest.TestCase):
             severity = 0
             enums = ["a", "b", "c"]
 
-        catools.checking_caget.side_effect = [[Initial(1), Initial(2)]]
+        catools.caget.side_effect = [[Initial(1), Initial(2)]]
         b = self.create_block(CAChoicePart(
             name="attrname", description="desc", pv="pv", rbv="rbv"))
         assert b.attrname.value is "b"
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
-        catools.checking_caget.assert_called_once_with(
-            ["rbv", 'pv'], datatype=catools.DBR_ENUM,
+        catools.caget.assert_called_once_with(
+            ["rbv", 'pv'], datatype=real_catools.DBR_ENUM,
             format=catools.FORMAT_CTRL)
+        catools.caget.reset_mock()
 
         class Update(int):
             ok = True
@@ -96,9 +99,9 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [Update(0)]
         b.attrname.put_value("c")
         catools.caput.assert_called_once_with(
-            "pv", 2, datatype=catools.DBR_ENUM, timeout=10.0, wait=True)
+            "pv", 2, datatype=real_catools.DBR_ENUM, timeout=10.0, wait=True)
         catools.caget.assert_called_once_with(
-            "rbv", datatype=catools.DBR_ENUM, format=catools.FORMAT_TIME)
+            "rbv", datatype=real_catools.DBR_ENUM, format=catools.FORMAT_TIME)
         assert b.attrname.value is "a"
         assert b.attrname.alarm.severity == AlarmSeverity.MAJOR_ALARM
         assert b.attrname.timeStamp.to_time() == 34.000004355
@@ -108,7 +111,7 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [Update(1)]
         b.attrname.put_value(1)
         catools.caput.assert_called_once_with(
-            "pv", 1, datatype=catools.DBR_ENUM, timeout=10.0, wait=True)
+            "pv", 1, datatype=real_catools.DBR_ENUM, timeout=10.0, wait=True)
         assert b.attrname.value is "b"
 
     def test_cadoublearray(self, catools):
@@ -118,16 +121,17 @@ class TestCAParts(unittest.TestCase):
         initial = Initial(dtype=np.float64, shape=(3,))
         initial[:] = np.arange(3) + 1.2
 
-        catools.checking_caget.side_effect = [[initial]]
+        catools.caget.side_effect = [[initial]]
         b = self.create_block(CADoubleArrayPart(
             name="attrname", description="desc", pv="pv",
             timeout=-1))
         assert list(b.attrname.value) == [1.2, 2.2, 3.2]
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
-        catools.checking_caget.assert_called_once_with(
-            ["pv"], datatype=catools.DBR_DOUBLE,
+        catools.caget.assert_called_once_with(
+            ["pv"], datatype=real_catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
+        catools.caget.reset_mock()
 
         class Update(np.ndarray):
             ok = False
@@ -135,10 +139,10 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [Update(shape=(6,))]
         b.attrname.put_value([])
         catools.caput.assert_called_once_with(
-            "pv", ANY, datatype=catools.DBR_DOUBLE, timeout=None, wait=True)
+            "pv", ANY, datatype=real_catools.DBR_DOUBLE, timeout=None, wait=True)
         assert list(catools.caput.call_args[0][1]) == []
         catools.caget.assert_called_once_with(
-            "pv", datatype=catools.DBR_DOUBLE, format=catools.FORMAT_TIME)
+            "pv", datatype=real_catools.DBR_DOUBLE, format=catools.FORMAT_TIME)
         assert list(b.attrname.value) == []
         assert b.attrname.alarm.severity == AlarmSeverity.INVALID_ALARM
 
@@ -148,14 +152,14 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 0
 
-        catools.checking_caget.side_effect = [[Initial(5.2)]]
+        catools.caget.side_effect = [[Initial(5.2)]]
         b = self.create_block(CADoublePart(
             name="attrname", description="desc", rbv="pv"))
         assert b.attrname.value == 5.2
         assert b.attrname.meta.description == "desc"
         assert not b.attrname.meta.writeable
-        catools.checking_caget.assert_called_once_with(
-            ['pv'], datatype=catools.DBR_DOUBLE,
+        catools.caget.assert_called_once_with(
+            ['pv'], datatype=real_catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
 
         l = []
@@ -179,16 +183,17 @@ class TestCAParts(unittest.TestCase):
         initial = Initial(dtype=np.int32, shape=(4,))
         initial[:] = [5, 6, 7, 8]
 
-        catools.checking_caget.side_effect = [[initial]]
+        catools.caget.side_effect = [[initial]]
         b = self.create_block(CALongArrayPart(
             name="attrname", description="desc", pv="pv",
             widget=Widget.TEXTINPUT))
         assert list(b.attrname.value) == [5, 6, 7, 8]
         assert b.attrname.meta.tags == ["widget:textinput", 'config:1']
         assert b.attrname.meta.writeable
-        catools.checking_caget.assert_called_once_with(
-            ["pv"], datatype=catools.DBR_LONG,
+        catools.caget.assert_called_once_with(
+            ["pv"], datatype=real_catools.DBR_LONG,
             format=catools.FORMAT_CTRL)
+        catools.caget.reset_mock()
 
         class Update(np.ndarray):
             ok = True
@@ -199,10 +204,10 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [update]
         b.attrname.put_value([4, 4.2])
         catools.caput.assert_called_once_with(
-            "pv", ANY, datatype=catools.DBR_LONG, timeout=10.0, wait=True)
+            "pv", ANY, datatype=real_catools.DBR_LONG, timeout=10.0, wait=True)
         assert list(catools.caput.call_args[0][1]) == [4, 4]
         catools.caget.assert_called_once_with(
-            "pv", datatype=catools.DBR_LONG, format=catools.FORMAT_TIME)
+            "pv", datatype=real_catools.DBR_LONG, format=catools.FORMAT_TIME)
         assert list(b.attrname.value) == [4, 5]
         assert b.attrname.alarm.is_ok()
 
@@ -212,14 +217,14 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 0
 
-        catools.checking_caget.side_effect = [[Initial(3)]]
+        catools.caget.side_effect = [[Initial(3)]]
         b = self.create_block(CALongPart(
             name="attrname", description="desc", pv="pv"))
         assert b.attrname.value == 3
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
-        catools.checking_caget.assert_called_once_with(
-            ['pv'], datatype=catools.DBR_LONG,
+        catools.caget.assert_called_once_with(
+            ['pv'], datatype=real_catools.DBR_LONG,
             format=catools.FORMAT_CTRL)
 
     def test_castring(self, catools):
@@ -228,14 +233,14 @@ class TestCAParts(unittest.TestCase):
             ok = True
             severity = 0
 
-        catools.checking_caget.side_effect = [[Initial("thing")]]
+        catools.caget.side_effect = [[Initial("thing")]]
         b = self.create_block(CAStringPart(
             name="attrname", description="desc", rbv="pv"))
         assert b.attrname.value == "thing"
         assert b.attrname.meta.description == "desc"
         assert not b.attrname.meta.writeable
-        catools.checking_caget.assert_called_once_with(
-            ['pv'], datatype=catools.DBR_STRING,
+        catools.caget.assert_called_once_with(
+            ['pv'], datatype=real_catools.DBR_STRING,
             format=catools.FORMAT_CTRL)
 
     def test_init_no_pv_no_rbv(self, catools):

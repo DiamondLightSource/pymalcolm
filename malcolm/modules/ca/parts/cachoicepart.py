@@ -1,7 +1,8 @@
+from cothread import catools
+
 from malcolm.core import Part, PartRegistrar, ChoiceMeta, DEFAULT_TIMEOUT
-from ..util import CaToolsHelper, CAAttribute, APartName, AMetaDescription, \
-    APv, ARbv, ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, \
-    AGroup, AConfig
+from ..util import CAAttribute, APartName, AMetaDescription, APv, ARbv, \
+    ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, AGroup, AConfig
 
 
 class CAChoicePart(Part):
@@ -22,7 +23,6 @@ class CAChoicePart(Part):
                  ):
         # type: (...) -> None
         super(CAChoicePart, self).__init__(name)
-        catools = CaToolsHelper.instance()
         self.meta = ChoiceMeta(description)
         self.caa = CAAttribute(
             self.meta, catools.DBR_ENUM, pv, rbv, rbv_suffix, min_delta, timeout,

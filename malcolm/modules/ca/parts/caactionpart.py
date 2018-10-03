@@ -1,8 +1,9 @@
 from annotypes import Anno
+from cothread import catools
 
 from malcolm.core import Part, PartRegistrar
 from malcolm.modules import builtin
-from ..util import CaToolsHelper, APartName, AMetaDescription, APv
+from ..util import APartName, AMetaDescription, APv
 
 with Anno("Status pv to see if successful"):
     StatusPv = str
@@ -31,7 +32,6 @@ class CAActionPart(Part):
                  ):
         # type: (...) -> None
         super(CAActionPart, self).__init__(name)
-        self.catools = CaToolsHelper.instance()
         self.description = description
         self.pv = pv
         self.status_pv = status_pv
@@ -54,24 +54,20 @@ class CAActionPart(Part):
             pvs.append(self.status_pv)
         if self.message_pv:
             pvs.append(self.message_pv)
-        ca_values = self.catools.caget(pvs)
+        ca_values = catools.caget(pvs)
         # check connection is ok
         for i, v in enumerate(ca_values):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
 
     def caput(self):
         self.log.info("caput %s %s", self.pv, self.value)
-        self.catools.caput(
-            self.pv, self.value,
-            wait=self.wait, timeout=None)
+        catools.caput(self.pv, self.value, wait=self.wait, timeout=None)
         if self.status_pv:
-            status = self.catools.caget(
-                self.status_pv,
-                datatype=self.catools.DBR_STRING)
+            status = catools.caget(
+                self.status_pv, datatype=catools.DBR_STRING)
             if self.message_pv:
-                message = " %s:" % self.catools.caget(
-                    self.message_pv,
-                    datatype=self.catools.DBR_CHAR_STR)
+                message = " %s:" % catools.caget(
+                    self.message_pv, datatype=catools.DBR_CHAR_STR)
             else:
                 message = ""
             assert status == self.good_status, \

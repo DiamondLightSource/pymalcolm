@@ -4,8 +4,6 @@ import sys
 from xml.etree import cElementTree as ET
 import os
 
-import cothread
-
 if sys.version_info < (3,):
     # python 2
     str_ = basestring
