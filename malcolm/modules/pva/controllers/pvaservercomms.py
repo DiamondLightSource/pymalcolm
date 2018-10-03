@@ -196,7 +196,6 @@ class BlockHandler(Handler):
     def onLastDisconnect(self, pv):
         # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
-        return
         self.controller.spawn(self._on_last_disconnect, pv).get(timeout=1)
 
     def _on_last_disconnect(self, pv):
