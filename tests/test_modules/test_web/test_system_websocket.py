@@ -167,21 +167,15 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         resp = self.result.get(timeout=2)
 
         if version_info[0] == 2:
-            assert resp == dict(
-                typeid="malcolm:core/Error:1.0",
-                id=0,
-                message="FieldError: typeid not present in keys " +
-                       "[u'id', u'path', u'parameters']"
-            )
+            message = "FieldError: typeid not present in keys " + \
+                "[u'id', u'path', u'parameters']"
         elif version_info[0] == 3:
-            assert resp == dict(
-                typeid="malcolm:core/Error:1.0",
-                id=0,
-                message="FieldError: typeid field not present in dictionary " +
-                        "( d.keys() = ['id', 'path', 'parameters'] )"
-            )
+            message = "FieldError: typeid not present in keys " + \
+                "['id', 'path', 'parameters']"
         else:
             raise Exception("Got bad python version info")
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0", id=0, message=message)
 
     def test_error_server_and_simple_client_bad_path_controller(self):
         msg = OrderedDict()
