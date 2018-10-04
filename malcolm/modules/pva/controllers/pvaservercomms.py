@@ -153,6 +153,7 @@ class BlockHandler(Handler):
             delta.changes[0][0] == [], "Expected root update, got %s" % (
                 delta.changes,)
         self.value = convert_dict_to_value(delta.changes[0][1])
+        self.controller.log.debug("Opening pv %s with %s", self.pv, self.value)
         self.pv.open(self.value)
 
     def _update_value(self, delta):
@@ -176,7 +177,9 @@ class BlockHandler(Handler):
     def onFirstConnect(self, pv):
         # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
+        self.controller.log.debug("Starting onFirstConnect %s", pv)
         self.controller.spawn(self._on_first_connect, pv).get(timeout=1)
+        self.controller.log.debug("Done onFirstConnect")
 
     def _on_first_connect(self, pv):
         # type: (SharedPV) -> None
@@ -196,7 +199,9 @@ class BlockHandler(Handler):
     def onLastDisconnect(self, pv):
         # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
+        self.controller.log.debug("Starting onLastDisconnect %s", pv)
         self.controller.spawn(self._on_last_disconnect, pv).get(timeout=1)
+        self.controller.log.debug("Done onLastDisconnect")
 
     def _on_last_disconnect(self, pv):
         # type: (SharedPV) -> None
@@ -303,5 +308,5 @@ class PvaServerComms(builtin.controllers.ServerComms):
             for pv in self._pvs.pop(mri, ()):
                 # Close pv with force destroy on, this will call
                 # onLastDisconnect
-                pv.close(True)
+                pv.close(destroy=True, sync=True, timeout=1.0)
 
