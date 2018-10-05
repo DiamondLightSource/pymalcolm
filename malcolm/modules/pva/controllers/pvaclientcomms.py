@@ -49,9 +49,9 @@ class PvaClientComms(ClientComms):
             request(Request): The message to pass to the server
         """
         self._send_queue.put(request)
-        self.spawn(self._send_to_server)
+        self.spawn(self._send_to_server, request)
 
-    def _send_to_server(self):
+    def _send_to_server(self, _):
         request = self._send_queue.get(timeout=0)
         try:
             request = deserialize_object(request, Request)
