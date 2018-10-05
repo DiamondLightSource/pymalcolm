@@ -150,8 +150,11 @@ class PvaClientComms(ClientComms):
         self._monitors[request.generate_key()] = m
 
     def _execute_unsubscribe(self, request):
-        monitor = self._monitors.pop(request.generate_key())
+        monitor = self._monitors[request.generate_key()]
         monitor.close()
+        # Don't pop until we have done the close, avoiding a race with
+        # ctxt.close
+        self._monitors.pop(request.generate_key())
         self._unsub_queue.put(None)
         response = Return(request.id)
         return response
