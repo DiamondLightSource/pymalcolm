@@ -423,7 +423,12 @@ class TestPVAServer(unittest.TestCase):
         self.assertEqual(counter.alarm.severity, 0)
 
     def assertCounter(self, value):
-        counter = self.ctxt.get("TESTCOUNTER.counter").value
+        if PVAPY:
+            # Get it over pva
+            counter = self.ctxt.get("TESTCOUNTER.counter").value
+        else:
+            # Get it directly from the data structure
+            counter = self.counter.make_view().counter.value
         self.assertEqual(counter, value)
 
     # Equivalent to:

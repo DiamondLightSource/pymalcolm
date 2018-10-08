@@ -199,6 +199,7 @@ class BlockHandler(Handler):
     def onLastDisconnect(self, pv):
         # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
+        assert self.pv, "onFirstConnect not called yet"
         self.controller.log.debug("Starting onLastDisconnect %s", pv)
         self.controller.spawn(self._on_last_disconnect, pv).get(timeout=1)
         self.controller.log.debug("Done onLastDisconnect")
@@ -222,7 +223,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
         super(PvaServerComms, self).__init__(mri, use_cothread=True)
         self._pva_server = None
         self._provider = None
-        self._published = ()
+        self._published = set()
         self._pvs = {}  # type: Dict[str, List[SharedPV]]
         # Hooks
         self.register_hooked(ProcessPublishHook, self.publish)
@@ -294,7 +295,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
     @add_call_types
     def publish(self, published):
         # type: (APublished) -> None
-        self._published = published
+        self._published = set(published)
         if self._pva_server:
             with self._lock:
                 mris = [mri for mri in self._pvs if mri not in published]
