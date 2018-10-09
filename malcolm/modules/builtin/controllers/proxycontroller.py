@@ -47,3 +47,7 @@ class ProxyController(BasicController):
     def get_put_function(self, attribute_name):
         return functools.partial(
             self.client_comms.send_put, self.mri, attribute_name)
+
+    def check_field_writeable(self, field):
+        # Let the server do this
+        pass
