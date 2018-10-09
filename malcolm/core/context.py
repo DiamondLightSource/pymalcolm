@@ -65,7 +65,7 @@ class Context(object):
     STOP = object()
 
     def __init__(self, process, use_cothread=True):
-        # type: (Process) -> None
+        # type: (Process, bool) -> None
         self._q = self.make_queue()
         # Func to call just before requests are dispatched
         self._notify_dispatch_request = None

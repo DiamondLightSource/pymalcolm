@@ -12,5 +12,4 @@ pytest-cov
 h5py>=2.8.0
 vdsgen>=0.3
 annotypes>=0.9
-p4p>=1.1a34
-epicscorelibs>=7.0.1.99.13.4a1
+p4p>=1.1a35
