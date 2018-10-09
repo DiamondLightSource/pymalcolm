@@ -1,5 +1,5 @@
 from p4p import Value
-from p4p.client.raw import Disconnected
+from p4p.client.raw import Disconnected, RemoteError
 from p4p.nt import NTURI
 from annotypes import TYPE_CHECKING
 
@@ -11,7 +11,7 @@ from .pvaconvert import convert_value_to_dict, convert_to_type_tuple_value, Type
 
 
 if TYPE_CHECKING:
-    from typing import Set
+    from typing import Set, Dict
 
 
 class PvaClientComms(ClientComms):
@@ -19,6 +19,7 @@ class PvaClientComms(ClientComms):
 
     _monitors = None
     _ctxt = None
+    _queues = {}
 
     def do_init(self):
         super(PvaClientComms, self).do_init()
@@ -28,6 +29,7 @@ class PvaClientComms(ClientComms):
         else:
             from p4p.client.thread import Context, Subscription
         self._ctxt = Context("pva", unwrap=False)
+        self._queues = {}  # type: Dict[str, Queue]
         self._monitors = set()  # type: Set[Subscription]
 
     def do_disable(self):
@@ -57,12 +59,13 @@ class PvaClientComms(ClientComms):
             block (BlockModel): The local proxy Block to keep in sync
         """
         done_queue = Queue()
+        self._queues[mri] = done_queue
         update_fields = set()
 
         def callback(value=None):
             if isinstance(value, Exception):
                 # Disconnect or Cancelled or RemoteError
-                if isinstance(value, Disconnected):
+                #if isinstance(value, Disconnected):
                     # We will get a reconnect with a whole new structure
                     update_fields.clear()
                     block.health.set_value(
@@ -72,6 +75,7 @@ class PvaClientComms(ClientComms):
             else:
                 with block.notifier.changes_squashed:
                     if not update_fields:
+                        self.log.debug("Regenerating from %s", list(value))
                         self._regenerate_block(block, value, update_fields)
                         done_queue.put(None)
                     else:
@@ -84,6 +88,10 @@ class PvaClientComms(ClientComms):
     def _regenerate_block(self, block, value, update_fields):
         # type: (BlockModel, Value, Set[str]) -> None
         # This is an initial update, generate the list of all fields
+        # TODO: very similar to websocketclientcomms
+        for field in list(block):
+            if field not in ("health", "meta"):
+                block.remove_endpoint(field)
         for k, v in value.items():
             if k == "health":
                 # Update health attribute
@@ -111,7 +119,6 @@ class PvaClientComms(ClientComms):
             v = value[k]
             if isinstance(v, Value):
                 v = convert_value_to_dict(v)
-            self.log.debug("Applying %s %s", k, v)
             block.apply_change(k.split("."), v)
 
     def send_put(self, mri, attribute_name, value):
@@ -128,7 +135,17 @@ class PvaClientComms(ClientComms):
             # Structure, make into a Value
             _, typeid, fields = typ
             value = Value(Type(fields, typeid), value)
-        self._ctxt.put(mri, {path: value}, path)
+        try:
+            self._ctxt.put(mri, {path: value}, path)
+        except RemoteError:
+            if attribute_name == "exports":
+                # TODO: use a tag instead of a name
+                # This will change the structure of the block
+                # Wait for reconnect
+                self._queues[mri].get(timeout=DEFAULT_TIMEOUT)
+            else:
+                # Not expected, raise
+                raise
 
     def send_post(self, mri, method_name, **params):
         """Abstract method to dispatch a Post to the server

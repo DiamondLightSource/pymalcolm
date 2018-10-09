@@ -151,7 +151,11 @@ class BlockHandler(Handler):
                 # We got a delta, create or update value and notify
                 if self.value is None:
                     # Open it with the value
-                    self._create_initial_value(response)
+                    assert len(response.changes) == 1 and \
+                           len(response.changes[0]) == 2 and \
+                           response.changes[0][0] == [], \
+                           "Expected root update, got %s" % (response.changes,)
+                    self._create_initial_value(response.changes[0][1])
                 elif self.pv.isOpen():
                     # Update it with values
                     self._update_value(response)
@@ -160,13 +164,10 @@ class BlockHandler(Handler):
                 self.pv.close()
                 self.pv = None
 
-    def _create_initial_value(self, delta):
-        # type: (Delta) -> None
+    def _create_initial_value(self, d):
+        # type: (Dict) -> None
         # Called with the lock taken
-        assert len(delta.changes) == 1 and len(delta.changes[0]) == 2 and \
-            delta.changes[0][0] == [], "Expected root update, got %s" % (
-                delta.changes,)
-        self.value = convert_dict_to_value(delta.changes[0][1])
+        self.value = convert_dict_to_value(d)
         unputtable_ids = (MethodModel.typeid, BlockMeta.typeid)
         if not self.field:
             self.put_paths = set(
@@ -176,39 +177,55 @@ class BlockHandler(Handler):
             self.put_paths = {"value"}
         else:
             self.put_paths = set()
+        self.controller.log.debug("Opening with %s", list(self.value))
         self.pv.open(self.value)
 
     def _update_value(self, delta):
         # type: (Delta) -> None
         # Called with the lock taken
         self.value.unmark()
+        # This will be set if we need to change type
+        new_typed_value = None  # type: Dict
         for change in delta.changes:
-            if len(change) == 1 or change[0] == []:
-                # This is a delete or update of the root, can't do this in pva,
-                # so force a reconnect
-                self._force_reconnect()
-                return
+            if len(change) == 1:
+                # Delete a field, type change
+                if new_typed_value is None:
+                    new_typed_value = convert_value_to_dict(self.value)
+                v = new_typed_value
+                for k in change[0][:-1]:
+                    v = v[k]
+                v.pop(change[0][-1])
             else:
+                assert len(change[0]) > 0, \
+                    "Can't handle root update %s after initial" % (change,)
                 # Path will have at least one element
                 path, update = change
-                try:
-                    update_path(self.value, path, update)
-                except KeyError:
-                    # Tried to add to a field that doesn't exist, force a
-                    # reconnect
-                    self._force_reconnect()
-                    return
-        self.pv.post(self.value)
-
-    def _force_reconnect(self):
-        self.pv.close()
-        self.value = None
+                if new_typed_value is None:
+                    try:
+                        update_path(self.value, path, update)
+                    except KeyError:
+                        # Tried to add to a field that doesn't exist, force a
+                        # reconnect
+                        new_typed_value = convert_value_to_dict(self.value)
+                if new_typed_value is not None:
+                    v = new_typed_value
+                    for k in change[0][:-1]:
+                        v = v[k]
+                    v[change[0][-1]] = update
+        if new_typed_value is None:
+            # No type change, post the updated value
+            self.pv.post(self.value)
+        else:
+            # Type change, close pv and open with new value
+            self.pv.close()
+            self._create_initial_value(new_typed_value)
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
     def onFirstConnect(self, pv):
         # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
+        self.controller.log.debug("onFirstConnect")
         self.controller.spawn(self._on_first_connect, pv).get(timeout=1)
 
     def _on_first_connect(self, pv):
@@ -229,6 +246,7 @@ class BlockHandler(Handler):
     def onLastDisconnect(self, pv):
         # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
+        self.controller.log.debug("onLastDisconnect")
         assert self.pv, "onFirstConnect not called yet"
         self.controller.spawn(self._on_last_disconnect, pv).get(timeout=1)
 

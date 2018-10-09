@@ -23,8 +23,6 @@ class TestSystemPVA(unittest.TestCase):
         for controller in \
                 pva_client_block(mri="PVA-CLIENT") + \
                 proxy_block(mri="TICKER", comms="PVA-CLIENT",
-                            use_cothread=True) + \
-                proxy_block(mri="COUNTERX", comms="PVA-CLIENT",
                             use_cothread=True):
             self.process2.add_controller(controller)
         self.process2.start()
@@ -34,7 +32,7 @@ class TestSystemPVA(unittest.TestCase):
         self.process2.stop(timeout=2)
 
     def make_generator(self):
-        line1 = LineGenerator('y', 'mm', 0, 2, 3)
+        line1 = LineGenerator('y', 'mm', 0, 3, 3)
         line2 = LineGenerator('x', 'mm', 1, 2, 2)
         compound = CompoundGenerator([line1, line2], [], [], duration=0.05)
         return compound
@@ -90,17 +88,21 @@ class TestSystemPVA(unittest.TestCase):
             'pause',
             'resume']
         assert list(block) == fields
-        t = ExportTable(source=["x.counter"], export=["xValue"])
-        with self.assertRaises(RemoteError):
-            block.exports.put_value(t)
-        # TODO: RemoteError allowed here, wait until reconnected?
-        block._context.sleep(0.5)
-        assert list(block) == fields + ["xValue"]
-        assert block.xValue.value == 0.0
         generator = self.make_generator()
         block.configure(generator, axesToMove=["x", "y"])
         block.run()
+        # Export X
+        t = ExportTable(source=["x.counter"], export=["xValue"])
+        block.exports.put_value(t)
+        assert list(block) == fields + ["xValue"]
         assert block.xValue.value == 2.0
-        counterx = self.process2.block_view("COUNTERX")
-        assert counterx.counter.value == 2.0
+        # Export Y
+        t = ExportTable(source=["y.counter"], export=["yValue"])
+        block.exports.put_value(t)
+        assert list(block) == fields + ["yValue"]
+        assert block.yValue.value == 3.0
+        # Export Nothing
+        t = ExportTable(source=[], export=[])
+        block.exports.put_value(t)
+        assert list(block) == fields
 
