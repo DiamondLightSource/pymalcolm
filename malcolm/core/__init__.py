@@ -11,9 +11,9 @@ from .hook import Hook
 from .info import Info
 from .loggable import Loggable
 from .models import BlockModel, AttributeModel, MethodModel, \
-    BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, \
+    BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, Model, \
     ChoiceMeta, NumberArrayMeta, NumberMeta, StringArrayMeta, StringMeta, \
-    TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion
+    TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion, NTScalar, BlockMeta
 from .moduleutil import submodule_all
 from .part import Part, PartRegistrar, APartName
 from .process import Process, ProcessPublishHook, ProcessStartHook, \

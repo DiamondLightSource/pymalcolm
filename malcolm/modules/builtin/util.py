@@ -1,7 +1,7 @@
 from annotypes import Anno, Array, Union, Sequence
 
 from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
-    StateSet
+    StateSet, DEFAULT_TIMEOUT
 
 with Anno("Is the attribute writeable?"):
     AWriteable = bool
@@ -81,6 +81,20 @@ class ExportTable(Table):
         # type: (USourceNameArray, UExportNameArray) -> None
         self.source = ASourceNameArray(source)
         self.export = AExportNameArray(export)
+
+
+def wait_for_stateful_block_init(context, mri, timeout=DEFAULT_TIMEOUT):
+    """Wait until a Block backed by a StatefulController has initialized
+
+    Args:
+        context (Context): The context to use to make the child block
+        mri (str): The mri of the child block
+        timeout (float): The maximum time to wait
+    """
+    context.when_matches(
+        [mri, "state", "value"], StatefulStates.READY,
+        bad_values=[StatefulStates.FAULT, StatefulStates.DISABLED],
+        timeout=timeout)
 
 
 class StatefulStates(StateSet):

@@ -457,18 +457,21 @@ class TestPVAServer(unittest.TestCase):
         self.addCleanup(m.close)
         counter = q.get(timeout=1)
         self.assertStructureWithoutTsEqual(str(counter), str(counter_expected))
-        self.assertTrue(counter.asSet().issuperset({
+        self.assertTrue(counter.changedSet().issuperset({
             "meta.fields", "counter.value", "zero.description"}))
+        self.assertEqual(counter["counter.value"], 0)
+        self.assertEqual(counter["zero.description"],
+                         "Zero the counter attribute")
         self.ctxt.put("TESTCOUNTER.counter", 5, "value")
         counter = q.get(timeout=1)
         self.assertEqual(counter.counter.value, 5)
         if PVAPY:
             # bitsets in pvaPy don't work, so it is everything at the moment
-            self.assertTrue(counter.asSet().issuperset({
+            self.assertTrue(counter.changedSet().issuperset({
                 "meta", "meta.fields", "counter", "zero"}))
         else:
-            self.assertEqual(counter.asSet(),
-                             {"counter.value", "counter.timeStamp",
+            self.assertEqual(counter.changedSet(),
+                             {"counter.value",
                               "counter.timeStamp.userTag",
                               "counter.timeStamp.secondsPastEpoch",
                               "counter.timeStamp.nanoseconds"})
@@ -486,10 +489,10 @@ class TestPVAServer(unittest.TestCase):
         self.assertEqual(counter.getID(), "structure")
         if PVAPY:
             # PVAPY says everything is changed
-            self.assertEqual(counter.asSet(), {"meta", "meta.fields"})
+            self.assertEqual(counter.changedSet(), {"meta", "meta.fields"})
         else:
             # P4P only says leaves have changed
-            self.assertEqual(counter.asSet(), {"meta.fields"})
+            self.assertEqual(counter.changedSet(), {"meta.fields"})
         self.assertEqual(counter.meta.fields,
                          ["health", "counter", "zero", "increment"])
         fields_code = dict(counter.meta.type().aspy()[2])["fields"]
@@ -503,18 +506,18 @@ class TestPVAServer(unittest.TestCase):
         self.addCleanup(m.close)
         counter = q.get(timeout=1)  # type: Value
         self.assertEqual(counter.getID(), "epics:nt/NTScalar:1.0")
-        self.assertTrue(counter.asSet().issuperset({
+        self.assertTrue(counter.changedSet().issuperset({
             "value", "alarm.severity", "timeStamp.userTag"}))
         self.ctxt.put("TESTCOUNTER.counter", 5, "value")
         counter = q.get(timeout=1)
         self.assertEqual(counter.value, 5)
         if PVAPY:
             # bitsets in pvaPy don't work, so it is everything at the moment
-            self.assertTrue(counter.asSet().issuperset({
+            self.assertTrue(counter.changedSet().issuperset({
                 "value", "alarm", "timeStamp"}))
         else:
-            self.assertEqual(counter.asSet(),
-                             {"value", "timeStamp",
+            self.assertEqual(counter.changedSet(),
+                             {"value",
                               "timeStamp.userTag",
                               "timeStamp.secondsPastEpoch",
                               "timeStamp.nanoseconds"})

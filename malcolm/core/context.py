@@ -64,7 +64,7 @@ class Context(object):
 
     STOP = object()
 
-    def __init__(self, process):
+    def __init__(self, process, use_cothread=True):
         # type: (Process) -> None
         self._q = self.make_queue()
         # Func to call just before requests are dispatched
@@ -78,7 +78,10 @@ class Context(object):
         self._pending_unsubscribes = {}  # dict {Future: Subscribe}
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
-        self._cothread = maybe_import_cothread()
+        if use_cothread:
+            self._cothread = maybe_import_cothread()
+        else:
+            self._cothread = None
 
     def make_queue(self):
         # type: () -> Queue

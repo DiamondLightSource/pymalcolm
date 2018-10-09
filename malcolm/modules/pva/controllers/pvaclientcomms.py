@@ -1,25 +1,23 @@
 from p4p import Value
+from p4p.client.raw import Disconnected
 from p4p.nt import NTURI
 from annotypes import TYPE_CHECKING
 
 from malcolm.compat import maybe_import_cothread
 from malcolm.modules.builtin.controllers import ClientComms
-from malcolm.core import Request, Get, Put, Post, Subscribe, Update, Return, \
-    Queue, deserialize_object, UnexpectedError, Unsubscribe, Delta, Response
+from malcolm.core import Queue, Model, DEFAULT_TIMEOUT, BlockMeta, \
+    serialize_object, BlockModel, Alarm
 from .pvaconvert import convert_value_to_dict, convert_to_type_tuple_value, Type
 
 
 if TYPE_CHECKING:
-    from typing import Dict, Tuple, Callable, Set
+    from typing import Set
 
 
 class PvaClientComms(ClientComms):
     """A class for a client to communicate with the server"""
 
     _monitors = None
-    _send_queue = None
-    _unsub_queue = None
-    _pending_monitors = None
     _ctxt = None
 
     def do_init(self):
@@ -30,145 +28,129 @@ class PvaClientComms(ClientComms):
         else:
             from p4p.client.thread import Context, Subscription
         self._ctxt = Context("pva", unwrap=False)
-        self._monitors = {}  # type: Dict[Tuple[Callable, int], Subscription]
-        self._pending_monitors = set()  # type: Set[Request]
-        self._send_queue = Queue()
-        # We can wait on this while there are _monitors
-        self._unsub_queue = Queue()
+        self._monitors = set()  # type: Set[Subscription]
 
     def do_disable(self):
         super(PvaClientComms, self).do_disable()
-        while self._monitors:
-            self._unsub_queue.get(timeout=1)
+        # Unsubscribe to all the monitors
+        for m in self._monitors:
+            m.close()
         self._ctxt.close()
 
-    def send_to_server(self, request):
-        """Dispatch a request to the server
+    def _update_settable_fields(self, update_fields, dotted_path, ob):
+        # type: (Set[str], str, Any) -> None
+        if isinstance(ob, (Model, dict)):
+            # Recurse down
+            for k in ob:
+                self._update_settable_fields(
+                    update_fields, "%s.%s" % (dotted_path, k), ob[k])
+        else:
+            # This is a terminal field, add to the set
+            update_fields.add(dotted_path)
+
+    def sync_proxy(self, mri, block):
+        """Abstract method telling the ClientComms to sync this proxy Block
+        with its remote counterpart. Should wait until it is connected
 
         Args:
-            request(Request): The message to pass to the server
+            mri (str): The mri for the remote block
+            block (BlockModel): The local proxy Block to keep in sync
         """
-        self._send_queue.put(request)
-        self.spawn(self._send_to_server, request)
+        done_queue = Queue()
+        update_fields = set()
 
-    def _send_to_server(self, _):
-        request = self._send_queue.get(timeout=0)
-        try:
-            request = deserialize_object(request, Request)
-            response = None
-            if isinstance(request, Get):
-                response = self._execute_get(request)
-            elif isinstance(request, Put):
-                response = self._execute_put(request)
-            elif isinstance(request, Post):
-                response = self._execute_rpc(request)
-            elif isinstance(request, Subscribe):
-                self._execute_monitor(request)
-            elif isinstance(request, Unsubscribe):
-                response = self._execute_unsubscribe(request)
+        def callback(value=None):
+            if isinstance(value, Exception):
+                # Disconnect or Cancelled or RemoteError
+                if isinstance(value, Disconnected):
+                    # We will get a reconnect with a whole new structure
+                    update_fields.clear()
+                    block.health.set_value(
+                        value="pvAccess disconnected",
+                        alarm=Alarm.disconnected("pvAccess disconnected")
+                    )
             else:
-                raise UnexpectedError("Unexpected request %s", request)
-        except Exception as e:
-            _, response = request.error_response(e)
-        if response:
-            request.callback(response)
+                with block.notifier.changes_squashed:
+                    if not update_fields:
+                        self._regenerate_block(block, value, update_fields)
+                        done_queue.put(None)
+                    else:
+                        self._update_block(block, value, update_fields)
 
-    def _execute_get(self, request):
-        path = ".".join(request.path[1:])
-        value = self._ctxt.get(request.path[0], path)
-        d = convert_value_to_dict(value)
-        for k in request.path[1:]:
-            d = d[k]
-        response = Return(request.id, d)
-        return response
+        m = self._ctxt.monitor(mri, callback, notify_disconnect=True)
+        self._monitors.add(m)
+        done_queue.get(timeout=DEFAULT_TIMEOUT)
 
-    def _execute_put(self, request):
-        path = ".".join(request.path[1:])
-        typ, value = convert_to_type_tuple_value(request.value)
+    def _regenerate_block(self, block, value, update_fields):
+        # type: (BlockModel, Value, Set[str]) -> None
+        # This is an initial update, generate the list of all fields
+        for k, v in value.items():
+            if k == "health":
+                # Update health attribute
+                block.health.set_value(
+                    value=v["value"],
+                    alarm=convert_value_to_dict(v["alarm"]),
+                    ts=convert_value_to_dict(v["timeStamp"]))
+            elif k == "meta":
+                # Update BlockMeta
+                meta = block.meta  # type: BlockMeta
+                for n in meta.call_types:
+                    meta.apply_change([n], v[n])
+            else:
+                # Add new Attribute/Method
+                v = convert_value_to_dict(v)
+                block.set_endpoint_data(k, v)
+            # Update the list of fields
+            self._update_settable_fields(update_fields, k, block[k])
+
+    def _update_block(self, block, value, update_fields):
+        # type: (BlockModel, Value, Set[str]) -> None
+        # This is a subsequent update
+        changed = value.changedSet(parents=True, expand=False)
+        for k in changed.intersection(update_fields):
+            v = value[k]
+            if isinstance(v, Value):
+                v = convert_value_to_dict(v)
+            self.log.debug("Applying %s %s", k, v)
+            block.apply_change(k.split("."), v)
+
+    def send_put(self, mri, attribute_name, value):
+        """Abstract method to dispatch a Put to the server
+
+        Args:
+            mri (str): The mri of the Block
+            attribute_name (str): The name of the Attribute within the Block
+            value: The value to put
+        """
+        path = attribute_name + ".value"
+        typ, value = convert_to_type_tuple_value(serialize_object(value))
         if isinstance(typ, tuple):
             # Structure, make into a Value
             _, typeid, fields = typ
             value = Value(Type(fields, typeid), value)
-            # TODO: this doesn't work yet...
-        self._ctxt.put(request.path[0], {path: value}, path)
-        response = Return(request.id)
-        return response
+        self._ctxt.put(mri, {path: value}, path)
 
-    def _make_delta(self, request, value, d, v):
-        # type: (Request, Value, Dict, Value) -> Response
-        # If we wanted a delta, work out what changed
-        changes = {}
-        # What we should trim from each changed field
-        trim = sum(len("." + x) for x in request.path[1:])
-        for field in value.asSet():
-            # Check each element to see if the root is changed
-            fv = v
-            fd = d
-            fp = []
-            for k in field[trim:].split("."):
-                fp.append(k)
-                if fv.changed(k):
-                    # A root has changed, add it to the change set if
-                    # not already on there and stop processing this
-                    # change
-                    tp = tuple(fp)
-                    if tp not in changes:
-                        changes[tp] = fd[k]
-                    break
-                fv = fv[k]
-                fd = fd[k]
-        # Make the delta
-        changes = [[list(k), v] for k, v in changes.items()]
-        response = Delta(request.id, changes=changes)
-        return response
+    def send_post(self, mri, method_name, **params):
+        """Abstract method to dispatch a Post to the server
 
-    def _execute_monitor(self, request):
-        def callback(value=None):
-            self.log.debug("Callback %s", value)
-            d = convert_value_to_dict(value)
-            v = value
-            for k in request.path[1:]:
-                d = d[k]
-                v = v[k]
-            if request.delta:
-                try:
-                    self._pending_monitors.remove(request)
-                except KeyError:
-                    # This is a subsequent monitor update
-                    response = self._make_delta(request, value, d, v)
-                else:
-                    # This is the first monitor update
-                    response = Delta(request.id, [[[], d]])
-            else:
-                # If we wanted an update, give the entire thing
-                response = Update(request.id, d)
-            request.callback(response)
+        Args:
+            mri (str): The mri of the Block
+            method_name (str): The name of the Method within the Block
+            params: The parameters to send
 
-        if request.delta:
-            self._pending_monitors.add(request)
-        m = self._ctxt.monitor(request.path[0], callback)
-        self._monitors[request.generate_key()] = m
-
-    def _execute_unsubscribe(self, request):
-        monitor = self._monitors[request.generate_key()]
-        monitor.close()
-        # Don't pop until we have done the close, avoiding a race with
-        # ctxt.close
-        self._monitors.pop(request.generate_key())
-        self._unsub_queue.put(None)
-        response = Return(request.id)
-        return response
-
-    def _execute_rpc(self, request):
-        typ, parameters = convert_to_type_tuple_value(request.parameters)
+        Returns:
+            The return results from the server
+        """
+        typ, parameters = convert_to_type_tuple_value(serialize_object(params))
         uri = NTURI(typ[2])
 
         uri = uri.wrap(
-            path=".".join(request.path),
+            path="%s.%s" % (mri, method_name),
             kws=parameters,
             scheme="pva"
         )
-        value = self._ctxt.rpc(request.path[0], uri, timeout=None)
-        d = convert_value_to_dict(value)
-        response = Return(request.id, d)
-        return response
+        value = self._ctxt.rpc(mri, uri, timeout=None)
+        return convert_value_to_dict(value)
+
+
+

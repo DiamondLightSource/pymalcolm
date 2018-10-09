@@ -60,6 +60,12 @@ class Alarm(Serializable):
         return cls(
             AlarmSeverity.INVALID_ALARM, AlarmStatus.DEVICE_STATUS, message)
 
+    @classmethod
+    def disconnected(cls, message):
+        # type: (str) -> Alarm
+        return cls(
+            AlarmSeverity.UNDEFINED_ALARM, AlarmStatus.CLIENT_STATUS, message)
+
     def is_ok(self):
         # type: () -> bool
         return self.severity == AlarmSeverity.NO_ALARM

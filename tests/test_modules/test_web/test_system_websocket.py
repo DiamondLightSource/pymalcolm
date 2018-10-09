@@ -252,7 +252,9 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.process.start()
         self.process2 = Process("proc2")
         for controller in \
-                websocket_client_block(mri="client", port=self.socket):
+                websocket_client_block(mri="client", port=self.socket) \
+                + proxy_block(mri="hello", comms="client") \
+                + proxy_block(mri="counter", comms="client"):
             self.process2.add_controller(controller)
         self.process2.start()
 
@@ -262,8 +264,6 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         self.process2.stop(timeout=1)
 
     def test_server_hello_with_malcolm_client(self):
-        self.process2.add_controller(
-            proxy_block(mri="hello", comms="client")[-1])
         block2 = self.process2.block_view("hello")
         ret = block2.greet("me2")
         assert ret == "Hello me2"
@@ -271,8 +271,6 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
             block2.error()
 
     def test_server_counter_with_malcolm_client(self):
-        self.process2.add_controller(
-            proxy_block(mri="counter", comms="client")[-1])
         block1 = self.process.block_view("counter")
         block2 = self.process2.block_view("counter")
         assert block2.counter.value == 0

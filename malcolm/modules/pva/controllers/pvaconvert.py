@@ -157,5 +157,3 @@ def update_path(value, path, update):
         value = value[p]
     _, update = convert_to_type_tuple_value(update)
     value[path[-1]] = update
-    # Mark the root as well as the leaves
-    value.mark(path[-1])

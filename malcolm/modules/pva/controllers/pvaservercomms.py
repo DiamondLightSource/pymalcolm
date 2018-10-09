@@ -1,3 +1,5 @@
+import time
+
 from annotypes import add_call_types, TYPE_CHECKING
 from p4p import Value
 from p4p.server import Server, DynamicProvider, ServerOperation
@@ -5,14 +7,15 @@ from p4p.server import Server, DynamicProvider, ServerOperation
 from malcolm.compat import maybe_import_cothread
 from malcolm.core import Subscribe, Error, APublished, Controller, Delta, \
     Return, stringify_error, Response, Put, Post, Unsubscribe, \
-    ProcessPublishHook, method_return_unpacked, Method, serialize_object
+    ProcessPublishHook, method_return_unpacked, Method, serialize_object, \
+    BlockMeta, MethodModel
 from malcolm.core.rlock import RLock
 from malcolm.modules import builtin
 from .pvaconvert import convert_dict_to_value, update_path, \
     convert_value_to_dict
 
 if TYPE_CHECKING:
-    from typing import Optional, Dict, List
+    from typing import Optional, Dict, List, Set
 
 
 cothread = maybe_import_cothread()
@@ -32,6 +35,7 @@ class BlockHandler(Handler):
         self.field = field
         self.pv = None  # type: Optional[SharedPV]
         self.value = None  # type: Value
+        self.put_paths = None  # type: Set[str]
 
     def rpc(self, pv, op):
         # type: (SharedPV, ServerOperation) -> None
@@ -75,7 +79,6 @@ class BlockHandler(Handler):
                     ret = response.value
                 serialized = serialize_object(ret)
                 v = convert_dict_to_value(serialized)
-                self.controller.log.debug("Calling op.done with %s", v)
                 op.done(v)
             else:
                 if isinstance(response, Error):
@@ -90,10 +93,23 @@ class BlockHandler(Handler):
     def put(self, pv, op):
         # type: (SharedPV, ServerOperation) -> None
         path = [self.controller.mri]
-        changed_set = op.value().changedSet()
-        assert len(changed_set) == 1, \
-            "Can only do a Put to a single field, got %s" % list(changed_set)
-        changed = list(changed_set)[0]
+        # We work out what to Put by taking every field that is marked as
+        # changed and walking up the tree, adding every dotted field name
+        # to the tree on the way up. This set will contain something like:
+        #  {"attr.value", "attr"}
+        # Or for a table:
+        #  {"table.value.colA", "table.value.colB", "table.value", "table"}
+        # Or if self.field:
+        #  {"value"}
+        changed_fields_inc_parents = op.value().changedSet(
+            parents=True, expand=False)
+        # Taking the intersection with all puttable paths should yield the
+        # thing we want to change, so value_changed would be:
+        #  {"attr.value"} or {"table.value"} or {"value"}
+        value_changed = changed_fields_inc_parents.intersection(self.put_paths)
+        assert len(value_changed) == 1, \
+            "Can only do a Put to a single field, got %s" % list(value_changed)
+        changed = list(value_changed)[0]
         if self.field is not None:
             # Only accept a Put to "value"
             assert changed == "value", \
@@ -133,12 +149,10 @@ class BlockHandler(Handler):
         with self._lock:
             if self.pv and isinstance(response, Delta):
                 # We got a delta, create or update value and notify
-                if not self.pv.isOpen():
+                if self.value is None:
                     # Open it with the value
-                    # TODO: at the moment this fires because we didn't close
-                    # and wait for unsubscribe at tearDown
                     self._create_initial_value(response)
-                else:
+                elif self.pv.isOpen():
                     # Update it with values
                     self._update_value(response)
             elif self.pv and self.pv.isOpen():
@@ -153,7 +167,15 @@ class BlockHandler(Handler):
             delta.changes[0][0] == [], "Expected root update, got %s" % (
                 delta.changes,)
         self.value = convert_dict_to_value(delta.changes[0][1])
-        self.controller.log.debug("Opening pv %s with %s", self.pv, self.value)
+        unputtable_ids = (MethodModel.typeid, BlockMeta.typeid)
+        if not self.field:
+            self.put_paths = set(
+                "%s.value" % x for x, v in self.value.items()
+                if v.getID() not in unputtable_ids)
+        elif self.value.getID() not in unputtable_ids:
+            self.put_paths = {"value"}
+        else:
+            self.put_paths = set()
         self.pv.open(self.value)
 
     def _update_value(self, delta):
@@ -164,22 +186,30 @@ class BlockHandler(Handler):
             if len(change) == 1 or change[0] == []:
                 # This is a delete or update of the root, can't do this in pva,
                 # so force a reconnect
-                self.onLastDisconnect(self.pv)
+                self._force_reconnect()
+                return
             else:
                 # Path will have at least one element
                 path, update = change
-                # TODO: try catch with disconnect here, reopen with new value
-                update_path(self.value, path, update)
+                try:
+                    update_path(self.value, path, update)
+                except KeyError:
+                    # Tried to add to a field that doesn't exist, force a
+                    # reconnect
+                    self._force_reconnect()
+                    return
         self.pv.post(self.value)
+
+    def _force_reconnect(self):
+        self.pv.close()
+        self.value = None
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
     def onFirstConnect(self, pv):
         # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
-        self.controller.log.debug("Starting onFirstConnect %s", pv)
         self.controller.spawn(self._on_first_connect, pv).get(timeout=1)
-        self.controller.log.debug("Done onFirstConnect")
 
     def _on_first_connect(self, pv):
         # type: (SharedPV) -> None
@@ -200,9 +230,7 @@ class BlockHandler(Handler):
         # type: (SharedPV) -> None
         # Called from pvAccess thread, so spawn in the right (co)thread
         assert self.pv, "onFirstConnect not called yet"
-        self.controller.log.debug("Starting onLastDisconnect %s", pv)
         self.controller.spawn(self._on_last_disconnect, pv).get(timeout=1)
-        self.controller.log.debug("Done onLastDisconnect")
 
     def _on_last_disconnect(self, pv):
         # type: (SharedPV) -> None
