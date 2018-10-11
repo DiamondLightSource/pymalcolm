@@ -307,7 +307,6 @@ class TestPVAServer(unittest.TestCase):
             self.process.start()
             self.addCleanup(self.process.stop, timeout=2)
         self.ctxt = self.make_pva_context(unwrap=False)
-        self.addCleanup(self.ctxt.close)
 
     def make_pva_context(self, *args, **kwargs):
         cothread = maybe_import_cothread()
@@ -315,7 +314,9 @@ class TestPVAServer(unittest.TestCase):
             from p4p.client.cothread import Context
         else:
             from p4p.client.thread import Context
-        return Context("pva", *args, **kwargs)
+        ctxt = Context("pva", *args, **kwargs)
+        self.addCleanup(ctxt.close)
+        return ctxt
 
     def assertStructureWithoutTsEqual(self, first, second):
         firstlines = first.splitlines(True)
@@ -405,7 +406,6 @@ class TestPVAServer(unittest.TestCase):
     def testGetDottedNTScalar(self):
         # Use the one with unwrapping on
         ctxt = self.make_pva_context()
-        self.addCleanup(ctxt.close)
         counter = ctxt.get("TESTCOUNTER.counter")
         self.assertIsInstance(counter, ntfloat)
         self.assertEqual(counter, 0.0)
@@ -478,6 +478,34 @@ class TestPVAServer(unittest.TestCase):
         self.ctxt.put("TESTCOUNTER.counter", 0, "value")
         counter = q.get(timeout=1)
         self.assertStructureWithoutTsEqual(str(counter), str(counter_expected))
+
+    def testTwoMonitors(self):
+        if PVAPY:
+            # No need to do this test on the old server
+            return
+        assert "TESTCOUNTER" not in self.server._pvs
+        # Make first monitor
+        q1 = Queue()
+        m1 = self.ctxt.monitor("TESTCOUNTER", q1.put)
+        self.addCleanup(m1.close)
+        counter = q1.get(timeout=1)
+        self.assertStructureWithoutTsEqual(str(counter), str(counter_expected))
+        assert len(self.server._pvs["TESTCOUNTER"]) == 1
+        # Make a second monitor and check that also fires without making another
+        # PV
+        ctxt2 = self.make_pva_context()
+        q2 = Queue()
+        m2 = ctxt2.monitor("TESTCOUNTER", q2.put)
+        self.addCleanup(m2.close)
+        counter = q2.get(timeout=1)
+        self.assertStructureWithoutTsEqual(str(counter), str(counter_expected))
+        assert len(self.server._pvs["TESTCOUNTER"]) == 1
+        # Check that a Put fires on both
+        self.ctxt.put("TESTCOUNTER.counter", 5, "value")
+        counter = q1.get(timeout=1)
+        self.assertEqual(counter.counter.value, 5)
+        counter = q2.get(timeout=1)
+        self.assertEqual(counter.counter.value, 5)
 
     # Equivalent to:
     #   pvget -m TESTCOUNTER -r meta.fields

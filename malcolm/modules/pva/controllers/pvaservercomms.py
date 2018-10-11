@@ -1,5 +1,3 @@
-import time
-
 from annotypes import add_call_types, TYPE_CHECKING
 from p4p import Value
 from p4p.server import Server, DynamicProvider, ServerOperation
@@ -147,27 +145,32 @@ class BlockHandler(Handler):
         # Called from whatever thread the child block could be in, so
         # must already be a good thread to take the lock
         with self._lock:
-            if self.pv and isinstance(response, Delta):
-                # We got a delta, create or update value and notify
-                if self.value is None:
-                    # Open it with the value
-                    assert len(response.changes) == 1 and \
-                           len(response.changes[0]) == 2 and \
-                           response.changes[0][0] == [], \
-                           "Expected root update, got %s" % (response.changes,)
-                    self._create_initial_value(response.changes[0][1])
-                elif self.pv.isOpen():
-                    # Update it with values
-                    self._update_value(response)
-            elif self.pv and self.pv.isOpen():
-                # We got a return or error, close the connection to clients
-                self.pv.close()
-                self.pv = None
+            if self.pv:
+                # onFirstConnect has been called, should be able to update it
+                try:
+                    assert isinstance(response, Delta), \
+                        "Expecting Delta response, got %s" % response
+                    # We got a delta, create or update value and notify
+                    if self.value is None:
+                        # Open it with the value
+                        self._create_initial_value(response)
+                    elif self.pv.isOpen():
+                        # Update it with values
+                        self._update_value(response)
+                except Exception:
+                    self.controller.log.debug(
+                        "Closing pv because of error", exc_info=True)
+                    # We got a return or error, close the connection to clients
+                    self.pv.close()
 
-    def _create_initial_value(self, d):
-        # type: (Dict) -> None
+    def _create_initial_value(self, response):
+        # type: (Delta) -> None
         # Called with the lock taken
-        self.value = convert_dict_to_value(d)
+        assert len(response.changes) == 1 and \
+               len(response.changes[0]) == 2 and \
+               response.changes[0][0] == [], \
+               "Expected root update, got %s" % (response.changes,)
+        self.value = convert_dict_to_value(response.changes[0][1])
         unputtable_ids = (MethodModel.typeid, BlockMeta.typeid)
         if not self.field:
             self.put_paths = set(
@@ -184,51 +187,20 @@ class BlockHandler(Handler):
         # type: (Delta) -> None
         # Called with the lock taken
         self.value.unmark()
-        # This will be set if we need to change type
-        new_typed_value = None  # type: Dict
         for change in delta.changes:
-            if len(change) == 1:
-                # Delete a field, type change
-                if new_typed_value is None:
-                    new_typed_value = convert_value_to_dict(self.value)
-                v = new_typed_value
-                for k in change[0][:-1]:
-                    v = v[k]
-                v.pop(change[0][-1])
-            else:
-                assert len(change[0]) > 0, \
-                    "Can't handle root update %s after initial" % (change,)
-                # Path will have at least one element
-                path, update = change
-                if new_typed_value is None:
-                    try:
-                        update_path(self.value, path, update)
-                    except KeyError:
-                        # Tried to add to a field that doesn't exist, force a
-                        # reconnect
-                        new_typed_value = convert_value_to_dict(self.value)
-                if new_typed_value is not None:
-                    v = new_typed_value
-                    for k in change[0][:-1]:
-                        v = v[k]
-                    v[change[0][-1]] = update
-        if new_typed_value is None:
-            # No type change, post the updated value
-            self.pv.post(self.value)
-        else:
-            # Type change, close pv and open with new value
-            self.pv.close()
-            self._create_initial_value(new_typed_value)
+            assert len(change) == 2, \
+                "Path %s deleted" % change[0]
+            assert len(change[0]) > 0, \
+                "Can't handle root update %s after initial" % (change,)
+            # Path will have at least one element
+            path, update = change
+            update_path(self.value, path, update)
+        # No type change, post the updated value
+        self.pv.post(self.value)
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
     def onFirstConnect(self, pv):
-        # type: (SharedPV) -> None
-        # Called from pvAccess thread, so spawn in the right (co)thread
-        self.controller.log.debug("onFirstConnect")
-        self.controller.spawn(self._on_first_connect, pv).get(timeout=1)
-
-    def _on_first_connect(self, pv):
         # type: (SharedPV) -> None
         # Store the PV, but don't open it now, let the first Delta do this
         with self._lock:
@@ -245,17 +217,12 @@ class BlockHandler(Handler):
     # noinspection PyPep8Naming
     def onLastDisconnect(self, pv):
         # type: (SharedPV) -> None
-        # Called from pvAccess thread, so spawn in the right (co)thread
-        self.controller.log.debug("onLastDisconnect")
         assert self.pv, "onFirstConnect not called yet"
-        self.controller.spawn(self._on_last_disconnect, pv).get(timeout=1)
-
-    def _on_last_disconnect(self, pv):
-        # type: (SharedPV) -> None
         # No-one listening, unsubscribe
         with self._lock:
             self.pv.close()
             self.pv = None
+            self.value = None
         request = Unsubscribe()
         request.set_callback(self.handle)
         self.controller.handle_request(request).get(timeout=1)
@@ -270,7 +237,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
         self._pva_server = None
         self._provider = None
         self._published = set()
-        self._pvs = {}  # type: Dict[str, List[SharedPV]]
+        self._pvs = {}  # type: Dict[str, Dict[str, SharedPV]]
         # Hooks
         self.register_hooked(ProcessPublishHook, self.publish)
 
@@ -293,9 +260,10 @@ class PvaServerComms(builtin.controllers.ServerComms):
     # noinspection PyPep8Naming
     def makeChannel(self, channel_name, src):
         # type: (str, str) -> SharedPV
-        return self.spawn(self._makeChannel, channel_name, src).get(timeout=1)
+        # Need to spawn as we take a lock here and in process
+        return self.spawn(self._make_channel, channel_name, src).get(timeout=1)
 
-    def _makeChannel(self, channel_name, src):
+    def _make_channel(self, channel_name, src):
         # type: (str, str) -> SharedPV
         self.log.debug("Making PV %s for %s", channel_name, src)
         if channel_name in self._published:
@@ -307,16 +275,21 @@ class PvaServerComms(builtin.controllers.ServerComms):
             mri, field = channel_name.rsplit(".", 1)
         else:
             raise NameError("Bad channel %s" % channel_name)
-        controller = self.process.get_controller(mri)
-        handler = BlockHandler(controller, field)
-        # We want any client passing a pvRequest field() to ONLY receive that
-        # field. The default behaviour of p4p is to send a masked version of
-        # the full structure. The mapperMode option allows us to tell p4p to
-        # send a slice instead
-        # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
-        pv = SharedPV(handler=handler, options={'mapperMode': 'Slice'})
-        self._pvs.setdefault(mri, []).append(pv)
-        return pv
+        with self._lock:
+            pvs = self._pvs.setdefault(mri, {})
+            try:
+                pv = pvs[field]
+            except KeyError:
+                controller = self.process.get_controller(mri)
+                handler = BlockHandler(controller, field)
+                # We want any client passing a pvRequest field() to ONLY receive
+                # that field. The default behaviour of p4p is to send a masked
+                # version of the full structure. The mapperMode option allows us
+                # to tell p4p to send a slice instead
+                # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
+                pv = SharedPV(handler=handler, options={'mapperMode': 'Slice'})
+                pvs[field] = pv
+            return pv
 
     def do_init(self):
         super(PvaServerComms, self).do_init()
@@ -352,7 +325,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
         # type: (List[str]) -> None
         """Disconnect anyone listening to any of the given mris"""
         for mri in mris:
-            for pv in self._pvs.pop(mri, ()):
+            for pv in self._pvs.pop(mri, {}).values():
                 # Close pv with force destroy on, this will call
                 # onLastDisconnect
                 pv.close(destroy=True, sync=True, timeout=1.0)
