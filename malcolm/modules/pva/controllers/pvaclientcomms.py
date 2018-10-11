@@ -65,7 +65,7 @@ class PvaClientComms(ClientComms):
         def callback(value=None):
             if isinstance(value, Exception):
                 # Disconnect or Cancelled or RemoteError
-                #if isinstance(value, Disconnected):
+                if isinstance(value, Disconnected):
                     # We will get a reconnect with a whole new structure
                     update_fields.clear()
                     block.health.set_value(
