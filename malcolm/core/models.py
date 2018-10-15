@@ -988,7 +988,6 @@ with Anno("The list of fields currently in the Block"):
 # A more permissive union to allow a wider range of set_* args
 UFields = Union[AFields, Sequence[str], str]
 
-
 @Serializable.register_subclass("malcolm:core/BlockMeta:1.0")
 class BlockMeta(Meta):
     __slots__ = ["fields"]
@@ -1009,6 +1008,10 @@ class BlockMeta(Meta):
         return self.set_endpoint_data("fields", AFields(fields))
 
 
+# Anything that can be a child of a Block (or converted to one)
+ModelOrDict = Union[AttributeModel, MethodModel, BlockMeta, Mapping[str, Any]]
+
+
 @Serializable.register_subclass("malcolm:core/Block:1.0")
 class BlockModel(Model):
     """Data Model for a Block"""
@@ -1020,7 +1023,7 @@ class BlockModel(Model):
         self.meta = self.set_endpoint_data("meta", BlockMeta())
 
     def set_endpoint_data(self, name, value):
-        # type: (str, Union[AttributeModel, MethodModel, BlockMeta]) -> Any
+        # type: (str, ModelOrDict) -> Any
         name = deserialize_object(name, str_)
         if name == "meta":
             value = deserialize_object(value, BlockMeta)

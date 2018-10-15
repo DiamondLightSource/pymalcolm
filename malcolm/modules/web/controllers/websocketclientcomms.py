@@ -4,9 +4,10 @@ from tornado.ioloop import IOLoop
 from tornado.websocket import websocket_connect, WebSocketClientConnection
 
 from malcolm.core import Subscribe, deserialize_object, \
-    json_decode, json_encode, Response, Error, Unsubscribe, Update, Return, \
+    json_decode, json_encode, Response, Error, Update, Return, \
     Queue, TimeoutError, Spawned, Request, StringArrayMeta, Widget, \
-    ResponseError, DEFAULT_TIMEOUT
+    ResponseError, DEFAULT_TIMEOUT, Context, Delta, BlockModel, NTScalar, \
+    BlockMeta, Put, Post
 from malcolm.modules import builtin
 
 if TYPE_CHECKING:
@@ -37,11 +38,10 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         self.connect_timeout = connect_timeout
         self.loop = IOLoop()
         self._connected_queue = Queue()
+        self._response_queue = Queue()
         self._spawned = None  # type: Spawned
-        # {new_id: (request, old_id}
-        self._request_lookup = {}  # type: Dict[int, Tuple[Request, int]]
-        # {Subscribe.generator_key(): Subscribe}
-        self._subscription_keys = {}  # type: Dict[Key, Subscribe]
+        # {new_id: request}
+        self._request_lookup = {}  # type: Dict[int, Request]
         self._next_id = 1
         self._conn = None  # type: WebSocketClientConnection
         # Create read-only attribute for the remotely reachable blocks
@@ -53,11 +53,10 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
 
     def do_init(self):
         super(WebsocketClientComms, self).do_init()
-        root_subscribe = Subscribe(id=0, path=[".", "blocks"])
-        root_subscribe.set_callback(self._update_remote_blocks)
-        self._subscription_keys[root_subscribe.generate_key()] = root_subscribe
-        self._request_lookup[0] = (root_subscribe, 0)
         self.start_io_loop()
+        root_subscribe = Subscribe(path=[".", "blocks"])
+        root_subscribe.set_callback(self._update_remote_blocks)
+        self.loop.add_callback(self._send_request, root_subscribe)
 
     def _update_remote_blocks(self, response):
         response = deserialize_object(response, Update)
@@ -86,18 +85,14 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         url = "ws://%s:%d/ws" % (self.hostname, self.port)
         self._conn = yield websocket_connect(
             url, self.loop, connect_timeout=self.connect_timeout - 0.5)
-        self._connected_queue.put(True)
-        for request in self._subscription_keys.values():
-            self._send_request(request)
+        self._connected_queue.put(None)
         while True:
             message = yield self._conn.read_message()
             if message is None:
-                for request, old_id in self._request_lookup.values():
-                    if not isinstance(request, Subscribe):
-                        # Respond with an error
-                        response = Error(
-                            old_id, ResponseError("Server disconnected"))
-                        request.callback(response)
+                for request in self._request_lookup.values():
+                    callback, response = request.error_response(
+                        ResponseError("Server disconnected"))
+                    callback(response)
                 self.spawn(self._report_fault)
                 return
             self.on_message(message)
@@ -126,15 +121,12 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
             d = json_decode(message)
             response = deserialize_object(d, Response)
             if isinstance(response, (Return, Error)):
-                request, old_id = self._request_lookup.pop(response.id)
-                if request.generate_key() in self._subscription_keys:
-                    self._subscription_keys.pop(request.generate_key())
+                request = self._request_lookup.pop(response.id)
                 if isinstance(response, Error):
                     # Make the message an exception so it can be raised
                     response.message = ResponseError(response.message)
             else:
-                request, old_id = self._request_lookup[response.id]
-            response.id = old_id
+                request = self._request_lookup[response.id]
             # TODO: should we spawn here?
             request.callback(response)
         except Exception:
@@ -142,31 +134,127 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
             # error messages about 'HTTPRequest' object has no attribute 'path'
             self.log.exception("on_message(%r) failed", message)
 
-    def send_to_server(self, request):
-        """Dispatch a request to the server
+    def sync_proxy(self, mri, block):
+        """Abstract method telling the ClientComms to sync this proxy Block
+        with its remote counterpart. Should wait until it is connected
 
         Args:
-            request (Request): The message to pass to the server
+            mri (str): The mri for the remote block
+            block (BlockModel): The local proxy Block to keep in sync
         """
-        self.loop.add_callback(self._send_to_server, request)
+        # Send a root Subscribe to the server
+        subscribe = Subscribe(path=[mri], delta=True)
+        done_queue = Queue()
 
-    def _send_to_server(self, request):
-        if isinstance(request, Unsubscribe):
-            # If we have an unsubscribe, send it with the same id as the
-            # subscribe
-            subscribe = self._subscription_keys.pop(request.generate_key())
-            new_id = subscribe.id
+        def handle_response(response):
+            # type: (Response) -> None
+            self._response_queue.put((response, block))
+            self.spawn(self._handle_response).get()
+            done_queue.put(None)
+
+        subscribe.set_callback(handle_response)
+        self.loop.add_callback(self._send_request, subscribe)
+        done_queue.get(timeout=DEFAULT_TIMEOUT)
+
+    def _handle_response(self):
+        with self.changes_squashed:
+            response, block = self._response_queue.get(timeout=0)
+            if not isinstance(response, Delta):
+                # Return or Error is the end of our subscription, log and ignore
+                self.log.debug("Proxy got response %r", response)
+                return
+            for change in response.changes:
+                try:
+                    self._handle_change(block, change)
+                except Exception:
+                    self.log.exception("Error handling %s", response)
+                    raise
+
+    def _handle_change(self, block, change):
+        path = change[0]
+        if len(path) == 0:
+            assert len(change) == 2, \
+                "Can't delete root block with change %r" % (change,)
+            self._regenerate_block(block, change[1])
+        elif len(path) == 1 and path[0] not in ("health", "meta"):
+            if len(change) == 1:
+                # Delete a field
+                block.remove_endpoint(path[1])
+            else:
+                # Change a single field of the block
+                block.set_endpoint_data(path[1], change[1])
         else:
-            if isinstance(request, Subscribe):
-                # If we have an subscribe, store it so we can look it up
-                self._subscription_keys[request.generate_key()] = request
-            new_id = self._next_id
-            self._next_id += 1
-            self._request_lookup[new_id] = (request, request.id)
-        request.id = new_id
-        self._send_request(request)
+            block.apply_change(path, *change[1:])
+
+    def _regenerate_block(self, block, d):
+        for field in list(block):
+            if field not in ("health", "meta"):
+                block.remove_endpoint(field)
+        for field, value in d.items():
+            if field == "health":
+                # Update health attribute
+                value = deserialize_object(value)  # type: NTScalar
+                block.health.set_value(
+                    value=value.value,
+                    alarm=value.alarm,
+                    ts=value.timeStamp)
+            elif field == "meta":
+                value = deserialize_object(value)  # type: BlockMeta
+                meta = block.meta  # type: BlockMeta
+                for k in meta.call_types:
+                    meta.apply_change([k], value[k])
+            elif field != "typeid":
+                # No need to set writeable_functions as the server will do it
+                block.set_endpoint_data(field, value)
+
+    def send_put(self, mri, attribute_name, value):
+        """Abstract method to dispatch a Put to the server
+
+        Args:
+            mri (str): The mri of the Block
+            attribute_name (str): The name of the Attribute within the Block
+            value: The value to put
+        """
+        q = Queue()
+        request = Put(
+            path=[mri, attribute_name, "value"],
+            value=value)
+        request.set_callback(q.put)
+        self.loop.add_callback(self._send_request, request)
+        response = q.get()
+        if isinstance(response, Error):
+            raise response.message
+        else:
+            return response.value
+
+    def send_post(self, mri, method_name, **params):
+        """Abstract method to dispatch a Post to the server
+
+        Args:
+            mri (str): The mri of the Block
+            method_name (str): The name of the Method within the Block
+            params: The parameters to send
+
+        Returns:
+            The return results from the server
+        """
+        q = Queue()
+        request = Post(
+            path=[mri, method_name],
+            parameters=params)
+        request.set_callback(q.put)
+        self.loop.add_callback(self._send_request, request)
+        response = q.get()
+        if isinstance(response, Error):
+            raise response.message
+        else:
+            return response.value
 
     def _send_request(self, request):
+        # Called in tornado thread
+        request.id = self._next_id
+        self._next_id += 1
+        self._request_lookup[request.id] = request
         message = json_encode(request)
         self.log.debug("Sending message %s", message)
         self._conn.write_message(message)

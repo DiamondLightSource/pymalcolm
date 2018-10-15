@@ -5,14 +5,15 @@ from p4p.server import Server, DynamicProvider, ServerOperation
 from malcolm.compat import maybe_import_cothread
 from malcolm.core import Subscribe, Error, APublished, Controller, Delta, \
     Return, stringify_error, Response, Put, Post, Unsubscribe, \
-    ProcessPublishHook, method_return_unpacked, Method, serialize_object
+    ProcessPublishHook, method_return_unpacked, Method, serialize_object, \
+    BlockMeta, MethodModel
 from malcolm.core.rlock import RLock
 from malcolm.modules import builtin
 from .pvaconvert import convert_dict_to_value, update_path, \
     convert_value_to_dict
 
 if TYPE_CHECKING:
-    from typing import Optional, Dict, List
+    from typing import Optional, Dict, List, Set
 
 
 cothread = maybe_import_cothread()
@@ -32,6 +33,7 @@ class BlockHandler(Handler):
         self.field = field
         self.pv = None  # type: Optional[SharedPV]
         self.value = None  # type: Value
+        self.put_paths = None  # type: Set[str]
 
     def rpc(self, pv, op):
         # type: (SharedPV, ServerOperation) -> None
@@ -75,7 +77,6 @@ class BlockHandler(Handler):
                     ret = response.value
                 serialized = serialize_object(ret)
                 v = convert_dict_to_value(serialized)
-                self.controller.log.debug("Calling op.done with %s", v)
                 op.done(v)
             else:
                 if isinstance(response, Error):
@@ -90,10 +91,23 @@ class BlockHandler(Handler):
     def put(self, pv, op):
         # type: (SharedPV, ServerOperation) -> None
         path = [self.controller.mri]
-        changed_set = op.value().changedSet()
-        assert len(changed_set) == 1, \
-            "Can only do a Put to a single field, got %s" % list(changed_set)
-        changed = list(changed_set)[0]
+        # We work out what to Put by taking every field that is marked as
+        # changed and walking up the tree, adding every dotted field name
+        # to the tree on the way up. This set will contain something like:
+        #  {"attr.value", "attr"}
+        # Or for a table:
+        #  {"table.value.colA", "table.value.colB", "table.value", "table"}
+        # Or if self.field:
+        #  {"value"}
+        changed_fields_inc_parents = op.value().changedSet(
+            parents=True, expand=False)
+        # Taking the intersection with all puttable paths should yield the
+        # thing we want to change, so value_changed would be:
+        #  {"attr.value"} or {"table.value"} or {"value"}
+        value_changed = changed_fields_inc_parents.intersection(self.put_paths)
+        assert len(value_changed) == 1, \
+            "Can only do a Put to a single field, got %s" % list(value_changed)
+        changed = list(value_changed)[0]
         if self.field is not None:
             # Only accept a Put to "value"
             assert changed == "value", \
@@ -131,28 +145,42 @@ class BlockHandler(Handler):
         # Called from whatever thread the child block could be in, so
         # must already be a good thread to take the lock
         with self._lock:
-            if self.pv and isinstance(response, Delta):
-                # We got a delta, create or update value and notify
-                if not self.pv.isOpen():
-                    # Open it with the value
-                    # TODO: at the moment this fires because we didn't close
-                    # and wait for unsubscribe at tearDown
-                    self._create_initial_value(response)
-                else:
-                    # Update it with values
-                    self._update_value(response)
-            elif self.pv and self.pv.isOpen():
-                # We got a return or error, close the connection to clients
-                self.pv.close()
-                self.pv = None
+            if self.pv:
+                # onFirstConnect has been called, should be able to update it
+                try:
+                    assert isinstance(response, Delta), \
+                        "Expecting Delta response, got %s" % response
+                    # We got a delta, create or update value and notify
+                    if self.value is None:
+                        # Open it with the value
+                        self._create_initial_value(response)
+                    elif self.pv.isOpen():
+                        # Update it with values
+                        self._update_value(response)
+                except Exception:
+                    self.controller.log.debug(
+                        "Closing pv because of error", exc_info=True)
+                    # We got a return or error, close the connection to clients
+                    self.pv.close()
 
-    def _create_initial_value(self, delta):
+    def _create_initial_value(self, response):
         # type: (Delta) -> None
         # Called with the lock taken
-        assert len(delta.changes) == 1 and len(delta.changes[0]) == 2 and \
-            delta.changes[0][0] == [], "Expected root update, got %s" % (
-                delta.changes,)
-        self.value = convert_dict_to_value(delta.changes[0][1])
+        assert len(response.changes) == 1 and \
+               len(response.changes[0]) == 2 and \
+               response.changes[0][0] == [], \
+               "Expected root update, got %s" % (response.changes,)
+        self.value = convert_dict_to_value(response.changes[0][1])
+        unputtable_ids = (MethodModel.typeid, BlockMeta.typeid)
+        if not self.field:
+            self.put_paths = set(
+                "%s.value" % x for x, v in self.value.items()
+                if v.getID() not in unputtable_ids)
+        elif self.value.getID() not in unputtable_ids:
+            self.put_paths = {"value"}
+        else:
+            self.put_paths = set()
+        self.controller.log.debug("Opening with %s", list(self.value))
         self.pv.open(self.value)
 
     def _update_value(self, delta):
@@ -160,25 +188,19 @@ class BlockHandler(Handler):
         # Called with the lock taken
         self.value.unmark()
         for change in delta.changes:
-            if len(change) == 1 or change[0] == []:
-                # This is a delete or update of the root, can't do this in pva,
-                # so force a reconnect
-                self.onLastDisconnect(self.pv)
-            else:
-                # Path will have at least one element
-                path, update = change
-                # TODO: try catch with disconnect here, reopen with new value
-                update_path(self.value, path, update)
+            assert len(change) == 2, \
+                "Path %s deleted" % change[0]
+            assert len(change[0]) > 0, \
+                "Can't handle root update %s after initial" % (change,)
+            # Path will have at least one element
+            path, update = change
+            update_path(self.value, path, update)
+        # No type change, post the updated value
         self.pv.post(self.value)
 
     # Need camelCase as called by p4p Server
     # noinspection PyPep8Naming
     def onFirstConnect(self, pv):
-        # type: (SharedPV) -> None
-        # Called from pvAccess thread, so spawn in the right (co)thread
-        self.controller.spawn(self._on_first_connect, pv).get(timeout=1)
-
-    def _on_first_connect(self, pv):
         # type: (SharedPV) -> None
         # Store the PV, but don't open it now, let the first Delta do this
         with self._lock:
@@ -195,15 +217,12 @@ class BlockHandler(Handler):
     # noinspection PyPep8Naming
     def onLastDisconnect(self, pv):
         # type: (SharedPV) -> None
-        # Called from pvAccess thread, so spawn in the right (co)thread
-        self.controller.spawn(self._on_last_disconnect, pv).get(timeout=1)
-
-    def _on_last_disconnect(self, pv):
-        # type: (SharedPV) -> None
+        assert self.pv, "onFirstConnect not called yet"
         # No-one listening, unsubscribe
         with self._lock:
             self.pv.close()
             self.pv = None
+            self.value = None
         request = Unsubscribe()
         request.set_callback(self.handle)
         self.controller.handle_request(request).get(timeout=1)
@@ -217,8 +236,8 @@ class PvaServerComms(builtin.controllers.ServerComms):
         super(PvaServerComms, self).__init__(mri, use_cothread=True)
         self._pva_server = None
         self._provider = None
-        self._published = ()
-        self._pvs = {}  # type: Dict[str, List[SharedPV]]
+        self._published = set()
+        self._pvs = {}  # type: Dict[str, Dict[str, SharedPV]]
         # Hooks
         self.register_hooked(ProcessPublishHook, self.publish)
 
@@ -241,9 +260,10 @@ class PvaServerComms(builtin.controllers.ServerComms):
     # noinspection PyPep8Naming
     def makeChannel(self, channel_name, src):
         # type: (str, str) -> SharedPV
-        return self.spawn(self._makeChannel, channel_name, src).get(timeout=1)
+        # Need to spawn as we take a lock here and in process
+        return self.spawn(self._make_channel, channel_name, src).get(timeout=1)
 
-    def _makeChannel(self, channel_name, src):
+    def _make_channel(self, channel_name, src):
         # type: (str, str) -> SharedPV
         self.log.debug("Making PV %s for %s", channel_name, src)
         if channel_name in self._published:
@@ -255,16 +275,21 @@ class PvaServerComms(builtin.controllers.ServerComms):
             mri, field = channel_name.rsplit(".", 1)
         else:
             raise NameError("Bad channel %s" % channel_name)
-        controller = self.process.get_controller(mri)
-        handler = BlockHandler(controller, field)
-        # We want any client passing a pvRequest field() to ONLY receive that
-        # field. The default behaviour of p4p is to send a masked version of
-        # the full structure. The mapperMode option allows us to tell p4p to
-        # send a slice instead
-        # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
-        pv = SharedPV(handler=handler, options={'mapperMode': 'Slice'})
-        self._pvs.setdefault(mri, []).append(pv)
-        return pv
+        with self._lock:
+            pvs = self._pvs.setdefault(mri, {})
+            try:
+                pv = pvs[field]
+            except KeyError:
+                controller = self.process.get_controller(mri)
+                handler = BlockHandler(controller, field)
+                # We want any client passing a pvRequest field() to ONLY receive
+                # that field. The default behaviour of p4p is to send a masked
+                # version of the full structure. The mapperMode option allows us
+                # to tell p4p to send a slice instead
+                # https://github.com/mdavidsaver/pvDataCPP/blob/master/src/copy/pv/createRequest.h#L76
+                pv = SharedPV(handler=handler, options={'mapperMode': 'Slice'})
+                pvs[field] = pv
+            return pv
 
     def do_init(self):
         super(PvaServerComms, self).do_init()
@@ -289,7 +314,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
     @add_call_types
     def publish(self, published):
         # type: (APublished) -> None
-        self._published = published
+        self._published = set(published)
         if self._pva_server:
             with self._lock:
                 mris = [mri for mri in self._pvs if mri not in published]
@@ -300,8 +325,8 @@ class PvaServerComms(builtin.controllers.ServerComms):
         # type: (List[str]) -> None
         """Disconnect anyone listening to any of the given mris"""
         for mri in mris:
-            for pv in self._pvs.pop(mri, ()):
+            for pv in self._pvs.pop(mri, {}).values():
                 # Close pv with force destroy on, this will call
                 # onLastDisconnect
-                pv.close(True)
+                pv.close(destroy=True, sync=True, timeout=1.0)
 

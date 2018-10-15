@@ -188,6 +188,9 @@ class Controller(Hookable):
                 raise NotWriteableError(
                     "Method %s is not writeable" % field.path)
 
+    def get_put_function(self, attribute_name):
+        return self._write_functions[attribute_name]
+
     def _handle_put(self, request):
         # type: (Put) -> CallbackResponses
         """Called with the lock taken"""
@@ -198,7 +201,7 @@ class Controller(Hookable):
             "Cannot Put to %s which is a %s" % (attribute.path, type(attribute))
         self.check_field_writeable(attribute)
 
-        put_function = self._write_functions[attribute_name]
+        put_function = self.get_put_function(attribute_name)
         value = attribute.meta.validate(request.value)
 
         with self.lock_released:
@@ -215,6 +218,9 @@ class Controller(Hookable):
         ret = [request.return_response(result)]
         return ret
 
+    def get_post_function(self, method_name):
+        return self._write_functions[method_name]
+
     def _handle_post(self, request):
         # type: (Post) -> CallbackResponses
         """Called with the lock taken"""
@@ -225,7 +231,7 @@ class Controller(Hookable):
             "Cannot Post to %s which is a %s" % (method.path, type(method))
         self.check_field_writeable(method)
 
-        post_function = self._write_functions[method_name]
+        post_function = self.get_post_function(method_name)
         args = method.validate(request.parameters)
 
         with self.lock_released:

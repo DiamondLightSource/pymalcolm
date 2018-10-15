@@ -10,7 +10,7 @@ from ..infos import PortInfo, LayoutInfo, SourcePortInfo, SinkPortInfo, \
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
     AContext, APortMap, ALayoutTable, LoadHook, SaveHook, AStructure, \
     ULayoutInfos
-from ..util import StatefulStates
+from ..util import StatefulStates, wait_for_stateful_block_init
 
 if TYPE_CHECKING:
     from typing import Dict, Any, List, Type, TypeVar, Tuple
@@ -67,9 +67,7 @@ class ChildPart(Part):
         if self.stateful:
             # Wait for a while until the child is ready as it changes the
             # save state
-            context.when_matches(
-                [self.mri, "state", "value"], ss.READY,
-                [ss.FAULT, ss.DISABLED], timeout=DEFAULT_TIMEOUT)
+            wait_for_stateful_block_init(context, self.mri)
         # Save what we have
         self.save(context)
         subscribe = Subscribe(path=[self.mri, "meta", "fields"])

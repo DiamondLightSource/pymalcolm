@@ -134,7 +134,8 @@ class Process(Loggable):
         self._run_hook(ProcessStopHook, timeout=timeout)
         for s in self._spawned:
             if not s.ready():
-                self.log.debug("Waiting for %s", s._function)
+                self.log.debug(
+                    "Waiting for %s *%s **%s", s._function, s._args, s._kwargs)
             s.wait(timeout=timeout)
         self._spawned = []  # type: List[Spawned]
         self._controllers = OrderedDict()

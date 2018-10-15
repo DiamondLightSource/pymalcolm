@@ -1,5 +1,6 @@
 import unittest
 
+from p4p.client.raw import RemoteError
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Process
@@ -13,26 +14,27 @@ class TestSystemPVA(unittest.TestCase):
 
     def setUp(self):
         self.process = Process("proc")
-        for controller in ticker_block(mri="TICKER", config_dir="/tmp") + \
+        for controller in \
+                ticker_block(mri="TICKER", config_dir="/tmp") + \
                 pva_server_block(mri="PVA-SERVER"):
             self.process.add_controller(controller)
         self.process.start()
         self.process2 = Process("proc2")
-        for controller in pva_client_block(mri="PVA-CLIENT"):
+        for controller in \
+                pva_client_block(mri="PVA-CLIENT") + \
+                proxy_block(mri="TICKER", comms="PVA-CLIENT",
+                            use_cothread=True):
             self.process2.add_controller(controller)
         self.process2.start()
-        # TODO: proxy block can only be added after the client init has finished
-        for controller in proxy_block(mri="TICKER", comms="PVA-CLIENT"):
-            self.process2.add_controller(controller)
 
     def tearDown(self):
         self.process.stop(timeout=2)
         self.process2.stop(timeout=2)
 
     def make_generator(self):
-        line1 = LineGenerator('y', 'mm', 0, 2, 3)
-        line2 = LineGenerator('x', 'mm', 0, 2, 2)
-        compound = CompoundGenerator([line1, line2], [], [], duration=0.5)
+        line1 = LineGenerator('y', 'mm', 0, 3, 3)
+        line2 = LineGenerator('x', 'mm', 1, 2, 2)
+        compound = CompoundGenerator([line1, line2], [], [], duration=0.05)
         return compound
 
     def check_blocks_equal(self):
@@ -59,7 +61,7 @@ class TestSystemPVA(unittest.TestCase):
         generator = self.make_generator()
         block.configure(generator, axesToMove=["x", "y"])
         # TODO: ordering is not maintained in PVA, so need to wait before get
-        block._context.sleep(1)
+        block._context.sleep(0.1)
         assert "Armed" == block.state.value
         self.check_blocks_equal()
 
@@ -86,8 +88,21 @@ class TestSystemPVA(unittest.TestCase):
             'pause',
             'resume']
         assert list(block) == fields
+        generator = self.make_generator()
+        block.configure(generator, axesToMove=["x", "y"])
+        block.run()
+        # Export X
         t = ExportTable(source=["x.counter"], export=["xValue"])
-        # block.exports.put_value(t)
-        # assert list(block) == fields + ["xValue"]
-
+        block.exports.put_value(t)
+        assert list(block) == fields + ["xValue"]
+        assert block.xValue.value == 2.0
+        # Export Y
+        t = ExportTable(source=["y.counter"], export=["yValue"])
+        block.exports.put_value(t)
+        assert list(block) == fields + ["yValue"]
+        assert block.yValue.value == 3.0
+        # Export Nothing
+        t = ExportTable(source=[], export=[])
+        block.exports.put_value(t)
+        assert list(block) == fields
 
