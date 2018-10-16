@@ -3,7 +3,7 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict, clean_repr
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
-    Unsubscribe, APartName, Port, Controller, Response, DEFAULT_TIMEOUT, \
+    Unsubscribe, APartName, Port, Controller, Response, \
     get_config_tag, Update, Return
 from ..infos import PortInfo, LayoutInfo, SourcePortInfo, SinkPortInfo, \
     PartExportableInfo, PartModifiedInfo

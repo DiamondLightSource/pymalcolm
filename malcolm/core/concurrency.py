@@ -82,6 +82,7 @@ class Queue(object):
             signal.signal(signal.SIGINT, signal_exception)
 
     def get(self, timeout=None):
+        # Assume we are in cothread's thread
         try:
             ret = self._event_queue.Wait(timeout=timeout)
         except Timedout:
@@ -93,4 +94,5 @@ class Queue(object):
                 return ret
 
     def put(self, value):
+        # Assume we are in cothread's thread
         self._event_queue.Signal(value)
