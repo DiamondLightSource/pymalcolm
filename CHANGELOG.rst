@@ -7,7 +7,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
-Nothing yet
+Changed:
+
+- Web gui version (malcolmjs 1.3.1)
+
+Fixed:
+
+- Minor bug with loading non-existant attributes failing
+- Some internal issues in p4p pvAccess support
+- ProxyController refactor, moving some code to ClientComms
 
 
 `3-0a4`_ - 2018-09-24
