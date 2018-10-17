@@ -6,6 +6,13 @@ import os
 
 if sys.version_info < (3,):
     # python 2
+    import Queue as queue
+else:
+    # python 3
+    import queue
+
+if sys.version_info < (3,):
+    # python 2
     str_ = basestring
 
     def clean_repr(x):

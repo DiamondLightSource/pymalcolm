@@ -12,7 +12,6 @@ from p4p import Value, Type
 from p4p.client.raw import RemoteError
 
 
-from malcolm.compat import maybe_import_cothread
 from malcolm.core import Process, Queue
 from malcolm.modules.demo.blocks import hello_block, counter_block
 from malcolm.modules.pva.blocks import pva_server_block
@@ -309,11 +308,7 @@ class TestPVAServer(unittest.TestCase):
         self.ctxt = self.make_pva_context(unwrap=False)
 
     def make_pva_context(self, *args, **kwargs):
-        cothread = maybe_import_cothread()
-        if cothread:
-            from p4p.client.cothread import Context
-        else:
-            from p4p.client.thread import Context
+        from p4p.client.cothread import Context
         ctxt = Context("pva", *args, **kwargs)
         self.addCleanup(ctxt.close)
         return ctxt

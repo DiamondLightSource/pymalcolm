@@ -1,13 +1,13 @@
 from annotypes import add_call_types, TYPE_CHECKING
+from cothread import cothread
 from p4p import Value
 from p4p.server import Server, DynamicProvider, ServerOperation
+from p4p.server.cothread import Handler, SharedPV
 
-from malcolm.compat import maybe_import_cothread
 from malcolm.core import Subscribe, Error, APublished, Controller, Delta, \
     Return, stringify_error, Response, Put, Post, Unsubscribe, \
     ProcessPublishHook, method_return_unpacked, Method, serialize_object, \
-    BlockMeta, MethodModel
-from malcolm.core.rlock import RLock
+    BlockMeta, MethodModel, RLock
 from malcolm.modules import builtin
 from .pvaconvert import convert_dict_to_value, update_path, \
     convert_value_to_dict
@@ -16,20 +16,12 @@ if TYPE_CHECKING:
     from typing import Optional, Dict, List, Set
 
 
-cothread = maybe_import_cothread()
-
-if cothread:
-    from p4p.server.cothread import Handler, SharedPV
-else:
-    from p4p.server.thread import Handler, SharedPV
-
-
 class BlockHandler(Handler):
     def __init__(self, controller, field=None):
         # type: (Controller, str) -> None
         self.controller = controller
         # Lock to control access to self.pv
-        self._lock = RLock(controller.use_cothread)
+        self._lock = RLock()
         self.field = field
         self.pv = None  # type: Optional[SharedPV]
         self.value = None  # type: Value
@@ -233,7 +225,7 @@ class PvaServerComms(builtin.controllers.ServerComms):
 
     def __init__(self, mri):
         # type: (builtin.controllers.AMri) -> None
-        super(PvaServerComms, self).__init__(mri, use_cothread=True)
+        super(PvaServerComms, self).__init__(mri)
         self._pva_server = None
         self._provider = None
         self._published = set()
@@ -261,7 +253,8 @@ class PvaServerComms(builtin.controllers.ServerComms):
     def makeChannel(self, channel_name, src):
         # type: (str, str) -> SharedPV
         # Need to spawn as we take a lock here and in process
-        return self.spawn(self._make_channel, channel_name, src).get(timeout=1)
+        return cothread.CallbackResult(
+            self._make_channel, channel_name, src, callback_timeout=1.0)
 
     def _make_channel(self, channel_name, src):
         # type: (str, str) -> SharedPV

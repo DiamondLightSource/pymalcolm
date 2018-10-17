@@ -1,9 +1,9 @@
 from p4p import Value
 from p4p.client.raw import Disconnected, RemoteError
 from p4p.nt import NTURI
+from p4p.client.cothread import Context, Subscription
 from annotypes import TYPE_CHECKING
 
-from malcolm.compat import maybe_import_cothread
 from malcolm.modules.builtin.controllers import ClientComms
 from malcolm.core import Queue, Model, DEFAULT_TIMEOUT, BlockMeta, \
     serialize_object, BlockModel, Alarm
@@ -23,11 +23,6 @@ class PvaClientComms(ClientComms):
 
     def do_init(self):
         super(PvaClientComms, self).do_init()
-        cothread = maybe_import_cothread()
-        if cothread:
-            from p4p.client.cothread import Context, Subscription
-        else:
-            from p4p.client.thread import Context, Subscription
         self._ctxt = Context("pva", unwrap=False)
         self._queues = {}  # type: Dict[str, Queue]
         self._monitors = set()  # type: Set[Subscription]
