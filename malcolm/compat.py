@@ -99,6 +99,10 @@ else:
     OrderedDict = InsertionOrderedDict
 
 
+def get_profiler_dir():
+    return os.environ.get("PYMALCOLM_PROFILER_DIR", "/tmp/imalcolm_profiles")
+
+
 def et_to_string(element):
     # type: (ET.Element) -> str
     xml = '<?xml version="1.0" ?>'

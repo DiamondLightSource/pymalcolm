@@ -1,20 +1,17 @@
 #!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
-import argparse
 import logging.config
-import sys
 import threading
 import argparse
 import atexit
-import os
 import getpass
 import json
-
-from ruamel import yaml
-
-from malcolm.compat import QueueListener, queue
+import os
+import sys
+from pkg_resources import require
 
 
 def make_async_logging(log_config):
+    from malcolm.compat import QueueListener, queue
     # Now we have our user specified logging config, pipe all logging messages
     # through a queue to make it asynchronous
 
@@ -45,9 +42,6 @@ def parse_args():
     parser.add_argument(
         '--logcfg', help="Logging dict config in JSON or YAML file")
     parser.add_argument(
-        "--profiledir", help="Directory to store profiler results in",
-        default="/tmp/imalcolm_profiles")
-    parser.add_argument(
         'yaml', nargs="?",
         help="The YAML file containing the blocks to be loaded")
     args = parser.parse_args()
@@ -55,6 +49,8 @@ def parse_args():
 
 
 def make_logging_config(args):
+    from ruamel import yaml
+
     log_config = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -140,25 +136,19 @@ def make_logging_config(args):
 def prepare_locals(q, args):
     # This will start cothread in this thread
     import cothread
+    from malcolm.core import Process, Context, Queue, Profiler
+    from malcolm.yamlutil import make_include_creator
+    from malcolm.compat import get_profiler_dir
 
     # These are the locals that we will pass to the console
     locals_d = {}
 
     # Setup profiler dir
-    try:
-        from malcolm.modules.profiling.parts import ProfilingViewerPart
-        from malcolm.modules.profiling.profiler import Profiler
-    except ImportError:
-        raise
-    else:
-        if not os.path.isdir(args.profiledir):
-            os.mkdir(args.profiledir)
-        ProfilingViewerPart.profiledir = args.profiledir
-        locals_d["profiler"] = Profiler(args.profiledir)
-        # locals_d["profiler"].start()
-
-    from malcolm.core import Process, Context, Queue
-    from malcolm.yamlutil import make_include_creator
+    profiledir = get_profiler_dir()
+    if not os.path.isdir(profiledir):
+        os.mkdir(profiledir)
+    locals_d["profiler"] = Profiler(profiledir)
+    # locals_d["profiler"].start()
 
     if args.yaml:
         proc_name = os.path.basename(args.yaml).split(".")[-2]
@@ -215,6 +205,8 @@ def prepare_locals(q, args):
 
 
 def main():
+    from malcolm.compat import queue
+
     args = parse_args()
 
     # Make some log config, either fron command line or
@@ -258,26 +250,23 @@ self.block_view("HELLO").greet("me")
         code.interact(header, local=locals())
     else:
         IPython.embed(header=header)
-    if "profiler" in locals_d:
-        if locals_d["profiler"].started:
-            locals_d["profiler"].stop()
-    # TODO: tearDown doesn't work properly yet
-    # locals_d["process"].stop()
+    if locals_d["profiler"].started:
+        locals_d["profiler"].stop()
+
+    # Now we can import cothread as it is already running
+    import cothread
+    cothread.CallbackResult(locals_d["process"].stop)
 
 
 if __name__ == "__main__":
     print("Loading...")
-    import os
-    import sys
 
     os.environ["EPICS_CA_MAX_ARRAY_BYTES"] = "6000000"
 
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-    from pkg_resources import require
-
-    require("tornado", "numpy", "ruamel.yaml", "cothread==2.14", "vdsgen~=0.3",
-            "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py~=2.8",
+    require("tornado", "numpy", "ruamel.yaml", "cothread==2.14", "vdsgen>=0.3",
+            "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py>=2.8",
             "annotypes>=0.9")
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "annotypes"))
