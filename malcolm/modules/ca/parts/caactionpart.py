@@ -2,7 +2,7 @@ from annotypes import Anno
 
 from malcolm.core import Part, PartRegistrar
 from malcolm.modules import builtin
-from ..util import APartName, AMetaDescription, APv, catools
+from .. import util
 
 with Anno("Status pv to see if successful"):
     StatusPv = str
@@ -20,9 +20,9 @@ class CAActionPart(Part):
     """Group a number of PVs together that represent a method like acquire()"""
 
     def __init__(self,
-                 name,  # type: APartName
-                 description,  # type: AMetaDescription
-                 pv="",  # type: APv
+                 name,  # type: util.APartName
+                 description,  # type: util.AMetaDescription
+                 pv="",  # type: util.APv
                  status_pv="",  # type: StatusPv
                  good_status="",  # type: GoodStatus
                  message_pv="",  # type: MessagePv
@@ -53,20 +53,20 @@ class CAActionPart(Part):
             pvs.append(self.status_pv)
         if self.message_pv:
             pvs.append(self.message_pv)
-        ca_values = catools.caget(pvs)
+        ca_values = util.catools.caget(pvs)
         # check connection is ok
         for i, v in enumerate(ca_values):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
 
     def caput(self):
         self.log.info("caput %s %s", self.pv, self.value)
-        catools.caput(self.pv, self.value, wait=self.wait, timeout=None)
+        util.catools.caput(self.pv, self.value, wait=self.wait, timeout=None)
         if self.status_pv:
-            status = catools.caget(
-                self.status_pv, datatype=catools.DBR_STRING)
+            status = util.catools.caget(
+                self.status_pv, datatype=util.catools.DBR_STRING)
             if self.message_pv:
-                message = " %s:" % catools.caget(
-                    self.message_pv, datatype=catools.DBR_CHAR_STR)
+                message = " %s:" % util.catools.caget(
+                    self.message_pv, datatype=util.catools.DBR_CHAR_STR)
             else:
                 message = ""
             assert status == self.good_status, \

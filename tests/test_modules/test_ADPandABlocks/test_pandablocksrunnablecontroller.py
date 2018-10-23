@@ -9,7 +9,7 @@ from malcolm.modules.pandablocks.pandablocksclient import \
 
 
 class PandABlocksRunnableControllerTest(unittest.TestCase):
-    @patch("cothread.catools")
+    @patch("malcolm.modules.ca.util.catools")
     @patch("malcolm.modules.pandablocks.controllers."
            "pandablocksmanagercontroller.PandABlocksClient")
     def setUp(self, mock_client, catools):

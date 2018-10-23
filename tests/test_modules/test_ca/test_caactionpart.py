@@ -10,7 +10,7 @@ class caint(int):
     ok = True
     
 
-@patch("malcolm.modules.ca.parts.caactionpart.catools")
+@patch("malcolm.modules.ca.util.catools")
 class TestCAActionPart(unittest.TestCase):
 
     def create_part(self, params=None):
