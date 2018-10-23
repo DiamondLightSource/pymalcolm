@@ -1,7 +1,6 @@
 import time
 
 from annotypes import Anno, TYPE_CHECKING
-from cothread import catools
 
 from malcolm.core import sleep, VMeta, Alarm, AlarmStatus, TimeStamp, \
     Loggable, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
@@ -20,6 +19,16 @@ if TYPE_CHECKING:
 # Store them here for re-export
 APartName = APartName
 AMetaDescription = AMetaDescription
+
+
+class CatoolsDeferred(object):
+    """Deferred gets of catools things"""
+    def __getattr__(self, item):
+        from cothread import catools
+        return getattr(catools, item)
+
+
+catools = CatoolsDeferred()
 
 
 with Anno("Full pv of demand and default for rbv"):
