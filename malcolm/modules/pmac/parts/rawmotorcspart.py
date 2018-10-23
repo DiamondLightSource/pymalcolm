@@ -1,5 +1,4 @@
 from annotypes import Anno
-from cothread import catools
 
 from malcolm.core import Part, PartRegistrar, ChoiceMeta, Port, Alarm
 from malcolm.modules import ca, builtin
@@ -40,8 +39,8 @@ class RawMotorCSPart(Part):
         # release old monitors
         self.disconnect()
         # make sure we can connect to the pvs
-        ca_values = ca.util.assert_connected(catools.caget(
-            self.pvs + self.rbvs, format=catools.FORMAT_CTRL))
+        ca_values = ca.util.assert_connected(ca.util.catools.caget(
+            self.pvs + self.rbvs, format=ca.util.catools.FORMAT_CTRL))
         # Set initial value
         self.port_choices = ca_values[0].enums
         choices = [""]
@@ -52,8 +51,8 @@ class RawMotorCSPart(Part):
         self.port = self.port_choices[ca_values[2]]
         self._update_value(ca_values[3], 1)
         # Setup monitor on rbvs
-        self.monitors = catools.camonitor(
-            self.rbvs, self._update_value, format=catools.FORMAT_TIME,
+        self.monitors = ca.util.catools.camonitor(
+            self.rbvs, self._update_value, format=cca.util.atools.FORMAT_TIME,
             notify_disconnect=True)
 
     def disconnect(self):
@@ -91,8 +90,9 @@ class RawMotorCSPart(Part):
         else:
             port_index = 0
             axis = ""
-        catools.caput(self.pvs, (port_index, axis), wait=True)
+        ca.util.catools.caput(self.pvs, (port_index, axis), wait=True)
         # now do a caget
-        values = catools.caget(self.rbvs, format=catools.FORMAT_TIME)
+        values = ca.util.catools.caget(
+            self.rbvs, format=ca.util.catools.FORMAT_TIME)
         self.port = self.port_choices[values[0]]
         self._update_value(values[1], 1)

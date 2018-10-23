@@ -1,5 +1,4 @@
 from annotypes import Any
-from cothread import catools
 
 from malcolm.core import Part, PartRegistrar, StringMeta, Port, Alarm
 from malcolm.modules import ca, builtin
@@ -32,13 +31,13 @@ class CompoundMotorCSPart(Part):
         # release old monitors
         self.disconnect()
         # make sure we can connect to the pvs
-        ca_values = ca.util.assert_connected(catools.caget(
-            [self.rbv], format=catools.FORMAT_CTRL))
+        ca_values = ca.util.assert_connected(ca.util.catools.caget(
+            [self.rbv], format=ca.util.catools.FORMAT_CTRL))
         # Set initial value
         self._update_value(ca_values[0])
         # Setup monitor on rbv
-        self.monitor = catools.camonitor(
-            self.rbv, self._update_value, format=catools.FORMAT_TIME,
+        self.monitor = ca.util.catools.camonitor(
+            self.rbv, self._update_value, format=ca.util.catools.FORMAT_TIME,
             notify_disconnect=True)
 
     def disconnect(self):

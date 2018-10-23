@@ -1,5 +1,4 @@
 from annotypes import Any
-from cothread import catools
 
 from malcolm.core import Part, PartRegistrar, StringMeta, Port
 from malcolm.modules import ca
@@ -16,7 +15,7 @@ class CSSourcePortsPart(Part):
         self.meta = StringMeta("CS Port name")
         # This gives the port name
         self.caa = ca.util.CAAttribute(
-            self.meta, catools.DBR_STRING, rbv=rbv, group=group,
+            self.meta, ca.util.catools.DBR_STRING, rbv=rbv, group=group,
             on_connect=self.update_tags)
         # These will be the "axis" Source Ports
         self.axis_attrs = {}

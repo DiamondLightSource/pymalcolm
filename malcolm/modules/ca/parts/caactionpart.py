@@ -1,9 +1,8 @@
 from annotypes import Anno
-from cothread import catools
 
 from malcolm.core import Part, PartRegistrar
 from malcolm.modules import builtin
-from ..util import APartName, AMetaDescription, APv
+from ..util import APartName, AMetaDescription, APv, catools
 
 with Anno("Status pv to see if successful"):
     StatusPv = str

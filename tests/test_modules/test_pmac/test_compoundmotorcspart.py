@@ -12,7 +12,7 @@ class castr(str):
 
 
 class TestCompoundMotorCSPart(unittest.TestCase):
-    @patch("malcolm.modules.pmac.parts.compoundmotorcspart.catools")
+    @patch("malcolm.modules.ca.util.catools")
     def setUp(self, catools):
         self.catools = catools
         catools.caget.side_effect = [[castr("@asyn(BRICK1CS1,2)")]]

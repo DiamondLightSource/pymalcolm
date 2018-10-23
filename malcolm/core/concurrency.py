@@ -2,8 +2,9 @@ import logging
 import signal
 
 from annotypes import TYPE_CHECKING
-from cothread import RLock, Sleep, EventQueue, Timedout, Spawn
+import cothread
 
+from malcolm.compat import get_thread_ident
 from .errors import TimeoutError
 
 if TYPE_CHECKING:
@@ -15,8 +16,8 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 # Re-export
-sleep = Sleep
-RLock = RLock
+sleep = cothread.Sleep
+RLock = cothread.RLock
 
 
 class Spawned(object):
@@ -29,7 +30,7 @@ class Spawned(object):
         self._function = func
         self._args = args
         self._kwargs = kwargs
-        Spawn(self.catching_function)
+        cothread.Spawn(self.catching_function)
 
     def catching_function(self):
         try:
@@ -67,12 +68,12 @@ class Spawned(object):
 
 
 class Queue(object):
-    """Wrapper around cothread EventQueue"""
+    """Threadsafe and cothreadsafe queue with gets in calling thread"""
     INTERRUPTED = object()
 
     def __init__(self, user_facing=False):
         self.user_facing = user_facing
-        self._event_queue = EventQueue()
+        self._event_queue = cothread.EventQueue()
         if user_facing:
             # Install a signal handler that will make sure we are the
             # thing that is interrupted
@@ -82,17 +83,25 @@ class Queue(object):
             signal.signal(signal.SIGINT, signal_exception)
 
     def get(self, timeout=None):
-        # Assume we are in cothread's thread
-        try:
-            ret = self._event_queue.Wait(timeout=timeout)
-        except Timedout:
-            raise TimeoutError("Queue().get() timed out")
+        if get_thread_ident() != cothread.scheduler_thread_id:
+            # Not in cothread's thread, so need to use CallbackResult
+            return cothread.CallbackResult(self.get, timeout)
         else:
-            if ret is self.INTERRUPTED:
-                raise KeyboardInterrupt()
+            # In cothread's thread
+            try:
+                ret = self._event_queue.Wait(timeout=timeout)
+            except cothread.Timedout:
+                raise TimeoutError("Queue().get() timed out")
             else:
-                return ret
+                if ret is self.INTERRUPTED:
+                    raise KeyboardInterrupt()
+                else:
+                    return ret
 
     def put(self, value):
-        # Assume we are in cothread's thread
-        self._event_queue.Signal(value)
+        if cothread.scheduler_thread_id != get_thread_ident():
+            # Not in cothread's thread, so need to use Callback
+            cothread.Callback(self._event_queue.Signal, value)
+        else:
+            # In cothread's thread
+            self._event_queue.Signal(value)

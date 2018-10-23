@@ -1,9 +1,9 @@
 from annotypes import Array
-from cothread import catools
 
 from malcolm.core import Part, PartRegistrar, NumberArrayMeta, DEFAULT_TIMEOUT
 from ..util import CAAttribute, APartName, AMetaDescription, APv, ARbv, \
-    ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, AGroup, AConfig
+    ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, AGroup, AConfig, \
+    catools
 
 
 class CADoubleArrayPart(Part):

@@ -1,8 +1,6 @@
 import unittest
 from mock import patch
 
-from cothread import catools as real_catools
-
 from malcolm.core import Process
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.pmac.parts import CSSourcePortsPart
@@ -29,7 +27,7 @@ class TestCSOutlinksPart(unittest.TestCase):
 
     def test_init(self):
         self.catools.caget.assert_called_once_with(
-            ["PV:PRE:Port"], datatype=real_catools.DBR_STRING,
+            ["PV:PRE:Port"], datatype=self.catools.DBR_STRING,
             format=self.catools.FORMAT_CTRL)
         assert list(self.b) == [
             'meta', 'health', 'state', 'disable', 'reset', 'cs',

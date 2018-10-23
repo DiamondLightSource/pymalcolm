@@ -17,7 +17,7 @@ class caenum(int):
     enums = ["ANYTHING", "BRICK1CS1", "BRICK1CS2"]
 
 
-@patch("malcolm.modules.pmac.parts.rawmotorcspart.catools")
+@patch("malcolm.modules.ca.util.catools")
 class TestRawMotorCSPart(unittest.TestCase):
     def setUp(self):
         self.process = Process("proc")

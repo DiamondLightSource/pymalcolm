@@ -1,11 +1,22 @@
 #!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
+import argparse
+import logging.config
+import sys
+import threading
+import argparse
+import atexit
+import os
+import getpass
+import json
+
+from ruamel import yaml
+
+from malcolm.compat import QueueListener, queue
 
 
 def make_async_logging(log_config):
     # Now we have our user specified logging config, pipe all logging messages
     # through a queue to make it asynchronous
-    from malcolm.compat import QueueListener, queue
-    import logging.config
 
     # These are the handlers for our root logger, they should go through a queue
     root_handlers = log_config["root"].pop("handlers")
@@ -25,19 +36,7 @@ def make_async_logging(log_config):
     return listener
 
 
-def make_process():
-    import sys
-    import threading
-    import argparse
-    import atexit
-    import os
-    import getpass
-    import json
-    from ruamel import yaml
-
-    # These are the locals that we will pass to the console
-    locals_d = {}
-
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Interactive shell for malcolm")
     parser.add_argument(
@@ -52,7 +51,10 @@ def make_process():
         'yaml', nargs="?",
         help="The YAML file containing the blocks to be loaded")
     args = parser.parse_args()
+    return args
 
+
+def make_logging_config(args):
     log_config = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -132,11 +134,15 @@ def make_process():
             file_config = yaml.load(text, Loader=yaml.RoundTripLoader)
         if file_config:
             log_config = file_config
+    return log_config
 
-    # Start it off, and tell it to stop when we quit
-    listener = make_async_logging(log_config)
-    listener.start()
-    atexit.register(listener.stop)
+
+def prepare_locals(q, args):
+    # This will start cothread in this thread
+    import cothread
+
+    # These are the locals that we will pass to the console
+    locals_d = {}
 
     # Setup profiler dir
     try:
@@ -149,11 +155,9 @@ def make_process():
             os.mkdir(args.profiledir)
         ProfilingViewerPart.profiledir = args.profiledir
         locals_d["profiler"] = Profiler(args.profiledir)
-        locals_d["profiler"].start()
+        # locals_d["profiler"].start()
 
-    from malcolm.core import Context, Process
-    from malcolm.core import Queue
-    from malcolm.modules.builtin.blocks import proxy_block
+    from malcolm.core import Process, Context, Queue
     from malcolm.yamlutil import make_include_creator
 
     if args.yaml:
@@ -184,29 +188,49 @@ def make_process():
             raise ValueError(
                 "Don't know how to create client to %s" % args.client)
         proc.add_controller(comms)
+    proc.start(timeout=60)
+    locals_d["process"] = proc
 
     class UserContext(Context):
         def make_queue(self):
             return Queue(user_facing=True)
 
-        def post(self, path, params=None, timeout=None):
+        def post(self, path, params=None, timeout=None, event_timeout=None):
             try:
-                return super(UserContext, self).post(path, params, timeout)
+                return super(UserContext, self).post(
+                    path, params, timeout, event_timeout)
             except KeyboardInterrupt:
                 self.post([path[0], "abort"])
                 raise
 
         def make_proxy(self, comms, mri):
-            proc.add_controller(proxy_block(comms=comms, mri=mri)[-1])
+            from malcolm.modules.builtin.blocks import proxy_block
+            # Need to do this in cothread's thread
+            cothread.CallbackResult(
+                proc.add_controller, proxy_block(comms=comms, mri=mri)[-1])
 
     locals_d["self"] = UserContext(proc)
-    proc.start(timeout=60)
-    locals_d["process"] = proc
-    return locals_d
+
+    q.put(locals_d)
 
 
 def main():
-    locals_d = make_process()
+    args = parse_args()
+
+    # Make some log config, either fron command line or
+    log_config = make_logging_config(args)
+
+    # Start it off, and tell it to stop when we quit
+    listener = make_async_logging(log_config)
+    listener.start()
+    atexit.register(listener.stop)
+
+    # Import the Malcolm process
+    q = queue.Queue()
+    t = threading.Thread(target=prepare_locals, args=(args, q))
+    t.start()
+    locals_d = q.get(timeout=65)
+    locals().update(locals_d)
 
     header = """Welcome to iMalcolm.
 
@@ -231,9 +255,8 @@ self.block_view("HELLO").greet("me")
         import IPython
     except ImportError:
         import code
-        code.interact(header, local=locals_d)
+        code.interact(header, local=locals())
     else:
-        locals().update(locals_d)
         IPython.embed(header=header)
     if "profiler" in locals_d:
         if locals_d["profiler"].started:

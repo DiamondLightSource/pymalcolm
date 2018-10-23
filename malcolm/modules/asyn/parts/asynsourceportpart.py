@@ -1,5 +1,4 @@
 from annotypes import Anno, Any
-from cothread import catools
 
 from malcolm.core import Part, PartRegistrar, StringMeta, Port
 from malcolm.modules import ca
@@ -25,7 +24,7 @@ class AsynSourcePortPart(Part):
         self.port_type = port_type
         self.meta = StringMeta(description)
         self.caa = ca.util.CAAttribute(
-            self.meta, catools.DBR_STRING, rbv=rbv, group=group,
+            self.meta, ca.util.catools.DBR_STRING, rbv=rbv, group=group,
             on_connect=self.update_tags)
 
     def setup(self, registrar):

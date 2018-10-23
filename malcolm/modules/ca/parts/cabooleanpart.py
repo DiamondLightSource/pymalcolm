@@ -1,8 +1,7 @@
-from cothread import catools
-
 from malcolm.core import Part, PartRegistrar, BooleanMeta, DEFAULT_TIMEOUT
 from ..util import CAAttribute, APartName, AMetaDescription, APv, ARbv, \
-    ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, AGroup, AConfig
+    ARbvSuffix, AMinDelta, ATimeout, ASinkPort, AWidget, AGroup, AConfig, \
+    catools
 
 
 class CABooleanPart(Part):
