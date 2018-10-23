@@ -6,7 +6,7 @@ from .controller import Controller
 from .hook import Hook, start_hooks, AHookable, wait_hooks
 from .info import Info
 from .loggable import Loggable
-from malcolm.core import Spawned
+from .concurrency import Spawned
 from .views import Block
 
 if TYPE_CHECKING:
@@ -94,7 +94,10 @@ class Process(Loggable):
         # type: (List[Controller], float) -> bool
         # Start just the given controller_list
         infos = self._run_hook(ProcessStartHook, controller_list,
-                               timeout=timeout, user_facing=True)
+                               timeout=timeout)
+        for mri, e in infos.items():
+            if isinstance(e, Exception):
+                self.log.error("Exception starting %s", mri)
         new_unpublished = set(
             info.mri for info in UnpublishedInfo.filter_values(infos))
         self._unpublished |= new_unpublished

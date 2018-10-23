@@ -173,17 +173,16 @@ def wait_hooks(logger, hook_queue, hook_spawned, timeout=None,
                 "%s: Child %s returned %r after %ss. Returning...",
                 hook.name, hook.child.name, ret, duration)
 
-        if isinstance(ret, Exception):
-            if exception_check:
-                if not isinstance(ret, AbortedError):
-                    # If AbortedError, all tasks have already been stopped.
-                    # Got an error, so stop and wait all hook runners
-                    for h in hook_spawned:
-                        h.stop()
-                # Wait for them to finish
+        if isinstance(ret, Exception) and exception_check:
+            if not isinstance(ret, AbortedError):
+                # If AbortedError, all tasks have already been stopped.
+                # Got an error, so stop and wait all hook runners
                 for h in hook_spawned:
-                    h.spawned.wait(timeout)
-                raise ret
+                    h.stop()
+            # Wait for them to finish
+            for h in hook_spawned:
+                h.spawned.wait(timeout)
+            raise ret
         else:
             return_dict[hook.child.name] = ret
 

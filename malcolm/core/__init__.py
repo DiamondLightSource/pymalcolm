@@ -18,7 +18,6 @@ from .moduleutil import submodule_all
 from .part import Part, PartRegistrar, APartName
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
     ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos
-from .profiler import Profiler, ProfilerMode
 from .request import Request, PathRequest, Subscribe, Unsubscribe, Get, Put, Post
 from .response import Response, Delta, Update, Return, Error
 from .serializable import Serializable, deserialize_object, serialize_object, \

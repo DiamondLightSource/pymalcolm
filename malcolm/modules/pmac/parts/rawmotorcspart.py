@@ -52,7 +52,7 @@ class RawMotorCSPart(Part):
         self._update_value(ca_values[3], 1)
         # Setup monitor on rbvs
         self.monitors = ca.util.catools.camonitor(
-            self.rbvs, self._update_value, format=cca.util.atools.FORMAT_TIME,
+            self.rbvs, self._update_value, format=ca.util.catools.FORMAT_TIME,
             notify_disconnect=True)
 
     def disconnect(self):

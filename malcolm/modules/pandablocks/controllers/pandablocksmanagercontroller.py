@@ -70,11 +70,11 @@ class PandABlocksManagerController(ManagerController):
             self._stop_queue = Queue()
             if self.client.started:
                 self.client.stop()
-            self.client.start(self.spawn, socket)
+            self.client.start(self.process.spawn, socket)
         if not self._blocks_parts:
             self._make_blocks_parts()
         if self._poll_spawned is None:
-            self._poll_spawned = self.spawn(self._poll_loop)
+            self._poll_spawned = self.process.spawn(self._poll_loop)
 
     def do_disable(self):
         super(PandABlocksManagerController, self).do_disable()

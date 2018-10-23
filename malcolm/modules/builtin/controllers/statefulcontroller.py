@@ -133,9 +133,9 @@ class StatefulController(BasicController):
             func(*args, **kwargs)
             self.transition(end_state)
         except Exception as e:  # pylint:disable=broad-except
-            self.log.exception(
+            self.log.debug(
                 "Exception running %s %s %s transitioning from %s to %s",
-                func, args, kwargs, start_state, end_state)
+                func, args, kwargs, start_state, end_state, exc_info=True)
             self.go_to_error_state(e)
             raise
 
