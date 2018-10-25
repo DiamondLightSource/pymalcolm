@@ -71,7 +71,7 @@ class TestCAActionPart(unittest.TestCase):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", status_pv="spv",
             good_status="All Good", message_pv="mpv"))
-        catools.caget.side_effect = [caint(4)]
+        catools.caget.return_value = [caint(4)]
         c = StatefulController("mri")
         c.add_part(p)
         proc = Process("proc")
