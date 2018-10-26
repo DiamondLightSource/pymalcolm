@@ -95,9 +95,6 @@ class Process(Loggable):
         # Start just the given controller_list
         infos = self._run_hook(ProcessStartHook, controller_list,
                                timeout=timeout)
-        for mri, e in infos.items():
-            if isinstance(e, Exception):
-                self.log.error("Exception starting %s", mri)
         new_unpublished = set(
             info.mri for info in UnpublishedInfo.filter_values(infos))
         self._unpublished |= new_unpublished
@@ -121,8 +118,14 @@ class Process(Loggable):
         hooks = [hook(controller, **kwargs).set_spawn(self.spawn)
                  for controller in controller_list]
         hook_queue, hook_spawned = start_hooks(hooks)
-        return wait_hooks(
+        infos = wait_hooks(
             self.log, hook_queue, hook_spawned, timeout, exception_check=False)
+        problems = [mri for mri, e in infos.items()
+                    if isinstance(e, Exception)]
+        if problems:
+            self.log.warning(
+                "Problem running %s on %s", hook.__name__, problems)
+        return infos
 
     def stop(self, timeout=None):
         """Stop the process and wait for it to finish
