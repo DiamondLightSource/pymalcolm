@@ -33,10 +33,11 @@ else:
     long_ = int  # pylint:disable=invalid-name
 
 
+# This is faster than collections.OrderedDict but slower than ruamel.ordereddict
 class InsertionOrderedDict(dict):
     # Don't accept keyword args as they have no insertion order
     def __init__(self, seq=None):
-        super(InsertionOrderedDict, self).__init__()
+        dict.__init__(self)
         self._keys = []
         if seq:
             for k, v in seq:
@@ -56,7 +57,7 @@ class InsertionOrderedDict(dict):
 
     def pop(self, key, *args):
         try:
-            ret = super(InsertionOrderedDict, self).pop(key)
+            ret = dict.pop(self, key)
         except KeyError:
             if args:
                 return args[0]
@@ -71,7 +72,7 @@ class InsertionOrderedDict(dict):
             self[key]
         except KeyError:
             self._keys.append(key)
-        super(InsertionOrderedDict, self).__setitem__(key, value)
+        dict.__setitem__(self, key, value)
 
     def __iter__(self):
         return iter(self._keys)
@@ -81,7 +82,7 @@ class InsertionOrderedDict(dict):
             return self[k]
         except KeyError:
             self._keys.append(k)
-            super(InsertionOrderedDict, self).__setitem__(k, d)
+            dict.__setitem__(self, k, d)
             return d
 
     def update(self, d):

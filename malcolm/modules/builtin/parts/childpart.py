@@ -200,7 +200,11 @@ class ChildPart(Part):
         for field in set(new_fields) - existing_fields:
             attr = getattr(child, field)
             if isinstance(attr, Attribute):
-                port_info = Port.port_tag_details(attr.meta.tags)
+                # Cache tags here
+                tags = attr.meta.tags
+                # Check if the attribute has any port tags, and store for
+                # when we are asked for LayoutInfo
+                port_info = Port.port_tag_details(tags)
                 if port_info:
                     is_source, port, extra = port_info
                     if is_source:
@@ -211,27 +215,26 @@ class ChildPart(Part):
                             name=field, port=port, disconnected_value=extra,
                             value=attr.value)
                     self.port_infos[field] = info
-            if isinstance(attr, Attribute) and get_config_tag(attr.meta.tags):
-                if self.config_subscriptions:
-                    new_id = max(self.config_subscriptions) + 1
-                else:
-                    new_id = 1
-                subscribe = Subscribe(id=new_id,
-                                      path=[self.mri, field, "value"])
-                subscribe.set_callback(self.update_part_modified)
-                self.config_subscriptions[new_id] = subscribe
-                # Signal that any change we get is a difference
-                if field not in self.saved_structure:
-                    self.saved_structure[field] = None
-                spawned.append(
-                    self.child_controller.handle_request(subscribe))
+                # If we are config tagged then subscribe so we can calculate
+                # if we are modified
+                if get_config_tag(tags):
+                    if self.config_subscriptions:
+                        new_id = max(self.config_subscriptions) + 1
+                    else:
+                        new_id = 1
+                    subscribe = Subscribe(id=new_id,
+                                          path=[self.mri, field, "value"])
+                    subscribe.set_callback(self.update_part_modified)
+                    self.config_subscriptions[new_id] = subscribe
+                    # Signal that any change we get is a difference
+                    if field not in self.saved_structure:
+                        self.saved_structure[field] = None
+                    spawned.append(
+                        self.child_controller.handle_request(subscribe))
 
-        # Wait for the first update to come in
+        # Wait for the first update to come in for every subscription
         for s in spawned:
             s.wait()
-
-        # Put data on the queue, so if spawns are handled out of order we
-        # still get the most up to date data
         port_infos = [
             self.port_infos[f] for f in new_fields if f in self.port_infos]
         self.registrar.report(PartExportableInfo(new_fields, port_infos))

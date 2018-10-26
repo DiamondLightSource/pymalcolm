@@ -66,8 +66,6 @@ class ManagerController(StatefulController):
         self.part_modified = {}  # type: Dict[Part, PartModifiedInfo]
         # The attributes our part has published
         self.our_config_attributes = {}  # type: Dict[str, AttributeModel]]
-        # Whether to do updates
-        self._do_update = True
         # The reportable infos we are listening for
         self.info_registry.add_reportable(
             PartModifiedInfo, self.update_modified)
@@ -242,21 +240,25 @@ class ManagerController(StatefulController):
             if part:
                 self.part_exportable[part] = info.names
                 self.port_info[part.name] = info.port_infos
-            # Find the exportable fields for each visible part
-            names = []
-            for part in self.parts.values():
-                fields = self.part_exportable.get(part, [])
-                for attr_name in fields:
-                    names.append("%s.%s" % (part.name, attr_name))
-            changed_names = set(names).symmetric_difference(
-                self.exports.meta.elements["source"].choices)
-            changed_exports = changed_names.intersection(
-                self.exports.value.source)
-            self.exports.meta.elements["source"].set_choices(names)
-            # Update the block endpoints if anything currently exported is
-            # added or deleted
-            if changed_exports:
-                self.update_block_endpoints()
+            # If we haven't saved visibility yet these have been called
+            # during do_init, so don't update block endpoints yet, this will
+            # be done as a batch at the end of do_init
+            if self.saved_visibility is not None:
+                # Find the exportable fields for each visible part
+                names = []
+                for part in self.parts.values():
+                    fields = self.part_exportable.get(part, [])
+                    for attr_name in fields:
+                        names.append("%s.%s" % (part.name, attr_name))
+                changed_names = set(names).symmetric_difference(
+                    self.exports.meta.elements["source"].choices)
+                changed_exports = changed_names.intersection(
+                    self.exports.value.source)
+                self.exports.meta.elements["source"].set_choices(names)
+                # Update the block endpoints if anything currently exported is
+                # added or deleted
+                if changed_exports:
+                    self.update_block_endpoints()
 
     def update_block_endpoints(self):
         if self._current_part_fields:
