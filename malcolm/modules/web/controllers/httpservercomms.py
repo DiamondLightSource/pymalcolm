@@ -50,7 +50,6 @@ class HTTPServerComms(builtin.controllers.ServerComms):
                 handler_info.kwargs))
         self._application = Application(handlers)
         self._server = HTTPServer(self._application)
-        self._start_server()
 
     def _start_server(self):
         if not self._server_started:
@@ -75,6 +74,8 @@ class HTTPServerComms(builtin.controllers.ServerComms):
         # type: (APublished) -> None
         self._published = published
         self.blocks.set_value(published)
+        # Start server if not already started
+        self._start_server()
 
     def update_request_received(self, part, info):
         # type: (Part, builtin.infos.RequestInfo) -> None
