@@ -183,7 +183,7 @@ def try_prepare_locals(q, args):
 
 
 def main():
-    from malcolm.compat import queue, get_profiler_dir
+    from malcolm.compat import queue
     from malcolm.profiler import Profiler
 
     args = parse_args()
@@ -197,10 +197,7 @@ def main():
     atexit.register(listener.stop)
 
     # Setup profiler dir
-    profiledir = get_profiler_dir()
-    if not os.path.isdir(profiledir):
-        os.mkdir(profiledir)
-    profiler = Profiler(profiledir)
+    profiler = Profiler()
     profiler.start()
 
     # Import the Malcolm process

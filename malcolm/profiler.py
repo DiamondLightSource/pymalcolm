@@ -6,6 +6,8 @@ import os
 
 from enum import Enum
 
+from malcolm.compat import get_profiler_dir, get_thread_ident
+
 
 class ProfilerMode(Enum):
     # Profile modes for use in the interrupt func
@@ -16,11 +18,14 @@ class ProfilerMode(Enum):
 
 # A combination of plop.Collector and plot.Formatter
 class Profiler(object):
-    def __init__(self, dirname, mode=ProfilerMode.PROF, interval=0.0001):
-        # type: (str, ProfilerMode, float) -> None
+    def __init__(self, dirname=None, mode=ProfilerMode.PROF):
+        # type: (str, ProfilerMode) -> None
+        if not dirname:
+            dirname = get_profiler_dir()
+        if not os.path.isdir(dirname):
+            os.mkdir(dirname)
         self.dirname = dirname
         self.mode = mode
-        self.interval = interval
         self.start_time = None
         self.running = False
         self.stopping = False
@@ -30,8 +35,6 @@ class Profiler(object):
         signal.siginterrupt(sig, False)
 
     def handler(self, sig, current_frame):
-        from malcolm.compat import get_thread_ident
-
         if self.stopping:
             # Told to stop, cancel timer and return
             timer = self.mode.value[0]
@@ -50,13 +53,14 @@ class Profiler(object):
                     frame = frame.f_back
                 self.stacks.append(frames)
 
-    def start(self):
+    def start(self, interval=0.001):
         assert not self.running, "Profiler already started"
         self.start_time = time.time()
+        self.stopping = False
         self.running = True
         self.stacks = []
         timer = self.mode.value[0]
-        signal.setitimer(timer, self.interval, self.interval)
+        signal.setitimer(timer, interval, interval)
 
     def stop(self, filename=None):
         assert self.running, "Profiler already stopped"

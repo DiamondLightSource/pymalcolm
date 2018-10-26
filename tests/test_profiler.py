@@ -58,8 +58,8 @@ class ProfilerTest(unittest.TestCase):
         def c(end):
             while time.time() < end: pass
 
-        profiler = Profiler("/tmp", interval=0.01)
-        profiler.start()
+        profiler = Profiler("/tmp")
+        profiler.start(interval=0.01)
         a(time.time() + 0.1)
         b(time.time() + 0.2)
         c(time.time() + 0.3)
