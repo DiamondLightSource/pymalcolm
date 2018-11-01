@@ -42,7 +42,7 @@ def make_process():
         description="Interactive shell for malcolm")
     parser.add_argument(
         '--client', '-c',
-        help="Add a client to given server, like ws://localhost:8080 or pva")
+        help="Add a client to given server, like ws://localhost:8008 or pva")
     parser.add_argument(
         '--logcfg', help="Logging dict config in JSON or YAML file")
     parser.add_argument(

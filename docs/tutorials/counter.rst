@@ -132,7 +132,7 @@ with this counter block and see how it works. Let's launch our demo again::
     Welcome to iMalcolm.
 
     self.mri_list:
-        ['localhost:8080']
+        ['localhost:8008']
 
     Try:
     hello = self.block_view("HELLO")
@@ -144,7 +144,7 @@ with this counter block and see how it works. Let's launch our demo again::
 
     or
 
-    self.make_proxy("localhost:8080", "HELLO")
+    self.make_proxy("localhost:8008", "HELLO")
     print self.block_view("HELLO").greet("me")
 
 

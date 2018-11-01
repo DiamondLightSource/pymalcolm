@@ -268,7 +268,7 @@ Let's run up the example and give it a go::
 
     or
 
-    self.make_proxy("localhost:8080", "HELLO")
+    self.make_proxy("localhost:8008", "HELLO")
     print self.block_view("HELLO").greet("me")
 
 
