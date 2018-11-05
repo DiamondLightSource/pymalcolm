@@ -254,10 +254,7 @@ if __name__ == "__main__":
 
     require("tornado", "numpy", "ruamel.yaml", "cothread==2.14", "vdsgen>=0.3",
             "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py>=2.8",
-            "annotypes>=0.9")
+            "annotypes>=0.9", "p4p==1.1a39")
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "annotypes"))
-    sys.path.append(
-        "/dls_sw/work/R3.14.12.3/support/pvaPy/lib/python/2.7/linux-x86_64")
-
     main()

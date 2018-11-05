@@ -46,6 +46,18 @@ Please follow `Google's python style`_ guide wherever possible.
 
 .. _Google's python style: https://google.github.io/styleguide/pyguide.html
 
+Docs follow the underlining convention::
+
+    Headling 1 (page title)
+    =======================
+
+    Heading 2
+    ---------
+
+    Heading 3
+    ~~~~~~~~~
+
+
 Building the docs
 -----------------
 
