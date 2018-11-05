@@ -74,5 +74,5 @@ Before a new release, please go through the following checklist:
 
 * Bump version in malcolm/version.py
 * Add a release note in CHANGELOG.rst
-* Git tag the version
+* Git tag the version with message from CHANGELOG
 * Push to github and travis will make a release on pypi
