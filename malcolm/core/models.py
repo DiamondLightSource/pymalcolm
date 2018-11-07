@@ -581,6 +581,8 @@ class StringMeta(VMeta):
         """Check if the value is valid returns it"""
         if value is None:
             return ""
+        elif isinstance(value, str_):
+            return value
         else:
             return str(value)
 
