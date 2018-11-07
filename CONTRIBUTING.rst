@@ -46,6 +46,18 @@ Please follow `Google's python style`_ guide wherever possible.
 
 .. _Google's python style: https://google.github.io/styleguide/pyguide.html
 
+Docs follow the underlining convention::
+
+    Headling 1 (page title)
+    =======================
+
+    Heading 2
+    ---------
+
+    Heading 3
+    ~~~~~~~~~
+
+
 Building the docs
 -----------------
 
@@ -62,5 +74,5 @@ Before a new release, please go through the following checklist:
 
 * Bump version in malcolm/version.py
 * Add a release note in CHANGELOG.rst
-* Git tag the version
+* Git tag the version with message from CHANGELOG
 * Push to github and travis will make a release on pypi

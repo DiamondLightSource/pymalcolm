@@ -28,7 +28,7 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
     def __init__(self,
                  mri,  # type: builtin.controllers.AMri
                  hostname="localhost",  # type: AHostname
-                 port=8080,  # type: APort
+                 port=8008,  # type: APort
                  connect_timeout=DEFAULT_TIMEOUT  # type: AConnectTimeout
                  ):
         # type: (...) -> None
@@ -149,7 +149,6 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         done_queue = Queue()
 
         def handle_response(response):
-            # type: (Response) -> None
             # Called from tornado
             if not isinstance(response, Delta):
                 # Return or Error is the end of our subscription, log and ignore

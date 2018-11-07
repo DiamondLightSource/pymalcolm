@@ -9,6 +9,27 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 Nothing yet
 
+`3-0a6`_ - 2018-11-05
+---------------------
+
+Fixed:
+
+- p4p imalcolm packaging and >= handling
+- Some documentation updates
+
+`3-0a5`_ - 2018-10-17
+---------------------
+
+Changed:
+
+- Web gui version (malcolmjs 1.3.1)
+
+Fixed:
+
+- Minor bug with loading non-existant attributes failing
+- Some internal issues in p4p pvAccess support
+- ProxyController refactor, moving some code to ClientComms
+
 
 `3-0a4`_ - 2018-09-24
 ---------------------
@@ -20,14 +41,14 @@ Added:
 Changed:
 
 - PVAccess library from pvaPy to p4p. This means that monitor deltas and RPC
-errors now work as expected
+  errors now work as expected
 
 Fixed:
 
 - PMAC trajectory pause waits for long enough to get GPIO signals
 - MotorInfo.make_velocity_profile now works with small distances, zero
-velocities, and a min_time. A floating point rounding error was previously
-making it return less than min_time
+  velocities, and a min_time. A floating point rounding error was previously
+  making it return less than min_time
 - Make all areaDetectors wait on stop() for the acquire light to go out
 - Updated DEFAULT_TIMEOUT to 10s
 - Fixed pmac so that stretched pulses on a PROFILE_POINTS boundary work
@@ -161,7 +182,9 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a4...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a6...HEAD
+.. _3-0a6: https://github.com/dls-controls/pymalcolm/compare/3-0a5...3-0a6
+.. _3-0a5: https://github.com/dls-controls/pymalcolm/compare/3-0a4...3-0a5
 .. _3-0a4: https://github.com/dls-controls/pymalcolm/compare/3-0a3...3-0a4
 .. _3-0a3: https://github.com/dls-controls/pymalcolm/compare/3-0a2...3-0a3
 .. _3-0a2: https://github.com/dls-controls/pymalcolm/compare/3-0a1...3-0a2

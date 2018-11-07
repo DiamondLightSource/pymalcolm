@@ -9,5 +9,5 @@ class TestHTTPServerComms(unittest.TestCase):
         self.o = HTTPServerComms(mri="mri")
 
     def test_init(self):
-        assert self.o.port == 8080
+        assert self.o.port == 8008
         assert self.o.mri == "mri"

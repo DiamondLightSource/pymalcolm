@@ -25,7 +25,7 @@ class RestfulHandler(RequestHandler):
         self.report_request(request)
 
     # curl --data 'parameters={"name": "me"}' \
-    #     http://localhost:8080/blocks/hello/say_hello
+    #     http://localhost:8008/blocks/hello/say_hello
     @asynchronous
     def post(self, endpoint_str):
         # called from tornado thread

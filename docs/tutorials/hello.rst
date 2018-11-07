@@ -35,7 +35,7 @@ You will see 4 entries in the file. The first 3 entries are instantiating Blocks
 that have already been defined. These Blocks each take a single `mri_` (Malcolm
 Resource Identifier) argument which tells the Process how clients will address
 that Block. The last entry creates a ServerComms Block which starts an HTTP
-server on port 8080 and listen for websocket connections from another Malcolm
+server on port 8008 and listen for websocket connections from another Malcolm
 process or a web GUI.
 
 .. highlight:: ipython
@@ -69,7 +69,7 @@ Let's run it now::
 
     or
 
-    self.make_proxy("localhost:8080", "HELLO")
+    self.make_proxy("localhost:8008", "HELLO")
     self.block_view("HELLO").greet("me")
 
 
@@ -124,7 +124,7 @@ on it::
     Welcome to iMalcolm.
 
     self.mri_list:
-        ['localhost:8080']
+        ['localhost:8008']
 
     Try:
     hello = self.block_view("HELLO")
@@ -136,11 +136,11 @@ on it::
 
     or
 
-    self.make_proxy("localhost:8080", "HELLO")
+    self.make_proxy("localhost:8008", "HELLO")
     self.block_view("HELLO").greet("me")
 
 
-    In [1]: self.make_proxy("localhost:8080", "HELLO")
+    In [1]: self.make_proxy("localhost:8008", "HELLO")
 
     In [2]: self.block_view("HELLO").greet("me")
     Out[2]: u'Hello me'

@@ -21,7 +21,7 @@ with Anno("TCP port number to run up under"):
 class HTTPServerComms(builtin.controllers.ServerComms):
     """A class for communication between browser and server"""
 
-    def __init__(self, mri, port=8080):
+    def __init__(self, mri, port=8008):
         # type: (builtin.controllers.AMri, APort) -> None
         super(HTTPServerComms, self).__init__(mri)
         self.port = port

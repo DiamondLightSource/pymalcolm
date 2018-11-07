@@ -5,7 +5,7 @@ Malcolm is a middlelayer framework that implements high level configure/run
 behaviour of control system components like those used in continuous scans.
 This `repository`_ contains a Python implementation (pymalcolm) allowing the
 creation of Malcolm servers and clients. There is also a `malcolmjs`_
-JavaScript client and a `jmalcolm`_ Java client.
+JavaScript client and a Java client in `GDA`_.
 
 Malcolm was created as part of the `Mapping project`_ at `Diamond Light Source`_
 in order to improve the performance of continuous scanning.
@@ -66,9 +66,6 @@ pvAccess specific documentation. The `RunnableStates` statemachine will also
 be of interest.
 
 
-
-
-
 .. _installation_guide:
 
 Installation Guide
@@ -88,5 +85,7 @@ All optional modules are already installed and available
 .. _malcolmjs:
     https://github.com/dls-controls/malcolmjs
 
-.. _jmalcolm:
-    https://github.com/openGDA
+.. _Mapping project:
+    https://indico.esss.lu.se/event/357/session/8/contribution/63
+
+
