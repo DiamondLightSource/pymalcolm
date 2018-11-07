@@ -1,7 +1,8 @@
 import os
 
 from malcolm.compat import OrderedDict
-from malcolm.modules.builtin.parts import GroupPart, IconPart, TitlePart
+from malcolm.modules.builtin.parts import GroupPart, IconPart, TitlePart, \
+    HelpPart
 from malcolm.core import Widget, group_tag, Port, config_tag, \
     BooleanMeta, ChoiceMeta, NumberMeta, StringMeta, TableMeta
 from .pandablocksactionpart import PandABlocksActionPart
@@ -34,10 +35,11 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
 
 
 class PandABlocksMaker(object):
-    def __init__(self, client, block_name, block_data):
+    def __init__(self, client, block_name, block_data, doc_url_base):
         self.client = client
         self.block_name = block_name
         self.block_data = block_data
+        self.doc_url_base = doc_url_base
         self.parts = OrderedDict()
         # Make an icon
         self._make_icon_label()
@@ -92,6 +94,9 @@ class PandABlocksMaker(object):
             self.block_name[len(block_type):]
         part = TitlePart(value=label)
         self._add_part("label", part)
+        part = HelpPart("%s/build/%s_doc.html" % (
+            self.doc_url_base, block_type.lower()))
+        self._add_part("help", part)
 
     def _make_scale_offset(self, field_name):
         group = self._make_group("outputs")

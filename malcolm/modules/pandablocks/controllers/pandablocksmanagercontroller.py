@@ -26,6 +26,9 @@ with Anno("Hostname of the box"):
     AHostname = str
 with Anno("Port number of the TCP server control port"):
     APort = int
+with Anno("Documentation URL base"):
+    ADocUrlBase = str
+DOC_URL_BASE = "https://pandablocks-fpga.readthedocs.io/en/autogen"
 
 
 class PandABlocksManagerController(ManagerController):
@@ -37,10 +40,12 @@ class PandABlocksManagerController(ManagerController):
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
                  use_git=True,  # type: AUseGit
+                 doc_url_base=DOC_URL_BASE  # type: ADocUrlBase
                  ):
         # type: (...) -> None
         super(PandABlocksManagerController, self).__init__(
             mri, config_dir, initial_design, description, use_git)
+        self._doc_url_base = doc_url_base
         # {block_name: BlockData}
         self._blocks_data = {}
         # {block_name: {field_name: Part}}
@@ -150,7 +155,8 @@ class PandABlocksManagerController(ManagerController):
         mri = "%s:%s" % (self.mri, block_name)
 
         # Defer creation of parts to a block maker
-        maker = PandABlocksMaker(self.client, block_name, block_data)
+        maker = PandABlocksMaker(
+            self.client, block_name, block_data, self._doc_url_base)
 
         # Make the child controller and add it to the process
         controller = self._make_child_controller(maker.parts.values(), mri)

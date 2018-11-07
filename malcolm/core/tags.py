@@ -61,6 +61,7 @@ class Widget(Enum):
     LED = "led"  # On/Off LED indicator
     COMBO = "combo"  # Select from a number of choice values
     ICON = "icon"  # This field gives the URL for an icon for the whole Block
+    HELP = "help"  # Gives a URL for the help documentation for the Block
     GROUP = "group"  # Group node in a TreeView that other fields can attach to
     TABLE = "table"  # Table of rows. A list is a single column table
     CHECKBOX = "checkbox"  # A box that can be checked or not

@@ -20,10 +20,11 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         fields["DIVIDE"] = FieldData("param", "enum", "Divide output",
                                      ["/1", "/2", "/4"])
         fields["OUT"] = FieldData("pos_out", "", "Output", ["No", "Capture"])
-        o = PandABlocksMaker(self.client, "ADDER1", block_data)
+        o = PandABlocksMaker(self.client, "ADDER1", block_data, "/docs")
         assert list(o.parts) == [
             'icon',
             'label',
+            'help',
             'inputs',
             'INPA',
             'INPA.CURRENT',
@@ -133,10 +134,11 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         fields["INP"] = FieldData("bit_mux", "", "Input", ["X.OUT", "Y.OUT"])
         fields["OUT"] = FieldData("bit_out", "", "Output", [])
         fields["ERR_PERIOD"] = FieldData("read", "bit", "Error", [])
-        o = PandABlocksMaker(self.client, "PULSE2", block_data)
+        o = PandABlocksMaker(self.client, "PULSE2", block_data, "/docs")
         assert list(o.parts) == [
             'icon',
             'label',
+            'help',
             'parameters',
             'DELAY',
             'DELAY.UNITS',
@@ -148,6 +150,9 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             'OUT',
             'readbacks',
             'ERR_PERIOD']
+
+        help = o.parts['help']
+        assert help.attr.value == "/docs/build/pulse_doc.html"
 
         delay = o.parts["DELAY"]
         assert delay.block_name == "PULSE2"
