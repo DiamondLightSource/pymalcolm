@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from annotypes import TYPE_CHECKING, Anno, Sequence, overload
+from annotypes import TYPE_CHECKING, Anno, Sequence
 
 from malcolm.compat import OrderedDict
 from .context import Context
@@ -99,28 +99,19 @@ class Controller(Hookable):
     def changes_squashed(self):
         return self._notifier.changes_squashed
 
-    @overload
-    def make_view(self, context=None):
+    def block_view(self, context=None):
         # type: (Context) -> Block
-        pass
-
-    @overload
-    def make_view(self, context, data=None, child_name=None):
-        # type: (Context, Model, str) -> Any
-        pass
-
-    # The above aren't really functions, they are overloads for mypy
-    # noinspection PyRedeclaration
-    def make_view(self, context=None, data=None, child_name=None):
-        # type: (Context, Model, str) -> Any
-        # """Make a child View of data[child_name]"""
+        if context is None:
+            context = Context(self.process)
         with self._lock:
-            if context is None:
-                context = Context(self.process)
-            if data is None:
-                child = self._block
-            else:
-                child = data[child_name]
+            child_view = make_view(self, context, self._block)
+        return child_view
+
+    def make_view(self, context, data, child_name):
+        # type: (Context, Model, str) -> Any
+        """Make a child View of data[child_name]"""
+        with self._lock:
+            child = data[child_name]
             child_view = make_view(self, context, child)
         return child_view
 

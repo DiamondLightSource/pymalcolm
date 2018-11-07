@@ -35,7 +35,7 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
         inenc = self.process.add_controller.call_args_list[1][0][0]
         assert inenc.mri == "P:INENC"
         inenc.setup(self.process)
-        return pcap.make_view(), inenc.make_view()
+        return pcap.block_view(), inenc.block_view()
 
     def test_initial_changes(self):
         assert self.process.mock_calls == [

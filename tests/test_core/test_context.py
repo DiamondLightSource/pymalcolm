@@ -40,7 +40,7 @@ class TestContext(unittest.TestCase):
 
     def test_block_view(self):
         self.o.block_view("block")
-        self.controller.make_view.assert_called_once_with(ANY)
+        self.controller.block_view.assert_called_once_with(ANY)
 
     def test_put(self):
         self.o._q.put(Return(1, 33))

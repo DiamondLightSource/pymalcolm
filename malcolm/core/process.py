@@ -211,6 +211,5 @@ class Process(Loggable):
         # type: (str) -> Block
         """Get a Block view from a Controller with given mri"""
         controller = self.get_controller(mri)
-        context = Context(self)
-        block = controller.make_view(context)
+        block = controller.block_view()
         return block

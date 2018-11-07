@@ -172,7 +172,7 @@ class ChildPart(Part):
     def update_part_exportable(self, response):
         # type: (Response) -> None
         # Get a child context to check if we have a config field
-        child = self.child_controller.make_view()
+        child = self.child_controller.block_view()
         spawned = []
         if isinstance(response, Update):
             new_fields = response.value

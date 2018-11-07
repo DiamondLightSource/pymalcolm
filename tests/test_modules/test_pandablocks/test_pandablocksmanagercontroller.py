@@ -58,7 +58,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         # Using a mock, so setup these controllers
         for c in (pcomp, counter, ttlin):
             c.setup(self.process)
-        return pcomp.make_view(), counter.make_view(), ttlin.make_view()
+        return pcomp.block_view(), counter.block_view(), ttlin.block_view()
 
     def test_initial_changes(self):
         assert self.process.mock_calls == [

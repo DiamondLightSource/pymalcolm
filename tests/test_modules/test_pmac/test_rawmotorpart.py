@@ -71,7 +71,7 @@ class TestRawMotorPart(ChildTestCase):
 
         c.add_part(ValidatePart("validate"))
         self.process.add_controller(c)
-        c.make_view().validate(CompoundGenerator([], [], []))
+        c.block_view().validate(CompoundGenerator([], [], []))
         assert len(ValidatePart.data) == 1
         assert list(ValidatePart.data[0]) == ["scan"]
         assert len(ValidatePart.data[0]["scan"]) == 1

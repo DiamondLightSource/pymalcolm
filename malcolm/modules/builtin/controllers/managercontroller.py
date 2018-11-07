@@ -511,7 +511,7 @@ class ManagerController(StatefulController):
         # Set other attributes
         our_values = {k: v for k, v in attributes.items()
                       if k in self.our_config_attributes}
-        block = self.make_view()
+        block = self.block_view()
         block.put_attribute_values(our_values)
         # Run the load hook to get parts to load their own structure
         self.run_hooks(

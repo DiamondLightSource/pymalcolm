@@ -7,6 +7,7 @@ import getpass
 import json
 import os
 import sys
+import time
 
 
 def make_async_logging(log_config):
@@ -198,7 +199,13 @@ def main():
 
     # Setup profiler dir
     profiler = Profiler()
-    profiler.start()
+    # profiler.start()
+
+    # If using p4p then set cothread to use the right ca libs before it is
+    try:
+        import epicscorelibs.path.cothread
+    except ImportError:
+        pass
 
     # Import the Malcolm process
     q = queue.Queue()
@@ -211,28 +218,41 @@ def main():
 
     # Now its safe to import Malcolm and cothread
     import cothread
-    from malcolm.core import Context, Queue
+
+    from malcolm.core import Context
     from malcolm.modules.builtin.blocks import proxy_block
 
     # Make a user context
     class UserContext(Context):
-        def make_queue(self):
-            return Queue(user_facing=True)
-
         def post(self, path, params=None, timeout=None, event_timeout=None):
             try:
                 return super(UserContext, self).post(
                     path, params, timeout, event_timeout)
             except KeyboardInterrupt:
                 self.post([path[0], "abort"])
-                raise
 
         def make_proxy(self, comms, mri):
             # Need to do this in cothread's thread
             cothread.CallbackResult(
-                process.add_controller, proxy_block(comms=comms, mri=mri)[-1])
+                self._process.add_controller,
+                proxy_block(comms=comms, mri=mri)[-1])
+
+        def block_view(self, mri):
+            return cothread.CallbackResult(
+                super(UserContext, self).block_view, mri)
+
+        def make_view(self, controller, data, child_name):
+            return cothread.CallbackResult(
+                super(UserContext, self).make_view,
+                controller, data, child_name)
+
+        def handle_request(self, controller, request):
+            cothread.CallbackResult(
+                super(UserContext, self).handle_request,
+                controller, request)
 
     self = UserContext(process)
+
     header = """Welcome to iMalcolm.
 
 self.mri_list:

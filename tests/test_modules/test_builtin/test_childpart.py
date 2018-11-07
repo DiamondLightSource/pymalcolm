@@ -126,8 +126,8 @@ class TestChildPart(unittest.TestCase):
 
     def test_sever_all_sink_ports(self):
         b = self.p.block_view("mainBlock")
-        b1, b2, b3 = (self.c1.make_view(), self.c2.make_view(),
-                      self.c3.make_view())
+        b1, b2, b3 = (self.c1.block_view(), self.c2.block_view(),
+                      self.c3.block_view())
         new_layout = dict(
             name=["partchild1"], mri=[""], x=[0], y=[0], visible=[False])
         b.layout.put_value(new_layout)
@@ -136,7 +136,7 @@ class TestChildPart(unittest.TestCase):
         assert b3.sinkportConnector.value == 'Connector2'
 
     def test_load_save(self):
-        b1 = self.c1.make_view()
+        b1 = self.c1.block_view()
         context = Context(self.p)
         structure1 = self.p1.save(context)
         expected = dict(sinkportConnector="Connector3")

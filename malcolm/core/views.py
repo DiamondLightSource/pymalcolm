@@ -45,7 +45,7 @@ def _make_get_property(cls, endpoint):
     def make_child_view(self):
         # Get the child of self._data. Needs to be done by the controller to
         # make sure lock is taken and we get consistent data
-        child = self._controller.make_view(self._context, self._data, endpoint)
+        child = self._context.make_view(self._controller, self._data, endpoint)
         return child
 
     setattr(cls, endpoint, make_child_view)
@@ -69,11 +69,11 @@ class Attribute(View):
 
     @property
     def meta(self):
-        return self._controller.make_view(self._context, self._data, "meta")
+        return self._context.make_view(self._controller, self._data, "meta")
 
     @property
     def value(self):
-        return self._controller.make_view(self._context, self._data, "value")
+        return self._context.make_view(self._controller, self._data, "value")
 
     def put_value(self, value, timeout=None):
         """Put a value to the Attribute and wait for completion"""
@@ -89,15 +89,15 @@ class Attribute(View):
 
     @property
     def alarm(self):
-        return self._controller.make_view(self._context, self._data, "alarm")
+        return self._context.make_view(self._controller, self._data, "alarm")
 
     # noinspection PyPep8Naming
     # timeStamp is camelCase to maintain compatibility with EPICS normative
     # types
     @property
     def timeStamp(self):
-        return self._controller.make_view(
-            self._context, self._data, "timeStamp")
+        return self._context.make_view(
+            self._controller, self._data, "timeStamp")
 
     def __repr__(self):
         return "<%s value=%r>" % (self.__class__.__name__, self.value)
@@ -128,33 +128,33 @@ class Method(View):
 
     @property
     def takes(self):
-        return self._controller.make_view(self._context, self._data, "takes")
+        return self._context.make_view(self._controller, self._data, "takes")
 
     @property
     def defaults(self):
-        return self._controller.make_view(self._context, self._data, "defaults")
+        return self._context.make_view(self._controller, self._data, "defaults")
 
     @property
     def description(self):
-        return self._controller.make_view(
-            self._context, self._data, "description")
+        return self._context.make_view(
+            self._controller, self._data, "description")
 
     @property
     def tags(self):
-        return self._controller.make_view(self._context, self._data, "tags")
+        return self._context.make_view(self._controller, self._data, "tags")
 
     @property
     def writeable(self):
-        return self._controller.make_view(
-            self._context, self._data, "writeable")
+        return self._context.make_view(
+            self._controller, self._data, "writeable")
 
     @property
     def label(self):
-        return self._controller.make_view(self._context, self._data, "label")
+        return self._context.make_view(self._controller, self._data, "label")
 
     @property
     def returns(self):
-        return self._controller.make_view(self._context, self._data, "returns")
+        return self._context.make_view(self._controller, self._data, "returns")
 
 
 class Block(View):
@@ -170,7 +170,7 @@ class Block(View):
         # type: (str) -> View
         # Get the child of self._data. Needs to be done by the controller to
         # make sure lock is taken and we get consistent data
-        child = self._controller.make_view(self._context, self._data, item)
+        child = self._context.make_view(self._controller, self._data, item)
         return child
 
     @property

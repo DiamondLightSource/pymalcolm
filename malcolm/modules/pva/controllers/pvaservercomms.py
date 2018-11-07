@@ -51,7 +51,7 @@ class BlockHandler(Handler):
                 assert method, "No 'method' in pvRequest:\n%s" % op.pvRequest()
             parameters = convert_value_to_dict(value)
         path = [self.controller.mri, method]
-        view = self.controller.make_view()[method]
+        view = self.controller.block_view()[method]
         assert isinstance(view, Method), \
             "%s.%s is not a Method so cannot do RPC" % tuple(path)
         add_wrapper = method_return_unpacked() in view.tags

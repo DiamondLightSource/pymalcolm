@@ -1,5 +1,6 @@
 import logging
 import signal
+import time
 
 from annotypes import TYPE_CHECKING
 import cothread
@@ -69,39 +70,26 @@ class Spawned(object):
 
 class Queue(object):
     """Threadsafe and cothreadsafe queue with gets in calling thread"""
-    INTERRUPTED = object()
-
-    def __init__(self, user_facing=False):
-        self.user_facing = user_facing
-        self._event_queue = cothread.EventQueue()
-        if user_facing:
-            # Install a signal handler that will make sure we are the
-            # thing that is interrupted
-            def signal_exception(signum, frame):
-                self._event_queue.Signal(self.INTERRUPTED)
-
-            signal.signal(signal.SIGINT, signal_exception)
+    def __init__(self):
+        if get_thread_ident() == cothread.scheduler_thread_id:
+            self._event_queue = cothread.EventQueue()
+        else:
+            self._event_queue = cothread.ThreadedEventQueue()
 
     def get(self, timeout=None):
-        if get_thread_ident() != cothread.scheduler_thread_id:
-            # Not in cothread's thread, so need to use CallbackResult
-            return cothread.CallbackResult(self.get, timeout)
-        else:
-            # In cothread's thread
+        # In cothread's thread
+        start = time.time()
+        remaining_timeout = timeout
+        while remaining_timeout is None or remaining_timeout >= 0:
             try:
-                ret = self._event_queue.Wait(timeout=timeout)
+                return self._event_queue.Wait(timeout=remaining_timeout)
             except cothread.Timedout:
-                raise TimeoutError("Queue().get() timed out")
-            else:
-                if ret is self.INTERRUPTED:
-                    raise KeyboardInterrupt()
-                else:
-                    return ret
+                if timeout is not None:
+                    remaining_timeout = start + timeout - time.time()
+                    if remaining_timeout < 0:
+                        raise TimeoutError("Queue().get() timed out")
+        raise TimeoutError("Queue().get() given negative timeout")
 
     def put(self, value):
-        if cothread.scheduler_thread_id != get_thread_ident():
-            # Not in cothread's thread, so need to use Callback
-            cothread.Callback(self._event_queue.Signal, value)
-        else:
-            # In cothread's thread
-            self._event_queue.Signal(value)
+        # In cothread's thread
+        self._event_queue.Signal(value)

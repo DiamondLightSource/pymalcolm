@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from typing import Callable, Any, List, Union
     from .process import Process
     from .views import Block
+    from .controller import Controller
+    from .models import Model
 
 
 class When(object):
@@ -66,7 +68,7 @@ class Context(object):
 
     def __init__(self, process):
         # type: (Process) -> None
-        self._q = self.make_queue()
+        self._q = Queue()
         # Func to call just before requests are dispatched
         self._notify_dispatch_request = None
         self._notify_args = ()
@@ -78,10 +80,6 @@ class Context(object):
         self._pending_unsubscribes = {}  # dict {Future: Subscribe}
         # If not None, wait for this before listening to STOPs
         self._sentinel_stop = None
-
-    def make_queue(self):
-        # type: () -> Queue
-        return Queue()
 
     @property
     def mri_list(self):
@@ -103,8 +101,12 @@ class Context(object):
             Block: The block we control
         """
         controller = self.get_controller(mri)
-        block = controller.make_view(weakref.proxy(self))
+        block = controller.block_view(weakref.proxy(self))
         return block
+
+    def make_view(self, controller, data, child_name):
+        # type: (Controller, Model, str) -> Any
+        return controller.make_view(self, data, child_name)
 
     def _get_next_id(self):
         new_id = self._next_id
@@ -128,10 +130,13 @@ class Context(object):
         controller = self.get_controller(request.path[0])
         if self._notify_dispatch_request:
             self._notify_dispatch_request(request, *self._notify_args)
+        self.handle_request(controller, request)
+        return future
+
+    def handle_request(self, controller, request):
         controller.handle_request(request)
         # Yield control to allow the request to be handled
         cothread.Yield()
-        return future
 
     def ignore_stops_before_now(self):
         """Ignore any stops received before this point"""
@@ -246,7 +251,7 @@ class Context(object):
         request = Unsubscribe(subscribe.id)
         request.set_callback(self._q.put)
         controller = self.get_controller(subscribe.path[0])
-        controller.handle_request(request)
+        self.handle_request(controller, request)
 
     def unsubscribe_all(self):
         """Send an unsubscribe for all active subscriptions"""

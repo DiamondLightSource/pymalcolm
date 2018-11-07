@@ -24,7 +24,7 @@ class TestSimultaneousAxesPart(unittest.TestCase):
         c = RunnableController("mri", "/tmp")
         c.add_part(self.o)
         self.process.add_controller(c)
-        self.b = c.make_view()
+        self.b = c.block_view()
 
     def test_good(self):
         self.b.simultaneousAxes.put_value(["x", "y"])

@@ -423,7 +423,7 @@ class TestPVAServer(unittest.TestCase):
             counter = self.ctxt.get("TESTCOUNTER.counter").value
         else:
             # Get it directly from the data structure
-            counter = self.counter.make_view().counter.value
+            counter = self.counter.block_view().counter.value
         self.assertEqual(counter, value)
 
     # Equivalent to:
