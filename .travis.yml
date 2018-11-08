@@ -1,4 +1,3 @@
-sudo: false
 language: python
 python:
   - "2.7"
@@ -13,6 +12,9 @@ addons:
   apt:
     packages:
       - libhdf5-serial-dev
+      - gdb
+      - python-dbg
+      - python3-dbg
 
 cache:
   directories:
@@ -27,13 +29,14 @@ install:
   - pip install "setuptools>=36"
   - pip install -r requirements/test.txt
   - pip install codecov
-  - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages  
+  - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
+  - find /usr -name 'python*-gdb.py'
   - python setup.py bdist_egg
-  
+
 # command to run tests
 script:
-  - pytest --cov=malcolm --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' tests
+  - gdb -batch -return-child-result -ex run -ex bt -ex "info threads" -ex "thread apply all bt" -ex quit --args python -m pytest --cov=malcolm --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' tests
 
 # submit coverage
 after_script:

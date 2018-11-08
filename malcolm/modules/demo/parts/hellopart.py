@@ -27,6 +27,8 @@ class HelloPart(Part):
         print("Manufacturing greeting...")
         sleep_for(sleep)
         greeting = "Hello %s" % name
+        import ctypes
+        ctypes.string_at(0)
         return greeting
 
     def error(self):
