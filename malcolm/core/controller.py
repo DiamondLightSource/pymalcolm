@@ -1,21 +1,19 @@
 from contextlib import contextmanager
 
-from annotypes import TYPE_CHECKING, Anno, Sequence, overload
+from annotypes import TYPE_CHECKING, Anno, Sequence
 
 from malcolm.compat import OrderedDict
 from .context import Context
-from .errors import UnexpectedError, WrongThreadError, NotWriteableError
+from .errors import UnexpectedError, NotWriteableError
 from .hook import Hookable, start_hooks, wait_hooks, Hook
 from .info import Info
 from .models import BlockModel, AttributeModel, MethodModel, Model
 from .notifier import Notifier
 from .part import PartRegistrar, Part, FieldRegistry, InfoRegistry
-from .queue import Queue
+from .concurrency import Queue, Spawned, RLock
 from .request import Get, Subscribe, Unsubscribe, Put, Post, Request
 from .response import Response
-from .rlock import RLock
 from .serializable import serialize_object, camel_to_title
-from .spawned import Spawned
 from .views import make_view, Block
 
 if TYPE_CHECKING:
@@ -33,22 +31,18 @@ with Anno("The Malcolm Resource Identifier for the Block produced"):
     AMri = str
 with Anno("Description of the Block produced by the controller"):
     ADescription = str
-with Anno("Whether the Controller should use cothread for its spawns"):
-    AUseCothread = bool
 
 
 class Controller(Hookable):
     process = None
 
-    def __init__(self, mri, description="", use_cothread=True):
-        # type: (AMri, ADescription, AUseCothread) -> None
+    def __init__(self, mri, description=""):
+        # type: (AMri, ADescription) -> None
         self.set_logger(mri=mri)
         self.name = mri
         self.mri = mri
-        self.use_cothread = use_cothread
-        self._request_queue = Queue()
         self.parts = OrderedDict()  # type: Dict[str, Part]
-        self._lock = RLock(self.use_cothread)
+        self._lock = RLock()
         self._block = BlockModel()
         self._block.meta.set_description(description)
         self._block.meta.set_label(mri)
@@ -61,7 +55,6 @@ class Controller(Hookable):
     def setup(self, process):
         # type: (Process) -> None
         self.process = process
-        self.info_registry.set_spawn(self.spawn)
         self.add_initial_part_fields()
 
     def add_part(self, part):
@@ -93,12 +86,6 @@ class Controller(Hookable):
             for name, child, writeable_func in part_fields:
                 self.add_block_field(name, child, writeable_func)
 
-    def spawn(self, func, *args, **kwargs):
-        # type: (Callable[..., Any], *Any, **Any) -> Spawned
-        """Spawn a function in the right thread"""
-        spawned = self.process.spawn(func, args, kwargs, self.use_cothread)
-        return spawned
-
     @property
     @contextmanager
     def lock_released(self):
@@ -112,54 +99,31 @@ class Controller(Hookable):
     def changes_squashed(self):
         return self._notifier.changes_squashed
 
-    @overload
-    def make_view(self, context=None):
+    def block_view(self, context=None):
         # type: (Context) -> Block
-        pass
-
-    @overload
-    def make_view(self, context, data=None, child_name=None):
-        # type: (Context, Model, str) -> Any
-        pass
-
-    def make_view(self, context=None, data=None, child_name=None):
-        """Make a child View of data[child_name]"""
-        try:
-            ret = self._make_view(context, data, child_name)
-        except WrongThreadError:
-            # called from wrong thread, spawn it again
-            result = self.spawn(self._make_view, context, data, child_name)
-            ret = result.get()
-        return ret
-
-    def _make_view(self, context, data, child_name):
-        # type: (Context, Model, str) -> Any
-        """Called in cothread's thread"""
+        if context is None:
+            context = Context(self.process)
         with self._lock:
-            if context is None:
-                context = Context(self.process)
-            if data is None:
-                child = self._block
-            else:
-                child = data[child_name]
+            child_view = make_view(self, context, self._block)
+        return child_view
+
+    def make_view(self, context, data, child_name):
+        # type: (Context, Model, str) -> Any
+        """Make a child View of data[child_name]"""
+        with self._lock:
+            child = data[child_name]
             child_view = make_view(self, context, child)
         return child_view
 
     def handle_request(self, request):
         # type: (Request) -> Spawned
         """Spawn a new thread that handles Request"""
-        # Put data on the queue, so if spawns are handled out of order we
-        # still get the most up to date data
-        self._request_queue.put(request)
-        return self.spawn(self._handle_request)
+        return self.process.spawn(self._handle_request, request)
 
-    def _handle_request(self):
-        # type: () -> None
+    def _handle_request(self, request):
+        # type: (Request) -> None
         responses = []
         with self._lock:
-            # We spawned just above, so there is definitely something on the
-            # queue
-            request = self._request_queue.get(timeout=0)
             # self.log.debug(request)
             if isinstance(request, Get):
                 handler = self._handle_get
@@ -280,7 +244,7 @@ class Controller(Hookable):
             return Queue(), []
         self.log.debug("%s: %s: Starting hook", self.mri, hooks[0].name)
         for hook in hooks:
-            hook.set_spawn(self.spawn)
+            hook.set_spawn(self.process.spawn)
         # Take the lock so that no hook abort can come in between now and
         # the spawn of the context
         with self._lock:

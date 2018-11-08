@@ -35,10 +35,10 @@ class TestAttribute(unittest.TestCase):
         assert f == self.context.put_async.return_value
 
     def test_repr(self):
-        self.controller.make_view.return_value = "foo"
+        self.context.make_view.return_value = "foo"
         assert repr(self.o) == "<Attribute value='foo'>"
-        self.controller.make_view.assert_called_once_with(
-            self.context, self.data, "value")
+        self.context.make_view.assert_called_once_with(
+            self.controller, self.data, "value")
 
 
 class TestBlock(unittest.TestCase):
@@ -91,7 +91,7 @@ class TestMethod(unittest.TestCase):
         self.controller = Controller("mri")
         self.controller.add_part(self.part)
         self.process.add_controller(self.controller)
-        self.block = self.controller.make_view()
+        self.block = self.controller.block_view()
         self.process.start()
 
     def tearDown(self):
@@ -124,9 +124,9 @@ class TestView(unittest.TestCase):
 
     def test_get_view(self):
         v = self.o.description
-        self.controller.make_view.assert_called_once_with(
-            self.context, self.data, "description")
-        assert v == self.controller.make_view.return_value
+        self.context.make_view.assert_called_once_with(
+            self.controller, self.data, "description")
+        assert v == self.context.make_view.return_value
 
     def test_second_subclass(self):
         data2 = {"a": 2}

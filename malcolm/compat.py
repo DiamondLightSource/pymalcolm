@@ -1,7 +1,6 @@
 import threading
 import logging
 import sys
-import time
 from xml.etree import cElementTree as ET
 import os
 
@@ -34,10 +33,11 @@ else:
     long_ = int  # pylint:disable=invalid-name
 
 
+# This is faster than collections.OrderedDict but slower than ruamel.ordereddict
 class InsertionOrderedDict(dict):
     # Don't accept keyword args as they have no insertion order
     def __init__(self, seq=None):
-        super(InsertionOrderedDict, self).__init__()
+        dict.__init__(self)
         self._keys = []
         if seq:
             for k, v in seq:
@@ -57,7 +57,7 @@ class InsertionOrderedDict(dict):
 
     def pop(self, key, *args):
         try:
-            ret = super(InsertionOrderedDict, self).pop(key)
+            ret = dict.pop(self, key)
         except KeyError:
             if args:
                 return args[0]
@@ -72,7 +72,7 @@ class InsertionOrderedDict(dict):
             self[key]
         except KeyError:
             self._keys.append(key)
-        super(InsertionOrderedDict, self).__setitem__(key, value)
+        dict.__setitem__(self, key, value)
 
     def __iter__(self):
         return iter(self._keys)
@@ -82,7 +82,7 @@ class InsertionOrderedDict(dict):
             return self[k]
         except KeyError:
             self._keys.append(k)
-            super(InsertionOrderedDict, self).__setitem__(k, d)
+            dict.__setitem__(self, k, d)
             return d
 
     def update(self, d):
@@ -100,6 +100,10 @@ else:
     OrderedDict = InsertionOrderedDict
 
 
+def get_profiler_dir():
+    return os.environ.get("PYMALCOLM_PROFILER_DIR", "/tmp/imalcolm_profiles")
+
+
 def et_to_string(element):
     # type: (ET.Element) -> str
     xml = '<?xml version="1.0" ?>'
@@ -108,31 +112,6 @@ def et_to_string(element):
     except LookupError:
         xml += ET.tostring(element)
     return xml
-
-
-def maybe_import_cothread():
-    if os.environ.get("PYMALCOLM_USE_COTHREAD", "YES")[0].upper() == "Y":
-        try:
-            import cothread
-        except ImportError:
-            cothread = None
-        return cothread
-
-
-def sleep(seconds):
-    cothread = maybe_import_cothread()
-    if cothread:
-        cothread.Sleep(seconds)
-    else:
-        time.sleep(seconds)
-
-
-def get_pool_num_threads():
-    if maybe_import_cothread():
-        num_threads = 16
-    else:
-        num_threads = 128
-    return num_threads
 
 
 # Exception handling from future.utils

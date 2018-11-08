@@ -7,7 +7,7 @@ from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.builtin.parts import StringPart, ChoicePart
 from malcolm.modules.pandablocks.controllers import \
     PandABlocksManagerController, AMri, AConfigDir, AHostname, APort, \
-    AInitialDesign, ADescription, AUseCothread, AUseGit
+    AInitialDesign, ADescription, AUseGit
 from malcolm.modules.scanning.controllers import RunnableController
 from ..parts import PandABlocksDriverPart, PandABlocksChildPart
 
@@ -26,13 +26,12 @@ class PandABlocksRunnableController(PandABlocksManagerController,
                  port=8888,  # type: APort
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
-                 use_cothread=True,  # type: AUseCothread
                  use_git=True,  # type: AUseGit
                  ):
         # type: (...) -> None
         super(PandABlocksRunnableController, self).__init__(
             mri, config_dir, hostname, port, initial_design, description,
-            use_cothread, use_git)
+            use_git)
         self.prefix = prefix
 
     def _make_child_controller(self, parts, mri):
@@ -75,8 +74,6 @@ class PandABlocksRunnableController(PandABlocksManagerController,
             controller = super(PandABlocksRunnableController, self).\
                 _make_child_controller(new_parts, mri)
         return controller
-
-
 
     def _make_corresponding_part(self, block_name, mri):
         if block_name == "PCAP":

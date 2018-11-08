@@ -1,10 +1,6 @@
 import unittest
 
-from malcolm.core.rlock import RLock
-from multiprocessing.pool import ThreadPool
-from malcolm.core.spawned import Spawned
-from malcolm.core.queue import Queue
-from malcolm.core.errors import TimeoutError
+from malcolm.core import Queue, Spawned, RLock, TimeoutError
 
 
 def sleep(t):
@@ -18,41 +14,40 @@ def sleep(t):
 class TestLockCothread(unittest.TestCase):
 
     def setUp(self):
-        self.pool = ThreadPool(4)
         self.v = None
 
-    def do_spawn(self, func, use_cothread, *args, **kwargs):
-        return Spawned(func, args, kwargs, use_cothread, self.pool)
+    def do_spawn(self, func, *args, **kwargs):
+        return Spawned(func, args, kwargs)
 
-    def do_spawn_unlocked(self, use_cothread):
-        l = RLock(use_cothread)
+    def test_spawn_unlocked(self):
+        l = RLock()
 
         def set_v1():
             self.v = 1
 
         # check our setter works in isolation
-        self.do_spawn(set_v1, use_cothread).wait()
+        self.do_spawn(set_v1).wait()
         assert self.v == 1
 
         # now do a long running task works
         with l:
             self.v = 2
             assert self.v == 2
-            self.do_spawn(set_v1, use_cothread).wait()
+            self.do_spawn(set_v1).wait()
             assert self.v == 1
 
         assert self.v == 1
 
-    def do_spawn_locked(self, use_cothread):
-        l = RLock(use_cothread)
+    def test_spawn_locked(self):
+        l = RLock()
 
         def set_v1():
             with l:
                 self.v = 1
 
         # check our setter works in isolation
-        assert self.v == None
-        self.do_spawn(set_v1, use_cothread).wait()
+        assert self.v is None
+        self.do_spawn(set_v1).wait()
         assert self.v == 1
 
         # now do a long running task works
@@ -61,7 +56,7 @@ class TestLockCothread(unittest.TestCase):
             assert self.v == 2
             # start our thing that will be blocked, then sleep to make sure
             # it can't do its thing
-            s = self.do_spawn(set_v1, use_cothread)
+            s = self.do_spawn(set_v1)
             sleep(0.2)
             assert self.v == 2
 
@@ -69,14 +64,3 @@ class TestLockCothread(unittest.TestCase):
         s.wait()
         assert self.v == 1
 
-    def test_allowed_unlocked_threads_cothread(self):
-        self.do_spawn_unlocked(True)
-
-    def test_allowed_unlocked_threads_no_cothread(self):
-        self.do_spawn_unlocked(False)
-
-    def test_locked_threads_not_allowed_cothread(self):
-        self.do_spawn_locked(True)
-
-    def test_locked_threads_not_allowed_no_cothread(self):
-        self.do_spawn_locked(False)

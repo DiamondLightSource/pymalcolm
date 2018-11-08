@@ -3,12 +3,14 @@ import json
 
 from tornado.websocket import websocket_connect
 from tornado import gen
+import cothread
 
 from malcolm.compat import OrderedDict
 from malcolm.core import Process, Queue, ResponseError, Post, json_encode
 from malcolm.modules.builtin.blocks import proxy_block
 from malcolm.modules.demo.blocks import hello_block, counter_block
 from malcolm.modules.web.blocks import web_server_block, websocket_client_block
+from malcolm.modules.web.util import IOLoopHelper
 from sys import version_info
 
 
@@ -38,7 +40,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         for _ in range(num):
             resp = yield conn.read_message()
             resp = json.loads(resp)
-            self.result.put(resp)
+            cothread.Callback(self.result.put, resp)
         conn.close()
 
     @gen.coroutine
@@ -51,7 +53,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg['id'] = 0
         msg['path'] = ("hello", "greet")
         msg['parameters'] = dict(name="me")
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Return:1.0",
@@ -63,7 +65,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg1 = Post(id=0, path=["hello", "greet"],
                     parameters=dict(name="me", sleep=2)).to_dict()
         msg2 = Post(id=1, path=["hello", "error"]).to_dict()
-        self.server._loop.add_callback(self.send_messages, [msg1, msg2])
+        IOLoopHelper.call(self.send_messages, [msg1, msg2])
         resp = self.result.get(timeout=1)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -81,9 +83,9 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg = OrderedDict()
         msg['typeid'] = "malcolm:core/Subscribe:1.0"
         msg['id'] = 0
-        msg['path'] = (".", "blocks")
+        msg['path'] = (".", "blocks", "value")
         msg['delta'] = True
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Delta:1.0",
@@ -95,9 +97,9 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg = OrderedDict()
         msg['typeid'] = "malcolm:core/Subscribe:1.0"
         msg['id'] = 0
-        msg['path'] = (".", "blocks")
+        msg['path'] = (".", "blocks", "value")
         msg['delta'] = False
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Update:1.0",
@@ -106,7 +108,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         )
 
     def test_error_server_and_simple_client_badJSON(self):
-        self.server._loop.add_callback(self.send_message, "I am JSON (but not a dict)")
+        IOLoopHelper.call(self.send_message, "I am JSON (but not a dict)")
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -114,7 +116,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             message="ValueError: Error decoding JSON object (didn't return OrderedDict)"
         )
 
-        self.server._loop.add_callback(self.send_message, "I am not JSON", convert_json=False)
+        IOLoopHelper.call(self.send_message, "I am not JSON", convert_json=False)
         resp = self.result.get(timeout=2)
         if version_info[0] == 2:
             assert resp == dict(
@@ -136,7 +138,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg['typeid'] = "malcolm:core/Post:1.0"
         msg['path'] = ("hello", "greet")
         msg['parameters'] = dict(name="me")
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -150,7 +152,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg['id'] = 0
         msg['path'] = ("hello", "greet")
         msg['parameters'] = dict(name="me")
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -163,7 +165,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg['id'] = 0
         msg['path'] = ("hello", "greet")
         msg['parameters'] = dict(name="me")
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
 
         if version_info[0] == 2:
@@ -183,7 +185,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg['id'] = 0
         msg['path'] = ("goodbye", "insult")
         msg['parameters'] = dict(name="me")
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -197,7 +199,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg['id'] = 0
         msg['path'] = ("hello", "meta")
         msg['parameters'] = dict(name="me")
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
@@ -211,7 +213,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg['typeid'] = "malcolm:core/Get:1.0"
         msg['id'] = 0
         msg['path'] = ("hello", "meat")
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
         if version_info[0] == 2:
             assert resp == dict(
@@ -230,12 +232,12 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg = OrderedDict()
         msg['typeid'] = "malcolm:core/Post:1.0"
         msg['id'] = 0
-        self.server._loop.add_callback(self.send_message, msg)
+        IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=0,
-            message='ValueError: No path supplied'
+            message='ValueError: Expected a path with at least 1 element, got []'
         )
 
 

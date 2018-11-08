@@ -11,6 +11,8 @@ class MyHandler(logging.Handler):
     def emit(self, record):
         self.emitted.append(record)
 
+
+# Need to put it somewhere importable so logging.config.dictConfig can find it
 malcolm.imalcolm.MyHandler = MyHandler
 
 
@@ -37,6 +39,7 @@ class TestIMalcolm(unittest.TestCase):
         listener.stop()
         assert len(MyHandler.emitted) == 1
         assert str(MyHandler.emitted[0]) == \
-            '<LogRecord: root, 30, %s, 36, "Bad things happen">' % __file__
+            '<LogRecord: root, 30, %s, 38, "Bad things happen">' % __file__
+
 
 

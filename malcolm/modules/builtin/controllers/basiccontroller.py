@@ -1,13 +1,12 @@
-from malcolm.core import Controller, StringMeta, AMri, ADescription, \
-    AUseCothread, Widget
+from malcolm.core import Controller, StringMeta, AMri, ADescription, Widget
 from ..infos import TitleInfo, HealthInfo
 
 
 class BasicController(Controller):
     """Basic Controller with Health and Title updating"""
-    def __init__(self, mri, description="", use_cothread=True):
-        # type: (AMri, ADescription, AUseCothread) -> None
-        super(BasicController, self).__init__(mri, description, use_cothread)
+    def __init__(self, mri, description=""):
+        # type: (AMri, ADescription) -> None
+        super(BasicController, self).__init__(mri, description)
         self._faults = {}  # Dict[Part, Alarm]
         self.info_registry.add_reportable(TitleInfo, self.update_title)
         self.info_registry.add_reportable(HealthInfo, self.update_health)

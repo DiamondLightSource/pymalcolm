@@ -35,7 +35,7 @@ class Info(object):
         """
         filtered = OrderedDict()
         for part_name, info_list in part_info.items():
-            if info_list is None:
+            if info_list is None or isinstance(info_list, Exception):
                 continue
             info_list = [i for i in info_list if isinstance(i, cls)]
             if info_list:

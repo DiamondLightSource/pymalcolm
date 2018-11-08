@@ -1,6 +1,5 @@
 import unittest
 
-from p4p.client.raw import RemoteError
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Process
@@ -22,8 +21,7 @@ class TestSystemPVA(unittest.TestCase):
         self.process2 = Process("proc2")
         for controller in \
                 pva_client_block(mri="PVA-CLIENT") + \
-                proxy_block(mri="TICKER", comms="PVA-CLIENT",
-                            use_cothread=True):
+                proxy_block(mri="TICKER", comms="PVA-CLIENT"):
             self.process2.add_controller(controller)
         self.process2.start()
 
@@ -61,7 +59,7 @@ class TestSystemPVA(unittest.TestCase):
         generator = self.make_generator()
         block.configure(generator, axesToMove=["x", "y"])
         # TODO: ordering is not maintained in PVA, so need to wait before get
-        block._context.sleep(0.1)
+        # block._context.sleep(0.1)
         assert "Armed" == block.state.value
         self.check_blocks_equal()
 

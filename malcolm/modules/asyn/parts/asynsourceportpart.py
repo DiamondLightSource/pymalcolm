@@ -23,9 +23,8 @@ class AsynSourcePortPart(Part):
         super(AsynSourcePortPart, self).__init__(name)
         self.port_type = port_type
         self.meta = StringMeta(description)
-        catools = ca.util.CaToolsHelper.instance()
         self.caa = ca.util.CAAttribute(
-            self.meta, catools.DBR_STRING, rbv=rbv, group=group,
+            self.meta, ca.util.catools.DBR_STRING, rbv=rbv, group=group,
             on_connect=self.update_tags)
 
     def setup(self, registrar):

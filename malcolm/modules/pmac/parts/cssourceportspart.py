@@ -13,10 +13,9 @@ class CSSourcePortsPart(Part):
         # type: (ca.util.APartName, ca.util.ARbv, ca.util.AGroup) -> None
         super(CSSourcePortsPart, self).__init__(name)
         self.meta = StringMeta("CS Port name")
-        catools = ca.util.CaToolsHelper.instance()
         # This gives the port name
         self.caa = ca.util.CAAttribute(
-            self.meta, catools.DBR_STRING, rbv=rbv, group=group,
+            self.meta, ca.util.catools.DBR_STRING, rbv=rbv, group=group,
             on_connect=self.update_tags)
         # These will be the "axis" Source Ports
         self.axis_attrs = {}

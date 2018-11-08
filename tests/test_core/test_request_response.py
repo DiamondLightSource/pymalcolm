@@ -153,7 +153,7 @@ class TestUnsubscribe(unittest.TestCase):
 
     def setUp(self):
         self.callback = MagicMock()
-        self.subscribe = Subscribe(32)
+        self.subscribe = Subscribe(32, ["."])
         self.subscribe.set_callback(self.callback)
         self.subscribes = {self.subscribe.generate_key(): self.subscribe}
         self.o = Unsubscribe(32)

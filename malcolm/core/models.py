@@ -47,8 +47,8 @@ class Model(Serializable):
         for name, ct in self.call_types.items():
             if ct.is_mapping:
                 child = getattr(self, name)
-                if issubclass(ct.typ[1], Model) and child:
-                    for k, v in getattr(self, name).items():
+                if child and issubclass(ct.typ[1], Model):
+                    for k, v in child.items():
                         v.set_notifier_path(notifier, self.path + [name, k])
             elif issubclass(ct.typ, Model):
                 assert not ct.is_array, \
@@ -581,6 +581,8 @@ class StringMeta(VMeta):
         """Check if the value is valid returns it"""
         if value is None:
             return ""
+        elif isinstance(value, str_):
+            return value
         else:
             return str(value)
 

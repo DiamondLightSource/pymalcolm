@@ -12,10 +12,10 @@ class castr(str):
 
 
 class TestCSOutlinksPart(unittest.TestCase):
-    @patch("malcolm.modules.ca.util.CaToolsHelper._instance")
+    @patch("malcolm.modules.ca.util.catools")
     def setUp(self, catools):
         self.catools = catools
-        catools.checking_caget.side_effect = [[castr("BRICK1CS1")]]
+        catools.caget.side_effect = [[castr("BRICK1CS1")]]
         self.process = Process("proc")
         self.o = CSSourcePortsPart("cs", "PV:PRE:Port")
         c = StatefulController("mri")
@@ -26,7 +26,7 @@ class TestCSOutlinksPart(unittest.TestCase):
         self.addCleanup(self.process.stop)
 
     def test_init(self):
-        self.catools.checking_caget.assert_called_once_with(
+        self.catools.caget.assert_called_once_with(
             ["PV:PRE:Port"], datatype=self.catools.DBR_STRING,
             format=self.catools.FORMAT_CTRL)
         assert list(self.b) == [

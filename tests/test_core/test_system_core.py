@@ -30,7 +30,7 @@ class TestHelloDemoSystem(unittest.TestCase):
     def test_concurrent(self):
         q = Queue()
         request = Post(id=44, path=["hello_block", "greet"],
-                       parameters=dict(name="me", sleep=2))
+                       parameters=dict(name="me", sleep=1))
         request.set_callback(q.put)
         self.controller.handle_request(request)
         request = Post(id=45, path=["hello_block", "error"])

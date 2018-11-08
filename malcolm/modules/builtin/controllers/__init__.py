@@ -1,4 +1,4 @@
-from .basiccontroller import BasicController, AMri, ADescription, AUseCothread
+from .basiccontroller import BasicController, AMri, ADescription
 from .statefulcontroller import StatefulController
 from .managercontroller import ManagerController, AConfigDir, AInitialDesign, \
     AUseGit

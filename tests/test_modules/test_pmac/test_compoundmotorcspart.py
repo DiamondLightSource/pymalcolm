@@ -12,10 +12,10 @@ class castr(str):
 
 
 class TestCompoundMotorCSPart(unittest.TestCase):
-    @patch("malcolm.modules.ca.util.CaToolsHelper._instance")
+    @patch("malcolm.modules.ca.util.catools")
     def setUp(self, catools):
         self.catools = catools
-        catools.checking_caget.side_effect = [[castr("@asyn(BRICK1CS1,2)")]]
+        catools.caget.side_effect = [[castr("@asyn(BRICK1CS1,2)")]]
         self.process = Process("proc")
         self.o = CompoundMotorCSPart("cs", "PV:PRE.OUT")
         c = StatefulController("mri")
@@ -26,7 +26,7 @@ class TestCompoundMotorCSPart(unittest.TestCase):
         self.addCleanup(self.process.stop)
 
     def test_init(self):
-        self.catools.checking_caget.assert_called_once_with(
+        self.catools.caget.assert_called_once_with(
             ["PV:PRE.OUT"], format=self.catools.FORMAT_CTRL)
         assert list(self.b) == [
             'meta', 'health', 'state', 'disable', 'reset', 'cs']

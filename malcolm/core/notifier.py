@@ -5,8 +5,8 @@ from annotypes import TYPE_CHECKING
 from .serializable import serialize_object
 from .loggable import Loggable
 from .request import Subscribe, Unsubscribe
-from .response import Response, Update
-from .rlock import RLock
+from .response import Response
+from .concurrency import RLock
 
 if TYPE_CHECKING:
     from .models import BlockModel

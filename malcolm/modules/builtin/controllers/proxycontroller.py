@@ -3,7 +3,7 @@ import functools
 from annotypes import Anno
 
 from malcolm.core import Alarm, ProcessStartHook, UnpublishedInfo, \
-    UUnpublishedInfos, AUseCothread, Context
+    UUnpublishedInfos, Context
 from .basiccontroller import BasicController, AMri
 from .clientcomms import ClientComms
 from ..util import wait_for_stateful_block_init
@@ -17,9 +17,9 @@ with Anno("Whether to re-publish this block via server comms"):
 class ProxyController(BasicController):
     """Sync a local block with a given remote block"""
 
-    def __init__(self, mri, comms, publish=False, use_cothread=False):
-        # type: (AMri, AComms, APublish, AUseCothread) -> None
-        super(ProxyController, self).__init__(mri, use_cothread=use_cothread)
+    def __init__(self, mri, comms, publish=False):
+        # type: (AMri, AComms, APublish) -> None
+        super(ProxyController, self).__init__(mri)
         self.comms = comms
         self.publish = publish
         self.client_comms = None
@@ -33,7 +33,7 @@ class ProxyController(BasicController):
         self.client_comms = self.process.get_controller(
             self.comms)  # type: ClientComms
         # Wait until connected
-        context = Context(self.process, self.use_cothread)
+        context = Context(self.process)
         wait_for_stateful_block_init(context, self.comms)
         # Tell the client comms to sync our block for us
         self.client_comms.sync_proxy(self.mri, self._block)

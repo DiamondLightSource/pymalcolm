@@ -4,12 +4,12 @@ import operator
 from xml.etree import cElementTree as ET
 
 from annotypes import Anno
+from cothread.cosocket import socket
 
-from malcolm.compat import OrderedDict, maybe_import_cothread, et_to_string
+from malcolm.compat import OrderedDict, et_to_string
 from malcolm.core import Queue, TimeoutError, BooleanMeta, TableMeta
 from malcolm.modules.builtin.controllers import BasicController, \
-    ManagerController, AMri, AConfigDir, AInitialDesign, ADescription, \
-    AUseCothread, AUseGit
+    ManagerController, AMri, AConfigDir, AInitialDesign, ADescription, AUseGit
 from malcolm.modules.builtin.parts import ChildPart
 from ..parts.pandablocksmaker import PandABlocksMaker, SVG_DIR
 from ..parts.pandablocksactionpart import PandABlocksActionPart
@@ -26,6 +26,9 @@ with Anno("Hostname of the box"):
     AHostname = str
 with Anno("Port number of the TCP server control port"):
     APort = int
+with Anno("Documentation URL base"):
+    ADocUrlBase = str
+DOC_URL_BASE = "https://pandablocks-fpga.readthedocs.io/en/autogen"
 
 
 class PandABlocksManagerController(ManagerController):
@@ -36,12 +39,13 @@ class PandABlocksManagerController(ManagerController):
                  port=8888,  # type: APort
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
-                 use_cothread=True,  # type: AUseCothread
                  use_git=True,  # type: AUseGit
+                 doc_url_base=DOC_URL_BASE  # type: ADocUrlBase
                  ):
         # type: (...) -> None
         super(PandABlocksManagerController, self).__init__(
-            mri, config_dir, initial_design, description, use_cothread, use_git)
+            mri, config_dir, initial_design, description, use_git)
+        self._doc_url_base = doc_url_base
         # {block_name: BlockData}
         self._blocks_data = {}
         # {block_name: {field_name: Part}}
@@ -71,16 +75,11 @@ class PandABlocksManagerController(ManagerController):
             self._stop_queue = Queue()
             if self.client.started:
                 self.client.stop()
-            from socket import socket
-            if self.use_cothread:
-                cothread = maybe_import_cothread()
-                if cothread:
-                    from cothread.cosocket import socket
-            self.client.start(self.spawn, socket)
+            self.client.start(self.process.spawn, socket)
         if not self._blocks_parts:
             self._make_blocks_parts()
         if self._poll_spawned is None:
-            self._poll_spawned = self.spawn(self._poll_loop)
+            self._poll_spawned = self.process.spawn(self._poll_loop)
 
     def do_disable(self):
         super(PandABlocksManagerController, self).do_disable()
@@ -156,7 +155,8 @@ class PandABlocksManagerController(ManagerController):
         mri = "%s:%s" % (self.mri, block_name)
 
         # Defer creation of parts to a block maker
-        maker = PandABlocksMaker(self.client, block_name, block_data)
+        maker = PandABlocksMaker(
+            self.client, block_name, block_data, self._doc_url_base)
 
         # Make the child controller and add it to the process
         controller = self._make_child_controller(maker.parts.values(), mri)

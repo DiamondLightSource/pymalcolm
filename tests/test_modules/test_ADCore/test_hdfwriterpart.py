@@ -32,7 +32,7 @@ class TestHDFWriterPart(ChildTestCase):
         c = RunnableController("mri", "/tmp")
         c.add_part(self.o)
         self.process.add_controller(c)
-        b = c.make_view()
+        b = c.block_view()
         assert list(b.configure.takes.elements) == [
             'generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate']
 

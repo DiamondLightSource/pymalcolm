@@ -9,7 +9,6 @@ from malcolm.core.request import Put, Post, Subscribe, Unsubscribe
 from malcolm.core.response import Error, Return, Update
 from malcolm.core import Process
 from malcolm.core.future import Future
-from malcolm.compat import maybe_import_cothread
 
 
 class MyWarning(Exception):
@@ -22,7 +21,6 @@ class TestContext(unittest.TestCase):
         self.controller = MagicMock(mri="block")
         self.process.add_controller(self.controller)
         self.o = Context(self.process)
-        self.cothread = maybe_import_cothread()
 
     def assert_handle_request_called_with(self, *requests):
         assert self.controller.handle_request.call_count == len(requests)
@@ -42,7 +40,7 @@ class TestContext(unittest.TestCase):
 
     def test_block_view(self):
         self.o.block_view("block")
-        self.controller.make_view.assert_called_once_with(ANY)
+        self.controller.block_view.assert_called_once_with(ANY)
 
     def test_put(self):
         self.o._q.put(Return(1, 33))
@@ -172,10 +170,7 @@ class TestContext(unittest.TestCase):
         with self.assertRaises(TimeoutError):
             self.o.wait_all_futures(fs, 0)
 
-        if self.cothread:
-            assert 0 == len(self.o._q._event_queue)
-        else:
-            assert 0 == self.o._q._queue.qsize()
+        assert 0 == len(self.o._q._event_queue)
 
     def test_futures_exception(self):
         fs = [self.o.put_async(["block", "attr", "value"], 32)]

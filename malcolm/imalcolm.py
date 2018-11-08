@@ -1,11 +1,19 @@
 #!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
+import logging.config
+import threading
+import argparse
+import atexit
+import getpass
+import json
+import os
+import sys
+import time
 
 
 def make_async_logging(log_config):
+    from malcolm.compat import QueueListener, queue
     # Now we have our user specified logging config, pipe all logging messages
     # through a queue to make it asynchronous
-    from malcolm.compat import QueueListener, queue
-    import logging.config
 
     # These are the handlers for our root logger, they should go through a queue
     root_handlers = log_config["root"].pop("handlers")
@@ -25,19 +33,7 @@ def make_async_logging(log_config):
     return listener
 
 
-def make_process():
-    import sys
-    import threading
-    import argparse
-    import atexit
-    import os
-    import getpass
-    import json
-    from ruamel import yaml
-
-    # These are the locals that we will pass to the console
-    locals_d = {}
-
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Interactive shell for malcolm")
     parser.add_argument(
@@ -46,12 +42,14 @@ def make_process():
     parser.add_argument(
         '--logcfg', help="Logging dict config in JSON or YAML file")
     parser.add_argument(
-        "--profiledir", help="Directory to store profiler results in",
-        default="/tmp/imalcolm_profiles")
-    parser.add_argument(
         'yaml', nargs="?",
         help="The YAML file containing the blocks to be loaded")
     args = parser.parse_args()
+    return args
+
+
+def make_logging_config(args):
+    from ruamel import yaml
 
     log_config = {
         "version": 1,
@@ -132,27 +130,11 @@ def make_process():
             file_config = yaml.load(text, Loader=yaml.RoundTripLoader)
         if file_config:
             log_config = file_config
+    return log_config
 
-    # Start it off, and tell it to stop when we quit
-    listener = make_async_logging(log_config)
-    listener.start()
-    atexit.register(listener.stop)
 
-    # Setup profiler dir
-    try:
-        from malcolm.modules.profiling.parts import ProfilingViewerPart
-        from malcolm.modules.profiling.profiler import Profiler
-    except ImportError:
-        raise
-    else:
-        if not os.path.isdir(args.profiledir):
-            os.mkdir(args.profiledir)
-        ProfilingViewerPart.profiledir = args.profiledir
-        locals_d["profiler"] = Profiler(args.profiledir)
-        locals_d["profiler"].start()
-
-    from malcolm.core import Context, Queue, Process
-    from malcolm.modules.builtin.blocks import proxy_block
+def prepare_locals(args):
+    from malcolm.core import Process
     from malcolm.yamlutil import make_include_creator
 
     if args.yaml:
@@ -183,29 +165,93 @@ def make_process():
             raise ValueError(
                 "Don't know how to create client to %s" % args.client)
         proc.add_controller(comms)
-
-    class UserContext(Context):
-        def make_queue(self):
-            return Queue(user_facing=True)
-
-        def post(self, path, params=None, timeout=None):
-            try:
-                return super(UserContext, self).post(path, params, timeout)
-            except KeyboardInterrupt:
-                self.post([path[0], "abort"])
-                raise
-
-        def make_proxy(self, comms, mri):
-            proc.add_controller(proxy_block(comms=comms, mri=mri)[-1])
-
-    locals_d["self"] = UserContext(proc)
     proc.start(timeout=60)
-    locals_d["process"] = proc
-    return locals_d
+    return proc
+
+
+def try_prepare_locals(q, args):
+    # This will start cothread in this thread
+    import cothread
+    cothread.input_hook._install_readline_hook(False)
+    try:
+        locals_d = prepare_locals(args)
+    except Exception as e:
+        q.put(e)
+        raise
+    else:
+        q.put(locals_d)
+    cothread.WaitForQuit(catch_interrupt=False)
 
 
 def main():
-    locals_d = make_process()
+    from malcolm.compat import queue
+    from malcolm.profiler import Profiler
+
+    args = parse_args()
+
+    # Make some log config, either fron command line or
+    log_config = make_logging_config(args)
+
+    # Start it off, and tell it to stop when we quit
+    listener = make_async_logging(log_config)
+    listener.start()
+    atexit.register(listener.stop)
+
+    # Setup profiler dir
+    profiler = Profiler()
+    # profiler.start()
+
+    # If using p4p then set cothread to use the right ca libs before it is
+    try:
+        import epicscorelibs.path.cothread
+    except ImportError:
+        pass
+
+    # Import the Malcolm process
+    q = queue.Queue()
+    t = threading.Thread(target=try_prepare_locals, args=(q, args))
+    t.start()
+    process = q.get(timeout=65)
+    if isinstance(process, Exception):
+        # Startup failed, exit now
+        sys.exit(1)
+
+    # Now its safe to import Malcolm and cothread
+    import cothread
+
+    from malcolm.core import Context
+    from malcolm.modules.builtin.blocks import proxy_block
+
+    # Make a user context
+    class UserContext(Context):
+        def post(self, path, params=None, timeout=None, event_timeout=None):
+            try:
+                return super(UserContext, self).post(
+                    path, params, timeout, event_timeout)
+            except KeyboardInterrupt:
+                self.post([path[0], "abort"])
+
+        def make_proxy(self, comms, mri):
+            # Need to do this in cothread's thread
+            cothread.CallbackResult(
+                self._process.add_controller,
+                proxy_block(comms=comms, mri=mri)[-1])
+
+        def block_view(self, mri):
+            return cothread.CallbackResult(
+                super(UserContext, self).block_view, mri)
+
+        def make_view(self, controller, data, child_name):
+            return cothread.CallbackResult(
+                super(UserContext, self).make_view,
+                controller, data, child_name)
+
+        def handle_request(self, controller, request):
+            cothread.CallbackResult(
+                super(UserContext, self).handle_request,
+                controller, request)
+
+    self = UserContext(process)
 
     header = """Welcome to iMalcolm.
 
@@ -224,33 +270,29 @@ or
 
 self.make_proxy("localhost:8008", "HELLO")
 self.block_view("HELLO").greet("me")
-""" % (locals_d["self"].mri_list,)
+""" % (self.mri_list,)
 
     try:
         import IPython
     except ImportError:
         import code
-        code.interact(header, local=locals_d)
+        code.interact(header, local=locals())
     else:
-        locals().update(locals_d)
         IPython.embed(header=header)
-    if "profiler" in locals_d:
-        if locals_d["profiler"].started:
-            locals_d["profiler"].stop()
-    # TODO: tearDown doesn't work properly yet
-    # locals_d["process"].stop()
+    if profiler.running and not profiler.stopping:
+        profiler.stop()
+
+    cothread.CallbackResult(process.stop)
+    cothread.CallbackResult(cothread.Quit)
 
 
 if __name__ == "__main__":
+    from pkg_resources import require
     print("Loading...")
-    import os
-    import sys
 
     os.environ["EPICS_CA_MAX_ARRAY_BYTES"] = "6000000"
 
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
-    from pkg_resources import require
 
     require("tornado", "numpy", "ruamel.yaml", "cothread==2.14", "vdsgen>=0.3",
             "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py>=2.8",

@@ -4,7 +4,7 @@ from malcolm.compat import OrderedDict
 from malcolm.core import Alarm, MethodModel, AttributeModel, ProcessStartHook, \
     ProcessStopHook, ChoiceMeta, Widget, Context, Part, NotWriteableError
 from malcolm.modules.builtin.util import StatefulStates
-from .basiccontroller import BasicController, AMri, ADescription, AUseCothread
+from .basiccontroller import BasicController, AMri, ADescription
 from ..hooks import InitHook, ResetHook, DisableHook, HaltHook
 from ..infos import HealthInfo
 
@@ -22,9 +22,9 @@ class StatefulController(BasicController):
     # The state_set that this controller implements
     state_set = ss()
 
-    def __init__(self, mri, description="", use_cothread=True):
-        # type: (AMri, ADescription, AUseCothread) -> None
-        super(StatefulController, self).__init__(mri, description, use_cothread)
+    def __init__(self, mri, description=""):
+        # type: (AMri, ADescription) -> None
+        super(StatefulController, self).__init__(mri, description)
         self._children_writeable = {}  # type: ChildrenWriteable
         self.state = ChoiceMeta(
             "StateMachine State of Block", self.state_set.possible_states,
@@ -133,9 +133,9 @@ class StatefulController(BasicController):
             func(*args, **kwargs)
             self.transition(end_state)
         except Exception as e:  # pylint:disable=broad-except
-            self.log.exception(
+            self.log.debug(
                 "Exception running %s %s %s transitioning from %s to %s",
-                func, args, kwargs, start_state, end_state)
+                func, args, kwargs, start_state, end_state, exc_info=True)
             self.go_to_error_state(e)
             raise
 

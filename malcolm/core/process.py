@@ -1,21 +1,16 @@
-from multiprocessing.pool import ThreadPool
-
 from annotypes import Anno, Array, TYPE_CHECKING, Union, Sequence
 
-from malcolm.compat import OrderedDict, maybe_import_cothread, \
-    get_pool_num_threads, str_
+from malcolm.compat import OrderedDict, str_
 from .context import Context
 from .controller import Controller
-from .errors import WrongThreadError
 from .hook import Hook, start_hooks, AHookable, wait_hooks
 from .info import Info
 from .loggable import Loggable
-from .rlock import RLock
-from .spawned import Spawned
+from .concurrency import Spawned
 from .views import Block
 
 if TYPE_CHECKING:
-    from typing import List, Callable, Dict, Any, Tuple, TypeVar
+    from typing import List, Callable, Any, TypeVar
 
     T = TypeVar("T")
 
@@ -74,14 +69,11 @@ class Process(Loggable):
         # type: (str_) -> None
         self.set_logger(process_name=name)
         self.name = name
-        self._cothread = maybe_import_cothread()
         self._controllers = OrderedDict()  # mri -> Controller
         self._unpublished = set()  # [mri] for unpublishable controllers
         self.state = STOPPED
         self._spawned = []
         self._spawn_count = 0
-        self._thread_pool = None
-        self._lock = RLock()
 
     def start(self, timeout=None):
         """Start the process going
@@ -102,11 +94,10 @@ class Process(Loggable):
         # type: (List[Controller], float) -> bool
         # Start just the given controller_list
         infos = self._run_hook(ProcessStartHook, controller_list,
-                               timeout=timeout, user_facing=True)
+                               timeout=timeout)
         new_unpublished = set(
             info.mri for info in UnpublishedInfo.filter_values(infos))
-        with self._lock:
-            self._unpublished |= new_unpublished
+        self._unpublished |= new_unpublished
         if len(controller_list) > len(new_unpublished):
             return True
         else:
@@ -119,17 +110,22 @@ class Process(Loggable):
         self._run_hook(ProcessPublishHook,
                        timeout=timeout, published=published)
 
-    def _run_hook(self, hook, controller_list=None, timeout=None,
-                  user_facing=False, **kwargs):
+    def _run_hook(self, hook, controller_list=None, timeout=None, **kwargs):
         # Run the given hook waiting til all hooked functions are complete
         # but swallowing any errors
         if controller_list is None:
             controller_list = self._controllers.values()
-        hooks = [hook(controller, **kwargs).set_spawn(controller.spawn)
+        hooks = [hook(controller, **kwargs).set_spawn(self.spawn)
                  for controller in controller_list]
-        hook_queue, hook_spawned = start_hooks(hooks, user_facing)
-        return wait_hooks(
+        hook_queue, hook_spawned = start_hooks(hooks)
+        infos = wait_hooks(
             self.log, hook_queue, hook_spawned, timeout, exception_check=False)
+        problems = [mri for mri, e in infos.items()
+                    if isinstance(e, Exception)]
+        if problems:
+            self.log.warning(
+                "Problem running %s on %s", hook.__name__, problems)
+        return infos
 
     def stop(self, timeout=None):
         """Stop the process and wait for it to finish
@@ -143,60 +139,36 @@ class Process(Loggable):
         # Allow every controller a chance to clean up
         self._run_hook(ProcessStopHook, timeout=timeout)
         for s in self._spawned:
-            self.log.debug(
-                "Waiting for %s *%s **%s", s._function, s._args, s._kwargs)
+            if not s.ready():
+                self.log.debug(
+                    "Waiting for %s *%s **%s", s._function, s._args, s._kwargs)
             s.wait(timeout=timeout)
-        self._spawned = []
+        self._spawned = []  # type: List[Spawned]
         self._controllers = OrderedDict()
         self._unpublished = set()
         self.state = STOPPED
-        if self._thread_pool:
-            self.log.debug("Waiting for thread pool")
-            self._thread_pool.close()
-            self._thread_pool.join()
-            self._thread_pool = None
         self.log.debug("Done process.stop()")
 
-    def spawn(self, function, args, kwargs, use_cothread):
-        # type: (Callable[..., Any], Tuple, Dict, bool) -> Spawned
+    def spawn(self, function, *args, **kwargs):
+        # type: (Callable[..., Any], *Any, **Any) -> Spawned
         """Runs the function in a worker thread, returning a Result object
 
         Args:
             function: Function to run
             args: Positional arguments to run the function with
             kwargs: Keyword arguments to run the function with
-            use_cothread (bool): Whether to try and run this as a cothread
 
         Returns:
             Spawned: Something you can call wait(timeout) on to see when it's
                 finished executing
         """
-        ret = self._call_in_right_thread(
-            self._spawn, function, args, kwargs, use_cothread)
-        return ret
-
-    def _call_in_right_thread(self, func, *args):
-        # type: (Callable[..., T], *Any) -> T
-        try:
-            return func(*args)
-        except WrongThreadError:
-            # called from outside cothread's thread, spawn it again
-            return self._cothread.CallbackResult(func, *args)
-
-    def _spawn(self, function, args, kwargs, use_cothread):
-        # type: (Callable[..., Any], Tuple, Dict, bool) -> Spawned
-        with self._lock:
-            assert self.state != STOPPED, "Can't spawn when process stopped"
-            if self._thread_pool is None:
-                if not self._cothread or not use_cothread:
-                    self._thread_pool = ThreadPool(get_pool_num_threads())
-            spawned = Spawned(
-                function, args, kwargs, use_cothread, self._thread_pool)
-            self._spawned.append(spawned)
-            self._spawn_count += 1
-            # Filter out things that are ready to avoid memory leaks
-            if self._spawn_count > SPAWN_CLEAR_COUNT:
-                self._clear_spawn_list()
+        assert self.state != STOPPED, "Can't spawn when process stopped"
+        spawned = Spawned(function, args, kwargs)
+        self._spawned.append(spawned)
+        self._spawn_count += 1
+        # Filter out things that are ready to avoid memory leaks
+        if self._spawn_count > SPAWN_CLEAR_COUNT:
+            self._clear_spawn_list()
         return spawned
 
     def _clear_spawn_list(self):
@@ -213,16 +185,10 @@ class Process(Loggable):
             timeout (float): Maximum amount of time to wait for each spawned
                 object. None means forever
         """
-        self._call_in_right_thread(
-            self._add_controller, controller, timeout)
-
-    def _add_controller(self, controller, timeout):
-        # type: (Controller, float) -> None
-        with self._lock:
-            assert controller.mri not in self._controllers, \
-                "Controller already exists for %s" % controller.mri
-            self._controllers[controller.mri] = controller
-            controller.setup(self)
+        assert controller.mri not in self._controllers, \
+            "Controller already exists for %s" % controller.mri
+        self._controllers[controller.mri] = controller
+        controller.setup(self)
         if self.state:
             should_publish = self._start_controllers([controller], timeout)
             if self.state == STARTED and should_publish:
@@ -245,6 +211,5 @@ class Process(Loggable):
         # type: (str) -> Block
         """Get a Block view from a Controller with given mri"""
         controller = self.get_controller(mri)
-        context = Context(self)
-        block = controller.make_view(context)
+        block = controller.block_view()
         return block

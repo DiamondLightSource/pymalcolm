@@ -1,14 +1,13 @@
 from malcolm.core import Part
-from .statefulcontroller import StatefulController, AMri, ADescription, \
-    AUseCothread
+from .statefulcontroller import StatefulController, AMri, ADescription
 from ..infos import RequestInfo
 
 
 class ServerComms(StatefulController):
     """Abstract class for dealing with requests from outside"""
-    def __init__(self, mri, description="", use_cothread=True):
-        # type: (AMri, ADescription, AUseCothread) -> None
-        super(ServerComms, self).__init__(mri, description, use_cothread)
+    def __init__(self, mri, description=""):
+        # type: (AMri, ADescription) -> None
+        super(ServerComms, self).__init__(mri, description)
         self.info_registry.add_reportable(
             RequestInfo, self.update_request_received)
 

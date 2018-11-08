@@ -1,10 +1,8 @@
-import threading
 import time
 
 from annotypes import Anno, TYPE_CHECKING
 
-from malcolm.compat import maybe_import_cothread
-from malcolm.core import Queue, VMeta, Alarm, AlarmStatus, TimeStamp, \
+from malcolm.core import sleep, VMeta, Alarm, AlarmStatus, TimeStamp, \
     Loggable, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
 from malcolm.modules.builtin.util import set_tags, AWidget, AGroup, AConfig, \
     ASinkPort
@@ -21,6 +19,16 @@ if TYPE_CHECKING:
 # Store them here for re-export
 APartName = APartName
 AMetaDescription = AMetaDescription
+
+
+class CatoolsDeferred(object):
+    """Deferred gets of catools things"""
+    def __getattr__(self, item):
+        from cothread import catools
+        return getattr(catools, item)
+
+
+catools = CatoolsDeferred()
 
 
 with Anno("Full pv of demand and default for rbv"):
@@ -70,7 +78,6 @@ class CAAttribute(Loggable):
         self.attr = meta.create_attribute_model()
         # Camonitor subscription
         self.monitor = None
-        self.catools = CaToolsHelper.instance()
         self._update_after = 0
 
     def reconnect(self):
@@ -80,15 +87,16 @@ class CAAttribute(Loggable):
         pvs = [self.rbv]
         if self.pv and self.pv != self.rbv:
             pvs.append(self.pv)
-        ca_values = self.catools.checking_caget(
-            pvs, format=self.catools.FORMAT_CTRL, datatype=self.datatype)
+        ca_values = assert_connected(catools.caget(
+            pvs, format=catools.FORMAT_CTRL, datatype=self.datatype))
+
         if self.on_connect:
             self.on_connect(ca_values[0])
         self._update_value(ca_values[0])
         # now setup monitor on rbv
-        self.monitor = self.catools.camonitor(
+        self.monitor = catools.camonitor(
             self.rbv, self._monitor_callback,
-            format=self.catools.FORMAT_TIME, datatype=self.datatype,
+            format=catools.FORMAT_TIME, datatype=self.datatype,
             notify_disconnect=True)
 
     def disconnect(self):
@@ -102,13 +110,11 @@ class CAAttribute(Loggable):
         else:
             timeout = self.timeout
         self.log.info("caput %s %s", self.pv, value)
-        self.catools.caput(
-            self.pv, value, wait=True, timeout=timeout,
-            datatype=self.datatype)
+        catools.caput(
+            self.pv, value, wait=True, timeout=timeout, datatype=self.datatype)
         # now do a caget
-        value = self.catools.caget(
-            self.rbv,
-            format=self.catools.FORMAT_TIME, datatype=self.datatype)
+        value = catools.caget(
+            self.rbv, format=catools.FORMAT_TIME, datatype=self.datatype)
         self._update_value(value)
 
     def _monitor_callback(self, value):
@@ -122,7 +128,7 @@ class CAAttribute(Loggable):
             self._update_after = now + self.min_delta
         elif delta < 0:
             # If delta is less than zero sleep for a bit
-            self.catools.cothread.Sleep(-delta)
+            sleep(-delta)
         else:
             # If we were within the delta window just increment next update
             self._update_after += self.min_delta
@@ -155,73 +161,8 @@ class CAAttribute(Loggable):
         register_hooked((InitHook, ResetHook), self.reconnect)
 
 
-def _import_cothread(q):
-    import cothread
-    from cothread import catools
-    from cothread.input_hook import _install_readline_hook
-    _install_readline_hook(None)
-    q.put((cothread, catools))
-    # Wait forever
-    cothread.Event().Wait()
-
-
-class CaToolsHelper(object):
-    _instance = None
-
-    def __init__(self):
-        assert not self._instance, \
-            "Can't create more than one instance of Singleton. Use instance()"
-        self.cothread = maybe_import_cothread()
-        if self.cothread:
-            # We can use it in this thread
-            from cothread import catools
-            self.in_cothread_thread = True
-        else:
-            # We need our own thread to run it in
-            q = Queue()
-            threading.Thread(target=_import_cothread, args=(q,)).start()
-            self.cothread, catools = q.get()
-            self.in_cothread_thread = False
-        self.catools = catools
-        self.DBR_STRING = catools.DBR_STRING
-        self.DBR_LONG = catools.DBR_LONG
-        self.DBR_DOUBLE = catools.DBR_DOUBLE
-        self.FORMAT_CTRL = catools.FORMAT_CTRL
-        self.FORMAT_TIME = catools.FORMAT_TIME
-        self.DBR_ENUM = catools.DBR_ENUM
-        self.DBR_CHAR_STR = catools.DBR_CHAR_STR
-
-    def caget(self, *args, **kwargs):
-        if self.in_cothread_thread:
-            return self.catools.caget(*args, **kwargs)
-        else:
-            return self.cothread.CallbackResult(
-                self.catools.caget, *args, **kwargs)
-
-    def caput(self, *args, **kwargs):
-        if self.in_cothread_thread:
-            return self.catools.caput(*args, **kwargs)
-        else:
-            return self.cothread.CallbackResult(
-                self.catools.caput, *args, **kwargs)
-
-    def camonitor(self, *args, **kwargs):
-        if self.in_cothread_thread:
-            return self.catools.camonitor(*args, **kwargs)
-        else:
-            return self.cothread.CallbackResult(
-                self.catools.camonitor, *args, **kwargs)
-
-    def checking_caget(self, values, *args, **kwargs):
-        ca_values = self.caget(values, *args, **kwargs)
-        # check connection is ok
-        for i, v in enumerate(ca_values):
-            assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
-        return ca_values
-
-    @classmethod
-    def instance(cls):
-        if not cls._instance:
-            cls._instance = CaToolsHelper()
-        return cls._instance
-
+def assert_connected(ca_values):
+    # check connection is ok
+    for i, v in enumerate(ca_values):
+        assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
+    return ca_values

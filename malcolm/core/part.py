@@ -3,11 +3,10 @@ import re
 from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
-from .queue import Queue
 from .hook import Hookable
 from .info import Info
 from .serializable import CAMEL_RE
-from .spawned import Spawned
+from .concurrency import Spawned
 from .models import MethodModel, AttributeModel
 
 if TYPE_CHECKING:
@@ -74,14 +73,6 @@ class InfoRegistry(object):
     def __init__(self):
         # type: (Callable[..., Spawned]) -> None
         self._reportable_infos = {}  # type: Dict[Type[Info], Callback]
-        self._spawn = None
-        self._report_queue = Queue()
-
-    def set_spawn(self, spawn):
-        # type: (Callable[..., Spawned]) -> None
-        """Called once the Controller has been attached to a Process so that
-        reports become asynchronous"""
-        self._spawn = spawn
 
     def add_reportable(self, info, callback):
         # type: (Type[Info], Callback) -> None
@@ -90,16 +81,6 @@ class InfoRegistry(object):
     def report(self, reporter, info):
         # type: (object, Info) -> None
         callback = self._reportable_infos[type(info)]
-        self._report_queue.put((callback, reporter, info))
-        if self._spawn:
-            # Spawn in case we are coming from a non-cothread to cothread thread
-            self._spawn(self._report).get()
-        else:
-            # No process yet, just run directly
-            self._report()
-
-    def _report(self):
-        callback, reporter, info = self._report_queue.get()
         callback(reporter, info)
 
 
@@ -126,7 +107,6 @@ class PartRegistrar(object):
         self._field_registry = field_registry
         self._info_registry = info_registry
         self._part = part
-        self._info_queue = Queue()
 
     def get_fields(self):
         # type: () -> List[Tuple[str, Field, Callable]]

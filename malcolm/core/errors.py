@@ -28,11 +28,6 @@ class BadValueError(MalcolmException):
     pass
 
 
-class WrongThreadError(MalcolmException):
-    """When you have called something outside of cothread's thread"""
-    pass
-
-
 class YamlError(MalcolmException):
     """When instantiating some YAML raises an error"""
     pass

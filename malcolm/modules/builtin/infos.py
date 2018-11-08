@@ -116,7 +116,9 @@ class PartModifiedInfo(Info):
 
 
 class RequestInfo(Info):
-    """Info saying that the part has received a request that needs servicing
+    """Info saying that the part has received a request that needs servicing.
+    Reporting this will send to the correct controller, but not wait for
+    completion
 
     Args:
         request: The request that needs servicing, with callback filled in

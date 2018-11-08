@@ -39,6 +39,8 @@ class GuiServerPart(Part):
         infos = [
             # Redirect / to /gui/
             HandlerInfo(r"/", RedirectHandler, url="/gui/"),
+            # Redirect /gui to /gui/
+            HandlerInfo(r"/gui", RedirectHandler, url="/gui/"),
             # Serve index.html for /gui or /details
             HandlerInfo(r"/(gui|details).*", self.GuiHandler, path=self.path),
             # Anything else should be a static file handle

@@ -1,5 +1,5 @@
 import unittest
-from mock import patch, ANY, Mock
+from mock import patch, Mock
 
 from malcolm.core import Process
 from malcolm.modules.builtin.controllers import StatefulController
@@ -10,7 +10,7 @@ class caint(int):
     ok = True
     
 
-@patch("malcolm.modules.ca.parts.caactionpart.CaToolsHelper")
+@patch("malcolm.modules.ca.util.catools")
 class TestCAActionPart(unittest.TestCase):
 
     def create_part(self, params=None):
@@ -36,32 +36,32 @@ class TestCAActionPart(unittest.TestCase):
 
     def test_reset(self, catools):
         p = self.create_part()
-        p.catools.caget.reset_mock()
-        p.catools.caget.return_value = [caint(4)]
+        catools.caget.reset_mock()
+        catools.caget.return_value = [caint(4)]
         p.connect_pvs()
-        p.catools.caget.assert_called_with(["pv"])
+        catools.caget.assert_called_with(["pv"])
 
     def test_caput(self, catools):
         p = self.create_part()
-        p.catools.caput.reset_mock()
+        catools.caput.reset_mock()
         p.caput()
-        p.catools.caput.assert_called_once_with(
+        catools.caput.assert_called_once_with(
             "pv", 1, wait=True, timeout=None)
 
     def test_caput_status_pv_ok(self, catools):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", status_pv="spv",
             good_status="All Good"))
-        p.catools.caput.reset_mock()
-        p.catools.caget.return_value = "All Good"
+        catools.caput.reset_mock()
+        catools.caget.return_value = "All Good"
         p.caput()
 
     def test_caput_status_pv_no_good(self, catools):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", status_pv="spv",
             good_status="All Good"))
-        p.catools.caput.reset_mock()
-        p.catools.caget.return_value = "No Good"
+        catools.caput.reset_mock()
+        catools.caget.return_value = "No Good"
         with self.assertRaises(AssertionError) as cm:
             p.caput()
         assert str(cm.exception) == \
@@ -71,7 +71,7 @@ class TestCAActionPart(unittest.TestCase):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", status_pv="spv",
             good_status="All Good", message_pv="mpv"))
-        p.catools.caget.side_effect = [caint(4)]
+        catools.caget.return_value = [caint(4)]
         c = StatefulController("mri")
         c.add_part(p)
         proc = Process("proc")
@@ -79,8 +79,8 @@ class TestCAActionPart(unittest.TestCase):
         proc.start()
         self.addCleanup(proc.stop)
         b = proc.block_view("mri")
-        p.catools.caput.reset_mock()
-        p.catools.caget.side_effect = ["No Good", "Bad things happened"]
+        catools.caput.reset_mock()
+        catools.caget.side_effect = ["No Good", "Bad things happened"]
         with self.assertRaises(AssertionError) as cm:
             b.mname()
         assert str(cm.exception) == "Status No Good: Bad things happened: " \
