@@ -37,6 +37,7 @@ install:
 # command to run tests
 script:
   - gdb -batch -return-child-result -ex run -ex bt -ex "info threads" -ex "thread apply all bt" -ex quit --args python -m pytest --cov=malcolm --log-format='%(asctime)s.%(msecs)03d %(filename)-25s %(lineno)4d %(levelname)-8s %(message)s' --log-date-format='%Y-%m-%d %H:%M:%S' tests
+  # Would love to do -ex "py-bt", but this means making a new virtualenv with python-dbg exe
 
 # submit coverage
 after_script:

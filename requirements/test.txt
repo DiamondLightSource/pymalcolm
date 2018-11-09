@@ -13,3 +13,4 @@ h5py>=2.8.0
 vdsgen>=0.3
 annotypes>=0.9
 p4p>=1.1a35
+pytest-faulthandler
