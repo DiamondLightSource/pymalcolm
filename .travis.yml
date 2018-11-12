@@ -1,4 +1,3 @@
-sudo: false
 language: python
 python:
   - "2.7"
@@ -24,6 +23,12 @@ cache:
 install:
   - env
   - ifconfig
+  - IP=$(ip addr show docker0 | grep -Po 'inet \K[\d.]+')
+  - echo $IP
+  # Fix docker0 broadcast address so p4p will work
+  - sudo ip addr del $IP/16 dev docker0
+  - sudo ip addr add $IP/16 broadcast + dev docker0
+  - ifconfig
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
   - pip install "setuptools>=36"
@@ -46,9 +51,9 @@ after_script:
 
 # Print backtrace
 after_failure:
-- COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
+  - COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
   # Would love to do -ex "py-bt", but this means making a new virtualenv with python-dbg exe
-- if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" python -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
+  - if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" python -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
 
 deploy:
   provider: pypi
