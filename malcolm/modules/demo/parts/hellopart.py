@@ -25,6 +25,8 @@ class HelloPart(Part):
         # type: (AName, ASleep) -> AGreeting
         """Optionally sleep <sleep> seconds, then return a greeting to <name>"""
         print("Manufacturing greeting...")
+        import ctypes
+        ctypes.string_at(0)
         sleep_for(sleep)
         greeting = "Hello %s" % name
         return greeting
