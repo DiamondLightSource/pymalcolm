@@ -226,9 +226,6 @@ class ChildPart(Part):
                                           path=[self.mri, field, "value"])
                     subscribe.set_callback(self.update_part_modified)
                     self.config_subscriptions[new_id] = subscribe
-                    # Signal that any change we get is a difference
-                    if field not in self.saved_structure:
-                        self.saved_structure[field] = None
                     spawned.append(
                         self.child_controller.handle_request(subscribe))
 
@@ -249,7 +246,9 @@ class ChildPart(Part):
             self.log.warning("Got unexpected response %r", response)
 
     def send_modified_info_if_not_equal(self, name, new_value):
-        original_value = self.saved_structure[name]
+        # If we did a save or load then we will have an original value,
+        # otherwise it will be None
+        original_value = self.saved_structure.get(name, None)
         try:
             np.testing.assert_equal(original_value, new_value)
         except AssertionError:
