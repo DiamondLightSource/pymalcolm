@@ -9,8 +9,8 @@ from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
     deserialize_object, Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
     AlarmStatus, Part, BooleanMeta, get_config_tag, Widget, ChoiceArrayMeta, \
     TableMeta, serialize_object, ChoiceMeta, config_tag, Put, Request, CAMEL_RE, \
-    camel_to_title
-from malcolm.core.tags import without_group_tags
+    camel_to_title, StringMeta
+from malcolm.core.tags import without_group_tags, Port
 from malcolm.modules.builtin.infos import PortInfo
 from malcolm.modules.builtin.util import ManagerStates
 from ..hooks import LayoutHook, LoadHook, SaveHook
@@ -72,6 +72,14 @@ class ManagerController(StatefulController):
         # Update queue of exportable fields
         self.info_registry.add_reportable(
             PartExportableInfo, self.update_exportable)
+        # Create a port for ourself
+        self.field_registry.add_attribute_model(
+            "mri",
+            StringMeta(
+                "A port for giving our MRI to things that might use us",
+                tags=[Port.BLOCK.source_port_tag(self.mri)]
+            ).create_attribute_model(self.mri)
+        )
         # Create a layout table attribute for setting block positions
         self.layout = TableMeta.from_table(
             LayoutTable, "Layout of child blocks", Widget.FLOWGRAPH,

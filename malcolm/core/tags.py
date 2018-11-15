@@ -83,6 +83,7 @@ class Port(Enum):
     INT32 = "int32"  # 32-bit signed integer
     NDARRAY = "NDArray"  # areaDetector NDArray port
     MOTOR = "motor"  # motor record connection to CS or controller
+    BLOCK = "block"  # malcolm level connection to another Block
 
     def sink_port_tag(self, disconnected_value):
         """Add a tag indicating this is a Sink Port of the given type

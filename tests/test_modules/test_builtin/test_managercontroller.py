@@ -87,6 +87,8 @@ class TestManagerController(unittest.TestCase):
         assert self.c.exports.value.export == []
         assert self.c.modified.value is False
         assert self.c.modified.alarm.message == ""
+        assert self.b.mri.value == "mainBlock"
+        assert self.b.mri.meta.tags == ["sourcePort:block:mainBlock"]
 
     def check_expected_save(self, x=0.0, y=0.0, visible="true",
                             attr="defaultv"):
@@ -193,6 +195,7 @@ class TestManagerController(unittest.TestCase):
             'state',
             'disable',
             'reset',
+            'mri',
             'layout',
             'design',
             'exports',
@@ -217,6 +220,7 @@ class TestManagerController(unittest.TestCase):
             'state',
             'disable',
             'reset',
+            'mri',
             'layout',
             'design',
             'exports',

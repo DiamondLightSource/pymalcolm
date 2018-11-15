@@ -71,6 +71,7 @@ class TestSystemPVA(unittest.TestCase):
             'state',
             'disable',
             'reset',
+            'mri',
             'layout',
             'design',
             'exports',
