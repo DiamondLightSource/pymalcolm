@@ -143,7 +143,7 @@ class Process(Loggable):
                 self.log.debug(
                     "Waiting for %s *%s **%s", s._function, s._args, s._kwargs)
             s.wait(timeout=timeout)
-        self._spawned = []  # type: List[Spawned]
+        self._spawned = []
         self._controllers = OrderedDict()
         self._unpublished = set()
         self.state = STOPPED
