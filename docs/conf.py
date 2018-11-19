@@ -39,8 +39,11 @@ from annotypes import make_annotations
 
 # Mock out failing imports
 MOCK_MODULES = [
-    "scanpointgenerator", "p4p", "plop", "plop.viewer", "h5py", "vdsgen",
-    "tornado", "tornado.options"]
+    "scanpointgenerator",
+    "p4p", "p4p.client.raw",
+    "plop", "plop.viewer",
+    "h5py", "vdsgen", "vdsgen.subframevdsgenerator",
+    "tornado", "tornado.options", "tornado.httpserver"]
 
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
@@ -168,6 +171,7 @@ intersphinx_mapping = dict(
         'http://scanpointgenerator.readthedocs.io/en/latest/', None),
     numpy=('https://docs.scipy.org/doc/numpy/', None),
     tornado=('http://www.tornadoweb.org/en/stable/', None),
+    p4p=('https://mdavidsaver.github.io/p4p-dev/', None)
 )
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
