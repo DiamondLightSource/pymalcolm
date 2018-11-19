@@ -31,6 +31,7 @@ else:
     require("numpy")
     require("ruamel.yaml")
     require("annotypes")
+    require("cothread")
 
 
 from mock import MagicMock
@@ -38,7 +39,8 @@ from annotypes import make_annotations
 
 # Mock out failing imports
 MOCK_MODULES = [
-    "scanpointgenerator", "pvaccess", "plop", "plop.viewer", "h5py", "vdsgen"]
+    "scanpointgenerator", "p4p", "plop", "plop.viewer", "h5py", "vdsgen",
+    "tornado", "tornado.options"]
 
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
