@@ -3,6 +3,9 @@ from annotypes import add_call_types
 from malcolm.core import APartName
 from malcolm.modules import builtin, scanning
 
+#: The SEQ.table attributes that should be present in PANDA.exports
+SEQ_TABLES = ("seqTableA", "seqTableB")
+
 
 class PandABlocksPcompPart(builtin.parts.ChildPart):
     """Part for controlling a `stats_plugin_block` in a Device"""
@@ -20,6 +23,9 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         self.loading = False
         # The mri of the panda we should be prodding
         self.panda_mri = None
+        # The mris of the sequencers we will be using
+        self.seqa_mri = None
+        self.seqb_mri = None
         # Hooks
         self.register_hooked(scanning.hooks.ConfigureHook,
                              self.configure)
@@ -47,17 +53,44 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         assert part_info
         # TODO: store here?
         assert axesToMove
+        # Our PandA might not be wired up yet, so this is as far as
+        # we can get
         self.panda_mri = context.block_view(self.mri).panda.value
+
+    def _get_seq_mris(self, context):
+        # {part_name: export_name}
+        panda = context.block_view(self.panda_mri)
+        seq_part_names = {}
+        for source, export in panda.exports.value.rows():
+            if export in SEQ_TABLES:
+                assert source.endswith(".table"), \
+                    "Expected export %s to come from SEQx.table, got %s" %(
+                        export, source)
+                seq_part_names[source[:-len(".table")]] = export
+        assert sorted(seq_part_names.values()) == SEQ_TABLES, \
+            "Expected exported attributes %s, got %s" % (
+                SEQ_TABLES, panda.exports.value.export)
+        # {export_name: mri}
+        seq_mris = {}
+        for name, mri, _, _, _ in panda.layout.value.rows():
+            if name in seq_part_names:
+                export = seq_part_names[name]
+                seq_mris[export] = mri
+        assert sorted(seq_mris) == sorted(seq_part_names.values()), \
+            "Couldn't find MRI for some of %s" % (seq_part_names.values(),)
+        return seq_mris
 
     @add_call_types
     def post_configure(self, context):
         # type: (scanning.hooks.AContext) -> None
+        seq_mris = self._get_seq_mris(context)
+        self.seqa_mri = seq_mris[SEQ_TABLES[0]]
+        self.seqb_mri = seq_mris[SEQ_TABLES[1]]
         # load up the first SEQ
-        panda = context.block_view(self.panda_mri)
-        panda.seqTableA.put_value({})
+        self._fill_sequencer()
 
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
         panda = context.block_view(self.panda_mri)
-        panda.seqTableB.put_value({})
+

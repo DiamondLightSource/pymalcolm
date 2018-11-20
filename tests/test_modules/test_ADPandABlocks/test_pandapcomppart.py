@@ -118,15 +118,4 @@ class TestPcompPart(ChildTestCase):
         assert self.o.scan_up_to == completed_steps + steps_to_do
         self.o.post_configure(self.context)
 
-    def test_run(self):
-        self.o.registrar = MagicMock()
-        self.o.run(self.context)
-        assert self.child.handled_requests.mock_calls == [
-            call.post('start')]
-        assert self.o.registrar.report.called_once
-        assert self.o.registrar.report.call_args[0][0].steps == 0
 
-    def test_abort(self):
-        self.o.abort(self.context)
-        assert self.child.handled_requests.mock_calls == [
-            call.post('stop')]
