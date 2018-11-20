@@ -877,6 +877,7 @@ class TableMeta(VMeta):
 
     @classmethod
     def from_table(cls, table_cls, description, widget=None, writeable=()):
+        # type: (Type[Table], str, Widget, List[str]) -> TableMeta
         """Create a TableMeta object, using a Table subclass as the spec
 
         Args:
@@ -886,7 +887,6 @@ class TableMeta(VMeta):
             writeable: A list of the writeable field names. If there are any
                 writeable fields then the whole Meta is writeable
             """
-        # type: (Type[Table], str, Widget, List[str]) -> TableMeta
         elements = OrderedDict()
         for k, ct in table_cls.call_types.items():
             subclass = cls.lookup_annotype_converter(ct)
@@ -904,6 +904,12 @@ class TableMeta(VMeta):
         # type: (Anno, bool, **Any) -> VMeta
         assert issubclass(anno.typ, Table), \
             "Expected Table, got %s" % anno.typ
+        if writeable:
+            # All fields are writeable
+            writeable = list(anno.typ.call_types)
+        else:
+            # No fields are writeable
+            writeable = []
         return cls.from_table(anno.typ, anno.description, writeable=writeable)
 
 

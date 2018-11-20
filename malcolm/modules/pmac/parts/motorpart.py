@@ -32,6 +32,9 @@ class MotorPart(builtin.parts.ChildPart):
             offset=child.offset.value,
             max_velocity=max_velocity,
             current_position=child.readback.value,
+            # We put a scannable in the object rather than relying on the part
+            # name of the dictionary as it allows the part_info structure to be
+            # flattened and iterated over in PmacTrajectoryPart
             scannable=self.name,
             velocity_settle=child.velocitySettle.value,
             units=child.units.value

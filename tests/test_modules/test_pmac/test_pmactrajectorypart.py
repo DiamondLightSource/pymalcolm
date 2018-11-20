@@ -64,7 +64,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
             x_velocity=1.0, y_velocity=1.0):
         # create some parts to mock the motion controller and 2 axes in a CS
         part_info = dict(
-            xpart=[MotorInfo(
+            x=[MotorInfo(
                 cs_axis="A",
                 cs_port="CS1",
                 acceleration=x_acceleration,
@@ -76,7 +76,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
                 velocity_settle=0.0,
                 units=units
             )],
-            ypart=[MotorInfo(
+            y=[MotorInfo(
                 cs_axis="B",
                 cs_port="CS1",
                 acceleration=y_acceleration,
