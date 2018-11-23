@@ -1,17 +1,23 @@
-from malcolm.core import Part, config_tag, NumberMeta, PartRegistrar
+from malcolm.core import Part, config_tag, NumberMeta, PartRegistrar, \
+    APartName, Widget
 
 
 class CounterPart(Part):
     """Defines a counter `Attribute` with zero and increment `Method` objects"""
-    counter = None
-    """Holds the current counter value"""
+
+    def __init__(self, name):
+        # type: (APartName) -> None
+        super(CounterPart, self).__init__(name)
+        # TODO: why doesn't this show up in the docs for CounterPart?
+        self.counter = NumberMeta(
+            "float64", "The current value of the counter",
+            tags=[config_tag(), Widget.TEXTINPUT.tag()]
+        ).create_attribute_model()
+        """Attribute holding the current counter value"""
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        # Create writeable attribute for current counter value
-        self.counter = NumberMeta(
-            "float64", "The current value of the counter", tags=[config_tag()]
-        ).create_attribute_model()
+        # Add some Attribute and Methods to the Block
         registrar.add_attribute_model(
             "counter", self.counter, self.counter.set_value)
         registrar.add_method_model(self.zero)

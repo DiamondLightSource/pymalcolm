@@ -7,68 +7,28 @@ if TYPE_CHECKING:
     from typing import Sequence, Union, Tuple, List
 
 
-def method_return_unpacked():
-    """This method has a single element returns, and when called will return
-    this single element unpacked rather than in a single element map
-
-    E.g.
-       hello.greet("me") -> "Hello me" not {"return": "Hello me"}
-    """
-    tag = "method:return:unpacked"
-    return tag
-
-
-def group_tag(group_name):
-    # type: (str) -> str
-    """Marks this field as belonging to a group"""
-    tag = "group:%s" % group_name
-    return tag
-
-
-def without_group_tags(tags):
-    # type: (Sequence[str]) -> List[str]
-    """Return a new list of tags without any group tags"""
-    new_tags = [x for x in tags if not x.startswith("group:")]
-    return new_tags
-
-
-def config_tag(iteration=1):
-    # type: (int) -> str
-    """Marks this field as a value that should be saved and loaded at config
-
-    Args:
-        iteration: All iterations are sorted in increasing order and done in
-            batches of the same iteration number
-    """
-    tag = "config:%d" % iteration
-    return tag
-
-
-def get_config_tag(tags):
-    # type: (Sequence[str]) -> Union[str, None]
-    """Get the config_tag from tags or return None"""
-    for tag in tags:
-        if tag.startswith("config:"):
-            return tag
-
-
 class Widget(Enum):
     """Enum with all the known widget tags to appear on Attribute Metas"""
-    NONE = ""  # Force no widget
-    TEXTINPUT = "textinput"  # Editable text input box
-    TEXTUPDATE = "textupdate"  # Read only text update
-    MULTILINETEXTUPDATE = "multilinetextupdate"  # Multi line text update
-    LED = "led"  # On/Off LED indicator
-    COMBO = "combo"  # Select from a number of choice values
-    ICON = "icon"  # This field gives the URL for an icon for the whole Block
-    HELP = "help"  # Gives a URL for the help documentation for the Block
-    GROUP = "group"  # Group node in a TreeView that other fields can attach to
-    TABLE = "table"  # Table of rows. A list is a single column table
-    CHECKBOX = "checkbox"  # A box that can be checked or not
-    FLOWGRAPH = "flowgraph"  # Boxes with lines for child block connections
-    TREE = "tree"  # A nested tree of object models editor
+    NONE = ""  #: Force no widget
+    TEXTINPUT = "textinput"  #: Editable text input box
+    TEXTUPDATE = "textupdate"  #: Read only text update
+    MULTILINETEXTUPDATE = "multilinetextupdate"  #: Multi line text update
+    LED = "led"  #: On/Off LED indicator
+    COMBO = "combo"  #: Select from a number of choice values
+    ICON = "icon"  #: This field gives the SVG icon for the whole Block
+    HELP = "help"  #: Gives a URL for the help documentation for the Block
+    GROUP = "group"  #: Expandable section that other Attributes can appear in
+    TABLE = "table"  #: Table of rows with a widget type for each column
+    CHECKBOX = "checkbox"  #: A box that can be checked or not
+    FLOWGRAPH = "flowgraph"  #: Boxes with lines for child block connections
+    TREE = "tree"  #: A nested tree of object models editor
 
     def tag(self):
+        """Return the actual tag for the given Widget
+
+        E.g.
+            Widget.LED.tag() -> "widget:led"
+        """
         assert self != Widget.NONE, "Widget.NONE has no widget tag"
         return "widget:%s" % self.value
 
@@ -79,11 +39,11 @@ port_tag_re = re.compile(r"(source|sink)Port:(.*):(.*)")
 class Port(Enum):
     """Enum with all the known flowgraph port tags to appear on Attribute
     Metas"""
-    BOOL = "bool"  # Boolean
-    INT32 = "int32"  # 32-bit signed integer
-    NDARRAY = "NDArray"  # areaDetector NDArray port
-    MOTOR = "motor"  # motor record connection to CS or controller
-    BLOCK = "block"  # malcolm level connection to another Block
+    BOOL = "bool"  #: Boolean value. Typically used in PandA
+    INT32 = "int32"  #: 32-bit signed integer. Typically used in PandA
+    NDARRAY = "NDArray"  #: areaDetector NDArray port
+    MOTOR = "motor"  #: Motor record connection to CS or controller
+    BLOCK = "block"  #: Malcolm level connection to another Block
 
     def sink_port_tag(self, disconnected_value):
         """Add a tag indicating this is a Sink Port of the given type
@@ -127,3 +87,48 @@ class Port(Enum):
             if match:
                 source_sink, port, extra = match.groups()
                 return source_sink == "source", cls(port), extra
+
+
+def group_tag(group_name):
+    # type: (str) -> str
+    """Marks this field as belonging to a group"""
+    tag = "group:%s" % group_name
+    return tag
+
+
+def without_group_tags(tags):
+    # type: (Sequence[str]) -> List[str]
+    """Return a new list of tags without any group tags"""
+    new_tags = [x for x in tags if not x.startswith("group:")]
+    return new_tags
+
+
+def config_tag(iteration=1):
+    # type: (int) -> str
+    """Marks this field as a value that should be saved and loaded at config
+
+    Args:
+        iteration: All iterations are sorted in increasing order and done in
+            batches of the same iteration number
+    """
+    tag = "config:%d" % iteration
+    return tag
+
+
+def get_config_tag(tags):
+    # type: (Sequence[str]) -> Union[str, None]
+    """Get the config_tag from tags or return None"""
+    for tag in tags:
+        if tag.startswith("config:"):
+            return tag
+
+
+def method_return_unpacked():
+    """This method has a single element returns, and when called will return
+    this single element unpacked rather than in a single element map
+
+    E.g.
+       hello.greet("me") -> "Hello me" not {"return": "Hello me"}
+    """
+    tag = "method:return:unpacked"
+    return tag

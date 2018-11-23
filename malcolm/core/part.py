@@ -102,6 +102,10 @@ class Part(Hookable):
 
 
 class PartRegistrar(object):
+    """Utility object that allows Parts to register Methods and Attributes
+    with their parent Controller that will appear in the Block
+    """
+
     def __init__(self, field_registry, info_registry, part):
         # type: (FieldRegistry, InfoRegistry, Part) -> None
         self._field_registry = field_registry
@@ -119,7 +123,7 @@ class PartRegistrar(object):
                          description=None,  # type: Optional[str]
                          ):
         # type: (...) -> MethodModel
-        """Register a function to be added to the block"""
+        """Register a function to be added to the Block as a MethodModel"""
         return self._field_registry.add_method_model(
             func, name, description, self._part)
 
@@ -129,9 +133,11 @@ class PartRegistrar(object):
                             writeable_func=None,  # type: Optional[Callable]
                             ):
         # type: (...) -> AttributeModel
+        """Register a pre-existing AttributeModel to be added to the Block"""
         return self._field_registry.add_attribute_model(
             name, attr, writeable_func, self._part)
 
     def report(self, info):
         # type: (Info) -> None
+        """Report an Info to the parent Controller"""
         self._info_registry.report(self._part, info)

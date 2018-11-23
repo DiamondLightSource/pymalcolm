@@ -33,8 +33,8 @@ class TestScanTickerPart(unittest.TestCase):
 
     def test_configure(self):
         self.prepare_half_run()
-        assert self.o.completed_steps == 0
-        assert self.o.steps_to_do == 2
+        assert self.o._completed_steps == 0
+        assert self.o._steps_to_do == 2
 
     def test_run(self):
         self.prepare_half_run()

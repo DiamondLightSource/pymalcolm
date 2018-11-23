@@ -323,56 +323,24 @@ to be defined once.
 
 The class we define is called ``HelloPart`` and it subclasses from `Part`. It
 implements `Part.setup` so that it can register two methods with the
+`PartRegistrar` object passed to it by it's `Controller`.
 
-
-
-It has a a method called ``greet`` that has a
-`decorator`_ on it and contains the actual business logic. In Python,
-decorators can be stacked many deep and can modify the function or class they
-are attached to. It also has a special `type comment`_ that tells some IDEs like
-PyCharm what type the arguments and return value are.
+It has a a method called ``greet`` that has a `decorator`_ on it and contains
+the actual business logic. In Python, decorators can be stacked many deep and
+can modify the function or class they are attached to. It also has a special
+`type comment`_ that tells some IDEs like PyCharm what type the arguments and
+return value are.
 
 The decorator and type comment work together to annotate the function at runtime
 with a special ``call_types`` variable that Malcolm uses to validate and
 provide introspection information about the Method.
 
-
-
-Let's take a closer look at those decorators. 
-
-1. `method_takes` defines the arguments that the ``greet`` method will take and
-   hence the contents of the  ``parameters`` argument. Malcolm will take any input arguments,
-   validate them, and create a `Map` instance with the `method_takes` arguments
-
-2. `method_returns` defines the values that the method will return. Malcolm will create
-   an empty `Map` configured to validate the items specified in `method_returns`
-   and pass it as ``return_map``, the final argument to ``greet``.
-
-Both of these decorators consumes their arguments in groups of 3:
-
-- name (str): The name of the argument
-- meta (`VMeta`): A Meta object that will validate that argument
-- `OPTIONAL`/`REQUIRED`/default_value: If REQUIRED then the argument
-  must be specified, if OPTIONAL then it may be specified, otherwise the value
-  is used as a default value for the argument
-
 Inside the actual function, we print a message just so we can see what is
 happening, then sleep for a bit to simulate doing some work, then place the
 greeting into the return map and return it.
 
-There is also a `method_takes` decorator on the class. This is used to define
-the parameters that ``HelloPart.__init__`` should receive in it's params `Map`.
-The reason it's on the class rather than the ``__init__`` function is because
-it's less likely to get lost there when subclassing.
-
-The last thing to explain is the `super` call in ``__init__``. This is a Python
-construct that lets us reliably call methods of our superclass that we have just
-overridden, even if multiple inheritance is used. If someone instantiates
-HelloPart, then ``super(HelloPart, self).__init__`` will return the ``__init__``
-function of the `Part`, bound so that ``self`` does not need to be passed into
-it. It's not necessary to understand what `super` does, but it is necessary to
-use it when you need to call the method you have just overridden, otherwise your
-class may not behave correctly if subclassed and multiple inheritance is used.
+There is also a second method called ``error`` that just raises an error. This
+doesn't need a decorator as it doesn't take any arguments or return anything.
 
 Conclusion
 ----------

@@ -3,6 +3,8 @@
 Generator Tutorial
 ==================
 
+.. module:: malcolm.core
+
 You should already know how to create a `part_` that attaches `Attributes
 <attribute_>` and `Methods <method_>` to a `block_`. The Blocks we have made in
 previous tutorials are quite simple and low level and might correspond to the
@@ -30,8 +32,7 @@ These higher level Blocks have two main methods:
 The application we have chosen for this tutorial is a ScanTicker. It will take
 the specification for a scan then use a number of Counter blocks, that we saw in
 the last tutorial, setting them to the demand positions of the axes in the
-scan. This will look a little like a Motor Controller performing a continuous
-scan.
+scan. This will look a little like a Motor Controller performing a scan.
 
 Let's take a look at the Process definition ``./malcolm/modules/demo/DEMO-TICKER.yaml``:
 
@@ -179,8 +180,8 @@ generators which work together to generate multi-dimensional scan paths. We
 will make our ScanTicker Block understand these generators.
 
 
-Hooking into configure() and run()
-----------------------------------
+Hooking into configure()
+------------------------
 
 We mentioned earlier that a Part can register functions to run the correct
 phase of Methods provided by the Controller. Lets take a look at the first
@@ -189,36 +190,54 @@ works:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/scantickerpart.py
     :language: python
-    :end-before: @RunnableController.Run
+    :end-before: # Run scan
 
-You'll notice some more decorators on those functions. The
-``@RunnableController.Configure`` line registers a function with a `hook_`. A
-Controller defines a a number of Hooks that define what methods of a Part will
-be run during a particular Method. For example, we are hooking our
-``configure()`` method to the `Configure` Hook.
+Again we override ``__init__``, but after initializing some
+`protected variables`_ we have some `hook_` statements. These call
+:meth:`~Part.register_hooked` to register a function to be run with one or more
+`Hook` classes. A Controller defines a a number of Hooks that define what
+methods of a Part will be run during a particular Method. For example, we are
+hooking our ``configure()`` method to the `ConfigureHook`.
 
 Let's take a look at its documentation:
 
-.. py:currentmodule:: malcolm.modules.scanning.controllers
-
-.. autoattribute:: RunnableController.Configure
+.. autoclass:: malcolm.modules.scanning.hooks.ConfigureHook
     :noindex:
 
 What happens in practice is that when ``TICKER.configure()`` is called, all the
-functions hooked to `Configure` will be called concurrently. They will each
-be passed the five arguments listed in the documentation above. Our ScanTicker
-``configure()`` method simply stores the relevant information so that the
-``run()`` method can operate on it. 
+functions hooked to `ConfigureHook` will be called concurrently. They will each
+be called with the arguments that they ask for (as long as its name appears in
+the documentation for the Hook). Our ScanTicker ``configure()`` method simply
+stores the relevant information so that the ``run()`` method can operate on it.
 
-Lets look at that next:
+Passing Infos back to the Controller
+------------------------------------
+
+You may have noticed that ``configure()`` takes an extra ``exceptionStep``
+argument, how does the Controller know to pass this? Well in ``setup()`` we
+report an `info_`. This is a way of telling our parent Controller something
+about us, either in response to a `hook_`, or asynchronously using
+`PartRegistrar.report`. In this case, we call `ConfigureHook.create_info` which
+scans our ``configure`` method for extra arguments and puts them in a
+`ConfigureParamsInfo` object that we can ``report()`` back. The docstring
+for this info explains what the Controller will do with this:
+
+.. autoclass:: malcolm.modules.scanning.infos.ConfigureParamsInfo
+    :noindex:
+
+Hooking into run()
+------------------
+
+We also hooked our ``run()`` method in ``__init__``. Let's take a look at
+what it does:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/scantickerpart.py
     :language: python
-    :start-after: self.generator = None
+    :start-after: # Run scan
 
-This is hooked to the `Run` Hook. Let's take a look at its documentation:
+This is hooked to the `RunHook`. Let's take a look at its documentation:
 
-.. autoattribute:: RunnableController.Run
+.. autoclass:: malcolm.modules.scanning.hooks.RunHook
     :noindex:
 
 Walking through the code we can see that we are iterating through each of the
@@ -231,11 +250,14 @@ attributes at the same time.
 
 After we have done the put, we work out how long we need to wait until the
 next position is to be produced, then do an interruptable sleep. Finally we
-call ``update_completed_steps`` with the step number and self, the object that
-is producing the update.
+:meth:`~PartRegistrar.report` a `RunProgressInfo` with the current step number.
 
 .. note:: Step numbers in Malcolm are 1-indexed, so a value of 0 means no steps
     completed.
+
+The Controller will use all of the `RunProgressInfo` instances to work out
+how far the actual scan has progressed, and report it in the Block's
+``currentStep`` Attribute.
 
 .. highlight:: ipython
 
@@ -278,7 +300,7 @@ Then enter::
 
     In [1]: from scanpointgenerator import LineGenerator, CompoundGenerator
 
-    In [2]: ticker = self.block_view("TICKER")
+    In [2]: from scanpointgenerator.plotgenerator import plot_generator
 
     In [3]: yline = LineGenerator("y", "mm", 0., 1., 6)
 
@@ -286,33 +308,53 @@ Then enter::
 
     In [5]: generator = CompoundGenerator([yline, xline], [], [], duration=0.5)
 
-    In [6]: ticker.configure(generator, ["x", "y"])
+We can then see what this generator looks like::
 
-    In [7]: gui(ticker)
+    In [6]: plot_generator(generator)
 
-    In [8]: gui(self.block_view("COUNTERX"))
-
-    In [9]: gui(self.block_view("COUNTERY"))
+.. image:: ticker_0.png
 
 What we have done here is set up a scan that is 6 rows in y and 5 columns in x.
 The x value will snake forwards and backwards, and the y value will increase
 at the end of each x row. We have told it that each scan point should last for
-0.5 seconds, which should give us enough time to see the ticks.
+0.5 seconds, which should give us enough time to see the ticks. If this is the
+scan that we wanted to do then we can either configure from the terminal, or
+dump the JSON so we can use the GUI. Let's do the latter::
 
-If you now click the run button on the TICKER window, you should now see a scan
-performed:
+    In [7]: from malcolm.core import json_encode
+
+    In [8]: json_encode(generator)
+    Out[8]: '{"typeid": "scanpointgenerator:generator/CompoundGenerator:1.0", "excluders": [], "continuous": true, "generators": [{"typeid": "scanpointgenerator:generator/LineGenerator:1.0", "alternate": false, "axes": ["y"], "stop": [1.0], "start": [0.0], "units": ["mm"], "size": 6}, {"typeid": "scanpointgenerator:generator/LineGenerator:1.0", "alternate": true, "axes": ["x"], "stop": [1.0], "start": [0.0], "units": ["mm"], "size": 5}], "duration": 0.5, "mutators": []}'
+
+Then we can open http://localhost:8008/gui/TICKER/layout to see the **TICKER**
+Block on the left, and the layout of child Blocks in the centre. If we then
+click AutoLayout we can see more clearly, and clicking on one of the Blocks
+will display it in the right pane:
 
 .. image:: ticker_1.png
 
+If we expand the Configure method and click Edit by the Generator field we can
+paste in our JSON:
+
+.. image:: ticker_2.png
+
+We can then click Configure and we will see the State change to Armed. If we
+go back to the layout view and select the x block again, then click Run we will
+see the scan be performed:
+
+.. image:: ticker_3.png
+
+We can then click on the info icon next to the counter attribute in the right
+hand window to see a table or plot of the values that the ticker went to:
+
+.. image:: ticker_4.png
+
 From here you can try pausing, resuming and seeking within the scan. If you want
-to re-run the scan you need to run::
+to re-run the scan you will need to click Configure again.
 
-    In [11]: ticker.configure(generator, ["x", "y"])
-
-This is because the GUI doesn't yet include an editor for scan specifications.
-This command will set the device to ``Armed`` so that you can then ``run()``
-again. See `RunnableStates` for more information about what functions you can
-run in different Block states.
+.. seealso::
+    `RunnableStates` has more information about what functions you can
+    run in different Block states.
 
 What is happening under the hood is that our hooked ``configure()`` method is
 being called during ``pause()``, ``configure()`` and ``seek()``, but we want it
@@ -329,3 +371,7 @@ Malcolm, how child Hardware Blocks are controlled from a parent Device Block and
 how Parts can register code to run at different phases of a Controller. In the
 next tutorial we will see how to make an `EPICS`_ `areaDetector`_ Block in the
 `device_layer_` capable of performing scans.
+
+
+.. _protected variables:
+    https://radek.io/2011/07/21/private-protected-and-public-in-python

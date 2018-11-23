@@ -83,9 +83,21 @@ exposes the attributes that the hardware device provides. Introduced in the
 Hook
 ----
 
-A `Hook` is an object attached to a `controller_` that `Parts <part_>` can
+A `Hook` is an object created by a `controller_` that `Parts <part_>` can
 register with so that arbitrary logic is run concurrently during specific times
 in Controller `Methods <method_>`. Introduced in the `generator_tutorial`.
+
+
+.. _info_:
+
+Info
+----
+
+A `Info` is an object created by a `part_` that is passed up to its parent
+`controller_` in response to a `hook_` or asynchronously by the call of
+`PartRegistrar.report()`. These may they be passed back down to all the
+children of the Controller via another Hook. Introduced in the
+`generator_tutorial`.
 
 
 .. _method_:

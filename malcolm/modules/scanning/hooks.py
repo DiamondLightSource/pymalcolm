@@ -91,6 +91,8 @@ class ConfigureHook(ControllerHook[UInfos]):
     @classmethod
     def create_info(cls, configure_func):
         # type: (Callable) -> ConfigureParamsInfo
+        """Create a `ConfigureParamsInfo` describing the extra parameters
+        that should be passed at configure"""
         call_types = getattr(configure_func, "call_types",
                              {})  # type: Dict[str, Anno]
         metas = OrderedDict()

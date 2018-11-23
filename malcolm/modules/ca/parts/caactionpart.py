@@ -5,29 +5,30 @@ from malcolm.modules import builtin
 from .. import util
 
 with Anno("Status pv to see if successful"):
-    StatusPv = str
+    AStatusPv = str
 with Anno("Good value for status pv"):
-    GoodStatus = str
+    AGoodStatus = str
 with Anno("PV containing error message if unsuccessful"):
-    MessagePv = str
+    AMessagePv = str
 with Anno("Value to write to pv when method called"):
-    Value = int
+    AValue = int
 with Anno("Wait for caput callback?"):
-    Wait = bool
+    AWait = bool
 
 
 class CAActionPart(Part):
-    """Group a number of PVs together that represent a method like acquire()"""
+    """Group a number of PVs together that represent a method like acquire()
+    """
 
     def __init__(self,
                  name,  # type: util.APartName
                  description,  # type: util.AMetaDescription
                  pv="",  # type: util.APv
-                 status_pv="",  # type: StatusPv
-                 good_status="",  # type: GoodStatus
-                 message_pv="",  # type: MessagePv
-                 value=1,  # type: Value
-                 wait=True,  # type: Wait
+                 status_pv="",  # type: AStatusPv
+                 good_status="",  # type: AGoodStatus
+                 message_pv="",  # type: AMessagePv
+                 value=1,  # type: AValue
+                 wait=True,  # type: AWait
                  ):
         # type: (...) -> None
         super(CAActionPart, self).__init__(name)

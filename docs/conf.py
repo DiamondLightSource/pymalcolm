@@ -6,6 +6,8 @@ import os
 import re
 import sys
 
+from enum import Enum
+
 
 def get_version():
     """Extracts the version number from the version.py file."""
@@ -35,15 +37,17 @@ else:
 
 
 from mock import MagicMock
-from annotypes import make_annotations
+from annotypes import make_annotations, Anno
 
 # Mock out failing imports
 MOCK_MODULES = [
     "scanpointgenerator",
-    "p4p", "p4p.client.raw",
+    "p4p", "p4p.nt", "p4p.client", "p4p.client.raw", "p4p.client.cothread",
+    "p4p.server", "p4p.server.cothread",
     "plop", "plop.viewer",
     "h5py", "vdsgen", "vdsgen.subframevdsgenerator",
-    "tornado", "tornado.options", "tornado.httpserver"]
+    "tornado", "tornado.options", "tornado.httpserver", "tornado.web",
+    "tornado.ioloop", "tornado.websocket"]
 
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
@@ -57,6 +61,8 @@ sys.path.append(os.path.dirname(__file__))
 def skip_member(app, what, name, obj, skip, options):
     # Override @add_call_types to always be documented
     if hasattr(obj, "call_types") or hasattr(obj, "return_type"):
+        return False
+    elif isinstance(obj, Enum):
         return False
 
 
@@ -78,6 +84,7 @@ def process_docstring(app, what, name, obj, options, lines):
             typ = getattr(anno.typ, "__name__", None)
             if typ:
                 lines.append(":type %s: %s" % (k, typ))
+            lines.append("")
         needs_call_types = False
     if needs_return_type and hasattr(obj, "return_type"):
         # If we have a return type and it isn't the object itself
@@ -166,12 +173,12 @@ exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
 intersphinx_mapping = dict(
-    python=('https://docs.python.org/2.7/', None),
+    python=('http://docs.python.org/3/', None),
     scanpointgenerator=(
         'http://scanpointgenerator.readthedocs.io/en/latest/', None),
-    numpy=('https://docs.scipy.org/doc/numpy/', None),
+    numpy=('http://docs.scipy.org/doc/numpy/', None),
     tornado=('http://www.tornadoweb.org/en/stable/', None),
-    p4p=('https://mdavidsaver.github.io/p4p-dev/', None)
+    p4p=('http://mdavidsaver.github.io/p4p-dev/', None)
 )
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.

@@ -35,10 +35,7 @@ Contents
 
     api/core_api
     build/modules_api
+    api/external_api
 
 * :ref:`genindex`
 
-.. class:: list
-
-    This seems to have been unindexed from the standard library's objects.inv.
-    It's just under `len`

@@ -279,9 +279,13 @@ class AttributeModel(Model):
     def __init__(self, value=None, alarm=None, timeStamp=None, meta=None):
         # type: (AValue, AAlarm, ATimeStamp, AVMeta) -> None
         self.meta = self.set_meta(meta)
+        """A Meta object describing the Attribute"""
         self.value = self.set_value(value, set_alarm_ts=False)
+        """The current value of the Attribute"""
         self.alarm = self.set_alarm(alarm)
+        """An Alarm object indicating any problems"""
         self.timeStamp = self.set_ts(timeStamp)
+        """When value was last set"""
 
     def set_meta(self, meta):
         # type: (VMeta) -> VMeta

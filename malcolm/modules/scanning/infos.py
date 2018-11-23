@@ -20,7 +20,9 @@ class ParameterTweakInfo(Info):
 
 
 class ConfigureParamsInfo(Info):
-    """Info about the parameters that should be passed to the Part in configure
+    """Info about the parameters that should be passed to the Part in configure.
+    The Controller will validate these when Block.configure() is called, and
+    pass them to all Parts that have registered interest in them.
 
     Args:
         metas: Metas for the extra parameters

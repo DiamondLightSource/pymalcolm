@@ -73,12 +73,50 @@ Let's take a look at the definition of `CounterPart` in
 .. literalinclude:: ../../malcolm/modules/demo/parts/counterpart.py
     :language: python
 
-Again, we start by subclassing `Part`, and we have decorated a couple
-of functions with `method_takes`, but this time they don't take or
-return any arguments, so the functions don't have a ``parameters`` argument.
-The main difference to the Hello example is that we have implemented
-:meth:`~Part.create_attribute_models` which expects us to create and yield any
-`AttributeModel` instances we expect the Block to have.
+Again, we start by subclassing `Part`, but this time we do some extra work in
+the ``__init__`` method. Whenever we override ``__init__`` it is important to
+call the ``__init__`` that we have just overridden, and that is what the
+`super` call does. This is a Python construct that lets us reliably call methods
+of our superclass that we have just overridden, even if multiple inheritance is
+used. If someone instantiates CounterPart, then
+``super(CounterPart, self).__init__`` will return the ``__init__`` function of
+the `Part`, bound so that ``self`` does not need to be passed into it.
+
+.. note::
+    It's not necessary to understand what `super` does, but it is necessary to
+    use it when you need to call the method you have just overridden, otherwise
+    your class may not behave correctly if subclassed and multiple inheritance
+    is used.
+
+We also add a type comment to the ``__init__`` method that tells anyone using
+the Part what parameters should be passed to the initializer. In this case, we
+don't actually add any parameters, just the ``name`` parameter that has been
+defined by `Part`, so we can reuse the ``APartName`` Anno object to avoid
+having to duplicate the type and description of this parameter.
+
+Finally for ``__init__`` we create an `AttributeModel`. To make the
+AttributeModel we first need to make a meta object. In our example we want a
+``float64`` `NumberMeta` as we want to demonstrate floating point numbers. If
+our counter was an integer we could choose ``int32`` or ``int64``. The actual
+AttributeModel is returned by the :meth:`~VMeta.create_attribute_model` method
+of this meta so that the correct type of AttributeModel can be chosen by the
+particular type of Meta object we specify. We specify a number of
+`tags_reference` on the Meta object that gives some hints about how this
+Attribute will be used. In this case, we specify a `config_tag` to say that
+this field is a configuration variable that will be marked for load/save, and
+a `Widget` tag that tells a GUI which widget to use to display this Attribute.
+
+
+The ``setup`` function looks very similar to the one in the previous tutorial,
+but this time we also register our `AttributeModel` so it appears in the parent
+`block_`. We do this by calling :meth:`~PartRegistrar.add_attribute_model` with
+3 arguments:
+
+- ``"counter"``: the name of the Attribute within the Block
+- ``self.counter``: the AttributeModel instance
+- ``self.counter.set_value``: the function that will be called when someone
+  tries to "Put" to the Attribute. If one isn't supplied then the Attribute
+  will not be writeable
 
 .. note:: We are producing an `AttributeModel` rather than an `Attribute`.
 
@@ -88,34 +126,21 @@ The main difference to the Hello example is that we have implemented
     own `Attribute` view of a single underlying `AttributeModel` that holds the
     actual data.
 
-In our example we yield:
-
-- ``"counter"``: the name of the Attribute within the Block
-- ``self.counter``: the AttributeModel instance
-- ``self.counter.set_value``: the function that will be called when someone
-  tries to "Put" to the Attribute, or None if it isn't writeable
-
-To make the AttributeModel we first need to make a meta object. In our example
-we want a ``float64`` `NumberMeta` as we want to demonstrate floating point
-numbers. If our counter was an integer we could choose ``int32`` or ``int64``.
-The actual AttributeModel is returned by the
-:meth:`~VMeta.create_attribute_model` method of this meta.
-
 In the two methods (zero and increment), we make use of the ``counter``
-Attribute. We can get its value by using the :attr:`~AttributeModel.value`
+AttributeModel. We can get its value by using the :attr:`~AttributeModel.value`
 attribute and set its value by calling the :meth:`~AttributeModel.set_value`
 method. This method will validate the new value using the `VMeta` object we
-passed in :meth:`~Part.create_attribute_models` and notify any interested subscribers
-that something has changed.
-
+created in ``__init__`` and notify any interested subscribers that something has
+changed.
 
 Visualising the Block with the GUI
 ----------------------------------
 
 .. highlight:: ipython
 
-There is a basic PyQt GUI that ships with pymalcolm. We can use it to play
-with this counter block and see how it works. Let's launch our demo again::
+There is a web GUI that ships with pymalcolm, called `malcolmjs`_. We can use it
+to play with this counter block and see how it works. Let's launch our demo
+again::
 
     [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-HELLO.yaml
     Loading...
@@ -132,11 +157,11 @@ with this counter block and see how it works. Let's launch our demo again::
     Welcome to iMalcolm.
 
     self.mri_list:
-        ['localhost:8008']
+        ['HELLO', 'HELLO2', 'COUNTER', 'WEB']
 
     Try:
     hello = self.block_view("HELLO")
-    print hello.greet("me")
+    hello.greet("me")
 
     or
 
@@ -145,39 +170,46 @@ with this counter block and see how it works. Let's launch our demo again::
     or
 
     self.make_proxy("localhost:8008", "HELLO")
-    print self.block_view("HELLO").greet("me")
+    self.block_view("HELLO").greet("me")
 
 
-    In [1]: gui(self.block_view("COUNTER"))
+    In [1]:
 
-This will launch a GUI that lets us see what's going on:
+Then open http://localhost:8008 in your favourite browser and click on the "..."
+button next to "Select a root block" to select the **COUNTER** Block:
+
+.. image:: counter_0.png
+
+You will now see a representation of the **COUNTER** Block appear in the left
+hand pane and the URL change to http://localhost:8008/gui/COUNTER:
 
 .. image:: counter_1.png
 
 If you try clicking the increment button a few times you should see the value
 increase, the reset button should zero it and clicking on the counter value
-should let you enter a number yourself. Notice that this value will also be
-validated by the meta object we created, so you can enter ``34.5`` into the
-counter value, but if you entered ``foo``, you will get a GUI that looks like
-this:
+should let you enter a number yourself. Clicking on the information icon next
+to the counter value will give you a history of the values that the Attribute
+has been set to.
+
+Notice that the value we set counter to will also be validated by the meta
+object we created, so you can enter ``34.5`` into the counter value, but if you
+entered ``foo``, you will get a GUI that looks like this:
 
 .. image:: counter_2.png
 
 And a message on the console::
 
-    malcolm.core.request: Exception raised for request {"typeid": "malcolm:core/Put:1.0", "id": 13, "path": ["COUNTER", "counter", "value"], "value": "foo"}
+    malcolm.core.request: Exception raised for request Put(id=63, path=Array([u'COUNTER', u'counter']), value=u'foo', get=False)
     Traceback (most recent call last):
-      File "./malcolm/../malcolm/core/controller.py", line 240, in _handle_request
+      File "./malcolm/../malcolm/core/controller.py", line 141, in _handle_request
         responses += handler(request)
-      File "./malcolm/../malcolm/core/controller.py", line 269, in _handle_put
-        result = put_function(request.value)
-      File "./malcolm/../malcolm/core/attributemodel.py", line 51, in set_value
-        self.set_value_alarm_ts(value, alarm, ts)
-      File "./malcolm/../malcolm/core/attributemodel.py", line 61, in set_value_alarm_ts
-        self.value = self.meta.validate(value)
-      File "./malcolm/../malcolm/modules/builtin/vmetas/numbermeta.py", line 32, in validate
-        cast = self._np_dtype(value)
+      File "./malcolm/../malcolm/core/controller.py", line 196, in _handle_put
+        value = attribute.meta.validate(request.value)
+      File "./malcolm/../malcolm/core/models.py", line 551, in validate
+        cast = self._np_type(value)
     ValueError: could not convert string to float: foo
+
+
 
 Conclusion
 ----------
@@ -189,3 +221,5 @@ from the previous tutorial, creating a Controller with 2 Parts that has
 counter and ``greet()`` functionality. In the next tutorial we will see how
 we can use this composition to control multiple child blocks with one parent
 Block.
+
+.. _malcolmjs: https://malcolmjs.readthedocs.io

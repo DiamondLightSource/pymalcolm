@@ -231,11 +231,12 @@ def main():
             except KeyboardInterrupt:
                 self.post([path[0], "abort"])
 
+        def _make_proxy(self, comms, mri):
+            self._process.add_controller(proxy_block(comms=comms, mri=mri)[-1])
+
         def make_proxy(self, comms, mri):
             # Need to do this in cothread's thread
-            cothread.CallbackResult(
-                self._process.add_controller,
-                proxy_block(comms=comms, mri=mri)[-1])
+            cothread.CallbackResult(self._make_proxy, comms, mri)
 
         def block_view(self, mri):
             return cothread.CallbackResult(
@@ -296,7 +297,8 @@ if __name__ == "__main__":
 
     require("tornado", "numpy", "ruamel.yaml", "cothread==2.14", "vdsgen>=0.3",
             "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py>=2.8",
-            "annotypes>=0.9", "p4p==3.0.0")
+            "annotypes>=0.9", "p4p==3.0.0",
+            "scipy")  # scipy only needed for scanpointgenerator.plot_generator
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "annotypes"))
     main()

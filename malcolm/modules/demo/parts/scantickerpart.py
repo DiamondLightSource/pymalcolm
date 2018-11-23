@@ -17,13 +17,13 @@ class ScanTickerPart(builtin.parts.ChildPart):
         super(ScanTickerPart, self).__init__(
             name, mri, initial_visibility=True, stateful=False)
         # Generator instance
-        self.generator = None  # type: scanning.hooks.AGenerator
+        self._generator = None  # type: scanning.hooks.AGenerator
         # Where to start
-        self.completed_steps = None  # type: int
+        self._completed_steps = None  # type: int
         # How many steps to do
-        self.steps_to_do = None  # type: int
+        self._steps_to_do = None  # type: int
         # When to blow up
-        self.exception_step = None  # type: int
+        self._exception_step = None  # type: int
         # Hooks
         self.register_hooked((scanning.hooks.ConfigureHook,
                               scanning.hooks.PostRunArmedHook,
@@ -53,27 +53,28 @@ class ScanTickerPart(builtin.parts.ChildPart):
         # If we are being asked to move
         if self.name in axesToMove:
             # Just store the generator and place we need to start
-            self.generator = generator
-            self.completed_steps = completed_steps
-            self.steps_to_do = steps_to_do
-            self.exception_step = exceptionStep
+            self._generator = generator
+            self._completed_steps = completed_steps
+            self._steps_to_do = steps_to_do
+            self._exception_step = exceptionStep
         else:
             # Flag nothing to do
-            self.generator = None
+            self._generator = None
 
+    # Run scan
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
-        if not self.generator:
+        if not self._generator:
             return
         # Start time so everything is relative
         point_time = time.time()
         child = context.block_view(self.mri)
-        for i in range(self.completed_steps,
-                       self.completed_steps + self.steps_to_do):
+        for i in range(self._completed_steps,
+                       self._completed_steps + self._steps_to_do):
             self.log.debug("Starting point %s", i)
             # Get the point we are meant to be scanning
-            point = self.generator.get_point(i)
+            point = self._generator.get_point(i)
             # Update the child counter_block to be the demand position
             position = point.positions[self.name]
             child.counter.put_value(position)
@@ -85,5 +86,5 @@ class ScanTickerPart(builtin.parts.ChildPart):
             # Update the point as being complete
             self.registrar.report(scanning.infos.RunProgressInfo(i + 1))
             # If this is the exception step then blow up
-            assert i + 1 != self.exception_step, \
-                "Raising exception at step %s" % self.exception_step
+            assert i + 1 != self._exception_step, \
+                "Raising exception at step %s" % self._exception_step

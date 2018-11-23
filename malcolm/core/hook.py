@@ -33,6 +33,14 @@ class Hookable(Loggable, WithCallTypes):
                         args_gen=None  # type: Optional[ArgsGen]
                         ):
         # type: (Type[Hook], Callable, Optional[Callable]) -> None
+        """Register func to be run when any of the hooks are run by parent
+
+        Args:
+            hooks: A Hook class or list of Hook classes of interest
+            func: The callable that should be run on that Hook
+            args_gen: Optionally specify the argument names that should be
+                passed to func. If not given then use func.call_types.keys
+        """
         if self.hooked is None:
             self.hooked = {}
         if args_gen is None:
