@@ -9,6 +9,23 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 Nothing yet
 
+`3-0a7`_ - 2018-11-27
+---------------------
+
+Changed:
+
+- cothread is now a required dependency
+
+Fixed:
+
+- Updated first 3 tutorials to match Malcolm3 changes
+- Bug on saving a new design after loading design=""
+
+Updated:
+
+- Web gui version (malcolmjs 1.5)
+
+
 `3-0a6`_ - 2018-11-05
 ---------------------
 
@@ -182,7 +199,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a6...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a7...HEAD
+.. _3-0a7: https://github.com/dls-controls/pymalcolm/compare/3-0a6...3-0a7
 .. _3-0a6: https://github.com/dls-controls/pymalcolm/compare/3-0a5...3-0a6
 .. _3-0a5: https://github.com/dls-controls/pymalcolm/compare/3-0a4...3-0a5
 .. _3-0a4: https://github.com/dls-controls/pymalcolm/compare/3-0a3...3-0a4
