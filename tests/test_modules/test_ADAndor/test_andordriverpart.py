@@ -4,6 +4,7 @@ from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import Context, Process
 from malcolm.modules.ADAndor.parts import AndorDriverPart
 from malcolm.modules.ADAndor.blocks import andor_driver_block
+from malcolm.modules.ADCore.infos import ExposureDeadtimeInfo
 from malcolm.testutil import ChildTestCase
 
 
@@ -30,7 +31,10 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         completed_steps = 0
         steps_to_do = 2000*3000
         self.o.configure(
-            self.context, completed_steps, steps_to_do, generator)
+            self.context, completed_steps, steps_to_do,
+            part_info=dict(anything=[ExposureDeadtimeInfo(0.013, 0)]),
+            generator=generator
+        )
         # Wait for the start_future so the post gets through to our child
         # even on non-cothread systems
         self.o.actions.start_future.result(timeout=1)
