@@ -1,11 +1,15 @@
 import logging
+import socket
+import fcntl
+import struct
+import os
 
 from annotypes import Anno, add_call_types, TYPE_CHECKING
 from tornado.websocket import WebSocketHandler, WebSocketError
 
 from malcolm.core import Part, json_decode, deserialize_object, Request, \
     json_encode, Subscribe, Unsubscribe, Delta, Update, Error, \
-    Response, FieldError, PartRegistrar
+    Response, FieldError, PartRegistrar, Put, Post
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, UHandlerInfos
@@ -19,19 +23,50 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+SIOCGIFADDR = 0x8915
+SIOCGIFNETMASK = 0x891b
+
+
+def get_ip_validator(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    packed_ifname = struct.pack('256s', ifname[:15].encode())
+    ifaddr = fcntl.ioctl(s.fileno(), SIOCGIFADDR, packed_ifname)
+    ifaddr = struct.unpack('!I', ifaddr[20:24])[0]
+    ifnetmask = fcntl.ioctl(s.fileno(), SIOCGIFNETMASK, packed_ifname)
+    ifnetmask = struct.unpack('!I', ifnetmask[20:24])[0]
+
+    def validator(remoteaddr):
+        return remoteaddr & ifnetmask == ifaddr & ifnetmask
+
+    return validator
+
+
 # For some reason tornado doesn't make us implement all abstract methods
 # noinspection PyAbstractClass
 class MalcWebSocketHandler(WebSocketHandler):
     _registrar = None
     _id_to_mri = None
+    _validators = None
+    _writeable = None
 
-    def initialize(self, registrar=None):
+    def initialize(self, registrar=None, validators=()):
         self._registrar = registrar  # type: PartRegistrar
         # {id: mri}
         self._id_to_mri = {}  # type: Dict[int, str]
+        self._validators = validators
 
     def on_message(self, message):
         # called in tornado's thread
+        if self._writeable is None:
+            # Work out if the remote ip is within the netmask of any of our
+            # interfaces. If not, Put and Post are forbidden
+            remoteaddr = struct.unpack(
+                "!I", socket.inet_aton(self.request.remote_ip))[0]
+            self._writeable = max(v(remoteaddr) for v in self._validators)
+            log.info("Puts and Posts are %s from %s",
+                     "allowed" if self._writeable else "forbidden",
+                     self.request.remote_ip)
+
         msg_id = -1
         try:
             d = json_decode(message)
@@ -49,6 +84,9 @@ class MalcWebSocketHandler(WebSocketHandler):
                 mri = self._id_to_mri[msg_id]
             else:
                 mri = request.path[0]
+            if isinstance(request, (Put, Post)) and not self._writeable:
+                raise ValueError(
+                    "Put/Post is forbidden from %s" % self.request.remote_ip)
             log.info("Request: %s", request)
             self._registrar.report(builtin.infos.RequestInfo(request, mri))
         except Exception as e:
@@ -105,7 +143,9 @@ class WebsocketServerPart(Part):
     def report_handlers(self):
         # type: () -> UHandlerInfos
         regexp = r"/%s" % self.name
+        ifnames = os.listdir('/sys/class/net/')
+        validators = [get_ip_validator(ifname) for ifname in ifnames]
         info = HandlerInfo(
-            regexp, MalcWebSocketHandler, registrar=self.registrar)
+            regexp, MalcWebSocketHandler,
+            registrar=self.registrar, validators=validators)
         return info
-
