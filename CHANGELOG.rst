@@ -9,6 +9,18 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 Nothing yet
 
+`3-0a8`_ - 2018-11-30
+---------------------
+
+Changed:
+
+- Websocket server now blocks write access from outside subnet
+
+Fixed:
+
+- PandA now reports correct datasets to the HDF writer to link
+- ADAndor does exposure time in a more standard way
+
 `3-0a7`_ - 2018-11-27
 ---------------------
 
@@ -199,7 +211,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a7...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a8...HEAD
+.. _3-0a8: https://github.com/dls-controls/pymalcolm/compare/3-0a7...3-0a8
 .. _3-0a7: https://github.com/dls-controls/pymalcolm/compare/3-0a6...3-0a7
 .. _3-0a6: https://github.com/dls-controls/pymalcolm/compare/3-0a5...3-0a6
 .. _3-0a5: https://github.com/dls-controls/pymalcolm/compare/3-0a4...3-0a5
