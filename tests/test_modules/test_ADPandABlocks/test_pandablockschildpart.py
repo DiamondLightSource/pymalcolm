@@ -12,13 +12,13 @@ class PandABoxChildPartTest(unittest.TestCase):
         self.child = OrderedDict()
         self.child["bits0Capture"] = Mock(value="no")
         self.child["bits1Capture"] = Mock(value="yes")
-        self.child["encoderValue1Capture"] = Mock(value="capture")
+        self.child["encoderValue1Capture"] = Mock(value="Diff")
         self.child["encoderValue1DatasetName"] = Mock(value="")
         self.child["encoderValue1DatasetType"] = Mock(value="anything")
-        self.child["encoderValue2Capture"] = Mock(value="no")
+        self.child["encoderValue2Capture"] = Mock(value="No")
         self.child["encoderValue2DatasetName"] = Mock(value="x1")
         self.child["encoderValue2DatasetType"] = Mock(value="anything")
-        self.child["encoderValue3Capture"] = Mock(value="capture")
+        self.child["encoderValue3Capture"] = Mock(value="Value")
         self.child["encoderValue3DatasetName"] = Mock(value="x2")
         self.child["encoderValue3DatasetType"] = Mock(value="position")
         self.context = MagicMock(spec=Context)
@@ -31,7 +31,7 @@ class PandABoxChildPartTest(unittest.TestCase):
         assert dataset_infos[0].name == "x2"
         assert dataset_infos[0].type == AttributeDatasetType.POSITION
         assert dataset_infos[0].rank == 2
-        assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3"
+        assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3.Value"
 
     def test_counter_configuration(self):
         self.child["encoderValue3DatasetType"] = Mock(value="monitor")
@@ -40,7 +40,7 @@ class PandABoxChildPartTest(unittest.TestCase):
         assert dataset_infos[0].name == "x2"
         assert dataset_infos[0].type == AttributeDatasetType.MONITOR
         assert dataset_infos[0].rank == 2
-        assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3"
+        assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3.Value"
 
     def test_counter_configuration_detector(self):
         self.child["encoderValue3DatasetType"] = Mock(value="detector")
@@ -49,4 +49,4 @@ class PandABoxChildPartTest(unittest.TestCase):
         assert dataset_infos[0].name == "x2"
         assert dataset_infos[0].type == AttributeDatasetType.DETECTOR
         assert dataset_infos[0].rank == 2
-        assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3"
+        assert dataset_infos[0].attr == "INENC1.ENCODER_VALUE3.Value"

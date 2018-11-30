@@ -2,19 +2,19 @@ import re
 
 from annotypes import add_call_types
 
-from malcolm.core import Hook, PartRegistrar
+from malcolm.core import PartRegistrar
 from malcolm.modules import scanning, ADCore, builtin
 from malcolm.modules.ADCore.util import AttributeDatasetType
 
 
-def is_capture_field(child, attr_name):
+def capture_field(child, attr_name):
     if attr_name.endswith("Capture"):
         attr = child[attr_name]
         if attr.value.lower() != "no":
-            return True
+            return attr.value
 
 
-def dataset_info(name, child, attr_name):
+def dataset_info(name, child, attr_name, capture):
     dataset_name_attr = attr_name + "DatasetName"
     dataset_type_attr = attr_name + "DatasetType"
     if dataset_name_attr in child and dataset_type_attr in child:
@@ -29,7 +29,7 @@ def dataset_info(name, child, attr_name):
             name=dataset_name,
             type=dataset_type,
             rank=2,
-            attr="%s.%s" % (name, uppercase_attr))
+            attr="%s.%s.%s" % (name, uppercase_attr, capture))
 
 
 class PandABlocksChildPart(builtin.parts.ChildPart):
@@ -45,9 +45,10 @@ class PandABlocksChildPart(builtin.parts.ChildPart):
         ret = []
         child = context.block_view(self.mri)
         for attr_name in child:
-            if is_capture_field(child, attr_name):
+            capture = capture_field(child, attr_name)
+            if capture:
                 info = dataset_info(
-                    self.name, child, attr_name[:-len("Capture")])
+                    self.name, child, attr_name[:-len("Capture")], capture)
                 if info:
                     ret.append(info)
         return ret
