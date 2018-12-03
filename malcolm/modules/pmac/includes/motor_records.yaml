@@ -6,6 +6,7 @@
     name: demand
     description: set the demand position of the motor
     pv: $(prefix)
+    config: 0
 
 - ca.parts.CADoublePart:
     name: readback
@@ -20,12 +21,12 @@
 - ca.parts.CADoublePart:
     name: accelerationTime
     description: time taken to accelerate to velocity
-    pv: $(prefix).ACCL
+    rbv: $(prefix).ACCL
 
 - ca.parts.CADoublePart:
     name: maxVelocity
     description: maximum velocity
-    pv: $(prefix).VMAX
+    rbv: $(prefix).VMAX
 
 - ca.parts.CADoublePart:
     name: resolution
@@ -35,9 +36,9 @@
 - ca.parts.CADoublePart:
     name: offset
     description: User offset
-    pv: $(prefix).OFF
+    rbv: $(prefix).OFF
 
 - ca.parts.CAStringPart:
     name: units
     description: Engineering units
-    pv: $(prefix).EGU
+    rbv: $(prefix).EGU
