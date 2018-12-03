@@ -22,18 +22,25 @@ if TYPE_CHECKING:
 # Create a module level logger
 log = logging.getLogger(__name__)
 
-
+# Signals we can send to get info
 SIOCGIFADDR = 0x8915
 SIOCGIFNETMASK = 0x891b
+
+# Where we get info about interfaces on Linux
+SYSNET = '/sys/class/net'
+
+
+def get_if_info(s, sig, ifname):
+    # Use an ioctl to get interface address or netmask
+    packed_ifname = struct.pack('256s', ifname[:15].encode())
+    info = fcntl.ioctl(s.fileno(), sig, packed_ifname)
+    return struct.unpack('!I', info[20:24])[0]
 
 
 def get_ip_validator(ifname):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    packed_ifname = struct.pack('256s', ifname[:15].encode())
-    ifaddr = fcntl.ioctl(s.fileno(), SIOCGIFADDR, packed_ifname)
-    ifaddr = struct.unpack('!I', ifaddr[20:24])[0]
-    ifnetmask = fcntl.ioctl(s.fileno(), SIOCGIFNETMASK, packed_ifname)
-    ifnetmask = struct.unpack('!I', ifnetmask[20:24])[0]
+    ifaddr = get_if_info(s, SIOCGIFADDR, ifname)
+    ifnetmask = get_if_info(s, SIOCGIFNETMASK, ifname)
 
     def validator(remoteaddr):
         return remoteaddr & ifnetmask == ifaddr & ifnetmask
@@ -143,8 +150,14 @@ class WebsocketServerPart(Part):
     def report_handlers(self):
         # type: () -> UHandlerInfos
         regexp = r"/%s" % self.name
-        ifnames = os.listdir('/sys/class/net/')
-        validators = [get_ip_validator(ifname) for ifname in ifnames]
+        validators = []
+        # Create an ip validator for every interface that is up
+        for ifname in os.listdir(SYSNET):
+            with open(os.path.join(SYSNET, ifname, 'flags')) as f:
+                flags = int(f.read(), 0)
+            if flags & 1:
+                # interface is up
+                validators.append(get_ip_validator(ifname))
         info = HandlerInfo(
             regexp, MalcWebSocketHandler,
             registrar=self.registrar, validators=validators)
