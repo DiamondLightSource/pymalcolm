@@ -9,6 +9,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 Nothing yet
 
+`3-0a9`_ - 2018-12-03
+---------------------
+
+Fixed:
+
+- Websocket only validates for interfaces that are up
+- Motor records have a number of records read only if they don't need writing
+
+
 `3-0a8`_ - 2018-11-30
 ---------------------
 
@@ -211,7 +220,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a8...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a9...HEAD
+.. _3-0a9: https://github.com/dls-controls/pymalcolm/compare/3-0a8...3-0a9
 .. _3-0a8: https://github.com/dls-controls/pymalcolm/compare/3-0a7...3-0a8
 .. _3-0a7: https://github.com/dls-controls/pymalcolm/compare/3-0a6...3-0a7
 .. _3-0a6: https://github.com/dls-controls/pymalcolm/compare/3-0a5...3-0a6
