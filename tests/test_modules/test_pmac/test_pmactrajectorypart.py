@@ -34,6 +34,11 @@ class TestPMACTrajectoryPart(ChildTestCase):
             self.o.min_turnaround.set_value
         )
 
+    def test_bad_units(self):
+        with self.assertRaises(AssertionError) as cm:
+            self.do_configure(["x", "y"], units="m")
+        assert str(cm.exception) == "x: Expected scan units of 'm', got 'mm'"
+
     def resolutions_and_use_call(self, useB=True):
         return [
             call.put('useA', True),
@@ -46,7 +51,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('useY', False),
             call.put('useZ', False)]
 
-    def make_part_info(self, x_pos=0.5, y_pos=0.0):
+    def make_part_info(self, x_pos=0.5, y_pos=0.0, units="mm"):
         part_info = dict(
             xpart=[MotorInfo(
                 cs_axis="A",
@@ -58,7 +63,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
                 current_position=x_pos,
                 scannable="x",
                 velocity_settle=0.0,
-                units="mm"
+                units=units
             )],
             ypart=[MotorInfo(
                 cs_axis="B",
@@ -70,7 +75,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
                 current_position=y_pos,
                 scannable="y",
                 velocity_settle=0.0,
-                units="mm"
+                units=units
             )],
             brick=[ControllerInfo(i10=1705244)],
             cs1=[CSInfo(mri="PMAC:CS1", port="CS1")]
@@ -78,8 +83,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
         return part_info
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
-                     y_pos=0.0, duration=1.0):
-        part_info = self.make_part_info(x_pos, y_pos)
+                     y_pos=0.0, duration=1.0, units="mm"):
+        part_info = self.make_part_info(x_pos, y_pos, units)
         steps_to_do = 3 * len(axes_to_scan)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
@@ -100,10 +105,34 @@ class TestPMACTrajectoryPart(ChildTestCase):
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
     def test_configure(self):
+        # Pretend to respond on demand values before they are actually set
+        self.set_attributes(self.cs, demandA=-0.1375, demandB=0.0)
         self.do_configure(axes_to_scan=["x", "y"])
+        assert self.cs.handled_requests.mock_calls == [
+            call.put('deferMoves', True),
+            call.put('csMoveTime', 0),
+            call.put('demandA', -0.1375),
+            call.put('demandB', 0.0),
+            call.put('deferMoves', False)
+        ]
         assert self.child.handled_requests.mock_calls == [
             call.put('numPoints', 4000000),
             call.put('cs', 'CS1'),
+            call.put('useA', False),
+            call.put('useB', False),
+            call.put('useC', False),
+            call.put('useU', False),
+            call.put('useV', False),
+            call.put('useW', False),
+            call.put('useX', False),
+            call.put('useY', False),
+            call.put('useZ', False),
+            call.put('pointsToBuild', 1),
+            call.put('timeArray', pytest.approx([2000])),
+            call.put('userPrograms', pytest.approx([8])),
+            call.put('velocityMode', pytest.approx([3])),
+            call.post('buildProfile'),
+            call.post('executeProfile'),
         ] + self.resolutions_and_use_call() + [
             call.put('pointsToBuild', 16),
             # pytest.approx to allow sensible compare with numpy arrays
@@ -131,6 +160,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
     def test_update_step(self):
+        # Pretend to respond on demand values before they are actually set
+        self.set_attributes(self.cs, demandA=-0.1375, demandB=0.0)
         self.do_configure(axes_to_scan=["x", "y"], x_pos=0.0, y_pos=0.2)
         positionsA = self.child.handled_requests.put.call_args_list[-5][0][1]
         assert len(positionsA) == 4
@@ -173,15 +204,34 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.post('abortProfile')]
 
     def test_multi_run(self):
+        # Pretend to respond on demand values before they are actually set
+        self.set_attributes(self.cs, demandA=-0.1375)
         self.do_configure(axes_to_scan=["x"])
         assert self.o.completed_steps_lookup == (
             [0, 0, 1, 1, 2, 2, 3, 3])
         self.child.handled_requests.reset_mock()
+        # Pretend to respond on demand values before they are actually set
+        self.set_attributes(self.cs, demandA=0.6375)
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.6375)
         assert self.child.handled_requests.mock_calls == [
             call.put('numPoints', 4000000),
             call.put('cs', 'CS1'),
+            call.put('useA', False),
+            call.put('useB', False),
+            call.put('useC', False),
+            call.put('useU', False),
+            call.put('useV', False),
+            call.put('useW', False),
+            call.put('useX', False),
+            call.put('useY', False),
+            call.put('useZ', False),
+            call.put('pointsToBuild', 1),
+            call.put('timeArray', pytest.approx([2000])),
+            call.put('userPrograms', pytest.approx([8])),
+            call.put('velocityMode', pytest.approx([3])),
+            call.post('buildProfile'),
+            call.post('executeProfile'),
         ] + self.resolutions_and_use_call(useB=False) + [
            call.put('pointsToBuild', 8),
            call.put('positionsA', pytest.approx([
@@ -197,6 +247,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
     def test_long_steps_lookup(self):
+        # Pretend to respond on demand values before they are actually set
+        self.set_attributes(self.cs, demandA=0.6250637755102041)
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.62506, duration=14.0)
         assert self.child.handled_requests.mock_calls[-6:] == [
@@ -218,6 +270,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
 
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.PROFILE_POINTS", 9)
     def test_split_in_a_long_step_lookup(self):
+        # Pretend to respond on demand values before they are actually set
+        self.set_attributes(self.cs, demandA=0.6250637755102041)
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.62506,
             duration=14.0)

@@ -210,9 +210,7 @@ class PmacTrajectoryPart(ChildPart):
         self.completed_steps_lookup = []
         # Work out which axes should be used
         use = [info.cs_axis for info in self.axis_mapping.values()]
-        attr_dict = dict(cs=cs_port)
-        for cs_axis in cs_axis_names:
-            attr_dict["use%s" % cs_axis] = cs_axis in use
+        attr_dict = {"use%s" % ax: ax in use for ax in cs_axis_names}
         child.put_attribute_values(attr_dict)
         self.profile = dict(time_array=[], velocity_mode=[], user_programs=[],
                             trajectory={name: [] for name in self.axis_mapping})
