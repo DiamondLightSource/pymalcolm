@@ -50,7 +50,9 @@ class TestDetectorDriverPart(ChildTestCase):
             call.put('arrayCounter', 0),
             call.put('exposure', 0.1 - 0.01 - 0.0001),
             call.put('imageMode', 'Multiple'),
-            call.put('numImages', 6)]
+            call.put('numImages', 6),
+            call.put('acquirePeriod', 0.1),
+        ]
 
     def test_run(self):
         self.o.registrar = MagicMock()
