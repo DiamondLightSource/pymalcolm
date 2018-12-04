@@ -16,7 +16,7 @@ class SimultaneousAxesPart(Part):
         super(SimultaneousAxesPart, self).__init__(name)
         self.attr = StringArrayMeta(
             "Set of axes that can be specified in axesToMove at configure",
-            tags=[Widget.TABLE.tag(), config_tag()]
+            tags=[Widget.TEXTINPUT.tag(), config_tag()]
         ).create_attribute_model(value)
         # Hooks
         self.register_hooked(ValidateHook, self.validate)
