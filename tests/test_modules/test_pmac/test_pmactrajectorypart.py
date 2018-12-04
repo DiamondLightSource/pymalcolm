@@ -5,8 +5,8 @@ import pytest
 
 from malcolm.core import Context, Process
 from malcolm.modules.pmac.parts import PmacTrajectoryPart
-from malcolm.modules.pmac.infos import MotorInfo, ControllerInfo
-from malcolm.modules.pmac.blocks import pmac_trajectory_block
+from malcolm.modules.pmac.infos import MotorInfo, ControllerInfo, CSInfo
+from malcolm.modules.pmac.blocks import pmac_trajectory_block, cs_block
 from malcolm.testutil import ChildTestCase
 
 
@@ -14,6 +14,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
+        self.cs = self.create_child_block(
+            cs_block, self.process, mri="PMAC:CS1", prefix="PV:CSPRE")
         self.child = self.create_child_block(
             pmac_trajectory_block, self.process, mri="PMAC:TRAJ",
             prefix="PV:PRE")
@@ -44,7 +46,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('useY', False),
             call.put('useZ', False)]
 
-    def make_part_info(self, x_pos=0.5, y_pos=0.0, outputs=[0]*16):
+    def make_part_info(self, x_pos=0.5, y_pos=0.0):
         part_info = dict(
             xpart=[MotorInfo(
                 cs_axis="A",
@@ -70,13 +72,14 @@ class TestPMACTrajectoryPart(ChildTestCase):
                 velocity_settle=0.0,
                 units="mm"
             )],
-            brick=[ControllerInfo(i10=1705244, outputs=outputs)]
+            brick=[ControllerInfo(i10=1705244)],
+            cs1=[CSInfo(mri="PMAC:CS1", port="CS1")]
         )
         return part_info
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
-                     y_pos=0.0, duration=1.0, outputs=[0]*16):
-        part_info = self.make_part_info(x_pos, y_pos, outputs)
+                     y_pos=0.0, duration=1.0):
+        part_info = self.make_part_info(x_pos, y_pos)
         steps_to_do = 3 * len(axes_to_scan)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
@@ -115,8 +118,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
                  200000, 200000, 500000, 500000, 500000, 500000, 500000,
                  500000, 100000])),
             call.put('userPrograms', pytest.approx([
-                 1, 5, 4, 8, 1, 5, 7, 0,
-                 6, 2, 3, 7, 6, 2, 8, 0])),
+                 1, 4, 1, 4, 1, 4, 2, 8, 1, 4, 1, 4, 1, 4, 2, 8])),
             call.put('velocityMode', pytest.approx([
                  2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 1, 3])),
             call.post('buildProfile')
@@ -124,7 +126,6 @@ class TestPMACTrajectoryPart(ChildTestCase):
         assert self.o.completed_steps_lookup == [
             0, 0, 1, 1, 2, 2, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
-        assert self.o.last_gpio == (0, 0, 0)
 
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.PROFILE_POINTS", 4)
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
@@ -137,7 +138,6 @@ class TestPMACTrajectoryPart(ChildTestCase):
         assert self.o.end_index == 2
         assert len(self.o.completed_steps_lookup) == 5
         assert len(self.o.profile["time_array"]) == 1
-        assert self.o.last_gpio == (1, 0, 0)
         self.o.registrar = Mock()
         self.child.handled_requests.reset_mock()
         self.o.update_step(
@@ -154,7 +154,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('timeArray', pytest.approx([
                 500000, 500000, 500000, 200000])),
             call.put('userPrograms', pytest.approx([
-                1, 5, 7, 0])),
+                1, 4, 2, 8])),
             call.put('velocityMode', pytest.approx([
                 0, 0, 1, 0])),
             call.post('appendProfile')]
@@ -189,7 +189,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
            call.put('timeArray', pytest.approx([
                100000, 500000, 500000, 500000, 500000, 500000, 500000,
                100000])),
-           call.put('userPrograms', pytest.approx([1, 5, 4, 8, 1, 5, 7, 0])),
+           call.put('userPrograms', pytest.approx([1, 4, 1, 4, 1, 4, 2, 8])),
            call.put('velocityMode', pytest.approx([2, 0, 0, 0, 0, 0, 1, 3])),
            call.post('buildProfile')
         ]
@@ -198,8 +198,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
            0.2)
     def test_long_steps_lookup(self):
         self.do_configure(
-            axes_to_scan=["x"], completed_steps=3, x_pos=0.62506,
-            duration=14.0, outputs=[1, 0, 0] + [0]*13)
+            axes_to_scan=["x"], completed_steps=3, x_pos=0.62506, duration=14.0)
         assert self.child.handled_requests.mock_calls[-6:] == [
             call.put('pointsToBuild', 14),
             call.put('positionsA', pytest.approx([
@@ -209,7 +208,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
                 7143, 3500000, 3500000, 3500000, 3500000, 3500000, 3500000,
                 3500000, 3500000, 3500000, 3500000, 3500000, 3500000, 7143])),
             call.put('userPrograms', pytest.approx([
-                8, 0, 4, 0, 5, 0, 1, 0, 8, 0, 4, 0, 6, 0])),
+                1, 0, 4, 0, 1, 0, 4, 0, 1, 0, 4, 0, 2, 8])),
             call.put('velocityMode', pytest.approx([
                 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3])),
             call.post('buildProfile')
@@ -221,7 +220,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
     def test_split_in_a_long_step_lookup(self):
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.62506,
-            duration=14.0, outputs=[1, 0, 0] + [0]*13)
+            duration=14.0)
         # The last 6 calls show what trajectory we are building, ignore the
         # first 11 which are just the useX calls and cs selection
         assert self.child.handled_requests.mock_calls[-6:] == [
@@ -233,7 +232,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
                 7143, 3500000, 3500000, 3500000, 3500000, 3500000, 3500000,
                 3500000, 3500000])),
             call.put('userPrograms', pytest.approx([
-                8, 0, 4, 0, 5, 0, 1, 0, 8])),
+                1, 0, 4, 0, 1, 0, 4, 0, 1])),
             call.put('velocityMode', pytest.approx([
                 2, 0, 0, 0, 0, 0, 0, 0, 0])),
             call.post('buildProfile')
@@ -259,7 +258,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('timeArray',pytest.approx([
                 3500000, 3500000, 3500000, 3500000, 7143])),
             call.put('userPrograms', pytest.approx([
-                0, 4, 0, 6, 0])),
+                0, 4, 0, 2, 8])),
             call.put('velocityMode', pytest.approx([
                 0, 0, 0, 1, 3])),
             call.post('appendProfile')

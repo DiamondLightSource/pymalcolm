@@ -13,14 +13,3 @@
     name: i10
     description: Value of i10 (servo ticks)
     rbv: $(prefix):I10
-
-- ca.parts.CAActionPart:
-    name: pollAllNow
-    description: Poll all variables in the PMAC to allow gpio etc to be valid
-    pv: $(prefix):PollAllNow
-
-# TODO: should be a bit field when we have one
-- ca.parts.CALongPart:
-    name: generalPurposeOutputs
-    description: Current value of GPIO Output bits
-    rbv: $(prefix):GPIO_OP_BITS

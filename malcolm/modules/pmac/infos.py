@@ -17,15 +17,30 @@ cs_axis_names = list("ABCUVWXYZ")
 
 
 class ControllerInfo(Info):
-    def __init__(self, i10, outputs):
-        # type: (int, Sequence[int]) -> None
+    def __init__(self, i10):
+        # type: (int) -> None
         self.i10 = i10
-        self.outputs = outputs
 
     def servo_freq(self):
         # type: () -> float
         freq = 8388608000. / self.i10
         return freq
+
+
+class CSInfo(Info):
+    def __init__(self, mri, port):
+        # type: (str, str) -> None
+        self.mri = mri
+        self.port = port
+
+    @classmethod
+    def get_cs_mri(cls, part_info, cs_port):
+        # type: (Dict[str, Optional[Sequence]], str) -> str
+        for info in cls.filter_values(part_info):
+            if info.port == cs_port:
+                return info.mri
+        raise ValueError(
+            "CS port %s not found in %s" % (cs_port, list(part_info)))
 
 
 class MotorInfo(Info):
