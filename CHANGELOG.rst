@@ -9,6 +9,14 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 Nothing yet
 
+`3-0b1`_ - 2018-12-04
+---------------------
+
+Fixed:
+
+- Trajectory scan back to level driven pulses as 24V GPIO has soft falling edges
+- Update malcolmjs to 1.5.1
+
 `3-0a9`_ - 2018-12-03
 ---------------------
 
@@ -220,7 +228,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0a9...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0b1...HEAD
+.. _3-0b1: https://github.com/dls-controls/pymalcolm/compare/3-0a9...3-0b1
 .. _3-0a9: https://github.com/dls-controls/pymalcolm/compare/3-0a8...3-0a9
 .. _3-0a8: https://github.com/dls-controls/pymalcolm/compare/3-0a7...3-0a8
 .. _3-0a7: https://github.com/dls-controls/pymalcolm/compare/3-0a6...3-0a7
