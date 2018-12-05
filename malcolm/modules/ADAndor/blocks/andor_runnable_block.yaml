@@ -28,7 +28,7 @@
     mri: $(mri_prefix):DRV
     prefix: $(pv_prefix):CAM
 
-- ADAndor.parts.AndorDriverPart:
+- ADCore.parts.DetectorDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
 
