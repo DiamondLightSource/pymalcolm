@@ -104,6 +104,10 @@ def get_profiler_dir():
     return os.environ.get("PYMALCOLM_PROFILER_DIR", "/tmp/imalcolm_profiles")
 
 
+def get_stack_size():
+    return int(os.environ.get("PYMALCOLM_STACK_SIZE", "0"))
+
+
 def et_to_string(element):
     # type: (ET.Element) -> str
     xml = '<?xml version="1.0" ?>'

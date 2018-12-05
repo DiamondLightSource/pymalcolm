@@ -1,11 +1,10 @@
 import logging
-import signal
 import time
 
 from annotypes import TYPE_CHECKING
 import cothread
 
-from malcolm.compat import get_thread_ident
+from malcolm.compat import get_thread_ident, get_stack_size
 from .errors import TimeoutError
 
 if TYPE_CHECKING:
@@ -31,8 +30,7 @@ class Spawned(object):
         self._function = func
         self._args = args
         self._kwargs = kwargs
-        # 1MB stack for each cothread
-        cothread.Spawn(self.catching_function, stack_size=1000000)
+        cothread.Spawn(self.catching_function, stack_size=get_stack_size())
 
     def catching_function(self):
         try:
