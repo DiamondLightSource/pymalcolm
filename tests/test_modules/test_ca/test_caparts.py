@@ -184,6 +184,7 @@ class TestCAParts(unittest.TestCase):
         callback(Initial(8.8))
         assert b.attrname.value == 8.8
 
+        # TODO: why does this seg fault on travis VMs?
         b._context.sleep(0.1)
         assert l == [5.2, 8.7, 8.8]
 
