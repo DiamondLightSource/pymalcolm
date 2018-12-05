@@ -31,7 +31,8 @@ class Spawned(object):
         self._function = func
         self._args = args
         self._kwargs = kwargs
-        cothread.Spawn(self.catching_function)
+        # 1MB stack for each cothread
+        cothread.Spawn(self.catching_function, stack_size=1000000)
 
     def catching_function(self):
         try:

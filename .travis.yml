@@ -53,7 +53,7 @@ after_script:
 after_failure:
   - COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1) # find core file
   # Would love to do -ex "py-bt", but this means making a new virtualenv with python-dbg exe
-  - if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" python -ex "thread apply all bt" -ex "set pagination 0" -batch; fi
+  - if [[ -f "$COREFILE" ]]; then gdb -c "$COREFILE" python -ex "thread apply all bt" -ex "set pagination 0" -ex "info reg" -ex "disassemble" -ex 'print /x * (int*) $rsp' -batch; fi
 
 deploy:
   provider: pypi
