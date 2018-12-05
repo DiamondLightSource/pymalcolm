@@ -18,7 +18,7 @@
     mri: $(mri_prefix):DRV
     prefix: $(pv_prefix)
 
-- xspress3.parts.Xspress3DriverPart:
+- ADCore.parts.DetectorDriverPart:
     name: Xspress3A
     mri: $(mri_prefix):DRV
 
