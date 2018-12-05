@@ -60,12 +60,17 @@ class DetectorDriverPart(ChildPart):
             exposure_info = ExposureDeadtimeInfo.filter_single_value(part_info)
         except BadValueError:
             # This is allowed, no exposure required
-            pass
+            exposure_info = None
         else:
             kwargs["exposure"] = exposure_info.calculate_exposure(
                 generator.duration)
         self.actions.setup_detector(
             context, completed_steps, steps_to_do, **kwargs)
+        # Might need to reset acquirePeriod as it's sometimes wrong
+        # in some detectors
+        if exposure_info:
+            child = context.block_view(self.mri)
+            child.acquirePeriod.put_value(generator.duration)
         if self.is_hardware_triggered:
             # Start now if we are hardware triggered
             self.actions.arm_detector(context)
