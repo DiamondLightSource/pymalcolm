@@ -43,4 +43,5 @@ class TestXspress3DetectorDriverPart(ChildTestCase):
             call.put('numImages', 6000000),
             call.put('pointsPerRow', 15000),
             call.put('triggerMode', 'Hardware'),
+            call.put('acquirePeriod', 0.1),
             call.post('start')]
