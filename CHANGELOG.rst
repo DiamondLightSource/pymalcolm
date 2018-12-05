@@ -9,6 +9,21 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 Nothing yet
 
+`3-0b2`_ - 2018-12-05
+---------------------
+
+Added:
+
+- PYMALCOLM_STACK_SIZE environment variable setting coroutine stack size
+- Default is still 0 (coroutines share stack)
+- DetectorDriverPart now also writes acqurirePeriod if writing exposure
+
+Fixed:
+
+- ADAndor now uses imageMode=Multiple not Fixed
+- ADAndor now uses standard DetectorDriverPart
+
+
 `3-0b1`_ - 2018-12-04
 ---------------------
 
@@ -228,7 +243,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0b1...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0b2...HEAD
+.. _3-0b1: https://github.com/dls-controls/pymalcolm/compare/3-0b1...3-0b2
 .. _3-0b1: https://github.com/dls-controls/pymalcolm/compare/3-0a9...3-0b1
 .. _3-0a9: https://github.com/dls-controls/pymalcolm/compare/3-0a8...3-0a9
 .. _3-0a8: https://github.com/dls-controls/pymalcolm/compare/3-0a7...3-0a8
