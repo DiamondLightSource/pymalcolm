@@ -67,8 +67,11 @@ class MalcWebSocketHandler(WebSocketHandler):
         if self._writeable is None:
             # Work out if the remote ip is within the netmask of any of our
             # interfaces. If not, Put and Post are forbidden
-            remoteaddr = struct.unpack(
-                "!I", socket.inet_aton(self.request.remote_ip))[0]
+            ipv4_ip = self.request.remote_ip
+            if ipv4_ip == "::1":
+                # Special case IPV6 loopback
+                ipv4_ip = "127.0.0.1"
+            remoteaddr = struct.unpack("!I", socket.inet_aton(ipv4_ip))[0]
             self._writeable = max(v(remoteaddr) for v in self._validators)
             log.info("Puts and Posts are %s from %s",
                      "allowed" if self._writeable else "forbidden",
