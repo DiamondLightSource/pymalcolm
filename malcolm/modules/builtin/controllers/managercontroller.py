@@ -125,12 +125,19 @@ class ManagerController(StatefulController):
                     ("git",) + args, cwd=self.config_dir)
             except subprocess.CalledProcessError as e:
                 self.log.warning("Git command failed: %s\n%s", e, e.output)
+                return ""
             else:
                 self.log.debug("Git command completed: %s", output)
+                return output
 
     def do_init(self):
         super(ManagerController, self).do_init()
         # Try and make it a git repo, don't care if it fails
+        name = self._run_git_cmd("config --get user.name")
+        if name == "":
+            self._run_git_cmd("config user.name Malcolm")
+            self._run_git_cmd("config user.email malcolm@diamond.ac.uk")
+
         self._run_git_cmd("init")
         self._run_git_cmd("commit", "--allow-empty", "-m", "Created repo")
         # List the config_dir and add to choices
