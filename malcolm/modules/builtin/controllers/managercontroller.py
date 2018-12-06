@@ -1,5 +1,6 @@
 import os
 import subprocess
+import socket
 
 import numpy as np
 from annotypes import Anno, add_call_types, TYPE_CHECKING
@@ -51,6 +52,9 @@ class ManagerController(StatefulController):
         self.config_dir = config_dir
         self.initial_design = initial_design
         self.use_git = use_git
+        self.git_email = os.environ["USER"] + "@" + socket.gethostname()
+        self.git_name = "Malcolm"
+        self.git_config = ("-c", "user.name=%s" % self.git_name, "-c", 'user.email="%s"' % self.git_email)
         # last saved layout and exports
         self.saved_visibility = None
         self.saved_exports = None
@@ -122,7 +126,7 @@ class ManagerController(StatefulController):
                 os.path.join(self.config_dir, ".git")):
             try:
                 output = subprocess.check_output(
-                    ("git",) + args, cwd=self.config_dir)
+                    ("git",) + self.git_config + args, cwd=self.config_dir)
             except subprocess.CalledProcessError as e:
                 self.log.warning("Git command failed: %s\n%s", e, e.output)
                 return None
@@ -133,13 +137,8 @@ class ManagerController(StatefulController):
     def do_init(self):
         super(ManagerController, self).do_init()
         # Try and make it a git repo, don't care if it fails
-        name = self._run_git_cmd("config", "--get", "user.name")
-        if name == "\n":
-            self._run_git_cmd("config", "user.name", "Malcolm")
-            self._run_git_cmd("config", "user.email", "malcolm@diamond.ac.uk")
-
         self._run_git_cmd("init")
-        self._run_git_cmd("commit", "--allow-empty", "-m", "Created repo")
+        self._run_git_cmd("commit", "--allow-empty", "-m", "Initial commit for %s" % self.mri)
         # List the config_dir and add to choices
         self._set_layout_names()
         # If given a default config, load this
