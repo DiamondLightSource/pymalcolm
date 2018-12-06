@@ -36,10 +36,12 @@ with Anno("Use git to manage to saved config files"):
 with Anno("Name of design to save, if different from current design"):
     ASaveDesign = str
 
+
 def check_git_version(required_version):
     output = subprocess.check_output(("git", "--version",))
     version = output.replace("git version ", "").strip("\n")
     return StrictVersion(version) >= StrictVersion(required_version)
+
 
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
@@ -58,12 +60,13 @@ class ManagerController(StatefulController):
         self.config_dir = config_dir
         self.initial_design = initial_design
         self.use_git = use_git
-        if check_git_version("1.7.2"):
-            self.git_email = os.environ["USER"] + "@" + socket.gethostname()
-            self.git_name = "Malcolm"
-            self.git_config = ("-c", "user.name=%s" % self.git_name, "-c", 'user.email="%s"' % self.git_email)
-        else:
-            self.git_config = ()
+        if use_git:
+            if check_git_version("1.7.2"):
+                self.git_email = os.environ["USER"] + "@" + socket.gethostname()
+                self.git_name = "Malcolm"
+                self.git_config = ("-c", "user.name=%s" % self.git_name, "-c", 'user.email="%s"' % self.git_email)
+            else:
+                self.git_config = ()
         # last saved layout and exports
         self.saved_visibility = None
         self.saved_exports = None
