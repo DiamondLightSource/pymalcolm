@@ -14,7 +14,7 @@
     value: |
       Device block corresponding to Merlin + stat + pos + hdf writer.
 
-      - Detector driver should have pv prefix $(pv_prefix):CAM
+      - Detector driver should have pv prefix $(pv_prefix):DET
       - Pos should have pv prefix $(pv_prefix):POS
       - Stat should have pv prefix $(pv_prefix):STAT
       - HDF should have pv prefix $(pv_prefix):HDF5
