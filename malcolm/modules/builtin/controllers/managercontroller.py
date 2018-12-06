@@ -39,7 +39,7 @@ with Anno("Name of design to save, if different from current design"):
 
 def check_git_version(required_version):
     output = subprocess.check_output(("git", "--version",))
-    version = output.replace("git version ", "").strip("\n")
+    version = output.decode('utf-8').replace("git version ", "").strip("\n")
     return StrictVersion(version) >= StrictVersion(required_version)
 
 
