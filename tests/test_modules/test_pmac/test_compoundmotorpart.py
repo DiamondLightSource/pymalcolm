@@ -18,7 +18,7 @@ class TestCompoundPart(ChildTestCase):
                             offset=4.5,
                             resolution=0.001,
                             cs="CS_PORT,B")
-        self.o = MotorPart(name="scan", mri="my_mri", compound=True)
+        self.o = MotorPart(name="scan", mri="my_mri")
         self.process.start()
 
     def tearDown(self):
@@ -29,7 +29,7 @@ class TestCompoundPart(ChildTestCase):
         assert returns.cs_axis == "B"
         assert returns.cs_port == "CS_PORT"
         assert returns.acceleration == 10.0
-        assert returns.resolution == 1.0
+        assert returns.resolution == 0.001
         assert returns.offset == 4.5
         assert returns.max_velocity == 5.0
         assert returns.current_position == 12.3

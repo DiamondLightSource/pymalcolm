@@ -17,4 +17,3 @@
 - pmac.parts.MotorPart:
     name: $(scannable)
     mri: $(mri)
-    compound: True
