@@ -1,5 +1,8 @@
 import os
 import subprocess
+import socket
+from distutils.version import StrictVersion
+
 
 import numpy as np
 from annotypes import Anno, add_call_types, TYPE_CHECKING
@@ -34,6 +37,12 @@ with Anno("Name of design to save, if different from current design"):
     ASaveDesign = str
 
 
+def check_git_version(required_version):
+    output = subprocess.check_output(("git", "--version",))
+    version = output.decode('utf-8').replace("git version ", "").strip("\n")
+    return StrictVersion(version) >= StrictVersion(required_version)
+
+
 class ManagerController(StatefulController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     state_set = ss()
@@ -51,6 +60,13 @@ class ManagerController(StatefulController):
         self.config_dir = config_dir
         self.initial_design = initial_design
         self.use_git = use_git
+        if use_git:
+            if check_git_version("1.7.2"):
+                self.git_email = os.environ["USER"] + "@" + socket.gethostname()
+                self.git_name = "Malcolm"
+                self.git_config = ("-c", "user.name=%s" % self.git_name, "-c", 'user.email="%s"' % self.git_email)
+            else:
+                self.git_config = ()
         # last saved layout and exports
         self.saved_visibility = None
         self.saved_exports = None
@@ -122,17 +138,19 @@ class ManagerController(StatefulController):
                 os.path.join(self.config_dir, ".git")):
             try:
                 output = subprocess.check_output(
-                    ("git",) + args, cwd=self.config_dir)
+                    ("git",) + self.git_config + args, cwd=self.config_dir)
             except subprocess.CalledProcessError as e:
                 self.log.warning("Git command failed: %s\n%s", e, e.output)
+                return None
             else:
                 self.log.debug("Git command completed: %s", output)
+                return output
 
     def do_init(self):
         super(ManagerController, self).do_init()
         # Try and make it a git repo, don't care if it fails
         self._run_git_cmd("init")
-        self._run_git_cmd("commit", "--allow-empty", "-m", "Created repo")
+        self._run_git_cmd("commit", "--allow-empty", "-m", "Initial commit for %s" % self.mri)
         # List the config_dir and add to choices
         self._set_layout_names()
         # If given a default config, load this
