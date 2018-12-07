@@ -25,6 +25,8 @@ def dataset_info(name, child, attr_name, capture):
             "Dataset name should not contain '.'"
         dataset_type = AttributeDatasetType(child[dataset_type_attr].value)
         uppercase_attr = re.sub("([A-Z])", r"_\1", attr_name).upper()
+        # If we have Min Max Mean, just take Mean
+        capture = capture.split(" ")[-1]
         return ADCore.infos.NDAttributeDatasetInfo(
             name=dataset_name,
             type=dataset_type,
