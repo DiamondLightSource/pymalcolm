@@ -2,6 +2,7 @@ import weakref
 import time
 
 from annotypes import TYPE_CHECKING
+import logging
 import cothread
 
 from .future import Future
@@ -16,6 +17,9 @@ if TYPE_CHECKING:
     from .views import Block
     from .controller import Controller
     from .models import Model
+
+# Create a module level logger
+log = logging.getLogger(__name__)
 
 
 class When(object):
@@ -253,19 +257,23 @@ class Context(object):
         controller = self.get_controller(subscribe.path[0])
         self.handle_request(controller, request)
 
-    def unsubscribe_all(self):
+    def unsubscribe_all(self, callback=False):
         """Send an unsubscribe for all active subscriptions"""
-        futures = [f for f, r in self._requests.items()
+        futures = ((f, r) for f, r in self._requests.items()
                    if isinstance(r, Subscribe)
-                   and f not in self._pending_unsubscribes]
+                   and f not in self._pending_unsubscribes)
         if futures:
-            for future in futures:
-                self.unsubscribe(future)
+            for future, request in futures:
+                if callback:
+                    log.warn("Unsubscribing from %s", request.path)
+                    cothread.Callback(self.unsubscribe, future)
+                else:
+                    self.unsubscribe(future)
 
     def __del__(self):
         # Unsubscribe from anything that is still active
         try:
-            self.unsubscribe_all()
+            self.unsubscribe_all(callback=True)
         except ValueError:
             # Controller has already gone, probably during tearDown
             pass
