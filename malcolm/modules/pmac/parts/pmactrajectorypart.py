@@ -8,7 +8,7 @@ from annotypes import add_call_types, TYPE_CHECKING, Anno
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import config_tag, NumberMeta, PartRegistrar, Widget, \
-    DEFAULT_TIMEOUT
+    DEFAULT_TIMEOUT, BooleanMeta
 from malcolm.modules import builtin, scanning
 from ..infos import MotorInfo, ControllerInfo, CSInfo, cs_axis_names
 
@@ -46,6 +46,8 @@ PROFILE_POINTS = 10000
 
 with Anno("Initial value for min time for any gaps between frames"):
     AMinTurnaround = float
+with Anno("Initial value for whether to send GPIO triggers for frame signals"):
+    AOutputTriggers = bool
 
 
 # We will set these attributes on the child block, so don't save them
@@ -58,7 +60,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
     def __init__(self,
                  name,  # type: builtin.parts.APartName
                  mri,  # type: builtin.parts.AMri
-                 initial_min_turnaround=0.0  # type: AMinTurnaround
+                 initial_min_turnaround=0.0,  # type: AMinTurnaround
+                 initial_output_triggers=True  # type: AOutputTriggers
                  ):
         # type: (...) -> None
         super(PmacTrajectoryPart, self).__init__(
@@ -83,6 +86,10 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             "float64", "Min time for any gaps between frames",
             tags=[Widget.TEXTINPUT.tag(), config_tag()]
         ).create_attribute_model(initial_min_turnaround)
+        self.output_triggers = BooleanMeta(
+            "Whether to send GPIO triggers for frame signals",
+            tags=[Widget.CHECKBOX.tag(), config_tag()]
+        ).create_attribute_model(initial_output_triggers)
         # Hooks
         self.register_hooked(scanning.hooks.ValidateHook, self.validate)
         self.register_hooked((scanning.hooks.ConfigureHook,
@@ -98,6 +105,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         super(PmacTrajectoryPart, self).setup(registrar)
         registrar.add_attribute_model("minTurnaround", self.min_turnaround,
                                       self.min_turnaround.set_value)
+        registrar.add_attribute_model("outputTriggers", self.output_triggers,
+                                      self.output_triggers.set_value)
 
     @add_call_types
     def reset(self, context):
@@ -116,6 +125,9 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # type: (...) -> scanning.hooks.UParameterTweakInfos
         # Make an axis mapping just to check they are all in the same CS
         MotorInfo.cs_axis_mapping(part_info, axesToMove)
+        # If GPIO not demanded we don't need to align to the servo cycle
+        if not self.output_triggers.value:
+            return
         # Find the duration
         assert generator.duration > 0, \
             "Can only do fixed duration at the moment"
@@ -469,6 +481,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
 
         # Set the requested point
         self.profile["velocity_mode"].append(velocity_point)
+        if not self.output_triggers.value:
+            user_point = NO_PROGRAM
         self.profile["user_programs"].append(user_point)
         self.completed_steps_lookup.append(completed_step)
         for k, v in axis_points.items():

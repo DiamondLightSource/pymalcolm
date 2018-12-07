@@ -36,10 +36,12 @@ class TestPMACTrajectoryPart(ChildTestCase):
     def test_init(self):
         registrar = Mock()
         self.o.setup(registrar)
-        registrar.add_attribute_model.assert_called_once_with(
-            "minTurnaround", self.o.min_turnaround,
-            self.o.min_turnaround.set_value
-        )
+        assert registrar.add_attribute_model.call_args_list == [
+            call("minTurnaround", self.o.min_turnaround,
+                 self.o.min_turnaround.set_value),
+            call("outputTriggers", self.o.output_triggers,
+                 self.o.output_triggers.set_value)
+        ]
 
     def test_bad_units(self):
         with self.assertRaises(AssertionError) as cm:

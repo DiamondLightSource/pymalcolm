@@ -67,7 +67,7 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
                     "Expected export %s to come from SEQx.table, got %s" %(
                         export, source)
                 seq_part_names[source[:-len(".table")]] = export
-        assert sorted(seq_part_names.values()) == SEQ_TABLES, \
+        assert tuple(sorted(seq_part_names.values())) == SEQ_TABLES, \
             "Expected exported attributes %s, got %s" % (
                 SEQ_TABLES, panda.exports.value.export)
         # {export_name: mri}
@@ -87,7 +87,7 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         self.seqa_mri = seq_mris[SEQ_TABLES[0]]
         self.seqb_mri = seq_mris[SEQ_TABLES[1]]
         # load up the first SEQ
-        self._fill_sequencer()
+        # self._fill_sequencer()
 
     @add_call_types
     def run(self, context):
