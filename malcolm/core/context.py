@@ -254,8 +254,13 @@ class Context(object):
         self._subscriptions.pop(subscribe.id)
         request = Unsubscribe(subscribe.id)
         request.set_callback(self._q.put)
-        controller = self.get_controller(subscribe.path[0])
-        self.handle_request(controller, request)
+        try:
+            controller = self.get_controller(subscribe.path[0])
+        except ValueError:
+            # Controller has already gone, probably during tearDown
+            pass
+        else:
+            self.handle_request(controller, request)
 
     def unsubscribe_all(self, callback=False):
         """Send an unsubscribe for all active subscriptions"""
@@ -272,11 +277,7 @@ class Context(object):
 
     def __del__(self):
         # Unsubscribe from anything that is still active
-        try:
-            self.unsubscribe_all(callback=True)
-        except ValueError:
-            # Controller has already gone, probably during tearDown
-            pass
+        self.unsubscribe_all(callback=True)
 
     def when_matches(self, path, good_value, bad_values=None, timeout=None,
                      event_timeout=None):
