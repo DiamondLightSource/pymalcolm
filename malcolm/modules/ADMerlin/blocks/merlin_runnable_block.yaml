@@ -28,9 +28,10 @@
     mri: $(mri_prefix):DRV
     prefix: $(pv_prefix):DET
 
-- ADCore.parts.DetectorDriverPart:
+- ADMerlin.parts.MerlinDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
+    fudge_factor: 1e-3
 
 - ADCore.parts.ExposureDeadtimePart:
     name: DEADTIME
