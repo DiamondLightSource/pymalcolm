@@ -7,14 +7,16 @@ from malcolm.modules.builtin.parts import AMri
 from malcolm.modules.ADCore.parts import DetectorDriverPart, AHardwareTriggered, AMainDatasetUseful
 from malcolm.modules.ADCore.infos import ExposureDeadtimeInfo
 
+with Anno("Fudge factor to deal with missing triggers if acquisition period is too close to generator duration"):
+    AFudgeFactor = float
 
 class MerlinDriverPart(DetectorDriverPart):
     def __init__(self,
-                 name,  # type: APartName
-                 mri,  # type: AMri
-                 is_hardware_triggered=True,  # type: AHardwareTriggered
-                 main_dataset_useful=True,  # type: AMainDatasetUseful
-                 fudge_factor=0.0
+                 name,                          # type: APartName
+                 mri,                           # type: AMri
+                 is_hardware_triggered=True,    # type: AHardwareTriggered
+                 main_dataset_useful=True,      # type: AMainDatasetUseful
+                 fudge_factor=0.0               # type: AFudgeFactor
                  ):
         # type: (...) -> None
         super(MerlinDriverPart, self).__init__(name, mri, is_hardware_triggered, main_dataset_useful)
