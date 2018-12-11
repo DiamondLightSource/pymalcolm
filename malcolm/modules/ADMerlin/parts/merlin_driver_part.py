@@ -1,9 +1,10 @@
 from annotypes import add_call_types, Any
 from malcolm.modules.scanning.hooks import AContext, AStepsToDo, ACompletedSteps, APartInfo
 from malcolm.modules.scanning.util import AGenerator
-from malcolm.core import BadValueError
+from malcolm.core import APartName, BadValueError
+from malcolm.modules.builtin.parts import AMri
 
-from malcolm.modules.ADCore.parts import DetectorDriverPart
+from malcolm.modules.ADCore.parts import DetectorDriverPart, AHardwareTriggered, AMainDatasetUseful
 from malcolm.modules.ADCore.infos import ExposureDeadtimeInfo
 
 
