@@ -1,4 +1,4 @@
-from annotypes import add_call_types, Any
+from annotypes import add_call_types, Any, Anno
 from malcolm.modules.scanning.hooks import AContext, AStepsToDo, ACompletedSteps, APartInfo
 from malcolm.modules.scanning.util import AGenerator
 from malcolm.core import APartName, BadValueError
