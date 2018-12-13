@@ -294,6 +294,9 @@ class RunnableController(ManagerController):
 
     def do_configure(self, params):
         # type: (ConfigureParams) -> None
+        # Clear out any old part contexts now rather than letting gc do it
+        for context in self.part_contexts.values():
+            context.unsubscribe_all()
         # These are the part tasks that abort() and pause() will operate on
         self.part_contexts = self.create_part_contexts()
         # So add one for ourself too so we can be aborted

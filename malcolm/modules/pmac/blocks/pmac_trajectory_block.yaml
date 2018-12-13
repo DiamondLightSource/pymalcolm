@@ -27,7 +27,7 @@
     message_pv: $(prefix):ProfileBuildMessage_RBV
     good_status: Success
 
-- ca.parts.CAStringPart:
+- ca.parts.CACharArrayPart:
     name: buildMessage
     description: message of last profile build
     rbv: $(prefix):ProfileBuildMessage_RBV
@@ -40,7 +40,7 @@
     message_pv: $(prefix):ProfileExecuteMessage_RBV
     good_status: Success
 
-- ca.parts.CAStringPart:
+- ca.parts.CACharArrayPart:
     name: executeMessage
     description: message of last profile execute
     rbv: $(prefix):ProfileExecuteMessage_RBV
@@ -53,7 +53,7 @@
     message_pv: $(prefix):ProfileAppendMessage_RBV
     good_status: Success
 
-- ca.parts.CAStringPart:
+- ca.parts.CACharArrayPart:
     name: appendMessage
     description: message of last profile append
     rbv: $(prefix):ProfileAppendMessage_RBV
