@@ -120,7 +120,9 @@ class ADBaseActions(object):
 
     def arm_detector(self, context):
         # type: (Context) -> None
-        self.start_future = context.block_view(self.mri).start_async()
+        child = context.block_view(self.mri)
+        self.start_future = child.start_async()
+        child.when_value_matches("acquiring", True)
 
     def wait_for_detector(self, context, registrar):
         # type: (Context, PartRegistrar) -> None
