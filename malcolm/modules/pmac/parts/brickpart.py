@@ -6,7 +6,7 @@ from ..infos import ControllerInfo
 
 class BrickPart(builtin.parts.ChildPart):
     def __init__(self, name, mri, initial_visibility=True):
-        # type: (builtin.parts.APartName, builtin.parts.AMri) -> None
+        # type: (builtin.parts.APartName, builtin.parts.AMri, builtin.parts.AInitialVisibility) -> None
         super(BrickPart, self).__init__(name, mri, initial_visibility)
         # Hooks
         self.register_hooked(scanning.hooks.ReportStatusHook,
