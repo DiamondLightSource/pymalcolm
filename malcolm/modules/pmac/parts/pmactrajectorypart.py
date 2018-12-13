@@ -10,16 +10,15 @@ from scanpointgenerator import CompoundGenerator
 from malcolm.core import config_tag, NumberMeta, PartRegistrar, Widget, \
     DEFAULT_TIMEOUT, BooleanMeta
 from malcolm.modules import builtin, scanning
-from ..infos import MotorInfo, ControllerInfo, CSInfo, cs_axis_names
+from ..infos import MotorInfo, ControllerInfo, CSInfo
+from ..util import cs_axis_names, cs_axis_mapping, points_joined, \
+    point_velocities, MIN_TIME, profile_between_points
 
 if TYPE_CHECKING:
     from typing import Dict, List
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
-
-# Minimum move time for any move
-MIN_TIME = 0.002
 
 # Interval for interpolating velocity curves
 INTERPOLATE_INTERVAL = 0.02
@@ -124,7 +123,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                  ):
         # type: (...) -> scanning.hooks.UParameterTweakInfos
         # Make an axis mapping just to check they are all in the same CS
-        MotorInfo.cs_axis_mapping(part_info, axesToMove)
+        cs_axis_mapping(part_info, axesToMove)
         # If GPIO not demanded we don't need to align to the servo cycle
         if not self.output_triggers.value:
             return
@@ -169,7 +168,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         first_point = self.generator.get_point(completed_steps)
         start_positions = {}
         move_to_start_time = 0.0
-        for axis_name, velocity in self.point_velocities(first_point).items():
+        for axis_name, velocity in point_velocities(
+                self.axis_mapping, first_point).items():
             motor_info = self.axis_mapping[axis_name]  # type: MotorInfo
             acceleration_distance = motor_info.ramp_distance(0, velocity)
             start_pos = first_point.lower[axis_name] - acceleration_distance
@@ -205,8 +205,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # type: (...) -> None
         context.unsubscribe_all()
         self.generator = generator
-        cs_port, self.axis_mapping = MotorInfo.cs_axis_mapping(
-            part_info, axesToMove)
+        cs_port, self.axis_mapping = cs_axis_mapping(part_info, axesToMove)
         # Check units for everything in the axis mapping
         for axis_name, motor_info in sorted(self.axis_mapping.items()):
             assert motor_info.units == generator.units[axis_name], \
@@ -288,72 +287,6 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                     "Why do we still have points? %s" % self.profile
                 child.appendProfile()
                 self.loading = False
-
-    def point_velocities(self, point):
-        """Find the velocities of each axis over the current point"""
-        velocities = {}
-        for axis_name, motor_info in self.axis_mapping.items():
-            full_distance = point.upper[axis_name] - point.lower[axis_name]
-            velocity = full_distance / point.duration
-            assert abs(velocity) < motor_info.max_velocity, \
-                "Velocity %s invalid for %r with max_velocity %s" % (
-                    velocity, axis_name, motor_info.max_velocity)
-            velocities[axis_name] = velocity
-        return velocities
-
-    def make_consistent_velocity_profiles(self, v1s, v2s, distances,
-                                          min_time=MIN_TIME):
-        """Make consistent time and velocity arrays for each axis
-
-        Try to create velocity profiles for all axes that all arrive at
-        'distance' in the same time period. The profiles will contain the
-        following points:-
-
-        - start point at 0 secs with velocity v1     start decelerating
-        - zero velocity point                        reached 0 speed
-        - [optional] zero velocity end point         start accelerating
-        - max velocity point                         achieved max speed
-        - [optional] max velocity end point          start decelerating
-        - zero velocity point                        reached 0 speed
-        - end point with velocity v2                 reached target speed
-
-        If the profile has to be stretched to achieve min_time then the
-        first zero velocity point is stretched to zero velocity end point.
-
-        If the axis never reaches maximum velocity then there is no max_velocity
-        end point. The acceleration just switches direction at max velocity
-        point. There are therefore between 5 and 7 points in a profile.
-
-        After generating all the profiles this function checks to ensure they
-        have all achieved min_time. If not min_time is reset to the slowest
-        profile and all profiles are recalculated.
-
-        Note that for each profile the area under the velocity/time plot
-        must equal 'distance'. motor_info.make_velocity_profile uses
-        _make_hat to do this.
-        """
-        time_arrays = {}
-        velocity_arrays = {}
-        iterations = 5
-        while iterations > 0:
-            for axis_name, motor_info in self.axis_mapping.items():
-                time_arrays[axis_name], velocity_arrays[axis_name] = \
-                    motor_info.make_velocity_profile(
-                        v1s[axis_name], v2s[axis_name], distances[axis_name],
-                        min_time)
-                assert time_arrays[axis_name][-1] >= min_time or np.isclose(
-                    time_arrays[axis_name][-1], min_time), \
-                    "Time %s velocity %s for %s takes less time than %s" % (
-                        time_arrays[axis_name], velocity_arrays[axis_name],
-                        axis_name, min_time)
-            new_min_time = max(t[-1] for t in time_arrays.values())
-            if np.isclose(new_min_time, min_time):
-                # We've got our consistent set
-                return time_arrays, velocity_arrays
-            else:
-                min_time = new_min_time
-                iterations -= 1
-        raise ValueError("Can't get a consistent time in 5 iterations")
 
     def write_profile_points(self, child, time_array, velocity_mode,
                              user_programs, trajectory):
@@ -497,7 +430,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             # Calculate how long to leave for the run-up (at least MIN_TIME)
             run_up_time = MIN_TIME
             axis_points = {}
-            for axis_name, velocity in self.point_velocities(point).items():
+            for axis_name, velocity in point_velocities(
+                    self.axis_mapping, point).items():
                 axis_points[axis_name] = point.lower[axis_name]
                 motor_info = self.axis_mapping[axis_name]
                 run_up_time = max(run_up_time,
@@ -520,9 +454,10 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             if i + 1 < self.steps_up_to:
                 # Check if we need to insert the lower bound of next_point
                 next_point = self.generator.get_point(i + 1)
-                points_joined = self.points_joined(point, next_point)
+                points_are_joined = points_joined(
+                    self.axis_mapping, point, next_point)
 
-                if points_joined:
+                if points_are_joined:
                     user_program = LIVE_PROGRAM
                     velocity_point = PREV_TO_NEXT
                 else:
@@ -533,7 +468,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                     point.duration / 2.0, velocity_point, user_program, i + 1,
                     {name: point.upper[name] for name in self.axis_mapping})
 
-                if not points_joined:
+                if not points_are_joined:
                     self.insert_gap(point, next_point, i + 1)
             else:
                 # No more frames, dead frame to finish
@@ -555,7 +490,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # Calculate how long to leave for the tail-off (at least MIN_TIME)
         axis_points = {}
         tail_off_time = MIN_TIME
-        for axis_name, velocity in self.point_velocities(point).items():
+        for axis_name, velocity in point_velocities(
+                self.axis_mapping, point, entry=False).items():
             motor_info = self.axis_mapping[axis_name]
             tail_off_time = max(tail_off_time,
                                 motor_info.acceleration_time(0, velocity))
@@ -567,29 +503,15 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                                self.steps_up_to, axis_points)
         self.end_index = self.steps_up_to
 
-    def points_joined(self, point, next_point):
-        # Check for axes that need to move within the space between points
-        for axis_name, motor_info in self.axis_mapping.items():
-            if point.upper[axis_name] != next_point.lower[axis_name]:
-                return False
-        return True
-
     def insert_gap(self, point, next_point, completed_steps):
-        # Work out the start and end velocities for each axis
-        start_velocities = self.point_velocities(point)
-        end_velocities = self.point_velocities(next_point)
-        start_positions = {}
-        distances = {}
-        for axis_name, motor_info in self.axis_mapping.items():
-            start_positions[axis_name] = point.upper[axis_name]
-            distances[axis_name] = \
-                next_point.lower[axis_name] - point.upper[axis_name]
-
         # Work out the velocity profiles of how to move to the start
-        time_arrays, velocity_arrays = \
-            self.make_consistent_velocity_profiles(
-                start_velocities, end_velocities, distances,
-                self.min_turnaround.value)
+        min_time = max(MIN_TIME, self.min_turnaround.value)
+        time_arrays, velocity_arrays = profile_between_points(
+            self.axis_mapping, point, next_point, min_time)
+
+        start_positions = {}
+        for axis_name in self.axis_mapping:
+            start_positions[axis_name] = point.upper[axis_name]
 
         # Work out the Position trajectories from these profiles
         self.calculate_profile_from_velocities(

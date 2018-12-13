@@ -2,7 +2,7 @@ from annotypes import Anno
 
 from malcolm.core import Part, PartRegistrar, ChoiceMeta, Port, Alarm
 from malcolm.modules import ca, builtin
-from malcolm.modules.pmac.infos import cs_axis_names
+from malcolm.modules.pmac.util import cs_axis_names
 
 with Anno("PV prefix for CSPort and CSAxis records"):
     APrefix = str

@@ -2,7 +2,7 @@ from annotypes import Any
 
 from malcolm.core import Part, PartRegistrar, StringMeta, Port, Alarm
 from malcolm.modules import ca, builtin
-from ..infos import cs_axis_names
+from ..util import cs_axis_names
 
 
 class CompoundMotorCSPart(Part):

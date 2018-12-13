@@ -2,7 +2,7 @@ from annotypes import Any
 
 from malcolm.core import Part, PartRegistrar, StringMeta, Port
 from malcolm.modules import ca
-from malcolm.modules.pmac.infos import cs_axis_names
+from ..util import cs_axis_names
 
 
 class CSSourcePortsPart(Part):

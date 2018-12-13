@@ -1,19 +1,13 @@
 # Treat all division as float division even in python2
 from __future__ import division
 
-from collections import Counter
-
 import numpy as np
 from annotypes import TYPE_CHECKING
 
 from malcolm.core import Info
 
 if TYPE_CHECKING:
-    from typing import Tuple, Dict, Sequence, Optional, Set
-
-
-# All possible PMAC CS axis assignment
-cs_axis_names = list("ABCUVWXYZ")
+    from typing import Dict, Sequence, Optional
 
 
 class ControllerInfo(Info):
@@ -249,35 +243,4 @@ class MotorInfo(Info):
             velocity_array.append(v2)
         return time_array, velocity_array
 
-    @classmethod
-    def cs_axis_mapping(cls,
-                        part_info,  # type: Dict[str, Optional[Sequence]]
-                        axes_to_move  # type: Sequence[str]
-                        ):
-        # type: (...) -> Tuple[str, Dict[str, MotorInfo]]
-        """Given the motor infos for the parts, filter those with scannable
-        names in axes_to_move, check they are all in the same CS, and return
-        the cs_port and mapping of cs_axis to MotorInfo"""
-        cs_ports = set()  # type: Set[str]
-        axis_mapping = {}  # type: Dict[str, MotorInfo]
-        for motor_info in cls.filter_values(part_info):
-            if motor_info.scannable in axes_to_move:
-                assert motor_info.cs_axis in cs_axis_names, \
-                    "Can only scan 1-1 mappings, %r is %r" % \
-                    (motor_info.scannable, motor_info.cs_axis)
-                cs_ports.add(motor_info.cs_port)
-                axis_mapping[motor_info.scannable] = motor_info
-        missing = list(set(axes_to_move) - set(axis_mapping))
-        assert not missing, \
-            "Some scannables %s are not in the CS mapping %s" % (
-                missing, axis_mapping)
-        assert len(cs_ports) == 1, \
-            "Requested axes %s are in multiple CS numbers %s" % (
-                axes_to_move, list(cs_ports))
-        cs_axis_counts = Counter([x.cs_axis for x in axis_mapping.values()])
-        # Any cs_axis defs that are used for more that one raw motor
-        overlap = [k for k, v in cs_axis_counts.items() if v > 1]
-        assert not overlap, \
-            "CS axis defs %s have more that one raw motor attached" % overlap
-        return cs_ports.pop(), axis_mapping
 
