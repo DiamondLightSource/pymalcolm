@@ -446,7 +446,7 @@ class ChoiceMeta(VMeta):
         # type: (UChoices) -> AChoices
         # Calculate a lookup from all possible entries to the choice value
         choices_lookup = {}  # type: Dict[Any, Union[str, Enum]]
-        str_choices = []
+        new_choices = []
         enum_typ = None  # type: Type
         for i, choice in enumerate(choices):
             # If we already have an enum type it must match
@@ -463,13 +463,13 @@ class ChoiceMeta(VMeta):
                 # Map the Enum instance and str to the Enum instance
                 choices_lookup[choice.value] = choice
                 choices_lookup[choice] = choice
-                str_choices.append(choice.value)
+                new_choices.append(choice)
             else:
                 assert isinstance(choice, str_), \
                     "Expected string choice, got %s" % (choice,)
                 # Map the string to itself
                 choices_lookup[choice] = choice
-                str_choices.append(choice)
+                new_choices.append(choice)
             # Map the index to the choice
             choices_lookup[i] = choice
         if choices:
@@ -478,14 +478,16 @@ class ChoiceMeta(VMeta):
         else:
             # There are no choices, so the default value is the empty string
             choices_lookup[None] = ""
+        self.choices_lookup = choices_lookup
         if enum_typ is None or issubclass(enum_typ, str_):
             # We are producing strings
             self.enum_cls = str
         else:
             # We are producing enums
             self.enum_cls = enum_typ
-        self.choices_lookup = choices_lookup
-        return self.set_endpoint_data("choices", AChoices(str_choices))
+        self.call_types["choices"].typ = self.enum_cls
+        return self.set_endpoint_data(
+            "choices", self.call_types["choices"](new_choices))
 
     def validate(self, value):
         # type: (Any) -> Union[Enum, str]
