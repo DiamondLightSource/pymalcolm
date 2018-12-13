@@ -16,4 +16,7 @@
 - ADCore.includes.adbase_parts:
     prefix: $(prefix)
 
-
+- ca.parts.CADoublePart:
+    name: andorReadoutTime
+    description: Readout time from the Andor2 SDK
+    rbv: $(prefix):ReadoutTime_RBV

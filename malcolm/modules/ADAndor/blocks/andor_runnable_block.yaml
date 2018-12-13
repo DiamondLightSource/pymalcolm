@@ -32,10 +32,6 @@
     name: DRV
     mri: $(mri_prefix):DRV
 
-- ADCore.parts.ExposureDeadtimePart:
-    name: DEADTIME
-    initial_readout_time: 13e-3
-
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT
     prefix: $(pv_prefix):STAT
