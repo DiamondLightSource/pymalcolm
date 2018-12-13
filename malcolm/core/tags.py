@@ -22,6 +22,7 @@ class Widget(Enum):
     CHECKBOX = "checkbox"  #: A box that can be checked or not
     FLOWGRAPH = "flowgraph"  #: Boxes with lines for child block connections
     TREE = "tree"  #: A nested tree of object models editor
+    PLOT = "plot"  #: Waveform plot
 
     def tag(self):
         """Return the actual tag for the given Widget
