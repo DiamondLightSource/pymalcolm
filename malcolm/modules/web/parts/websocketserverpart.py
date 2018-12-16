@@ -33,7 +33,12 @@ SYSNET = '/sys/class/net'
 def get_if_info(s, sig, ifname):
     # Use an ioctl to get interface address or netmask
     packed_ifname = struct.pack('256s', ifname[:15].encode())
-    info = fcntl.ioctl(s.fileno(), sig, packed_ifname)
+    try:
+        info = fcntl.ioctl(s.fileno(), sig, packed_ifname)
+    except IOError as e:
+        if e.errno == 99:
+            log.debug('Error getting info for device %s (maybe link is down)' % ifname)
+            info = "\r" * 25
     return struct.unpack('!I', info[20:24])[0]
 
 
