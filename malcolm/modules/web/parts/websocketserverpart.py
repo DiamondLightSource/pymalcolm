@@ -33,12 +33,7 @@ SYSNET = '/sys/class/net'
 def get_if_info(s, sig, ifname):
     # Use an ioctl to get interface address or netmask
     packed_ifname = struct.pack('256s', ifname[:15].encode())
-    try:
-        info = fcntl.ioctl(s.fileno(), sig, packed_ifname)
-    except IOError as e:
-        if e.errno == 99:
-            log.debug('Error getting info for device %s (maybe link is down)' % ifname)
-            info = "\r" * 25
+    info = fcntl.ioctl(s.fileno(), sig, packed_ifname)
     return struct.unpack('!I', info[20:24])[0]
 
 
@@ -161,9 +156,9 @@ class WebsocketServerPart(Part):
         validators = []
         # Create an ip validator for every interface that is up
         for ifname in os.listdir(SYSNET):
-            with open(os.path.join(SYSNET, ifname, 'flags')) as f:
-                flags = int(f.read(), 0)
-            if flags & 1:
+            with open(os.path.join(SYSNET, ifname, 'operstate')) as f:
+                state = str(f.read())
+            if state != 'down\n':
                 # interface is up
                 validators.append(get_ip_validator(ifname))
         info = HandlerInfo(
