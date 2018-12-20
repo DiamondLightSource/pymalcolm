@@ -69,9 +69,10 @@ class DetectorDriverPart(ChildPart):
         self.actions.setup_detector(
             context, completed_steps, steps_to_do, **kwargs)
         child = context.block_view(self.mri)
-        tm = getattr(child, "triggerMode")
-        if tm:
-            self.is_hardware_triggered = tm.value not in self.soft_trigger_modes
+        try:  # todo is this the best way to check if the block has triggerMode ??
+            self.is_hardware_triggered = child.triggerMode.value not in self.soft_trigger_modes
+        except KeyError:
+            pass
         # Might need to reset acquirePeriod as it's sometimes wrong
         # in some detectors
         if exposure_info:
