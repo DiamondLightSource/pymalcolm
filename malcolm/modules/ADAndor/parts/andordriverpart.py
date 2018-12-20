@@ -17,18 +17,13 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                   ):
         # type: (...) -> None
 
-        # Readout time from the Andor2 SDK
-        readout_time = self.get_readout_time(context)
+        child = context.block_view(self.mri)
 
-        # Compare to readout time from Accumulation period
-        readout_time_actual = self.get_readout_time_from_acquire_period(context)
+        # Get readout time
+        readout_time = self.get_readout_time(child)
 
-        # Use the greater of the two readout times
-        if readout_time_actual > readout_time:
-            readout_time = readout_time_actual
-
-        # Frequency accuracy in PPM
-        frequency_accuracy = 50
+        # Frequency accuracy in PPM (set to 0 as we use a fixed offset)
+        frequency_accuracy = 0.0
 
         # Additional buffer to offset acquirePeriod from generator duration
         additional_buffer_time = 0.001
@@ -42,20 +37,18 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
             context, completed_steps, steps_to_do, **kwargs)
 
         # Set acquire period to exposure time (driver will set to minimum allowed)
-        child = context.block_view(self.mri)
         child.acquirePeriod.put_value(kwargs["exposure"])
 
         if self.is_hardware_triggered:
             # Start now if we are hardware triggered
             self.actions.arm_detector(context)
 
-    def get_readout_time_from_acquire_period(self, context):
+    def get_readout_time(self, child):
         """Calculate the readout time of the detector from the EPICS driver
             - Set exposure and acquire period to same value
             - Acquire period will be set to lowest acceptable value
-            - Difference will be readout time (fixed amount based on detector setup)
+            - Difference will be readout time (this value is affected by detector settings)
         """
-        child = context.block_view(self.mri)
         exposure_time_trial = 1.0
         child.exposure.put_value(exposure_time_trial)
         child.acquirePeriod.put_value(exposure_time_trial)
@@ -65,9 +58,3 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         readout_time = acquire_period - exposure_time
 
         return readout_time
-
-    def get_readout_time(self, context):
-        """Get the readout time from the SDK
-        """
-        child = context.block_view(self.mri)
-        return child.andorReadoutTime.value
