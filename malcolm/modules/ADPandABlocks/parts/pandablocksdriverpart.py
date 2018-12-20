@@ -7,4 +7,4 @@ class PandABlocksDriverPart(ADCore.parts.DetectorDriverPart,
     def __init__(self, name, mri):
         # type: (ADCore.parts.APartName, ADCore.parts.AMri) -> None
         super(PandABlocksDriverPart, self).__init__(
-            name, mri, main_dataset_useful=False)
+            name, mri, main_dataset_useful=False, soft_trigger_modes=[])

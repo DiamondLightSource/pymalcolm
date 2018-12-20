@@ -2,23 +2,23 @@
   "attributes": {
     "layout": {
       "DRV": {
-        "x": 0.0,
+        "x": -267.5, 
         "y": 0.0, 
         "visible": true
       }, 
       "STAT": {
-        "x": 0.0,
-        "y": 0.0,
+        "x": 160.5, 
+        "y": -84.800003051757812, 
         "visible": true
       }, 
       "POS": {
-        "x": 0.0,
+        "x": -53.5, 
         "y": 0.0, 
         "visible": true
       }, 
       "HDF5": {
-        "x": 0.0,
-        "y": 0.0,
+        "x": 160.5, 
+        "y": 84.800003051757812, 
         "visible": true
       }
     }, 
@@ -34,15 +34,15 @@
       "imageMode": "Multiple", 
       "numImages": 30, 
       "triggerMode": "Internal", 
-      "exposure": 0.49996000000000002, 
-      "acquirePeriod": 0.0050000000000000001, 
+      "exposure": 0.49993500000000002, 
+      "acquirePeriod": 0.5, 
       "gainX": 1.0, 
       "gainY": 1.0
     }, 
     "STAT": {
       "arrayCallbacks": true, 
       "arrayCounter": 2571, 
-      "attributesFile": "/tmp/DETECTOR:STAT-attributes.xml", 
+      "attributesFile": "DETECTOR:STAT-attributes.xml", 
       "input": "ADSIM.POS", 
       "enableCallbacks": true, 
       "computeStatistics": true
@@ -69,8 +69,8 @@
       "numCapture": 0, 
       "flushDataPerNFrames": 2, 
       "flushAttrPerNFrames": 2, 
-      "xml": "/tmp/DETECTOR:HDF5-layout.xml", 
-      "filePath": "/tmp/", 
+      "xml": "DETECTOR:HDF5-layout.xml", 
+      "filePath": "/", 
       "fileName": "det", 
       "fileTemplate": "%s%s.h5", 
       "numExtraDims": 1, 

@@ -25,7 +25,8 @@ class TestDetectorDriverPart(ChildTestCase):
 
         self.child = self.create_child_block(child_block, self.process)
         self.o = DetectorDriverPart(
-            name="m", mri="mri", is_hardware_triggered=False)
+            name="m", mri="mri", soft_trigger_modes=[''])
+        self.o.is_hardware_triggered = False  # this is for test_run
         self.process.start()
 
     def tearDown(self):
