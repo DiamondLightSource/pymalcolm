@@ -1,7 +1,7 @@
 from .datasetrunnablechildpart import DatasetRunnableChildPart
 from .datasettablepart import DatasetTablePart
 from .detectordriverpart import DetectorDriverPart, APartName, AMri, \
-    AMainDatasetUseful
+    AMainDatasetUseful, ASoftTriggerModes, USoftTriggerModes
 from .exposuredeadtimepart import ExposureDeadtimePart, AInitialAccuracy, \
     AInitialReadoutTime
 from .hdfwriterpart import HDFWriterPart, AFileDir, AFileTemplate, AFormatName

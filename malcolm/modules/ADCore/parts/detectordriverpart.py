@@ -20,7 +20,7 @@ class DetectorDriverPart(ChildPart):
     def __init__(self,
                  name,  # type: APartName
                  mri,  # type: AMri
-                 soft_trigger_modes=('Internal',),  # type: USoftTriggerModes
+                 soft_trigger_modes=None,  # type: USoftTriggerModes
                  main_dataset_useful=True,  # type: AMainDatasetUseful
                  ):
         # type: (...) -> None
@@ -69,10 +69,8 @@ class DetectorDriverPart(ChildPart):
         self.actions.setup_detector(
             context, completed_steps, steps_to_do, **kwargs)
         child = context.block_view(self.mri)
-        try:  # todo is this the best way to check if the block has triggerMode ??
+        if self.soft_trigger_modes:
             self.is_hardware_triggered = child.triggerMode.value not in self.soft_trigger_modes
-        except KeyError:
-            pass
         # Might need to reset acquirePeriod as it's sometimes wrong
         # in some detectors
         if exposure_info:
