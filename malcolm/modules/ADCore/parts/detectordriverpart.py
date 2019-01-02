@@ -1,4 +1,4 @@
-from annotypes import Anno, add_call_types, Any
+from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
 
 from malcolm.core import APartName, BadValueError
 from malcolm.modules.builtin.parts import AMri, ChildPart
@@ -9,22 +9,24 @@ from malcolm.modules.scanning.util import AGenerator
 from ..infos import NDArrayDatasetInfo, ExposureDeadtimeInfo
 from ..util import ADBaseActions
 
-with Anno("Is detector hardware triggered?"):
-    AHardwareTriggered = bool
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
+with Anno("List of trigger modes that do not use hardware triggers"):
+    ASoftTriggerModes = Array[str]
+USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
 
 
 class DetectorDriverPart(ChildPart):
     def __init__(self,
                  name,  # type: APartName
                  mri,  # type: AMri
-                 is_hardware_triggered=True,  # type: AHardwareTriggered
+                 soft_trigger_modes=None,  # type: USoftTriggerModes
                  main_dataset_useful=True,  # type: AMainDatasetUseful
                  ):
         # type: (...) -> None
         super(DetectorDriverPart, self).__init__(name, mri)
-        self.is_hardware_triggered = is_hardware_triggered
+        self.soft_trigger_modes = soft_trigger_modes
+        self.is_hardware_triggered = True
         self.main_dataset_useful = main_dataset_useful
         self.actions = ADBaseActions(mri)
         # Hooks
@@ -66,10 +68,12 @@ class DetectorDriverPart(ChildPart):
                 generator.duration)
         self.actions.setup_detector(
             context, completed_steps, steps_to_do, **kwargs)
+        child = context.block_view(self.mri)
+        if self.soft_trigger_modes:
+            self.is_hardware_triggered = child.triggerMode.value not in self.soft_trigger_modes
         # Might need to reset acquirePeriod as it's sometimes wrong
         # in some detectors
         if exposure_info:
-            child = context.block_view(self.mri)
             child.acquirePeriod.put_value(generator.duration)
         if self.is_hardware_triggered:
             # Start now if we are hardware triggered
