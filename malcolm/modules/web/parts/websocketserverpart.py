@@ -156,9 +156,9 @@ class WebsocketServerPart(Part):
         validators = []
         # Create an ip validator for every interface that is up
         for ifname in os.listdir(SYSNET):
-            with open(os.path.join(SYSNET, ifname, 'flags')) as f:
-                flags = int(f.read(), 0)
-            if flags & 1:
+            with open(os.path.join(SYSNET, ifname, 'operstate')) as f:
+                state = str(f.read())
+            if state != 'down\n':
                 # interface is up
                 validators.append(get_ip_validator(ifname))
         info = HandlerInfo(
