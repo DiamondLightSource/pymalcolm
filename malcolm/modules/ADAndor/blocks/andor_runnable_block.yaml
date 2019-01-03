@@ -28,16 +28,12 @@
     mri: $(mri_prefix):DRV
     prefix: $(pv_prefix):CAM
 
-- ADCore.parts.DetectorDriverPart:
+- ADAndor.parts.AndorDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
     soft_trigger_modes:
         - Internal
         - Software
-
-- ADCore.parts.ExposureDeadtimePart:
-    name: DEADTIME
-    initial_readout_time: 13e-3
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT

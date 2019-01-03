@@ -2,6 +2,11 @@
     name: prefix
     description: The root PV for the all records
 
+- builtin.parameters.string:
+    name: post_acquire_status
+    description: The value of ADStatus when acquire returns at the end of an acquisition
+    default: Idle
+
 - ADCore.includes.ndarraybase_parts:
     prefix: $(prefix)
 
@@ -22,7 +27,7 @@
     description: Demand for starting acquisition
     pv: $(prefix):Acquire
     status_pv: $(prefix):DetectorState_RBV
-    good_status: Idle
+    good_status: $(post_acquire_status)
 
 - ca.parts.CAActionPart:
     name: stop
