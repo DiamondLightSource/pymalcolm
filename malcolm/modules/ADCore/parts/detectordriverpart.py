@@ -58,6 +58,7 @@ class DetectorDriverPart(ChildPart):
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
+        child = context.block_view(self.mri)
         try:
             exposure_info = ExposureDeadtimeInfo.filter_single_value(part_info)
         except BadValueError:
@@ -68,13 +69,16 @@ class DetectorDriverPart(ChildPart):
                 generator.duration)
         self.actions.setup_detector(
             context, completed_steps, steps_to_do, **kwargs)
-        child = context.block_view(self.mri)
+        # If detector can be soft triggered, then we might need to defer
+        # starting it until run. Check triggerMode to find out
         if self.soft_trigger_modes:
-            self.is_hardware_triggered = child.triggerMode.value not in self.soft_trigger_modes
+            mode = child.triggerMode.value
+            self.is_hardware_triggered = mode not in self.soft_trigger_modes
         # Might need to reset acquirePeriod as it's sometimes wrong
         # in some detectors
         if exposure_info:
-            child.acquirePeriod.put_value(generator.duration)
+            period = kwargs["exposure"] + exposure_info.readout_time
+            child.acquirePeriod.put_value(period)
         if self.is_hardware_triggered:
             # Start now if we are hardware triggered
             self.actions.arm_detector(context)

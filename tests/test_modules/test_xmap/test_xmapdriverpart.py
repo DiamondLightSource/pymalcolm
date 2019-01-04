@@ -24,6 +24,8 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
         completed_steps = 0
         steps_to_do = 456
         self.o.post_configure = MagicMock()
+        # We wait to be armed, so set this here
+        self.set_attributes(self.child, acquiring=True)
         self.o.configure(
             self.context, completed_steps, steps_to_do, {}, MagicMock())
         # Wait for the start_future so the post gets through to our child

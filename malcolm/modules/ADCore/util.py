@@ -122,7 +122,7 @@ class ADBaseActions(object):
         # type: (Context) -> None
         child = context.block_view(self.mri)
         self.start_future = child.start_async()
-        child.when_value_matches("acquiring", True)
+        child.when_value_matches("acquiring", True, timeout=DEFAULT_TIMEOUT)
 
     def wait_for_detector(self, context, registrar):
         # type: (Context, PartRegistrar) -> None

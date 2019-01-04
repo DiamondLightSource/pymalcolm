@@ -1,10 +1,10 @@
+import pytest
 from mock import call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import Context, Process
 from malcolm.modules.ADAndor.parts import AndorDriverPart
 from malcolm.modules.ADAndor.blocks import andor_driver_block
-from malcolm.modules.ADCore.infos import ExposureDeadtimeInfo
 from malcolm.testutil import ChildTestCase
 
 
@@ -30,19 +30,20 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         generator.prepare()
         completed_steps = 0
         steps_to_do = 2000*3000
+        # We wait to be armed, so set this here
+        self.set_attributes(self.child, acquiring=True)
+        # This is what the detector does when exposure and acquirePeriod are
+        # both set to 0.1
+        self.set_attributes(self.child, exposure=0.1, acquirePeriod=0.105)
         self.o.configure(
-            self.context, completed_steps, steps_to_do,
-            part_info=dict(anything=[ExposureDeadtimeInfo(0.013, 0)]),
-            generator=generator
-        )
-        # Wait for the start_future so the post gets through to our child
-        # even on non-cothread systems
-        self.o.actions.start_future.result(timeout=1)
+            self.context, completed_steps, steps_to_do, {}, generator=generator)
         assert self.child.handled_requests.mock_calls == [
+            call.put('exposure', 0.1),
+            call.put('acquirePeriod', 0.1),
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
-            call.put('exposure', 0.087000000000000008),
-            call.put('imageMode', 'Fixed'),
+            call.put('exposure', pytest.approx(0.1 - 0.005 - 5e-6)),
+            call.put('imageMode', 'Multiple'),
             call.put('numImages', 6000000),
-            call.put('acquirePeriod', 0.1),
+            call.put('acquirePeriod', 0.1 - 5e-6),
             call.post('start')]

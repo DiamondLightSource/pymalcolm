@@ -25,8 +25,7 @@ class TestDetectorDriverPart(ChildTestCase):
 
         self.child = self.create_child_block(child_block, self.process)
         self.o = DetectorDriverPart(
-            name="m", mri="mri", soft_trigger_modes=[''])
-        self.o.is_hardware_triggered = False  # this is for test_run
+            name="m", mri="mri", soft_trigger_modes=["Internal"])
         self.process.start()
 
     def tearDown(self):
@@ -44,6 +43,7 @@ class TestDetectorDriverPart(ChildTestCase):
         completed_steps = 0
         steps_to_do = 6
         part_info = dict(anyname=[ExposureDeadtimeInfo(0.01, 1000)])
+        self.set_attributes(self.child, triggerMode="Internal")
         self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, generator)
         assert self.child.handled_requests.mock_calls == [
@@ -52,11 +52,16 @@ class TestDetectorDriverPart(ChildTestCase):
             call.put('exposure', 0.1 - 0.01 - 0.0001),
             call.put('imageMode', 'Multiple'),
             call.put('numImages', 6),
-            call.put('acquirePeriod', 0.1),
+            call.put('acquirePeriod', 0.1 - 0.0001),
         ]
+        assert not self.o.is_hardware_triggered
 
     def test_run(self):
         self.o.registrar = MagicMock()
+        # This would have been done by configure
+        self.o.is_hardware_triggered = False
+        # We wait until we are acquiring, so fake this
+        self.set_attributes(self.child, acquiring=True)
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('start')]
