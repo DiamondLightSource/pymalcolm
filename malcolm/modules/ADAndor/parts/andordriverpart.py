@@ -19,8 +19,8 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         readout_time = self.get_readout_time(child, generator.duration)
 
         # Create an ExposureInfo to pass to the superclass
-        part_info.setdefault(self.name, []).append(ExposureDeadtimeInfo(
-            readout_time, frequency_accuracy=50))
+        part_info[""] = [ExposureDeadtimeInfo(
+            readout_time, frequency_accuracy=50)]
         super(AndorDriverPart, self).configure(
             context, completed_steps, steps_to_do, part_info, generator,
             **kwargs)
@@ -35,4 +35,8 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         child.exposure.put_value(duration)
         child.acquirePeriod.put_value(duration)
         readout_time = child.acquirePeriod.value - child.exposure.value
-        return readout_time
+        # It seems that the difference between acquirePeriod and exposure
+        # doesn't tell the whole story, we seem to need an additional bit
+        # of readout (or something) time on top
+        fudge_factor = duration * 0.004 + 0.001
+        return readout_time + fudge_factor

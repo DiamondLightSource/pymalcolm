@@ -42,7 +42,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             call.put('acquirePeriod', 0.1),
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
-            call.put('exposure', pytest.approx(0.1 - 0.005 - 5e-6)),
+            # duration - readout - fudge_factor - crystal offset
+            call.put('exposure', pytest.approx(0.1 - 0.005 - 0.0014 - 5e-6)),
             call.put('imageMode', 'Multiple'),
             call.put('numImages', 6000000),
             call.put('acquirePeriod', 0.1 - 5e-6),
