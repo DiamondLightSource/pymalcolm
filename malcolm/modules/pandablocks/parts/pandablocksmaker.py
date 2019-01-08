@@ -22,7 +22,7 @@ def make_meta(subtyp, description, tags, writeable=True, labels=None):
         meta = NumberMeta("uint32", description)
     elif subtyp in ("int", "pos"):
         meta = NumberMeta("int32", description)
-    elif subtyp in ("scalar", "xadc"):
+    elif subtyp == "scalar":
         meta = NumberMeta("float64", description)
     elif subtyp == "lut":
         meta = StringMeta(description)
@@ -56,7 +56,7 @@ class PandABlocksMaker(object):
         typ = field_data.field_type
         subtyp = field_data.field_subtype
 
-        if typ in ("read", "xadc"):
+        if typ == "read":
             writeable = False
         else:
             writeable = True
@@ -65,7 +65,7 @@ class PandABlocksMaker(object):
             self._make_time_parts(field_name, field_data, writeable)
         elif typ == "write" and subtyp == "action":
             self._make_action_part(field_name, field_data)
-        elif typ in ("param", "read", "write", "xadc"):
+        elif typ in ("param", "read", "write"):
             self._make_param_part(field_name, field_data, writeable)
         elif typ == "bit_out":
             self._make_out(field_name, field_data, "bit")
@@ -134,11 +134,7 @@ class PandABlocksMaker(object):
             group = self._make_group("parameters")
         else:
             group = self._make_group("readbacks")
-        if field_data.field_type == "xadc":
-            subtype = "xadc"
-        else:
-            subtype = field_data.field_subtype
-        meta = make_meta(subtype, field_data.description,
+        meta = make_meta(field_data.field_subtype, field_data.description,
                          [group], writeable, field_data.labels)
         self._make_field_part(field_name, meta, writeable)
 
