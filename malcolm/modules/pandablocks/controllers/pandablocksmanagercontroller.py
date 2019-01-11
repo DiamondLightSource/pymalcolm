@@ -27,15 +27,14 @@ MUX_CONSTANT_VALUES = dict(
 LUT_CONSTANTS = dict(
     A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
 
-# Time between polls for *CHANGES
-POLL_PERIOD = 0.1
-
 with Anno("Hostname of the box"):
     AHostname = str
 with Anno("Port number of the TCP server control port"):
     APort = int
 with Anno("Documentation URL base"):
     ADocUrlBase = str
+with Anno("Time between polls of PandA current value changes"):
+    APollPeriod = float
 DOC_URL_BASE = "https://pandablocks-fpga.readthedocs.io/en/autogen"
 
 
@@ -48,11 +47,13 @@ class PandABlocksManagerController(ManagerController):
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
                  use_git=True,  # type: AUseGit
-                 doc_url_base=DOC_URL_BASE  # type: ADocUrlBase
+                 doc_url_base=DOC_URL_BASE,  # type: ADocUrlBase
+                 poll_period=0.1  # type: APollPeriod
                  ):
         # type: (...) -> None
         super(PandABlocksManagerController, self).__init__(
             mri, config_dir, initial_design, description, use_git)
+        self._poll_period = poll_period
         self._doc_url_base = doc_url_base
         # {block_name: BlockData}
         self._blocks_data = {}
@@ -98,10 +99,10 @@ class PandABlocksManagerController(ManagerController):
         super(PandABlocksManagerController, self).do_reset()
 
     def _poll_loop(self):
-        """At POLL_PERIOD poll for changes"""
+        """At self.poll_period poll for changes"""
         next_poll = time.time()
         while True:
-            next_poll += POLL_PERIOD
+            next_poll += self._poll_period
             timeout = next_poll - time.time()
             if timeout < 0:
                 timeout = 0
