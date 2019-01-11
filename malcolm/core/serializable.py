@@ -2,7 +2,7 @@ import re
 import logging
 import json
 
-from annotypes import WithCallTypes, TypeVar, Any, TYPE_CHECKING, Array
+from annotypes import WithCallTypes, TypeVar, Any, TYPE_CHECKING
 from enum import Enum
 
 from malcolm.compat import OrderedDict
@@ -37,7 +37,8 @@ def json_decode(s):
 
 def serialize_hook(o):
     o = serialize_object(o)
-    if isinstance(o, Array):
+    # Cheaper than subclass check...
+    if o.__class__.__name__ == "Array":
         # Unwrap the array as it might be a list, tuple or numpy array
         o = o.seq
     if hasattr(o, "tolist"):

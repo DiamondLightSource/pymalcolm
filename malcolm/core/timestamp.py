@@ -40,3 +40,13 @@ class TimeStamp(Serializable):
     def to_time(self):
         # type: () -> float
         return self.secondsPastEpoch + 1e-9 * self.nanoseconds
+
+    def to_dict(self):
+        # This needs to be fast as we do it a lot, so use a plain dict instead
+        # of an OrderedDict
+        return dict(
+            typeid=self.typeid,
+            secondsPastEpoch=self.secondsPastEpoch,
+            nanoseconds=self.nanoseconds,
+            userTag=self.userTag
+        )
