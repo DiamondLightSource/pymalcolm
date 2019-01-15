@@ -13,6 +13,7 @@ from .table import Table
 from .tags import Widget, method_return_unpacked
 from .timestamp import TimeStamp
 
+
 if TYPE_CHECKING:
     from typing import Tuple, Type, List, Dict, Callable
 
@@ -124,6 +125,48 @@ class Model(Serializable):
             assert len(path) == 1 and len(args) == 1, \
                 "Cannot process change %s" % ([self.path + path] + list(args))
             getattr(self, "set_%s" % path[0])(args[0])
+
+
+with Anno("Lower limit"):
+    ALoLimit = np.float64
+with Anno("Upper limit"):
+    AHiLimit = np.float64
+with Anno("Description"):
+    ADescription = str
+with Anno("Number of significant figures to display"):
+    APrecision = np.int32
+with Anno("Units"):
+    AUnits = str
+
+
+class Display(Model):
+
+    __slots__ = ["limitLow", "limitHigh", "description", "precision", "units"]
+
+    # noinspection PyPep8Naming
+    # limitLow and limitHigh are camelCase to maintain compatibility with
+    # EPICS normative types
+    def __init__(self, limitLow=None, limitHigh=None, description="", precision=0, units=None):
+        # type: (ALoLimit, AHiLimit, ADescription, APrecision, AUnits) -> None
+        # Set initial values
+        self.limitLow = self.set_limitLow(limitLow)
+        self.limitHigh = self.set_limitHigh(limitHigh)
+        self.description = description
+        self.precision = self.set_precision(precision)
+        self.units = units
+
+    def set_limitLow(self, limitLow):
+        return self.set_endpoint_data("limitLow", np.float64(limitLow))
+
+    def set_limitHigh(self, limitHigh):
+        return self.set_endpoint_data("limitHigh", np.float64(limitHigh))
+
+    def set_precision(self, precision):
+        return self.set_endpoint_data("precision", np.int32(precision))
+
+
+with Anno("Display info meta object"):
+    ADisplayT = Display
 
 
 # Types used when deserializing to the class
@@ -532,13 +575,23 @@ class NumberMeta(VMeta):
     __slots__ = ["dtype"]
 
     def __init__(self, dtype="float64", description="", tags=(),
-                 writeable=False, label=""):
-        # type: (ADtype, AMetaDescription, UTags, AWriteable, ALabel) -> None
+                 writeable=False, label="", display_t=None):
+        # type: (ADtype, AMetaDescription, UTags, AWriteable, ALabel, ADisplayT) -> None
         super(NumberMeta, self).__init__(description, tags, writeable, label)
         # like np.float64
         self._np_type = None  # type: type
         # like "float64"
         self.dtype = self.set_dtype(dtype)
+        self.display_t = self.set_display_t(display_t)
+
+    def set_display_t(self, display_t):
+        if display_t is not None:
+            assert isinstance(display_t, Display), \
+                "Expected instance of display_t, got %s" % display_t.__class__.__name__
+            return self.set_endpoint_data("display_t", display_t)
+        else:
+            return self.set_endpoint_data("display_t", Display(-1, 1))
+            #return None
 
     def set_dtype(self, dtype):
         # type: (ADtype) -> ADtype
