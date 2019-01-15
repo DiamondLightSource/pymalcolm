@@ -11,7 +11,7 @@ from .hook import Hook
 from .info import Info
 from .loggable import Loggable
 from .models import BlockModel, AttributeModel, MethodModel, \
-    BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, Model, Display, \
+    BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, Model, Display, ALoLimit, AHiLimit,\
     ChoiceMeta, NumberArrayMeta, NumberMeta, StringArrayMeta, StringMeta, \
     TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion, NTScalar, BlockMeta
 from .moduleutil import submodule_all

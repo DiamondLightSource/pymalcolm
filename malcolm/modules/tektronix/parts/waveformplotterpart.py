@@ -1,4 +1,4 @@
-from malcolm.core import Part, Widget, PartRegistrar, NumberArrayMeta, DEFAULT_TIMEOUT, Display
+from malcolm.core import Part, Widget, PartRegistrar, NumberArrayMeta, TableMeta, DEFAULT_TIMEOUT, Display
 from malcolm.modules.ca.util import catools
 from .. import util
 
@@ -24,9 +24,13 @@ class Waveform2DPart(Part):
         # type: (...) -> None
         super(Waveform2DPart, self).__init__(name)
         self.caa = util.Waveform2DAttribute(
-            NumberArrayMeta("float64", description, display_t=Display()), catools.DBR_DOUBLE,
-            yData, xData, min_delta, timeout, sink_port, widget, group,
-            config, limits_from_pv)
+            TableMeta(
+                "2D plot", description,
+                elements={
+                    "xData": NumberArrayMeta("float64", "x data", display_t=Display()),
+                    "yData": NumberArrayMeta("float64", "y data", display_t=Display())
+                }),
+            catools.DBR_DOUBLE, yData, xData, min_delta, timeout, sink_port, widget, group, config, limits_from_pv)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

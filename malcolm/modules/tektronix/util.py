@@ -2,8 +2,8 @@ import time
 
 from annotypes import Anno, Any, TYPE_CHECKING
 
-from malcolm.core import sleep, Widget, VMeta, Alarm, AlarmStatus, TimeStamp, \
-    Loggable, Display, Table, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
+from malcolm.core import sleep, VMeta, Alarm, AlarmStatus, TimeStamp, \
+    Loggable, Table, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
 from malcolm.modules.builtin.util import set_tags, AWidget, AGroup, AConfig, \
     ASinkPort
 from malcolm.modules.builtin.hooks import InitHook, ResetHook, DisableHook
@@ -43,12 +43,18 @@ with Anno("Max time to wait for puts to complete, <0 is forever"):
     ATimeout = float
 with Anno("Get limits from PV (HOPR & LOPR)"):
     AGetLimits = bool
+with Anno("Function to be called"):
+    AFunction = Any
+with Anno("anything"):
+    ASomething = Any
+with Anno("Meta info object"):
+    AMeta = VMeta
 
 
 class Waveform2DAttribute(Loggable, Table):
     def __init__(self,
-                 meta,  # type: VMeta
-                 datatype,  # type: Any
+                 meta,  # type: AMeta
+                 datatype,  # type: ASomething
                  yData="",  # type: APv
                  xData="",  # type: ARbv
                  min_delta=0.05,  # type: AMinDelta
@@ -58,7 +64,7 @@ class Waveform2DAttribute(Loggable, Table):
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
                  limits_from_pv=False,  # type: AGetLimits
-                 on_connect=None  # type: Callable[[Any], None]
+                 on_connect=None  # type: AFunction
                  ):
         # type: (...) -> None
         self.set_logger(xData=xData, yData=yData)
@@ -167,16 +173,16 @@ class Waveform2DAttribute(Loggable, Table):
         self._monitor_callback_base(value, "yData")
 
     def _monitor_callback_xLow(self, value):
-        self._monitor_callback_base(value, "xLow")
+        self._monitor_callback_limits(value, "xLow")
 
     def _monitor_callback_xHigh(self, value):
-        self._monitor_callback_base(value, "xHigh")
+        self._monitor_callback_limits(value, "xHigh")
 
     def _monitor_callback_yLow(self, value):
-        self._monitor_callback_base(value, "yLow")
+        self._monitor_callback_limits(value, "yLow")
 
     def _monitor_callback_yHigh(self, value):
-        self._monitor_callback_base(value, "yHigh")
+        self._monitor_callback_limits(value, "yHigh")
 
     def _update_value(self, new_value):
         if not new_value.ok:
@@ -198,14 +204,14 @@ class Waveform2DAttribute(Loggable, Table):
         if not new_limit_value.ok:
             self.attr.set_value(None, alarm=Alarm.invalid("Limit PV disconnected"))
         else:
-            display = self.attr.meta.elements[limit[0]].display_t
+            display = self.attr.meta.elements[limit[0]+"Data"].display_t
             if limit[1:] == "Low":
-                display.set_lopr(new_limit_value)
+                display.set_limitLow(new_limit_value)
             elif limit[1:] == "High":
-                display.set_hopr(new_limit_value)
+                display.set_limitHigh(new_limit_value)
 
     def setup(self, registrar, name, register_hooked, writeable_func=None):
-        # type: (PartRegistrar, str, Register, Callable[[Any], None]) -> None
+        # type: (PartRegistrar, str, Register, AFunction) -> None
         registrar.add_attribute_model(name, self.attr, writeable_func)
         register_hooked(DisableHook, self.disconnect)
         register_hooked((InitHook, ResetHook), self.reconnect)
