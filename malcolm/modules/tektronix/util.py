@@ -1,9 +1,9 @@
 import time
 
-from annotypes import Anno, TYPE_CHECKING
+from annotypes import Anno, Any, TYPE_CHECKING
 
 from malcolm.core import sleep, Widget, VMeta, Alarm, AlarmStatus, TimeStamp, \
-    Loggable, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
+    Loggable, Display, Table, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
 from malcolm.modules.builtin.util import set_tags, AWidget, AGroup, AConfig, \
     ASinkPort
 from malcolm.modules.builtin.hooks import InitHook, ResetHook, DisableHook
@@ -45,7 +45,7 @@ with Anno("Get limits from PV (HOPR & LOPR)"):
     AGetLimits = bool
 
 
-class Waveform2DAttribute(Loggable):
+class Waveform2DAttribute(Loggable, Table):
     def __init__(self,
                  meta,  # type: VMeta
                  datatype,  # type: Any
@@ -74,7 +74,8 @@ class Waveform2DAttribute(Loggable):
         # Camonitor subscriptions
         self.monitor = {"xData": None, "yData": None, "xLow": None, "yLow": None, "xHigh": None, "yHigh": None}
         self._update_after = 0
-        self._local_value = {"xData": [], "yData": [], "xLow": None, "yLow": None, "xHigh": None, "yHigh": None}
+        self._local_value = {"xData": [], "yData": []}
+        self._limits = {"xLow": None, "yLow": None, "xHigh": None, "yHigh": None}
         self.limits_from_pv = limits_from_pv
 
     def reconnect(self):
@@ -142,6 +143,23 @@ class Waveform2DAttribute(Loggable):
             # If we were within the delta window just increment next update
             self._update_after += self.min_delta
 
+    def _monitor_callback_limits(self, new_limit, value_key):
+        now = time.time()
+        delta = now - self._update_after
+        self._limits[value_key] = new_limit
+        self._update_display(value_key, new_limit)
+        # See how long to sleep for to make sure we don't get more than one
+        # update at < min_delta interval
+        if delta > self.min_delta:
+            # If we were more than min_delta late then reset next update time
+            self._update_after = now + self.min_delta
+        elif delta < 0:
+            # If delta is less than zero sleep for a bit
+            sleep(-delta)
+        else:
+            # If we were within the delta window just increment next update
+            self._update_after += self.min_delta
+
     def _monitor_callback_xData(self, value):
         self._monitor_callback_base(value, "xData")
 
@@ -175,6 +193,16 @@ class Waveform2DAttribute(Loggable):
             ts = TimeStamp(*getattr(new_value, "raw_stamp", (None, None)))
             # new_value = self.attr.meta.validate(new_value)
             self.attr.set_value_alarm_ts(self._local_value, alarm, ts)
+
+    def _update_display(self, limit, new_limit_value):
+        if not new_limit_value.ok:
+            self.attr.set_value(None, alarm=Alarm.invalid("Limit PV disconnected"))
+        else:
+            display = self.attr.meta.elements[limit[0]].display_t
+            if limit[1:] == "Low":
+                display.set_lopr(new_limit_value)
+            elif limit[1:] == "High":
+                display.set_hopr(new_limit_value)
 
     def setup(self, registrar, name, register_hooked, writeable_func=None):
         # type: (PartRegistrar, str, Register, Callable[[Any], None]) -> None
