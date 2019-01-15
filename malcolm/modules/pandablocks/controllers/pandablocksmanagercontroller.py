@@ -1,3 +1,4 @@
+import numpy as np
 import time
 import os
 import operator
@@ -7,7 +8,8 @@ from annotypes import Anno
 from cothread.cosocket import socket
 
 from malcolm.compat import OrderedDict, et_to_string
-from malcolm.core import Queue, TimeoutError, BooleanMeta, TableMeta
+from malcolm.core import Queue, TimeoutError, BooleanMeta, TableMeta, TimeStamp, \
+    Alarm
 from malcolm.modules.builtin.controllers import BasicController, \
     ManagerController, AMri, AConfigDir, AInitialDesign, ADescription, AUseGit
 from malcolm.modules.builtin.parts import ChildPart
@@ -15,12 +17,15 @@ from ..parts.pandablocksmaker import PandABlocksMaker, SVG_DIR
 from ..parts.pandablocksactionpart import PandABlocksActionPart
 from ..pandablocksclient import PandABlocksClient
 
+# If a mux is set to one of these, then the current value is a constant
+# {field_type: {mux_value: attribute_value}}
+MUX_CONSTANT_VALUES = dict(
+    pos_mux=dict(ZERO=np.int32(0.0)),
+    bit_mux=dict(ZERO=False, ONE=True),
+)
 
 LUT_CONSTANTS = dict(
     A=0xffff0000, B=0xff00ff00, C=0xf0f0f0f0, D=0xcccccccc, E=0xaaaaaaaa)
-
-# Time between polls for *CHANGES
-POLL_PERIOD = 0.1
 
 with Anno("Hostname of the box"):
     AHostname = str
@@ -28,6 +33,8 @@ with Anno("Port number of the TCP server control port"):
     APort = int
 with Anno("Documentation URL base"):
     ADocUrlBase = str
+with Anno("Time between polls of PandA current value changes"):
+    APollPeriod = float
 DOC_URL_BASE = "https://pandablocks-fpga.readthedocs.io/en/autogen"
 
 
@@ -40,11 +47,13 @@ class PandABlocksManagerController(ManagerController):
                  initial_design="",  # type: AInitialDesign
                  description="",  # type: ADescription
                  use_git=True,  # type: AUseGit
-                 doc_url_base=DOC_URL_BASE  # type: ADocUrlBase
+                 doc_url_base=DOC_URL_BASE,  # type: ADocUrlBase
+                 poll_period=0.1  # type: APollPeriod
                  ):
         # type: (...) -> None
         super(PandABlocksManagerController, self).__init__(
             mri, config_dir, initial_design, description, use_git)
+        self._poll_period = poll_period
         self._doc_url_base = doc_url_base
         # {block_name: BlockData}
         self._blocks_data = {}
@@ -90,10 +99,10 @@ class PandABlocksManagerController(ManagerController):
         super(PandABlocksManagerController, self).do_reset()
 
     def _poll_loop(self):
-        """At POLL_PERIOD poll for changes"""
+        """At self.poll_period poll for changes"""
         next_poll = time.time()
         while True:
-            next_poll += POLL_PERIOD
+            next_poll += self._poll_period
             timeout = next_poll - time.time()
             if timeout < 0:
                 timeout = 0
@@ -133,7 +142,7 @@ class PandABlocksManagerController(ManagerController):
         # Handle the initial set of changes to get an initial value
         self.handle_changes(self.client.get_changes())
         # Then once more to let bit_outs toggle back
-        self.handle_changes({})
+        self.handle_changes(())
         assert not self.changes, "There are still changes %s" % self.changes
 
     def _make_child_controller(self, parts, mri):
@@ -240,7 +249,7 @@ class PandABlocksManagerController(ManagerController):
         self._lut_elements[fnum] = invis
 
     def handle_changes(self, changes):
-        for k, v in changes.items():
+        for k, v in changes:
             self.changes[k] = v
         block_changes = OrderedDict()
         for full_field, val in list(self.changes.items()):
@@ -271,38 +280,45 @@ class PandABlocksManagerController(ManagerController):
             if block_name.startswith("LUT") and field_name == "FUNC":
                 self._set_lut_icon(block_name)
 
-    def update_attribute(self, block_name, field_name, val):
+    def update_attribute(self, block_name, field_name, value):
         ret = None
         parts = self._blocks_parts[block_name]
         if field_name not in parts:
             self.log.debug("Block %s has no field %s", block_name, field_name)
-            return
+            return ret
         part = parts[field_name]
         attr = part.attr
         field_data = self._blocks_data[block_name].fields.get(field_name, None)
-        if val == Exception:
+        if value == Exception:
             # TODO: set error
-            val = None
-        elif isinstance(attr.meta, BooleanMeta):
-            val = bool(int(val))
+            self.log.warning("Field %s.%s in error", block_name, field_name)
+            value = None
+
+        # Cheaper than isinstance
+        if attr.meta.typeid == TableMeta.typeid:
+            value = part.table_from_list(value)
+        elif attr.meta.typeid == BooleanMeta.typeid:
+            value = bool(int(value))
             is_bit_out = field_data and field_data.field_type == "bit_out"
-            if is_bit_out and val == attr.value:
+            if is_bit_out and attr.value is value:
                 # make bit_out things toggle while changing
-                ret = val
-                val = not val
-        elif isinstance(attr.meta, TableMeta):
-            val = part.table_from_list(val)
+                ret = value
+                value = not value
+        else:
+            value = attr.meta.validate(value)
 
         # Update the value of our attribute and anyone listening
-        attr.set_value(val)
+        ts = TimeStamp()
+        attr.set_value_alarm_ts(value, Alarm.ok, ts)
         for dest_attr in self._listening_attrs.get(attr, []):
-            dest_attr.set_value(val)
+            dest_attr.set_value_alarm_ts(value, Alarm.ok, ts)
 
         # if we changed the value of a mux, update the slaved values
         if field_data and field_data.field_type in ("bit_mux", "pos_mux"):
             current_part = parts[field_name + ".CURRENT"]
             current_attr = current_part.attr
-            self._update_current_attr(current_attr, val)
+            self._update_current_attr(
+                current_attr, value, ts, field_data.field_type)
 
         # if we changed a pos_out, its SCALE or OFFSET, update its scaled value
         root_field_name = field_name.split(".")[0]
@@ -310,12 +326,12 @@ class PandABlocksManagerController(ManagerController):
         if field_data.field_type == "pos_out":
             scale = parts[root_field_name + ".SCALE"].attr.value
             offset = parts[root_field_name + ".OFFSET"].attr.value
-            value = parts[root_field_name].attr.value
-            scaled = value * scale + offset
-            parts[root_field_name + ".SCALED"].attr.set_value(scaled)
+            scaled = parts[root_field_name].attr.value * scale + offset
+            parts[root_field_name + ".SCALED"].attr.set_value_alarm_ts(
+                scaled, Alarm.ok, ts)
         return ret
 
-    def _update_current_attr(self, current_attr, mux_val):
+    def _update_current_attr(self, current_attr, mux_val, ts, field_type):
         # Remove the old current_attr from all lists
         for mux_set in self._listening_attrs.values():
             try:
@@ -323,14 +339,13 @@ class PandABlocksManagerController(ManagerController):
             except KeyError:
                 pass
         # add it to the list of things that need to update
-        if mux_val == "ZERO":
-            current_attr.set_value(0)
-        elif mux_val == "ONE":
-            current_attr.set_value(1)
-        else:
+        try:
+            val = MUX_CONSTANT_VALUES[field_type][mux_val]
+        except KeyError:
             mon_block_name, mon_field_name = mux_val.split(".", 1)
             mon_parts = self._blocks_parts[mon_block_name]
             out_attr = mon_parts[mon_field_name].attr
             self._listening_attrs.setdefault(out_attr, set()).add(current_attr)
             # update it to the right value
-            current_attr.set_value(out_attr.value)
+            val = out_attr.value
+        current_attr.set_value_alarm_ts(val, Alarm.ok, ts)

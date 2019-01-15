@@ -106,7 +106,7 @@ class PandABoxControlTest(unittest.TestCase):
 .
 """]
         self.start(messages)
-        changes = self.c.get_changes()
+        changes = list(self.c.get_changes())
         self.c.stop()
         assert self.socket.send.call_args_list == [
             call("*CHANGES?\n"), call("SEQ1.TABLE?\n")]
@@ -120,7 +120,7 @@ class PandABoxControlTest(unittest.TestCase):
         expected["PULSE1.INP"] = Exception
         expected["PULSE2.INP"] = Exception
         expected["PULSE3.INP"] = Exception
-        assert changes == expected
+        assert OrderedDict(changes) == expected
 
     def test_set_field(self):
         messages = "OK\n"

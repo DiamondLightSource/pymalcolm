@@ -48,11 +48,10 @@ class TestReframePluginPart(ChildTestCase):
         generator.prepare()
         completed_steps = 0
         steps_to_do = 6
+        # We wait to be armed, so set this here
+        self.set_attributes(self.child, acquiring=True)
         self.o.configure(
             self.context, completed_steps, steps_to_do, {}, generator)
-        # Wait for the start_future so the post gets through to our child
-        # even on non-cothread systems
-        self.o.actions.start_future.result(timeout=1)
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),

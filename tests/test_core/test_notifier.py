@@ -108,7 +108,7 @@ class TestNotifier(unittest.TestCase):
         # delete the first and check calls
         with self.o.changes_squashed:
             self.block.data.pop("attr")
-            self.o.add_squashed_change(["b", "attr"])
+            self.o.add_squashed_delete(["b", "attr"])
         self.assert_called_with(r1.callback, Update(value=None))
         r1.callback.reset_mock()
         self.assert_called_with(r2.callback, Delta(

@@ -9,6 +9,26 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 Nothing yet
 
+
+`3-0`_ - 2019-01-04
+-------------------
+
+Changed:
+
+- areaDetectors now set acquirePeriod = exposure + readout_time
+- Andor calculates readout_time from the reported driver values
+
+Added:
+
+- soft_trigger_modes to DetectorDriverPart to calculate is_hardware_triggered
+
+Fixed:
+
+- Look at operstart rather than flags to see if link is down for WebSockets
+- BrickPart can now take initial_visibility again (broken in 3-0b2)
+- Add git username and email settings at save for git versions that support it
+
+
 `3-0b2`_ - 2018-12-05
 ---------------------
 
@@ -243,8 +263,9 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0b2...HEAD
-.. _3-0b1: https://github.com/dls-controls/pymalcolm/compare/3-0b1...3-0b2
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0...HEAD
+.. _3-0: https://github.com/dls-controls/pymalcolm/compare/3-0b2...3-0
+.. _3-0b2: https://github.com/dls-controls/pymalcolm/compare/3-0b1...3-0b2
 .. _3-0b1: https://github.com/dls-controls/pymalcolm/compare/3-0a9...3-0b1
 .. _3-0a9: https://github.com/dls-controls/pymalcolm/compare/3-0a8...3-0a9
 .. _3-0a8: https://github.com/dls-controls/pymalcolm/compare/3-0a7...3-0a8

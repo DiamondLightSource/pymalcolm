@@ -22,8 +22,12 @@ class DummyNotifier(object):
     def changes_squashed(self):
         yield
 
-    def add_squashed_change(self, path, data=None):
+    def add_squashed_change(self, path, data):
         # type: (List[str], Any) -> None
+        pass
+
+    def add_squashed_delete(self, path):
+        # type: (List[str]) -> None
         pass
 
 
@@ -66,20 +70,26 @@ class Notifier(Loggable):
         """
         return self
 
-    def add_squashed_change(self, path, data=None):
+    def add_squashed_change(self, path, data):
         # type: (List[str], Any) -> None
-        """Call setter, then notify subscribers of change
+        """Register a squashed change to a particular path
 
         Args:
             path (list): The path of what has changed, relative from Block
-            data (object): The new data, None for deletion
+            data (object): The new data
         """
         assert self._squashed_count, "Called while not squashing changes"
-        if data is None:
-            change = [path[1:]]
-        else:
-            change = [path[1:], data]
-        self._squashed_changes.append(change)
+        self._squashed_changes.append([path[1:], data])
+
+    def add_squashed_delete(self, path):
+        # type: (List[str]) -> None
+        """Register a squashed deletion of a particular path
+
+        Args:
+            path (list): The path of what has changed, relative from Block
+        """
+        assert self._squashed_count, "Called while not squashing changes"
+        self._squashed_changes.append([path[1:]])
 
     def __enter__(self):
         """So we can use this as a context manager for squashing changes"""

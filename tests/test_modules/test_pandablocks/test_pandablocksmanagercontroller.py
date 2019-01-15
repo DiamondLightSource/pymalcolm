@@ -44,9 +44,9 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         changes["COUNTER.OUT.OFFSET"] = "0"
         changes["COUNTER.OUT.UNITS"] = ""
         changes["TTLIN.VAL"] = "0"
-        self.o.handle_changes(changes)
+        self.o.handle_changes(changes.items())
         # Once more to let the bit_outs toggle back
-        self.o.handle_changes({})
+        self.o.handle_changes(())
 
     def _blocks(self):
         pcomp = self.process.add_controller.call_args_list[0][0][0]
@@ -97,12 +97,12 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
 
     def test_rewiring(self):
         pcomp, counter, ttlin = self._blocks()
-        self.o.handle_changes({"COUNTER.OUT": 32})
+        self.o.handle_changes({"COUNTER.OUT": 32}.items())
         assert counter.out.value== 32
-        self.o.handle_changes({"PCOMP.INP": "COUNTER.OUT"})
+        self.o.handle_changes({"PCOMP.INP": "COUNTER.OUT"}.items())
         assert pcomp.inp.value == "COUNTER.OUT"
         assert pcomp.inpCurrent.value == 32
-        self.o.handle_changes({"PCOMP.INP": "ZERO"})
+        self.o.handle_changes({"PCOMP.INP": "ZERO"}.items())
         assert pcomp.inp.value == "ZERO"
         assert pcomp.inpCurrent.value == 0
 
@@ -112,13 +112,13 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         assert counter.outScale.value == 1.0
         assert counter.outOffset.value == 0.0
         assert counter.outScaled.value == 0.0
-        self.o.handle_changes({"COUNTER.OUT": 30})
+        self.o.handle_changes({"COUNTER.OUT": 30}.items())
         assert counter.out.value == 30
         assert counter.outScaled.value == 30.0
-        self.o.handle_changes({"COUNTER.OUT.SCALE": 0.1})
+        self.o.handle_changes({"COUNTER.OUT.SCALE": 0.1}.items())
         assert counter.out.value == 30
         assert counter.outScaled.value == 3.0
-        self.o.handle_changes({"COUNTER.OUT.OFFSET": 5.1})
+        self.o.handle_changes({"COUNTER.OUT.OFFSET": 5.1}.items())
         assert counter.out.value == 30
         assert counter.outScaled.value == 8.1
 

@@ -1112,4 +1112,4 @@ class BlockModel(Model):
             self.call_types.pop(name)
             delattr(self, name)
             self._update_fields()
-            self.notifier.add_squashed_change(self.path + [name])
+            self.notifier.add_squashed_delete(self.path + [name])

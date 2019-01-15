@@ -11,6 +11,5 @@ class ExcaliburDriverPart(ADCore.parts.DetectorDriverPart):
                   ):
         # type: (...) -> None
         child = context.block_view(self.mri)
-        self.is_hardware_triggered = child.triggerMode.value != "Internal"
         super(ExcaliburDriverPart, self).configure(
             context, completed_steps, steps_to_do, generator, **kwargs)

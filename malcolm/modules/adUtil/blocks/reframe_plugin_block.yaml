@@ -48,3 +48,7 @@
     value: 0
     wait: False
 
+- ca.parts.CABooleanPart:
+    name: acquiring
+    description: If plugin is currently acquiring
+    rbv: $(prefix):Capture

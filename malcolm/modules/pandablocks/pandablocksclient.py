@@ -263,7 +263,6 @@ class PandABlocksClient(object):
         return blocks
 
     def get_changes(self):
-        changes = OrderedDict()
         table_queues = {}
         for line in self.send_recv("*CHANGES?\n"):
             if line.endswith("(error)"):
@@ -279,10 +278,9 @@ class PandABlocksClient(object):
             else:
                 log.warning("Can't parse line %r of changes", line)
                 continue
-            changes[field] = val
+            yield field, val
         for field, q in table_queues.items():
-            changes[field] = self.recv(q)
-        return changes
+            yield field, self.recv(q)
 
     def get_table_fields(self, block, field):
         fields = OrderedDict()

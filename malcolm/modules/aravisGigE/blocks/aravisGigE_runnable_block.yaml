@@ -31,6 +31,8 @@
 - ADCore.parts.DetectorDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
+    soft_trigger_modes:
+        - Off
 
 - ADCore.parts.ExposureDeadtimePart:
     name: DEADTIME
