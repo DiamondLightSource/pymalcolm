@@ -23,7 +23,6 @@ def stringify_error(e):
 
 def json_encode(o, indent=None):
     s = json.dumps(o, default=serialize_hook, indent=indent)
-    s = s.replace("NaN", "null")  # NaN is not valid json but numpy.nan serializes to this regardless
     return s
 
 

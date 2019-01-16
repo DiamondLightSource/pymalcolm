@@ -139,7 +139,7 @@ with Anno("Units"):
     AUnits = str
 
 
-@Serializable.register_subclass("epics:nt/display_t:1.0")
+@Serializable.register_subclass("display_t")
 class Display(Model):
 
     __slots__ = ["limitLow", "limitHigh", "description", "precision", "units"]
@@ -147,7 +147,7 @@ class Display(Model):
     # noinspection PyPep8Naming
     # limitLow and limitHigh are camelCase to maintain compatibility with
     # EPICS normative types
-    def __init__(self, limitLow=None, limitHigh=None, description="", precision=0, units=None):
+    def __init__(self, limitLow=0, limitHigh=0, description="", precision=0, units=None):
         # type: (ALoLimit, AHiLimit, ADescription, APrecision, AUnits) -> None
         # Set initial values
         self.limitLow = self.set_limitLow(limitLow)
@@ -157,16 +157,10 @@ class Display(Model):
         self.units = units
 
     def set_limitLow(self, limitLow):
-        #if limitLow is not None:
         return self.set_endpoint_data("limitLow", np.float64(limitLow))
-        #else:
-        #    return self.set_endpoint_data("limitLow", None)
 
     def set_limitHigh(self, limitHigh):
-        #if limitHigh is not None:
         return self.set_endpoint_data("limitHigh", np.float64(limitHigh))
-        #else:
-        #    return self.set_endpoint_data("limitHigh", np.float64(limitLow))
 
     def set_precision(self, precision):
         return self.set_endpoint_data("precision", np.int32(precision))
