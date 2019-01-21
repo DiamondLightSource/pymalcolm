@@ -7,12 +7,12 @@ from scanpointgenerator import Point
 from malcolm.core import APartName, Block
 from malcolm.modules import builtin, scanning, pmac
 
-#: The SEQ.table attributes that should be present in PANDA.exports
 from ..util import SequencerTable, Trigger
 
 if TYPE_CHECKING:
     from typing import List, Tuple
 
+#: The SEQ.table attributes that should be present in PANDA.exports
 SEQ_TABLES = ("seqTableA", "seqTableB")
 
 #: The number of sequencer table rows
@@ -82,11 +82,12 @@ def time_row(half_frame):
 
 
 class PandABlocksPcompPart(builtin.parts.ChildPart):
-    """Part for controlling a `stats_plugin_block` in a Device"""
+    """Part for operating a pair of SEQ blocks in a PandA to do position
+    compare"""
 
     def __init__(self, name, mri, posa, posb="", posc=""):
         # type: (APartName, builtin.parts.AMri, APos, APos, APos) -> None
-        super(PandABlocksPcompPart, self).__init__(name, mri)
+        super(PandABlocksPcompPart, self).__init__(name, mri, stateful=False)
         # Store scannable names
         self.scannables = (posa, posb, posc)
         self.trigger_enums = {

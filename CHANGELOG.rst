@@ -7,7 +7,10 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
-Nothing yet
+Changed:
+
+- CS and motors now show a link to parent PMAC, require pmac version 2-2
+- Added Position Compare support for PandA via 2 SEQ blocks
 
 
 `3-3`_ - 2019-02-19

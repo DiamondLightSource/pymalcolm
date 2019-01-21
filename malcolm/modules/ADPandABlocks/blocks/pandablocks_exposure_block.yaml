@@ -1,0 +1,25 @@
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: det
+    description: Initial value of Detector mri we will get readoutTime from
+
+- builtin.parameters.string:
+    name: panda
+    description: Initial value of PandA mri we will configure
+
+- builtin.controllers.BasicController:
+    mri: $(mri)
+
+- builtin.parts.BlockPart:
+    name: det
+    description: Detector mri we will get readoutTime from
+    value: $(det)
+
+- builtin.parts.BlockPart:
+    name: panda
+    description: PandA mri we will configure
+    value: $(panda)
+

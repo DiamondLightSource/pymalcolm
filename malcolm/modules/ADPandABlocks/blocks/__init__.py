@@ -1,5 +1,7 @@
 from malcolm.yamlutil import make_block_creator, check_yaml_names
 
+pandablocks_exposure_block = make_block_creator(
+    __file__, "pandablocks_exposure_block.yaml")
 pandablocks_runnable_block = make_block_creator(
     __file__, "pandablocks_runnable_block.yaml")
 pandablocks_pcomp_block = make_block_creator(
