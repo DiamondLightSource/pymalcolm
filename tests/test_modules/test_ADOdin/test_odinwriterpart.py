@@ -1,5 +1,5 @@
 import pytest
-from mock import call
+from mock import call, MagicMock
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import Context, Process
@@ -19,23 +19,38 @@ class TestOdinDWriterPart(ChildTestCase):
         self.o = OdinWriterPart(name="m", mri="mri")
         self.process.start()
 
+        self.completed_steps = 0
+        self.steps_to_do = 2000 * 3000
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3000, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2000)
+        self.generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        self.generator.prepare()
+
     def tearDown(self):
         self.process.stop(timeout=1)
 
     def test_configure(self):
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3000, alternate=True)
-        ys = LineGenerator("y", "mm", 0.0, 0.1, 2000)
-        generator = CompoundGenerator([ys, xs], [], [], 0.1)
-        generator.prepare()
-        completed_steps = 0
-        steps_to_do = 2000 * 3000
-
         self.o.configure(
-            self.context, completed_steps, steps_to_do, {}, generator=generator,
-            fileDir='/tmp', fileName='odin.hdf')
+            self.context, self.completed_steps, self.steps_to_do, {},
+            generator=self.generator, fileDir='/tmp', fileName='odin.hdf')
         assert self.child.handled_requests.mock_calls == [
             call.put('fileName', 'odin.hdf'),
             call.put('filePath', '/tmp/'),
-            call.put('numCapture', 6000000),
+            call.put('numCapture', self.steps_to_do),
             call.post('start')]
         print(self.child.handled_requests.mock_calls)
+
+    def test_run(self):
+        self.o.configure(
+            self.context, self.completed_steps, self.steps_to_do, {},
+            generator=self.generator, fileDir='/tmp', fileName='odin.hdf')
+        self.child.handled_requests.reset_mock()
+        self.o.registrar = MagicMock()
+        # run waits for this value
+        self.child.field_registry.get_field("numCaptured").set_value(
+            self.o.done_when_reaches)
+        self.o.run(self.context)
+        assert self.child.handled_requests.mock_calls == []
+        assert self.o.registrar.report.called_once
+        assert self.o.registrar.report.call_args_list[0][0][0].steps == \
+               self.steps_to_do
