@@ -333,7 +333,8 @@ class ChildPart(Part):
             for name, port_info in sink_ports.items():
                 if source_port_lookup is True or source_port_lookup.get(
                         child[name].value, None) == port_info.port:
-                    attribute_values[name] = port_info.disconnected_value
+                    if child[name].meta.writeable:
+                        attribute_values[name] = port_info.disconnected_value
             child.put_attribute_values(attribute_values)
 
     def calculate_part_visibility(self, ports):
