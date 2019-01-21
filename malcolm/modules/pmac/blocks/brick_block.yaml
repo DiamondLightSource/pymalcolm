@@ -9,6 +9,12 @@
 - builtin.controllers.StatefulController:
     mri: $(mri)
 
+- asyn.parts.AsynSourcePortPart:
+    name: port
+    description: Asyn Port Name
+    rbv: $(prefix):Port
+    port_type: motor
+
 - ca.parts.CALongPart:
     name: i10
     description: Value of i10 (servo ticks)

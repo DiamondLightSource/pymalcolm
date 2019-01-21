@@ -5,13 +5,13 @@ from malcolm.modules import ca, builtin
 from ..util import cs_axis_names
 
 
-class CompoundMotorCSPart(Part):
+class CompoundMotorSinkPortsPart(Part):
     """Defines a string `Attribute` representing the CS this compound motor
     is permanently assigned to by reading its motor record OUT link"""
 
     def __init__(self, name, rbv, group=None):
         # type: (ca.util.APartName, ca.util.ARbv, ca.util.AGroup) -> None
-        super(CompoundMotorCSPart, self).__init__(name)
+        super(CompoundMotorSinkPortsPart, self).__init__(name)
         meta = StringMeta("CS Axis")
         builtin.util.set_tags(meta, group=group, sink_port=Port.MOTOR)
         self.rbv = rbv

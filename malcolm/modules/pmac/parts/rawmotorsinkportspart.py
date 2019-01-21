@@ -1,6 +1,7 @@
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, ChoiceMeta, Port, Alarm
+from malcolm.core import Part, PartRegistrar, ChoiceMeta, Port, Alarm, \
+    StringMeta
 from malcolm.modules import ca, builtin
 from malcolm.modules.pmac.util import cs_axis_names
 
@@ -8,19 +9,23 @@ with Anno("PV prefix for CSPort and CSAxis records"):
     APrefix = str
 
 
-class RawMotorCSPart(Part):
+class RawMotorSinkPortsPart(Part):
     """Defines a string `Attribute` representing a asyn port that should be
     depicted as a Source Port on a Block"""
 
-    def __init__(self, name, prefix, group=None):
-        # type: (ca.util.APartName, APrefix, ca.util.AGroup) -> None
-        super(RawMotorCSPart, self).__init__(name)
+    def __init__(self, prefix, group=None):
+        # type: (APrefix, ca.util.AGroup) -> None
+        super(RawMotorSinkPortsPart, self).__init__("sinkPorts")
         self.pvs = [prefix + ":CsPort", prefix + ":CsAxis"]
-        self.rbvs = [prefix + ":CsPort_RBV", prefix + ":CsAxis_RBV"]
+        self.rbvs = [prefix + ":CsPort_RBV", prefix + ":CsAxis_RBV",
+                     prefix + ".OUT"]
         meta = ChoiceMeta("CS Axis")
         builtin.util.set_tags(
             meta, writeable=True, group=group, sink_port=Port.MOTOR)
-        self.attr = meta.create_attribute_model()
+        self.cs_attr = meta.create_attribute_model()
+        meta = StringMeta("Parent PMAC Port name")
+        builtin.util.set_tags(meta, group=group, sink_port=Port.MOTOR)
+        self.pmac_attr = meta.create_attribute_model()
         # Subscriptions
         self.monitors = []
         self.port = None
@@ -33,7 +38,8 @@ class RawMotorCSPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        registrar.add_attribute_model(self.name, self.attr, self.caput)
+        registrar.add_attribute_model("pmac", self.pmac_attr)
+        registrar.add_attribute_model("cs", self.cs_attr, self.caput)
 
     def reconnect(self):
         # release old monitors
@@ -47,9 +53,10 @@ class RawMotorCSPart(Part):
         for choice in self.port_choices[1:]:
             for axis in cs_axis_names + ["I"]:
                 choices.append("%s,%s" % (choice, axis))
-        self.attr.meta.set_choices(choices)
+        self.cs_attr.meta.set_choices(choices)
         self.port = self.port_choices[ca_values[2]]
         self._update_value(ca_values[3], 1)
+        self._update_value(ca_values[4], 2)
         # Setup monitor on rbvs
         self.monitors = ca.util.catools.camonitor(
             self.rbvs, self._update_value, format=ca.util.catools.FORMAT_TIME,
@@ -62,26 +69,37 @@ class RawMotorCSPart(Part):
 
     def _update_value(self, value, index):
         if index == 0:
+            # Got CS Port
             if not value.ok:
                 self.port = None
             elif value == 0:
                 self.port = ""
             else:
                 self.port = self.port_choices[value]
-        else:
+        elif index == 1:
+            # Got CS Axis
             if value.ok and str(value) in cs_axis_names + ["I"]:
                 self.axis = value
             else:
                 self.axis = None
+        else:
+            # Got PMAC Port name
+            if value.ok:
+                # Split "@asyn(PORT,num)" into ["PORT", "num"]
+                split = value.split("(")[1].rstrip(")").split(",")
+                self.pmac_attr.set_value(split[0].strip())
+            else:
+                self.pmac_attr.set_value(
+                    None, alarm=Alarm.invalid("Bad PV value"))
         if self.port is None or self.axis is None:
             # Bad value or PV disconnected
-            self.attr.set_value(None, alarm=Alarm.invalid("Bad PV value"))
+            self.cs_attr.set_value(None, alarm=Alarm.invalid("Bad PV value"))
         elif self.port and self.axis:
             # Connected to a port
-            self.attr.set_value("%s,%s" % (self.port, self.axis))
+            self.cs_attr.set_value("%s,%s" % (self.port, self.axis))
         else:
             # Not connected to a port
-            self.attr.set_value("")
+            self.cs_attr.set_value("")
 
     def caput(self, value):
         if value:

@@ -19,6 +19,12 @@
     pv: $(prefix):ProfileCsName
     rbv_suffix: _RBV
 
+- ca.parts.CAStringPart:
+    name: pmac
+    description: Port name of parent PMAC object
+    rbv: $(prefix):ParentPort
+    sink_port: motor
+
 - ca.parts.CAActionPart:
     name: buildProfile
     description: command to build the profile once times and positions are set

@@ -3,7 +3,7 @@ from mock import patch
 
 from malcolm.core import Process, AlarmSeverity
 from malcolm.modules.builtin.controllers import StatefulController
-from malcolm.modules.pmac.parts import CompoundMotorCSPart
+from malcolm.modules.pmac.parts import CompoundMotorSinkPortsPart
 
 
 class castr(str):
@@ -11,13 +11,13 @@ class castr(str):
     severity = 0
 
 
-class TestCompoundMotorCSPart(unittest.TestCase):
+class TestCompoundMotorSinkPortsPart(unittest.TestCase):
     @patch("malcolm.modules.ca.util.catools")
     def setUp(self, catools):
         self.catools = catools
         catools.caget.side_effect = [[castr("@asyn(BRICK1CS1,2)")]]
         self.process = Process("proc")
-        self.o = CompoundMotorCSPart("cs", "PV:PRE.OUT")
+        self.o = CompoundMotorSinkPortsPart("cs", "PV:PRE.OUT")
         c = StatefulController("mri")
         c.add_part(self.o)
         self.process.add_controller(c)

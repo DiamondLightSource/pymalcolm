@@ -17,8 +17,7 @@
 - pmac.includes.motor_records:
     prefix: $(prefix)
 
-- pmac.parts.RawMotorCSPart:
-    name: cs
+- pmac.parts.RawMotorSinkPortsPart:
     prefix: $(prefix)
 
 - builtin.parts.Float64Part:

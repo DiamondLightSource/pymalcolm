@@ -24,6 +24,12 @@
     name: port
     rbv: $(prefix):Port
 
+- ca.parts.CAStringPart:
+    name: pmac
+    description: Port name of parent PMAC object
+    rbv: $(prefix):ParentPort
+    sink_port: motor
+
 - ca.parts.CAActionPart:
     name: abort
     description: Abort the current CS move

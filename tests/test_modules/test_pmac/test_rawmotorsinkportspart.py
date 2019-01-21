@@ -3,7 +3,7 @@ from mock import patch
 
 from malcolm.core import Process, AlarmSeverity
 from malcolm.modules.builtin.controllers import StatefulController
-from malcolm.modules.pmac.parts import RawMotorCSPart
+from malcolm.modules.pmac.parts import RawMotorSinkPortsPart
 
 
 class castr(str):
@@ -18,10 +18,10 @@ class caenum(int):
 
 
 @patch("malcolm.modules.ca.util.catools")
-class TestRawMotorCSPart(unittest.TestCase):
+class TestRawMotorSinkPortsPart(unittest.TestCase):
     def setUp(self):
         self.process = Process("proc")
-        self.o = RawMotorCSPart("cs", "PV:PRE")
+        self.o = RawMotorSinkPortsPart("PV:PRE")
         c = StatefulController("mri")
         c.add_part(self.o)
         self.process.add_controller(c)
@@ -31,7 +31,7 @@ class TestRawMotorCSPart(unittest.TestCase):
     def do_init(self, catools):
         catools.caget.side_effect = [[
             caenum(2), castr("I"),
-            caenum(1), castr("A")
+            caenum(1), castr("A"), castr("@asyn(PMAC,1)")
         ]]
         self.process.start()
 
@@ -39,10 +39,12 @@ class TestRawMotorCSPart(unittest.TestCase):
         self.do_init(catools)
         catools.caget.assert_called_once_with(
             ["PV:PRE:CsPort", "PV:PRE:CsAxis", "PV:PRE:CsPort_RBV",
-             "PV:PRE:CsAxis_RBV"], format=catools.FORMAT_CTRL)
+             "PV:PRE:CsAxis_RBV", "PV:PRE.OUT"],
+            format=catools.FORMAT_CTRL)
         assert list(self.b) == [
-            'meta', 'health', 'state', 'disable', 'reset', 'cs']
+            'meta', 'health', 'state', 'disable', 'reset', "pmac", 'cs']
         assert self.b.cs.value == "BRICK1CS1,A"
+        assert self.b.pmac.value == "PMAC"
 
     def test_update_axis(self, catools):
         self.do_init(catools)

@@ -1,6 +1,3 @@
-# Treat all division as float division even in python2
-from __future__ import division
-
 from annotypes import add_call_types
 
 from malcolm.modules import builtin, scanning

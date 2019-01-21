@@ -17,7 +17,7 @@
 - pmac.includes.motor_records:
     prefix: $(prefix)
 
-- pmac.parts.CompoundMotorCSPart:
+- pmac.parts.CompoundMotorSinkPortsPart:
     name: cs
     rbv: $(prefix).OUT
 
