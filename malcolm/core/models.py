@@ -126,7 +126,6 @@ class Model(Serializable):
                 "Cannot process change %s" % ([self.path + path] + list(args))
             getattr(self, "set_%s" % path[0])(args[0])
 
-
 with Anno("Lower limit"):
     ALoLimit = np.float64
 with Anno("Upper limit"):
@@ -135,26 +134,28 @@ with Anno("Description"):
     ADescription = str
 with Anno("Number of significant figures to display"):
     APrecision = np.int32
+with Anno("format to display value"):
+    AForm = str
 with Anno("Units"):
     AUnits = str
-
 
 @Serializable.register_subclass("display_t")
 class Display(Model):
 
-    __slots__ = ["limitLow", "limitHigh", "description", "precision", "units"]
+    __slots__ = ["limitLow", "limitHigh", "description", "precision", "form", "units"]
 
     # noinspection PyPep8Naming
     # limitLow and limitHigh are camelCase to maintain compatibility with
     # EPICS normative types
-    def __init__(self, limitLow=0, limitHigh=0, description="", precision=0, units=None):
-        # type: (ALoLimit, AHiLimit, ADescription, APrecision, AUnits) -> None
+    def __init__(self, limitLow=0, limitHigh=0, description="", precision=0, form=None, units=None):
+        # type: (ALoLimit, AHiLimit, ADescription, APrecision, AForm, AUnits) -> None
         # Set initial values
         self.limitLow = self.set_limitLow(limitLow)
         self.limitHigh = self.set_limitHigh(limitHigh)
         self.description = description
+        self.form = form
         self.precision = self.set_precision(precision)
-        self.units = units
+        self.units = self.set_units(units)
 
     def set_limitLow(self, limitLow):
         return self.set_endpoint_data("limitLow", np.float64(limitLow))
@@ -164,6 +165,12 @@ class Display(Model):
 
     def set_precision(self, precision):
         return self.set_endpoint_data("precision", np.int32(precision))
+
+    def set_units(self, units):
+        unit_str = ""
+        if units is not None:
+            unit_str = str(units)
+        return self.set_endpoint_data("units", unit_str)
 
 
 with Anno("Display info meta object"):
@@ -591,7 +598,7 @@ class NumberMeta(VMeta):
                 "Expected instance of display_t, got %s" % display_t.__class__.__name__
             return self.set_endpoint_data("display_t", display_t)
         else:
-            return self.set_endpoint_data("display_t", Display(-1, 1))
+            return self.set_endpoint_data("display_t", Display())
             #return None
 
     def set_dtype(self, dtype):

@@ -24,7 +24,7 @@ ss = RunnableStates
 with Anno("The validated configure parameters"):
     AConfigureParams = ConfigureParams
 with Anno("Step to mark as the last completed step, 0 for current"):
-    ACompletedSteps = int
+    ALastGoodStep = int
 
 
 def get_steps_per_run(generator, axes_to_move):
@@ -459,8 +459,8 @@ class RunnableController(ManagerController):
     # Allow camelCase as this will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def pause(self, completedSteps=0):
-        # type: (ACompletedSteps) -> None
+    def pause(self, lastGoodStep=0):
+        # type: (ALastGoodStep) -> None
         """Pause a run() so that resume() can be called later, or seek within
         an Armed or Paused state.
 
@@ -472,18 +472,18 @@ class RunnableController(ManagerController):
         state. If the user disables then it will return in Disabled state.
         """
         current_state = self.state.value
-        if completedSteps <= 0:
-            completed_steps = self.completed_steps.value
+        if lastGoodStep <= 0:
+            last_good_step = self.completed_steps.value
         else:
-            completed_steps = completedSteps
+            last_good_step = lastGoodStep
         if current_state == ss.RUNNING:
             next_state = ss.PAUSED
         else:
             next_state = current_state
-        assert completed_steps < self.total_steps.value, \
+        assert last_good_step < self.total_steps.value, \
             "Cannot seek to after the end of the scan"
         self.try_aborting_function(
-            ss.SEEKING, next_state, self.do_pause, completed_steps)
+            ss.SEEKING, next_state, self.do_pause, last_good_step)
 
     def do_pause(self, completed_steps):
         # type: (int) -> None

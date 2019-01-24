@@ -155,7 +155,7 @@ class RunnableChildPart(ChildPart):
         # Clear out the update_completed_steps and match_future subscriptions
         context.unsubscribe_all()
         child = context.block_view(self.mri)
-        child.pause(completedSteps=completed_steps)
+        child.pause(lastGoodStep=completed_steps)
 
     @add_call_types
     def abort(self, context):

@@ -19,10 +19,25 @@ class CAWaveform2DPart(Part):
                  widget=Widget.PLOT,  # type: util.AWidget
                  group=None,  # type: util.AGroup
                  config=True,  # type: util.AConfig
-                 limits_from_pv=False  # type: util.AGetLimits
+                 display_t_from_pv=False  # type: util.AGetLimits
                  ):
         # type: (...) -> None
         super(CAWaveform2DPart, self).__init__(name)
+
+        def update_display_t(connected_pv, attr):
+            if display_t_from_pv:
+                el = None
+                if connected_pv.name == yData:
+                    el = "yData"
+                elif connected_pv.name == xData:
+                    el = "xData"
+                if el is not None:
+                    display = attr.meta.elements[el].display_t
+                    display.set_limitHigh(connected_pv.upper_disp_limit)
+                    display.set_limitLow(connected_pv.lower_disp_limit)
+                    display.set_precision(connected_pv.precision)
+                    display.set_units(connected_pv.units)
+
         self.caa = util.Waveform2DAttribute(
             TableMeta(
                 "2D plot", description,
@@ -30,7 +45,7 @@ class CAWaveform2DPart(Part):
                     "xData": NumberArrayMeta("float64", "x data", display_t=Display()),
                     "yData": NumberArrayMeta("float64", "y data", display_t=Display())
                 }),
-            catools.DBR_DOUBLE, yData, xData, min_delta, timeout, sink_port, widget, group, config, limits_from_pv)
+            catools.DBR_DOUBLE, yData, xData, min_delta, timeout, sink_port, widget, group, config, on_connect=update_display_t)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

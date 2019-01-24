@@ -30,7 +30,6 @@ class CatoolsDeferred(object):
 
 catools = CatoolsDeferred()
 
-
 with Anno("Full pv of demand and default for rbv"):
     APv = str
 with Anno("Override for rbv"):
@@ -49,14 +48,14 @@ class CABase(Loggable):
     def __init__(self,
                  meta,  # type: VMeta
                  datatype,  # type: Any
-                 writeable, # type: bool
+                 writeable,  # type: bool
                  min_delta=0.05,  # type: AMinDelta
                  timeout=DEFAULT_TIMEOUT,  # type: ATimeout
                  sink_port=None,  # type: ASinkPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
-                 on_connect=None,  # type: Callable[[Any], None]
+                 on_connect=None,  # type: Callable[[Any, Any], None]
                  ):
         # type: (...) -> None
         self.writeable = writeable
@@ -93,16 +92,6 @@ class CABase(Loggable):
             value = self.attr.meta.validate(value)
             self.attr.set_value_alarm_ts(value, alarm, ts)
 
-    def _update_display(self, limit, new_limit_value):
-        if not new_limit_value.ok:
-            self.attr.set_value(None, alarm=Alarm.invalid("Limit PV disconnected"))
-        else:
-            display = self.attr.meta.elements[limit[0]+"Data"].display_t
-            if limit[1:] == "Low":
-                display.set_limitLow(new_limit_value)
-            elif limit[1:] == "High":
-                display.set_limitHigh(new_limit_value)
-
     def setup(self, registrar, name, register_hooked, writeable_func=None):
         # type: (PartRegistrar, str, Register, Callable[[Any], None]) -> None
         if self.writeable:
@@ -128,12 +117,12 @@ class CAAttribute(CABase):
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
-                 on_connect=None,  # type: Callable[[Any], None]
+                 on_connect=None,  # type: Callable[[Any, Any], None]
                  ):
         # type: (...) -> None
         self.set_logger(pv=pv, rbv=rbv)
         writeable = bool(pv)
-        super(CAAttribute, self).__init__(meta, datatype, writeable, min_delta, min_delta, timeout, sink_port, widget, group, config, on_connect)
+        super(CAAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, sink_port, widget, group, config, on_connect)
         if not rbv and not pv:
             raise ValueError('Must pass pv or rbv')
         if not rbv:
@@ -157,7 +146,7 @@ class CAAttribute(CABase):
             pvs, format=catools.FORMAT_CTRL, datatype=self.datatype))
 
         if self.on_connect:
-            self.on_connect(ca_values[0])
+            self.on_connect(ca_values[0], self.attr)
         self._update_value(ca_values[0], ca_values[0])
         # now setup monitor on rbv
         self.monitors["rbv"] = catools.camonitor(
@@ -208,7 +197,7 @@ class Waveform2DAttribute(CABase):
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
                  limits_from_pv=False,  # type: AGetLimits
-                 on_connect=None  # type: Callable[[Any], None]
+                 on_connect=None  # type: Callable[[Any, Any], None]
                  ):
         # type: (...) -> None
         self.set_logger(xData=xData, yData=yData)
@@ -242,9 +231,10 @@ class Waveform2DAttribute(CABase):
 
         ca_values = assert_connected(catools.caget(
             pvs, format=catools.FORMAT_CTRL, datatype=self.datatype))
-
         if self.on_connect:
-            self.on_connect(ca_values[0])
+            self.on_connect(ca_values[0], self.attr)
+            if self.xPv:
+                self.on_connect(ca_values[1], self.attr)
         self._local_value["yData"] = ca_values[0]
         if self.xPv:
             self._local_value["xData"] = ca_values[1]
@@ -253,22 +243,13 @@ class Waveform2DAttribute(CABase):
         self.establish_monitor(self.yPv, "yData")
         if self.xPv:
             self.establish_monitor(self.xPv, "xData")
-        if self.limits_from_pv:
-            self.establish_monitor(self.yPv + ".LOPR", "yLow")
-            self.establish_monitor(self.yPv + ".HOPR", "yHigh")
-            if self.xPv:
-                self.establish_monitor(self.xPv + ".LOPR", "xLow")
-                self.establish_monitor(self.xPv + ".HOPR", "xHigh")
 
     def _monitor_callback(self, value, value_key):
         now = time.time()
         delta = now - self._update_after
-        if value_key[1:] == "Data":
-            self._local_value[value_key] = value
-            self._update_value(self._local_value, value)
-        else:
-            self._limits[value_key] = value
-            self._update_display(value_key, value)
+        self._local_value[value_key] = value
+        self._update_value(self._local_value, value)
+
         # See how long to sleep for to make sure we don't get more than one
         # update at < min_delta interval
         if delta > self.min_delta:
