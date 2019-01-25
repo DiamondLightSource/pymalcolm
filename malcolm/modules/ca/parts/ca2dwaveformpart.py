@@ -42,8 +42,8 @@ class CAWaveform2DPart(Part):
                 description,
                 writeable=False,
                 elements={
-                    "xData": NumberArrayMeta("float64", "x data", display_t=Display()),
-                    "yData": NumberArrayMeta("float64", "y data", display_t=Display())
+                    "xData": NumberArrayMeta("float64", "x data", display_t=Display(), tags=(Widget.TEXTUPDATE.tag(),)),
+                    "yData": NumberArrayMeta("float64", "y data", display_t=Display(), tags=(Widget.TEXTUPDATE.tag(),))
                 }),
             util.catools.DBR_DOUBLE, yData, xData, min_delta, timeout, sink_port, widget, group, config, on_connect=update_display_t)
 
