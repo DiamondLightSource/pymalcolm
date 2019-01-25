@@ -222,7 +222,7 @@ class TestRunnableController(unittest.TestCase):
         self.b.run()
         self.checkState(self.ss.ARMED)
         self.checkSteps(4, 2, 6)
-        self.b.pause(completedSteps=1)
+        self.b.pause(lastGoodStep=1)
         self.checkState(self.ss.ARMED)
         self.checkSteps(2, 1, 6)
         self.b.run()

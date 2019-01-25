@@ -24,7 +24,7 @@ class CAWaveform2DPart(Part):
         # type: (...) -> None
         super(CAWaveform2DPart, self).__init__(name)
 
-        def update_display_t(connected_pv, attr):
+        def update_display_t(connected_pv):
             if display_t_from_pv:
                 el = None
                 if connected_pv.name == yData:
@@ -32,7 +32,7 @@ class CAWaveform2DPart(Part):
                 elif connected_pv.name == xData:
                     el = "xData"
                 if el is not None:
-                    display = attr.meta.elements[el].display_t
+                    display = self.caa.attr.meta.elements[el].display_t
                     display.set_limitHigh(connected_pv.upper_disp_limit)
                     display.set_limitLow(connected_pv.lower_disp_limit)
                     display.set_precision(connected_pv.precision)

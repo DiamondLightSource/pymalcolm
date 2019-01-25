@@ -152,8 +152,8 @@ class Display(Model):
         # Set initial values
         self.limitLow = self.set_limitLow(limitLow)
         self.limitHigh = self.set_limitHigh(limitHigh)
-        self.description = description
-        self.form = form
+        self.description = self.set_description(description)
+        self.form = self.set_form(form)
         self.precision = self.set_precision(precision)
         self.units = self.set_units(units)
 
@@ -171,6 +171,12 @@ class Display(Model):
         if units is not None:
             unit_str = str(units)
         return self.set_endpoint_data("units", unit_str)
+
+    def set_form(self, form):
+        return self.set_endpoint_data("form", str(form))
+
+    def set_description(self, description):
+        return self.set_endpoint_data("description", str(description))
 
 
 with Anno("Display info meta object"):
@@ -594,12 +600,14 @@ class NumberMeta(VMeta):
 
     def set_display_t(self, display_t):
         if display_t is not None:
+            if isinstance(display_t, OrderedDict):
+                del display_t["typeid"]
+                display_t = Display(**display_t)
             assert isinstance(display_t, Display), \
-                "Expected instance of display_t, got %s" % display_t.__class__.__name__
+                    "Expected instance of display_t, got %s" % display_t.__class__.__name__
             return self.set_endpoint_data("display_t", display_t)
         else:
             return self.set_endpoint_data("display_t", Display())
-            #return None
 
     def set_dtype(self, dtype):
         # type: (ADtype) -> ADtype

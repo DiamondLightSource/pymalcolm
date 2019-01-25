@@ -55,7 +55,7 @@ class CABase(Loggable):
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
-                 on_connect=None,  # type: Callable[[Any, Any], None]
+                 on_connect=None,  # type: Callable[[Any], None]
                  ):
         # type: (...) -> None
         self.writeable = writeable
@@ -75,8 +75,10 @@ class CABase(Loggable):
                 self.monitors[monitor].close()
                 self.monitors[monitor] = None
 
-    def _update_value(self, value, status):
+    def _update_value(self, value, status=None):
         # Attribute value might not be raw PV, PV which triggered update is passed as status
+        if status is None:
+            status = value
         if not status.ok:
             self.attr.set_value(None, alarm=Alarm.invalid("PV disconnected"))
         else:
@@ -117,7 +119,7 @@ class CAAttribute(CABase):
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
-                 on_connect=None,  # type: Callable[[Any, Any], None]
+                 on_connect=None,  # type: Callable[[Any], None]
                  ):
         # type: (...) -> None
         self.set_logger(pv=pv, rbv=rbv)
@@ -146,8 +148,8 @@ class CAAttribute(CABase):
             pvs, format=catools.FORMAT_CTRL, datatype=self.datatype))
 
         if self.on_connect:
-            self.on_connect(ca_values[0], self.attr)
-        self._update_value(ca_values[0], ca_values[0])
+            self.on_connect(ca_values[0])
+        self._update_value(ca_values[0])
         # now setup monitor on rbv
         self.monitors["rbv"] = catools.camonitor(
             self.rbv, self._monitor_callback,
@@ -197,7 +199,7 @@ class Waveform2DAttribute(CABase):
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
                  limits_from_pv=False,  # type: AGetLimits
-                 on_connect=None  # type: Callable[[Any, Any], None]
+                 on_connect=None  # type: Callable[[Any], None]
                  ):
         # type: (...) -> None
         self.set_logger(xData=xData, yData=yData)
@@ -232,9 +234,9 @@ class Waveform2DAttribute(CABase):
         ca_values = assert_connected(catools.caget(
             pvs, format=catools.FORMAT_CTRL, datatype=self.datatype))
         if self.on_connect:
-            self.on_connect(ca_values[0], self.attr)
+            self.on_connect(ca_values[0])
             if self.xPv:
-                self.on_connect(ca_values[1], self.attr)
+                self.on_connect(ca_values[1])
         self._local_value["yData"] = ca_values[0]
         if self.xPv:
             self._local_value["xData"] = ca_values[1]

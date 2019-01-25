@@ -9,7 +9,7 @@ from malcolm.core import BlockModel, Serializable, StringMeta, Alarm, \
     NumberMeta, NumberArrayMeta, MethodModel, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta, BooleanArrayMeta
 from malcolm.core.models import NTTable, MapMeta, BlockMeta, NTScalar, \
-    Meta
+    Meta, Display
 
 
 class TestAttribute(unittest.TestCase):
@@ -573,6 +573,7 @@ class TestNumberMeta(unittest.TestCase):
         self.serialized["tags"] = []
         self.serialized["writeable"] = False
         self.serialized["label"] = "name"
+        self.serialized["display_t"] = Display().to_dict()
 
     def test_to_dict(self):
         nm = NumberMeta("float64", "desc", label="name")
