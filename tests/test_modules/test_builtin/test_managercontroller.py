@@ -126,7 +126,7 @@ class TestManagerController(unittest.TestCase):
         assert len(l) == 1
         assert l.pop()["choices"] == [""]
         b = c.block_view("mainBlock")
-        b.save(design="testSaveLayout")
+        b.save(designName="testSaveLayout")
         assert len(l) == 3
         assert l[0]["writeable"] == False
         assert l[1]["choices"] == ["", "testSaveLayout"]
@@ -141,7 +141,7 @@ class TestManagerController(unittest.TestCase):
         assert self.c.modified.value is True
         assert self.c.modified.alarm.message == \
                "part2.attr.value = 'newv' not 'defaultv'"
-        self.c.save(design="")
+        self.c.save(designName="")
         self.check_expected_save(attr="newv")
         assert self.c.design.value == 'testSaveLayout'
         assert self.c._run_git_cmd.call_args_list == [
@@ -179,7 +179,7 @@ class TestManagerController(unittest.TestCase):
         assert self.c.modified.alarm.message == "layout changed"
 
         # save the layout, modify and restore it
-        self.b.save(design='testSaveLayout')
+        self.b.save(designName='testSaveLayout')
         assert self.c.modified.value is False
         self.check_expected_save(10.0, 20.0, "false")
         self.c.parts['part2'].x = 30
@@ -210,7 +210,7 @@ class TestManagerController(unittest.TestCase):
         self.c.set_exports(new_exports)
         assert self.c.modified.value == True
         assert self.c.modified.alarm.message == "exports changed"
-        self.c.save(design='testSaveLayout')
+        self.c.save(designName='testSaveLayout')
         assert self.c.modified.value == False
         # block has changed, get a new view
         b = context.block_view("mainBlock")

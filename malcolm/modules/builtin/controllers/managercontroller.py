@@ -422,10 +422,10 @@ class ManagerController(StatefulController):
         return part_contexts
 
     @add_call_types
-    def save(self, design=""):
+    def save(self, designName=""):
         # type: (ASaveDesign) -> None
         """Save the current design to file"""
-        self.try_stateful_function(ss.SAVING, ss.READY, self.do_save, design)
+        self.try_stateful_function(ss.SAVING, ss.READY, self.do_save, designName)
 
     def do_save(self, design=""):
         if not design:

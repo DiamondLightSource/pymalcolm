@@ -223,7 +223,7 @@ class TestCAParts(unittest.TestCase):
             upper_disp_limit = 1527
             units = "tests"
 
-        catools.caget.side_effect = [[Initial(5.2)]]
+        catools.caget.side_effect = [[Initial(5.2)], [Initial(5.2)]]
         b = self.create_block(CADoublePart(
             name="attrname", description="desc", rbv="pv"))
         assert b.attrname.value == 5.2
