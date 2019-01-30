@@ -126,16 +126,25 @@ class TestCAParts(unittest.TestCase):
         class Initial(np.ndarray):
             ok = True
             severity = 0
+            precision = 5
+            units = ""
+            lower_disp_limit = -1.0
+            upper_disp_limit = 10.0
+
         initial = Initial(dtype=np.float64, shape=(3,))
         initial[:] = np.arange(3) + 1.2
 
         catools.caget.side_effect = [[initial]]
         b = self.create_block(CADoubleArrayPart(
             name="attrname", description="desc", pv="pv",
-            timeout=-1))
+            timeout=-1, display_from_pv=True))
+
         assert list(b.attrname.value) == [1.2, 2.2, 3.2]
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
+        assert b.attrname.meta.display.limitLow == -1.0
+        assert b.attrname.meta.display.limitHigh == 10.0
+        assert b.attrname.meta.display.precision == 5
         catools.caget.assert_called_once_with(
             ["pv"], datatype=catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
@@ -186,29 +195,25 @@ class TestCAParts(unittest.TestCase):
             return return_vals
 
         catools.caget.side_effect = mock_get
-        b = self.create_block(CAWaveform2DPart(
-            name="attrname", description="desc", yData="yPv", xData="xPv",
-            timeout=-1), "noDisplayFromPv")
         c = self.create_block(CAWaveform2DPart(
             name="attrname", description="desc", yData="yPv", xData="xPv",
             timeout=-1, display_from_pv=True), "withDisplayFromPv")
 
-        assert isinstance(b.attrname.value, Table)
+        assert isinstance(c.attrname.value, Table)
 
-        assert b.attrname.value["yData"] == [1.2, 2.2, 3.2]
-        assert b.attrname.meta.description == "desc"
-        assert not b.attrname.meta.writeable
-
-        catools.caget.assert_called_with(
-            ["yPv", "xPv"], datatype=catools.DBR_DOUBLE,
-            format=catools.FORMAT_CTRL)
-
+        assert c.attrname.value["yData"] == [1.2, 2.2, 3.2]
+        assert c.attrname.meta.description == "desc"
+        assert not c.attrname.meta.writeable
         assert c.attrname.meta.elements["yData"].display.limitLow == np.e
         assert c.attrname.meta.elements["yData"].display.limitHigh == 10.0
         assert c.attrname.meta.elements["yData"].display.precision == 7
         assert c.attrname.meta.elements["xData"].display.limitLow == 0.0
         assert c.attrname.meta.elements["xData"].display.limitHigh == np.pi
         assert c.attrname.meta.elements["xData"].display.units == "s"
+
+        catools.caget.assert_called_with(
+            ["yPv", "xPv"], datatype=catools.DBR_DOUBLE,
+            format=catools.FORMAT_CTRL)
 
         catools.caget.reset_mock()
 
@@ -229,6 +234,12 @@ class TestCAParts(unittest.TestCase):
         assert b.attrname.value == 5.2
         assert b.attrname.meta.description == "desc"
         assert not b.attrname.meta.writeable
+
+        assert b.attrname.meta.display.limitLow == 0.0
+        assert b.attrname.meta.display.limitHigh == 0.0
+        assert b.attrname.meta.display.precision == 0
+        assert b.attrname.meta.display.units == ""
+
         catools.caget.assert_called_once_with(
             ['pv'], datatype=catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
