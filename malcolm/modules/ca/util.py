@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     ArgsGen = Callable[(), List[str]]
     Register = Callable[(Hooks, Callable, Optional[ArgsGen]), None]
 
-
 # Store them here for re-export
 APartName = APartName
 AMetaDescription = AMetaDescription
@@ -23,6 +22,7 @@ AMetaDescription = AMetaDescription
 
 class CatoolsDeferred(object):
     """Deferred gets of catools things"""
+
     def __getattr__(self, item):
         from cothread import catools
         return getattr(catools, item)
@@ -145,7 +145,8 @@ class CAAttribute(CABase):
         # type: (...) -> None
         self.set_logger(pv=pv, rbv=rbv)
         writeable = bool(pv)
-        super(CAAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, sink_port, widget, group, config, on_connect)
+        super(CAAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, sink_port, widget, group,
+                                          config, on_connect)
         if not rbv and not pv:
             raise ValueError('Must pass pv or rbv')
         if not rbv:

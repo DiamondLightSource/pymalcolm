@@ -137,6 +137,7 @@ with Anno("Number of significant figures to display"):
 with Anno("Units"):
     AUnits = str
 
+
 @Serializable.register_subclass("display_t")
 class Display(Model):
 
