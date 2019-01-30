@@ -198,7 +198,12 @@ class PmacTrajectoryPart(ChildPart):
                     axis_name, motor_info.units, generator.units[axis_name])
         child = context.block_view(self.mri)
         child.numPoints.put_value(4000000)
-        child.cs.put_value(cs_port)
+        try:
+            child.cs.put_value(cs_port)
+        except ValueError as e:
+            raise ValueError(
+                "Cannot set CS to %s, did you use a compound_motor_block for "
+                "a raw motor?\n%s" % (cs_port, e))
         # Reset GPIOs
         self.reset_triggers(child)
         # Start moving to the start
