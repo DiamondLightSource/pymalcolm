@@ -165,8 +165,8 @@ class TestCAParts(unittest.TestCase):
         assert list(b.attrname.value) == []
         assert b.attrname.alarm.severity == AlarmSeverity.INVALID_ALARM
 
-    def test_ca2dwaveform(self, catools):
-        from malcolm.modules.ca.parts import CAWaveform2DPart
+    def test_cawaveformtable(self, catools):
+        from malcolm.modules.ca.parts import CAWaveformTablePart
 
         class Initial(np.ndarray):
             ok = True
@@ -195,8 +195,8 @@ class TestCAParts(unittest.TestCase):
             return return_vals
 
         catools.caget.side_effect = mock_get
-        c = self.create_block(CAWaveform2DPart(
-            name="attrname", description="desc", yData="yPv", xData="xPv",
+        c = self.create_block(CAWaveformTablePart(
+            name="attrname", description="desc", pv_list=("yPv", "xPv",), name_list=("yData", "xData",),
             timeout=-1, display_from_pv=True), "withDisplayFromPv")
 
         assert isinstance(c.attrname.value, Table)
@@ -212,7 +212,7 @@ class TestCAParts(unittest.TestCase):
         assert c.attrname.meta.elements["xData"].display.units == "s"
 
         catools.caget.assert_called_with(
-            ["yPv", "xPv"], datatype=catools.DBR_DOUBLE,
+            ("yPv", "xPv"), datatype=catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
 
         catools.caget.reset_mock()

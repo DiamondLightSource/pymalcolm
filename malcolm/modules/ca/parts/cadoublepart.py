@@ -21,19 +21,19 @@ class CADoublePart(Part):
                  ):
         # type: (...) -> None
         super(CADoublePart, self).__init__(name)
-
-        def update_display(connected_pv):
-            if display_from_pv:
-                display = self.caa.attr.meta.display
-                display.set_limitHigh(connected_pv.upper_disp_limit)
-                display.set_limitLow(connected_pv.lower_disp_limit)
-                display.set_precision(connected_pv.precision)
-                display.set_units(connected_pv.units)
-
+        self.display_from_pv = display_from_pv
         self.caa = util.CAAttribute(
             NumberMeta("float64", description, display=Display()), util.catools.DBR_DOUBLE, pv,
             rbv, rbv_suffix, min_delta, timeout, sink_port, widget, group,
-            config, on_connect=update_display)
+            config, on_connect=self._update_display)
+
+    def _update_display(self, connected_pv):
+        if self.display_from_pv:
+            display = Display(
+                limitHigh=connected_pv.upper_disp_limit, limitLow=connected_pv.lower_disp_limit,
+                precision=connected_pv.precision, units=connected_pv.units
+            )
+            self.caa.attr.meta.set_display(display)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

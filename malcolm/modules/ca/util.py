@@ -34,6 +34,10 @@ with Anno("Full pv of demand and default for rbv"):
     APv = str
 with Anno("Override for rbv"):
     ARbv = str
+with Anno("List of PVs to monitor"):
+    APvList = tuple
+with Anno("List of names to give to monitored PVs"):
+    ANameList = tuple
 with Anno("Set rbv to pv + rbv_suffix"):
     ARbvSuffix = str
 with Anno("Minimum time between attribute updates in seconds"):
@@ -192,12 +196,12 @@ class CAAttribute(CABase):
         self._update_value(value)
 
 
-class Waveform2DAttribute(CABase):
+class WaveformTableAttribute(CABase):
     def __init__(self,
                  meta,  # type: VMeta
                  datatype,  # type: Any
-                 yData="",  # type: APv
-                 xData="",  # type: ARbv
+                 pv_list=(),  # type: APvList
+                 name_list=(),  # type: ANameList
                  min_delta=0.05,  # type: AMinDelta
                  timeout=DEFAULT_TIMEOUT,  # type: ATimeout
                  widget=None,  # type: AWidget
@@ -207,18 +211,25 @@ class Waveform2DAttribute(CABase):
                  on_connect=None  # type: Callable[[Any], None]
                  ):
         # type: (...) -> None
-        self.set_logger(xData=xData, yData=yData)
+        logs = {}
+        for ind in range(len(pv_list)):
+            logs[name_list[ind]] = pv_list[ind]
+
+        self.set_logger(**logs)
         writeable = False
-        super(Waveform2DAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, None, widget,
+        super(WaveformTableAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, None, widget,
                                                   group, config, on_connect)
-        if not yData:
-            raise ValueError('Must pass y data PV name')
-        self.xPv = xData
-        self.yPv = yData
+        if len(pv_list) == 0:
+            raise ValueError('Must pass at least one PV')
+        self.pv_list = pv_list
+        self.name_list = name_list
         # Camonitor subscriptions
-        self.monitors = {"xData": None, "yData": None}
+        self.monitors = {}
+        self._local_value = {}
+        for name in name_list:
+            self.monitors[name] = None
+            self._local_value[name] = []
         self._update_after = 0
-        self._local_value = {"xData": [], "yData": []}
         self.limits_from_pv = limits_from_pv
 
     def establish_monitor(self, pv, value_key):
@@ -231,24 +242,17 @@ class Waveform2DAttribute(CABase):
         # release old monitor
         self.disconnect()
         # make the connection in cothread's thread, use caget for initial value
-        pvs = [self.yPv]
-        if self.xPv:
-            pvs.append(self.xPv)
-
         ca_values = assert_connected(catools.caget(
-            pvs, format=catools.FORMAT_CTRL, datatype=self.datatype))
-        if self.on_connect:
-            self.on_connect(ca_values[0])
-            if self.xPv:
-                self.on_connect(ca_values[1])
-        self._local_value["yData"] = ca_values[0]
-        if self.xPv:
-            self._local_value["xData"] = ca_values[1]
+            self.pv_list, format=catools.FORMAT_CTRL, datatype=self.datatype))
+        for ind in range(len(ca_values)):
+            if self.on_connect:
+                self.on_connect(ca_values[ind])
+            self._local_value[self.name_list[ind]] = ca_values[ind]
         self._update_value(self._local_value, ca_values[0])
-        # now setup monitors for all the things
-        self.establish_monitor(self.yPv, "yData")
-        if self.xPv:
-            self.establish_monitor(self.xPv, "xData")
+        for ind in range(len(self.name_list)):
+            # now setup monitors for all the things
+            self.establish_monitor(self.pv_list[ind], self.name_list[ind])
+
 
 
 def assert_connected(ca_values):
