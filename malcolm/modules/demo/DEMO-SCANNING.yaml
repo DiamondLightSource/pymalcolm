@@ -36,3 +36,7 @@
 # Add a webserver
 - web.blocks.web_server_block:
     mri: WEB
+
+# Add a PVA
+- pva.blocks.pva_server_block:
+    mri: PVA
