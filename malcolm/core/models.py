@@ -134,26 +134,23 @@ with Anno("Description"):
     ADescription = str
 with Anno("Number of significant figures to display"):
     APrecision = np.int32
-with Anno("format to display value"):
-    AForm = str
 with Anno("Units"):
     AUnits = str
 
 @Serializable.register_subclass("display_t")
 class Display(Model):
 
-    __slots__ = ["limitLow", "limitHigh", "description", "precision", "form", "units"]
+    __slots__ = ["limitLow", "limitHigh", "description", "precision", "units"]
 
     # noinspection PyPep8Naming
     # limitLow and limitHigh are camelCase to maintain compatibility with
     # EPICS normative types
-    def __init__(self, limitLow=0, limitHigh=0, description="", precision=0, form=None, units=None):
-        # type: (ALoLimit, AHiLimit, ADescription, APrecision, AForm, AUnits) -> None
+    def __init__(self, limitLow=0, limitHigh=0, description="", precision=0, units=""):
+        # type: (ALoLimit, AHiLimit, ADescription, APrecision, AUnits) -> None
         # Set initial values
         self.limitLow = self.set_limitLow(limitLow)
         self.limitHigh = self.set_limitHigh(limitHigh)
         self.description = self.set_description(description)
-        self.form = self.set_form(form)
         self.precision = self.set_precision(precision)
         self.units = self.set_units(units)
 
@@ -167,20 +164,14 @@ class Display(Model):
         return self.set_endpoint_data("precision", np.int32(precision))
 
     def set_units(self, units):
-        unit_str = ""
-        if units is not None:
-            unit_str = str(units)
-        return self.set_endpoint_data("units", unit_str)
-
-    def set_form(self, form):
-        return self.set_endpoint_data("form", str(form))
+        return self.set_endpoint_data("units", units)
 
     def set_description(self, description):
-        return self.set_endpoint_data("description", str(description))
+        return self.set_endpoint_data("description", description)
 
 
 with Anno("Display info meta object"):
-    ADisplayT = Display
+    ADisplay = Display
 
 
 # Types used when deserializing to the class
@@ -586,28 +577,22 @@ _dtype_string_lookup.update({int: "int64", float: "float64"})
 class NumberMeta(VMeta):
     """Meta object containing information for a numerical value"""
     attribute_class = NTScalar
-    __slots__ = ["dtype"]
+    __slots__ = ["dtype", "display"]
 
     def __init__(self, dtype="float64", description="", tags=(),
-                 writeable=False, label="", display_t=None):
-        # type: (ADtype, AMetaDescription, UTags, AWriteable, ALabel, ADisplayT) -> None
+                 writeable=False, label="", display=None):
+        # type: (ADtype, AMetaDescription, UTags, AWriteable, ALabel, ADisplay) -> None
         super(NumberMeta, self).__init__(description, tags, writeable, label)
         # like np.float64
         self._np_type = None  # type: type
         # like "float64"
         self.dtype = self.set_dtype(dtype)
-        self.display_t = self.set_display_t(display_t)
+        self.display = self.set_display(display if display else Display())
 
-    def set_display_t(self, display_t):
-        if display_t is not None:
-            if isinstance(display_t, OrderedDict):
-                del display_t["typeid"]
-                display_t = Display(**display_t)
-            assert isinstance(display_t, Display), \
-                    "Expected instance of display_t, got %s" % display_t.__class__.__name__
-            return self.set_endpoint_data("display_t", display_t)
-        else:
-            return self.set_endpoint_data("display_t", Display())
+    def set_display(self, display):
+        # type: (ADisplay) -> ADisplay
+        display = deserialize_object(display, Display)
+        return self.set_endpoint_data("display", display)
 
     def set_dtype(self, dtype):
         # type: (ADtype) -> ADtype

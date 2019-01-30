@@ -68,6 +68,7 @@ class CABase(Loggable):
         # Camonitor subscription
         self.monitors = {}
         self._update_after = 0
+        self._local_value = None
 
     def disconnect(self):
         for monitor in self.monitors.keys():
@@ -104,6 +105,26 @@ class CABase(Loggable):
         registrar.add_attribute_model(name, self.attr, writeable_func)
         register_hooked(DisableHook, self.disconnect)
         register_hooked((InitHook, ResetHook), self.reconnect)
+
+    def _monitor_callback(self, value, value_key=None):
+        now = time.time()
+        delta = now - self._update_after
+        if value_key is not None:
+            self._local_value[value_key] = value
+            self._update_value(self._local_value, value)
+        else:
+            self._update_value(value, value)
+        # See how long to sleep for to make sure we don't get more than one
+        # update at < min_delta interval
+        if delta > self.min_delta:
+            # If we were more than min_delta late then reset next update time
+            self._update_after = now + self.min_delta
+        elif delta < 0:
+            # If delta is less than zero sleep for a bit
+            sleep(-delta)
+        else:
+            # If we were within the delta window just increment next update
+            self._update_after += self.min_delta
 
 
 class CAAttribute(CABase):
@@ -169,22 +190,6 @@ class CAAttribute(CABase):
             self.rbv, format=catools.FORMAT_TIME, datatype=self.datatype)
         self._update_value(value)
 
-    def _monitor_callback(self, value):
-        now = time.time()
-        delta = now - self._update_after
-        self._update_value(value, value)
-        # See how long to sleep for to make sure we don't get more than one
-        # update at < min_delta interval
-        if delta > self.min_delta:
-            # If we were more than min_delta late then reset next update time
-            self._update_after = now + self.min_delta
-        elif delta < 0:
-            # If delta is less than zero sleep for a bit
-            sleep(-delta)
-        else:
-            # If we were within the delta window just increment next update
-            self._update_after += self.min_delta
-
 
 class Waveform2DAttribute(CABase):
     def __init__(self,
@@ -194,7 +199,6 @@ class Waveform2DAttribute(CABase):
                  xData="",  # type: ARbv
                  min_delta=0.05,  # type: AMinDelta
                  timeout=DEFAULT_TIMEOUT,  # type: ATimeout
-                 sink_port=None,  # type: ASinkPort
                  widget=None,  # type: AWidget
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
@@ -204,17 +208,16 @@ class Waveform2DAttribute(CABase):
         # type: (...) -> None
         self.set_logger(xData=xData, yData=yData)
         writeable = False
-        super(Waveform2DAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, sink_port, widget,
+        super(Waveform2DAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, None, widget,
                                                   group, config, on_connect)
         if not yData:
             raise ValueError('Must pass y data PV name')
         self.xPv = xData
         self.yPv = yData
         # Camonitor subscriptions
-        self.monitors = {"xData": None, "yData": None, "xLow": None, "yLow": None, "xHigh": None, "yHigh": None}
+        self.monitors = {"xData": None, "yData": None}
         self._update_after = 0
         self._local_value = {"xData": [], "yData": []}
-        self._limits = {"xLow": None, "yLow": None, "xHigh": None, "yHigh": None}
         self.limits_from_pv = limits_from_pv
 
     def establish_monitor(self, pv, value_key):
@@ -245,24 +248,6 @@ class Waveform2DAttribute(CABase):
         self.establish_monitor(self.yPv, "yData")
         if self.xPv:
             self.establish_monitor(self.xPv, "xData")
-
-    def _monitor_callback(self, value, value_key):
-        now = time.time()
-        delta = now - self._update_after
-        self._local_value[value_key] = value
-        self._update_value(self._local_value, value)
-
-        # See how long to sleep for to make sure we don't get more than one
-        # update at < min_delta interval
-        if delta > self.min_delta:
-            # If we were more than min_delta late then reset next update time
-            self._update_after = now + self.min_delta
-        elif delta < 0:
-            # If delta is less than zero sleep for a bit
-            sleep(-delta)
-        else:
-            # If we were within the delta window just increment next update
-            self._update_after += self.min_delta
 
 
 def assert_connected(ca_values):

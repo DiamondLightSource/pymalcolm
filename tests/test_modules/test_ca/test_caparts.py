@@ -191,7 +191,7 @@ class TestCAParts(unittest.TestCase):
             timeout=-1), "noDisplayFromPv")
         c = self.create_block(CAWaveform2DPart(
             name="attrname", description="desc", yData="yPv", xData="xPv",
-            timeout=-1, display_t_from_pv=True), "withDisplayFromPv")
+            timeout=-1, display_from_pv=True), "withDisplayFromPv")
 
         assert isinstance(b.attrname.value, Table)
 
@@ -203,12 +203,12 @@ class TestCAParts(unittest.TestCase):
             ["yPv", "xPv"], datatype=catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
 
-        assert c.attrname.meta.elements["yData"].display_t.limitLow == np.e
-        assert c.attrname.meta.elements["yData"].display_t.limitHigh == 10.0
-        assert c.attrname.meta.elements["yData"].display_t.precision == 7
-        assert c.attrname.meta.elements["xData"].display_t.limitLow == 0.0
-        assert c.attrname.meta.elements["xData"].display_t.limitHigh == np.pi
-        assert c.attrname.meta.elements["xData"].display_t.units == "s"
+        assert c.attrname.meta.elements["yData"].display.limitLow == np.e
+        assert c.attrname.meta.elements["yData"].display.limitHigh == 10.0
+        assert c.attrname.meta.elements["yData"].display.precision == 7
+        assert c.attrname.meta.elements["xData"].display.limitLow == 0.0
+        assert c.attrname.meta.elements["xData"].display.limitHigh == np.pi
+        assert c.attrname.meta.elements["xData"].display.units == "s"
 
         catools.caget.reset_mock()
 
@@ -250,12 +250,12 @@ class TestCAParts(unittest.TestCase):
         assert l == [5.2, 8.7, 8.8]
 
         c = self.create_block(CADoublePart(
-            name="attrname", description="desc", rbv="pv", display_t_from_pv=True), "withDisplayFromPv")
+            name="attrname", description="desc", rbv="pv", display_from_pv=True), "withDisplayFromPv")
 
-        assert c.attrname.meta.display_t.limitLow == 189
-        assert c.attrname.meta.display_t.limitHigh == 1527
-        assert c.attrname.meta.display_t.precision == 99
-        assert c.attrname.meta.display_t.units == "tests"
+        assert c.attrname.meta.display.limitLow == 189
+        assert c.attrname.meta.display.limitHigh == 1527
+        assert c.attrname.meta.display.precision == 99
+        assert c.attrname.meta.display.units == "tests"
 
     def test_calongarray(self, catools):
         from malcolm.modules.ca.parts import CALongArrayPart

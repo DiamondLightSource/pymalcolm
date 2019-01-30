@@ -1,6 +1,6 @@
 from annotypes import Array
 
-from malcolm.core import Part, PartRegistrar, NumberArrayMeta, DEFAULT_TIMEOUT
+from malcolm.core import Part, PartRegistrar, NumberArrayMeta, DEFAULT_TIMEOUT, Display
 from .. import util
 
 
@@ -19,13 +19,23 @@ class CADoubleArrayPart(Part):
                  widget=None,  # type: util.AWidget
                  group=None,  # type: util.AGroup
                  config=True,  # type: util.AConfig
+                 display_from_pv=False,  # type: util.AGetLimits
                  ):
         # type: (...) -> None
         super(CADoubleArrayPart, self).__init__(name)
+
+        def update_display(connected_pv):
+            if display_from_pv:
+                display = self.caa.attr.meta.display
+                display.set_limitHigh(connected_pv.upper_disp_limit)
+                display.set_limitLow(connected_pv.lower_disp_limit)
+                display.set_precision(connected_pv.precision)
+                display.set_units(connected_pv.units)
+
         self.caa = util.CAAttribute(
-            NumberArrayMeta("float64", description), util.catools.DBR_DOUBLE,
+            NumberArrayMeta("float64", description, display=Display()), util.catools.DBR_DOUBLE,
             pv, rbv, rbv_suffix, min_delta, timeout, sink_port, widget, group,
-            config)
+            config, on_connect=update_display)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

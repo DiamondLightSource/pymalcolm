@@ -11,27 +11,26 @@ class CAWaveform2DPart(Part):
                  name,  # type: util.APartName
                  description,  # type: util.AMetaDescription
                  yData="",  # type: util.APv
-                 xData="",  # type: util.ARbv
+                 xData="",  # type: util.APv
                  min_delta=0.05,  # type: util.AMinDelta
                  timeout=DEFAULT_TIMEOUT,  # type: util.ATimeout
-                 sink_port=None,  # type: util.ASinkPort
                  widget=Widget.PLOT,  # type: util.AWidget
                  group=None,  # type: util.AGroup
                  config=True,  # type: util.AConfig
-                 display_t_from_pv=False  # type: util.AGetLimits
+                 display_from_pv=False  # type: util.AGetLimits
                  ):
         # type: (...) -> None
         super(CAWaveform2DPart, self).__init__(name)
 
-        def update_display_t(connected_pv):
-            if display_t_from_pv:
+        def update_display(connected_pv):
+            if display_from_pv:
                 el = None
                 if connected_pv.name == yData:
                     el = "yData"
                 elif connected_pv.name == xData:
                     el = "xData"
                 if el is not None:
-                    display = self.caa.attr.meta.elements[el].display_t
+                    display = self.caa.attr.meta.elements[el].display
                     display.set_limitHigh(connected_pv.upper_disp_limit)
                     display.set_limitLow(connected_pv.lower_disp_limit)
                     display.set_precision(connected_pv.precision)
@@ -42,10 +41,10 @@ class CAWaveform2DPart(Part):
                 description,
                 writeable=False,
                 elements={
-                    "xData": NumberArrayMeta("float64", "x data", display_t=Display(), tags=(Widget.TEXTUPDATE.tag(),)),
-                    "yData": NumberArrayMeta("float64", "y data", display_t=Display(), tags=(Widget.TEXTUPDATE.tag(),))
+                    "xData": NumberArrayMeta("float64", "x data", display=Display(), tags=(Widget.TEXTUPDATE.tag(),)),
+                    "yData": NumberArrayMeta("float64", "y data", display=Display(), tags=(Widget.TEXTUPDATE.tag(),))
                 }),
-            util.catools.DBR_DOUBLE, yData, xData, min_delta, timeout, sink_port, widget, group, config, on_connect=update_display_t)
+            util.catools.DBR_DOUBLE, yData, xData, min_delta, timeout, widget, group, config, on_connect=update_display)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
