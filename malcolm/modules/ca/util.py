@@ -1,6 +1,6 @@
 import time
 
-from annotypes import Anno, TYPE_CHECKING
+from annotypes import Anno, Array, TYPE_CHECKING
 
 from malcolm.core import sleep, VMeta, Alarm, AlarmStatus, TimeStamp, \
     Loggable, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
@@ -35,9 +35,9 @@ with Anno("Full pv of demand and default for rbv"):
 with Anno("Override for rbv"):
     ARbv = str
 with Anno("List of PVs to monitor"):
-    APvList = tuple
+    APvList = Array[str]
 with Anno("List of names to give to monitored PVs"):
-    ANameList = tuple
+    ANameList = Array[str]
 with Anno("Set rbv to pv + rbv_suffix"):
     ARbvSuffix = str
 with Anno("Minimum time between attribute updates in seconds"):

@@ -5,6 +5,7 @@ import inspect
 
 from annotypes import Any, TYPE_CHECKING, Anno, NO_DEFAULT
 from ruamel import yaml
+from collections import MutableSequence
 
 from malcolm.compat import str_, raise_with_traceback, OrderedDict
 from malcolm.core import YamlError, Controller, Part, Define, MethodModel
@@ -298,6 +299,11 @@ class Section(object):
                 if isinstance(v, str_):
                     # TODO: handle int etc here
                     v = v.replace("$(%s)" % s, str(substitutions[s]))
+                if isinstance(v, MutableSequence):
+                    for ind in range(len(v)):
+                        if isinstance(v[ind], str_):
+                            # TODO: handle int etc here
+                            v[ind] = v[ind].replace("$(%s)" % s, str(substitutions[s]))
             param_dict[k] = v
         return param_dict
 
