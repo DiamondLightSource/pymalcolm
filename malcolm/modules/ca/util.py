@@ -70,34 +70,41 @@ class CABase(Loggable):
         self.on_connect = on_connect
         self.attr = meta.create_attribute_model()
         # Camonitor subscription
-        self.monitors = {}
+        self.monitor = None
         self._update_after = 0
         self._local_value = None
 
     def disconnect(self):
-        for monitor in self.monitors.keys():
-            if self.monitors[monitor] is not None:
-                self.monitors[monitor].close()
-                self.monitors[monitor] = None
+        if self.monitor is not None:
+            if hasattr(self.monitor, "__len__"):
+                for monitor in self.monitor:
+                    monitor.close()
+            else:
+                self.monitor.close()
+            self.monitor = None
 
-    def _update_value(self, value, status=None):
+    def _update_value(self, value):
         # Attribute value might not be raw PV, PV which triggered update is passed as status
-        if status is None:
-            status = value
-        if not status.ok:
+        if not value.ok:
             self.attr.set_value(None, alarm=Alarm.invalid("PV disconnected"))
         else:
-            if status.severity:
-                alarm = Alarm(severity=status.severity,
+            if value.severity:
+                alarm = Alarm(severity=value.severity,
                               status=AlarmStatus.RECORD_STATUS,
                               message="PV in alarm state")
             else:
                 alarm = Alarm.ok
             # We only have a raw_stamp attr on monitor, the initial
             # caget with CTRL doesn't give us a timestamp
-            ts = TimeStamp(*getattr(status, "raw_stamp", (None, None)))
+            ts = TimeStamp(*getattr(value, "raw_stamp", (None, None)))
             value = self.attr.meta.validate(value)
             self.attr.set_value_alarm_ts(value, alarm, ts)
+
+    def reconnect(self):
+        pass
+
+    def caput(self, value):
+        pass
 
     def setup(self, registrar, name, register_hooked, writeable_func=None):
         # type: (PartRegistrar, str, Register, Callable[[Any], None]) -> None
@@ -110,14 +117,22 @@ class CABase(Loggable):
         register_hooked(DisableHook, self.disconnect)
         register_hooked((InitHook, ResetHook), self.reconnect)
 
-    def _monitor_callback(self, value, value_key=None):
+    def _monitor_callback(self, value, value_index=None):
         now = time.time()
         delta = now - self._update_after
-        if value_key is not None:
+        if value.severity != 0:
+            print('##############: sevr=%s, len=%s, max=%s' % (value.severity, len(value), max(*value)))
+            print(value.name)
+            print(value)
+        if value_index is not None and hasattr(self, "name_list"):
+            value_key = self.name_list[value_index]
             self._local_value[value_key] = value
-            self._update_value(self._local_value, value)
+            self._local_value.raw_stamp = getattr(value, "raw_stamp", (None, None))
+            self._local_value.ok = (self._local_value.ok or value.ok)
+            self._local_value.severity = max(self._local_value.severity, value.severity)
+            self._update_value(self._local_value)
         else:
-            self._update_value(value, value)
+            self._update_value(value)
         # See how long to sleep for to make sure we don't get more than one
         # update at < min_delta interval
         if delta > self.min_delta:
@@ -161,7 +176,7 @@ class CAAttribute(CABase):
         self.pv = pv
         self.rbv = rbv
         # Camonitor subscription
-        self.monitors = {"rbv": None}
+        self.monitor = None
 
     def reconnect(self):
         # release old monitor
@@ -177,7 +192,7 @@ class CAAttribute(CABase):
             self.on_connect(ca_values[0])
         self._update_value(ca_values[0])
         # now setup monitor on rbv
-        self.monitors["rbv"] = catools.camonitor(
+        self.monitor = catools.camonitor(
             self.rbv, self._monitor_callback,
             format=catools.FORMAT_TIME, datatype=self.datatype,
             notify_disconnect=True)
@@ -196,6 +211,12 @@ class CAAttribute(CABase):
         self._update_value(value)
 
 
+class CATable(dict):
+    ok = True
+    severity = 0
+    raw_stamp = (None, None)
+
+
 class WaveformTableAttribute(CABase):
     def __init__(self,
                  meta,  # type: VMeta
@@ -212,47 +233,42 @@ class WaveformTableAttribute(CABase):
                  ):
         # type: (...) -> None
         logs = {}
-        for ind in range(len(pv_list)):
-            logs[name_list[ind]] = pv_list[ind]
+        for ind, pv in enumerate(pv_list):
+            logs[name_list[ind]] = pv
 
         self.set_logger(**logs)
         writeable = False
         super(WaveformTableAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, None, widget,
-                                                  group, config, on_connect)
+                                                     group, config, on_connect)
         if len(pv_list) == 0:
             raise ValueError('Must pass at least one PV')
         self.pv_list = pv_list
         self.name_list = name_list
         # Camonitor subscriptions
-        self.monitors = {}
-        self._local_value = {}
+        self.monitor = None
+        self._local_value = CATable()
         for name in name_list:
-            self.monitors[name] = None
             self._local_value[name] = []
         self._update_after = 0
         self.limits_from_pv = limits_from_pv
 
-    def establish_monitor(self, pv, value_key):
-        self.monitors[value_key] = catools.camonitor(
-            pv, lambda value: self._monitor_callback(value, value_key),
-            format=catools.FORMAT_TIME, datatype=self.datatype,
-            notify_disconnect=True)
-
     def reconnect(self):
         # release old monitor
         self.disconnect()
-        # make the connection in cothread's thread, use caget for initial value
+        # make the connection in cothread's thread, use caget for initial
         ca_values = assert_connected(catools.caget(
             self.pv_list, format=catools.FORMAT_CTRL, datatype=self.datatype))
-        for ind in range(len(ca_values)):
-            if self.on_connect:
-                self.on_connect(ca_values[ind])
-            self._local_value[self.name_list[ind]] = ca_values[ind]
-        self._update_value(self._local_value, ca_values[0])
-        for ind in range(len(self.name_list)):
-            # now setup monitors for all the things
-            self.establish_monitor(self.pv_list[ind], self.name_list[ind])
 
+        for ind, value in enumerate(ca_values):
+            if self.on_connect:
+                self.on_connect(value)
+            self._local_value[self.name_list[ind]] = value
+            self._local_value.severity = max(self._local_value.severity, value.severity)
+            self._local_value.ok = self._local_value.ok or value.ok
+        self._update_value(self._local_value)
+        # now setup monitors for all the things
+        self.monitor = catools.camonitor(self.pv_list, self._monitor_callback, format=catools.FORMAT_TIME,
+                                         datatype=self.datatype, notify_disconnect=True)
 
 
 def assert_connected(ca_values):
