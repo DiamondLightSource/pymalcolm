@@ -120,10 +120,6 @@ class CABase(Loggable):
     def _monitor_callback(self, value, value_index=None):
         now = time.time()
         delta = now - self._update_after
-        if value.severity != 0:
-            print('##############: sevr=%s, len=%s, max=%s' % (value.severity, len(value), max(*value)))
-            print(value.name)
-            print(value)
         if value_index is not None and hasattr(self, "name_list"):
             value_key = self.name_list[value_index]
             self._local_value[value_key] = value

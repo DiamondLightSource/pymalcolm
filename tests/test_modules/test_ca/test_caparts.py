@@ -3,7 +3,7 @@ from mock import patch, ANY
 
 import numpy as np
 
-from malcolm.core import AlarmSeverity, Process, Widget, Table, Display
+from malcolm.core import AlarmSeverity, Process, Widget, Table
 from malcolm.modules.builtin.controllers import StatefulController
 
 
