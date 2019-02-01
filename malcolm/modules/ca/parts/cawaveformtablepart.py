@@ -17,7 +17,7 @@ class CAWaveformTablePart(Part):
                  widget=Widget.PLOT,  # type: util.AWidget
                  group=None,  # type: util.AGroup
                  config=True,  # type: util.AConfig
-                 display_from_pv=False  # type: util.AGetLimits
+                 display_from_pv=True  # type: util.AGetLimits
                  ):
         # type: (...) -> None
         if len(pv_list) != len(name_list):
@@ -26,7 +26,7 @@ class CAWaveformTablePart(Part):
         self.display_from_pv = display_from_pv
         elements = {}
         for name in name_list:
-            elements[name] = NumberArrayMeta("float64", name, display=Display(), tags=(Widget.TEXTUPDATE.tag(),))
+            elements[name] = NumberArrayMeta("float64", name, tags=[Widget.TEXTUPDATE.tag()])
         self.name_list = name_list
         self.pv_list = pv_list
         self.caa = util.WaveformTableAttribute(

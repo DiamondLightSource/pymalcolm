@@ -295,23 +295,17 @@ class Section(object):
         param_dict = {}
         # TODO: this should be yaml.add_implicit_resolver()
         for k, v in self.param_dict.items():
-            if isinstance(v, MutableSequence):
-                value = [entry for entry in v]
-            else:
-                value = v
-            for s in substitutions:
-                if isinstance(value, str_):
-                    # TODO: handle int etc here
-                    value = value.replace("$(%s)" % s, str(substitutions[s]))
-                if isinstance(v, MutableSequence):
-                    for ind, entry in enumerate(value):
-                        if isinstance(entry, str_):
-                            # TODO: handle int etc here
-                            value[ind] = entry.replace("$(%s)" % s, str(substitutions[s]))
-            param_dict[k] = value
+            param_dict[k] = replace_substitutions(v, substitutions)
         return param_dict
 
     def __repr__(self):
         return "Section(%s, %s)" % (self.name, self.param_dict)
 
 
+def replace_substitutions(value, substitutions):
+    if isinstance(value, MutableSequence):
+        value = [replace_substitutions(v, substitutions) for v in value]
+    elif isinstance(value, str_):
+        for s in substitutions:
+            value = value.replace("$(%s)" % s, str(substitutions[s]))
+    return value

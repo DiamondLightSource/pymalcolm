@@ -137,7 +137,7 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = [[initial]]
         b = self.create_block(CADoubleArrayPart(
             name="attrname", description="desc", pv="pv",
-            timeout=-1, display_from_pv=True))
+            timeout=-1))
 
         assert list(b.attrname.value) == [1.2, 2.2, 3.2]
         assert b.attrname.meta.description == "desc"
@@ -197,7 +197,7 @@ class TestCAParts(unittest.TestCase):
         catools.caget.side_effect = mock_get
         c = self.create_block(CAWaveformTablePart(
             name="attrname", description="desc", pv_list=("yPv", "xPv",), name_list=("yData", "xData",),
-            timeout=-1, display_from_pv=True), "withDisplayFromPv")
+            timeout=-1), "withDisplayFromPv")
 
         assert isinstance(c.attrname.value, Table)
 
@@ -230,7 +230,7 @@ class TestCAParts(unittest.TestCase):
 
         catools.caget.side_effect = [[Initial(5.2)], [Initial(5.2)]]
         b = self.create_block(CADoublePart(
-            name="attrname", description="desc", rbv="pv"))
+            name="attrname", description="desc", rbv="pv", display_from_pv=False), "noDisplayFromPv")
         assert b.attrname.value == 5.2
         assert b.attrname.meta.description == "desc"
         assert not b.attrname.meta.writeable
@@ -261,7 +261,7 @@ class TestCAParts(unittest.TestCase):
         assert l == [5.2, 8.7, 8.8]
 
         c = self.create_block(CADoublePart(
-            name="attrname", description="desc", rbv="pv", display_from_pv=True), "withDisplayFromPv")
+            name="attrname", description="desc", rbv="pv"), "withDisplayFromPv")
 
         assert c.attrname.meta.display.limitLow == 189
         assert c.attrname.meta.display.limitHigh == 1527

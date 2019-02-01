@@ -19,14 +19,14 @@ class CADoubleArrayPart(Part):
                  widget=None,  # type: util.AWidget
                  group=None,  # type: util.AGroup
                  config=True,  # type: util.AConfig
-                 display_from_pv=False,  # type: util.AGetLimits
+                 display_from_pv=True,  # type: util.AGetLimits
                  ):
         # type: (...) -> None
         super(CADoubleArrayPart, self).__init__(name)
         self.display_from_pv = display_from_pv
 
         self.caa = util.CAAttribute(
-            NumberArrayMeta("float64", description, display=Display()), util.catools.DBR_DOUBLE,
+            NumberArrayMeta("float64", description), util.catools.DBR_DOUBLE,
             pv, rbv, rbv_suffix, min_delta, timeout, sink_port, widget, group,
             config, on_connect=self._update_display)
 
