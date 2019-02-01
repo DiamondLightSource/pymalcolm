@@ -1,4 +1,5 @@
-from malcolm.core import Part, Widget, PartRegistrar, NumberArrayMeta, TableMeta, DEFAULT_TIMEOUT, Display
+from malcolm.core import Part, Widget, PartRegistrar, NumberArrayMeta, TableMeta, DEFAULT_TIMEOUT, Display, \
+    BadValueError
 from .. import util
 
 
@@ -19,8 +20,9 @@ class CAWaveformTablePart(Part):
                  display_from_pv=False  # type: util.AGetLimits
                  ):
         # type: (...) -> None
+        if len(pv_list) != len(name_list):
+            raise BadValueError("List of PVs must be same length as list of names!")
         super(CAWaveformTablePart, self).__init__(name)
-        assert len(pv_list) == len(name_list), "List of PVs must be same length as list of names!"
         self.display_from_pv = display_from_pv
         elements = {}
         for name in name_list:
