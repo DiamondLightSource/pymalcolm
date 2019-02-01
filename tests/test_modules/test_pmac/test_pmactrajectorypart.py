@@ -9,6 +9,14 @@ from malcolm.modules.pmac.infos import MotorInfo, ControllerInfo, CSInfo
 from malcolm.modules.pmac.blocks import pmac_trajectory_block, cs_block
 from malcolm.testutil import ChildTestCase
 
+dummy_attr = {}
+
+
+def dummy_wait(self, attr, value, timeout=1.0):
+    global dummy_attr
+    dummy_attr[attr] = value
+    return 0
+
 
 class TestPMACTrajectoryPart(ChildTestCase):
     def setUp(self):
@@ -51,15 +59,19 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('useY', False),
             call.put('useZ', False)]
 
-    def make_part_info(self, x_pos=0.5, y_pos=0.0, units="mm"):
+    def make_motion_parts_info(
+            self, x_pos=0.5, y_pos=0.0, units="mm",
+            x_acceleration=2.5, y_acceleration=2.5,
+            x_velocity=1.0, y_velocity=1.0):
+        # create some parts to mock the motion controller and 2 axes in a CS
         part_info = dict(
             xpart=[MotorInfo(
                 cs_axis="A",
                 cs_port="CS1",
-                acceleration=2.5,
+                acceleration=x_acceleration,
                 resolution=0.001,
                 offset=0.0,
-                max_velocity=1.0,
+                max_velocity=x_velocity,
                 current_position=x_pos,
                 scannable="x",
                 velocity_settle=0.0,
@@ -68,10 +80,10 @@ class TestPMACTrajectoryPart(ChildTestCase):
             ypart=[MotorInfo(
                 cs_axis="B",
                 cs_port="CS1",
-                acceleration=2.5,
+                acceleration=y_acceleration,
                 resolution=0.001,
                 offset=0.0,
-                max_velocity=1.0,
+                max_velocity=y_velocity,
                 current_position=y_pos,
                 scannable="y",
                 velocity_settle=0.0,
@@ -84,7 +96,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
                      y_pos=0.0, duration=1.0, units="mm"):
-        part_info = self.make_part_info(x_pos, y_pos, units)
+        part_info = self.make_motion_parts_info(x_pos, y_pos, units)
         steps_to_do = 3 * len(axes_to_scan)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
@@ -97,7 +109,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
     def test_validate(self):
         generator = CompoundGenerator([], [], [], 0.0102)
         axesToMove = ["x"]
-        part_info = self.make_part_info()
+        part_info = self.make_motion_parts_info()
         ret = self.o.validate(part_info, generator, axesToMove)
         expected = 0.010166
         assert ret.value.duration == expected
@@ -134,24 +146,24 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.post('buildProfile'),
             call.post('executeProfile'),
         ] + self.resolutions_and_use_call() + [
-            call.put('pointsToBuild', 16),
-            # pytest.approx to allow sensible compare with numpy arrays
-            call.put('positionsA', pytest.approx([
-                -0.125, 0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
-                0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375])),
-            call.put('positionsB', pytest.approx([
-                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
-                 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])),
-            call.put('timeArray', pytest.approx([
-                 100000, 500000, 500000, 500000, 500000, 500000, 500000,
-                 200000, 200000, 500000, 500000, 500000, 500000, 500000,
-                 500000, 100000])),
-            call.put('userPrograms', pytest.approx([
-                 1, 4, 1, 4, 1, 4, 2, 8, 1, 4, 1, 4, 1, 4, 2, 8])),
-            call.put('velocityMode', pytest.approx([
-                 2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 1, 3])),
-            call.post('buildProfile')
-        ]
+                   call.put('pointsToBuild', 16),
+                   # pytest.approx to allow sensible compare with numpy arrays
+                   call.put('positionsA', pytest.approx([
+                       -0.125, 0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
+                       0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375])),
+                   call.put('positionsB', pytest.approx([
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
+                       0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])),
+                   call.put('timeArray', pytest.approx([
+                       100000, 500000, 500000, 500000, 500000, 500000, 500000,
+                       200000, 200000, 500000, 500000, 500000, 500000, 500000,
+                       500000, 100000])),
+                   call.put('userPrograms', pytest.approx([
+                       1, 4, 1, 4, 1, 4, 2, 8, 1, 4, 1, 4, 1, 4, 2, 8])),
+                   call.put('velocityMode', pytest.approx([
+                       2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 1, 3])),
+                   call.post('buildProfile')
+               ]
         assert self.o.completed_steps_lookup == [
             0, 0, 1, 1, 2, 2, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
@@ -233,16 +245,18 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.post('buildProfile'),
             call.post('executeProfile'),
         ] + self.resolutions_and_use_call(useB=False) + [
-           call.put('pointsToBuild', 8),
-           call.put('positionsA', pytest.approx([
-               0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375])),
-           call.put('timeArray', pytest.approx([
-               100000, 500000, 500000, 500000, 500000, 500000, 500000,
-               100000])),
-           call.put('userPrograms', pytest.approx([1, 4, 1, 4, 1, 4, 2, 8])),
-           call.put('velocityMode', pytest.approx([2, 0, 0, 0, 0, 0, 1, 3])),
-           call.post('buildProfile')
-        ]
+                   call.put('pointsToBuild', 8),
+                   call.put('positionsA', pytest.approx([
+                       0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375])),
+                   call.put('timeArray', pytest.approx([
+                       100000, 500000, 500000, 500000, 500000, 500000, 500000,
+                       100000])),
+                   call.put('userPrograms',
+                            pytest.approx([1, 4, 1, 4, 1, 4, 2, 8])),
+                   call.put('velocityMode',
+                            pytest.approx([2, 0, 0, 0, 0, 0, 1, 3])),
+                   call.post('buildProfile')
+               ]
 
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
@@ -309,7 +323,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('pointsToBuild', 5),
             call.put('positionsA', pytest.approx([
                 0.0625, 0.0, -0.0625, -0.125, -0.12506377551020409])),
-            call.put('timeArray',pytest.approx([
+            call.put('timeArray', pytest.approx([
                 3500000, 3500000, 3500000, 3500000, 7143])),
             call.put('userPrograms', pytest.approx([
                 0, 4, 0, 2, 8])),
@@ -323,3 +337,60 @@ class TestPMACTrajectoryPart(ChildTestCase):
         assert self.o.completed_steps_lookup == (
             [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
 
+    # patch a dummy version of when_value_matches so we do not have to
+    # 'Pretend to respond on demand values' and so we can capture
+    # what start positions were calculated in
+    # PmacTrajectoryPart.move_to_start
+    @patch("malcolm.core.views.Block.when_value_matches", dummy_wait)
+    def sawtooth_overshoot(self, go_really_fast=False):
+        """ check for a previous bug in a sawtooth X,Y scan
+        The issue was that the first point at the start of each rising edge
+        overshot in Y. The parameters for each rising edge are below.
+
+        Line Y, start=-2.5, stop= -2.5 +0.025, points=30
+        Line X, start=-0.95, stop= -0.95 +0.025, points=30
+        duration=0.15
+
+        X motor: VMAX=17, ACCL=0.1
+        Y motor: VMAX=1, ACCL=0.2
+        """
+        # xs = LineGenerator("x", "mm", -2.5, 0.025, 30)
+        # ys = LineGenerator("y", "mm", -0.95, 0.025, 30)
+
+        xys = LineGenerator(["x", "y"], ["mm", "mm"],
+                            [-2.5, -0.95], [-2.475, -.0925], 30)
+        generator = CompoundGenerator([xys], [], [], 0.15)
+        generator.prepare()
+
+        if go_really_fast:
+            motion_parts = self.make_motion_parts_info(
+                x_acceleration=0.1, y_acceleration=0.2,
+                x_velocity=17, y_velocity=1,
+                x_pos=-2.5, y_pos=-.95)
+        else:
+            motion_parts = self.make_motion_parts_info(
+                x_pos=-2.5, y_pos=-.95)
+
+        self.o.configure(self.context, 0, 30, motion_parts, generator,
+                         ["x", "y"])
+
+        import os
+        if "PYCHARM_HOSTED" in os.environ:
+            import matplotlib.pyplot as plt
+            global dummy_attr
+
+            xp = [dummy_attr['demandA']]
+            yp = [dummy_attr['demandB']]
+            for i in range(generator.size):
+                p = generator.get_point(i).positions
+                xp.append(p['x'])
+                yp.append(p['y'])
+
+            plt.title("test_sawtooth_overshoot: trajectory with start point.")
+            plt.plot(xp, yp, '.', linewidth=1.4)
+
+            plt.show()
+
+    def test_sawtooth_overshoot(self):
+        self.sawtooth_overshoot(go_really_fast=False)
+        self.sawtooth_overshoot(go_really_fast=True)
