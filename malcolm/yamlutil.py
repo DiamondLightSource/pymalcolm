@@ -5,6 +5,7 @@ import inspect
 
 from annotypes import Any, TYPE_CHECKING, Anno, NO_DEFAULT
 from ruamel import yaml
+from collections import MutableSequence
 
 from malcolm.compat import str_, raise_with_traceback, OrderedDict
 from malcolm.core import YamlError, Controller, Part, Define, MethodModel
@@ -294,14 +295,17 @@ class Section(object):
         param_dict = {}
         # TODO: this should be yaml.add_implicit_resolver()
         for k, v in self.param_dict.items():
-            for s in substitutions:
-                if isinstance(v, str_):
-                    # TODO: handle int etc here
-                    v = v.replace("$(%s)" % s, str(substitutions[s]))
-            param_dict[k] = v
+            param_dict[k] = replace_substitutions(v, substitutions)
         return param_dict
 
     def __repr__(self):
         return "Section(%s, %s)" % (self.name, self.param_dict)
 
 
+def replace_substitutions(value, substitutions):
+    if isinstance(value, MutableSequence):
+        value = [replace_substitutions(v, substitutions) for v in value]
+    elif isinstance(value, str_):
+        for s in substitutions:
+            value = value.replace("$(%s)" % s, str(substitutions[s]))
+    return value

@@ -3,7 +3,7 @@ from mock import patch, ANY
 
 import numpy as np
 
-from malcolm.core import AlarmSeverity, Process, Widget
+from malcolm.core import AlarmSeverity, Process, Widget, Table
 from malcolm.modules.builtin.controllers import StatefulController
 
 
@@ -14,11 +14,11 @@ class TestCAParts(unittest.TestCase):
         self.process = Process("proc")
         self.process.start()
 
-    def create_block(self, p):
-        c = StatefulController("mri")
+    def create_block(self, p, mri="mri"):
+        c = StatefulController(mri)
         c.add_part(p)
         self.process.add_controller(c)
-        b = self.process.block_view("mri")
+        b = self.process.block_view(mri)
         return b
 
     def tearDown(self):
@@ -126,6 +126,11 @@ class TestCAParts(unittest.TestCase):
         class Initial(np.ndarray):
             ok = True
             severity = 0
+            precision = 5
+            units = ""
+            lower_disp_limit = -1.0
+            upper_disp_limit = 10.0
+
         initial = Initial(dtype=np.float64, shape=(3,))
         initial[:] = np.arange(3) + 1.2
 
@@ -133,9 +138,13 @@ class TestCAParts(unittest.TestCase):
         b = self.create_block(CADoubleArrayPart(
             name="attrname", description="desc", pv="pv",
             timeout=-1))
+
         assert list(b.attrname.value) == [1.2, 2.2, 3.2]
         assert b.attrname.meta.description == "desc"
         assert b.attrname.meta.writeable
+        assert b.attrname.meta.display.limitLow == -1.0
+        assert b.attrname.meta.display.limitHigh == 10.0
+        assert b.attrname.meta.display.precision == 5
         catools.caget.assert_called_once_with(
             ["pv"], datatype=catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
@@ -156,19 +165,81 @@ class TestCAParts(unittest.TestCase):
         assert list(b.attrname.value) == []
         assert b.attrname.alarm.severity == AlarmSeverity.INVALID_ALARM
 
+    def test_cawaveformtable(self, catools):
+        from malcolm.modules.ca.parts import CAWaveformTablePart
+
+        class Initial(np.ndarray):
+            ok = True
+            severity = 0
+            precision = 7
+            units = ""
+            lower_disp_limit = 0.0
+            upper_disp_limit = 0.0
+
+        initialY = Initial(dtype=np.float64, shape=(3,))
+        initialY.lower_disp_limit = np.e
+        initialY.upper_disp_limit = 10.0
+        initialY.name = "yPv"
+        initialY[:] = np.arange(3) + 1.2
+        initialX = Initial(dtype=np.float64, shape=(3,))
+        initialX.upper_disp_limit = np.pi
+        initialX.name = "xPv"
+        initialX.units = "s"
+        initialX[:] = (np.arange(3) + 1) ** 2
+        initial = {"yPv": initialY, "xPv": initialX}
+
+        def mock_get(pvs, **kwargs):
+            return_vals = []
+            for pv in pvs:
+                return_vals.append(initial[pv])
+            return return_vals
+
+        catools.caget.side_effect = mock_get
+        c = self.create_block(CAWaveformTablePart(
+            name="attrname", description="desc", pv_list=("yPv", "xPv",), name_list=("yData", "xData",),
+            timeout=-1), "withDisplayFromPv")
+
+        assert isinstance(c.attrname.value, Table)
+
+        assert c.attrname.value["yData"] == [1.2, 2.2, 3.2]
+        assert c.attrname.meta.description == "desc"
+        assert not c.attrname.meta.writeable
+        assert c.attrname.meta.elements["yData"].display.limitLow == np.e
+        assert c.attrname.meta.elements["yData"].display.limitHigh == 10.0
+        assert c.attrname.meta.elements["yData"].display.precision == 7
+        assert c.attrname.meta.elements["xData"].display.limitLow == 0.0
+        assert c.attrname.meta.elements["xData"].display.limitHigh == np.pi
+        assert c.attrname.meta.elements["xData"].display.units == "s"
+
+        catools.caget.assert_called_with(
+            ("yPv", "xPv"), datatype=catools.DBR_DOUBLE,
+            format=catools.FORMAT_CTRL)
+
+        catools.caget.reset_mock()
+
     def test_cadouble(self, catools):
         from malcolm.modules.ca.parts import CADoublePart
 
         class Initial(float):
             ok = True
             severity = 0
+            precision = 99
+            lower_disp_limit = 189
+            upper_disp_limit = 1527
+            units = "tests"
 
-        catools.caget.side_effect = [[Initial(5.2)]]
+        catools.caget.side_effect = [[Initial(5.2)], [Initial(5.2)]]
         b = self.create_block(CADoublePart(
-            name="attrname", description="desc", rbv="pv"))
+            name="attrname", description="desc", rbv="pv", display_from_pv=False), "noDisplayFromPv")
         assert b.attrname.value == 5.2
         assert b.attrname.meta.description == "desc"
         assert not b.attrname.meta.writeable
+
+        assert b.attrname.meta.display.limitLow == 0.0
+        assert b.attrname.meta.display.limitHigh == 0.0
+        assert b.attrname.meta.display.precision == 0
+        assert b.attrname.meta.display.units == ""
+
         catools.caget.assert_called_once_with(
             ['pv'], datatype=catools.DBR_DOUBLE,
             format=catools.FORMAT_CTRL)
@@ -188,6 +259,14 @@ class TestCAParts(unittest.TestCase):
         # stack sharing?
         b._context.sleep(0.1)
         assert l == [5.2, 8.7, 8.8]
+
+        c = self.create_block(CADoublePart(
+            name="attrname", description="desc", rbv="pv"), "withDisplayFromPv")
+
+        assert c.attrname.meta.display.limitLow == 189
+        assert c.attrname.meta.display.limitHigh == 1527
+        assert c.attrname.meta.display.precision == 99
+        assert c.attrname.meta.display.units == "tests"
 
     def test_calongarray(self, catools):
         from malcolm.modules.ca.parts import CALongArrayPart

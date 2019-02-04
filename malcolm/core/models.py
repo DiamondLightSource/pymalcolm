@@ -13,6 +13,7 @@ from .table import Table
 from .tags import Widget, method_return_unpacked
 from .timestamp import TimeStamp
 
+
 if TYPE_CHECKING:
     from typing import Tuple, Type, List, Dict, Callable
 
@@ -124,6 +125,54 @@ class Model(Serializable):
             assert len(path) == 1 and len(args) == 1, \
                 "Cannot process change %s" % ([self.path + path] + list(args))
             getattr(self, "set_%s" % path[0])(args[0])
+
+with Anno("Lower limit"):
+    ALoLimit = np.float64
+with Anno("Upper limit"):
+    AHiLimit = np.float64
+with Anno("Description"):
+    ADescription = str
+with Anno("Number of significant figures to display"):
+    APrecision = np.int32
+with Anno("Units"):
+    AUnits = str
+
+
+@Serializable.register_subclass("display_t")
+class Display(Model):
+
+    __slots__ = ["limitLow", "limitHigh", "description", "precision", "units"]
+
+    # noinspection PyPep8Naming
+    # limitLow and limitHigh are camelCase to maintain compatibility with
+    # EPICS normative types
+    def __init__(self, limitLow=0, limitHigh=0, description="", precision=0, units=""):
+        # type: (ALoLimit, AHiLimit, ADescription, APrecision, AUnits) -> None
+        # Set initial values
+        self.limitLow = self.set_limitLow(limitLow)
+        self.limitHigh = self.set_limitHigh(limitHigh)
+        self.description = self.set_description(description)
+        self.precision = self.set_precision(precision)
+        self.units = self.set_units(units)
+
+    def set_limitLow(self, limitLow):
+        return self.set_endpoint_data("limitLow", np.float64(limitLow))
+
+    def set_limitHigh(self, limitHigh):
+        return self.set_endpoint_data("limitHigh", np.float64(limitHigh))
+
+    def set_precision(self, precision):
+        return self.set_endpoint_data("precision", np.int32(precision))
+
+    def set_units(self, units):
+        return self.set_endpoint_data("units", units)
+
+    def set_description(self, description):
+        return self.set_endpoint_data("description", description)
+
+
+with Anno("Display info meta object"):
+    ADisplay = Display
 
 
 # Types used when deserializing to the class
@@ -529,16 +578,22 @@ _dtype_string_lookup.update({int: "int64", float: "float64"})
 class NumberMeta(VMeta):
     """Meta object containing information for a numerical value"""
     attribute_class = NTScalar
-    __slots__ = ["dtype"]
+    __slots__ = ["dtype", "display"]
 
     def __init__(self, dtype="float64", description="", tags=(),
-                 writeable=False, label=""):
-        # type: (ADtype, AMetaDescription, UTags, AWriteable, ALabel) -> None
+                 writeable=False, label="", display=None):
+        # type: (ADtype, AMetaDescription, UTags, AWriteable, ALabel, ADisplay) -> None
         super(NumberMeta, self).__init__(description, tags, writeable, label)
         # like np.float64
         self._np_type = None  # type: type
         # like "float64"
         self.dtype = self.set_dtype(dtype)
+        self.display = self.set_display(display if display else Display())
+
+    def set_display(self, display):
+        # type: (ADisplay) -> ADisplay
+        display = deserialize_object(display, Display)
+        return self.set_endpoint_data("display", display)
 
     def set_dtype(self, dtype):
         # type: (ADtype) -> ADtype
