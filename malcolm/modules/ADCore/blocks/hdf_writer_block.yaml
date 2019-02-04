@@ -63,6 +63,12 @@
     rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
+    name: cacheFramesPerChunk
+    description: Number of frames to capture between HDF dataset flushes
+    pv: $(prefix):NumFramesChunks
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
     name: flushAttrPerNFrames
     description: Number of frames to capture between HDF attribute flushes
     pv: $(prefix):NDAttributeChunk
