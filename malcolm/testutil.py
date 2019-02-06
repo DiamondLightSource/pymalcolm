@@ -36,6 +36,9 @@ class ChildTestCase(unittest.TestCase):
 
         def handle_put(request):
             attr_name = request.path[1]
+            # store values sent to the mocked block so that tests can check them
+            child.attributes[attr_name] = request.value
+
             child.handled_requests.put(attr_name, request.value)
             return [request.return_response()]
 
@@ -44,8 +47,20 @@ class ChildTestCase(unittest.TestCase):
             child.handled_requests.post(method_name, **request.parameters)
             return [request.return_response()]
 
+        def handle_when_value_matches(attr, good_value, bad_values=None,
+                                      timeout=None, event_timeout=None):
+            child.handled_requests.when_values_matches(
+                attr, good_value, bad_values, timeout, event_timeout)
+
+        def block_view(context=None, old=child.block_view):
+            view = old(context)
+            object.__setattr__(view, "when_value_matches", handle_when_value_matches)
+            return view
+
+        child.block_view = block_view
         child._handle_put = handle_put
         child._handle_post = handle_post
+        child.attributes = {}
         return child
 
     def set_attributes(self, child, **params):
