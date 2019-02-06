@@ -535,6 +535,8 @@ class PmacTrajectoryPart(ChildPart):
         # Work out the Position trajectories from these profiles
         self.calculate_profile_from_velocities(
             time_arrays, velocity_arrays, start_positions, completed_steps)
+        # todo add assert that the last point of turnaround = lower of
+        #  first point in next line
 
         # Change the last point to be a live frame
         self.profile["velocity_mode"][-1] = CURRENT_TO_NEXT

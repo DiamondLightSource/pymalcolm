@@ -1,21 +1,12 @@
-from mock import Mock, call, patch
-
-from scanpointgenerator import LineGenerator, CompoundGenerator
 import pytest
+from mock import Mock, call, patch
+from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Context, Process
-from malcolm.modules.pmac.parts import PmacTrajectoryPart
-from malcolm.modules.pmac.infos import MotorInfo, ControllerInfo, CSInfo
 from malcolm.modules.pmac.blocks import pmac_trajectory_block, cs_block
+from malcolm.modules.pmac.infos import MotorInfo, ControllerInfo, CSInfo
+from malcolm.modules.pmac.parts import PmacTrajectoryPart
 from malcolm.testutil import ChildTestCase
-
-dummy_attr = {}
-
-
-def dummy_wait(self, attr, value, timeout=1.0):
-    global dummy_attr
-    dummy_attr[attr] = value
-    return 0
 
 
 class TestPMACTrajectoryPart(ChildTestCase):
@@ -117,14 +108,14 @@ class TestPMACTrajectoryPart(ChildTestCase):
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
     def test_configure(self):
-        # Pretend to respond on demand values before they are actually set
-        self.set_attributes(self.cs, demandA=-0.1375, demandB=0.0)
         self.do_configure(axes_to_scan=["x", "y"])
         assert self.cs.handled_requests.mock_calls == [
             call.put('deferMoves', True),
             call.put('csMoveTime', 0),
             call.put('demandA', -0.1375),
             call.put('demandB', 0.0),
+            call.when_values_matches('demandA', -0.1375, None, 1.0, None),
+            call.when_values_matches('demandB', 0.0, None, 1.0, None),
             call.put('deferMoves', False)
         ]
         assert self.child.handled_requests.mock_calls == [
@@ -172,8 +163,6 @@ class TestPMACTrajectoryPart(ChildTestCase):
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
     def test_update_step(self):
-        # Pretend to respond on demand values before they are actually set
-        self.set_attributes(self.cs, demandA=-0.1375, demandB=0.0)
         self.do_configure(axes_to_scan=["x", "y"], x_pos=0.0, y_pos=0.2)
         positionsA = self.child.handled_requests.put.call_args_list[-5][0][1]
         assert len(positionsA) == 4
@@ -208,7 +197,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
     def test_run(self):
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
-            call.post('executeProfile')]
+            call.post('executeProfile'),
+            call.when_values_matches('pointsScanned', 0, None, 0.1, None)]
 
     def test_reset(self):
         self.o.reset(self.context)
@@ -216,14 +206,10 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.post('abortProfile')]
 
     def test_multi_run(self):
-        # Pretend to respond on demand values before they are actually set
-        self.set_attributes(self.cs, demandA=-0.1375)
         self.do_configure(axes_to_scan=["x"])
         assert self.o.completed_steps_lookup == (
             [0, 0, 1, 1, 2, 2, 3, 3])
         self.child.handled_requests.reset_mock()
-        # Pretend to respond on demand values before they are actually set
-        self.set_attributes(self.cs, demandA=0.6375)
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.6375)
         assert self.child.handled_requests.mock_calls == [
@@ -261,8 +247,6 @@ class TestPMACTrajectoryPart(ChildTestCase):
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
            0.2)
     def test_long_steps_lookup(self):
-        # Pretend to respond on demand values before they are actually set
-        self.set_attributes(self.cs, demandA=0.6250637755102041)
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.62506, duration=14.0)
         assert self.child.handled_requests.mock_calls[-6:] == [
@@ -284,8 +268,6 @@ class TestPMACTrajectoryPart(ChildTestCase):
 
     @patch("malcolm.modules.pmac.parts.pmactrajectorypart.PROFILE_POINTS", 9)
     def test_split_in_a_long_step_lookup(self):
-        # Pretend to respond on demand values before they are actually set
-        self.set_attributes(self.cs, demandA=0.6250637755102041)
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.62506,
             duration=14.0)
@@ -337,12 +319,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         assert self.o.completed_steps_lookup == (
             [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
 
-    # patch a dummy version of when_value_matches so we do not have to
-    # 'Pretend to respond on demand values' and so we can capture
-    # what start positions were calculated in
-    # PmacTrajectoryPart.move_to_start
-    @patch("malcolm.core.views.Block.when_value_matches", dummy_wait)
-    def sawtooth_overshoot(self, go_really_fast=False):
+    def turnaround_overshoot(self, go_really_fast=False, title=''):
         """ check for a previous bug in a sawtooth X,Y scan
         The issue was that the first point at the start of each rising edge
         overshot in Y. The parameters for each rising edge are below.
@@ -354,43 +331,77 @@ class TestPMACTrajectoryPart(ChildTestCase):
         X motor: VMAX=17, ACCL=0.1
         Y motor: VMAX=1, ACCL=0.2
         """
-        # xs = LineGenerator("x", "mm", -2.5, 0.025, 30)
-        # ys = LineGenerator("y", "mm", -0.95, 0.025, 30)
+        x = -2.5
+        y = -.95
+        p = 30  # set to 30 for Tom's original numbers
+        d = .025 * 30 / p
+        xs = LineGenerator("x", "mm", x, x+d, p)
+        ys = LineGenerator("y", "mm", y, y+d, p)
+        # xs = LineGenerator("x", "mm", -2.5, -2.475, 30)
+        # ys = LineGenerator("y", "mm", -0.95, -0.925, 30)
 
-        xys = LineGenerator(["x", "y"], ["mm", "mm"],
-                            [-2.5, -0.95], [-2.475, -.0925], 30)
-        generator = CompoundGenerator([xys], [], [], 0.15)
+        # xys = LineGenerator(["x", "y"], ["mm", "mm"],
+        #                     [-2.5, -0.95], [-2.475, -.925], 30)
+        generator = CompoundGenerator([ys, xs], [], [], 0.15)
         generator.prepare()
 
         if go_really_fast:
             motion_parts = self.make_motion_parts_info(
-                x_acceleration=0.1, y_acceleration=0.2,
-                x_velocity=17, y_velocity=1,
+                x_acceleration=17.0/0.1, y_acceleration=1.0/0.2,
+                x_velocity=17.0, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
         else:
             motion_parts = self.make_motion_parts_info(
+                x_acceleration=1./0.2, y_acceleration=1./0.2,
+                x_velocity=1, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
 
-        self.o.configure(self.context, 0, 30, motion_parts, generator,
+        self.o.configure(self.context, 0, p*2, motion_parts, generator,
                          ["x", "y"])
 
+        # if this test is run in pycharm then it plots some results
+        # to help diagnose issues.
         import os
         if "PYCHARM_HOSTED" in os.environ:
             import matplotlib.pyplot as plt
-            global dummy_attr
+            import numpy as np
 
-            xp = [dummy_attr['demandA']]
-            yp = [dummy_attr['demandB']]
-            for i in range(generator.size):
-                p = generator.get_point(i).positions
-                xp.append(p['x'])
-                yp.append(p['y'])
+            a = self.cs.attributes
+            # xp = np.array([])
+            # yp = np.array([])
+            # tp = np.array([])
+            xp = np.array([a['demandA']])
+            yp = np.array([a['demandB']])
+            tp = np.array([0])
+            for c in self.child.handled_requests.mock_calls:
+                if c[1][0] == 'positionsA':
+                    xp = np.append(xp, (c[1][1]))
+                if c[1][0] == 'positionsB':
+                    yp = np.append(yp, c[1][1])
+                if c[1][0] == 'timeArray':
+                    if c[1][1].size > 1:  # reject the reset triggers call
+                        tp = np.append(tp, c[1][1])
+                if c[1][0] == 'pointsToBuild':
+                    points = c[1][1]
 
-            plt.title("test_sawtooth_overshoot: trajectory with start point.")
-            plt.plot(xp, yp, '.', linewidth=1.4)
+            # plt.title("{} x/y {} points".format(title, xp.size))
+            # plt.plot(xp, yp, '+', ms=2.5)
+            # plt.show()
 
+            plt.title("{} x/point {} points".format(title, xp.size))
+            plt.plot(xp, range(xp.size), '+', ms=2.5)
             plt.show()
 
-    def test_sawtooth_overshoot(self):
-        self.sawtooth_overshoot(go_really_fast=False)
-        self.sawtooth_overshoot(go_really_fast=True)
+            # times = np.cumsum(tp)
+            # plt.title("{} x/time {} points".format(title, xp.size))
+            # plt.plot(xp, times, '.',  '+', ms=2.5)
+            # plt.show()
+
+    def test_turnaround_overshoot(self):
+        self.turnaround_overshoot(
+            go_really_fast=False,
+            title='test_turnaround_overshoot slower')
+        self.child.handled_requests.reset_mock()
+        self.turnaround_overshoot(
+            go_really_fast=True,
+            title='test_turnaround_overshoot fast')
