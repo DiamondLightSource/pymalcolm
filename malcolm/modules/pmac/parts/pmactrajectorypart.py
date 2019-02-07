@@ -4,15 +4,15 @@ from __future__ import division
 import time
 
 import numpy as np
-from scanpointgenerator import CompoundGenerator
 from annotypes import add_call_types, TYPE_CHECKING, Anno
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import config_tag, NumberMeta, PartRegistrar, Widget, \
     DEFAULT_TIMEOUT
 from malcolm.modules import builtin, scanning
 from malcolm.modules.builtin.parts import ChildPart
-from ..infos import MotorInfo, ControllerInfo, CSInfo
 from malcolm.modules.pmac.infos import cs_axis_names
+from ..infos import MotorInfo, ControllerInfo, CSInfo
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -287,7 +287,35 @@ class PmacTrajectoryPart(ChildPart):
 
     def make_consistent_velocity_profiles(self, v1s, v2s, distances,
                                           min_time=MIN_TIME):
-        """Make consistent time and velocity arrays for each axis"""
+        """Make consistent time and velocity arrays for each axis
+
+        Try to create velocity profiles for all axes that all arrive at
+        'distance' in the same time period. The profiles will contain the
+        following points:-
+
+        - start point at 0 secs with velocity v1     start decelerating
+        - zero velocity point                        reached 0 speed
+        - [optional] zero velocity end point         start accelerating
+        - max velocity point                         achieved max speed
+        - [optional] max velocity end point          start decelerating
+        - zero velocity point                        reached 0 speed
+        - end point with velocity v2                 reached target speed
+
+        If the profile has to be stretched to achieve min_time then the
+        first zero velocity point is stretched to zero velocity end point.
+
+        If the axis never reaches maximum velocity then there is no max_velocity
+        end point. The acceleration just switches direction at max velocity
+        point. There are therefore between 5 and 7 points in a profile.
+
+        After generating all the profiles this function checks to ensure they
+        have all achieved min_time. If not min_time is reset to the slowest
+        profile and all profiles are recalculated.
+
+        Note that for each profile the area under the velocity/time plot
+        must equal 'distance'. motor_info.make_velocity_profile uses
+        _make_hat to do this.
+        """
         time_arrays = {}
         velocity_arrays = {}
         iterations = 5
@@ -378,11 +406,25 @@ class PmacTrajectoryPart(ChildPart):
             ts = time_arrays[axis_name]
             vs = velocity_arrays[axis_name]
             position = current_positions[axis_name]
+            """ at this point we have time/velocity arrays with 5-7 values and
+            want to create a matching move profile with 'num_intervals' 
+            steps, each separated by 'interval' seconds. Walk through the 
+            profile steps aiming for the next time/velocity. Pop a 
+            time/velocity pair off of the lists as the total elapsed profile 
+            time exceeds the next point in the time/velocity pair.
+            
+            As we get to each profile point we set its velocity to be 
+            between the velocities of the two surrounding velocity points.
+            The fraction of the time interval between the previous and next 
+            velocity points is used to determine what fraction of the change in
+            velocity is applied at this profile point. 
+            """
             for i in range(num_intervals):
                 time = interval * (i + 1)
                 # If we have exceeded the current segment, pop it and add it's
-                # position in
-                if time > ts[1] and not np.isclose(time, ts[1]):
+                # position in time
+                # use while on this check in case multiple segments exceeded
+                while time > ts[1] and not np.isclose(time, ts[1]):
                     position += motor_info.ramp_distance(
                         vs[0], vs[1], ts[1] - ts[0])
                     vs = vs[1:]
@@ -535,8 +577,6 @@ class PmacTrajectoryPart(ChildPart):
         # Work out the Position trajectories from these profiles
         self.calculate_profile_from_velocities(
             time_arrays, velocity_arrays, start_positions, completed_steps)
-        # todo add assert that the last point of turnaround = lower of
-        #  first point in next line
 
         # Change the last point to be a live frame
         self.profile["velocity_mode"][-1] = CURRENT_TO_NEXT
