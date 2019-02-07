@@ -1,6 +1,8 @@
 import pytest
 from mock import Mock, call, patch
 from scanpointgenerator import LineGenerator, CompoundGenerator
+import numpy as np
+import os
 
 from malcolm.core import Context, Process
 from malcolm.modules.pmac.blocks import pmac_trajectory_block, cs_block
@@ -319,7 +321,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
         assert self.o.completed_steps_lookup == (
             [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
 
-    def turnaround_overshoot(self, go_really_fast=False, title=''):
+    def turnaround_overshoot(
+            self, go_really_fast=False, title='', points=30):
         """ check for a previous bug in a sawtooth X,Y scan
         The issue was that the first point at the start of each rising edge
         overshot in Y. The parameters for each rising edge are below.
@@ -328,80 +331,83 @@ class TestPMACTrajectoryPart(ChildTestCase):
         Line X, start=-0.95, stop= -0.95 +0.025, points=30
         duration=0.15
 
-        X motor: VMAX=17, ACCL=0.1
+        X motor: VMAX=17, ACCL=0.1 (time to VMAX)
         Y motor: VMAX=1, ACCL=0.2
         """
         x = -2.5
         y = -.95
-        p = 30  # set to 30 for Tom's original numbers
-        d = .025 * 30 / p
-        xs = LineGenerator("x", "mm", x, x+d, p)
-        ys = LineGenerator("y", "mm", y, y+d, p)
+        p = points  # set to 30 for Tom's original numbers
+        d = .025 * p / 30
+        xs = LineGenerator("x", "mm", x, x + d, p)
+        ys = LineGenerator("y", "mm", y, y + d, p)
+        # Toms original parameters below
         # xs = LineGenerator("x", "mm", -2.5, -2.475, 30)
         # ys = LineGenerator("y", "mm", -0.95, -0.925, 30)
 
-        # xys = LineGenerator(["x", "y"], ["mm", "mm"],
-        #                     [-2.5, -0.95], [-2.475, -.925], 30)
         generator = CompoundGenerator([ys, xs], [], [], 0.15)
         generator.prepare()
 
         if go_really_fast:
             motion_parts = self.make_motion_parts_info(
-                x_acceleration=17.0/0.1, y_acceleration=1.0/0.2,
-                x_velocity=17.0, y_velocity=1,
+                x_acceleration=17.0 / 0.1, y_acceleration=1. / 0.2,
+                x_velocity=.1, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
         else:
             motion_parts = self.make_motion_parts_info(
-                x_acceleration=1./0.2, y_acceleration=1./0.2,
+                x_acceleration=1. / 0.2, y_acceleration=1. / 0.2,
                 x_velocity=1, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
 
-        self.o.configure(self.context, 0, p*2, motion_parts, generator,
+        self.o.configure(self.context, 0, p * 2, motion_parts, generator,
                          ["x", "y"])
 
+        a = self.cs.attributes
+        # add in the start point to the position and time arrays
+        xp = np.array([a['demandA']])
+        yp = np.array([a['demandB']])
+        tp = np.array([0])
+        for c in self.child.handled_requests.mock_calls:
+            if c[1][0] == 'positionsA':
+                xp = np.append(xp, (c[1][1]))
+            if c[1][0] == 'positionsB':
+                yp = np.append(yp, c[1][1])
+            if c[1][0] == 'timeArray':
+                if c[1][1].size > 1:  # reject the reset triggers call
+                    tp = np.append(tp, c[1][1])
+            if c[1][0] == 'pointsToBuild':
+                total_points = c[1][1]
+
         # if this test is run in pycharm then it plots some results
-        # to help diagnose issues.
-        import os
+        # to help diagnose issues
         if "PYCHARM_HOSTED" in os.environ:
             import matplotlib.pyplot as plt
-            import numpy as np
-
-            a = self.cs.attributes
-            # xp = np.array([])
-            # yp = np.array([])
-            # tp = np.array([])
-            xp = np.array([a['demandA']])
-            yp = np.array([a['demandB']])
-            tp = np.array([0])
-            for c in self.child.handled_requests.mock_calls:
-                if c[1][0] == 'positionsA':
-                    xp = np.append(xp, (c[1][1]))
-                if c[1][0] == 'positionsB':
-                    yp = np.append(yp, c[1][1])
-                if c[1][0] == 'timeArray':
-                    if c[1][1].size > 1:  # reject the reset triggers call
-                        tp = np.append(tp, c[1][1])
-                if c[1][0] == 'pointsToBuild':
-                    points = c[1][1]
-
             # plt.title("{} x/y {} points".format(title, xp.size))
             # plt.plot(xp, yp, '+', ms=2.5)
             # plt.show()
 
-            plt.title("{} x/point {} points".format(title, xp.size))
-            plt.plot(xp, range(xp.size), '+', ms=2.5)
-            plt.show()
-
-            # times = np.cumsum(tp)
-            # plt.title("{} x/time {} points".format(title, xp.size))
-            # plt.plot(xp, times, '.',  '+', ms=2.5)
+            # plt.title("{} x/point {} points".format(title, xp.size))
+            # plt.plot(xp, range(xp.size), '+', ms=2.5)
             # plt.show()
 
+            times = np.cumsum(tp / 1000)  # show in millisecs
+            plt.title("{} x/time {} points".format(title, xp.size))
+
+            plt.plot(xp, times, '+', ms=2.5)
+            plt.show()
+
+        return xp
+
     def test_turnaround_overshoot(self):
-        self.turnaround_overshoot(
+        x1 = self.turnaround_overshoot(
             go_really_fast=False,
-            title='test_turnaround_overshoot slower')
+            title='test_turnaround_overshoot 10 slower',
+            points=10)
         self.child.handled_requests.reset_mock()
-        self.turnaround_overshoot(
+        x2 = self.turnaround_overshoot(
             go_really_fast=True,
-            title='test_turnaround_overshoot fast')
+            title='test_turnaround_overshoot 10 fast',
+            points=10)
+        self.child.handled_requests.reset_mock()
+
+        assert np.allclose(x1, x2, rtol=0.001), \
+            "High acceleration caused incorrect x profile"
