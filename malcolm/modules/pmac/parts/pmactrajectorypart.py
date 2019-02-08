@@ -148,7 +148,7 @@ class PmacTrajectoryPart(ChildPart):
 
     def move_to_start(self, child, completed_steps):
         # Set all the axes to move to the start positions
-        child.deferMoves.put_value(1)
+        child.deferMoves.put_value(True)
         child.csMoveTime.put_value(0)
         first_point = self.generator.get_point(completed_steps)
         start_positions = {}
@@ -172,7 +172,7 @@ class PmacTrajectoryPart(ChildPart):
         for attr, value in start_positions.items():
             child.when_value_matches(attr, value, timeout=1.0)
         # Start the move
-        child.deferMoves.put_value(0)
+        child.deferMoves.put_value(False)
         return fs, deadline
 
     # Allow CamelCase as arguments will be serialized
@@ -406,19 +406,18 @@ class PmacTrajectoryPart(ChildPart):
             ts = time_arrays[axis_name]
             vs = velocity_arrays[axis_name]
             position = current_positions[axis_name]
-            """ at this point we have time/velocity arrays with 5-7 values and
-            want to create a matching move profile with 'num_intervals' 
-            steps, each separated by 'interval' seconds. Walk through the 
-            profile steps aiming for the next time/velocity. Pop a 
-            time/velocity pair off of the lists as the total elapsed profile 
-            time exceeds the next point in the time/velocity pair.
-            
-            As we get to each profile point we set its velocity to be 
-            between the velocities of the two surrounding velocity points.
-            The fraction of the time interval between the previous and next 
-            velocity points is used to determine what fraction of the change in
-            velocity is applied at this profile point. 
-            """
+            # at this point we have time/velocity arrays with 5-7 values and
+            # want to create a matching move profile with 'num_intervals'
+            # steps, each separated by 'interval' seconds. Walk through the
+            # profile steps aiming for the next time/velocity. Pop a
+            # time/velocity pair off of the lists as the total elapsed profile
+            # time exceeds the next point in the time/velocity pair.
+            #
+            # As we get to each profile point we set its velocity to be
+            # between the velocities of the two surrounding velocity points.
+            # The fraction of the time interval between the previous and next
+            # velocity points is used to determine what fraction of the change
+            # in velocity is applied at this profile point.
             for i in range(num_intervals):
                 time = interval * (i + 1)
                 # If we have exceeded the current segment, pop it and add it's
