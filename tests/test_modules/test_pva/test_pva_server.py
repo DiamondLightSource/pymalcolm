@@ -48,6 +48,14 @@ ts_tuple = ('S', 'time_t', [
     ('userTag', 'i')
 ])
 
+display_tuple = ('S', 'display_t', [
+    ('limitLow', 'd'),
+    ('limitHigh', 'd'),
+    ('description', 's'),
+    ('precision', 'i'),
+    ('units', 's')
+])
+
 ts_zero = {
     'secondsPastEpoch': 0,
     'nanoseconds': 0,
@@ -117,7 +125,8 @@ counter_block_t = Type([
             ('description', 's'),
             ('tags', 'as'),
             ('writeable', '?'),
-            ('label', 's')
+            ('label', 's'),
+            ('display', display_tuple)
         ])),
     ])),
     ('zero', empty_method_tuple),
@@ -150,7 +159,7 @@ counter_dict = {
         'meta': {
             'dtype': 'float64',
             'description': 'The current value of the counter',
-            'tags': ['config:1'],
+            'tags': ['config:1', 'widget:textinput'],
             'writeable': True,
             'label': 'Counter'
         }
@@ -192,7 +201,8 @@ hello_block_t = Type([
                     ('description', 's'),
                     ('tags', 'as'),
                     ('writeable', '?'),
-                    ('label', 's')
+                    ('label', 's'),
+                    ('display', display_tuple)
                 ]))
             ])),
             ('required', 'as')
@@ -321,7 +331,8 @@ class TestPVAServer(unittest.TestCase):
         def linejunk(line):
             # Ignore the timeStamp fields
             split = line.split()
-            return len(split) > 1 and split[1] in ("secondsPastEpoch", "nanoseconds")
+            return len(split) > 1 and split[1] in (
+                "secondsPastEpoch", "nanoseconds", "userTag")
 
         for f, s in zip(firstlines, secondlines):
             if not same:
