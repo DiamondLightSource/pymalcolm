@@ -150,7 +150,7 @@ counter_dict = {
         'meta': {
             'dtype': 'float64',
             'description': 'The current value of the counter',
-            'tags': ['config:1'],
+            'tags': ['config:1', 'widget:textinput'],
             'writeable': True,
             'label': 'Counter'
         }
@@ -321,7 +321,10 @@ class TestPVAServer(unittest.TestCase):
         def linejunk(line):
             # Ignore the timeStamp fields
             split = line.split()
-            return len(split) > 1 and split[1] in ("secondsPastEpoch", "nanoseconds")
+            # ignore timestamps which change and also ignore userTag because
+            # we are now using un-ordered dictionaries
+            return len(split) > 1 and split[1] in ("secondsPastEpoch",
+                                                   "nanoseconds", "userTag")
 
         for f, s in zip(firstlines, secondlines):
             if not same:
