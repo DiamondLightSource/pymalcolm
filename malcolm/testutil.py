@@ -1,7 +1,7 @@
 import unittest
-from mock import MagicMock as Mock, patch
 
 from annotypes import TYPE_CHECKING, Union, Sequence
+from mock import MagicMock as Mock, patch
 
 from malcolm.core import Hook, Part
 
@@ -36,6 +36,9 @@ class ChildTestCase(unittest.TestCase):
 
         def handle_put(request):
             attr_name = request.path[1]
+            # store values sent to the mocked block so that tests can check them
+            child.attributes[attr_name] = request.value
+
             child.handled_requests.put(attr_name, request.value)
             return [request.return_response()]
 
@@ -44,8 +47,31 @@ class ChildTestCase(unittest.TestCase):
             child.handled_requests.post(method_name, **request.parameters)
             return [request.return_response()]
 
+        def handle_when_value_matches(attr, good_value, bad_values=None,
+                                      timeout=None, event_timeout=None):
+            # tell the mock we were called
+            child.handled_requests.when_values_matches(
+                attr, good_value, bad_values, timeout, event_timeout)
+            # poke the value we are looking for into the attribute so
+            # that old_when_matches will immediately succeed
+            self.set_attributes(child, **{attr: good_value})
+            # now run the original code
+            self.old_when_matches(
+                attr, good_value, bad_values, timeout, event_timeout)
+
+        def block_view(context=None, old=child.block_view):
+            self._context = context
+            view = old(context)
+            self.old_when_matches = object.__getattribute__(
+                view, "when_value_matches")
+            object.__setattr__(view, "when_value_matches",
+                               handle_when_value_matches)
+            return view
+
+        child.block_view = block_view
         child._handle_put = handle_put
         child._handle_post = handle_post
+        child.attributes = {}
         return child
 
     def set_attributes(self, child, **params):

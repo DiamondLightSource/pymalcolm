@@ -8,7 +8,7 @@ enum34
 ruamel.yaml
 plop==0.3.0
 pytest>=3.2.0
-pytest-cov
+pytest-cov<=2.6.0
 h5py>=2.8.0
 vdsgen>=0.3
 annotypes>=0.9
