@@ -47,4 +47,5 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             call.put('imageMode', 'Multiple'),
             call.put('numImages', 6000000),
             call.put('acquirePeriod', 0.1 - 5e-6),
-            call.post('start')]
+            call.post('start'),
+            call.when_values_matches('acquiring', True, None, 10.0, None)]
