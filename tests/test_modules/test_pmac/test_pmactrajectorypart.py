@@ -1,8 +1,9 @@
+import os
+
+import numpy as np
 import pytest
 from mock import Mock, call, patch
 from scanpointgenerator import LineGenerator, CompoundGenerator
-import numpy as np
-import os
 
 from malcolm.core import Context, Process
 from malcolm.modules.pmac.blocks import pmac_trajectory_block, cs_block
@@ -350,12 +351,12 @@ class TestPMACTrajectoryPart(ChildTestCase):
         if go_really_fast:
             motion_parts = self.make_motion_parts_info(
                 x_acceleration=17.0 / 0.1, y_acceleration=1. / 0.2,
-                x_velocity=.1, y_velocity=1,
+                x_velocity=17, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
         else:
             motion_parts = self.make_motion_parts_info(
-                x_acceleration=1. / 0.2, y_acceleration=1. / 0.2,
-                x_velocity=1, y_velocity=1,
+                x_acceleration=1. / 0.1, y_acceleration=1. / 0.2,
+                x_velocity=17, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
 
         self.o.configure(self.context, 0, p * 2, motion_parts, generator,
@@ -401,13 +402,17 @@ class TestPMACTrajectoryPart(ChildTestCase):
         x1 = self.turnaround_overshoot(
             go_really_fast=False,
             title='test_turnaround_overshoot 10 slower',
-            points=10)
+            points=30)
         self.child.handled_requests.reset_mock()
         x2 = self.turnaround_overshoot(
             go_really_fast=True,
             title='test_turnaround_overshoot 10 fast',
-            points=10)
+            points=30)
         self.child.handled_requests.reset_mock()
 
-        assert np.allclose(x1, x2, rtol=0.001), \
-            "High acceleration caused incorrect x profile"
+        # checks that the two turnarounds only contain points
+        # between the first line end and the second line start
+        assert x2[61] > x2[62] > x2[63], \
+            "Bad turnaround point in fast profile"
+        assert x1[61] > x1[62] > x1[63] > x1[64] > x1[65] > x1[66], \
+            "Bad turnaround point in slow profile"
