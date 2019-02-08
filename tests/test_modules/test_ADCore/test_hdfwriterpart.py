@@ -251,7 +251,8 @@ class TestHDFWriterPart(ChildTestCase):
         # run waits for this value
         self.child.field_registry.get_field("uniqueId").set_value(self.o.done_when_reaches)
         self.o.run(self.context)
-        assert self.child.handled_requests.mock_calls == []
+        assert self.child.handled_requests.mock_calls == [
+            call.when_values_matches('uniqueId', 38, None, None, 60)]
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 38
 

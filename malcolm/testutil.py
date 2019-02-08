@@ -1,7 +1,7 @@
 import unittest
-from mock import MagicMock as Mock, patch
 
 from annotypes import TYPE_CHECKING, Union, Sequence
+from mock import MagicMock as Mock, patch
 
 from malcolm.core import Hook, Part
 
@@ -49,12 +49,23 @@ class ChildTestCase(unittest.TestCase):
 
         def handle_when_value_matches(attr, good_value, bad_values=None,
                                       timeout=None, event_timeout=None):
+            # tell the mock we were called
             child.handled_requests.when_values_matches(
+                attr, good_value, bad_values, timeout, event_timeout)
+            # poke the value we are looking for into the attribute so
+            # that old_when_matches will immediately succeed
+            self.set_attributes(child, **{attr: good_value})
+            # now run the original code
+            self.old_when_matches(
                 attr, good_value, bad_values, timeout, event_timeout)
 
         def block_view(context=None, old=child.block_view):
+            self._context = context
             view = old(context)
-            object.__setattr__(view, "when_value_matches", handle_when_value_matches)
+            self.old_when_matches = object.__getattribute__(
+                view, "when_value_matches")
+            object.__setattr__(view, "when_value_matches",
+                               handle_when_value_matches)
             return view
 
         child.block_view = block_view
