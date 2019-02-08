@@ -47,4 +47,5 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
             call.put('pixelsPerBuffer', 1),
             call.put('pixelsPerRun', steps_to_do),
             call.put('presetMode', 'No preset'),
-            call.post('start')]
+            call.post('start'),
+            call.when_values_matches('acquiring', True, None, 10.0, None)]

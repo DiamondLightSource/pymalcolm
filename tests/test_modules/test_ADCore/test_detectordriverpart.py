@@ -64,11 +64,15 @@ class TestDetectorDriverPart(ChildTestCase):
         self.set_attributes(self.child, acquiring=True)
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
-            call.post('start')]
-        assert self.o.registrar.report.called_once
+            call.post('start'),
+            call.when_values_matches('acquiring', True, None, 10.0, None),
+            call.when_values_matches('arrayCounterReadback', 0, None, 10.0,
+                                     None)]
+        assert self.o.registrar.report.call_count == 2
         assert self.o.registrar.report.call_args[0][0].steps == 0
 
     def test_abort(self):
         self.o.abort(self.context)
         assert self.child.handled_requests.mock_calls == [
-            call.post('stop')]
+            call.post('stop'),
+            call.when_values_matches('acquiring', False, None, 10.0, None)]
