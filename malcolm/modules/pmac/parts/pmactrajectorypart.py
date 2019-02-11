@@ -169,7 +169,7 @@ class PmacTrajectoryPart(ChildPart):
         fs = child.put_attribute_values_async(
             {attr: value for attr, value in start_positions.items()})
         # Wait for the demand to have been received by the PV
-        for attr, value in start_positions.items():
+        for attr, value in sorted(start_positions.items()):
             child.when_value_matches(attr, value, timeout=1.0)
         # Start the move
         child.deferMoves.put_value(False)
