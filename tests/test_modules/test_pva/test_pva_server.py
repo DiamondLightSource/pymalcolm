@@ -48,6 +48,14 @@ ts_tuple = ('S', 'time_t', [
     ('userTag', 'i')
 ])
 
+display_tuple = ('S', 'display_t', [
+    ('limitLow', 'd'),
+    ('limitHigh', 'd'),
+    ('description', 's'),
+    ('precision', 'i'),
+    ('units', 's')
+])
+
 ts_zero = {
     'secondsPastEpoch': 0,
     'nanoseconds': 0,
@@ -117,7 +125,8 @@ counter_block_t = Type([
             ('description', 's'),
             ('tags', 'as'),
             ('writeable', '?'),
-            ('label', 's')
+            ('label', 's'),
+            ('display', display_tuple)
         ])),
     ])),
     ('zero', empty_method_tuple),
@@ -192,7 +201,8 @@ hello_block_t = Type([
                     ('description', 's'),
                     ('tags', 'as'),
                     ('writeable', '?'),
-                    ('label', 's')
+                    ('label', 's'),
+                    ('display', display_tuple)
                 ]))
             ])),
             ('required', 'as')
