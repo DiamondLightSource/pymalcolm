@@ -456,6 +456,8 @@ class ManagerController(StatefulController):
         filename = self._validated_config_filename(design)
         with open(filename, "w") as f:
             f.write(text)
+        # Run a sync command to make sure we flush this file to disk
+        subprocess.call("sync")
         # Try and commit the file to git, don't care if it fails
         self._run_git_cmd("add", filename)
         msg = "Saved %s %s" % (self.mri, design)
