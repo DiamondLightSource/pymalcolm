@@ -146,7 +146,8 @@ class Display(Model):
     # noinspection PyPep8Naming
     # limitLow and limitHigh are camelCase to maintain compatibility with
     # EPICS normative types
-    def __init__(self, limitLow=0, limitHigh=0, description="", precision=0, units=""):
+    def __init__(self, limitLow=0, limitHigh=0, description="", precision=0,
+                 units=""):
         # type: (ALoLimit, AHiLimit, ADescription, APrecision, AUnits) -> None
         # Set initial values
         self.limitLow = self.set_limitLow(limitLow)
@@ -567,8 +568,8 @@ with Anno("Numpy dtype string"):
     ADtype = str
 
 
-_dtype_strings = ["int8", "uint8", "int16", "uint16", "int32", "uint32", "int64",
-           "uint64", "float32", "float64"]
+_dtype_strings = ["int8", "uint8", "int16", "uint16", "int32", "uint32",
+                  "int64", "uint64", "float32", "float64"]
 _dtype_string_lookup = {getattr(np, dtype): dtype for dtype in _dtype_strings}
 _dtype_string_lookup.update({int: "int64", float: "float64"})
 
@@ -580,15 +581,28 @@ class NumberMeta(VMeta):
     attribute_class = NTScalar
     __slots__ = ["dtype", "display"]
 
-    def __init__(self, dtype="float64", description="", tags=(),
-                 writeable=False, label="", display=None):
-        # type: (ADtype, AMetaDescription, UTags, AWriteable, ALabel, ADisplay) -> None
+    def __init__(self,
+                 dtype="float64",  # type: ADtype
+                 description="",  # type: AMetaDescription
+                 tags=(),  # type: UTags
+                 writeable=False,  # type: AWriteable
+                 label="",  # type: ALabel
+                 display=None  # type: ADisplay
+                 ):
+        # type: (...) -> None
         super(NumberMeta, self).__init__(description, tags, writeable, label)
         # like np.float64
         self._np_type = None  # type: type
         # like "float64"
         self.dtype = self.set_dtype(dtype)
-        self.display = self.set_display(display if display else Display())
+        if display is None:
+            # Guess some defaults for the display object
+            if dtype in ["float32", "float64"]:
+                precision = 8
+            else:
+                precision = 0
+            display = Display(precision=np.int32(precision))
+        self.display = self.set_display(display)
 
     def set_display(self, display):
         # type: (ADisplay) -> ADisplay
@@ -1048,6 +1062,7 @@ with Anno("The list of fields currently in the Block"):
 
 # A more permissive union to allow a wider range of set_* args
 UFields = Union[AFields, Sequence[str], str]
+
 
 @Serializable.register_subclass("malcolm:core/BlockMeta:1.0")
 class BlockMeta(Meta):

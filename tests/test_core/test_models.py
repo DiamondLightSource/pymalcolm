@@ -573,7 +573,14 @@ class TestNumberMeta(unittest.TestCase):
         self.serialized["tags"] = []
         self.serialized["writeable"] = False
         self.serialized["label"] = "name"
-        self.serialized["display"] = Display().to_dict()
+        display = OrderedDict()
+        display["typeid"] = "display_t"
+        display["limitLow"] = 0
+        display["limitHigh"] = 0
+        display["description"] = ""
+        display["precision"] = 8
+        display["units"] = ""
+        self.serialized["display"] = display
 
     def test_to_dict(self):
         nm = NumberMeta("float64", "desc", label="name")

@@ -237,7 +237,7 @@ class TestCAParts(unittest.TestCase):
 
         assert b.attrname.meta.display.limitLow == 0.0
         assert b.attrname.meta.display.limitHigh == 0.0
-        assert b.attrname.meta.display.precision == 0
+        assert b.attrname.meta.display.precision == 8
         assert b.attrname.meta.display.units == ""
 
         catools.caget.assert_called_once_with(

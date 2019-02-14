@@ -161,7 +161,10 @@ counter_dict = {
             'description': 'The current value of the counter',
             'tags': ['config:1', 'widget:textinput'],
             'writeable': True,
-            'label': 'Counter'
+            'label': 'Counter',
+            'display': {
+                'precision': 8
+            }
         }
     },
     'zero': {
@@ -262,7 +265,10 @@ hello_dict = {
                     'description': 'Time to wait before returning',
                     'tags': ['widget:textinput'],
                     'writeable': True,
-                    'label': 'Sleep'
+                    'label': 'Sleep',
+                    'display': {
+                        'precision': 8
+                    }
                 }
             },
             'required': ["name"]
