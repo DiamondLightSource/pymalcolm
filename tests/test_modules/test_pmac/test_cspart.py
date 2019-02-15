@@ -13,6 +13,7 @@ class TestCSPart(ChildTestCase):
             prefix="PV:PRE")
         self.set_attributes(self.child, port="CS1")
         self.o = CSPart(name="pmac", mri="PMAC:CS1")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

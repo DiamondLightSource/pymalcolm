@@ -1,11 +1,13 @@
 from annotypes import Anno, add_call_types, Any
 
-from malcolm.modules import ADCore, scanning
+from malcolm.modules import ADCore, scanning, builtin
 
 with Anno("Sample frequency of ADC signal in Hz"):
     ASampleFreq = float
 
 
+# We will set these attributes on the child block, so don't save them
+@builtin.util.no_save('postCount')
 class ReframePluginPart(ADCore.parts.DetectorDriverPart):
     def __init__(self, name, mri, sample_freq=10000.0):
         # type: (ADCore.parts.APartName, ADCore.parts.AMri, ASampleFreq) -> None

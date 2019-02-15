@@ -1,5 +1,8 @@
+import collections
+
 from annotypes import Anno, Array, Union, Sequence
 
+from malcolm.compat import str_
 from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
     StateSet, DEFAULT_TIMEOUT
 
@@ -134,3 +137,20 @@ class ManagerStates(StatefulStates):
         self.set_allowed(self.SAVING, self.READY)
         self.set_allowed(self.READY, self.LOADING)
         self.set_allowed(self.LOADING, self.READY)
+
+
+def no_save(*attrs):
+    def decorator(cls):
+        additions = set()
+        for attr in attrs:
+            if isinstance(attr, collections.Iterable) \
+                    and not isinstance(attr, str_):
+                additions |= set(attr)
+            else:
+                additions.add(attr)
+        bad = [x for x in additions if not isinstance(x, str_)]
+        assert not bad, \
+            "Cannot add non-string attribute names to no_save: %s" % bad
+        cls.no_save |= additions
+        return cls
+    return decorator

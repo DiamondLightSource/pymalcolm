@@ -15,6 +15,7 @@ class TestStatsPluginPart(ChildTestCase):
             stats_plugin_block, self.process,
             mri="BLOCK-STAT", prefix="prefix")
         self.o = StatsPluginPart(name="m", mri="BLOCK-STAT")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

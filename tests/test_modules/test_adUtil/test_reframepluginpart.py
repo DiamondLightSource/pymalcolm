@@ -17,6 +17,7 @@ class TestReframePluginPart(ChildTestCase):
             reframe_plugin_block, self.process,
             mri="mri", prefix="prefix")
         self.o = ReframePluginPart(name="m", mri="mri")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

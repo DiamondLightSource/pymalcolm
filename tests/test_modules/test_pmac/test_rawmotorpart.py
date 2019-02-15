@@ -24,6 +24,7 @@ class TestRawMotorPart(ChildTestCase):
                             resolution=0.001,
                             cs="CS1,Y")
         self.o = MotorPart(name="scan", mri="mri")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

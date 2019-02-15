@@ -26,6 +26,7 @@ class TestDetectorDriverPart(ChildTestCase):
         self.child = self.create_child_block(child_block, self.process)
         self.o = DetectorDriverPart(
             name="m", mri="mri", soft_trigger_modes=["Internal"])
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

@@ -226,9 +226,16 @@ def make_layout_xml(generator, part_info):
     return xml
 
 
+# We will set these attributes on the child block, so don't save them
+@builtin.util.no_save(
+    'positionMode', 'enableCallbacks', 'fileWriteMode', 'swmrMode',
+    'dimAttDatasets', 'lazyOpen', 'arrayCounter', 'filePath', 'fileName',
+    'fileTemplate', 'numExtraDims', 'flushAttrPerNFrames', 'xml',
+    'flushDataPerNFrames', 'numCapture')
+@builtin.util.no_save("posNameDim%s" % SUFFIXES[i] for i in range(10))
+@builtin.util.no_save("extraDimSize%s" % SUFFIXES[i] for i in range(10))
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
-
     def __init__(self, name, mri):
         # type: (APartName, scanning.parts.AMri) -> None
         super(HDFWriterPart, self).__init__(name, mri)

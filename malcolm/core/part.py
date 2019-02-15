@@ -3,6 +3,7 @@ import re
 from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
+from .request import Request
 from .hook import Hookable
 from .info import Info
 from .serializable import CAMEL_RE
@@ -99,6 +100,12 @@ class Part(Hookable):
         # type: (PartRegistrar) -> None
         """Use the given Registrar to populate the hooks and fields"""
         self.registrar = registrar
+
+    def notify_dispatch_request(self, request):
+        # type: (Request) -> None
+        """Will be called when a context passed to a hooked function is about
+        to dispatch a request"""
+        pass
 
 
 class PartRegistrar(object):

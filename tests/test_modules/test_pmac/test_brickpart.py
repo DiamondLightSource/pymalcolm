@@ -17,6 +17,7 @@ class TestBrickPart(ChildTestCase):
         self.set_attributes(child,
                             i10=1705244)
         self.o = BrickPart(name="part", mri="my_mri")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

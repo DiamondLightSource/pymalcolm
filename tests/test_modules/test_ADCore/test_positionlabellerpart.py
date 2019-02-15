@@ -17,6 +17,7 @@ class TestPositionLabellerPart(ChildTestCase):
             position_labeller_block, self.process,
             mri="BLOCK-POS", prefix="prefix")
         self.o = PositionLabellerPart(name="m", mri="BLOCK-POS")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

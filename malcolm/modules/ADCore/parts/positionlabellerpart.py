@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from typing import Tuple
 
 
+# We will set these attributes on the child block, so don't save them
+@builtin.util.no_save("xml", "enableCallbacks", "idStart", "qty")
 class PositionLabellerPart(builtin.parts.ChildPart):
     """Part for controlling a `position_labeller_block` in a scan"""
 

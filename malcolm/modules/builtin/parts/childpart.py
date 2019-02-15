@@ -4,7 +4,7 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 from malcolm.compat import OrderedDict, clean_repr
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
     Unsubscribe, APartName, Port, Controller, Response, \
-    get_config_tag, Update, Return
+    get_config_tag, Update, Return, Put, Request
 from ..infos import PortInfo, LayoutInfo, SourcePortInfo, SinkPortInfo, \
     PartExportableInfo, PartModifiedInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
@@ -31,6 +31,25 @@ ss = StatefulStates
 
 
 class ChildPart(Part):
+    # Override in subclasses for the fields that we will put to and shouldn't
+    # be put to
+    no_save = set()
+
+    def notify_dispatch_request(self, request):
+        # type: (Request) -> None
+        """Will be called when a context passed to a hooked function is about
+        to dispatch a request"""
+        if isinstance(request, Put) and request.path[0] == self.mri:
+            # This means the context we were passed has just made a Put request
+            # so mark the field as "we_modified" so it doesn't screw up the
+            # modified led
+            attribute_name = request.path[-2]
+            if attribute_name not in self.no_save:
+                self.log.warning(
+                    "Part %s tried to set '%s' that is not in self.no_save. "
+                    "This will stop the 'modified' attribute from working.",
+                    self, attribute_name)
+
     def __init__(self, name, mri, initial_visibility=None, stateful=True):
         # type: (APartName, AMri, AInitialVisibility, AStateful) -> None
         super(ChildPart, self).__init__(name)
@@ -163,9 +182,11 @@ class ChildPart(Part):
         child = context.block_view(self.mri)
         part_structure = OrderedDict()
         for k in child:
-            attr = getattr(child, k)
-            if isinstance(attr, Attribute) and get_config_tag(attr.meta.tags):
-                part_structure[k] = serialize_object(attr.value)
+            if k not in self.no_save:
+                attr = getattr(child, k)
+                if isinstance(attr, Attribute) and \
+                        get_config_tag(attr.meta.tags):
+                    part_structure[k] = serialize_object(attr.value)
         self.saved_structure = part_structure
         return part_structure
 
@@ -217,7 +238,7 @@ class ChildPart(Part):
                     self.port_infos[field] = info
                 # If we are config tagged then subscribe so we can calculate
                 # if we are modified
-                if get_config_tag(tags):
+                if field not in self.no_save and get_config_tag(tags):
                     if self.config_subscriptions:
                         new_id = max(self.config_subscriptions) + 1
                     else:

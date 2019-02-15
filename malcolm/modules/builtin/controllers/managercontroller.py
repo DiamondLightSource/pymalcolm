@@ -11,8 +11,8 @@ from malcolm.compat import OrderedDict
 from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
     deserialize_object, Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
     AlarmStatus, Part, BooleanMeta, get_config_tag, Widget, ChoiceArrayMeta, \
-    TableMeta, serialize_object, ChoiceMeta, config_tag, Put, Request, CAMEL_RE, \
-    camel_to_title, StringMeta
+    TableMeta, serialize_object, ChoiceMeta, config_tag, Put, Request, \
+    CAMEL_RE, camel_to_title, StringMeta
 from malcolm.core.tags import without_group_tags, Port
 from malcolm.modules.builtin.infos import PortInfo
 from malcolm.modules.builtin.util import ManagerStates
@@ -64,7 +64,8 @@ class ManagerController(StatefulController):
             if check_git_version("1.7.2"):
                 self.git_email = os.environ["USER"] + "@" + socket.gethostname()
                 self.git_name = "Malcolm"
-                self.git_config = ("-c", "user.name=%s" % self.git_name, "-c", 'user.email="%s"' % self.git_email)
+                self.git_config = ("-c", "user.name=%s" % self.git_name,
+                                   "-c", 'user.email="%s"' % self.git_email)
             else:
                 self.git_config = ()
         # last saved layout and exports
@@ -78,6 +79,7 @@ class ManagerController(StatefulController):
         self.port_info = {}  # type: Dict[str, List[PortInfo]]
         # {part: [attr_name]}
         self.part_exportable = {}
+        # TODO: turn this into "exported attribute modified"
         self.context_modified = {}  # type: Dict[Part, Set[str]]
         self.part_modified = {}  # type: Dict[Part, PartModifiedInfo]
         # The attributes our part has published
@@ -296,16 +298,6 @@ class ManagerController(StatefulController):
         for name, child, writeable_func in self._current_part_fields:
             self.add_block_field(name, child, writeable_func)
 
-    def notify_dispatch_request(self, request, part):
-        # type: (Request, Part) -> None
-        """Will be called when a context passed to a hooked function is about
-        to dispatch a request"""
-        if isinstance(request, Put):
-            # This means the context we were passed has just made a Put request
-            # so mark the field as "we_modified" so it doesn't screw up the
-            # modified led
-            self.context_modified.setdefault(part, set()).add(request.path[-2])
-
     def add_initial_part_fields(self):
         # Only add our own fields to start with, the rest will be added on load
         for name, child, writeable_func in self.field_registry.fields[None]:
@@ -417,15 +409,18 @@ class ManagerController(StatefulController):
                     part_contexts.pop(part)
                 else:
                     part_contexts[part].set_notify_dispatch_request(
-                        self.notify_dispatch_request, part)
+                        part.notify_dispatch_request)
 
         return part_contexts
 
+    # Allow CamelCase for arguments as they will be exposed in the Block Method
+    # noinspection PyPep8Naming
     @add_call_types
     def save(self, designName=""):
         # type: (ASaveDesign) -> None
         """Save the current design to file"""
-        self.try_stateful_function(ss.SAVING, ss.READY, self.do_save, designName)
+        self.try_stateful_function(
+            ss.SAVING, ss.READY, self.do_save, designName)
 
     def do_save(self, design=""):
         if not design:

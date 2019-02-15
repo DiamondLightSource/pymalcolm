@@ -17,6 +17,7 @@ class TestOdinDWriterPart(ChildTestCase):
             odin_writer_block, self.process,
             mri="mri", prefix="prefix")
         self.o = OdinWriterPart(name="m", mri="mri")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
         self.completed_steps = 0
@@ -31,7 +32,7 @@ class TestOdinDWriterPart(ChildTestCase):
 
     def test_configure(self):
         self.o.configure(
-            self.context, self.completed_steps, self.steps_to_do, {},
+            self.context, self.completed_steps, self.steps_to_do,
             generator=self.generator, fileDir='/tmp', fileName='odin.hdf')
         assert self.child.handled_requests.mock_calls == [
             call.put('fileName', 'odin.hdf'),
@@ -42,7 +43,7 @@ class TestOdinDWriterPart(ChildTestCase):
 
     def test_run(self):
         self.o.configure(
-            self.context, self.completed_steps, self.steps_to_do, {},
+            self.context, self.completed_steps, self.steps_to_do,
             generator=self.generator, fileDir='/tmp', fileName='odin.hdf')
         self.child.handled_requests.reset_mock()
         self.o.registrar = MagicMock()

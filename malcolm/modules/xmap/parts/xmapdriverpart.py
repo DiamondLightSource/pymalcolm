@@ -1,8 +1,13 @@
 from annotypes import add_call_types, Any
 
-from malcolm.modules import ADCore, scanning
+from malcolm.modules import ADCore, scanning, builtin
 
 
+@builtin.util.no_save(
+    "collectMode", "pixelAdvanceMode", "presetMode", "ignoreGate",
+    "pixelsPerRun", "autoPixelsPerBuffer", "pixelsPerBuffer", "binsInSpectrum",
+    "dxp1MaxEnergy", "dxp2MaxEnergy", "dxp3MaxEnergy", "dxp4MaxEnergy",
+    "inputLogicPolarity")
 class XmapDriverPart(ADCore.parts.DetectorDriverPart):
     """Part for using xmap_driver_block in a scan"""
 

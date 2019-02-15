@@ -113,22 +113,25 @@ else:
         'required': []
     }
 
+ntscalar_tuple = ('S', 'epics:nt/NTScalar:1.0', [
+    ('value', 'd'),
+    ('alarm', alarm_tuple),
+    ('timeStamp', ts_tuple),
+    ('meta', ('S', 'malcolm:core/NumberMeta:1.0', [
+        ('dtype', 's'),
+        ('description', 's'),
+        ('tags', 'as'),
+        ('writeable', '?'),
+        ('label', 's'),
+        ('display', display_tuple)
+    ])),
+])
+
 counter_block_t = Type([
     ('meta', block_meta_tuple),
     ('health', health_attribute_tuple),
-    ('counter', ('S', 'epics:nt/NTScalar:1.0', [
-        ('value', 'd'),
-        ('alarm', alarm_tuple),
-        ('timeStamp', ts_tuple),
-        ('meta', ('S', 'malcolm:core/NumberMeta:1.0', [
-            ('dtype', 's'),
-            ('description', 's'),
-            ('tags', 'as'),
-            ('writeable', '?'),
-            ('label', 's'),
-            ('display', display_tuple)
-        ])),
-    ])),
+    ('counter', ntscalar_tuple),
+    ('delta', ntscalar_tuple),
     ('zero', empty_method_tuple),
     ('increment', empty_method_tuple)
 ], 'malcolm:core/Block:1.0')
@@ -139,7 +142,7 @@ counter_dict = {
         'tags': [],
         'writeable': True,
         'label': 'TESTCOUNTER',
-        'fields': ['health', 'counter', 'zero', 'increment']
+        'fields': ['health', 'counter', 'delta', 'zero', 'increment']
     },
     'health': {
         'value': "OK",
@@ -162,6 +165,21 @@ counter_dict = {
             'tags': ['config:1', 'widget:textinput'],
             'writeable': True,
             'label': 'Counter',
+            'display': {
+                'precision': 8
+            }
+        }
+    },
+    'delta': {
+        'value': 1.0,
+        'alarm': alarm_ok,
+        'timeStamp': ts_zero,
+        'meta': {
+            'dtype': 'float64',
+            'description': 'The amount to increment() by',
+            'tags': ['config:1', 'widget:textinput'],
+            'writeable': True,
+            'label': 'Delta',
             'display': {
                 'precision': 8
             }
@@ -359,8 +377,9 @@ class TestPVAServer(unittest.TestCase):
         self.assertStructureWithoutTsEqual(str(counter), str(counter_expected))
         self.assertEqual(counter.getID(), "malcolm:core/Block:1.0")
         names = list(counter)
-        self.assertEqual(names,
-                         ["meta", "health", "counter", "zero", "increment"])
+        self.assertEqual(
+            names,
+            ["meta", "health", "counter", "delta", "zero", "increment"])
         self.assertEqual(counter.meta.getID(), "malcolm:core/BlockMeta:1.0")
         self.assertEqual(counter.meta.label, "TESTCOUNTER")
         self.assertEqual(counter.meta.fields, names[1:])
@@ -382,7 +401,7 @@ class TestPVAServer(unittest.TestCase):
         self.assertEqual(counter.getID(), "structure")
         self.assertEqual(len(counter.items()), 1)
         self.assertEqual(len(counter.meta.items()), 1)
-        self.assertEqual(len(counter.meta.fields), 4)
+        self.assertEqual(len(counter.meta.fields), 5)
         fields_code = dict(counter.meta.type().items())["fields"]
         self.assertEqual(fields_code, "as")
 
@@ -411,7 +430,7 @@ class TestPVAServer(unittest.TestCase):
         meta = self.ctxt.get("TESTCOUNTER.meta", "fields")
         self.assertEqual(meta.getID(), "structure")
         self.assertEqual(len(meta.items()), 1)
-        self.assertEqual(len(meta.fields), 4)
+        self.assertEqual(len(meta.fields), 5)
         fields_code = dict(meta.type().aspy()[2])["fields"]
         self.assertEqual(fields_code, "as")
 
@@ -536,7 +555,7 @@ class TestPVAServer(unittest.TestCase):
             # P4P only says leaves have changed
             self.assertEqual(counter.changedSet(), {"meta.fields"})
         self.assertEqual(counter.meta.fields,
-                         ["health", "counter", "zero", "increment"])
+                         ["health", "counter", "delta", "zero", "increment"])
         fields_code = dict(counter.meta.type().aspy()[2])["fields"]
         self.assertEqual(fields_code, "as")
 

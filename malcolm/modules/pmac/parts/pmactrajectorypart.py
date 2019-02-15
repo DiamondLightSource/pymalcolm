@@ -10,9 +10,7 @@ from scanpointgenerator import CompoundGenerator
 from malcolm.core import config_tag, NumberMeta, PartRegistrar, Widget, \
     DEFAULT_TIMEOUT
 from malcolm.modules import builtin, scanning
-from malcolm.modules.builtin.parts import ChildPart
-from malcolm.modules.pmac.infos import cs_axis_names
-from ..infos import MotorInfo, ControllerInfo, CSInfo
+from ..infos import MotorInfo, ControllerInfo, CSInfo, cs_axis_names
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -50,7 +48,13 @@ with Anno("Initial value for min time for any gaps between frames"):
     AMinTurnaround = float
 
 
-class PmacTrajectoryPart(ChildPart):
+# We will set these attributes on the child block, so don't save them
+@builtin.util.no_save(
+    "numPoints", "enableCallbacks", "computeStatistics", "timeArray", "cs",
+    "velocityMode", "userPrograms", "pointsToBuild")
+@builtin.util.no_save("use%s" % x for x in cs_axis_names)
+@builtin.util.no_save("positions%s" % x for x in cs_axis_names)
+class PmacTrajectoryPart(builtin.parts.ChildPart):
     def __init__(self,
                  name,  # type: builtin.parts.APartName
                  mri,  # type: builtin.parts.AMri

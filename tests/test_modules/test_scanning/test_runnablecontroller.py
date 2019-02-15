@@ -114,26 +114,27 @@ class TestRunnableController(unittest.TestCase):
         self.b_child.save("init_child")
         assert self.b_child.modified.value is False
         x = self.context.block_view("COUNTERX")
-        x.counter.put_value(31)
-        # x counter now at 31, child should be modified
-        assert x.counter.value == 31
+        x.delta.put_value(31)
+        # x delta now at 31, child should be modified
+        assert x.delta.value == 31
         assert self.b_child.modified.value is True
         assert self.b_child.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b_child.modified.alarm.message == \
-            "x.counter.value = 31.0 not 0.0"
+            "x.delta.value = 31.0 not 1.0"
         self.prepare_half_run()
         self.b.run()
-        # x counter now at 2, child should be modified by us
+        # x counter now at 2, child should still be modified
         assert self.b_child.modified.value is True
-        assert self.b_child.modified.alarm.severity == AlarmSeverity.NO_ALARM
+        assert self.b_child.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b_child.modified.alarm.message == \
-            "(We modified) x.counter.value = 2.0 not 0.0"
+            "x.delta.value = 31.0 not 1.0"
         assert x.counter.value == 2.0
-        x.counter.put_value(0.0)
+        assert x.delta.value == 31
+        x.delta.put_value(1.0)
         # x counter now at 0, child should be unmodified
-        assert x.counter.value == 0
+        assert x.delta.value == 1.0
         assert self.b_child.modified.alarm.message == ""
         assert self.b_child.modified.value is False
 
