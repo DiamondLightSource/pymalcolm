@@ -2,6 +2,7 @@ from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
 
 from malcolm.core import APartName, BadValueError
 from malcolm.modules.builtin.parts import AMri, ChildPart
+from malcolm.modules.builtin.util import no_save
 from malcolm.modules.scanning.hooks import ReportStatusHook, \
     ConfigureHook, PostRunArmedHook, SeekHook, RunHook, ResumeHook, PauseHook, \
     AbortHook, AContext, UInfos, AStepsToDo, ACompletedSteps, APartInfo
@@ -16,6 +17,9 @@ with Anno("List of trigger modes that do not use hardware triggers"):
 USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
 
 
+# We will set these attributes on the child block, so don't save them
+@no_save('arrayCounter', 'imageMode', 'numImages', 'arrayCallbacks', 'exposure',
+         'acquirePeriod')
 class DetectorDriverPart(ChildPart):
     def __init__(self,
                  name,  # type: APartName

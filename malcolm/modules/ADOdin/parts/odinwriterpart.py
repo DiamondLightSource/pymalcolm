@@ -1,17 +1,12 @@
 import os
-import math
-from xml.etree import cElementTree as ET
 
 from annotypes import add_call_types, Anno, TYPE_CHECKING
-from scanpointgenerator import CompoundGenerator, Dimension
 
-from malcolm.compat import et_to_string
-from malcolm.core import APartName, Future, Info, Block, PartRegistrar
+from malcolm.core import APartName, Future, Info, PartRegistrar
 from malcolm.modules import builtin, scanning
-from malcolm.core.errors import MalcolmException
 
 if TYPE_CHECKING:
-    from typing import Iterator, List, Dict
+    from typing import List, Dict
 
     PartInfo = Dict[str, List[Info]]
 
@@ -33,9 +28,10 @@ def greater_than_zero(v):
     return v > 0
 
 
+# We will set these attributes on the child block, so don't save them
+@builtin.util.no_save("fileName", "filePath", "numCapture")
 class OdinWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
-
     def __init__(self, name, mri):
         # type: (APartName, scanning.parts.AMri) -> None
         super(OdinWriterPart, self).__init__(name, mri)
@@ -83,7 +79,6 @@ class OdinWriterPart(builtin.parts.ChildPart):
                   context,  # type: scanning.hooks.AContext
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
                   fileDir='/tmp',  # type: AFileDir
                   fileName="odin.hdf",  # type: AFileName

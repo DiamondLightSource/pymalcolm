@@ -9,6 +9,8 @@ with Anno("If >0, raise an exception at the end of this step"):
     AExceptionStep = int
 
 
+# We will set these attributes on the child block, so don't save them
+@builtin.util.no_save("counter")
 class ScanTickerPart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `RunnableController`"""
 

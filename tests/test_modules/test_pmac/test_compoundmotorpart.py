@@ -19,6 +19,7 @@ class TestCompoundPart(ChildTestCase):
                             resolution=0.001,
                             cs="CS_PORT,B")
         self.o = MotorPart(name="scan", mri="my_mri")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

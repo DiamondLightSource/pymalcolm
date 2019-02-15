@@ -15,6 +15,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
             xmap_driver_block, self.process,
             mri="mri", prefix="prefix")
         self.o = XmapDriverPart(name="m", mri="mri")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

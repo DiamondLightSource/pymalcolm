@@ -3,7 +3,7 @@ from annotypes import add_call_types, Anno, Union, Array, Sequence, Any
 from malcolm.compat import OrderedDict
 from malcolm.core import BadValueError, serialize_object, APartName, \
     Delta, deserialize_object, Subscribe, MethodModel, Unsubscribe, \
-    Future, PartRegistrar
+    Future, PartRegistrar, Put, Request
 from malcolm.modules.builtin.hooks import AStructure, AInit
 from malcolm.modules.builtin.parts import ChildPart, AMri, AInitialVisibility
 from ..hooks import ConfigureHook, PostRunArmedHook, \
@@ -109,6 +109,14 @@ class RunnableChildPart(ChildPart):
             if serialize_object(kwargs[k]) != v:
                 ret.append(ParameterTweakInfo(k, v))
         return ret
+
+    def notify_dispatch_request(self, request):
+        # type: (Request) -> None
+        if isinstance(request, Put) and request.path[1] == "design":
+            # This is ok
+            pass
+        else:
+            super(RunnableChildPart, self).notify_dispatch_request(request)
 
     @add_call_types
     def configure(self, context, **kwargs):

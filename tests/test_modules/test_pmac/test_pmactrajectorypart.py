@@ -22,6 +22,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
             pmac_trajectory_block, self.process, mri="PMAC:TRAJ",
             prefix="PV:PRE")
         self.o = PmacTrajectoryPart(name="pmac", mri="PMAC:TRAJ")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

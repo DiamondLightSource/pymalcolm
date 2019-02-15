@@ -18,6 +18,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             mri="mri", prefix="prefix")
         # readoutTime used to be 0.002, not any more...
         self.o = AndorDriverPart(name="m", mri="mri")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):

@@ -4,7 +4,7 @@ from xml.etree import cElementTree as ET
 from annotypes import Anno, add_call_types
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Hook
+from malcolm.core import APartName
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo
 from ..util import StatisticsName
@@ -15,6 +15,8 @@ with Anno("Directory to write data to"):
     AFileDir = str
 
 
+# We will set these attributes on the child block, so don't save them
+@builtin.util.no_save("attributesFile", "enableCallbacks", "computeStatistics")
 class StatsPluginPart(builtin.parts.ChildPart):
     """Part for controlling a `stats_plugin_block` in a Device"""
 

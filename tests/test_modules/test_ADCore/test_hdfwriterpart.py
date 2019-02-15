@@ -23,6 +23,7 @@ class TestHDFWriterPart(ChildTestCase):
             hdf_writer_block, self.process,
             mri="BLOCK-HDF5", prefix="prefix")
         self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
     def tearDown(self):
