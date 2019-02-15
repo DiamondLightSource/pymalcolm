@@ -6,13 +6,13 @@ from ..util import set_tags
 
 
 with Anno("Initial value of Block label"):
-    Value = str
+    AValue = str
 
 
 class TitlePart(Part):
     """Part representing a the title of the Block a GUI should display"""
     def __init__(self, value):
-        # type: (Value) -> None
+        # type: (AValue) -> None
         super(TitlePart, self).__init__("label")
         meta = StringMeta("Label for the block")
         set_tags(meta, writeable=True)

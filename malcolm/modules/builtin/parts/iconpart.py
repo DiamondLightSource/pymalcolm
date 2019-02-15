@@ -5,13 +5,13 @@ from ..util import set_tags
 
 
 with Anno("If given, path to svg for initial value"):
-    Svg = str
+    ASvg = str
 
 
 class IconPart(Part):
     """Part representing a the icon a GUI should display"""
     def __init__(self, svg=""):
-        # type: (Svg) -> None
+        # type: (ASvg) -> None
         super(IconPart, self).__init__("icon")
         meta = StringMeta("SVG icon for the Block")
         set_tags(meta, widget=Widget.ICON)

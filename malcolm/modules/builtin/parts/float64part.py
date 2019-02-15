@@ -1,11 +1,11 @@
 from annotypes import Anno
 
 from malcolm.core import Part, PartRegistrar, NumberMeta, APartName, \
-    AMetaDescription
+    AMetaDescription, Display, APrecision, AUnits, ALimitHigh, ALimitLow
 from ..util import set_tags, AWriteable, AConfig, AGroup, AWidget
 
 with Anno("Initial value of the created attribute"):
-    Value = float
+    AValue = float
 
 
 class Float64Part(Part):
@@ -17,11 +17,19 @@ class Float64Part(Part):
                  config=1,  # type: AConfig
                  group=None,  # type: AGroup
                  widget=None,  # type: AWidget
-                 value=0.0,  # type: Value
+                 value=0.0,  # type: AValue
+                 limit_low=0,  # type: ALimitLow
+                 limit_high=0,  # type: ALimitHigh
+                 precision=8,  # type: APrecision
+                 units="",  # type: AUnits
                  ):
         # type: (...) -> None
         super(Float64Part, self).__init__(name)
-        meta = NumberMeta("float64", description)
+        display = Display(limitLow=limit_low,
+                          limitHigh=limit_high,
+                          precision=precision,
+                          units=units)
+        meta = NumberMeta("float64", description, display=display)
         set_tags(meta, writeable, config, group, widget)
         self.attr = meta.create_attribute_model(value)
         self.writeable_func = self.attr.set_value if writeable else None

@@ -3,7 +3,7 @@ from __future__ import division
 from annotypes import Anno, add_call_types
 
 from malcolm.core import Part, NumberMeta, Widget, config_tag, APartName, \
-    PartRegistrar
+    PartRegistrar, Display
 from malcolm.modules import scanning
 from ..infos import ExposureDeadtimeInfo
 
@@ -27,11 +27,13 @@ class ExposureDeadtimePart(Part):
         super(ExposureDeadtimePart, self).__init__(name)
         self.readout_time = NumberMeta(
             "float64", readout_desc,
-            tags=[Widget.TEXTINPUT.tag(), config_tag()]
+            tags=[Widget.TEXTINPUT.tag(), config_tag()],
+            display=Display(precision=6, units="s")
         ).create_attribute_model(initial_readout_time)
         self.frequency_accuracy = NumberMeta(
             "float64", frequency_accuracy_desc,
-            tags=[Widget.TEXTINPUT.tag(), config_tag()]
+            tags=[Widget.TEXTINPUT.tag(), config_tag()],
+            display=Display(precision=3, units="ppm")
         ).create_attribute_model(initial_frequency_accuracy)
         # Hooks
         self.register_hooked(

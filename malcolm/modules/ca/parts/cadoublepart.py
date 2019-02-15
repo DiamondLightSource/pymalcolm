@@ -1,4 +1,5 @@
-from malcolm.core import Part, PartRegistrar, NumberMeta, DEFAULT_TIMEOUT, Display
+from malcolm.core import Part, PartRegistrar, NumberMeta, DEFAULT_TIMEOUT, \
+    Display
 from .. import util
 
 
@@ -30,8 +31,10 @@ class CADoublePart(Part):
     def _update_display(self, connected_pv):
         if self.display_from_pv:
             display = Display(
-                limitHigh=connected_pv.upper_disp_limit, limitLow=connected_pv.lower_disp_limit,
-                precision=connected_pv.precision, units=connected_pv.units
+                limitHigh=connected_pv.upper_disp_limit,
+                limitLow=connected_pv.lower_disp_limit,
+                precision=connected_pv.precision,
+                units=connected_pv.units
             )
             self.caa.attr.meta.set_display(display)
 
