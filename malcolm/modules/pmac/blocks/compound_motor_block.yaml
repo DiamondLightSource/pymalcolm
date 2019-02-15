@@ -26,3 +26,5 @@
     description: Time in seconds for motor to settle at constant velocity
     writeable: True
     value: $(initial_velocity_settle)
+    precision: 3
+    units: s

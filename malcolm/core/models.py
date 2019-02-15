@@ -126,55 +126,6 @@ class Model(Serializable):
                 "Cannot process change %s" % ([self.path + path] + list(args))
             getattr(self, "set_%s" % path[0])(args[0])
 
-with Anno("Lower limit"):
-    ALoLimit = np.float64
-with Anno("Upper limit"):
-    AHiLimit = np.float64
-with Anno("Description"):
-    ADescription = str
-with Anno("Number of significant figures to display"):
-    APrecision = np.int32
-with Anno("Units"):
-    AUnits = str
-
-
-@Serializable.register_subclass("display_t")
-class Display(Model):
-
-    __slots__ = ["limitLow", "limitHigh", "description", "precision", "units"]
-
-    # noinspection PyPep8Naming
-    # limitLow and limitHigh are camelCase to maintain compatibility with
-    # EPICS normative types
-    def __init__(self, limitLow=0, limitHigh=0, description="", precision=0,
-                 units=""):
-        # type: (ALoLimit, AHiLimit, ADescription, APrecision, AUnits) -> None
-        # Set initial values
-        self.limitLow = self.set_limitLow(limitLow)
-        self.limitHigh = self.set_limitHigh(limitHigh)
-        self.description = self.set_description(description)
-        self.precision = self.set_precision(precision)
-        self.units = self.set_units(units)
-
-    def set_limitLow(self, limitLow):
-        return self.set_endpoint_data("limitLow", np.float64(limitLow))
-
-    def set_limitHigh(self, limitHigh):
-        return self.set_endpoint_data("limitHigh", np.float64(limitHigh))
-
-    def set_precision(self, precision):
-        return self.set_endpoint_data("precision", np.int32(precision))
-
-    def set_units(self, units):
-        return self.set_endpoint_data("units", units)
-
-    def set_description(self, description):
-        return self.set_endpoint_data("description", description)
-
-
-with Anno("Display info meta object"):
-    ADisplay = Display
-
 
 # Types used when deserializing to the class
 with Anno("Description of what this element represents"):
@@ -564,9 +515,60 @@ class ChoiceMeta(VMeta):
             anno, writeable, choices=list(anno.typ))
 
 
+with Anno("The lower bound of range within which the value must be set"):
+    ALimitLow = np.float64
+with Anno("The upper bound of range within which the value must be set"):
+    ALimitHigh = np.float64
+with Anno("Number of significant figures to display"):
+    APrecision = np.int32
+UPrecision = Union[APrecision, int]
+with Anno("The units for the value"):
+    AUnits = str
+
+
+@Serializable.register_subclass("display_t")
+class Display(Model):
+
+    __slots__ = ["limitLow", "limitHigh", "description", "precision", "units"]
+
+    # noinspection PyPep8Naming
+    # limitLow and limitHigh are camelCase to maintain compatibility with
+    # EPICS normative types
+    def __init__(self,
+                 limitLow=0,  # type: ALimitLow
+                 limitHigh=0,  # type: ALimitHigh
+                 description="",  # type: AMetaDescription
+                 precision=0,  # type: UPrecision
+                 units=""  # type: AUnits
+                 ):
+        # type: (...) -> None
+        # Set initial values
+        self.limitLow = self.set_limitLow(limitLow)
+        self.limitHigh = self.set_limitHigh(limitHigh)
+        self.description = self.set_description(description)
+        self.precision = self.set_precision(precision)
+        self.units = self.set_units(units)
+
+    def set_limitLow(self, limitLow):
+        return self.set_endpoint_data("limitLow", np.float64(limitLow))
+
+    def set_limitHigh(self, limitHigh):
+        return self.set_endpoint_data("limitHigh", np.float64(limitHigh))
+
+    def set_precision(self, precision):
+        return self.set_endpoint_data("precision", np.int32(precision))
+
+    def set_units(self, units):
+        return self.set_endpoint_data("units", units)
+
+    def set_description(self, description):
+        return self.set_endpoint_data("description", description)
+
+
 with Anno("Numpy dtype string"):
     ADtype = str
-
+with Anno("Display info meta object"):
+    ADisplay = Display
 
 _dtype_strings = ["int8", "uint8", "int16", "uint16", "int32", "uint32",
                   "int64", "uint64", "float32", "float64"]
@@ -601,7 +603,7 @@ class NumberMeta(VMeta):
                 precision = 8
             else:
                 precision = 0
-            display = Display(precision=np.int32(precision))
+            display = Display(precision=precision)
         self.display = self.set_display(display)
 
     def set_display(self, display):

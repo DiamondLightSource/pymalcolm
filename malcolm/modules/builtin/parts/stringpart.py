@@ -5,7 +5,7 @@ from malcolm.core import Part, PartRegistrar, StringMeta, APartName, \
 from ..util import set_tags, AWriteable, AConfig, AGroup, AWidget
 
 with Anno("Initial value of the created attribute"):
-    Value = str
+    AValue = str
 
 
 class StringPart(Part):
@@ -17,7 +17,7 @@ class StringPart(Part):
                  config=1,  # type: AConfig
                  group=None,  # type: AGroup
                  widget=None,  # type: AWidget
-                 value="",  # type: Value
+                 value="",  # type: AValue
                  ):
         # type: (...) -> None
         super(StringPart, self).__init__(name)
