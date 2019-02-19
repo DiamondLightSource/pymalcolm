@@ -44,6 +44,7 @@ A Block looks like this::
         string[]    tags       :opt // For future use
         bool        writeable  :opt // For future use
         string      label      :opt // Short label if different to name
+        string[]    fields     :opt // The list of fields currently in the Block
 
 
 The ``health`` `Attribute` will have value "OK" if everything is fine, otherwise
