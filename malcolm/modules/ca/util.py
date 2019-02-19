@@ -84,9 +84,11 @@ class CABase(Loggable):
             self.monitor = None
 
     def _update_value(self, value):
-        # Attribute value might not be raw PV, PV which triggered update is passed as status
+        # Attribute value might not be raw PV, PV which triggered update is
+        # passed as status
         if not value.ok:
-            self.attr.set_value(None, alarm=Alarm.invalid("PV disconnected"))
+            self.attr.set_value(
+                self.attr.value, alarm=Alarm.disconnected("PV disconnected"))
         else:
             if value.severity:
                 alarm = Alarm(severity=value.severity,

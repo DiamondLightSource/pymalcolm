@@ -162,8 +162,8 @@ class TestCAParts(unittest.TestCase):
         catools.caget.assert_called_once_with(
             "pv", datatype=catools.DBR_DOUBLE,
             format=catools.FORMAT_TIME)
-        assert list(b.attrname.value) == []
-        assert b.attrname.alarm.severity == AlarmSeverity.INVALID_ALARM
+        assert list(b.attrname.value) == [1.2, 2.2, 3.2]
+        assert b.attrname.alarm.severity == AlarmSeverity.UNDEFINED_ALARM
 
     def test_cawaveformtable(self, catools):
         from malcolm.modules.ca.parts import CAWaveformTablePart
