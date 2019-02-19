@@ -11,6 +11,10 @@ from malcolm.modules.pmac.infos import MotorInfo, ControllerInfo, CSInfo
 from malcolm.modules.pmac.parts import PmacTrajectoryPart
 from malcolm.testutil import ChildTestCase
 
+SHOW_GRAPHS = False
+# Uncomment this to show graphs when running under PyCharm
+# SHOW_GRAPHS = "PYCHARM_HOSTED" in os.environ
+
 
 class TestPMACTrajectoryPart(ChildTestCase):
     def setUp(self):
@@ -381,7 +385,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
 
         # if this test is run in pycharm then it plots some results
         # to help diagnose issues
-        if "PYCHARM_HOSTED" in os.environ:
+        if SHOW_GRAPHS:
             import matplotlib.pyplot as plt
             # plt.title("{} x/y {} points".format(title, xp.size))
             # plt.plot(xp, yp, '+', ms=2.5)
