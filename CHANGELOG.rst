@@ -10,6 +10,39 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 Nothing yet
 
 
+`3-3`_ - 2019-02-19
+-------------------
+
+Added:
+
+- Precision and units in a display_t for NumberMeta
+- Number of frames per chunk in HDF writer Block saved
+- Merlin support
+- Waveform Table support with plot widget in malcolmjs
+
+Fixed:
+
+- Disconnected PVs now keep their value, rather than zeroing it
+- Update malcolmjs to 1.6.1
+- Subtle bug with turnaround trajectories at high accelerations
+- Made explicit the attributes that are managed by ChildPart and shouldn't save
+- save() now calls sync so file is flushed to disk (for PandA)
+
+
+`3-2`_ - 2019-01-21
+-------------------
+
+Added:
+
+- ADOdin support for start/stop (not rewind or VDS yet)
+- Configurable poll period of PandA
+
+Fixed:
+
+- Performance tweaks for PandA web control, which makes time_t unordered dict
+- Better error message for wrong cs_port in a trajectory scan
+
+
 `3-0`_ - 2019-01-04
 -------------------
 
@@ -263,7 +296,9 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-0...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-3...HEAD
+.. _3-3: https://github.com/dls-controls/pymalcolm/compare/3-2...3-3
+.. _3-2: https://github.com/dls-controls/pymalcolm/compare/3-0...3-2
 .. _3-0: https://github.com/dls-controls/pymalcolm/compare/3-0b2...3-0
 .. _3-0b2: https://github.com/dls-controls/pymalcolm/compare/3-0b1...3-0b2
 .. _3-0b1: https://github.com/dls-controls/pymalcolm/compare/3-0a9...3-0b1
