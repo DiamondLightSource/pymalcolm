@@ -8,7 +8,7 @@ from .hook import Hookable
 from .info import Info
 from .serializable import CAMEL_RE
 from .concurrency import Spawned
-from .models import MethodModel, AttributeModel
+from .models import MethodModel, AttributeModel, MethodMeta
 
 if TYPE_CHECKING:
     from typing import Union, List, Tuple, Dict, Callable, Optional, Type
@@ -48,7 +48,7 @@ class FieldRegistry(object):
         """Register a function to be added to the block"""
         if name is None:
             name = func.__name__
-        method = MethodModel.from_callable(func, description)
+        method = MethodModel(meta=MethodMeta.from_callable(func, description))
         self._add_field(owner, name, method, func)
         return method
 

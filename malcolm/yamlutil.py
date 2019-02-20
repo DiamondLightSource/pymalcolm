@@ -8,7 +8,7 @@ from ruamel import yaml
 from collections import MutableSequence
 
 from malcolm.compat import str_, raise_with_traceback, OrderedDict
-from malcolm.core import YamlError, Controller, Part, Define, MethodModel
+from malcolm.core import YamlError, Controller, Part, Define, MethodMeta
 
 if TYPE_CHECKING:
     from typing import List, Dict, Tuple, Callable
@@ -228,8 +228,8 @@ class Section(object):
                 ImportError("\n%s:%d:\nPackage %r has no ident %r" % (
                     self.filename, self.lineno, pkg, ident)))
         try:
-            model = MethodModel.from_callable(ob, returns=False)
-            args = model.validate(param_dict)
+            meta = MethodMeta.from_callable(ob, returns=False)
+            args = meta.validate(param_dict)
             ret = ob(**args)
         except Exception as e:
             sourcefile = inspect.getsourcefile(ob)

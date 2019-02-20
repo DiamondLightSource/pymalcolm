@@ -12,7 +12,7 @@ from .info import Info
 from .loggable import Loggable
 from .models import BlockModel, AttributeModel, MethodModel, \
     BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, Model, Display, \
-    ALimitLow, ALimitHigh, APrecision, AUnits, \
+    ALimitLow, ALimitHigh, APrecision, AUnits, MethodMeta, \
     ChoiceMeta, NumberArrayMeta, NumberMeta, StringArrayMeta, StringMeta, \
     TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion, NTScalar, BlockMeta
 from .moduleutil import submodule_all

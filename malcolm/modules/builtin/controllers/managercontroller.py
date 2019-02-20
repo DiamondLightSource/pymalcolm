@@ -376,13 +376,11 @@ class ManagerController(StatefulController):
                     # Strip out group tags
                     # TODO: need to strip out port tags too...
                     export.meta.set_tags(without_group_tags(export.meta.tags))
-                    # Regenerate label
-                    export.meta.set_label(label)
                 else:
                     def setter(*args):
                         context.post(path, *args)
-                    # Regenerate label
-                    export.set_label(label)
+                # Regenerate label
+                export.meta.set_label(label)
                 ret["export"] = export
                 ret["setter"] = setter
             else:

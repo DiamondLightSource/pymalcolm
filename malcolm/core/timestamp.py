@@ -50,3 +50,9 @@ class TimeStamp(Serializable):
             nanoseconds=self.nanoseconds,
             userTag=self.userTag
         )
+
+    zero = None  # filled in below
+
+
+TimeStamp.zero = TimeStamp(0, zero32)
+

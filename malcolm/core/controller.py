@@ -3,17 +3,20 @@ from contextlib import contextmanager
 from annotypes import TYPE_CHECKING, Anno, Sequence
 
 from malcolm.compat import OrderedDict
+from .alarm import Alarm
 from .context import Context
 from .errors import UnexpectedError, NotWriteableError
 from .hook import Hookable, start_hooks, wait_hooks, Hook
 from .info import Info
-from .models import BlockModel, AttributeModel, MethodModel, Model
+from .models import BlockModel, AttributeModel, MethodModel, Model, MethodValue
 from .notifier import Notifier
 from .part import PartRegistrar, Part, FieldRegistry, InfoRegistry
 from .concurrency import Queue, Spawned, RLock
 from .request import Get, Subscribe, Unsubscribe, Put, Post, Request
 from .response import Response
-from .serializable import serialize_object, camel_to_title
+from .serializable import serialize_object, camel_to_title, stringify_error
+from .timestamp import TimeStamp
+from .tags import method_return_unpacked
 from .views import make_view, Block
 
 if TYPE_CHECKING:
@@ -67,17 +70,11 @@ class Controller(Hookable):
 
     def add_block_field(self, name, child, writeable_func):
         # type: (str, Field, Callable[..., Any]) -> None
-        if isinstance(child, AttributeModel):
-            meta = child.meta
-        elif isinstance(child, MethodModel):
-            meta = child
-        else:
-            raise ValueError("Invalid block field %r" % child)
         if writeable_func:
             self._write_functions[name] = writeable_func
-            meta.set_writeable(True)
-        if not meta.label:
-            meta.set_label(camel_to_title(name))
+            child.meta.set_writeable(True)
+        if not child.meta.label:
+            child.meta.set_label(camel_to_title(name))
         self._block.set_endpoint_data(name, child)
 
     def add_initial_part_fields(self):
@@ -170,14 +167,8 @@ class Controller(Hookable):
         return ret
 
     def check_field_writeable(self, field):
-        if isinstance(field, AttributeModel):
-            if not field.meta.writeable:
-                raise NotWriteableError(
-                    "Attribute %s is not writeable" % field.path)
-        elif isinstance(field, MethodModel):
-            if not field.writeable:
-                raise NotWriteableError(
-                    "Method %s is not writeable" % field.path)
+        if not field.meta.writeable:
+            raise NotWriteableError("Field %s is not writeable" % field.path)
 
     def get_put_function(self, attribute_name):
         return self._write_functions[attribute_name]
@@ -223,10 +214,29 @@ class Controller(Hookable):
         self.check_field_writeable(method)
 
         post_function = self.get_post_function(method_name)
-        args = method.validate(request.parameters)
+        took_ts = TimeStamp()
+        took_value = request.parameters
+        returns_alarm = Alarm.ok
+        returns_value = {}
+        args = method.meta.validate(request.parameters)
 
-        with self.lock_released:
-            result = post_function(**args)
+        try:
+            with self.lock_released:
+                result = post_function(**args)
+            if method_return_unpacked() in method.meta.tags:
+                returns_value = {"return": serialize_object(result)}
+            else:
+                returns_value = serialize_object(result)
+        except Exception as e:
+            returns_alarm = Alarm.major(stringify_error(e))
+            raise
+        finally:
+            with self.changes_squashed:
+                method.took.set_timeStamp(took_ts)
+                method.took.set_value(took_value)
+                method.returned.set_timeStamp()
+                method.returned.set_value(returns_value)
+                method.returned.set_alarm(returns_alarm)
 
         # Don't need to serialize as the result should be immutable
         ret = [request.return_response(result)]

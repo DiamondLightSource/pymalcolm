@@ -148,7 +148,6 @@ the structure::
         bool        writeable  :opt // True if you can Put at the moment
         string      label      :opt // Short label if different to name
         display_t   display    :opt // Display limits, units, etc
-        control_t   control    :opt // Control limits for writeable numbers
 
 The ScalarArrayMeta structures are identical to the ScalarMeta structures, but
 have "Array" in their typeid. TableMeta has similar fields::
@@ -180,11 +179,18 @@ A PointGeneratorMeta looks similar::
 
 A Method looks like this::
 
-    Argument := scalar_t | scalar_t[] | TableValue | PointGeneratorValue
-
     Method :=
 
-    malcolm:core/Method:1.0
+    malcolm:core/Method:1.1
+        MethodMeta  meta            // Spec for args and returns
+        MethodValue took       :opt // The last args the method was called with
+        MethodValue returned   :opt // The last return value the method produced
+
+    Argument := scalar_t | scalar_t[] | TableValue | PointGeneratorValue
+
+    MethodMeta :=
+
+    malcolm:core/MethodMeta:1.1
         MapMeta     takes           // Argument spec
         structure   defaults
             {Argument   <argname>}0+    // The defaults if not supplied
@@ -194,9 +200,9 @@ A Method looks like this::
         string      label      :opt // Short label if different to name
         MapMeta     returns    :opt // Return value spec if any
 
-
     ArgumentMeta := ScalarMeta | ScalarArrayMeta | TableMeta |
         PointGeneratorMeta
+
 
     MapMeta :=
 
@@ -204,6 +210,14 @@ A Method looks like this::
         structure   elements            // Metadata for each element in map
             {ArgumentMeta <elname>}0+
         string[]    required       :opt // These fields will always be present
+
+    MethodValue :=
+
+    malcolm:core/MethodValue:1.0
+        structure   value
+            {Argument   <argname>}0+    // The arguments supplied or returned
+        alarm_t     alarm       :opt    // If something went wrong, what
+        time_t      timeStamp   :opt    // Time it was called/returned
 
 The ``takes`` structure describes the arguments that should be passed to the
 Method. The ``returns`` structure describes what will be returned as a result.

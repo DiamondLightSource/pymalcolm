@@ -60,7 +60,8 @@ class RunnableChildPart(ChildPart):
         # type: (AContext) -> None
         super(RunnableChildPart, self).init(context)
         # Monitor the child configure Method for changes
-        subscription = Subscribe(path=[self.mri, "configure"], delta=True)
+        subscription = Subscribe(
+            path=[self.mri, "configure", "meta"], delta=True)
         subscription.set_callback(self.update_part_configure_args)
         # Wait for the first update to come in
         self.child_controller.handle_request(subscription).wait()
@@ -77,7 +78,7 @@ class RunnableChildPart(ChildPart):
     def reset(self, context):
         # type: (AContext) -> None
         child = context.block_view(self.mri)
-        if child.abort.writeable:
+        if child.abort.meta.writeable:
             child.abort()
         super(RunnableChildPart, self).reset(context)
 

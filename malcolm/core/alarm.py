@@ -70,5 +70,7 @@ class Alarm(Serializable):
         # type: () -> bool
         return self.severity == AlarmSeverity.NO_ALARM
 
+    ok = None  # filled in below
+
 
 Alarm.ok = Alarm()

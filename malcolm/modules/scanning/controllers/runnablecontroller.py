@@ -4,7 +4,7 @@ from scanpointgenerator import CompoundGenerator
 from malcolm.core import AbortedError, MethodModel, Queue, Context, \
     TimeoutError, AMri, NumberMeta, Widget, Part, DEFAULT_TIMEOUT
 from malcolm.compat import OrderedDict
-from malcolm.core.models import MapMeta
+from malcolm.core.models import MapMeta, MethodMeta
 from malcolm.modules.builtin.controllers import ManagerController, \
     AConfigDir, AInitialDesign, ADescription, AUseGit
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
@@ -142,7 +142,7 @@ class RunnableController(ManagerController):
                 return
 
             # Get the model of our configure method as the starting point
-            configure_model = MethodModel.from_callable(self.configure)
+            configure_model = MethodMeta.from_callable(self.configure)
 
             # These will not be inserted as the already exist
             ignored = tuple(ConfigureHook.call_types)
@@ -187,17 +187,17 @@ class RunnableController(ManagerController):
             configure_model.set_defaults(defaults)
 
             # Update methods from the new metas
-            self._block.configure.set_takes(configure_model.takes)
-            self._block.configure.set_defaults(configure_model.defaults)
+            self._block.configure.meta.set_takes(configure_model.takes)
+            self._block.configure.meta.set_defaults(configure_model.defaults)
 
             # Now make a validate model with returns
-            validate_model = MethodModel.from_dict(configure_model.to_dict())
+            validate_model = MethodMeta.from_dict(configure_model.to_dict())
             returns = MapMeta.from_dict(validate_model.takes.to_dict())
             for v in returns.elements.values():
                 v.set_writeable(False)
-            self._block.validate.set_takes(validate_model.takes)
-            self._block.validate.set_defaults(validate_model.defaults)
-            self._block.validate.set_returns(returns)
+            self._block.validate.meta.set_takes(validate_model.takes)
+            self._block.validate.meta.set_defaults(validate_model.defaults)
+            self._block.validate.meta.set_returns(returns)
 
     def update_block_endpoints(self):
         super(RunnableController, self).update_block_endpoints()
@@ -226,7 +226,7 @@ class RunnableController(ManagerController):
         """
         iterations = 10
         # We will return this, so make sure we fill in defaults
-        for k, default in self._block.configure.defaults.items():
+        for k, default in self._block.configure.meta.defaults.items():
             if k not in kwargs:
                 kwargs[k] = default
         # The validated parameters we will eventually return

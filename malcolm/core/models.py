@@ -285,7 +285,7 @@ class AttributeModel(Model):
         """The current value of the Attribute"""
         self.alarm = self.set_alarm(alarm)
         """An Alarm object indicating any problems"""
-        self.timeStamp = self.set_ts(timeStamp)
+        self.timeStamp = self.set_timeStamp(timeStamp)
         """When value was last set"""
 
     def set_meta(self, meta):
@@ -338,7 +338,10 @@ class AttributeModel(Model):
             alarm = deserialize_object(alarm, Alarm)
         return self.set_endpoint_data("alarm", alarm)
 
-    def set_ts(self, ts=None):
+    # noinspection PyPep8Naming
+    # timeStamp is camelCase to maintain compatibility with EPICS normative
+    # types
+    def set_timeStamp(self, ts=None):
         # type: (TimeStamp) -> TimeStamp
         if ts is None:
             ts = TimeStamp()
@@ -349,8 +352,6 @@ class AttributeModel(Model):
     def apply_change(self, path, *args):
         if path == ["value"] and args:
             self.set_value(args[0], set_alarm_ts=False)
-        elif path == ["timeStamp"] and args:
-            self.set_ts(args[0])
         else:
             super(AttributeModel, self).apply_change(path, *args)
 
@@ -958,8 +959,8 @@ with Anno("Meta for describing the arguments that will be returned"):
     AReturns = MapMeta
 
 
-@Serializable.register_subclass("malcolm:core/Method:1.0")
-class MethodModel(Meta):
+@Serializable.register_subclass("malcolm:core/MethodMeta:1.1")
+class MethodMeta(Meta):
     """Exposes a function with metadata for arguments and return values"""
     __slots__ = ["takes", "returns", "defaults"]
 
@@ -976,7 +977,7 @@ class MethodModel(Meta):
         self.takes = self.set_takes(takes if takes else MapMeta())
         self.returns = self.set_returns(returns if returns else MapMeta())
         self.defaults = self.set_defaults(defaults if defaults else {})
-        super(MethodModel, self).__init__(description, tags, writeable, label)
+        super(MethodMeta, self).__init__(description, tags, writeable, label)
 
     def set_takes(self, takes):
         # type: (ATakes) -> ATakes
@@ -1013,7 +1014,7 @@ class MethodModel(Meta):
 
     @classmethod
     def from_callable(cls, func, description=None, returns=True):
-        # type: (Callable, str, bool) -> MethodModel
+        # type: (Callable, str, bool) -> MethodMeta
         """Return an instance of this class from a Callable"""
         if description is None:
             if func.__doc__ is None:
@@ -1056,6 +1057,101 @@ class MethodModel(Meta):
             method.set_returns(returns)
         method.set_tags(tags)
         return method
+
+
+# Types used when deserializing to the class
+with Anno("The last map this took/returned"):
+    AMVValue = Mapping[str, Any]
+
+
+@Serializable.register_subclass("malcolm:core/MethodValue:1.0")
+class MethodValue(Model):
+    """Exposes a function with metadata for arguments and return values"""
+    __slots__ = ["value", "alarm", "timeStamp"]
+
+    # noinspection PyPep8Naming
+    # timeStamp is camelCase to maintain compatibility with EPICS normative
+    # types
+    def __init__(self, value=None, alarm=None, timeStamp=None):
+        # type: (AMVValue, AAlarm, ATimeStamp) -> None
+        self.value = self.set_value(value)
+        self.alarm = self.set_alarm(alarm)
+        self.timeStamp = self.set_timeStamp(timeStamp)
+
+    def set_value(self, value):
+        # type: (AMVValue) -> AMVValue
+        if value is None:
+            value = {}
+        return self.set_endpoint_data("value", value)
+
+    def set_alarm(self, alarm=None):
+        # type: (Alarm) -> Alarm
+        if alarm is None:
+            alarm = Alarm.ok
+        else:
+            alarm = deserialize_object(alarm, Alarm)
+        return self.set_endpoint_data("alarm", alarm)
+
+    # noinspection PyPep8Naming
+    # timeStamp is camelCase to maintain compatibility with EPICS normative
+    # types
+    def set_timeStamp(self, ts=None):
+        # type: (TimeStamp) -> TimeStamp
+        if ts is None:
+            ts = TimeStamp()
+        else:
+            ts = deserialize_object(ts, TimeStamp)
+        return self.set_endpoint_data("timeStamp", ts)
+
+    @classmethod
+    def zero(cls):
+        return cls({}, Alarm.ok, TimeStamp.zero)
+
+
+# Types used when deserializing to the class
+with Anno("The last arguments that a method call took"):
+    ATook = MethodValue
+with Anno("The last return value produced by a method call"):
+    AReturned = MethodValue
+with Anno("Meta for describing the arguments that will be returned"):
+    AMethodMeta = MethodMeta
+
+
+@Serializable.register_subclass("malcolm:core/Method:1.1")
+class MethodModel(Model):
+    """Exposes a function with last took and returned arguments"""
+    __slots__ = ["took", "returned", "meta"]
+
+    def __init__(self, took=None, returned=None, meta=None):
+        # type: (ATook, AReturned, AMethodMeta) -> None
+        self.took = self.set_took(took if took else MethodValue.zero())
+        self.returned = self.set_returned(
+            returned if returned else MethodValue.zero())
+        self.meta = self.set_meta(meta if meta else MethodMeta())
+
+    def set_meta(self, meta):
+        # type: (AMethodMeta) -> AMethodMeta
+        meta = deserialize_object(meta, MethodMeta)
+        return self.set_endpoint_data("meta", meta)
+
+    def set_took(self, took):
+        # type: (ATook) -> ATook
+        took = deserialize_object(took, MethodValue)
+        return self.set_endpoint_data("took", took)
+
+    def set_returned(self, returned):
+        # type: (AReturned) -> AReturned
+        returned = deserialize_object(returned, MethodValue)
+        return self.set_endpoint_data("returned", returned)
+
+    @classmethod
+    def from_callable(cls, func, description=None, returns=True):
+        # type: (Callable, str, bool) -> MethodModel
+        """Return an instance of this class from a Callable"""
+        meta = MethodMeta.from_callable(func, description, returns)
+        took = MethodValue({}, Alarm.ok, TimeStamp.zero)
+        returned = MethodValue({}, Alarm.ok, TimeStamp.zero)
+        return cls(took, returned, meta)
 
 
 # Types used when deserializing to the class

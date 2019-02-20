@@ -34,7 +34,7 @@ class TestHDFWriterPart(ChildTestCase):
         c.add_part(self.o)
         self.process.add_controller(c)
         b = c.block_view()
-        assert list(b.configure.takes.elements) == [
+        assert list(b.configure.meta.takes.elements) == [
             'generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate']
 
     def test_configure(self):
