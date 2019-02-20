@@ -70,10 +70,12 @@ class StatsPluginPart(builtin.parts.ChildPart):
         context.wait_all_futures(fs)
 
     @add_call_types
-    def reset(self):
-        # type: () -> None
+    def reset(self, context):
+        # type: (scanning.hooks.AContext) -> None
+        super(StatsPluginPart, self).reset(context)
         # Delete the attribute XML file
         if self.attributes_filename is not None:
             if os.path.isfile(self.attributes_filename):
                 os.remove(self.attributes_filename)
-                # TODO: might want to blank child.attributeFile here
+                child = context.block_view(self.mri)
+                child.attributesFile.put_value("")

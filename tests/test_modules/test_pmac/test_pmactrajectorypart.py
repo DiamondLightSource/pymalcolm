@@ -22,9 +22,11 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.context = Context(self.process)
         self.cs = self.create_child_block(
             cs_block, self.process, mri="PMAC:CS1", prefix="PV:CSPRE")
+        self.mock_when_value_matches(self.cs)
         self.child = self.create_child_block(
             pmac_trajectory_block, self.process, mri="PMAC:TRAJ",
             prefix="PV:PRE")
+        self.mock_when_value_matches(self.child)
         self.o = PmacTrajectoryPart(name="pmac", mri="PMAC:TRAJ")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
@@ -122,8 +124,8 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('demandA', -0.1375),
             call.put('demandB', 0.0),
             call.put('csMoveTime', 1.0375),
-            call.when_values_matches('demandA', -0.1375, None, 1.0, None),
-            call.when_values_matches('demandB', 0.0, None, 1.0, None),
+            call.when_value_matches('demandA', -0.1375, None),
+            call.when_value_matches('demandB', 0.0, None),
             call.put('deferMoves', False)
         ]
         assert self.child.handled_requests.mock_calls == [
@@ -206,7 +208,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('executeProfile'),
-            call.when_values_matches('pointsScanned', 0, None, 0.1, None)]
+            call.when_value_matches('pointsScanned', 0, None)]
 
     def test_reset(self):
         self.o.reset(self.context)

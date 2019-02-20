@@ -16,6 +16,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         self.child = self.create_child_block(
             andor_driver_block, self.process,
             mri="mri", prefix="prefix")
+        self.mock_when_value_matches(self.child)
         # readoutTime used to be 0.002, not any more...
         self.o = AndorDriverPart(name="m", mri="mri")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
@@ -49,4 +50,4 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             call.put('numImages', 6000000),
             call.put('acquirePeriod', 0.1 - 5e-6),
             call.post('start'),
-            call.when_values_matches('acquiring', True, None, 10.0, None)]
+            call.when_value_matches('acquiring', True, None)]
