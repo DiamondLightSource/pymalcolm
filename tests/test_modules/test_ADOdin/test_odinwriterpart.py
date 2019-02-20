@@ -5,6 +5,7 @@ from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import Context, Process
 from malcolm.modules.ADOdin.parts import OdinWriterPart
 from malcolm.modules.ADOdin.blocks import odin_writer_block
+from malcolm.modules.ADOdin.parts.odinwriterpart import greater_than_zero
 from malcolm.testutil import ChildTestCase
 
 
@@ -16,6 +17,7 @@ class TestOdinDWriterPart(ChildTestCase):
         self.child = self.create_child_block(
             odin_writer_block, self.process,
             mri="mri", prefix="prefix")
+        self.mock_when_value_matches(self.child)
         self.o = OdinWriterPart(name="m", mri="mri")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
@@ -38,8 +40,8 @@ class TestOdinDWriterPart(ChildTestCase):
             call.put('fileName', 'odin.hdf'),
             call.put('filePath', '/tmp/'),
             call.put('numCapture', self.steps_to_do),
-            call.post('start')]
-        print(self.child.handled_requests.mock_calls)
+            call.post('start'),
+            call.when_value_matches('numCaptured', greater_than_zero, None)]
 
     def test_run(self):
         self.o.configure(
@@ -52,7 +54,7 @@ class TestOdinDWriterPart(ChildTestCase):
             self.o.done_when_reaches)
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
-            call.when_values_matches('numCaptured', 6000000, None, None, 60)]
+            call.when_value_matches('numCaptured', 6000000, None)]
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == \
                self.steps_to_do

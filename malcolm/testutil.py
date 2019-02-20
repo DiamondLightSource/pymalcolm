@@ -47,31 +47,34 @@ class ChildTestCase(unittest.TestCase):
             child.handled_requests.post(method_name, **request.parameters)
             return [request.return_response()]
 
-        def handle_when_value_matches(attr, good_value, bad_values=None,
-                                      timeout=None, event_timeout=None):
+        child._handle_put = handle_put
+        child._handle_post = handle_post
+        child.attributes = {}
+        return child
+
+    def mock_when_value_matches(self, child):
+        def handle_when_value_matches_async(attr, good_value, bad_values=None):
             # tell the mock we were called
-            child.handled_requests.when_values_matches(
-                attr, good_value, bad_values, timeout, event_timeout)
+            child.handled_requests.when_value_matches(
+                attr, good_value, bad_values)
             # poke the value we are looking for into the attribute so
             # that old_when_matches will immediately succeed
-            self.set_attributes(child, **{attr: good_value})
+            # If it's callable then rely on the test code to do this
+            if not callable(good_value):
+                self.set_attributes(child, **{attr: good_value})
             # now run the original code
-            self.old_when_matches(
-                attr, good_value, bad_values, timeout, event_timeout)
+            return self.old_when_matches_async(attr, good_value, bad_values)
 
         def block_view(context=None, old=child.block_view):
             self._context = context
             view = old(context)
-            self.old_when_matches = object.__getattribute__(
-                view, "when_value_matches")
-            object.__setattr__(view, "when_value_matches",
-                               handle_when_value_matches)
+            self.old_when_matches_async = object.__getattribute__(
+                view, "when_value_matches_async")
+            object.__setattr__(view, "when_value_matches_async",
+                               handle_when_value_matches_async)
             return view
 
         child.block_view = block_view
-        child._handle_put = handle_put
-        child._handle_post = handle_post
-        child.attributes = {}
         return child
 
     def set_attributes(self, child, **params):

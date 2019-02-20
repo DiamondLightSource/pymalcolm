@@ -14,6 +14,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
         self.child = self.create_child_block(
             xmap_driver_block, self.process,
             mri="mri", prefix="prefix")
+        self.mock_when_value_matches(self.child)
         self.o = XmapDriverPart(name="m", mri="mri")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
@@ -49,4 +50,4 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
             call.put('pixelsPerRun', steps_to_do),
             call.put('presetMode', 'No preset'),
             call.post('start'),
-            call.when_values_matches('acquiring', True, None, 10.0, None)]
+            call.when_value_matches('acquiring', True, None)]

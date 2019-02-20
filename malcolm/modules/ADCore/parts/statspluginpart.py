@@ -72,7 +72,11 @@ class StatsPluginPart(builtin.parts.ChildPart):
         context.wait_all_futures(fs)
 
     @add_call_types
-    def post_run_ready(self):
-        # type: () -> None
+    def post_run_ready(self, context):
+        # type: (scanning.hooks.AContext) -> None
         # Delete the attribute XML file
-        os.remove(self.attributes_filename)
+        if self.attributes_filename is not None:
+            if os.path.isfile(self.attributes_filename):
+                os.remove(self.attributes_filename)
+                child = context.block_view(self.mri)
+                child.attributesFile.put_value("")

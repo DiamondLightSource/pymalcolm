@@ -24,6 +24,7 @@ class TestDetectorDriverPart(ChildTestCase):
             return controllers + [controller]
 
         self.child = self.create_child_block(child_block, self.process)
+        self.mock_when_value_matches(self.child)
         self.o = DetectorDriverPart(
             name="m", mri="mri", soft_trigger_modes=["Internal"])
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
@@ -61,14 +62,11 @@ class TestDetectorDriverPart(ChildTestCase):
         self.o.registrar = MagicMock()
         # This would have been done by configure
         self.o.is_hardware_triggered = False
-        # We wait until we are acquiring, so fake this
-        self.set_attributes(self.child, acquiring=True)
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('start'),
-            call.when_values_matches('acquiring', True, None, 10.0, None),
-            call.when_values_matches('arrayCounterReadback', 0, None, 10.0,
-                                     None)]
+            call.when_value_matches('acquiring', True, None),
+            call.when_value_matches('arrayCounterReadback', 0, None)]
         assert self.o.registrar.report.call_count == 2
         assert self.o.registrar.report.call_args[0][0].steps == 0
 
@@ -76,4 +74,4 @@ class TestDetectorDriverPart(ChildTestCase):
         self.o.abort(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('stop'),
-            call.when_values_matches('acquiring', False, None, 10.0, None)]
+            call.when_value_matches('acquiring', False, None)]
