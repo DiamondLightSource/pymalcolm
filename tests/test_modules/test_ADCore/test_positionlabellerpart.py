@@ -38,13 +38,12 @@ class TestPositionLabellerPart(ChildTestCase):
 <dimensions>
 <dimension name="d0" />
 <dimension name="d1" />
-<dimension name="FilePluginClose" />
 </dimensions>
 <positions>
-<position FilePluginClose="0" d0="0" d1="2" />
-<position FilePluginClose="0" d0="1" d1="2" />
-<position FilePluginClose="0" d0="1" d1="1" />
-<position FilePluginClose="1" d0="1" d1="0" />
+<position d0="0" d1="2" />
+<position d0="1" d1="2" />
+<position d0="1" d1="1" />
+<position d0="1" d1="0" />
 </positions>
 </pos_layout>""".replace("\n", "")
         # Wait for the start_future so the post gets through to our child
@@ -81,11 +80,10 @@ class TestPositionLabellerPart(ChildTestCase):
 <dimensions>
 <dimension name="d0" />
 <dimension name="d1" />
-<dimension name="FilePluginClose" />
 </dimensions>
 <positions>
-<position FilePluginClose="0" d0="1" d1="1" />
-<position FilePluginClose="1" d0="1" d1="0" />
+<position d0="1" d1="1" />
+<position d0="1" d1="0" />
 </positions>
 </pos_layout>""".replace("\n", "")
         assert child.mock_calls == [call.xml.put_value(expected_xml)]

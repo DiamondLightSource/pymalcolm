@@ -2,11 +2,12 @@ from annotypes import Anno, TYPE_CHECKING, add_call_types, Any
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import AbortedError, MethodModel, Queue, Context, \
-    TimeoutError, AMri, NumberMeta, Widget, Part, DEFAULT_TIMEOUT
+    TimeoutError, AMri, NumberMeta, Widget, Part, DEFAULT_TIMEOUT, UnexpectedError
 from malcolm.compat import OrderedDict
 from malcolm.core.models import MapMeta
 from malcolm.modules.builtin.controllers import ManagerController, \
     AConfigDir, AInitialDesign, ADescription, AUseGit
+from malcolm.modules.builtin.hooks import ResetHook
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, AAxesToMove, ConfigureParams
 from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
@@ -23,7 +24,7 @@ ss = RunnableStates
 
 with Anno("The validated configure parameters"):
     AConfigureParams = ConfigureParams
-with Anno("Step to mark as the last completed step, 0 for current"):
+with Anno("Step to mark as the last completed step, -1 for current"):
     ALastGoodStep = int
 
 
@@ -100,22 +101,23 @@ class RunnableController(ManagerController):
         # Create the method models
         self.field_registry.add_method_model(self.validate)
         self.set_writeable_in(
-            self.field_registry.add_method_model(self.configure), ss.READY)
+            self.field_registry.add_method_model(self.configure),
+            ss.READY, ss.FINISHED)
         self.set_writeable_in(
             self.field_registry.add_method_model(self.run), ss.ARMED)
         self.set_writeable_in(
             self.field_registry.add_method_model(self.abort),
             ss.READY, ss.CONFIGURING, ss.ARMED, ss.RUNNING, ss.POSTRUN,
-            ss.PAUSED, ss.SEEKING)
+            ss.PAUSED, ss.SEEKING, ss.FINISHED)
         self.set_writeable_in(
             self.field_registry.add_method_model(self.pause),
-            ss.ARMED, ss.PAUSED, ss.RUNNING)
+            ss.ARMED, ss.PAUSED, ss.RUNNING, ss.POSTRUN, ss.FINISHED)
         self.set_writeable_in(
             self.field_registry.add_method_model(self.resume), ss.PAUSED)
         # Override reset to work from aborted too
         self.set_writeable_in(
             self.field_registry.get_field("reset"),
-            ss.FAULT, ss.DISABLED, ss.ABORTED, ss.ARMED)
+            ss.FAULT, ss.DISABLED, ss.ABORTED, ss.ARMED, ss.FINISHED)
         # Allow Parts to report their status
         self.info_registry.add_reportable(
             RunProgressInfo, self.update_completed_steps)
@@ -281,9 +283,10 @@ class RunnableController(ManagerController):
         state. If the user disables then it will return in Disabled state.
         """
         params = self.validate(generator, axesToMove, **kwargs)
+        state = self.state.value
         try:
             self.transition(ss.CONFIGURING)
-            self.do_configure(params)
+            self.do_configure(state, params)
             self.abortable_transition(ss.ARMED)
         except AbortedError:
             self.abort_queue.put(None)
@@ -292,8 +295,12 @@ class RunnableController(ManagerController):
             self.go_to_error_state(e)
             raise
 
-    def do_configure(self, params):
-        # type: (ConfigureParams) -> None
+    def do_configure(self, state, params):
+        # type: (str, ConfigureParams) -> None
+        if state == ss.FINISHED:
+            # If we were finished then do a reset before configuring
+            self.run_hooks(
+                ResetHook(p, c) for p, c in self.create_part_contexts().items())
         # Clear out any old part contexts now rather than letting gc do it
         for context in self.part_contexts.values():
             context.unsubscribe_all()
@@ -344,10 +351,11 @@ class RunnableController(ManagerController):
         will return in Fault state. If the user disables then it will return in
         Disabled state.
         """
+
         if self.configured_steps.value < self.total_steps.value:
             next_state = ss.ARMED
         else:
-            next_state = ss.READY
+            next_state = ss.FINISHED
         try:
             self.transition(ss.RUNNING)
             hook = RunHook
@@ -355,6 +363,7 @@ class RunnableController(ManagerController):
             while going:
                 try:
                     self.do_run(hook)
+                    self.abortable_transition(next_state)
                 except AbortedError:
                     self.abort_queue.put(None)
                     # Wait for a response on the resume_queue
@@ -368,7 +377,6 @@ class RunnableController(ManagerController):
                         raise
                 else:
                     going = False
-            self.abortable_transition(next_state)
         except AbortedError:
             raise
         except Exception as e:
@@ -434,7 +442,7 @@ class RunnableController(ManagerController):
                 self.transition(start_state)
                 for context in self.part_contexts.values():
                     context.stop()
-            if original_state not in (ss.READY, ss.ARMED, ss.PAUSED):
+            if original_state not in (ss.READY, ss.ARMED, ss.PAUSED, ss.FINISHED):
                 # Something was running, let it finish aborting
                 try:
                     self.abort_queue.get(timeout=DEFAULT_TIMEOUT)
@@ -459,7 +467,7 @@ class RunnableController(ManagerController):
     # Allow camelCase as this will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def pause(self, lastGoodStep=0):
+    def pause(self, lastGoodStep=-1):
         # type: (ALastGoodStep) -> None
         """Pause a run() so that resume() can be called later, or seek within
         an Armed or Paused state.
@@ -472,18 +480,26 @@ class RunnableController(ManagerController):
         state. If the user disables then it will return in Disabled state.
         """
         current_state = self.state.value
-        if lastGoodStep <= 0:
-            last_good_step = self.completed_steps.value
+        total_steps = self.total_steps.value
+        configured_steps = self.configured_steps.value
+
+        # Always cap lastGoodStep to bounds of scan
+        if lastGoodStep < 0:
+            lastGoodStep = self.completed_steps.value
+        elif lastGoodStep >= total_steps:
+            lastGoodStep = total_steps - 1
+
+        if current_state in [ss.ARMED, ss.FINISHED]:
+            # We don't have a run process, free to go anywhere we want
+            next_state = ss.ARMED
         else:
-            last_good_step = lastGoodStep
-        if current_state == ss.RUNNING:
+            # Need to pause within the bounds of the current run
+            if lastGoodStep == self.configured_steps.value:
+                lastGoodStep -= 1
             next_state = ss.PAUSED
-        else:
-            next_state = current_state
-        assert last_good_step < self.total_steps.value, \
-            "Cannot seek to after the end of the scan"
+
         self.try_aborting_function(
-            ss.SEEKING, next_state, self.do_pause, last_good_step)
+            ss.SEEKING, next_state, self.do_pause, lastGoodStep)
 
     def do_pause(self, completed_steps):
         # type: (int) -> None

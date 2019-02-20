@@ -63,6 +63,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # type: (...) -> None
         super(PmacTrajectoryPart, self).__init__(
             name, mri, initial_visibility=True)
+        # The CS MRI if it is currently moving to the start
+        self.cs_mri = None
         # Axis information stored from validate
         self.axis_mapping = None  # type: Dict[str, MotorInfo]
         # Lookup of the completed_step value for each point
@@ -153,7 +155,6 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
     def move_to_start(self, child, completed_steps):
         # Set all the axes to move to the start positions
         child.deferMoves.put_value(True)
-        child.csMoveTime.put_value(0)
         first_point = self.generator.get_point(completed_steps)
         start_positions = {}
         move_to_start_time = 0.0
@@ -168,15 +169,17 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             times, _ = motor_info.make_velocity_profile(
                 0, 0, motor_info.current_position - start_pos, 0)
             move_to_start_time = max(times[-1], move_to_start_time)
-        deadline = time.time() + move_to_start_time + DEFAULT_TIMEOUT
         # Start them off moving, can't wait forever
         fs = child.put_attribute_values_async(
             {attr: value for attr, value in start_positions.items()})
+        # Put in the calculated move time
+        child.csMoveTime.put_value(move_to_start_time)
         # Wait for the demand to have been received by the PV
         for attr, value in sorted(start_positions.items()):
             child.when_value_matches(attr, value, timeout=1.0)
         # Start the move
         child.deferMoves.put_value(False)
+        deadline = time.time() + move_to_start_time + DEFAULT_TIMEOUT
         return fs, deadline
 
     # Allow CamelCase as arguments will be serialized
@@ -211,9 +214,9 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # Reset GPIOs
         self.reset_triggers(child)
         # Start moving to the start
-        cs_mri = CSInfo.get_cs_mri(part_info, cs_port)
+        self.cs_mri = CSInfo.get_cs_mri(part_info, cs_port)
         fs, deadline = self.move_to_start(
-            context.block_view(cs_mri), completed_steps)
+            context.block_view(self.cs_mri), completed_steps)
         # Set how far we should be going, and the lookup
         self.steps_up_to = completed_steps + steps_to_do
         self.completed_steps_lookup = []
@@ -228,6 +231,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         child.buildProfile()
         # Wait for the motors to have got to the start
         context.wait_all_futures(fs, timeout=deadline - time.time())
+        # Clear the cs_mri so it doesn't get aborted if it doesn't need to
+        self.cs_mri = None
 
     @add_call_types
     def run(self, context):
@@ -247,6 +252,10 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # type: (scanning.hooks.AContext) -> None
         child = context.block_view(self.mri)
         child.abortProfile()
+        if self.cs_mri:
+            # If we were doing a move to start, abort the CS block
+            child = context.block_view(self.cs_mri)
+            child.abort()
 
     def update_step(self, scanned, child):
         # scanned is an index into the completed_steps_lookup, so a

@@ -119,9 +119,9 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.do_configure(axes_to_scan=["x", "y"])
         assert self.cs.handled_requests.mock_calls == [
             call.put('deferMoves', True),
-            call.put('csMoveTime', 0),
             call.put('demandA', -0.1375),
             call.put('demandB', 0.0),
+            call.put('csMoveTime', 1.0375),
             call.when_values_matches('demandA', -0.1375, None, 1.0, None),
             call.when_values_matches('demandB', 0.0, None, 1.0, None),
             call.put('deferMoves', False)

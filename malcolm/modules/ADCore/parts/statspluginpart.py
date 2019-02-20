@@ -30,8 +30,6 @@ class StatsPluginPart(builtin.parts.ChildPart):
         self.register_hooked(scanning.hooks.ReportStatusHook,
                              self.report_status)
         self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
-        self.register_hooked(scanning.hooks.PostRunReadyHook,
-                             self.post_run_ready)
 
     @add_call_types
     def report_status(self):
@@ -72,7 +70,10 @@ class StatsPluginPart(builtin.parts.ChildPart):
         context.wait_all_futures(fs)
 
     @add_call_types
-    def post_run_ready(self):
+    def reset(self):
         # type: () -> None
         # Delete the attribute XML file
-        os.remove(self.attributes_filename)
+        if self.attributes_filename is not None:
+            if os.path.isfile(self.attributes_filename):
+                os.remove(self.attributes_filename)
+                # TODO: might want to blank child.attributeFile here

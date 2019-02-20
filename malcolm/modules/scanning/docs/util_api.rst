@@ -26,9 +26,10 @@ util
         subgraph cluster_normal {
             subgraph cluster_abortable {
                 {rank=min Ready}
-                {rank=same Configuring Loading Saving}
+                {rank=same Loading Saving Configuring}
                 {rank=same Armed Seeking}
-                {rank=max Running Paused PostRun}
+                {rank=same Paused Running}
+                {rank=max PostRun Finished}
                 Ready [fillcolor="#BBE7BB"]
                 Ready -> Configuring [label="configure()" weight=30]
                 Ready -> Saving [label="save()"]
@@ -41,8 +42,12 @@ util
                 Armed -> Seeking [label="put\nsteps"]
                 Running -> PostRun
                 Running -> Seeking [label="pause()"]
-                PostRun -> Ready [weight=30]
+                PostRun -> Finished
                 PostRun -> Armed
+                PostRun -> Seeking [label="pause()"]
+                Finished [fillcolor="#BBE7BB"]
+                Finished -> Seeking [label="pause()"]
+                Finished -> Configuring [label="configure()" weight=30]
                 Seeking -> Armed
                 Seeking -> Paused
                 Paused -> Seeking [label="put\nsteps"]
@@ -50,12 +55,14 @@ util
             }
             Aborted [fillcolor="#FFBE89"]
             Resetting -> Ready
-            Ready -> Aborting [ltail=cluster_abortable label="abort()"]
+            Configuring -> Aborting [ltail=cluster_abortable label="abort()"]
             Aborting -> Aborted
-            Aborted -> Resetting
+            Aborted -> Resetting [label="reset()"]
+            Armed -> Resetting [label="reset()"]
+            Finished -> Resetting [label="reset()"]
         }
         Aborting -> Disabling [ltail=cluster_normal label="disable()"]
-        Aborted -> Fault [ltail=cluster_normal label="on_error"]
+        Resetting -> Fault [ltail=cluster_normal label="on_error"]
 
         Fault -> Resetting [label="reset()"]
         Fault -> Disabling [label="disable()"]

@@ -1,12 +1,13 @@
 import os
 import math
+import time
 from xml.etree import cElementTree as ET
 
 from annotypes import add_call_types, Anno, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator, Dimension
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Future, Info, Block, PartRegistrar
+from malcolm.core import APartName, Future, Info, Block, PartRegistrar, TimeoutError
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, DatasetType, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
@@ -243,6 +244,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.start_future = None  # type: Future
         self.array_future = None  # type: Future
         self.done_when_reaches = 0
+        # This is when uniqueId last updated
+        self.last_id_update = None
         # CompletedSteps = arrayCounter + self.uniqueid_offset
         self.uniqueid_offset = 0
         # The HDF5 layout file we write to say where the datasets go
@@ -262,6 +265,15 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # type: (scanning.hooks.AContext) -> None
         super(HDFWriterPart, self).reset(context)
         self.abort(context)
+        # HDFWriter might have still be writing so stop doesn't guarantee flushed all frames
+        # start_future is in a different context so can't wait for it, so
+        # just wait for the running attribute to be false
+        child = context.block_view(self.mri)
+        child.when_value_matches("running", False)
+        # Delete the layout XML file
+        if self.layout_filename is not None:
+            if os.path.isfile(self.layout_filename):
+                os.remove(self.layout_filename)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -301,7 +313,6 @@ class HDFWriterPart(builtin.parts.ChildPart):
             enableCallbacks=True,
             fileWriteMode="Stream",
             swmrMode=True,
-            positionMode=True,
             dimAttDatasets=True,
             lazyOpen=True,
             arrayCounter=0,
@@ -333,8 +344,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
                 steps_to_do, n_frames_between_flushes)
         futures += child.put_attribute_values_async(dict(
             xml=self.layout_filename,
-            flushDataPerNFrames=n_frames_between_flushes,
-            flushAttrPerNFrames=n_frames_between_flushes))
+            flushDataPerNFrames=steps_to_do,
+            flushAttrPerNFrames=0))
         # Wait for the previous puts to finish
         context.wait_all_futures(futures)
         # Reset numCapture back to 0
@@ -372,19 +383,38 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # type: (scanning.hooks.AContext) -> None
         context.wait_all_futures(self.array_future)
         context.unsubscribe_all()
+        self.last_id_update = None
         child = context.block_view(self.mri)
         child.uniqueId.subscribe_value(self.update_completed_steps)
-        # TODO: what happens if we miss the last frame?
-        child.when_value_matches(
-            "uniqueId", self.done_when_reaches, event_timeout=FRAME_TIMEOUT)
+        f_done = child.when_value_matches_async("uniqueId", self.done_when_reaches)
+        while True:
+            try:
+                context.wait_all_futures(f_done, timeout=1)
+            except TimeoutError:
+                # This is ok, means we aren't done yet, so flush
+                self._flush_if_still_writing(child)
+                # Check it hasn't been too long
+                if self.last_id_update and time.time() - self.last_id_update > FRAME_TIMEOUT:
+                    raise TimeoutError("HDF writer stalled, last updated at %s" % self.last_id_update)
+                # TODO: what happens if we miss the last frame?
+            else:
+                return
+
+    def _flush_if_still_writing(self, child):
+        # Check that the start_future hasn't errored
+        if self.start_future.done():
+            # This will raise if it errored
+            self.start_future.result()
+        else:
+            # Flush the hdf frames to disk
+            child.flushNow()
 
     @add_call_types
     def post_run_ready(self, context):
         # type: (scanning.hooks.AContext) -> None
-        # If this is the last one, wait until the file is closed
-        context.wait_all_futures(self.start_future)
-        # Delete the layout XML file
-        os.remove(self.layout_filename)
+        # Do one last flush and then we're done
+        child = context.block_view(self.mri)
+        self._flush_if_still_writing(child)
 
     @add_call_types
     def abort(self, context):
@@ -395,4 +425,5 @@ class HDFWriterPart(builtin.parts.ChildPart):
     def update_completed_steps(self, value):
         # type: (int) -> None
         completed_steps = value + self.uniqueid_offset
+        self.last_id_update = time.time()
         self.registrar.report(scanning.infos.RunProgressInfo(completed_steps))
