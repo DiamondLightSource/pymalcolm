@@ -9,7 +9,7 @@ from malcolm.core import BlockModel, Serializable, StringMeta, Alarm, \
     NumberMeta, NumberArrayMeta, MethodModel, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta, BooleanArrayMeta
 from malcolm.core.models import NTTable, MapMeta, BlockMeta, NTScalar, \
-    Meta, Display, MethodMeta
+    Meta, MethodMeta, MethodLog
 
 
 class TestAttribute(unittest.TestCase):
@@ -307,10 +307,29 @@ class TestMethodMeta(unittest.TestCase):
         assert m.returns.to_dict() == MapMeta().to_dict()
 
 
-class TestMethodModel(unittest.TestCase):
+class TestMethodLog(unittest.TestCase):
 
-    def test_init(self):
-        raise NotImplementedError(MethodModel)
+    def setUp(self):
+        self.serialized = OrderedDict()
+        self.serialized["typeid"] = "malcolm:core/MethodLog:1.0"
+        self.serialized["value"] = dict(a=1)
+        self.serialized["present"] = ["a"]
+        self.serialized["alarm"] = Alarm.ok.to_dict()
+        self.serialized["timeStamp"] = TimeStamp.zero.to_dict()
+
+    def test_to_dict(self):
+        m = MethodLog()
+        m.set_value(dict(a=1))
+        m.set_present(["a"])
+        m.set_timeStamp(TimeStamp.zero)
+        assert m.to_dict() == self.serialized
+
+    def test_from_dict(self):
+        m = MethodLog.from_dict(self.serialized)
+        assert m.value == dict(a=1)
+        assert m.present == ["a"]
+        assert m.alarm.to_dict() == Alarm.ok.to_dict()
+        assert m.timeStamp.to_dict() == TimeStamp.zero.to_dict()
 
 
 class TestMapMeta(unittest.TestCase):

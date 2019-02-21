@@ -8,7 +8,7 @@ from .context import Context
 from .errors import UnexpectedError, NotWriteableError
 from .hook import Hookable, start_hooks, wait_hooks, Hook
 from .info import Info
-from .models import BlockModel, AttributeModel, MethodModel, Model, MethodValue
+from .models import BlockModel, AttributeModel, MethodModel, Model
 from .notifier import Notifier
 from .part import PartRegistrar, Part, FieldRegistry, InfoRegistry
 from .concurrency import Queue, Spawned, RLock
@@ -158,9 +158,10 @@ class Controller(Hookable):
                     typ = data.typeid
                 else:
                     typ = type(data)
+                path = ".".join(request.path[:i+1])
                 raise UnexpectedError(
-                    "Object %s of type %r has no attribute %r" % (
-                        request.path[:i+1], typ, endpoint))
+                    "Object '%s' of type %r has no attribute '%s'" % (
+                        path, typ, endpoint))
         # Important to serialize now with the lock so we get a consistent set
         serialized = serialize_object(data)
         ret = [request.return_response(serialized)]
@@ -203,6 +204,19 @@ class Controller(Hookable):
     def get_post_function(self, method_name):
         return self._write_functions[method_name]
 
+    def update_method_logs(self, method, took_value, took_ts, returned_value,
+                           returned_alarm):
+        with self.changes_squashed:
+            method.took.set_value(
+                method.meta.takes.validate(took_value, add_missing=True))
+            method.took.set_present(list(took_value))
+            method.took.set_timeStamp(took_ts)
+            method.returned.set_value(
+                method.meta.returns.validate(returned_value, add_missing=True))
+            method.returned.set_present(list(returned_value))
+            method.returned.set_alarm(returned_alarm)
+            method.returned.set_timeStamp()
+
     def _handle_post(self, request):
         # type: (Post) -> CallbackResponses
         """Called with the lock taken"""
@@ -215,28 +229,27 @@ class Controller(Hookable):
 
         post_function = self.get_post_function(method_name)
         took_ts = TimeStamp()
-        took_value = request.parameters
-        returns_alarm = Alarm.ok
-        returns_value = {}
-        args = method.meta.validate(request.parameters)
+        took_value = method.meta.takes.validate(request.parameters)
+        returned_alarm = Alarm.ok
+        returned_value = {}
 
         try:
             with self.lock_released:
-                result = post_function(**args)
+                result = post_function(**took_value)
             if method_return_unpacked() in method.meta.tags:
-                returns_value = {"return": serialize_object(result)}
+                # Single element, wrap in a dict
+                returned_value = {"return": result}
+            elif result is None:
+                returned_value = {}
             else:
-                returns_value = serialize_object(result)
+                # It should already be an object that serializes to a dict
+                returned_value = serialize_object(result)
         except Exception as e:
-            returns_alarm = Alarm.major(stringify_error(e))
+            returned_alarm = Alarm.major(stringify_error(e))
             raise
         finally:
-            with self.changes_squashed:
-                method.took.set_timeStamp(took_ts)
-                method.took.set_value(took_value)
-                method.returned.set_timeStamp()
-                method.returned.set_value(returns_value)
-                method.returned.set_alarm(returns_alarm)
+            self.update_method_logs(
+                method, took_value, took_ts, returned_value, returned_alarm)
 
         # Don't need to serialize as the result should be immutable
         ret = [request.return_response(result)]

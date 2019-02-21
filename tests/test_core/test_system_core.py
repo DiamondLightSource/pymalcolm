@@ -35,8 +35,8 @@ class TestHelloDemoSystem(unittest.TestCase):
         # Get the initial subscribe value
         inital = q.get(timeout=0.1)
         self.assertIsInstance(inital, Delta)
-        assert inital.changes[0][1]["took"]["value"] == {}
-        assert inital.changes[0][1]["returned"]["value"] == {}
+        assert inital.changes[0][1]["took"]["value"] == dict(sleep=0, name='')
+        assert inital.changes[0][1]["returned"]["value"] == {'return': ''}
         # Do a greet
         request = Post(id=44, path=["hello_block", "greet"],
                        parameters=dict(name="me", sleep=1))
@@ -53,17 +53,28 @@ class TestHelloDemoSystem(unittest.TestCase):
         # Then the long running greet delta
         response = q.get(timeout=3.0)
         self.assertIsInstance(response, Delta)
-        assert len(response.changes) == 5
-        assert response.changes[0][0] == ["took", "timeStamp"]
-        assert response.changes[1][0] == ["took", "value"]
-        assert response.changes[1][1] == dict(sleep=1, name="me")
-        assert response.changes[2][0] == ["returned", "timeStamp"]
+        assert len(response.changes) == 7
+        assert response.changes[0][0] == ["took", "value"]
+        assert response.changes[0][1] == dict(sleep=1, name="me")
+
+        assert response.changes[1][0] == ["took", "present"]
+        assert response.changes[1][1] == ["name", "sleep"]
+
+        assert response.changes[2][0] == ["took", "timeStamp"]
+
         assert response.changes[3][0] == ["returned", "value"]
         assert response.changes[3][1] == {"return": "Hello me"}
-        assert response.changes[4][0] == ["returned", "alarm"]
-        assert response.changes[4][1]["severity"] == 0
-        took_ts = TimeStamp.from_dict(response.changes[0][1])
-        returned_ts = TimeStamp.from_dict(response.changes[2][1])
+
+        assert response.changes[4][0] == ["returned", "present"]
+        assert response.changes[4][1] == ["return"]
+
+        assert response.changes[5][0] == ["returned", "alarm"]
+        assert response.changes[5][1]["severity"] == 0
+
+        assert response.changes[6][0] == ["returned", "timeStamp"]
+
+        took_ts = TimeStamp.from_dict(response.changes[2][1])
+        returned_ts = TimeStamp.from_dict(response.changes[6][1])
         # Check it took about 1s to run
         assert abs(1 - (returned_ts.to_time() - took_ts.to_time())) < 0.4
         # And it's response

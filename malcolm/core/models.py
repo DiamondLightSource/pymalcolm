@@ -104,7 +104,7 @@ class Model(Serializable):
                     child = getattr(self, name, None)
                     if child:
                         child.set_notifier_path(Model.notifier, [])
-                    value.set_notifier_path(self.notifier, self.path)
+                    value.set_notifier_path(self.notifier, self.path + [name])
                 # Make sure it is the right typ
                 check_type(value, ct.typ)
             with self.notifier.changes_squashed:
@@ -949,6 +949,28 @@ class MapMeta(Model):
                 "Expected one of %r, got %r" % (list(self.elements), r)
         return self.set_endpoint_data("required", ARequired(required))
 
+    def validate(self, param_dict=None, add_missing=False):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        """Return a param dict in the right order, with the correct keys and
+        values of the correct type with no extras or missing"""
+        if param_dict is None:
+            param_dict = {}
+        extra = set(param_dict) - set(self.elements)
+        assert not extra, \
+            "Given keys %s, some of which aren't in allowed keys %s" % (
+                list(param_dict), list(self.elements))
+        args = OrderedDict()
+        for k, m in self.elements.items():
+            if k in param_dict:
+                args[k] = m.validate(param_dict[k])
+            elif add_missing:
+                args[k] = m.validate(None)
+        missing = set(self.required) - set(args)
+        assert not missing, \
+            "Requires keys %s but only given %s" % (
+                list(self.required), list(args))
+        return args
+
 
 # Types used when deserializing to the class
 with Anno("Meta for describing the arguments that should be passed"):
@@ -995,22 +1017,6 @@ class MethodMeta(Meta):
         # type: (AReturns) -> AReturns
         returns = deserialize_object(returns, MapMeta)
         return self.set_endpoint_data("returns", returns)
-
-    def validate(self, param_dict=None):
-        # type: (Dict[str, Any]) -> Dict[str, Any]
-        if param_dict is None:
-            param_dict = {}
-        args = {}
-        for k, v in param_dict.items():
-            assert k in self.takes.elements, \
-                "Method passed argument %r which is not in %r" % (
-                    k, list(self.takes.elements))
-            args[k] = self.takes.elements[k].validate(v)
-        missing = set(self.takes.required) - set(args)
-        assert not missing, \
-            "Method requires %s but only passed %s" % (
-                list(self.takes.required), list(args))
-        return args
 
     @classmethod
     def from_callable(cls, func, description=None, returns=True):
@@ -1062,27 +1068,37 @@ class MethodMeta(Meta):
 # Types used when deserializing to the class
 with Anno("The last map this took/returned"):
     AMVValue = Mapping[str, Any]
+with Anno("The elements that were supplied in the map"):
+    APresent = Array[str]
+
+# A more permissive union to allow a wider range of set_* args
+UPresent = Union[APresent, Sequence[str], str]
 
 
-@Serializable.register_subclass("malcolm:core/MethodValue:1.0")
-class MethodValue(Model):
+@Serializable.register_subclass("malcolm:core/MethodLog:1.0")
+class MethodLog(Model):
     """Exposes a function with metadata for arguments and return values"""
     __slots__ = ["value", "alarm", "timeStamp"]
 
     # noinspection PyPep8Naming
     # timeStamp is camelCase to maintain compatibility with EPICS normative
     # types
-    def __init__(self, value=None, alarm=None, timeStamp=None):
-        # type: (AMVValue, AAlarm, ATimeStamp) -> None
+    def __init__(self, value=None, present=(), alarm=None, timeStamp=None):
+        # type: (AMVValue, UPresent, AAlarm, ATimeStamp) -> None
         self.value = self.set_value(value)
+        self.present = self.set_present(present)
         self.alarm = self.set_alarm(alarm)
         self.timeStamp = self.set_timeStamp(timeStamp)
 
-    def set_value(self, value):
+    def set_value(self, value=None):
         # type: (AMVValue) -> AMVValue
         if value is None:
             value = {}
         return self.set_endpoint_data("value", value)
+
+    def set_present(self, present):
+        # type: (UPresent) -> APresent
+        return self.set_endpoint_data("present", APresent(present))
 
     def set_alarm(self, alarm=None):
         # type: (Alarm) -> Alarm
@@ -1103,16 +1119,12 @@ class MethodValue(Model):
             ts = deserialize_object(ts, TimeStamp)
         return self.set_endpoint_data("timeStamp", ts)
 
-    @classmethod
-    def zero(cls):
-        return cls({}, Alarm.ok, TimeStamp.zero)
-
 
 # Types used when deserializing to the class
 with Anno("The last arguments that a method call took"):
-    ATook = MethodValue
+    ATook = MethodLog
 with Anno("The last return value produced by a method call"):
-    AReturned = MethodValue
+    AReturned = MethodLog
 with Anno("Meta for describing the arguments that will be returned"):
     AMethodMeta = MethodMeta
 
@@ -1124,34 +1136,32 @@ class MethodModel(Model):
 
     def __init__(self, took=None, returned=None, meta=None):
         # type: (ATook, AReturned, AMethodMeta) -> None
-        self.took = self.set_took(took if took else MethodValue.zero())
-        self.returned = self.set_returned(
-            returned if returned else MethodValue.zero())
         self.meta = self.set_meta(meta if meta else MethodMeta())
+        self.took = self.set_took(took)
+        self.returned = self.set_returned(returned)
 
     def set_meta(self, meta):
         # type: (AMethodMeta) -> AMethodMeta
         meta = deserialize_object(meta, MethodMeta)
         return self.set_endpoint_data("meta", meta)
 
-    def set_took(self, took):
+    def set_took(self, took=None):
         # type: (ATook) -> ATook
-        took = deserialize_object(took, MethodValue)
+        if took is None:
+            took = MethodLog(self.meta.takes.validate(add_missing=True),
+                             [], Alarm.ok, TimeStamp.zero)
+        else:
+            took = deserialize_object(took, MethodLog)
         return self.set_endpoint_data("took", took)
 
-    def set_returned(self, returned):
+    def set_returned(self, returned=None):
         # type: (AReturned) -> AReturned
-        returned = deserialize_object(returned, MethodValue)
+        if returned is None:
+            returned = MethodLog(self.meta.returns.validate(add_missing=True),
+                                 [], Alarm.ok, TimeStamp.zero)
+        else:
+            returned = deserialize_object(returned, MethodLog)
         return self.set_endpoint_data("returned", returned)
-
-    @classmethod
-    def from_callable(cls, func, description=None, returns=True):
-        # type: (Callable, str, bool) -> MethodModel
-        """Return an instance of this class from a Callable"""
-        meta = MethodMeta.from_callable(func, description, returns)
-        took = MethodValue({}, Alarm.ok, TimeStamp.zero)
-        returned = MethodValue({}, Alarm.ok, TimeStamp.zero)
-        return cls(took, returned, meta)
 
 
 # Types used when deserializing to the class

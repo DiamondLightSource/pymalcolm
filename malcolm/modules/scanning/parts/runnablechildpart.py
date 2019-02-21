@@ -2,8 +2,8 @@ from annotypes import add_call_types, Anno, Union, Array, Sequence, Any
 
 from malcolm.compat import OrderedDict
 from malcolm.core import BadValueError, serialize_object, APartName, \
-    Delta, deserialize_object, Subscribe, MethodModel, Unsubscribe, \
-    Future, PartRegistrar, Put, Request
+    Delta, deserialize_object, Subscribe, Unsubscribe, Future, PartRegistrar, \
+    Put, Request
 from malcolm.modules.builtin.hooks import AStructure, AInit
 from malcolm.modules.builtin.parts import ChildPart, AMri, AInitialVisibility
 from ..hooks import ConfigureHook, PostRunArmedHook, \
@@ -34,7 +34,7 @@ class RunnableChildPart(ChildPart):
         # Stored between runs
         self.run_future = None  # type: Future
         # The configure method model of our child
-        self.configure_model = MethodModel()
+        self.configure_model = None
         # The registrar object we get at setup
         self.registrar = None  # type: PartRegistrar
         # The design we last loaded/saved

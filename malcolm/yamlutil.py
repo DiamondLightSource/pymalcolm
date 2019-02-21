@@ -229,7 +229,7 @@ class Section(object):
                     self.filename, self.lineno, pkg, ident)))
         try:
             meta = MethodMeta.from_callable(ob, returns=False)
-            args = meta.validate(param_dict)
+            args = meta.takes.validate(param_dict)
             ret = ob(**args)
         except Exception as e:
             sourcefile = inspect.getsourcefile(ob)

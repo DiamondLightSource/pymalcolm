@@ -144,7 +144,7 @@ class RunnableController(ManagerController):
             # Get the model of our configure method as the starting point
             configure_model = MethodMeta.from_callable(self.configure)
 
-            # These will not be inserted as the already exist
+            # These will not be inserted as they already exist
             ignored = tuple(ConfigureHook.call_types)
 
             # Re-calculate the following
@@ -189,6 +189,7 @@ class RunnableController(ManagerController):
             # Update methods from the new metas
             self._block.configure.meta.set_takes(configure_model.takes)
             self._block.configure.meta.set_defaults(configure_model.defaults)
+            self._block.configure.set_took()
 
             # Now make a validate model with returns
             validate_model = MethodMeta.from_dict(configure_model.to_dict())
@@ -198,6 +199,8 @@ class RunnableController(ManagerController):
             self._block.validate.meta.set_takes(validate_model.takes)
             self._block.validate.meta.set_defaults(validate_model.defaults)
             self._block.validate.meta.set_returns(returns)
+            self._block.validate.set_took()
+            self._block.validate.set_returned()
 
     def update_block_endpoints(self):
         super(RunnableController, self).update_block_endpoints()

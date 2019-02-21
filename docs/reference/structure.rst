@@ -183,8 +183,8 @@ A Method looks like this::
 
     malcolm:core/Method:1.1
         MethodMeta  meta            // Spec for args and returns
-        MethodValue took       :opt // The last args the method was called with
-        MethodValue returned   :opt // The last return value the method produced
+        MethodLog   took       :opt // The last args the method was called with
+        MethodLog   returned   :opt // The last return value the method produced
 
     Argument := scalar_t | scalar_t[] | TableValue | PointGeneratorValue
 
@@ -211,11 +211,12 @@ A Method looks like this::
             {ArgumentMeta <elname>}0+
         string[]    required       :opt // These fields will always be present
 
-    MethodValue :=
+    MethodLog :=
 
-    malcolm:core/MethodValue:1.0
-        structure   value
-            {Argument   <argname>}0+    // The arguments supplied or returned
+    malcolm:core/MethodLog:1.0
+        structure   value               // The arguments supplied or returned
+            {Argument   <argname>}0+    // Including any server defaults
+        string[]    present             // The keys of value sent
         alarm_t     alarm       :opt    // If something went wrong, what
         time_t      timeStamp   :opt    // Time it was called/returned
 

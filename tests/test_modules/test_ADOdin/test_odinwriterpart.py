@@ -39,7 +39,6 @@ class TestOdinDWriterPart(ChildTestCase):
             call.put('filePath', '/tmp/'),
             call.put('numCapture', self.steps_to_do),
             call.post('start')]
-        print(self.child.handled_requests.mock_calls)
 
     def test_run(self):
         self.o.configure(

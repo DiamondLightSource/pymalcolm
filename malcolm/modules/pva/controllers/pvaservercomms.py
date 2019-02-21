@@ -54,7 +54,7 @@ class BlockHandler(Handler):
         view = self.controller.block_view()[method]
         assert isinstance(view, Method), \
             "%s.%s is not a Method so cannot do RPC" % tuple(path)
-        add_wrapper = method_return_unpacked() in view.tags
+        add_wrapper = method_return_unpacked() in view.meta.tags
 
         post = Post(path=path, parameters=parameters)
 
@@ -151,7 +151,8 @@ class BlockHandler(Handler):
                         self._update_value(response)
                 except Exception:
                     self.controller.log.debug(
-                        "Closing pv because of error", exc_info=True)
+                        "Closing pv because of error in response %s",
+                        response, exc_info=True)
                     # We got a return or error, close the connection to clients
                     self.pv.close()
 

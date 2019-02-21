@@ -100,7 +100,8 @@ class TestController(unittest.TestCase):
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Error)
         assert response.id == 43
-        assert str(response.message) == "Method passed argument 'dummy' which is not in []"
+        assert str(response.message) == \
+            "Given keys ['dummy'], some of which aren't in allowed keys []"
 
         request = Subscribe(id=44, path=["mri", "myAttribute"], delta=False)
         request.set_callback(q.put)
