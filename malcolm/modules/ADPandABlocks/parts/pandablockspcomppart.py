@@ -16,15 +16,10 @@ if TYPE_CHECKING:
 SEQ_TABLES = ("seqTableA", "seqTableB")
 
 #: The number of sequencer table rows
-SEQ_TABLE_ROWS = 1024
+SEQ_TABLE_ROWS = 4096
 
 with Anno("Scannable name for sequencer input"):
     APos = str
-
-
-# The triggers if pos >= position
-POS_GT = [Trigger.POSA_GT, Trigger.POSB_GT, Trigger.POSC_GT]
-POS_LT = [Trigger.POSA_LT, Trigger.POSB_LT, Trigger.POSC_LT]
 
 # How long is a single tick if prescaler is 0
 TICK = 8e-9
@@ -55,7 +50,7 @@ def gap_row(duration=MIN_PHASE * 2):
 
 
 def compare_row(half_frame, position, trigger_enum):
-    # type: (int, int, Trigger) -> List
+    # type: (int, int, str) -> List
     # Put in a compare point for the lower bound
     row = [1, trigger_enum, position,
            # Phase1: Live=1, Gate=1, PCAP_Trig=0
@@ -177,6 +172,8 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         self.seq_tables = [panda[attr] for attr in SEQ_TABLES]
         # load up the first SEQ
         self._fill_sequencer(self.seq_tables[0])
+        # Call sequence table enable
+        panda.seqTableEnable()
 
     def _what_moves_most(self, point):
         # type: (Point) -> Tuple[int, Trigger, int]
@@ -199,26 +196,33 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
                 diff_cts = centre_cts - compare_cts
                 diffs[s] = abs(diff_cts)
                 positions[s] = compare_cts
-                increasings[s] = diff_cts > 0
+                increasings[s] = (info.resolution, diff_cts > 0)
         assert diffs, \
             "Can't work out a compare point for %s" % point.positions
         # Sort on abs(diff), take the biggest
         axis_name = sorted(diffs, key=diffs.get)[-1]
-        increasing = increasings[axis_name]
+        resolution, increasing = increasings[axis_name]
         trigger_enum = self.trigger_enums[(axis_name, increasing)]
+
         if self.last_point:
             # TODO: what about pmactrajectorypart min_turnaround?
             time_arrays, velocity_arrays = pmac.util.profile_between_points(
                 self.axis_mapping, self.last_point, point)
+
             time_array = time_arrays[axis_name]
             velocity_array = velocity_arrays[axis_name]
+
+
             # Work backwards through the velocity array until we are going the
             # opposite way
             i = 0
             for i, v in reversed(list(enumerate(velocity_array))):
+                # Divide v by resolution so it is in counts
+                v /= resolution
                 if (increasing and v <= 0) or (not increasing and v >= 0):
                     # The axis is stationary or going the wrong way at this
                     # point, so we should be blind before then
+
                     assert i < len(velocity_array) - 1, \
                         "Last point of %s is wrong direction" % velocity_array
                     break

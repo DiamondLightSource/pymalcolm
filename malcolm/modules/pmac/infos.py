@@ -187,7 +187,7 @@ class MotorInfo(Info):
 
         Returns:
             tuple: (time_list, position_list) where time_list is a list of
-                relative time points in seconds, and position_list is the
+                absolute time points in seconds, and position_list is the
                 position in EGUs that the motor should be
         """
         # Take off the settle time and distance

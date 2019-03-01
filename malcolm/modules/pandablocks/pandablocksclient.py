@@ -118,7 +118,7 @@ class PandABlocksClient(object):
                 break
             try:
                 self._response_queues.put(response_queue)
-                self._socket.send(message)
+                self._socket.sendall(message)
             except Exception:  # pylint:disable=broad-except
                 log.exception("Exception sending message %s", message)
 

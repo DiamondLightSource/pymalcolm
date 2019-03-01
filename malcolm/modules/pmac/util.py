@@ -140,6 +140,7 @@ def profile_between_points(axis_mapping, point, next_point, min_time=MIN_TIME):
                 time_array[-1], min_time), \
                 "Time %s velocity %s for %s takes less time than %s" % (
                     time_array, velocity_array, axis_name, min_time)
+            # Absolute time values that we are at that velocity
             time_arrays[axis_name] = time_array
             velocity_arrays[axis_name] = velocity_array
         new_min_time = max(t[-1] for t in time_arrays.values())

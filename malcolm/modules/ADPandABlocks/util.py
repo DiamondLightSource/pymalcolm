@@ -5,7 +5,7 @@ import numpy as np
 from malcolm.core import Table
 
 
-class Trigger(Enum):
+class Trigger(object):
     """Convenience Enum for setting sequencer tables, will be translated into
     integer values by the TablePart. The strings must match what comes from the
     PandA"""
@@ -27,7 +27,7 @@ class Trigger(Enum):
 with Anno("Number of times the line will repeat"):
     ALineRepeatsArray = Array[np.uint16]
 with Anno("The trigger condition to start the phases"):
-    ATriggerArray = Array[Trigger]
+    ATriggerArray = Array[str]
 with Anno("The position that can be used in trigger condition"):
     APositionArray = Array[np.int32]
 with Anno("The time that the phase should take"):
