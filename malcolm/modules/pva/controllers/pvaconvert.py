@@ -4,6 +4,7 @@ from p4p import Type, Value
 import numpy as np
 
 from malcolm.compat import str_, long_, OrderedDict
+from malcolm.core import AlarmSeverity, AlarmStatus
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Any
@@ -97,6 +98,9 @@ def convert_to_type_tuple_value(value):
                 fields.append((k, t))
                 value_for_set[k] = v_set
         spec = ('S', typeid, fields)
+    elif isinstance(value, (AlarmSeverity, AlarmStatus)):
+        spec = 'i'
+        value_for_set = value.value
     elif isinstance(value, Enum):
         spec = 's'
         value_for_set = value.value

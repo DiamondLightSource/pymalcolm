@@ -22,7 +22,7 @@ from .process import Process, ProcessPublishHook, ProcessStartHook, \
 from .request import Request, PathRequest, Subscribe, Unsubscribe, Get, Put, \
     Post
 from .response import Response, Delta, Update, Return, Error
-from .serializable import Serializable, deserialize_object, serialize_object, \
+from .serializable import serialize_object, \
     json_decode, json_encode, snake_to_camel, camel_to_title, \
     CAMEL_RE, serialize_hook, stringify_error
 from .stateset import StateSet

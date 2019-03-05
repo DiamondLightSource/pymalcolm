@@ -386,10 +386,9 @@ class TestPVAServer(unittest.TestCase):
         def linejunk(line):
             # Ignore the timeStamp fields
             split = line.split()
-            # ignore timestamps which change and also ignore userTag because
-            # we are now using un-ordered dictionaries
+            # ignore timestamps which change
             return len(split) > 1 and split[1] in ("secondsPastEpoch",
-                                                   "nanoseconds", "userTag")
+                                                   "nanoseconds")
 
         for f, s in zip(firstlines, secondlines):
             if not same:

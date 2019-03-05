@@ -1,14 +1,15 @@
 import inspect
 
 from annotypes import Array, Anno, Union, Sequence, Mapping, Any, to_array, \
-    Optional, TYPE_CHECKING, WithCallTypes, NO_DEFAULT
+    Optional, TYPE_CHECKING, WithCallTypes, NO_DEFAULT, Serializable, \
+    deserialize_object
 import numpy as np
 from enum import Enum
 
 from malcolm.compat import OrderedDict, str_
 from .alarm import Alarm
 from .notifier import DummyNotifier, Notifier
-from .serializable import Serializable, deserialize_object, camel_to_title
+from .serializable import camel_to_title, serialize_object
 from .table import Table
 from .tags import Widget, method_return_unpacked
 from .timestamp import TimeStamp
@@ -360,9 +361,9 @@ class AttributeModel(Model):
 class NTTable(AttributeModel):
     __slots__ = []
 
-    def to_dict(self):
-        # type: () -> OrderedDict
-        d = OrderedDict()
+    def to_dict(self, dict_cls=OrderedDict):
+        # type: (Type[dict]) -> Dict[str, Any]
+        d = dict_cls()
         d["typeid"] = self.typeid
         # Add labels for compatibility with epics normative types
         labels = []
@@ -373,7 +374,7 @@ class NTTable(AttributeModel):
             else:
                 labels.append(column_name)
         d["labels"] = Array[str](labels)
-        d.update(super(NTTable, self).to_dict())
+        d.update(super(NTTable, self).to_dict(dict_cls))
         return d
 
     @classmethod
@@ -852,7 +853,7 @@ class TableMeta(VMeta):
             value = {k: None for k in self.elements}
         elif isinstance(value, Table):
             # Serialize it so we can type check it
-            value = value.to_dict()
+            value = serialize_object(value)
         elif not isinstance(value, dict):
             raise ValueError(
                 "Expected Table instance or serialized, got %s" % (value,))

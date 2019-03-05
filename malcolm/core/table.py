@@ -1,4 +1,4 @@
-from .serializable import Serializable
+from annotypes import Serializable
 
 
 @Serializable.register_subclass("malcolm:core/Table:1.0")

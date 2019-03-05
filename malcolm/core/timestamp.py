@@ -1,9 +1,12 @@
 import time
 
 import numpy as np
-from annotypes import Anno
+from annotypes import Anno, Serializable, TYPE_CHECKING
 
-from .serializable import Serializable
+from malcolm.compat import InsertionOrderedDict
+
+if TYPE_CHECKING:
+    from typing import Type, Dict, Any
 
 
 with Anno("Seconds since Jan 1, 1970 00:00:00 UTC"):
@@ -15,6 +18,20 @@ with Anno("An integer value whose interpretation is deliberately undefined"):
 
 
 zero32 = np.int32(0)
+
+
+# Make a fixed serialized
+class TimeStampOrderedDict(InsertionOrderedDict):
+    # Fix them as a tuple as they never change. This will make pop etc. fail
+    _keys = ("typeid", "secondsPastEpoch", "nanoseconds", "userTag")
+
+    def __init__(self, secondsPastEpoch, nanoseconds, userTag):
+        # Don't call superclass as it would overwrite _keys
+        dict.__init__(self,
+                      typeid="time_t",
+                      secondsPastEpoch=secondsPastEpoch,
+                      nanoseconds=nanoseconds,
+                      userTag=userTag)
 
 
 @Serializable.register_subclass("time_t")
@@ -41,11 +58,11 @@ class TimeStamp(Serializable):
         # type: () -> float
         return self.secondsPastEpoch + 1e-9 * self.nanoseconds
 
-    def to_dict(self):
+    def to_dict(self, dict_cls=TimeStampOrderedDict):
+        # type: (Type[dict]) -> Dict[str, Any]
         # This needs to be fast as we do it a lot, so use a plain dict instead
         # of an OrderedDict
-        return dict(
-            typeid=self.typeid,
+        return TimeStampOrderedDict(
             secondsPastEpoch=self.secondsPastEpoch,
             nanoseconds=self.nanoseconds,
             userTag=self.userTag

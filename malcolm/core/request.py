@@ -1,9 +1,10 @@
 import logging
 
-from annotypes import Anno, Array, Any, TYPE_CHECKING, Mapping, Union, Sequence
+from annotypes import Anno, Array, Any, TYPE_CHECKING, Mapping, Union, \
+    Sequence, Serializable
 
 from .response import Return, Error, Update, Delta, Response
-from .serializable import Serializable, serialize_object
+from .serializable import serialize_object
 
 if TYPE_CHECKING:
     from typing import Callable, Tuple, List

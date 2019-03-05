@@ -1,8 +1,9 @@
-from annotypes import add_call_types, Anno, Union, Array, Sequence, Any
+from annotypes import add_call_types, Anno, Union, Array, Sequence, Any, \
+    deserialize_object
 
 from malcolm.compat import OrderedDict
 from malcolm.core import BadValueError, serialize_object, APartName, \
-    Delta, deserialize_object, Subscribe, Unsubscribe, Future, PartRegistrar, \
+    Delta, Subscribe, Unsubscribe, Future, PartRegistrar, \
     Put, Request
 from malcolm.modules.builtin.hooks import AStructure, AInit
 from malcolm.modules.builtin.parts import ChildPart, AMri, AInitialVisibility

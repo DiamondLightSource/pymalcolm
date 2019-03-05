@@ -1,7 +1,8 @@
 import unittest
 
 from malcolm.core import Process, Post, Subscribe, Return, \
-    Update, Controller, Queue, TimeoutError, Put, Error, Delta, TimeStamp
+    Update, Controller, Queue, TimeoutError, Put, Error, Delta, TimeStamp, \
+    AlarmSeverity
 from malcolm.modules.demo.parts import HelloPart, CounterPart
 
 
@@ -69,7 +70,7 @@ class TestHelloDemoSystem(unittest.TestCase):
         assert response.changes[4][1] == ["return"]
 
         assert response.changes[5][0] == ["returned", "alarm"]
-        assert response.changes[5][1]["severity"] == 0
+        assert response.changes[5][1]["severity"] == AlarmSeverity.NO_ALARM
 
         assert response.changes[6][0] == ["returned", "timeStamp"]
 

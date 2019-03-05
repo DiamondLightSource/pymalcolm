@@ -4,10 +4,10 @@ import fcntl
 import struct
 import os
 
-from annotypes import Anno, add_call_types, TYPE_CHECKING
+from annotypes import Anno, add_call_types, TYPE_CHECKING, deserialize_object
 from tornado.websocket import WebSocketHandler, WebSocketError
 
-from malcolm.core import Part, json_decode, deserialize_object, Request, \
+from malcolm.core import Part, json_decode, Request, \
     json_encode, Subscribe, Unsubscribe, Delta, Update, Error, \
     Response, FieldError, PartRegistrar, Put, Post
 from malcolm.modules import builtin

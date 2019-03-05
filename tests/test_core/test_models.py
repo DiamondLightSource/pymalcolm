@@ -4,7 +4,8 @@ import unittest
 import numpy as np
 from mock import Mock
 
-from malcolm.core import BlockModel, Serializable, StringMeta, Alarm, \
+from annotypes import Serializable
+from malcolm.core import BlockModel, StringMeta, Alarm, \
     AlarmSeverity, AlarmStatus, TimeStamp, VMeta, TableMeta, StringArrayMeta, \
     NumberMeta, NumberArrayMeta, MethodModel, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta, BooleanArrayMeta
