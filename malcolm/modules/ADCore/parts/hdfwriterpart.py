@@ -179,7 +179,7 @@ def make_layout_xml(generator, part_info):
     # type: (CompoundGenerator, PartInfo) -> str
     # Make a root element with an NXEntry
     root_el = ET.Element("hdf5_layout")
-    entry_el = ET.SubElement(root_el, "group", name="entry")
+    entry_el = ET.SubElement(root_el, "group", name="entry", auto_ndattr_default="false")
     ET.SubElement(entry_el, "attribute", name="NX_class",
                   source="constant", value="NXentry", type="string")
 
@@ -188,8 +188,10 @@ def make_layout_xml(generator, part_info):
     if not ndarray_infos:
         # Still need to put the data in the file, so manufacture something
         primary_rank = 1
+        nd_attributes = []
     else:
         primary_rank = ndarray_infos[0].rank
+        nd_attributes = []
 
     # Make an NXData element with the detector data in it in
     # /entry/detector/detector
@@ -219,9 +221,14 @@ def make_layout_xml(generator, part_info):
 
     # Add a group for attributes
     NDAttributes_el = ET.SubElement(entry_el, "group", name="NDAttributes",
-                                    ndattr_default="true")
+                                    ndattr_default="false")
     ET.SubElement(NDAttributes_el, "attribute", name="NX_class",
                   source="constant", value="NXcollection", type="string")
+    ET.SubElement(NDAttributes_el, "attribute", name="NDArrayUniqueID",
+                  source="ndattribute", ndattribute="NDArrayUniqueID")
+    for attr in nd_attributes:
+        ET.SubElement(NDAttributes_el, "attribute", name=attr,
+                      source="ndattribute", ndattribute=attr)
     xml = et_to_string(root_el)
     return xml
 
