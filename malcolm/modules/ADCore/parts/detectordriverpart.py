@@ -1,6 +1,7 @@
 from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
-
-from malcolm.core import APartName, BadValueError
+from xml.etree import cElementTree as ET
+from malcolm.compat import et_to_string
+from malcolm.core import APartName, BadValueError, TableMeta
 from malcolm.modules.builtin.parts import AMri, ChildPart
 from malcolm.modules.builtin.util import no_save
 from malcolm.modules.scanning.hooks import ReportStatusHook, \
@@ -8,7 +9,7 @@ from malcolm.modules.scanning.hooks import ReportStatusHook, \
     AbortHook, AContext, UInfos, AStepsToDo, ACompletedSteps, APartInfo
 from malcolm.modules.scanning.util import AGenerator
 from ..infos import NDArrayDatasetInfo, ExposureDeadtimeInfo
-from ..util import ADBaseActions
+from ..util import ADBaseActions, PVSetTable
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
@@ -33,12 +34,32 @@ class DetectorDriverPart(ChildPart):
         self.is_hardware_triggered = True
         self.main_dataset_useful = main_dataset_useful
         self.actions = ADBaseActions(mri)
+        self.pvsToCapture = TableMeta.from_table(
+            PVSetTable, "PVs to be logged in HDF file", writeable=("name", "pv", "description")
+        ).create_attribute_model()
         # Hooks
         self.register_hooked(ReportStatusHook, self.report_status)
         self.register_hooked((ConfigureHook, PostRunArmedHook, SeekHook),
                              self.configure)
         self.register_hooked((RunHook, ResumeHook), self.run)
         self.register_hooked((PauseHook, AbortHook), self.abort)
+
+    def updatePVCaptureSet(self, value):
+        print value
+        self.pvsToCapture.set_value(value)
+
+    def buildAttributeXml(self):
+        root_el = ET.Element("Attributes")
+        for index in range(len(self.pvsToCapture.value.pv)):
+            ET.SubElement(root_el, "Attribute", name=self.pvsToCapture.value.name[index], type="EPICS_PV",
+                          dbrtype="DBR_DOUBLE", description=self.pvsToCapture.value.description[index],
+                          source=self.pvsToCapture.value.pv[index])
+        return et_to_string(root_el)
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        registrar.add_attribute_model("pvsToCapture", self.pvsToCapture, self.updatePVCaptureSet)
+        self.registrar = registrar
 
     @add_call_types
     def reset(self, context):
@@ -86,6 +107,16 @@ class DetectorDriverPart(ChildPart):
         if self.is_hardware_triggered:
             # Start now if we are hardware triggered
             self.actions.arm_detector(context)
+
+        attributeXml = self.buildAttributeXml()
+
+        file_path = "/tmp/%s-attributes.xml" % child.mri
+        with open(file_path, 'w') as xml:
+            xml.write(attributeXml)
+        futures = child.put_attribute_values_async(dict(
+            attributesFile=file_path))
+        # Wait for the previous puts to finish
+        context.wait_all_futures(futures)
 
     @add_call_types
     def run(self, context):

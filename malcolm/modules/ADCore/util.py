@@ -35,7 +35,10 @@ class StatisticsName(Enum):
     SUM = "TOTAL"  # Sum of all elements
     NET = "NET"  # Sum of all elements not in background region
 
-
+with Anno("PV names"):
+    APvNameArray = Array[str]
+with Anno("PV descriptions"):
+    ADescriptionArray = Array[str]
 with Anno("Dataset names"):
     ANameArray = Array[str]
 with Anno("Filenames of HDF files relative to fileDir"):
@@ -49,6 +52,8 @@ with Anno("Dataset paths within HDF files"):
 with Anno("UniqueID array paths within HDF files"):
     AUniqueIDArray = Array[str]
 UNameArray = Union[ANameArray, Sequence[str]]
+UPvNameArray = Union[APvNameArray, Sequence[str]]
+UDescriptionArray = Union[ADescriptionArray, Sequence[str]]
 UFilenameArray = Union[AFilenameArray, Sequence[str]]
 UTypeArray = Union[ATypeArray, Sequence[DatasetType]]
 URankArray = Union[ARankArray, Sequence[np.int32]]
@@ -74,6 +79,20 @@ class DatasetTable(Table):
         self.rank = ARankArray(rank)
         self.path = APathArray(path)
         self.uniqueid = AUniqueIDArray(uniqueid)
+
+
+class PVSetTable(Table):
+    # This will be serialized so we need type to be called that
+    # noinspection PyShadowingBuiltins
+    def __init__(self,
+                 name,  # type: UNameArray
+                 pv,    # type: UPvNameArray
+                 description, # type: UDescriptionArray
+                 ):
+        # type: (...) -> None
+        self.name = ANameArray(name)
+        self.pv = APvNameArray(pv)
+        self.description = ADescriptionArray(description)
 
 
 class ADBaseActions(object):
