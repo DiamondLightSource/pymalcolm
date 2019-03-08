@@ -1,6 +1,8 @@
 import os
 
 from annotypes import add_call_types, Anno, TYPE_CHECKING
+from vdsgen import InterleaveVDSGenerator, \
+    ExcaliburGapFillVDSGenerator, ReshapeVDSGenerator
 
 from malcolm.core import APartName, Future, Info, PartRegistrar
 from malcolm.modules import builtin, scanning
@@ -10,10 +12,13 @@ if TYPE_CHECKING:
 
     PartInfo = Dict[str, List[Info]]
 
-
 # If the HDF writer doesn't get new frames in this time (seconds), consider it
 # stalled and raise
 FRAME_TIMEOUT = 60
+
+VDS_DATASET_NAME = "data"
+VDS_UID_NAME = "uid"
+VDS_SUM_NAME = "sum"
 
 with Anno("Directory to write data to"):
     AFileDir = str
@@ -28,10 +33,63 @@ def greater_than_zero(v):
     return v > 0
 
 
+def create_vds(generator, raw_name, vds_path, hdf_count):
+    vds_folder, vds_name = os.path.split(vds_path)
+
+    # todo hdf_count tells me the module count. We need to translate
+    #  this into resolution (currently assume 1536/2048)
+
+    # hdf_shape tuple represents the number of images in each file
+    per_file = int(hdf_count) / int(generator.size)
+    remainder = int(hdf_count) % int(generator.size)
+    hdf_shape = (per_file + int(i < remainder) for i in range(hdf_count))
+
+    # this vds reshapes from 1 file per data writer to a single 1D data set
+    gen = InterleaveVDSGenerator(vds_folder,
+                                 prefix=raw_name,
+                                 source={'height': 1536,
+                                         'width': 2048,
+                                         'dtype': 'uint16',
+                                         'shape': (hdf_shape, 1536, 2048)
+                                         },
+                                 output=vds_name,
+                                 target_node="process/data_interleave",
+                                 block_size=1,
+                                 log_level=1)
+    gen.generate_vds()
+
+    # this VDS adds in the gaps between sensors
+    gen = ExcaliburGapFillVDSGenerator(vds_folder,
+                                       files=[vds_name],
+                                       source_node="process/data_interleave",
+                                       target_node="process/data_gaps",
+                                       chip_spacing=3,
+                                       module_spacing=123,
+                                       modules=3,
+                                       output="excalibur_196368_vds.h5",
+                                       log_level=1)
+
+    gen.generate_vds()
+
+    scan_shape = (10, 2)
+    # this VDS shapes the data to match the dimensions of the scan
+    gen = ReshapeVDSGenerator(path=vds_folder,
+                              files=[vds_name],
+                              source_node="process/data_gaps",
+                              target_node="data",
+                              output=vds_name,
+                              shape=scan_shape,
+                              alternate=(False, True),
+                              log_level=1)
+
+    gen.generate_vds()
+
+
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save("fileName", "filePath", "numCapture")
 class OdinWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
+
     def __init__(self, name, mri):
         # type: (APartName, scanning.parts.AMri) -> None
         super(OdinWriterPart, self).__init__(name, mri)
@@ -89,13 +147,18 @@ class OdinWriterPart(builtin.parts.ChildPart):
         self.unique_id_offset = 0
         child = context.block_view(self.mri)
         file_dir = fileDir.rstrip(os.sep)
-        full_filename = os.path.join(fileDir, fileName)
-        assert "." in full_filename, \
-            "File extension for %r should be supplied" % full_filename
+        # this is path to the requested file which will be a VDS
+        vds_full_filename = os.path.join(fileDir, fileName)
+        root, ext = os.path.splitext(fileName)
+        # this is the path to underlying file the odin writer will write to
+        raw_file_basename = 'raw_data'
+        raw_file_name = raw_file_basename + ext
+        assert "." in vds_full_filename, \
+            "File extension for %r should be supplied" % vds_full_filename
         futures = child.put_attribute_values_async(dict(
             numCapture=steps_to_do,
             filePath=file_dir + os.sep,
-            fileName=fileName))
+            fileName=raw_file_name))
         # todo restore similar to this when Flush period control is avail
         # # We want the HDF writer to flush this often:
         # flush_time = 1  # seconds
@@ -127,10 +190,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
         self.array_future = child.when_value_matches_async(
             "numCaptured", greater_than_zero)
 
-        # todo Return the dataset information
-        # dataset_infos = list(create_dataset_infos(
-        #     fileName, part_info, generator, full_filename))
-        # return dataset_infos
+        create_vds(generator, raw_file_basename,
+                   vds_full_filename, child.numProcesses.value)
         return None
 
     @add_call_types

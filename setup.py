@@ -26,7 +26,7 @@ def get_version():
         raise RuntimeError('Unable to find version string in {0}.'
                            .format(VERSION_FILE))
 
-install_requires = ['numpy', 'scanpointgenerator>=1.5', 'annotypes']
+install_requires = ['numpy', 'scanpointgenerator>=1.5', 'annotypes', 'vdsgen']
 
 def add_multiversion_require(module):
     try:
