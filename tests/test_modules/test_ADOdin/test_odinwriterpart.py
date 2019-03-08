@@ -7,6 +7,9 @@ from malcolm.modules.ADOdin.parts import OdinWriterPart
 from malcolm.modules.ADOdin.blocks import odin_writer_block
 from malcolm.testutil import ChildTestCase
 
+from vdsgen import SubFrameVDSGenerator, InterleaveVDSGenerator, ExcaliburGapFillVDSGenerator, ReshapeVDSGenerator, generate_raw_files
+import numpy as np
+
 
 class TestOdinDWriterPart(ChildTestCase):
 

@@ -27,11 +27,16 @@
     description: Number of frames captured since last 'start'
     rbv: $(prefix):NumCaptured_RBV
 
-#- ca.parts.CALongPart:
-#    name: flushDataPerNFrames
-#    description: Number of frames to capture between HDF dataset flushes
-#    pv: $(prefix):NumFramesFlush
-#    rbv_suffix: _RBV
+- ca.parts.CALongPart:
+    name: numProcesses
+    description: number of receiver/writer pairs and hence HDF files
+    rbv: $(prefix):NumProcesses_RBV
+
+#- ca.parts.CALongPa#-rt:
+#    name: flushData# PerNFrames
+#    description: Nu# mber of frames to capture between HDF dataset flushes
+#    pv: $(prefix):N# umFramesFlush
+#    rbv_suffix: _RB# V
 
 # Filename
 - ca.parts.CACharArrayPart:
