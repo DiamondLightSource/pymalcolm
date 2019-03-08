@@ -40,9 +40,11 @@ def create_vds(generator, raw_name, vds_path, hdf_count):
     #  this into resolution (currently assume 1536/2048)
 
     # hdf_shape tuple represents the number of images in each file
-    per_file = int(hdf_count) / int(generator.size)
-    remainder = int(hdf_count) % int(generator.size)
-    hdf_shape = (per_file + int(i < remainder) for i in range(hdf_count))
+    per_file = int(generator.size) / int(hdf_count)
+    remainder = int(generator.size) % int(hdf_count)
+    hdf_shape = tuple(
+        (per_file + int(i < remainder) for i in range(hdf_count))
+    )
 
     # this vds reshapes from 1 file per data writer to a single 1D data set
     gen = InterleaveVDSGenerator(vds_folder,
@@ -66,19 +68,18 @@ def create_vds(generator, raw_name, vds_path, hdf_count):
                                        chip_spacing=3,
                                        module_spacing=123,
                                        modules=3,
-                                       output="excalibur_196368_vds.h5",
+                                       output=vds_name,
                                        log_level=1)
 
     gen.generate_vds()
 
-    scan_shape = (10, 2)
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(path=vds_folder,
                               files=[vds_name],
                               source_node="process/data_gaps",
                               target_node="data",
                               output=vds_name,
-                              shape=scan_shape,
+                              shape=generator.shape,
                               alternate=(False, True),
                               log_level=1)
 
@@ -149,9 +150,9 @@ class OdinWriterPart(builtin.parts.ChildPart):
         file_dir = fileDir.rstrip(os.sep)
         # this is path to the requested file which will be a VDS
         vds_full_filename = os.path.join(fileDir, fileName)
-        root, ext = os.path.splitext(fileName)
+        base, ext = os.path.splitext(fileName)
         # this is the path to underlying file the odin writer will write to
-        raw_file_basename = 'raw_data'
+        raw_file_basename = base + '_raw_data'
         raw_file_name = raw_file_basename + ext
         assert "." in vds_full_filename, \
             "File extension for %r should be supplied" % vds_full_filename
