@@ -9,9 +9,6 @@ from malcolm.modules.ADOdin.parts import OdinWriterPart
 from malcolm.modules.ADOdin.blocks import odin_writer_block
 from malcolm.testutil import ChildTestCase
 
-from vdsgen import SubFrameVDSGenerator, InterleaveVDSGenerator, ExcaliburGapFillVDSGenerator, ReshapeVDSGenerator, generate_raw_files
-import numpy as np
-
 
 class TestOdinDWriterPart(ChildTestCase):
 
@@ -28,9 +25,10 @@ class TestOdinDWriterPart(ChildTestCase):
         self.process.start()
 
         self.completed_steps = 0
-        cols, rows = 300, 200
+        # goal for these is 3000, 2000, True
+        cols, rows, alternate = 3000, 2000, False
         self.steps_to_do = cols * rows
-        xs = LineGenerator("x", "mm", 0.0, 0.5, cols, alternate=True)
+        xs = LineGenerator("x", "mm", 0.0, 0.5, cols, alternate=alternate)
         ys = LineGenerator("y", "mm", 0.0, 0.1, rows)
         self.generator = CompoundGenerator([ys, xs], [], [], 0.1)
         self.generator.prepare()
