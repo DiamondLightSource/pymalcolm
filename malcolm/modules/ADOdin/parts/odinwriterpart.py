@@ -38,6 +38,8 @@ def create_vds(generator, raw_name, vds_path, hdf_count):
 
     # todo hdf_count tells me the module count. We need to translate
     #  this into resolution (currently assume 1536/2048)
+    # todo also - need to work out what to pass to 'alternate'
+    #  in ReshapeVDSGenerator
 
     # hdf_shape tuple represents the number of images in each file
     per_file = int(generator.size) / int(hdf_count)
@@ -59,28 +61,28 @@ def create_vds(generator, raw_name, vds_path, hdf_count):
                                  block_size=1,
                                  log_level=1)
     gen.generate_vds()
-
-    # this VDS adds in the gaps between sensors
-    gen = ExcaliburGapFillVDSGenerator(vds_folder,
-                                       files=[vds_name],
-                                       source_node="process/data_interleave",
-                                       target_node="process/data_gaps",
-                                       chip_spacing=3,
-                                       module_spacing=123,
-                                       modules=3,
-                                       output=vds_name,
-                                       log_level=1)
-
-    gen.generate_vds()
+    #
+    # # this VDS adds in the gaps between sensors
+    # gen = ExcaliburGapFillVDSGenerator(vds_folder,
+    #                                    files=[vds_name],
+    #                                    source_node="process/data_interleave",
+    #                                    target_node="process/data_gaps",
+    #                                    chip_spacing=3,
+    #                                    module_spacing=123,
+    #                                    modules=3,
+    #                                    output=vds_name,
+    #                                    log_level=1)
+    #
+    # gen.generate_vds()
 
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(path=vds_folder,
                               files=[vds_name],
-                              source_node="process/data_gaps",
+                              source_node="process/data_interleave",
                               target_node="data",
                               output=vds_name,
                               shape=generator.shape,
-                              alternate=(False, True),
+                              alternate=None,
                               log_level=1)
 
     gen.generate_vds()

@@ -12,9 +12,6 @@ from malcolm.testutil import ChildTestCase
 from tempfile import mkdtemp
 from shutil import rmtree
 
-from vdsgen import SubFrameVDSGenerator, InterleaveVDSGenerator, ExcaliburGapFillVDSGenerator, ReshapeVDSGenerator, generate_raw_files
-import numpy as np
-
 
 class TestOdinWriterPart(ChildTestCase):
     EXCALIBUR_FILE_PATH = \
