@@ -1,7 +1,7 @@
 from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
 from xml.etree import cElementTree as ET
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, BadValueError, TableMeta
+from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar
 from malcolm.modules.builtin.parts import AMri, ChildPart
 from malcolm.modules.builtin.util import no_save
 from malcolm.modules.scanning.hooks import ReportStatusHook, \
@@ -10,13 +10,15 @@ from malcolm.modules.scanning.hooks import ReportStatusHook, \
 from malcolm.modules.scanning.util import AGenerator
 from ..infos import NDArrayDatasetInfo, ExposureDeadtimeInfo
 from ..util import ADBaseActions, PVSetTable
+import os
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
 with Anno("List of trigger modes that do not use hardware triggers"):
     ASoftTriggerModes = Array[str]
 USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
-
+with Anno("Directory to write data to"):
+    AFileDir = str
 
 # We will set these attributes on the child block, so don't save them
 @no_save('arrayCounter', 'imageMode', 'numImages', 'arrayCallbacks', 'exposure',
@@ -33,6 +35,7 @@ class DetectorDriverPart(ChildPart):
         self.soft_trigger_modes = soft_trigger_modes
         self.is_hardware_triggered = True
         self.main_dataset_useful = main_dataset_useful
+        self.attributes_filename = ""
         self.actions = ADBaseActions(mri)
         self.pvsToCapture = TableMeta.from_table(
             PVSetTable, "PVs to be logged in HDF file", writeable=("name", "pv", "description")
@@ -44,11 +47,7 @@ class DetectorDriverPart(ChildPart):
         self.register_hooked((RunHook, ResumeHook), self.run)
         self.register_hooked((PauseHook, AbortHook), self.abort)
 
-    def updatePVCaptureSet(self, value):
-        print value
-        self.pvsToCapture.set_value(value)
-
-    def buildAttributeXml(self):
+    def build_attribute_xml(self):
         root_el = ET.Element("Attributes")
         for index in range(len(self.pvsToCapture.value.pv)):
             ET.SubElement(root_el, "Attribute", name=self.pvsToCapture.value.name[index], type="EPICS_PV",
@@ -58,8 +57,8 @@ class DetectorDriverPart(ChildPart):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        registrar.add_attribute_model("pvsToCapture", self.pvsToCapture, self.updatePVCaptureSet)
-        self.registrar = registrar
+        super(DetectorDriverPart, self).setup(registrar)
+        registrar.add_attribute_model("pvsToCapture", self.pvsToCapture, self.pvsToCapture.set_value)
 
     @add_call_types
     def reset(self, context):
@@ -73,6 +72,8 @@ class DetectorDriverPart(ChildPart):
         if self.main_dataset_useful:
             return NDArrayDatasetInfo(rank=2)
 
+    # Allow CamelCase as fileDir parameter will be serialized
+    # noinspection PyPep8Naming
     @add_call_types
     def configure(self,
                   context,  # type: AContext
@@ -80,6 +81,7 @@ class DetectorDriverPart(ChildPart):
                   steps_to_do,  # type: AStepsToDo
                   part_info,  # type: APartInfo
                   generator,  # type: AGenerator
+                  fileDir,   # type: AFileDir
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
@@ -107,15 +109,13 @@ class DetectorDriverPart(ChildPart):
         if self.is_hardware_triggered:
             # Start now if we are hardware triggered
             self.actions.arm_detector(context)
-
-        attributeXml = self.buildAttributeXml()
-
-        file_path = "/tmp/%s-attributes.xml" % child.mri
-        with open(file_path, 'w') as xml:
-            xml.write(attributeXml)
+        attribute_xml = self.build_attribute_xml()
+        self.attributes_filename = os.path.join(
+            fileDir, "%s-attributes.xml" % self.mri)
+        with open(self.attributes_filename, 'w') as xml:
+            xml.write(attribute_xml)
         futures = child.put_attribute_values_async(dict(
-            attributesFile=file_path))
-        # Wait for the previous puts to finish
+            attributesFile=self.attributes_filename))
         context.wait_all_futures(futures)
 
     @add_call_types
@@ -130,3 +130,9 @@ class DetectorDriverPart(ChildPart):
     def abort(self, context):
         # type: (AContext) -> None
         self.actions.abort_detector(context)
+
+    @add_call_types
+    def post_run_ready(self):
+        # type: () -> None
+        # Delete the attribute XML file
+        os.remove(self.attributes_filename)
