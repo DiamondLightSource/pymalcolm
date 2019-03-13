@@ -1,15 +1,15 @@
 from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
 from xml.etree import cElementTree as ET
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar
+from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar, config_tag
 from malcolm.modules.builtin.parts import AMri, ChildPart
 from malcolm.modules.builtin.util import no_save
 from malcolm.modules.scanning.hooks import ReportStatusHook, \
     ConfigureHook, PostRunArmedHook, SeekHook, RunHook, ResumeHook, PauseHook, \
     AbortHook, AContext, UInfos, AStepsToDo, ACompletedSteps, APartInfo
 from malcolm.modules.scanning.util import AGenerator
-from ..infos import NDArrayDatasetInfo, ExposureDeadtimeInfo
-from ..util import ADBaseActions, PVSetTable
+from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, ExposureDeadtimeInfo
+from ..util import ADBaseActions, PVSetTable, AttributeDatasetType
 import os
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
@@ -40,6 +40,10 @@ class DetectorDriverPart(ChildPart):
         self.pvsToCapture = TableMeta.from_table(
             PVSetTable, "PVs to be logged in HDF file", writeable=("name", "pv", "description")
         ).create_attribute_model()
+        tags = list(self.pvsToCapture.meta.tags)
+        tags.append(config_tag())
+        self.pvsToCapture.meta.tags = tags
+        self.pvsToCapture.set_meta(self.pvsToCapture.meta)
         # Hooks
         self.register_hooked(ReportStatusHook, self.report_status)
         self.register_hooked((ConfigureHook, PostRunArmedHook, SeekHook),
@@ -69,8 +73,13 @@ class DetectorDriverPart(ChildPart):
     @add_call_types
     def report_status(self):
         # type: () -> UInfos
+        ret = []
         if self.main_dataset_useful:
-            return NDArrayDatasetInfo(rank=2)
+            ret.append(NDArrayDatasetInfo(rank=2))
+        for attr in self.pvsToCapture.value.name:
+            ret.append(NDAttributeDatasetInfo(rank=2, name="NDAttributes", attr=attr, type=AttributeDatasetType("monitor")))
+
+        return ret
 
     # Allow CamelCase as fileDir parameter will be serialized
     # noinspection PyPep8Naming

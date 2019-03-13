@@ -178,8 +178,8 @@ def make_nxdata(name, rank, entry_el, generator, link=False):
 def make_layout_xml(generator, part_info):
     # type: (CompoundGenerator, PartInfo) -> str
     # Make a root element with an NXEntry
-    root_el = ET.Element("hdf5_layout")
-    entry_el = ET.SubElement(root_el, "group", name="entry", auto_ndattr_default="false")
+    root_el = ET.Element("hdf5_layout", auto_ndattr_default="false")
+    entry_el = ET.SubElement(root_el, "group", name="entry")
     ET.SubElement(entry_el, "attribute", name="NX_class",
                   source="constant", value="NXentry", type="string")
 
@@ -188,10 +188,9 @@ def make_layout_xml(generator, part_info):
     if not ndarray_infos:
         # Still need to put the data in the file, so manufacture something
         primary_rank = 1
-        nd_attributes = []
     else:
         primary_rank = ndarray_infos[0].rank
-        nd_attributes = []
+
 
     # Make an NXData element with the detector data in it in
     # /entry/detector/detector
@@ -212,7 +211,7 @@ def make_layout_xml(generator, part_info):
                       source="ndattribute", ndattribute=dataset_info.attr)
 
     # And then any other attribute sources of data
-    for dataset_info in NDAttributeDatasetInfo.filter_values(part_info):
+    for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if attr_set.name != "NDAttributes"]:
         # if we are a secondary source, use the same rank as the det
         attr_el = make_nxdata(dataset_info.name, dataset_info.rank,
                               entry_el, generator, link=True)
@@ -224,11 +223,14 @@ def make_layout_xml(generator, part_info):
                                     ndattr_default="false")
     ET.SubElement(NDAttributes_el, "attribute", name="NX_class",
                   source="constant", value="NXcollection", type="string")
-    ET.SubElement(NDAttributes_el, "attribute", name="NDArrayUniqueID",
-                  source="ndattribute", ndattribute="NDArrayUniqueID")
-    for attr in nd_attributes:
-        ET.SubElement(NDAttributes_el, "attribute", name=attr,
-                      source="ndattribute", ndattribute=attr)
+    ET.SubElement(NDAttributes_el, "dataset", name="NDArrayUniqueId",
+                  source="ndattribute", ndattribute="NDArrayUniqueId")
+
+    for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if
+                         attr_set.name == "NDAttributes"]:
+        ET.SubElement(NDAttributes_el, "dataset", name=dataset_info.attr,
+                      source="ndattribute", ndattribute=dataset_info.attr)
+
     xml = et_to_string(root_el)
     return xml
 
