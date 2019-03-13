@@ -62,7 +62,7 @@ class PandABoxControlTest(unittest.TestCase):
         self.start(messages)
         block_data = self.c.get_blocks_data()
         self.c.stop()
-        assert self.socket.send.call_args_list == [
+        assert self.socket.sendall.call_args_list == [
             call("*BLOCKS?\n"),
             call("*DESC.TTLIN?\n"),
             call("*DESC.TTLOUT?\n"),
@@ -108,7 +108,7 @@ class PandABoxControlTest(unittest.TestCase):
         self.start(messages)
         changes = list(self.c.get_changes())
         self.c.stop()
-        assert self.socket.send.call_args_list == [
+        assert self.socket.sendall.call_args_list == [
             call("*CHANGES?\n"), call("SEQ1.TABLE?\n")]
         expected = OrderedDict()
         expected["PULSE0.WIDTH"] = "1.43166e+09"
@@ -127,14 +127,14 @@ class PandABoxControlTest(unittest.TestCase):
         self.start(messages)
         self.c.set_field("PULSE0", "WIDTH", 0)
         self.c.stop()
-        self.socket.send.assert_called_once_with("PULSE0.WIDTH=0\n")
+        self.socket.sendall.assert_called_once_with("PULSE0.WIDTH=0\n")
 
     def test_set_table(self):
         messages = "OK\n"
         self.start(messages)
         self.c.set_table("SEQ1", "TABLE", [1, 2, 3])
         self.c.stop()
-        self.socket.send.assert_called_once_with("""SEQ1.TABLE<
+        self.socket.sendall.assert_called_once_with("""SEQ1.TABLE<
 1
 2
 3
@@ -155,7 +155,7 @@ class PandABoxControlTest(unittest.TestCase):
         self.start(messages)
         fields = self.c.get_table_fields("SEQ1", "TABLE")
         self.c.stop()
-        assert self.socket.send.call_args_list == [
+        assert self.socket.sendall.call_args_list == [
             call("SEQ1.TABLE.FIELDS?\n"),
             call("*ENUMS.SEQ1.TABLE[].INPB?\n"),
             call("*DESC.SEQ1.TABLE[].REPEATS?\n"),

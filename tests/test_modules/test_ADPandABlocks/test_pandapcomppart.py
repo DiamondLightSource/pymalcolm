@@ -30,6 +30,15 @@ class SequencerPart(Part):
         registrar.add_attribute_model("table", table, self.table_set)
 
 
+class GatePart(Part):
+    enable_set = None
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        self.enable_set = MagicMock()
+        registrar.add_method_model(MagicMock, "forceSet")
+
+
 class TestPcompPart(ChildTestCase):
 
     def setUp(self):
@@ -49,6 +58,13 @@ class TestPcompPart(ChildTestCase):
             self.panda.add_part(
                 ChildPart("SEQ%d" % i, "PANDA:SEQ%d" % i,
                           initial_visibility=True, stateful=False))
+        # And an srgate
+        controller = BasicController("PANDA:SRGATE1")
+        controller.add_part(GatePart("part"))
+        self.process.add_controller(controller)
+        self.panda.add_part(
+            ChildPart("SRGATE1", "PANDA:SRGATE1",
+                      initial_visibility=True, stateful=False))
         self.process.add_controller(self.panda)
 
         # Make the child block holding panda mri
@@ -64,7 +80,8 @@ class TestPcompPart(ChildTestCase):
         self.process.start()
         exports = ExportTable.from_rows([
             ('SEQ1.table', 'seqTableA'),
-            ('SEQ2.table', 'seqTableB')
+            ('SEQ2.table', 'seqTableB'),
+            ('SRGATE1.forceSet', 'seqTableEnable')
         ])
         self.panda.set_exports(exports)
 
