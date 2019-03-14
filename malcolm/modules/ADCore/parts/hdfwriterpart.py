@@ -6,7 +6,7 @@ from annotypes import add_call_types, Anno, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator, Dimension
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Future, Info, Block, PartRegistrar
+from malcolm.core import APartName, Future, Info, Block, PartRegistrar, BooleanMeta, Widget
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, DatasetType, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
@@ -175,7 +175,7 @@ def make_nxdata(name, rank, entry_el, generator, link=False):
     return data_el
 
 
-def make_layout_xml(generator, part_info):
+def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
     # type: (CompoundGenerator, PartInfo) -> str
     # Make a root element with an NXEntry
     root_el = ET.Element("hdf5_layout", auto_ndattr_default="false")
@@ -190,7 +190,6 @@ def make_layout_xml(generator, part_info):
         primary_rank = 1
     else:
         primary_rank = ndarray_infos[0].rank
-
 
     # Make an NXData element with the detector data in it in
     # /entry/detector/detector
@@ -211,7 +210,8 @@ def make_layout_xml(generator, part_info):
                       source="ndattribute", ndattribute=dataset_info.attr)
 
     # And then any other attribute sources of data
-    for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if attr_set.name != "NDAttributes"]:
+    for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if
+                         attr_set.name.split('/')[0] != "NDAttributes"]:
         # if we are a secondary source, use the same rank as the det
         attr_el = make_nxdata(dataset_info.name, dataset_info.rank,
                               entry_el, generator, link=True)
@@ -219,16 +219,17 @@ def make_layout_xml(generator, part_info):
                       source="ndattribute", ndattribute=dataset_info.attr)
 
     # Add a group for attributes
+    ndattr_default = "true" if write_all_nd_attributes else "false"
     NDAttributes_el = ET.SubElement(entry_el, "group", name="NDAttributes",
-                                    ndattr_default="false")
+                                    ndattr_default=ndattr_default)
     ET.SubElement(NDAttributes_el, "attribute", name="NX_class",
                   source="constant", value="NXcollection", type="string")
     ET.SubElement(NDAttributes_el, "dataset", name="NDArrayUniqueId",
                   source="ndattribute", ndattribute="NDArrayUniqueId")
 
     for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if
-                         attr_set.name == "NDAttributes"]:
-        ET.SubElement(NDAttributes_el, "dataset", name=dataset_info.attr,
+                         attr_set.name.split('/')[0] == "NDAttributes"]:
+        ET.SubElement(NDAttributes_el, "dataset", name=dataset_info.name.split('/')[1],
                       source="ndattribute", ndattribute=dataset_info.attr)
 
     xml = et_to_string(root_el)
@@ -245,6 +246,7 @@ def make_layout_xml(generator, part_info):
 @builtin.util.no_save("extraDimSize%s" % SUFFIXES[i] for i in range(10))
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
+
     def __init__(self, name, mri):
         # type: (APartName, scanning.parts.AMri) -> None
         super(HDFWriterPart, self).__init__(name, mri)
@@ -257,6 +259,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # The HDF5 layout file we write to say where the datasets go
         self.layout_filename = None  # type: str
         # Hooks
+        self.write_all_nd_attributes = BooleanMeta(
+            "Toggles wheteher all NDAttributes are written to file, or only those specified in the dataset",
+            writeable=True, tags=Widget.CHECKBOX.tag()).create_attribute_model()
         self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
         self.register_hooked((scanning.hooks.PostRunArmedHook,
                               scanning.hooks.SeekHook), self.seek)
@@ -275,6 +280,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(HDFWriterPart, self).setup(registrar)
+        registrar.add_attribute_model("writeAllNdAttributes", self.write_all_nd_attributes,
+                                      self.write_all_nd_attributes.set_value)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
@@ -318,7 +325,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
             fileName=formatName,
             fileTemplate="%s" + fileTemplate))
         futures += set_dimensions(child, generator)
-        xml = make_layout_xml(generator, part_info)
+        xml = make_layout_xml(generator, part_info, self.write_all_nd_attributes.value)
         self.layout_filename = os.path.join(
             file_dir, "%s-layout.xml" % self.mri)
         with open(self.layout_filename, "w") as f:

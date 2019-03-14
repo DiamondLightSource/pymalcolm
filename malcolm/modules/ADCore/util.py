@@ -2,7 +2,8 @@ from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
 from enum import Enum
 import numpy as np
 
-from malcolm.core import Table, Future, Context, PartRegistrar, DEFAULT_TIMEOUT
+from malcolm.core import Table, Future, Context, PartRegistrar, DEFAULT_TIMEOUT, StringArrayMeta, ChoiceArrayMeta, \
+    Widget
 from malcolm.modules import scanning
 
 if TYPE_CHECKING:
@@ -34,6 +35,7 @@ class StatisticsName(Enum):
     SIGMA = "SIGMA_VALUE"  # Sigma of all elements
     SUM = "TOTAL"  # Sum of all elements
     NET = "NET"  # Sum of all elements not in background region
+
 
 with Anno("PV names"):
     APvNameArray = Array[str]
@@ -81,13 +83,24 @@ class DatasetTable(Table):
         self.uniqueid = AUniqueIDArray(uniqueid)
 
 
+AttrSetTableElements = {
+    "name": StringArrayMeta("name to give to NDAttribute in dataset", tags=[Widget.TEXTINPUT.tag()], writeable=True),
+    "sourceId": StringArrayMeta(
+        "reference to give to attribute in dataset (NDAttribute name if existing NDAttribute, PV name if PVAttribute)",
+        tags=[Widget.TEXTINPUT.tag()], writeable=True),
+    "description": StringArrayMeta("description of attribute", tags=[Widget.TEXTINPUT.tag()], writeable=True),
+    "sourceType": ChoiceArrayMeta("source of data to be added to dataset", tags=[Widget.COMBO.tag()],
+                                  choices=["NDAttribute", "PVAttribute"], writeable=True)
+}
+
+
 class PVSetTable(Table):
     # This will be serialized so we need type to be called that
     # noinspection PyShadowingBuiltins
     def __init__(self,
                  name,  # type: UNameArray
-                 pv,    # type: UPvNameArray
-                 description, # type: UDescriptionArray
+                 pv,  # type: UPvNameArray
+                 description,  # type: UDescriptionArray
                  ):
         # type: (...) -> None
         self.name = ANameArray(name)

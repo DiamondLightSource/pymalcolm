@@ -1,7 +1,7 @@
 from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
 from xml.etree import cElementTree as ET
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar, config_tag
+from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar, config_tag, Widget
 from malcolm.modules.builtin.parts import AMri, ChildPart
 from malcolm.modules.builtin.util import no_save
 from malcolm.modules.scanning.hooks import ReportStatusHook, \
@@ -9,7 +9,7 @@ from malcolm.modules.scanning.hooks import ReportStatusHook, \
     AbortHook, AContext, UInfos, AStepsToDo, ACompletedSteps, APartInfo
 from malcolm.modules.scanning.util import AGenerator
 from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, ExposureDeadtimeInfo
-from ..util import ADBaseActions, PVSetTable, AttributeDatasetType
+from ..util import ADBaseActions, AttrSetTableElements, AttributeDatasetType
 import os
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
@@ -19,6 +19,7 @@ with Anno("List of trigger modes that do not use hardware triggers"):
 USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
 with Anno("Directory to write data to"):
     AFileDir = str
+
 
 # We will set these attributes on the child block, so don't save them
 @no_save('arrayCounter', 'imageMode', 'numImages', 'arrayCallbacks', 'exposure',
@@ -37,13 +38,15 @@ class DetectorDriverPart(ChildPart):
         self.main_dataset_useful = main_dataset_useful
         self.attributes_filename = ""
         self.actions = ADBaseActions(mri)
-        self.pvsToCapture = TableMeta.from_table(
-            PVSetTable, "PVs to be logged in HDF file", writeable=("name", "pv", "description")
-        ).create_attribute_model()
-        tags = list(self.pvsToCapture.meta.tags)
-        tags.append(config_tag())
-        self.pvsToCapture.meta.tags = tags
-        self.pvsToCapture.set_meta(self.pvsToCapture.meta)
+        self.AttrToCapture = TableMeta(writeable=True, elements=AttrSetTableElements,
+                                       tags=[config_tag(), Widget.TABLE.tag()]).create_attribute_model()
+        # self.pvsToCapture = TableMeta.from_table(
+        #     PVSetTable, "PVs to be logged in HDF file", writeable=("name", "pv", "description", "source")
+        # ).create_attribute_model()
+        # tags = list(self.pvsToCapture.meta.tags)
+        # tags.append()
+        # self.pvsToCapture.meta.tags = tags
+        # self.pvsToCapture.set_meta(self.pvsToCapture.meta)
         # Hooks
         self.register_hooked(ReportStatusHook, self.report_status)
         self.register_hooked((ConfigureHook, PostRunArmedHook, SeekHook),
@@ -53,16 +56,17 @@ class DetectorDriverPart(ChildPart):
 
     def build_attribute_xml(self):
         root_el = ET.Element("Attributes")
-        for index in range(len(self.pvsToCapture.value.pv)):
-            ET.SubElement(root_el, "Attribute", name=self.pvsToCapture.value.name[index], type="EPICS_PV",
-                          dbrtype="DBR_DOUBLE", description=self.pvsToCapture.value.description[index],
-                          source=self.pvsToCapture.value.pv[index])
+        for index in range(len(self.AttrToCapture.value.sourceId)):
+            if self.AttrToCapture.value.sourceType[index] == "PVAttribute":
+                ET.SubElement(root_el, "Attribute", name=self.AttrToCapture.value.name[index], type="EPICS_PV",
+                              dbrtype="DBR_NATIVE", description=self.AttrToCapture.value.description[index],
+                              source=self.AttrToCapture.value.sourceId[index])
         return et_to_string(root_el)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(DetectorDriverPart, self).setup(registrar)
-        registrar.add_attribute_model("pvsToCapture", self.pvsToCapture, self.pvsToCapture.set_value)
+        registrar.add_attribute_model("attributesToCapture", self.AttrToCapture, self.AttrToCapture.set_value)
 
     @add_call_types
     def reset(self, context):
@@ -76,8 +80,12 @@ class DetectorDriverPart(ChildPart):
         ret = []
         if self.main_dataset_useful:
             ret.append(NDArrayDatasetInfo(rank=2))
-        for attr in self.pvsToCapture.value.name:
-            ret.append(NDAttributeDatasetInfo(rank=2, name="NDAttributes", attr=attr, type=AttributeDatasetType("monitor")))
+        for attrInd in range(len(self.AttrToCapture.value.sourceId)):
+            attr_id = self.AttrToCapture.value.sourceId[attrInd] if self.AttrToCapture.value.sourceType[attrInd] == "NDAttribute" else self.AttrToCapture.value.name[attrInd]
+            ret.append(
+                NDAttributeDatasetInfo(rank=2, name="NDAttributes/%s" % self.AttrToCapture.value.name[attrInd],
+                                       attr=attr_id,
+                                       type=AttributeDatasetType("monitor")))
 
         return ret
 
@@ -90,7 +98,7 @@ class DetectorDriverPart(ChildPart):
                   steps_to_do,  # type: AStepsToDo
                   part_info,  # type: APartInfo
                   generator,  # type: AGenerator
-                  fileDir,   # type: AFileDir
+                  fileDir,  # type: AFileDir
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
