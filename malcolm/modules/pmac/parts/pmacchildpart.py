@@ -5,16 +5,15 @@ import re
 import time
 
 import numpy as np
-from annotypes import add_call_types, TYPE_CHECKING, Anno
+from annotypes import add_call_types, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import config_tag, NumberMeta, PartRegistrar, Widget, \
-    DEFAULT_TIMEOUT, BooleanMeta, Future, Block
+from malcolm.core import Future, Block
 from malcolm.modules import builtin, scanning
 from malcolm.modules.scanning.infos import MinTurnaroundInfo
 from ..infos import MotorInfo
-from ..util import CS_AXIS_NAMES, cs_axis_mapping, points_joined, \
-    point_velocities, MIN_TIME, profile_between_points
+from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
+    profile_between_points
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -44,12 +43,15 @@ ZERO_PROGRAM = 8  # GPIO123 = 0, 0, 0
 # How many profile points to write each time
 PROFILE_POINTS = 10000
 
+# 80 char line lengths...
+AIV = builtin.parts.AInitialVisibility
+
 
 class PmacChildPart(builtin.parts.ChildPart):
     def __init__(self,
                  name,  # type: builtin.parts.APartName
                  mri,  # type: builtin.parts.AMri
-                 initial_visibility  # type: builtin.parts.AInitialVisibility
+                 initial_visibility=None  # type: AIV
                  ):
         # type: (...) -> None
         super(PmacChildPart, self).__init__(name, mri, initial_visibility)
@@ -65,8 +67,10 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.end_index = 0
         # Where we should stop loading points
         self.steps_up_to = 0
+        # Whether to output triggers
+        self.output_triggers = True
         # Profile points that haven't been sent yet
-        # {time_array/velocity_mode/trajectory/user_programs: [elements]}
+        # {timeArray/velocityMode/userPrograms/a/b/c/u/v/w/x/y/z: [elements]}
         self.profile = {}
         # Stored generator for positions
         self.generator = None  # type: CompoundGenerator
@@ -146,7 +150,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 0, 0, motor_info.current_position - start_pos, 0)
             move_to_start_time = max(times[-1], move_to_start_time)
         # Call the method with the values
-        fs = move_async(move_time=move_to_start_time, **args)
+        fs = move_async(moveTime=move_to_start_time, **args)
         return fs
 
     # Allow CamelCase as arguments will be serialized
@@ -164,6 +168,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         context.unsubscribe_all()
         child = context.block_view(self.mri)
         self.generator = generator
+        # Store if we need to output triggers
+        self.output_triggers = child.outputTriggers.value
         # See if there is a minimum turnaround
         infos = MinTurnaroundInfo.filter_values(part_info)
         if infos:
@@ -336,7 +342,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 velocity = fraction * (vs[1] - vs[0]) + vs[0]
                 part_position = motor_info.ramp_distance(
                     vs[0], velocity, time - ts[0])
-                self.profile[motor_info.cs_port.lower()].append(
+                self.profile[motor_info.cs_axis.lower()].append(
                     position + part_position)
 
     def add_profile_point(self, time_point, velocity_point, user_point,
@@ -368,7 +374,7 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         # Set the requested point
         self.profile["velocityMode"].append(velocity_point)
-        if not self.output_triggers.value:
+        if not self.output_triggers:
             user_point = NO_PROGRAM
         self.profile["userPrograms"].append(user_point)
         self.completed_steps_lookup.append(completed_step)

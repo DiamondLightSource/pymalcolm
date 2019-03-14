@@ -1,49 +1,45 @@
-import os
-
 import numpy as np
 import pytest
 from mock import Mock, call, patch
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Context, Process
-from malcolm.modules.pmac.blocks import pmac_trajectory_block, cs_block
-from malcolm.modules.pmac.infos import MotorInfo, ControllerInfo, CSInfo
-from malcolm.modules.pmac.parts import PmacTrajectoryPart
+from malcolm.modules.pmac.parts import PmacChildPart
 from malcolm.testutil import ChildTestCase
+from malcolm.yamlutil import make_block_creator
 
 SHOW_GRAPHS = False
 # Uncomment this to show graphs when running under PyCharm
 # SHOW_GRAPHS = "PYCHARM_HOSTED" in os.environ
 
 
-class TestPMACTrajectoryPart(ChildTestCase):
+class TestPMACChildPart(ChildTestCase):
     def setUp(self):
         self.process = Process("Process")
         self.context = Context(self.process)
-        self.cs = self.create_child_block(
-            cs_block, self.process, mri="PMAC:CS1", prefix="PV:CSPRE")
+        pmac_block = make_block_creator(
+            __file__, "test_pmac_manager_block.yaml")
         self.child = self.create_child_block(
-            pmac_trajectory_block, self.process, mri="PMAC:TRAJ",
-            prefix="PV:PRE")
-        self.o = PmacTrajectoryPart(name="pmac", mri="PMAC:TRAJ")
+            pmac_block, self.process, mri_prefix="PMAC",
+            config_dir="/tmp")
+        # These are the child blocks we are interested in
+        self.child_x = self.process.get_controller("BL45P-ML-STAGE-01:X")
+        self.child_y = self.process.get_controller("BL45P-ML-STAGE-01:Y")
+        self.child_cs1 = self.process.get_controller("PMAC:CS1")
+        self.child_traj = self.process.get_controller("PMAC:TRAJ")
+        self.child_status = self.process.get_controller("PMAC:STATUS")
+        # Set some static vars
+        self.set_attributes(self.child_cs1, port="CS1")
+        self.o = PmacChildPart(name="pmac", mri="PMAC")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
+        self.set_attributes(self.child, outputTriggers=True)
 
     def tearDown(self):
         del self.context
         self.process.stop(timeout=1)
 
-    def test_init(self):
-        registrar = Mock()
-        self.o.setup(registrar)
-        assert registrar.add_attribute_model.call_args_list == [
-            call("minTurnaround", self.o.min_turnaround,
-                 self.o.min_turnaround.set_value),
-            call("outputTriggers", self.o.output_triggers,
-                 self.o.output_triggers.set_value)
-        ]
-
-    def test_bad_units(self):
+    def _______________test_bad_units(self):
         with self.assertRaises(AssertionError) as cm:
             self.do_configure(["x", "y"], units="m")
         assert str(cm.exception) == "x: Expected scan units of 'm', got 'mm'"
@@ -60,111 +56,71 @@ class TestPMACTrajectoryPart(ChildTestCase):
             call.put('useY', False),
             call.put('useZ', False)]
 
-    def make_motion_parts_info(
+    def set_motor_attributes(
             self, x_pos=0.5, y_pos=0.0, units="mm",
             x_acceleration=2.5, y_acceleration=2.5,
             x_velocity=1.0, y_velocity=1.0):
         # create some parts to mock the motion controller and 2 axes in a CS
-        part_info = dict(
-            x=[MotorInfo(
-                cs_axis="A",
-                cs_port="CS1",
-                acceleration=x_acceleration,
-                resolution=0.001,
-                offset=0.0,
-                max_velocity=x_velocity,
-                current_position=x_pos,
-                scannable="x",
-                velocity_settle=0.0,
-                units=units
-            )],
-            y=[MotorInfo(
-                cs_axis="B",
-                cs_port="CS1",
-                acceleration=y_acceleration,
-                resolution=0.001,
-                offset=0.0,
-                max_velocity=y_velocity,
-                current_position=y_pos,
-                scannable="y",
-                velocity_settle=0.0,
-                units=units
-            )],
-            brick=[ControllerInfo(i10=1705244)],
-            cs1=[CSInfo(mri="PMAC:CS1", port="CS1")]
-        )
-        return part_info
+        self.set_attributes(
+            self.child_x, cs="CS1,A",
+            accelerationTime=x_velocity/x_acceleration, resolution=0.001,
+            offset=0.0, maxVelocity=x_velocity, readback=x_pos,
+            velocitySettle=0.0, units=units)
+        self.set_attributes(
+            self.child_y, cs="CS1,B",
+            accelerationTime=y_velocity/y_acceleration, resolution=0.001,
+            offset=0.0, maxVelocity=y_velocity, readback=y_pos,
+            velocitySettle=0.0, units=units)
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
                      y_pos=0.0, duration=1.0, units="mm"):
-        part_info = self.make_motion_parts_info(x_pos, y_pos, units)
+        self.set_motor_attributes(x_pos, y_pos, units)
         steps_to_do = 3 * len(axes_to_scan)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], duration)
         generator.prepare()
         self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info,
+            self.context, completed_steps, steps_to_do, {},
             generator, axes_to_scan)
 
     def test_validate(self):
         generator = CompoundGenerator([], [], [], 0.0102)
         axesToMove = ["x"]
-        part_info = self.make_motion_parts_info()
-        ret = self.o.validate(part_info, generator, axesToMove)
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+        ret = self.o.validate(self.context, generator, axesToMove)
         expected = 0.010166
         assert ret.value.duration == expected
 
-    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
            0.2)
     def test_configure(self):
         self.do_configure(axes_to_scan=["x", "y"])
-        assert self.cs.handled_requests.mock_calls == [
-            call.put('deferMoves', True),
-            call.put('csMoveTime', 0),
-            call.put('demandA', -0.1375),
-            call.put('demandB', 0.0),
-            call.when_values_matches('demandA', -0.1375, None, 1.0, None),
-            call.when_values_matches('demandB', 0.0, None, 1.0, None),
-            call.put('deferMoves', False)
-        ]
         assert self.child.handled_requests.mock_calls == [
-            call.put('numPoints', 4000000),
-            call.put('cs', 'CS1'),
-            call.put('useA', False),
-            call.put('useB', False),
-            call.put('useC', False),
-            call.put('useU', False),
-            call.put('useV', False),
-            call.put('useW', False),
-            call.put('useX', False),
-            call.put('useY', False),
-            call.put('useZ', False),
-            call.put('pointsToBuild', 1),
-            call.put('timeArray', pytest.approx([2000])),
-            call.put('userPrograms', pytest.approx([8])),
-            call.put('velocityMode', pytest.approx([3])),
-            call.post('buildProfile'),
+            call.post('writeProfile',
+                      csPort='CS1', timeArray=[0.002], userPrograms=[8]),
             call.post('executeProfile'),
-        ] + self.resolutions_and_use_call() + [
-                   call.put('pointsToBuild', 16),
-                   # pytest.approx to allow sensible compare with numpy arrays
-                   call.put('positionsA', pytest.approx([
+            call.post('moveCS1', a=-0.1375, b=0.0, moveTime=1.0375),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post('writeProfile',
+                      csPort='CS1',
+                      a=pytest.approx([
                        -0.125, 0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
-                       0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375])),
-                   call.put('positionsB', pytest.approx([
+                       0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375]),
+                      b=pytest.approx([
                        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05,
-                       0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])),
-                   call.put('timeArray', pytest.approx([
+                       0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]),
+                      timeArray=pytest.approx([
                        100000, 500000, 500000, 500000, 500000, 500000, 500000,
                        200000, 200000, 500000, 500000, 500000, 500000, 500000,
-                       500000, 100000])),
-                   call.put('userPrograms', pytest.approx([
-                       1, 4, 1, 4, 1, 4, 2, 8, 1, 4, 1, 4, 1, 4, 2, 8])),
-                   call.put('velocityMode', pytest.approx([
-                       2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 1, 3])),
-                   call.post('buildProfile')
-               ]
+                       500000, 100000]),
+                      userPrograms=pytest.approx([
+                       1, 4, 1, 4, 1, 4, 2, 8, 1, 4, 1, 4, 1, 4, 2, 8]),
+                      velocityMode=pytest.approx([
+                       2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 1, 3])
+                      )
+            ]
         assert self.o.completed_steps_lookup == [
             0, 0, 1, 1, 2, 2, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
@@ -356,12 +312,12 @@ class TestPMACTrajectoryPart(ChildTestCase):
         generator.prepare()
 
         if go_really_fast:
-            motion_parts = self.make_motion_parts_info(
+            motion_parts = self.set_motor_attributes(
                 x_acceleration=17.0 / 0.1, y_acceleration=1. / 0.2,
                 x_velocity=17, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
         else:
-            motion_parts = self.make_motion_parts_info(
+            motion_parts = self.set_motor_attributes(
                 x_acceleration=1. / 0.1, y_acceleration=1. / 0.2,
                 x_velocity=17, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)

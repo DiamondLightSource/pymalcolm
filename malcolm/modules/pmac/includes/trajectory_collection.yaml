@@ -7,9 +7,9 @@
     description: the root PV for the trajectory scan template
 
 - builtin.parameters.float64:
-    name: initial_min_turnaround
-    description: Minimum turnaround time
-    default: 0.0
+    name: initial_output_triggers
+    description: Whether to send GPIO triggers in output
+    default: True
 
 - pmac.blocks.pmac_status_block:
     mri: $(mri_prefix):STATUS
@@ -27,4 +27,4 @@
 - pmac.parts.PmacTrajectoryPart:
     name: TRAJ
     mri: $(mri_prefix):TRAJ
-    initial_min_turnaround: $(initial_min_turnaround)
+    initial_output_triggers: $(initial_output_triggers)

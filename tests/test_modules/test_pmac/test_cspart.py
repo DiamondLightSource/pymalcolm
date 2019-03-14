@@ -29,13 +29,14 @@ class TestCSPart(ChildTestCase):
             self.o.move, "moveCS1")
 
     def test_move(self):
+        self.mock_when_value_matches(self.child)
         self.o.move(a=32, c=19.1, move_time=2.3)
         assert self.child.handled_requests.mock_calls == [
             call.put('deferMoves', True),
             call.put('csMoveTime', 2.3),
             call.put('demandA', 32),
             call.put('demandC', 19.1),
-            call.when_values_matches('demandA', 32, None, 1.0, None),
-            call.when_values_matches('demandC', 19.1, None, 1.0, None),
+            call.when_value_matches('demandA', 32, None),
+            call.when_value_matches('demandC', 19.1, None),
             call.put('deferMoves', False)
         ]

@@ -1,14 +1,9 @@
-import os
-
-import numpy as np
 import pytest
 from cothread import cothread
-from mock import Mock, call, patch
-from scanpointgenerator import LineGenerator, CompoundGenerator
+from mock import Mock, call
 
-from malcolm.core import Context, Process
+from malcolm.core import Context, Process, TimeoutError
 from malcolm.modules.pmac.blocks import pmac_trajectory_block
-from malcolm.modules.pmac.infos import MotorInfo
 from malcolm.modules.pmac.parts import PmacTrajectoryPart
 from malcolm.testutil import ChildTestCase
 
@@ -88,20 +83,22 @@ class TestPMACTrajectoryPart(ChildTestCase):
         ]
 
     def test_execute_profile(self):
+        self.mock_when_value_matches(self.child)
         self.o.execute_profile()
         assert self.child.handled_requests.mock_calls == [
             call.post('executeProfile'),
-            call.when_values_matches('pointsScanned', 0, None, 0.1, None)
+            call.when_value_matches('pointsScanned', 0, None)
         ]
 
     def test_execute_profile_not_enough(self):
         def _handle_post(request):
-            cothread.Sleep(2)
+            cothread.Sleep(1)
             return [request.return_response(1)]
         self.child._handle_post = _handle_post
         self.o.total_points = 2
-        sp = cothread.Spawn(self.o.execute_profile)
+        sp = cothread.Spawn(self.o.execute_profile, raise_on_wait=True)
         self.set_attributes(self.child, pointsScanned=1)
-        with self.assertRaises(AssertionError) as cm:
-            sp.Wait(3)
+        with self.assertRaises(TimeoutError) as cm:
+            sp.Wait(2)
+        assert str(cm.exception) == "Timeout waiting for [When(PMAC:TRAJ.pointsScanned.value, equals_2, last=1)]"
 

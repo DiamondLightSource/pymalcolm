@@ -46,7 +46,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                  initial_output_triggers=True  # type: AOutputTriggers
                  ):
         # type: (...) -> None
-        super(PmacTrajectoryPart, self).__init__(name, mri)
+        super(PmacTrajectoryPart, self).__init__(
+            name, mri, initial_visibility=True)
         # The total number of points we have written
         self.total_points = 0
         # The context we will use for all our functions

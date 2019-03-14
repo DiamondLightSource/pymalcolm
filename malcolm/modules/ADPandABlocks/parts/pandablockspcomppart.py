@@ -134,7 +134,7 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         self.scan_up_to = completed_steps + steps_to_do
         self.loading = False
         self.last_point = None
-        _, self.axis_mapping = pmac.util.cs_axis_mapping(part_info, axesToMove)
+        self.axis_mapping = pmac.util.cs_axis_mapping(part_info, axesToMove)
         # Our PandA might not be wired up yet, so this is as far as
         # we can get
         self.panda_mri = context.block_view(self.mri).panda.value

@@ -4,6 +4,7 @@ from annotypes import TYPE_CHECKING, Union, Sequence
 from mock import MagicMock as Mock, patch
 
 from malcolm.core import Hook, Part
+from malcolm.modules.builtin.controllers import ManagerController
 
 if TYPE_CHECKING:
     from typing import List, Any, Type, Callable, Optional
@@ -27,9 +28,10 @@ class ChildTestCase(unittest.TestCase):
         """
         controllers = child_block(**params)
         for controller in controllers:
-            # We've already setup the CAParts and added to the block, so we
-            # can safely delete them so they don't try to connect
-            controller.parts = {}
+            if not isinstance(controller, ManagerController):
+                # We've already setup the CAParts and added to the block, so we
+                # can safely delete them so they don't try to connect
+                controller.parts = {}
             process.add_controller(controller)
         child = controllers[-1]
         child.handled_requests = Mock(return_value=None)
@@ -44,8 +46,9 @@ class ChildTestCase(unittest.TestCase):
 
         def handle_post(request):
             method_name = request.path[1]
-            child.handled_requests.post(method_name, **request.parameters)
-            return [request.return_response()]
+            value = child.handled_requests.post(
+                method_name, **request.parameters)
+            return [request.return_response(value)]
 
         child._handle_put = handle_put
         child._handle_post = handle_post

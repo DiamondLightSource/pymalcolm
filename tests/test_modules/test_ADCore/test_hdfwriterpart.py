@@ -255,9 +255,10 @@ class TestHDFWriterPart(ChildTestCase):
         self.o.registrar = MagicMock()
         # run waits for this value, so say we have finished immediately
         self.set_attributes(self.child, uniqueId=self.o.done_when_reaches)
+        self.mock_when_value_matches(self.child)
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
-            call.when_values_matches('uniqueId', 38, None, None, 60)]
+            call.when_value_matches('uniqueId', 38, None)]
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 38
 

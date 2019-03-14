@@ -8,7 +8,7 @@ motor_records = make_include_creator(
     __file__, "motor_records.yaml")
 rawmotor_collection = make_include_creator(
     __file__, "rawmotor_collection.yaml")
-brick_collection = make_include_creator(
-    __file__, "brick_collection.yaml")
+trajectory_collection = make_include_creator(
+    __file__, "trajectory_collection.yaml")
 
 __all__ = check_yaml_names(globals())

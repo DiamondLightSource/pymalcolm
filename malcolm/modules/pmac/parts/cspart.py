@@ -41,6 +41,8 @@ class CSPart(ChildPart):
         assert cs_port.endswith(str(self.cs)), \
             "CS Port %s doesn't end with port number %d" % (cs_port, self.cs)
 
+    # Serialize, so use camelCase
+    # noinspection PyPep8Naming
     @add_call_types
     def move(self,
              a=None,  # type: ADemandPosition
@@ -52,13 +54,13 @@ class CSPart(ChildPart):
              x=None,  # type: ADemandPosition
              y=None,  # type: ADemandPosition
              z=None,  # type: ADemandPosition
-             move_time=0  # type: AMoveTime
+             moveTime=0  # type: AMoveTime
              ):
         # type: (...) -> None
         """Move the given CS axes using a deferred co-ordinated move"""
         child = self.context.block_view(self.mri)
         child.deferMoves.put_value(True)
-        child.csMoveTime.put_value(move_time)
+        child.csMoveTime.put_value(moveTime)
         # Add in the motors we need to move
         attribute_values = {}
         for axis in CS_AXIS_NAMES:
@@ -72,7 +74,7 @@ class CSPart(ChildPart):
         # Start the move
         child.deferMoves.put_value(False)
         # Wait for them to get there
-        self.context.wait_all_futures(fs, timeout=move_time + DEFAULT_TIMEOUT)
+        self.context.wait_all_futures(fs, timeout=moveTime + DEFAULT_TIMEOUT)
 
 #    def inverse_kinematics():
 #    def forward_kinematics():
