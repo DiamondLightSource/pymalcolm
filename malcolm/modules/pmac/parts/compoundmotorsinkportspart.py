@@ -2,7 +2,7 @@ from annotypes import Any
 
 from malcolm.core import Part, PartRegistrar, StringMeta, Port, Alarm
 from malcolm.modules import ca, builtin
-from ..util import cs_axis_names
+from ..util import CS_AXIS_NAMES
 
 
 class CompoundMotorSinkPortsPart(Part):
@@ -53,5 +53,5 @@ class CompoundMotorSinkPortsPart(Part):
             # Split "@asyn(PORT,num)" into ["PORT", "num"]
             split = value.split("(")[1].rstrip(")").split(",")
             cs_port = split[0].strip()
-            cs_axis = cs_axis_names[int(split[1].strip()) - 1]
+            cs_axis = CS_AXIS_NAMES[int(split[1].strip()) - 1]
             self.attr.set_value("%s,%s" % (cs_port, cs_axis))

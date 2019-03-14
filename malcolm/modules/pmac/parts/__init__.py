@@ -1,9 +1,7 @@
-from .brickpart import BrickPart
+from .pmacstatuspart import PmacStatusPart
 from .compoundmotorsinkportspart import CompoundMotorSinkPortsPart
 from .cssourceportspart import CSSourcePortsPart
 from .cspart import CSPart
-from .motorpart import MotorPart
-from .pmacrunnablechildpart import PmacRunnableChildPart
 from .pmactrajectorypart import PmacTrajectoryPart
 from .rawmotorsinkportspart import RawMotorSinkPortsPart
 

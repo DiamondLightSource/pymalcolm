@@ -3,7 +3,7 @@ from annotypes import Anno
 from malcolm.core import Part, PartRegistrar, ChoiceMeta, Port, Alarm, \
     StringMeta
 from malcolm.modules import ca, builtin
-from malcolm.modules.pmac.util import cs_axis_names
+from malcolm.modules.pmac.util import CS_AXIS_NAMES
 
 with Anno("PV prefix for CSPort and CSAxis records"):
     APrefix = str
@@ -51,7 +51,7 @@ class RawMotorSinkPortsPart(Part):
         self.port_choices = ca_values[0].enums
         choices = [""]
         for choice in self.port_choices[1:]:
-            for axis in cs_axis_names + ["I"]:
+            for axis in CS_AXIS_NAMES + ["I"]:
                 choices.append("%s,%s" % (choice, axis))
         self.cs_attr.meta.set_choices(choices)
         self.port = self.port_choices[ca_values[2]]
@@ -78,7 +78,7 @@ class RawMotorSinkPortsPart(Part):
                 self.port = self.port_choices[value]
         elif index == 1:
             # Got CS Axis
-            if value.ok and str(value) in cs_axis_names + ["I"]:
+            if value.ok and str(value) in CS_AXIS_NAMES + ["I"]:
                 self.axis = value
             else:
                 self.axis = None

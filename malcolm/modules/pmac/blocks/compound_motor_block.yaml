@@ -4,7 +4,7 @@
 
 - builtin.parameters.string:
     name: prefix
-    description: the root PV for the motor record
+    description: The root PV for the motor record
 
 - builtin.parameters.float64:
     name: initial_velocity_settle

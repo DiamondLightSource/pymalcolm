@@ -11,13 +11,13 @@
     description: Minimum turnaround time
     default: 0.0
 
-- pmac.blocks.brick_block:
-    mri: $(mri_prefix):CONTROLLER
+- pmac.blocks.pmac_status_block:
+    mri: $(mri_prefix):STATUS
     prefix: $(prefix)
 
-- pmac.parts.BrickPart:
-    name: CONTROLLER
-    mri: $(mri_prefix):CONTROLLER
+- pmac.parts.PmacStatusPart:
+    name: STATUS
+    mri: $(mri_prefix):STATUS
     initial_visibility: True
 
 - pmac.blocks.pmac_trajectory_block:

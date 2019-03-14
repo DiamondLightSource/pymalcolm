@@ -7,13 +7,13 @@
     description: The root PV for the all records, without the CS number
 
 - builtin.parameters.int32:
-    name: CS
-    description: The CS number
+    name: cs
+    description: The Co-ordinate system number
 
 - pmac.blocks.cs_block:
-    mri: $(mri_prefix):CS$(CS)
-    prefix: $(prefix):CS$(CS)
+    mri: $(mri_prefix):CS$(cs)
+    prefix: $(prefix):CS$(cs)
 
 - pmac.parts.CSPart:
-    name: CS$(CS)
-    mri: $(mri_prefix):CS$(CS)
+    mri: $(mri_prefix):CS$(cs)
+    cs: $(cs)

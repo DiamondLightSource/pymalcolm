@@ -2,7 +2,7 @@ from annotypes import Any
 
 from malcolm.core import Part, PartRegistrar, StringMeta, Port
 from malcolm.modules import ca
-from ..util import cs_axis_names
+from ..util import CS_AXIS_NAMES
 
 
 class CSSourcePortsPart(Part):
@@ -24,7 +24,7 @@ class CSSourcePortsPart(Part):
         # type: (PartRegistrar) -> None
         self.caa.setup(registrar, self.name, self.register_hooked)
         # Add 9 compound motor attributes
-        for k in cs_axis_names + ["I"]:
+        for k in CS_AXIS_NAMES + ["I"]:
             # Note no widget tag as we don't want it on the properties pane,
             # just the layout view
             v = StringMeta(

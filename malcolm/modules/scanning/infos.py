@@ -45,3 +45,15 @@ class RunProgressInfo(Info):
     def __init__(self, steps):
         # type: (int) -> None
         self.steps = steps
+
+
+class MinTurnaroundInfo(Info):
+    """Info about the minimum time gap that should be left between points
+    that are not joined together
+
+    Args:
+        gap: The minimum time gap in seconds
+    """
+    def __init__(self, gap):
+        # type: (float) -> None
+        self.gap = gap

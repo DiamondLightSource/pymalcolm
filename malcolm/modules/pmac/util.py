@@ -7,6 +7,8 @@ from annotypes import TYPE_CHECKING, Array
 from scanpointgenerator import Point
 import numpy as np
 
+from malcolm.core import Context
+from malcolm.modules import builtin
 from .infos import MotorInfo
 
 if TYPE_CHECKING:
@@ -15,28 +17,47 @@ if TYPE_CHECKING:
 
 
 # All possible PMAC CS axis assignment
-cs_axis_names = list("ABCUVWXYZ")
+CS_AXIS_NAMES = list("ABCUVWXYZ")
 
 # Minimum move time for any move
 MIN_TIME = 0.002
 
 
-def cs_axis_mapping(part_info,  # type: Dict[str, Optional[Sequence]]
+def cs_axis_mapping(context,  # type: Context
+                    layout_table,  # type: builtin.util.LayoutTable
                     axes_to_move  # type: Array[str]
                     ):
-    # type: (...) -> Tuple[str, Dict[str, MotorInfo]]
-    """Given the motor infos for the parts, filter those with scannable
-    names in axes_to_move, check they are all in the same CS, and return
-    the cs_port and mapping of cs_axis to MotorInfo"""
+    # type: (...) -> Dict[str, MotorInfo]
+    """Given the layout table of a PMAC, create a MotorInfo for every axis in
+    axes_to_move. Check that they are all in the same CS"""
     cs_ports = set()  # type: Set[str]
     axis_mapping = {}  # type: Dict[str, MotorInfo]
-    for motor_info in MotorInfo.filter_values(part_info):
-        if motor_info.scannable in axes_to_move:
-            assert motor_info.cs_axis in cs_axis_names, \
-                "Can only scan 1-1 mappings, %r is %r" % \
-                (motor_info.scannable, motor_info.cs_axis)
-            cs_ports.add(motor_info.cs_port)
-            axis_mapping[motor_info.scannable] = motor_info
+    for name, mri in zip(layout_table.name, layout_table.mri):
+        if name in axes_to_move:
+            child = context.block_view(mri)
+            max_velocity = child.maxVelocity.value
+            acceleration = float(max_velocity) / child.accelerationTime.value
+            cs = child.cs.value
+            if cs:
+                cs_port, cs_axis = child.cs.value.split(",", 1)
+            else:
+                cs_port, cs_axis = "", ""
+            assert cs_axis in CS_AXIS_NAMES, \
+                "Can only scan 1-1 mappings, %r is %r" % (
+                    name, cs_axis)
+            cs_ports.add(cs_port)
+            axis_mapping[name] = MotorInfo(
+                cs_axis=cs_axis,
+                cs_port=cs_port,
+                acceleration=acceleration,
+                resolution=child.resolution.value,
+                offset=child.offset.value,
+                max_velocity=max_velocity,
+                current_position=child.readback.value,
+                scannable=name,
+                velocity_settle=child.velocitySettle.value,
+                units=child.units.value
+            )
     missing = list(set(axes_to_move) - set(axis_mapping))
     assert not missing, \
         "Some scannables %s are not in the CS mapping %s" % (
@@ -49,7 +70,7 @@ def cs_axis_mapping(part_info,  # type: Dict[str, Optional[Sequence]]
     overlap = [k for k, v in cs_axis_counts.items() if v > 1]
     assert not overlap, \
         "CS axis defs %s have more that one raw motor attached" % overlap
-    return cs_ports.pop(), axis_mapping
+    return axis_mapping
 
 
 def points_joined(axis_mapping, point, next_point):
