@@ -211,7 +211,7 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
 
     # And then any other attribute sources of data
     for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if
-                         attr_set.name.split('/')[0] != "NDAttributes"]:
+                         attr_set.type == AttributeDatasetType.DETECTOR]:
         # if we are a secondary source, use the same rank as the det
         attr_el = make_nxdata(dataset_info.name, dataset_info.rank,
                               entry_el, generator, link=True)
@@ -228,8 +228,8 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
                   source="ndattribute", ndattribute="NDArrayUniqueId")
 
     for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if
-                         attr_set.name.split('/')[0] == "NDAttributes"]:
-        ET.SubElement(NDAttributes_el, "dataset", name=dataset_info.name.split('/')[1],
+                         attr_set.type == AttributeDatasetType.MONITOR]:
+        ET.SubElement(NDAttributes_el, "dataset", name=dataset_info.name,
                       source="ndattribute", ndattribute=dataset_info.attr)
 
     xml = et_to_string(root_el)

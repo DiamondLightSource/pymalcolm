@@ -58,15 +58,36 @@ class DetectorDriverPart(ChildPart):
         root_el = ET.Element("Attributes")
         for index in range(len(self.AttrToCapture.value.sourceId)):
             if self.AttrToCapture.value.sourceType[index] == "PVAttribute":
+                dbr_type = self.AttrToCapture.value.dataType[index]
+                if dbr_type == "INT":
+                    dbr_type = "DBR_LONG"
+                elif dbr_type == "DOUBLE":
+                    dbr_type = "DBR_DOUBLE"
+                elif dbr_type == "STRING":
+                    dbr_type = "DBR_STRING"
                 ET.SubElement(root_el, "Attribute", name=self.AttrToCapture.value.name[index], type="EPICS_PV",
-                              dbrtype="DBR_NATIVE", description=self.AttrToCapture.value.description[index],
+                              dbrtype=dbr_type, description=self.AttrToCapture.value.description[index],
+                              source=self.AttrToCapture.value.sourceId[index])
+            elif self.AttrToCapture.value.sourceType[index] == "paramAttribute":
+                ET.SubElement(root_el, "Attribute", name=self.AttrToCapture.value.name[index], type="PARAM",
+                              datatype=self.AttrToCapture.value.dataType[index],
+                              description=self.AttrToCapture.value.description[index],
                               source=self.AttrToCapture.value.sourceId[index])
         return et_to_string(root_el)
+
+    def set_attr_to_capture(self, value, set_alarm_ts=True, alarm=None, ts=None):
+        new_value = value
+        new_value.dataType = list(value.dataType)
+        for row in range(len(new_value.name)):
+            if new_value.sourceType[row] == "paramAttribute":
+                if new_value.dataType[row] == "DBR_NATIVE":
+                    raise ValueError("data type DBR_NATIVE invalid for asyn param attribute")
+        self.AttrToCapture.set_value(new_value, set_alarm_ts, alarm, ts)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(DetectorDriverPart, self).setup(registrar)
-        registrar.add_attribute_model("attributesToCapture", self.AttrToCapture, self.AttrToCapture.set_value)
+        registrar.add_attribute_model("attributesToCapture", self.AttrToCapture, self.set_attr_to_capture)
 
     @add_call_types
     def reset(self, context):
@@ -81,11 +102,10 @@ class DetectorDriverPart(ChildPart):
         if self.main_dataset_useful:
             ret.append(NDArrayDatasetInfo(rank=2))
         for attrInd in range(len(self.AttrToCapture.value.sourceId)):
-            attr_id = self.AttrToCapture.value.sourceId[attrInd] if self.AttrToCapture.value.sourceType[attrInd] == "NDAttribute" else self.AttrToCapture.value.name[attrInd]
             ret.append(
-                NDAttributeDatasetInfo(rank=2, name="NDAttributes/%s" % self.AttrToCapture.value.name[attrInd],
-                                       attr=attr_id,
-                                       type=AttributeDatasetType("monitor")))
+                NDAttributeDatasetInfo(rank=2, name=self.AttrToCapture.value.name[attrInd],
+                                       attr=self.AttrToCapture.value.name[attrInd],
+                                       type=AttributeDatasetType(self.AttrToCapture.value.datasetType[attrInd])))
 
         return ret
 

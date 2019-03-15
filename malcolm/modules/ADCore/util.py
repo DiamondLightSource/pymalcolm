@@ -90,7 +90,11 @@ AttrSetTableElements = {
         tags=[Widget.TEXTINPUT.tag()], writeable=True),
     "description": StringArrayMeta("description of attribute", tags=[Widget.TEXTINPUT.tag()], writeable=True),
     "sourceType": ChoiceArrayMeta("source of data to be added to dataset", tags=[Widget.COMBO.tag()],
-                                  choices=["NDAttribute", "PVAttribute"], writeable=True)
+                                  choices=["PVAttribute", "paramAttribute"], writeable=True),
+    "dataType": ChoiceArrayMeta("type of data provided by source", tags=[Widget.COMBO.tag()],
+                                  choices=["INT", "DOUBLE", "STRING", "DBR_NATIVE"], writeable=True),
+    "datasetType": ChoiceArrayMeta("type of dataset", tags=[Widget.COMBO.tag()],
+                                  choices=["monitor", "detector", "position"], writeable=True)
 }
 
 
