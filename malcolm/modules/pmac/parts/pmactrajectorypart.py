@@ -101,8 +101,10 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # type: (...) -> None
         child = self.context.block_view(self.mri)
         # The axes taking part in the scan
-        use_axes = [axis for axis in CS_AXIS_NAMES
-                    if locals()[axis.lower()] is not None]
+        use_axes = []
+        for axis in CS_AXIS_NAMES:
+            if locals()[axis.lower()] is not None:
+                use_axes.append(axis)
         if csPort is not None:
             # This is a build
             action = child.buildProfile
