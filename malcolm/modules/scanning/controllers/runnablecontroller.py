@@ -11,7 +11,7 @@ from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, AAxesToMove, ConfigureParams
 from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
     RunHook, PostRunArmedHook, PostRunReadyHook, ResumeHook, ReportStatusHook, \
-    AbortHook, PauseHook, SeekHook, ControllerHook
+    AbortHook, PauseHook, SeekHook, ControllerHook, PreConfigureHook
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Iterable, Type, Callable
@@ -303,6 +303,9 @@ class RunnableController(ManagerController):
         self.part_contexts[self] = Context(self.process)
         # Store the params for use in seek()
         self.configure_params = params
+        # Tell everything to get into the right state to Configure
+        self.run_hooks(PreConfigureHook(p, c)
+                       for p, c in self.part_contexts.items())
         # This will calculate what we need from the generator, possibly a long
         # call
         params.generator.prepare()

@@ -65,6 +65,11 @@ with Anno("Number of steps we should configure for"):
     AStepsToDo = int
 
 
+class PreConfigureHook(ControllerHook[None]):
+    """Called before configure() to get the device into a suitable state to
+    report status and run configure. Typically will load a saved design."""
+
+
 class ConfigureHook(ControllerHook[UInfos]):
     """Called at configure() to configure child block for a run"""
 
