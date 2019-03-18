@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pytest
 from mock import Mock, call, patch
@@ -28,7 +30,7 @@ class TestPMACChildPart(ChildTestCase):
         self.child_cs1 = self.process.get_controller("PMAC:CS1")
         self.child_traj = self.process.get_controller("PMAC:TRAJ")
         self.child_status = self.process.get_controller("PMAC:STATUS")
-        # Set some static vars
+        # CS1 needs to have the right port otherwise we will error
         self.set_attributes(self.child_cs1, port="CS1")
         self.o = PmacChildPart(name="pmac", mri="PMAC")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
@@ -125,46 +127,45 @@ class TestPMACChildPart(ChildTestCase):
             0, 0, 1, 1, 2, 2, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
-    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.PROFILE_POINTS", 4)
-    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.PROFILE_POINTS", 4)
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
            0.2)
     def test_update_step(self):
         self.do_configure(axes_to_scan=["x", "y"], x_pos=0.0, y_pos=0.2)
-        positionsA = self.child.handled_requests.put.call_args_list[-5][0][1]
+        assert len(self.child.handled_requests.mock_calls) == 4
+        # Check that the first trajectory moves to the first place
+        positionsA = self.child.handled_requests.post.call_args_list[-1][1]["a"]
         assert len(positionsA) == 4
         assert positionsA[-1] == 0.25
         assert self.o.end_index == 2
         assert len(self.o.completed_steps_lookup) == 5
-        assert len(self.o.profile["time_array"]) == 1
+        assert len(self.o.profile["timeArray"]) == 1
         self.o.registrar = Mock()
         self.child.handled_requests.reset_mock()
         self.o.update_step(
-            3, self.context.block_view("PMAC:TRAJ"))
+            3, self.context.block_view("PMAC"))
         self.o.registrar.report.assert_called_once()
         assert self.o.registrar.report.call_args[0][0].steps == 1
         assert not self.o.loading
         assert self.child.handled_requests.mock_calls == [
-            call.put('pointsToBuild', 4),
-            call.put('positionsA', pytest.approx([
-                0.375, 0.5, 0.625, 0.6375])),
-            call.put('positionsB', pytest.approx([
-                0.0, 0.0, 0.0, 0.05])),
-            call.put('timeArray', pytest.approx([
-                500000, 500000, 500000, 200000])),
-            call.put('userPrograms', pytest.approx([
-                1, 4, 2, 8])),
-            call.put('velocityMode', pytest.approx([
-                0, 0, 1, 0])),
-            call.post('appendProfile')]
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post('writeProfile',
+                      a=pytest.approx([0.375, 0.5, 0.625, 0.6375]),
+                      b=pytest.approx([0.0, 0.0, 0.0, 0.05]),
+                      timeArray=pytest.approx([
+                          500000, 500000, 500000, 200000]),
+                      userPrograms=pytest.approx([1, 4, 2, 8]),
+                      velocityMode=pytest.approx([0, 0, 1, 0])
+            )
+        ]
         assert self.o.end_index == 3
         assert len(self.o.completed_steps_lookup) == 9
-        assert len(self.o.profile["time_array"]) == 1
+        assert len(self.o.profile["timeArray"]) == 1
 
     def test_run(self):
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
-            call.post('executeProfile'),
-            call.when_values_matches('pointsScanned', 0, None, 0.1, None)]
+            call.post('executeProfile')]
 
     def test_reset(self):
         self.o.reset(self.context)
@@ -179,80 +180,65 @@ class TestPMACChildPart(ChildTestCase):
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.6375)
         assert self.child.handled_requests.mock_calls == [
-            call.put('numPoints', 4000000),
-            call.put('cs', 'CS1'),
-            call.put('useA', False),
-            call.put('useB', False),
-            call.put('useC', False),
-            call.put('useU', False),
-            call.put('useV', False),
-            call.put('useW', False),
-            call.put('useX', False),
-            call.put('useY', False),
-            call.put('useZ', False),
-            call.put('pointsToBuild', 1),
-            call.put('timeArray', pytest.approx([2000])),
-            call.put('userPrograms', pytest.approx([8])),
-            call.put('velocityMode', pytest.approx([3])),
-            call.post('buildProfile'),
+            call.post('writeProfile', csPort='CS1', timeArray=[0.002],
+                      userPrograms=[8]),
             call.post('executeProfile'),
-        ] + self.resolutions_and_use_call(useB=False) + [
-                   call.put('pointsToBuild', 8),
-                   call.put('positionsA', pytest.approx([
-                       0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375])),
-                   call.put('timeArray', pytest.approx([
-                       100000, 500000, 500000, 500000, 500000, 500000, 500000,
-                       100000])),
-                   call.put('userPrograms',
-                            pytest.approx([1, 4, 1, 4, 1, 4, 2, 8])),
-                   call.put('velocityMode',
-                            pytest.approx([2, 0, 0, 0, 0, 0, 1, 3])),
-                   call.post('buildProfile')
-               ]
+            call.post('moveCS1', a=0.6375, moveTime=0.0),
+            call.post(
+                'writeProfile',
+                csPort='CS1',
+                a=pytest.approx([
+                    0.625, 0.5, 0.375, 0.25, 0.125, 0.0, -0.125, -0.1375]),
+                timeArray=pytest.approx([
+                    100000, 500000, 500000, 500000, 500000, 500000, 500000,
+                    100000]),
+                userPrograms=pytest.approx([1, 4, 1, 4, 1, 4, 2, 8]),
+                velocityMode=pytest.approx([2, 0, 0, 0, 0, 0, 1, 3])),
+            ]
 
-    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.INTERPOLATE_INTERVAL",
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
            0.2)
     def test_long_steps_lookup(self):
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.62506, duration=14.0)
-        assert self.child.handled_requests.mock_calls[-6:] == [
-            call.put('pointsToBuild', 14),
-            call.put('positionsA', pytest.approx([
+        # Ignore the trigger reset and move to start, just look at the last call
+        # which is the profile write
+        assert self.child.handled_requests.mock_calls[-1] == call.post(
+            'writeProfile',
+            csPort='CS1',
+            a=pytest.approx([
                 0.625, 0.5625, 0.5, 0.4375, 0.375, 0.3125, 0.25, 0.1875,
-                0.125, 0.0625, 0.0, -0.0625, -0.125, -0.12506377551020409])),
-            call.put('timeArray', pytest.approx([
+                0.125, 0.0625, 0.0, -0.0625, -0.125, -0.12506377551020409]),
+            timeArray=pytest.approx([
                 7143, 3500000, 3500000, 3500000, 3500000, 3500000, 3500000,
-                3500000, 3500000, 3500000, 3500000, 3500000, 3500000, 7143])),
-            call.put('userPrograms', pytest.approx([
-                1, 0, 4, 0, 1, 0, 4, 0, 1, 0, 4, 0, 2, 8])),
-            call.put('velocityMode', pytest.approx([
-                2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3])),
-            call.post('buildProfile')
-        ]
+                3500000, 3500000, 3500000, 3500000, 3500000, 3500000, 7143]),
+            userPrograms=pytest.approx([
+                1, 0, 4, 0, 1, 0, 4, 0, 1, 0, 4, 0, 2, 8]),
+            velocityMode=pytest.approx([
+                2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3]))
         assert self.o.completed_steps_lookup == (
             [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
 
-    @patch("malcolm.modules.pmac.parts.pmactrajectorypart.PROFILE_POINTS", 9)
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.PROFILE_POINTS", 9)
     def test_split_in_a_long_step_lookup(self):
         self.do_configure(
             axes_to_scan=["x"], completed_steps=3, x_pos=0.62506,
             duration=14.0)
-        # The last 6 calls show what trajectory we are building, ignore the
-        # first 11 which are just the useX calls and cs selection
-        assert self.child.handled_requests.mock_calls[-6:] == [
-            call.put('pointsToBuild', 9),
-            call.put('positionsA', pytest.approx([
+        # Ignore the trigger reset and move to start, just look at the last call
+        # which is the profile write
+        assert self.child.handled_requests.mock_calls[-1] == call.post(
+            'writeProfile',
+            csPort='CS1',
+            a=pytest.approx([
                 0.625, 0.5625, 0.5, 0.4375, 0.375, 0.3125, 0.25, 0.1875,
-                0.125])),
-            call.put('timeArray', pytest.approx([
+                0.125]),
+            timeArray=pytest.approx([
                 7143, 3500000, 3500000, 3500000, 3500000, 3500000, 3500000,
-                3500000, 3500000])),
-            call.put('userPrograms', pytest.approx([
-                1, 0, 4, 0, 1, 0, 4, 0, 1])),
-            call.put('velocityMode', pytest.approx([
-                2, 0, 0, 0, 0, 0, 0, 0, 0])),
-            call.post('buildProfile')
-        ]
+                3500000, 3500000]),
+            userPrograms=pytest.approx([
+                1, 0, 4, 0, 1, 0, 4, 0, 1]),
+            velocityMode=pytest.approx([
+                2, 0, 0, 0, 0, 0, 0, 0, 0]))
         # The completed steps works on complete (not split) steps, so we expect
         # the last value to be the end of step 6, even though it doesn't
         # actually appear in the velocity arrays
@@ -265,20 +251,18 @@ class TestPMACChildPart(ChildTestCase):
         # scanned can be any index into completed_steps_lookup so that there
         # are less than PROFILE_POINTS left to go in it
         self.o.update_step(
-            scanned=2, child=self.process.block_view("PMAC:TRAJ"))
+            scanned=2, child=self.process.block_view("PMAC"))
         # Expect the rest of the points
-        assert self.child.handled_requests.mock_calls[-6:] == [
-            call.put('pointsToBuild', 5),
-            call.put('positionsA', pytest.approx([
-                0.0625, 0.0, -0.0625, -0.125, -0.12506377551020409])),
-            call.put('timeArray', pytest.approx([
-                3500000, 3500000, 3500000, 3500000, 7143])),
-            call.put('userPrograms', pytest.approx([
-                0, 4, 0, 2, 8])),
-            call.put('velocityMode', pytest.approx([
-                0, 0, 0, 1, 3])),
-            call.post('appendProfile')
-        ]
+        assert self.child.handled_requests.mock_calls[-1] == call.post(
+            'writeProfile',
+            a=pytest.approx([
+                0.0625, 0.0, -0.0625, -0.125, -0.12506377551020409]),
+            timeArray=pytest.approx([
+                3500000, 3500000, 3500000, 3500000, 7143]),
+            userPrograms=pytest.approx([
+                0, 4, 0, 2, 8]),
+            velocityMode=pytest.approx([
+                0, 0, 0, 1, 3]))
         assert self.o.registrar.report.call_count == 1
         assert self.o.registrar.report.call_args[0][0].steps == 3
         # And for the rest of the lookup table to be added
@@ -312,34 +296,33 @@ class TestPMACChildPart(ChildTestCase):
         generator.prepare()
 
         if go_really_fast:
-            motion_parts = self.set_motor_attributes(
+            self.set_motor_attributes(
                 x_acceleration=17.0 / 0.1, y_acceleration=1. / 0.2,
                 x_velocity=17, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
         else:
-            motion_parts = self.set_motor_attributes(
+            self.set_motor_attributes(
                 x_acceleration=1. / 0.1, y_acceleration=1. / 0.2,
                 x_velocity=17, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
 
-        self.o.configure(self.context, 0, p * 2, motion_parts, generator,
+        self.o.configure(self.context, 0, p * 2, {}, generator,
                          ["x", "y"])
 
-        a = self.cs.attributes
+        name, args, kwargs = self.child.handled_requests.mock_calls[2]
+        assert name == "post"
+        assert args[0] == "moveCS1"
         # add in the start point to the position and time arrays
-        xp = np.array([a['demandA']])
-        yp = np.array([a['demandB']])
+        xp = np.array([kwargs['a']])
+        yp = np.array([kwargs['b']])
         tp = np.array([0])
-        for c in self.child.handled_requests.mock_calls:
-            if c[1][0] == 'positionsA':
-                xp = np.append(xp, (c[1][1]))
-            if c[1][0] == 'positionsB':
-                yp = np.append(yp, c[1][1])
-            if c[1][0] == 'timeArray':
-                if c[1][1].size > 1:  # reject the reset triggers call
-                    tp = np.append(tp, c[1][1])
-            if c[1][0] == 'pointsToBuild':
-                total_points = c[1][1]
+        # And the profile write
+        name, args, kwargs = self.child.handled_requests.mock_calls[-1]
+        assert name == "post"
+        assert args[0] == "writeProfile"
+        xp = np.append(xp, kwargs["a"])
+        yp = np.append(yp, kwargs["b"])
+        tp = np.append(tp, kwargs["timeArray"])
 
         # if this test is run in pycharm then it plots some results
         # to help diagnose issues
