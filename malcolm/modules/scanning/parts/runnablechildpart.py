@@ -8,7 +8,7 @@ from malcolm.modules.builtin.hooks import AStructure, AInit
 from malcolm.modules.builtin.parts import ChildPart, AMri, AInitialVisibility
 from ..hooks import ConfigureHook, PostRunArmedHook, \
     SeekHook, RunHook, ResumeHook, ACompletedSteps, AContext, ValidateHook, \
-    UParameterTweakInfos, PostRunReadyHook, AbortHook
+    UParameterTweakInfos, PostRunReadyHook, AbortHook, PreConfigureHook
 from ..infos import ParameterTweakInfo, ConfigureParamsInfo, RunProgressInfo
 from ..util import RunnableStates
 
@@ -41,6 +41,7 @@ class RunnableChildPart(ChildPart):
         self.design = None
         # Hooks
         self.register_hooked(ValidateHook, self.validate, self.configure_args)
+        self.register_hooked(PreConfigureHook, self.reload)
         self.register_hooked(ConfigureHook, self.configure, self.configure_args)
         self.register_hooked((RunHook, ResumeHook), self.run)
         self.register_hooked((PostRunArmedHook, PostRunReadyHook),
@@ -82,24 +83,6 @@ class RunnableChildPart(ChildPart):
         super(RunnableChildPart, self).reset(context)
 
     @add_call_types
-    def load(self, context, structure, init=False):
-        # type: (AContext, AStructure, AInit) -> None
-        if init:
-            # At init pop out the design so it doesn't get restored here
-            # This stops child devices (like a detector) getting told to
-            # go to multiple conflicting designs at startup
-            design = structure.pop("design", "")
-            super(RunnableChildPart, self).load(context, structure)
-            # Now put it back in the saved structure
-            self.saved_structure["design"] = design
-            # We might not have cleared the changes so report here
-            child = context.block_view(self.mri)
-            self.send_modified_info_if_not_equal(
-                "design", child.design.value)
-        else:
-            super(RunnableChildPart, self).load(context, structure)
-
-    @add_call_types
     def validate(self, context, **kwargs):
         # type: (AContext, **Any) -> UParameterTweakInfos
         child = context.block_view(self.mri)
@@ -122,11 +105,6 @@ class RunnableChildPart(ChildPart):
     def configure(self, context, **kwargs):
         # type: (AContext, **Any) -> None
         child = context.block_view(self.mri)
-        # If we have done a save or load with the child having a particular
-        # design then make sure the child now has that design
-        design = self.saved_structure.get("design", "")
-        if design:
-            child.design.put_value(design)
         child.configure(**kwargs)
 
     @add_call_types

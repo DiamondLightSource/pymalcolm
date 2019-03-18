@@ -76,6 +76,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.generator = None  # type: CompoundGenerator
         # Hooks
         self.register_hooked(scanning.hooks.ValidateHook, self.validate)
+        self.register_hooked(scanning.hooks.PreConfigureHook, self.reload)
         self.register_hooked((scanning.hooks.ConfigureHook,
                               scanning.hooks.PostRunArmedHook,
                               scanning.hooks.SeekHook), self.configure)

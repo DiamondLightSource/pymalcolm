@@ -5,6 +5,7 @@ from malcolm.compat import OrderedDict, clean_repr
 from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
     Unsubscribe, APartName, Port, Controller, Response, \
     get_config_tag, Update, Return, Put, Request
+from malcolm.modules.builtin.hooks import AInit
 from ..infos import PortInfo, LayoutInfo, SourcePortInfo, SinkPortInfo, \
     PartExportableInfo, PartModifiedInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
@@ -145,8 +146,13 @@ class ChildPart(Part):
         return [ret]
 
     @add_call_types
-    def load(self, context, structure):
-        # type: (AContext, AStructure) -> None
+    def load(self, context, structure, init=False):
+        # type: (AContext, AStructure, AInit) -> None
+        if init:
+            # At init pop out the design so it doesn't get restored here
+            # This stops child devices (like a detector) getting told to
+            # go to multiple conflicting designs at startup
+            design = structure.pop("design", "")
         child = context.block_view(self.mri)
         iterations = {}  # type: Dict[int, Dict[str, Tuple[Attribute, Any]]]
         for k, v in structure.items():
@@ -175,6 +181,13 @@ class ChildPart(Part):
                 except AssertionError:
                     to_set[k] = v
             child.put_attribute_values(to_set)
+        if init:
+            # Now put it back in the saved structure
+            self.saved_structure["design"] = design
+            # We might not have cleared the changes so report here
+            child = context.block_view(self.mri)
+            self.send_modified_info_if_not_equal(
+                "design", child.design.value)
 
     @add_call_types
     def save(self, context):
@@ -189,6 +202,16 @@ class ChildPart(Part):
                     part_structure[k] = serialize_object(attr.value)
         self.saved_structure = part_structure
         return part_structure
+
+    @add_call_types
+    def reload(self, context):
+        # type: (AContext) -> None
+        """If we have done a save or load with the child having a particular
+        design then make sure the child now has that design."""
+        design = self.saved_structure.get("design", "")
+        if design:
+            child = context.block_view(self.mri)
+            child.design.put_value(design)
 
     def update_part_exportable(self, response):
         # type: (Response) -> None
