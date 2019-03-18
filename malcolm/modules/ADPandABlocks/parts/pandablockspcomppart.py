@@ -6,6 +6,7 @@ from scanpointgenerator import Point
 
 from malcolm.core import APartName, Block
 from malcolm.modules import builtin, scanning, pmac
+from malcolm.modules.scanning.infos import MinTurnaroundInfo
 
 from ..util import SequencerTable, Trigger
 
@@ -76,6 +77,33 @@ def time_row(half_frame):
     return row
 
 
+def _get_blocks(context, panda_mri):
+    # {part_name: export_name}
+    panda = context.block_view(panda_mri)
+    seq_part_names = {}
+    for source, export in panda.exports.value.rows():
+        if export in SEQ_TABLES:
+            assert source.endswith(".table"), \
+                "Expected export %s to come from SEQx.table, got %s" %(
+                    export, source)
+            seq_part_names[source[:-len(".table")]] = export
+    assert tuple(sorted(seq_part_names.values())) == SEQ_TABLES, \
+        "Expected exported attributes %s, got %s" % (
+            SEQ_TABLES, panda.exports.value.export)
+    # {export_name: mri}
+    seq_mris = {}
+    for name, mri, _, _, _ in panda.layout.value.rows():
+        if name in seq_part_names:
+            export = seq_part_names[name]
+            seq_mris[export] = mri
+    assert sorted(seq_mris) == sorted(seq_part_names.values()), \
+        "Couldn't find MRI for some of %s" % (seq_part_names.values(),)
+    blocks = [panda]
+    blocks += [context.block_view(seq_mris[x]) for x in SEQ_TABLES]
+    # TODO: check wiring delays, prescalers
+    return blocks
+
+
 class PandABlocksPcompPart(builtin.parts.ChildPart):
     """Part for operating a pair of SEQ blocks in a PandA to do position
     compare"""
@@ -105,15 +133,13 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         self.last_point = None
         # What is the mapping of scannable name to MotorInfo
         self.axis_mapping = None
-        # The mri of the panda we should be prodding
-        self.panda_mri = None
+        # The minimum turnaround time for non-joined points
+        self.min_turnaround = 0
         # The sequencer tables
         self.seq_tables = []
         # Hooks
         self.register_hooked(scanning.hooks.ConfigureHook,
                              self.configure)
-        self.register_hooked(scanning.hooks.PostConfigureHook,
-                             self.post_configure)
         self.register_hooked(scanning.hooks.RunHook,
                              self.run)
 
@@ -134,41 +160,22 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         self.scan_up_to = completed_steps + steps_to_do
         self.loading = False
         self.last_point = None
-        self.axis_mapping = pmac.util.cs_axis_mapping(part_info, axesToMove)
-        # Our PandA might not be wired up yet, so this is as far as
-        # we can get
-        self.panda_mri = context.block_view(self.mri).panda.value
-
-    def _get_blocks(self, context):
-        # {part_name: export_name}
-        panda = context.block_view(self.panda_mri)
-        seq_part_names = {}
-        for source, export in panda.exports.value.rows():
-            if export in SEQ_TABLES:
-                assert source.endswith(".table"), \
-                    "Expected export %s to come from SEQx.table, got %s" %(
-                        export, source)
-                seq_part_names[source[:-len(".table")]] = export
-        assert tuple(sorted(seq_part_names.values())) == SEQ_TABLES, \
-            "Expected exported attributes %s, got %s" % (
-                SEQ_TABLES, panda.exports.value.export)
-        # {export_name: mri}
-        seq_mris = {}
-        for name, mri, _, _, _ in panda.layout.value.rows():
-            if name in seq_part_names:
-                export = seq_part_names[name]
-                seq_mris[export] = mri
-        assert sorted(seq_mris) == sorted(seq_part_names.values()), \
-            "Couldn't find MRI for some of %s" % (seq_part_names.values(),)
-        blocks = [panda]
-        blocks += [context.block_view(seq_mris[x]) for x in SEQ_TABLES]
-        # TODO: check wiring delays, prescalers
-        return blocks
-
-    @add_call_types
-    def post_configure(self, context):
-        # type: (scanning.hooks.AContext) -> None
-        panda, seqa, seqb = self._get_blocks(context)
+        # Get the panda and the pmac we will be using
+        panda_mri = context.block_view(self.mri).panda.value
+        pmac_mri = context.block_view(self.mri).pmac.value
+        # See if there is a minimum turnaround
+        infos = MinTurnaroundInfo.filter_values(part_info)
+        if infos:
+            assert len(infos) == 1, \
+                "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(infos)
+            self.min_turnaround = max(pmac.util.MIN_TIME, infos[0].gap)
+        else:
+            self.min_turnaround = pmac.util.MIN_TIME
+        # Fill in motor info
+        self.axis_mapping = pmac.util.cs_axis_mapping(
+            context, context.block_view(pmac_mri).layout.value, axesToMove)
+        # Get the sequencer tables
+        panda, seqa, seqb = _get_blocks(context, panda_mri)
         self.seq_tables = [panda[attr] for attr in SEQ_TABLES]
         # load up the first SEQ
         self._fill_sequencer(self.seq_tables[0])
@@ -176,7 +183,7 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         panda.seqTableEnable()
 
     def _what_moves_most(self, point):
-        # type: (Point) -> Tuple[int, Trigger, int]
+        # type: (Point) -> Tuple[int, str, int]
         # {axis_name: abs(diff_cts)}
         diffs = {}
         # {axis_name: compare_cts}
@@ -205,13 +212,11 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         trigger_enum = self.trigger_enums[(axis_name, increasing)]
 
         if self.last_point:
-            # TODO: what about pmactrajectorypart min_turnaround?
             time_arrays, velocity_arrays = pmac.util.profile_between_points(
-                self.axis_mapping, self.last_point, point)
+                self.axis_mapping, self.last_point, point, self.min_turnaround)
 
             time_array = time_arrays[axis_name]
             velocity_array = velocity_arrays[axis_name]
-
 
             # Work backwards through the velocity array until we are going the
             # opposite way
@@ -269,6 +274,6 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
-        panda = context.block_view(self.panda_mri)
+        pass
 
 

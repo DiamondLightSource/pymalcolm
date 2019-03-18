@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 
 from annotypes import Anno, Array
@@ -15,6 +17,7 @@ from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.pmac.infos import MotorInfo
 from malcolm.testutil import ChildTestCase
+from malcolm.yamlutil import make_block_creator
 
 
 class SequencerPart(Part):
@@ -67,10 +70,24 @@ class TestPcompPart(ChildTestCase):
                       initial_visibility=True, stateful=False))
         self.process.add_controller(self.panda)
 
-        # Make the child block holding panda mri
+        # And the PMAC
+        pmac_block = make_block_creator(
+            os.path.join(os.path.dirname(__file__), "..", "test_pmac", "blah"),
+            "test_pmac_manager_block.yaml")
+        self.pmac = self.create_child_block(
+            pmac_block, self.process, mri_prefix="PMAC",
+            config_dir="/tmp")
+        # These are the motors we are interested in
+        self.child_x = self.process.get_controller("BL45P-ML-STAGE-01:X")
+        self.child_y = self.process.get_controller("BL45P-ML-STAGE-01:Y")
+        self.child_cs1 = self.process.get_controller("PMAC:CS1")
+        # CS1 needs to have the right port otherwise we will error
+        self.set_attributes(self.child_cs1, port="CS1")
+
+        # Make the child block holding panda and pmac mri
         self.child = self.create_child_block(
             pandablocks_pcomp_block, self.process,
-            mri="SCAN:PCOMP", panda="PANDA")
+            mri="SCAN:PCOMP", panda="PANDA", pmac="PMAC")
 
         # And our part under test
         self.o = PandABlocksPcompPart("pcomp", "SCAN:PCOMP", "x", "y")
@@ -88,34 +105,21 @@ class TestPcompPart(ChildTestCase):
     def tearDown(self):
         self.process.stop(timeout=2)
 
-    def make_part_info(self, x_pos=0.5, y_pos=0.0):
-        part_info = dict(
-            x=[MotorInfo(
-                cs_axis="A",
-                cs_port="CS1",
-                acceleration=2.5,
-                resolution=0.001,
-                offset=0.0,
-                max_velocity=1.0,
-                current_position=x_pos,
-                scannable="x",
-                velocity_settle=0.0,
-                units="mm"
-            )],
-            y=[MotorInfo(
-                cs_axis="B",
-                cs_port="CS1",
-                acceleration=2.5,
-                resolution=0.001,
-                offset=0.0,
-                max_velocity=1.0,
-                current_position=y_pos,
-                scannable="y",
-                velocity_settle=0.0,
-                units="mm"
-            )],
-        )
-        return part_info
+    def set_motor_attributes(
+            self, x_pos=0.5, y_pos=0.0, units="mm",
+            x_acceleration=2.5, y_acceleration=2.5,
+            x_velocity=1.0, y_velocity=1.0):
+        # create some parts to mock the motion controller and 2 axes in a CS
+        self.set_attributes(
+            self.child_x, cs="CS1,A",
+            accelerationTime=x_velocity/x_acceleration, resolution=0.001,
+            offset=0.0, maxVelocity=x_velocity, readback=x_pos,
+            velocitySettle=0.0, units=units)
+        self.set_attributes(
+            self.child_y, cs="CS1,B",
+            accelerationTime=y_velocity/y_acceleration, resolution=0.001,
+            offset=0.0, maxVelocity=y_velocity, readback=y_pos,
+            velocitySettle=0.0, units=units)
 
     def test_configure(self):
         xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
@@ -124,16 +128,14 @@ class TestPcompPart(ChildTestCase):
         generator.prepare()
         completed_steps = 0
         steps_to_do = 8
-        part_info = self.make_part_info()
+        self.set_motor_attributes()
         axes_to_move = ["x", "y"]
         self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info, generator,
+            self.context, completed_steps, steps_to_do, {}, generator,
             axes_to_move)
-        assert self.o.panda_mri == "PANDA"
         assert self.o.generator is generator
         assert self.o.loaded_up_to == completed_steps
         assert self.o.scan_up_to == completed_steps + steps_to_do
-        self.o.post_configure(self.context)
         # Triggers
         GT = Trigger.POSA_GT
         I = Trigger.IMMEDIATE

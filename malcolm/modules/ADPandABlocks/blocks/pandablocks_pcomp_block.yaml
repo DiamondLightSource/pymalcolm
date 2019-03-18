@@ -6,6 +6,10 @@
     name: panda
     description: Initial value of PandA mri we will configure
 
+- builtin.parameters.string:
+    name: pmac
+    description: Initial value of PMAC mri holding the motors in the scan
+
 - builtin.controllers.BasicController:
     mri: $(mri)
 
@@ -13,3 +17,8 @@
     name: panda
     description: PandA mri we will configure
     value: $(panda)
+
+- builtin.parts.BlockPart:
+    name: pmac
+    description: PMAC mri holding the motors taking part in the scan
+    value: $(pmac)

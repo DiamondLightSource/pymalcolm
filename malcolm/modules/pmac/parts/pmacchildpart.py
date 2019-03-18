@@ -220,6 +220,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.loading = False
         child = context.block_view(self.mri)
         # Wait for the trajectory to run and complete
+        child.pointsScanned.subscribe_value(self.update_step, child)
         # TODO: we should return at the end of the last point for PostRun
         child.executeProfile()
 
