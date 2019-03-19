@@ -26,6 +26,8 @@ with Anno("Argument for fileTemplate, normally filename without extension"):
     AFileName = str
 with Anno("File Name"):
     AFileTemplate = str
+with Anno("Argument for fileTemplate, normally filename without extension"):
+    AFormatName = str
 
 
 def greater_than_zero(v):
@@ -99,7 +101,7 @@ def create_vds(generator, raw_name, vds_path, child):
     else:
         alternates = None
 
-    files = [os.path.join(vds_path, '{}{}.hdf'.format(raw_name, i + 1))
+    files = [os.path.join(vds_folder, '{}{}.hdf'.format(raw_name, i + 1))
              for i in range(hdf_count)]
     shape = (hdf_shape, image_height, image_width)
 
@@ -170,21 +172,28 @@ class OdinWriterPart(builtin.parts.ChildPart):
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   generator,  # type: scanning.hooks.AGenerator
-                  fileDir='/tmp',  # type: AFileDir
-                  fileName="odin.hdf",  # type: AFileName
+                  fileDir,  # type: AFileDir
+                  formatName="odin",  # type: AFormatName
+                  fileTemplate="%s.hdf",  # type: AFileTemplate
                   ):
         # type: (...) -> scanning.hooks.UInfos
+
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + steps_to_do
         self.unique_id_offset = 0
         child = context.block_view(self.mri)
         file_dir = fileDir.rstrip(os.sep)
+
+        # derive file path from template as AreaDetector would normally do
+        fileName = fileTemplate.replace('%s', formatName)
+
         # this is path to the requested file which will be a VDS
         vds_full_filename = os.path.join(fileDir, fileName)
-        base, ext = os.path.splitext(fileName)
+
         # this is the path to underlying file the odin writer will write to
-        raw_file_basename = base + '_raw_data'
-        raw_file_name = raw_file_basename + ext
+        raw_file_name = fileTemplate.replace('%s', formatName+'_raw_data')
+        raw_file_basename, _ = os.path.splitext(raw_file_name)
+
         assert "." in vds_full_filename, \
             "File extension for %r should be supplied" % vds_full_filename
         futures = child.put_attribute_values_async(dict(
