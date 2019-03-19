@@ -2,7 +2,7 @@ import os
 
 from annotypes import add_call_types, Anno, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, \
-    ExcaliburGapFillVDSGenerator, ReshapeVDSGenerator
+    ReshapeVDSGenerator
 
 from malcolm.core import APartName, Future, Info, PartRegistrar
 from malcolm.modules import builtin, scanning
@@ -33,59 +33,88 @@ def greater_than_zero(v):
     return v > 0
 
 
-def create_vds(generator, raw_name, vds_path, hdf_count):
-    vds_folder, vds_name = os.path.split(vds_path)
+def files_shape(frames, block_size, file_count):
+    # all files get at least per_file blocks
+    per_file = int(frames) / int(file_count * block_size)
+    # this is the remainder once per_file blocks have been distributed
+    remainder = int(frames) % int(file_count * block_size)
 
-    # todo hdf_count tells me the module count. We need to translate
-    #  this into resolution (currently assume 1536/2048)
-    # todo also - need to work out what to pass to 'alternate'
-    #  in ReshapeVDSGenerator
+    # distribute the remainder
+    remainders = [block_size if remains > block_size else remains
+                  for remains in range(remainder, 0, -block_size)]
+    # pad the remainders list with zeros
+    remainders += [0] * (file_count-len(remainders))
 
-    # hdf_shape tuple represents the number of images in each file
-    per_file = int(generator.size) / int(hdf_count)
-    remainder = int(generator.size) % int(hdf_count)
-    hdf_shape = tuple(
-        (per_file + int(i < remainder) for i in range(hdf_count))
-    )
+    shape = tuple(per_file*block_size + remainders[i]
+                  for i in range(file_count))
+    return shape
 
+
+def one_vds(vds_folder, vds_name, files, width, height,
+            shape, generator, alternates, block_size, node, d_type):
     # this vds reshapes from 1 file per data writer to a single 1D data set
-    gen = InterleaveVDSGenerator(vds_folder,
-                                 prefix=raw_name,
-                                 source={'height': 1536,
-                                         'width': 2048,
-                                         'dtype': 'uint16',
-                                         'shape': (hdf_shape, 1536, 2048)
-                                         },
-                                 output=vds_name,
-                                 target_node="process/data_interleave",
-                                 block_size=1,
-                                 log_level=1)
+    gen = InterleaveVDSGenerator(
+        vds_folder,
+        files=files,
+        source={'height': width,
+                'width': height,
+                'dtype': d_type,
+                'shape': shape
+                },
+        output=vds_name,
+        source_node=node,
+        target_node="process/"+node+"_interleave",
+        block_size=block_size,
+        log_level=1)
     gen.generate_vds()
-    #
-    # # this VDS adds in the gaps between sensors
-    # gen = ExcaliburGapFillVDSGenerator(vds_folder,
-    #                                    files=[vds_name],
-    #                                    source_node="process/data_interleave",
-    #                                    target_node="process/data_gaps",
-    #                                    chip_spacing=3,
-    #                                    module_spacing=123,
-    #                                    modules=3,
-    #                                    output=vds_name,
-    #                                    log_level=1)
-    #
-    # gen.generate_vds()
 
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(path=vds_folder,
                               files=[vds_name],
-                              source_node="process/data_interleave",
-                              target_node="data",
+                              source_node="process/"+node+"_interleave",
+                              target_node=node,
                               output=vds_name,
                               shape=generator.shape,
-                              alternate=None,
+                              alternate=alternates,
                               log_level=1)
 
     gen.generate_vds()
+
+
+def create_vds(generator, raw_name, vds_path, child):
+    vds_folder, vds_name = os.path.split(vds_path)
+
+    image_width = child.imageWidth.value
+    image_height = child.imageHeight.value
+    block_size = child.blockSize.value
+    hdf_count = child.numProcesses.value
+    data_type = child.dataType.value
+
+    # hdf_shape tuple represents the number of images in each file
+    hdf_shape = files_shape(generator.size, block_size, hdf_count)
+
+    alternates = (gen.alternate for gen in generator.generators)
+    if any(alternates):
+        raise ValueError("Snake scans are not yet supported")
+    else:
+        alternates = None
+
+    files = [os.path.join(vds_path, '{}{}.hdf'.format(raw_name, i + 1))
+             for i in range(hdf_count)]
+    shape = (hdf_shape, image_height, image_width)
+
+    # prepare a vds for the image data
+    one_vds(vds_folder, vds_name, files, image_width, image_height,
+            shape, generator, alternates, block_size, 'data', data_type)
+
+    shape = (hdf_shape, 1, 1)
+
+    # prepare a vds for the unique IDs
+    one_vds(vds_folder, vds_name, files, 1, 1,
+            shape, generator, alternates, block_size, 'uid', 'uint64')
+    # prepare a vds for the sums
+    one_vds(vds_folder, vds_name, files, 1, 1,
+            shape, generator, alternates, block_size, 'sum', 'uint64')
 
 
 # We will set these attributes on the child block, so don't save them
@@ -162,29 +191,6 @@ class OdinWriterPart(builtin.parts.ChildPart):
             numCapture=steps_to_do,
             filePath=file_dir + os.sep,
             fileName=raw_file_name))
-        # todo restore similar to this when Flush period control is avail
-        # # We want the HDF writer to flush this often:
-        # flush_time = 1  # seconds
-        # # (In particular this means that HDF files can be read cleanly by
-        # # SciSoft at the start of a scan.)
-        # assert generator.duration > 0, \
-        #     "Duration %s for generator must be >0 to signify fixed exposure" \
-        #     % generator.duration
-        # if generator.duration > flush_time:
-        #     # We are going slower than 1/flush_time Hz, so flush every frame
-        #     n_frames_between_flushes = 1
-        # else:
-        #     # Limit update rate to be every flush_time seconds
-        #     n_frames_between_flushes = int(math.ceil(
-        #         flush_time / generator.duration))
-        #     # But make sure we flush in this round of frames
-        #     n_frames_between_flushes = min(
-        #         steps_to_do, n_frames_between_flushes)
-        # futures += child.put_attribute_values_async(dict(
-        #     xml=self.layout_filename,
-        #     flushDataPerNFrames=n_frames_between_flushes,
-        #     flushAttrPerNFrames=n_frames_between_flushes))
-        # # Wait for the previous puts to finish
         context.wait_all_futures(futures)
 
         # Start the plugin
@@ -194,7 +200,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
             "numCaptured", greater_than_zero)
 
         create_vds(generator, raw_file_basename,
-                   vds_full_filename, child.numProcesses.value)
+                   vds_full_filename, child)
         return None
 
     @add_call_types
@@ -222,7 +228,6 @@ class OdinWriterPart(builtin.parts.ChildPart):
         context.unsubscribe_all()
         child = context.block_view(self.mri)
         child.numCaptured.subscribe_value(self.update_completed_steps)
-        # TODO: what happens if we miss the last frame?
         child.when_value_matches(
             "numCaptured", self.done_when_reaches, event_timeout=FRAME_TIMEOUT)
 
