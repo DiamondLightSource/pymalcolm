@@ -47,28 +47,28 @@ class TestOdinWriterPart(ChildTestCase):
 
     def test_configure(self):
         tmp_dir = mkdtemp() + os.path.sep
-        vds_file = 'odin.hdf'
+        vds_file = 'odin2'
 
         start_time = datetime.now()
         self.o.configure(
             self.context, self.completed_steps, self.steps_to_do,
-            generator=self.generator, fileDir=tmp_dir, fileName=vds_file)
+            generator=self.generator, fileDir=tmp_dir, formatName=vds_file)
         assert self.child.handled_requests.mock_calls == [
-            call.put('fileName', 'odin_raw_data.hdf'),
+            call.put('fileName', 'odin2_raw_data.hdf'),
             call.put('filePath', tmp_dir),
             call.put('numCapture', self.steps_to_do),
             call.post('start')]
         print(self.child.handled_requests.mock_calls)
         print('OdinWriter configure {} points took {} secs'.format(
             self.steps_to_do, datetime.now() - start_time))
-        # currently keep test output to examine the results in dawn
-        # rmtree(tmp_dir)
+        rmtree(tmp_dir)
 
     def test_run(self):
         tmp_dir = mkdtemp() + os.path.sep
         self.o.configure(
             self.context, self.completed_steps, self.steps_to_do,
-            generator=self.generator, fileDir=tmp_dir, fileName='odin.hdf')
+            generator=self.generator, fileDir=tmp_dir, formatName='odin2',
+            fileTemplate='a_unique_name_%s_from_gda.h5')
         self.child.handled_requests.reset_mock()
         self.o.registrar = MagicMock()
         # run waits for this value
@@ -81,6 +81,7 @@ class TestOdinWriterPart(ChildTestCase):
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == \
             self.steps_to_do
+        rmtree(tmp_dir)
 
     def test_alternate_fails(self):
         cols, rows, alternate = 3000, 2000, True
@@ -94,4 +95,4 @@ class TestOdinWriterPart(ChildTestCase):
             ValueError, self.o.configure,
             *(self.context, self.completed_steps, self.steps_to_do),
             **{'generator': self.generator,
-               'fileDir': '/tmp', 'fileName': 'odin2.hdf'})
+               'fileDir': '/tmp', 'formatName': 'odin3'})
