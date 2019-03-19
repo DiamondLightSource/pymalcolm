@@ -51,3 +51,8 @@ class ProxyController(BasicController):
     def check_field_writeable(self, field):
         # Let the server do this
         pass
+
+    def update_method_logs(self, method, took_value, took_ts, returned_value,
+                           returned_alarm):
+        # Let the server do this
+        pass

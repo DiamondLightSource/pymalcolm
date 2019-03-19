@@ -18,10 +18,6 @@ from malcolm.modules.pva.blocks import pva_server_block
 from malcolm.modules.pva.controllers.pvaconvert import EMPTY
 
 
-# Set to true if running against old server
-PVAPY = False
-
-
 block_meta_tuple = ('S', 'malcolm:core/BlockMeta:1.0', [
     ('description', 's'),
     ('tags', 'as'),
@@ -74,44 +70,45 @@ health_attribute_tuple = ('S', 'epics:nt/NTScalar:1.0', [
     ]))
 ])
 
-if PVAPY:
-    # PvaPy can't do empty structures, so suppress elements
-    empty_map_meta_tuple = ('S', 'malcolm:core/MapMeta:1.0', [
-        ('required', 'as'),
-    ])
-    empty_method_tuple = ('S', 'malcolm:core/Method:1.0', [
-        ('takes', empty_map_meta_tuple),
-        ('description', 's'),
-        ('tags', 'as'),
-        ('writeable', '?'),
-        ('label', 's'),
-        ('returns', empty_map_meta_tuple)
-    ])
-else:
-    empty_map_meta_tuple = ('S', 'malcolm:core/MapMeta:1.0', [
-        ('elements', ('S', None, [])),
-        ('required', 'as'),
-    ])
-    empty_method_tuple = ('S', 'malcolm:core/Method:1.0', [
-        ('takes', empty_map_meta_tuple),
-        ('defaults', ('S', None, [])),
-        ('description', 's'),
-        ('tags', 'as'),
-        ('writeable', '?'),
-        ('label', 's'),
-        ('returns', empty_map_meta_tuple)
-    ])
+empty_map_meta_tuple = ('S', 'malcolm:core/MapMeta:1.0', [
+    ('elements', ('S', None, [])),
+    ('required', 'as'),
+])
 
-if PVAPY:
-    # PvaPy can't do empty structures, so suppress elements
-    empty_map_meta_dict = {
-        'required': []
-    }
-else:
-    empty_map_meta_dict = {
-        'elements': {},
-        'required': []
-    }
+empty_method_meta_tuple = ('S', 'malcolm:core/MethodMeta:1.1', [
+    ('takes', empty_map_meta_tuple),
+    ('defaults', ('S', None, [])),
+    ('description', 's'),
+    ('tags', 'as'),
+    ('writeable', '?'),
+    ('label', 's'),
+    ('returns', empty_map_meta_tuple)
+])
+
+empty_method_log_tuple = ('S', 'malcolm:core/MethodLog:1.0', [
+    ('value', ('S', None, [])),
+    ('present', 'as'),
+    ('alarm', alarm_tuple),
+    ('timeStamp', ts_tuple),
+])
+
+empty_method_tuple = ('S', 'malcolm:core/Method:1.1', [
+    ('took', empty_method_log_tuple),
+    ('returned', empty_method_log_tuple),
+    ('meta', empty_method_meta_tuple),
+])
+
+empty_map_meta_dict = {
+    'elements': {},
+    'required': []
+}
+
+empty_method_log_dict = {
+    'value': {},
+    'present': [],
+    'alarm': alarm_ok,
+    'timeStamp': ts_zero
+}
 
 ntscalar_tuple = ('S', 'epics:nt/NTScalar:1.0', [
     ('value', 'd'),
@@ -186,20 +183,28 @@ counter_dict = {
         }
     },
     'zero': {
-        'takes': empty_map_meta_dict,
-        'description': 'Zero the counter attribute',
-        'tags': [],
-        'writeable': True,
-        'label': 'Zero',
-        'returns': empty_map_meta_dict
+        'took': empty_method_log_dict,
+        'returned': empty_method_log_dict,
+        'meta': {
+            'takes': empty_map_meta_dict,
+            'description': 'Zero the counter attribute',
+            'tags': [],
+            'writeable': True,
+            'label': 'Zero',
+            'returns': empty_map_meta_dict
+        }
     },
     'increment': {
-        'takes': empty_map_meta_dict,
-        'description': 'Add one to the counter attribute',
-        'tags': [],
-        'writeable': True,
-        'label': 'Increment',
-        'returns': empty_map_meta_dict
+        'took': empty_method_log_dict,
+        'returned': empty_method_log_dict,
+        'meta': {
+            'takes': empty_map_meta_dict,
+            'description': 'Add one to the counter attribute',
+            'tags': [],
+            'writeable': True,
+            'label': 'Increment',
+            'returns': empty_map_meta_dict
+        }
     }
 }
 
@@ -208,43 +213,62 @@ counter_expected = Value(counter_block_t, counter_dict)
 hello_block_t = Type([
     ('meta', block_meta_tuple),
     ('health', health_attribute_tuple),
-    ('greet', ('S', 'malcolm:core/Method:1.0', [
-        ('takes', ('S', 'malcolm:core/MapMeta:1.0', [
-            ('elements', ('S', None, [
-                ('name', ('S', 'malcolm:core/StringMeta:1.0', [
-                    ('description', 's'),
-                    ('tags', 'as'),
-                    ('writeable', '?'),
-                    ('label', 's')
-                ])),
-                ('sleep', ('S', 'malcolm:core/NumberMeta:1.0', [
-                    ('dtype', 's'),
-                    ('description', 's'),
-                    ('tags', 'as'),
-                    ('writeable', '?'),
-                    ('label', 's'),
-                    ('display', display_tuple)
-                ]))
+    ('greet', ('S', 'malcolm:core/Method:1.1', [
+        ('took', ('S', 'malcolm:core/MethodLog:1.0', [
+            ('value', ('S', None, [
+                ('name', 's'),
+                ('sleep', 'd')
             ])),
-            ('required', 'as')
+            ('present', 'as'),
+            ('alarm', alarm_tuple),
+            ('timeStamp', ts_tuple),
         ])),
-        ('defaults', ('S', None, [
-            ('sleep', 'd')
-        ])),
-        ('description', 's'),
-        ('tags', 'as'),
-        ('writeable', '?'),
-        ('label', 's'),
-        ('returns', ('S', 'malcolm:core/MapMeta:1.0', [
-            ('elements', ('S', None, [
-                ('return', ('S', 'malcolm:core/StringMeta:1.0', [
-                    ('description', 's'),
-                    ('tags', 'as'),
-                    ('writeable', '?'),
-                    ('label', 's')
-                ])),
+        ('returned', ('S', 'malcolm:core/MethodLog:1.0', [
+            ('value', ('S', None, [
+                ('return', 's'),
             ])),
-            ('required', 'as')
+            ('present', 'as'),
+            ('alarm', alarm_tuple),
+            ('timeStamp', ts_tuple),
+        ])),
+        ('meta', ('S', 'malcolm:core/MethodMeta:1.1', [
+            ('takes', ('S', 'malcolm:core/MapMeta:1.0', [
+                ('elements', ('S', None, [
+                    ('name', ('S', 'malcolm:core/StringMeta:1.0', [
+                        ('description', 's'),
+                        ('tags', 'as'),
+                        ('writeable', '?'),
+                        ('label', 's')
+                    ])),
+                    ('sleep', ('S', 'malcolm:core/NumberMeta:1.0', [
+                        ('dtype', 's'),
+                        ('description', 's'),
+                        ('tags', 'as'),
+                        ('writeable', '?'),
+                        ('label', 's'),
+                        ('display', display_tuple)
+                    ]))
+                ])),
+                ('required', 'as')
+            ])),
+            ('defaults', ('S', None, [
+                ('sleep', 'd')
+            ])),
+            ('description', 's'),
+            ('tags', 'as'),
+            ('writeable', '?'),
+            ('label', 's'),
+            ('returns', ('S', 'malcolm:core/MapMeta:1.0', [
+                ('elements', ('S', None, [
+                    ('return', ('S', 'malcolm:core/StringMeta:1.0', [
+                        ('description', 's'),
+                        ('tags', 'as'),
+                        ('writeable', '?'),
+                        ('label', 's')
+                    ])),
+                ])),
+                ('required', 'as')
+            ])),
         ])),
     ])),
     ('error', empty_method_tuple)
@@ -270,53 +294,61 @@ hello_dict = {
         }
     },
     'greet': {
-        'takes': {
-            'elements': {
-                'name': {
-                    'description': 'The name of the person to greet',
-                    'tags': ['widget:textinput'],
-                    'writeable': True,
-                    'label': 'Name'
-                },
-                'sleep': {
-                    'dtype': 'float64',
-                    'description': 'Time to wait before returning',
-                    'tags': ['widget:textinput'],
-                    'writeable': True,
-                    'label': 'Sleep',
-                    'display': {
-                        'precision': 8
+        'took': empty_method_log_dict,
+        'returned': empty_method_log_dict,
+        'meta': {
+            'takes': {
+                'elements': {
+                    'name': {
+                        'description': 'The name of the person to greet',
+                        'tags': ['widget:textinput'],
+                        'writeable': True,
+                        'label': 'Name'
+                    },
+                    'sleep': {
+                        'dtype': 'float64',
+                        'description': 'Time to wait before returning',
+                        'tags': ['widget:textinput'],
+                        'writeable': True,
+                        'label': 'Sleep',
+                        'display': {
+                            'precision': 8
+                        }
                     }
-                }
+                },
+                'required': ["name"]
             },
-            'required': ["name"]
-        },
-        'defaults': {
-            'sleep': 0.0
-        },
-        'description': 'Optionally sleep <sleep> seconds, then return a greeting to <name>',
-        'tags': ['method:return:unpacked'],
-        'writeable': True,
-        'label': 'Greet',
-        'returns': {
-            'elements': {
-                'return': {
-                    'description': 'The manufactured greeting',
-                    'tags': ['widget:textupdate'],
-                    'writeable': False,
-                    'label': 'Return'
-                }
+            'defaults': {
+                'sleep': 0.0
             },
-            'required': ['return']
+            'description': 'Optionally sleep <sleep> seconds, then return a greeting to <name>',
+            'tags': ['method:return:unpacked'],
+            'writeable': True,
+            'label': 'Greet',
+            'returns': {
+                'elements': {
+                    'return': {
+                        'description': 'The manufactured greeting',
+                        'tags': ['widget:textupdate'],
+                        'writeable': False,
+                        'label': 'Return'
+                    }
+                },
+                'required': ['return']
+            }
         }
     },
     'error': {
-        'takes': empty_map_meta_dict,
-        'description': 'Raise an error',
-        'tags': [],
-        'writeable': True,
-        'label': 'Error',
-        'returns': empty_map_meta_dict
+        'took': empty_method_log_dict,
+        'returned': empty_method_log_dict,
+        'meta': {
+            'takes': empty_map_meta_dict,
+            'description': 'Raise an error',
+            'tags': [],
+            'writeable': True,
+            'label': 'Error',
+            'returns': empty_map_meta_dict
+        }
     }
 }
 
@@ -329,16 +361,15 @@ class TestPVAServer(unittest.TestCase):
 
     def setUp(self):
         TestPVAServer.SEQ += 1
-        if not PVAPY:
-            self.process = Process("proc%s" % TestPVAServer.SEQ)
-            self.hello = hello_block(mri="TESTHELLO")[-1]
-            self.process.add_controller(self.hello)
-            self.counter = counter_block(mri="TESTCOUNTER")[-1]
-            self.process.add_controller(self.counter)
-            self.server = pva_server_block(mri="PVA")[-1]
-            self.process.add_controller(self.server)
-            self.process.start()
-            self.addCleanup(self.process.stop, timeout=2)
+        self.process = Process("proc%s" % TestPVAServer.SEQ)
+        self.hello = hello_block(mri="TESTHELLO")[-1]
+        self.process.add_controller(self.hello)
+        self.counter = counter_block(mri="TESTCOUNTER")[-1]
+        self.process.add_controller(self.counter)
+        self.server = pva_server_block(mri="PVA")[-1]
+        self.process.add_controller(self.server)
+        self.process.start()
+        self.addCleanup(self.process.stop, timeout=2)
         self.ctxt = self.make_pva_context(unwrap=False)
 
     def make_pva_context(self, *args, **kwargs):
@@ -355,10 +386,9 @@ class TestPVAServer(unittest.TestCase):
         def linejunk(line):
             # Ignore the timeStamp fields
             split = line.split()
-            # ignore timestamps which change and also ignore userTag because
-            # we are now using un-ordered dictionaries
+            # ignore timestamps which change
             return len(split) > 1 and split[1] in ("secondsPastEpoch",
-                                                   "nanoseconds", "userTag")
+                                                   "nanoseconds")
 
         for f, s in zip(firstlines, secondlines):
             if not same:
@@ -407,16 +437,9 @@ class TestPVAServer(unittest.TestCase):
 
     # Equivalent to:
     #   pvget TESTCOUNTER -r junk.thing
-    def atestGetBadSubfield(self):
-        if PVAPY:
-            # Currently only returns an error structure as pvaPy can't raise
-            # exceptions
-            error = self.ctxt.get("TESTCOUNTER", "junk.thing")
-            self.assertEqual(error.getID(), "malcolm:core/Error:1.0")
-            self.assertEqual(error.message, "UnexpectedError: Object ['TESTCOUNTER'] of type 'malcolm:core/Block:1.0' has no attribute 'junk'")
-        else:
-            with self.assertRaises(RemoteError):
-                self.ctxt.get("TESTCOUNTER", "junk.thing")
+    def testGetBadSubfield(self):
+        with self.assertRaises(RemoteError):
+            self.ctxt.get("TESTCOUNTER", "junk.thing")
 
     # Equivalent to:
     #   pvget BADCHANNEL -r ""
@@ -456,12 +479,7 @@ class TestPVAServer(unittest.TestCase):
         self.assertEqual(counter.alarm.severity, 0)
 
     def assertCounter(self, value):
-        if PVAPY:
-            # Get it over pva
-            counter = self.ctxt.get("TESTCOUNTER.counter").value
-        else:
-            # Get it directly from the data structure
-            counter = self.counter.block_view().counter.value
+        counter = self.counter.block_view().counter.value
         self.assertEqual(counter, value)
 
     # Equivalent to:
@@ -491,31 +509,23 @@ class TestPVAServer(unittest.TestCase):
         counter = q.get(timeout=1)
         self.assertStructureWithoutTsEqual(str(counter), str(counter_expected))
         self.assertTrue(counter.changedSet().issuperset({
-            "meta.fields", "counter.value", "zero.description"}))
+            "meta.fields", "counter.value", "zero.meta.description"}))
         self.assertEqual(counter["counter.value"], 0)
-        self.assertEqual(counter["zero.description"],
+        self.assertEqual(counter["zero.meta.description"],
                          "Zero the counter attribute")
         self.ctxt.put("TESTCOUNTER.counter", 5, "value")
         counter = q.get(timeout=1)
         self.assertEqual(counter.counter.value, 5)
-        if PVAPY:
-            # bitsets in pvaPy don't work, so it is everything at the moment
-            self.assertTrue(counter.changedSet().issuperset({
-                "meta", "meta.fields", "counter", "zero"}))
-        else:
-            self.assertEqual(counter.changedSet(),
-                             {"counter.value",
-                              "counter.timeStamp.userTag",
-                              "counter.timeStamp.secondsPastEpoch",
-                              "counter.timeStamp.nanoseconds"})
+        self.assertEqual(counter.changedSet(),
+                         {"counter.value",
+                          "counter.timeStamp.userTag",
+                          "counter.timeStamp.secondsPastEpoch",
+                          "counter.timeStamp.nanoseconds"})
         self.ctxt.put("TESTCOUNTER.counter", 0, "value")
         counter = q.get(timeout=1)
         self.assertStructureWithoutTsEqual(str(counter), str(counter_expected))
 
     def testTwoMonitors(self):
-        if PVAPY:
-            # No need to do this test on the old server
-            return
         assert "TESTCOUNTER" not in self.server._pvs
         # Make first monitor
         q1 = Queue()
@@ -548,12 +558,8 @@ class TestPVAServer(unittest.TestCase):
         self.addCleanup(m.close)
         counter = q.get(timeout=1)
         self.assertEqual(counter.getID(), "structure")
-        if PVAPY:
-            # PVAPY says everything is changed
-            self.assertEqual(counter.changedSet(), {"meta", "meta.fields"})
-        else:
-            # P4P only says leaves have changed
-            self.assertEqual(counter.changedSet(), {"meta.fields"})
+        # P4P only says leaves have changed
+        self.assertEqual(counter.changedSet(), {"meta.fields"})
         self.assertEqual(counter.meta.fields,
                          ["health", "counter", "delta", "zero", "increment"])
         fields_code = dict(counter.meta.type().aspy()[2])["fields"]
@@ -572,16 +578,11 @@ class TestPVAServer(unittest.TestCase):
         self.ctxt.put("TESTCOUNTER.counter", 5, "value")
         counter = q.get(timeout=1)
         self.assertEqual(counter.value, 5)
-        if PVAPY:
-            # bitsets in pvaPy don't work, so it is everything at the moment
-            self.assertTrue(counter.changedSet().issuperset({
-                "value", "alarm", "timeStamp"}))
-        else:
-            self.assertEqual(counter.changedSet(),
-                             {"value",
-                              "timeStamp.userTag",
-                              "timeStamp.secondsPastEpoch",
-                              "timeStamp.nanoseconds"})
+        self.assertEqual(counter.changedSet(),
+                         {"value",
+                          "timeStamp.userTag",
+                          "timeStamp.secondsPastEpoch",
+                          "timeStamp.nanoseconds"})
         self.ctxt.put("TESTCOUNTER.counter", 0, "value")
         counter = q.get(timeout=1)
         self.assertEqual(counter.value, 0)
@@ -623,14 +624,7 @@ class TestPVAServer(unittest.TestCase):
     # Equivalent to:
     #    eget -z -s "TESTHELLO.greet" -a name=me
     def testRpcError(self):
-        if PVAPY:
-            # This doesn't raise on the pvaPy server as it cannot return errors
-            error = self.ctxt.rpc("TESTHELLO.error", EMPTY)
-            self.assertEqual(error.getID(), "malcolm:core/Error:1.0")
-            self.assertEqual(error.message,
-                             "RuntimeError: You called method error()")
-        else:
-            with self.assertRaises(RuntimeError) as cm:
-                self.ctxt.rpc("TESTHELLO.error", EMPTY)
-            self.assertEqual(str(cm.exception),
-                             "RuntimeError: You called method error()")
+        with self.assertRaises(RuntimeError) as cm:
+            self.ctxt.rpc("TESTHELLO.error", EMPTY)
+        self.assertEqual(str(cm.exception),
+                         "RuntimeError: You called method error()")

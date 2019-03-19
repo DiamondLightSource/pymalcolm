@@ -157,7 +157,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=0,
-            message="FieldError: 'NotATypeID' not a valid typeid"
+            message="TypeError: 'NotATypeID' not a valid typeid"
         )
 
     def test_error_server_and_simple_client_no_type(self):
@@ -169,10 +169,10 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         resp = self.result.get(timeout=2)
 
         if version_info[0] == 2:
-            message = "FieldError: typeid not present in keys " + \
+            message = "TypeError: typeid not present in keys " + \
                 "[u'id', u'path', u'parameters']"
         elif version_info[0] == 3:
-            message = "FieldError: typeid not present in keys " + \
+            message = "TypeError: typeid not present in keys " + \
                 "['id', 'path', 'parameters']"
         else:
             raise Exception("Got bad python version info")
@@ -208,6 +208,19 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
             "__init__() got an unexpected keyword argument 'parameters'"
         )
 
+    def test_error_server_and_simple_client_bad_path_dict_attribute(self):
+        msg = OrderedDict()
+        msg['typeid'] = "malcolm:core/Get:1.0"
+        msg['id'] = 0
+        msg['path'] = ("hello", "greet", "meta", "takes", "elements", "bad")
+        IOLoopHelper.call(self.send_message, msg)
+        resp = self.result.get(timeout=2)
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message="UnexpectedError: Object 'hello.greet.meta.takes.elements' of type %r has no attribute 'bad'" % type(OrderedDict())
+        )
+
     def test_error_server_and_simple_client_bad_path_attribute(self):
         msg = OrderedDict()
         msg['typeid'] = "malcolm:core/Get:1.0"
@@ -215,18 +228,11 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         msg['path'] = ("hello", "meat")
         IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
-        if version_info[0] == 2:
-            assert resp == dict(
-                typeid="malcolm:core/Error:1.0",
-                id=0,
-                message="UnexpectedError: Object [u'hello'] of type 'malcolm:core/Block:1.0' has no attribute u'meat'"
-            )
-        elif version_info[0] == 3:
-            assert resp == dict(
-                typeid="malcolm:core/Error:1.0",
-                id=0,
-                message="UnexpectedError: Object ['hello'] of type 'malcolm:core/Block:1.0' has no attribute 'meat'"
-            )
+        assert resp == dict(
+            typeid="malcolm:core/Error:1.0",
+            id=0,
+            message="UnexpectedError: Object 'hello' of type 'malcolm:core/Block:1.0' has no attribute 'meat'"
+        )
 
     def test_error_server_and_simple_client_no_path(self):
         msg = OrderedDict()

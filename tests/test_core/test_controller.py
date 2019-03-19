@@ -52,8 +52,8 @@ class TestController(unittest.TestCase):
         b = self.process.block_view("mri")
         method_view = b.method
         attribute_view = b.myAttribute
-        dict_view = b.method.returns.elements
-        list_view = b.method.returns.required
+        dict_view = b.method.meta.returns.elements
+        list_view = b.method.meta.returns.required
         assert method_view() == 'world'
         assert attribute_view.value == "hello_block"
         assert dict_view['return'].description == "The return value"
@@ -100,7 +100,8 @@ class TestController(unittest.TestCase):
         response = q.get(timeout=.1)
         self.assertIsInstance(response, Error)
         assert response.id == 43
-        assert str(response.message) == "Method passed argument 'dummy' which is not in []"
+        assert str(response.message) == \
+            "Given keys ['dummy'], some of which aren't in allowed keys []"
 
         request = Subscribe(id=44, path=["mri", "myAttribute"], delta=False)
         request.set_callback(q.put)

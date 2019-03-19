@@ -2,11 +2,10 @@ from collections import OrderedDict
 import unittest
 
 import numpy as np
-from annotypes import Anno, Array, Mapping, Union, Sequence, Any
+from annotypes import Anno, Array, Mapping, Union, Sequence, Any, \
+    Serializable, deserialize_object
 
-from malcolm.core.serializable import Serializable, deserialize_object, \
-    json_encode, serialize_object
-from malcolm.core.models import StringMeta
+from malcolm.core.serializable import json_encode, serialize_object
 
 
 with Anno("A Boo"):
@@ -44,46 +43,7 @@ class DummySerializable(Serializable):
         self.NOT_CAMEL = ANotCamel(c)
 
 
-@Serializable.register_subclass("empty:1.0")
-class EmptySerializable(Serializable):
-    pass
-
-
 class TestSerialization(unittest.TestCase):
-
-    def test_to_dict(self):
-        d = {'a': 42, 'b': 42}
-        l = [42, 42]
-        s = DummySerializable(3, d, l)
-        expected = OrderedDict(typeid="foo:1.0")
-        expected["boo"] = 3
-        expected["bar"] = d
-        expected["NOT_CAMEL"] = l
-        assert expected == s.to_dict()
-
-        n = DummySerializable.from_dict(expected)
-        assert n.to_dict() == expected
-
-    def test_deserialize(self):
-        a = EmptySerializable()
-        d = a.to_dict()
-        b = deserialize_object(d)
-        assert a.to_dict() == b.to_dict()
-
-    def test_to_dict_children(self):
-        children = OrderedDict()
-        children["a"] = StringMeta().to_dict()
-        children["b"] = EmptySerializable().to_dict()
-        s = DummySerializable(3, children, [])
-        expected = OrderedDict(typeid="foo:1.0")
-        expected["boo"] = 3
-        expected["bar"] = children
-        expected["NOT_CAMEL"] = []
-
-        assert expected == s.to_dict()
-
-        n = DummySerializable.from_dict(expected)
-        assert n.to_dict() == expected
 
     def test_json_numpy_array(self):
         s1 = DummySerializable(3, {}, np.array([3, 4]))

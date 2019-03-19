@@ -4,12 +4,13 @@ import unittest
 import numpy as np
 from mock import Mock
 
-from malcolm.core import BlockModel, Serializable, StringMeta, Alarm, \
+from annotypes import Serializable
+from malcolm.core import BlockModel, StringMeta, Alarm, \
     AlarmSeverity, AlarmStatus, TimeStamp, VMeta, TableMeta, StringArrayMeta, \
     NumberMeta, NumberArrayMeta, MethodModel, ChoiceMeta, ChoiceArrayMeta, \
     BooleanMeta, BooleanArrayMeta
 from malcolm.core.models import NTTable, MapMeta, BlockMeta, NTScalar, \
-    Meta, Display
+    Meta, MethodMeta, MethodLog
 
 
 class TestAttribute(unittest.TestCase):
@@ -36,7 +37,7 @@ class TestAttribute(unittest.TestCase):
 
     def test_set_timeStamp(self):
         timeStamp = TimeStamp()
-        self.o.set_ts(timeStamp)
+        self.o.set_timeStamp(timeStamp)
         assert self.o.timeStamp == timeStamp
 
 
@@ -53,7 +54,7 @@ class TestNTScalar(unittest.TestCase):
     def test_to_dict(self):
         a = StringMeta("desc").create_attribute_model()
         a.set_value("some string")
-        a.set_ts(self.serialized["timeStamp"])
+        a.set_timeStamp(self.serialized["timeStamp"])
         assert a.to_dict() == self.serialized
 
     def test_from_dict(self):
@@ -268,19 +269,19 @@ class TestChoiceMeta(unittest.TestCase):
 class TestMethodMeta(unittest.TestCase):
 
     def test_init(self):
-        m = MethodModel(description="test_description")
+        m = MethodMeta(description="test_description")
         assert "test_description" == m.description
-        assert "malcolm:core/Method:1.0" == m.typeid
+        assert "malcolm:core/MethodMeta:1.1" == m.typeid
         assert "" == m.label
 
     def test_set_label(self):
-        m = MethodModel(description="test_description")
+        m = MethodMeta(description="test_description")
         m.set_label("new_label")
         assert "new_label" == m.label
 
     def setUp(self):
         self.serialized = OrderedDict()
-        self.serialized["typeid"] = "malcolm:core/Method:1.0"
+        self.serialized["typeid"] = "malcolm:core/MethodMeta:1.1"
         self.takes = MapMeta()
         self.takes.set_elements({"in_attr": StringMeta("desc")})
         self.serialized["takes"] = self.takes.to_dict()
@@ -292,19 +293,44 @@ class TestMethodMeta(unittest.TestCase):
         self.serialized["returns"] = MapMeta().to_dict()
 
     def test_to_dict(self):
-        m = MethodModel(description="test_description")
+        m = MethodMeta(description="test_description")
         m.set_takes(self.takes)
         m.set_defaults(self.serialized["defaults"])
         assert m.to_dict() == self.serialized
 
     def test_from_dict(self):
-        m = MethodModel.from_dict(self.serialized)
+        m = MethodMeta.from_dict(self.serialized)
         assert m.takes.to_dict() == self.takes.to_dict()
         assert m.defaults == self.serialized["defaults"]
         assert m.tags == []
         assert m.writeable is False
         assert m.label == ""
         assert m.returns.to_dict() == MapMeta().to_dict()
+
+
+class TestMethodLog(unittest.TestCase):
+
+    def setUp(self):
+        self.serialized = OrderedDict()
+        self.serialized["typeid"] = "malcolm:core/MethodLog:1.0"
+        self.serialized["value"] = dict(a=1)
+        self.serialized["present"] = ["a"]
+        self.serialized["alarm"] = Alarm.ok.to_dict()
+        self.serialized["timeStamp"] = TimeStamp.zero.to_dict()
+
+    def test_to_dict(self):
+        m = MethodLog()
+        m.set_value(dict(a=1))
+        m.set_present(["a"])
+        m.set_timeStamp(TimeStamp.zero)
+        assert m.to_dict() == self.serialized
+
+    def test_from_dict(self):
+        m = MethodLog.from_dict(self.serialized)
+        assert m.value == dict(a=1)
+        assert m.present == ["a"]
+        assert m.alarm.to_dict() == Alarm.ok.to_dict()
+        assert m.timeStamp.to_dict() == TimeStamp.zero.to_dict()
 
 
 class TestMapMeta(unittest.TestCase):
@@ -431,7 +457,7 @@ class TestNTTable(unittest.TestCase):
             foo=["foo1", "foo2"],
             bar=["bar1", "bar2"])
         o = meta.create_attribute_model(value)
-        o.set_ts(self.serialized["timeStamp"])
+        o.set_timeStamp(self.serialized["timeStamp"])
         assert o.meta.elements["foo"].to_dict() == self.serialized["meta"]["elements"]["foo"]
         assert o.to_dict() == self.serialized
 

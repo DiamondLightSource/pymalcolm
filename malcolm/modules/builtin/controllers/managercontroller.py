@@ -5,13 +5,13 @@ from distutils.version import StrictVersion
 
 
 import numpy as np
-from annotypes import Anno, add_call_types, TYPE_CHECKING
+from annotypes import Anno, add_call_types, TYPE_CHECKING, deserialize_object
 
 from malcolm.compat import OrderedDict
 from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
-    deserialize_object, Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
+    Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
     AlarmStatus, Part, BooleanMeta, get_config_tag, Widget, ChoiceArrayMeta, \
-    TableMeta, serialize_object, ChoiceMeta, config_tag, Put, Request, \
+    TableMeta, serialize_object, ChoiceMeta, config_tag, \
     CAMEL_RE, camel_to_title, StringMeta
 from malcolm.core.tags import without_group_tags, Port
 from malcolm.modules.builtin.infos import PortInfo
@@ -376,13 +376,11 @@ class ManagerController(StatefulController):
                     # Strip out group tags
                     # TODO: need to strip out port tags too...
                     export.meta.set_tags(without_group_tags(export.meta.tags))
-                    # Regenerate label
-                    export.meta.set_label(label)
                 else:
                     def setter(*args):
                         context.post(path, *args)
-                    # Regenerate label
-                    export.set_label(label)
+                # Regenerate label
+                export.meta.set_label(label)
                 ret["export"] = export
                 ret["setter"] = setter
             else:

@@ -118,10 +118,7 @@ class StatefulController(BasicController):
                 self.state.set_value(state)
                 self.state.set_alarm(alarm)
                 for child, writeable in self._children_writeable[state].items():
-                    if isinstance(child, AttributeModel):
-                        child.meta.set_writeable(writeable)
-                    elif isinstance(child, MethodModel):
-                        child.set_writeable(writeable)
+                    child.meta.set_writeable(writeable)
             else:
                 raise TypeError("Cannot transition from %s to %s" %
                                 (initial_state, state))

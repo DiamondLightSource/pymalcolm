@@ -25,7 +25,7 @@ class TestHelloPart(unittest.TestCase):
 
     def test_method_meta(self):
         b = self.p.block_view("mri")
-        method = b.greet
+        method = b.greet.meta
         assert list(method.to_dict()) == [
             'typeid', 'takes', 'defaults', 'description', 'tags', 'writeable', 'label', 'returns']
         assert method.defaults == dict(sleep=0.0)

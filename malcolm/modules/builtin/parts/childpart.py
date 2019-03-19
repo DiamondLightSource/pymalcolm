@@ -100,14 +100,14 @@ class ChildPart(Part):
         # type: (AContext) -> None
         # TODO: do we actually want to disable children on disable?
         child = context.block_view(self.mri)
-        if self.stateful and child.disable.writeable:
+        if self.stateful and child.disable.meta.writeable:
             child.disable()
 
     @add_call_types
     def reset(self, context):
         # type: (AContext) -> None
         child = context.block_view(self.mri)
-        if self.stateful and child.reset.writeable:
+        if self.stateful and child.reset.meta.writeable:
             child.reset()
 
     @add_call_types

@@ -1,14 +1,15 @@
 import inspect
 
 from annotypes import Array, Anno, Union, Sequence, Mapping, Any, to_array, \
-    Optional, TYPE_CHECKING, WithCallTypes, NO_DEFAULT
+    Optional, TYPE_CHECKING, WithCallTypes, NO_DEFAULT, Serializable, \
+    deserialize_object
 import numpy as np
 from enum import Enum
 
 from malcolm.compat import OrderedDict, str_
 from .alarm import Alarm
 from .notifier import DummyNotifier, Notifier
-from .serializable import Serializable, deserialize_object, camel_to_title
+from .serializable import camel_to_title, serialize_object
 from .table import Table
 from .tags import Widget, method_return_unpacked
 from .timestamp import TimeStamp
@@ -104,7 +105,7 @@ class Model(Serializable):
                     child = getattr(self, name, None)
                     if child:
                         child.set_notifier_path(Model.notifier, [])
-                    value.set_notifier_path(self.notifier, self.path)
+                    value.set_notifier_path(self.notifier, self.path + [name])
                 # Make sure it is the right typ
                 check_type(value, ct.typ)
             with self.notifier.changes_squashed:
@@ -285,7 +286,7 @@ class AttributeModel(Model):
         """The current value of the Attribute"""
         self.alarm = self.set_alarm(alarm)
         """An Alarm object indicating any problems"""
-        self.timeStamp = self.set_ts(timeStamp)
+        self.timeStamp = self.set_timeStamp(timeStamp)
         """When value was last set"""
 
     def set_meta(self, meta):
@@ -338,7 +339,10 @@ class AttributeModel(Model):
             alarm = deserialize_object(alarm, Alarm)
         return self.set_endpoint_data("alarm", alarm)
 
-    def set_ts(self, ts=None):
+    # noinspection PyPep8Naming
+    # timeStamp is camelCase to maintain compatibility with EPICS normative
+    # types
+    def set_timeStamp(self, ts=None):
         # type: (TimeStamp) -> TimeStamp
         if ts is None:
             ts = TimeStamp()
@@ -349,8 +353,6 @@ class AttributeModel(Model):
     def apply_change(self, path, *args):
         if path == ["value"] and args:
             self.set_value(args[0], set_alarm_ts=False)
-        elif path == ["timeStamp"] and args:
-            self.set_ts(args[0])
         else:
             super(AttributeModel, self).apply_change(path, *args)
 
@@ -359,9 +361,9 @@ class AttributeModel(Model):
 class NTTable(AttributeModel):
     __slots__ = []
 
-    def to_dict(self):
-        # type: () -> OrderedDict
-        d = OrderedDict()
+    def to_dict(self, dict_cls=OrderedDict):
+        # type: (Type[dict]) -> Dict[str, Any]
+        d = dict_cls()
         d["typeid"] = self.typeid
         # Add labels for compatibility with epics normative types
         labels = []
@@ -372,7 +374,7 @@ class NTTable(AttributeModel):
             else:
                 labels.append(column_name)
         d["labels"] = Array[str](labels)
-        d.update(super(NTTable, self).to_dict())
+        d.update(super(NTTable, self).to_dict(dict_cls))
         return d
 
     @classmethod
@@ -853,7 +855,7 @@ class TableMeta(VMeta):
             value = {k: None for k in self.elements}
         elif isinstance(value, Table):
             # Serialize it so we can type check it
-            value = value.to_dict()
+            value = serialize_object(value)
         elif not isinstance(value, dict):
             raise ValueError(
                 "Expected Table instance or serialized, got %s" % (value,))
@@ -956,6 +958,28 @@ class MapMeta(Model):
                 "Expected one of %r, got %r" % (list(self.elements), r)
         return self.set_endpoint_data("required", ARequired(required))
 
+    def validate(self, param_dict=None, add_missing=False):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        """Return a param dict in the right order, with the correct keys and
+        values of the correct type with no extras or missing"""
+        if param_dict is None:
+            param_dict = {}
+        extra = set(param_dict) - set(self.elements)
+        assert not extra, \
+            "Given keys %s, some of which aren't in allowed keys %s" % (
+                list(param_dict), list(self.elements))
+        args = OrderedDict()
+        for k, m in self.elements.items():
+            if k in param_dict:
+                args[k] = m.validate(param_dict[k])
+            elif add_missing:
+                args[k] = m.validate(None)
+        missing = set(self.required) - set(args)
+        assert not missing, \
+            "Requires keys %s but only given %s" % (
+                list(self.required), list(args))
+        return args
+
 
 # Types used when deserializing to the class
 with Anno("Meta for describing the arguments that should be passed"):
@@ -966,8 +990,8 @@ with Anno("Meta for describing the arguments that will be returned"):
     AReturns = MapMeta
 
 
-@Serializable.register_subclass("malcolm:core/Method:1.0")
-class MethodModel(Meta):
+@Serializable.register_subclass("malcolm:core/MethodMeta:1.1")
+class MethodMeta(Meta):
     """Exposes a function with metadata for arguments and return values"""
     __slots__ = ["takes", "returns", "defaults"]
 
@@ -984,7 +1008,7 @@ class MethodModel(Meta):
         self.takes = self.set_takes(takes if takes else MapMeta())
         self.returns = self.set_returns(returns if returns else MapMeta())
         self.defaults = self.set_defaults(defaults if defaults else {})
-        super(MethodModel, self).__init__(description, tags, writeable, label)
+        super(MethodMeta, self).__init__(description, tags, writeable, label)
 
     def set_takes(self, takes):
         # type: (ATakes) -> ATakes
@@ -1003,25 +1027,9 @@ class MethodModel(Meta):
         returns = deserialize_object(returns, MapMeta)
         return self.set_endpoint_data("returns", returns)
 
-    def validate(self, param_dict=None):
-        # type: (Dict[str, Any]) -> Dict[str, Any]
-        if param_dict is None:
-            param_dict = {}
-        args = {}
-        for k, v in param_dict.items():
-            assert k in self.takes.elements, \
-                "Method passed argument %r which is not in %r" % (
-                    k, list(self.takes.elements))
-            args[k] = self.takes.elements[k].validate(v)
-        missing = set(self.takes.required) - set(args)
-        assert not missing, \
-            "Method requires %s but only passed %s" % (
-                list(self.takes.required), list(args))
-        return args
-
     @classmethod
     def from_callable(cls, func, description=None, returns=True):
-        # type: (Callable, str, bool) -> MethodModel
+        # type: (Callable, str, bool) -> MethodMeta
         """Return an instance of this class from a Callable"""
         if description is None:
             if func.__doc__ is None:
@@ -1064,6 +1072,105 @@ class MethodModel(Meta):
             method.set_returns(returns)
         method.set_tags(tags)
         return method
+
+
+# Types used when deserializing to the class
+with Anno("The last map this took/returned"):
+    AMVValue = Mapping[str, Any]
+with Anno("The elements that were supplied in the map"):
+    APresent = Array[str]
+
+# A more permissive union to allow a wider range of set_* args
+UPresent = Union[APresent, Sequence[str], str]
+
+
+@Serializable.register_subclass("malcolm:core/MethodLog:1.0")
+class MethodLog(Model):
+    """Exposes a function with metadata for arguments and return values"""
+    __slots__ = ["value", "alarm", "timeStamp"]
+
+    # noinspection PyPep8Naming
+    # timeStamp is camelCase to maintain compatibility with EPICS normative
+    # types
+    def __init__(self, value=None, present=(), alarm=None, timeStamp=None):
+        # type: (AMVValue, UPresent, AAlarm, ATimeStamp) -> None
+        self.value = self.set_value(value)
+        self.present = self.set_present(present)
+        self.alarm = self.set_alarm(alarm)
+        self.timeStamp = self.set_timeStamp(timeStamp)
+
+    def set_value(self, value=None):
+        # type: (AMVValue) -> AMVValue
+        if value is None:
+            value = {}
+        return self.set_endpoint_data("value", value)
+
+    def set_present(self, present):
+        # type: (UPresent) -> APresent
+        return self.set_endpoint_data("present", APresent(present))
+
+    def set_alarm(self, alarm=None):
+        # type: (Alarm) -> Alarm
+        if alarm is None:
+            alarm = Alarm.ok
+        else:
+            alarm = deserialize_object(alarm, Alarm)
+        return self.set_endpoint_data("alarm", alarm)
+
+    # noinspection PyPep8Naming
+    # timeStamp is camelCase to maintain compatibility with EPICS normative
+    # types
+    def set_timeStamp(self, ts=None):
+        # type: (TimeStamp) -> TimeStamp
+        if ts is None:
+            ts = TimeStamp()
+        else:
+            ts = deserialize_object(ts, TimeStamp)
+        return self.set_endpoint_data("timeStamp", ts)
+
+
+# Types used when deserializing to the class
+with Anno("The last arguments that a method call took"):
+    ATook = MethodLog
+with Anno("The last return value produced by a method call"):
+    AReturned = MethodLog
+with Anno("Meta for describing the arguments that will be returned"):
+    AMethodMeta = MethodMeta
+
+
+@Serializable.register_subclass("malcolm:core/Method:1.1")
+class MethodModel(Model):
+    """Exposes a function with last took and returned arguments"""
+    __slots__ = ["took", "returned", "meta"]
+
+    def __init__(self, took=None, returned=None, meta=None):
+        # type: (ATook, AReturned, AMethodMeta) -> None
+        self.meta = self.set_meta(meta if meta else MethodMeta())
+        self.took = self.set_took(took)
+        self.returned = self.set_returned(returned)
+
+    def set_meta(self, meta):
+        # type: (AMethodMeta) -> AMethodMeta
+        meta = deserialize_object(meta, MethodMeta)
+        return self.set_endpoint_data("meta", meta)
+
+    def set_took(self, took=None):
+        # type: (ATook) -> ATook
+        if took is None:
+            took = MethodLog(self.meta.takes.validate(add_missing=True),
+                             [], Alarm.ok, TimeStamp.zero)
+        else:
+            took = deserialize_object(took, MethodLog)
+        return self.set_endpoint_data("took", took)
+
+    def set_returned(self, returned=None):
+        # type: (AReturned) -> AReturned
+        if returned is None:
+            returned = MethodLog(self.meta.returns.validate(add_missing=True),
+                                 [], Alarm.ok, TimeStamp.zero)
+        else:
+            returned = deserialize_object(returned, MethodLog)
+        return self.set_endpoint_data("returned", returned)
 
 
 # Types used when deserializing to the class

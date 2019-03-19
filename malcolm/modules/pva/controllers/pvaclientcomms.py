@@ -36,7 +36,12 @@ class PvaClientComms(ClientComms):
 
     def _update_settable_fields(self, update_fields, dotted_path, ob):
         # type: (Set[str], str, Any) -> None
-        if isinstance(ob, (Model, dict)):
+        if isinstance(ob, dict):
+            model_children = all([isinstance(ob[k], Model) for k in ob])
+        else:
+            model_children = False
+
+        if isinstance(ob, Model) or model_children:
             # Recurse down
             for k in ob:
                 self._update_settable_fields(

@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from annotypes import TYPE_CHECKING, Anno, Sequence
 
 from malcolm.compat import OrderedDict
+from .alarm import Alarm
 from .context import Context
 from .errors import UnexpectedError, NotWriteableError
 from .hook import Hookable, start_hooks, wait_hooks, Hook
@@ -13,7 +14,9 @@ from .part import PartRegistrar, Part, FieldRegistry, InfoRegistry
 from .concurrency import Queue, Spawned, RLock
 from .request import Get, Subscribe, Unsubscribe, Put, Post, Request
 from .response import Response
-from .serializable import serialize_object, camel_to_title
+from .serializable import serialize_object, camel_to_title, stringify_error
+from .timestamp import TimeStamp
+from .tags import method_return_unpacked
 from .views import make_view, Block
 
 if TYPE_CHECKING:
@@ -67,17 +70,11 @@ class Controller(Hookable):
 
     def add_block_field(self, name, child, writeable_func):
         # type: (str, Field, Callable[..., Any]) -> None
-        if isinstance(child, AttributeModel):
-            meta = child.meta
-        elif isinstance(child, MethodModel):
-            meta = child
-        else:
-            raise ValueError("Invalid block field %r" % child)
         if writeable_func:
             self._write_functions[name] = writeable_func
-            meta.set_writeable(True)
-        if not meta.label:
-            meta.set_label(camel_to_title(name))
+            child.meta.set_writeable(True)
+        if not child.meta.label:
+            child.meta.set_label(camel_to_title(name))
         self._block.set_endpoint_data(name, child)
 
     def add_initial_part_fields(self):
@@ -161,23 +158,18 @@ class Controller(Hookable):
                     typ = data.typeid
                 else:
                     typ = type(data)
+                path = ".".join(request.path[:i+1])
                 raise UnexpectedError(
-                    "Object %s of type %r has no attribute %r" % (
-                        request.path[:i+1], typ, endpoint))
+                    "Object '%s' of type %r has no attribute '%s'" % (
+                        path, typ, endpoint))
         # Important to serialize now with the lock so we get a consistent set
         serialized = serialize_object(data)
         ret = [request.return_response(serialized)]
         return ret
 
     def check_field_writeable(self, field):
-        if isinstance(field, AttributeModel):
-            if not field.meta.writeable:
-                raise NotWriteableError(
-                    "Attribute %s is not writeable" % field.path)
-        elif isinstance(field, MethodModel):
-            if not field.writeable:
-                raise NotWriteableError(
-                    "Method %s is not writeable" % field.path)
+        if not field.meta.writeable:
+            raise NotWriteableError("Field %s is not writeable" % field.path)
 
     def get_put_function(self, attribute_name):
         return self._write_functions[attribute_name]
@@ -212,6 +204,19 @@ class Controller(Hookable):
     def get_post_function(self, method_name):
         return self._write_functions[method_name]
 
+    def update_method_logs(self, method, took_value, took_ts, returned_value,
+                           returned_alarm):
+        with self.changes_squashed:
+            method.took.set_value(
+                method.meta.takes.validate(took_value, add_missing=True))
+            method.took.set_present(list(took_value))
+            method.took.set_timeStamp(took_ts)
+            method.returned.set_value(
+                method.meta.returns.validate(returned_value, add_missing=True))
+            method.returned.set_present(list(returned_value))
+            method.returned.set_alarm(returned_alarm)
+            method.returned.set_timeStamp()
+
     def _handle_post(self, request):
         # type: (Post) -> CallbackResponses
         """Called with the lock taken"""
@@ -223,10 +228,28 @@ class Controller(Hookable):
         self.check_field_writeable(method)
 
         post_function = self.get_post_function(method_name)
-        args = method.validate(request.parameters)
+        took_ts = TimeStamp()
+        took_value = method.meta.takes.validate(request.parameters)
+        returned_alarm = Alarm.ok
+        returned_value = {}
 
-        with self.lock_released:
-            result = post_function(**args)
+        try:
+            with self.lock_released:
+                result = post_function(**took_value)
+            if method_return_unpacked() in method.meta.tags:
+                # Single element, wrap in a dict
+                returned_value = {"return": result}
+            elif result is None:
+                returned_value = {}
+            else:
+                # It should already be an object that serializes to a dict
+                returned_value = serialize_object(result)
+        except Exception as e:
+            returned_alarm = Alarm.major(stringify_error(e))
+            raise
+        finally:
+            self.update_method_logs(
+                method, took_value, took_ts, returned_value, returned_alarm)
 
         # Don't need to serialize as the result should be immutable
         ret = [request.return_response(result)]

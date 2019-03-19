@@ -1,6 +1,4 @@
-from annotypes import Anno, Any
-
-from .serializable import Serializable
+from annotypes import Anno, Any, Serializable
 
 
 with Anno("ID that the Request was sent with"):

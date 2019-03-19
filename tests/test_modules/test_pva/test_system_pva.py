@@ -2,7 +2,7 @@ import unittest
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.core import Process
+from malcolm.core import Process, json_encode
 from malcolm.modules.builtin.blocks import proxy_block
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.demo.blocks import ticker_block
@@ -39,13 +39,15 @@ class TestSystemPVA(unittest.TestCase):
         src_block = self.process.block_view("TESTTICKER")
         block = self.process2.block_view("TESTTICKER")
         for k in src_block:
-            assert block[k].to_dict() == src_block[k].to_dict()
+            assert json_encode(block[k].to_dict(), indent=2) == \
+                   json_encode(src_block[k].to_dict(), indent=2)
 
     def test_init(self):
         self.check_blocks_equal()
 
     def test_validate(self):
         block = self.process2.block_view("TESTTICKER")
+        self.check_blocks_equal()
         generator = self.make_generator()
         params = block.validate(generator, axesToMove=["x", "y"])
         assert params == dict(
@@ -53,14 +55,30 @@ class TestSystemPVA(unittest.TestCase):
             exceptionStep=0,
             generator=generator.to_dict(),
         )
+        # Sent 2 things (exceptionStep is zero by default)
+        assert block.validate.took.value == params
+        assert block.validate.took.present == ["generator", "axesToMove"]
+        # Got back 3 things
+        assert block.validate.returned.value == params
+        assert block.validate.returned.present == [
+            "generator", "axesToMove", "exceptionStep"]
+        self.check_blocks_equal()
 
     def test_configure(self):
         block = self.process2.block_view("TESTTICKER")
+        self.check_blocks_equal()
         generator = self.make_generator()
         block.configure(generator, axesToMove=["x", "y"])
-        # TODO: ordering is not maintained in PVA, so need to wait before get
+        # TODO: ordering is not maintained in PVA, so may need to wait before
+        #       get
         # block._context.sleep(0.1)
         assert "Armed" == block.state.value
+        assert block.configure.took.value == dict(
+            generator=generator.to_dict(), axesToMove=["x", "y"],
+            exceptionStep=0)
+        assert block.configure.took.present == ["generator", "axesToMove"]
+        assert block.configure.returned.value == {}
+        assert block.configure.returned.present == []
         self.check_blocks_equal()
 
     def test_exports(self):

@@ -117,6 +117,7 @@ class Notifier(Loggable):
                 cb(response)
             except Exception:
                 self.log.exception("Exception notifying %s", response)
+                raise
 
 
 class NotifierNode(object):

@@ -1,9 +1,9 @@
-from annotypes import Anno, TYPE_CHECKING
+from annotypes import Anno, TYPE_CHECKING, deserialize_object
 from cothread import cothread
 from tornado import gen
 from tornado.websocket import websocket_connect, WebSocketClientConnection
 
-from malcolm.core import Subscribe, deserialize_object, json_decode, \
+from malcolm.core import Subscribe, json_decode, \
     json_encode, Response, Error, Update, Return, Queue, Request, \
     StringArrayMeta, Widget, ResponseError, DEFAULT_TIMEOUT, Delta, \
     BlockModel, NTScalar, BlockMeta, Put, Post

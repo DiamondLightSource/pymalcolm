@@ -108,7 +108,7 @@ class Method(View):
 
     def _add_positional_args(self, args, kwargs):
         # add any positional args into our kwargs dict
-        for name, v in zip(self._data.takes.elements, args):
+        for name, v in zip(self._data.meta.takes.elements, args):
             assert name not in kwargs, \
                 "%s specified as positional and keyword args" % (name,)
             kwargs[name] = v
@@ -127,34 +127,16 @@ class Method(View):
         return fs
 
     @property
-    def takes(self):
-        return self._context.make_view(self._controller, self._data, "takes")
+    def meta(self):
+        return self._context.make_view(self._controller, self._data, "meta")
 
     @property
-    def defaults(self):
-        return self._context.make_view(self._controller, self._data, "defaults")
+    def took(self):
+        return self._context.make_view(self._controller, self._data, "took")
 
     @property
-    def description(self):
-        return self._context.make_view(
-            self._controller, self._data, "description")
-
-    @property
-    def tags(self):
-        return self._context.make_view(self._controller, self._data, "tags")
-
-    @property
-    def writeable(self):
-        return self._context.make_view(
-            self._controller, self._data, "writeable")
-
-    @property
-    def label(self):
-        return self._context.make_view(self._controller, self._data, "label")
-
-    @property
-    def returns(self):
-        return self._context.make_view(self._controller, self._data, "returns")
+    def returned(self):
+        return self._context.make_view(self._controller, self._data, "returned")
 
 
 class Block(View):

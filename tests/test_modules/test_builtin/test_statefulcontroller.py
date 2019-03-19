@@ -96,8 +96,8 @@ class TestStatefulController(unittest.TestCase):
         self.start_process()
         assert list(self.b) == ['meta', 'health', 'state', 'disable', 'reset']
         assert self.b.state.value == "Ready"
-        assert self.b.disable.writeable is True
-        assert self.b.reset.writeable is False
+        assert self.b.disable.meta.writeable is True
+        assert self.b.reset.meta.writeable is False
 
     def test_reset_fails_from_ready(self):
         self.start_process()
@@ -114,7 +114,7 @@ class TestStatefulController(unittest.TestCase):
         with self.assertRaises(NotWriteableError) as cm:
             self.b.disable()
         assert str(cm.exception) == \
-            "Method ['MyMRI', 'disable'] is not writeable in state Disabled"
+            "Field ['MyMRI', 'disable'] is not writeable in state Disabled"
         assert not self.part.reset_done
         self.b.reset()
         assert self.part.reset_done

@@ -1,9 +1,10 @@
-from annotypes import add_call_types, Anno, Union, Array, Sequence, Any
+from annotypes import add_call_types, Anno, Union, Array, Sequence, Any, \
+    deserialize_object
 
 from malcolm.compat import OrderedDict
 from malcolm.core import BadValueError, serialize_object, APartName, \
-    Delta, deserialize_object, Subscribe, MethodModel, Unsubscribe, \
-    Future, PartRegistrar, Put, Request
+    Delta, Subscribe, Unsubscribe, Future, PartRegistrar, \
+    Put, Request
 from malcolm.modules.builtin.hooks import AStructure, AInit
 from malcolm.modules.builtin.parts import ChildPart, AMri, AInitialVisibility
 from ..hooks import ConfigureHook, PostRunArmedHook, \
@@ -34,7 +35,7 @@ class RunnableChildPart(ChildPart):
         # Stored between runs
         self.run_future = None  # type: Future
         # The configure method model of our child
-        self.configure_model = MethodModel()
+        self.configure_model = None
         # The registrar object we get at setup
         self.registrar = None  # type: PartRegistrar
         # The design we last loaded/saved
@@ -61,7 +62,8 @@ class RunnableChildPart(ChildPart):
         # type: (AContext) -> None
         super(RunnableChildPart, self).init(context)
         # Monitor the child configure Method for changes
-        subscription = Subscribe(path=[self.mri, "configure"], delta=True)
+        subscription = Subscribe(
+            path=[self.mri, "configure", "meta"], delta=True)
         subscription.set_callback(self.update_part_configure_args)
         # Wait for the first update to come in
         self.child_controller.handle_request(subscription).wait()
@@ -78,7 +80,7 @@ class RunnableChildPart(ChildPart):
     def reset(self, context):
         # type: (AContext) -> None
         child = context.block_view(self.mri)
-        if child.abort.writeable:
+        if child.abort.meta.writeable:
             child.abort()
         super(RunnableChildPart, self).reset(context)
 

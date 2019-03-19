@@ -100,7 +100,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.c.completed_steps.value == 0
         assert self.c.configured_steps.value == 0
         assert self.c.total_steps.value == 0
-        assert list(self.b.configure.takes.elements) == \
+        assert list(self.b.configure.meta.takes.elements) == \
                ["generator", "axesToMove", "exceptionStep"]
 
     def test_reset(self):
@@ -188,17 +188,17 @@ class TestRunnableController(unittest.TestCase):
             generator=compound, axesToMove=['x'], exceptionStep=exception)
 
     def test_configure_run(self):
-        assert self.b.configure.writeable is True
-        assert self.b.configure.takes.elements["generator"].writeable is True
-        assert self.b.validate.takes.elements["generator"].writeable is True
-        assert self.b.validate.returns.elements["generator"].writeable is False
+        assert self.b.configure.meta.writeable is True
+        assert self.b.configure.meta.takes.elements["generator"].writeable is True
+        assert self.b.validate.meta.takes.elements["generator"].writeable is True
+        assert self.b.validate.meta.returns.elements["generator"].writeable is False
         self.prepare_half_run()
         self.checkSteps(2, 0, 6)
         self.checkState(self.ss.ARMED)
-        assert self.b.configure.writeable is False
-        assert self.b.configure.takes.elements["generator"].writeable is True
-        assert self.b.validate.takes.elements["generator"].writeable is True
-        assert self.b.validate.returns.elements["generator"].writeable is False
+        assert self.b.configure.meta.writeable is False
+        assert self.b.configure.meta.takes.elements["generator"].writeable is True
+        assert self.b.validate.meta.takes.elements["generator"].writeable is True
+        assert self.b.validate.meta.returns.elements["generator"].writeable is False
 
         self.b.run()
         self.checkState(self.ss.ARMED)

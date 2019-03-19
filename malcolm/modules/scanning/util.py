@@ -1,8 +1,8 @@
-from annotypes import Anno, Array, Union, Sequence, Any
+from annotypes import Anno, Array, Union, Sequence, Any, Serializable
 from scanpointgenerator import CompoundGenerator
 import numpy as np
 
-from malcolm.core import Serializable, VMeta, NTUnion, Widget
+from malcolm.core import VMeta, NTUnion, Widget
 from malcolm.modules.builtin.util import ManagerStates
 
 with Anno("Generator instance providing specification for scan"):
