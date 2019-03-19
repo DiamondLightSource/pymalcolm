@@ -296,7 +296,7 @@ if __name__ == "__main__":
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
     require("tornado", "numpy", "ruamel.yaml", "cothread==2.14", "vdsgen==0.5",
-            "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py==2.8.0",
+            "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py>=2.8.0",
             "annotypes==0.9", "p4p==3.0.0",
             "scipy==0.19.1")  # scipy only needed for scanpointgenerator.plot_generator
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))

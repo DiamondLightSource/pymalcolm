@@ -1,16 +1,18 @@
-import pytest
-from mock import call, MagicMock
 import os
 from datetime import datetime
 
+from mock import call, MagicMock
 from scanpointgenerator import LineGenerator, CompoundGenerator
+
 from malcolm.core import Context, Process
-from malcolm.modules.ADOdin.parts import OdinWriterPart
 from malcolm.modules.ADOdin.blocks import odin_writer_block
+from malcolm.modules.ADOdin.parts import OdinWriterPart
 from malcolm.testutil import ChildTestCase
+from tempfile import mkdtemp
+from shutil import rmtree
 
 
-class TestOdinDWriterPart(ChildTestCase):
+class TestOdinWriterPart(ChildTestCase):
 
     def setUp(self):
         self.process = Process("Process")
@@ -18,8 +20,15 @@ class TestOdinDWriterPart(ChildTestCase):
         self.child = self.create_child_block(
             odin_writer_block, self.process,
             mri="mri", prefix="prefix")
-        self.set_attributes(self.child,
-                            numProcesses=4)
+        # set up some values for OdinData PVs that Excalibur would have
+        settings = {
+            'imageHeight': 1536,
+            'imageWidth': 1048,
+            'blockSize': 1,
+            'numProcesses': 4,
+            'dataType': 'uint16',
+        }
+        self.set_attributes(self.child, **settings)
         self.o = OdinWriterPart(name="m", mri="mri")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
@@ -37,38 +46,29 @@ class TestOdinDWriterPart(ChildTestCase):
         self.process.stop(timeout=1)
 
     def test_configure(self):
-        # the test makes /tmp/odin.hdf - make sure a previous one is not there
-        vds_file = os.path.join('/tmp', 'odin.hdf')
-        if os.path.exists(vds_file):
-            os.remove(vds_file)
-        # also the VDS will look for the existence of these files:
-        for i in range(1, 5):
-            # todo this is a bug since these files wont be created
-            #  in normal conditions. Need to get vdsgen to cope with this
-            #  in some fashion
-            # todo ALSO need to get vdsgen to cope with 6 million points
-            #  this will require spawning to another process methinks
-            open(os.path.join(
-                '/tmp', 'odin_raw_data{}.hdf'.format(i)), 'w'
-            ).close()
+        tmp_dir = mkdtemp() + os.path.sep
+        vds_file = 'odin.hdf'
 
         start_time = datetime.now()
         self.o.configure(
             self.context, self.completed_steps, self.steps_to_do,
-            generator=self.generator, fileDir='/tmp', fileName='odin.hdf')
+            generator=self.generator, fileDir=tmp_dir, fileName=vds_file)
         assert self.child.handled_requests.mock_calls == [
             call.put('fileName', 'odin_raw_data.hdf'),
-            call.put('filePath', '/tmp/'),
+            call.put('filePath', tmp_dir),
             call.put('numCapture', self.steps_to_do),
             call.post('start')]
         print(self.child.handled_requests.mock_calls)
         print('OdinWriter configure {} points took {} secs'.format(
             self.steps_to_do, datetime.now() - start_time))
+        # currently keep test output to examine the results in dawn
+        # rmtree(tmp_dir)
 
     def test_run(self):
+        tmp_dir = mkdtemp() + os.path.sep
         self.o.configure(
             self.context, self.completed_steps, self.steps_to_do,
-            generator=self.generator, fileDir='/tmp', fileName='odin.hdf')
+            generator=self.generator, fileDir=tmp_dir, fileName='odin.hdf')
         self.child.handled_requests.reset_mock()
         self.o.registrar = MagicMock()
         # run waits for this value
@@ -80,4 +80,18 @@ class TestOdinDWriterPart(ChildTestCase):
                 'numCaptured', self.steps_to_do, None, None, 60)]
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == \
-               self.steps_to_do
+            self.steps_to_do
+
+    def test_alternate_fails(self):
+        cols, rows, alternate = 3000, 2000, True
+        self.steps_to_do = cols * rows
+        xs = LineGenerator("x", "mm", 0.0, 0.5, cols, alternate=alternate)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, rows)
+        self.generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        self.generator.prepare()
+
+        self.assertRaises(
+            ValueError, self.o.configure,
+            *(self.context, self.completed_steps, self.steps_to_do),
+            **{'generator': self.generator,
+               'fileDir': '/tmp', 'fileName': 'odin2.hdf'})

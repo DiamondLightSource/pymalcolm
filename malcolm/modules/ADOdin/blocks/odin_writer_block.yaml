@@ -32,6 +32,53 @@
     description: number of receiver/writer pairs and hence HDF files
     rbv: $(prefix):NumProcesses_RBV
 
+- ca.parts.CALongPart:
+    name: imageHeight
+    description: Height of the data frames
+    pv: $(prefix):ImageHeight
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: imageWidth
+    description: Width of the data frames
+    pv: $(prefix):ImageWidth
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: numFramesChunks
+    description: Size of chunks in frames
+    pv: $(prefix):NumFramesChunks
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: numRowChunks
+    description: Number of Rows per Chunk
+    pv: $(prefix):NumRowsChunks
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: numColChunks
+    description: Number of Columns per Chunk
+    pv: $(prefix):NumColChunks
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: blockSize
+    description: Number of contiguous frames written to each file
+    pv: $(prefix):BlockSize
+    rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: blocksPerFile
+    description: Number of blocks per file
+    pv: $(prefix):BlocksPerFile
+    rbv_suffix: _RBV
+
+- ca.parts.CAStringPart:
+    name: dataType
+    description: type of the pixel data
+    rbv: $(prefix):DataType
+
 #- ca.parts.CALongPa#-rt:
 #    name: flushData# PerNFrames
 #    description: Nu# mber of frames to capture between HDF dataset flushes

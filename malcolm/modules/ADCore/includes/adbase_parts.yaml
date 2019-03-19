@@ -58,3 +58,13 @@
     description: Duration of each frame including readout
     pv: $(prefix):AcquirePeriod
     rbv_suffix: _RBV
+
+- ca.parts.CALongPart:
+    name: arraySizeX
+    description: width of the image in pixels
+    rbv: $(prefix):ArraySizeX_RBV
+
+- ca.parts.CALongPart:
+      name: arraySizeY
+      description: height of the image in pixels
+      rbv: $(prefix):ArraySizeY_RBV
