@@ -101,22 +101,26 @@ def create_vds(generator, raw_name, vds_path, child):
     else:
         alternates = None
 
-    files = [os.path.join(vds_folder, '{}{}.hdf'.format(raw_name, i + 1))
-             for i in range(hdf_count)]
+    files = [os.path.join(
+        vds_folder, '{}_{:06d}.h5'.format(raw_name, i + 1))
+        for i in range(hdf_count)]
     shape = (hdf_shape, image_height, image_width)
 
     # prepare a vds for the image data
     one_vds(vds_folder, vds_name, files, image_width, image_height,
-            shape, generator, alternates, block_size, 'data', data_type)
+            shape, generator, alternates, block_size,
+            VDS_DATASET_NAME, data_type)
 
     shape = (hdf_shape, 1, 1)
 
     # prepare a vds for the unique IDs
     one_vds(vds_folder, vds_name, files, 1, 1,
-            shape, generator, alternates, block_size, 'uid', 'uint64')
+            shape, generator, alternates, block_size,
+            VDS_UID_NAME, 'uint64')
     # prepare a vds for the sums
     one_vds(vds_folder, vds_name, files, 1, 1,
-            shape, generator, alternates, block_size, 'sum', 'uint64')
+            shape, generator, alternates, block_size,
+            VDS_SUM_NAME, 'uint64')
 
 
 # We will set these attributes on the child block, so don't save them
@@ -199,7 +203,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
         futures = child.put_attribute_values_async(dict(
             numCapture=steps_to_do,
             filePath=file_dir + os.sep,
-            fileName=raw_file_name))
+            fileName=raw_file_basename))
         context.wait_all_futures(futures)
 
         # Start the plugin

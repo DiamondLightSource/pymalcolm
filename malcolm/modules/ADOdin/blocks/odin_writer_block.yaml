@@ -53,7 +53,7 @@
 - ca.parts.CALongPart:
     name: numRowChunks
     description: Number of Rows per Chunk
-    pv: $(prefix):NumRowsChunks
+    pv: $(prefix):NumRowChunks
     rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
