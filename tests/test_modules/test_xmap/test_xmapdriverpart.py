@@ -4,6 +4,7 @@ from malcolm.core import Context, Process
 from malcolm.modules.xmap.parts import XmapDriverPart
 from malcolm.modules.xmap.blocks import xmap_driver_block
 from malcolm.testutil import ChildTestCase
+from malcolm.modules.ADCore.infos import FilePathTranslatorInfo
 
 
 class TestXmap3DetectorDriverPart(ChildTestCase):
@@ -14,7 +15,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
         self.child = self.create_child_block(
             xmap_driver_block, self.process,
             mri="mri", prefix="prefix")
-        self.o = XmapDriverPart(name="m", mri="mri")
+        self.o = XmapDriverPart(name="m", mri="mri", runs_on_windows=True)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
 
@@ -24,11 +25,12 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
     def test_configure(self):
         completed_steps = 0
         steps_to_do = 456
+        part_info = {"sth": [FilePathTranslatorInfo("Z", "/tmp")]}
         self.o.post_configure = MagicMock()
         # We wait to be armed, so set this here
         self.set_attributes(self.child, acquiring=True)
         self.o.configure(
-            self.context, completed_steps, steps_to_do, {}, MagicMock())
+            self.context, completed_steps, steps_to_do, part_info, MagicMock(), fileDir="/tmp")
         # Wait for the start_future so the post gets through to our child
         # even on non-cothread systems
         self.o.actions.start_future.result(timeout=1)
@@ -49,4 +51,5 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
             call.put('pixelsPerRun', steps_to_do),
             call.put('presetMode', 'No preset'),
             call.post('start'),
-            call.when_values_matches('acquiring', True, None, 10.0, None)]
+            call.when_values_matches('acquiring', True, None, 10.0, None),
+            call.put('attributesFile', 'Z:\\mri-attributes.xml')]

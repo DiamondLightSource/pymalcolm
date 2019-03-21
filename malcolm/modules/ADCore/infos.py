@@ -3,6 +3,16 @@ from malcolm.core import Info
 from .util import DatasetType, AttributeDatasetType
 
 
+class FilePathTranslatorInfo(Info):
+    def __init__(self, windows_drive_letter, path_prefix):
+        self.windows_drive_letter = windows_drive_letter
+        self.path_prefix = path_prefix
+
+    def translate_filepath(self, filepath):
+        assert filepath.startswith(self.path_prefix), \
+            "filepath %s does not start with expected prefix %s" % (filepath, self.path_prefix)
+        return filepath.replace(self.path_prefix, self.windows_drive_letter + ":").replace("/", "\\")
+
 class ExposureDeadtimeInfo(Info):
     """Detector exposure time should be generator.duration - deadtime
 

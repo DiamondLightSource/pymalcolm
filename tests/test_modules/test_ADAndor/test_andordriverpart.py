@@ -37,7 +37,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         # both set to 0.1
         self.set_attributes(self.child, exposure=0.1, acquirePeriod=0.105)
         self.o.configure(
-            self.context, completed_steps, steps_to_do, {}, generator=generator)
+            self.context, completed_steps, steps_to_do, {}, generator=generator, fileDir="/tmp")
         assert self.child.handled_requests.mock_calls == [
             call.put('exposure', 0.1),
             call.put('acquirePeriod', 0.1),
@@ -49,4 +49,5 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             call.put('numImages', 6000000),
             call.put('acquirePeriod', 0.1 - 5e-6),
             call.post('start'),
-            call.when_values_matches('acquiring', True, None, 10.0, None)]
+            call.when_values_matches('acquiring', True, None, 10.0, None),
+            call.put('attributesFile', '/tmp/mri-attributes.xml')]

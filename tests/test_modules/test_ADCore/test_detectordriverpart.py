@@ -34,7 +34,8 @@ class TestDetectorDriverPart(ChildTestCase):
 
     def test_report(self):
         info = self.o.report_status()
-        assert info.rank == 2
+        assert len(info) == 1
+        assert info[0].rank == 2
 
     def test_configure(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
@@ -46,7 +47,7 @@ class TestDetectorDriverPart(ChildTestCase):
         part_info = dict(anyname=[ExposureDeadtimeInfo(0.01, 1000)])
         self.set_attributes(self.child, triggerMode="Internal")
         self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info, generator)
+            self.context, completed_steps, steps_to_do, part_info, generator, fileDir="/tmp")
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
@@ -54,6 +55,7 @@ class TestDetectorDriverPart(ChildTestCase):
             call.put('imageMode', 'Multiple'),
             call.put('numImages', 6),
             call.put('acquirePeriod', 0.1 - 0.0001),
+            call.put('attributesFile', '/tmp/mri-attributes.xml'),
         ]
         assert not self.o.is_hardware_triggered
 

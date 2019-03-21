@@ -9,6 +9,8 @@ from malcolm.modules import scanning
 if TYPE_CHECKING:
     from typing import List, Any
 
+with Anno("Is the IOC this part connects to running on Windows?"):
+    APartRunsOnWindows = bool
 
 class AttributeDatasetType(Enum):
     DETECTOR = "detector"

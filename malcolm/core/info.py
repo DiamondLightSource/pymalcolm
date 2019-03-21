@@ -60,20 +60,23 @@ class Info(object):
         return filtered
 
     @classmethod
-    def filter_single_value(cls, part_info):
-        # type: (Type[T], PartInfo) -> T
+    def filter_single_value(cls, part_info, error_msg=None):
+        # type: (Type[T], PartInfo, str) -> T
         """Filter the part_info dict list looking for a single instance of our
         class
 
         Args:
             part_info (dict): {part_name: [Info] or None} as returned from
                 Controller.run_hook()
+            error_msg (str, optional): Specific error message to show if there isn't a single value
 
         Returns:
             info subclass of cls
         """
         filtered = cls.filter_values(part_info)
         if len(filtered) != 1:
-            raise BadValueError("Expected a single %s, got %s of them" % (
-                cls.__name__, len(filtered)))
+            if error_msg is None:
+                error_msg = "Expected a single %s, got %s of them" % \
+                            (cls.__name__, len(filtered))
+            raise BadValueError(error_msg)
         return filtered[0]

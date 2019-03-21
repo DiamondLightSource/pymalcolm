@@ -25,7 +25,8 @@ class TestReframePluginPart(ChildTestCase):
 
     def test_report(self):
         infos = self.o.report_status()
-        assert infos.rank == 2
+        assert len(infos) == 1
+        assert infos[0].rank == 2
 
     def test_validate(self):
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
@@ -52,7 +53,7 @@ class TestReframePluginPart(ChildTestCase):
         # We wait to be armed, so set this here
         self.set_attributes(self.child, acquiring=True)
         self.o.configure(
-            self.context, completed_steps, steps_to_do, {}, generator)
+            self.context, completed_steps, steps_to_do, {}, generator, fileDir="/tmp")
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
@@ -60,4 +61,5 @@ class TestReframePluginPart(ChildTestCase):
             call.put('numImages', 6),
             call.put('postCount', 999),
             call.post('start'),
-            call.when_values_matches('acquiring', True, None, 10.0, None)]
+            call.when_values_matches('acquiring', True, None, 10.0, None),
+            call.put('attributesFile', '/tmp/mri-attributes.xml')]

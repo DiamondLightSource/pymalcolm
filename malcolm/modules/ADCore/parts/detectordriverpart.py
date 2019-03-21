@@ -8,8 +8,8 @@ from malcolm.modules.scanning.hooks import ReportStatusHook, \
     ConfigureHook, PostRunArmedHook, SeekHook, RunHook, ResumeHook, PauseHook, \
     AbortHook, AContext, UInfos, AStepsToDo, ACompletedSteps, APartInfo
 from malcolm.modules.scanning.util import AGenerator
-from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, ExposureDeadtimeInfo
-from ..util import ADBaseActions, AttrSetTableElements, AttributeDatasetType
+from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, ExposureDeadtimeInfo, FilePathTranslatorInfo
+from ..util import ADBaseActions, AttrSetTableElements, AttributeDatasetType, APartRunsOnWindows
 import os
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
@@ -30,6 +30,7 @@ class DetectorDriverPart(ChildPart):
                  mri,  # type: AMri
                  soft_trigger_modes=None,  # type: USoftTriggerModes
                  main_dataset_useful=True,  # type: AMainDatasetUseful
+                 runs_on_windows=False,  # type: APartRunsOnWindows
                  ):
         # type: (...) -> None
         super(DetectorDriverPart, self).__init__(name, mri)
@@ -38,8 +39,9 @@ class DetectorDriverPart(ChildPart):
         self.main_dataset_useful = main_dataset_useful
         self.attributes_filename = ""
         self.actions = ADBaseActions(mri)
-        self.AttrToCapture = TableMeta(writeable=True, elements=AttrSetTableElements,
-                                       tags=[config_tag(), Widget.TABLE.tag()]).create_attribute_model()
+        self.extra_attributes = TableMeta(writeable=True, elements=AttrSetTableElements,
+                                          tags=[config_tag(), Widget.TABLE.tag()]).create_attribute_model()
+        self.runs_on_windows = runs_on_windows
         # self.pvsToCapture = TableMeta.from_table(
         #     PVSetTable, "PVs to be logged in HDF file", writeable=("name", "pv", "description", "source")
         # ).create_attribute_model()
@@ -56,38 +58,38 @@ class DetectorDriverPart(ChildPart):
 
     def build_attribute_xml(self):
         root_el = ET.Element("Attributes")
-        for index in range(len(self.AttrToCapture.value.sourceId)):
-            if self.AttrToCapture.value.sourceType[index] == "PVAttribute":
-                dbr_type = self.AttrToCapture.value.dataType[index]
+        for _, index in enumerate(self.extra_attributes.value.sourceId):
+            if self.extra_attributes.value.sourceType[index] == "PVAttribute":
+                dbr_type = self.extra_attributes.value.dataType[index]
                 if dbr_type == "INT":
                     dbr_type = "DBR_LONG"
                 elif dbr_type == "DOUBLE":
                     dbr_type = "DBR_DOUBLE"
                 elif dbr_type == "STRING":
                     dbr_type = "DBR_STRING"
-                ET.SubElement(root_el, "Attribute", name=self.AttrToCapture.value.name[index], type="EPICS_PV",
-                              dbrtype=dbr_type, description=self.AttrToCapture.value.description[index],
-                              source=self.AttrToCapture.value.sourceId[index])
-            elif self.AttrToCapture.value.sourceType[index] == "paramAttribute":
-                ET.SubElement(root_el, "Attribute", name=self.AttrToCapture.value.name[index], type="PARAM",
-                              datatype=self.AttrToCapture.value.dataType[index],
-                              description=self.AttrToCapture.value.description[index],
-                              source=self.AttrToCapture.value.sourceId[index])
+                ET.SubElement(root_el, "Attribute", name=self.extra_attributes.value.name[index], type="EPICS_PV",
+                              dbrtype=dbr_type, description=self.extra_attributes.value.description[index],
+                              source=self.extra_attributes.value.sourceId[index])
+            elif self.extra_attributes.value.sourceType[index] == "paramAttribute":
+                ET.SubElement(root_el, "Attribute", name=self.extra_attributes.value.name[index], type="PARAM",
+                              datatype=self.extra_attributes.value.dataType[index],
+                              description=self.extra_attributes.value.description[index],
+                              source=self.extra_attributes.value.sourceId[index])
         return et_to_string(root_el)
 
-    def set_attr_to_capture(self, value, set_alarm_ts=True, alarm=None, ts=None):
+    def set_extra_attributes(self, value, set_alarm_ts=True, alarm=None, ts=None):
         new_value = value
         new_value.dataType = list(value.dataType)
-        for row in range(len(new_value.name)):
+        for _, row in enumerate(new_value.name):
             if new_value.sourceType[row] == "paramAttribute":
                 if new_value.dataType[row] == "DBR_NATIVE":
                     raise ValueError("data type DBR_NATIVE invalid for asyn param attribute")
-        self.AttrToCapture.set_value(new_value, set_alarm_ts, alarm, ts)
+        self.extra_attributes.set_value(new_value, set_alarm_ts, alarm, ts)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(DetectorDriverPart, self).setup(registrar)
-        registrar.add_attribute_model("attributesToCapture", self.AttrToCapture, self.set_attr_to_capture)
+        registrar.add_attribute_model("attributesToCapture", self.extra_attributes, self.set_extra_attributes)
 
     @add_call_types
     def reset(self, context):
@@ -101,11 +103,11 @@ class DetectorDriverPart(ChildPart):
         ret = []
         if self.main_dataset_useful:
             ret.append(NDArrayDatasetInfo(rank=2))
-        for attrInd in range(len(self.AttrToCapture.value.sourceId)):
+        for _, attrInd in enumerate(self.extra_attributes.value.sourceId):
             ret.append(
-                NDAttributeDatasetInfo(rank=2, name=self.AttrToCapture.value.name[attrInd],
-                                       attr=self.AttrToCapture.value.name[attrInd],
-                                       type=AttributeDatasetType(self.AttrToCapture.value.datasetType[attrInd])))
+                NDAttributeDatasetInfo(rank=2, name=self.extra_attributes.value.name[attrInd],
+                                       attr=self.extra_attributes.value.name[attrInd],
+                                       type=AttributeDatasetType(self.extra_attributes.value.datasetType[attrInd])))
 
         return ret
 
@@ -151,9 +153,20 @@ class DetectorDriverPart(ChildPart):
             fileDir, "%s-attributes.xml" % self.mri)
         with open(self.attributes_filename, 'w') as xml:
             xml.write(attribute_xml)
-        futures = child.put_attribute_values_async(dict(
-            attributesFile=self.attributes_filename))
-        context.wait_all_futures(futures)
+
+        if hasattr(child, "attributesFile"):
+            attributes_filename = self.attributes_filename
+            if self.runs_on_windows:
+                error_msg = "No or multiple FilePathTranslatorPart found:" + \
+                            "must have exactly 1 if any part in the AD chain is running on Windows"
+                translator = FilePathTranslatorInfo.filter_single_value(part_info, error_msg)
+                attributes_filename = translator.translate_filepath(self.attributes_filename)
+            futures = child.put_attribute_values_async(dict(
+                attributesFile=attributes_filename))
+            context.wait_all_futures(futures)
+        else:
+            raise AssertionError('''Block doesn't have "attributesFile" attribute''' +
+                                 ' (was it instantiated properly with adbase_parts?)')
 
     @add_call_types
     def run(self, context):

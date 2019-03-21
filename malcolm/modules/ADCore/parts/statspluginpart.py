@@ -6,8 +6,8 @@ from annotypes import Anno, add_call_types
 from malcolm.compat import et_to_string
 from malcolm.core import APartName
 from malcolm.modules import builtin, scanning
-from ..infos import CalculatedNDAttributeDatasetInfo
-from ..util import StatisticsName
+from ..infos import CalculatedNDAttributeDatasetInfo, FilePathTranslatorInfo
+from ..util import StatisticsName, APartRunsOnWindows
 
 with Anno("Which statistic to capture"):
     AStatisticsName = StatisticsName
@@ -20,12 +20,13 @@ with Anno("Directory to write data to"):
 class StatsPluginPart(builtin.parts.ChildPart):
     """Part for controlling a `stats_plugin_block` in a Device"""
 
-    def __init__(self, name, mri, statistic=StatisticsName.SUM):
-        # type: (APartName, builtin.parts.AMri, AStatisticsName) -> None
+    def __init__(self, name, mri, statistic=StatisticsName.SUM, runs_on_windows=False):
+        # type: (APartName, builtin.parts.AMri, AStatisticsName, APartRunsOnWindows) -> None
         super(StatsPluginPart, self).__init__(name, mri)
         self.statistic = statistic
         # The NDAttributes file we write to say what to capture
         self.attributes_filename = None  # type: str
+        self.runs_on_windows = runs_on_windows
         # Hooks
         self.register_hooked(scanning.hooks.ReportStatusHook,
                              self.report_status)
@@ -56,8 +57,8 @@ class StatsPluginPart(builtin.parts.ChildPart):
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self, context, fileDir):
-        # type: (scanning.hooks.AContext, AFileDir) -> None
+    def configure(self, context, part_info, fileDir):
+        # type: (scanning.hooks.AContext, scanning.hooks.APartInfo, AFileDir) -> None
         child = context.block_view(self.mri)
         fs = child.put_attribute_values_async(dict(
             enableCallbacks=True,
@@ -67,8 +68,12 @@ class StatsPluginPart(builtin.parts.ChildPart):
             fileDir, "%s-attributes.xml" % self.mri)
         with open(self.attributes_filename, "w") as f:
             f.write(xml)
+        attributes_filename = self.attributes_filename
+        if self.runs_on_windows:
+            translator = FilePathTranslatorInfo.filter_single_value(part_info)
+            attributes_filename = translator.translate_filepath(self.attributes_filename)
         fs.append(
-            child.attributesFile.put_value_async(self.attributes_filename))
+            child.attributesFile.put_value_async(attributes_filename))
         context.wait_all_futures(fs)
 
     @add_call_types

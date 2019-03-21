@@ -35,4 +35,5 @@ class XmapDriverPart(ADCore.parts.DetectorDriverPart):
             dxp2MaxEnergy=4.096,
             dxp3MaxEnergy=4.096,
             dxp4MaxEnergy=4.096,
-            inputLogicPolarity="Normal")
+            inputLogicPolarity="Normal",
+            fileDir=kwargs["fileDir"])

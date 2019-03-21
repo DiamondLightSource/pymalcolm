@@ -6,11 +6,12 @@ from annotypes import add_call_types, Anno, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator, Dimension
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Future, Info, Block, PartRegistrar, BooleanMeta, Widget
+from malcolm.core import APartName, Future, Info, Block, PartRegistrar, BooleanMeta, Widget, config_tag
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, DatasetType, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
-    AttributeDatasetType
+    FilePathTranslatorInfo, AttributeDatasetType
+from ..util import APartRunsOnWindows
 
 if TYPE_CHECKING:
     from typing import Iterator, List, Dict
@@ -210,8 +211,7 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
                       source="ndattribute", ndattribute=dataset_info.attr)
 
     # And then any other attribute sources of data
-    for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if
-                         attr_set.type == AttributeDatasetType.DETECTOR]:
+    for dataset_info in NDAttributeDatasetInfo.filter_values(part_info):
         # if we are a secondary source, use the same rank as the det
         attr_el = make_nxdata(dataset_info.name, dataset_info.rank,
                               entry_el, generator, link=True)
@@ -226,11 +226,13 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
                   source="constant", value="NXcollection", type="string")
     ET.SubElement(NDAttributes_el, "dataset", name="NDArrayUniqueId",
                   source="ndattribute", ndattribute="NDArrayUniqueId")
-
-    for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if
-                         attr_set.type == AttributeDatasetType.MONITOR]:
-        ET.SubElement(NDAttributes_el, "dataset", name=dataset_info.name,
-                      source="ndattribute", ndattribute=dataset_info.attr)
+    ET.SubElement(NDAttributes_el, "dataset", name="NDArrayTimeStamp",
+                  source="ndattribute", ndattribute="NDArrayTimeStamp")
+    # All manually declared attributes have specific Dataset type, now go in /entry/$(name)/$(name)
+    # for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if
+    #                      attr_set.type == AttributeDatasetType.MONITOR]:
+    #     ET.SubElement(NDAttributes_el, "dataset", name=dataset_info.name,
+    #                   source="ndattribute", ndattribute=dataset_info.attr)
 
     xml = et_to_string(root_el)
     return xml
@@ -247,8 +249,8 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
-    def __init__(self, name, mri):
-        # type: (APartName, scanning.parts.AMri) -> None
+    def __init__(self, name, mri, runs_on_windows=False):
+        # type: (APartName, scanning.parts.AMri, APartRunsOnWindows) -> None
         super(HDFWriterPart, self).__init__(name, mri)
         # Future for the start action
         self.start_future = None  # type: Future
@@ -258,10 +260,11 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.uniqueid_offset = 0
         # The HDF5 layout file we write to say where the datasets go
         self.layout_filename = None  # type: str
+        self.runs_on_windows = runs_on_windows
         # Hooks
         self.write_all_nd_attributes = BooleanMeta(
             "Toggles wheteher all NDAttributes are written to file, or only those specified in the dataset",
-            writeable=True, tags=Widget.CHECKBOX.tag()).create_attribute_model()
+            writeable=True, tags=[Widget.CHECKBOX.tag(), config_tag()]).create_attribute_model()
         self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
         self.register_hooked((scanning.hooks.PostRunArmedHook,
                               scanning.hooks.SeekHook), self.seek)
@@ -347,8 +350,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
             # But make sure we flush in this round of frames
             n_frames_between_flushes = min(
                 steps_to_do, n_frames_between_flushes)
+        layout_filename = self.layout_filename
+        if self.runs_on_windows:
+            translator = FilePathTranslatorInfo.filter_single_value(part_info)
+            layout_filename = translator.translate_filepath(self.layout_filename)
         futures += child.put_attribute_values_async(dict(
-            xml=self.layout_filename,
+            xml=layout_filename,
             flushDataPerNFrames=n_frames_between_flushes,
             flushAttrPerNFrames=n_frames_between_flushes))
         # Wait for the previous puts to finish
