@@ -1,12 +1,12 @@
-from annotypes import add_call_types, TYPE_CHECKING
+from annotypes import add_call_types, TYPE_CHECKING, stringify_error
 from cothread import cothread
 from p4p import Value
 from p4p.server import Server, DynamicProvider, ServerOperation
 from p4p.server.cothread import Handler, SharedPV
 
 from malcolm.core import Subscribe, Error, APublished, Controller, Delta, \
-    Return, stringify_error, Response, Put, Post, Unsubscribe, \
-    ProcessPublishHook, method_return_unpacked, Method, serialize_object, \
+    Return, Response, Put, Post, Unsubscribe, \
+    ProcessPublishHook, method_return_unpacked, Method, \
     BlockMeta, MethodModel, RLock
 from malcolm.modules import builtin
 from .pvaconvert import convert_dict_to_value, update_path, \
@@ -67,8 +67,7 @@ class BlockHandler(Handler):
                     ret = {"return": response.value}
                 else:
                     ret = response.value
-                serialized = serialize_object(ret)
-                v = convert_dict_to_value(serialized)
+                v = convert_dict_to_value(ret)
                 op.done(v)
             else:
                 if isinstance(response, Error):

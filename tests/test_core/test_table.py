@@ -24,8 +24,8 @@ class TestTable(unittest.TestCase):
         self.t = MyTable(AA(["x", "y", "z"]), AB([1, 2, 3]))
         self.serialized = OrderedDict()
         self.serialized["typeid"] = 'malcolm:core/Table:1.0'
-        self.serialized["a"] = AA(["x", "y", "z"])
-        self.serialized["b"] = AB([1, 2, 3])
+        self.serialized["a"] = ["x", "y", "z"]
+        self.serialized["b"] = [1, 2, 3]
 
     def test_init(self):
         t = Table()
@@ -53,8 +53,9 @@ class TestTable(unittest.TestCase):
         assert MyTable.from_dict(self.serialized).to_dict() == self.serialized
 
     def test_equal(self):
-        numpy.testing.assert_equal(self.t.to_dict(), self.t.to_dict())
+        t2 = MyTable(AA(["x", "y", "z"]), AB(numpy.arange(3) + 1))
+        assert self.t == t2
 
     def test_not_equal(self):
-        t2 = MyTable(AA(["x", "y", "z"]), AB(numpy.arange(3) + 1)).to_dict()
-        numpy.testing.assert_equal(self.t.to_dict(), t2)
+        t2 = MyTable(AA(["x", "y", "z"]), AB(numpy.arange(3)))
+        assert self.t != t2

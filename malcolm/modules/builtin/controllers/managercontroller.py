@@ -4,14 +4,14 @@ import socket
 from distutils.version import StrictVersion
 
 
-import numpy as np
-from annotypes import Anno, add_call_types, TYPE_CHECKING, deserialize_object
+from annotypes import Anno, add_call_types, TYPE_CHECKING, deserialize_object, \
+    json_encode, json_decode
 
 from malcolm.compat import OrderedDict
-from malcolm.core import json_encode, json_decode, Unsubscribe, Subscribe, \
+from malcolm.core import Unsubscribe, Subscribe, \
     Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
     AlarmStatus, Part, BooleanMeta, get_config_tag, Widget, ChoiceArrayMeta, \
-    TableMeta, serialize_object, ChoiceMeta, config_tag, \
+    TableMeta, ChoiceMeta, config_tag, \
     CAMEL_RE, camel_to_title, StringMeta
 from malcolm.core.tags import without_group_tags, Port
 from malcolm.modules.builtin.infos import PortInfo
@@ -182,19 +182,13 @@ class ManagerController(StatefulController):
                     y.append(layout_info.y)
                     visible.append(layout_info.visible)
             layout_table = LayoutTable(name, mri, x, y, visible)
-            try:
-                # Compare the Array seq to get at the numpy array
-                np.testing.assert_equal(
-                    layout_table.visible.seq, self.layout.value.visible.seq)
-            except AssertionError:
-                visibility_changed = True
-            else:
-                visibility_changed = False
+            visibility_changed = \
+                layout_table.visible != self.layout.value.visible
             self.layout.set_value(layout_table)
             if self.saved_visibility is None:
                 # First write of table, set layout and exports saves
                 self.saved_visibility = layout_table.visible
-                self.saved_exports = self.exports.value.to_dict()
+                self.saved_exports = self.exports.value
                 # Force visibility changed so we update_block_endpoints
                 # even if there weren't any visible
                 visibility_changed = True
@@ -238,17 +232,10 @@ class ManagerController(StatefulController):
                             only_modified_by_us = False
                         message_list.append(message)
             # Add in any modification messages from the layout and export tables
-            try:
-                # Compare the Array seq to get at the numpy array
-                np.testing.assert_equal(
-                    self.layout.value.visible.seq, self.saved_visibility)
-            except AssertionError:
+            if self.layout.value.visible != self.saved_visibility:
                 message_list.append("layout changed")
                 only_modified_by_us = False
-            try:
-                np.testing.assert_equal(
-                    self.exports.value.to_dict(), self.saved_exports)
-            except AssertionError:
+            if self.exports.value != self.saved_exports:
                 message_list.append("exports changed")
                 only_modified_by_us = False
             if message_list:
@@ -440,7 +427,7 @@ class ManagerController(StatefulController):
             exports[source] = export
         # Add other attributes
         for name, attribute in self.our_config_attributes.items():
-            attributes[name] = serialize_object(attribute.value)
+            attributes[name] = attribute.value
         # Add any structure that a child part wants to save
         structure["children"] = self.run_hooks(
             SaveHook(p, c)
@@ -543,7 +530,7 @@ class ManagerController(StatefulController):
     def _mark_clean(self, design, init=False):
         with self.changes_squashed:
             self.saved_visibility = self.layout.value.visible
-            self.saved_exports = self.exports.value.to_dict()
+            self.saved_exports = self.exports.value
             # Now we are clean, modified should clear
             if not init:
                 # Don't clear at init, because some things may not be

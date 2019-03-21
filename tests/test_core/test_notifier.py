@@ -2,12 +2,13 @@ import unittest
 from mock import Mock
 from threading import RLock
 
+from annotypes import serialize_object
+
 # module imports
 from malcolm.compat import OrderedDict
 from malcolm.core.notifier import Notifier
 from malcolm.core.request import Return, Subscribe, Unsubscribe
 from malcolm.core.response import Update, Delta
-from malcolm.core.serializable import serialize_object
 
 
 class Dummy(object):
@@ -23,8 +24,8 @@ class Dummy(object):
     def __setitem__(self, item, value):
         self.data[item] = value
 
-    def to_dict(self):
-        return serialize_object(self.data)
+    def to_dict(self, dict_cls=dict):
+        return serialize_object(self.data, dict_cls)
 
 
 class TestNotifier(unittest.TestCase):

@@ -1,8 +1,7 @@
-from annotypes import Anno, add_call_types
+from annotypes import Anno, add_call_types, json_decode, json_encode
 from tornado.web import RequestHandler, asynchronous
 
-from malcolm.core import Part, json_decode, json_encode, Get, Post, Return, \
-    Error, PartRegistrar
+from malcolm.core import Part, Get, Post, Return, Error, PartRegistrar
 from malcolm.modules import builtin
 from ..hooks import ReportHandlersHook, UHandlerInfos
 from ..infos import HandlerInfo

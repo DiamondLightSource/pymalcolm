@@ -124,8 +124,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         duration = 2 * float(micros) / 1e6
         if duration != generator.duration:
             serialized = generator.to_dict()
-            serialized["duration"] = duration
             new_generator = CompoundGenerator.from_dict(serialized)
+            new_generator.duration = duration
             return scanning.infos.ParameterTweakInfo("generator", new_generator)
 
     def move_to_start(self, child, cs_port, completed_steps):

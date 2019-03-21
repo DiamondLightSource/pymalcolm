@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from annotypes import TYPE_CHECKING, Anno, Sequence
+from annotypes import TYPE_CHECKING, Anno, Sequence, stringify_error
 
 from malcolm.compat import OrderedDict
 from .alarm import Alarm
@@ -9,12 +9,12 @@ from .errors import UnexpectedError, NotWriteableError
 from .hook import Hookable, start_hooks, wait_hooks, Hook
 from .info import Info
 from .models import BlockModel, AttributeModel, MethodModel, Model
-from .notifier import Notifier
+from .notifier import Notifier, freeze
 from .part import PartRegistrar, Part, FieldRegistry, InfoRegistry
 from .concurrency import Queue, Spawned, RLock
 from .request import Get, Subscribe, Unsubscribe, Put, Post, Request
 from .response import Response
-from .serializable import serialize_object, camel_to_title, stringify_error
+from .camel import camel_to_title
 from .timestamp import TimeStamp
 from .tags import method_return_unpacked
 from .views import make_view, Block
@@ -162,8 +162,8 @@ class Controller(Hookable):
                 raise UnexpectedError(
                     "Object '%s' of type %r has no attribute '%s'" % (
                         path, typ, endpoint))
-        # Important to serialize now with the lock so we get a consistent set
-        serialized = serialize_object(data)
+        # Important to freeze now with the lock so we get a consistent set
+        serialized = freeze(data)
         ret = [request.return_response(serialized)]
         return ret
 
@@ -243,7 +243,7 @@ class Controller(Hookable):
                 returned_value = {}
             else:
                 # It should already be an object that serializes to a dict
-                returned_value = serialize_object(result)
+                returned_value = result
         except Exception as e:
             returned_alarm = Alarm.major(stringify_error(e))
             raise
@@ -251,7 +251,7 @@ class Controller(Hookable):
             self.update_method_logs(
                 method, took_value, took_ts, returned_value, returned_alarm)
 
-        # Don't need to serialize as the result should be immutable
+        # Don't need to freeze as the result should be immutable
         ret = [request.return_response(result)]
         return ret
 

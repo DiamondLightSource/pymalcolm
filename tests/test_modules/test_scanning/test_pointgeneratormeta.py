@@ -15,7 +15,7 @@ class TestPointGeneratorMeta(unittest.TestCase):
         assert self.PGM.label == ""
 
     def test_validate(self):
-        g = CompoundGenerator([MagicMock()], [], [])
+        g = CompoundGenerator([], [], [])
         self.PGM.validate(g)
 
     @patch('malcolm.modules.scanning.util.CompoundGenerator.from_dict')

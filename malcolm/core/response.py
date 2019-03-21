@@ -1,5 +1,5 @@
-from annotypes import Anno, Any, Serializable
-
+from annotypes import Anno, Any, Serializable, FrozenOrderedDict, \
+    serialize_object
 
 with Anno("ID that the Request was sent with"):
     AId = int
@@ -30,8 +30,6 @@ class Return(Response):
     def __init__(self, id=0, value=None):
         # type: (AId, AValue) -> None
         super(Return, self).__init__(id)
-        # TODO: we used to serialize here, but I think its unnecessary
-        # This will be serialized by to_dict() if needed
         self.value = value
 
 
@@ -56,7 +54,6 @@ class Update(Response):
     def __init__(self, id=0, value=None):
         # type: (AId, AValue) -> None
         super(Update, self).__init__(id)
-        # Should already be serialized
         self.value = value
 
 
@@ -69,6 +66,13 @@ class Delta(Response):
     def __init__(self, id=0, changes=None):
         # type: (AId, AChanges) -> None
         super(Delta, self).__init__(id)
-        # Should already be serialized
         self.changes = changes
 
+    def to_dict(self, dict_cls=FrozenOrderedDict):
+        d = super(Delta, self).to_dict(dict_cls)
+        # Serialize doesn't know to recurse here as it's not typed, so do it
+        # here
+        for change in d["changes"]:
+            if len(change) == 2:
+                change[1] = serialize_object(change[1], dict_cls)
+        return d

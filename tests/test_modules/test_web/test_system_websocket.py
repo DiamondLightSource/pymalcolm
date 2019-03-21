@@ -4,9 +4,10 @@ import json
 from tornado.websocket import websocket_connect
 from tornado import gen
 import cothread
+from annotypes import json_encode
 
 from malcolm.compat import OrderedDict
-from malcolm.core import Process, Queue, ResponseError, Post, json_encode
+from malcolm.core import Process, Queue, ResponseError, Post
 from malcolm.modules.builtin.blocks import proxy_block
 from malcolm.modules.demo.blocks import hello_block, counter_block
 from malcolm.modules.web.blocks import web_server_block, websocket_client_block
@@ -113,7 +114,7 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Error:1.0",
             id=-1,
-            message="ValueError: Error decoding JSON object (didn't return OrderedDict)"
+            message="ValueError: Error decoding JSON object (didn't return FrozenOrderedDict)"
         )
 
         IOLoopHelper.call(self.send_message, "I am not JSON", convert_json=False)

@@ -1,9 +1,9 @@
 import unittest
 import os
 from mock import MagicMock, ANY
+from annotypes import json_decode
 
 from malcolm.compat import OrderedDict
-from malcolm.core import json_decode
 from malcolm.core.request import Request, Get, Post, Subscribe, Unsubscribe, Put
 from malcolm.core.response import Return, Error, Update, Delta, Response
 
@@ -141,7 +141,7 @@ class TestSubscribe(unittest.TestCase):
     def test_setters(self):
         self.o.path = ["BL18I:XSPRESS3", "state", "value"]
         self.o.id = 19
-        d = self.o.to_dict()
+        d = self.o.to_dict(dict_cls=OrderedDict)
         del d["delta"]
         assert get_doc_json("subscribe_xspress3_state_value") == d
 

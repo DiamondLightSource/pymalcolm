@@ -134,4 +134,3 @@ class TestRunnableChildPart(unittest.TestCase):
         assert self.bf.design.value == "fast"
         assert self.b.design.value == "default"
         assert self.b.modified.value is False
-

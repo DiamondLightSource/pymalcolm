@@ -1,11 +1,11 @@
-from annotypes import Anno, TYPE_CHECKING, deserialize_object
+from annotypes import Anno, TYPE_CHECKING, deserialize_object, json_decode, \
+    json_encode
 from cothread import cothread
 from tornado import gen
 from tornado.websocket import websocket_connect, WebSocketClientConnection
 
-from malcolm.core import Subscribe, json_decode, \
-    json_encode, Response, Error, Update, Return, Queue, Request, \
-    StringArrayMeta, Widget, ResponseError, DEFAULT_TIMEOUT, Delta, \
+from malcolm.core import Subscribe, Response, Error, Update, Return, Queue, \
+    Request, StringArrayMeta, Widget, ResponseError, DEFAULT_TIMEOUT, Delta, \
     BlockModel, NTScalar, BlockMeta, Put, Post
 from malcolm.modules import builtin
 from ..util import IOLoopHelper

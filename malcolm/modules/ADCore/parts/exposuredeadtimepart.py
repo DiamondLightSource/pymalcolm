@@ -15,13 +15,16 @@ frequency_accuracy_desc = \
     "In ppm. Subtract duration*this/1e6 when calculating exposure"
 with Anno(frequency_accuracy_desc):
     AInitialAccuracy = float
+with Anno("The minimum exposure time this detector will accept"):
+    AMinExposure = float
 
 
 class ExposureDeadtimePart(Part):
     def __init__(self,
                  name,  # type: APartName
                  initial_readout_time=0.0,  # type: AInitialReadoutTime
-                 initial_frequency_accuracy=50.0  # type: AInitialAccuracy
+                 initial_frequency_accuracy=50.0,  # type: AInitialAccuracy
+                 min_exposure=0.0  # type: AMinExposure
                  ):
         # type: (...) -> None
         super(ExposureDeadtimePart, self).__init__(name)
@@ -35,6 +38,12 @@ class ExposureDeadtimePart(Part):
             tags=[Widget.TEXTINPUT.tag(), config_tag()],
             display=Display(precision=3, units="ppm")
         ).create_attribute_model(initial_frequency_accuracy)
+        self.exposure = NumberMeta(
+            "float64", "The calculated exposure for this run",
+            tags=[Widget.TEXTUPDATE.tag(), config_tag()],
+            display=Display(precision=6, units="s", limitLow=min_exposure)
+
+        )
         # Hooks
         self.register_hooked(
             scanning.hooks.ReportStatusHook, self.report_status)

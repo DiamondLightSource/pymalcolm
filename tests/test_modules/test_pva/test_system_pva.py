@@ -1,8 +1,9 @@
 import unittest
 
+from annotypes import json_encode
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.core import Process, json_encode
+from malcolm.core import Process
 from malcolm.modules.builtin.blocks import proxy_block
 from malcolm.modules.builtin.util import ExportTable
 from malcolm.modules.demo.blocks import ticker_block

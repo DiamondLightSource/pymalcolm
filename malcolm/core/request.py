@@ -4,7 +4,6 @@ from annotypes import Anno, Array, Any, TYPE_CHECKING, Mapping, Union, \
     Sequence, Serializable
 
 from .response import Return, Error, Update, Delta, Response
-from .serializable import serialize_object
 
 if TYPE_CHECKING:
     from typing import Callable, Tuple, List
@@ -102,7 +101,7 @@ class Put(PathRequest):
     def __init__(self, id=0, path=None, value=None, get=False):
         # type: (AId, UPath, AValue, AGet) -> None
         super(Put, self).__init__(id, path)
-        self.value = serialize_object(value)
+        self.value = value
         self.get = get
 
 
@@ -116,9 +115,6 @@ class Post(PathRequest):
     def __init__(self, id=0, path=None, parameters=None):
         # type: (AId, UPath, AParameters) -> None
         super(Post, self).__init__(id, path)
-        if parameters is not None:
-            for k, v in parameters.items():
-                parameters[k] = serialize_object(v)
         self.parameters = parameters
 
 

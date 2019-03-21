@@ -2,14 +2,14 @@ import inspect
 
 from annotypes import Array, Anno, Union, Sequence, Mapping, Any, to_array, \
     Optional, TYPE_CHECKING, WithCallTypes, NO_DEFAULT, Serializable, \
-    deserialize_object
+    deserialize_object, FrozenOrderedDict
 import numpy as np
 from enum import Enum
 
 from malcolm.compat import OrderedDict, str_
 from .alarm import Alarm
 from .notifier import DummyNotifier, Notifier
-from .serializable import camel_to_title, serialize_object
+from .camel import camel_to_title
 from .table import Table
 from .tags import Widget, method_return_unpacked
 from .timestamp import TimeStamp
@@ -521,8 +521,10 @@ class ChoiceMeta(VMeta):
 
 with Anno("The lower bound of range within which the value must be set"):
     ALimitLow = np.float64
+ULimitLow = Union[ALimitLow, float]
 with Anno("The upper bound of range within which the value must be set"):
     ALimitHigh = np.float64
+ULimitHigh = Union[ALimitHigh, float]
 with Anno("Number of significant figures to display"):
     APrecision = np.int32
 UPrecision = Union[APrecision, int]
@@ -539,8 +541,8 @@ class Display(Model):
     # limitLow and limitHigh are camelCase to maintain compatibility with
     # EPICS normative types
     def __init__(self,
-                 limitLow=0,  # type: ALimitLow
-                 limitHigh=0,  # type: ALimitHigh
+                 limitLow=0,  # type: ULimitLow
+                 limitHigh=0,  # type: ULimitHigh
                  description="",  # type: AMetaDescription
                  precision=0,  # type: UPrecision
                  units=""  # type: AUnits
@@ -553,19 +555,30 @@ class Display(Model):
         self.precision = self.set_precision(precision)
         self.units = self.set_units(units)
 
+    # noinspection PyPep8Naming
+    # limitLow is camelCase to maintain compatibility with EPICS normative
+    # types
     def set_limitLow(self, limitLow):
+        # type: (ULimitLow) -> ALimitLow
         return self.set_endpoint_data("limitLow", np.float64(limitLow))
 
+    # noinspection PyPep8Naming
+    # limitHigh is camelCase to maintain compatibility with EPICS normative
+    # types
     def set_limitHigh(self, limitHigh):
+        # type: (ULimitHigh) -> ALimitHigh
         return self.set_endpoint_data("limitHigh", np.float64(limitHigh))
 
     def set_precision(self, precision):
+        # type: (UPrecision) -> APrecision
         return self.set_endpoint_data("precision", np.int32(precision))
 
     def set_units(self, units):
+        # type: (AUnits) -> AUnits
         return self.set_endpoint_data("units", units)
 
     def set_description(self, description):
+        # type: (AMetaDescription) -> AMetaDescription
         return self.set_endpoint_data("description", description)
 
 
@@ -854,8 +867,8 @@ class TableMeta(VMeta):
             # Create an empty table
             value = {k: None for k in self.elements}
         elif isinstance(value, Table):
-            # Serialize it so we can type check it
-            value = serialize_object(value)
+            # Serialize a single level so we can type check it
+            value = {k: value[k] for k in value.call_types}
         elif not isinstance(value, dict):
             raise ValueError(
                 "Expected Table instance or serialized, got %s" % (value,))
@@ -1017,9 +1030,10 @@ class MethodMeta(Meta):
 
     def set_defaults(self, defaults):
         # type: (ADefaults) -> ADefaults
-        for k, v in defaults.items():
-            if k != "typeid":
-                defaults[k] = self.takes.elements[k].validate(v)
+        defaults = FrozenOrderedDict(tuple(
+            (k, self.takes.elements[k].validate(v))
+            for k, v in defaults.items() if k != "typeid"
+        ))
         return self.set_endpoint_data("defaults", defaults)
 
     def set_returns(self, returns):

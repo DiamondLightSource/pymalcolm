@@ -1,8 +1,7 @@
 from contextlib import contextmanager
 
-from annotypes import TYPE_CHECKING
+from annotypes import TYPE_CHECKING, FrozenOrderedDict, Array
 
-from .serializable import serialize_object
 from .loggable import Loggable
 from .request import Subscribe, Unsubscribe
 from .response import Response
@@ -29,6 +28,23 @@ class DummyNotifier(object):
     def add_squashed_delete(self, path):
         # type: (List[str]) -> None
         pass
+
+
+def freeze(o):
+    # Cheaper than a subclass check, will find Models for us and freeze them
+    # into dicts
+    if hasattr(o, "notifier"):
+        o = FrozenOrderedDict((("typeid", o.typeid),) + tuple(
+            (k, freeze(getattr(o, k)))
+            for k in o.call_types
+        ))
+    elif isinstance(o, dict):
+        # Recurse down in case there are any models down there
+        o = FrozenOrderedDict(tuple((k, freeze(v)) for k, v in o.items()))
+    elif o.__class__ == Array and hasattr(o.typ, "notifier"):
+        # Recurse down only if the type suggests it has a model
+        o = [freeze(v) for v in o.seq]
+    return o
 
 
 class Notifier(Loggable):
@@ -152,16 +168,16 @@ class NotifierNode(object):
             # Add any changes that our children need to know about
             self._add_child_change(change, child_changes)
 
-        # If we have update subscribers, serialize at this level
+        # If we have update subscribers, freeze at this level
         if self.update_requests:
-            serialized = serialize_object(self.data)
+            frozen = freeze(self.data)
             for request in self.update_requests:
-                ret.append(request.update_response(serialized))
+                ret.append(request.update_response(frozen))
 
-        # If we have delta subscribers, serialize the changes
+        # If we have delta subscribers, freeze the change value
         if self.delta_requests:
             for change in changes:
-                change[-1] = serialize_object(change[-1])
+                change[-1] = freeze(change[-1])
             for request in self.delta_requests:
                 ret.append(request.delta_response(changes))
 
@@ -237,13 +253,13 @@ class NotifierNode(object):
             ret += self.children[name].handle_subscribe(request, path[1:])
         else:
             # This is for us
-            serialized = serialize_object(self.data)
+            frozen = freeze(self.data)
             if request.delta:
                 self.delta_requests.append(request)
-                ret.append(request.delta_response([[[], serialized]]))
+                ret.append(request.delta_response([[[], frozen]]))
             else:
                 self.update_requests.append(request)
-                ret.append(request.update_response(serialized))
+                ret.append(request.update_response(frozen))
         return ret
 
     def handle_unsubscribe(self, request, path):

@@ -2,10 +2,9 @@ from annotypes import add_call_types, Anno, Union, Array, Sequence, Any, \
     deserialize_object
 
 from malcolm.compat import OrderedDict
-from malcolm.core import BadValueError, serialize_object, APartName, \
+from malcolm.core import BadValueError, APartName, \
     Delta, Subscribe, Unsubscribe, Future, PartRegistrar, \
     Put, Request
-from malcolm.modules.builtin.hooks import AStructure, AInit
 from malcolm.modules.builtin.parts import ChildPart, AMri, AInitialVisibility
 from ..hooks import ConfigureHook, PostRunArmedHook, \
     SeekHook, RunHook, ResumeHook, ACompletedSteps, AContext, ValidateHook, \
@@ -88,10 +87,15 @@ class RunnableChildPart(ChildPart):
     def validate(self, context, **kwargs):
         # type: (AContext, **Any) -> UParameterTweakInfos
         child = context.block_view(self.mri)
+        # This is a Serializable with the correct entries
         returns = child.validate(**kwargs)
+        # TODO: this will fail if we split across 2 Malcolm processes as
+        # scanpointgenerators don't compare equal, but we don't want to
+        # serialize everything as that is expensive for arrays
         ret = []
-        for k, v in serialize_object(returns).items():
-            if serialize_object(kwargs[k]) != v:
+        for k in returns:
+            v = returns[k]
+            if kwargs[k] != v:
                 ret.append(ParameterTweakInfo(k, v))
         return ret
 

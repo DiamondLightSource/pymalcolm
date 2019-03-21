@@ -354,10 +354,10 @@ class TestMapMeta(unittest.TestCase):
     def setUp(self):
         self.mm = MapMeta()
         self.sam = StringArrayMeta()
+        self.sam.label = "C1"
         self.serialized = OrderedDict()
         self.serialized["typeid"] = "malcolm:core/MapMeta:1.0"
         self.serialized["elements"] = dict(c1=self.sam.to_dict())
-        self.serialized["elements"]["c1"]["label"] = "C1"
         self.serialized["required"] = ["c1"]
 
     def test_to_dict(self):
@@ -370,7 +370,6 @@ class TestMapMeta(unittest.TestCase):
         tm = MapMeta.from_dict(self.serialized)
         assert len(tm.elements) == 1
         expected = self.sam.to_dict()
-        expected["label"] = "C1"
         assert tm.elements["c1"].to_dict() == expected
 
 

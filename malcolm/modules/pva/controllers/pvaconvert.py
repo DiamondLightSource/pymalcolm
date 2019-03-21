@@ -50,51 +50,37 @@ except NameError:
 
 def convert_to_type_tuple_value(value):
     # type: (Any) -> Tuple[Any, Any]
-    if isinstance(value, Array):
+    # cheaper than a subclass check
+    if value.__class__ is Array:
         if issubclass(value.typ, Enum):
-            typ = str
+            spec = "as"
             value_for_set = [x.value for x in value.seq]
+        elif hasattr(value.typ, "to_dict"):
+            # Array of objects
+            spec = "av"
+            value_for_set = [convert_dict_to_value(v) for v in value.seq]
         else:
-            typ = value.typ
+            spec = 'a' + type_specifiers[value.typ]
             value_for_set = value.seq
-        spec = 'a' + type_specifiers[typ]
-        # TODO: cope with arrays of objects
     elif isinstance(value, np.ndarray):
         assert len(value.shape) == 1, \
             "Expected 1d array, got {}".format(value.shape)
         spec = 'a' + type_specifiers[value.dtype.type]
         value_for_set = value
     elif isinstance(value, list):
-        specs = set()
-        for v in value:
-            t, _ = convert_to_type_tuple_value(v)
-            if isinstance(t, tuple):
-                t = 'av'
-            specs.add(t)
-        # TODO: remove this when scanpoint generator has types
-        if len(specs) == 1:
-            spec = specs.pop()
-            if not spec.startswith("a"):
-                spec = 'a%s' % spec
-        else:
-            spec = 'av'
-        if spec == 'av':
-            value_for_set = []
-            for v in value:
-                if isinstance(v, dict):
-                    # Dict structures need to be turned into Values so they
-                    # can give type information to the variant union
-                    v = convert_dict_to_value(v)
-                value_for_set.append(v)
-        else:
-            value_for_set = value
-    elif isinstance(value, dict):
-        typeid = value.get("typeid", "structure")
+        # List of objects
+        spec = "av"
+        value_for_set = [convert_dict_to_value(v) for v in value]
+    elif isinstance(value, dict) or hasattr(value, "to_dict"):
+        try:
+            typeid = value["typeid"]
+        except KeyError:
+            typeid = "structure"
         fields = []
         value_for_set = {}
-        for k, v in value.items():
+        for k in value:
             if k != "typeid":
-                t, v_set = convert_to_type_tuple_value(v)
+                t, v_set = convert_to_type_tuple_value(value[k])
                 fields.append((k, t))
                 value_for_set[k] = v_set
         spec = ('S', typeid, fields)
@@ -118,10 +104,11 @@ def convert_from_type_spec(spec, val):
     elif spec == "av":
         # Variant list of objects
         return [convert_value_to_dict(v) for v in val]
-#    elif spec[0] == "a":
-        # Array of something with concrete type
-        # typ = specifier_types[spec[1]]
-        # return Array[typ](val)
+    #elif spec[0] == "a":
+    #    # Array of something with concrete type
+    #    # This currently fails because Array[np.float64] != Array[float]
+    #    typ = specifier_types[spec[1]]
+    #    return Array[typ](val)
     else:
         # Primitive
         return val

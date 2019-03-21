@@ -1,8 +1,7 @@
-import numpy as np
 from annotypes import Anno, add_call_types, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict, clean_repr
-from malcolm.core import Part, serialize_object, Attribute, Subscribe, \
+from malcolm.core import Part, Attribute, Subscribe, \
     Unsubscribe, APartName, Port, Controller, Response, \
     get_config_tag, Update, Return, Put, Request
 from malcolm.modules.builtin.hooks import AInit
@@ -148,14 +147,14 @@ class ChildPart(Part):
     @add_call_types
     def load(self, context, structure, init=False):
         # type: (AContext, AStructure, AInit) -> None
-        if init:
-            # At init pop out the design so it doesn't get restored here
-            # This stops child devices (like a detector) getting told to
-            # go to multiple conflicting designs at startup
-            design = structure.pop("design", "")
         child = context.block_view(self.mri)
         iterations = {}  # type: Dict[int, Dict[str, Tuple[Attribute, Any]]]
         for k, v in structure.items():
+            if init and k == "design":
+                # At init pop out the design so it doesn't get restored here
+                # This stops child devices (like a detector) getting told to
+                # go to multiple conflicting designs at startup
+                continue
             try:
                 attr = getattr(child, k)
             except KeyError:
@@ -176,18 +175,12 @@ class ChildPart(Part):
             # ones that need to change
             to_set = {}
             for k, (attr, v) in params.items():
-                try:
-                    np.testing.assert_equal(serialize_object(attr.value), v)
-                except AssertionError:
+                if attr.value != v:
                     to_set[k] = v
             child.put_attribute_values(to_set)
-        if init:
-            # Now put it back in the saved structure
-            self.saved_structure["design"] = design
+        if init and "design" in child:
             # We might not have cleared the changes so report here
-            child = context.block_view(self.mri)
-            self.send_modified_info_if_not_equal(
-                "design", child.design.value)
+            self.send_modified_info_if_not_equal("design", child.design.value)
 
     @add_call_types
     def save(self, context):
@@ -199,7 +192,7 @@ class ChildPart(Part):
                 attr = getattr(child, k)
                 if isinstance(attr, Attribute) and \
                         get_config_tag(attr.meta.tags):
-                    part_structure[k] = serialize_object(attr.value)
+                    part_structure[k] = attr.value
         self.saved_structure = part_structure
         return part_structure
 
@@ -293,14 +286,12 @@ class ChildPart(Part):
         # If we did a save or load then we will have an original value,
         # otherwise it will be None
         original_value = self.saved_structure.get(name, None)
-        try:
-            np.testing.assert_equal(original_value, new_value)
-        except AssertionError:
+        if original_value == new_value:
+            message = None
+        else:
             message = "%s.%s.value = %s not %s" % (
                 self.name, name, clean_repr(new_value),
                 clean_repr(original_value))
-        else:
-            message = None
         last_message = self.modified_messages.get(name, None)
         if message != last_message:
             # Tell the controller if something has changed

@@ -31,3 +31,17 @@ class Table(Serializable):
         data = [getattr(self, a) for a in self.call_types]
         for row in zip(*data):
             yield list(row)
+
+    def __eq__(self, other):
+        # type: (object) -> bool
+        return not self != other
+
+    def __ne__(self, other):
+        if not isinstance(other, Table):
+            return True
+        if list(self.call_types) != list(other.call_types):
+            return True
+        for k in self.call_types:
+            if self[k] != other[k]:
+                return True
+        return False

@@ -74,8 +74,8 @@ class TestHelloDemoSystem(unittest.TestCase):
 
         assert response.changes[6][0] == ["returned", "timeStamp"]
 
-        took_ts = TimeStamp.from_dict(response.changes[2][1])
-        returned_ts = TimeStamp.from_dict(response.changes[6][1])
+        took_ts = response.changes[2][1]
+        returned_ts = response.changes[6][1]
         # Check it took about 1s to run
         assert abs(1 - (returned_ts.to_time() - took_ts.to_time())) < 0.4
         # And it's response

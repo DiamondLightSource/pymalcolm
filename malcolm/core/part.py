@@ -6,7 +6,7 @@ from malcolm.compat import OrderedDict
 from .request import Request
 from .hook import Hookable
 from .info import Info
-from .serializable import CAMEL_RE
+from .camel import CAMEL_RE
 from .concurrency import Spawned
 from .models import MethodModel, AttributeModel, MethodMeta
 

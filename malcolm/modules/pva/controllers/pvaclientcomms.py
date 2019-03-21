@@ -6,7 +6,7 @@ from annotypes import TYPE_CHECKING
 
 from malcolm.modules.builtin.controllers import ClientComms
 from malcolm.core import Queue, Model, DEFAULT_TIMEOUT, BlockMeta, \
-    serialize_object, BlockModel, Alarm
+    BlockModel, Alarm
 from .pvaconvert import convert_value_to_dict, convert_to_type_tuple_value, Type
 
 
@@ -130,7 +130,7 @@ class PvaClientComms(ClientComms):
             value: The value to put
         """
         path = attribute_name + ".value"
-        typ, value = convert_to_type_tuple_value(serialize_object(value))
+        typ, value = convert_to_type_tuple_value(value)
         if isinstance(typ, tuple):
             # Structure, make into a Value
             _, typeid, fields = typ
@@ -158,7 +158,7 @@ class PvaClientComms(ClientComms):
         Returns:
             The return results from the server
         """
-        typ, parameters = convert_to_type_tuple_value(serialize_object(params))
+        typ, parameters = convert_to_type_tuple_value(params)
         uri = NTURI(typ[2])
 
         uri = uri.wrap(
