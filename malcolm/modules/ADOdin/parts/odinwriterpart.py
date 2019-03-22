@@ -1,5 +1,6 @@
 import os
 
+import h5py
 from annotypes import add_call_types, Anno, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, \
     ReshapeVDSGenerator
@@ -45,9 +46,9 @@ def files_shape(frames, block_size, file_count):
     remainders = [block_size if remains > block_size else remains
                   for remains in range(remainder, 0, -block_size)]
     # pad the remainders list with zeros
-    remainders += [0] * (file_count-len(remainders))
+    remainders += [0] * (file_count - len(remainders))
 
-    shape = tuple(per_file*block_size + remainders[i]
+    shape = tuple(per_file * block_size + remainders[i]
                   for i in range(file_count))
     return shape
 
@@ -65,7 +66,7 @@ def one_vds(vds_folder, vds_name, files, width, height,
                 },
         output=vds_name,
         source_node=node,
-        target_node="process/"+node+"_interleave",
+        target_node="process/" + node + "_interleave",
         block_size=block_size,
         log_level=1)
     gen.generate_vds()
@@ -73,7 +74,7 @@ def one_vds(vds_folder, vds_name, files, width, height,
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(path=vds_folder,
                               files=[vds_name],
-                              source_node="process/"+node+"_interleave",
+                              source_node="process/" + node + "_interleave",
                               target_node=node,
                               output=vds_name,
                               shape=generator.shape,
@@ -121,6 +122,68 @@ def create_vds(generator, raw_name, vds_path, child):
     one_vds(vds_folder, vds_name, files, 1, 1,
             shape, generator, alternates, block_size,
             VDS_SUM_NAME, 'uint64')
+
+
+set_bases = ["/entry/detector/", "/entry/sum/", "/entry/uid/"]
+set_data = ["/data", "/sum", "/uid"]
+
+
+def add_nexus_nodes(generator, vds_file_path):
+    """ Add in the additional information to make this into a standard nexus
+    format file:-
+    (a) create the standard structure under the 'entry' group with a
+    subgroup for each dataset. 'set_bases' lists the data sets we make here.
+    (b) save a dataset for each axis in each of the dimensions of the scan
+    representing the demand position at every point in the scan.
+    """
+
+    # create the axes dimensions attribute, a comma separated list giving size
+    # of the axis dimensions padded with . for the detector dimensions and
+    # multidimensional dimensions
+    pad_dims = []
+    for d in generator.dimensions:
+        if len(d.axes) == 1:
+            pad_dims.append("%s_set" % d.axes[0])
+        else:
+            pad_dims.append(".")
+
+    pad_dims += ["."] * 2  # assume a 2 dimensional detector
+
+    with h5py.File(vds_file_path, 'r+', libver="latest") as vds:
+        for data, node in zip(set_data, set_bases):
+            # create a group for this entry
+            vds.require_group(node)
+            # points to the axis demand data sets
+            vds[node].attrs["axes"] = ','.join(pad_dims)
+
+            data_node_name = node.split('/')[-2]
+            # points to the detector dataset for this entry
+            vds[node].attrs["signal"] = data_node_name
+            # a hard link from this entry 'signal' to the actual data
+            vds[node + data_node_name] = vds[data]
+
+            axis_sets = {}
+            # iterate the axes in each dimension of the generator to create the
+            # axis information nodes
+            for i, d in enumerate(generator.dimensions):
+                for axis in d.axes:
+                    # add signal data dimension for axis
+                    axis_indices = '{}_set_indices'.format(axis)
+                    vds[node].attrs[axis_indices] = str(i)
+
+                    # demand positions for axis
+                    axis_set = '{}_set'.format(axis)
+                    if axis_sets.get(axis_set):
+                        # link to the first entry's demand list
+                        vds[node + axis_set] = axis_sets[axis_set]
+                    else:
+                        # create the demand list for the first entry only
+                        axis_demands = d.get_positions(axis)
+                        vds.create_dataset(
+                            node + axis_set, data=axis_demands)
+                        vds[node + axis_set].attrs["units"] = \
+                            generator.units[axis]
+                    axis_sets[axis_set] = vds[node + axis_set]
 
 
 # We will set these attributes on the child block, so don't save them
@@ -195,7 +258,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
         vds_full_filename = os.path.join(fileDir, fileName)
 
         # this is the path to underlying file the odin writer will write to
-        raw_file_name = fileTemplate.replace('%s', formatName+'_raw_data')
+        raw_file_name = fileTemplate.replace('%s', formatName + '_raw_data')
         raw_file_basename, _ = os.path.splitext(raw_file_name)
 
         assert "." in vds_full_filename, \
@@ -214,6 +277,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
 
         create_vds(generator, raw_file_basename,
                    vds_full_filename, child)
+        add_nexus_nodes(generator, vds_full_filename)
+
         return None
 
     @add_call_types
