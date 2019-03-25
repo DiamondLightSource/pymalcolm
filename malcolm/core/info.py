@@ -7,6 +7,7 @@ from .errors import BadValueError
 
 if TYPE_CHECKING:
     from typing import Type, Dict, List, Union, Sequence
+
     PartInfo = Dict[str, Union[None, Sequence]]
 
 T = TypeVar("T")

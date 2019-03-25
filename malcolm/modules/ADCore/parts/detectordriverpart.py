@@ -1,15 +1,18 @@
 from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
 from xml.etree import cElementTree as ET
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar, config_tag
+from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar, \
+    config_tag
 from malcolm.modules.builtin.parts import AMri, ChildPart
 from malcolm.modules.builtin.util import no_save
 from malcolm.modules.scanning.hooks import ReportStatusHook, \
     ConfigureHook, PostRunArmedHook, SeekHook, RunHook, ResumeHook, PauseHook, \
     AbortHook, AContext, UInfos, AStepsToDo, ACompletedSteps, APartInfo
 from malcolm.modules.scanning.util import AGenerator
-from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, ExposureDeadtimeInfo, FilePathTranslatorInfo
-from ..util import ADBaseActions, ExtraAttributesTable, AttributeDatasetType, APartRunsOnWindows, DataType, SourceType
+from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, \
+    ExposureDeadtimeInfo, FilePathTranslatorInfo
+from ..util import ADBaseActions, ExtraAttributesTable, AttributeDatasetType, \
+    APartRunsOnWindows, DataType, SourceType
 import os
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
@@ -41,7 +44,9 @@ class DetectorDriverPart(ChildPart):
         self.actions = ADBaseActions(mri)
         self.extra_attributes = TableMeta.from_table(
             ExtraAttributesTable, "Extra attributes to be added to the dataset",
-            writeable=("name", "pv", "description", "sourceId", "sourceType", "dataType", "datasetType"),
+            writeable=(
+            "name", "pv", "description", "sourceId", "sourceType", "dataType",
+            "datasetType"),
             extra_tags=[config_tag()]
         ).create_attribute_model()
         self.runs_on_windows = runs_on_windows
@@ -65,28 +70,42 @@ class DetectorDriverPart(ChildPart):
                     dbr_type = "DBR_STRING"
                 else:
                     dbr_type = dbr_type.value
-                ET.SubElement(root_el, "Attribute", name=self.extra_attributes.value.name[index], type="EPICS_PV",
-                              dbrtype=dbr_type, description=self.extra_attributes.value.description[index],
-                              source=self.extra_attributes.value.sourceId[index])
-            elif self.extra_attributes.value.sourceType[index] == SourceType.PARAM:
-                ET.SubElement(root_el, "Attribute", name=self.extra_attributes.value.name[index], type="PARAM",
-                              datatype=self.extra_attributes.value.dataType[index].value,
-                              description=self.extra_attributes.value.description[index],
-                              source=self.extra_attributes.value.sourceId[index])
+                ET.SubElement(root_el, "Attribute",
+                              name=self.extra_attributes.value.name[index],
+                              type="EPICS_PV",
+                              dbrtype=dbr_type, description=
+                              self.extra_attributes.value.description[index],
+                              source=self.extra_attributes.value.sourceId[
+                                  index])
+            elif self.extra_attributes.value.sourceType[
+                index] == SourceType.PARAM:
+                ET.SubElement(root_el, "Attribute",
+                              name=self.extra_attributes.value.name[index],
+                              type="PARAM",
+                              datatype=self.extra_attributes.value.dataType[
+                                  index].value,
+                              description=
+                              self.extra_attributes.value.description[index],
+                              source=self.extra_attributes.value.sourceId[
+                                  index])
         return et_to_string(root_el)
 
-    def set_extra_attributes(self, value, set_alarm_ts=True, alarm=None, ts=None):
+    def set_extra_attributes(self, value, set_alarm_ts=True, alarm=None,
+                             ts=None):
         for row, _ in enumerate(value.name):
 
             if value.sourceType[row] == SourceType.PARAM:
                 if value.dataType[row] == DataType.DBRNATIVE:
-                    raise ValueError("data type DBR_NATIVE invalid for asyn param attribute")
+                    raise ValueError(
+                        "data type DBR_NATIVE invalid for asyn param attribute")
         self.extra_attributes.set_value(value, set_alarm_ts, alarm, ts)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(DetectorDriverPart, self).setup(registrar)
-        registrar.add_attribute_model("attributesToCapture", self.extra_attributes, self.set_extra_attributes)
+        registrar.add_attribute_model("attributesToCapture",
+                                      self.extra_attributes,
+                                      self.set_extra_attributes)
 
     @add_call_types
     def reset(self, context):
@@ -100,8 +119,10 @@ class DetectorDriverPart(ChildPart):
         ret = []
         if self.main_dataset_useful:
             ret.append(NDArrayDatasetInfo(rank=2))
-        for name, dataset_type in zip(self.extra_attributes.value.name, self.extra_attributes.value.datasetType):
-            ret.append(NDAttributeDatasetInfo(rank=2, name=name, attr=name, type=dataset_type))
+        for name, dataset_type in zip(self.extra_attributes.value.name,
+                                      self.extra_attributes.value.datasetType):
+            ret.append(NDAttributeDatasetInfo(rank=2, name=name, attr=name,
+                                              type=dataset_type))
 
         return ret
 
@@ -154,14 +175,17 @@ class DetectorDriverPart(ChildPart):
                 if self.runs_on_windows:
                     error_msg = "No or multiple FilePathTranslatorPart found:" + \
                                 "must have exactly 1 if any part in the AD chain is running on Windows"
-                    translator = FilePathTranslatorInfo.filter_single_value(part_info, error_msg)
-                    attributes_filename = translator.translate_filepath(part_info, self.attributes_filename)
+                    translator = FilePathTranslatorInfo.filter_single_value(
+                        part_info, error_msg)
+                    attributes_filename = translator.translate_filepath(
+                        part_info, self.attributes_filename)
                 futures = child.put_attribute_values_async(dict(
                     attributesFile=attributes_filename))
                 context.wait_all_futures(futures)
             else:
-                raise AssertionError('''Block doesn't have "attributesFile" attribute''' +
-                                     ' (was it instantiated properly with adbase_parts?)')
+                raise AssertionError(
+                    '''Block doesn't have "attributesFile" attribute''' +
+                    ' (was it instantiated properly with adbase_parts?)')
 
     @add_call_types
     def run(self, context):

@@ -6,7 +6,8 @@ from annotypes import add_call_types, Anno, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator, Dimension
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Future, Info, Block, PartRegistrar, BooleanMeta, Widget, config_tag
+from malcolm.core import APartName, Future, Info, Block, PartRegistrar, \
+    BooleanMeta, Widget, config_tag
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, DatasetType, \
     DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
@@ -230,11 +231,6 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
                   source="ndattribute", ndattribute="NDArrayUniqueId")
     ET.SubElement(NDAttributes_el, "dataset", name="NDArrayTimeStamp",
                   source="ndattribute", ndattribute="NDArrayTimeStamp")
-    # All manually declared attributes have specific Dataset type, now go in /entry/$(name)/$(name)
-    # for dataset_info in [attr_set for attr_set in NDAttributeDatasetInfo.filter_values(part_info) if
-    #                      attr_set.type == AttributeDatasetType.MONITOR]:
-    #     ET.SubElement(NDAttributes_el, "dataset", name=dataset_info.name,
-    #                   source="ndattribute", ndattribute=dataset_info.attr)
 
     xml = et_to_string(root_el)
     return xml
@@ -251,7 +247,8 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
-    def __init__(self, name, mri, runs_on_windows=False, write_all_nd_attributes=True):
+    def __init__(self, name, mri, runs_on_windows=False,
+                 write_all_nd_attributes=True):
         # type: (APartName, scanning.parts.AMri, APartRunsOnWindows, AWriteAllNDAttributes) -> None
         super(HDFWriterPart, self).__init__(name, mri)
         # Future for the start action
@@ -266,7 +263,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # Hooks
         self.write_all_nd_attributes = BooleanMeta(
             "Toggles wheteher all NDAttributes are written to file, or only those specified in the dataset",
-            writeable=True, tags=[Widget.CHECKBOX.tag(), config_tag()]).create_attribute_model(write_all_nd_attributes)
+            writeable=True,
+            tags=[Widget.CHECKBOX.tag(), config_tag()]).create_attribute_model(
+            write_all_nd_attributes)
         self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
         self.register_hooked((scanning.hooks.PostRunArmedHook,
                               scanning.hooks.SeekHook), self.seek)
@@ -285,7 +284,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(HDFWriterPart, self).setup(registrar)
-        registrar.add_attribute_model("writeAllNdAttributes", self.write_all_nd_attributes,
+        registrar.add_attribute_model("writeAllNdAttributes",
+                                      self.write_all_nd_attributes,
                                       self.write_all_nd_attributes.set_value)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
@@ -330,7 +330,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
             fileName=formatName,
             fileTemplate="%s" + fileTemplate))
         futures += set_dimensions(child, generator)
-        xml = make_layout_xml(generator, part_info, self.write_all_nd_attributes.value)
+        xml = make_layout_xml(generator, part_info,
+                              self.write_all_nd_attributes.value)
         self.layout_filename = os.path.join(
             file_dir, "%s-layout.xml" % self.mri)
         with open(self.layout_filename, "w") as f:
@@ -354,7 +355,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
                 steps_to_do, n_frames_between_flushes)
         layout_filename = self.layout_filename
         if self.runs_on_windows:
-            layout_filename = FilePathTranslatorInfo.translate_filepath(part_info, self.layout_filename)
+            layout_filename = FilePathTranslatorInfo.translate_filepath(
+                part_info, self.layout_filename)
         futures += child.put_attribute_values_async(dict(
             xml=layout_filename,
             flushDataPerNFrames=n_frames_between_flushes,

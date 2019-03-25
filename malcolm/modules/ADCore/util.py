@@ -50,7 +50,8 @@ class StatisticsName(Enum):
 
 with Anno("Is the IOC this part connects to running on Windows?"):
     APartRunsOnWindows = bool
-with Anno("source ID for attribute (PV name for PVAttribute, asyn param name for paramAttribute)"):
+with Anno("source ID for attribute (PV name for PVAttribute," +
+          "asyn param name for paramAttribute)"):
     ASourceIdArray = Array[str]
 with Anno("PV descriptions"):
     ADescriptionArray = Array[str]
@@ -109,12 +110,12 @@ class ExtraAttributesTable(Table):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     def __init__(self,
-                 name,          # type: UNameArray
-                 sourceId,      # type: USourceIdArray
-                 description,   # type: UDescriptionArray
-                 sourceType,    # type: USourceTypeArray
-                 dataType,      # type: UDataTypeArray
-                 datasetType,   # type: UAttributeTypeArray
+                 name,  # type: UNameArray
+                 sourceId,  # type: USourceIdArray
+                 description,  # type: UDescriptionArray
+                 sourceType,  # type: USourceTypeArray
+                 dataType,  # type: UDataTypeArray
+                 datasetType,  # type: UAttributeTypeArray
                  ):
         # type: (...) -> None
         self.name = ANameArray(name)

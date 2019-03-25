@@ -13,7 +13,6 @@ from .table import Table
 from .tags import Widget, method_return_unpacked
 from .timestamp import TimeStamp
 
-
 if TYPE_CHECKING:
     from typing import Tuple, Type, List, Dict, Callable
 
@@ -528,7 +527,6 @@ with Anno("The units for the value"):
 
 @Serializable.register_subclass("display_t")
 class Display(Model):
-
     __slots__ = ["limitLow", "limitHigh", "description", "precision", "units"]
 
     # noinspection PyPep8Naming
@@ -746,6 +744,7 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
 @VMeta.register_annotype_converter(list(_dtype_string_lookup), is_array=True)
 class NumberArrayMeta(NumberMeta, VArrayMeta):
     """Meta object containing information for an array of numerical values"""
+
     def validate(self, value):
         # type: (Any) -> Array
         """Check if the value is valid returns it"""
@@ -876,7 +875,8 @@ class TableMeta(VMeta):
         return Widget.TABLE
 
     @classmethod
-    def from_table(cls, table_cls, description, widget=None, writeable=(), extra_tags=()):
+    def from_table(cls, table_cls, description, widget=None, writeable=(),
+                   extra_tags=()):
         """Create a TableMeta object, using a Table subclass as the spec
 
         Args:

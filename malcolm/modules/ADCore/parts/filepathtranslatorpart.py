@@ -42,7 +42,8 @@ class FilepathTranslatorPart(Part):
         super(FilepathTranslatorPart, self).setup(registrar)
         # Attributes
         registrar.add_attribute_model(
-            "windowsDriveLetter", self.windows_drive_letter, self.windows_drive_letter.set_value)
+            "windowsDriveLetter", self.windows_drive_letter,
+            self.windows_drive_letter.set_value)
         registrar.add_attribute_model(
             "pathPrefix", self.path_prefix,
             self.path_prefix.set_value)
