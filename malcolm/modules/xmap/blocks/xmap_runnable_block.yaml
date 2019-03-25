@@ -37,5 +37,5 @@
 
 - ADCore.parts.FilepathTranslatorPart:
     name: WINPATH
-    default_windows_drive_letter: T
-    default_path_prefix: /dls
+    initial_windows_drive_letter: T
+    initial_path_prefix: /dls

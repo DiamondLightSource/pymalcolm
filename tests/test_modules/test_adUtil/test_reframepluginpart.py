@@ -61,5 +61,4 @@ class TestReframePluginPart(ChildTestCase):
             call.put('numImages', 6),
             call.put('postCount', 999),
             call.post('start'),
-            call.when_values_matches('acquiring', True, None, 10.0, None),
-            call.put('attributesFile', '/tmp/mri-attributes.xml')]
+            call.when_values_matches('acquiring', True, None, 10.0, None)]

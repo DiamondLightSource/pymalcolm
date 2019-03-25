@@ -4,18 +4,29 @@ from .util import DatasetType, AttributeDatasetType
 
 
 class FilePathTranslatorInfo(Info):
+    """Translate linux filepath to windows equivalent
+
+    Args:
+        windows_drive_letter: The drive letter assigned to the windows mount
+        path_prefix: The location of the mount in linux (i.e. /dls or /dls_sw)
+    """
     def __init__(self, windows_drive_letter, path_prefix):
         self.windows_drive_letter = windows_drive_letter
         self.path_prefix = path_prefix
 
-    def translate_filepath(self, filepath):
-        assert filepath.startswith(self.path_prefix), \
-            "filepath %s does not start with expected prefix %s" % (filepath, self.path_prefix)
-        return filepath.replace(self.path_prefix, self.windows_drive_letter + ":").replace("/", "\\")
+    @classmethod
+    def translate_filepath(cls, part_info, filepath):
+        error_msg = "No or multiple FilePathTranslatorPart found:" + \
+                    "must have exactly 1 if any part in the AD chain is running on Windows"
+        translator = cls.filter_single_value(part_info, error_msg)
+        assert filepath.startswith(translator.path_prefix), \
+            "filepath %s does not start with expected prefix %s" % (filepath, translator.path_prefix)
+        return filepath.replace(translator.path_prefix, translator.windows_drive_letter + ":").replace("/", "\\")
+
 
 class ExposureDeadtimeInfo(Info):
     """Detector exposure time should be generator.duration - deadtime
-
+X
     Args:
         readout_time: The per frame readout time of the detector
         frequency_accuracy: The crystal accuracy in ppm

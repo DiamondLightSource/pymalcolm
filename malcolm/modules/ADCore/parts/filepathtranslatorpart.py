@@ -20,19 +20,19 @@ with Anno(path_prefix_desc):
 class FilepathTranslatorPart(Part):
     def __init__(self,
                  name,  # type: APartName
-                 default_windows_drive_letter="",  # type: ADriveLetter
-                 default_path_prefix="/dls"  # type: APathPrefix
+                 initial_windows_drive_letter,  # type: ADriveLetter
+                 initial_path_prefix="/dls"  # type: APathPrefix
                  ):
         # type: (...) -> None
         super(FilepathTranslatorPart, self).__init__(name)
         self.windows_drive_letter = StringMeta(
             drive_letter_desc,
             tags=[Widget.TEXTINPUT.tag(), config_tag()],
-        ).create_attribute_model(default_windows_drive_letter)
+        ).create_attribute_model(initial_windows_drive_letter)
         self.path_prefix = StringMeta(
             path_prefix_desc,
             tags=[Widget.TEXTINPUT.tag(), config_tag()],
-        ).create_attribute_model(default_path_prefix)
+        ).create_attribute_model(initial_path_prefix)
         # Hooks
         self.register_hooked(
             scanning.hooks.ReportStatusHook, self.report_status)

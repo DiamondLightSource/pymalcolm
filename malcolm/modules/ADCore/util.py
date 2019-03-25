@@ -2,15 +2,12 @@ from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
 from enum import Enum
 import numpy as np
 
-from malcolm.core import Table, Future, Context, PartRegistrar, DEFAULT_TIMEOUT, StringArrayMeta, ChoiceArrayMeta, \
-    Widget
+from malcolm.core import Table, Future, Context, PartRegistrar, DEFAULT_TIMEOUT
 from malcolm.modules import scanning
 
 if TYPE_CHECKING:
     from typing import List, Any
 
-with Anno("Is the IOC this part connects to running on Windows?"):
-    APartRunsOnWindows = bool
 
 class AttributeDatasetType(Enum):
     DETECTOR = "detector"
@@ -26,6 +23,18 @@ class DatasetType(Enum):
     POSITION_VALUE = "position_value"
 
 
+class DataType(Enum):
+    INT = "INT"
+    DOUBLE = "DOUBLE"
+    STRING = "STRING"
+    DBRNATIVE = "DBR_NATIVE"
+
+
+class SourceType(Enum):
+    PARAM = "paramAttribute"
+    PV = "PVAttribute"
+
+
 class StatisticsName(Enum):
     MIN = "MIN_VALUE"  # Minimum counts in any element
     MIN_X = "MIN_X"  # X position of minimum counts
@@ -39,8 +48,10 @@ class StatisticsName(Enum):
     NET = "NET"  # Sum of all elements not in background region
 
 
-with Anno("PV names"):
-    APvNameArray = Array[str]
+with Anno("Is the IOC this part connects to running on Windows?"):
+    APartRunsOnWindows = bool
+with Anno("source ID for attribute (PV name for PVAttribute, asyn param name for paramAttribute)"):
+    ASourceIdArray = Array[str]
 with Anno("PV descriptions"):
     ADescriptionArray = Array[str]
 with Anno("Dataset names"):
@@ -55,14 +66,23 @@ with Anno("Dataset paths within HDF files"):
     APathArray = Array[str]
 with Anno("UniqueID array paths within HDF files"):
     AUniqueIDArray = Array[str]
+with Anno("Types of attribute dataset"):
+    AAttributeTypeArray = Array[AttributeDatasetType]
+with Anno("Type of attribute source"):
+    ASourceTypeArray = Array[SourceType]
+with Anno("Type of attribute data"):
+    ADataTypeArray = Array[DataType]
 UNameArray = Union[ANameArray, Sequence[str]]
-UPvNameArray = Union[APvNameArray, Sequence[str]]
+USourceIdArray = Union[ASourceIdArray, Sequence[str]]
 UDescriptionArray = Union[ADescriptionArray, Sequence[str]]
 UFilenameArray = Union[AFilenameArray, Sequence[str]]
 UTypeArray = Union[ATypeArray, Sequence[DatasetType]]
 URankArray = Union[ARankArray, Sequence[np.int32]]
 UPathArray = Union[APathArray, Sequence[str]]
 UUniqueIDArray = Union[AUniqueIDArray, Sequence[str]]
+UAttributeTypeArray = Union[AAttributeTypeArray, Sequence[AttributeDatasetType]]
+UDataTypeArray = Union[ADataTypeArray, Sequence[DataType]]
+USourceTypeArray = Union[ASourceTypeArray, Sequence[SourceType]]
 
 
 class DatasetTable(Table):
@@ -85,33 +105,24 @@ class DatasetTable(Table):
         self.uniqueid = AUniqueIDArray(uniqueid)
 
 
-AttrSetTableElements = {
-    "name": StringArrayMeta("name to give to NDAttribute in dataset", tags=[Widget.TEXTINPUT.tag()], writeable=True),
-    "sourceId": StringArrayMeta(
-        "reference to give to attribute in dataset (NDAttribute name if existing NDAttribute, PV name if PVAttribute)",
-        tags=[Widget.TEXTINPUT.tag()], writeable=True),
-    "description": StringArrayMeta("description of attribute", tags=[Widget.TEXTINPUT.tag()], writeable=True),
-    "sourceType": ChoiceArrayMeta("source of data to be added to dataset", tags=[Widget.COMBO.tag()],
-                                  choices=["PVAttribute", "paramAttribute"], writeable=True),
-    "dataType": ChoiceArrayMeta("type of data provided by source", tags=[Widget.COMBO.tag()],
-                                  choices=["INT", "DOUBLE", "STRING", "DBR_NATIVE"], writeable=True),
-    "datasetType": ChoiceArrayMeta("type of dataset", tags=[Widget.COMBO.tag()],
-                                  choices=["monitor", "detector", "position"], writeable=True)
-}
-
-
-class PVSetTable(Table):
-    # This will be serialized so we need type to be called that
-    # noinspection PyShadowingBuiltins
+class ExtraAttributesTable(Table):
+    # Allow CamelCase as arguments will be serialized
+    # noinspection PyPep8Naming
     def __init__(self,
-                 name,  # type: UNameArray
-                 pv,  # type: UPvNameArray
-                 description,  # type: UDescriptionArray
+                 name,          # type: UNameArray
+                 sourceId,      # type: USourceIdArray
+                 description,   # type: UDescriptionArray
+                 sourceType,    # type: USourceTypeArray
+                 dataType,      # type: UDataTypeArray
+                 datasetType,   # type: UAttributeTypeArray
                  ):
         # type: (...) -> None
         self.name = ANameArray(name)
-        self.pv = APvNameArray(pv)
+        self.sourceId = ASourceIdArray(sourceId)
         self.description = ADescriptionArray(description)
+        self.sourceType = ASourceTypeArray(sourceType)
+        self.dataType = ADataTypeArray(dataType)
+        self.datasetType = AAttributeTypeArray(datasetType)
 
 
 class ADBaseActions(object):

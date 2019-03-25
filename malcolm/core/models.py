@@ -876,7 +876,7 @@ class TableMeta(VMeta):
         return Widget.TABLE
 
     @classmethod
-    def from_table(cls, table_cls, description, widget=None, writeable=()):
+    def from_table(cls, table_cls, description, widget=None, writeable=(), extra_tags=()):
         """Create a TableMeta object, using a Table subclass as the spec
 
         Args:
@@ -885,6 +885,7 @@ class TableMeta(VMeta):
             widget: The widget of the created Meta
             writeable: A list of the writeable field names. If there are any
                 writeable fields then the whole Meta is writeable
+            extra_tags: A list of tags to be added to the table meta
             """
         # type: (Type[Table], str, Widget, List[str]) -> TableMeta
         elements = OrderedDict()
@@ -895,7 +896,9 @@ class TableMeta(VMeta):
                   writeable=bool(writeable))
         if widget is None:
             widget = ret.default_widget()
-        ret.set_tags([widget.tag()])
+        tags = [widget.tag()]
+        tags.extend(extra_tags)
+        ret.set_tags(tags)
         ret.set_table_cls(table_cls)
         return ret
 

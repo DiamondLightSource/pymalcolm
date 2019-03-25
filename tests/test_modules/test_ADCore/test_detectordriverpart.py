@@ -6,8 +6,19 @@ from malcolm.core import Context, Process
 from malcolm.modules.ADCore.includes import adbase_parts
 from malcolm.modules.ADCore.infos import ExposureDeadtimeInfo
 from malcolm.modules.ADCore.parts import DetectorDriverPart
+from malcolm.modules.ADCore.util import ExtraAttributesTable, SourceType, DataType, AttributeDatasetType
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.testutil import ChildTestCase
+
+
+expected_xml = """\
+<?xml version="1.0" ?>
+<Attributes>
+<Attribute dbrtype="DBR_NATIVE" description="a test pv" name="test1" source="PV1" type="EPICS_PV" />
+<Attribute dbrtype="DBR_DOUBLE" description="another test PV" name="test2" source="PV2" type="EPICS_PV" />
+<Attribute datatype="DOUBLE" description="a param, for testing" name="test3" source="PARAM1" type="PARAM" />
+</Attributes>
+"""
 
 
 class TestDetectorDriverPart(ChildTestCase):
@@ -55,9 +66,44 @@ class TestDetectorDriverPart(ChildTestCase):
             call.put('imageMode', 'Multiple'),
             call.put('numImages', 6),
             call.put('acquirePeriod', 0.1 - 0.0001),
-            call.put('attributesFile', '/tmp/mri-attributes.xml'),
         ]
         assert not self.o.is_hardware_triggered
+
+    def test_configure_with_extra_attributes(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 6
+        expected_xml_filename = '/tmp/mri-attributes.xml'
+        part_info = dict(anyname=[ExposureDeadtimeInfo(0.01, 1000)])
+        self.set_attributes(self.child, triggerMode="Internal")
+        extra_attributes = ExtraAttributesTable(
+            name=["test1", "test2", "test3"],
+            sourceId=["PV1", "PV2", "PARAM1"],
+            sourceType=[SourceType.PV, SourceType.PV, SourceType.PARAM],
+            description=["a test pv", "another test PV", "a param, for testing"],
+            dataType=[DataType.DBRNATIVE, DataType.DOUBLE, DataType.DOUBLE],
+            datasetType=[AttributeDatasetType.MONITOR, AttributeDatasetType.DETECTOR, AttributeDatasetType.POSITION],
+        )
+        self.o.extra_attributes.set_value(extra_attributes)
+        self.o.configure(
+            self.context, completed_steps, steps_to_do, part_info, generator, fileDir="/tmp")
+        assert self.child.handled_requests.mock_calls == [
+            call.put('arrayCallbacks', True),
+            call.put('arrayCounter', 0),
+            call.put('exposure', 0.1 - 0.01 - 0.0001),
+            call.put('imageMode', 'Multiple'),
+            call.put('numImages', 6),
+            call.put('acquirePeriod', 0.1 - 0.0001),
+            call.put('attributesFile', expected_xml_filename),
+        ]
+        assert not self.o.is_hardware_triggered
+        with open(expected_xml_filename) as f:
+            actual_xml = f.read().replace(">", ">\n")
+
+        assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_run(self):
         self.o.registrar = MagicMock()

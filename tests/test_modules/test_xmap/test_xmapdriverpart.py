@@ -5,6 +5,16 @@ from malcolm.modules.xmap.parts import XmapDriverPart
 from malcolm.modules.xmap.blocks import xmap_driver_block
 from malcolm.testutil import ChildTestCase
 from malcolm.modules.ADCore.infos import FilePathTranslatorInfo
+from malcolm.modules.ADCore.util import ExtraAttributesTable, SourceType, DataType, AttributeDatasetType
+
+expected_xml = """\
+<?xml version="1.0" ?>
+<Attributes>
+<Attribute dbrtype="DBR_LONG" description="a test pv" name="test1" source="PV1" type="EPICS_PV" />
+<Attribute dbrtype="DBR_STRING" description="another test PV" name="test2" source="PV2" type="EPICS_PV" />
+<Attribute datatype="STRING" description="a param, for testing" name="test3" source="PARAM1" type="PARAM" />
+</Attributes>
+"""
 
 
 class TestXmap3DetectorDriverPart(ChildTestCase):
@@ -29,6 +39,16 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
         self.o.post_configure = MagicMock()
         # We wait to be armed, so set this here
         self.set_attributes(self.child, acquiring=True)
+
+        extra_attributes = ExtraAttributesTable(
+            name=["test1", "test2", "test3"],
+            sourceId=["PV1", "PV2", "PARAM1"],
+            sourceType=[SourceType.PV, SourceType.PV, SourceType.PARAM],
+            description=["a test pv", "another test PV", "a param, for testing"],
+            dataType=[DataType.INT, DataType.STRING, DataType.STRING],
+            datasetType=[AttributeDatasetType.MONITOR, AttributeDatasetType.DETECTOR, AttributeDatasetType.POSITION],
+        )
+        self.o.extra_attributes.set_value(extra_attributes)
         self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, MagicMock(), fileDir="/tmp")
         # Wait for the start_future so the post gets through to our child
@@ -53,3 +73,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
             call.post('start'),
             call.when_values_matches('acquiring', True, None, 10.0, None),
             call.put('attributesFile', 'Z:\\mri-attributes.xml')]
+        with open('/tmp/mri-attributes.xml') as f:
+            actual_xml = f.read().replace(">", ">\n")
+
+        assert actual_xml.splitlines() == expected_xml.splitlines()

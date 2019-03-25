@@ -12,7 +12,6 @@ from malcolm.modules.ADCore.util import AttributeDatasetType, DatasetType
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.testutil import ChildTestCase
 
-
 expected_xml = """<?xml version="1.0" ?>
 <hdf5_layout auto_ndattr_default="false">
 <group name="entry">
@@ -85,13 +84,16 @@ expected_xml = """<?xml version="1.0" ?>
 <hardlink name="y_set" target="/entry/detector/y_set" />
 <dataset name="t1x" ndattribute="INENC1.VAL" source="ndattribute" />
 </group>
-<group name="NDAttributes" ndattr_default="false">
+<group name="NDAttributes" ndattr_default="true">
 <attribute name="NX_class" source="constant" type="string" value="NXcollection" />
 <dataset name="NDArrayUniqueId" ndattribute="NDArrayUniqueId" source="ndattribute" />
 <dataset name="NDArrayTimeStamp" ndattribute="NDArrayTimeStamp" source="ndattribute" />
 </group>
 </group>
 </hdf5_layout>"""
+
+expected_xml_limited_attr = expected_xml.replace('<group name="NDAttributes" ndattr_default="true">',
+                                                 '<group name="NDAttributes" ndattr_default="false">')
 
 
 class TestHDFWriterPart(ChildTestCase):
@@ -248,6 +250,40 @@ class TestHDFWriterPart(ChildTestCase):
         with open(expected_xml_filename) as f:
             actual_xml = f.read().replace(">", ">\n")
         assert actual_xml.splitlines() == expected_xml.splitlines()
+
+    def test_honours_write_all_attributes_flag(self):
+        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5", write_all_nd_attributes=False)
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
+        self.process.start()
+        energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
+        spiral = SpiralGenerator(
+            ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
+        generator = CompoundGenerator([energy, spiral], [], [], 0.1)
+        generator.prepare()
+        fileDir = "/tmp"
+        formatName = "xspress3"
+        fileTemplate = "thing-%s.h5"
+        completed_steps = 0
+        steps_to_do = 38
+        expected_xml_filename = "/tmp/BLOCK-HDF5-layout.xml"
+        part_info = {
+            "DET": [NDArrayDatasetInfo(2)],
+            "PANDA": [
+                NDAttributeDatasetInfo(
+                    "I0", AttributeDatasetType.DETECTOR, "COUNTER1.COUNTER", 2),
+                NDAttributeDatasetInfo(
+                    "It", AttributeDatasetType.MONITOR, "COUNTER2.COUNTER", 2),
+                NDAttributeDatasetInfo(
+                    "t1x", AttributeDatasetType.POSITION, "INENC1.VAL", 2)],
+            "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
+        }
+        self.o.configure(
+            self.context, completed_steps, steps_to_do, part_info, generator,
+            fileDir, formatName, fileTemplate)
+
+        with open(expected_xml_filename) as f:
+            actual_xml = f.read().replace(">", ">\n")
+        assert actual_xml.splitlines() == expected_xml_limited_attr.splitlines()
 
     def test_configure_windows(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5", runs_on_windows=True)

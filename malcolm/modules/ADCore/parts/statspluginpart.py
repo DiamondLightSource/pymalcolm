@@ -70,8 +70,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
             f.write(xml)
         attributes_filename = self.attributes_filename
         if self.runs_on_windows:
-            translator = FilePathTranslatorInfo.filter_single_value(part_info)
-            attributes_filename = translator.translate_filepath(self.attributes_filename)
+            attributes_filename = FilePathTranslatorInfo.translate_filepath(part_info, self.attributes_filename)
         fs.append(
             child.attributesFile.put_value_async(attributes_filename))
         context.wait_all_futures(fs)

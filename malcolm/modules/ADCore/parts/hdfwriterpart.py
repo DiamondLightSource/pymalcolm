@@ -32,6 +32,8 @@ with Anno("""Printf style template to generate filename relative to fileDir.
 Arguments are:
   1) %s: the value of formatName"""):
     AFileTemplate = str
+with Anno("Toggle writing of all ND attributes to HDF file"):
+    AWriteAllNDAttributes = bool
 
 
 def greater_than_zero(v):
@@ -249,8 +251,8 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
-    def __init__(self, name, mri, runs_on_windows=False):
-        # type: (APartName, scanning.parts.AMri, APartRunsOnWindows) -> None
+    def __init__(self, name, mri, runs_on_windows=False, write_all_nd_attributes=True):
+        # type: (APartName, scanning.parts.AMri, APartRunsOnWindows, AWriteAllNDAttributes) -> None
         super(HDFWriterPart, self).__init__(name, mri)
         # Future for the start action
         self.start_future = None  # type: Future
@@ -264,7 +266,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # Hooks
         self.write_all_nd_attributes = BooleanMeta(
             "Toggles wheteher all NDAttributes are written to file, or only those specified in the dataset",
-            writeable=True, tags=[Widget.CHECKBOX.tag(), config_tag()]).create_attribute_model()
+            writeable=True, tags=[Widget.CHECKBOX.tag(), config_tag()]).create_attribute_model(write_all_nd_attributes)
         self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
         self.register_hooked((scanning.hooks.PostRunArmedHook,
                               scanning.hooks.SeekHook), self.seek)
@@ -352,8 +354,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
                 steps_to_do, n_frames_between_flushes)
         layout_filename = self.layout_filename
         if self.runs_on_windows:
-            translator = FilePathTranslatorInfo.filter_single_value(part_info)
-            layout_filename = translator.translate_filepath(self.layout_filename)
+            layout_filename = FilePathTranslatorInfo.translate_filepath(part_info, self.layout_filename)
         futures += child.put_attribute_values_async(dict(
             xml=layout_filename,
             flushDataPerNFrames=n_frames_between_flushes,
