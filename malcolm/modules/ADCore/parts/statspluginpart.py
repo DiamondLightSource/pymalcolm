@@ -22,9 +22,9 @@ class StatsPluginPart(builtin.parts.ChildPart):
     """Part for controlling a `stats_plugin_block` in a Device"""
 
     def __init__(self,
-                 name,                          # type: APartName,
-                 mri,                           # type: builtin.parts.AMri,
-                 statistic=StatisticsName.SUM,  # type: AStatsName,
+                 name,                          # type: APartName
+                 mri,                           # type: builtin.parts.AMri
+                 statistic=StatisticsName.SUM,  # type: AStatsName
                  runs_on_windows=False,         # type: APartRunsOnWindows
                  ):
         # type: (...) -> None

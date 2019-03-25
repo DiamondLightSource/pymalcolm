@@ -11,7 +11,7 @@ from malcolm.modules.scanning.hooks import ReportStatusHook, \
 from malcolm.modules.scanning.util import AGenerator
 from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, \
     ExposureDeadtimeInfo, FilePathTranslatorInfo
-from ..util import ADBaseActions, ExtraAttributesTable, AttributeDatasetType, \
+from ..util import ADBaseActions, ExtraAttributesTable, \
     APartRunsOnWindows, DataType, SourceType
 import os
 
@@ -45,8 +45,9 @@ class DetectorDriverPart(ChildPart):
         self.extra_attributes = TableMeta.from_table(
             ExtraAttributesTable, "Extra attributes to be added to the dataset",
             writeable=(
-            "name", "pv", "description", "sourceId", "sourceType", "dataType",
-            "datasetType"),
+                "name", "pv", "description", "sourceId", "sourceType",
+                "dataType",
+                "datasetType"),
             extra_tags=[config_tag()]
         ).create_attribute_model()
         self.runs_on_windows = runs_on_windows
@@ -173,12 +174,9 @@ class DetectorDriverPart(ChildPart):
             if hasattr(child, "attributesFile"):
                 attributes_filename = self.attributes_filename
                 if self.runs_on_windows:
-                    error_msg = "No or multiple FilePathTranslatorPart found:" + \
-                                "must have exactly 1 if any part in the AD chain is running on Windows"
-                    translator = FilePathTranslatorInfo.filter_single_value(
-                        part_info, error_msg)
-                    attributes_filename = translator.translate_filepath(
-                        part_info, self.attributes_filename)
+                    attributes_filename = \
+                        FilePathTranslatorInfo.translate_filepath(
+                         part_info, self.attributes_filename)
                 futures = child.put_attribute_values_async(dict(
                     attributesFile=attributes_filename))
                 context.wait_all_futures(futures)

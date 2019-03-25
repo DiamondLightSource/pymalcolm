@@ -247,9 +247,13 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
-    def __init__(self, name, mri, runs_on_windows=False,
-                 write_all_nd_attributes=True):
-        # type: (APartName, scanning.parts.AMri, APartRunsOnWindows, AWriteAllNDAttributes) -> None
+    def __init__(self,
+                 name,                          # type: APartName
+                 mri,                           # type: scanning.parts.AMri
+                 runs_on_windows=False,         # type: APartRunsOnWindows
+                 write_all_nd_attributes=True,  # type: AWriteAllNDAttributes
+                 ):
+        # type: (...) -> None
         super(HDFWriterPart, self).__init__(name, mri)
         # Future for the start action
         self.start_future = None  # type: Future
@@ -261,8 +265,10 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.layout_filename = None  # type: str
         self.runs_on_windows = runs_on_windows
         # Hooks
+        description = "Toggles whether all NDAttributes are written to " + \
+                      "file, or only those specified in the dataset"
         self.write_all_nd_attributes = BooleanMeta(
-            "Toggles wheteher all NDAttributes are written to file, or only those specified in the dataset",
+            description,
             writeable=True,
             tags=[Widget.CHECKBOX.tag(), config_tag()]).create_attribute_model(
             write_all_nd_attributes)

@@ -69,7 +69,8 @@ class Info(object):
         Args:
             part_info (dict): {part_name: [Info] or None} as returned from
                 Controller.run_hook()
-            error_msg (str, optional): Specific error message to show if there isn't a single value
+            error_msg (str, optional): Specific error message to show if
+                there isn't a single value
 
         Returns:
             info subclass of cls
