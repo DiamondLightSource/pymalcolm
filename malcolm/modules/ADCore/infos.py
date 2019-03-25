@@ -26,7 +26,7 @@ class FilePathTranslatorInfo(Info):
 
 class ExposureDeadtimeInfo(Info):
     """Detector exposure time should be generator.duration - deadtime
-X
+
     Args:
         readout_time: The per frame readout time of the detector
         frequency_accuracy: The crystal accuracy in ppm
