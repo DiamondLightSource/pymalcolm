@@ -87,8 +87,8 @@ class StatsPluginPart(builtin.parts.ChildPart):
         # type: (scanning.hooks.AContext) -> None
         super(StatsPluginPart, self).reset(context)
         # Delete the attribute XML file
-        if self.attributes_filename is not None:
-            if os.path.isfile(self.attributes_filename):
-                os.remove(self.attributes_filename)
-                child = context.block_view(self.mri)
-                child.attributesFile.put_value("")
+        if self.attributes_filename and os.path.isfile(
+                self.attributes_filename):
+            os.remove(self.attributes_filename)
+            child = context.block_view(self.mri)
+            child.attributesFile.put_value("")

@@ -250,9 +250,9 @@ class TestHDFWriterPart(ChildTestCase):
             call.put('posNameDimN', 'd1'),
             call.put('posNameDimX', 'd0'),
             call.put('posNameDimY', ''),
-            call.put('flushAttrPerNFrames', 0.0),
-            call.put('flushDataPerNFrames', 38.0),
-            call.put('xml', expected_xml_filename_remote),
+            call.put('flushAttrPerNFrames', 0),
+            call.put('flushDataPerNFrames', 38),
+            call.put('xmlLayout', expected_xml_filename_remote),
             call.put('numCapture', 0),
             call.post('start'),
             call.when_value_matches('arrayCounterReadback', greater_than_zero, None)

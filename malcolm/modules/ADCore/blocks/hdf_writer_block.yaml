@@ -75,7 +75,7 @@
     rbv_suffix: _RBV
 
 - ca.parts.CACharArrayPart:
-    name: xml
+    name: xmlLayout
     description: XML for layout
     pv: $(prefix):XMLFileName
     rbv_suffix: _RBV

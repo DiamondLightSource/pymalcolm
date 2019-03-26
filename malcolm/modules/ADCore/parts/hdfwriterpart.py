@@ -281,15 +281,15 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # type: (scanning.hooks.AContext) -> None
         super(HDFWriterPart, self).reset(context)
         self.abort(context)
-        # HDFWriter might have still be writing so stop doesn't guarantee flushed all frames
-        # start_future is in a different context so can't wait for it, so
-        # just wait for the running attribute to be false
+        # HDFWriter might have still be writing so stop doesn't guarantee
+        # flushed all frames start_future is in a different context so
+        # can't wait for it, so just wait for the running attribute to be false
         child = context.block_view(self.mri)
         child.when_value_matches("running", False)
         # Delete the layout XML file
-        if self.layout_filename is not None:
-            if os.path.isfile(self.layout_filename):
-                os.remove(self.layout_filename)
+        if self.layout_filename and os.path.isfile(self.layout_filename):
+            os.remove(self.layout_filename)
+            child.xmlLayout.put_value("")
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -349,7 +349,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
             layout_filename = FilePathTranslatorInfo.translate_filepath(
                 part_info, self.layout_filename)
         futures += child.put_attribute_values_async(dict(
-            xml=layout_filename,
+            xmlLayout=layout_filename,
             flushDataPerNFrames=steps_to_do,
             flushAttrPerNFrames=0))
         # Wait for the previous puts to finish

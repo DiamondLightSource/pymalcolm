@@ -91,15 +91,13 @@ class DetectorDriverPart(ChildPart):
                                   index])
         return et_to_string(root_el)
 
-    def set_extra_attributes(self, value, set_alarm_ts=True, alarm=None,
-                             ts=None):
+    def set_extra_attributes(self, value):
         for row, _ in enumerate(value.name):
-
             if value.sourceType[row] == SourceType.PARAM:
                 if value.dataType[row] == DataType.DBRNATIVE:
                     raise ValueError(
                         "data type DBR_NATIVE invalid for asyn param attribute")
-        self.extra_attributes.set_value(value, set_alarm_ts, alarm, ts)
+        self.extra_attributes.set_value(value)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -113,6 +111,12 @@ class DetectorDriverPart(ChildPart):
         # type: (AContext) -> None
         super(DetectorDriverPart, self).reset(context)
         self.actions.abort_detector(context)
+        # Delete the layout XML file
+        if self.attributes_filename and os.path.isfile(
+                self.attributes_filename):
+            os.remove(self.attributes_filename)
+            child = context.block_view(self.mri)
+            child.attributesFile.put_value("")
 
     @add_call_types
     def report_status(self):
@@ -170,26 +174,22 @@ class DetectorDriverPart(ChildPart):
         if self.is_hardware_triggered:
             # Start now if we are hardware triggered
             self.actions.arm_detector(context)
+        # Tell detector to store NDAttributes if table given
         if len(self.extra_attributes.value.sourceId) > 0:
             attribute_xml = self.build_attribute_xml()
             self.attributes_filename = os.path.join(
                 fileDir, "%s-attributes.xml" % self.mri)
             with open(self.attributes_filename, 'w') as xml:
                 xml.write(attribute_xml)
-
-            if hasattr(child, "attributesFile"):
-                attributes_filename = self.attributes_filename
-                if self.runs_on_windows:
-                    attributes_filename = \
-                        FilePathTranslatorInfo.translate_filepath(
-                         part_info, self.attributes_filename)
-                futures = child.put_attribute_values_async(dict(
-                    attributesFile=attributes_filename))
-                context.wait_all_futures(futures)
-            else:
-                raise AssertionError(
-                    '''Block doesn't have "attributesFile" attribute'''
-                    ' (was it instantiated properly with adbase_parts?)')
+            assert hasattr(child, "attributesFile"), \
+                "Block doesn't have 'attributesFile' attribute " \
+                "(was it instantiated properly with adbase_parts?)"
+            attributes_filename = self.attributes_filename
+            if self.runs_on_windows:
+                attributes_filename = \
+                    FilePathTranslatorInfo.translate_filepath(
+                     part_info, self.attributes_filename)
+            child.attributesFile.put_value(attributes_filename)
 
     @add_call_types
     def run(self, context):
@@ -204,8 +204,3 @@ class DetectorDriverPart(ChildPart):
         # type: (AContext) -> None
         self.actions.abort_detector(context)
 
-    @add_call_types
-    def post_run_ready(self):
-        # type: () -> None
-        # Delete the attribute XML file
-        os.remove(self.attributes_filename)
