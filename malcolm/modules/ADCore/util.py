@@ -23,6 +23,18 @@ class DatasetType(Enum):
     POSITION_VALUE = "position_value"
 
 
+class DataType(Enum):
+    INT = "INT"
+    DOUBLE = "DOUBLE"
+    STRING = "STRING"
+    DBRNATIVE = "DBR_NATIVE"
+
+
+class SourceType(Enum):
+    PARAM = "paramAttribute"
+    PV = "PVAttribute"
+
+
 class StatisticsName(Enum):
     MIN = "MIN_VALUE"  # Minimum counts in any element
     MIN_X = "MIN_X"  # X position of minimum counts
@@ -36,6 +48,13 @@ class StatisticsName(Enum):
     NET = "NET"  # Sum of all elements not in background region
 
 
+with Anno("Is the IOC this part connects to running on Windows?"):
+    APartRunsOnWindows = bool
+with Anno("source ID for attribute (PV name for PVAttribute," +
+          "asyn param name for paramAttribute)"):
+    ASourceIdArray = Array[str]
+with Anno("PV descriptions"):
+    ADescriptionArray = Array[str]
 with Anno("Dataset names"):
     ANameArray = Array[str]
 with Anno("Filenames of HDF files relative to fileDir"):
@@ -48,12 +67,23 @@ with Anno("Dataset paths within HDF files"):
     APathArray = Array[str]
 with Anno("UniqueID array paths within HDF files"):
     AUniqueIDArray = Array[str]
+with Anno("Types of attribute dataset"):
+    AAttributeTypeArray = Array[AttributeDatasetType]
+with Anno("Type of attribute source"):
+    ASourceTypeArray = Array[SourceType]
+with Anno("Type of attribute data"):
+    ADataTypeArray = Array[DataType]
 UNameArray = Union[ANameArray, Sequence[str]]
+USourceIdArray = Union[ASourceIdArray, Sequence[str]]
+UDescriptionArray = Union[ADescriptionArray, Sequence[str]]
 UFilenameArray = Union[AFilenameArray, Sequence[str]]
 UTypeArray = Union[ATypeArray, Sequence[DatasetType]]
 URankArray = Union[ARankArray, Sequence[np.int32]]
 UPathArray = Union[APathArray, Sequence[str]]
 UUniqueIDArray = Union[AUniqueIDArray, Sequence[str]]
+UAttributeTypeArray = Union[AAttributeTypeArray, Sequence[AttributeDatasetType]]
+UDataTypeArray = Union[ADataTypeArray, Sequence[DataType]]
+USourceTypeArray = Union[ASourceTypeArray, Sequence[SourceType]]
 
 
 class DatasetTable(Table):
@@ -74,6 +104,26 @@ class DatasetTable(Table):
         self.rank = ARankArray(rank)
         self.path = APathArray(path)
         self.uniqueid = AUniqueIDArray(uniqueid)
+
+
+class ExtraAttributesTable(Table):
+    # Allow CamelCase as arguments will be serialized
+    # noinspection PyPep8Naming
+    def __init__(self,
+                 name,  # type: UNameArray
+                 sourceId,  # type: USourceIdArray
+                 description,  # type: UDescriptionArray
+                 sourceType,  # type: USourceTypeArray
+                 dataType,  # type: UDataTypeArray
+                 datasetType,  # type: UAttributeTypeArray
+                 ):
+        # type: (...) -> None
+        self.name = ANameArray(name)
+        self.sourceId = ASourceIdArray(sourceId)
+        self.description = ADescriptionArray(description)
+        self.sourceType = ASourceTypeArray(sourceType)
+        self.dataType = ADataTypeArray(dataType)
+        self.datasetType = AAttributeTypeArray(datasetType)
 
 
 class ADBaseActions(object):

@@ -118,3 +118,7 @@
     pv: $(prefix):InputLogicPolarity
     rbv_suffix: _RBV
 
+- ca.parts.CACharArrayPart:
+    name: attributesFile
+    description: Filename for NDAttributes
+    pv: $(prefix):TX:NDAttributesFile

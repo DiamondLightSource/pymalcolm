@@ -7,6 +7,7 @@ from .exposuredeadtimepart import ExposureDeadtimePart, AInitialAccuracy, \
 from .hdfwriterpart import HDFWriterPart, AFileDir, AFileTemplate, AFormatName
 from .positionlabellerpart import PositionLabellerPart
 from .statspluginpart import StatsPluginPart
+from .filepathtranslatorpart import FilepathTranslatorPart
 
 # Expose a nice namespace
 from malcolm.core import submodule_all
