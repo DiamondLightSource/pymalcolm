@@ -4,6 +4,7 @@ import sys
 from xml.etree import cElementTree as ET
 import os
 
+
 if sys.version_info < (3,):
     # python 2
     import Queue as queue
@@ -33,71 +34,14 @@ else:
     long_ = int  # pylint:disable=invalid-name
 
 
-# This is faster than collections.OrderedDict but slower than ruamel.ordereddict
-class InsertionOrderedDict(dict):
-    # Don't accept keyword args as they have no insertion order
-    def __init__(self, seq=None):
-        dict.__init__(self)
-        self._keys = []
-        if seq:
-            for k, v in seq:
-                self[k] = v
-
-    def keys(self):
-        return self._keys
-
-    def values(self):
-        return [self[k] for k in self._keys]
-
-    def iteritems(self):
-        return ((k, self[k]) for k in self._keys)
-
-    def items(self):
-        return [(k, self[k]) for k in self._keys]
-
-    def pop(self, key, *args):
-        try:
-            ret = dict.pop(self, key)
-        except KeyError:
-            if args:
-                return args[0]
-            else:
-                raise
-        else:
-            self._keys.remove(key)
-            return ret
-
-    def __setitem__(self, key, value):
-        try:
-            self[key]
-        except KeyError:
-            self._keys.append(key)
-        dict.__setitem__(self, key, value)
-
-    def __iter__(self):
-        return iter(self._keys)
-
-    def setdefault(self, k, d=None):
-        try:
-            return self[k]
-        except KeyError:
-            self._keys.append(k)
-            dict.__setitem__(self, k, d)
-            return d
-
-    def update(self, d):
-        for k, v in d.items():
-            self[k] = v
-
-
 if os.environ.get("PYMALCOLM_FULL_ORDEREDDICT", "YES")[0].upper() == "Y":
     try:
         # ruamel exists
         from ruamel.ordereddict import ordereddict as OrderedDict
     except ImportError:
-        OrderedDict = InsertionOrderedDict
+        from collections import OrderedDict
 else:
-    OrderedDict = InsertionOrderedDict
+    from collections import OrderedDict
 
 
 def get_profiler_dir():
