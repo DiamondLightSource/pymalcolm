@@ -543,3 +543,8 @@ class RunnableController(ManagerController):
         if self.resume_queue:
             self.resume_queue.put(False)
         super(RunnableController, self).do_disable()
+
+    def go_to_error_state(self, exception):
+        if self.resume_queue:
+            self.resume_queue.put(False)
+        super(RunnableController, self).go_to_error_state(exception)

@@ -2,7 +2,8 @@ import unittest
 import time
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
-
+from annotypes import add_call_types
+from malcolm.modules.scanning.hooks import ACompletedSteps, AContext
 from malcolm.core import Process, Part, Context, AlarmStatus, \
     AlarmSeverity, AbortedError
 from malcolm.modules.scanning.parts import RunnableChildPart
@@ -11,6 +12,20 @@ from malcolm.compat import OrderedDict
 from malcolm.modules.scanning.controllers import \
     RunnableController
 from malcolm.modules.scanning.util import RunnableStates
+
+
+class TestPauseException(Exception):
+    pass
+
+
+class MisbehavingPart(RunnableChildPart):
+    @add_call_types
+    def seek(self, context, completed_steps):
+        # type: (AContext, ACompletedSteps) -> None
+        super(MisbehavingPart, self).seek(context, completed_steps)
+        if completed_steps == 3:
+            raise TestPauseException("Called magic number to make pause throw an exception")
+
 
 
 class TestRunnableStates(unittest.TestCase):
@@ -54,6 +69,9 @@ class TestRunnableController(unittest.TestCase):
         self.p = Process('process1')
         self.context = Context(self.p)
 
+        self.p2 = Process('process2')
+        self.context2 = Context(self.p2)
+
         # Make a ticker_block block to act as our child
         for c in ticker_block(mri="childBlock", config_dir="/tmp"):
             self.p.add_controller(c)
@@ -63,13 +81,17 @@ class TestRunnableController(unittest.TestCase):
         part1 = Part("part1")
 
         # Make a RunnableChildPart to control the ticker_block
-        part2 = RunnableChildPart(
+        # part2 = RunnableChildPart(
+        #     mri='childBlock', name='part2', initial_visibility=True)
+
+        part2 = MisbehavingPart(
             mri='childBlock', name='part2', initial_visibility=True)
 
         # create a root block for the RunnableController block to reside in
         self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
         self.c.add_part(part1)
         self.c.add_part(part2)
+        #self.c.add_part(misbehaving_part)
         self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
         self.ss = self.c.state_set
@@ -266,4 +288,14 @@ class TestRunnableController(unittest.TestCase):
         with self.assertRaises(AbortedError):
             f.result()
         self.checkState(self.ss.ABORTED)
+
+    def test_error_in_pause_returns_run(self):
+        self.prepare_half_run(duration=0.5)
+        f = self.b.run_async()
+        self.context.sleep(0.95)
+        with self.assertRaises(TestPauseException):
+            self.b.pause(lastGoodStep=3)
+        self.checkState(self.ss.FAULT, child=False)
+        with self.assertRaises(AbortedError):
+            f.result()
 
