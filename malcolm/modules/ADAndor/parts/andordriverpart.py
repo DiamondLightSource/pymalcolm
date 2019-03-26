@@ -1,10 +1,22 @@
 from annotypes import add_call_types, Any
 
-from malcolm.modules import ADCore, scanning
-from malcolm.modules.ADCore.infos import ExposureDeadtimeInfo
+from malcolm.core import PartRegistrar
+from malcolm.modules import ADCore, scanning, builtin
 
 
 class AndorDriverPart(ADCore.parts.DetectorDriverPart):
+    def __init__(self, name, mri):
+        # type: (builtin.parts.APartName, builtin.parts.AMri) -> None
+        super(AndorDriverPart, self).__init__(name, mri, soft_trigger_modes=[
+                "Internal", "Software"])
+        self.exposure = scanning.util.exposure_attribute(min_exposure=0.0)
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(AndorDriverPart, self).setup(registrar)
+        # Attributes
+        registrar.add_attribute_model("exposure", self.exposure)
+
     @add_call_types
     def configure(self,
                   context,  # type: scanning.hooks.AContext
@@ -12,6 +24,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
+                  exposure=0.0,  # type: scanning.util.AExposure
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
@@ -19,11 +32,14 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         readout_time = self.get_readout_time(child, generator.duration)
 
         # Create an ExposureInfo to pass to the superclass
-        part_info[""] = [ExposureDeadtimeInfo(
-            readout_time, frequency_accuracy=50)]
+        info = ADCore.infos.ExposureDeadtimeInfo(
+            readout_time, frequency_accuracy=50, min_exposure=0.0)
+        exposure = info.calculate_exposure(generator.duration, exposure)
+        self.exposure.set_value(exposure)
+        part_info[""] = [info]
         super(AndorDriverPart, self).configure(
             context, completed_steps, steps_to_do, part_info, generator,
-            **kwargs)
+            exposure=exposure, **kwargs)
 
     def get_readout_time(self, child, duration):
         """Calculate the readout time of the detector from the EPICS driver:

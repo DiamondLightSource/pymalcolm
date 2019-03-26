@@ -33,7 +33,7 @@ def greater_than_zero(v):
 class OdinWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
     def __init__(self, name, mri):
-        # type: (APartName, scanning.parts.AMri) -> None
+        # type: (APartName, builtin.parts.AMri) -> None
         super(OdinWriterPart, self).__init__(name, mri)
         # Future for the start action
         self.start_future = None  # type: Future

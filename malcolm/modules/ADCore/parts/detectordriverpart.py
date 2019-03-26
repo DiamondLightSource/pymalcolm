@@ -36,7 +36,7 @@ class DetectorDriverPart(ChildPart):
         # Hooks
         self.register_hooked(ReportStatusHook, self.report_status)
         self.register_hooked((ConfigureHook, PostRunArmedHook, SeekHook),
-                             self.configure)
+                             self.configure, self.configure_args_with_exposure)
         self.register_hooked((RunHook, ResumeHook), self.run)
         self.register_hooked((PauseHook, AbortHook), self.abort)
 
@@ -51,6 +51,12 @@ class DetectorDriverPart(ChildPart):
         # type: () -> UInfos
         if self.main_dataset_useful:
             return NDArrayDatasetInfo(rank=2)
+
+    def configure_args_with_exposure(self, keys):
+        need_keys = self.configure.call_types.keys()
+        if "exposure" in keys:
+            need_keys.append("exposure")
+        return need_keys
 
     @add_call_types
     def configure(self,
@@ -69,8 +75,9 @@ class DetectorDriverPart(ChildPart):
             # This is allowed, no exposure required
             exposure_info = None
         else:
+            # Validate the exposure using the info provided
             kwargs["exposure"] = exposure_info.calculate_exposure(
-                generator.duration)
+                generator.duration, kwargs.get("exposure", 0.0))
         self.actions.setup_detector(
             context, completed_steps, steps_to_do, **kwargs)
         # If detector can be soft triggered, then we might need to defer

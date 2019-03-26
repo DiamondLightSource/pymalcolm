@@ -44,7 +44,7 @@ class TestDetectorDriverPart(ChildTestCase):
         generator.prepare()
         completed_steps = 0
         steps_to_do = 6
-        part_info = dict(anyname=[ExposureDeadtimeInfo(0.01, 1000)])
+        part_info = dict(anyname=[ExposureDeadtimeInfo(0.01, 1000, 0.0)])
         self.set_attributes(self.child, triggerMode="Internal")
         self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, generator)

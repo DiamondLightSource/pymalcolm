@@ -20,7 +20,18 @@ log = logging.getLogger(__name__)
 T = TypeVar("T")
 if TYPE_CHECKING:
     Hooked = Callable[..., T]
-    ArgsGen = Callable[(), List[str]]
+    ArgsGen = Callable[(List[str]), List[str]]
+
+
+def make_args_gen(func):
+    # type: (Callable) -> ArgsGen
+    call_types = getattr(func, "call_types", {})
+
+    def args_gen(keys):
+        # type: (List[str]) -> List[str]
+        return call_types.keys()
+
+    return args_gen
 
 
 class Hookable(Loggable, WithCallTypes):
@@ -32,7 +43,7 @@ class Hookable(Loggable, WithCallTypes):
                         func,  # type: Hooked
                         args_gen=None  # type: Optional[ArgsGen]
                         ):
-        # type: (Type[Hook], Callable, Optional[Callable]) -> None
+        # type: (...) -> None
         """Register func to be run when any of the hooks are run by parent
 
         Args:
@@ -44,7 +55,7 @@ class Hookable(Loggable, WithCallTypes):
         if self.hooked is None:
             self.hooked = {}
         if args_gen is None:
-            args_gen = getattr(func, "call_types", {}).keys
+            args_gen = make_args_gen(func)
         if not isinstance(hooks, Sequence):
             hooks = [hooks]
         for hook_cls in hooks:
@@ -58,7 +69,7 @@ class Hookable(Loggable, WithCallTypes):
         except (KeyError, TypeError):
             return
         else:
-            hook(func, args_gen())
+            hook(func, args_gen)
 
 
 with Anno("The child that the hook is being passed to"):
@@ -95,22 +106,22 @@ class Hook(Generic[T], WithCallTypes):
         """Override this if we need to prepare before running"""
         pass
 
-    def __call__(self, func, keys=None):
-        # type: (Callable[..., T], Sequence[str]) -> None
+    def __call__(self, func, args_gen=None):
+        # type: (Callable[..., T], ArgsGen) -> None
         """Spawn the function, passing kwargs specified by func.call_types or
         keys if given"""
-        if keys is None:
-            keys = getattr(func, "call_types", {}).keys()
         assert not self.spawned, \
             "Hook has already spawned a function, cannot run another"
         self.prepare()
+        if args_gen is None:
+            args_gen = make_args_gen(func)
         # TODO: should we check the return types here?
-        kwargs = {}
-        for k in keys:
-            assert k in self._kwargs, \
-                "Hook requested argument %r not in %r" % (
-                    k, list(self._kwargs))
-            kwargs[k] = self._kwargs[k]
+        supplied = list(self._kwargs)
+        demanded = args_gen(supplied)
+        assert set(supplied).issuperset(demanded), \
+            "Hook demanded arguments %s, but only supplied %s" % (
+                demanded, supplied)
+        kwargs = {k: self._kwargs[k] for k in demanded}
         self.spawned = self._spawn(self._run, func, kwargs)
 
     def _run(self, func, kwargs):

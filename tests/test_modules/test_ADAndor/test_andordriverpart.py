@@ -39,15 +39,19 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         self.set_attributes(self.child, exposure=0.1, acquirePeriod=0.105)
         self.o.configure(
             self.context, completed_steps, steps_to_do, {}, generator=generator)
+        # duration - readout - fudge_factor - crystal offset
+        expected_exposure = pytest.approx(0.1 - 0.005 - 0.0014 - 5e-6)
         assert self.child.handled_requests.mock_calls == [
+            # Checking for readout time
             call.put('exposure', 0.1),
             call.put('acquirePeriod', 0.1),
+            # Setup of detector
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
-            # duration - readout - fudge_factor - crystal offset
-            call.put('exposure', pytest.approx(0.1 - 0.005 - 0.0014 - 5e-6)),
+            call.put('exposure', expected_exposure),
             call.put('imageMode', 'Multiple'),
             call.put('numImages', 6000000),
             call.put('acquirePeriod', 0.1 - 5e-6),
             call.post('start'),
             call.when_value_matches('acquiring', True, None)]
+        assert self.o.exposure.value == expected_exposure
