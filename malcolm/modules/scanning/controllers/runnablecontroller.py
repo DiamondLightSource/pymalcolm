@@ -1,10 +1,10 @@
 from annotypes import Anno, TYPE_CHECKING, add_call_types, Any
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import AbortedError, MethodModel, Queue, Context, \
-    TimeoutError, AMri, NumberMeta, Widget, Part, DEFAULT_TIMEOUT
+from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
+    NumberMeta, Widget, Part, DEFAULT_TIMEOUT
 from malcolm.compat import OrderedDict
-from malcolm.core.models import MapMeta, MethodMeta
+from malcolm.core.models import MapMeta, MethodMeta, TableMeta
 from malcolm.modules.builtin.controllers import ManagerController, \
     AConfigDir, AInitialDesign, ADescription, AUseGit
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
@@ -43,6 +43,56 @@ def get_steps_per_run(generator, axes_to_move):
         # Now multiply by the dimensions to get the number of steps
         steps *= dim.size
     return steps
+
+
+def update_configure_model(configure_model, part_configure_infos):
+    # type: (MethodMeta, List[ConfigureParamsInfo]) -> MethodMeta
+    # These will not be inserted as they already exist
+    ignored = list(ConfigureHook.call_types)
+
+    # Re-calculate the following
+    required = []
+    metas = OrderedDict()
+    defaults = OrderedDict()
+
+    # First do the required arguments
+    for k in configure_model.takes.required:
+        required.append(k)
+        metas[k] = configure_model.takes.elements[k]
+    for info in part_configure_infos:
+        for k in info.required:
+            if k not in required + ignored:
+                required.append(k)
+                # TODO: moan about type changes, when != works...
+                metas[k] = info.metas[k]
+
+    # Now the default and optional
+    for k in configure_model.takes.elements:
+        if k not in required:
+            metas[k] = configure_model.takes.elements[k]
+    for info in part_configure_infos:
+        for k, meta in info.metas.items():
+            if k not in required + ignored:
+                # TODO: moan about type changes, when != works...
+                metas[k] = meta
+                if k in info.defaults:
+                    if isinstance(meta, TableMeta) and min(
+                            m.writeable for m in meta.elements.values()):
+                        # This is a table with non-writeable rows, merge the
+                        # defaults together row by row
+                        rows = []
+                        if k in defaults:
+                            rows += defaults[k].rows()
+                        rows += info.defaults[k].rows()
+                        defaults[k] = meta.table_cls.from_rows(rows)
+                    else:
+                        defaults[k] = info.defaults[k]
+
+    # Set the values
+    configure_model.takes.set_elements(metas)
+    configure_model.takes.set_required(required)
+    configure_model.set_defaults(defaults)
+    return configure_model
 
 
 class RunnableController(ManagerController):
@@ -144,47 +194,15 @@ class RunnableController(ManagerController):
             # Get the model of our configure method as the starting point
             configure_model = MethodMeta.from_callable(self.configure)
 
-            # These will not be inserted as they already exist
-            ignored = tuple(ConfigureHook.call_types)
-
-            # Re-calculate the following
-            required = []
-            takes_elements = OrderedDict()
-            defaults = OrderedDict()
-
-            # First do the required arguments
-            for k in configure_model.takes.required:
-                required.append(k)
-                takes_elements[k] = configure_model.takes.elements[k]
+            # And a list of all the infos that the parts have contributed
+            part_configure_infos = []
             for part in self.parts.values():
-                try:
-                    info = self.part_configure_params[part]
-                except KeyError:
-                    continue
-                for k in info.required:
-                    if k not in required and k not in ignored:
-                        required.append(k)
-                        takes_elements[k] = info.metas[k]
+                info = self.part_configure_params.get(part, None)
+                if info:
+                    part_configure_infos.append(info)
 
-            # Now the default and optional
-            for k in configure_model.takes.elements:
-                if k not in required:
-                    takes_elements[k] = configure_model.takes.elements[k]
-            for part in self.parts.values():
-                try:
-                    info = self.part_configure_params[part]
-                except KeyError:
-                    continue
-                for k in info.metas:
-                    if k not in required and k not in ignored:
-                        takes_elements[k] = info.metas[k]
-                        if k in info.defaults:
-                            defaults[k] = info.defaults[k]
-
-            # Set the values
-            configure_model.takes.set_elements(takes_elements)
-            configure_model.takes.set_required(required)
-            configure_model.set_defaults(defaults)
+            # Make an update configure mode
+            update_configure_model(configure_model, part_configure_infos)
 
             # Update methods from the new metas
             self._block.configure.meta.set_takes(configure_model.takes)
