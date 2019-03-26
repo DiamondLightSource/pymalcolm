@@ -1,8 +1,8 @@
 import unittest
 
-from malcolm.modules.ADCore.parts import DatasetTablePart
-from malcolm.modules.ADCore.infos import DatasetProducedInfo
-from malcolm.modules.ADCore.util import DatasetType
+from malcolm.modules.scanning.parts import DatasetTablePart
+from malcolm.modules.scanning.infos import DatasetProducedInfo
+from malcolm.modules.scanning.util import DatasetType
 
 
 class TestDatasetReportingPart(unittest.TestCase):

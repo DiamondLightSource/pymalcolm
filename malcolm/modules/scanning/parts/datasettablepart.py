@@ -1,9 +1,9 @@
 from annotypes import add_call_types
 
 from malcolm.core import Part, PartRegistrar, APartName, TableMeta
-from malcolm.modules import scanning
 from ..infos import DatasetProducedInfo
 from ..util import DatasetTable
+from ..hooks import PostConfigureHook, APartInfo
 
 
 class DatasetTablePart(Part):
@@ -15,8 +15,7 @@ class DatasetTablePart(Part):
         self.datasets = TableMeta.from_table(
             DatasetTable, "Datasets produced in HDF file"
         ).create_attribute_model()
-        self.register_hooked(scanning.hooks.PostConfigureHook,
-                             self.post_configure)
+        self.register_hooked(PostConfigureHook, self.post_configure)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -24,7 +23,7 @@ class DatasetTablePart(Part):
 
     @add_call_types
     def post_configure(self, part_info):
-        # type: (scanning.hooks.APartInfo) -> None
+        # type: (APartInfo) -> None
         # Update the dataset table
         name, filename, typ, rank, path, uid = [], [], [], [], [], []
         for i in DatasetProducedInfo.filter_values(part_info):

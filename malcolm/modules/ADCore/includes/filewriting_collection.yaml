@@ -6,7 +6,7 @@
     name: mri_prefix
     description: Malcolm resource id prefix for all created blocks
 
-- ADCore.parts.DatasetTablePart:
+- scanning.parts.DatasetTablePart:
     name: DSET
 
 - ADCore.blocks.position_labeller_block:

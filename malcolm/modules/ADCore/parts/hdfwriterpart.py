@@ -2,15 +2,16 @@ import os
 import math
 from xml.etree import cElementTree as ET
 
-from annotypes import add_call_types, Anno, TYPE_CHECKING
+from annotypes import add_call_types, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator, Dimension
 
 from malcolm.compat import et_to_string
 from malcolm.core import APartName, Future, Info, Block, PartRegistrar
 from malcolm.modules import builtin, scanning
-from ..infos import CalculatedNDAttributeDatasetInfo, DatasetType, \
-    DatasetProducedInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
+from ..infos import CalculatedNDAttributeDatasetInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
     AttributeDatasetType
+from malcolm.modules.scanning.infos import DatasetProducedInfo
+from malcolm.modules.scanning.util import DatasetType
 
 if TYPE_CHECKING:
     from typing import Iterator, List, Dict
@@ -22,15 +23,6 @@ SUFFIXES = "NXY3456789"
 # If the HDF writer doesn't get new frames in this time (seconds), consider it
 # stalled and raise
 FRAME_TIMEOUT = 60
-
-with Anno("Directory to write data to"):
-    AFileDir = str
-with Anno("Argument for fileTemplate, normally filename without extension"):
-    AFormatName = str
-with Anno("""Printf style template to generate filename relative to fileDir.
-Arguments are:
-  1) %s: the value of formatName"""):
-    AFileTemplate = str
 
 
 def greater_than_zero(v):
@@ -237,7 +229,7 @@ def make_layout_xml(generator, part_info):
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
     def __init__(self, name, mri):
-        # type: (APartName, scanning.parts.AMri) -> None
+        # type: (APartName, builtin.parts.AMri) -> None
         super(HDFWriterPart, self).__init__(name, mri)
         # Future for the start action
         self.start_future = None  # type: Future
@@ -279,9 +271,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: AFileDir
-                  formatName="det",  # type: AFormatName
-                  fileTemplate="%s.h5",  # type: AFileTemplate
+                  fileDir,  # type: scanning.util.AFileDir
+                  formatName="det",  # type: scanning.util.AFormatName
+                  fileTemplate="%s.h5",  # type: scanning.util.AFileTemplate
                   ):
         # type: (...) -> scanning.hooks.UInfos
         # On initial configure, expect to get the demanded number of frames

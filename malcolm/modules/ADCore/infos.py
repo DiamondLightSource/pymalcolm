@@ -1,6 +1,6 @@
 from malcolm.core import Info
 
-from .util import DatasetType, AttributeDatasetType
+from .util import AttributeDatasetType
 
 
 class ExposureDeadtimeInfo(Info):
@@ -9,21 +9,29 @@ class ExposureDeadtimeInfo(Info):
     Args:
         readout_time: The per frame readout time of the detector
         frequency_accuracy: The crystal accuracy in ppm
+        min_exposure: The minimum exposure time this detector supports
     """
-    def __init__(self, readout_time, frequency_accuracy):
-        # type: (float, float) -> None
+    def __init__(self, readout_time, frequency_accuracy, min_exposure):
+        # type: (float, float, float) -> None
         self.readout_time = readout_time
         self.frequency_accuracy = frequency_accuracy
+        self.min_exposure = min_exposure
 
-    def calculate_exposure(self, duration):
+    def calculate_exposure(self, duration, exposure=0.0):
         # type: (float) -> float
         """Calculate the exposure to set the detector to given the duration of
         the frame and the readout_time and frequency_accuracy"""
-        exposure = duration - self.frequency_accuracy * duration / 1000000.0 - \
-            self.readout_time
-        assert exposure > 0.0, \
-            "Exposure time %s too small when deadtime taken into account" % (
-                exposure,)
+        assert duration > 0, \
+            "Duration %s for generator must be >0 to signify constant " \
+            "exposure" % duration
+        max_exposure = duration - self.readout_time - (
+                self.frequency_accuracy * duration / 1000000.0)
+        # If exposure time is 0, then use the max_exposure for this duration
+        if exposure <= 0.0:
+            exposure = max_exposure
+        assert self.min_exposure <= exposure <= max_exposure, \
+            "Exposure %s should be in range %s to %s" % (
+                self.min_exposure, exposure, max_exposure)
         return exposure
 
 
@@ -70,24 +78,4 @@ class NDAttributeDatasetInfo(Info):
         self.attr = attr
         self.rank = rank
 
-
-class DatasetProducedInfo(Info):
-    """Declare that we will write the following dataset to file
-
-    Args:
-        name: Dataset name
-        filename: Filename relative to the fileDir we were given
-        type: What NeXuS dataset type it produces
-        rank: The rank of the dataset including generator dims
-        path: The path of the dataset within the file
-        uniqueid: The path of the UniqueID dataset within the file
-    """
-    def __init__(self, name, filename, type, rank, path, uniqueid):
-        # type: (str, str, DatasetType, int, str, str) -> None
-        self.name = name
-        self.filename = filename
-        self.type = type
-        self.rank = rank
-        self.path = path
-        self.uniqueid = uniqueid
 

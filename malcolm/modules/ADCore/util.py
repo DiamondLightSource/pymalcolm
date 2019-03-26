@@ -1,8 +1,7 @@
-from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
+from annotypes import Anno, TYPE_CHECKING
 from enum import Enum
-import numpy as np
 
-from malcolm.core import Table, Future, Context, PartRegistrar, DEFAULT_TIMEOUT
+from malcolm.core import Future, Context, PartRegistrar, DEFAULT_TIMEOUT
 from malcolm.modules import scanning
 
 if TYPE_CHECKING:
@@ -13,14 +12,6 @@ class AttributeDatasetType(Enum):
     DETECTOR = "detector"
     MONITOR = "monitor"
     POSITION = "position"
-
-
-class DatasetType(Enum):
-    PRIMARY = "primary"
-    SECONDARY = "secondary"
-    MONITOR = "monitor"
-    POSITION_SET = "position_set"
-    POSITION_VALUE = "position_value"
 
 
 class StatisticsName(Enum):
@@ -34,46 +25,6 @@ class StatisticsName(Enum):
     SIGMA = "SIGMA_VALUE"  # Sigma of all elements
     SUM = "TOTAL"  # Sum of all elements
     NET = "NET"  # Sum of all elements not in background region
-
-
-with Anno("Dataset names"):
-    ANameArray = Array[str]
-with Anno("Filenames of HDF files relative to fileDir"):
-    AFilenameArray = Array[str]
-with Anno("Types of dataset"):
-    ATypeArray = Array[DatasetType]
-with Anno("Rank (number of dimensions) of the dataset"):
-    ARankArray = Array[np.int32]
-with Anno("Dataset paths within HDF files"):
-    APathArray = Array[str]
-with Anno("UniqueID array paths within HDF files"):
-    AUniqueIDArray = Array[str]
-UNameArray = Union[ANameArray, Sequence[str]]
-UFilenameArray = Union[AFilenameArray, Sequence[str]]
-UTypeArray = Union[ATypeArray, Sequence[DatasetType]]
-URankArray = Union[ARankArray, Sequence[np.int32]]
-UPathArray = Union[APathArray, Sequence[str]]
-UUniqueIDArray = Union[AUniqueIDArray, Sequence[str]]
-
-
-class DatasetTable(Table):
-    # This will be serialized so we need type to be called that
-    # noinspection PyShadowingBuiltins
-    def __init__(self,
-                 name,  # type: UNameArray
-                 filename,  # type: UFilenameArray
-                 type,  # type: UTypeArray
-                 rank,  # type: URankArray
-                 path,  # type: UPathArray
-                 uniqueid,  # type: UUniqueIDArray
-                 ):
-        # type: (...) -> None
-        self.name = ANameArray(name)
-        self.filename = AFilenameArray(filename)
-        self.type = ATypeArray(type)
-        self.rank = ARankArray(rank)
-        self.path = APathArray(path)
-        self.uniqueid = AUniqueIDArray(uniqueid)
 
 
 class ADBaseActions(object):

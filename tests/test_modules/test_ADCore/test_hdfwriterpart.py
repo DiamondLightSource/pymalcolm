@@ -9,7 +9,8 @@ from malcolm.modules.ADCore.parts import HDFWriterPart
 from malcolm.modules.ADCore.infos import NDArrayDatasetInfo, \
     CalculatedNDAttributeDatasetInfo, NDAttributeDatasetInfo
 from malcolm.modules.ADCore.parts.hdfwriterpart import greater_than_zero
-from malcolm.modules.ADCore.util import AttributeDatasetType, DatasetType
+from malcolm.modules.ADCore.util import AttributeDatasetType
+from malcolm.modules.scanning.util import DatasetType
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.testutil import ChildTestCase
 

@@ -1,8 +1,10 @@
 from annotypes import Anno, Array, Union, Sequence, Any, Serializable
+from enum import Enum
 from scanpointgenerator import CompoundGenerator
 import numpy as np
 
-from malcolm.core import VMeta, NTUnion, Widget
+from malcolm.core import VMeta, NTUnion, Table, NumberMeta, Widget, \
+    config_tag, Display, AttributeModel
 from malcolm.modules.builtin.util import ManagerStates
 
 with Anno("Generator instance providing specification for scan"):
@@ -10,6 +12,26 @@ with Anno("Generator instance providing specification for scan"):
 with Anno("List of axes in inner dimension of generator that should be moved"):
     AAxesToMove = Array[str]
 UAxesToMove = Union[AAxesToMove, Sequence[str]]
+with Anno("Directory to write data to"):
+    AFileDir = str
+with Anno("Argument for fileTemplate, normally filename without extension"):
+    AFormatName = str
+with Anno("""Printf style template to generate filename relative to fileDir.
+Arguments are:
+  1) %s: the value of formatName"""):
+    AFileTemplate = str
+with Anno("The demand exposure time of this scan, 0 for the maximum possible"):
+    AExposure = float
+
+
+def exposure_attribute(min_exposure):
+    # type: (float) -> AttributeModel
+    meta = NumberMeta(
+        "float64", "The calculated exposure for this run",
+        tags=[Widget.TEXTUPDATE.tag(), config_tag()],
+        display=Display(precision=6, units="s", limitLow=min_exposure)
+    )
+    return meta.create_attribute_model()
 
 
 class ConfigureParams(Serializable):
@@ -100,3 +122,81 @@ class PointGeneratorMeta(VMeta):
         else:
             raise TypeError(
                 "Value %s must be a Generator object or dictionary" % value)
+
+
+class DatasetType(Enum):
+    PRIMARY = "primary"
+    SECONDARY = "secondary"
+    MONITOR = "monitor"
+    POSITION_SET = "position_set"
+    POSITION_VALUE = "position_value"
+
+
+with Anno("Dataset names"):
+    ADatasetNames = Array[str]
+with Anno("Filenames of HDF files relative to fileDir"):
+    AFilenames = Array[str]
+with Anno("Types of dataset"):
+    ADatasetTypes = Array[DatasetType]
+with Anno("Rank (number of dimensions) of the dataset"):
+    ARanks = Array[np.int32]
+with Anno("Dataset paths within HDF files"):
+    APaths = Array[str]
+with Anno("UniqueID array paths within HDF files"):
+    AUniqueIDs = Array[str]
+UDatasetNames = Union[ADatasetNames, Sequence[str]]
+UFilenames = Union[AFilenames, Sequence[str]]
+UDatasetTypes = Union[ADatasetTypes, Sequence[DatasetType]]
+URanks = Union[ARanks, Sequence[np.int32]]
+UPaths = Union[APaths, Sequence[str]]
+UUniqueIDs = Union[AUniqueIDs, Sequence[str]]
+
+
+class DatasetTable(Table):
+    # This will be serialized so we need type to be called type
+    # noinspection PyShadowingBuiltins
+    def __init__(self,
+                 name,  # type: UDatasetNames
+                 filename,  # type: UFilenames
+                 type,  # type: UDatasetTypes
+                 rank,  # type: URanks
+                 path,  # type: UPaths
+                 uniqueid,  # type: UUniqueIDs
+                 ):
+        # type: (...) -> None
+        self.name = ADatasetNames(name)
+        self.filename = AFilenames(filename)
+        self.type = ADatasetTypes(type)
+        self.rank = ARanks(rank)
+        self.path = APaths(path)
+        self.uniqueid = AUniqueIDs(uniqueid)
+
+
+with Anno("Detector names"):
+    ADetectorNames = Array[str]
+with Anno("Detector block mris"):
+    ADetectorMris = Array[str]
+with Anno("Exposure of each detector frame for the current scan"):
+    AExposures = Array[float]
+with Anno("Number of detector frames for each generator point"):
+    AFramesPerPoints = Array[np.int32]
+UDetectorNames = Union[ADetectorNames, Sequence[str]]
+UDetectorMris = Union[ADetectorMris, Sequence[str]]
+UExposures = Union[AExposures, Sequence[float]]
+UFramesPerPoints = Union[AFramesPerPoints, Sequence[np.int32]]
+
+
+class DetectorTable(Table):
+    # Will be serialized so use camelCase
+    # noinspection PyPep8Naming
+    def __init__(self,
+                 name,  # type: UDetectorNames
+                 mri,  # type: UDetectorMris
+                 exposure,  # type: UExposures
+                 framesPerPoint,  # type: UFramesPerPoints
+                 ):
+        # type: (...) -> None
+        self.name = ADetectorNames(name)
+        self.mri = ADetectorMris(mri)
+        self.exposure = AExposures(exposure)
+        self.framesPerPoint = AFramesPerPoints(framesPerPoint)

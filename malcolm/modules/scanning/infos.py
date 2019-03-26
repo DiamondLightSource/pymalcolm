@@ -57,3 +57,24 @@ class MinTurnaroundInfo(Info):
     def __init__(self, gap):
         # type: (float) -> None
         self.gap = gap
+
+
+class DatasetProducedInfo(Info):
+    """Declare that we will write the following dataset to file
+
+    Args:
+        name: Dataset name
+        filename: Filename relative to the fileDir we were given
+        type: What NeXuS dataset type it produces
+        rank: The rank of the dataset including generator dims
+        path: The path of the dataset within the file
+        uniqueid: The path of the UniqueID dataset within the file
+    """
+    def __init__(self, name, filename, type, rank, path, uniqueid):
+        # type: (str, str, DatasetType, int, str, str) -> None
+        self.name = name
+        self.filename = filename
+        self.type = type
+        self.rank = rank
+        self.path = path
+        self.uniqueid = uniqueid
