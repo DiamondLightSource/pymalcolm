@@ -17,17 +17,17 @@ class FilePathTranslatorInfo(Info):
 
     @classmethod
     def translate_filepath(cls, part_info, filepath):
-        translator = cls.filter_single_value(part_info,
-                        "No or multiple FilePathTranslatorPart found:"
-                        " must have exactly 1 if any part in the" 
-                        "AD chain is running on Windows"
-                     )
+        translator = cls.filter_single_value(
+            part_info,
+            "No or multiple FilePathTranslatorPart found: must have exactly "
+            "1 if any part in the AD chain is running on Windows")
         assert filepath.startswith(translator.path_prefix), \
             "filepath %s does not start with expected prefix %s" % (
                 filepath, translator.path_prefix)
-        return filepath.replace(translator.path_prefix,
-                                translator.windows_drive_letter + ":").replace(
-            "/", "\\")
+        return filepath.replace(
+            translator.path_prefix,
+            translator.windows_drive_letter + ":"
+        ).replace("/", "\\")
 
 
 class ExposureDeadtimeInfo(Info):
