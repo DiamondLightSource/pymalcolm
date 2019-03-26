@@ -35,5 +35,5 @@ class CounterPart(Part):
         self.counter.set_value(0)
 
     def increment(self):
-        """Add one to the counter attribute"""
-        self.counter.set_value(self.counter.value + 1)
+        """Add delta to the counter attribute"""
+        self.counter.set_value(self.counter.value + self.delta.value)

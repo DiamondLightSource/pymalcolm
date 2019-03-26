@@ -199,7 +199,7 @@ counter_dict = {
         'returned': empty_method_log_dict,
         'meta': {
             'takes': empty_map_meta_dict,
-            'description': 'Add one to the counter attribute',
+            'description': 'Add delta to the counter attribute',
             'tags': [],
             'writeable': True,
             'label': 'Increment',
