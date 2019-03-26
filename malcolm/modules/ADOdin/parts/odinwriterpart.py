@@ -17,10 +17,6 @@ if TYPE_CHECKING:
 # stalled and raise
 FRAME_TIMEOUT = 60
 
-VDS_DATASET_NAME = "data"
-VDS_UID_NAME = "uid"
-VDS_SUM_NAME = "sum"
-
 with Anno("Directory to write data to"):
     AFileDir = str
 with Anno("Argument for fileTemplate, normally filename without extension"):
@@ -54,7 +50,8 @@ def files_shape(frames, block_size, file_count):
 
 
 def one_vds(vds_folder, vds_name, files, width, height,
-            shape, generator, alternates, block_size, node, d_type):
+            shape, generator, alternates, block_size, source_node, 
+            target_node, d_type):
     # this vds reshapes from 1 file per data writer to a single 1D data set
     gen = InterleaveVDSGenerator(
         vds_folder,
@@ -65,8 +62,8 @@ def one_vds(vds_folder, vds_name, files, width, height,
                 'shape': shape
                 },
         output=vds_name,
-        source_node=node,
-        target_node="process/" + node + "_interleave",
+        source_node=source_node,
+        target_node="process/" + target_node + "_interleave",
         block_size=block_size,
         log_level=1)
     gen.generate_vds()
@@ -74,8 +71,9 @@ def one_vds(vds_folder, vds_name, files, width, height,
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(path=vds_folder,
                               files=[vds_name],
-                              source_node="process/" + node + "_interleave",
-                              target_node=node,
+                              source_node="process/" + target_node + \
+                               "_interleave",
+                              target_node=target_node,
                               output=vds_name,
                               shape=generator.shape,
                               alternate=alternates,
@@ -89,6 +87,8 @@ def create_vds(generator, raw_name, vds_path, child):
 
     image_width = child.imageWidth.value
     image_height = child.imageHeight.value
+    #image_width = 2069
+    #image_height = 1793
     block_size = child.blockSize.value
     hdf_count = child.numProcesses.value
     data_type = child.dataType.value
@@ -110,18 +110,18 @@ def create_vds(generator, raw_name, vds_path, child):
     # prepare a vds for the image data
     one_vds(vds_folder, vds_name, files, image_width, image_height,
             shape, generator, alternates, block_size,
-            VDS_DATASET_NAME, data_type)
+            'data', 'data', data_type)
 
     shape = (hdf_shape, 1, 1)
 
     # prepare a vds for the unique IDs
     one_vds(vds_folder, vds_name, files, 1, 1,
             shape, generator, alternates, block_size,
-            VDS_UID_NAME, 'uint64')
+            'UID', 'uid', 'uint64')
     # prepare a vds for the sums
     one_vds(vds_folder, vds_name, files, 1, 1,
             shape, generator, alternates, block_size,
-            VDS_SUM_NAME, 'uint64')
+            'SUM', 'sum', 'uint64')
 
 
 set_bases = ["/entry/detector/", "/entry/sum/", "/entry/uid/"]
