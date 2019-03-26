@@ -182,7 +182,7 @@ class DetectorDriverPart(ChildPart):
                 context.wait_all_futures(futures)
             else:
                 raise AssertionError(
-                    '''Block doesn't have "attributesFile" attribute''' +
+                    '''Block doesn't have "attributesFile" attribute'''
                     ' (was it instantiated properly with adbase_parts?)')
 
     @add_call_types

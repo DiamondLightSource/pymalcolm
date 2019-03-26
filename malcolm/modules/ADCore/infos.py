@@ -17,10 +17,11 @@ class FilePathTranslatorInfo(Info):
 
     @classmethod
     def translate_filepath(cls, part_info, filepath):
-        error_msg = "No or multiple FilePathTranslatorPart found:" + \
-                    "must have exactly 1 if any part in the" + \
-                    "AD chain is running on Windows"
-        translator = cls.filter_single_value(part_info, error_msg)
+        translator = cls.filter_single_value(part_info,
+                        "No or multiple FilePathTranslatorPart found:"
+                        " must have exactly 1 if any part in the" 
+                        "AD chain is running on Windows"
+                     )
         assert filepath.startswith(translator.path_prefix), \
             "filepath %s does not start with expected prefix %s" % (
                 filepath, translator.path_prefix)

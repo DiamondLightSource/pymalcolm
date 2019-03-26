@@ -265,10 +265,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.layout_filename = None  # type: str
         self.runs_on_windows = runs_on_windows
         # Hooks
-        description = "Toggles whether all NDAttributes are written to " + \
-                      "file, or only those specified in the dataset"
         self.write_all_nd_attributes = BooleanMeta(
-            description,
+            "Toggles whether all NDAttributes are written to "
+            "file, or only those specified in the dataset",
             writeable=True,
             tags=[Widget.CHECKBOX.tag(), config_tag()]).create_attribute_model(
             write_all_nd_attributes)
