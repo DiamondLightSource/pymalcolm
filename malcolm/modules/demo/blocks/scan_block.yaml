@@ -34,7 +34,7 @@
     mri: $(det)
     initial_visibility: True
 
-- scanning.parts.RunnableChildPart:
+- scanning.parts.ScanTickerPart:
     name: MOTORS
     mri: $(motors)
     initial_visibility: True

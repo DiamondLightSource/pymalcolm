@@ -12,7 +12,7 @@
       Device Block that controls 2 child counters to simulate a motor controller
       doing a trajectory move
 
-- scanning.controllers.RunnableController:
+- builtin.controllers.ManagerController:
     mri: $(mri)
     config_dir: $(config_dir)
     description: $(docstring)
@@ -25,11 +25,11 @@
     mri: COUNTERY
 
 # Add Parts to use the Counter blocks within Ticker block
-- demo.parts.ScanTickerPart:
+- demo.parts.MotorMovePart:
     name: x
     mri: COUNTERX
 
-- demo.parts.ScanTickerPart:
+- demo.parts.MotorMovePart:
     name: y
     mri: COUNTERY
 

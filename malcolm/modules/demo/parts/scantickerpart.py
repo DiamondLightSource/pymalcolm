@@ -2,11 +2,12 @@ import time
 
 from annotypes import Anno, add_call_types
 
-from malcolm.core import APartName, PartRegistrar
+from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
 
 with Anno("If >0, raise an exception at the end of this step"):
     AExceptionStep = int
+AInitialVisibility = builtin.parts.AInitialVisibility
 
 
 # We will set these attributes on the child block, so don't save them
@@ -14,10 +15,14 @@ with Anno("If >0, raise an exception at the end of this step"):
 class ScanTickerPart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `RunnableController`"""
 
-    def __init__(self, name, mri):
-        # type: (APartName, builtin.parts.AMri) -> None
+    def __init__(self,
+                 name,  # type: builtin.parts.APartName
+                 mri,  # type: builtin.parts.AMri
+                 initial_visibility=None,  # type: AInitialVisibility
+                 ):
+        # type: (...) -> None
         super(ScanTickerPart, self).__init__(
-            name, mri, initial_visibility=True, stateful=False)
+            name, mri, initial_visibility, stateful=False)
         # Generator instance
         self._generator = None  # type: scanning.hooks.AGenerator
         # Where to start
@@ -26,6 +31,8 @@ class ScanTickerPart(builtin.parts.ChildPart):
         self._steps_to_do = None  # type: int
         # When to blow up
         self._exception_step = None  # type: int
+        # Which axes we should be moving
+        self._axes_to_move = None  # type: scanning.hooks.AAxesToMove
         # Hooks
         self.register_hooked((scanning.hooks.ConfigureHook,
                               scanning.hooks.PostRunArmedHook,
@@ -52,34 +59,35 @@ class ScanTickerPart(builtin.parts.ChildPart):
                   exceptionStep=0,  # type: AExceptionStep
                   ):
         # type: (...) -> None
-        # If we are being asked to move
-        if self.name in axesToMove:
-            # Just store the generator and place we need to start
-            self._generator = generator
-            self._completed_steps = completed_steps
-            self._steps_to_do = steps_to_do
-            self._exception_step = exceptionStep
-        else:
-            # Flag nothing to do
-            self._generator = None
+        # Store the generator and place we need to start
+        self._generator = generator
+        self._completed_steps = completed_steps
+        self._steps_to_do = steps_to_do
+        self._exception_step = exceptionStep
+        self._axes_to_move = axesToMove
 
     # Run scan
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
-        if not self._generator:
-            return
         # Start time so everything is relative
         point_time = time.time()
         child = context.block_view(self.mri)
+        # Get the asynchronous versions of the move methods
+        async_move_methods = {}
+        for axis in self._axes_to_move:
+            async_move_methods[axis] = child[axis + "Move_async"]
         for i in range(self._completed_steps,
                        self._completed_steps + self._steps_to_do):
             self.log.debug("Starting point %s", i)
             # Get the point we are meant to be scanning
             point = self._generator.get_point(i)
-            # Update the child counter_block to be the demand position
-            position = point.positions[self.name]
-            child.counter.put_value(position)
+            # Start all the children moving at the same time, populating a list
+            # of futures we can wait on
+            fs = []
+            for axis, move_async in async_move_methods.items():
+                fs.append(move_async(point.positions[axis]))
+            context.wait_all_futures(fs)
             # Wait until the next point is due
             point_time += point.duration
             wait_time = point_time - time.time()
