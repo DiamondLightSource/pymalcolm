@@ -109,7 +109,7 @@ class TestSystemPVA(unittest.TestCase):
         generator = self.make_generator()
         block.configure(generator, axesToMove=["x", "y"])
         block.run()
-        ##################### block.reset()
+        block.reset()
         # Export X
         t = ExportTable(source=["x.counter"], export=["xValue"])
         block.exports.put_value(t)

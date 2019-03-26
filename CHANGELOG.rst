@@ -11,6 +11,21 @@ Changed:
 
 - CS and motors now show a link to parent PMAC, require pmac version 2-2
 - Added Position Compare support for PandA via 2 SEQ blocks
+- State machine. Added Finished state and Malcolm will now sit in Finished state
+  after a scan
+- CSMove changed to explicitly tell the motor controller how long it should take 
+  to do the move to start
+- Changed seeking to not allow it to stop on a configured_step boundary
+
+Added:
+
+- Make use of FlushNow in ADCore, which flushes data and attributes after every 
+  second during run() or when commanded through the record on HDF Writer. Files
+  are kept open until next reset()/abort()
+  
+Fixed:
+
+- caactionpart now waits for good status, prevents timeout errors when doing caputs
 
 
 `3-3`_ - 2019-02-19

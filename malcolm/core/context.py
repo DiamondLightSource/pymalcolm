@@ -381,10 +381,14 @@ class Context(object):
                 descriptions.append("%s.put_value(%s)" % (path, request.value))
             elif isinstance(request, Subscribe):
                 path = ".".join(request.path)
-                func, _ = self._subscriptions[request.id]
+                func, _ = self._subscriptions.get(request.id, (None, None))
                 if isinstance(func, When):
                     descriptions.append("When(%s, %s, last=%s)" % (
                         path, func.condition_satisfied.__name__, func.last))
+                elif func is None:
+                    # We have already called unsubscribe, but haven't received the
+                    # Return for it yet
+                    descriptions.append("Unsubscribed(%s)" % path)
                 else:
                     descriptions.append("Subscribe(%s)" % path)
             elif isinstance(request, Post):

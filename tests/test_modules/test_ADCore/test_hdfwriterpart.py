@@ -1,4 +1,7 @@
 import os
+
+import cothread
+
 from mock import MagicMock, call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, SpiralGenerator
@@ -108,6 +111,7 @@ class TestHDFWriterPart(ChildTestCase):
         self.child = self.create_child_block(
             hdf_writer_block, self.process,
             mri="BLOCK-HDF5", prefix="prefix")
+        self.process.start()
 
     def tearDown(self):
         self.process.stop(2)
@@ -115,7 +119,6 @@ class TestHDFWriterPart(ChildTestCase):
     def test_init(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.process.start()
         c = RunnableController("mri", "/tmp")
         c.add_part(self.o)
         self.process.add_controller(c)
@@ -123,11 +126,7 @@ class TestHDFWriterPart(ChildTestCase):
         assert list(b.configure.meta.takes.elements) == [
             'generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate']
 
-    def test_configure(self):
-        self.mock_when_value_matches(self.child)
-        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
-        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.process.start()
+    def configure_and_check_output(self, on_windows=False):
         energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
         spiral = SpiralGenerator(
             ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
@@ -149,6 +148,8 @@ class TestHDFWriterPart(ChildTestCase):
                     "t1x", AttributeDatasetType.POSITION, "INENC1.VAL", 2)],
             "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
         }
+        if on_windows:
+            part_info["WINPATH"] = [FilePathTranslatorInfo("Y", "/tmp")]
         infos = self.o.configure(
             self.context, completed_steps, steps_to_do, part_info, generator,
             fileDir, formatName, fileTemplate)
@@ -209,7 +210,11 @@ class TestHDFWriterPart(ChildTestCase):
         assert infos[7].path == "/entry/detector/y_set"
         assert infos[7].uniqueid == ""
 
-        expected_xml_filename = "/tmp/BLOCK-HDF5-layout.xml"
+        expected_xml_filename_local = "/tmp/BLOCK-HDF5-layout.xml"
+        if on_windows:
+            expected_xml_filename_remote = "Y:\\BLOCK-HDF5-layout.xml"
+        else:
+            expected_xml_filename_remote = expected_xml_filename_local
         # Wait for the start_future so the post gets through to our child
         # even on non-cothread systems
         self.o.start_future.result(timeout=1)
@@ -223,7 +228,6 @@ class TestHDFWriterPart(ChildTestCase):
             call.put('fileTemplate', '%sthing-%s.h5'),
             call.put('fileWriteMode', 'Stream'),
             call.put('lazyOpen', True),
-            call.put('positionMode', True),
             call.put('swmrMode', True),
             call.put('extraDimSize3', 1),
             call.put('extraDimSize4', 1),
@@ -246,187 +250,41 @@ class TestHDFWriterPart(ChildTestCase):
             call.put('posNameDimN', 'd1'),
             call.put('posNameDimX', 'd0'),
             call.put('posNameDimY', ''),
-            call.put('flushAttrPerNFrames', 10.0),
-            call.put('flushDataPerNFrames', 10.0),
-            call.put('xml', expected_xml_filename),
+            call.put('flushAttrPerNFrames', 0.0),
+            call.put('flushDataPerNFrames', 38.0),
+            call.put('xml', expected_xml_filename_remote),
             call.put('numCapture', 0),
             call.post('start'),
             call.when_value_matches('arrayCounterReadback', greater_than_zero, None)
         ]
-        with open(expected_xml_filename) as f:
+        with open(expected_xml_filename_local) as f:
             actual_xml = f.read().replace(">", ">\n")
+        return actual_xml
+
+    def test_configure(self):
+        self.mock_when_value_matches(self.child)
+        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
+        actual_xml = self.configure_and_check_output()
         assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_honours_write_all_attributes_flag(self):
+        self.mock_when_value_matches(self.child)
         self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5", write_all_nd_attributes=False)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.process.start()
-        energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
-        spiral = SpiralGenerator(
-            ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
-        generator = CompoundGenerator([energy, spiral], [], [], 0.1)
-        generator.prepare()
-        fileDir = "/tmp"
-        formatName = "xspress3"
-        fileTemplate = "thing-%s.h5"
-        completed_steps = 0
-        steps_to_do = 38
-        expected_xml_filename = "/tmp/BLOCK-HDF5-layout.xml"
-        part_info = {
-            "DET": [NDArrayDatasetInfo(2)],
-            "PANDA": [
-                NDAttributeDatasetInfo(
-                    "I0", AttributeDatasetType.DETECTOR, "COUNTER1.COUNTER", 2),
-                NDAttributeDatasetInfo(
-                    "It", AttributeDatasetType.MONITOR, "COUNTER2.COUNTER", 2),
-                NDAttributeDatasetInfo(
-                    "t1x", AttributeDatasetType.POSITION, "INENC1.VAL", 2)],
-            "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
-        }
-        self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info, generator,
-            fileDir, formatName, fileTemplate)
-
-        with open(expected_xml_filename) as f:
-            actual_xml = f.read().replace(">", ">\n")
+        actual_xml = self.configure_and_check_output()
         assert actual_xml.splitlines() == expected_xml_limited_attr.splitlines()
 
     def test_configure_windows(self):
+        self.mock_when_value_matches(self.child)
         self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5", runs_on_windows=True)
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.process.start()
-        energy = LineGenerator("energy", "kEv", 13.0, 15.2, 2)
-        spiral = SpiralGenerator(
-            ["x", "y"], ["mm", "mm"], [0., 0.], 5., scale=2.0)
-        generator = CompoundGenerator([energy, spiral], [], [], 0.1)
-        generator.prepare()
-        fileDir = "/tmp"
-        formatName = "xspress3"
-        fileTemplate = "thing-%s.h5"
-        completed_steps = 0
-        steps_to_do = 38
-        part_info = {
-            "DET": [NDArrayDatasetInfo(2), FilePathTranslatorInfo("Y", "/tmp")],
-            "PANDA": [
-                NDAttributeDatasetInfo(
-                    "I0", AttributeDatasetType.DETECTOR, "COUNTER1.COUNTER", 2),
-                NDAttributeDatasetInfo(
-                    "It", AttributeDatasetType.MONITOR, "COUNTER2.COUNTER", 2),
-                NDAttributeDatasetInfo(
-                    "t1x", AttributeDatasetType.POSITION, "INENC1.VAL", 2)],
-            "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
-        }
-        infos = self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info, generator,
-            fileDir, formatName, fileTemplate)
-        assert len(infos) == 8
-        assert infos[0].name == "xspress3.data"
-        assert infos[0].filename == "thing-xspress3.h5"
-        assert infos[0].type == DatasetType.PRIMARY
-        assert infos[0].rank == 4
-        assert infos[0].path == "/entry/detector/detector"
-        assert infos[0].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
-
-        assert infos[1].name == "xspress3.sum"
-        assert infos[1].filename == "thing-xspress3.h5"
-        assert infos[1].type == DatasetType.SECONDARY
-        assert infos[1].rank == 4
-        assert infos[1].path == "/entry/sum/sum"
-        assert infos[1].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
-
-        assert infos[2].name == "I0.data"
-        assert infos[2].filename == "thing-xspress3.h5"
-        assert infos[2].type == DatasetType.PRIMARY
-        assert infos[2].rank == 4
-        assert infos[2].path == "/entry/I0/I0"
-        assert infos[2].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
-
-        assert infos[3].name == "It.data"
-        assert infos[3].filename == "thing-xspress3.h5"
-        assert infos[3].type == DatasetType.MONITOR
-        assert infos[3].rank == 4
-        assert infos[3].path == "/entry/It/It"
-        assert infos[3].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
-
-        assert infos[4].name == "t1x.value"
-        assert infos[4].filename == "thing-xspress3.h5"
-        assert infos[4].type == DatasetType.POSITION_VALUE
-        assert infos[4].rank == 4
-        assert infos[4].path == "/entry/t1x/t1x"
-        assert infos[4].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
-
-        assert infos[5].name == "energy.value_set"
-        assert infos[5].filename == "thing-xspress3.h5"
-        assert infos[5].type == DatasetType.POSITION_SET
-        assert infos[5].rank == 1
-        assert infos[5].path == "/entry/detector/energy_set"
-        assert infos[5].uniqueid == ""
-
-        assert infos[6].name == "x.value_set"
-        assert infos[6].filename == "thing-xspress3.h5"
-        assert infos[6].type == DatasetType.POSITION_SET
-        assert infos[6].rank == 1
-        assert infos[6].path == "/entry/detector/x_set"
-        assert infos[6].uniqueid == ""
-
-        assert infos[7].name == "y.value_set"
-        assert infos[7].filename == "thing-xspress3.h5"
-        assert infos[7].type == DatasetType.POSITION_SET
-        assert infos[7].rank == 1
-        assert infos[7].path == "/entry/detector/y_set"
-        assert infos[7].uniqueid == ""
-
-        expected_xml_filename_unix = "/tmp/BLOCK-HDF5-layout.xml"
-        expected_xml_filename_windows = "Y:\\BLOCK-HDF5-layout.xml"
-        # Wait for the start_future so the post gets through to our child
-        # even on non-cothread systems
-        self.o.start_future.result(timeout=1)
-        assert self.child.handled_requests.mock_calls == [
-            call.put('positionMode', True),
-            call.put('arrayCounter', 0),
-            call.put('dimAttDatasets', True),
-            call.put('enableCallbacks', True),
-            call.put('fileName', 'xspress3'),
-            call.put('filePath', '/tmp/'),
-            call.put('fileTemplate', '%sthing-%s.h5'),
-            call.put('fileWriteMode', 'Stream'),
-            call.put('lazyOpen', True),
-            call.put('positionMode', True),
-            call.put('swmrMode', True),
-            call.put('extraDimSize3', 1),
-            call.put('extraDimSize4', 1),
-            call.put('extraDimSize5', 1),
-            call.put('extraDimSize6', 1),
-            call.put('extraDimSize7', 1),
-            call.put('extraDimSize8', 1),
-            call.put('extraDimSize9', 1),
-            call.put('extraDimSizeN', 20),
-            call.put('extraDimSizeX', 2),
-            call.put('extraDimSizeY', 1),
-            call.put('numExtraDims', 1),
-            call.put('posNameDim3', ''),
-            call.put('posNameDim4', ''),
-            call.put('posNameDim5', ''),
-            call.put('posNameDim6', ''),
-            call.put('posNameDim7', ''),
-            call.put('posNameDim8', ''),
-            call.put('posNameDim9', ''),
-            call.put('posNameDimN', 'd1'),
-            call.put('posNameDimX', 'd0'),
-            call.put('posNameDimY', ''),
-            call.put('flushAttrPerNFrames', 10.0),
-            call.put('flushDataPerNFrames', 10.0),
-            call.put('xml', expected_xml_filename_windows),
-            call.put('numCapture', 0),
-            call.post('start')]
-        with open(expected_xml_filename_unix) as f:
-            actual_xml = f.read().replace(">", ">\n")
+        actual_xml = self.configure_and_check_output(on_windows=True)
         assert actual_xml.splitlines() == expected_xml.splitlines()
 
     def test_run(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.process.start()
         self.o.done_when_reaches = 38
         self.o.completed_offset = 0
         # Say that we're getting the first frame
@@ -442,7 +300,8 @@ class TestHDFWriterPart(ChildTestCase):
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == 38
 
-    def ______________________test_run_and_flush(self):
+    def test_run_and_flush(self):
+        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
 
         def set_unique_id():
             # Sleep for 2.5 seconds to ensure 2 flushes, and then set value to finish
@@ -471,7 +330,6 @@ class TestHDFWriterPart(ChildTestCase):
         self.mock_when_value_matches(self.child)
         self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.process.start()
         self.o.done_when_reaches = 10
         completed_steps = 4
         steps_to_do = 3
@@ -485,7 +343,6 @@ class TestHDFWriterPart(ChildTestCase):
     def test_post_run_ready(self):
         self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
-        self.process.start()
         # Say that we've returned from start
         self.o.start_future = Future(None)
         self.o.start_future.set_result(None)
@@ -496,4 +353,22 @@ class TestHDFWriterPart(ChildTestCase):
         self.o.layout_filename = fname
         self.o.post_run_ready(self.context)
         assert self.child.handled_requests.mock_calls == []
+        assert os.path.isfile(fname)
+        self.o.reset(self.context)
         assert not os.path.isfile(fname)
+
+    def test_post_run_ready_not_done_flush(self):
+        # Say that we've returned from start
+        self.o = HDFWriterPart(name="m", mri="BLOCK-HDF5")
+        self.o.start_future = Future(None)
+        fname = "/tmp/test_filename"
+        with open(fname, "w") as f:
+            f.write("thing")
+        assert os.path.isfile(fname)
+        self.o.layout_filename = fname
+        self.o.post_run_ready(self.context)
+        assert self.child.handled_requests.mock_calls == [call.post('flushNow')]
+        assert os.path.isfile(fname)
+        self.o.reset(self.context)
+        assert not os.path.isfile(fname)
+

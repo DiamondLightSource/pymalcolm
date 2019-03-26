@@ -242,6 +242,12 @@
     value: 0
     wait: False
 
+- ca.parts.CAActionPart:
+    name: flushNow
+    description: Demand for flushing the data and attributes
+    pv: $(prefix):FlushNow
+    wait: True
+
 - ca.parts.CABooleanPart:
     name: running
     description: If detector is currently acquiring

@@ -45,9 +45,11 @@ class TestRunnableStates(unittest.TestCase):
                              "Fault", "Disabling", "Resetting"}
         expected['Running'] = {"PostRun", "Seeking", "Aborting", "Fault",
                                "Disabling"}
-        expected['PostRun'] = {"Ready", "Armed", "Aborting", "Fault",
+        expected['PostRun'] = {"Finished", "Armed", "Seeking", "Aborting", "Fault",
                                "Disabling"}
-        expected['Seeking'] = {"Armed", "Paused", "Aborting", "Fault",
+        expected['Finished'] = {"Seeking", "Resetting", "Configuring", "Aborting", "Fault",
+                               "Disabling"}
+        expected['Seeking'] = {"Armed", "Paused", "Finished", "Aborting", "Fault",
                                "Disabling"}
         expected['Paused'] = {"Seeking", "Running", "Aborting", "Fault",
                               "Disabling"}
@@ -59,7 +61,7 @@ class TestRunnableStates(unittest.TestCase):
         assert self.o._allowed == expected
         possible_states = [
             'Ready', 'Resetting', 'Saving', 'Loading', 'Configuring', 'Armed',
-            'Running', 'Seeking', 'PostRun', 'Paused', 'Aborting', 'Aborted',
+            'Running', 'Seeking', 'PostRun', 'Finished', 'Paused', 'Aborting', 'Aborted',
             'Fault', 'Disabling', 'Disabled']
         assert self.o.possible_states == possible_states
 
@@ -231,7 +233,7 @@ class TestRunnableController(unittest.TestCase):
         self.checkSteps(6, 4, 6)
 
         self.b.run()
-        self.checkState(self.ss.READY)
+        self.checkState(self.ss.FINISHED)
 
     def test_abort(self):
         self.prepare_half_run()
@@ -253,7 +255,19 @@ class TestRunnableController(unittest.TestCase):
         self.b.completedSteps.put_value(5)
         self.checkSteps(6, 5, 6)
         self.b.run()
-        self.checkState(self.ss.READY)
+        self.checkState(self.ss.FINISHED)
+
+    def test_pause_seek_resume_outside_limits(self):
+        self.prepare_half_run()
+        self.checkSteps(configured=2, completed=0, total=6)
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+        self.b.pause(lastGoodStep=7)
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 5, 6)
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
 
     def test_resume_in_run(self):
         self.prepare_half_run(duration=0.5)
@@ -273,6 +287,116 @@ class TestRunnableController(unittest.TestCase):
         # This test fails on Travis sometimes, looks like the docker container
         # just gets starved
         # self.assertAlmostEqual(now - then, 0.5, delta=0.1)
+
+    def test_pause_seek_resume_from_finished(self):
+        self.prepare_half_run()
+        self.checkSteps(configured=2, completed=0, total=6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+        self.b.pause(lastGoodStep=1)
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(2, 1, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+    def test_pause_seek_resume_from_postrun(self):
+        self.prepare_half_run()
+        self.checkSteps(configured=2, completed=0, total=6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+        self.b.pause(lastGoodStep=1)
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(2, 1, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+    def test_reset_from_finished(self):
+        self.prepare_half_run()
+        self.checkSteps(2, 0, 6)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+        self.c.reset()
+        self.checkState(self.ss.READY)
+
+    def test_configure_from_finished(self):
+        self.prepare_half_run()
+        self.checkSteps(2, 0, 6)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+        self.prepare_half_run()
+        self.checkSteps(2, 0, 6)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(4, 2, 6)
+
+        self.b.run()
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(6, 4, 6)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
 
     def test_run_exception(self):
         self.prepare_half_run(exception=1)

@@ -58,6 +58,7 @@ class RunnableStates(ManagerStates):
     ARMED = "Armed"
     RUNNING = "Running"
     POSTRUN = "PostRun"
+    FINISHED = "Finished"
     PAUSED = "Paused"
     SEEKING = "Seeking"
     ABORTING = "Aborting"
@@ -71,14 +72,15 @@ class RunnableStates(ManagerStates):
         self.set_allowed(self.ARMED,
                          self.RUNNING, self.SEEKING, self.RESETTING)
         self.set_allowed(self.RUNNING, self.POSTRUN, self.SEEKING)
-        self.set_allowed(self.POSTRUN, self.READY, self.ARMED)
-        self.set_allowed(self.SEEKING, self.ARMED, self.PAUSED)
+        self.set_allowed(self.POSTRUN, self.FINISHED, self.ARMED, self.SEEKING)
+        self.set_allowed(self.FINISHED, self.SEEKING, self.RESETTING, self.CONFIGURING)
+        self.set_allowed(self.SEEKING, self.ARMED, self.PAUSED, self.FINISHED)
         self.set_allowed(self.PAUSED, self.SEEKING, self.RUNNING)
 
         # Add Abort to all normal states
         normal_states = [
             self.READY, self.CONFIGURING, self.ARMED, self.RUNNING,
-            self.POSTRUN, self.PAUSED, self.SEEKING]
+            self.POSTRUN, self.PAUSED, self.SEEKING, self.FINISHED]
         for state in normal_states:
             self.set_allowed(state, self.ABORTING)
 
