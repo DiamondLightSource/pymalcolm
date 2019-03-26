@@ -2,16 +2,19 @@ import os
 import math
 from xml.etree import cElementTree as ET
 
-from annotypes import add_call_types, TYPE_CHECKING
+from annotypes import Anno, add_call_types, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator, Dimension
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Future, Info, Block, PartRegistrar
+from malcolm.core import APartName, Future, Info, Block, PartRegistrar, \
+    BooleanMeta, Widget, config_tag
 from malcolm.modules import builtin, scanning
-from ..infos import CalculatedNDAttributeDatasetInfo, NDArrayDatasetInfo, NDAttributeDatasetInfo, \
-    AttributeDatasetType
+from ..infos import CalculatedNDAttributeDatasetInfo, NDArrayDatasetInfo, \
+    NDAttributeDatasetInfo, \
+    AttributeDatasetType, FilePathTranslatorInfo
 from malcolm.modules.scanning.infos import DatasetProducedInfo
 from malcolm.modules.scanning.util import DatasetType
+from ..util import APartRunsOnWindows
 
 if TYPE_CHECKING:
     from typing import Iterator, List, Dict
@@ -23,6 +26,9 @@ SUFFIXES = "NXY3456789"
 # If the HDF writer doesn't get new frames in this time (seconds), consider it
 # stalled and raise
 FRAME_TIMEOUT = 60
+
+with Anno("Toggle writing of all ND attributes to HDF file"):
+    AWriteAllNDAttributes = bool
 
 
 def greater_than_zero(v):
@@ -167,10 +173,10 @@ def make_nxdata(name, rank, entry_el, generator, link=False):
     return data_el
 
 
-def make_layout_xml(generator, part_info):
+def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
     # type: (CompoundGenerator, PartInfo) -> str
     # Make a root element with an NXEntry
-    root_el = ET.Element("hdf5_layout")
+    root_el = ET.Element("hdf5_layout", auto_ndattr_default="false")
     entry_el = ET.SubElement(root_el, "group", name="entry")
     ET.SubElement(entry_el, "attribute", name="NX_class",
                   source="constant", value="NXentry", type="string")
@@ -210,10 +216,16 @@ def make_layout_xml(generator, part_info):
                       source="ndattribute", ndattribute=dataset_info.attr)
 
     # Add a group for attributes
+    ndattr_default = "true" if write_all_nd_attributes else "false"
     NDAttributes_el = ET.SubElement(entry_el, "group", name="NDAttributes",
-                                    ndattr_default="true")
+                                    ndattr_default=ndattr_default)
     ET.SubElement(NDAttributes_el, "attribute", name="NX_class",
                   source="constant", value="NXcollection", type="string")
+    ET.SubElement(NDAttributes_el, "dataset", name="NDArrayUniqueId",
+                  source="ndattribute", ndattribute="NDArrayUniqueId")
+    ET.SubElement(NDAttributes_el, "dataset", name="NDArrayTimeStamp",
+                  source="ndattribute", ndattribute="NDArrayTimeStamp")
+
     xml = et_to_string(root_el)
     return xml
 
@@ -228,8 +240,13 @@ def make_layout_xml(generator, part_info):
 @builtin.util.no_save("extraDimSize%s" % SUFFIXES[i] for i in range(10))
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
-    def __init__(self, name, mri):
-        # type: (APartName, builtin.parts.AMri) -> None
+    def __init__(self,
+                 name,                          # type: APartName
+                 mri,                           # type: builtin.parts.AMri
+                 runs_on_windows=False,         # type: APartRunsOnWindows
+                 write_all_nd_attributes=True,  # type: AWriteAllNDAttributes
+                 ):
+        # type: (...) -> None
         super(HDFWriterPart, self).__init__(name, mri)
         # Future for the start action
         self.start_future = None  # type: Future
@@ -239,7 +256,14 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.uniqueid_offset = 0
         # The HDF5 layout file we write to say where the datasets go
         self.layout_filename = None  # type: str
+        self.runs_on_windows = runs_on_windows
         # Hooks
+        self.write_all_nd_attributes = BooleanMeta(
+            "Toggles whether all NDAttributes are written to "
+            "file, or only those specified in the dataset",
+            writeable=True,
+            tags=[Widget.CHECKBOX.tag(), config_tag()]).create_attribute_model(
+            write_all_nd_attributes)
         self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
         self.register_hooked((scanning.hooks.PostRunArmedHook,
                               scanning.hooks.SeekHook), self.seek)
@@ -258,6 +282,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(HDFWriterPart, self).setup(registrar)
+        registrar.add_attribute_model("writeAllNdAttributes",
+                                      self.write_all_nd_attributes,
+                                      self.write_all_nd_attributes.set_value)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
@@ -301,7 +328,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
             fileName=formatName,
             fileTemplate="%s" + fileTemplate))
         futures += set_dimensions(child, generator)
-        xml = make_layout_xml(generator, part_info)
+        xml = make_layout_xml(generator, part_info,
+                              self.write_all_nd_attributes.value)
         self.layout_filename = os.path.join(
             file_dir, "%s-layout.xml" % self.mri)
         with open(self.layout_filename, "w") as f:
@@ -323,8 +351,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
             # But make sure we flush in this round of frames
             n_frames_between_flushes = min(
                 steps_to_do, n_frames_between_flushes)
+        layout_filename = self.layout_filename
+        if self.runs_on_windows:
+            layout_filename = FilePathTranslatorInfo.translate_filepath(
+                part_info, self.layout_filename)
         futures += child.put_attribute_values_async(dict(
-            xml=self.layout_filename,
+            xml=layout_filename,
             flushDataPerNFrames=n_frames_between_flushes,
             flushAttrPerNFrames=n_frames_between_flushes))
         # Wait for the previous puts to finish

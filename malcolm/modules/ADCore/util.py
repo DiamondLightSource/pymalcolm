@@ -1,7 +1,7 @@
-from annotypes import Anno, TYPE_CHECKING
+from annotypes import Anno, TYPE_CHECKING, Array, Sequence, Union
 from enum import Enum
 
-from malcolm.core import Future, Context, PartRegistrar, DEFAULT_TIMEOUT
+from malcolm.core import Future, Context, PartRegistrar, DEFAULT_TIMEOUT, Table
 from malcolm.modules import scanning
 
 if TYPE_CHECKING:
@@ -12,6 +12,18 @@ class AttributeDatasetType(Enum):
     DETECTOR = "detector"
     MONITOR = "monitor"
     POSITION = "position"
+
+
+class DataType(Enum):
+    INT = "INT"
+    DOUBLE = "DOUBLE"
+    STRING = "STRING"
+    DBRNATIVE = "DBR_NATIVE"
+
+
+class SourceType(Enum):
+    PARAM = "paramAttribute"
+    PV = "PVAttribute"
 
 
 class StatisticsName(Enum):
@@ -25,6 +37,50 @@ class StatisticsName(Enum):
     SIGMA = "SIGMA_VALUE"  # Sigma of all elements
     SUM = "TOTAL"  # Sum of all elements
     NET = "NET"  # Sum of all elements not in background region
+
+
+with Anno("Is the IOC this part connects to running on Windows?"):
+    APartRunsOnWindows = bool
+
+with Anno("NDAttribute name to be exported"):
+    AAttributeNames = Array[str]
+with Anno("source ID for attribute (PV name for PVAttribute," +
+          "asyn param name for paramAttribute)"):
+    ASourceIds = Array[str]
+with Anno("PV descriptions"):
+    ADescriptions = Array[str]
+with Anno("Types of attribute dataset"):
+    AAttributeTypes = Array[AttributeDatasetType]
+with Anno("Type of attribute source"):
+    ASourceTypes = Array[SourceType]
+with Anno("Type of attribute data"):
+    ADataTypes = Array[DataType]
+UAttributeNames = Union[AAttributeNames, Sequence[str]]
+USourceIds = Union[ASourceIds, Sequence[str]]
+UDescriptions = Union[ADescriptions, Sequence[str]]
+UAttributeTypes = Union[AAttributeTypes, Sequence[AttributeDatasetType]]
+UDataTypes = Union[ADataTypes, Sequence[DataType]]
+USourceTypes = Union[ASourceTypes, Sequence[SourceType]]
+
+
+class ExtraAttributesTable(Table):
+    # Allow CamelCase as arguments will be serialized
+    # noinspection PyPep8Naming
+    def __init__(self,
+                 name,  # type: UAttributeNames
+                 sourceId,  # type: USourceIds
+                 description,  # type: UDescriptions
+                 sourceType,  # type: USourceTypes
+                 dataType,  # type: UDataTypes
+                 datasetType,  # type: UAttributeTypes
+                 ):
+        # type: (...) -> None
+        self.name = AAttributeNames(name)
+        self.sourceId = ASourceIds(sourceId)
+        self.description = ADescriptions(description)
+        self.sourceType = ASourceTypes(sourceType)
+        self.dataType = ADataTypes(dataType)
+        self.datasetType = AAttributeTypes(datasetType)
 
 
 class ADBaseActions(object):

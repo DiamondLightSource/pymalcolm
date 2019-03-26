@@ -14,7 +14,6 @@ from .table import Table
 from .tags import Widget, method_return_unpacked
 from .timestamp import TimeStamp
 
-
 if TYPE_CHECKING:
     from typing import Tuple, Type, List, Dict, Callable
 
@@ -534,7 +533,6 @@ with Anno("The units for the value"):
 
 @Serializable.register_subclass("display_t")
 class Display(Model):
-
     __slots__ = ["limitLow", "limitHigh", "description", "precision", "units"]
 
     # noinspection PyPep8Naming
@@ -763,6 +761,7 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
 @VMeta.register_annotype_converter(list(_dtype_string_lookup), is_array=True)
 class NumberArrayMeta(NumberMeta, VArrayMeta):
     """Meta object containing information for an array of numerical values"""
+
     def validate(self, value):
         # type: (Any) -> Array
         """Check if the value is valid returns it"""
@@ -893,8 +892,8 @@ class TableMeta(VMeta):
         return Widget.TABLE
 
     @classmethod
-    def from_table(cls, table_cls, description, widget=None, writeable=()):
-        # type: (Type[Table], str, Widget, List[str]) -> TableMeta
+    def from_table(cls, table_cls, description, widget=None, writeable=(),
+                   extra_tags=()):
         """Create a TableMeta object, using a Table subclass as the spec
 
         Args:
@@ -903,6 +902,7 @@ class TableMeta(VMeta):
             widget: The widget of the created Meta
             writeable: A list of the writeable field names. If there are any
                 writeable fields then the whole Meta is writeable
+            extra_tags: A list of tags to be added to the table meta
             """
         elements = OrderedDict()
         for k, ct in table_cls.call_types.items():
@@ -912,7 +912,9 @@ class TableMeta(VMeta):
                   writeable=bool(writeable))
         if widget is None:
             widget = ret.default_widget()
-        ret.set_tags([widget.tag()])
+        tags = [widget.tag()]
+        tags.extend(extra_tags)
+        ret.set_tags(tags)
         ret.set_table_cls(table_cls)
         return ret
 

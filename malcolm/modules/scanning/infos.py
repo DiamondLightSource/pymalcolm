@@ -1,6 +1,7 @@
 from annotypes import TYPE_CHECKING
 
 from malcolm.core import Info, VMeta
+from .util import DatasetType
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List
@@ -70,6 +71,7 @@ class DatasetProducedInfo(Info):
         path: The path of the dataset within the file
         uniqueid: The path of the UniqueID dataset within the file
     """
+
     def __init__(self, name, filename, type, rank, path, uniqueid):
         # type: (str, str, DatasetType, int, str, str) -> None
         self.name = name

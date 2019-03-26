@@ -38,7 +38,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         # both set to 0.1
         self.set_attributes(self.child, exposure=0.1, acquirePeriod=0.105)
         self.o.configure(
-            self.context, completed_steps, steps_to_do, {}, generator=generator)
+            self.context, completed_steps, steps_to_do, {}, generator=generator,
+            fileDir="/tmp")
         # duration - readout - fudge_factor - crystal offset
         expected_exposure = pytest.approx(0.1 - 0.005 - 0.0014 - 5e-6)
         assert self.child.handled_requests.mock_calls == [
