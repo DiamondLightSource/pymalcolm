@@ -73,7 +73,6 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
             call.put('presetMode', 'No preset'),
             call.post('start'),
             call.when_value_matches('acquiring', True, None),
-            call.when_values_matches('acquiring', True, None, 10.0, None),
             call.put('attributesFile', 'Z:\\mri-attributes.xml')]
         with open('/tmp/mri-attributes.xml') as f:
             actual_xml = f.read().replace(">", ">\n")
