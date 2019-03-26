@@ -11,5 +11,5 @@ pytest>=3.2.0
 pytest-cov<=2.6.0
 h5py>=2.8.0
 vdsgen>=0.3
-annotypes>=0.9
+annotypes==0.9
 p4p>=3.0.0
