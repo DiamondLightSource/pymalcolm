@@ -2,7 +2,7 @@
 HERE=$(dirname $0)
 
 # Pull in changes from a built version of malcolmjs
-RELEASE=https://github.com/dls-controls/malcolmjs/releases/download/1.6.1/malcolmjs-1.6.1-0-gb3ce08f.tar.gz
+RELEASE=https://github.com/dls-controls/malcolmjs/releases/download/1.6.2/malcolmjs-1.6.2-0-g1b3d290.tar.gz
 TMP=/tmp/malcolmjs.tar.gz
 
 git rm -rf $HERE/www

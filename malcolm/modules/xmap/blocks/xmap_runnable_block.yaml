@@ -21,6 +21,7 @@
 - xmap.parts.XmapDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
+    runs_on_windows: true
 
 - ADCore.blocks.stats_plugin_block:
     mri: $(mri_prefix):STAT
@@ -33,3 +34,8 @@
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)
     mri_prefix: $(mri_prefix)
+
+- ADCore.parts.FilepathTranslatorPart:
+    name: WINPATH
+    initial_windows_drive_letter: T
+    initial_path_prefix: /dls
