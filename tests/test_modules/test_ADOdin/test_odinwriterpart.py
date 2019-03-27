@@ -63,7 +63,7 @@ class TestOdinWriterPart(ChildTestCase):
         print(self.child.handled_requests.mock_calls)
         print('OdinWriter configure {} points took {} secs'.format(
             self.steps_to_do, datetime.now() - start_time))
-        # rmtree(tmp_dir)
+        rmtree(tmp_dir)
 
     def test_run(self):
         tmp_dir = mkdtemp() + os.path.sep
@@ -113,8 +113,8 @@ class TestOdinWriterPart(ChildTestCase):
             raw = h5py.File(name, 'r+', libver="latest")
 
             # set values in the data
-            print raw.items()
-            print raw['data'][idx]
+            print(raw.items())
+            print(raw['data'][idx])
             data = np.full((1536, 2048), value, np.uint16)
             raw['data'][idx] = data
             raw.close()

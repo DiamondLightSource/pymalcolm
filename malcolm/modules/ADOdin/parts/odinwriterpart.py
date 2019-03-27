@@ -44,7 +44,7 @@ def files_shape(frames, block_size, file_count):
     # pad the remainders list with zeros
     remainders += [0] * (file_count - len(remainders))
 
-    shape = tuple(per_file * block_size + remainders[i]
+    shape = tuple(int(per_file * block_size + remainders[i])
                   for i in range(file_count))
     return shape
 
@@ -71,8 +71,8 @@ def one_vds(vds_folder, vds_name, files, width, height,
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(path=vds_folder,
                               files=[vds_name],
-                              source_node="process/" + target_node + \
-                               "_interleave",
+                              source_node="process/" + target_node +
+                                          "_interleave",
                               target_node=target_node,
                               output=vds_name,
                               shape=generator.shape,
@@ -85,13 +85,11 @@ def one_vds(vds_folder, vds_name, files, width, height,
 def create_vds(generator, raw_name, vds_path, child):
     vds_folder, vds_name = os.path.split(vds_path)
 
-    image_width = child.imageWidth.value
-    image_height = child.imageHeight.value
-    #image_width = 2069
-    #image_height = 1793
-    block_size = child.blockSize.value
-    hdf_count = child.numProcesses.value
-    data_type = child.dataType.value
+    image_width = int(child.imageWidth.value)
+    image_height = int(child.imageHeight.value)
+    block_size = int(child.blockSize.value)
+    hdf_count = int(child.numProcesses.value)
+    data_type = str(child.dataType.value)
 
     # hdf_shape tuple represents the number of images in each file
     hdf_shape = files_shape(generator.size, block_size, hdf_count)
@@ -212,6 +210,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
                              self.post_run_ready)
         self.register_hooked(scanning.hooks.AbortHook, self.abort)
         self.register_hooked(scanning.hooks.PauseHook, self.pause)
+        self.exposure_time = 0
 
     @add_call_types
     def reset(self, context):
@@ -244,6 +243,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
                   fileTemplate="%s.hdf",  # type: AFileTemplate
                   ):
         # type: (...) -> scanning.hooks.UInfos
+
+        self.exposure_time = generator.duration
 
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + steps_to_do
@@ -307,7 +308,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         child.numCaptured.subscribe_value(self.update_completed_steps)
         child.when_value_matches(
-            "numCaptured", self.done_when_reaches, event_timeout=FRAME_TIMEOUT)
+            "numCaptured", self.done_when_reaches,
+            event_timeout=self.exposure_time+FRAME_TIMEOUT)
 
     @add_call_types
     def post_run_ready(self, context):
