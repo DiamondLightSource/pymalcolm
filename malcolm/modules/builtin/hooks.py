@@ -18,7 +18,6 @@ T = TypeVar("T")
 
 class ControllerHook(Hook[T]):
     """A hook that takes Part and Context for use in controllers"""
-
     def __init__(self, part, context, **kwargs):
         # type: (APart, AContext, **Any) -> None
         # Pass a weak reference to our children

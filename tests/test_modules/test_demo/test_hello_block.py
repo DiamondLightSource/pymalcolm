@@ -1,17 +1,15 @@
 import unittest
 
 from malcolm.core import Process
-from malcolm.modules.builtin.controllers import BasicController
-from malcolm.modules.demo.parts import HelloPart
+from malcolm.modules.demo.blocks import hello_block
 
 
-class TestHelloPart(unittest.TestCase):
+class TestHelloBlock(unittest.TestCase):
 
     def setUp(self):
         self.p = Process("proc")
-        c = BasicController("mri")
-        c.add_part(HelloPart(name='block'))
-        self.p.add_controller(c)
+        for c in hello_block("mri"):
+            self.p.add_controller(c)
         self.p.start()
 
     def tearDown(self):
@@ -27,7 +25,8 @@ class TestHelloPart(unittest.TestCase):
         b = self.p.block_view("mri")
         method = b.greet.meta
         assert list(method.to_dict()) == [
-            'typeid', 'takes', 'defaults', 'description', 'tags', 'writeable', 'label', 'returns']
+            'typeid', 'takes', 'defaults', 'description', 'tags', 'writeable',
+            'label', 'returns']
         assert method.defaults == dict(sleep=0.0)
         assert list(method.takes["elements"]) == ["name", "sleep"]
         assert list(method.returns["elements"]) == ["return"]

@@ -198,10 +198,6 @@ class Block(View):
         future = self._context.when_matches_async(path, good_value, bad_values)
         return future
 
-    def wait_all_futures(self, futures, timeout=None, event_timeout=None):
-        self._context.wait_all_futures(
-            futures, timeout=timeout, event_timeout=event_timeout)
-
 
 def make_view(controller, context, data):
     # type: (Controller, Context, Any) -> Any

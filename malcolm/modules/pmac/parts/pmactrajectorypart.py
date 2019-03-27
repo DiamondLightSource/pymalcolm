@@ -50,8 +50,6 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             name, mri, initial_visibility=True)
         # The total number of points we have written
         self.total_points = 0
-        # The context we will use for all our functions
-        self.context = None  # type: Context
         self.output_triggers = BooleanMeta(
             "Whether to send GPIO triggers for frame signals",
             tags=[Widget.CHECKBOX.tag(), config_tag()]
@@ -73,13 +71,6 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                                       self.output_triggers.set_value)
         registrar.add_attribute_model("pointsScanned", self.points_scanned)
 
-    @add_call_types
-    def init(self, context):
-        # type: (builtin.hooks.AContext) -> None
-        # Store the context for later use
-        self.context = context
-        super(PmacTrajectoryPart, self).init(context)
-
     # Serialized, so use camelCase
     # noinspection PyPep8Naming
     @add_call_types
@@ -99,7 +90,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                       z=None,  # type: ADemandTrajectory
                       ):
         # type: (...) -> None
-        child = self.context.block_view(self.mri)
+        child = self.registrar.context.block_view(self.mri)
         # The axes taking part in the scan
         use_axes = []
         for axis in CS_AXIS_NAMES:
@@ -144,21 +135,23 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
     @add_call_types
     def execute_profile(self):
         # type: (...) -> None
-        self.context.unsubscribe_all()
-        fs = self.context.subscribe([self.mri, "pointsScanned", "value"],
-                                    self.points_scanned.set_value)
-        child = self.context.block_view(self.mri)
-        child.executeProfile()
-        # Now wait for up to 2*min_delta time to make sure any
-        # update_completed_steps come in
-        child.when_value_matches(
-            "pointsScanned", self.total_points, timeout=0.1)
-        self.context.unsubscribe(fs)
+        context = self.registrar.context
+        child = context.block_view(self.mri)
+        fs = context.subscribe([self.mri, "pointsScanned", "value"],
+                               self.points_scanned.set_value)
+        try:
+            child.executeProfile()
+            # Now wait for up to 2*min_delta time to make sure any
+            # update_completed_steps come in
+            child.when_value_matches(
+                "pointsScanned", self.total_points, timeout=0.1)
+        finally:
+            context.unsubscribe(fs)
 
     @add_call_types
     def abort_profile(self):
         # type: (...) -> None
-        child = self.context.block_view(self.mri)
+        child = self.registrar.context.block_view(self.mri)
         child.abortProfile()
 
 

@@ -1,17 +1,15 @@
 import unittest
 
 from malcolm.core import Process
-from malcolm.modules.builtin.controllers import BasicController
-from malcolm.modules.demo.parts import CounterPart
+from malcolm.modules.demo.blocks import counter_block
 
 
-class TestCounterPart(unittest.TestCase):
+class TestCounterBlock(unittest.TestCase):
 
     def setUp(self):
         self.p = Process("proc")
-        c = BasicController("mri")
-        c.add_part(CounterPart(name='counting'))
-        self.p.add_controller(c)
+        for c in counter_block("mri"):
+            self.p.add_controller(c)
         self.p.start()
         self.b = self.p.block_view("mri")
 

@@ -3,12 +3,14 @@ import re
 from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.compat import OrderedDict
+from .context import Context
 from .request import Request
 from .hook import Hookable
 from .info import Info
 from .camel import CAMEL_RE
 from .concurrency import Spawned
 from .models import MethodModel, AttributeModel, MethodMeta
+from .views import Block
 
 if TYPE_CHECKING:
     from typing import Union, List, Tuple, Dict, Callable, Optional, Type
@@ -113,11 +115,19 @@ class PartRegistrar(object):
     with their parent Controller that will appear in the Block
     """
 
-    def __init__(self, field_registry, info_registry, part):
-        # type: (FieldRegistry, InfoRegistry, Part) -> None
+    def __init__(self, field_registry, info_registry, part, context):
+        # type: (FieldRegistry, InfoRegistry, Part, Context) -> None
         self._field_registry = field_registry
         self._info_registry = info_registry
         self._part = part
+        self._context = context
+
+    @property
+    def context(self):
+        # type: () -> Context
+        """Get a static Context created at startup. This should only be used
+        for standalone methods, not during hooks"""
+        return self._context
 
     def get_fields(self):
         # type: () -> List[Tuple[str, Field, Callable]]

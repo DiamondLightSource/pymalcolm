@@ -15,9 +15,6 @@ with Anno("Time to take to perform move"):
 
 
 class CSPart(ChildPart):
-    # The context we will use for all our functions
-    context = None
-
     def __init__(self, mri, cs):
         # type: (builtin.parts.AMri, ACS) -> None
         super(CSPart, self).__init__("CS%d" % cs, mri, initial_visibility=True)
@@ -32,8 +29,6 @@ class CSPart(ChildPart):
     @add_call_types
     def init(self, context):
         # type: (builtin.hooks.AContext) -> None
-        # Store the context for later use
-        self.context = context
         super(CSPart, self).init(context)
         # Check the port name matches our CS number
         child = context.block_view(self.mri)
@@ -58,7 +53,7 @@ class CSPart(ChildPart):
              ):
         # type: (...) -> None
         """Move the given CS axes using a deferred co-ordinated move"""
-        child = self.context.block_view(self.mri)
+        child = self.registrar.context.block_view(self.mri)
         child.deferMoves.put_value(True)
         child.csMoveTime.put_value(moveTime)
         # Add in the motors we need to move
@@ -74,7 +69,8 @@ class CSPart(ChildPart):
         # Start the move
         child.deferMoves.put_value(False)
         # Wait for them to get there
-        self.context.wait_all_futures(fs, timeout=moveTime + DEFAULT_TIMEOUT)
+        self.registrar.context.wait_all_futures(
+            fs, timeout=moveTime + DEFAULT_TIMEOUT)
 
 #    def inverse_kinematics():
 #    def forward_kinematics():
