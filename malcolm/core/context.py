@@ -386,8 +386,8 @@ class Context(object):
                     descriptions.append("When(%s, %s, last=%s)" % (
                         path, func.condition_satisfied.__name__, func.last))
                 elif func is None:
-                    # We have already called unsubscribe, but haven't received the
-                    # Return for it yet
+                    # We have already called unsubscribe, but haven't received
+                    # the Return for it yet
                     descriptions.append("Unsubscribed(%s)" % path)
                 else:
                     descriptions.append("Subscribe(%s)" % path)

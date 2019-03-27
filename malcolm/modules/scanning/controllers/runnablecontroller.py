@@ -499,7 +499,8 @@ class RunnableController(ManagerController):
                 self.transition(start_state)
                 for context in self.part_contexts.values():
                     context.stop()
-            if original_state not in (ss.READY, ss.ARMED, ss.PAUSED, ss.FINISHED):
+            if original_state not in (
+                    ss.READY, ss.ARMED, ss.PAUSED, ss.FINISHED):
                 # Something was running, let it finish aborting
                 try:
                     self.abort_queue.get(timeout=DEFAULT_TIMEOUT)

@@ -73,7 +73,8 @@ class RunnableStates(ManagerStates):
                          self.RUNNING, self.SEEKING, self.RESETTING)
         self.set_allowed(self.RUNNING, self.POSTRUN, self.SEEKING)
         self.set_allowed(self.POSTRUN, self.FINISHED, self.ARMED, self.SEEKING)
-        self.set_allowed(self.FINISHED, self.SEEKING, self.RESETTING, self.CONFIGURING)
+        self.set_allowed(self.FINISHED, self.SEEKING, self.RESETTING,
+                         self.CONFIGURING)
         self.set_allowed(self.SEEKING, self.ARMED, self.PAUSED, self.FINISHED)
         self.set_allowed(self.PAUSED, self.SEEKING, self.RUNNING)
 

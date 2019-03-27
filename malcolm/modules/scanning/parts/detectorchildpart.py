@@ -121,6 +121,8 @@ class DetectorChildPart(ChildPart):
         for name, mri, exposure, frames in detectors.rows():
             if name == self.name and frames > 0:
                 # Found a row saying to take part
+                assert mri == self.mri, \
+                    "%s has mri %s, passed %s" % (name, self.mri, mri)
                 break
         else:
             # Didn't find a row or no frames, don't take part

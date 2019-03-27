@@ -41,7 +41,7 @@ def files_shape(frames, block_size, file_count):
 
 
 def one_vds(vds_folder, vds_name, files, width, height,
-            shape, generator, alternates, block_size, source_node, 
+            shape, generator, alternates, block_size, source_node,
             target_node, d_type):
     # this vds reshapes from 1 file per data writer to a single 1D data set
     gen = InterleaveVDSGenerator(
