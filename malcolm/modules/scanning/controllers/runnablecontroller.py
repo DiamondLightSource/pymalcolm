@@ -2,7 +2,7 @@ from annotypes import Anno, TYPE_CHECKING, add_call_types, Any
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
-    NumberMeta, Widget, Part, DEFAULT_TIMEOUT, UnexpectedError
+    NumberMeta, Widget, Part, DEFAULT_TIMEOUT, UnexpectedError, Table
 from malcolm.compat import OrderedDict
 from malcolm.core.models import MapMeta, MethodMeta, TableMeta
 from malcolm.modules.builtin.controllers import ManagerController, \
@@ -77,7 +77,7 @@ def update_configure_model(configure_model, part_configure_infos):
                 # TODO: moan about type changes, when != works...
                 metas[k] = meta
                 if k in info.defaults:
-                    if isinstance(meta, TableMeta) and min(
+                    if isinstance(meta, TableMeta) and not min(
                             m.writeable for m in meta.elements.values()):
                         # This is a table with non-writeable rows, merge the
                         # defaults together row by row
@@ -94,6 +94,26 @@ def update_configure_model(configure_model, part_configure_infos):
     configure_model.takes.set_required(required)
     configure_model.set_defaults(defaults)
     return configure_model
+
+
+def merge_non_writeable_table(default, supplied, non_writeable):
+    # type: (Table, Table, List[int]) -> Table
+    default_rows = list(default.rows())
+    for supplied_row in supplied.rows():
+        key = [supplied_row[i] for i in non_writeable]
+        for default_row in default_rows:
+            if key == [default_row[i] for i in non_writeable]:
+                break
+        else:
+            raise ValueError(
+                "Table row with %s doesn't match a row in the default table"
+                % {k: supplied_row[i] for i, k in enumerate(supplied.call_types)
+                   if i in non_writeable})
+        for i, v in enumerate(supplied_row):
+            if i not in non_writeable:
+                default_row[i] = v
+    table = default.from_rows(default_rows)
+    return table
 
 
 class RunnableController(ManagerController):
@@ -250,8 +270,20 @@ class RunnableController(ManagerController):
         iterations = 10
         # We will return this, so make sure we fill in defaults
         for k, default in self._block.configure.meta.defaults.items():
-            if k not in kwargs:
+            if k in kwargs:
+                meta = self._block.configure.meta.takes.elements[k]
+                if isinstance(meta, TableMeta):
+                    non_writeable = [
+                        i for i, m in enumerate(meta.elements.values())
+                        if not m.writeable]
+                    # If it is a table with non-writeable columns, fill in the
+                    # columns with the non-writeable values
+                    if non_writeable:
+                        kwargs[k] = merge_non_writeable_table(
+                            default, kwargs[k], non_writeable)
+            else:
                 kwargs[k] = default
+
         # The validated parameters we will eventually return
         params = ConfigureParams(generator, axesToMove, **kwargs)
         # Make some tasks just for validate
@@ -269,7 +301,7 @@ class RunnableController(ManagerController):
             tweaks = ParameterTweakInfo.filter_values(validate_part_info)
             if tweaks:
                 for tweak in tweaks:
-                    deserialized = self._block.configure.takes.elements[
+                    deserialized = self._block.configure.meta.takes.elements[
                         tweak.parameter].validate(tweak.value)
                     setattr(params, tweak.parameter, deserialized)
                     self.log.debug(
@@ -389,7 +421,8 @@ class RunnableController(ManagerController):
                     self.do_run(hook)
                     self.abortable_transition(next_state)
                 except AbortedError:
-                    self.abort_queue.put(None)
+                    if self.abort_queue:
+                        self.abort_queue.put(None)
                     # Wait for a response on the resume_queue
                     should_resume = self.resume_queue.get()
                     if should_resume:

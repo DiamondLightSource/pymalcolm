@@ -315,6 +315,7 @@ class TestHDFWriterPart(ChildTestCase):
         self.o.array_future.set_result(None)
         self.o.start_future = Future(None)
         self.o.registrar = MagicMock()
+        self.o.frame_timeout = 60
         # Spawn process to finish it after a few seconds
         self.process.spawn(set_unique_id)
         # Run

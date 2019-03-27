@@ -1,7 +1,7 @@
 import os
 
 import h5py
-from annotypes import add_call_types, Anno, TYPE_CHECKING
+from annotypes import add_call_types, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, \
     ReshapeVDSGenerator
 
@@ -16,15 +16,6 @@ if TYPE_CHECKING:
 # If the HDF writer doesn't get new frames in this time (seconds), consider it
 # stalled and raise
 FRAME_TIMEOUT = 60
-
-with Anno("Directory to write data to"):
-    AFileDir = str
-with Anno("Argument for fileTemplate, normally filename without extension"):
-    AFileName = str
-with Anno("File Name"):
-    AFileTemplate = str
-with Anno("Argument for fileTemplate, normally filename without extension"):
-    AFormatName = str
 
 
 def greater_than_zero(v):
@@ -239,9 +230,9 @@ class OdinWriterPart(builtin.parts.ChildPart):
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: AFileDir
-                  formatName="odin",  # type: AFormatName
-                  fileTemplate="%s.hdf",  # type: AFileTemplate
+                  fileDir,  # type: scanning.util.AFileDir
+                  formatName="odin",  # type: scanning.util.AFormatName
+                  fileTemplate="%s.hdf",  # type: scanning.util.AFileTemplate
                   ):
         # type: (...) -> scanning.hooks.UInfos
 

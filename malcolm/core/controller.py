@@ -213,11 +213,15 @@ class Controller(Hookable):
         with self.changes_squashed:
             method.took.set_value(
                 method.meta.takes.validate(took_value, add_missing=True))
-            method.took.set_present(list(took_value))
+            method.took.set_present(
+                [x for x in method.meta.takes.elements
+                 if x in took_value])
             method.took.set_timeStamp(took_ts)
             method.returned.set_value(
                 method.meta.returns.validate(returned_value, add_missing=True))
-            method.returned.set_present(list(returned_value))
+            method.returned.set_present(
+                [x for x in method.meta.returns.elements
+                 if x in returned_value])
             method.returned.set_alarm(returned_alarm)
             method.returned.set_timeStamp()
 

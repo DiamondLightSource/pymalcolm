@@ -1,4 +1,4 @@
-from annotypes import add_call_types, Anno, Any, TYPE_CHECKING
+from annotypes import add_call_types, Anno, Any, TYPE_CHECKING, stringify_error
 
 from malcolm.core import BadValueError, APartName ,Future, Put, Request
 from malcolm.modules.scanning.infos import DatasetProducedInfo
@@ -85,7 +85,11 @@ class DetectorChildPart(ChildPart):
             return
         child = context.block_view(self.mri)
         # This is a Serializable with the correct entries
-        returns = child.validate(**kwargs)
+        try:
+            returns = child.validate(**kwargs)
+        except Exception as e:
+            raise BadValueError("Validate of %s failed: %s" % (
+                self.mri, stringify_error(e)))
         # TODO: this will fail if we split across 2 Malcolm processes as
         # scanpointgenerators don't compare equal, but we don't want to
         # serialize everything as that is expensive for arrays
@@ -115,7 +119,7 @@ class DetectorChildPart(ChildPart):
         need_extra_dim = max(detectors.framesPerPoint) > 1
         # Check the detector table to see what we need to do
         for name, mri, exposure, frames in detectors.rows():
-            if name == self.name and self.frames > 0:
+            if name == self.name and frames > 0:
                 # Found a row saying to take part
                 break
         else:

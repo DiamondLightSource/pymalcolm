@@ -1,7 +1,8 @@
-from .hellopart import HelloPart
 from .counterpart import CounterPart
-from .scantickerpart import ScanTickerPart
+from .filewritepart import FileWritePart
+from .hellopart import HelloPart
 from .motormovepart import MotorMovePart
+from .motionchildpart import MotionChildPart
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

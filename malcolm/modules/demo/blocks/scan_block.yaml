@@ -16,25 +16,26 @@
 
 - builtin.defines.docstring:
     value: |
-      Scan Block that controls a detector and ticker simulate a continuous scan
+      Scan Block that controls a detector and ticker to simulate a continuous
+      scan
 
 - scanning.controllers.RunnableController:
     mri: $(mri)
     config_dir: $(config_dir)
     description: $(docstring)
 
-- ADCore.parts.DatasetTablePart:
+- scanning.parts.DatasetTablePart:
     name: DSET
 
 - scanning.parts.SimultaneousAxesPart:
     value: [x, y]
 
-- ADCore.parts.DatasetRunnableChildPart:
+- scanning.parts.DetectorChildPart:
     name: DET
     mri: $(det)
     initial_visibility: True
 
-- scanning.parts.ScanTickerPart:
-    name: MOTORS
+- demo.parts.MotionChildPart:
+    name: MOTION
     mri: $(motors)
     initial_visibility: True

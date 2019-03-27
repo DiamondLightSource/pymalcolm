@@ -10,9 +10,7 @@ with Anno("If >0, raise an exception at the end of this step"):
 AInitialVisibility = builtin.parts.AInitialVisibility
 
 
-# We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("counter")
-class ScanTickerPart(builtin.parts.ChildPart):
+class MotionChildPart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `RunnableController`"""
 
     def __init__(self,
@@ -21,7 +19,7 @@ class ScanTickerPart(builtin.parts.ChildPart):
                  initial_visibility=None,  # type: AInitialVisibility
                  ):
         # type: (...) -> None
-        super(ScanTickerPart, self).__init__(
+        super(MotionChildPart, self).__init__(
             name, mri, initial_visibility, stateful=False)
         # Generator instance
         self._generator = None  # type: scanning.hooks.AGenerator
@@ -34,6 +32,7 @@ class ScanTickerPart(builtin.parts.ChildPart):
         # Which axes we should be moving
         self._axes_to_move = None  # type: scanning.hooks.AAxesToMove
         # Hooks
+        self.register_hooked(scanning.hooks.PreConfigureHook, self.reload)
         self.register_hooked((scanning.hooks.ConfigureHook,
                               scanning.hooks.PostRunArmedHook,
                               scanning.hooks.SeekHook), self.configure)
@@ -42,7 +41,7 @@ class ScanTickerPart(builtin.parts.ChildPart):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        super(ScanTickerPart, self).setup(registrar)
+        super(MotionChildPart, self).setup(registrar)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))

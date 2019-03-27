@@ -3,29 +3,56 @@ import time
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from annotypes import add_call_types
-from malcolm.modules.scanning.hooks import ACompletedSteps, AContext
-from malcolm.core import Process, Part, Context, AlarmStatus, \
+
+from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
+from malcolm.modules.scanning.hooks import ACompletedSteps, AContext, \
+    AStepsToDo, ValidateHook, UInfos
+from malcolm.core import Process, Context, AlarmStatus, \
     AlarmSeverity, AbortedError
-from malcolm.modules.scanning.parts import RunnableChildPart
-from malcolm.modules.demo.blocks import ticker_block
+from malcolm.modules.demo.parts import MotionChildPart
+from malcolm.modules.demo.blocks import motion_block
 from malcolm.compat import OrderedDict
 from malcolm.modules.scanning.controllers import \
     RunnableController
-from malcolm.modules.scanning.util import RunnableStates
+from malcolm.modules.scanning.infos import ParameterTweakInfo
+from malcolm.modules.scanning.util import RunnableStates, AGenerator, \
+    AAxesToMove
 
 
 class TestPauseException(Exception):
     pass
 
 
-class MisbehavingPart(RunnableChildPart):
+class MisbehavingPart(MotionChildPart):
+    def setup(self, registrar):
+        super(MisbehavingPart, self).setup(registrar)
+        self.register_hooked(ValidateHook, self.validate)
+
     @add_call_types
-    def seek(self, context, completed_steps):
-        # type: (AContext, ACompletedSteps) -> None
-        super(MisbehavingPart, self).seek(context, completed_steps)
+    def validate(self, generator):
+        # type: (AGenerator) -> UInfos
+        if generator.duration < 0.1:
+            serialized = generator.to_dict()
+            new_generator = CompoundGenerator.from_dict(serialized)
+            new_generator.duration = 0.1
+            return ParameterTweakInfo("generator", new_generator)
+
+    # Allow CamelCase for arguments as they will be serialized by parent
+    # noinspection PyPep8Naming
+    @add_call_types
+    def configure(self,
+                  completed_steps,  # type: ACompletedSteps
+                  steps_to_do,  # type: AStepsToDo
+                  # The following were passed from the user calling configure()
+                  generator,  # type: AGenerator
+                  axesToMove,  # type: AAxesToMove
+                  exceptionStep=0,  # type: AExceptionStep
+                  ):
+        # type: (...) -> None
+        super(MisbehavingPart, self).configure(
+            completed_steps, steps_to_do, generator, axesToMove, exceptionStep)
         if completed_steps == 3:
             raise TestPauseException("Called magic number to make pause throw an exception")
-
 
 
 class TestRunnableStates(unittest.TestCase):
@@ -74,26 +101,21 @@ class TestRunnableController(unittest.TestCase):
         self.p2 = Process('process2')
         self.context2 = Context(self.p2)
 
-        # Make a ticker_block block to act as our child
-        for c in ticker_block(mri="childBlock", config_dir="/tmp"):
+        # Make a motion block to act as our child
+        for c in motion_block(mri="childBlock", config_dir="/tmp"):
             self.p.add_controller(c)
         self.b_child = self.context.block_view("childBlock")
-
-        # Make an empty part for our parent
-        part1 = Part("part1")
 
         # Make a RunnableChildPart to control the ticker_block
         # part2 = RunnableChildPart(
         #     mri='childBlock', name='part2', initial_visibility=True)
 
-        part2 = MisbehavingPart(
+        part = MisbehavingPart(
             mri='childBlock', name='part2', initial_visibility=True)
 
         # create a root block for the RunnableController block to reside in
         self.c = RunnableController(mri='mainBlock', config_dir="/tmp")
-        self.c.add_part(part1)
-        self.c.add_part(part2)
-        #self.c.add_part(misbehaving_part)
+        self.c.add_part(part)
         self.p.add_controller(self.c)
         self.b = self.context.block_view("mainBlock")
         self.ss = self.c.state_set
@@ -106,19 +128,13 @@ class TestRunnableController(unittest.TestCase):
     def tearDown(self):
         self.p.stop(timeout=1)
 
-    def checkState(self, state, child=True, parent=True):
-        if child:
-            assert self.b_child.state.value == state
-        if parent:
-            assert self.c.state.value == state
+    def checkState(self, state):
+        assert self.c.state.value == state
 
     def checkSteps(self, configured, completed, total):
         assert self.b.configuredSteps.value == configured
         assert self.b.completedSteps.value == completed
         assert self.b.totalSteps.value == total
-        assert self.b_child.configuredSteps.value == configured
-        assert self.b_child.completedSteps.value == completed
-        assert self.b_child.totalSteps.value == total
 
     def test_init(self):
         assert self.c.completed_steps.value == 0
@@ -137,7 +153,7 @@ class TestRunnableController(unittest.TestCase):
         # Save an initial setting for the child
         self.b_child.save("init_child")
         assert self.b_child.modified.value is False
-        x = self.context.block_view("COUNTERX")
+        x = self.context.block_view("childBlock:COUNTERX")
         x.delta.put_value(31)
         # x delta now at 31, child should be modified
         assert x.delta.value == 31
@@ -167,7 +183,7 @@ class TestRunnableController(unittest.TestCase):
         self.b_child.save("init_child")
         self.b.save("init_parent")
         # Change a value and save as a new child setting
-        x = self.context.block_view("COUNTERX")
+        x = self.context.block_view("childBlock:COUNTERX")
         x.counter.put_value(31)
         self.b_child.save("new_child")
         assert self.b_child.modified.value is False
@@ -199,8 +215,10 @@ class TestRunnableController(unittest.TestCase):
     def test_validate(self):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
         line2 = LineGenerator('x', 'mm', 0, 2, 2)
-        compound = CompoundGenerator([line1, line2], [], [])
+        compound = CompoundGenerator([line1, line2], [], [], duration=0.001)
         actual = self.b.validate(generator=compound, axesToMove=['x'])
+        assert actual["generator"].duration == 0.1
+        actual["generator"].duration = 0.001
         assert actual["generator"].to_dict() == compound.to_dict()
         assert actual["axesToMove"] == ['x']
 
@@ -279,7 +297,7 @@ class TestRunnableController(unittest.TestCase):
         self.b.resume()
         # Parent should be running, child won't have got request yet
         then = time.time()
-        self.checkState(self.ss.RUNNING, child=False)
+        self.checkState(self.ss.RUNNING)
         self.context.wait_all_futures(f, timeout=2)
         now = time.time()
         self.checkState(self.ss.ARMED)
@@ -419,7 +437,7 @@ class TestRunnableController(unittest.TestCase):
         self.context.sleep(0.95)
         with self.assertRaises(TestPauseException):
             self.b.pause(lastGoodStep=3)
-        self.checkState(self.ss.FAULT, child=False)
+        self.checkState(self.ss.FAULT)
         with self.assertRaises(AbortedError):
             f.result()
 

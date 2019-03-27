@@ -1,6 +1,6 @@
 import unittest
 
-from malcolm.core import Part, PartRegistrar, StringMeta, Controller
+from malcolm.core import Part, PartRegistrar, StringMeta, Controller, Process
 
 
 class BadPart(Part):
@@ -13,11 +13,13 @@ class BadPart(Part):
 class TestPart(unittest.TestCase):
     def setUp(self):
         self.c = Controller("c")
+        self.p = Process("proc")
 
     def test_init(self):
         p = Part("name")
         assert p.name == "name"
         self.c.add_part(p)
+        self.c.setup(self.p)
         assert p.registrar
 
     def test_bad_name(self):
@@ -29,5 +31,7 @@ class TestPart(unittest.TestCase):
 
     def test_bad_field_name(self):
         p = BadPart("name")
+        self.c.add_part(p)
         with self.assertRaises(AssertionError):
-            self.c.add_part(p)
+            self.c.setup(self.p)
+

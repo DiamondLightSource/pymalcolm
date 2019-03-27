@@ -3,38 +3,22 @@
     description: MRI for created block
 
 - builtin.parameters.string:
-    name: det
-    description: MRI for detector DetectorManager object
-
-- builtin.parameters.string:
-    name: motors
-    description: MRI for the motor controller
-
-- builtin.parameters.string:
     name: config_dir
     description: Where to store saved configs
 
 - builtin.defines.docstring:
     value: |
-      Scan Block that controls a detector and ticker simulate a continuous scan
+      Simulated detector that writes HDF files for an x, y scan
 
 - scanning.controllers.RunnableController:
     mri: $(mri)
     config_dir: $(config_dir)
     description: $(docstring)
 
-- ADCore.parts.DatasetTablePart:
+- scanning.parts.DatasetTablePart:
     name: DSET
 
-- scanning.parts.SimultaneousAxesPart:
-    value: [x, y]
-
-- ADCore.parts.DatasetRunnableChildPart:
+- demo.parts.FileWritePart:
     name: DET
-    mri: $(det)
-    initial_visibility: True
-
-- scanning.parts.ScanTickerPart:
-    name: MOTORS
-    mri: $(motors)
-    initial_visibility: True
+    width: 320
+    height: 240

@@ -1,6 +1,6 @@
 import unittest
 
-from malcolm.core import Controller
+from malcolm.core import Controller, Process
 from malcolm.modules.builtin.parts import StringPart
 
 
@@ -10,6 +10,7 @@ class TestStringPart(unittest.TestCase):
         self.o = StringPart(name="sp", description="desc")
         self.c = Controller("mri")
         self.c.add_part(self.o)
+        self.c.setup(Process("proc"))
 
     def test_init(self):
         assert self.o.name == "sp"

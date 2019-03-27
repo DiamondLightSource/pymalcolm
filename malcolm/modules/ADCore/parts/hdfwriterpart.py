@@ -260,6 +260,8 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # The HDF5 layout file we write to say where the datasets go
         self.layout_filename = None  # type: str
         self.runs_on_windows = runs_on_windows
+        # How long to wait between frame updates before error
+        self.frame_timeout = 0.0
         # Hooks
         self.write_all_nd_attributes = BooleanMeta(
             "Toggles whether all NDAttributes are written to "
@@ -318,6 +320,10 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + steps_to_do
         self.uniqueid_offset = 0
+        # Calculate how long to wait before marking this scan as stalled
+        assert generator.duration > 0, \
+            "Can only do constant exposure for now"
+        self.frame_timeout = FRAME_TIMEOUT + generator.duration
         child = context.block_view(self.mri)
         # For first run then open the file
         # Enable position mode before setting any position related things
@@ -401,11 +407,11 @@ class HDFWriterPart(builtin.parts.ChildPart):
                 # This is ok, means we aren't done yet, so flush
                 self._flush_if_still_writing(child)
                 # Check it hasn't been too long
-                if self.last_id_update and (
-                        time.time() - self.last_id_update > FRAME_TIMEOUT):
-                    raise TimeoutError(
-                        "HDF writer stalled, last updated at %s" % (
-                            self.last_id_update))
+                if self.last_id_update:
+                    if time.time() > self.last_id_update + self.frame_timeout:
+                        raise TimeoutError(
+                            "HDF writer stalled, last updated at %s" % (
+                                self.last_id_update))
                 # TODO: what happens if we miss the last frame?
             else:
                 return
