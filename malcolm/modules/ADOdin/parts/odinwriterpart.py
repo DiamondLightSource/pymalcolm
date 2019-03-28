@@ -122,7 +122,8 @@ def create_vds(generator, raw_name, vds_path, child):
             'SUM', 'sum', 'uint64')
 
 
-set_bases = ["/entry/detector/", "/entry/sum/", "/entry/uid/"]
+set_bases = ["/entry/detector/", "/entry/detector_sum/",
+             "/entry/detector_uid/"]
 set_data = ["/data", "/sum", "/uid"]
 
 
@@ -152,13 +153,13 @@ def add_nexus_nodes(generator, vds_file_path):
             # create a group for this entry
             vds.require_group(node)
             # points to the axis demand data sets
-            vds[node].attrs["axes"] = ','.join(pad_dims)
+            vds[node].attrs["axes"] = pad_dims
+            vds[node].attrs["NX_class"] = ['NXdata']
 
-            data_node_name = node.split('/')[-2]
             # points to the detector dataset for this entry
-            vds[node].attrs["signal"] = data_node_name
+            vds[node].attrs["signal"] = data.split('/')[-1]
             # a hard link from this entry 'signal' to the actual data
-            vds[node + data_node_name] = vds[data]
+            vds[node + data] = vds[data]
 
             axis_sets = {}
             # iterate the axes in each dimension of the generator to create the
@@ -167,7 +168,7 @@ def add_nexus_nodes(generator, vds_file_path):
                 for axis in d.axes:
                     # add signal data dimension for axis
                     axis_indices = '{}_set_indices'.format(axis)
-                    vds[node].attrs[axis_indices] = str(i)
+                    vds[node].attrs[axis_indices] = i
 
                     # demand positions for axis
                     axis_set = '{}_set'.format(axis)
@@ -182,6 +183,8 @@ def add_nexus_nodes(generator, vds_file_path):
                         vds[node + axis_set].attrs["units"] = \
                             generator.units[axis]
                     axis_sets[axis_set] = vds[node + axis_set]
+
+        vds['entry'].attrs["NX_class"] = ['NXentry']
 
 
 # We will set these attributes on the child block, so don't save them
