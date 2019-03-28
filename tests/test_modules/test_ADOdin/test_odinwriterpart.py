@@ -192,11 +192,11 @@ class TestOdinWriterPart(ChildTestCase):
         stage1_x_set_dataset = vds_file['/entry/detector/x_set']
         assert stage1_x_set_dataset[0] == 0
         assert stage1_x_set_dataset[1] == 2
-        assert stage1_x_set_dataset.attrs['units'] == b'mm'
+        assert str(stage1_x_set_dataset.attrs['units']) == 'mm'
 
         stage1_y_set_dataset = vds_file['/entry/detector/y_set']
         assert stage1_y_set_dataset[0] == 0
         assert stage1_y_set_dataset[1] == 4
-        assert stage1_y_set_dataset.attrs['units'] == b'mm'
+        assert str(stage1_y_set_dataset.attrs['units']) == 'mm'
 
         vds_file.close()
