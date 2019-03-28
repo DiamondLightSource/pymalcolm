@@ -10,6 +10,19 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 Nothing yet
 
 
+`3-4`_ - 2019-03-28
+-------------------
+Added:
+- ADOdin VDS and nexus file generation
+- HDF Attributes control of NDAttributes written
+- Windows detector file path support
+- added precision and units to number attributes
+
+
+Fixes
+- Update to malcolmjs 1.6.2 to fix cryptic errors
+
+
 `3-3`_ - 2019-02-19
 -------------------
 
