@@ -2,8 +2,7 @@ from __future__ import print_function
 
 from annotypes import Anno, add_call_types
 
-from malcolm.core import Part, sleep as sleep_for
-
+from malcolm.core import Part, PartRegistrar, sleep as sleep_for
 
 with Anno("The name of the person to greet"):
     AName = str
@@ -17,6 +16,8 @@ class HelloPart(Part):
     """Defines greet and error `Method` objects on a `Block`"""
 
     def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(HelloPart, self).setup(registrar)
         registrar.add_method_model(self.greet)
         registrar.add_method_model(self.error)
 

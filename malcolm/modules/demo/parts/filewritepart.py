@@ -62,6 +62,13 @@ class FileWritePart(Part):
         self._steps_to_do = 0
         # How much to offset uid value from generator point
         self._uid_offset = 0
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(FileWritePart, self).setup(registrar)
+        # Tell the controller to expose some extra configure parameters
+        registrar.report(scanning.hooks.ConfigureHook.create_info(
+            self.configure))
         # Hooks
         self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
         self.register_hooked((scanning.hooks.PostRunArmedHook,
@@ -70,13 +77,6 @@ class FileWritePart(Part):
                               scanning.hooks.ResumeHook), self.run)
         self.register_hooked((scanning.hooks.AbortHook,
                               builtin.hooks.ResetHook), self.reset)
-
-    def setup(self, registrar):
-        # type: (PartRegistrar) -> None
-        super(FileWritePart, self).setup(registrar)
-        # Tell the controller to expose some extra configure parameters
-        registrar.report(scanning.hooks.ConfigureHook.create_info(
-            self.configure))
 
     @add_call_types
     def reset(self):

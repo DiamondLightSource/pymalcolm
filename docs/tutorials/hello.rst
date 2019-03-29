@@ -44,10 +44,10 @@ Let's run it now::
 
     [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-HELLO.yaml
     Loading...
-    Python 2.7.3 (default, Nov  9 2013, 21:59:00)
+    Python 2.7.13 (default, Oct  3 2017, 11:17:53)
     Type "copyright", "credits" or "license" for more information.
 
-    IPython 2.1.0 -- An enhanced Interactive Python.
+    IPython 5.4.1 -- An enhanced Interactive Python.
     ?         -> Introduction and overview of IPython's features.
     %quickref -> Quick reference.
     help      -> Python's own help system.
@@ -111,10 +111,10 @@ on it::
 
     [me@mypc pymalcolm]$ ./malcolm/imalcolm.py -c ws://localhost:8008
     Loading...
-    Python 2.7.3 (default, Nov  9 2013, 21:59:00)
+    Python 2.7.13 (default, Oct  3 2017, 11:17:53)
     Type "copyright", "credits" or "license" for more information.
 
-    IPython 2.1.0 -- An enhanced Interactive Python.
+    IPython 5.4.1 -- An enhanced Interactive Python.
     ?         -> Introduction and overview of IPython's features.
     %quickref -> Quick reference.
     help      -> Python's own help system.
@@ -203,7 +203,7 @@ Attributes make a good interface to the outside world, they aren't the right
 size unit to divide our Block into re-usable chunks of code. What we actually
 need is something to co-ordinate our Block and provide a framework for the logic
 we will write, and plugins that can extend and customize this logic. The object
-that play a co-ordinating role is called a `controller_` and each plugin is
+that plays a co-ordinating role is called a `controller_` and each plugin is
 called a `part_`. This is how they fit together:
 
 .. digraph:: controllers_and_parts
@@ -340,7 +340,8 @@ happening, then sleep for a bit to simulate doing some work, then place the
 greeting into the return map and return it.
 
 There is also a second method called ``error`` that just raises an error. This
-doesn't need a decorator as it doesn't take any arguments or return anything.
+doesn't need a decorator as it doesn't take any arguments or return anything
+(although adding one would be harmless).
 
 Conclusion
 ----------

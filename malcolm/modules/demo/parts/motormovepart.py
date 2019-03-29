@@ -5,6 +5,8 @@ from malcolm.modules import builtin
 
 with Anno("The demand value to move our counter motor to"):
     ADemand = float
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = builtin.parts.AMri
 
 
 # We will set these attributes on the child block, so don't save them
@@ -13,7 +15,7 @@ class MotorMovePart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `ManagerController`"""
 
     def __init__(self, name, mri):
-        # type: (APartName, builtin.parts.AMri) -> None
+        # type: (APartName, AMri) -> None
         super(MotorMovePart, self).__init__(
             name, mri, stateful=False, initial_visibility=True)
 

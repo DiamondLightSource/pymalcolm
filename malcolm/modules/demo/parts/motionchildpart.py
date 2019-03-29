@@ -2,23 +2,22 @@ import time
 
 from annotypes import Anno, add_call_types
 
-from malcolm.core import PartRegistrar
+from malcolm.core import PartRegistrar, APartName
 from malcolm.modules import builtin, scanning
 
 with Anno("If >0, raise an exception at the end of this step"):
     AExceptionStep = int
+# Pull re-used annotypes into our namespace in case we are subclassed
+# TODO: Add this to CONTRIBUTING.rst
+AMri = builtin.parts.AMri
 AInitialVisibility = builtin.parts.AInitialVisibility
 
 
 class MotionChildPart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `RunnableController`"""
 
-    def __init__(self,
-                 name,  # type: builtin.parts.APartName
-                 mri,  # type: builtin.parts.AMri
-                 initial_visibility=None,  # type: AInitialVisibility
-                 ):
-        # type: (...) -> None
+    def __init__(self, name, mri, initial_visibility=None):
+        # type: (APartName, AMri, AInitialVisibility) -> None
         super(MotionChildPart, self).__init__(
             name, mri, initial_visibility, stateful=False)
         # Generator instance
@@ -31,13 +30,6 @@ class MotionChildPart(builtin.parts.ChildPart):
         self._exception_step = None  # type: int
         # Which axes we should be moving
         self._axes_to_move = None  # type: scanning.hooks.AAxesToMove
-        # Hooks
-        self.register_hooked(scanning.hooks.PreConfigureHook, self.reload)
-        self.register_hooked((scanning.hooks.ConfigureHook,
-                              scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook), self.configure)
-        self.register_hooked((scanning.hooks.RunHook,
-                              scanning.hooks.ResumeHook), self.run)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -45,6 +37,14 @@ class MotionChildPart(builtin.parts.ChildPart):
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
+        # Hooks
+        # TODO: Add this to CONTRIBUTING.rst
+        self.register_hooked(scanning.hooks.PreConfigureHook, self.reload)
+        self.register_hooked((scanning.hooks.ConfigureHook,
+                              scanning.hooks.PostRunArmedHook,
+                              scanning.hooks.SeekHook), self.configure)
+        self.register_hooked((scanning.hooks.RunHook,
+                              scanning.hooks.ResumeHook), self.run)
 
     # Allow CamelCase for arguments as they will be serialized by parent
     # noinspection PyPep8Naming
