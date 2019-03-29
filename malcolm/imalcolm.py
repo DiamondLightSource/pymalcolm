@@ -1,4 +1,4 @@
-#!/dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
+#!/bin/env dls-python
 import logging.config
 import threading
 import argparse
@@ -7,7 +7,6 @@ import getpass
 import json
 import os
 import sys
-import time
 
 
 def make_async_logging(log_config):
@@ -295,10 +294,24 @@ if __name__ == "__main__":
 
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-    require("tornado", "numpy", "ruamel.yaml", "cothread==2.14", "vdsgen==0.5",
-            "pygelf==0.3.1", "scanpointgenerator==2.1.1", "plop", "h5py>=2.8.0",
-            "annotypes==0.9", "p4p==3.0.0",
-            "scipy==0.19.1")  # scipy only needed for scanpointgenerator.plot_generator
+    require(
+        # External
+        "enum34==1.1.6",
+        "tornado==4.5.1",
+        "numpy==1.13.1",
+        "ruamel.yaml==0.15.33",
+        "h5py==2.9.0",
+        "p4p==3.2.0",
+        "pygelf==0.3.5",
+        "plop==0.3.0",
+        # scipy only needed for scanpointgenerator.plot_generator
+        "scipy==0.19.1",
+        # DLS developed
+        "annotypes==0.15",
+        "cothread==2.14",
+        "scanpointgenerator==2.2.1",
+        "vdsgen==0.5.1"
+    )
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "annotypes"))
     main()

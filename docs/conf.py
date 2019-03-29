@@ -6,9 +6,6 @@ import os
 import re
 import sys
 
-from enum import Enum
-
-
 def get_version():
     """Extracts the version number from the version.py file."""
     VERSION_FILE = '../malcolm/version.py'
@@ -26,7 +23,7 @@ def get_version():
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 try:
     from pkg_resources import require
-except:
+except ImportError:
     pass
 else:
     require("mock")
@@ -34,10 +31,12 @@ else:
     require("ruamel.yaml")
     require("annotypes")
     require("cothread")
+    require("enum34")
+    require("sphinx_rtd_theme")
 
 
 from mock import MagicMock
-from annotypes import make_annotations, Anno
+from enum import Enum
 
 # Mock out failing imports
 MOCK_MODULES = [

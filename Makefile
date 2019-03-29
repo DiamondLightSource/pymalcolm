@@ -1,6 +1,7 @@
 # Specify defaults for testing
 PREFIX := $(shell pwd)/prefix
 PYTHON = dls-python
+PYTHON_VERSION_SHORT := $(shell dls-python --version 2>&1 | grep -oP "(?<=^Python )[0-9]+.[0-9]+")
 MODULEVER=0.0
 
 # Override with any release info
@@ -19,6 +20,7 @@ clean:
 
 # Install the built egg and keep track of what was installed
 install: dist docs
+	mkdir -p $(PREFIX)/lib/python$(PYTHON_VERSION_SHORT)/site-packages
 	$(PYTHON) setup.py easy_install -m \
 		--record=installed.files \
 		--prefix=$(PREFIX) dist/*.egg
