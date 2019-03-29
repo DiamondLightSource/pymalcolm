@@ -66,7 +66,7 @@ class TestOdinWriterPart(ChildTestCase):
         print(self.child.handled_requests.mock_calls)
         print('OdinWriter configure {} points took {} secs'.format(
             self.steps_to_do, datetime.now() - start_time))
-        # rmtree(tmp_dir)
+        rmtree(tmp_dir)
 
     def test_run(self):
         tmp_dir = mkdtemp() + os.path.sep
@@ -81,7 +81,7 @@ class TestOdinWriterPart(ChildTestCase):
             self.o.done_when_reaches)
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
-            call.when_value_matches('numCaptured', 6000000, None)]
+            call.when_value_matches('numCaptured', self.steps_to_do, None)]
         assert self.o.registrar.report.called_once
         assert self.o.registrar.report.call_args_list[0][0][0].steps == \
                self.steps_to_do
@@ -115,8 +115,8 @@ class TestOdinWriterPart(ChildTestCase):
             raw = h5py.File(name, 'r+', libver="latest")
 
             # set values in the data
-            print raw.items()
-            print raw['data'][idx]
+            print(raw.items())
+            print(raw['data'][idx])
             data = np.full((1536, 2048), value, np.uint16)
             raw['data'][idx] = data
             raw.close()
@@ -147,7 +147,7 @@ class TestOdinWriterPart(ChildTestCase):
         # Open the created VDS file and dataset to check values
         vds_path = os.path.join(tmp_dir, 'odin123.h5')
         vds_file = h5py.File(vds_path, "r")
-        detector_dataset = vds_file['/entry/detector/detector']
+        detector_dataset = vds_file['/entry/detector/data']
 
         # Check values at indices 0,0
         self.assertEquals(detector_dataset[0][0][756][393], 1)
@@ -183,10 +183,12 @@ class TestOdinWriterPart(ChildTestCase):
 
         # Check detector attributes
         detector_group = vds_file['/entry/detector']
-        assert detector_group.attrs['axes'] == 'y_set,x_set,.,.'
-        assert detector_group.attrs['signal'] == 'detector'
-        assert detector_group.attrs['y_set_indices'] == '0'
-        assert detector_group.attrs['x_set_indices'] == '1'
+        for a, b in zip(detector_group.attrs['axes'],
+                        ['y_set', 'x_set', '.', '.']):
+            assert a == b
+        assert detector_group.attrs['signal'] == 'data'
+        assert detector_group.attrs['y_set_indices'] == 0
+        assert detector_group.attrs['x_set_indices'] == 1
 
         # Check _set datasets
         # N.B. units are encoded as ASCII in the original file, so come
@@ -194,11 +196,12 @@ class TestOdinWriterPart(ChildTestCase):
         stage1_x_set_dataset = vds_file['/entry/detector/x_set']
         assert stage1_x_set_dataset[0] == 0
         assert stage1_x_set_dataset[1] == 2
-        assert stage1_x_set_dataset.attrs['units'] == b'mm'
+        assert str(stage1_x_set_dataset.attrs['units']) == 'mm'
 
         stage1_y_set_dataset = vds_file['/entry/detector/y_set']
         assert stage1_y_set_dataset[0] == 0
         assert stage1_y_set_dataset[1] == 4
-        assert stage1_y_set_dataset.attrs['units'] == b'mm'
+        assert str(stage1_y_set_dataset.attrs['units']) == 'mm'
 
         vds_file.close()
+        rmtree(tmp_dir)

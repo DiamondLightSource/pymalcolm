@@ -28,6 +28,19 @@ Fixed:
 - caactionpart now waits for good status, prevents timeout errors when doing caputs
 
 
+`3-4`_ - 2019-03-28
+-------------------
+Added:
+- ADOdin VDS and nexus file generation
+- HDF Attributes control of NDAttributes written
+- Windows detector file path support
+- added precision and units to number attributes
+
+
+Fixes
+- Update to malcolmjs 1.6.2 to fix cryptic errors
+
+
 `3-3`_ - 2019-02-19
 -------------------
 

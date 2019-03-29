@@ -35,7 +35,7 @@ def files_shape(frames, block_size, file_count):
     # pad the remainders list with zeros
     remainders += [0] * (file_count - len(remainders))
 
-    shape = tuple(per_file * block_size + remainders[i]
+    shape = tuple(int(per_file * block_size + remainders[i])
                   for i in range(file_count))
     return shape
 
@@ -62,8 +62,8 @@ def one_vds(vds_folder, vds_name, files, width, height,
     # this VDS shapes the data to match the dimensions of the scan
     gen = ReshapeVDSGenerator(path=vds_folder,
                               files=[vds_name],
-                              source_node="process/" + target_node + \
-                               "_interleave",
+                              source_node="process/" + target_node +
+                                          "_interleave",
                               target_node=target_node,
                               output=vds_name,
                               shape=generator.shape,
@@ -76,13 +76,11 @@ def one_vds(vds_folder, vds_name, files, width, height,
 def create_vds(generator, raw_name, vds_path, child):
     vds_folder, vds_name = os.path.split(vds_path)
 
-    image_width = child.imageWidth.value
-    image_height = child.imageHeight.value
-    #image_width = 2069
-    #image_height = 1793
-    block_size = child.blockSize.value
-    hdf_count = child.numProcesses.value
-    data_type = child.dataType.value
+    image_width = int(child.imageWidth.value)
+    image_height = int(child.imageHeight.value)
+    block_size = int(child.blockSize.value)
+    hdf_count = int(child.numProcesses.value)
+    data_type = str(child.dataType.value)
 
     # hdf_shape tuple represents the number of images in each file
     hdf_shape = files_shape(generator.size, block_size, hdf_count)
@@ -115,7 +113,8 @@ def create_vds(generator, raw_name, vds_path, child):
             'SUM', 'sum', 'uint64')
 
 
-set_bases = ["/entry/detector/", "/entry/sum/", "/entry/uid/"]
+set_bases = ["/entry/detector/", "/entry/detector_sum/",
+             "/entry/detector_uid/"]
 set_data = ["/data", "/sum", "/uid"]
 
 
@@ -145,13 +144,13 @@ def add_nexus_nodes(generator, vds_file_path):
             # create a group for this entry
             vds.require_group(node)
             # points to the axis demand data sets
-            vds[node].attrs["axes"] = ','.join(pad_dims)
+            vds[node].attrs["axes"] = pad_dims
+            vds[node].attrs["NX_class"] = ['NXdata']
 
-            data_node_name = node.split('/')[-2]
             # points to the detector dataset for this entry
-            vds[node].attrs["signal"] = data_node_name
+            vds[node].attrs["signal"] = data.split('/')[-1]
             # a hard link from this entry 'signal' to the actual data
-            vds[node + data_node_name] = vds[data]
+            vds[node + data] = vds[data]
 
             axis_sets = {}
             # iterate the axes in each dimension of the generator to create the
@@ -160,7 +159,7 @@ def add_nexus_nodes(generator, vds_file_path):
                 for axis in d.axes:
                     # add signal data dimension for axis
                     axis_indices = '{}_set_indices'.format(axis)
-                    vds[node].attrs[axis_indices] = str(i)
+                    vds[node].attrs[axis_indices] = i
 
                     # demand positions for axis
                     axis_set = '{}_set'.format(axis)
@@ -175,6 +174,8 @@ def add_nexus_nodes(generator, vds_file_path):
                         vds[node + axis_set].attrs["units"] = \
                             generator.units[axis]
                     axis_sets[axis_set] = vds[node + axis_set]
+
+        vds['entry'].attrs["NX_class"] = ['NXentry']
 
 
 # We will set these attributes on the child block, so don't save them
@@ -203,6 +204,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
                              self.post_run_ready)
         self.register_hooked(scanning.hooks.AbortHook, self.abort)
         self.register_hooked(scanning.hooks.PauseHook, self.pause)
+        self.exposure_time = 0
 
     @add_call_types
     def reset(self, context):
@@ -232,9 +234,11 @@ class OdinWriterPart(builtin.parts.ChildPart):
                   generator,  # type: scanning.hooks.AGenerator
                   fileDir,  # type: scanning.util.AFileDir
                   formatName="odin",  # type: scanning.util.AFormatName
-                  fileTemplate="%s.hdf",  # type: scanning.util.AFileTemplate
+                  fileTemplate="%s.h5",  # type: scanning.util.AFileTemplate
                   ):
         # type: (...) -> scanning.hooks.UInfos
+
+        self.exposure_time = generator.duration
 
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + steps_to_do
@@ -298,7 +302,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         child.numCaptured.subscribe_value(self.update_completed_steps)
         child.when_value_matches(
-            "numCaptured", self.done_when_reaches, event_timeout=FRAME_TIMEOUT)
+            "numCaptured", self.done_when_reaches,
+            event_timeout=self.exposure_time+FRAME_TIMEOUT)
 
     @add_call_types
     def post_run_ready(self, context):
