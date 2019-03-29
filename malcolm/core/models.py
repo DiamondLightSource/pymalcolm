@@ -904,6 +904,7 @@ class TableMeta(VMeta):
                 writeable fields then the whole Meta is writeable
             extra_tags: A list of tags to be added to the table meta
             """
+        # type: (Type[Table], str, Widget, List[str], List[str]) -> TableMeta
         elements = OrderedDict()
         for k, ct in table_cls.call_types.items():
             subclass = cls.lookup_annotype_converter(ct)
