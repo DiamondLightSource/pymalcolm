@@ -166,7 +166,7 @@ class TestDetectorChildPart(unittest.TestCase):
                 ])
             )
         assert str(cm.exception) == \
-               "Validate of slow failed: AssertionError: Given keys ['fileTemplate', 'generator', 'fileDir', 'formatName', 'axesToMove', 'exposure'], some of which aren't in allowed keys ['generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate']"
+               "Validate of slow failed: AssertionError: Given keys ['axesToMove', 'exposure', 'fileDir', 'fileTemplate', 'formatName', 'generator'], some of which aren't in allowed keys ['generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate']"
 
     def test_not_paused_when_resume(self):
         # Set it up to do 6 steps

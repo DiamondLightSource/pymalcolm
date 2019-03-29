@@ -982,7 +982,7 @@ class MapMeta(Model):
         extra = set(param_dict) - set(self.elements)
         assert not extra, \
             "Given keys %s, some of which aren't in allowed keys %s" % (
-                list(param_dict), list(self.elements))
+                list(sorted(param_dict)), list(self.elements))
         args = OrderedDict()
         for k, m in self.elements.items():
             if k in param_dict:
