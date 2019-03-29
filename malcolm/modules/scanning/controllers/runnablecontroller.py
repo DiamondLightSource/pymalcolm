@@ -1,4 +1,4 @@
-from annotypes import Anno, TYPE_CHECKING, add_call_types, Any
+from annotypes import Anno, TYPE_CHECKING, add_call_types, Any, json_encode
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
@@ -105,10 +105,12 @@ def merge_non_writeable_table(default, supplied, non_writeable):
             if key == [default_row[i] for i in non_writeable]:
                 break
         else:
+            json_key = json_encode(
+                {k: supplied_row[i] for i, k in enumerate(supplied.call_types)
+                 if i in non_writeable})
             raise ValueError(
                 "Table row with %s doesn't match a row in the default table"
-                % {k: supplied_row[i] for i, k in enumerate(supplied.call_types)
-                   if i in non_writeable})
+                % json_key)
         for i, v in enumerate(supplied_row):
             if i not in non_writeable:
                 default_row[i] = v

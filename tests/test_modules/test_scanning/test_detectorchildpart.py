@@ -154,7 +154,7 @@ class TestDetectorChildPart(unittest.TestCase):
                 ])
             )
         assert str(cm.exception) == \
-               "Table row with {'name': 'SLOW', 'mri': 'fast'} doesn't match a row in the default table"
+               'Table row with {"name": "SLOW", "mri": "fast"} doesn\'t match a row in the default table'
 
     def test_bad_det_exposure(self):
         # Send mismatching rows
