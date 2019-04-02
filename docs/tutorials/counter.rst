@@ -14,8 +14,10 @@ Let's take the example of a Counter. It contains:
 
 - a writeable `attribute_` called ``counter`` which will keep the current
   counter value.
+- a writeable `attribute_` called ``delta`` which will keep the amount to
+  increment the counter value by.
 - a `method_` zero() which will set ``counter = 0``.
-- a `method_` increment() which will set ``counter = counter + 1``.
+- a `method_` increment() which will set ``counter = counter + delta``.
 
 The block definition in ``./malcolm/modules/demo/blocks/counter_block.yaml``
 looks very similar to the hello_block example in the previous tutorial:
@@ -44,6 +46,7 @@ It creates the Methods and Attributes you would expect:
     block [shape=Mrecord label="{Block|mri: 'COUNTER'}"]
     zero [shape=Mrecord label="{Method|name: 'zero'}"]
     increment [shape=Mrecord label="{Method|name: 'increment'}"]
+    delta [shape=Mrecord label="{Attribute|name: 'delta'}"]
     counter [shape=Mrecord label="{Attribute|name: 'counter'}"]
     health [shape=Mrecord label="{Attribute|name: 'health'}"]
 
@@ -53,6 +56,7 @@ It creates the Methods and Attributes you would expect:
         block -> zero
         block -> increment
         block -> counter
+        block -> delta
         block -> health
     }
 
@@ -62,7 +66,9 @@ It creates the Methods and Attributes you would expect:
     cpart -> zero [style=dashed]
     cpart -> increment [style=dashed]
     cpart -> counter [style=dashed]
+    cpart -> delta [style=dashed]
     controller -> block [arrowhead=vee dir=from style=dashed label=produces]
+
 
 Creating Attributes in a Part
 -----------------------------
@@ -73,50 +79,43 @@ Let's take a look at the definition of `CounterPart` in
 .. literalinclude:: ../../malcolm/modules/demo/parts/counterpart.py
     :language: python
 
-Again, we start by subclassing `Part`, but this time we do some extra work in
-the ``__init__`` method. Whenever we override ``__init__`` it is important to
-call the ``__init__`` that we have just overridden, and that is what the
-`super` call does. This is a Python construct that lets us reliably call methods
-of our superclass that we have just overridden, even if multiple inheritance is
-used. If someone instantiates CounterPart, then
-``super(CounterPart, self).__init__`` will return the ``__init__`` function of
-the `Part`, bound so that ``self`` does not need to be passed into it.
+Again, we start by subclassing `Part`, but this time we define a couple of
+`AttributeModel` instances. By convention, we declare class attributes with
+the right names and value of None so that we don't have to override
+``__init__``. It also makes the docstrings for these attributes (which
+appear after the definitions) more legible.
 
-.. note::
-    It's not necessary to understand what `super` does, but it is necessary to
-    use it when you need to call the method you have just overridden, otherwise
-    your class may not behave correctly if subclassed and multiple inheritance
-    is used.
+.. note:: We are using a type comment to declare the type of this attribute
 
-We also add a type comment to the ``__init__`` method that tells anyone using
-the Part what parameters should be passed to the initializer. In this case, we
-don't actually add any parameters, just the ``name`` parameter that has been
-defined by `Part`, so we can reuse the ``APartName`` Anno object to avoid
-having to duplicate the type and description of this parameter.
+    This is not strictly necessary at runtime, but it is good practice so that
+    an IDE like PyCharm can tell what type the attribute is, and warn you if
+    you try to use it in an unsupported way.
 
-Finally for ``__init__`` we create an `AttributeModel`. To make the
-AttributeModel we first need to make a meta object. In our example we want a
-``float64`` `NumberMeta` as we want to demonstrate floating point numbers. If
-our counter was an integer we could choose ``int32`` or ``int64``. The actual
-AttributeModel is returned by the :meth:`~VMeta.create_attribute_model` method
-of this meta so that the correct type of AttributeModel can be chosen by the
-particular type of Meta object we specify. We specify a number of
-`tags_reference` on the Meta object that gives some hints about how this
-Attribute will be used. In this case, we specify a `config_tag` to say that
-this field is a configuration variable that will be marked for load/save, and
-a `Widget` tag that tells a GUI which widget to use to display this Attribute.
+We move onto the ``setup`` method. First, we create two `AttributeModel`
+instances. To make an AttributeModel we first need to make a meta object.
+In our example we want a ``float64`` `NumberMeta` counter as we want to
+demonstrate floating point numbers. If our counter was an integer we could
+choose ``int32`` or ``int64``. The actual AttributeModel is returned by the
+:meth:`~VMeta.create_attribute_model` method of this meta so that the correct
+type of AttributeModel can be chosen by the particular type of Meta object we
+specify. We specify a number of `tags_reference` on the Meta object that gives
+some hints about how this Attribute will be used. In this case, we specify a
+`config_tag` to say that this field is a configuration variable that will be
+marked for load/save, and a `Widget` tag that tells a GUI which widget to use
+to display this Attribute.
 
-
-The ``setup`` function looks very similar to the one in the previous tutorial,
-but this time we also register our `AttributeModel` so it appears in the parent
-`block_`. We do this by calling :meth:`~PartRegistrar.add_attribute_model` with
-3 arguments:
+The rest of the ``setup`` function looks very similar to the one in the previous
+tutorial, but this time we also register our `AttributeModel` so it appears in
+the parent `block_`. We do this by calling
+:meth:`~PartRegistrar.add_attribute_model` with 3 arguments:
 
 - ``"counter"``: the name of the Attribute within the Block
 - ``self.counter``: the AttributeModel instance
 - ``self.counter.set_value``: the function that will be called when someone
   tries to "Put" to the Attribute. If one isn't supplied then the Attribute
   will not be writeable
+
+We then do the same with ``delta`` to register a second Attribute.
 
 .. note:: We are producing an `AttributeModel` rather than an `Attribute`.
 
@@ -144,10 +143,10 @@ again::
 
     [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-HELLO.yaml
     Loading...
-    Python 2.7.3 (default, Nov  9 2013, 21:59:00)
+    Python 2.7.13 (default, Oct  3 2017, 11:17:53)
     Type "copyright", "credits" or "license" for more information.
 
-    IPython 2.1.0 -- An enhanced Interactive Python.
+    IPython 5.4.1 -- An enhanced Interactive Python.
     ?         -> Introduction and overview of IPython's features.
     %quickref -> Quick reference.
     help      -> Python's own help system.
@@ -199,13 +198,13 @@ entered ``foo``, you will get a GUI that looks like this:
 
 And a message on the console::
 
-    malcolm.core.request: Exception raised for request Put(id=63, path=Array([u'COUNTER', u'counter']), value=u'foo', get=False)
+    malcolm.core.request: Exception raised for request Put(id=40, path=Array([u'COUNTER', u'counter']), value=u'foo', get=False)
     Traceback (most recent call last):
-      File "./malcolm/../malcolm/core/controller.py", line 141, in _handle_request
+      File "./malcolm/../malcolm/core/controller.py", line 142, in _handle_request
         responses += handler(request)
-      File "./malcolm/../malcolm/core/controller.py", line 196, in _handle_put
+      File "./malcolm/../malcolm/core/controller.py", line 192, in _handle_put
         value = attribute.meta.validate(request.value)
-      File "./malcolm/../malcolm/core/models.py", line 551, in validate
+      File "./malcolm/../malcolm/core/models.py", line 641, in validate
         cast = self._np_type(value)
     ValueError: could not convert string to float: foo
 
