@@ -75,7 +75,7 @@ class Controller(Hookable):
         assert part.name not in self.parts, \
             "Part %r already exists in Controller %r" % (part.name, self.mri)
         self.parts[part.name] = part
-        if self.process:
+        if self.process is not None:
             # If we added a part after we were setup ourselves, then setup the
             # part now
             self._setup_part(part, self.process)

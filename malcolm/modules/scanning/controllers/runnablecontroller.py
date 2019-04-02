@@ -105,12 +105,13 @@ def merge_non_writeable_table(default, supplied, non_writeable):
             if key == [default_row[i] for i in non_writeable]:
                 break
         else:
-            json_key = json_encode(
-                {k: supplied_row[i] for i, k in enumerate(supplied.call_types)
-                 if i in non_writeable})
+            d = OrderedDict()
+            for i, k in enumerate(supplied.call_types):
+                if i in non_writeable:
+                    d[k] = supplied_row[i]
             raise ValueError(
                 "Table row with %s doesn't match a row in the default table"
-                % json_key)
+                % json_encode(d))
         for i, v in enumerate(supplied_row):
             if i not in non_writeable:
                 default_row[i] = v
