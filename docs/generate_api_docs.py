@@ -3,28 +3,23 @@ import shutil
 
 
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+build_dir = os.path.join(repo_root, "docs", "build")
+modules_root = os.path.join(repo_root, "malcolm", "modules")
 
 
 def generate_docs():
-    build_dir = os.path.join(repo_root, "docs", "build")
-    if not os.path.exists(build_dir):
-        os.makedirs(build_dir)
-
     # Add entries for each module
     modules = []
-    modules_root = os.path.join(repo_root, "malcolm", "modules")
+
     for modulename in sorted(os.listdir(modules_root)):
-        module_root = os.path.join(modules_root, modulename)
-        if not os.path.isdir(module_root):
+        # Ignore files
+        if not os.path.isdir(os.path.join(modules_root, modulename)):
             continue
-        # Make sure the directory exists
-        docs_build = os.path.join(repo_root, "docs", "build", modulename)
-        if not os.path.exists(docs_build):
-            os.makedirs(docs_build)
+        module_build_dir = os.path.join(build_dir, modulename)
         # Walk the tree finding documents
         # {docname: section}
         documents = {}
-        dirs = sorted(os.listdir(module_root))
+        dirs = sorted(os.listdir(os.path.join(modules_root, modulename)))
         # Make any parameters and defines docs
         for fname in ["parameters.py", "defines.py", "hooks.py", "infos.py",
                       "util.py", "blocks", "includes", "controllers", "parts"]:
@@ -36,10 +31,10 @@ def generate_docs():
                 documents[docname] = section
 
         # Copy from the docs dir if it exists
-        docs_dir = os.path.join(module_root, "docs")
+        module_docs = os.path.join(modules_root, modulename, "docs")
         for docname, section in sorted(documents.items()):
-            src_path = os.path.join(docs_dir, docname + ".rst")
-            rst_path = os.path.join(docs_build, docname + ".rst")
+            src_path = os.path.join(module_docs, docname + ".rst")
+            rst_path = os.path.join(module_build_dir, docname + ".rst")
             if os.path.exists(src_path):
                 with open(src_path) as rst:
                     text = rst.read()
@@ -49,8 +44,8 @@ def generate_docs():
                 make_automodule_doc(section, rst_path)
 
         # Add an index
-        src_path = os.path.join(docs_dir, "index.rst")
-        rst_path = os.path.join(docs_build, "index.rst")
+        src_path = os.path.join(module_docs, "index.rst")
+        rst_path = os.path.join(module_build_dir, "index.rst")
         got_index = True
         if os.path.exists(src_path):
             with open(src_path) as rst:
@@ -115,9 +110,15 @@ def make_index_doc(modulename, rst_path, documents):
 
 
 def write_if_different(path, text):
-    with open(path) as current:
-        different = current.read() != text
+    if os.path.exists(path):
+        with open(path) as current:
+            different = current.read() != text
+    else:
+        different = True
     if different:
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
         with open(path, "w") as updated:
             updated.write(text)    
 
