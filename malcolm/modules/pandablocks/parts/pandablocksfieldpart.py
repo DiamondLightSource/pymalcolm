@@ -33,6 +33,7 @@ class PandABlocksFieldPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
+        super(PandABlocksFieldPart, self).setup(registrar)
         attr_name = snake_to_camel(self.field_name.replace(".", "_"))
         if self.meta.writeable:
             writeable_func = self.set_field

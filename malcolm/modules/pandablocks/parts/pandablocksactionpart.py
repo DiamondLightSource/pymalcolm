@@ -32,10 +32,11 @@ class PandABlocksActionPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
+        super(PandABlocksActionPart, self).setup(registrar)
         method_name = snake_to_camel(self.field_name)
         self.method = registrar.add_method_model(
             self.set_field, method_name, self.description)
-        self.method.set_tags(self.tags)
+        self.method.meta.set_tags(self.tags)
 
     def set_field(self):
         self.client.set_field(self.block_name, self.field_name, "")

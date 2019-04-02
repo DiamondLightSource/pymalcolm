@@ -152,7 +152,8 @@ class ManagerController(StatefulController):
         super(ManagerController, self).do_init()
         # Try and make it a git repo, don't care if it fails
         self._run_git_cmd("init")
-        self._run_git_cmd("commit", "--allow-empty", "-m", "Initial commit for %s" % self.mri)
+        self._run_git_cmd("commit", "--allow-empty", "-m",
+                          "Initial commit for %s" % self.mri)
         # List the config_dir and add to choices
         self._set_layout_names()
         # If given a default config, load this
