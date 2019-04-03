@@ -208,9 +208,9 @@ called a `part_`. This is how they fit together:
 
 .. digraph:: controllers_and_parts
 
-    newrank=true
+    newrank=true;  // Sensible ranking of clusters
     bgcolor=transparent
-    node [fontname=Arial fontsize=10 shape=Mrecord style=filled fillcolor="#8BC4E9"]
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
     graph [fontname=Arial fontsize=11]
     edge [fontname=Arial fontsize=10 arrowhead=none]
 
@@ -258,36 +258,36 @@ Here's a diagram showing who created those Methods and Attributes:
 
 .. digraph:: hello_controllers_and_parts
 
-    newrank=true
+    newrank=true;  // Sensible ranking of clusters
     bgcolor=transparent
-    node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
     graph [fontname=Arial fontsize=11]
     edge [fontname=Arial fontsize=10 arrowhead=none]
-
-    controller [shape=Mrecord label="{BasicController|mri: 'HELLO'}"]
-    hello [shape=Mrecord label="{HelloPart|name: 'hello'}"]
 
     subgraph cluster_control {
         label="Control"
         labelloc="b"
+        height=120
+        controller [label=<BasicController<BR/>mri: 'HELLO'>]
+        hello [label=<HelloPart<BR/>name: 'hello'>]
         controller -> hello
     }
-
-    block [shape=Mrecord label="{Block|mri: 'HELLO'}"]
-    greet [shape=Mrecord label="{Method|name: 'greet'}"]
-    error [shape=Mrecord label="{Method|name: 'error'}"]
-    health [shape=Mrecord label="{Attribute|name: 'health'}"]
 
     subgraph cluster_view {
         label="View"
         labelloc="b"
+        height=120
+        block [label=<Block<BR/>mri: 'HELLO'>]
+        greet [label=<Method<BR/>name: 'greet'>]
+        error [label=<Method<BR/>name: 'error'>]
+        health [label=<Attribute<BR/>name: 'health'>]
         block -> greet
         block -> error
         block -> health
     }
 
     {rank=same;controller block}
-    {rank=same;hello greet error}
+    {rank=same;hello greet error health}
 
     controller -> health [style=dashed]
     hello -> greet [style=dashed]

@@ -29,30 +29,27 @@ It creates the Methods and Attributes you would expect:
 
 .. digraph:: counter_controllers_and_parts
 
+    newrank=true;  // Sensible ranking of clusters
     bgcolor=transparent
-    node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
     graph [fontname=Arial fontsize=11]
     edge [fontname=Arial fontsize=10 arrowhead=none]
 
-    controller [shape=Mrecord label="{BasicController|mri: 'COUNTER'}"]
-    cpart [shape=Mrecord label="{CounterPart|name: 'counter'}"]
-
     subgraph cluster_control {
         label="Control"
-        labelloc="b"
+        controller [label=<BasicController<BR/>mri: 'COUNTER'>]
+        cpart [label=<CounterPart<BR/>name: 'counter'>]
         controller -> cpart
     }
 
-    block [shape=Mrecord label="{Block|mri: 'COUNTER'}"]
-    zero [shape=Mrecord label="{Method|name: 'zero'}"]
-    increment [shape=Mrecord label="{Method|name: 'increment'}"]
-    delta [shape=Mrecord label="{Attribute|name: 'delta'}"]
-    counter [shape=Mrecord label="{Attribute|name: 'counter'}"]
-    health [shape=Mrecord label="{Attribute|name: 'health'}"]
-
     subgraph cluster_view {
         label="View"
-        labelloc="b"
+        block [label=<Block<BR/>mri: 'COUNTER'>]
+        zero [label=<Method<BR/>name: 'zero'>]
+        increment [label=<Method<BR/>name: 'increment'>]
+        delta [label=<Attribute<BR/>name: 'delta'>]
+        counter [label=<Attribute<BR/>name: 'counter'>]
+        health [label=<Attribute<BR/>name: 'health'>]
         block -> zero
         block -> increment
         block -> counter
@@ -61,6 +58,7 @@ It creates the Methods and Attributes you would expect:
     }
 
     {rank=same;controller block}
+    {rank=same;cpart health zero increment counter delta}
 
     controller -> health [style=dashed]
     cpart -> zero [style=dashed]
@@ -82,8 +80,8 @@ Let's take a look at the definition of `CounterPart` in
 Again, we start by subclassing `Part`, but this time we define a couple of
 `AttributeModel` instances. By convention, we declare class attributes with
 the right names and value of None so that we don't have to override
-``__init__``. It also makes the docstrings for these attributes (which
-appear after the definitions) more legible.
+``__init__``. It also makes the doc comments for these attributes (which
+appear on the line before the definitions) more legible.
 
 .. note:: We are using a type comment to declare the type of this attribute
 

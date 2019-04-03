@@ -5,11 +5,10 @@ from malcolm.core import Part, config_tag, NumberMeta, PartRegistrar, \
 class CounterPart(Part):
     """Defines a counter `Attribute` with zero and increment `Method` objects"""
 
+    #: Writeable Attribute holding the current counter value
     counter = None  # type: AttributeModel
-    """Attribute holding the current counter value"""
-
+    #: Writeable Attribute holding the amount to increment() by
     delta = None  # type: AttributeModel
-    """Attribute holding the amount to increment() by"""
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
