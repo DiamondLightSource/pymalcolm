@@ -19,7 +19,7 @@ from malcolm.modules.scanning.util import RunnableStates, AGenerator, \
     AAxesToMove
 
 
-class TestPauseException(Exception):
+class MisbehavingPauseException(Exception):
     pass
 
 
@@ -52,7 +52,7 @@ class MisbehavingPart(MotionChildPart):
         super(MisbehavingPart, self).configure(
             completed_steps, steps_to_do, generator, axesToMove, exceptionStep)
         if completed_steps == 3:
-            raise TestPauseException("Called magic number to make pause throw an exception")
+            raise MisbehavingPauseException("Called magic number to make pause throw an exception")
 
 
 class TestRunnableStates(unittest.TestCase):
@@ -435,7 +435,7 @@ class TestRunnableController(unittest.TestCase):
         self.prepare_half_run(duration=0.5)
         f = self.b.run_async()
         self.context.sleep(0.95)
-        with self.assertRaises(TestPauseException):
+        with self.assertRaises(MisbehavingPauseException):
             self.b.pause(lastGoodStep=3)
         self.checkState(self.ss.FAULT)
         with self.assertRaises(AbortedError):

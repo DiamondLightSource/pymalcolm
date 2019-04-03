@@ -11,6 +11,8 @@ if sys.version_info < (3,):
     class TimeoutError(MalcolmException):
         """The operation exceeded the given deadline"""
         pass
+else:
+    TimeoutError = TimeoutError
 
 
 class AbortedError(MalcolmException):

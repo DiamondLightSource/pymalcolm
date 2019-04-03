@@ -1,6 +1,4 @@
-from mock import Mock
-
-from malcolm.core import Context, Process, PartRegistrar
+from malcolm.core import Process
 from malcolm.modules.builtin.controllers import ManagerController
 from malcolm.modules.pmac.parts import PmacStatusPart
 from malcolm.modules.pmac.blocks import pmac_status_block
