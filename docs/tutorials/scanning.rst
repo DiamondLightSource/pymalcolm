@@ -33,9 +33,10 @@ We now end up with a hierarchy that looks like this:
 
 .. digraph:: scan_child_connections
 
+    newrank=true;  // Sensible ranking of clusters
     bgcolor=transparent
     compound=true
-    node [fontname=Arial fontsize=10 shape=Mrecord style=filled fillcolor="#8BC4E9"]
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
     graph [fontname=Arial fontsize=10]
     edge [fontname=Arial fontsize=10 arrowhead=vee]
 
@@ -49,9 +50,9 @@ We now end up with a hierarchy that looks like this:
             ranksep=0.1
 		    color=white
             scan_c [label="RunnableController"]
-            DET [label="{DatasetRunnableChildPart|name: 'DET'}"]
-            MOTORS [label="{RunnableChildPart|name: 'MOTORS'}"]
-            DSET_s [label="{DatasetTablePart|name: 'DSET'}"]
+            DET [label=<DatasetRunnableChildPart<BR/>name: 'DET'>]
+            MOTORS [label=<RunnableChildPart<BR/>name: 'MOTORS'>]
+            DSET_s [label=<DatasetTablePart<BR/>name: 'DSET'>]
             scan_c -> DET [style=invis]
             scan_c -> MOTORS [style=invis]
             scan_c -> DSET_s [style=invis]
@@ -70,11 +71,11 @@ We now end up with a hierarchy that looks like this:
             ranksep=0.1
 		    color=white
             detector_c [label="RunnableController"]
-            DRV [label="{SimDetectorDriverPart|name: 'DRV'}"]
-            POS [label="{PositionLabellerPart|name: 'POS'}"]
-            STAT [label="{StatsPluginPart|name: 'STAT'}"]
-            HDF [label="{HDFWriterPart|name: 'HDF'}"]
-            DSET [label="{DatasetTablePart|name: 'DSET'}"]
+            DRV [label=<SimDetectorDriverPart<BR/>name: 'DRV'>]
+            POS [label=<PositionLabellerPart<BR/>name: 'POS'>]
+            STAT [label=<StatsPluginPart<BR/>name: 'STAT'>]
+            HDF [label=<HDFWriterPart<BR/>name: 'HDF'>]
+            DSET [label=<DatasetTablePart<BR/>name: 'DSET'>]
             detector_c -> DRV [style=invis]
             detector_c -> POS [style=invis]
             DRV -> DSET [style=invis]
@@ -86,8 +87,8 @@ We now end up with a hierarchy that looks like this:
             ranksep=0.1
 		    color=white
             ticker_c [label="RunnableController"]
-            x [label="{ScanTickerPart|name: 'x'}"]
-            y [label="{ScanTickerPart|name: 'y'}"]
+            x [label=<ScanTickerPart<BR/>name: 'x'>]
+            y [label=<ScanTickerPart<BR/>name: 'y'>]
             ticker_c -> x [style=invis]
             ticker_c -> y [style=invis]
         }

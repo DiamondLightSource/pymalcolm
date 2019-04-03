@@ -14,10 +14,11 @@ util
 
     .. digraph:: runnable_states
 
+        newrank=true;  // Sensible ranking of clusters
         bgcolor=transparent
         compound=true
         rankdir=LR
-        node [fontname=Arial fontsize=10 shape=Mrecord style=filled fillcolor="#8BC4E9"]
+        node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
         graph [fontname=Arial fontsize=11]
         edge [fontname=Arial fontsize=10 arrowhead=vee]
         Fault [fillcolor="#F03232"]
@@ -25,11 +26,6 @@ util
 
         subgraph cluster_normal {
             subgraph cluster_abortable {
-                {rank=min Ready}
-                {rank=same Loading Saving Configuring}
-                {rank=same Armed Seeking}
-                {rank=same Paused Running}
-                {rank=max PostRun Finished}
                 Ready [fillcolor="#BBE7BB"]
                 Ready -> Configuring [label="configure()" weight=30]
                 Ready -> Saving [label="save()"]
@@ -55,14 +51,14 @@ util
             }
             Aborted [fillcolor="#FFBE89"]
             Resetting -> Ready
-            Configuring -> Aborting [ltail=cluster_abortable label="abort()"]
+            Seeking -> Aborting [ltail=cluster_abortable label="abort()"]
             Aborting -> Aborted
             Aborted -> Resetting [label="reset()"]
             Armed -> Resetting [label="reset()"]
             Finished -> Resetting [label="reset()"]
         }
-        Aborting -> Disabling [ltail=cluster_normal label="disable()"]
-        Resetting -> Fault [ltail=cluster_normal label="on_error"]
+        Aborted -> Disabling [ltail=cluster_normal label="disable()"]
+        Aborted -> Fault [ltail=cluster_normal label="on_error"]
 
         Fault -> Resetting [label="reset()"]
         Fault -> Disabling [label="disable()"]
@@ -70,5 +66,8 @@ util
         Disabling -> Disabled
         Disabled -> Resetting [label="reset()"]
 
-
+        {rank=min Ready Resetting Fault}
+        {rank=same Loading Saving Configuring}
+        {rank=same Armed Seeking Finished Aborted Disabling}
+        {rank=max Paused Running PostRun Aborting Disabled}
 

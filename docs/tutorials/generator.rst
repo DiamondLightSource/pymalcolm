@@ -54,9 +54,10 @@ This tree of Blocks is probably better viewed as a diagram:
 
 .. digraph:: ticker_child_connections
 
+    newrank=true;  // Sensible ranking of clusters
     bgcolor=transparent
     compound=true
-    node [fontname=Arial fontsize=10 shape=Mrecord style=filled fillcolor="#8BC4E9"]
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
     graph [fontname=Arial fontsize=10]
     edge [fontname=Arial fontsize=10 arrowhead=vee]
 
@@ -70,8 +71,8 @@ This tree of Blocks is probably better viewed as a diagram:
             ranksep=0.1
 		    color=white
             ticker_c [label="RunnableController"]
-            x [label="{ScanTickerPart|name: 'x'}"]
-            y [label="{ScanTickerPart|name: 'y'}"]
+            x [label=<ScanTickerPart<BR/>name: 'x'>]
+            y [label=<ScanTickerPart<BR/>name: 'y'>]
             ticker_c -> x [style=invis]
             ticker_c -> y [style=invis]
         }
@@ -106,14 +107,15 @@ Now let's see some of the Methods and Attributes that are created:
 
 .. digraph:: ticker_controllers_and_parts
 
+    newrank=true;  // Sensible ranking of clusters
     bgcolor=transparent
-    node [fontname=Arial fontsize=10 shape=box style=filled fillcolor="#8BC4E9"]
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
     graph [fontname=Arial fontsize=11]
     edge [fontname=Arial fontsize=10 arrowhead=none]
 
-    controller [shape=Mrecord label="{RunnableController|mri: 'TICKER'}"]
-    tpart1 [shape=Mrecord label="{ScanTickerPart|name: 'x'}"]
-    tpart2 [shape=Mrecord label="{ScanTickerPart|name: 'y'}"]
+    controller [label=<RunnableController<BR/>mri: 'TICKER'>]
+    tpart1 [label=<ScanTickerPart<BR/>name: 'x'>]
+    tpart2 [label=<ScanTickerPart<BR/>name: 'y'>]
 
     subgraph cluster_control {
         label="Control"
@@ -122,10 +124,10 @@ Now let's see some of the Methods and Attributes that are created:
         controller -> tpart2
     }
 
-    block [shape=Mrecord label="{Block|mri: 'TICKER'}"]
-    configure [shape=Mrecord label="{Method|name: 'configure'}"]
-    run [shape=Mrecord label="{Method|name: 'run'}"]
-    state [shape=Mrecord label="{Attribute|name: 'state'}"]
+    block [label=<Block<BR/>mri: 'TICKER'>]
+    configure [label=<Method<BR/>name: 'configure'>]
+    run [label=<Method<BR/>name: 'run'>]
+    state [label=<Attribute<BR/>name: 'state'>]
 
     subgraph cluster_view {
         label="View"

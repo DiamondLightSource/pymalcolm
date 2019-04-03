@@ -13,10 +13,11 @@ util
 
     .. digraph:: stateful_states
 
+        newrank=true;  // Sensible ranking of clusters
         bgcolor=transparent
         compound=true
         rankdir=LR
-        node [fontname=Arial fontsize=10 shape=Mrecord style=filled fillcolor="#8BC4E9"]
+        node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
         graph [fontname=Arial fontsize=11]
         edge [fontname=Arial fontsize=10 arrowhead=vee]
         Fault [fillcolor="#F03232"]
@@ -44,10 +45,11 @@ util
 
     .. digraph:: manager_states
 
+        newrank=true;  // Sensible ranking of clusters
         bgcolor=transparent
         compound=true
         rankdir=LR
-        node [fontname=Arial fontsize=10 shape=Mrecord style=filled fillcolor="#8BC4E9"]
+        node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
         graph [fontname=Arial fontsize=11]
         edge [fontname=Arial fontsize=10 arrowhead=vee]
         Fault [fillcolor="#F03232"]
