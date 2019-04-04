@@ -1,18 +1,11 @@
-import sys
-
-
 class MalcolmException(Exception):
     """Base class for all Malcolm exceptions"""
     pass
 
 
-if sys.version_info < (3,):
-    # python 2
-    class TimeoutError(MalcolmException):
-        """The operation exceeded the given deadline"""
-        pass
-else:
-    TimeoutError = TimeoutError
+class TimeoutError(MalcolmException):
+    """The operation exceeded the given deadline"""
+    pass
 
 
 class AbortedError(MalcolmException):

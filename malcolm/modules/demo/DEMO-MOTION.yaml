@@ -1,0 +1,8 @@
+# Create some Blocks
+- demo.blocks.motion_block:
+    mri: MOTION
+    config_dir: /tmp
+
+# Add a webserver
+- web.blocks.web_server_block:
+    mri: WEB

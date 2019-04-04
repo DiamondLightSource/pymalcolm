@@ -1,5 +1,6 @@
 from .blockpart import BlockPart
-from .childpart import ChildPart, APartName, AMri, AInitialVisibility
+# Re-export APartName as subclasses of ChildPart may want to use it
+from .childpart import APartName, ChildPart, AMri, AInitialVisibility
 from .choicepart import ChoicePart
 from .float64part import Float64Part
 from .grouppart import GroupPart

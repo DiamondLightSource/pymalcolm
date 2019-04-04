@@ -16,7 +16,7 @@
     description: $(docstring)
 
 - scanning.parts.DatasetTablePart:
-    name: DSET
+    name: DATASETS
 
 - demo.parts.FileWritePart:
     name: DET

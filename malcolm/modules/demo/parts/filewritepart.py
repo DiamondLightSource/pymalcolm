@@ -4,12 +4,11 @@ import time
 import h5py
 import numpy as np
 from annotypes import add_call_types, Anno
-from scanpointgenerator import Point
+from scanpointgenerator import Point, CompoundGenerator
 
 from malcolm.core import Part, APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
-from malcolm.modules.scanning.infos import DatasetProducedInfo
-from malcolm.modules.scanning.util import DatasetType
+from ..util import make_gaussian_blob, interesting_pattern
 
 with Anno("Width of detector image"):
     AWidth = int
@@ -24,24 +23,6 @@ UID_PATH = "/entry/uid"
 
 # How often we flush in seconds
 FLUSH_PERIOD = 1
-
-
-def make_gaussian_blob(width, height):
-    x, y = np.meshgrid(np.linspace(-1, 1, width), np.linspace(-1, 1, height))
-    d = np.sqrt(x*x+y*y)
-    blob = np.exp(-d**2)
-    return blob
-
-
-def interesting_pattern(point):
-    # type: (Point) -> float
-    # Grab the x and y values out of the point
-    x = [v for k, v in sorted(point.positions.items()) if "x" in k.lower()][0]
-    y = [v for k, v in sorted(point.positions.items()) if "y" in k.lower()][0]
-    # Return a value between 0 and 1 based on a function that gives interesting
-    # pattern on x and y in range -10:10
-    z = 0.5 + (np.sin(x)**10 + np.cos(10 + y*x) * np.cos(x))/2
-    return z
 
 
 class FileWritePart(Part):
@@ -66,24 +47,17 @@ class FileWritePart(Part):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(FileWritePart, self).setup(registrar)
+        # Hooks
+        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook((scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook), self.seek)
+        registrar.hook((scanning.hooks.RunHook,
+                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook((scanning.hooks.AbortHook,
+                        builtin.hooks.ResetHook), self.reset)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
-        # Hooks
-        self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
-        self.register_hooked((scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook), self.seek)
-        self.register_hooked((scanning.hooks.RunHook,
-                              scanning.hooks.ResumeHook), self.run)
-        self.register_hooked((scanning.hooks.AbortHook,
-                              builtin.hooks.ResetHook), self.reset)
-
-    @add_call_types
-    def reset(self):
-        # type: () -> None
-        if self._hdf:
-            self._hdf.close()
-            self._hdf = None
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
@@ -97,6 +71,7 @@ class FileWritePart(Part):
                   fileTemplate="%s.h5",  # type: scanning.util.AFileTemplate
                   ):
         # type: (...) -> scanning.hooks.UInfos
+        """On `ConfigureHook` create HDF file with datasets"""
         # Store args
         self._completed_steps = completed_steps
         self._steps_to_do = steps_to_do
@@ -105,60 +80,33 @@ class FileWritePart(Part):
         # Work out where to write the file
         filename = fileTemplate % formatName
         filepath = os.path.join(fileDir, filename)
-        # The generator tells us what dimensions our scan should be. The dataset
-        # will grow, so start off with the smallest we need
-        initial_shape = tuple(1 for _ in generator.shape)
-        # Write the initial dataset structure
-        with h5py.File(filepath, "w", libver="latest") as hdf:
-            # The detector dataset containing the simulated data
-            hdf.create_dataset(
-                DATA_PATH, dtype=np.uint8,
-                shape=initial_shape + (self._height, self._width),
-                maxshape=generator.shape + (self._height, self._width))
-            # Make the scalar datasets
-            for path, dtype in {
-                    UID_PATH: np.int32, SUM_PATH: np.float64}.items():
-                hdf.create_dataset(
-                    path, dtype=dtype,
-                    shape=initial_shape + (1, 1),
-                    maxshape=generator.shape + (1, 1))
-        # Re-open the file in swmr mode
-        self._hdf = h5py.File(filepath, "a", libver="latest", swmr=True)
+        # Make the HDF file
+        self._hdf = self._create_hdf(filepath, generator)
         # Tell everyone what we're going to make
         infos = [
             # Main dataset
-            DatasetProducedInfo(
+            scanning.infos.DatasetProducedInfo(
                 name="%s.data" % formatName,
                 filename=filename,
-                type=DatasetType.PRIMARY,
+                type=scanning.util.DatasetType.PRIMARY,
                 rank=len(generator.shape) + 2,
                 path=DATA_PATH,
                 uniqueid=UID_PATH),
             # Sum
-            DatasetProducedInfo(
+            scanning.infos.DatasetProducedInfo(
                 name="%s.sum" % formatName,
                 filename=filename,
-                type=DatasetType.SECONDARY,
+                type=scanning.util.DatasetType.SECONDARY,
                 rank=len(generator.shape) + 2,
                 path=SUM_PATH,
                 uniqueid=UID_PATH)]
         return infos
 
-    @add_call_types
-    def seek(self,
-             completed_steps,  # type: scanning.hooks.ACompletedSteps
-             steps_to_do,  # type: scanning.hooks.AStepsToDo
-             ):
-        # type: (...) -> None
-        # Skip the uid so it is guaranteed to be unique
-        self._uid_offset = self._completed_steps + self._steps_to_do - \
-                           completed_steps
-        self._completed_steps = completed_steps
-        self._steps_to_do = steps_to_do
-
+    # For docs: Before run
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
+        """On `RunHook`, `ResumeHook` record where to next take data"""
         # Start time so everything is relative
         point_time = time.time()
         last_flush = point_time
@@ -182,6 +130,50 @@ class FileWritePart(Part):
         # Do one last flush and then we're done
         self._flush_datasets()
 
+    @add_call_types
+    def seek(self,
+             completed_steps,  # type: scanning.hooks.ACompletedSteps
+             steps_to_do,  # type: scanning.hooks.AStepsToDo
+             ):
+        # type: (...) -> None
+        """On `SeekHook`, `PostRunArmedHook` record where to next take data"""
+        # Skip the uid so it is guaranteed to be unique
+        self._uid_offset = self._completed_steps + self._steps_to_do - \
+            completed_steps
+        self._completed_steps = completed_steps
+        self._steps_to_do = steps_to_do
+
+    @add_call_types
+    def reset(self):
+        # type: () -> None
+        """On `AbortHook`, `ResetHook` close HDF file if it exists"""
+        if self._hdf:
+            self._hdf.close()
+            self._hdf = None
+
+    def _create_hdf(self, filepath, generator):
+        # type: (str, CompoundGenerator) -> h5py.File
+        # The generator tells us what dimensions our scan should be. The dataset
+        # will grow, so start off with the smallest we need
+        initial_shape = tuple(1 for _ in generator.shape)
+        # Write the initial dataset structure
+        with h5py.File(filepath, "w", libver="latest") as hdf:
+            # The detector dataset containing the simulated data
+            hdf.create_dataset(
+                DATA_PATH, dtype=np.uint8,
+                shape=initial_shape + (self._height, self._width),
+                maxshape=generator.shape + (self._height, self._width))
+            # Make the scalar datasets
+            for path, dtype in {
+                    UID_PATH: np.int32, SUM_PATH: np.float64}.items():
+                hdf.create_dataset(
+                    path, dtype=dtype,
+                    shape=initial_shape + (1, 1),
+                    maxshape=generator.shape + (1, 1))
+        # Re-open the file in swmr mode
+        hdf = h5py.File(filepath, "a", libver="latest", swmr=True)
+        return hdf
+
     def _write_data(self, point, step):
         # type: (Point, int) -> None
         point_needs_shape = tuple(x + 1 for x in point.indexes) + (1, 1)
@@ -202,15 +194,3 @@ class FileWritePart(Part):
         # Note that UID comes last so anyone monitoring knows the data is there
         for path in (DATA_PATH, SUM_PATH, UID_PATH):
             self._hdf[path].flush()
-
-
-
-
-
-
-
-
-
-
-
-

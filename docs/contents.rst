@@ -13,9 +13,10 @@ Contents
 
     tutorials/hello
     tutorials/counter
-    tutorials/generator
-    tutorials/areadetector
+    tutorials/motion
+    tutorials/detector
     tutorials/scanning
+    tutorials/areadetector
 
 .. _reference-doc:
 

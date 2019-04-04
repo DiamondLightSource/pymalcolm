@@ -36,14 +36,13 @@ It creates the Methods and Attributes you would expect:
     edge [fontname=Arial fontsize=10 arrowhead=none]
 
     subgraph cluster_control {
-        label="Control"
         controller [label=<BasicController<BR/>mri: 'COUNTER'>]
         cpart [label=<CounterPart<BR/>name: 'counter'>]
         controller -> cpart
+        label="Control"
     }
 
     subgraph cluster_view {
-        label="View"
         block [label=<Block<BR/>mri: 'COUNTER'>]
         zero [label=<Method<BR/>name: 'zero'>]
         increment [label=<Method<BR/>name: 'increment'>]
@@ -55,6 +54,7 @@ It creates the Methods and Attributes you would expect:
         block -> counter
         block -> delta
         block -> health
+        label="View"
     }
 
     {rank=same;controller block}
@@ -66,7 +66,6 @@ It creates the Methods and Attributes you would expect:
     cpart -> counter [style=dashed]
     cpart -> delta [style=dashed]
     controller -> block [arrowhead=vee dir=from style=dashed label=produces]
-
 
 Creating Attributes in a Part
 -----------------------------

@@ -53,43 +53,6 @@ class ConfigureParams(Serializable):
         self.axesToMove = AAxesToMove(axesToMove)
 
 
-class RunnableStates(ManagerStates):
-    CONFIGURING = "Configuring"
-    ARMED = "Armed"
-    RUNNING = "Running"
-    POSTRUN = "PostRun"
-    FINISHED = "Finished"
-    PAUSED = "Paused"
-    SEEKING = "Seeking"
-    ABORTING = "Aborting"
-    ABORTED = "Aborted"
-
-    def create_block_transitions(self):
-        super(RunnableStates, self).create_block_transitions()
-        # Set transitions for normal states
-        self.set_allowed(self.READY, self.CONFIGURING)
-        self.set_allowed(self.CONFIGURING, self.ARMED)
-        self.set_allowed(self.ARMED,
-                         self.RUNNING, self.SEEKING, self.RESETTING)
-        self.set_allowed(self.RUNNING, self.POSTRUN, self.SEEKING)
-        self.set_allowed(self.POSTRUN, self.FINISHED, self.ARMED, self.SEEKING)
-        self.set_allowed(self.FINISHED, self.SEEKING, self.RESETTING,
-                         self.CONFIGURING)
-        self.set_allowed(self.SEEKING, self.ARMED, self.PAUSED, self.FINISHED)
-        self.set_allowed(self.PAUSED, self.SEEKING, self.RUNNING)
-
-        # Add Abort to all normal states
-        normal_states = [
-            self.READY, self.CONFIGURING, self.ARMED, self.RUNNING,
-            self.POSTRUN, self.PAUSED, self.SEEKING, self.FINISHED]
-        for state in normal_states:
-            self.set_allowed(state, self.ABORTING)
-
-        # Set transitions for aborted states
-        self.set_allowed(self.ABORTING, self.ABORTED)
-        self.set_allowed(self.ABORTED, self.RESETTING)
-
-
 @Serializable.register_subclass("malcolm:core/PointGeneratorMeta:1.0")
 @VMeta.register_annotype_converter(CompoundGenerator)
 class PointGeneratorMeta(VMeta):
@@ -182,11 +145,11 @@ with Anno("Detector block mris"):
 with Anno("Exposure of each detector frame for the current scan"):
     AExposures = Array[float]
 with Anno("Number of detector frames for each generator point"):
-    AFramesPerPoints = Array[np.int32]
+    AFramesPerStep = Array[np.int32]
 UDetectorNames = Union[ADetectorNames, Sequence[str]]
 UDetectorMris = Union[ADetectorMris, Sequence[str]]
 UExposures = Union[AExposures, Sequence[float]]
-UFramesPerPoints = Union[AFramesPerPoints, Sequence[np.int32]]
+UFramesPerStep = Union[AFramesPerStep, Sequence[np.int32]]
 
 
 class DetectorTable(Table):
@@ -196,10 +159,50 @@ class DetectorTable(Table):
                  name,  # type: UDetectorNames
                  mri,  # type: UDetectorMris
                  exposure,  # type: UExposures
-                 framesPerPoint,  # type: UFramesPerPoints
+                 framesPerStep,  # type: UFramesPerStep
                  ):
         # type: (...) -> None
         self.name = ADetectorNames(name)
         self.mri = ADetectorMris(mri)
         self.exposure = AExposures(exposure)
-        self.framesPerPoint = AFramesPerPoints(framesPerPoint)
+        self.framesPerStep = AFramesPerStep(framesPerStep)
+
+
+class RunnableStates(ManagerStates):
+    """This state set covers controllers and parts that can be configured and
+    then run, and have the ability to pause and rewind"""
+
+    CONFIGURING = "Configuring"
+    ARMED = "Armed"
+    RUNNING = "Running"
+    POSTRUN = "PostRun"
+    FINISHED = "Finished"
+    PAUSED = "Paused"
+    SEEKING = "Seeking"
+    ABORTING = "Aborting"
+    ABORTED = "Aborted"
+
+    def create_block_transitions(self):
+        super(RunnableStates, self).create_block_transitions()
+        # Set transitions for normal states
+        self.set_allowed(self.READY, self.CONFIGURING)
+        self.set_allowed(self.CONFIGURING, self.ARMED)
+        self.set_allowed(self.ARMED,
+                         self.RUNNING, self.SEEKING, self.RESETTING)
+        self.set_allowed(self.RUNNING, self.POSTRUN, self.SEEKING)
+        self.set_allowed(self.POSTRUN, self.FINISHED, self.ARMED, self.SEEKING)
+        self.set_allowed(self.FINISHED, self.SEEKING, self.RESETTING,
+                         self.CONFIGURING)
+        self.set_allowed(self.SEEKING, self.ARMED, self.PAUSED, self.FINISHED)
+        self.set_allowed(self.PAUSED, self.SEEKING, self.RUNNING)
+
+        # Add Abort to all normal states
+        normal_states = [
+            self.READY, self.CONFIGURING, self.ARMED, self.RUNNING,
+            self.POSTRUN, self.PAUSED, self.SEEKING, self.FINISHED]
+        for state in normal_states:
+            self.set_allowed(state, self.ABORTING)
+
+        # Set transitions for aborted states
+        self.set_allowed(self.ABORTING, self.ABORTED)
+        self.set_allowed(self.ABORTED, self.RESETTING)

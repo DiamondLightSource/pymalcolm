@@ -9,6 +9,20 @@ that Device Layer that looks a bit like a simulated motor controller. Now let's
 put a `scan_layer_` Block on top that will control the underlying Device Blocks
 to work together to perform a scan.
 
+What is missing from these
+Hardware Blocks is the combilogic of "do this, then that, then these 3 things at the
+same time"
+
+These higher level Blocks have two main methods:
+
+- configure(params): Take a set of parameters and configure all child Blocks
+  according to these parameters. This operation should include as much as
+  possible of the setup of the device, without actually starting a scan.
+- run(): When all devices taking part in the scan have configured themselves,
+  this method will start the scan going. It supervises the actions of the
+  scan, providing status monitoring and any periodic actions that need to
+  happen.
+
 Block Hierarchy
 ---------------
 
@@ -311,7 +325,7 @@ We have now setup our 6x5 snake scan and we can see that it has the same
 If you now click the Run button on the SCAN window you will see the scan
 being performed:
 
-.. image:: scan_1.png
+.. image:: scanning_1.png
 
 This will write 30 frames to ``/tmp/DET.h5`` as the previous example. The reason
 the filename and dataset names are a little different is because the detector

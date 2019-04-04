@@ -1,10 +1,14 @@
 import collections
 
-from annotypes import Anno, Array, Union, Sequence
+from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
 
 from malcolm.compat import str_
 from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
     StateSet, DEFAULT_TIMEOUT
+
+if TYPE_CHECKING:
+    from typing import Type
+    from .parts import ChildPart
 
 with Anno("Is the attribute writeable?"):
     AWriteable = bool
@@ -101,6 +105,9 @@ def wait_for_stateful_block_init(context, mri, timeout=DEFAULT_TIMEOUT):
 
 
 class StatefulStates(StateSet):
+    """This state set covers controllers and parts that can be disabled and have
+    faults, but otherwise have no state."""
+
     RESETTING = "Resetting"
     DISABLED = "Disabled"
     DISABLING = "Disabling"
@@ -128,6 +135,9 @@ class StatefulStates(StateSet):
 
 
 class ManagerStates(StatefulStates):
+    """This state set covers controllers and parts that have loadable and savable
+    child state."""
+
     SAVING = "Saving"
     LOADING = "Loading"
 
@@ -139,18 +149,25 @@ class ManagerStates(StatefulStates):
         self.set_allowed(self.LOADING, self.READY)
 
 
-def no_save(*attrs):
+def no_save(*attribute_names):
+    """Helper for defining ChildPart.no_save_attribute_names.
+
+    Args:
+        attribute_names (str): The Attributes of the child Block that shouldn't
+            be saved
+    """
     def decorator(cls):
+        # type: (Type[ChildPart]) -> Type[ChildPart]
         additions = set()
-        for attr in attrs:
-            if isinstance(attr, collections.Iterable) \
-                    and not isinstance(attr, str_):
-                additions |= set(attr)
+        for attribute_name in attribute_names:
+            if isinstance(attribute_name, collections.Iterable) \
+                    and not isinstance(attribute_name, str_):
+                additions |= set(attribute_name)
             else:
-                additions.add(attr)
+                additions.add(attribute_name)
         bad = [x for x in additions if not isinstance(x, str_)]
         assert not bad, \
             "Cannot add non-string attribute names to no_save: %s" % bad
-        cls.no_save |= additions
+        cls.no_save_attribute_names |= additions
         return cls
     return decorator

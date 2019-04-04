@@ -1,26 +1,30 @@
 import re
 
-from annotypes import Anno, TYPE_CHECKING
+from annotypes import Anno, TYPE_CHECKING, TypeVar
 
 from malcolm.compat import OrderedDict
 from .context import Context
 from .request import Request
-from .hook import Hookable
+from .hook import Hookable, Hook
 from .info import Info
 from .camel import CAMEL_RE
 from .concurrency import Spawned
 from .models import MethodModel, AttributeModel, MethodMeta
-from .views import Block
+
+T = TypeVar("T")
 
 if TYPE_CHECKING:
-    from typing import Union, List, Tuple, Dict, Callable, Optional, Type
+    from typing import Union, List, Tuple, Dict, Callable, Optional, Type, \
+        Sequence
+
     Field = Union[AttributeModel, MethodModel]
     FieldDict = Dict[object, List[Tuple[str, Field, Callable]]]
     Callback = Callable[[object, Info], None]
+    Hooked = Callable[..., T]
+    ArgsGen = Callable[(List[str]), List[str]]
 
 with Anno("The name of the Part within the Controller"):
     APartName = str
-
 
 # Part names are alphanumeric with underscores and dashes. Dots not allowed as
 # web gui uses dot as "something that can't appear in field or part names"
@@ -133,6 +137,22 @@ class PartRegistrar(object):
         # type: () -> List[Tuple[str, Field, Callable]]
         """Get the field list that we have added"""
         return self._field_registry.fields[self]
+
+    def hook(self,
+             hooks,  # type: Union[Type[Hook], Sequence[Type[Hook]]]
+             func,  # type: Hooked
+             args_gen=None  # type: Optional[ArgsGen]
+             ):
+        """Register func to be run when any of the hooks are run by parent
+
+        Args:
+            hooks: A Hook class or list of Hook classes of interest
+            func: The callable that should be run on that Hook
+            args_gen: Optionally specify the argument names that should be
+                passed to func. If not given then use func.call_types.keys
+        """
+        # TODO: move the hook functionality here out of the part
+        self._part.register_hooked(hooks, func, args_gen)
 
     def add_method_model(self,
                          func,  # type: Callable

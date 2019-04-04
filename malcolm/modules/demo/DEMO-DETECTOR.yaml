@@ -1,6 +1,6 @@
 # Create some Blocks
-- demo.blocks.ticker_block:
-    mri: TICKER
+- demo.blocks.detector_block:
+    mri: DETECTOR
     config_dir: /tmp
 
 # Add a webserver

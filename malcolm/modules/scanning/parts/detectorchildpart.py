@@ -33,8 +33,8 @@ class DetectorChildPart(ChildPart):
                  ):
         # type: (...) -> None
         super(DetectorChildPart, self).__init__(name, mri, initial_visibility)
-        # frames per generator point given by the detector table at configure()
-        self.frames_per_point = 0
+        # frames per scan step given by the detector table at configure()
+        self.frames_per_step = 0
         # Stored between runs
         self.run_future = None  # type: Future
         # Hooks
@@ -67,6 +67,8 @@ class DetectorChildPart(ChildPart):
             child.abort()
         super(DetectorChildPart, self).reset(context)
 
+    # Must match those passed in configure() Method, so need to be camelCase
+    # noinspection PyPep8Naming
     @add_call_types
     def validate(self,
                  context,  # type: AContext
@@ -78,9 +80,9 @@ class DetectorChildPart(ChildPart):
                  ):
         # type: (...) -> UParameterTweakInfos
         # Work out if we are taking part
-        frames_per_point, kwargs = self._configure_args(
+        frames_per_step, kwargs = self._configure_args(
             generator, fileDir, detectors, axesToMove, fileTemplate)
-        if frames_per_point < 1:
+        if frames_per_step < 1:
             # We aren't
             return
         child = context.block_view(self.mri)
@@ -116,7 +118,7 @@ class DetectorChildPart(ChildPart):
                         fileTemplate="%s.h5",  # type: AFileTemplate
                         ):
         # type: (...) -> Tuple[int, Dict[str, Any]]
-        need_extra_dim = max(detectors.framesPerPoint) > 1
+        need_extra_dim = max(detectors.framesPerStep) > 1
         # Check the detector table to see what we need to do
         for name, mri, exposure, frames in detectors.rows():
             if name == self.name and frames > 0:
@@ -149,6 +151,8 @@ class DetectorChildPart(ChildPart):
             kwargs["exposure"] = exposure
         return frames, kwargs
 
+    # Must match those passed in configure() Method, so need to be camelCase
+    # noinspection PyPep8Naming
     @add_call_types
     def configure(self,
                   context,  # type: AContext
@@ -160,9 +164,9 @@ class DetectorChildPart(ChildPart):
                   ):
         # type: (...) -> UInfos
         # Work out if we are taking part
-        self.frames_per_point, kwargs = self._configure_args(
+        self.frames_per_step, kwargs = self._configure_args(
             generator, fileDir, detectors, axesToMove, fileTemplate)
-        if self.frames_per_point < 1:
+        if self.frames_per_step < 1:
             # We aren't taking part in the scan
             return
         child = context.block_view(self.mri)
@@ -178,7 +182,7 @@ class DetectorChildPart(ChildPart):
     @add_call_types
     def run(self, context):
         # type: (AContext) -> None
-        if self.frames_per_point < 1:
+        if self.frames_per_step < 1:
             # We aren't taking part in the scan
             return
         context.unsubscribe_all()
@@ -204,7 +208,7 @@ class DetectorChildPart(ChildPart):
     @add_call_types
     def post_run(self, context):
         # type: (AContext) -> None
-        if self.frames_per_point < 1:
+        if self.frames_per_step < 1:
             # We aren't taking part in the scan
             return
         context.wait_all_futures(self.run_future)
@@ -212,7 +216,7 @@ class DetectorChildPart(ChildPart):
     @add_call_types
     def seek(self, context, completed_steps):
         # type: (AContext, ACompletedSteps) -> None
-        if self.frames_per_point < 1:
+        if self.frames_per_step < 1:
             # We aren't taking part in the scan
             return
         # Clear out the update_completed_steps and match_future subscriptions
@@ -228,4 +232,4 @@ class DetectorChildPart(ChildPart):
 
     def update_completed_steps(self, value):
         # type: (int) -> None
-        self.registrar.report(RunProgressInfo(value // self.frames_per_point))
+        self.registrar.report(RunProgressInfo(value // self.frames_per_step))

@@ -16,6 +16,8 @@ Changed:
 - CSMove changed to explicitly tell the motor controller how long it should take 
   to do the move to start
 - Changed seeking to not allow it to stop on a configured_step boundary
+- Disable checking of scanpointgenerator units while GDA doesn't send the right
+  ones
 
 Added:
 
@@ -25,19 +27,22 @@ Added:
   
 Fixed:
 
-- caactionpart now waits for good status, prevents timeout errors when doing caputs
+- caactionpart now waits for good status, prevents timeout errors when doing
+  caputs
 
 
 `3-4`_ - 2019-03-28
 -------------------
+
 Added:
+
 - ADOdin VDS and nexus file generation
 - HDF Attributes control of NDAttributes written
 - Windows detector file path support
 - added precision and units to number attributes
 
+Fixed:
 
-Fixes
 - Update to malcolmjs 1.6.2 to fix cryptic errors
 
 
@@ -327,7 +332,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-3...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-4...HEAD
+.. _3-4: https://github.com/dls-controls/pymalcolm/compare/3-3...3-4
 .. _3-3: https://github.com/dls-controls/pymalcolm/compare/3-2...3-3
 .. _3-2: https://github.com/dls-controls/pymalcolm/compare/3-0...3-2
 .. _3-0: https://github.com/dls-controls/pymalcolm/compare/3-0b2...3-0

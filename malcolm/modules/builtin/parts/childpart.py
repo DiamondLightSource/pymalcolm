@@ -31,9 +31,9 @@ ss = StatefulStates
 
 
 class ChildPart(Part):
-    # Override in subclasses for the fields that we will put to and shouldn't
-    # be put to
-    no_save = set()
+    #: A set containing all the Attribute names of our child Block that we will
+    #: put to, so shouldn't be saved. Set this in subclasses using `no_save`
+    no_save_attribute_names = set()
 
     def notify_dispatch_request(self, request):
         # type: (Request) -> None
@@ -44,14 +44,16 @@ class ChildPart(Part):
             # so mark the field as "we_modified" so it doesn't screw up the
             # modified led
             attribute_name = request.path[-2]
-            if attribute_name not in self.no_save:
+            if attribute_name not in self.no_save_attribute_names:
                 self.log.warning(
                     "Part %s tried to set '%s' that is not in self.no_save. "
                     "This will stop the 'modified' attribute from working.",
                     self, attribute_name)
 
+    # For docs: before ChildPart init
     def __init__(self, name, mri, initial_visibility=None, stateful=True):
         # type: (APartName, AMri, AInitialVisibility, AStateful) -> None
+        # For docs: after ChildPart init
         super(ChildPart, self).__init__(name)
         self.stateful = stateful
         self.mri = mri
@@ -188,7 +190,7 @@ class ChildPart(Part):
         child = context.block_view(self.mri)
         part_structure = OrderedDict()
         for k in child:
-            if k not in self.no_save:
+            if k not in self.no_save_attribute_names:
                 attr = getattr(child, k)
                 if isinstance(attr, Attribute) and \
                         get_config_tag(attr.meta.tags):
@@ -254,7 +256,7 @@ class ChildPart(Part):
                     self.port_infos[field] = info
                 # If we are config tagged then subscribe so we can calculate
                 # if we are modified
-                if field not in self.no_save and get_config_tag(tags):
+                if field not in self.no_save_attribute_names and get_config_tag(tags):
                     if self.config_subscriptions:
                         new_id = max(self.config_subscriptions) + 1
                     else:

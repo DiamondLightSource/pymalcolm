@@ -1,12 +1,14 @@
 from annotypes import Anno, add_call_types
 
-from malcolm.core import PartRegistrar, APartName
+from malcolm.core import PartRegistrar
 from malcolm.modules import builtin
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = builtin.parts.APartName
+AMri = builtin.parts.AMri
 
 with Anno("The demand value to move our counter motor to"):
     ADemand = float
-# Pull re-used annotypes into our namespace in case we are subclassed
-AMri = builtin.parts.AMri
 
 
 # We will set these attributes on the child block, so don't save them
@@ -28,6 +30,7 @@ class MotorMovePart(builtin.parts.ChildPart):
     @add_call_types
     def move(self, demand):
         # type: (ADemand) -> None
+        """Move the motor instantly to the demand value"""
         child = self.registrar.context.block_view(self.mri)
         # "Move" the motor
         child.counter.put_value(demand)

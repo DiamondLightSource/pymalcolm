@@ -1,0 +1,28 @@
+digraph {
+    newrank=true;  // Sensible ranking of clusters
+    bgcolor=transparent
+    compound=true
+    rankdir=LR
+    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
+    graph [fontname=Arial fontsize=11]
+    edge [fontname=Arial fontsize=10 arrowhead=vee]
+    Fault [fillcolor="#F03232"]
+    Disabled [fillcolor="#AAAAAA"]
+
+    subgraph cluster_normal {
+        Ready [fillcolor="#BBE7BB"]
+        Resetting -> Ready
+    }
+    Resetting -> Disabling [ltail=cluster_normal label="disable()"]
+    Resetting -> Fault [ltail=cluster_normal label="on_error"]
+
+    Fault -> Resetting [label="reset()"]
+    Fault -> Disabling [label="disable()"]
+    Disabling -> Fault [label="on_error"]
+    Disabling -> Disabled
+    Disabled -> Resetting [label="reset()"]
+
+    label="Unlabelled transitions take place in response to internal actions\n
+           Labelled transitions are triggered externally.";
+    labelloc=bottom;
+}

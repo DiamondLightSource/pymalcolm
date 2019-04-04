@@ -43,10 +43,11 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
 
     def get_readout_time(self, child, duration):
         """Calculate the readout time of the detector from the EPICS driver:
-            - Set exposure and acquire period to same value
-            - Acquire period will be set to lowest acceptable value
-            - Difference will be readout time (this value is affected by
-              detector settings)
+
+        - Set exposure and acquire period to same value
+        - Acquire period will be set to lowest acceptable value
+        - Difference will be readout time (this value is affected by
+          detector settings)
         """
         child.exposure.put_value(duration)
         child.acquirePeriod.put_value(duration)

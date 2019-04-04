@@ -16,44 +16,49 @@ def generate_docs():
         if not os.path.isdir(os.path.join(modules_root, modulename)):
             continue
         module_build_dir = os.path.join(build_dir, modulename)
-        # Walk the tree finding documents
-        # {docname: section}
+
+        # Copy across any files that are in the docs dir of the module
+        module_docs = os.path.join(modules_root, modulename, "docs")
+        manual_gen_docs = []
+        if os.path.isdir(module_docs):
+            for fname in os.listdir(module_docs):
+                src_path = os.path.join(module_docs, fname)
+                dest_path = os.path.join(module_build_dir, fname)
+                if os.path.isfile(src_path):
+                    with open(src_path) as f:
+                        text = f.read()
+                    write_if_different(dest_path, text)
+                    manual_gen_docs.append(fname)
+
+        # Walk the tree finding documents that need to exist
+        # {doc_name: rst_name}
         documents = {}
         dirs = sorted(os.listdir(os.path.join(modules_root, modulename)))
+
         # Make any parameters and defines docs
-        for fname in ["parameters.py", "defines.py", "hooks.py", "infos.py",
-                      "util.py", "blocks", "includes", "controllers", "parts"]:
+        for fname in ["parameters.py", "defines.py", "infos.py", "util.py",
+                      "hooks.py", "blocks", "includes", "controllers", "parts"]:
             if fname in dirs:
                 if fname.endswith(".py"):
-                    fname = fname[:-3]
-                docname = "%s_api" % fname
-                section = "malcolm.modules.%s.%s" % (modulename, fname)
-                documents[docname] = section
+                    doc_name = fname[:-3]
+                else:
+                    doc_name = fname
+                rst_name = doc_name + "_api.rst"
+                documents[doc_name] = rst_name
+                if rst_name not in manual_gen_docs:
+                    # Make one up
+                    section = "malcolm.modules.%s.%s" % (modulename, doc_name)
+                    rst_path = os.path.join(module_build_dir, rst_name)
+                    make_automodule_doc(section, rst_path)
 
-        # Copy from the docs dir if it exists
-        module_docs = os.path.join(modules_root, modulename, "docs")
-        for docname, section in sorted(documents.items()):
-            src_path = os.path.join(module_docs, docname + ".rst")
-            rst_path = os.path.join(module_build_dir, docname + ".rst")
-            if os.path.exists(src_path):
-                with open(src_path) as rst:
-                    text = rst.read()
-                write_if_different(rst_path, text)
-            else:
-                # Or make one up
-                make_automodule_doc(section, rst_path)
-
-        # Add an index
-        src_path = os.path.join(module_docs, "index.rst")
-        rst_path = os.path.join(module_build_dir, "index.rst")
-        got_index = True
-        if os.path.exists(src_path):
-            with open(src_path) as rst:
-                text = rst.read()
-            write_if_different(rst_path, text)
+        # Add an index if we need to
+        if "index.rst" in manual_gen_docs:
+            got_index = True
         elif documents:
             # Or make one up
+            rst_path = os.path.join(module_build_dir, "index.rst")
             make_index_doc(modulename, rst_path, documents)
+            got_index = True
         else:
             got_index = False
 
@@ -103,8 +108,8 @@ def make_index_doc(modulename, rst_path, documents):
 
 """ % dict(modulename=modulename, underline="=" * len(modulename))
 
-    for doc in sorted(documents):
-        text += "    %s <%s.rst>\n" % (doc, doc)
+    for doc_name, rst_name in sorted(documents.items()):
+        text += "    %s <%s>\n" % (doc_name, rst_name)
 
     write_if_different(rst_path, text)
 

@@ -24,7 +24,7 @@
 - demo.blocks.counter_block:
     mri: $(mri):COUNTERY
 
-# Add Parts to use the Counter blocks within Ticker block
+# Add Parts to use the Counter blocks within Motion block
 - demo.parts.MotorMovePart:
     name: x
     mri: $(mri):COUNTERX

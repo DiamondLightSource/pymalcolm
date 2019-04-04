@@ -34,17 +34,16 @@ class MotionChildPart(builtin.parts.ChildPart):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(MotionChildPart, self).setup(registrar)
+        # Hooks
+        registrar.hook(scanning.hooks.PreConfigureHook, self.reload)
+        registrar.hook((scanning.hooks.ConfigureHook,
+                        scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook), self.configure)
+        registrar.hook((scanning.hooks.RunHook,
+                        scanning.hooks.ResumeHook), self.run)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
-        # Hooks
-        # TODO: Add this to CONTRIBUTING.rst
-        self.register_hooked(scanning.hooks.PreConfigureHook, self.reload)
-        self.register_hooked((scanning.hooks.ConfigureHook,
-                              scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook), self.configure)
-        self.register_hooked((scanning.hooks.RunHook,
-                              scanning.hooks.ResumeHook), self.run)
 
     # Allow CamelCase for arguments as they will be serialized by parent
     # noinspection PyPep8Naming

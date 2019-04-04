@@ -15,7 +15,7 @@ dist: setup.py $(wildcard malcolm/*/*.py)
 # Clean the module
 clean:
 	$(PYTHON) setup.py clean
-	rm -rf build dist *egg-info installed.files prefix docs/html
+	rm -rf build dist *egg-info installed.files prefix docs/html docs/build
 	find -name '*.pyc' -delete -or -name '*~' -delete
 
 # Install the built egg and keep track of what was installed

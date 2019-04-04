@@ -8,6 +8,9 @@ You should already know how to create a `block_` in the `device_layer_` using a
 the `hardware_layer_`. Now let's build this same kind of structure to control an
 `EPICS`_ `areaDetector`_ `simDetector`_ and its `plugin chain`_.
 
+
+
+
 Acquisition Strategy
 --------------------
 

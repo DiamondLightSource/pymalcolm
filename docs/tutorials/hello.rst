@@ -266,8 +266,6 @@ Here's a diagram showing who created those Methods and Attributes:
 
     subgraph cluster_control {
         label="Control"
-        labelloc="b"
-        height=120
         controller [label=<BasicController<BR/>mri: 'HELLO'>]
         hello [label=<HelloPart<BR/>name: 'hello'>]
         controller -> hello
@@ -275,8 +273,6 @@ Here's a diagram showing who created those Methods and Attributes:
 
     subgraph cluster_view {
         label="View"
-        labelloc="b"
-        height=120
         block [label=<Block<BR/>mri: 'HELLO'>]
         greet [label=<Method<BR/>name: 'greet'>]
         error [label=<Method<BR/>name: 'error'>]
