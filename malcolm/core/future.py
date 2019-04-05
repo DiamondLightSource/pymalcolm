@@ -40,7 +40,7 @@ class Future(object):
         Raises:
             TimeoutError: If the future didn't finish executing before the given
                 timeout.
-            exceptions.Exception: If the call raised then that exception will be
+            Exception: If the call raised then that exception will be
                 raised.
         """
         if self._state == self.RUNNING:

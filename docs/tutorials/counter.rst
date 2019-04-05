@@ -3,7 +3,7 @@
 Counter Tutorial
 ================
 
-.. py:currentmodule:: malcolm.core
+.. module:: malcolm.core
 
 You should already know how to run up a Malcolm `process_` with some `Blocks
 <block_>` that are each composed of `controller_` with `Parts <part_>`, and have
@@ -123,11 +123,10 @@ We then do the same with ``delta`` to register a second Attribute.
     actual data.
 
 In the two methods (zero and increment), we make use of the ``counter``
-AttributeModel. We can get its value by using the :attr:`~AttributeModel.value`
-attribute and set its value by calling the :meth:`~AttributeModel.set_value`
-method. This method will validate the new value using the `VMeta` object we
-created in ``__init__`` and notify any interested subscribers that something has
-changed.
+AttributeModel. We can get its value by using the ``value`` attribute and set
+its value by calling the :meth:`~AttributeModel.set_value` method. This method
+will validate the new value using the `VMeta` object we created in ``__init__``
+and notify any interested subscribers that something has changed.
 
 Visualising the Block with the GUI
 ----------------------------------
@@ -155,19 +154,15 @@ again::
     self.mri_list:
         ['HELLO', 'HELLO2', 'COUNTER', 'WEB']
 
-    Try:
-    hello = self.block_view("HELLO")
-    hello.greet("me")
+    # To create a view of an existing Block
+    block = self.block_view("<mri>")
 
-    or
+    # To create a proxy of a Block in another Malcolm
+    self.make_proxy("<client_comms_mri>", "<mri>")
+    block = self.block_view("<mri>")
 
-    gui(self.block_view("COUNTER"))
-
-    or
-
-    self.make_proxy("localhost:8008", "HELLO")
-    self.block_view("HELLO").greet("me")
-
+    # To view state of Blocks in a GUI
+    !firefox localhost:8008
 
     In [1]:
 

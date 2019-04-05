@@ -26,9 +26,9 @@ point in a scan that are needed by Malcolm:
   be at the  mid-point of a detector frame. This is needed for step scans and
   continuous scans.
 - The demand positions of those actuators at the upper and lower bounds (start
-  and end) of that detector frame. This is needed for continuous scans only so
-  that each detector frame is taken while the actuators were moving at a
-  constant velocity.
+  and end) of that detector frame. This is only needed for continuous scans
+  where each detector frame is taken while the actuators were moving rather than
+  a step scan where they are static.
 - The index in the data file that the frame should be stored. For grid based
   scans (like a snake scan) these will have the same dimensions as the demand
   positions. For non grid based scans (like a spiral scan) these will have
@@ -327,12 +327,12 @@ Running the demo
 
 Let's run up the example and give it a go::
 
-    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-TICKER.yaml
+    [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-DETECTOR.yaml
     Loading...
-    Python 2.7.3 (default, Nov  9 2013, 21:59:00)
+    Python 2.7.13 (default, Oct  3 2017, 11:17:53)
     Type "copyright", "credits" or "license" for more information.
 
-    IPython 2.1.0 -- An enhanced Interactive Python.
+    IPython 5.4.1 -- An enhanced Interactive Python.
     ?         -> Introduction and overview of IPython's features.
     %quickref -> Quick reference.
     help      -> Python's own help system.
@@ -344,19 +344,15 @@ Let's run up the example and give it a go::
     self.mri_list:
         ['COUNTERX', 'COUNTERY', 'TICKER', 'WEB']
 
-    Try:
-    hello = self.block_view("HELLO")
-    print hello.greet("me")
+    # To create a view of an existing Block
+    block = self.block_view("<mri>")
 
-    or
+    # To create a proxy of a Block in another Malcolm
+    self.make_proxy("<client_comms_mri>", "<mri>")
+    block = self.block_view("<mri>")
 
-    gui(self.block_view("COUNTER"))
-
-    or
-
-    self.make_proxy("localhost:8008", "HELLO")
-    print self.block_view("HELLO").greet("me")
-
+    # To view state of Blocks in a GUI
+    !firefox localhost:8008
 
     In [1]:
 
@@ -366,9 +362,9 @@ Then enter::
 
     In [2]: from scanpointgenerator.plotgenerator import plot_generator
 
-    In [3]: yline = LineGenerator("y", "mm", 0., 1., 6)
+    In [3]: yline = LineGenerator("y", "mm", -1, 0, 6)
 
-    In [4]: xline = LineGenerator("x", "mm", 0., 1., 5, alternate=True)
+    In [4]: xline = LineGenerator("x", "mm", 4, 5, 5, alternate=True)
 
     In [5]: generator = CompoundGenerator([yline, xline], [], [], duration=0.5)
 
@@ -376,7 +372,7 @@ We can then see what this generator looks like::
 
     In [6]: plot_generator(generator)
 
-.. image:: ticker_0.png
+.. image:: detector_0.png
 
 What we have done here is set up a scan that is 6 rows in y and 5 columns in x.
 The x value will snake forwards and backwards, and the y value will increase
@@ -385,57 +381,69 @@ at the end of each x row. We have told it that each scan point should last for
 scan that we wanted to do then we can either configure from the terminal, or
 dump the JSON so we can use the GUI. Let's do the latter::
 
-    In [7]: from malcolm.core import json_encode
+    In [7]: from annotypes import json_encode
 
     In [8]: json_encode(generator)
-    Out[8]: '{"typeid": "scanpointgenerator:generator/CompoundGenerator:1.0", "excluders": [], "continuous": true, "generators": [{"typeid": "scanpointgenerator:generator/LineGenerator:1.0", "alternate": false, "axes": ["y"], "stop": [1.0], "start": [0.0], "units": ["mm"], "size": 6}, {"typeid": "scanpointgenerator:generator/LineGenerator:1.0", "alternate": true, "axes": ["x"], "stop": [1.0], "start": [0.0], "units": ["mm"], "size": 5}], "duration": 0.5, "mutators": []}'
+    Out[8]: '{"typeid": "scanpointgenerator:generator/CompoundGenerator:1.0", "generators": [{"typeid": "scanpointgenerator:generator/LineGenerator:1.0", "axes": ["y"], "units": ["mm"], "start": [0.0], "stop": [1.0], "size": 6, "alternate": false}, {"typeid": "scanpointgenerator:generator/LineGenerator:1.0", "axes": ["x"], "units": ["mm"], "start": [0.0], "stop": [1.0], "size": 5, "alternate": true}], "excluders": [], "mutators": [], "duration": 0.5, "continuous": true}'
 
-Then we can open http://localhost:8008/gui/TICKER/layout to see the **TICKER**
-Block on the left, and the layout of child Blocks in the centre. If we then
-click AutoLayout we can see more clearly, and clicking on one of the Blocks
-will display it in the right pane:
+Then we can open http://localhost:8008/gui/DETECTOR to see the **DETECTOR**
+Block on the left. If we expand the Configure method and click Edit by the
+Generator field we can paste in our JSON:
 
-.. image:: ticker_1.png
+.. image:: detector_1.png
 
-If we expand the Configure method and click Edit by the Generator field we can
-paste in our JSON:
+If we set fileDir to "/tmp", then click Configure, we will see the State change
+to Armed. We can then click on the "VIEW" button next to "Datasets" to see
+what the detector will write. Here we see that it will make a primary dataset
+in (containing detector data) ``/entry/data``, and a secondary dataset
+(containing summary data calculated from the detector data) ``/entry/sum``.
+Both of these will be written to a file called ``det.h5`` in the fileDir:
 
-.. image:: ticker_2.png
+.. image:: detector_2.png
 
-We can then click Configure and we will see the State change to Armed. If we
-go back to the layout view and select the x block again, then click Run we will
-see the scan be performed:
+If we click on the info icon next to the "Completed Steps", and then
+select the Plot tab, then click the "Run" button on the left pane we will see
+the scan be performed:
 
-.. image:: ticker_3.png
+.. image:: detector_3.png
 
-We can then click on the info icon next to the counter attribute in the right
-hand window to see a table or plot of the values that the ticker went to:
+We can then view the data that the detector wrote from our iPython terminal.
+We read the HDF file we have produced, copy the dataset, close the file, and
+check the shape of the dataset to see that it does indeed have rank 4::
 
-.. image:: ticker_4.png
+    In [13]: import h5py
 
-From here you can try pausing, resuming and seeking within the scan. If you want
-to re-run the scan you will need to click Configure again.
+    In [10]: with h5py.File("/tmp/det.h5") as f:
+        ...:     im = f["/entry/sum"][:]
+        ...:
 
-.. seealso::
-    `RunnableStates` has more information about what functions you can
-    run in different Block states.
+    In [11]: im.shape
+    Out[11]: (6, 5, 1, 1)
 
-What is happening under the hood is that our hooked ``configure()`` method is
-being called during ``pause()``, ``configure()`` and ``seek()``, but we want it
-to do the same thing each time so can use the same method.  The ``run()``
-command is likewise hooked to both ``run()`` and ``resume()`` as it makes no
-difference in our example. In a real example, there may be some device state
-that would mean different things need to be run in these two hooks.
+The sum dataset has the same rank as the detector data, so we need to squash
+those last two dimensions down so that we can plot it. We do that using the
+reshape function, then we show the resulting (6, 5) dataset::
+
+    In [12]: from pylab import imshow, show
+
+    In [13]: imshow(im.reshape(im.shape[:2]))
+    Out[13]: <matplotlib.image.AxesImage at 0x7f11a300b090>
+
+    In [14]: show()
+
+.. image:: detector_4.png
+
+From here you can try modifying the generator to make a bigger, faster scan,
+pressing Configure then Run again.
 
 Conclusion
 ----------
 
 This tutorial has given us an understanding of how scans are specified in
-Malcolm, how child Hardware Blocks are controlled from a parent Device Block and
-how Parts can register code to run at different phases of a Controller. In the
-next tutorial we will see how to make an `EPICS`_ `areaDetector`_ Block in the
-`device_layer_` capable of performing scans.
-
+Malcolm, the configure/run State Machine that Malcolm implements, and
+how Parts can register code to run at different phases of a Controller.
+In the next tutorial we will see how to create a Block in the
+`scan_layer_` to co-ordinate a detector and a motion controller.
 
 .. _protected variables:
     https://radek.io/2011/07/21/private-protected-and-public-in-python

@@ -7,15 +7,16 @@ from .define import Define
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
     UnexpectedError, YamlError, FieldError, NotWriteableError
 from .future import Future
-from .hook import Hook
+from .hook import Hook, Hookable
 from .info import Info
 from .loggable import Loggable
-from .models import BlockModel, AttributeModel, MethodModel, \
-    BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, Model, Display, \
-    ALimitLow, ALimitHigh, APrecision, AUnits, MethodMeta, \
+from .models import BlockModel, AttributeModel, MethodModel, MapMeta, \
+    MethodLog, BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, Model, Display, \
+    ALimitLow, ALimitHigh, APrecision, AUnits, MethodMeta, NTScalarArray, \
     ChoiceMeta, NumberArrayMeta, NumberMeta, StringArrayMeta, StringMeta, \
     TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion, NTScalar, BlockMeta
 from .moduleutil import submodule_all
+from .notifier import Notifier
 from .part import Part, PartRegistrar, APartName
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
     ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos
@@ -31,4 +32,4 @@ from .timestamp import TimeStamp
 from .views import Attribute, Method, Block
 
 # Make a nice namespace
-__all__ = submodule_all(globals())
+__all__ = submodule_all(globals(), only_classes=False)

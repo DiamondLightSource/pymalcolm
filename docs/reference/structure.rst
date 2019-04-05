@@ -104,7 +104,7 @@ An Attribute looks like this::
 
 
 The structures are very similar, and all hold the current value in whatever
-type is appropriate for the Attribute. Each structure contains a `meta` field
+type is appropriate for the Attribute. Each structure contains a ``meta`` field
 that describes the values that are allowed to be passed to the value field of
 the structure::
 

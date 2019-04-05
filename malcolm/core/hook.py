@@ -35,6 +35,7 @@ def make_args_gen(func):
 
 
 class Hookable(Loggable, WithCallTypes):
+    """Baseclass of something that can be attached to a hook"""
     name = None  # type: str
     hooked = None  # type: Dict[Type[Hook], Tuple[Hooked, ArgsGen]]
 

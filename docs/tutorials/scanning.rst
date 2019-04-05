@@ -257,10 +257,10 @@ Let's start up the example and see it in action::
 
     [me@mypc pymalcolm]$ ./malcolm/imalcolm.py malcolm/modules/demo/DEMO-SCANNING.yaml
     Loading...
-    Python 2.7.3 (default, Nov  9 2013, 21:59:00)
+    Python 2.7.13 (default, Oct  3 2017, 11:17:53)
     Type "copyright", "credits" or "license" for more information.
 
-    IPython 2.1.0 -- An enhanced Interactive Python.
+    IPython 5.4.1 -- An enhanced Interactive Python.
     ?         -> Introduction and overview of IPython's features.
     %quickref -> Quick reference.
     help      -> Python's own help system.
@@ -272,19 +272,15 @@ Let's start up the example and see it in action::
     self.mri_list:
         ['DETECTOR:DRV', 'DETECTOR:STAT', 'DETECTOR:POS', 'DETECTOR:HDF5', 'DETECTOR', 'COUNTERX', 'COUNTERY', 'TICKER', 'SCAN', 'WEB']
 
-    Try:
-    hello = self.block_view("HELLO")
-    print hello.greet("me")
+    # To create a view of an existing Block
+    block = self.block_view("<mri>")
 
-    or
+    # To create a proxy of a Block in another Malcolm
+    self.make_proxy("<client_comms_mri>", "<mri>")
+    block = self.block_view("<mri>")
 
-    gui(self.block_view("COUNTER"))
-
-    or
-
-    self.make_proxy("localhost:8008", "HELLO")
-    print self.block_view("HELLO").greet("me")
-
+    # To view state of Blocks in a GUI
+    !firefox localhost:8008
 
     In [1]:
 
@@ -335,6 +331,22 @@ if not specified. In ``scan_block.yaml`` we defined the
 of the written file. Apart from this, the file is identical to previous example.
 
 
+
+pausing, resuming and seeking within the scan. If you want
+to re-run the scan you will need to click Configure again.
+
+.. seealso::
+    `RunnableStates` has more information about what functions you can
+    run in different Block states.
+
+What is happening under the hood is that our hooked ``configure()`` method is
+being called during ``pause()``, ``configure()`` and ``seek()``, but we want it
+to do the same thing each time so can use the same method.  The ``run()``
+command is likewise hooked to both ``run()`` and ``resume()`` as it makes no
+difference in our example. In a real example, there may be some device state
+that would mean different things need to be run in these two hooks.
+
+
 Conclusion
 ----------
 
@@ -342,3 +354,6 @@ This tutorial has given us an understanding of how a `scan_layer_` Block can
 co-ordinate various `device_layer_` Blocks to perform a continuous scan. In the
 next tutorial we will see how to wire up some real hardware to perform a
 continuous scan.
+In the
+next tutorial we will see how to make an `EPICS`_ `areaDetector`_ Block in the
+`device_layer_` capable of performing scans.

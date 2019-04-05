@@ -258,19 +258,15 @@ def main():
 self.mri_list:
     %s
 
-Try:
-hello = self.block_view("HELLO")
-hello.greet("me")
+# To create a view of an existing Block
+block = self.block_view("<mri>")
+ 
+# To create a proxy of a Block in another Malcolm
+self.make_proxy("<client_comms_mri>", "<mri>")
+block = self.block_view("<mri>")
 
-or
-
-gui(self.block_view("COUNTER"))
-
-or
-
-self.make_proxy("localhost:8008", "HELLO")
-self.block_view("HELLO").greet("me")
-""" % (self.mri_list,)
+# To view state of Blocks in a GUI
+!firefox localhost:8008""" % (self.mri_list,)
 
     try:
         import IPython
