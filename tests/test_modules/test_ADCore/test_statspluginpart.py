@@ -23,6 +23,8 @@ class TestStatsPluginPart(ChildTestCase):
         self.o = StatsPluginPart(name="m", mri="BLOCK-STAT")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
+        assert list(self.o.no_save_attribute_names) == [
+            "attributesFile", "enableCallbacks", "computeStatistics"]
         infos = self.o.report_status()
         assert len(infos) == 1
         assert infos[0].name == "sum"

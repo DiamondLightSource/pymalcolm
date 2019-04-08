@@ -13,7 +13,7 @@ from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
 from ..util import StatefulStates, wait_for_stateful_block_init
 
 if TYPE_CHECKING:
-    from typing import Dict, Any, List, Type, TypeVar, Tuple
+    from typing import Dict, Any, List, Type, TypeVar, Tuple, Set
 
     TP = TypeVar("TP", bound=PortInfo)
 
@@ -31,9 +31,13 @@ ss = StatefulStates
 
 
 class ChildPart(Part):
-    # Override in subclasses for the fields that we will put to and shouldn't
-    # be put to
-    no_save = set()
+    #: A set containing all the Attribute names of our child Block that we will
+    #: put to, so shouldn't be saved. Set this in subclasses using `no_save`
+    no_save_attribute_names = None  # type: Set[str]
+
+    def _unmanaged_attr(self, attr_name):
+        return not self.no_save_attribute_names or (
+                attr_name not in self.no_save_attribute_names)
 
     def notify_dispatch_request(self, request):
         # type: (Request) -> None
@@ -43,8 +47,9 @@ class ChildPart(Part):
             # This means the context we were passed has just made a Put request
             # so mark the field as "we_modified" so it doesn't screw up the
             # modified led
+            # TODO: does this moan during load?
             attribute_name = request.path[-2]
-            if attribute_name not in self.no_save:
+            if self._unmanaged_attr(attribute_name):
                 self.log.warning(
                     "Part %s tried to set '%s' that is not in self.no_save. "
                     "This will stop the 'modified' attribute from working.",
@@ -182,7 +187,7 @@ class ChildPart(Part):
         child = context.block_view(self.mri)
         part_structure = OrderedDict()
         for k in child:
-            if k not in self.no_save:
+            if self._unmanaged_attr(k):
                 attr = getattr(child, k)
                 if isinstance(attr, Attribute) and \
                         get_config_tag(attr.meta.tags):
@@ -238,7 +243,7 @@ class ChildPart(Part):
                     self.port_infos[field] = info
                 # If we are config tagged then subscribe so we can calculate
                 # if we are modified
-                if field not in self.no_save and get_config_tag(tags):
+                if self._unmanaged_attr(field) and get_config_tag(tags):
                     if self.config_subscriptions:
                         new_id = max(self.config_subscriptions) + 1
                     else:

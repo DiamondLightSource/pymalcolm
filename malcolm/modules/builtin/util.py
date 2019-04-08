@@ -151,6 +151,7 @@ def no_save(*attrs):
         bad = [x for x in additions if not isinstance(x, str_)]
         assert not bad, \
             "Cannot add non-string attribute names to no_save: %s" % bad
-        cls.no_save |= additions
+        existing = cls.no_save_attribute_names or set()
+        cls.no_save_attribute_names = existing | additions
         return cls
     return decorator
