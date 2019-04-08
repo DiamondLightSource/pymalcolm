@@ -83,6 +83,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
             child.attributesFile.put_value_async(attributes_filename))
         context.wait_all_futures(fs)
 
+    @add_call_types
     def reset(self, context):
         # type: (scanning.hooks.AContext) -> None
         super(StatsPluginPart, self).reset(context)

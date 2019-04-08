@@ -4,7 +4,7 @@ import logging
 from annotypes import TYPE_CHECKING, Anno, WithCallTypes, Any, Generic, \
     TypeVar, Sequence
 
-from malcolm.compat import OrderedDict
+from malcolm.compat import OrderedDict, getargspec
 from .concurrency import Queue, Spawned
 from .errors import AbortedError
 from .loggable import Loggable
@@ -26,6 +26,13 @@ if TYPE_CHECKING:
 def make_args_gen(func):
     # type: (Callable) -> ArgsGen
     call_types = getattr(func, "call_types", {})
+    arg_spec = getargspec(func)
+    need_args = [k for k in arg_spec.args if k != "self"]
+
+    if need_args and not call_types:
+        raise TypeError(
+            "Function %s takes arguments but doesn't have call_types. Did you "
+            "forget to decorate with @add_call_types?" % func)
 
     def args_gen(keys):
         # type: (List[str]) -> List[str]

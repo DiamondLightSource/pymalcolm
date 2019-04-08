@@ -1,3 +1,4 @@
+import inspect
 import threading
 import logging
 import sys
@@ -48,6 +49,15 @@ def get_profiler_dir():
 
 def get_stack_size():
     return int(os.environ.get("PYMALCOLM_STACK_SIZE", "0"))
+
+
+def getargspec(f):
+    if sys.version_info < (3,):
+        args, varargs, keywords, defaults = inspect.getargspec(f)
+    else:
+        # Need to use fullargspec in case there are annotations
+        args, varargs, keywords, defaults = inspect.getfullargspec(f)[:4]
+    return inspect.ArgSpec(args, varargs, keywords, defaults)
 
 
 def et_to_string(element):
