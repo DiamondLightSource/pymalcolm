@@ -34,13 +34,11 @@ else:
     long_ = int  # pylint:disable=invalid-name
 
 
-if os.environ.get("PYMALCOLM_FULL_ORDEREDDICT", "YES")[0].upper() == "Y":
-    try:
-        # ruamel exists
-        from ruamel.ordereddict import ordereddict as OrderedDict
-    except ImportError:
-        from collections import OrderedDict
-else:
+try:
+    # ruamel exists, us this OrderedDict as it is faster
+    from ruamel.ordereddict import ordereddict as OrderedDict
+except ImportError:
+    # Fallback to slower collections one
     from collections import OrderedDict
 
 

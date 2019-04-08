@@ -4,10 +4,6 @@ python:
   - "3.5"
   - "3.6"
 
-env:
-    - PYMALCOLM_FULL_ORDEREDDICT=NO
-    - PYMALCOLM_FULL_ORDEREDDICT=YES
-
 addons:
   apt:
     packages:
@@ -32,6 +28,7 @@ install:
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
   - pip install "setuptools>=36"
+  - pip install setuptools_dso epicscorelibs
   - pip install -r requirements/test.txt
   - pip install codecov
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
@@ -65,4 +62,3 @@ deploy:
     tags: true
     # As we are doing a source dist, only deploy for one python in matrix
     python: "3.6"
-    condition: PYMALCOLM_FULL_ORDEREDDICT = YES
