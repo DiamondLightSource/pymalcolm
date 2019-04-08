@@ -22,5 +22,5 @@ class TestIconPart(unittest.TestCase):
         assert self.o.attr.meta.description == "SVG icon for the Block"
         assert self.o.attr.meta.tags == ["widget:icon"]
         assert self.c.field_registry.fields[self.o] == [(
-            "icon", self.o.attr, None
+            "icon", self.o.attr, None, False
         )]

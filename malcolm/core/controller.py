@@ -55,16 +55,14 @@ class Controller(Hookable):
         self.field_registry = FieldRegistry()
         self.info_registry = InfoRegistry()
 
-    def _setup_part(self, part, process):
+    def _setup_part(self, part):
         # type: (Part, Process) -> None
-        part.setup(PartRegistrar(
-            self.field_registry, self.info_registry, part, Context(process)
-        ))
+        part.setup(PartRegistrar(self.field_registry, self.info_registry, part))
 
     def setup(self, process):
         # type: (Process) -> None
         for part in self.parts.values():
-            self._setup_part(part, process)
+            self._setup_part(part)
         # Store this after, so that part reports can tell that we aren't ready
         # for Block updates yet
         self.process = process
@@ -78,12 +76,19 @@ class Controller(Hookable):
         if self.process is not None:
             # If we added a part after we were setup ourselves, then setup the
             # part now
-            self._setup_part(part, self.process)
+            self._setup_part(part)
 
-    def add_block_field(self, name, child, writeable_func):
+    def add_block_field(self, name, child, writeable_func, needs_context):
         # type: (str, Field, Callable[..., Any]) -> None
         if writeable_func:
-            self._write_functions[name] = writeable_func
+            if needs_context:
+                # Wrap func
+                def func_wrapper(*args, **kwargs):
+                    return writeable_func(
+                        Context(self.process), *args, **kwargs)
+                self._write_functions[name] = func_wrapper
+            else:
+                self._write_functions[name] = writeable_func
             child.meta.set_writeable(True)
         if not child.meta.label:
             child.meta.set_label(camel_to_title(name))
@@ -92,8 +97,8 @@ class Controller(Hookable):
     def add_initial_part_fields(self):
         # type: () -> None
         for part_fields in self.field_registry.fields.values():
-            for name, child, writeable_func in part_fields:
-                self.add_block_field(name, child, writeable_func)
+            for name, child, writeable_func, needs_context in part_fields:
+                self.add_block_field(name, child, writeable_func, needs_context)
 
     @property
     @contextmanager

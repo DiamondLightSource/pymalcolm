@@ -25,12 +25,13 @@ class MotorMovePart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(MotorMovePart, self).setup(registrar)
         # Method
-        registrar.add_method_model(self.move, self.name + "Move")
+        registrar.add_method_model(
+            self.move, self.name + "Move", needs_context=True)
 
     @add_call_types
-    def move(self, demand):
-        # type: (ADemand) -> None
+    def move(self, context, demand):
+        # type: (builtin.hooks.AContext, ADemand) -> None
         """Move the motor instantly to the demand value"""
-        child = self.registrar.context.block_view(self.mri)
+        child = context.block_view(self.mri)
         # "Move" the motor
         child.counter.put_value(demand)

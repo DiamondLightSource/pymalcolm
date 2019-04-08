@@ -1,8 +1,8 @@
 import numpy as np
 from annotypes import add_call_types, Anno, Array
 
-from malcolm.core import PartRegistrar, Context, AttributeModel, BooleanMeta, \
-    config_tag, Widget, NumberMeta
+from malcolm.core import PartRegistrar, BooleanMeta, config_tag, Widget, \
+    NumberMeta
 from malcolm.modules import builtin
 from ..util import CS_AXIS_NAMES
 
@@ -63,9 +63,12 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(PmacTrajectoryPart, self).setup(registrar)
         # Add methods
-        registrar.add_method_model(self.write_profile, "writeProfile")
-        registrar.add_method_model(self.execute_profile, "executeProfile")
-        registrar.add_method_model(self.abort_profile, "abortProfile")
+        registrar.add_method_model(
+            self.write_profile, "writeProfile", needs_context=True)
+        registrar.add_method_model(
+            self.execute_profile, "executeProfile", needs_context=True)
+        registrar.add_method_model(
+            self.abort_profile, "abortProfile", needs_context=True)
         # Add Attributes
         registrar.add_attribute_model("outputTriggers", self.output_triggers,
                                       self.output_triggers.set_value)
@@ -75,6 +78,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def write_profile(self,
+                      context,  # type: builtin.hooks.AContext
                       timeArray,  # type: ATimeArray
                       csPort=None,  # type: ACSPort
                       velocityMode=None,  # type: AVelocityMode
@@ -90,7 +94,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                       z=None,  # type: ADemandTrajectory
                       ):
         # type: (...) -> None
-        child = self.registrar.context.block_view(self.mri)
+        child = context.block_view(self.mri)
         # The axes taking part in the scan
         use_axes = []
         for axis in CS_AXIS_NAMES:
@@ -133,9 +137,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         self.total_points += num_points
 
     @add_call_types
-    def execute_profile(self):
-        # type: (...) -> None
-        context = self.registrar.context
+    def execute_profile(self, context):
+        # type: (builtin.hooks.AContext) -> None
         child = context.block_view(self.mri)
         fs = context.subscribe([self.mri, "pointsScanned", "value"],
                                self.points_scanned.set_value)
@@ -149,9 +152,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             context.unsubscribe(fs)
 
     @add_call_types
-    def abort_profile(self):
-        # type: (...) -> None
-        child = self.registrar.context.block_view(self.mri)
+    def abort_profile(self, context):
+        # type: (builtin.hooks.AContext) -> None
+        child = context.block_view(self.mri)
         child.abortProfile()
-
-

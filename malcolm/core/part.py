@@ -18,7 +18,7 @@ if TYPE_CHECKING:
         Sequence
 
     Field = Union[AttributeModel, MethodModel]
-    FieldDict = Dict[object, List[Tuple[str, Field, Callable]]]
+    FieldDict = Dict[object, List[Tuple[str, Field, Callable, bool]]]
     Callback = Callable[[object, Info], None]
     Hooked = Callable[..., T]
     ArgsGen = Callable[(List[str]), List[str]]
@@ -39,7 +39,7 @@ class FieldRegistry(object):
     def get_field(self, name):
         # type: (str) -> Field
         for fields in self.fields.values():
-            for (n, field, _) in fields:
+            for (n, field, _, _) in fields:
                 if n == name:
                     return field
         raise ValueError("No field named %s found" % (name,))
@@ -49,13 +49,30 @@ class FieldRegistry(object):
                          name=None,  # type: Optional[str]
                          description=None,  # type: Optional[str]
                          owner=None,  # type: object
+                         needs_context=False  # type: bool
                          ):
         # type: (...) -> MethodModel
         """Register a function to be added to the block"""
         if name is None:
             name = func.__name__
-        method = MethodModel(meta=MethodMeta.from_callable(func, description))
-        self._add_field(owner, name, method, func)
+        if needs_context:
+            call_types = getattr(func, "call_types", {})
+            context_anno = call_types.get("context", None)  # type: Anno
+            assert context_anno, \
+                "Func %s needs_context, but has no 'context' anno. Did " \
+                "you forget the @add_call_types decorator?" % func
+            assert list(call_types)[0] == "context", \
+                "Func %s needs_context, so 'context' needs to be the first " \
+                "argument it takes" % func
+            assert context_anno.typ is Context, \
+                "Func %s needs_context, but 'context' has type %s rather than" \
+                "Context" % (func, context_anno.typ)
+            without = ("context",)
+        else:
+            without = ()
+        method = MethodModel(meta=MethodMeta.from_callable(
+            func, description, without_takes=without))
+        self._add_field(owner, name, method, func, needs_context)
         return method
 
     def add_attribute_model(self,
@@ -63,17 +80,18 @@ class FieldRegistry(object):
                             attr,  # type: AttributeModel
                             writeable_func=None,  # type: Optional[Callable]
                             owner=None,  # type: object
+                            needs_context=False  # type: bool
                             ):
         # type: (...) -> AttributeModel
-        self._add_field(owner, name, attr, writeable_func)
+        self._add_field(owner, name, attr, writeable_func, needs_context)
         return attr
 
-    def _add_field(self, owner, name, model, writeable_func):
+    def _add_field(self, owner, name, model, writeable_func, needs_context):
         # type: (object, str, Field, Callable) -> None
         assert CAMEL_RE.match(name), \
             "Field %r published by %s is not camelCase" % (name, owner)
         part_fields = self.fields.setdefault(owner, [])
-        part_fields.append((name, model, writeable_func))
+        part_fields.append((name, model, writeable_func, needs_context))
 
 
 class InfoRegistry(object):
@@ -119,24 +137,11 @@ class PartRegistrar(object):
     with their parent Controller that will appear in the Block
     """
 
-    def __init__(self, field_registry, info_registry, part, context):
-        # type: (FieldRegistry, InfoRegistry, Part, Context) -> None
+    def __init__(self, field_registry, info_registry, part):
+        # type: (FieldRegistry, InfoRegistry, Part) -> None
         self._field_registry = field_registry
         self._info_registry = info_registry
         self._part = part
-        self._context = context
-
-    @property
-    def context(self):
-        # type: () -> Context
-        """Get a static Context created at startup. This should only be used
-        for standalone methods, not during hooks"""
-        return self._context
-
-    def get_fields(self):
-        # type: () -> List[Tuple[str, Field, Callable]]
-        """Get the field list that we have added"""
-        return self._field_registry.fields[self]
 
     def hook(self,
              hooks,  # type: Union[Type[Hook], Sequence[Type[Hook]]]
@@ -158,21 +163,31 @@ class PartRegistrar(object):
                          func,  # type: Callable
                          name=None,  # type: Optional[str]
                          description=None,  # type: Optional[str]
+                         needs_context=False,  # type: bool
                          ):
         # type: (...) -> MethodModel
-        """Register a function to be added to the Block as a MethodModel"""
+        """Register a function to be added to the Block as a MethodModel
+
+        Args:
+            func: The callable that will be called when the Method is called
+            name: Override name, if None then take function __name__
+            description: Override description, if None take function.__doc__
+            needs_context: If True the "context" argument will be supplied to
+                func with a newly created `Context` instance
+        """
         return self._field_registry.add_method_model(
-            func, name, description, self._part)
+            func, name, description, self._part, needs_context)
 
     def add_attribute_model(self,
                             name,  # type: str
                             attr,  # type: AttributeModel
                             writeable_func=None,  # type: Optional[Callable]
+                            needs_context=False,  # type: bool
                             ):
         # type: (...) -> AttributeModel
         """Register a pre-existing AttributeModel to be added to the Block"""
         return self._field_registry.add_attribute_model(
-            name, attr, writeable_func, self._part)
+            name, attr, writeable_func, self._part, needs_context)
 
     def report(self, info):
         # type: (Info) -> None

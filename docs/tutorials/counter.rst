@@ -116,11 +116,16 @@ We then do the same with ``delta`` to register a second Attribute.
 
 .. note:: We are producing an `AttributeModel` rather than an `Attribute`.
 
-    This is because the Attribute is a user facing View, with methods like
-    :meth:`~Attribute.put_value`, while AttributeModel is a data centred model
-    with methods like :meth:`~AttributeModel.set_value`. Each user gets their
-    own `Attribute` view of a single underlying `AttributeModel` that holds the
-    actual data.
+    Attribute is a View, allowing users of the Block (either external clients,
+    or Blocks further up the heirarchy) with methods like
+    :meth:`~Attribute.put_value` that allow requests to be made.
+
+    AttributeModel is a Model, keeping the definitive version of the data,
+    with methods like :meth:`~AttributeModel.set_value` that allow the owner of
+    that data to respond to requests.
+
+    Each user gets their own `Attribute` view of a single underlying
+    `AttributeModel` that holds the actual data.
 
 In the two methods (zero and increment), we make use of the ``counter``
 AttributeModel. We can get its value by using the ``value`` attribute and set

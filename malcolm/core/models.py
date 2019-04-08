@@ -1045,9 +1045,21 @@ class MethodMeta(Meta):
         return self.set_endpoint_data("returns", returns)
 
     @classmethod
-    def from_callable(cls, func, description=None, returns=True):
-        # type: (Callable, str, bool) -> MethodMeta
-        """Return an instance of this class from a Callable"""
+    def from_callable(cls, func, description=None, returns=True,
+                      without_takes=()):
+        # type: (Callable, str, bool, Sequence[str]) -> MethodMeta
+        """Return an instance of this class from a Callable
+
+        Args:
+            func: @with_call_types decorated Callable to inspect
+            description: Override description. If None use func.__doc__
+            returns: If True then scan return_type too
+            without_takes: A sequence of strings that should not appear in the
+                takes structure
+
+        Returns:
+            A MethodMeta with takes and returns matching the input func
+        """
         if description is None:
             if func.__doc__ is None:
                 description = ""
@@ -1058,7 +1070,10 @@ class MethodMeta(Meta):
         takes_elements = OrderedDict()
         defaults = OrderedDict()
         takes_required = []
+        without_takes_set = set(without_takes)
         for k, anno in getattr(func, "call_types", {}).items():
+            if k in without_takes_set:
+                continue
             scls = VMeta.lookup_annotype_converter(anno)
             takes_elements[k] = scls.from_annotype(anno, writeable=True)
             if anno.default is NO_DEFAULT:

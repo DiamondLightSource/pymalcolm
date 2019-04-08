@@ -18,5 +18,5 @@ class TestStringPart(unittest.TestCase):
         assert self.o.attr.meta.description == "desc"
         assert self.o.attr.meta.tags == ["widget:textupdate"]
         assert self.c.field_registry.fields[self.o] == [(
-            "sp", self.o.attr, None
+            "sp", self.o.attr, None, False
         )]

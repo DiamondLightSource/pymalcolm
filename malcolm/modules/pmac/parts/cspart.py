@@ -24,7 +24,8 @@ class CSPart(ChildPart):
         # type: (PartRegistrar) -> None
         super(CSPart, self).setup(registrar)
         # Add methods
-        registrar.add_method_model(self.move, "moveCS%d" % self.cs)
+        registrar.add_method_model(
+            self.move, "moveCS%d" % self.cs, needs_context=True)
 
     @add_call_types
     def init(self, context):
@@ -40,6 +41,7 @@ class CSPart(ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def move(self,
+             context,  # type: builtin.hooks.AContext
              a=None,  # type: ADemandPosition
              b=None,  # type: ADemandPosition
              c=None,  # type: ADemandPosition
@@ -53,7 +55,7 @@ class CSPart(ChildPart):
              ):
         # type: (...) -> None
         """Move the given CS axes using a deferred co-ordinated move"""
-        child = self.registrar.context.block_view(self.mri)
+        child = context.block_view(self.mri)
         child.deferMoves.put_value(True)
         child.csMoveTime.put_value(moveTime)
         # Add in the motors we need to move
@@ -69,7 +71,7 @@ class CSPart(ChildPart):
         # Start the move
         child.deferMoves.put_value(False)
         # Wait for them to get there
-        self.registrar.context.wait_all_futures(
+        context.wait_all_futures(
             fs, timeout=moveTime + DEFAULT_TIMEOUT)
 
 #    def inverse_kinematics():

@@ -71,7 +71,7 @@ class ManagerController(StatefulController):
         # last saved layout and exports
         self.saved_visibility = None
         self.saved_exports = None
-        # ((name, AttributeModel/MethodModel, setter))
+        # ((name, AttributeModel/MethodModel, setter, needs_context))
         self._current_part_fields = ()
         # [Subscribe]
         self._subscriptions = []
@@ -278,21 +278,23 @@ class ManagerController(StatefulController):
 
     def update_block_endpoints(self):
         if self._current_part_fields:
-            for name, child, _ in self._current_part_fields:
+            for name, child, _, _ in self._current_part_fields:
                 self._block.remove_endpoint(name)
                 for state, state_writeable in self._children_writeable.items():
                     state_writeable.pop(child, None)
         self._current_part_fields = tuple(self._get_current_part_fields())
-        for name, child, writeable_func in self._current_part_fields:
-            self.add_block_field(name, child, writeable_func)
+        for name, child, writeable_func, needs_context in \
+                self._current_part_fields:
+            self.add_block_field(name, child, writeable_func, needs_context)
 
     def add_initial_part_fields(self):
         # Only add our own fields to start with, the rest will be added on load
-        for name, child, writeable_func in self.field_registry.fields[None]:
-            self.add_block_field(name, child, writeable_func)
+        for name, child, writeable_func, needs_context in \
+                self.field_registry.fields[None]:
+            self.add_block_field(name, child, writeable_func, needs_context)
         for part in self.parts.values():
-            for name, field, writeable_func in self.field_registry.fields.get(
-                    part, []):
+            for name, field, writeable_func, needs_context in \
+                    self.field_registry.fields.get(part, []):
                 if isinstance(field, AttributeModel):
                     tag = get_config_tag(field.meta.tags)
                     if tag:
@@ -341,7 +343,7 @@ class ManagerController(StatefulController):
                     export_name = attr_name
                 export, setter = self._make_export_field(
                     mri, attr_name, export_name)
-                yield export_name, export, setter
+                yield export_name, export, setter, False
 
     def _make_export_field(self, mri, attr_name, export_name):
         controller = self.process.get_controller(mri)

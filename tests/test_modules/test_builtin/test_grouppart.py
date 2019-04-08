@@ -18,7 +18,7 @@ class TestGroupPart(unittest.TestCase):
         assert self.o.attr.meta.description == "A group of things"
         assert self.o.attr.meta.tags == ["widget:group", "config:1"]
         assert self.c.field_registry.fields[self.o] == [(
-            "things", self.o.attr, self.o.attr.set_value
+            "things", self.o.attr, self.o.attr.set_value, False
         )]
 
     def test_setter(self):

@@ -17,5 +17,5 @@ class TestHelpPart(unittest.TestCase):
         assert self.o.attr.value == "/BLOCK.html"
         assert self.o.attr.meta.tags == ["widget:help"]
         assert self.c.field_registry.fields[self.o] == [(
-            "help", self.o.attr, None
+            "help", self.o.attr, None, False
         )]

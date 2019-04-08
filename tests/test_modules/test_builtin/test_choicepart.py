@@ -20,7 +20,7 @@ class TestChoicePart(unittest.TestCase):
         assert self.o.attr.meta.choices == ["a", "b"]
         assert self.o.attr.meta.tags == ["widget:combo", "config:1"]
         assert self.c.field_registry.fields[self.o] == [(
-            "cp", self.o.attr, self.o.attr.set_value
+            "cp", self.o.attr, self.o.attr.set_value, False
         )]
 
     def test_setter(self):

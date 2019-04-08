@@ -20,6 +20,6 @@ class TestFloat64Part(unittest.TestCase):
         assert self.o.attr.meta.dtype == "float64"
         assert self.o.attr.meta.tags == ["widget:textinput", "config:1"]
         assert self.c.field_registry.fields[self.o] == [(
-            "fp", self.o.attr, self.o.attr.set_value
+            "fp", self.o.attr, self.o.attr.set_value, False
         )]
 

@@ -180,7 +180,8 @@ The aim of this tutorial is to make something that looks like a motion
 controller, so we will make our Part expose a single method "moveX" (or "moveY")
 that will "move" it's child Block by doing a Put to the counter value.
 
-We instantiate two parts, so here are the Methods and Attributes created:
+We instantiate two parts, so here are some of the Methods and Attributes
+created:
 
 .. digraph:: motion_controllers_and_parts
 
@@ -292,17 +293,17 @@ In ``setup()`` we export a single Method, but as we are expecting to have
 many of these Parts in a single Controller, we prefix the Method name with the
 name of the Part, so it is unique in the Block. For our example, we have two
 MotorMoveParts, ``x`` and ``y``, so the resulting Block should have ``xMove()``
-and ``yMove()`` Methods.
+and ``yMove()`` Methods. The ``needs_context=True`` argument tells Malcolm that
+when the move Method is called, it should be passed a `Context` object as the
+first argument. This is a utility object that makes us a `Block` view so we can
+interact with our child Block
 
-Finally we define the ``move()`` Method. It takes a single argument ``demand``
-which is describe by an annotype, and moves the motor instantly to the
-demanded value by doing a Put to the counter value. Here we see a `Context` for
-the first time. It is a utility object that makes us a Block view so we can
-interact with our child Block. In future tutorials we will see that sometimes
-we are passed one into a Method, but in this case we will use the Context that
-is attached to the ``registrar`` object we were passed in ``setup()``. We
-ask it for a Block view of the counter, then call the `Attribute.put_value`
-method on the counter value.
+Finally we define the ``move()`` Method. As well as the `Context` we requested,
+it takes an argument ``demand`` which is described by an annotype. We use the
+``context`` to create a `Block` view of the Counter child Block, then get its
+``counter`` `Attribute` view, and call `~Attribute.put_value` on it to request
+that the Counter Block sets its counter value to ``demand``. We wait for
+completion (which is almost instant), then return.
 
 How it looks in the GUI
 -----------------------
