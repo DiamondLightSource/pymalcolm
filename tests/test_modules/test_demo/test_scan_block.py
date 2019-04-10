@@ -4,7 +4,7 @@ import unittest
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.modules.demo.blocks import detector_block, motion_block, scan_block
+from malcolm.modules.demo.blocks import detector_block, motion_block, scan_1det_block
 from malcolm.core import Process
 from malcolm.modules.scanning.util import DatasetType
 
@@ -13,14 +13,13 @@ class TestScanBlock(unittest.TestCase):
 
     def setUp(self):
         self.p = Process("proc")
-        for c in detector_block("DETMRI", config_dir="/tmp") + \
-                motion_block("MOTORSMRI", config_dir="/tmp") + \
-                scan_block("SCANMRI", det="DETMRI", motors="MOTORSMRI",
-                           config_dir="/tmp"):
+        for c in detector_block("DETECTOR", config_dir="/tmp") + \
+                motion_block("MOTION", config_dir="/tmp") + \
+                scan_1det_block("SCANMRI", config_dir="/tmp"):
             self.p.add_controller(c)
         self.p.start()
         self.b = self.p.block_view("SCANMRI")
-        self.bd = self.p.block_view("DETMRI")
+        self.bd = self.p.block_view("DETECTOR")
         self.tmpdir = tempfile.mkdtemp()
 
     def tearDown(self):

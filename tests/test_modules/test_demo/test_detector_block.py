@@ -52,7 +52,7 @@ class TestDetectorBlock(unittest.TestCase):
         ]
         filepath = os.path.join(self.tmpdir, "det.h5")
         with h5py.File(filepath, "r") as hdf:
-            assert hdf["/entry/data"].shape == (1, 1, 240, 320)
+            assert hdf["/entry/data"].shape == (1, 1, 120, 160)
             assert hdf["/entry/sum"].shape == (1, 1, 1, 1)
             assert hdf["/entry/uid"].shape == (1, 1, 1, 1)
             assert hdf["/entry/uid"][0][0][0][0] == 0
@@ -60,12 +60,12 @@ class TestDetectorBlock(unittest.TestCase):
             # Wait for 2 frames to be written (but not reported yet)
             cothread.Sleep(0.8)
             assert self.b.completedSteps.value == 1
-            assert hdf["/entry/data"].shape == (1, 2, 240, 320)
+            assert hdf["/entry/data"].shape == (1, 2, 120, 160)
             assert hdf["/entry/sum"].shape == (1, 2, 1, 1)
             assert hdf["/entry/uid"].shape == (1, 2, 1, 1)
-            assert hdf["/entry/sum"][0][0][0][0] == 837336.0
+            assert hdf["/entry/sum"][0][0][0][0] == 208560.0
             assert hdf["/entry/uid"][0][0][0][0] == 1
-            assert hdf["/entry/sum"][0][1][0][0] == 3904536.0
+            assert hdf["/entry/sum"][0][1][0][0] == 972408.0
             assert hdf["/entry/uid"][0][1][0][0] == 2
             # pause
             self.b.pause(lastGoodStep=3)
@@ -77,14 +77,14 @@ class TestDetectorBlock(unittest.TestCase):
             fs.result(timeout=10)
             self.assertAlmostEqual(time.time() - before_end, 1.5, delta=0.25)
             # Check the rest of the data, including the blank
-            assert hdf["/entry/data"].shape == (2, 3, 240, 320)
+            assert hdf["/entry/data"].shape == (2, 3, 120, 160)
             assert hdf["/entry/sum"].shape == (2, 3, 1, 1)
             assert hdf["/entry/uid"].shape == (2, 3, 1, 1)
             assert hdf["/entry/sum"][0][2][0][0] == 0
             assert hdf["/entry/uid"][0][2][0][0] == 0
-            assert hdf["/entry/sum"][1][2][0][0] == 7195916.0
+            assert hdf["/entry/sum"][1][2][0][0] == 1792360.0
             assert hdf["/entry/uid"][1][2][0][0] == 7
-            assert hdf["/entry/sum"][1][0][0][0] == 837336.0
+            assert hdf["/entry/sum"][1][0][0][0] == 208560.0
             assert hdf["/entry/uid"][1][0][0][0] == 9
             # Reset to close the file
             self.b.reset()
