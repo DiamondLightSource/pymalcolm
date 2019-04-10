@@ -2,34 +2,25 @@ import time
 
 from annotypes import Anno, add_call_types
 
-from malcolm.core import PartRegistrar, APartName
+from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
 
 with Anno("If >0, raise an exception at the end of this step"):
     AExceptionStep = int
-# Pull re-used annotypes into our namespace in case we are subclassed
-# TODO: Add this to CONTRIBUTING.rst
-AMri = builtin.parts.AMri
-AInitialVisibility = builtin.parts.AInitialVisibility
 
 
 class MotionChildPart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `RunnableController`"""
-
-    def __init__(self, name, mri, initial_visibility=None):
-        # type: (APartName, AMri, AInitialVisibility) -> None
-        super(MotionChildPart, self).__init__(
-            name, mri, initial_visibility, stateful=False)
-        # Generator instance
-        self._generator = None  # type: scanning.hooks.AGenerator
-        # Where to start
-        self._completed_steps = None  # type: int
-        # How many steps to do
-        self._steps_to_do = None  # type: int
-        # When to blow up
-        self._exception_step = None  # type: int
-        # Which axes we should be moving
-        self._axes_to_move = None  # type: scanning.hooks.AAxesToMove
+    # Generator instance
+    _generator = None  # type: scanning.hooks.AGenerator
+    # Where to start
+    _completed_steps = None  # type: int
+    # How many steps to do
+    _steps_to_do = None  # type: int
+    # When to blow up
+    _exception_step = None  # type: int
+    # Which axes we should be moving
+    _axes_to_move = None  # type: scanning.hooks.AAxesToMove
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -45,6 +36,7 @@ class MotionChildPart(builtin.parts.ChildPart):
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
 
+    # For docs: Before configure
     # Allow CamelCase for arguments as they will be serialized by parent
     # noinspection PyPep8Naming
     @add_call_types
@@ -64,7 +56,6 @@ class MotionChildPart(builtin.parts.ChildPart):
         self._exception_step = exceptionStep
         self._axes_to_move = axesToMove
 
-    # Run scan
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
@@ -77,7 +68,6 @@ class MotionChildPart(builtin.parts.ChildPart):
             async_move_methods[axis] = child[axis + "Move_async"]
         for i in range(self._completed_steps,
                        self._completed_steps + self._steps_to_do):
-            self.log.debug("Starting point %s", i)
             # Get the point we are meant to be scanning
             point = self._generator.get_point(i)
             # Start all the children moving at the same time, populating a list
@@ -88,9 +78,7 @@ class MotionChildPart(builtin.parts.ChildPart):
             context.wait_all_futures(fs)
             # Wait until the next point is due
             point_time += point.duration
-            wait_time = point_time - time.time()
-            self.log.debug("%s Sleeping %s", self.name, wait_time)
-            context.sleep(wait_time)
+            context.sleep(point_time - time.time())
             # Update the point as being complete
             self.registrar.report(scanning.infos.RunProgressInfo(i + 1))
             # If this is the exception step then blow up

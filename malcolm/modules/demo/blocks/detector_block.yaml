@@ -16,9 +16,9 @@
     description: $(docstring)
 
 - scanning.parts.DatasetTablePart:
-    name: DATASETS
+    name: DSET
 
 - demo.parts.FileWritePart:
-    name: DET
-    width: 320
-    height: 240
+    name: FW
+    width: 160
+    height: 120

@@ -17,7 +17,6 @@ In this tutorial we will build a simple Device Block that represents motion
 controller hardware moving two motors. A pair of counter Blocks will serve as
 "motors".
 
-
 Creating Device Blocks
 ----------------------
 
@@ -54,15 +53,15 @@ This tree of Blocks is probably better viewed as a diagram:
 		style=filled
 		color=lightgrey
 
-        subgraph cluster_ticker {
+        subgraph cluster_motion {
             label="MOTION"
             ranksep=0.1
 		    color=white
-            ticker_c [label="ManagerController"]
+            motion_c [label="ManagerController"]
             x [label=<MotorMovePart<BR/>name: 'x'>]
             y [label=<MotorMovePart<BR/>name: 'y'>]
-            ticker_c -> x [style=invis]
-            ticker_c -> y [style=invis]
+            motion_c -> x [style=invis]
+            motion_c -> y [style=invis]
         }
     }
 
@@ -301,7 +300,7 @@ interact with our child Block
 Finally we define the ``move()`` Method. As well as the `Context` we requested,
 it takes an argument ``demand`` which is described by an annotype. We use the
 ``context`` to create a `Block` view of the Counter child Block, then get its
-``counter`` `Attribute` view, and call `~Attribute.put_value` on it to request
+``counter`` `Attribute` view, and call `Attribute.put_value` on it to request
 that the Counter Block sets its counter value to ``demand``. We wait for
 completion (which is almost instant), then return.
 

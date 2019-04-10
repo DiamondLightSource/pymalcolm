@@ -4,24 +4,12 @@ Scanning Tutorial
 =================
 
 You should already know how to create a detector `block_` in the `device_layer_`
-that controls an `EPICS`_ `areaDetector`_, and how to create a ticker Block in
-that Device Layer that looks a bit like a simulated motor controller. Now let's
+that controls a simulated detector, and how to create a motion Block in
+that Device Layer that looks a bit like a simulated motion controller. Now let's
 put a `scan_layer_` Block on top that will control the underlying Device Blocks
 to work together to perform a scan.
 
-What is missing from these
-Hardware Blocks is the combilogic of "do this, then that, then these 3 things at the
-same time"
-
-These higher level Blocks have two main methods:
-
-- configure(params): Take a set of parameters and configure all child Blocks
-  according to these parameters. This operation should include as much as
-  possible of the setup of the device, without actually starting a scan.
-- run(): When all devices taking part in the scan have configured themselves,
-  this method will start the scan going. It supervises the actions of the
-  scan, providing status monitoring and any periodic actions that need to
-  happen.
+.. module:: malcolm.core
 
 Block Hierarchy
 ---------------
@@ -35,13 +23,21 @@ and Run phases of the scan:
   the child datasets (if any) in a dataset table of its own.
 
 - Run: It should run() both children at the same time, relying on hardware
-  synchronization to keep them in step. It should report back the minimum of
-  its childrens' currentStep as its own.
+  synchronization to keep them in step. It should report back progress of its
+  children.
 
-To do this, we put the logic for controlling the child in a `RunnableChildPart`
-and the dataset reporting in the `DatasetRunnableChildPart`. The
-`RunnableController` already provides all the hooks we need, so can be reused
-without modification.
+In the `motion_tutorial` we introduced a simple Device Block. The interface it
+presents is pair of ``moveX`` and ``moveY`` `Methods <method_>`. To control
+this within a scan, we need to write a `part_` which knows when to call these
+Methods.
+
+In the `detector_tutorial` we introduced a runnable Device Block. It presents
+a configure/run interface, and includes a Dataset Table to report back the
+files that it will write. This is a common design pattern for all detectors, so
+we can use a `DetectorChildPart` to integrate it into the scan.
+
+Our scan Block should support the same configure/run interface, so we use a
+`RunnableController` just like in the detector.
 
 We now end up with a hierarchy that looks like this:
 
@@ -64,14 +60,14 @@ We now end up with a hierarchy that looks like this:
             ranksep=0.1
 		    color=white
             scan_c [label="RunnableController"]
-            DET [label=<DatasetRunnableChildPart<BR/>name: 'DET'>]
-            MOTORS [label=<RunnableChildPart<BR/>name: 'MOTORS'>]
             DSET_s [label=<DatasetTablePart<BR/>name: 'DSET'>]
-            scan_c -> DET [style=invis]
-            scan_c -> MOTORS [style=invis]
+            MOT [label=<MotionChildPart<BR/>name: 'MOT'>]
+            DET [label=<DetectorChildPart<BR/>name: 'DET'>]
+            SA [label=<SimultaneousAxesPart<BR/>name: 'simultaneousAxes'>]
             scan_c -> DSET_s [style=invis]
-            DSET_s -> DET [style=invis]
-            {rank=same; DET -> MOTORS DSET_s}
+            scan_c -> MOT [style=invis]
+            scan_c -> DET [style=invis]
+            scan_c -> SA [style=invis]
         }
     }
 
@@ -85,26 +81,22 @@ We now end up with a hierarchy that looks like this:
             ranksep=0.1
 		    color=white
             detector_c [label="RunnableController"]
-            DRV [label=<SimDetectorDriverPart<BR/>name: 'DRV'>]
-            POS [label=<PositionLabellerPart<BR/>name: 'POS'>]
-            STAT [label=<StatsPluginPart<BR/>name: 'STAT'>]
-            HDF [label=<HDFWriterPart<BR/>name: 'HDF'>]
+            FW [label=<FileWritePart<BR/>name: 'FW'>]
             DSET [label=<DatasetTablePart<BR/>name: 'DSET'>]
-            detector_c -> DRV [style=invis]
-            detector_c -> POS [style=invis]
-            DRV -> DSET [style=invis]
-            {rank=same; DRV -> POS -> STAT -> HDF}
+            detector_c -> FW [style=invis]
+            detector_c -> DSET [style=invis]
+            {rank=max; FW DSET}
         }
 
-        subgraph cluster_ticker {
-            label="TICKER"
+        subgraph cluster_motion {
+            label="MOTION"
             ranksep=0.1
 		    color=white
-            ticker_c [label="RunnableController"]
-            x [label=<ScanTickerPart<BR/>name: 'x'>]
-            y [label=<ScanTickerPart<BR/>name: 'y'>]
-            ticker_c -> x [style=invis]
-            ticker_c -> y [style=invis]
+            motion_c [label="ManagerController"]
+            x [label=<MotorMovePart<BR/>name: 'x'>]
+            y [label=<MotorMovePart<BR/>name: 'y'>]
+            motion_c -> x [style=invis]
+            motion_c -> y [style=invis]
         }
     }
 
@@ -112,38 +104,6 @@ We now end up with a hierarchy that looks like this:
         label="Hardware Layer"
 		style=filled
 		color=lightgrey
-
-        subgraph cluster_drv {
-            label="DETECTOR:DRV"
-            color=white
-            drv_c [label="StatefulController"]
-            drv_p [label="CAParts"]
-            drv_c -> drv_p [style=invis]
-        }
-
-        subgraph cluster_pos {
-            label="DETECTOR:POS"
-            color=white
-            pos_c [label="StatefulController"]
-            pos_p [label="CAParts"]
-            pos_c -> pos_p [style=invis]
-        }
-
-        subgraph cluster_stat {
-            label="DETECTOR:STAT"
-            color=white
-            stat_c [label="StatefulController"]
-            stat_p [label="CAParts"]
-            stat_c -> stat_p [style=invis]
-        }
-
-        subgraph cluster_hdf {
-            label="DETECTOR:HDF"
-            color=white
-            hdf_c [label="StatefulController"]
-            hdf_p [label="CAParts"]
-            hdf_c -> hdf_p [style=invis]
-        }
 
         subgraph cluster_counterx {
             label="COUNTERX"
@@ -162,16 +122,12 @@ We now end up with a hierarchy that looks like this:
         }
     }
 
+    MOT -> motion_c [lhead=cluster_motion minlen=3 style=dashed]
     DET -> detector_c [lhead=cluster_detector minlen=3 style=dashed]
-    MOTORS -> ticker_c [lhead=cluster_ticker minlen=3 style=dashed]
-    DRV -> drv_c [lhead=cluster_drv minlen=3 style=dashed]
-    POS -> pos_c [lhead=cluster_pos minlen=3 style=dashed]
-    STAT -> stat_c [lhead=cluster_stat minlen=3 style=dashed]
-    HDF -> hdf_c [lhead=cluster_hdf minlen=3 style=dashed]
     x -> counterx_c [lhead=cluster_counterx minlen=3 style=dashed]
     y -> countery_c [lhead=cluster_countery minlen=3 style=dashed]
 
-The DETECTOR and TICKER Blocks are unchanged from the previous examples, we
+The MOTION and DETECTOR Blocks are unchanged from the previous examples, we
 have just placed a SCAN Block in a layer above them that uses an appropriate
 `part_` to control each of its children. The nice thing about this design is
 that we can add another detector to control just by adding a new part to the
@@ -186,29 +142,42 @@ Let's have a look at the Process definition
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-SCANNING.yaml
     :language: yaml
 
-It looks quite similar to the one from the `generator_tutorial`, starting off
-with the defines that are needed to talk to our simulated areaDetector plus
-a new one that defines a config_dir variable that can be shared between our
-Blocks. After that come the Blocks, with simDetector and ticker Blocks that we
-have seen in previous tutorials, then our scan_block to sit on top.
+To start off with, we define a variable ``$(config_dir)`` with value ``/tmp``
+that we can pass down. In general we should try to follow the DRY_ principle:
+Don't repeat yourself. If there is a single value used in multiple places, we
+should define it in one place and pass it down to where it is needed. This may
+require more lines of YAML, but when the variable is changed later it will be
+clear where it need to be changed.
+
+Apart from the web server, we instantiate 3 Blocks:
+
+- The motion block from the `motion_tutorial`
+- The detector block from the `detector_tutorial`
+- Our new ``scan_1det_block`` to sit on top
 
 Scan Block
 ----------
 
-The top level Scan Block is a `scan_block` defined just for this demo. Let's
-take a look at ``./malcolm/modules/demo/blocks/scan_block.yaml`` to see what one
-of those looks like:
+The top level Scan Block is a `scan_1det_block` defined just for this demo.
+Let's take a look at ``./malcolm/modules/demo/blocks/scan_1det_block.yaml``
+to see what one of those looks like:
 
-.. literalinclude:: ../../malcolm/modules/demo/blocks/scan_block.yaml
+.. literalinclude:: ../../malcolm/modules/demo/blocks/scan_1det_block.yaml
     :language: yaml
 
-A number of parameters are used to pass in the `mri_` of the scan block we
-should create and those of the child blocks, then we get to the Controller.
-We use a `RunnableController` like the Device Blocks, but here we specify
-some default ``axesToMove`` because a scan is likely to know which motors it
-can move in a continuous fashion. After that we specify a `DatasetTablePart`
-to report datasets just like Device Blocks, and a `DatasetRunnableChildPart`
-and `RunnableChildPart` to control the child Blocks.
+After some parameter definitions, we get to the Controller. We use a
+`RunnableController` like in the Detector Block, passing it the `mri_` of
+the created Block, along with where to write saved configs and its docstring.
+Next we have a `DatasetTablePart` to report datasets just like Device Blocks.
+After that is a `SimultaneousAxesPart` which checks that all the desired
+``axesToMove`` of a scan are within a particular set. This is needed because
+a motor controller is probably setup for a specific set of axes to be scanned
+together, and any subset of those axes is acceptable as an argument to
+configure().
+
+The final two parts control child Blocks, a `DetectorChildPart` will control
+any configure/run Block with a DatasetTable, and the `MotionChildPart` is
+written specially for our Motion Block.
 
 .. note::
 
@@ -218,40 +187,83 @@ and `RunnableChildPart` to control the child Blocks.
     potentially be used by many Scan Blocks, while Hardware Blocks are typically
     only used by a single Device Block.
 
+Hooking a Simple Device Block into a Scan
+-----------------------------------------
 
-Loading and Saving
+To make our Motion Block with ``moveX()`` and ``moveY()`` Methods work within
+a scan Block, we have to write some logic that will call these at the correct
+point in a `Scan Point Generator`_ specified scan. We do this by registering
+a number of hooks, like in the `detector_tutorial`. Let's look at the start of
+``./malcolm/modules/demo/parts/motionchildpart.py`` to see this:
+
+.. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py
+    :language: python
+    :end-before: # For docs: Before configure
+
+After the imports and annotype definitions as in previous tutorials, we come
+to the class definition. We inherit from `ChildPart` as we are controlling a
+single child Block. As we have no new arguments to pass to ``__init__``, we
+don't need to override it, we can just declare all the instance variables as
+class variables with value ``None``.
+
+The ``setup()`` function is where we register our Hooks, as we will see below.
+We also report that we take an extra configure argument ``exceptionStep``.
+
+Hooking into configure()
+------------------------
+
+There is a `PreConfigureHook` that is called at the start of ``configure()``.
+It's purpose is reloading the last saved design to the child Block, as we
+see in its documentation:
+
+.. autoclass:: malcolm.modules.scanning.hooks.PreConfigureHook
+    :noindex:
+
+We hook this to our ``reload()`` function to accomplish this. The purpose of
+this is so that if someone messes with our counter settings between scans, or
+another scan Block reconfigures them, they should be restored before anything
+else is done.
+
+We then hook our configure method into the `ConfigureHook`:
+
+.. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py
+    :language: python
+    :pyobject: MotionChildPart.configure
+
+This just stores the parameters to configure, ready to start the run. It is also
+hooked into the `PostRunArmedHook` and `SeekHook` so that any pause or repeated
+run also stores these parameters.
+
+Hooking into run()
 ------------------
 
-Scan Blocks can have saved `design_` files just like Device Blocks. The
-difference is that they have far fewer entries as their children typically save
-their config in their own Design files. If we ``scan.save("initial_design")``
-just after we start, we will see just how few entries there are in
-``./malcolm/modules/demo/saved_designs/SCAN/initial_design.json``:
+We also hooked our ``run()`` Method into the `RunHook` and `ResumeHook`. Let's
+look at what it does:
 
-.. literalinclude:: ../../malcolm/modules/demo/saved_designs/SCAN/initial_design.json
-    :language: json
+.. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py
+    :language: python
+    :pyobject: MotionChildPart.run
 
-Basically we imagine that each Device Block will have a number of designs for
-hardware or software triggering or different motor setups, and the Scan Block
-will say "I need DET with the hardware_trigger design and MOTORS with
-hkl_geometry". The ``readoutTime`` Attribute is not encapsulated in the design
-of its child Device Block because it will vary depending on the trigger source,
-so is saved as the Scan Block design.
+Walking through the code we can see that the first thing we do is make a child
+Block, and use it to get asynchronous versions of our ``xMove()`` and
+``yMove()`` Methods. This is another feature of the `Block` View created by the
+`Context`. Asynchronous methods kick off the Method going, then return `Future`
+objects that can be waited on, and will hold the result of the method when it is
+finished. We can use these to start a number of long running processes going at
+the same time, then wait until they are all finished.
 
-We also need to be a little careful with how we apply these designs. The parent
-Scan Block will load child Device Block designs before configure(), but only
-if the Scan Block has done a load or a save with the Device Block having a saved
-Design. This means that while we are commissioning, Attributes on the Hardware
-Blocks can be set to whatever we need, and the Scan Block will not interfere,
-but when we save the Device Block and Scan Block settings we want to make sure
-that they are in that state before every scan.
+We then start iterating through each of the step indexes that we need to
+produce, getting a scanpointgenerator.Point object for each one. We pick out the
+positions of the axes we were told to move, and start them moving using our
+asynchronous method calls. We then wait for them all to complete, before
+calculating how long we should do an interruptible :meth:`~Context.sleep` for.
+
+Finally we :meth:`~PartRegistrar.report` a `RunProgressInfo` with the
+current step number so the client knows how much of the scan is complete, and
+check the current step number to see if we were meant to blow up here.
 
 Running a Scan
 --------------
-
-First you need an areaDetector IOC. From the Diamond launcher, select
-``Utilities -> GDA AreaDetector Simulation``, then click the ``Start IOC``
-button.
 
 Let's start up the example and see it in action::
 
@@ -270,7 +282,7 @@ Let's start up the example and see it in action::
     Welcome to iMalcolm.
 
     self.mri_list:
-        ['DETECTOR:DRV', 'DETECTOR:STAT', 'DETECTOR:POS', 'DETECTOR:HDF5', 'DETECTOR', 'COUNTERX', 'COUNTERY', 'TICKER', 'SCAN', 'WEB']
+        ['MOTION:COUNTERX', 'MOTION:COUNTERY', 'MOTION', 'DETECTOR', 'SCAN', 'WEB']
 
     # To create a view of an existing Block
     block = self.block_view("<mri>")
@@ -284,76 +296,58 @@ Let's start up the example and see it in action::
 
     In [1]:
 
-We can run the same scan as before, but we'll watch the counters to see the
-simulated continuous scan tick along::
+Then run a scan by configuring and running with a generator. If you have
+completed the `detector_tutorial` then some of the lines will be in your
+`IPython`_ history and you can get them back by pressing the up arrow::
 
     In [1]: from scanpointgenerator import LineGenerator, CompoundGenerator
 
-    In [2]: scan = self.block_view("SCAN")
+    In [2]: from annotypes import json_encode
 
-    In [3]: yline = LineGenerator("y", "mm", 0., 1., 6)
+    In [3]: yline = LineGenerator("y", "mm", -1, 0, 6)
 
-    In [4]: xline = LineGenerator("x", "mm", 0., 1., 5, alternate=True)
+    In [4]: xline = LineGenerator("x", "mm", 4, 5, 5, alternate=True)
 
     In [5]: generator = CompoundGenerator([yline, xline], [], [], duration=0.5)
 
-    In [6]: scan.configure(generator, fileDir="/tmp")
+    In [6]: json_encode(generator)
+    Out[6]: '{"typeid": "scanpointgenerator:generator/CompoundGenerator:1.0", "generators": [{"typeid": "scanpointgenerator:generator/LineGenerator:1.0", "axes": ["y"], "units": ["mm"], "start": [0.0], "stop": [1.0], "size": 6, "alternate": false}, {"typeid": "scanpointgenerator:generator/LineGenerator:1.0", "axes": ["x"], "units": ["mm"], "start": [0.0], "stop": [1.0], "size": 5, "alternate": true}], "excluders": [], "mutators": [], "duration": 0.5, "continuous": true}'
 
-    In [7]: gui(scan)
+Then we can open http://localhost:8008/gui/SCAN to see the **SCAN**
+Block on the left. If we expand the Configure method and click Edit by the
+Generator field we can paste in our JSON, then set fileDir to "/tmp" and
+click Configure to arm:
 
-    In [8]: gui(self.block_view("COUNTERX"))
+.. image:: scanning_0.png
 
-    In [9]: gui(self.block_view("COUNTERY"))
-
-We have now setup our 6x5 snake scan and we can see that it has the same
-``datasets`` Attribute value as in our previous example::
-
-    In [10]: for col in scan.datasets.value:
-        print "%09s: %s" % (col, scan.datasets.value[col])
-       ...:
-         name: ('DET.data', 'DET.sum', 'y.value_set', 'x.value_set')
-     filename: ('DET.h5', 'DET.h5', 'DET.h5', 'DET.h5')
-         type: ('primary', 'secondary', 'position_set', 'position_set')
-         rank: [4 4 1 1]
-         path: ('/entry/detector/detector', '/entry/sum/sum', '/entry/detector/y_set', '/entry/detector/x_set')
-     uniqueid: ('/entry/NDAttributes/NDArrayUniqueId', '/entry/NDAttributes/NDArrayUniqueId', '', '')
-
-If you now click the Run button on the SCAN window you will see the scan
-being performed:
+You can now click Run, and a scan will be run. Clicking through the layers
+SCAN -> Layout -> MOT -> Layout -> x -> COUNTER -> Info will get you to
+http://localhost:8008/gui/SCAN/layout/MOT/layout/x/counter/.info and clicking
+on the PLOT tab will show the x axis has moved on its snake scanning trajectory:
 
 .. image:: scanning_1.png
 
-This will write 30 frames to ``/tmp/DET.h5`` as the previous example. The reason
-the filename and dataset names are a little different is because the detector
-dataset takes its name from the parent controlling part, defaulting to ``det``
-if not specified. In ``scan_block.yaml`` we defined the
-`DatasetRunnableChildPart` for ``DETECTOR`` to have name ``DET``, hence the name
-of the written file. Apart from this, the file is identical to previous example.
+The DETECTOR block will write 30 frames to ``/tmp/DET.h5`` as the previous
+example. The reason the filename and dataset names are a little different is
+because the detector dataset takes its name from the parent controlling part,
+defaulting to ``det`` if not specified. In ``scan_block.yaml`` we defined the
+for ``DETECTOR`` to have name ``DET``, hence the name of the written file.
+Apart from this, the file is identical to previous example.
 
-
-
-pausing, resuming and seeking within the scan. If you want
-to re-run the scan you will need to click Configure again.
+From here you can click Configure again, run another scan, and try pausing,
+resuming and seeking within the scan. You could try setting an ``exceptionStep``
+to simulate a scan that fails at a particular point.
 
 .. seealso::
     `RunnableStates` has more information about what functions you can
     run in different Block states.
-
-What is happening under the hood is that our hooked ``configure()`` method is
-being called during ``pause()``, ``configure()`` and ``seek()``, but we want it
-to do the same thing each time so can use the same method.  The ``run()``
-command is likewise hooked to both ``run()`` and ``resume()`` as it makes no
-difference in our example. In a real example, there may be some device state
-that would mean different things need to be run in these two hooks.
-
 
 Conclusion
 ----------
 
 This tutorial has given us an understanding of how a `scan_layer_` Block can
 co-ordinate various `device_layer_` Blocks to perform a continuous scan. In the
-next tutorial we will see how to wire up some real hardware to perform a
-continuous scan.
-In the
-next tutorial we will see how to make an `EPICS`_ `areaDetector`_ Block in the
-`device_layer_` capable of performing scans.
+next tutorial we will see how to add an `EPICS`_ `areaDetector`_ Device Block
+to our scan, and make a scan with multiple detectors.
+
+.. _DRY: https://en.wikipedia.org/wiki/Don%27t_repeat_yourself

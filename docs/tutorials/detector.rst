@@ -63,10 +63,13 @@ We instantiate a `DatasetTablePart` to report the datasets that we will write,
 a `FileWritePart` to write some dummy data to an HDF file, and then use a
 `RunnableController` to construct our Block.
 
-Unlike the previous example, there are no Child Blocks. This is because we
-are making a cut down demo, in a real example like in the
-`areadetector_tutorial` we would have child Blocks and multiple parts to
-control them.
+This produces a single ``DETECTOR`` Device Block.
+
+.. note::
+    Unlike the previous example, there are no Child Blocks in the
+    `hardware_layer_`. This is because we are making a cut down demo, in a real
+    example like in the `areadetector_tutorial` we would have child Blocks and
+    multiple parts to control them.
 
 Controller for Runnable Device Blocks
 -------------------------------------
@@ -147,8 +150,8 @@ example:
     edge [fontname=Arial fontsize=10 arrowhead=none]
 
     controller [label=<RunnableController<BR/>mri: 'DETECTOR'>]
-    detpart [label=<FileWritePart<BR/>name: 'DET'>]
-    dspart [label=<DatasetTablePart<BR/>name: 'DATASETS'>]
+    detpart [label=<FileWritePart<BR/>name: 'FW'>]
+    dspart [label=<DatasetTablePart<BR/>name: 'DSET'>]
 
     subgraph cluster_control {
         label="Control"
