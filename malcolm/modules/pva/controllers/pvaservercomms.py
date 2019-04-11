@@ -144,12 +144,13 @@ class BlockHandler(Handler):
                     # We got a delta, create or update value and notify
                     if self.value is None:
                         # Open it with the value
+                        self.controller.log.debug("About to open")
                         self._create_initial_value(response)
                     elif self.pv.isOpen():
                         # Update it with values
                         self._update_value(response)
                 except Exception:
-                    self.controller.log.debug(
+                    self.controller.log.warning(
                         "Closing pv because of error in response %s",
                         response, exc_info=True)
                     # We got a return or error, close the connection to clients

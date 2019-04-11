@@ -36,7 +36,6 @@ type_specifiers.update({
     int: 'l',
     long_: 'l',
     float: 'd',
-    str_: 's',
 })
 
 
@@ -90,6 +89,9 @@ def convert_to_type_tuple_value(value):
     elif isinstance(value, Enum):
         spec = 's'
         value_for_set = value.value
+    elif isinstance(value, str_):
+        spec = 's'
+        value_for_set = value
     else:
         spec = type_specifiers[type(value)]
         value_for_set = value
