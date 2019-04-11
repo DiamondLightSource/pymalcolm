@@ -11,6 +11,11 @@
     description: Where to store saved configs
 
 - builtin.parameters.string:
+    name: label
+    description: Beamline specific label for the detector
+    default: SimDetector
+
+- builtin.parameters.string:
     name: initial_design
     description: Design to load at init
     default:
@@ -32,8 +37,13 @@
 - scanning.controllers.RunnableController:
     mri: $(mri_prefix)
     config_dir: $(config_dir)
-    description: $(docstring)
     initial_design: $(initial_design)
+    description: |
+      SimDetector produces a simulated detector image, with either a Linear
+      ramp, array of peaks, or sine wave function used to make the 2D image
+
+- builtin.parts.LabelPart:
+    value: $(label)
 
 - ADSimDetector.blocks.sim_detector_driver_block:
     mri: $(mri_prefix):DRV
