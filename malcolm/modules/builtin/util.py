@@ -135,8 +135,8 @@ class StatefulStates(StateSet):
 
 
 class ManagerStates(StatefulStates):
-    """This state set covers controllers and parts that have loadable and savable
-    child state."""
+    """This state set covers controllers and parts that have loadable and
+    savable child state."""
 
     SAVING = "Saving"
     LOADING = "Loading"

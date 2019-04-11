@@ -4,7 +4,7 @@ from __future__ import division
 from annotypes import add_call_types, Anno, TYPE_CHECKING
 from scanpointgenerator import Point
 
-from malcolm.core import APartName, Block
+from malcolm.core import APartName, Block, Attribute, Context
 from malcolm.modules import builtin, scanning, pmac
 from malcolm.modules.scanning.infos import MinTurnaroundInfo
 
@@ -78,6 +78,7 @@ def time_row(half_frame):
 
 
 def _get_blocks(context, panda_mri):
+    # type: (Context, str) -> List[Block]
     # {part_name: export_name}
     panda = context.block_view(panda_mri)
     seq_part_names = {}
@@ -176,6 +177,12 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
             context, context.block_view(pmac_mri).layout.value, axesToMove)
         # Get the sequencer tables
         panda, seqa, seqb = _get_blocks(context, panda_mri)
+        # Check that the sequencer blocks have the correct wiring, and setup
+        # monitors on the active field
+        assert seqa
+        assert seqb
+        # Now grab the exported attribute on the PandA Block that we are
+        # allowed to do a put to
         self.seq_tables = [panda[attr] for attr in SEQ_TABLES]
         # load up the first SEQ
         self._fill_sequencer(self.seq_tables[0])
@@ -237,7 +244,7 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         return blind, trigger_enum, positions[axis_name]
 
     def _fill_sequencer(self, seq_table):
-        # type: (Block) -> None
+        # type: (Attribute) -> None
         rows = []
         for i in range(self.loaded_up_to, self.scan_up_to):
             point = self.generator.get_point(i)
