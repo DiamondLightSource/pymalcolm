@@ -156,22 +156,23 @@ class FileWritePart(Part):
         # The generator tells us what dimensions our scan should be. The dataset
         # will grow, so start off with the smallest we need
         initial_shape = tuple(1 for _ in generator.shape)
-        # Write the initial dataset structure
-        with h5py.File(filepath, "w", libver="latest") as hdf:
-            # The detector dataset containing the simulated data
+        # Open the file with the latest libver so SWMR works
+        hdf = h5py.File(filepath, "w", libver="latest")
+        # Write the datasets
+        # The detector dataset containing the simulated data
+        hdf.create_dataset(
+            DATA_PATH, dtype=np.uint8,
+            shape=initial_shape + (self._height, self._width),
+            maxshape=generator.shape + (self._height, self._width))
+        # Make the scalar datasets
+        for path, dtype in {
+                UID_PATH: np.int32, SUM_PATH: np.float64}.items():
             hdf.create_dataset(
-                DATA_PATH, dtype=np.uint8,
-                shape=initial_shape + (self._height, self._width),
-                maxshape=generator.shape + (self._height, self._width))
-            # Make the scalar datasets
-            for path, dtype in {
-                    UID_PATH: np.int32, SUM_PATH: np.float64}.items():
-                hdf.create_dataset(
-                    path, dtype=dtype,
-                    shape=initial_shape + (1, 1),
-                    maxshape=generator.shape + (1, 1))
-        # Re-open the file in swmr mode
-        hdf = h5py.File(filepath, "a", libver="latest", swmr=True)
+                path, dtype=dtype,
+                shape=initial_shape + (1, 1),
+                maxshape=generator.shape + (1, 1))
+        # Datasets made, we can switch to SWMR mode now
+        hdf.swmr_mode = True
         return hdf
 
     def _write_data(self, point, step):
