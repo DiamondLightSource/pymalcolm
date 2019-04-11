@@ -10,6 +10,11 @@
     name: config_dir
     description: Where to store saved configs
 
+- builtin.parameters.string:
+    name: label
+    description: Beamline specific label for the detector
+    default: Merlin
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to Merlin + stat + pos + hdf writer.
@@ -22,7 +27,11 @@
 - scanning.controllers.RunnableController:
     mri: $(mri_prefix)
     config_dir: $(config_dir)
-    description: $(docstring)
+    description: |
+      Merlin is a photon counting detector based on the Medipix chip
+
+- builtin.parts.LabelPart:
+    value: $(label)
 
 - ADMerlin.blocks.merlin_driver_block:
     mri: $(mri_prefix):DRV
