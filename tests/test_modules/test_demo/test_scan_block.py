@@ -15,7 +15,7 @@ class TestScanBlock(unittest.TestCase):
         self.p = Process("proc")
         for c in detector_block("DETECTOR", config_dir="/tmp") + \
                 motion_block("MOTION", config_dir="/tmp") + \
-                scan_1det_block("SCANMRI", config_dir="/tmp"):
+                scan_1det_block("SCANMRI", config_dir="/tmp", label="Scan 1"):
             self.p.add_controller(c)
         self.p.start()
         self.b = self.p.block_view("SCANMRI")
@@ -27,7 +27,7 @@ class TestScanBlock(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def test_init(self):
-        assert self.b.label.value == "Mapping x, y with demo detector"
+        assert self.b.label.value == "Scan 1"
         assert list(self.b.configure.meta.defaults["detectors"].rows()) \
             == [['DET', 'DETECTOR', 0.0, 1]]
 

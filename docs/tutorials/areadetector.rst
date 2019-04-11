@@ -3,140 +3,11 @@
 AreaDetector Tutorial
 =====================
 
-You should already know how to create a `block_` in the `device_layer_` using a
-`RunnableController` and some `Part` subclasses to control low level Blocks in
-the `hardware_layer_`. Now let's build this same kind of structure to control an
-`EPICS`_ `areaDetector`_ `simDetector`_ and its `plugin chain`_.
-
-
-We now end up with a hierarchy that looks like this:
-
-.. digraph:: scan_child_connections
-
-    newrank=true;  // Sensible ranking of clusters
-    bgcolor=transparent
-    compound=true
-    node [fontname=Arial fontsize=10 shape=rect style=filled fillcolor="#8BC4E9"]
-    graph [fontname=Arial fontsize=10]
-    edge [fontname=Arial fontsize=10 arrowhead=vee]
-
-    subgraph cluster_scan {
-        label="Scan Layer"
-		style=filled
-		color=lightgrey
-
-        subgraph cluster_scan_block {
-            label="SCAN"
-            ranksep=0.1
-		    color=white
-            scan_c [label="RunnableController"]
-            DET [label=<DetectorChildPart<BR/>name: 'DET'>]
-            MOTORS [label=<MotionChildPart<BR/>name: 'MOTORS'>]
-            DSET_s [label=<DatasetTablePart<BR/>name: 'DSET'>]
-            scan_c -> DET [style=invis]
-            scan_c -> MOTORS [style=invis]
-            scan_c -> DSET_s [style=invis]
-            DSET_s -> DET [style=invis]
-            {rank=same; DET -> MOTORS DSET_s}
-        }
-    }
-
-    subgraph cluster_device {
-        label="Device Layer"
-		style=filled
-		color=lightgrey
-
-        subgraph cluster_detector {
-            label="DETECTOR"
-            ranksep=0.1
-		    color=white
-            detector_c [label="RunnableController"]
-            DRV [label=<SimDetectorDriverPart<BR/>name: 'DRV'>]
-            POS [label=<PositionLabellerPart<BR/>name: 'POS'>]
-            STAT [label=<StatsPluginPart<BR/>name: 'STAT'>]
-            HDF [label=<HDFWriterPart<BR/>name: 'HDF'>]
-            DSET [label=<DatasetTablePart<BR/>name: 'DSET'>]
-            detector_c -> DRV [style=invis]
-            detector_c -> POS [style=invis]
-            DRV -> DSET [style=invis]
-            {rank=same; DRV -> POS -> STAT -> HDF}
-        }
-
-        subgraph cluster_ticker {
-            label="TICKER"
-            ranksep=0.1
-		    color=white
-            ticker_c [label="RunnableController"]
-            x [label=<ScanTickerPart<BR/>name: 'x'>]
-            y [label=<ScanTickerPart<BR/>name: 'y'>]
-            ticker_c -> x [style=invis]
-            ticker_c -> y [style=invis]
-        }
-    }
-
-    subgraph cluster_hardware {
-        label="Hardware Layer"
-		style=filled
-		color=lightgrey
-
-        subgraph cluster_drv {
-            label="DETECTOR:DRV"
-            color=white
-            drv_c [label="StatefulController"]
-            drv_p [label="CAParts"]
-            drv_c -> drv_p [style=invis]
-        }
-
-        subgraph cluster_pos {
-            label="DETECTOR:POS"
-            color=white
-            pos_c [label="StatefulController"]
-            pos_p [label="CAParts"]
-            pos_c -> pos_p [style=invis]
-        }
-
-        subgraph cluster_stat {
-            label="DETECTOR:STAT"
-            color=white
-            stat_c [label="StatefulController"]
-            stat_p [label="CAParts"]
-            stat_c -> stat_p [style=invis]
-        }
-
-        subgraph cluster_hdf {
-            label="DETECTOR:HDF"
-            color=white
-            hdf_c [label="StatefulController"]
-            hdf_p [label="CAParts"]
-            hdf_c -> hdf_p [style=invis]
-        }
-
-        subgraph cluster_counterx {
-            label="COUNTERX"
-            color=white
-            counterx_c [label="BasicController"]
-            counterx_p [label="CounterPart"]
-            counterx_c -> counterx_p [style=invis]
-        }
-
-        subgraph cluster_countery {
-            label="COUNTERY"
-            color=white
-            countery_c [label="BasicController"]
-            countery_p [label="CounterPart"]
-            countery_c -> countery_p [style=invis]
-        }
-    }
-
-    DET -> detector_c [lhead=cluster_detector minlen=3 style=dashed]
-    MOTORS -> ticker_c [lhead=cluster_ticker minlen=3 style=dashed]
-    DRV -> drv_c [lhead=cluster_drv minlen=3 style=dashed]
-    POS -> pos_c [lhead=cluster_pos minlen=3 style=dashed]
-    STAT -> stat_c [lhead=cluster_stat minlen=3 style=dashed]
-    HDF -> hdf_c [lhead=cluster_hdf minlen=3 style=dashed]
-    x -> counterx_c [lhead=cluster_counterx minlen=3 style=dashed]
-    y -> countery_c [lhead=cluster_countery minlen=3 style=dashed]
-
+You should already know how to create a `block_` in the `device_layer_` that
+looks like a detector, and how to integrate it into a `scan_layer_` Block, using
+a `DetectorChildPart`.  Now let's build a Detector Block to control an
+`EPICS`_ `areaDetector`_ `simDetector`_ and its `plugin chain`_, and integrate
+it into a scan.
 
 Acquisition Strategy
 --------------------
@@ -146,8 +17,8 @@ want to be able to take a number of frames with the detector driver, calculate
 some statistics on them, and write them in the same dimensionality as the scan
 suggests into a `NeXus`_ formatted `HDF5`_ file. The driver and each plugin in
 the chain will be represented by a Block in the `hardware_layer_`, and they will
-all be controlled detector Block in the `device_layer_`. This is best viewed as a
-diagram:
+all be controlled detector Block in the `device_layer_`. This is best viewed as
+a diagram:
 
 .. digraph:: simDetector_child_connections
 

@@ -12,15 +12,23 @@
 
 - builtin.defines.docstring:
     value: |
-      Demo scan that drives an detector like block called DETECTOR and a demo
-      motion controller called MOTION
+      Demo scan that drives:
+
+      - MOT: A motion controller called $(hostname)-ML-MOT-01
+      - INTERFERENCE: A detector like block called $(hostname)-ML-DET-01
+      - RAMP: A detector like block called $(hostname)-ML-DET-02
+
+- builtin.defines.cmd_string:
+    name: hostname
+    cmd: hostname -s
 
 - scanning.controllers.RunnableController:
     mri: $(mri)
     config_dir: $(config_dir)
     description: |
-      Demo scan with a single detector and motor controller suitable for
-      making an interesting pattern when scanning x and y in range -10 to 10
+      Demo scan with a 2 detector and motor controller. The Interference
+      detector makes an interesting pattern when scanning x and y in range -10
+      to 10. The Ramping detector independantly makes a sawtooth ramp
 
 - builtin.parts.LabelPart:
     value: $(label)
@@ -32,11 +40,16 @@
     value: [x, y]
 
 - scanning.parts.DetectorChildPart:
-    name: DET
-    mri: DETECTOR
+    name: INTERFERENCE
+    mri: $(hostname)-ML-DET-01
+    initial_visibility: True
+
+- scanning.parts.DetectorChildPart:
+    name: RAMP
+    mri: $(hostname)-ML-DET-02
     initial_visibility: True
 
 - demo.parts.MotionChildPart:
     name: MOT
-    mri: MOTION
+    mri: $(hostname)-ML-MOT-01
     initial_visibility: True
