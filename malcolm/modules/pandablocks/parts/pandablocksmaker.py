@@ -1,7 +1,7 @@
 import os
 
 from malcolm.compat import OrderedDict
-from malcolm.modules.builtin.parts import GroupPart, IconPart, TitlePart, \
+from malcolm.modules.builtin.parts import GroupPart, IconPart, LabelPart, \
     HelpPart
 from malcolm.core import Widget, group_tag, Port, config_tag, \
     BooleanMeta, ChoiceMeta, NumberMeta, StringMeta, TableMeta
@@ -92,7 +92,7 @@ class PandABlocksMaker(object):
         self._add_part("icon", part)
         label = self.block_data.description + " " + \
             self.block_name[len(block_type):]
-        part = TitlePart(value=label)
+        part = LabelPart(value=label)
         self._add_part("label", part)
         part = HelpPart("%s/build/%s_doc.html" % (
             self.doc_url_base, block_type.lower()))

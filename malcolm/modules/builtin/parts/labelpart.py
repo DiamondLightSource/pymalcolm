@@ -1,7 +1,7 @@
 from annotypes import Anno
 
 from malcolm.core import Part, PartRegistrar, StringMeta
-from ..infos import TitleInfo
+from ..infos import LabelInfo
 from ..util import set_tags
 
 
@@ -9,11 +9,11 @@ with Anno("Initial value of Block label"):
     AValue = str
 
 
-class TitlePart(Part):
+class LabelPart(Part):
     """Part representing a the title of the Block a GUI should display"""
     def __init__(self, value):
         # type: (AValue) -> None
-        super(TitlePart, self).__init__("label")
+        super(LabelPart, self).__init__("label")
         meta = StringMeta("Label for the block")
         set_tags(meta, writeable=True)
         self.attr = meta.create_attribute_model()
@@ -28,4 +28,4 @@ class TitlePart(Part):
 
     def set_label(self, value):
         self.attr.set_value(value)
-        self.registrar.report(TitleInfo(value))
+        self.registrar.report(LabelInfo(value))

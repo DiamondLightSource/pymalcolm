@@ -6,7 +6,7 @@ from .float64part import Float64Part
 from .grouppart import GroupPart
 from .helppart import HelpPart
 from .iconpart import IconPart
-from .titlepart import TitlePart
+from .labelpart import LabelPart
 from .stringpart import StringPart
 
 # Expose a nice namespace

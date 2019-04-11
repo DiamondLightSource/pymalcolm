@@ -1,5 +1,5 @@
 from malcolm.core import Controller, StringMeta, AMri, ADescription, Widget
-from ..infos import TitleInfo, HealthInfo
+from ..infos import LabelInfo, HealthInfo
 
 
 class BasicController(Controller):
@@ -8,18 +8,18 @@ class BasicController(Controller):
         # type: (AMri, ADescription) -> None
         super(BasicController, self).__init__(mri, description)
         self._faults = {}  # Dict[Part, Alarm]
-        self.info_registry.add_reportable(TitleInfo, self.update_title)
+        self.info_registry.add_reportable(LabelInfo, self.update_label)
         self.info_registry.add_reportable(HealthInfo, self.update_health)
         self.health = StringMeta(
             "Displays OK or an error message", tags=[Widget.TEXTUPDATE.tag()]
         ).create_attribute_model("OK")
         self.field_registry.add_attribute_model("health", self.health)
 
-    def update_title(self, _, info):
-        # type: (object, TitleInfo) -> None
+    def update_label(self, _, info):
+        # type: (object, LabelInfo) -> None
         """Set the label of the Block Meta object"""
         with self._lock:
-            self._block.meta.set_label(info.title)
+            self._block.meta.set_label(info.label)
 
     def update_health(self, reporter, info):
         # type: (object, HealthInfo) -> None

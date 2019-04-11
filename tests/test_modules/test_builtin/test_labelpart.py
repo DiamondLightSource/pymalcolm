@@ -1,14 +1,14 @@
 import unittest
 
-from malcolm.core import Process, Context, Queue, Subscribe, Put
+from malcolm.core import Process, Queue, Subscribe, Put
 from malcolm.modules.builtin.controllers import BasicController
-from malcolm.modules.builtin.parts import TitlePart
+from malcolm.modules.builtin.parts import LabelPart
 
 
-class TestTitlePart(unittest.TestCase):
+class TestLabelPart(unittest.TestCase):
 
     def setUp(self):
-        self.o = TitlePart(value="My label")
+        self.o = LabelPart(value="My label")
         self.p = Process("proc")
         self.c = BasicController("mri")
         self.c.add_part(self.o)

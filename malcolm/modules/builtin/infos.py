@@ -3,18 +3,18 @@ from annotypes import TYPE_CHECKING
 from malcolm.core import Info, Alarm, Port, Request
 
 if TYPE_CHECKING:
-    from typing import Callable, List, Any, Dict
+    from typing import List, Any, Dict
 
 
-class TitleInfo(Info):
-    """Used to tell the Controller the title of the Block should change
+class LabelInfo(Info):
+    """Used to tell the Controller the label of the Block should change
 
     Args:
-        title: The new title of the Block
+        label: The new title of the Block
     """
-    def __init__(self, title):
+    def __init__(self, label):
         # type: (str) -> None
-        self.title = title
+        self.label = label
 
 
 class HealthInfo(Info):
