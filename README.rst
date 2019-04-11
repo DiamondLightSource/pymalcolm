@@ -1,9 +1,6 @@
 Malcolm
 =======
 
-.. image:: https://api.codacy.com/project/badge/Grade/9b277852ec9347329f35dc41d068c151
-   :alt: Codacy Badge
-   :target: https://app.codacy.com/app/dls-controls/pymalcolm?utm_source=github.com&utm_medium=referral&utm_content=dls-controls/pymalcolm&utm_campaign=Badge_Grade_Dashboard
 
 |build_status| |coverage| |health| |pypi_version| |readthedocs|
 
@@ -63,8 +60,8 @@ APACHE License. (see `LICENSE`_)
     :target: http://pymalcolm.readthedocs.org
     :alt: Documentation
 
-.. |health| image:: https://landscape.io/github/dls-controls/pymalcolm/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/dls-controls/pymalcolm/master
+.. |health| image:: https://api.codacy.com/project/badge/Grade/9b277852ec9347329f35dc41d068c151
+   :target: https://app.codacy.com/app/dls-controls/pymalcolm?utm_source=github.com&utm_medium=referral&utm_content=dls-controls/pymalcolm&utm_campaign=Badge_Grade_Dashboard
    :alt: Code Health
 
 .. _CHANGELOG:
