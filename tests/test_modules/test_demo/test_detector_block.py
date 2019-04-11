@@ -31,10 +31,11 @@ class TestDetectorBlock(unittest.TestCase):
             'meta', 'health', 'state', 'disable', 'reset', 'mri', 'layout',
             'design', 'exports', 'modified', 'save', 'completedSteps',
             'configuredSteps', 'totalSteps', 'validate', 'configure', 'run',
-            'abort', 'pause', 'resume', 'datasets']
+            'abort', 'pause', 'resume', 'label', 'datasets']
         assert list(self.b.configure.meta.takes.elements) == [
             'generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate'
         ]
+        assert self.b.label.value == "DemoDetector"
 
     def make_generator(self):
         linex = LineGenerator('stage_x', 'mm', 0, 2, 3, alternate=True)

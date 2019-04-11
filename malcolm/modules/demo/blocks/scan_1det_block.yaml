@@ -6,15 +6,25 @@
     name: config_dir
     description: Where to store saved configs
 
+- builtin.parameters.string:
+    name: label
+    description: Instance specific label for the scan
+    default: Mapping x, y with demo detector
+
 - builtin.defines.docstring:
     value: |
-      Scan Block that controls a detector and motion controller to simulate a
-      continuous scan
+      Demo scan that drives an detector like block called DETECTOR and a demo
+      motion controller called MOTION
 
 - scanning.controllers.RunnableController:
     mri: $(mri)
     config_dir: $(config_dir)
-    description: $(docstring)
+    description: |
+      Demo scan with a single detector and motor controller suitable for
+      making an interesting pattern when scanning x and y in range -10 to 10
+
+- builtin.parts.LabelPart:
+    value: $(label)
 
 - scanning.parts.DatasetTablePart:
     name: DSET

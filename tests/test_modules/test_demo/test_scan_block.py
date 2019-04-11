@@ -26,6 +26,11 @@ class TestScanBlock(unittest.TestCase):
         self.p.stop(timeout=2)
         shutil.rmtree(self.tmpdir)
 
+    def test_init(self):
+        assert self.b.label.value == "Mapping x, y with demo detector"
+        assert list(self.b.configure.meta.defaults["detectors"].rows()) \
+            == [['DET', 'DETECTOR', 0.0, 1]]
+
     def prepare_half_run(self):
         linex = LineGenerator('x', 'mm', 0, 2, 3, alternate=True)
         liney = LineGenerator('y', 'mm', 0, 2, 2)

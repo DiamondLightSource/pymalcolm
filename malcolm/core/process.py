@@ -65,7 +65,7 @@ class ProcessStopHook(Hook[None]):
 class Process(Loggable):
     """Hosts a number of Controllers and provides spawn capabilities"""
 
-    def __init__(self, name):
+    def __init__(self, name="Process"):
         # type: (str_) -> None
         self.set_logger(process_name=name)
         self.name = name

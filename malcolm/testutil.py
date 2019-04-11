@@ -3,7 +3,7 @@ import unittest
 from annotypes import TYPE_CHECKING, Union, Sequence
 from mock import MagicMock as Mock, patch
 
-from malcolm.core import Hook, Part
+from malcolm.core import Hook, Part, Controller, Process
 from malcolm.modules.builtin.controllers import ManagerController
 
 if TYPE_CHECKING:
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class ChildTestCase(unittest.TestCase):
     @patch("malcolm.modules.ca.util.catools", Mock())
     def create_child_block(self, child_block, process, **params):
+        # type: (Callable, Process, **Any) -> Controller
         """Creates an instance of child_block with CA calls mocked out.
 
         Args:
