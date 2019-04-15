@@ -128,11 +128,14 @@ class Process(Loggable):
         published = []
 
         def walk(d):
+            to_do = []
             for k, v in d.items():
                 if k not in published and k not in self._unpublished:
                     published.append(k)
                 if v:
-                    walk(v)
+                    to_do.append(v)
+            for v in to_do:
+                walk(v)
 
         walk(tree)
 
