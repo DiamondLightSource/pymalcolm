@@ -4,9 +4,11 @@ import unittest
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
-from malcolm.modules.demo.blocks import detector_block, motion_block, scan_1det_block
+from malcolm.modules.demo.blocks import detector_block, motion_block, \
+    scan_1det_block
 from malcolm.core import Process
 from malcolm.modules.scanning.util import DatasetType
+from malcolm.testutil import PublishController
 
 
 class TestScanBlock(unittest.TestCase):
@@ -17,6 +19,8 @@ class TestScanBlock(unittest.TestCase):
                 motion_block("MOTION", config_dir="/tmp") + \
                 scan_1det_block("SCANMRI", config_dir="/tmp", label="Scan 1"):
             self.p.add_controller(c)
+        self.pub = PublishController("PUB")
+        self.p.add_controller(self.pub)
         self.p.start()
         self.b = self.p.block_view("SCANMRI")
         self.bd = self.p.block_view("DETECTOR")
@@ -30,6 +34,9 @@ class TestScanBlock(unittest.TestCase):
         assert self.b.label.value == "Scan 1"
         assert list(self.b.configure.meta.defaults["detectors"].rows()) \
             == [['DET', 'DETECTOR', 0.0, 1]]
+        assert self.pub.published == [
+            'SCANMRI', 'DETECTOR', 'MOTION', 'MOTION:COUNTERX',
+            'MOTION:COUNTERY', 'PUB']
 
     def prepare_half_run(self):
         linex = LineGenerator('x', 'mm', 0, 2, 3, alternate=True)

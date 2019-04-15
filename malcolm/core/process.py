@@ -104,9 +104,38 @@ class Process(Loggable):
             return False
 
     def _publish_controllers(self, timeout):
-        # New controllers to publish
-        published = [mri for mri in self._controllers
-                     if mri not in self._unpublished]
+        tree = OrderedDict()
+        done = set()
+
+        def add_controller(controller):
+            # type: (Controller) -> OrderedDict
+            if controller.mri not in done:
+                done.add(controller.mri)
+                children = OrderedDict()
+                for part in controller.parts.values():
+                    part_mri = getattr(part, "mri", None)
+                    if part_mri in tree:
+                        children[part_mri] = tree.pop(part_mri)
+                    elif part_mri:
+                        children[part_mri] = add_controller(
+                            self._controllers[part_mri])
+                tree[controller.mri] = children
+            return tree[controller.mri]
+
+        for c in self._controllers.values():
+            add_controller(c)
+
+        published = []
+
+        def walk(d):
+            for k, v in d.items():
+                if k not in published and k not in self._unpublished:
+                    published.append(k)
+                if v:
+                    walk(v)
+
+        walk(tree)
+
         self._run_hook(ProcessPublishHook,
                        timeout=timeout, published=published)
 

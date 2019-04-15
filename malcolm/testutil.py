@@ -1,9 +1,10 @@
 import unittest
 
-from annotypes import TYPE_CHECKING, Union, Sequence
+from annotypes import TYPE_CHECKING, Union, Sequence, add_call_types
 from mock import MagicMock as Mock, patch
 
-from malcolm.core import Hook, Part, Controller, Process
+from malcolm.core import Hook, Part, Controller, Process, ProcessPublishHook, \
+    APublished, ProcessStartHook, UnpublishedInfo
 from malcolm.modules.builtin.controllers import ManagerController
 
 if TYPE_CHECKING:
@@ -103,3 +104,25 @@ class ChildTestCase(unittest.TestCase):
             hooks = [hooks]
         for hook in hooks:
             assert part.hooked[hook] == (func, args_gen)
+
+
+class PublishController(Controller):
+    published = []
+
+    def on_hook(self, hook):
+        if isinstance(hook, ProcessPublishHook):
+            hook(self.do_publish)
+
+    @add_call_types
+    def do_publish(self, published):
+        # type: (APublished) -> None
+        self.published = published
+
+
+class UnpublishableController(Controller):
+    def on_hook(self, hook):
+        if isinstance(hook, ProcessStartHook):
+            hook(self.on_start)
+
+    def on_start(self):
+        return UnpublishedInfo(self.mri)

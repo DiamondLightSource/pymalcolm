@@ -6,6 +6,7 @@ from mock import MagicMock
 from malcolm.core import Process, ProcessStartHook, ProcessPublishHook, \
     APublished, UnpublishedInfo
 from malcolm.core.controller import Controller
+from malcolm.testutil import PublishController, UnpublishableController
 
 
 class TestProcess(unittest.TestCase):
@@ -38,26 +39,6 @@ class TestProcess(unittest.TestCase):
         assert c.init == True
 
     def test_publish_controller(self):
-        class PublishController(Controller):
-            published = []
-
-            def on_hook(self, hook):
-                if isinstance(hook, ProcessPublishHook):
-                    hook(self.do_publish)
-
-            @add_call_types
-            def do_publish(self, published):
-                # type: (APublished) -> None
-                self.published = published
-
-        class UnpublishableController(Controller):
-            def on_hook(self, hook):
-                if isinstance(hook, ProcessStartHook):
-                    hook(self.on_start)
-
-            def on_start(self):
-                return UnpublishedInfo(self.mri)
-
         c = PublishController("mri")
         self.o.add_controller(c)
         assert c.published == ["mri"]
