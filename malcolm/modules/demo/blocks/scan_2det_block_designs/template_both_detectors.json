@@ -1,0 +1,38 @@
+{
+  "attributes": {
+    "layout": {
+      "INTERFERENCE": {
+        "x": 0.0, 
+        "y": -139.60000610351562, 
+        "visible": true
+      }, 
+      "RAMP": {
+        "x": 0.0, 
+        "y": 0.0, 
+        "visible": true
+      }, 
+      "MOT": {
+        "x": 0.0, 
+        "y": 139.60000610351562, 
+        "visible": true
+      }
+    }, 
+    "exports": {}, 
+    "simultaneousAxes": [
+      "x", 
+      "y"
+    ], 
+    "label": "Mapping x, y with Interference and Ramp detectors"
+  }, 
+  "children": {
+    "INTERFERENCE": {
+      "design": ""
+    }, 
+    "RAMP": {
+      "design": "template_software_triggered.json"
+    }, 
+    "MOT": {
+      "design": ""
+    }
+  }
+}

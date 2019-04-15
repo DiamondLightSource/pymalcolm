@@ -60,8 +60,8 @@ class DetectorDriverPart(ChildPart):
 
     def build_attribute_xml(self):
         root_el = ET.Element("Attributes")
-        for index, _ in enumerate(self.extra_attributes.value.sourceId):
-            if self.extra_attributes.value.sourceType[index] == SourceType.PV:
+        for index, s_type in enumerate(self.extra_attributes.value.sourceType):
+            if s_type == SourceType.PV:
                 dbr_type = self.extra_attributes.value.dataType[index]
                 if dbr_type == DataType.INT:
                     dbr_type = "DBR_LONG"
@@ -71,24 +71,21 @@ class DetectorDriverPart(ChildPart):
                     dbr_type = "DBR_STRING"
                 else:
                     dbr_type = dbr_type.value
-                ET.SubElement(root_el, "Attribute",
-                              name=self.extra_attributes.value.name[index],
-                              type="EPICS_PV",
-                              dbrtype=dbr_type, description=
-                              self.extra_attributes.value.description[index],
-                              source=self.extra_attributes.value.sourceId[
-                                  index])
-            elif self.extra_attributes.value.sourceType[
-                index] == SourceType.PARAM:
-                ET.SubElement(root_el, "Attribute",
-                              name=self.extra_attributes.value.name[index],
-                              type="PARAM",
-                              datatype=self.extra_attributes.value.dataType[
-                                  index].value,
-                              description=
-                              self.extra_attributes.value.description[index],
-                              source=self.extra_attributes.value.sourceId[
-                                  index])
+                ET.SubElement(
+                    root_el, "Attribute",
+                    name=self.extra_attributes.value.name[index],
+                    type="EPICS_PV",
+                    dbrtype=dbr_type,
+                    description=self.extra_attributes.value.description[index],
+                    source=self.extra_attributes.value.sourceId[index])
+            elif s_type == SourceType.PARAM:
+                ET.SubElement(
+                    root_el, "Attribute",
+                    name=self.extra_attributes.value.name[index],
+                    type="PARAM",
+                    datatype=self.extra_attributes.value.dataType[index].value,
+                    description=self.extra_attributes.value.description[index],
+                    source=self.extra_attributes.value.sourceId[index])
         return et_to_string(root_el)
 
     def set_extra_attributes(self, value):

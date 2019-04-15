@@ -1,0 +1,67 @@
+{
+  "attributes": {
+    "layout": {
+      "DRV": {
+        "x": -321.0, 
+        "y": 4.024997711181641, 
+        "visible": true
+      }, 
+      "STAT": {
+        "x": 107.0, 
+        "y": -4.024997711181641, 
+        "visible": true
+      }, 
+      "POS": {
+        "x": -107.0, 
+        "y": 4.024997711181641, 
+        "visible": true
+      }, 
+      "HDF5": {
+        "x": 321.0, 
+        "y": -4.024997711181641, 
+        "visible": true
+      }
+    }, 
+    "exports": {}, 
+    "frequencyAccuracy": 50.0, 
+    "attributesToCapture": {
+      "typeid": "malcolm:core/Table:1.0", 
+      "name": [], 
+      "sourceId": [], 
+      "description": [], 
+      "sourceType": [], 
+      "dataType": [], 
+      "datasetType": []
+    }, 
+    "label": "Ramp detector", 
+    "readoutTime": 4e-05, 
+    "exposure": 0.0, 
+    "writeAllNdAttributes": true
+  }, 
+  "children": {
+    "DRV": {
+      "attributesFile": "", 
+      "triggerMode": "Internal", 
+      "gainX": 1.0, 
+      "gainY": 1.0
+    }, 
+    "STAT": {
+      "arrayCallbacks": true, 
+      "arrayCounter": 2571, 
+      "input": "ADSIM.POS"
+    }, 
+    "POS": {
+      "arrayCallbacks": true, 
+      "arrayCounter": 2571, 
+      "attributesFile": "", 
+      "input": "ADSIM.CAM"
+    }, 
+    "HDF5": {
+      "arrayCallbacks": false, 
+      "attributesFile": "", 
+      "input": "ADSIM.stat", 
+      "cacheFramesPerChunk": 0, 
+      "xmlLayout": ""
+    }
+  }
+}

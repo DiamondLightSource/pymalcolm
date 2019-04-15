@@ -28,7 +28,7 @@ def exposure_attribute(min_exposure):
     # type: (float) -> AttributeModel
     meta = NumberMeta(
         "float64", "The calculated exposure for this run",
-        tags=[Widget.TEXTUPDATE.tag(), config_tag()],
+        tags=[Widget.TEXTUPDATE.tag()],
         display=Display(precision=6, units="s", limitLow=min_exposure)
     )
     return meta.create_attribute_model()

@@ -235,7 +235,7 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
 @builtin.util.no_save(
     'positionMode', 'enableCallbacks', 'fileWriteMode', 'swmrMode',
     'dimAttDatasets', 'lazyOpen', 'arrayCounter', 'filePath', 'fileName',
-    'fileTemplate', 'numExtraDims', 'flushAttrPerNFrames', 'xml',
+    'fileTemplate', 'numExtraDims', 'flushAttrPerNFrames', 'xmlLayout',
     'flushDataPerNFrames', 'numCapture')
 @builtin.util.no_save("posNameDim%s" % SUFFIXES[i] for i in range(10))
 @builtin.util.no_save("extraDimSize%s" % SUFFIXES[i] for i in range(10))

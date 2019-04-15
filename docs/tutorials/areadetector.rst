@@ -237,39 +237,32 @@ Template Designs
 One of the benefits of splitting the Hardware Layer from the Device Layer is
 that we now get a useful interface that tells us what to load and save. We
 tag all writeable CAParts as config Attributes by default, which will mean that
-when we :meth:`~ManagerController.save()` the Device Block, it will write the
-current value of all these Attributes of all its child Hardware Blocks to a
-`design_` file.
+when we ``save()`` the Device Block, it will write the current value of all
+these Attributes of all its child Hardware Blocks to a `design_` file.
 
 We learned in the `motion_tutorial` that Designs are JSON formatted files stored
 in the ``config_dir`` on ``save()``, and that they can be loaded by setting
-the ``design`` Attribute at runtime. We now
+the ``design`` Attribute at runtime. We now introduce the concept of a
+`template_design_`. This is a read-only Design that is provided by Malcolm to
+demonstrate how a Block might be used to implement a particular use case. It
+always starts with the text ``template_``.
 
-
-The keen eyed will notice that the top level `RunnableController` has
-``config_dir`` and ``initial_design`` parameters. The first we set to
-``$(yamldir)/saved_designs`` which tells us where to save and load designs from.
-The second we set to ``demo_design`` which is the name design we should load at
-init.
-
-We also introduce the concept of a `template_design_` here. This is a read-only
-`design_` that is provided by Malcolm to demonstrate how a Block might be used
-to implement a particular use case.
-
-has been pulled into Malcol
-
-
-All this means that when Malcolm starts up it will apply the settings in
-``./malcolm/modules/demo/saved_designs/DETECTOR/demo_design.json``. If you are
-interested you can click below to expand the contents:
+In our demo, we want our simDetector wired up in such a way that we can
+implement the Acquisition Strategy set out earlier. The ``ADSimDetector``
+module provides a design ``template_software_triggered`` that will do this for
+us. We would discover this by running up Malcolm, and seeing the possible values
+in the ``design`` drop-down list. If you are interested you can click
+below to expand the text of
+``blocks/sim_detector_runnable_block_designs/template_software_triggered.json``
+in ``./malcolm/modules/ADSimDetector/`` to see what it will load:
 
 .. container:: toggle
 
     .. container:: header
 
-        Saved Design JSON: demo_design
+        Template Design JSON: template_software_triggered
 
-    .. literalinclude:: ../../malcolm/modules/demo/saved_designs/DETECTOR/demo_design.json
+    .. literalinclude:: ../../malcolm/modules/ADSimDetector/blocks/sim_detector_runnable_block_designs/template_software_triggered.json
         :language: json
 
 This Design will setup the plugin chain correctly for areaDetector to work the
@@ -282,6 +275,50 @@ that it receives.
     The reason that this rewiring is done in the Design file rather than each
     plugin Part is that it allows extra plugins to be placed inline that Malcolm
     doesn't and shouldn't have to know about.
+
+Scan Blocks can have saved `design_` files just like Device Blocks. The
+difference is that they have far fewer entries as their children typically save
+their config in their own Design files. If we look at
+``./malcolm/modules/demo/blocks/scan_2det_block_designs/template_both_detectors.json``
+we will see just how few entries there are:
+
+.. literalinclude:: ../../malcolm/modules/demo/blocks/scan_2det_block_designs/template_both_detectors.json
+    :language: json
+
+Basically we imagine that each Device Block will have a number of designs for
+hardware or software triggering or different motor setups, and the Scan Block
+will say "I need DET with the hardware_trigger design and MOTORS with
+hkl_geometry". The Scan Block will not load its children's designs at init, but
+will set them before every ``configure()`` call, ensuring the Device Blocks are
+all setup correctly at the beginning of every scan.
+
+Now we know what we need to load, we need to work out when to load it. There is
+an ``initial_design`` parameter that we pass to any `ManagerController` or
+`RunnableController` that will tell it what design to load when Malcolm starts
+up, and we have two places we could load an ``initial_design``:
+
+1.  In the detector. In this case, the design will be loaded as soon as Malcolm
+    starts, but if there is not a clear single design that all scans use then
+    it is not clear what to set it to.
+
+2.  In the scan. In this case, the design will be loaded at the beginning of
+    every scan. This means that scans can use different
+
+
+As we already know the design we want, we can set this as the ``initial_design``
+for the Block. This means it will be loaded when Malcolm starts, but not after.
+This is suitable for our application, as Malcolm is the only user of this IOC.
+
+
+
+
+We also need to be a little careful with how we apply these designs. The parent
+Scan Block will load child Device Block designs before configure(), but only
+if the Scan Block has done a load or a save with the Device Block having a saved
+Design. This means that while we are commissioning, Attributes on the Hardware
+Blocks can be set to whatever we need, and the Scan Block will not interfere,
+but when we save the Device Block and Scan Block settings we want to make sure
+that they are in that state before every scan.
 
 
 Running a Scan
@@ -459,32 +496,7 @@ chains can be controlled in Malcolm, and how `Designs <design_>` can be loaded
 and saved.
 
 
-Loading and Saving
-------------------
 
-Scan Blocks can have saved `design_` files just like Device Blocks. The
-difference is that they have far fewer entries as their children typically save
-their config in their own Design files. If we ``scan.save("initial_design")``
-just after we start, we will see just how few entries there are in
-``./malcolm/modules/demo/saved_designs/SCAN/initial_design.json``:
-
-.. literalinclude:: ../../malcolm/modules/demo/saved_designs/SCAN/initial_design.json
-    :language: json
-
-Basically we imagine that each Device Block will have a number of designs for
-hardware or software triggering or different motor setups, and the Scan Block
-will say "I need DET with the hardware_trigger design and MOTORS with
-hkl_geometry". The ``readoutTime`` Attribute is not encapsulated in the design
-of its child Device Block because it will vary depending on the trigger source,
-so is saved as the Scan Block design.
-
-We also need to be a little careful with how we apply these designs. The parent
-Scan Block will load child Device Block designs before configure(), but only
-if the Scan Block has done a load or a save with the Device Block having a saved
-Design. This means that while we are commissioning, Attributes on the Hardware
-Blocks can be set to whatever we need, and the Scan Block will not interfere,
-but when we save the Device Block and Scan Block settings we want to make sure
-that they are in that state before every scan.
 
 
 

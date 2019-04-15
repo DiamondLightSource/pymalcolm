@@ -10,6 +10,11 @@
     name: label
     description: Instance specific label for the scan
 
+- builtin.parameters.string:
+    name: initial_design
+    description: Design to load at init
+    default:
+
 - builtin.defines.docstring:
     value: |
       Demo scan that drives:
@@ -26,6 +31,7 @@
     mri: $(mri)
     config_dir: $(config_dir)
     template_designs: $(yamldir)/$(yamlname)_designs
+    initial_design: $(initial_design)
     description: |
       Demo scan with a 2 detector and motor controller. The Interference
       detector makes an interesting pattern when scanning x and y in range -10

@@ -5,7 +5,7 @@ from annotypes import TYPE_CHECKING, Anno, Sequence, stringify_error
 from malcolm.compat import OrderedDict
 from .alarm import Alarm
 from .context import Context
-from .errors import UnexpectedError, NotWriteableError
+from .errors import UnexpectedError, NotWriteableError, FieldError
 from .hook import Hookable, start_hooks, wait_hooks, Hook
 from .info import Info
 from .models import BlockModel, AttributeModel, MethodModel, Model
@@ -56,7 +56,7 @@ class Controller(Hookable):
         self.info_registry = InfoRegistry()
 
     def _setup_part(self, part):
-        # type: (Part, Process) -> None
+        # type: (Part) -> None
         part.setup(PartRegistrar(self.field_registry, self.info_registry, part))
 
     def setup(self, process):
@@ -196,7 +196,12 @@ class Controller(Hookable):
         """Called with the lock taken"""
         attribute_name = request.path[1]
 
-        attribute = self._block[attribute_name]
+        try:
+            attribute = self._block[attribute_name]
+        except KeyError:
+            raise FieldError("Block '%s' has no Attribute '%s'" % (
+                self.mri, attribute_name))
+
         assert isinstance(attribute, AttributeModel), \
             "Cannot Put to %s which is a %s" % (attribute.path, type(attribute))
         self.check_field_writeable(attribute)
@@ -243,7 +248,12 @@ class Controller(Hookable):
         """Called with the lock taken"""
         method_name = request.path[1]
 
-        method = self._block[method_name]
+        try:
+            method = self._block[method_name]
+        except KeyError:
+            raise FieldError("Block '%s' has no Method '%s'" % (
+                self.mri, method_name))
+
         assert isinstance(method, MethodModel), \
             "Cannot Post to %s which is a %s" % (method.path, type(method))
         self.check_field_writeable(method)

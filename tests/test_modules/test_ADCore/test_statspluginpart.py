@@ -24,7 +24,8 @@ class TestStatsPluginPart(ChildTestCase):
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
         assert list(sorted(self.o.no_save_attribute_names)) == [
-            "attributesFile", "computeStatistics", "enableCallbacks"]
+            "arrayCounter", "attributesFile", "computeStatistics",
+            "enableCallbacks"]
         infos = self.o.report_status()
         assert len(infos) == 1
         assert infos[0].name == "sum"

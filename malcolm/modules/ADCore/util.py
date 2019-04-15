@@ -9,34 +9,44 @@ if TYPE_CHECKING:
 
 
 class AttributeDatasetType(Enum):
+    """Used to signal from a detector driver that it is producing an NDAttribute
+    that should be published to the user, and what its NeXus type is"""
+    #: Primary data that is directly relevant to the user, like a transmission
+    #: diode.
     DETECTOR = "detector"
+    #: Data that only makes sense when considered with detector data, like a
+    #: measure of beam current with an ion chamber
     MONITOR = "monitor"
+    #: Readback position of a motor that is taking part in the experiment
     POSITION = "position"
 
 
 class DataType(Enum):
-    INT = "INT"
-    DOUBLE = "DOUBLE"
-    STRING = "STRING"
-    DBRNATIVE = "DBR_NATIVE"
+    """The datatype that should be used for the NDAttribute"""
+    INT = "INT"  #: int32
+    DOUBLE = "DOUBLE"  #: float64
+    STRING = "STRING"  #: string
+    DBRNATIVE = "DBR_NATIVE"  #: Whatever native type the PV has
 
 
 class SourceType(Enum):
-    PARAM = "paramAttribute"
-    PV = "PVAttribute"
+    """Where to get the NDAttribute data from"""
+    PARAM = "paramAttribute"  #: From an asyn parameter of this driver
+    PV = "PVAttribute"  #: From a PV name
 
 
 class StatisticsName(Enum):
-    MIN = "MIN_VALUE"  # Minimum counts in any element
-    MIN_X = "MIN_X"  # X position of minimum counts
-    MIN_Y = "MIN_Y"  # Y position of minimum counts
-    MAX = "MAX_VALUE"  # Maximum counts in any element
-    MAX_X = "MAX_X"  # X position of maximum counts
-    MAX_Y = "MAX_Y"  # Y position of maximum counts
-    MEAN = "MEAN_VALUE"  # Mean counts of all elements
-    SIGMA = "SIGMA_VALUE"  # Sigma of all elements
-    SUM = "TOTAL"  # Sum of all elements
-    NET = "NET"  # Sum of all elements not in background region
+    """The types of statistics calculated by the areaDetector NDPluginStats"""
+    MIN = "MIN_VALUE"  #: Minimum counts in any element
+    MIN_X = "MIN_X"  #: X position of minimum counts
+    MIN_Y = "MIN_Y"  #: Y position of minimum counts
+    MAX = "MAX_VALUE"  #: Maximum counts in any element
+    MAX_X = "MAX_X"  #: X position of maximum counts
+    MAX_Y = "MAX_Y"  #: Y position of maximum counts
+    MEAN = "MEAN_VALUE"  #: Mean counts of all elements
+    SIGMA = "SIGMA_VALUE"  #: Sigma of all elements
+    SUM = "TOTAL"  #: Sum of all elements
+    NET = "NET"  #: Sum of all elements not in background region
 
 
 with Anno("Is the IOC this part connects to running on Windows?"):

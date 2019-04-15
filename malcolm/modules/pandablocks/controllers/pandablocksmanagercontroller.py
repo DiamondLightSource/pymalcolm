@@ -8,11 +8,11 @@ from annotypes import Anno
 from cothread.cosocket import socket
 
 from malcolm.compat import OrderedDict, et_to_string
-from malcolm.core import Queue, TimeoutError, BooleanMeta, TableMeta, TimeStamp, \
-    Alarm
+from malcolm.core import Queue, TimeoutError, BooleanMeta, TableMeta, \
+    TimeStamp, Alarm
 from malcolm.modules.builtin.controllers import BasicController, \
-    ManagerController, AMri, AConfigDir, AInitialDesign, ADescription, AUseGit, \
-    ATemplateDesigns
+    ManagerController, AMri, AConfigDir, AInitialDesign, ADescription, \
+    AUseGit, ATemplateDesigns
 from malcolm.modules.builtin.parts import ChildPart
 from ..parts.pandablocksmaker import PandABlocksMaker, SVG_DIR
 from ..parts.pandablocksactionpart import PandABlocksActionPart

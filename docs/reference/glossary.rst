@@ -159,3 +159,13 @@ A `ServerComms` is a special `controller_` that provides access to the `Blocks
 <block_>` hosted by the current Malcolm `process_`. Introduced in the
 `hello_tutorial`.
 
+.. _template_design_:
+
+Template Design
+---------------
+
+A read-only `design_` that is provide by Malcolm itself. It always starts
+with the string ``template_``. It can either be a sensible set of defaults for a
+particular Block that can be used as is (like ``template_hardware_gate`` for a
+detector) or act as a starting point for a user design (like ``template_pcomp``
+for a PandA)

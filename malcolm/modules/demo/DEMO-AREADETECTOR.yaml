@@ -31,12 +31,12 @@
     pv_prefix: $(hostname)-AD-SIM-01
     label: Ramp detector
     drv_suffix: CAM
-    initial_design: template_linear_ramps
 
 - demo.blocks.scan_2det_block:
     mri: $(hostname)-ML-SCAN-01
     config_dir: $(config_dir)
     label: Mapping x, y with Interference and Ramp detectors
+    initial_design: template_both_detectors
 
 # Add a webserver comms
 - web.blocks.web_server_block:
