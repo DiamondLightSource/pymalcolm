@@ -1,7 +1,10 @@
 from threading import Thread
 import atexit
 
+from annotypes import Anno, Array
 from tornado.ioloop import IOLoop
+
+from malcolm.core import Table
 
 
 class IOLoopHelper(object):
@@ -39,3 +42,16 @@ class IOLoopHelper(object):
             # Wait until done
             cls._thread.join()
             cls._thread = None
+
+
+with Anno("The Malcolm Resource Identifier for the Block"):
+    AMris = Array[str]
+with Anno("A human readable label for the Block"):
+    ALabels = Array[str]
+
+
+class BlockTable(Table):
+    def __init__(self, mri, label):
+        # type: (AMris, ALabels) -> None
+        self.mri = mri
+        self.label = label
