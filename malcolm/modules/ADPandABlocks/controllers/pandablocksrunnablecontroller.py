@@ -7,7 +7,7 @@ from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.builtin.parts import StringPart, ChoicePart
 from malcolm.modules.pandablocks.controllers import \
     PandABlocksManagerController, AMri, AConfigDir, AHostname, APort, \
-    AInitialDesign, ADescription, AUseGit
+    AInitialDesign, ADescription, AUseGit, ATemplateDesigns
 from malcolm.modules.scanning.controllers import RunnableController
 from ..parts import PandABlocksDriverPart, PandABlocksChildPart
 
@@ -24,14 +24,22 @@ class PandABlocksRunnableController(PandABlocksManagerController,
                  prefix,  # type: APrefix
                  hostname="localhost",  # type: AHostname
                  port=8888,  # type: APort
+                 template_designs="",  # type: ATemplateDesigns
                  initial_design="",  # type: AInitialDesign
-                 description="",  # type: ADescription
                  use_git=True,  # type: AUseGit
+                 description="",  # type: ADescription
                  ):
         # type: (...) -> None
         super(PandABlocksRunnableController, self).__init__(
-            mri, config_dir, hostname, port, initial_design, description,
-            use_git)
+            mri=mri,
+            config_dir=config_dir,
+            hostname=hostname,
+            port=port,
+            template_designs=template_designs,
+            initial_design=initial_design,
+            use_git=use_git,
+            description=description,
+        )
         self.prefix = prefix
 
     def _make_child_controller(self, parts, mri):

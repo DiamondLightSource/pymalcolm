@@ -2,11 +2,11 @@ from annotypes import Anno, TYPE_CHECKING, add_call_types, Any, json_encode
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
-    NumberMeta, Widget, Part, DEFAULT_TIMEOUT, UnexpectedError, Table
+    NumberMeta, Widget, Part, DEFAULT_TIMEOUT, Table
 from malcolm.compat import OrderedDict
 from malcolm.core.models import MapMeta, MethodMeta, TableMeta
 from malcolm.modules.builtin.controllers import ManagerController, \
-    AConfigDir, AInitialDesign, ADescription, AUseGit
+    AConfigDir, AInitialDesign, ADescription, AUseGit, ATemplateDesigns
 from malcolm.modules.builtin.hooks import ResetHook
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, AAxesToMove, ConfigureParams
@@ -127,13 +127,20 @@ class RunnableController(ManagerController):
     def __init__(self,
                  mri,  # type: AMri
                  config_dir,  # type: AConfigDir
+                 template_designs="",  # type: ATemplateDesigns
                  initial_design="",  # type: AInitialDesign
-                 description="",  # type: ADescription
                  use_git=True,  # type: AUseGit
+                 description="",  # type: ADescription
                  ):
         # type: (...) -> None
         super(RunnableController, self).__init__(
-            mri, config_dir, initial_design, description, use_git)
+            mri=mri,
+            config_dir=config_dir,
+            template_designs=template_designs,
+            initial_design=initial_design,
+            use_git=use_git,
+            description=description,
+        )
         # Shared contexts between Configure, Run, Pause, Seek, Resume
         self.part_contexts = {}  # type: Dict[Part, Context]
         # Any custom ConfigureParams subclasses requested by Parts

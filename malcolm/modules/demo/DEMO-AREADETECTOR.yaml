@@ -13,7 +13,7 @@
 
 - builtin.defines.string:
     name: config_dir
-    value: $(yamldir)/saved_designs
+    value: /tmp
 
 # Create some Blocks
 - demo.blocks.motion_block:
@@ -31,7 +31,7 @@
     pv_prefix: $(hostname)-AD-SIM-01
     label: Ramp detector
     drv_suffix: CAM
-    initial_design: demo_design
+    initial_design: template_linear_ramps
 
 - demo.blocks.scan_2det_block:
     mri: $(hostname)-ML-SCAN-01

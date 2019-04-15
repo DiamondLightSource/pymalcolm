@@ -11,7 +11,8 @@ from malcolm.compat import OrderedDict, et_to_string
 from malcolm.core import Queue, TimeoutError, BooleanMeta, TableMeta, TimeStamp, \
     Alarm
 from malcolm.modules.builtin.controllers import BasicController, \
-    ManagerController, AMri, AConfigDir, AInitialDesign, ADescription, AUseGit
+    ManagerController, AMri, AConfigDir, AInitialDesign, ADescription, AUseGit, \
+    ATemplateDesigns
 from malcolm.modules.builtin.parts import ChildPart
 from ..parts.pandablocksmaker import PandABlocksMaker, SVG_DIR
 from ..parts.pandablocksactionpart import PandABlocksActionPart
@@ -44,15 +45,22 @@ class PandABlocksManagerController(ManagerController):
                  config_dir,  # type: AConfigDir
                  hostname="localhost",  # type: AHostname
                  port=8888,  # type: APort
-                 initial_design="",  # type: AInitialDesign
-                 description="",  # type: ADescription
-                 use_git=True,  # type: AUseGit
                  doc_url_base=DOC_URL_BASE,  # type: ADocUrlBase
-                 poll_period=0.1  # type: APollPeriod
+                 poll_period=0.1,  # type: APollPeriod
+                 template_designs="",  # type: ATemplateDesigns
+                 initial_design="",  # type: AInitialDesign
+                 use_git=True,  # type: AUseGit
+                 description="",  # type: ADescription
                  ):
         # type: (...) -> None
         super(PandABlocksManagerController, self).__init__(
-            mri, config_dir, initial_design, description, use_git)
+            mri=mri,
+            config_dir=config_dir,
+            template_designs=template_designs,
+            initial_design=initial_design,
+            use_git=use_git,
+            description=description,
+        )
         self._poll_period = poll_period
         self._doc_url_base = doc_url_base
         # {block_name: BlockData}

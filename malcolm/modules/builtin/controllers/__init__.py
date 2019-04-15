@@ -1,7 +1,7 @@
 from .basiccontroller import BasicController, AMri, ADescription
 from .statefulcontroller import StatefulController
 from .managercontroller import ManagerController, AConfigDir, AInitialDesign, \
-    AUseGit
+    AUseGit, ATemplateDesigns
 from .clientcomms import ClientComms
 from .proxycontroller import ProxyController, AComms, APublish
 from .servercomms import ServerComms

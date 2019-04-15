@@ -36,6 +36,7 @@
     value: 0
     wait: False
 
+# For docs: before acquiring
 - ca.parts.CABooleanPart:
     name: acquiring
     description: If detector is currently acquiring

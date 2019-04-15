@@ -35,6 +35,9 @@ with Anno("Use git to manage to saved config files"):
     AUseGit = bool
 with Anno("Name of design to save, if different from current design"):
     ASaveDesign = str
+with Anno("A directory of templates with which to initially populate designs "
+          "Attribute. These cannot be saved over."):
+    ATemplateDesigns = str
 
 
 def check_git_version(required_version):
@@ -50,16 +53,21 @@ class ManagerController(StatefulController):
     def __init__(self,
                  mri,  # type: AMri
                  config_dir,  # type: AConfigDir
+                 template_designs="",  # type: ATemplateDesigns
                  initial_design="",  # type: AInitialDesign
-                 description="",  # type: ADescription
                  use_git=True,  # type: AUseGit
+                 description="",  # type: ADescription
                  ):
         # type: (...) -> None
-        super(ManagerController, self).__init__(mri, description)
+        super(ManagerController, self).__init__(
+            mri=mri,
+            description=description
+        )
         assert os.path.isdir(config_dir), "%s is not a directory" % config_dir
         self.config_dir = config_dir
         self.initial_design = initial_design
         self.use_git = use_git
+        self.template_designs = template_designs
         if use_git:
             if check_git_version("1.7.2"):
                 self.git_email = os.environ["USER"] + "@" + socket.gethostname()
@@ -414,6 +422,7 @@ class ManagerController(StatefulController):
         if not design:
             design = self.design.value
         assert design, "Please specify save design name when saving from new"
+        assert not design.startswith("template_"), "Cannot save over a template"
         structure = OrderedDict()
         attributes = structure.setdefault("attributes", OrderedDict())
         # Add the layout table
@@ -456,6 +465,14 @@ class ManagerController(StatefulController):
                 names.append(f.split(".json")[0])
         if extra_name and str(extra_name) not in names:
             names.append(str(extra_name))
+        names.sort()
+        if os.path.isdir(self.template_designs):
+            for f in sorted(os.listdir(self.template_designs)):
+                assert f.startswith("template_"), \
+                    "Template design %s/%s should start with 'template_'" % (
+                        self.template_designs, f)
+                if f not in names:
+                    names.append(f)
         self.design.meta.set_choices(names)
 
     def _validated_config_filename(self, name):
@@ -467,7 +484,13 @@ class ManagerController(StatefulController):
         Returns:
             str: Full path including extension
         """
-        dir_name = self._make_config_dir()
+
+        if name.startswith("template_"):
+            # Load from templates dir
+            dir_name = self.template_designs
+        else:
+            # Load from config dir
+            dir_name = self._make_config_dir()
         filename = os.path.join(dir_name, name.split(".json")[0] + ".json")
         return filename
 

@@ -380,7 +380,8 @@ Load/Save
 
 To swap between dynamic configurations we use the concept of designs. The state
 of the parent and it's immediate children can be saved to a file and restored
-at a later date. These configurations are stored on a per Block basis.
+at a later date. These configurations are stored on a per Block basis in the
+``config_dir`` specified in the top level YAML file.
 
 If you look at the left hand sign of the screen you should see a "Modified" LED
 which should be lit. This is saying that there are unsaved changes since either

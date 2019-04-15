@@ -192,7 +192,7 @@ Hardware Blocks
 
 If we look at the next level down at something like
 ``./malcolm/modules/ADSimDetector/blocks/sim_detector_driver_block.yaml`` we
-will see out PV interface:
+will see our PV interface:
 
 .. literalinclude:: ../../malcolm/modules/ADSimDetector/blocks/sim_detector_driver_block.yaml
     :language: yaml
@@ -204,7 +204,7 @@ start of that file:
 
 .. literalinclude:: ../../malcolm/modules/ADCore/includes/adbase_parts.yaml
     :language: yaml
-    :lines: 1-34
+    :end-before: # For docs: before acquiring
 
 This include structure mirrors that of the underlying templates, and allows us
 to maintain a one to one mapping of YAML file to template file. If you look at
@@ -215,7 +215,7 @@ For instance:
 
 .. literalinclude:: ../../malcolm/modules/ADCore/includes/adbase_parts.yaml
     :language: yaml
-    :lines: 15-21
+    :lines: 19-24
 
 This corresponds to an `attribute_` that caputs to the ``NumImages`` pv with
 callback when set, and uses ``NumImages_RBV`` as the current value.
@@ -224,27 +224,40 @@ Alternatively:
 
 .. literalinclude:: ../../malcolm/modules/ADCore/includes/adbase_parts.yaml
     :language: yaml
-    :lines: 22-28
+    :lines: 25-31
 
 This corresponds to a `method_` that caputs to the ``Acquire`` pv with callback,
 and when it completes checks ``DetectorState_RBV`` to see if the detector
 completed successfully or with an error.
 
 
-Loading and Saving
-------------------
+Template Designs
+----------------
 
 One of the benefits of splitting the Hardware Layer from the Device Layer is
 that we now get a useful interface that tells us what to load and save. We
 tag all writeable CAParts as config Attributes by default, which will mean that
-when we `save()` the Device Block, it will write the current value of all these
-Attributes of all its child Hardware Blocks to a JSON `design_` file.
+when we :meth:`~ManagerController.save()` the Device Block, it will write the
+current value of all these Attributes of all its child Hardware Blocks to a
+`design_` file.
+
+We learned in the `motion_tutorial` that Designs are JSON formatted files stored
+in the ``config_dir`` on ``save()``, and that they can be loaded by setting
+the ``design`` Attribute at runtime. We now
+
 
 The keen eyed will notice that the top level `RunnableController` has
 ``config_dir`` and ``initial_design`` parameters. The first we set to
 ``$(yamldir)/saved_designs`` which tells us where to save and load designs from.
 The second we set to ``demo_design`` which is the name design we should load at
 init.
+
+We also introduce the concept of a `template_design_` here. This is a read-only
+`design_` that is provided by Malcolm to demonstrate how a Block might be used
+to implement a particular use case.
+
+has been pulled into Malcol
+
 
 All this means that when Malcolm starts up it will apply the settings in
 ``./malcolm/modules/demo/saved_designs/DETECTOR/demo_design.json``. If you are

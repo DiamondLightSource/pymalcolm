@@ -1,6 +1,6 @@
 from .pandablocksmanagercontroller import PandABlocksManagerController, \
     AMri, AConfigDir, AHostname, APort, AInitialDesign, ADescription, \
-    AUseGit
+    AUseGit, ATemplateDesigns
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

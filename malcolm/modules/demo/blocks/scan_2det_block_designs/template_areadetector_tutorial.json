@@ -13,7 +13,7 @@
   }, 
   "exports": {}, 
   "DET": {
-    "design": "demo_design", 
+    "design": "template_linear_ramps",
     "axesToMove": [], 
     "readoutTime": 4.0000000000000003e-05
   }, 
