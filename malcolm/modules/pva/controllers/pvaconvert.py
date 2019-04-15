@@ -5,6 +5,7 @@ import numpy as np
 
 from malcolm.compat import str_, long_, OrderedDict
 from malcolm.core import AlarmSeverity, AlarmStatus
+from malcolm.core.models import NTTable
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Any
@@ -77,6 +78,19 @@ def convert_to_type_tuple_value(value):
             typeid = "structure"
         fields = []
         value_for_set = {}
+        # Special case NTTable labels
+        if typeid == NTTable.typeid:
+            # Add labels for compatibility with epics normative types
+            labels = []
+            elements = value["meta"]["elements"]
+            for column_name in elements:
+                column_meta = elements[column_name]
+                if column_meta["label"]:
+                    labels.append(column_meta["label"])
+                else:
+                    labels.append(column_name)
+            fields.append(("labels", "as"))
+            value_for_set["labels"] = labels
         for k in value:
             if k != "typeid":
                 t, v_set = convert_to_type_tuple_value(value[k])
@@ -140,6 +154,9 @@ def convert_value_to_dict(v):
         d["typeid"] = typeid
     # Fill in all the fields
     for name, spec in v.type().items():
+        if typeid == NTTable.typeid and name == "labels":
+            # NTTable might give us labels, ignore them
+            continue
         d[name] = convert_from_type_spec(spec, v[name])
     return d
 

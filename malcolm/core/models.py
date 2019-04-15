@@ -360,27 +360,6 @@ class AttributeModel(Model):
 class NTTable(AttributeModel):
     __slots__ = []
 
-    def to_dict(self, dict_cls=OrderedDict):
-        # type: (Type[dict]) -> Dict[str, Any]
-        d = dict_cls()
-        d["typeid"] = self.typeid
-        # Add labels for compatibility with epics normative types
-        labels = []
-        for column_name in self.meta.elements:
-            column_meta = self.meta.elements[column_name]
-            if column_meta.label:
-                labels.append(column_meta.label)
-            else:
-                labels.append(column_name)
-        d["labels"] = Array[str](labels)
-        d.update(super(NTTable, self).to_dict(dict_cls))
-        return d
-
-    @classmethod
-    def from_dict(cls, d, ignore=()):
-        ignore += ("labels",)
-        return super(NTTable, cls).from_dict(d, ignore)
-
 
 @Serializable.register_subclass("epics:nt/NTUnion:1.0")
 class NTUnion(AttributeModel):

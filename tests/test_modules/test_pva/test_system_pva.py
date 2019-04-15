@@ -2,6 +2,7 @@ import shutil
 import tempfile
 import unittest
 
+import pytest
 from annotypes import json_encode
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
@@ -94,6 +95,23 @@ class TestSystemDetectorPVA(unittest.TestCase):
         assert block.configure.returned.value == {}
         assert block.configure.returned.present == []
         self.check_blocks_equal()
+        # Check the NTTable
+        from p4p.client.cothread import Context
+        with Context("pva") as ctxt:
+            table = ctxt.get("TESTDET.datasets")
+            assert table.getID() == "epics:nt/NTTable:1.0"
+            assert dict(table.value.items()) == dict(
+                 filename=['det.h5', 'det.h5'],
+                 name=['det.data', 'det.sum'],
+                 path=['/entry/data', '/entry/sum'],
+                 rank=pytest.approx([4, 4]),
+                 type=['primary', 'secondary'],
+                 uniqueid=['/entry/uid', '/entry/uid']
+            )
+            labels = ['name', 'filename', 'type', 'rank', 'path', 'uniqueid']
+            assert list(table.meta.elements) == labels
+            assert table.labels == labels
+
 
 
 class TestSystemMotionPVA(unittest.TestCase):
