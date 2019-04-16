@@ -4,7 +4,7 @@ from scanpointgenerator import CompoundGenerator
 import numpy as np
 
 from malcolm.core import VMeta, NTUnion, Table, NumberMeta, Widget, \
-    config_tag, Display, AttributeModel
+    Display, AttributeModel
 from malcolm.modules.builtin.util import ManagerStates
 
 with Anno("Generator instance providing specification for scan"):
@@ -41,7 +41,7 @@ class ConfigureParams(Serializable):
         # type: (AGenerator, UAxesToMove, **Any) -> None
         if kwargs:
             # Got some additional args to report
-            self.call_types = self.call_types.copy()
+            self.call_types = ConfigureParams.call_types.copy()
             for k in kwargs:
                 # We don't use this apart from its presence,
                 # so no need to fill in description, typ, etc.
@@ -91,10 +91,17 @@ class PointGeneratorMeta(VMeta):
 
 
 class DatasetType(Enum):
+    """NeXus type of a produced dataset"""
+    #: Detector data, like the 2D data from an imaging detector
     PRIMARY = "primary"
+    #: Calculated from detector data, like the sum of each frame
     SECONDARY = "secondary"
+    #: Data that only makes sense when considered with detector data, like a
+    #: measure of beam current with an ion chamber
     MONITOR = "monitor"
+    #: The demand positions of an axis as specified by the generator
     POSITION_SET = "position_set"
+    #: The readback positions of an axis that moves during the sacn
     POSITION_VALUE = "position_value"
 
 

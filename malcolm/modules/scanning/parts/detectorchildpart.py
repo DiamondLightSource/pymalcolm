@@ -98,7 +98,7 @@ class DetectorChildPart(ChildPart):
         ret = []
         for k in returns:
             v = returns[k]
-            if kwargs[k] != v:
+            if kwargs.get(k, v) != v:
                 ret.append(ParameterTweakInfo(k, v))
         return ret
 
