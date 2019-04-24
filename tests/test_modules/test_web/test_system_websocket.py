@@ -91,14 +91,17 @@ class TestSystemWSCommsServerOnly(unittest.TestCase):
         assert resp == dict(
             typeid="malcolm:core/Delta:1.0",
             id=0,
-            changes=[[[], ["hello", "server"]]]
+            changes=[[[],
+                      {'label': ['hello', 'server'],
+                       'mri': ['hello', 'server'],
+                       'typeid': 'malcolm:core/Table:1.0'}]]
         )
 
     def test_blocks_update(self):
         msg = OrderedDict()
         msg['typeid'] = "malcolm:core/Subscribe:1.0"
         msg['id'] = 0
-        msg['path'] = (".", "blocks", "value")
+        msg['path'] = (".", "blocks", "value", "mri")
         msg['delta'] = False
         IOLoopHelper.call(self.send_message, msg)
         resp = self.result.get(timeout=2)
@@ -289,5 +292,5 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         assert block2.counter.value == 1
         block2.zero()
         assert block2.counter.value == 0
-        assert self.process2.block_view("client").remoteBlocks.value == [
+        assert self.process2.block_view("client").remoteBlocks.value.mri == [
             "hello", "counter", "server"]

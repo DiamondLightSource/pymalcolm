@@ -6,9 +6,9 @@ from tornado.websocket import websocket_connect, WebSocketClientConnection
 
 from malcolm.core import Subscribe, Response, Error, Update, Return, Queue, \
     Request, StringArrayMeta, Widget, ResponseError, DEFAULT_TIMEOUT, Delta, \
-    BlockModel, NTScalar, BlockMeta, Put, Post
+    BlockModel, NTScalar, BlockMeta, Put, Post, TableMeta
 from malcolm.modules import builtin
-from ..util import IOLoopHelper
+from ..util import IOLoopHelper, BlockTable
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, Callable
@@ -42,8 +42,8 @@ class WebsocketClientComms(builtin.controllers.ClientComms):
         self._next_id = 1
         self._conn = None  # type: WebSocketClientConnection
         # Create read-only attribute for the remotely reachable blocks
-        self.remote_blocks = StringArrayMeta(
-            "Remotely reachable blocks", tags=[Widget.TEXTINPUT.tag()]
+        self.remote_blocks = TableMeta.from_table(
+            BlockTable, "Remotely reachable blocks"
         ).create_attribute_model()
         self.field_registry.add_attribute_model(
             "remoteBlocks", self.remote_blocks)
