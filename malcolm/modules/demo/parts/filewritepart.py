@@ -138,7 +138,7 @@ class FileWritePart(Part):
         # type: (...) -> None
         """On `SeekHook`, `PostRunArmedHook` record where to next take data"""
         # Skip the uid so it is guaranteed to be unique
-        self._uid_offset = self._completed_steps + self._steps_to_do - \
+        self._uid_offset += self._completed_steps + self._steps_to_do - \
             completed_steps
         self._completed_steps = completed_steps
         self._steps_to_do = steps_to_do

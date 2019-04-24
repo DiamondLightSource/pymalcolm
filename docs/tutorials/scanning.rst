@@ -247,7 +247,7 @@ look at what it does:
 Walking through the code we can see that the first thing we do is make a child
 Block, and use it to get asynchronous versions of our ``xMove()`` and
 ``yMove()`` Methods. This is another feature of the `Block` View created by the
-`Context`. Asynchronous methods kick off the Method going, then return `Future`
+`Context`. Asynchronous methods kick off the Method going, then return `future_`
 objects that can be waited on, and will hold the result of the method when it is
 finished. We can use these to start a number of long running processes going at
 the same time, then wait until they are all finished.

@@ -21,6 +21,7 @@ RLock = cothread.RLock
 
 
 class Spawned(object):
+    """Internal object keeping track of a spawned function"""
     NO_RESULT = object()
 
     def __init__(self, func, args, kwargs):

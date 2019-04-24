@@ -95,7 +95,7 @@ demonstrate floating point numbers. If our counter was an integer we could
 choose ``int32`` or ``int64``. The actual AttributeModel is returned by the
 :meth:`~VMeta.create_attribute_model` method of this meta so that the correct
 type of AttributeModel can be chosen by the particular type of Meta object we
-specify. We specify a number of `tags_reference` on the Meta object that gives
+specify. We specify a number of `tags_` on the Meta object that give
 some hints about how this Attribute will be used. In this case, we specify a
 `config_tag` to say that this field is a configuration variable that will be
 marked for load/save, and a `Widget` tag that tells a GUI which widget to use

@@ -1,14 +1,10 @@
-.. _tags_reference:
+.. _supported_tags:
 
-Tags
-====
+Supported Tags
+==============
 
-The tags field on Meta objects in Malcolm is an array of freeform text strings
-that can be used to pass particular information about an Attribute or Method
-between the server and client. This can be used to add information for a GUI
-like which widget to use to display the Attribute, or to clients within the
-server itself like whether this Attribute should be loaded/saved by a parent
-Block.
+`tags_` are freeform text strings that appear in the tags field on Meta objects.
+This page lists the currently supported tags, and how they are used.
 
 Widget Tag
 ----------

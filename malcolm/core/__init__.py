@@ -14,7 +14,8 @@ from .models import BlockModel, AttributeModel, MethodModel, MapMeta, \
     MethodLog, BooleanArrayMeta, BooleanMeta, ChoiceArrayMeta, Model, Display, \
     ALimitLow, ALimitHigh, APrecision, AUnits, MethodMeta, NTScalarArray, \
     ChoiceMeta, NumberArrayMeta, NumberMeta, StringArrayMeta, StringMeta, \
-    TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion, NTScalar, BlockMeta
+    TableMeta, VMeta, VArrayMeta, AMetaDescription, NTUnion, NTScalar, \
+    BlockMeta, NTTable
 from .moduleutil import submodule_all
 from .notifier import Notifier
 from .part import Part, PartRegistrar, APartName

@@ -53,7 +53,7 @@ will be in alarm status and report what is wrong. The other `Attribute` and
 change, appear and disappear depending on the state of the Block.
 
 The ``meta`` `BlockMeta` defines a description and label for this Block. All
-meta objects have tags that are defined in the `tags_reference`.
+meta objects have `tags_` that are defined in the `supported_tags` page.
 
 An Attribute looks like this::
 

@@ -165,11 +165,11 @@ to see what one of those looks like:
 
 The top of the file tells us what parameters should be passed, and defines a
 docstring for the Block. After that we instantiate the `RunnableController`,
-`sim_detector_driver_block` and its corresponding `SimDetectorDriverPart`, and
+`sim_detector_driver_block` and its corresponding `DetectorDriverPart`, and
 then a `stats_plugin_block` with is corresponding `StatsPluginPart`.
 
 
-The entry after this is an include. It lets us take some commonly used Blocks
+The entry after this is an `include_`. It lets us take some commonly used Blocks
 and Parts and instantiate them at the level of the currently defined Block. If
 we look at ``./malcolm/modules/ADCore/includes/filewriting_collection.yaml``
 we'll see how it does this:
@@ -295,31 +295,27 @@ all setup correctly at the beginning of every scan.
 Now we know what we need to load, we need to work out when to load it. There is
 an ``initial_design`` parameter that we pass to any `ManagerController` or
 `RunnableController` that will tell it what design to load when Malcolm starts
-up, and we have two places we could load an ``initial_design``:
+up, and we have two places we could load an `initial_design_`:
 
 1.  In the detector. In this case, the design will be loaded as soon as Malcolm
     starts, but if there is not a clear single design that all scans use then
     it is not clear what to set it to.
 
 2.  In the scan. In this case, the design will be loaded at the beginning of
-    every scan. This means that scans can use different
+    every scan. This means that scans can use different designs for their
+    children, and Devices are guaranteed to be in the right state even if
+    another application changes PVs between scans.
 
+.. caution::
 
-As we already know the design we want, we can set this as the ``initial_design``
-for the Block. This means it will be loaded when Malcolm starts, but not after.
-This is suitable for our application, as Malcolm is the only user of this IOC.
+    If you set ``initial_design`` on a Block in the ``device_layer``, then PVs
+    will change when you restart Malcolm. This may or may not be what you want.
 
-
-
-
-We also need to be a little careful with how we apply these designs. The parent
-Scan Block will load child Device Block designs before configure(), but only
-if the Scan Block has done a load or a save with the Device Block having a saved
-Design. This means that while we are commissioning, Attributes on the Hardware
-Blocks can be set to whatever we need, and the Scan Block will not interfere,
-but when we save the Device Block and Scan Block settings we want to make sure
-that they are in that state before every scan.
-
+We will choose case 2 here and set the scan Block to load
+``template_both_detectors`` before each scan. It is worth pointing out that we
+are only likely to set ``initial_design`` once a scan is working. Once a design
+is set, it will be restored every ``configure()``, so a ``save()`` or unsetting
+the design is required to keep any manual changes to child Blocks.
 
 Running a Scan
 --------------
@@ -345,7 +341,7 @@ Let's start up the example and see it in action::
     Welcome to iMalcolm.
 
     self.mri_list:
-        ['DETECTOR:DRV', 'DETECTOR:STAT', 'DETECTOR:POS', 'DETECTOR:HDF5', 'DETECTOR', 'WEB']
+        ['mypc-ML-MOT-01:COUNTERX', 'mypc-ML-MOT-01:COUNTERY', 'mypc-ML-MOT-01', 'mypc-ML-DET-01', 'mypc-ML-DET-02:DRV', 'mypc-ML-DET-02:STAT', 'mypc-ML-DET-02:POS', 'mypc-ML-DET-02:HDF5', 'mypc-ML-DET-02', 'mypc-ML-SCAN-01', 'WEB', 'PVA']
 
     # To create a view of an existing Block
     block = self.block_view("<mri>")
@@ -359,68 +355,119 @@ Let's start up the example and see it in action::
 
     In [1]:
 
-
+This time we will configure from the commandline. You may have some of these
+lines in your history from earlier tutorials::
 
     In [1]: from scanpointgenerator import LineGenerator, CompoundGenerator
 
-    In [2]: det = self.block_view("DETECTOR")
+    In [2]: scan = self.block_view("mypc-ML-SCAN-01")
 
-    In [3]: yline = LineGenerator("y", "mm", 0., 1., 6)
+    In [3]: yline = LineGenerator("y", "mm", -1, 0, 6)
 
-    In [4]: xline = LineGenerator("x", "mm", 0., 1., 5, alternate=True)
+    In [4]: xline = LineGenerator("x", "mm", 4, 5, 5, alternate=True)
 
     In [5]: generator = CompoundGenerator([yline, xline], [], [], duration=0.5)
 
-    In [6]: det.configure(generator, "/tmp", axesToMove=["x", "y"])
+    In [6]: scan.configure(generator, "/tmp")
 
-    In [7]: gui(det)
-
-    In [8]: gui(self.block_view("DETECTOR:HDF5"))
-
-We have now setup our 6x5 snake scan with 0.5 seconds per point, told Malcolm
-to write the data file to the directory ``/tmp``, and that Malcolm is expected
-to move the ``x`` and ``y`` axes in a continuous fashion. This means that the
-detector will be configured for 30 frames that will be acquired on `run()`.
 
 After configure, the detector will also report the datasets that it is about
 to write in the ``datasets`` Attribute::
 
-    In [9]: for col in det.datasets.value:
-        print "%09s: %s" % (col, det.datasets.value[col])
-       ...:
-         name: ('det.data', 'det.sum', 'y.value_set', 'x.value_set')
-     filename: ('det.h5', 'det.h5', 'det.h5', 'det.h5')
-         type: ('primary', 'secondary', 'position_set', 'position_set')
-         rank: [4 4 1 1]
-         path: ('/entry/detector/detector', '/entry/sum/sum', '/entry/detector/y_set', '/entry/detector/x_set')
-     uniqueid: ('/entry/NDAttributes/NDArrayUniqueId', '/entry/NDAttributes/NDArrayUniqueId', '', '')
+    In [7]: from annotypes import json_encode
 
-This is saying that there is a primary dataset containing detector data in
-``/entry/detector/detector`` of ``det.h5`` within the ``/tmp`` directory. It has
-rank 4 (2D detector wrapped in a 2D scan), and will fill in a uniqueid dataset
-``/entry/NDAttributes/NDArrayUniqueId`` each time the detector writes a new
-frame. There is also a secondary (calculated) dataset called ``/entry/sum/sum``
-in the same file that shares the uniqueid dataset. Finally there are a couple of
-position setpoints for ``x`` and ``y`` demand values.
+    In [8]: print(json_encode(scan.datasets.value, indent=4))
+    {
+        "typeid": "malcolm:core/Table:1.0",
+        "name": [
+            "INTERFERENCE.data",
+            "INTERFERENCE.sum",
+            "RAMP.data",
+            "RAMP.sum",
+            "y.value_set",
+            "x.value_set"
+        ],
+        "filename": [
+            "INTERFERENCE.h5",
+            "INTERFERENCE.h5",
+            "RAMP.h5",
+            "RAMP.h5",
+            "RAMP.h5",
+            "RAMP.h5"
+        ],
+        "type": [
+            "primary",
+            "secondary",
+            "primary",
+            "secondary",
+            "position_set",
+            "position_set"
+        ],
+        "rank": [
+            4,
+            4,
+            4,
+            4,
+            1,
+            1
+        ],
+        "path": [
+            "/entry/data",
+            "/entry/sum",
+            "/entry/detector/detector",
+            "/entry/sum/sum",
+            "/entry/detector/y_set",
+            "/entry/detector/x_set"
+        ],
+        "uniqueid": [
+            "/entry/uid",
+            "/entry/uid",
+            "/entry/NDAttributes/NDArrayUniqueId",
+            "/entry/NDAttributes/NDArrayUniqueId",
+            "",
+            ""
+        ]
+    }
 
-If you now click the Run button on the DETECTOR window you will see the scan
-being performed:
+This is very similar to the `scanning_tutorial`, but now datasets are reported
+from both detectors. We also have a couple of datasets with type position_set,
+these are the demand positions for the ``x`` and ``y`` axes that take their
+setpoints from the generator values.
 
-.. image:: areadetector_1.png
+Now that you have the files open, you can use the `h5watch`_ command to monitor
+the dataset and see it grow::
 
-This will write 30 frames to ``/tmp/det.h5`` (you can change the fileName within
-the directory by passing it as a configure argument if you like). You can take a
-look at the `HDF5`_ file to see what has been written::
+    [me@mypc pymalcolm]$ h5watch /tmp/INTERFERENCE.h5/entry/uid
+    Opened "/tmp/INTERFERENCE.h5" with sec2 driver.
+    Monitoring dataset /entry/uid...
 
-    [me@mypc pymalcolm]$ module load hdf5/1-10-1
-    [me@mypc pymalcolm]$ h5dump -n /tmp/det.h5
-    HDF5 "/tmp/det.h5" {
+You will be able to run a the same h5watch command on
+``/tmp/RAMP.h5/entry/NDAttributes/NDArrayUniqueId`` to see the areaDetector
+dataset grow, but only when the scan has started as the HDF writer can't write
+the datasets until it knows the size of the first detector frame.
+
+You can open the web GUI again to inspect the state of the various objects,
+and you will see that both the ``RAMP`` and ``INTERFERENCE`` detector objects
+are in state ``Armed``, as is the ``SCAN``. You can then run a scan, either from
+the web GUI, or the commandline, resetting when it is done to close the file
+(only needed so that the commandline tools will work)::
+
+    In [9]: scan.run()
+
+    In [10]: scan.reset()
+
+This will write 30 frames of data to ``/tmp/INTERFERENCE.h5`` directly, and
+supervise the writing of 30 frames of data to ``/tmp/RAMP.h5`` via areaDetector.
+You can take a look at the `HDF5`_ files to see what has been written::
+
+    [me@mypc pymalcolm]$ module load hdf5/1-10-4
+    [me@mypc pymalcolm]$ h5dump -n /tmp/RAMP.h5
+    HDF5 "/tmp/RAMP.h5" {
     FILE_CONTENTS {
      group      /
      group      /entry
      group      /entry/NDAttributes
      dataset    /entry/NDAttributes/ColorMode
-     dataset    /entry/NDAttributes/FilePluginClose
      dataset    /entry/NDAttributes/NDArrayEpicsTSSec
      dataset    /entry/NDAttributes/NDArrayEpicsTSnSec
      dataset    /entry/NDAttributes/NDArrayTimeStamp
@@ -443,8 +490,8 @@ This corresponds to the dataset table that the Block reported before run() was
 called. You can examine the uniqueid dataset to see the order that the frames
 were written::
 
-    [me@mypc pymalcolm]$ h5dump -d /entry/NDAttributes/NDArrayUniqueId /tmp/det.h5
-    HDF5 "/tmp/det.h5" {
+    [me@mypc pymalcolm]$ h5dump -d /entry/NDAttributes/NDArrayUniqueId /tmp/RAMP.h5
+    HDF5 "/tmp/RAMP.h5" {
     DATASET "/entry/NDAttributes/NDArrayUniqueId" {
        DATATYPE  H5T_STD_I32LE
        DATASPACE  SIMPLE { ( 6, 5, 1, 1 ) / ( H5S_UNLIMITED, H5S_UNLIMITED, 1, 1 ) }
@@ -485,21 +532,18 @@ were written::
 This tells us that it was written in a snake fashion, with the first row
 written 1-5 left-to-right, the second row 6-10 right-to-left, etc. The detector
 will always increment the uniqueid number when it writes a new frame, so if
-you try pausing and rewinding you will see the uniqueID number jump where you
-overwrite existing frames with new frames with a greater uniqueID.
+you try pausing and setting the Completed Steps Attribute, you will see the
+uniqueID number jump where you overwrite existing frames with new frames with a
+greater uniqueID. This will mean that the two detectors will have matching
+unique ID datasets.
 
 Conclusion
 ----------
 
 This tutorial has given us an understanding of how `areaDetector`_ plugin
-chains can be controlled in Malcolm, and how `Designs <design_>` can be loaded
-and saved.
-
-
-
-
-
-
+chains can be controlled in Malcolm, and how multiple detectors interface into
+a scan and can be paused and rewound together. The next tutorial will focus
+on using real hardware to perform a continuous scan.
 
 .. _simDetector:
     http://cars.uchicago.edu/software/epics/simDetectorDoc.html
@@ -518,3 +562,6 @@ and saved.
 
 .. _NDFileHDF5:
     http://cars.uchicago.edu/software/epics/NDFileHDF5.html
+
+.. _h5watch:
+    https://support.hdfgroup.org/HDF5/doc/RM/Tools/h5watch.htm

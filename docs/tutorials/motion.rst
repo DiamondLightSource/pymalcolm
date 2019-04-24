@@ -102,7 +102,8 @@ All Blocks in the Device Layer control child Blocks. A `controller_` that
 provides functionality aimed at managing child Blocks is called a
 `ManagerController`. It provides functionality like Load/Save, disabling and
 enabling child Blocks, and a state machine to protect against these functions
-being called at the wrong time.
+being called at the wrong time. Settings of its children are managed using
+`Designs <design_>` which can be swapped between at runtime.
 
 It has the following Attributes:
 
@@ -293,7 +294,7 @@ many of these Parts in a single Controller, we prefix the Method name with the
 name of the Part, so it is unique in the Block. For our example, we have two
 MotorMoveParts, ``x`` and ``y``, so the resulting Block should have ``xMove()``
 and ``yMove()`` Methods. The ``needs_context=True`` argument tells Malcolm that
-when the move Method is called, it should be passed a `Context` object as the
+when the move Method is called, it should be passed a `context_` object as the
 first argument. This is a utility object that makes us a `Block` view so we can
 interact with our child Block
 

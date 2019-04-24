@@ -35,8 +35,8 @@ class TestScanBlock(unittest.TestCase):
         assert list(self.b.configure.meta.defaults["detectors"].rows()) \
             == [['DET', 'DETECTOR', 0.0, 1]]
         assert self.pub.published == [
-            'SCANMRI', 'DETECTOR', 'MOTION', 'MOTION:COUNTERX',
-            'MOTION:COUNTERY', 'PUB']
+            'SCANMRI', 'PUB', 'DETECTOR', 'MOTION', 'MOTION:COUNTERX',
+            'MOTION:COUNTERY']
 
     def prepare_half_run(self):
         linex = LineGenerator('x', 'mm', 0, 2, 3, alternate=True)

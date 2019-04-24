@@ -358,21 +358,27 @@ class AttributeModel(Model):
 
 @Serializable.register_subclass("epics:nt/NTTable:1.0")
 class NTTable(AttributeModel):
-    __slots__ = []
-
-
-@Serializable.register_subclass("epics:nt/NTUnion:1.0")
-class NTUnion(AttributeModel):
+    """AttributeModel containing a `TableMeta`"""
     __slots__ = []
 
 
 @Serializable.register_subclass("epics:nt/NTScalarArray:1.0")
 class NTScalarArray(AttributeModel):
+    """AttributeModel containing a `VArrayMeta`"""
     __slots__ = []
 
 
 @Serializable.register_subclass("epics:nt/NTScalar:1.0")
 class NTScalar(AttributeModel):
+    """AttributeModel containing a `StringMeta`, `BooleanMeta`, `NumberMeta`
+    or `ChoiceMeta`
+    """
+    __slots__ = []
+
+
+@Serializable.register_subclass("epics:nt/NTUnion:1.0")
+class NTUnion(AttributeModel):
+    """AttributeModel containing a meta producing some object structure"""
     __slots__ = []
 
 
@@ -668,7 +674,8 @@ class StringMeta(VMeta):
 
 
 class VArrayMeta(VMeta):
-    # intermediate class so TableMeta can say "only arrays"
+    """Intermediate abstract class so `TableMeta` can say "only arrays"
+    """
     attribute_class = NTScalarArray
     __slots__ = []
 

@@ -1,8 +1,9 @@
 from annotypes import Anno, Array, TYPE_CHECKING, Union, Sequence
 
 from malcolm.compat import OrderedDict, str_
+from malcolm.core import TimeoutError
 from .context import Context
-from .controller import Controller
+from .controller import Controller, DEFAULT_TIMEOUT
 from .hook import Hook, start_hooks, AHookable, wait_hooks
 from .info import Info
 from .loggable import Loggable
@@ -75,7 +76,7 @@ class Process(Loggable):
         self._spawned = []
         self._spawn_count = 0
 
-    def start(self, timeout=None):
+    def start(self, timeout=DEFAULT_TIMEOUT):
         """Start the process going
 
         Args:
@@ -128,11 +129,14 @@ class Process(Loggable):
         published = []
 
         def walk(d):
+            to_do = []
             for k, v in d.items():
                 if k not in published and k not in self._unpublished:
                     published.append(k)
                 if v:
-                    walk(v)
+                    to_do.append(v)
+            for v in to_do:
+                walk(v)
 
         walk(tree)
 
@@ -156,7 +160,7 @@ class Process(Loggable):
                 "Problem running %s on %s", hook.__name__, problems)
         return infos
 
-    def stop(self, timeout=None):
+    def stop(self, timeout=DEFAULT_TIMEOUT):
         """Stop the process and wait for it to finish
 
         Args:
@@ -171,7 +175,12 @@ class Process(Loggable):
             if not s.ready():
                 self.log.debug(
                     "Waiting for %s *%s **%s", s._function, s._args, s._kwargs)
-            s.wait(timeout=timeout)
+            try:
+                s.wait(timeout=timeout)
+            except TimeoutError:
+                self.log.warning(
+                    "Timeout waiting for %s *%s **%s",
+                    s._function, s._args, s._kwargs)
         self._spawned = []
         self._controllers = OrderedDict()
         self._unpublished = set()
