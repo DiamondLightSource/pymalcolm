@@ -1,17 +1,13 @@
-from annotypes import Anno, add_call_types, TYPE_CHECKING
+from annotypes import Anno, add_call_types
 from cothread import cothread
 from tornado.httpserver import HTTPServer
 from tornado.web import Application
 
-from malcolm.core import ProcessPublishHook, APublished, Part, StringArrayMeta, \
-    Widget
+from malcolm.core import ProcessPublishHook, APublished, Part, TableMeta
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook
-from ..util import IOLoopHelper
-
-if TYPE_CHECKING:
-    from typing import List
+from ..util import IOLoopHelper, BlockTable
 
 
 with Anno("TCP port number to run up under"):
@@ -28,10 +24,10 @@ class HTTPServerComms(builtin.controllers.ServerComms):
         self._server = None  # type: HTTPServer
         self._server_started = False
         self._application = None  # type: Application
-        self._published = []  # type: List[str]
-        self.blocks = StringArrayMeta(
+        self.blocks = TableMeta.from_table(
+            BlockTable,
             "List of local Blocks to serve up",
-            tags=[Widget.TEXTUPDATE.tag()]
+            writeable=list(BlockTable.call_types)
         ).create_attribute_model()
         self.field_registry.add_attribute_model("blocks", self.blocks)
         # Hooks
@@ -73,8 +69,13 @@ class HTTPServerComms(builtin.controllers.ServerComms):
     @add_call_types
     def publish(self, published):
         # type: (APublished) -> None
-        self._published = published
-        self.blocks.set_value(published)
+        rows = []
+        for mri in published:
+            label = self.process.block_view(mri).meta.label
+            if not label:
+                label = mri
+            rows.append((mri, label))
+        self.blocks.set_value(BlockTable.from_rows(rows))
 
     def update_request_received(self, part, info):
         # type: (Part, builtin.infos.RequestInfo) -> None
