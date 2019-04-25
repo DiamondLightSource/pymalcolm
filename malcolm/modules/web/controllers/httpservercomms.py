@@ -25,9 +25,7 @@ class HTTPServerComms(builtin.controllers.ServerComms):
         self._server_started = False
         self._application = None  # type: Application
         self.blocks = TableMeta.from_table(
-            BlockTable,
-            "List of local Blocks to serve up",
-            writeable=list(BlockTable.call_types)
+            BlockTable, "List of local Blocks to serve up"
         ).create_attribute_model()
         self.field_registry.add_attribute_model("blocks", self.blocks)
         # Hooks
