@@ -3,13 +3,14 @@ import socket
 import fcntl
 import struct
 import os
+import cothread
 
 from annotypes import Anno, add_call_types, TYPE_CHECKING, deserialize_object, \
     json_encode, json_decode
 from tornado.websocket import WebSocketHandler, WebSocketError
 
 from malcolm.core import Part, Request, Subscribe, Unsubscribe, Delta, \
-    Update, Error, Response, FieldError, PartRegistrar, Put, Post
+    Update, Error, Response, FieldError, PartRegistrar, Put, Post, Queue
 from malcolm.modules import builtin
 from ..infos import HandlerInfo
 from ..hooks import ReportHandlersHook, UHandlerInfos
@@ -55,12 +56,16 @@ class MalcWebSocketHandler(WebSocketHandler):
     _id_to_mri = None
     _validators = None
     _writeable = None
+    _queue = None
+    _counter = None
 
     def initialize(self, registrar=None, validators=()):
         self._registrar = registrar  # type: PartRegistrar
         # {id: mri}
         self._id_to_mri = {}  # type: Dict[int, str]
         self._validators = validators
+        self._queue = Queue()
+        self._counter = 0
 
     def on_message(self, message):
         # called in tornado's thread
@@ -111,6 +116,11 @@ class MalcWebSocketHandler(WebSocketHandler):
     def on_response(self, response):
         # called from cothread
         IOLoopHelper.call(self._on_response, response)
+        # Wait for completion once every 10 message
+        self._counter += 1
+        if self. _counter % 10 == 0:
+            for i in range(10):
+                self._queue.get()
 
     def _on_response(self, response):
         # type: (Response) -> None
@@ -134,6 +144,7 @@ class MalcWebSocketHandler(WebSocketHandler):
                     unsubscribe.set_callback(self.on_response)
                     self._registrar.report(
                         builtin.infos.RequestInfo(unsubscribe, mri))
+        cothread.Callback(self._queue.put, None)
 
     # http://stackoverflow.com/q/24851207
     # TODO: remove this when the web gui is hosted from the box
