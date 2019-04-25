@@ -105,31 +105,33 @@ class Process(Loggable):
 
     def _publish_controllers(self, timeout):
         tree = OrderedDict()
-        done = set()
+        is_child = set()
 
         def add_controller(controller):
             # type: (Controller) -> OrderedDict
-            if controller.mri not in done:
-                done.add(controller.mri)
-                children = OrderedDict()
-                tree[controller.mri] = children
-                for part in controller.parts.values():
-                    part_mri = getattr(part, "mri", None)
-                    if part_mri in tree:
-                        children[part_mri] = tree.pop(part_mri)
-                    elif part_mri:
-                        children[part_mri] = add_controller(
-                            self._controllers[part_mri])
+            children = OrderedDict()
+            tree[controller.mri] = children
+            for part in controller.parts.values():
+                part_mri = getattr(part, "mri", None)
+                is_child.add(part_mri)
+                if part_mri in tree:
+                    children[part_mri] = tree[part_mri]
+                elif part_mri:
+                    children[part_mri] = add_controller(
+                        self._controllers[part_mri])
             return tree[controller.mri]
 
         for c in self._controllers.values():
-            add_controller(c)
+            if c.mri not in is_child:
+                add_controller(c)
 
         published = []
 
-        def walk(d):
+        def walk(d, not_at_this_level=()):
             to_do = []
             for k, v in d.items():
+                if k in not_at_this_level:
+                    continue
                 if k not in published and k not in self._unpublished:
                     published.append(k)
                 if v:
@@ -137,7 +139,7 @@ class Process(Loggable):
             for v in to_do:
                 walk(v)
 
-        walk(tree)
+        walk(tree, not_at_this_level=is_child)
 
         self._run_hook(ProcessPublishHook,
                        timeout=timeout, published=published)
