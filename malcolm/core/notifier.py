@@ -41,7 +41,7 @@ def freeze(o):
     elif isinstance(o, dict):
         # Recurse down in case there are any models down there
         o = FrozenOrderedDict(tuple((k, freeze(v)) for k, v in o.items()))
-    elif o.__class__ == Array and hasattr(o.typ, "notifier"):
+    elif o.__class__ is Array and hasattr(o.typ, "notifier"):
         # Recurse down only if the type suggests it has a model
         o = [freeze(v) for v in o.seq]
     return o

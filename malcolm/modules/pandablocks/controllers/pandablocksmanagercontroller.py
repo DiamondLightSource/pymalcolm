@@ -9,7 +9,7 @@ from cothread.cosocket import socket
 
 from malcolm.compat import OrderedDict, et_to_string
 from malcolm.core import Queue, TimeoutError, BooleanMeta, TableMeta, \
-    TimeStamp, Alarm
+    TimeStamp, Alarm, NumberMeta, Widget, Display
 from malcolm.modules.builtin.controllers import BasicController, \
     ManagerController, AMri, AConfigDir, AInitialDesign, ADescription, \
     AUseGit, ATemplateDesigns
@@ -79,6 +79,14 @@ class PandABlocksManagerController(ManagerController):
         # Filled in on reset
         self._stop_queue = None
         self._poll_spawned = None
+        # Poll period reporting
+        self.last_poll_period = NumberMeta(
+            "float64", "The time between the last 2 polls of the hardware",
+            tags=[Widget.TEXTUPDATE.tag(),],
+            display=Display(units="s", precision=3)
+        ).create_attribute_model(poll_period)
+        self.field_registry.add_attribute_model(
+            "lastPollPeriod", self.last_poll_period)
 
     def do_init(self):
         # start the poll loop and make block parts first to fill in our parts
@@ -108,22 +116,34 @@ class PandABlocksManagerController(ManagerController):
 
     def _poll_loop(self):
         """At self.poll_period poll for changes"""
-        next_poll = time.time()
+        next_poll = time.time() + self._poll_period
         while True:
-            next_poll += self._poll_period
-            timeout = next_poll - time.time()
-            if timeout < 0:
-                timeout = 0
+            # Need to make sure we don't consume all the CPU, allow us to be
+            # active for 50% of the poll period, so we must sleep at least 50%
+            min_sleep = self._poll_period * 0.5
+            sleep_for = next_poll - time.time()
+            if sleep_for < min_sleep:
+                # Going too fast, slow down a bit
+                last_poll_period = self._poll_period + min_sleep - sleep_for
+                sleep_for = min_sleep
+            else:
+                last_poll_period = self._poll_period
             try:
-                return self._stop_queue.get(timeout=timeout)
+                # If told to stop, we will get something here and return
+                return self._stop_queue.get(timeout=sleep_for)
             except TimeoutError:
                 # No stop, no problem
                 pass
+            # Poll for changes
             try:
-                self.handle_changes(self.client.get_changes())
+                changes = self.client.get_changes()
+                self.handle_changes(changes)
             except Exception:
                 # TODO: should fault here?
                 self.log.exception("Error while getting changes")
+            if last_poll_period != self.last_poll_period.value:
+                self.last_poll_period.set_value(last_poll_period)
+            next_poll += last_poll_period
 
     def stop_poll_loop(self):
         if self._poll_spawned:
