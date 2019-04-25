@@ -2,7 +2,6 @@ from annotypes import Anno, Array, TYPE_CHECKING, Union, Sequence
 
 from malcolm.compat import OrderedDict, str_
 from malcolm.core import TimeoutError
-from .context import Context
 from .controller import Controller, DEFAULT_TIMEOUT
 from .hook import Hook, start_hooks, AHookable, wait_hooks
 from .info import Info
@@ -113,6 +112,7 @@ class Process(Loggable):
             if controller.mri not in done:
                 done.add(controller.mri)
                 children = OrderedDict()
+                tree[controller.mri] = children
                 for part in controller.parts.values():
                     part_mri = getattr(part, "mri", None)
                     if part_mri in tree:
@@ -120,7 +120,6 @@ class Process(Loggable):
                     elif part_mri:
                         children[part_mri] = add_controller(
                             self._controllers[part_mri])
-                tree[controller.mri] = children
             return tree[controller.mri]
 
         for c in self._controllers.values():

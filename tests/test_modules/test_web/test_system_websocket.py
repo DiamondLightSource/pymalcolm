@@ -294,3 +294,9 @@ class TestSystemWSCommsServerAndClient(unittest.TestCase):
         assert block2.counter.value == 0
         assert self.process2.block_view("client").remoteBlocks.value.mri == [
             "hello", "counter", "server"]
+
+    def test_server_blocks(self):
+        block = self.process.block_view("server")
+        assert block.blocks.value.mri == ["hello", "counter", "server"]
+        assert block.blocks.value.label == ["hello", "counter", "server"]
+        assert block.blocks.meta.writeable is False
