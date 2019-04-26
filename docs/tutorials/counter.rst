@@ -116,9 +116,9 @@ We then do the same with ``delta`` to register a second Attribute.
 
 .. note:: We are producing an `AttributeModel` rather than an `Attribute`.
 
-    Attribute is a View, allowing users of the Block (either external clients,
-    or Blocks further up the heirarchy) with methods like
-    :meth:`~Attribute.put_value` that allow requests to be made.
+    Attribute is a View, allowing users of the Block to make requests using
+    methods like :meth:`~Attribute.put_value`. The users can either be
+    external clients or Blocks further up the hierarchy.
 
     AttributeModel is a Model, keeping the definitive version of the data,
     with methods like :meth:`~AttributeModel.set_value` that allow the owner of
