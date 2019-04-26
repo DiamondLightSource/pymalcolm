@@ -119,7 +119,7 @@ class MalcWebSocketHandler(WebSocketHandler):
         # Wait for completion once every 10 message
         self._counter += 1
         if self. _counter % 10 == 0:
-            for i in range(10):
+            for _ in range(10):
                 self._queue.get()
 
     def _on_response(self, response):
