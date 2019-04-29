@@ -16,13 +16,13 @@ with Anno("Tags to be attached to Method"):
 UTags = Union[ATags, Sequence[str], str]
 
 
-class PandABlocksActionPart(Part):
+class PandAActionPart(Part):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
     def __init__(self, client, block_name, field_name, description, tags):
-        # type: (AClient, ABlockName, AFieldName, ADescription, ATags) -> None
-        super(PandABlocksActionPart, self).__init__(field_name)
+        # type: (AClient, ABlockName, AFieldName, ADescription, UTags) -> None
+        super(PandAActionPart, self).__init__(field_name)
         self.client = client
         self.block_name = block_name
         self.field_name = field_name
@@ -32,7 +32,7 @@ class PandABlocksActionPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        super(PandABlocksActionPart, self).setup(registrar)
+        super(PandAActionPart, self).setup(registrar)
         method_name = snake_to_camel(self.field_name)
         self.method = registrar.add_method_model(
             self.set_field, method_name, self.description)

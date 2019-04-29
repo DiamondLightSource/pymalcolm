@@ -1,12 +1,12 @@
 from malcolm.compat import OrderedDict
 from malcolm.core import snake_to_camel, camel_to_title, Widget, \
-    BooleanArrayMeta, NumberArrayMeta, ChoiceArrayMeta
-from .pandablocksfieldpart import PandABlocksFieldPart, AClient, AMeta, \
+    BooleanArrayMeta, NumberArrayMeta, ChoiceArrayMeta, TimeStamp, Alarm
+from .pandafieldpart import PandAFieldPart, AClient, AMeta, \
     ABlockName, AFieldName
 from ..pandablocksclient import TableFieldData
 
 
-class PandABlocksTablePart(PandABlocksFieldPart):
+class PandATablePart(PandAFieldPart):
     """This will normally be instantiated by the PandABox assembly, not created
     in yaml"""
 
@@ -51,8 +51,13 @@ class PandABlocksTablePart(PandABlocksFieldPart):
             self.field_data[column_name] = field_data
         meta.set_elements(columns)
         # Superclass will make the attribute for us
-        super(PandABlocksTablePart, self).__init__(
+        super(PandATablePart, self).__init__(
             client, meta, block_name, field_name)
+
+    def handle_change(self, value, ts):
+        # type: (str, TimeStamp) -> None
+        value = self.table_from_list(value)
+        self.attr.set_value_alarm_ts(value, Alarm.ok, ts)
 
     def set_field(self, value):
         int_values = self.list_from_table(value)
