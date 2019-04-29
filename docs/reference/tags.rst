@@ -34,6 +34,18 @@ widget:flowgraph            Boxes with lines for child block connections
 widget:tree                 A nested tree of object models editor
 =========================== ====================================================
 
+Linked Value Tag
+----------------
+
+A Linked Value tag can be attached to an Attribute to tell the GUI that there
+is another Attribute that can be monitored that should be displayed under the
+current Attribute with the text "Linked Value". This is typically used for
+inports whose connected outport tag contain a current value that could be
+displayed. It is the responsibility of the Controller to change these tags if
+the path to the Attribute that is to be displayed changes.
+
+These are created using the `linked_value_tag`.
+
 Port Tag
 --------
 

@@ -104,6 +104,21 @@ def without_group_tags(tags):
     return new_tags
 
 
+def linked_value_tag(mri, attribute_name):
+    # type: (str) -> str
+    """Marks this field as having another attribute in another Block that
+    should be displaed below it as a linked value"""
+    tag = "linkedvalue:%s:%s" % (attribute_name, mri)
+    return tag
+
+
+def without_linked_value_tags(tags):
+    # type: (Sequence[str]) -> List[str]
+    """Return a new list of tags without any group tags"""
+    new_tags = [x for x in tags if not x.startswith("linkedvalue:")]
+    return new_tags
+
+
 def config_tag(iteration=1):
     # type: (int) -> str
     """Marks this field as a value that should be saved and loaded at config
