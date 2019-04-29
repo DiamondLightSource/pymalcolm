@@ -132,8 +132,8 @@ class PandABoxControlTest(unittest.TestCase):
         ] + ["!\n" * 12] + [".\n"]
         self.start(messages)
         expected = {
-            "PCAP.BITS0": ["B%d" % i for i in range(32)],
-            "PCAP.BITS1": ["B%d" % i for i in range(32, 52)] + [""] * 12
+            "PCAP.BITS0.CAPTURE": ["B%d" % i for i in range(32)],
+            "PCAP.BITS1.CAPTURE": ["B%d" % i for i in range(32, 52)] + [""] * 12
         }
         assert self.c.get_pcap_bits_fields() == expected
         self.c.stop()

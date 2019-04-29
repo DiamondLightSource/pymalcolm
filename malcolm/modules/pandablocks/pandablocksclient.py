@@ -275,7 +275,7 @@ class PandABlocksClient(object):
         bits_queues = self.parameterized_send("%s.BITS?\n", sorted(bits_fields))
         bits = OrderedDict()
         for k, queue in bits_queues.items():
-            bits[k] = self.recv(queue)
+            bits[k + ".CAPTURE"] = self.recv(queue)
         return bits
 
     def get_changes(self):
