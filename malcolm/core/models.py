@@ -361,6 +361,26 @@ class NTTable(AttributeModel):
     """AttributeModel containing a `TableMeta`"""
     __slots__ = []
 
+    def set_value_alarm_ts(self, value, alarm, ts):
+        with self.notifier.changes_squashed:
+            # Assume they are of the right format
+            # Work out what changed in value, do a cheap Array id check
+            changed = [k for k in value if value[k] is not self.value[k]]
+            self.value = value
+            if len(changed) == len(value.call_types):
+                # Everything changed
+                self.notifier.add_squashed_change(self.path + ["value"], value)
+            else:
+                # Only some changed
+                for k in changed:
+                    self.notifier.add_squashed_change(
+                        self.path + ["value", k], value[k])
+            if alarm is not self.alarm:
+                self.alarm = alarm
+                self.notifier.add_squashed_change(self.path + ["alarm"], alarm)
+            self.timeStamp = ts
+            self.notifier.add_squashed_change(self.path + ["timeStamp"], ts)
+
 
 @Serializable.register_subclass("epics:nt/NTScalarArray:1.0")
 class NTScalarArray(AttributeModel):
@@ -686,13 +706,14 @@ def to_np_array(dtype, value):
         dtype = float
     elif dtype == np.int64:
         dtype = int
-    if value.__class__ is Array:
-        # Unwrap Array as we are going to cast it anyway
-        value = value.seq
-    if isinstance(value, Sequence):
-        # Cast to numpy array
-        value = np.array(value, dtype=dtype)
-    return to_array(Array[dtype], value)
+    if value.__class__ is Array and getattr(value.seq, "dtype", None) == dtype:
+        # If Array wraps a numpy array of the correct type we are done
+        return value
+    else:
+        if isinstance(value, Sequence):
+            # Cast to numpy array
+            value = np.array(value, dtype=dtype)
+        return to_array(Array[dtype], value)
 
 
 @Serializable.register_subclass("malcolm:core/BooleanArrayMeta:1.0")

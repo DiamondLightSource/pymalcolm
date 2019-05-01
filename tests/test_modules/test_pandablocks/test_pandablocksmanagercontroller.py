@@ -1,8 +1,8 @@
 from collections import OrderedDict
 import unittest
-from mock import patch
+from mock import patch, ANY
 
-from malcolm.core import Process
+from malcolm.core import Process, Queue, Subscribe
 from malcolm.modules.pandablocks.controllers import PandAManagerController
 from malcolm.modules.pandablocks.pandablocksclient import \
     FieldData, BlockData
@@ -13,7 +13,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
     def setUp(self, mock_client):
         self.process = Process()
         self.o = PandAManagerController(
-            mri="P", config_dir="/tmp", poll_period=10)
+            mri="P", config_dir="/tmp", poll_period=1000)
         self.client = self.o._client
         self.client.started = False
         blocks_data = OrderedDict()
@@ -147,3 +147,22 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         assert ttlin.val.value is False
         self.o.handle_changes(())
         assert ttlin.val.value is False
+
+    def test_table_deltas(self):
+        queue = Queue()
+        subscribe = Subscribe(path=["P"], delta=True)
+        subscribe.set_callback(queue.put)
+        self.o.handle_request(subscribe)
+        delta = queue.get()
+        table = delta.changes[0][1]["bits"]["value"]
+        assert table.name == ['TTLIN1.VAL', 'TTLIN2.VAL', 'PCOMP.OUT']
+        assert table.value == [False, False, False]
+        assert table.capture == [False, False, False]
+
+        self.o.handle_changes([("TTLIN1.VAL", "1")])
+        delta = queue.get()
+        assert delta.changes == [
+            [['bits', 'value', 'value'], [True, False, False]],
+            [['bits', 'timeStamp'], ANY]
+        ]
+
