@@ -202,7 +202,7 @@ created:
         controller -> mpart2
     }
 
-    block [label=<Block<BR/>mri: 'DETECTOR'>]
+    block [label=<Block<BR/>mri: 'MOTION'>]
     design [label=<Attribute<BR/>name: 'design'>]
     save [label=<Method<BR/>name: 'save'>]
     moveX [label=<Method<BR/>name: 'moveX'>]

@@ -6,9 +6,10 @@ Detector Tutorial
 .. module:: malcolm.core
 
 You should already know how to create a `part_` that can be instantiated
-multiple parts in a `ManagerController` to simple create a `block_` in the
-`device_layer_`. This exposed a simple interface with a couple of
-`Methods <method_>` such as that of a Motion Controller. We will now build an
+multiple times in a `ManagerController` with each instance creating
+a `block_` in the `device_layer_` below.
+In the example we exposed a simple interface with a couple of
+`Methods <method_>` to simulate a Motion Controller. We will now build an
 interface that looks like a Detector, taking a scan specification, and writing
 data to an HDF file. To do this, we will introduce a new configure/run interface
 that will make using these detectors in a scan more straightforward. The
@@ -18,7 +19,7 @@ is a supervisory stage where the scan is performed.
 Specifying Scan Points
 ----------------------
 
-If this Detector Block is going to simulate running a scan, we better learn
+If this Detector Block is going to simulate running a scan, we need to learn
 how to specify a scan. There are a number of pieces of information about each
 point in a scan that are needed by Malcolm:
 
@@ -193,8 +194,9 @@ on the Controller to execute arbitrary logic at the correct stage of
 Hooking into configure()
 ------------------------
 
-We mentioned earlier that a Part can register functions to run the correct
-phase of Methods provided by the Controller. Lets take a look at the first
+We mentioned earlier that a Part can register hook functions.
+Each hook function is called at at a specific phase of a specific Method
+provided by the Controller. Lets take a look at the first
 part of ``./malcolm/modules/demo/parts/filewritepart.py`` to see how this
 works:
 
