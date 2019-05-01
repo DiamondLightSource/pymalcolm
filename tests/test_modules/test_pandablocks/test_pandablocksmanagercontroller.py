@@ -6,6 +6,7 @@ from malcolm.core import Process, Queue, Subscribe
 from malcolm.modules.pandablocks.controllers import PandAManagerController
 from malcolm.modules.pandablocks.pandablocksclient import \
     FieldData, BlockData
+from malcolm.modules.pandablocks.util import PositionCapture
 
 
 class PandABlocksManagerControllerTest(unittest.TestCase):
@@ -166,3 +167,31 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
             [['bits', 'timeStamp'], ANY]
         ]
 
+    def test_pos_table_deltas(self):
+        queue = Queue()
+        subscribe = Subscribe(path=["P"], delta=True)
+        subscribe.set_callback(queue.put)
+        self.o.handle_request(subscribe)
+        delta = queue.get()
+        table = delta.changes[0][1]["positions"]["value"]
+        assert table.name == ['COUNTER.OUT']
+        assert table.value == [0.0]
+        assert table.scale == [1.0]
+        assert table.offset == [0.0]
+        assert table.capture == [PositionCapture.NO]
+
+        self.o.handle_changes([("COUNTER.OUT", "20")])
+        delta = queue.get()
+        assert delta.changes == [
+            [['positions', 'value', 'value'], [20.0]],
+            [['positions', 'timeStamp'], ANY]
+        ]
+
+        self.o.handle_changes([("COUNTER.OUT", "5"),
+                               ("COUNTER.OUT.SCALE", 0.5)])
+        delta = queue.get()
+        assert delta.changes == [
+            [['positions', 'value', 'value'], [2.5]],
+            [['positions', 'value', 'scale'], [0.5]],
+            [['positions', 'timeStamp'], ANY]
+        ]

@@ -1,5 +1,3 @@
-from .pandablocksdriverpart import PandABlocksDriverPart
-from .pandablockschildpart import PandABlocksChildPart
 from .pandablockspcomppart import PandABlocksPcompPart
 
 # Expose a nice namespace

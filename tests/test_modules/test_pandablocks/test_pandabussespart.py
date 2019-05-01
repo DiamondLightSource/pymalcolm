@@ -38,7 +38,7 @@ class PandABussesPartTest(unittest.TestCase):
         assert self.o.positions.value.value == [0.0] * 4
         assert self.o.positions.value.value.seq.dtype == float
         assert self.o.positions.value.units == [""] * 4
-        assert self.o.positions.value.scale == [0.0] * 4
+        assert self.o.positions.value.scale == [1.0] * 4
         assert self.o.positions.value.offset == [0.0] * 4
         assert self.o.positions.value.capture == [PositionCapture.NO] * 4
 
@@ -79,7 +79,7 @@ class PandABussesPartTest(unittest.TestCase):
         assert self.o.positions.value.name == self.expected_pos_names
         assert self.o.positions.value.value == [0.0] * 4
         assert self.o.positions.value.units == ['', '', 'mm', '']
-        assert self.o.positions.value.scale == [0.0, 0.0, 0.1, 0.0]
+        assert self.o.positions.value.scale == [1.0, 1.0, 0.1, 1.0]
         assert self.o.positions.value.offset == [0.0, 0.0, 0.0, 0.0]
         assert self.o.positions.value.capture == [
             PositionCapture.NO, PositionCapture.NO, PositionCapture.MEAN,
@@ -89,9 +89,9 @@ class PandABussesPartTest(unittest.TestCase):
                   'B1.P1.CAPTURE': 'No',
                   'B2.P33.CAPTURE': 'No',
                   'B1.P0.CAPTURE': 'No'}),
-            call({'B1.P0.SCALE': 0.0,
-                  'B2.P33.SCALE': 0.0,
-                  'B1.P1.SCALE': 0.0,
+            call({'B1.P0.SCALE': 1.0,
+                  'B2.P33.SCALE': 1.0,
+                  'B1.P1.SCALE': 1.0,
                   'B1.P2.SCALE': 0.1}),
             call({'B2.P33.UNITS': '',
                   'B1.P2.UNITS': 'mm',

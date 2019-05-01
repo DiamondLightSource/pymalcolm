@@ -1,53 +1,89 @@
 from collections import OrderedDict
 import unittest
-from mock import call, Mock, patch, ANY
 
+from annotypes import add_call_types
+from mock import call, Mock, patch, ANY
+from scanpointgenerator import CompoundGenerator, StaticPointGenerator
+
+from malcolm.core import Process, Part
+from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.ADPandABlocks.controllers import \
     PandARunnableController
+from malcolm.modules.ADPandABlocks.util import DatasetPositionsTable
 from malcolm.modules.pandablocks.pandablocksclient import \
     FieldData, BlockData
+from malcolm.modules.scanning.hooks import APartInfo, ConfigureHook
+from malcolm.modules.scanning.parts import DatasetTablePart
+
+
+class DSGather(Part):
+    part_info = None
+
+    def setup(self, registrar):
+        self.register_hooked(ConfigureHook, self.configure)
+
+    @add_call_types
+    def configure(self, part_info):
+        # type: (APartInfo) -> None
+        self.part_info = part_info
 
 
 class PandABlocksRunnableControllerTest(unittest.TestCase):
-    @patch("malcolm.modules.ca.util.catools")
+    @patch("malcolm.modules.ADCore.includes.adbase_parts")
     @patch("malcolm.modules.pandablocks.controllers."
-           "pandablocksmanagercontroller.PandABlocksClient")
-    def setUp(self, mock_client, catools):
-        self.process = Mock()
+           "pandamanagercontroller.PandABlocksClient")
+    def setUp(self, mock_client, mock_adbase_parts):
+        mock_adbase_parts.return_value = ([], [])
+        self.process = Process()
         self.o = PandARunnableController(
             mri="P", config_dir="/tmp", prefix="PV:")
-        self.o.setup(self.process)
+        self.o.add_part(DatasetTablePart("DSET"))
+        self.client = self.o._client
+        self.client.started = False
         blocks_data = OrderedDict()
         fields = OrderedDict()
         fields["TS"] = FieldData("ext_out", "", "Timestamp", ["No", "Capture"])
         blocks_data["PCAP"] = BlockData(1, "", fields)
         fields = OrderedDict()
         fields["VAL"] = FieldData("pos_out", "", "Output", ["No", "Capture"])
-        blocks_data["INENC"] = BlockData(1, "", fields)
-        self.client = self.o.client
+        blocks_data["INENC"] = BlockData(4, "", fields)
         self.client.get_blocks_data.return_value = blocks_data
-        self.o._make_child_controllers()
+        self.process.add_controller(self.o)
+        self.process.start()
 
-    def _blocks(self):
-        pcap = self.process.add_controller.call_args_list[0][0][0]
-        assert pcap.mri == "P:PCAP"
-        pcap.setup(self.process)
-        inenc = self.process.add_controller.call_args_list[1][0][0]
-        assert inenc.mri == "P:INENC"
-        inenc.setup(self.process)
-        return pcap.block_view(), inenc.block_view()
+    def tearDown(self):
+        self.process.stop()
 
     def test_initial_changes(self):
-        assert self.process.mock_calls == [
-            call.add_controller(ANY, timeout=5),
-            call.add_controller(ANY, timeout=5)]
-        pcap, inenc = self._blocks()
+        pcap = self.process.block_view('P:PCAP')
+        inenc = self.process.block_view('P:INENC1')
         with self.assertRaises(Exception):
             pcap.ts
         assert pcap.tsCapture.value == "No"
-        assert pcap.tsDatasetName.value == ""
-        assert pcap.tsDatasetType.value.value == "monitor"
         assert inenc.val.value == 0.0
-        assert inenc.valCapture.value == "No"
-        assert inenc.valDatasetName.value == ""
-        assert inenc.valDatasetType.value.value == "position"
+        with self.assertRaises(Exception):
+            inenc.valCapture
+
+    def test_report_configuration(self):
+        p = DSGather("DS")
+        self.o.add_part(p)
+        b = self.process.block_view("P")
+        pos_table = DatasetPositionsTable(
+            name=["INENC1.VAL", "INENC2.VAL", "INENC3.VAL", "INENC4.VAL"],
+            value=[0]*4, offset=[0]*4, scale=[0]*4, units=[""]*4,
+            capture=["Diff", "No", "Min Max Mean", "Diff"],
+            datasetName=["", "x1", "x2", "x3"],
+            datasetType=["monitor", "monitor", "position", "monitor"],
+        )
+        b.positions.put_value(pos_table)
+        b.configure(generator=CompoundGenerator([StaticPointGenerator(1)], [], []))
+        dataset_infos = p.part_info["busses"]
+        assert len(dataset_infos) == 2
+        assert dataset_infos[0].name == "x2"
+        assert dataset_infos[0].type == AttributeDatasetType.POSITION
+        assert dataset_infos[0].rank == 2
+        assert dataset_infos[0].attr == "INENC3.VAL.Mean"
+        assert dataset_infos[1].name == "x3"
+        assert dataset_infos[1].type == AttributeDatasetType.MONITOR
+        assert dataset_infos[1].rank == 2
+        assert dataset_infos[1].attr == "INENC4.VAL.Diff"

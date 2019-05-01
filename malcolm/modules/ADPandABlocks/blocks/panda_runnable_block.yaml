@@ -20,7 +20,7 @@
     name: config_dir
     description: Where to store saved configs
 
-- ADPandABlocks.controllers.PandABlocksRunnableController:
+- ADPandABlocks.controllers.PandARunnableController:
     mri: $(mri_prefix)
     config_dir: $(config_dir)
     hostname: $(hostname)

@@ -1,13 +1,11 @@
-import numpy as np
-
 from annotypes import TYPE_CHECKING
 
 from malcolm.core import Part, TableMeta, PartRegistrar, config_tag, \
-    TimeStamp, Table, AMri
+    TimeStamp, Table, AMri, BadValueError
 from ..util import BitsTable, PositionsTable, AClient, PositionCapture
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Any, Type, Optional
+    from typing import Dict, List, Any, Optional
 
 
 def update_column(column_changes, column, table_value):
@@ -25,33 +23,25 @@ def update_column(column_changes, column, table_value):
     return column_value
 
 
-def get_column_changes(old, new, lookup):
+def get_column_changes(old, new):
     # type: (Table, Table) -> Dict[str, List[Any]]
     column_changes = {}
+    lookup = {k: i for i, k in enumerate(old.name)}
     for i, name in enumerate(new.name):
         for k in old:
             if k not in ("name", "value"):
                 new_value = new[k][i]
                 # Lookup row index in actual table
-                j = lookup[name]
+                try:
+                    j = lookup[name]
+                except KeyError:
+                    raise BadValueError(
+                        "Table contains name '%s' which is not in %s" % (
+                            name, sorted(list(lookup))))
                 if old[k][j] != new_value:
                     # row changed
                     update_column(column_changes, k, old)[j] = new_value
     return column_changes
-
-
-def make_default_table(table_cls, names):
-    # type: (Type[Table], List[str]) -> Table
-    kwargs = {}
-    for k, anno in table_cls.call_types.items():
-        if k == "name":
-            v = names
-        elif anno.typ is PositionCapture:
-            v = [PositionCapture.NO] * len(names)
-        else:
-            v = [anno.typ()] * len(names)
-        kwargs[k] = v
-    return table_cls(**kwargs)
 
 
 def make_updated_table(old_value, column_changes):
@@ -63,6 +53,10 @@ def make_updated_table(old_value, column_changes):
 
 
 class PandABussesPart(Part):
+    # Tables to make metas from
+    bits_table_cls = BitsTable
+    positions_table_cls = PositionsTable
+
     # Attributes
     bits = None
     positions = None
@@ -86,33 +80,28 @@ class PandABussesPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        self.bits = self._make_bits_table()
-        self.positions = self._make_positions_table()
+        self.bits = TableMeta.from_table(
+            self.bits_table_cls,
+            "Current values and capture status of Bit fields",
+            writeable=[x for x in self.bits_table_cls.call_types
+                       if x not in ("name", "value")],
+            extra_tags=[config_tag()]
+        ).create_attribute_model()
+        self.positions = TableMeta.from_table(
+            self.positions_table_cls,
+            "Current values, scaling, and capture status of Position fields",
+            writeable=[x for x in self.bits_table_cls.call_types
+                       if x not in ("name", "value")],
+            extra_tags=[config_tag()]
+        ).create_attribute_model()
         registrar.add_attribute_model(
             "bits", self.bits, self.set_bits)
         registrar.add_attribute_model(
             "positions", self.positions, self.set_positions)
 
-    def _make_bits_table(self):
-        meta = TableMeta.from_table(
-            BitsTable, "Current values and capture status of Bit fields",
-            writeable=("capture",), extra_tags=[config_tag()]
-        )
-        return meta.create_attribute_model()
-
-    def _make_positions_table(self):
-        meta = TableMeta.from_table(
-            PositionsTable,
-            "Current values, scaling, and capture status of Position fields",
-            writeable=("scale", "offset", "units", "capture"),
-            extra_tags=[config_tag()]
-        )
-        return meta.create_attribute_model()
-
     def set_bits(self, value):
         # type: (BitsTable) -> None
-        column_changes = get_column_changes(
-            self.bits.value, value, self._bit_indexes)
+        column_changes = get_column_changes(self.bits.value, value)
         if "capture" in column_changes:
             # If capture changed, set PCAP bits
             field_values = {k: "No" for k in self._pcap_bit_indexes}
@@ -128,8 +117,7 @@ class PandABussesPart(Part):
 
     def set_positions(self, value):
         # type: (PositionsTable) -> None
-        column_changes = get_column_changes(
-            self.positions.value, value, self._pos_indexes)
+        column_changes = get_column_changes(self.positions.value, value)
         for attr in ("capture", "scale", "offset", "units"):
             if attr in column_changes:
                 # If attribute changed, set field bits
@@ -145,6 +133,27 @@ class PandABussesPart(Part):
         if column_changes:
             new_value = make_updated_table(self.positions.value, column_changes)
             self.positions.set_value(new_value)
+
+    def initial_bits_table(self, bit_names):
+        # type: (List[str]) -> BitsTable
+        bits_table = BitsTable(
+            name=bit_names,
+            value=[False] * len(bit_names),
+            capture=[False] * len(bit_names),
+        )
+        return bits_table
+
+    def initial_pos_table(self, pos_names):
+        # type: (List[str]) -> PositionsTable
+        pos_table = PositionsTable(
+            name=pos_names,
+            value=[0.0] * len(pos_names),
+            units=[""] * len(pos_names),
+            scale=[1.0] * len(pos_names),
+            offset=[0.0] * len(pos_names),
+            capture=[PositionCapture.NO] * len(pos_names),
+        )
+        return pos_table
 
     def create_busses(self, pcap_bits_fields, pos_names):
         # type: (Dict[str, List[str]], List[str]) -> None
@@ -163,12 +172,9 @@ class PandABussesPart(Part):
                     bit_names.append(bit)
                     self._bit_indexes[bit] = index
             self._pcap_bit_indexes[k] = indexes
-        self.bits.set_value(
-            make_default_table(self.bits.meta.table_cls, bit_names))
-
+        self.bits.set_value(self.initial_bits_table(bit_names))
         # Positions
-        self.positions.set_value(
-            make_default_table(self.positions.meta.table_cls, pos_names))
+        self.positions.set_value(self.initial_pos_table(pos_names))
         # Pos lookups
         self._pos_indexes = {k: i for i, k in enumerate(pos_names)}
         for i, k in enumerate(pos_names):
