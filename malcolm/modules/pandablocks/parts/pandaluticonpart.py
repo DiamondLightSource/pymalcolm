@@ -85,11 +85,11 @@ def get_lut_icon_elements(fnum):
 class PandALutIconPart(PandAIconPart):
     update_fields = {"FUNC"}
 
-    def update_icon(self, field_values):
+    def update_icon(self, field_values, ts):
         """Update the icon using the given field values"""
         with open(os.path.join(SVG_DIR, "LUT.svg")) as f:
             svg_text = f.read()
         fnum = int(self.client.get_field(self.block_name, "FUNC.RAW"), 0)
         invis = get_lut_icon_elements(fnum)
         svg_text = builtin.util.svg_text_without_elements(svg_text, invis)
-        self.attr.set_value(svg_text)
+        self.attr.set_value(svg_text, ts=ts)

@@ -106,7 +106,7 @@ class PandABoxControlTest(unittest.TestCase):
 .
 """]
         self.start(messages)
-        changes = list(self.c.get_changes())
+        changes = list(self.c.get_changes(include_errors=True))
         self.c.stop()
         assert self.socket.sendall.call_args_list == [
             call("*CHANGES?\n"), call("SEQ1.TABLE?\n")]

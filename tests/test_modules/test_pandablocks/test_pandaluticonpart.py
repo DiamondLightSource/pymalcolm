@@ -2,6 +2,7 @@ import unittest
 from mock import MagicMock
 from xml.etree import cElementTree as ET
 
+from malcolm.core import TimeStamp
 from malcolm.modules.pandablocks.parts.pandaluticonpart import \
     PandALutIconPart, get_lut_icon_elements
 
@@ -36,7 +37,8 @@ class PandABLutIconTest(unittest.TestCase):
     def test_symbol(self):
         # !A&!B&!C&!D&!E
         self.o.client.get_field.return_value = "1"
-        self.o.update_icon({})
+        ts = TimeStamp()
+        self.o.update_icon({}, ts)
         self.o.client.get_field.assert_called_once_with("LUT1", "FUNC.RAW")
         svg_text = self.o.attr.value
         root = ET.fromstring(svg_text)
@@ -44,3 +46,4 @@ class PandABLutIconTest(unittest.TestCase):
         assert len(root.findall(".//*[@id='notA']")) == 1
         assert len(root.findall(".//*[@id='OR']")) == 0
         assert len(root.findall(".//*[@id='AND']")) == 1
+        assert self.o.attr.timeStamp is ts

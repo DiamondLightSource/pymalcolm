@@ -5,7 +5,7 @@ from .choicepart import ChoicePart
 from .float64part import Float64Part
 from .grouppart import GroupPart
 from .helppart import HelpPart
-from .iconpart import IconPart
+from .iconpart import IconPart, ASvg
 from .labelpart import LabelPart
 from .stringpart import StringPart
 

@@ -278,12 +278,15 @@ class PandABlocksClient(object):
             bits[k + ".CAPTURE"] = self.recv(queue)
         return bits
 
-    def get_changes(self):
+    def get_changes(self, include_errors=False):
         table_queues = {}
         for line in self.send_recv("*CHANGES?\n"):
             if line.endswith("(error)"):
-                field = line.split(" ", 1)[0]
-                val = Exception
+                if include_errors:
+                    field = line.split(" ", 1)[0]
+                    val = Exception
+                else:
+                    continue
             elif "<" in line:
                 # table
                 field = line.rstrip("<")

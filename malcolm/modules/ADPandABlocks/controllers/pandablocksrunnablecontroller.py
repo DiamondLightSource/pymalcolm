@@ -6,7 +6,7 @@ from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.builtin.parts import StringPart, ChoicePart
 from malcolm.modules.pandablocks.controllers import \
-    PandABlocksManagerController, AMri, AConfigDir, AHostname, APort, \
+    PandAManagerController, AMri, AConfigDir, AHostname, APort, \
     AInitialDesign, ADescription, AUseGit, ATemplateDesigns
 from malcolm.modules.scanning.controllers import RunnableController
 from ..parts import PandABlocksDriverPart, PandABlocksChildPart
@@ -16,8 +16,8 @@ with Anno("Prefix for areaDetector records"):
     APrefix = str
 
 
-class PandABlocksRunnableController(PandABlocksManagerController,
-                                    RunnableController):
+class PandARunnableController(PandAManagerController,
+                              RunnableController):
     def __init__(self,
                  mri,  # type: AMri
                  config_dir,  # type: AConfigDir
@@ -30,7 +30,7 @@ class PandABlocksRunnableController(PandABlocksManagerController,
                  description="",  # type: ADescription
                  ):
         # type: (...) -> None
-        super(PandABlocksRunnableController, self).__init__(
+        super(PandARunnableController, self).__init__(
             mri=mri,
             config_dir=config_dir,
             hostname=hostname,
@@ -79,7 +79,7 @@ class PandABlocksRunnableController(PandABlocksManagerController,
             for c in cs:
                 self.process.add_controller(c)
         else:
-            controller = super(PandABlocksRunnableController, self).\
+            controller = super(PandARunnableController, self).\
                 _make_child_controller(new_parts, mri)
         return controller
 

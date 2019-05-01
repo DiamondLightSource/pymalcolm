@@ -1,4 +1,4 @@
-from .pandablocksrunnablecontroller import PandABlocksRunnableController
+from .pandablocksrunnablecontroller import PandARunnableController
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

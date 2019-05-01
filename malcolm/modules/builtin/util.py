@@ -1,8 +1,9 @@
 import collections
+from xml.etree import cElementTree as ET
 
 from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
 
-from malcolm.compat import str_
+from malcolm.compat import str_, et_to_string
 from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
     StateSet, DEFAULT_TIMEOUT
 
@@ -172,3 +173,21 @@ def no_save(*attribute_names):
         cls.no_save_attribute_names = existing | additions
         return cls
     return decorator
+
+
+def svg_text_without_elements(svg_text, ids):
+    # type: (str, Sequence[str]) -> str
+    """Take some SVG and remove all elements with the given ids before returning
+    it
+    """
+    # https://stackoverflow.com/a/8998773
+    ET.register_namespace('', "http://www.w3.org/2000/svg")
+    root = ET.fromstring(svg_text)
+    for i in ids:
+        # Find the first parent which has a child with id i
+        parent = root.find('.//*[@id=%r]/..' % i)
+        # Find the child and remove it
+        child = parent.find('./*[@id=%r]' % i)
+        parent.remove(child)
+    svg_text = et_to_string(root)
+    return svg_text

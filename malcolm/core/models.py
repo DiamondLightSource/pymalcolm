@@ -686,6 +686,9 @@ def to_np_array(dtype, value):
         dtype = float
     elif dtype == np.int64:
         dtype = int
+    if value.__class__ is Array:
+        # Unwrap Array as we are going to cast it anyway
+        value = value.seq
     if isinstance(value, Sequence):
         # Cast to numpy array
         value = np.array(value, dtype=dtype)
@@ -867,6 +870,11 @@ class TableMeta(VMeta):
         value = self.table_cls(**args)
         # Check column lengths
         value.validate_column_lengths()
+        # Check the table class give Array elements
+        for k in args:
+            assert value[k].__class__ is Array, \
+                "Table Class %s doesn't wrap attr '%s' with an Array" % (
+                    self.table_cls, k)
         return value
 
     def doc_type_string(self):

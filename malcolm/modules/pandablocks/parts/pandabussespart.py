@@ -1,3 +1,5 @@
+import numpy as np
+
 from annotypes import TYPE_CHECKING
 
 from malcolm.core import Part, TableMeta, PartRegistrar, config_tag, \
@@ -13,7 +15,12 @@ def update_column(column_changes, column, table_value):
     try:
         column_value = column_changes[column]
     except KeyError:
-        column_value = table_value[column].seq[:]
+        try:
+            # numpy array
+            column_value = table_value[column].seq.copy()
+        except AttributeError:
+            # list
+            column_value = table_value[column].seq[:]
         column_changes[column] = column_value
     return column_value
 
@@ -181,9 +188,6 @@ class PandABussesPart(Part):
         # type: (str, str, Dict[str, List[Any]]) -> Optional[bool]
         i = self._pos_indexes.get(field_name, None)
         if i is not None:
-            table_value = self.positions.value
-            scale = table_value.scale[i]
-            offset = table_value.offset[i]
             split = field_name.split(".")
             if len(split) == 2:
                 # Value change
@@ -192,16 +196,16 @@ class PandABussesPart(Part):
                 # Another field change
                 assert len(split) == 3, "Bad Pos field name: %s" % field_name
                 column = split[-1].lower()
-                if column == "scale":
+                if column in ("scale", "offset"):
                     value = float(value)
-                    scale = value
-                elif column == "offset":
-                    value = float(value)
-                    offset = value
                 elif column == "capture":
                     value = PositionCapture(value)
                 update_column(column_changes, column, self.positions.value)[i] \
                     = value
+            # Grab scale and offset
+            table_value = self.positions.value
+            scale = column_changes.get("scale", table_value.scale)[i]
+            offset = column_changes.get("offset", table_value.offset)[i]
 
             # It's a pos, update the value column with what we know
             update_column(column_changes, "value", self.positions.value)[i] \

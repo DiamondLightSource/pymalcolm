@@ -16,7 +16,7 @@
     name: config_dir
     description: Where to store saved configs
 
-- pandablocks.controllers.PandABlocksManagerController:
+- pandablocks.controllers.PandAManagerController:
     mri: $(mri)
     config_dir: $(config_dir)
     hostname: $(hostname)

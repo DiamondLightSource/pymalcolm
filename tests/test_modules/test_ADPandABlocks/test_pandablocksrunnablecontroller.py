@@ -3,7 +3,7 @@ import unittest
 from mock import call, Mock, patch, ANY
 
 from malcolm.modules.ADPandABlocks.controllers import \
-    PandABlocksRunnableController
+    PandARunnableController
 from malcolm.modules.pandablocks.pandablocksclient import \
     FieldData, BlockData
 
@@ -14,7 +14,7 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
            "pandablocksmanagercontroller.PandABlocksClient")
     def setUp(self, mock_client, catools):
         self.process = Mock()
-        self.o = PandABlocksRunnableController(
+        self.o = PandARunnableController(
             mri="P", config_dir="/tmp", prefix="PV:")
         self.o.setup(self.process)
         blocks_data = OrderedDict()
@@ -26,7 +26,7 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
         blocks_data["INENC"] = BlockData(1, "", fields)
         self.client = self.o.client
         self.client.get_blocks_data.return_value = blocks_data
-        self.o._make_blocks_parts()
+        self.o._make_child_controllers()
 
     def _blocks(self):
         pcap = self.process.add_controller.call_args_list[0][0][0]

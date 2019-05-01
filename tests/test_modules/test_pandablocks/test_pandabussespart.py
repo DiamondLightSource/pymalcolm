@@ -1,7 +1,6 @@
 from collections import OrderedDict
 import unittest
-from mock import call, patch, ANY, MagicMock
-from xml.etree import cElementTree as ET
+from mock import call, MagicMock
 
 from malcolm.core import TimeStamp
 from malcolm.modules.pandablocks.parts.pandabussespart import PandABussesPart
@@ -30,12 +29,14 @@ class PandABussesPartTest(unittest.TestCase):
         assert list(self.o.bits.meta.elements) == ["name", "value", "capture"]
         assert self.o.bits.value.name == self.expected_bit_names
         assert self.o.bits.value.value == [False] * 9
+        assert self.o.bits.value.value.seq.dtype == bool
         assert self.o.bits.value.capture == [False] * 9
         assert self.o.bits.meta.elements["capture"].tags == ["widget:checkbox"]
         assert list(self.o.positions.meta.elements) == [
             "name", "value", "units", "scale", "offset", "capture"]
         assert self.o.positions.value.name == self.expected_pos_names
         assert self.o.positions.value.value == [0.0] * 4
+        assert self.o.positions.value.value.seq.dtype == float
         assert self.o.positions.value.units == [""] * 4
         assert self.o.positions.value.scale == [0.0] * 4
         assert self.o.positions.value.offset == [0.0] * 4

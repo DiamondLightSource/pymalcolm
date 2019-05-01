@@ -1,4 +1,4 @@
-from .pandablocksmanagercontroller import PandABlocksManagerController, \
+from .pandamanagercontroller import PandAManagerController, \
     AMri, AConfigDir, AHostname, APort, AInitialDesign, ADescription, \
     AUseGit, ATemplateDesigns
 
