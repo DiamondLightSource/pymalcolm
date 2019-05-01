@@ -752,15 +752,24 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
             ret = []
             if isinstance(value, str_):
                 value = [value]
+            # If we have an Array of the right type, start off assuming it's the
+            # same
+            is_same = value.__class__ is Array and value.typ is self.enum_cls
             for i, choice in enumerate(value):
                 # Our lookup table contains all the possible values
                 try:
-                    ret.append(self.choices_lookup[choice])
+                    new_choice = self.choices_lookup[choice]
                 except KeyError:
                     raise ValueError(
                         "%s is not a valid value in %s for element %s" % (
                             value, self.choices, i))
-            return to_array(Array[self.enum_cls], ret)
+                else:
+                    is_same &= choice == new_choice
+                    ret.append(new_choice)
+            if is_same:
+                return value
+            else:
+                return to_array(Array[self.enum_cls], ret)
 
     def doc_type_string(self):
         # type: () -> str
