@@ -11,11 +11,15 @@ class Table(Serializable):
             "Column lengths %s don't match" % lengths
 
     def __getitem__(self, item):
-        if isinstance(item, int):
-            self.validate_column_lengths()
-            return [getattr(self, a)[item] for a in self.call_types]
-        else:
+        try:
             return super(Table, self).__getitem__(item)
+        except KeyError:
+            # If we have an integer, make a row
+            if isinstance(item, int):
+                self.validate_column_lengths()
+                return [getattr(self, a)[item] for a in self.call_types]
+            else:
+                raise
 
     @classmethod
     def from_rows(cls, rows):

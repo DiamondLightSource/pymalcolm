@@ -127,6 +127,5 @@ class PandABussesPartTest(unittest.TestCase):
         assert self.o.bits.value.name == self.expected_bit_names
         assert self.o.bits.value.capture == [False, True] + [False] * 7
         assert self.o.bits.value.value == [False] * 9
-        assert self.o._client.set_fields.call_args_list == [
-            call({'PCAP.BITS1.CAPTURE': 'No', 'PCAP.BITS0.CAPTURE': 'Value'})
-        ]
+        self.o._client.set_fields.assert_called_once_with(
+            {'PCAP.BITS0.CAPTURE': 'Value'})

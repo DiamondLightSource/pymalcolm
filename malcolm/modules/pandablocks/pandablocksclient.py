@@ -281,19 +281,19 @@ class PandABlocksClient(object):
     def get_changes(self, include_errors=False):
         table_queues = {}
         for line in self.send_recv("*CHANGES?\n"):
-            if line.endswith("(error)"):
+            if "=" in line:
+                field, val = line.split("=", 1)
+            elif line[-1] == "<":
+                # table
+                field = line[:-1]
+                val = None
+                table_queues[field] = self.send("%s?\n" % field)
+            elif line.endswith("(error)"):
                 if include_errors:
                     field = line.split(" ", 1)[0]
                     val = Exception
                 else:
                     continue
-            elif "<" in line:
-                # table
-                field = line.rstrip("<")
-                val = None
-                table_queues[field] = self.send("%s?\n" % field)
-            elif "=" in line:
-                field, val = line.split("=", 1)
             else:
                 log.warning("Can't parse line %r of changes", line)
                 continue

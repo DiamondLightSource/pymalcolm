@@ -1,7 +1,7 @@
 from annotypes import TYPE_CHECKING
 
 from malcolm.core import Part, TableMeta, PartRegistrar, config_tag, \
-    TimeStamp, Table, AMri, BadValueError
+    TimeStamp, Table, AMri, BadValueError, Alarm
 from ..util import BitsTable, PositionsTable, AClient, PositionCapture
 
 if TYPE_CHECKING:
@@ -13,12 +13,13 @@ def update_column(column_changes, column, table_value):
     try:
         column_value = column_changes[column]
     except KeyError:
+        column_array = getattr(table_value, column)
         try:
             # numpy array
-            column_value = table_value[column].seq.copy()
+            column_value = column_array.seq.copy()
         except AttributeError:
             # list
-            column_value = table_value[column].seq[:]
+            column_value = column_array.seq[:]
         column_changes[column] = column_value
     return column_value
 
@@ -47,7 +48,7 @@ def get_column_changes(old, new):
 def make_updated_table(old_value, column_changes):
     # type: (Table, Dict[str, List[Any]]) -> Table
     # Create new table from the old and changes
-    d = {k: column_changes.get(k, old_value[k]) for k in old_value}
+    d = {k: column_changes.get(k, getattr(old_value, k)) for k in old_value}
     new_value = old_value.__class__(**d)
     return new_value
 
@@ -104,12 +105,17 @@ class PandABussesPart(Part):
         column_changes = get_column_changes(self.bits.value, value)
         if "capture" in column_changes:
             # If capture changed, set PCAP bits
-            field_values = {k: "No" for k in self._pcap_bit_indexes}
-            bit_names = self.bits.value.name
-            for bit, capture in zip(bit_names, column_changes["capture"]):
+            field_values = {}
+            for bit in value.name:
+                capture = column_changes["capture"][self._bit_indexes[bit]]
+                capture_field = self._bit_pcap_fields[bit]
                 if capture:
-                    capture_field = self._bit_pcap_fields[bit]
+                    # If told to capture, this trumps anything it currently
+                    # holds
                     field_values[capture_field] = "Value"
+                else:
+                    # If not already set, set it to No
+                    field_values.setdefault(capture_field, "No")
             self._client.set_fields(field_values)
         if column_changes:
             new_value = make_updated_table(self.bits.value, column_changes)
@@ -237,8 +243,8 @@ class PandABussesPart(Part):
         # Update the tables
         if bit_column_changes:
             new_value = make_updated_table(self.bits.value, bit_column_changes)
-            self.bits.set_value(new_value, ts=ts)
+            self.bits.set_value_alarm_ts(new_value, Alarm.ok, ts)
         if pos_column_changes:
             new_value = make_updated_table(
                 self.positions.value, pos_column_changes)
-            self.positions.set_value(new_value, ts=ts)
+            self.positions.set_value_alarm_ts(new_value, Alarm.ok, ts)

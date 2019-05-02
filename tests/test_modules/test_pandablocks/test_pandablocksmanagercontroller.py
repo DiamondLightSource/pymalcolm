@@ -6,7 +6,7 @@ from malcolm.core import Process, Queue, Subscribe
 from malcolm.modules.pandablocks.controllers import PandAManagerController
 from malcolm.modules.pandablocks.pandablocksclient import \
     FieldData, BlockData
-from malcolm.modules.pandablocks.util import PositionCapture
+from malcolm.modules.pandablocks.util import PositionCapture, BitsTable
 
 
 class PandABlocksManagerControllerTest(unittest.TestCase):
@@ -32,6 +32,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         fields = OrderedDict()
         fields["VAL"] = FieldData("bit_out", "", "Output", [])
         blocks_data["TTLIN"] = BlockData(2, "", fields)
+        blocks_data["PCAP"] = BlockData(1, "", {})
         self.client.get_blocks_data.return_value = blocks_data
         changes = [
             ["PCOMP.INP", "ZERO"],
@@ -60,7 +61,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
 
     def test_initial_changes(self):
         assert self.process.mri_list == [
-            'P', 'P:PCOMP', 'P:COUNTER', 'P:TTLIN1', 'P:TTLIN2']
+            'P', 'P:PCOMP', 'P:COUNTER', 'P:TTLIN1', 'P:TTLIN2', 'P:PCAP']
         assert self.o._bit_outs == {
             'TTLIN1.VAL': False, 'TTLIN2.VAL': False, 'PCOMP.OUT': False}
         pcomp = self.process.block_view('P:PCOMP')
@@ -195,3 +196,22 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
             [['positions', 'value', 'scale'], [0.5]],
             [['positions', 'timeStamp'], ANY]
         ]
+
+    def test_change_pcap_bits(self):
+        b = self.process.block_view('P')
+        assert b.bits.value.capture == [False, False, False]
+        b.bits.put_value(BitsTable(
+            name=["TTLIN1.VAL"], value=[False], capture=[True]))
+        assert b.bits.value.capture == [True, False, False]
+        self.client.set_fields.assert_called_once_with(
+            {"PCAP.BITS0.CAPTURE": 'Value'})
+        self.client.set_fields.reset_mock()
+        self.o.handle_changes([("PCAP.BITS0.CAPTURE", "Value")])
+        assert b.bits.value.capture == [True, True, True]
+        b.bits.put_value(BitsTable(
+            name=["TTLIN1.VAL"], value=[False], capture=[False]))
+        assert b.bits.value.capture == [False, True, True]
+        self.client.set_fields.assert_called_once_with(
+            {"PCAP.BITS0.CAPTURE": 'No'})
+        self.o.handle_changes([("PCAP.BITS0.CAPTURE", "No")])
+        assert b.bits.value.capture == [False, False, False]

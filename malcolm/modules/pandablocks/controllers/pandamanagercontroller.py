@@ -214,6 +214,41 @@ class PandAManagerController(builtin.controllers.ManagerController):
         part = builtin.parts.ChildPart(name=block_name, mri=mri, stateful=False)
         return part
 
+    def _handle_change(self, k, v, bus_changes, block_changes, bit_out_changes):
+        # Handle bit changes
+        try:
+            current_v = self._bit_outs[k]
+        except KeyError:
+            # Not a bit
+            pass
+        else:
+            # Convert to a boolean
+            v = bool(int(v))
+            try:
+                changed_to = bit_out_changes[k]
+            except KeyError:
+                # We didn't already make a change
+                if v == current_v:
+                    # Value is the same, store the negation, and set it
+                    # back next time
+                    self._bit_out_changes[k] = v
+                    v = not v
+            else:
+                # Already made a change, defer this value til next time
+                # if it is different
+                if changed_to != v:
+                    self._bit_out_changes[k] = v
+                return
+            self._bit_outs[k] = v
+
+        # Notify the bus tables if they need to know
+        if k in self._bus_fields:
+            bus_changes[k] = v
+
+        # Add to the relevant Block changes dict
+        block_name, field_name = k.split(".", 1)
+        block_changes.setdefault(block_name, {})[field_name] = v
+
     def handle_changes(self, changes):
         # type: (Sequence[Tuple[str, str]]) -> None
         ts = TimeStamp()
@@ -233,34 +268,8 @@ class PandAManagerController(builtin.controllers.ManagerController):
 
         # Work out which change is needed for which block
         for k, v in changes:
-            # Handle bit changes
-            if k in self._bit_outs:
-                # Convert to a boolean
-                v = bool(int(v))
-                try:
-                    changed_to = bit_out_changes[k]
-                except KeyError:
-                    # We didn't already make a change
-                    if v == self._bit_outs[k]:
-                        # Value is the same, store the negation, and set it
-                        # back next time
-                        self._bit_out_changes[k] = v
-                        v = not v
-                else:
-                    # Already made a change, defer this value til next time
-                    # if it is different
-                    if changed_to != v:
-                        self._bit_out_changes[k] = v
-                    continue
-                self._bit_outs[k] = v
-
-            # Notify the bus tables if they need to know
-            if k in self._bus_fields:
-                bus_changes[k] = v
-
-            # Add to the relevant Block changes dict
-            block_name, field_name = k.split(".", 1)
-            block_changes.setdefault(block_name, {})[field_name] = v
+            self._handle_change(
+                k, v, bus_changes, block_changes, bit_out_changes)
 
         # Notify the Blocks that they need to handle these changes
         if bus_changes:
