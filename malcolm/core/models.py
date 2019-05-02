@@ -866,9 +866,8 @@ class TableMeta(VMeta):
                 # We can distinguish the type by asking for the default
                 # validate value
                 default_array = meta.validate(None)  # type: Array
-                anno = Anno(meta.description, default_array.typ, k)
-                anno.is_array = True
-                anno.is_mapping = False
+                anno = Anno(meta.description, name=k).set_typ(
+                    default_array.typ, is_array=True)
                 table_cls.call_types[k] = anno
         else:
             # User supplied, check it matches element names
@@ -1283,7 +1282,7 @@ class BlockModel(Model):
                 # Stop the old Model notifying
                 getattr(self, name).set_notifier_path(Model.notifier, [])
             else:
-                anno = Anno("Field", typ=type(value))
+                anno = Anno("Field").set_typ(type(value))
                 self.call_types[name] = anno
             value.set_notifier_path(self.notifier, self.path + [name])
             setattr(self, name, value)

@@ -94,20 +94,23 @@ class PandABlockController(builtin.controllers.BasicController):
                 except KeyError:
                     pass
                 else:
-                    # Mux changed its value, update its link to a different
-                    # Attribute
-                    tags = without_linked_value_tags(mux_meta.tags)
-                    split = v.split(".")
-                    if len(split) == 2:
-                        block_name, field_name = split
-                        attr_name = snake_to_camel(field_name.replace(".", "_"))
-                        block_mri = "%s:%s" % (self.mri_prefix, block_name)
-                        tags.append(linked_value_tag(block_mri, attr_name))
-                    mux_meta.set_tags(tags)
+                    self._handle_mux_update(mux_meta, v)
             if icon_needs_update:
                 d = {k: self.field_parts[k].attr.value
                      for k in self.icon_part.update_fields}
                 self.icon_part.update_icon(d, ts)
+
+    def _handle_mux_update(self, mux_meta, v):
+        # Mux changed its value, update its link to a different
+        # Attribute
+        tags = without_linked_value_tags(mux_meta.tags)
+        split = v.split(".")
+        if len(split) == 2:
+            block_name, field_name = split
+            attr_name = snake_to_camel(field_name.replace(".", "_"))
+            block_mri = "%s:%s" % (self.mri_prefix, block_name)
+            tags.append(linked_value_tag(block_mri, attr_name))
+        mux_meta.set_tags(tags)
 
     def _make_common_parts(self):
         # type: () -> PandAIconPart

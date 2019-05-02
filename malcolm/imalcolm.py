@@ -303,7 +303,7 @@ if __name__ == "__main__":
         # scipy only needed for scanpointgenerator.plot_generator
         "scipy==0.19.1",
         # DLS developed
-        "annotypes==0.15",
+        "annotypes==0.16",
         "cothread==2.14",
         "scanpointgenerator==2.2.1",
         "vdsgen==0.5.1"
