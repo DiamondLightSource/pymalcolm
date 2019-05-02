@@ -21,7 +21,8 @@ class PandADatasetBussesPart(PandABussesPart):
         self.register_hooked(scanning.hooks.ReportStatusHook,
                              self.report_status)
 
-    def initial_bits_table(self, bit_names):
+    @staticmethod
+    def _make_initial_bits_table(bit_names):
         # type: (List[str]) -> DatasetBitsTable
         ds_types = [ADCore.util.AttributeDatasetType.MONITOR] * len(bit_names)
         bits_table = DatasetBitsTable(
@@ -33,7 +34,8 @@ class PandADatasetBussesPart(PandABussesPart):
         )
         return bits_table
 
-    def initial_pos_table(self, pos_names):
+    @staticmethod
+    def _make_initial_pos_table(pos_names):
         # type: (List[str]) -> DatasetPositionsTable
         ds_types = []
         for pos in pos_names:

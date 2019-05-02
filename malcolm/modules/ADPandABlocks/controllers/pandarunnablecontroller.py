@@ -57,7 +57,7 @@ class PandARunnableController(pandablocks.controllers.PandAManagerController,
         # type: () -> PandADatasetBussesPart
         return PandADatasetBussesPart("busses", self._client)
 
-    def _make_child_controller(self, block_name, block_data):
+    def _make_child_block(self, block_name, block_data):
         if block_name == "PCAP":
             controller = PandAStatefulBlockController(
                 self._client, self.mri, block_name, block_data,
@@ -66,16 +66,9 @@ class PandARunnableController(pandablocks.controllers.PandAManagerController,
             _, ps = ADCore.includes.adbase_parts(prefix=self.prefix)
             for p in ps:
                 controller.add_part(p)
+            child_part = ADCore.parts.DetectorDriverPart(
+                name=block_name, mri=controller.mri, main_dataset_useful=False)
+            return controller, child_part
         else:
-            controller = super(PandARunnableController, self).\
-                _make_child_controller(block_name, block_data)
-        return controller
-
-    def _make_corresponding_part(self, block_name, mri):
-        if block_name == "PCAP":
-            part = ADCore.parts.DetectorDriverPart(
-                name=block_name, mri=mri, main_dataset_useful=False)
-        else:
-            part = super(PandARunnableController, self)\
-                ._make_corresponding_part(block_name, mri)
-        return part
+            return super(PandARunnableController, self).\
+                _make_child_block(block_name, block_data)

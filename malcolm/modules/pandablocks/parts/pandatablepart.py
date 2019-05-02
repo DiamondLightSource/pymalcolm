@@ -85,7 +85,7 @@ class PandATablePart(PandAFieldPart):
                         name, row, max_value, field_value)
                 int_value |= field_value << field_data.bits_lo
             # Split the big int into 32-bit numbers
-            for i in range(nconsume):
+            for _ in range(nconsume):
                 int_values.append(int_value & (2 ** 32 - 1))
                 int_value = int_value >> 32
         return int_values
@@ -98,7 +98,7 @@ class PandATablePart(PandAFieldPart):
             for c in range(nconsume):
                 int_value += int(int_values[i*nconsume+c]) << (32 * c)
             row = []
-            for name, field_data in self.field_data.items():
+            for field_data in self.field_data.values():
                 mask = 2 ** (field_data.bits_hi + 1) - 1
                 field_value = (int_value & mask) >> field_data.bits_lo
                 if field_data.labels:

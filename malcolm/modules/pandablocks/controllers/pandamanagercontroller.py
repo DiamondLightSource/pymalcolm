@@ -166,14 +166,12 @@ class PandAManagerController(builtin.controllers.ManagerController):
                         pos_names.append("%s.%s" % (block_name, field_name))
 
                 # Make the child controller and add it to the process
-                controller = self._make_child_controller(block_name, block_data)
+                controller, child_part = self._make_child_block(
+                    block_name, block_data)
                 self.process.add_controller(controller, timeout=5)
                 self._child_controllers[block_name] = controller
-
-                # Make the corresponding part for us
-                child_part = self._make_corresponding_part(
-                    block_name, controller.mri)
                 self.add_part(child_part)
+
         # Create the busses from their initial sets of values
         pcap_bit_fields = self._client.get_pcap_bits_fields()
         self.busses.create_busses(pcap_bit_fields, pos_names)
@@ -200,7 +198,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
         # type: () -> PandABussesPart
         return PandABussesPart("busses", self._client)
 
-    def _make_child_controller(self, block_name, block_data):
+    def _make_child_block(self, block_name, block_data):
         controller = PandABlockController(
             self._client, self.mri, block_name, block_data, self._doc_url_base)
         if block_name == "PCAP":
@@ -208,11 +206,9 @@ class PandAManagerController(builtin.controllers.ManagerController):
                 self._client, "*PCAP", "ARM", "Arm position capture", []))
             controller.add_part(PandAActionPart(
                 self._client, "*PCAP", "DISARM", "Disarm position capture", []))
-        return controller
-
-    def _make_corresponding_part(self, block_name, mri):
-        part = builtin.parts.ChildPart(name=block_name, mri=mri, stateful=False)
-        return part
+        child_part = builtin.parts.ChildPart(
+            name=block_name, mri=controller.mri, stateful=False)
+        return controller, child_part
 
     def _handle_change(self, k, v, bus_changes, block_changes, bit_out_changes):
         # Handle bit changes

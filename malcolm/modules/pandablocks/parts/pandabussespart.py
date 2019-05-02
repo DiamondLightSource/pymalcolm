@@ -140,7 +140,8 @@ class PandABussesPart(Part):
             new_value = make_updated_table(self.positions.value, column_changes)
             self.positions.set_value(new_value)
 
-    def initial_bits_table(self, bit_names):
+    @staticmethod
+    def _make_initial_bits_table(bit_names):
         # type: (List[str]) -> BitsTable
         bits_table = BitsTable(
             name=bit_names,
@@ -149,7 +150,8 @@ class PandABussesPart(Part):
         )
         return bits_table
 
-    def initial_pos_table(self, pos_names):
+    @staticmethod
+    def _make_initial_pos_table(pos_names):
         # type: (List[str]) -> PositionsTable
         pos_table = PositionsTable(
             name=pos_names,
@@ -178,9 +180,9 @@ class PandABussesPart(Part):
                     bit_names.append(bit)
                     self._bit_indexes[bit] = index
             self._pcap_bit_indexes[k] = indexes
-        self.bits.set_value(self.initial_bits_table(bit_names))
+        self.bits.set_value(self._make_initial_bits_table(bit_names))
         # Positions
-        self.positions.set_value(self.initial_pos_table(pos_names))
+        self.positions.set_value(self._make_initial_pos_table(pos_names))
         # Pos lookups
         self._pos_indexes = {k: i for i, k in enumerate(pos_names)}
         for i, k in enumerate(pos_names):
