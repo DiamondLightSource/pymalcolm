@@ -3,5 +3,5 @@ numpy
 ipython
 sphinx_rtd_theme
 ruamel.yaml
-annotypes>=0.15
+annotypes>=0.17
 cothread
