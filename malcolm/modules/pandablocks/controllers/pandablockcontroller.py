@@ -7,6 +7,7 @@ from malcolm.core import AMri, Widget, group_tag, NumberMeta, ChoiceMeta, \
     without_linked_value_tags, linked_value_tag, VMeta, snake_to_camel
 from malcolm.modules import builtin
 from ..parts.pandaiconpart import PandAIconPart
+from ..parts.pandalabelpart import PandALabelPart
 from ..parts.pandaluticonpart import PandALutIconPart
 from ..parts.pandaactionpart import PandAActionPart
 from ..parts.pandafieldpart import PandAFieldPart
@@ -15,7 +16,8 @@ from ..util import AClient, ADocUrlBase, SVG_DIR, ABlockName
 from ..pandablocksclient import BlockData, FieldData
 
 if TYPE_CHECKING:
-    from typing import Dict, Any, Optional
+    from typing import Dict, Any, Optional, Union
+    ChangeHandler = Union[PandAFieldPart, PandALabelPart]
 
 
 with Anno("Prefix to put on the beginning of the Block Name to make MRI"):
@@ -63,7 +65,7 @@ class PandABlockController(builtin.controllers.BasicController):
         self.block_data = block_data
         self.doc_url_base = doc_url_base
         # {field_name: part}
-        self.field_parts = {}  # type: Dict[str, Optional[PandAFieldPart]]
+        self.field_parts = {}  # type: Dict[str, Optional[ChangeHandler]]
         # {field_name: attr.meta}
         self.mux_metas = {}  # type: Dict[str, VMeta]
         # Make an icon, label and help for the Block
@@ -115,16 +117,25 @@ class PandABlockController(builtin.controllers.BasicController):
     def _make_common_parts(self):
         # type: () -> PandAIconPart
         block_type = self.block_name.rstrip("0123456789")
+        block_number = self.block_name[len(block_type):]
         svg_path = os.path.join(SVG_DIR, block_type + ".svg")
-        label = self.block_data.description + " " + \
-            self.block_name[len(block_type):]
         if block_type == "LUT":
             icon_cls = PandALutIconPart
         else:
             icon_cls = PandAIconPart
         icon_part = icon_cls(self.client, self.block_name, svg_path)
         self.add_part(icon_part)
-        self.add_part(builtin.parts.LabelPart(value=label))
+        label = self.block_data.description
+        metadata_field = "LABEL_%s" % self.block_name
+        if block_number:
+            # If we have multiple blocks, make the labels unique
+            label += " %s" % block_number
+        else:
+            # If we only have one block, the metadata field still has numbers
+            metadata_field += "1"
+        label_part = PandALabelPart(self.client, metadata_field, value=label)
+        self.add_part(label_part)
+        self.field_parts["LABEL"] = label_part
         self.add_part(builtin.parts.HelpPart("%s/build/%s_doc.html" % (
             self.doc_url_base, block_type.lower())))
         return icon_part

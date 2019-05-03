@@ -125,6 +125,27 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             'errPeriod']
 
         assert b.meta.label == "Pulse description 2"
+        assert b.label.value == "Pulse description 2"
+
+        # check setting label
+        b.label.put_value("A new label")
+        assert b.meta.label == "A new label"
+        assert b.label.value == "A new label"
+        self.client.set_field.assert_called_once_with(
+            "*METADATA", "LABEL_PULSE2", "A new label")
+        self.client.set_field.reset_mock()
+
+        # check updated with nothing
+        o.handle_changes(dict(LABEL=""), ts=TimeStamp())
+        assert b.meta.label == "A new label"
+        assert b.label.value == "A new label"
+        self.client.set_field.assert_not_called()
+
+        # check updated with something from the server
+        o.handle_changes(dict(LABEL="A server label"), ts=TimeStamp())
+        assert b.meta.label == "A server label"
+        assert b.label.value == "A server label"
+        self.client.set_field.assert_not_called()
 
         help = b.help
         assert help.value == "/docs/build/pulse_doc.html"

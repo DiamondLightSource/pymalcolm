@@ -31,6 +31,10 @@ AUseGit = builtin.controllers.AUseGit
 ADescription = builtin.controllers.ADescription
 
 
+# Minimum period in seconds between updates of the last poll period attribute
+POLL_PERIOD_REPORT = 1
+
+
 class PandAManagerController(builtin.controllers.ManagerController):
     def __init__(self,
                  mri,  # type: AMri
@@ -111,6 +115,7 @@ class PandAManagerController(builtin.controllers.ManagerController):
 
     def _poll_loop(self):
         """At self.poll_period poll for changes"""
+        last_poll_update = time.time()
         next_poll = time.time() + self._poll_period
         try:
             while True:
@@ -133,8 +138,10 @@ class PandAManagerController(builtin.controllers.ManagerController):
                     pass
                 # Poll for changes
                 self.handle_changes(self._client.get_changes())
-                if last_poll_period != self.last_poll_period.value:
+                if last_poll_period != self.last_poll_period.value and \
+                        next_poll - last_poll_update > POLL_PERIOD_REPORT:
                     self.last_poll_period.set_value(last_poll_period)
+                    last_poll_update = next_poll
                 next_poll += last_poll_period
         except Exception as e:
             self.go_to_error_state(e)
@@ -170,6 +177,10 @@ class PandAManagerController(builtin.controllers.ManagerController):
                     block_name, block_data)
                 self.process.add_controller(controller, timeout=5)
                 self._child_controllers[block_name] = controller
+                # If there is only one, make an alias with "1" appended for
+                # *METADATA.LABEL lookup
+                if block_data.number == 1:
+                    self._child_controllers[block_name + "1"] = controller
                 self.add_part(child_part)
 
         # Create the busses from their initial sets of values
@@ -243,6 +254,12 @@ class PandAManagerController(builtin.controllers.ManagerController):
 
         # Add to the relevant Block changes dict
         block_name, field_name = k.split(".", 1)
+        if block_name == "*METADATA":
+            if field_name.startswith("LABEL_"):
+                field_name, block_name = field_name.split("_", 1)
+            else:
+                # Don't support any non-label metadata fields at the moment
+                return
         block_changes.setdefault(block_name, {})[field_name] = v
 
     def handle_changes(self, changes):
@@ -271,5 +288,4 @@ class PandAManagerController(builtin.controllers.ManagerController):
         if bus_changes:
             self.busses.handle_changes(bus_changes, ts)
         for block_name, changes in block_changes.items():
-            if block_name != "*METADATA":
-                self._child_controllers[block_name].handle_changes(changes, ts)
+            self._child_controllers[block_name].handle_changes(changes, ts)

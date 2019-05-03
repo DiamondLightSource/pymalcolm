@@ -23,7 +23,7 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
         fields["START"] = FieldData("param", "", "Start position", [])
         fields["STEP"] = FieldData("param", "", "Step position", [])
         fields["OUT"] = FieldData("bit_out", "", "Output", [])
-        blocks_data["PCOMP"] = BlockData(1, "", fields)
+        blocks_data["PCOMP"] = BlockData(1, "Position Compare", fields)
         fields = OrderedDict()
         fields["INP"] = FieldData("bit_mux", "", "Input", ["ZERO", "TTLIN.VAL"])
         fields["START"] = FieldData("param", "pos", "Start position", [])
@@ -215,3 +215,12 @@ class PandABlocksManagerControllerTest(unittest.TestCase):
             {"PCAP.BITS0.CAPTURE": 'No'})
         self.o.handle_changes([("PCAP.BITS0.CAPTURE", "No")])
         assert b.bits.value.capture == [False, False, False]
+
+    def test_label_change(self):
+        pcomp = self.process.block_view('P:PCOMP')
+        assert pcomp.label.value == "Position Compare"
+        self.o.handle_changes([("*METADATA.LABEL_PCOMP1", "New Label")])
+        assert pcomp.label.value == "New Label"
+        pcomp.label.put_value("Very new")
+        self.client.set_field.assert_called_once_with(
+            "*METADATA", "LABEL_PCOMP1", "Very new")
