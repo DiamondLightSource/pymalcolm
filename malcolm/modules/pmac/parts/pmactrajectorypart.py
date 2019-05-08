@@ -115,7 +115,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                  ):
         # type: (...) -> scanning.hooks.UParameterTweakInfos
         # Make an axis mapping just to check they are all in the same CS
-        MotorInfo.cs_axis_mapping(part_info, axesToMove)
+        #MotorInfo.cs_axis_mapping(part_info, axesToMove)
         # Find the duration
         assert generator.duration > 0, \
             "Can only do fixed duration at the moment"
