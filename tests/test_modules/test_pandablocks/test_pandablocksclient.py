@@ -50,12 +50,12 @@ class PandABoxControlTest(unittest.TestCase):
             "!TTLIN 6\n!TTLOUT 10\n.\n",
             "OK =TTL input\n",
             "OK =TTL output\n",
-            "!VAL 1 pos_out\n!TERM 0 param enum\n.\n",
+            "!VAL 1 ext_out funny\n!TERM 0 param enum\n.\n",
             "!VAL 0 bit_mux\n.\n",
             "OK =TTL termination\n",
             "OK =TTL input value\n",
             "!High-Z\n!50-Ohm\n.\n",
-            "!Average\n!No\n.\n",
+            "!No\n!Value\n.\n",
             "OK =TTL output value\n",
             "!ZERO\n!TTLIN1.VAL\n!TTLIN2.VAL\n.\n",
         ]
@@ -79,8 +79,8 @@ class PandABoxControlTest(unittest.TestCase):
         in_fields = OrderedDict()
         in_fields["TERM"] = FieldData("param", "enum", "TTL termination",
                                       ["High-Z", "50-Ohm"])
-        in_fields["VAL"] = FieldData("pos_out", "", "TTL input value",
-                                     ["Average", "No"])
+        in_fields["VAL"] = FieldData("ext_out", "funny", "TTL input value",
+                                     ["No", "Value"])
         assert block_data["TTLIN"] == (
                          BlockData(6, "TTL input", in_fields))
         out_fields = OrderedDict()
@@ -106,7 +106,7 @@ class PandABoxControlTest(unittest.TestCase):
 .
 """]
         self.start(messages)
-        changes = list(self.c.get_changes())
+        changes = list(self.c.get_changes(include_errors=True))
         self.c.stop()
         assert self.socket.sendall.call_args_list == [
             call("*CHANGES?\n"), call("SEQ1.TABLE?\n")]
@@ -122,12 +122,46 @@ class PandABoxControlTest(unittest.TestCase):
         expected["PULSE3.INP"] = Exception
         assert OrderedDict(changes) == expected
 
+    def test_get_pcap_bits_fields(self):
+        messages = [
+            "!BITS1 1 ext_out bits\n!BITS0 0 ext_out bits\n.\n"
+        ] + [
+            "!B%d\n" % i for i in range(32)
+        ] + [".\n"] + [
+            "!B%d\n" % i for i in range(32, 52)
+        ] + ["!\n" * 12] + [".\n"]
+        self.start(messages)
+        expected = {
+            "PCAP.BITS0.CAPTURE": ["B%d" % i for i in range(32)],
+            "PCAP.BITS1.CAPTURE": ["B%d" % i for i in range(32, 52)] + [""] * 12
+        }
+        assert self.c.get_pcap_bits_fields() == expected
+        self.c.stop()
+        assert self.socket.sendall.call_args_list == [
+            call("PCAP.*?\n"), call("PCAP.BITS0.BITS?\n"),
+            call("PCAP.BITS1.BITS?\n")]
+
+    def test_get_field(self):
+        messages = "OK =32\n"
+        self.start(messages)
+        assert self.c.get_field("PULSE0", "WIDTH") == "32"
+        self.c.stop()
+        self.socket.sendall.assert_called_once_with("PULSE0.WIDTH?\n")
+
     def test_set_field(self):
         messages = "OK\n"
         self.start(messages)
         self.c.set_field("PULSE0", "WIDTH", 0)
         self.c.stop()
         self.socket.sendall.assert_called_once_with("PULSE0.WIDTH=0\n")
+
+    def test_set_fields(self):
+        messages = "OK\nOK\n"
+        self.start(messages)
+        self.c.set_fields({"PULSE0.WIDTH": 0, "PULSE0.DELAY": 5})
+        self.c.stop()
+        assert sorted(self.socket.sendall.call_args_list) == [
+            call("PULSE0.DELAY=5\n"), call("PULSE0.WIDTH=0\n")]
 
     def test_set_table(self):
         messages = "OK\n"

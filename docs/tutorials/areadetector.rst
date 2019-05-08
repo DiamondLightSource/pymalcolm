@@ -357,7 +357,7 @@ Let's start up the example and see it in action::
 
 This time we will configure from the commandline. You may have some of these
 lines in your history from earlier tutorials. Note you will need to replace
-'mypc' with the name of your pc name::
+'mypc' with the name of your pc::
 
     In [1]: from scanpointgenerator import LineGenerator, CompoundGenerator
 

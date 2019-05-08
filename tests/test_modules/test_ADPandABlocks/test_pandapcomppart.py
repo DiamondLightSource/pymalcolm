@@ -8,7 +8,7 @@ from mock import MagicMock, ANY, call
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Context, Process, Part, TableMeta, PartRegistrar
-from malcolm.modules.ADPandABlocks.blocks import pandablocks_pcomp_block
+from malcolm.modules.ADPandABlocks.blocks import panda_pcomp_block
 from malcolm.modules.ADPandABlocks.parts import PandABlocksPcompPart
 from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger
 from malcolm.modules.builtin.controllers import ManagerController, \
@@ -86,7 +86,7 @@ class TestPcompPart(ChildTestCase):
 
         # Make the child block holding panda and pmac mri
         self.child = self.create_child_block(
-            pandablocks_pcomp_block, self.process,
+            panda_pcomp_block, self.process,
             mri="SCAN:PCOMP", panda="PANDA", pmac="PMAC")
 
         # And our part under test

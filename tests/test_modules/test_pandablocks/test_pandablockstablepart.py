@@ -2,11 +2,11 @@ from collections import OrderedDict
 import unittest
 from mock import Mock
 
-from malcolm.core import Table, BooleanArrayMeta, NumberArrayMeta, TableMeta, \
+from malcolm.core import BooleanArrayMeta, NumberArrayMeta, TableMeta, \
     ChoiceArrayMeta
 from malcolm.modules.pandablocks.pandablocksclient import TableFieldData
-from malcolm.modules.pandablocks.parts.pandablockstablepart import \
-    PandABlocksTablePart
+from malcolm.modules.pandablocks.parts.pandatablepart import \
+    PandATablePart
 
 
 class PandABoxTablePartTest(unittest.TestCase):
@@ -19,7 +19,7 @@ class PandABoxTablePartTest(unittest.TestCase):
         fields["TIME_PH_A"] = TableFieldData(95, 64, "Time Phase A", None)
         self.client.get_table_fields.return_value = fields
         self.meta = TableMeta("Seq table", writeable=True)
-        self.o = PandABlocksTablePart(
+        self.o = PandATablePart(
             self.client, self.meta,
             block_name="SEQ1", field_name="TABLE")
 

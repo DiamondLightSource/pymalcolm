@@ -1,8 +1,12 @@
 from annotypes import Anno, Array
-from enum import Enum
 import numpy as np
 
 from malcolm.core import Table
+from malcolm.modules.ADCore.util import UAttributeNames, AAttributeNames, \
+    UAttributeTypes, AAttributeTypes
+from malcolm.modules.pandablocks.util import BitsTable, UBitNames, UBitValues, \
+    UBitCaptures, PositionsTable, UPositionNames, UPositionValues, \
+    UPositionUnits, UPositionScales, UPositionOffsets, UPositionCaptures
 
 
 class Trigger(object):
@@ -75,3 +79,39 @@ class SequencerTable(Table):
         self.outd2 = AOutArray(outd2)
         self.oute2 = AOutArray(oute2)
         self.outf2 = AOutArray(outf2)
+
+
+class DatasetBitsTable(BitsTable):
+    # Allow CamelCase as arguments will be serialized
+    # noinspection PyPep8Naming
+    def __init__(self,
+                 name,  # type: UBitNames
+                 value,  # type: UBitValues
+                 capture,  # type: UBitCaptures
+                 datasetName,  # type: UAttributeNames
+                 datasetType  # type: UAttributeTypes
+                 ):
+        # type: (...) -> None
+        super(DatasetBitsTable, self).__init__(name, value, capture)
+        self.datasetName = AAttributeNames(datasetName)
+        self.datasetType = AAttributeTypes(datasetType)
+
+
+class DatasetPositionsTable(PositionsTable):
+    # Allow CamelCase as arguments will be serialized
+    # noinspection PyPep8Naming
+    def __init__(self,
+                 name,  # type: UPositionNames
+                 value,  # type: UPositionValues
+                 units,  # type: UPositionUnits
+                 scale,  # type: UPositionScales
+                 offset,  # type: UPositionOffsets
+                 capture,  # type: UPositionCaptures
+                 datasetName,  # type: UAttributeNames
+                 datasetType  # type: UAttributeTypes
+                 ):
+        # type: (...) -> None
+        super(DatasetPositionsTable, self).__init__(
+            name, value, units, scale, offset, capture)
+        self.datasetName = AAttributeNames(datasetName)
+        self.datasetType = AAttributeTypes(datasetType)

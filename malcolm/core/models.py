@@ -361,6 +361,26 @@ class NTTable(AttributeModel):
     """AttributeModel containing a `TableMeta`"""
     __slots__ = []
 
+    def set_value_alarm_ts(self, value, alarm, ts):
+        with self.notifier.changes_squashed:
+            # Assume they are of the right format
+            # Work out what changed in value, do a cheap Array id check
+            changed = [k for k in value if value[k] is not self.value[k]]
+            self.value = value
+            if len(changed) == len(value.call_types):
+                # Everything changed
+                self.notifier.add_squashed_change(self.path + ["value"], value)
+            else:
+                # Only some changed
+                for k in changed:
+                    self.notifier.add_squashed_change(
+                        self.path + ["value", k], value[k])
+            if alarm is not self.alarm:
+                self.alarm = alarm
+                self.notifier.add_squashed_change(self.path + ["alarm"], alarm)
+            self.timeStamp = ts
+            self.notifier.add_squashed_change(self.path + ["timeStamp"], ts)
+
 
 @Serializable.register_subclass("epics:nt/NTScalarArray:1.0")
 class NTScalarArray(AttributeModel):
@@ -686,10 +706,14 @@ def to_np_array(dtype, value):
         dtype = float
     elif dtype == np.int64:
         dtype = int
-    if isinstance(value, Sequence):
-        # Cast to numpy array
-        value = np.array(value, dtype=dtype)
-    return to_array(Array[dtype], value)
+    if value.__class__ is Array and getattr(value.seq, "dtype", None) == dtype:
+        # If Array wraps a numpy array of the correct type we are done
+        return value
+    else:
+        if isinstance(value, Sequence):
+            # Cast to numpy array
+            value = np.array(value, dtype=dtype)
+        return to_array(Array[dtype], value)
 
 
 @Serializable.register_subclass("malcolm:core/BooleanArrayMeta:1.0")
@@ -728,15 +752,24 @@ class ChoiceArrayMeta(ChoiceMeta, VArrayMeta):
             ret = []
             if isinstance(value, str_):
                 value = [value]
+            # If we have an Array of the right type, start off assuming it's the
+            # same
+            is_same = value.__class__ is Array and value.typ is self.enum_cls
             for i, choice in enumerate(value):
                 # Our lookup table contains all the possible values
                 try:
-                    ret.append(self.choices_lookup[choice])
+                    new_choice = self.choices_lookup[choice]
                 except KeyError:
                     raise ValueError(
                         "%s is not a valid value in %s for element %s" % (
                             value, self.choices, i))
-            return to_array(Array[self.enum_cls], ret)
+                else:
+                    is_same &= choice == new_choice
+                    ret.append(new_choice)
+            if is_same:
+                return value
+            else:
+                return to_array(Array[self.enum_cls], ret)
 
     def doc_type_string(self):
         # type: () -> str
@@ -833,9 +866,8 @@ class TableMeta(VMeta):
                 # We can distinguish the type by asking for the default
                 # validate value
                 default_array = meta.validate(None)  # type: Array
-                anno = Anno(meta.description, default_array.typ, k)
-                anno.is_array = True
-                anno.is_mapping = False
+                anno = Anno(meta.description, name=k).set_typ(
+                    default_array.typ, is_array=True)
                 table_cls.call_types[k] = anno
         else:
             # User supplied, check it matches element names
@@ -867,6 +899,11 @@ class TableMeta(VMeta):
         value = self.table_cls(**args)
         # Check column lengths
         value.validate_column_lengths()
+        # Check the table class give Array elements
+        for k in args:
+            assert value[k].__class__ is Array, \
+                "Table Class %s doesn't wrap attr '%s' with an Array" % (
+                    self.table_cls, k)
         return value
 
     def doc_type_string(self):
@@ -1245,7 +1282,7 @@ class BlockModel(Model):
                 # Stop the old Model notifying
                 getattr(self, name).set_notifier_path(Model.notifier, [])
             else:
-                anno = Anno("Field", typ=type(value))
+                anno = Anno("Field").set_typ(type(value))
                 self.call_types[name] = anno
             value.set_notifier_path(self.notifier, self.path + [name])
             setattr(self, name, value)

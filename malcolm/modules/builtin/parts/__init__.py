@@ -5,8 +5,8 @@ from .choicepart import ChoicePart
 from .float64part import Float64Part
 from .grouppart import GroupPart
 from .helppart import HelpPart
-from .iconpart import IconPart
-from .labelpart import LabelPart
+from .iconpart import IconPart, ASvg
+from .labelpart import LabelPart, ALabelValue
 from .stringpart import StringPart
 
 # Expose a nice namespace

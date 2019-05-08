@@ -16,6 +16,9 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         super(AndorDriverPart, self).setup(registrar)
         # Attributes
         registrar.add_attribute_model("exposure", self.exposure)
+        # Tell the controller to expose some extra configure parameters
+        registrar.report(scanning.hooks.ConfigureHook.create_info(
+            self.configure))
 
     @add_call_types
     def configure(self,
@@ -24,6 +27,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
+                  fileDir,  # type: scanning.util.AFileDir
                   exposure=0.0,  # type: scanning.util.AExposure
                   **kwargs  # type: **Any
                   ):
@@ -39,7 +43,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         part_info[""] = [info]
         super(AndorDriverPart, self).configure(
             context, completed_steps, steps_to_do, part_info, generator,
-            exposure=exposure, **kwargs)
+            fileDir, exposure=exposure, **kwargs)
 
     def get_readout_time(self, child, duration):
         """Calculate the readout time of the detector from the EPICS driver:

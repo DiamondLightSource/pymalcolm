@@ -242,7 +242,7 @@ class PandABlocksClient(object):
                 if field_type in ("bit_mux", "pos_mux") or field_subtype == \
                         "enum":
                     enum_fields.append(field_name)
-                elif field_type in ("pos_out", "ext_out"):
+                elif field_type == "ext_out":
                     enum_fields.append(field_name + ".CAPTURE")
             enum_queues = self.parameterized_send(
                 "*ENUMS.%s.%%s?\n" % block_name, enum_fields)
@@ -262,19 +262,38 @@ class PandABlocksClient(object):
 
         return blocks
 
-    def get_changes(self):
+    def get_pcap_bits_fields(self):
+        # {field_to_set: [bit_names]}
+        # E.g. {"PCAP.BITS0"=["TTLIN1.VAL", "TTLIN2.VAL", ...], ...}
+        bits_fields = []
+        for line in self.send_recv("PCAP.*?\n"):
+            split = line.split()
+            if len(split) == 4:
+                field_name, _, field_type, field_subtype = split
+                if field_type == "ext_out" and field_subtype == "bits":
+                    bits_fields.append("PCAP.%s" % field_name)
+        bits_queues = self.parameterized_send("%s.BITS?\n", sorted(bits_fields))
+        bits = OrderedDict()
+        for k, queue in bits_queues.items():
+            bits[k + ".CAPTURE"] = self.recv(queue)
+        return bits
+
+    def get_changes(self, include_errors=False):
         table_queues = {}
         for line in self.send_recv("*CHANGES?\n"):
-            if line.endswith("(error)"):
-                field = line.split(" ", 1)[0]
-                val = Exception
-            elif "<" in line:
+            if "=" in line:
+                field, val = line.split("=", 1)
+            elif line[-1] == "<":
                 # table
-                field = line.rstrip("<")
+                field = line[:-1]
                 val = None
                 table_queues[field] = self.send("%s?\n" % field)
-            elif "=" in line:
-                field, val = line.split("=", 1)
+            elif line.endswith("(error)"):
+                if include_errors:
+                    field = line.split(" ", 1)[0]
+                    val = Exception
+                else:
+                    continue
             else:
                 log.warning("Can't parse line %r of changes", line)
                 continue
@@ -317,13 +336,21 @@ class PandABlocksClient(object):
             return strip_ok(resp)
 
     def set_field(self, block, field, value):
-        try:
-            resp = self.send_recv("%s.%s=%s\n" % (block, field, value))
-        except ValueError as e:
-            raise ValueError("Error setting %s.%s to %r: %s" % (
-                block, field, value, e))
-        else:
-            assert resp == "OK", "Expected OK, got %r" % resp
+        self.set_fields({"%s.%s" % (block, field): value})
+
+    def set_fields(self, field_values):
+        queues = OrderedDict()
+        for field, value in field_values.items():
+            message = "%s=%s\n" % (field, value)
+            queues[(field, value)] = self.send(message)
+        for (field, value), queue in queues.items():
+            try:
+                resp = self.recv(queue)
+            except ValueError as e:
+                raise ValueError(
+                    "Error setting %s to %r: %s" % (field, value, e))
+            else:
+                assert resp == "OK", "Expected OK, got %r" % resp
 
     def set_table(self, block, field, int_values):
         lines = ["%s.%s<\n" % (block, field)]

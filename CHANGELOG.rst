@@ -7,6 +7,9 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
+`4-0b1`_ - 2019-05-03
+---------------------
+
 Changed:
 
 - CS and motors now show a link to parent PMAC, require pmac version 2-2
@@ -18,6 +21,9 @@ Changed:
 - Changed seeking to not allow it to stop on a configured_step boundary
 - Disable checking of scanpointgenerator units while GDA doesn't send the right
   ones
+- PMAC should now be a ManagerController, with PmacChildPart in the scan
+- PandA now specifies datasets in a Bits and Positions table
+- Web GUI now takes last run parameters from server for methods
 
 Added:
 
@@ -332,7 +338,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-4...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-0b1...HEAD
+.. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-4..4-0b1
 .. _3-4: https://github.com/dls-controls/pymalcolm/compare/3-3...3-4
 .. _3-3: https://github.com/dls-controls/pymalcolm/compare/3-2...3-3
 .. _3-2: https://github.com/dls-controls/pymalcolm/compare/3-0...3-2

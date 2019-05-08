@@ -12,8 +12,9 @@ if TYPE_CHECKING:
 
 
 class ChildTestCase(unittest.TestCase):
+    @staticmethod
     @patch("malcolm.modules.ca.util.catools", Mock())
-    def create_child_block(self, child_block, process, **params):
+    def create_child_block(child_block, process, **params):
         # type: (Callable, Process, **Any) -> Controller
         """Creates an instance of child_block with CA calls mocked out.
 
