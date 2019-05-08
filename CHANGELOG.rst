@@ -16,7 +16,7 @@ Changed:
 - Added Position Compare support for PandA via 2 SEQ blocks
 - State machine. Added Finished state and Malcolm will now sit in Finished state
   after a scan
-- CSMove changed to explicitly tell the motor controller how long it should take 
+- CSMove changed to explicitly tell the motor controller how long it should take
   to do the move to start
 - Changed seeking to not allow it to stop on a configured_step boundary
 - Disable checking of scanpointgenerator units while GDA doesn't send the right
@@ -27,14 +27,24 @@ Changed:
 
 Added:
 
-- Make use of FlushNow in ADCore, which flushes data and attributes after every 
+- Make use of FlushNow in ADCore, which flushes data and attributes after every
   second during run() or when commanded through the record on HDF Writer. Files
   are kept open until next reset()/abort()
-  
+
 Fixed:
 
 - caactionpart now waits for good status, prevents timeout errors when doing
   caputs
+
+
+`3-4-1`_ - 2019-05-08
+---------------------
+
+Fixed:
+- no_save now saves everything apart from what is passed. Previously it was
+  updating a set that was common to all ChildPart subclasses
+- pmactrajectorypart no longer checks CS numbers on validate in case they are
+  different to what is saved
 
 
 `3-4`_ - 2019-03-28
@@ -339,7 +349,8 @@ Added:
 - Initial release with hello world and websocket comms
 
 .. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-0b1...HEAD
-.. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-4..4-0b1
+.. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-4-1..4-0b1
+.. _3-4-1: https://github.com/dls-controls/pymalcolm/compare/3-4...3-4-1
 .. _3-4: https://github.com/dls-controls/pymalcolm/compare/3-3...3-4
 .. _3-3: https://github.com/dls-controls/pymalcolm/compare/3-2...3-3
 .. _3-2: https://github.com/dls-controls/pymalcolm/compare/3-0...3-2
