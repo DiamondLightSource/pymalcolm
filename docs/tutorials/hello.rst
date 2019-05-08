@@ -24,7 +24,7 @@ The simplest way is to use the imalcolm application. It will be installed on the
 system as ``imalcolm``, but you can use it from your checked out copy of
 pymalcolm by running ``./malcolm/imalcolm.py``. You also need to tell imalcolm
 what Blocks it should instantiate and what Comms modules it should use by
-writing a `YAML`_ file.
+writing a `YAML`_ `process definition file<process_def_>`.
 
 Let's look at ``./malcolm/modules/demo/DEMO-HELLO.yaml`` now:
 
@@ -324,8 +324,8 @@ with a special ``call_types`` variable that Malcolm uses to validate and
 provide introspection information about the Method.
 
 Inside the actual function, we print a message just so we can see what is
-happening, then sleep for a bit to simulate doing some work, then place the
-greeting into the return map and return it.
+happening, then sleep for a bit to simulate doing some work, then return the
+greeting.
 
 There is also a second method called ``error`` that just raises an error. This
 doesn't need a decorator as it doesn't take any arguments or return anything
