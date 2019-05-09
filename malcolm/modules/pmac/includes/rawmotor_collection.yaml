@@ -3,7 +3,7 @@
     description: Malcolm resource id of the RawMotor Block
 
 - builtin.parameters.string:
-    name: prefix
+    name: pv_prefix
     description: The root PV for the all records
 
 - builtin.parameters.string:
@@ -12,7 +12,7 @@
 
 - pmac.blocks.raw_motor_block:
     mri: $(mri)
-    prefix: $(prefix)
+    pv_prefix: $(pv_prefix)
 
 - builtin.parts.ChildPart:
     name: $(scannable)

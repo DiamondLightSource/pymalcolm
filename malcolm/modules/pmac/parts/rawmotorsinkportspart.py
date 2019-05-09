@@ -6,19 +6,19 @@ from malcolm.modules import ca, builtin
 from malcolm.modules.pmac.util import CS_AXIS_NAMES
 
 with Anno("PV prefix for CSPort and CSAxis records"):
-    APrefix = str
+    APvPrefix = str
 
 
 class RawMotorSinkPortsPart(Part):
     """Defines a string `Attribute` representing a asyn port that should be
     depicted as a Source Port on a Block"""
 
-    def __init__(self, prefix, group=None):
-        # type: (APrefix, ca.util.AGroup) -> None
+    def __init__(self, pv_prefix, group=None):
+        # type: (APvPrefix, ca.util.AGroup) -> None
         super(RawMotorSinkPortsPart, self).__init__("sinkPorts")
-        self.pvs = [prefix + ":CsPort", prefix + ":CsAxis"]
-        self.rbvs = [prefix + ":CsPort_RBV", prefix + ":CsAxis_RBV",
-                     prefix + ".OUT"]
+        self.pvs = [pv_prefix + ":CsPort", pv_prefix + ":CsAxis"]
+        self.rbvs = [pv_prefix + ":CsPort_RBV", pv_prefix + ":CsAxis_RBV",
+                     pv_prefix + ".OUT"]
         meta = ChoiceMeta("CS Axis")
         builtin.util.set_tags(
             meta, writeable=True, group=group, sink_port=Port.MOTOR)

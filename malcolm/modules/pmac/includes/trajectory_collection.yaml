@@ -3,7 +3,7 @@
     description: Malcolm resource id of the Block
 
 - builtin.parameters.string:
-    name: prefix
+    name: pv_prefix
     description: the root PV for the trajectory scan template
 
 - builtin.parameters.float64:
@@ -13,7 +13,7 @@
 
 - pmac.blocks.pmac_status_block:
     mri: $(mri_prefix):STATUS
-    prefix: $(prefix)
+    pv_prefix: $(pv_prefix)
 
 - pmac.parts.PmacStatusPart:
     name: STATUS
@@ -22,7 +22,7 @@
 
 - pmac.blocks.pmac_trajectory_block:
     mri: $(mri_prefix):TRAJ
-    prefix: $(prefix)
+    pv_prefix: $(pv_prefix)
 
 - pmac.parts.PmacTrajectoryPart:
     name: TRAJ

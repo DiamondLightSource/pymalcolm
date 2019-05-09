@@ -41,6 +41,7 @@ class TestPMACChildPart(ChildTestCase):
         del self.context
         self.process.stop(timeout=1)
 
+    # TODO: restore this tests when GDA does units right
     def _______________test_bad_units(self):
         with self.assertRaises(AssertionError) as cm:
             self.do_configure(["x", "y"], units="m")

@@ -10,7 +10,7 @@ class TestPmacStatusPart(ChildTestCase):
     def setUp(self):
         self.process = Process("Process")
         child = self.create_child_block(
-            pmac_status_block, self.process, mri="my_mri", prefix="PV:PRE")
+            pmac_status_block, self.process, mri="my_mri", pv_prefix="PV:PRE")
         self.set_attributes(child,
                             i10=1705244)
         c = ManagerController("PMAC", "/tmp")

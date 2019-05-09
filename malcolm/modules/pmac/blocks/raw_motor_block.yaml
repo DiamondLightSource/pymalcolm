@@ -3,7 +3,7 @@
     description: Malcolm resource id of the Block
 
 - builtin.parameters.string:
-    name: prefix
+    name: pv_prefix
     description: The root PV for the motor record
 
 - builtin.parameters.float64:
@@ -15,10 +15,10 @@
     mri: $(mri)
 
 - pmac.includes.motor_records:
-    prefix: $(prefix)
+    pv_prefix: $(pv_prefix)
 
 - pmac.parts.RawMotorSinkPortsPart:
-    prefix: $(prefix)
+    pv_prefix: $(pv_prefix)
 
 - builtin.parts.Float64Part:
     name: velocitySettle

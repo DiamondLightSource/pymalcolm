@@ -12,24 +12,24 @@
 
 - pmac.includes.rawmotor_collection:
     mri: BL45P-ML-STAGE-01:X
-    prefix: BL45P-MO-MAP-01:STAGE:X
+    pv_prefix: BL45P-MO-MAP-01:STAGE:X
     scannable: x
 
 - pmac.includes.rawmotor_collection:
     mri: BL45P-ML-STAGE-01:Y
-    prefix: BL45P-MO-MAP-01:STAGE:Y
+    pv_prefix: BL45P-MO-MAP-01:STAGE:Y
     scannable: y
 
 - pmac.includes.rawmotor_collection:
     mri: BL45P-ML-STAGE-01:Z
-    prefix: BL45P-MO-MAP-01:STAGE:Z
+    pv_prefix: BL45P-MO-MAP-01:STAGE:Z
     scannable: z
 
 - pmac.includes.cs_collection:
     mri_prefix: $(mri_prefix)
-    prefix: BL45P-MO-STEP-02
+    pv_prefix: BL45P-MO-STEP-02
     cs: 1
 
 - pmac.includes.trajectory_collection:
     mri_prefix: $(mri_prefix)
-    prefix: BL45P-MO-STEP-02
+    pv_prefix: BL45P-MO-STEP-02

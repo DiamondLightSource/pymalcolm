@@ -18,7 +18,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.process = Process("Process")
         self.child = self.create_child_block(
             pmac_trajectory_block, self.process, mri="PMAC:TRAJ",
-            prefix="PV:PRE")
+            pv_prefix="PV:PRE")
         c = ManagerController("PMAC", "/tmp")
         self.o = PmacTrajectoryPart(name="pmac", mri="PMAC:TRAJ")
         c.add_part(self.o)

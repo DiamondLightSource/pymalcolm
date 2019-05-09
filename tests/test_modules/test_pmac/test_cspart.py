@@ -1,6 +1,6 @@
 from mock import call, Mock
 
-from malcolm.core import Context, Process, PartRegistrar
+from malcolm.core import Process
 from malcolm.modules.builtin.controllers import ManagerController
 from malcolm.modules.pmac.parts import CSPart
 from malcolm.modules.pmac.blocks import cs_block
@@ -12,7 +12,7 @@ class TestCSPart(ChildTestCase):
         self.process = Process("Process")
         self.child = self.create_child_block(
             cs_block, self.process, mri="PMAC:CS1",
-            prefix="PV:PRE")
+            pv_prefix="PV:PRE")
         self.set_attributes(self.child, port="PMAC2CS1")
         c = ManagerController("PMAC", "/tmp")
         c.add_part(CSPart(mri="PMAC:CS1", cs=1))

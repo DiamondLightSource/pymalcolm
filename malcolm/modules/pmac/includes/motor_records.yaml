@@ -1,44 +1,44 @@
 - builtin.parameters.string:
-    name: prefix
+    name: pv_prefix
     description: the root PV for the motor record
 
 - ca.parts.CADoublePart:
     name: demand
     description: set the demand position of the motor
-    pv: $(prefix)
+    pv: $(pv_prefix)
     config: 0
 
 - ca.parts.CADoublePart:
     name: readback
     description: set the target position of the motor or get current position
-    rbv: $(prefix).RBV
+    rbv: $(pv_prefix).RBV
 
 - ca.parts.CALongPart:
     name: doneMoving
     description: set to zero when motor is stationary
-    rbv: $(prefix).DMOV
+    rbv: $(pv_prefix).DMOV
 
 - ca.parts.CADoublePart:
     name: accelerationTime
     description: time taken to accelerate to velocity
-    rbv: $(prefix).ACCL
+    rbv: $(pv_prefix).ACCL
 
 - ca.parts.CADoublePart:
     name: maxVelocity
     description: maximum velocity
-    rbv: $(prefix).VMAX
+    rbv: $(pv_prefix).VMAX
 
 - ca.parts.CADoublePart:
     name: resolution
     description: Motor resolution
-    rbv: $(prefix).ERES
+    rbv: $(pv_prefix).ERES
 
 - ca.parts.CADoublePart:
     name: offset
     description: User offset
-    rbv: $(prefix).OFF
+    rbv: $(pv_prefix).OFF
 
 - ca.parts.CAStringPart:
     name: units
     description: Engineering units
-    rbv: $(prefix).EGU
+    rbv: $(pv_prefix).EGU

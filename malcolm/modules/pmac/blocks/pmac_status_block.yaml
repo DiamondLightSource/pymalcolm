@@ -3,7 +3,7 @@
     description: Malcolm resource id of the Block
 
 - builtin.parameters.string:
-    name: prefix
+    name: pv_prefix
     description: The root PV for the Controller records
 
 - builtin.controllers.StatefulController:
@@ -12,10 +12,10 @@
 - asyn.parts.AsynSourcePortPart:
     name: port
     description: Asyn Port Name
-    rbv: $(prefix):Port
+    rbv: $(pv_prefix):Port
     port_type: motor
 
 - ca.parts.CALongPart:
     name: i10
     description: Value of i10 (servo ticks)
-    rbv: $(prefix):I10
+    rbv: $(pv_prefix):I10

@@ -3,7 +3,7 @@
     description: Malcolm resource id of the Block
 
 - builtin.parameters.string:
-    name: prefix
+    name: pv_prefix
     description: The root PV for the trajectory scan template
 
 - builtin.defines.docstring:
@@ -16,196 +16,196 @@
 - ca.parts.CAChoicePart:
     name: cs
     description: Co-ordinate system name that should be trajectory scanned
-    pv: $(prefix):ProfileCsName
+    pv: $(pv_prefix):ProfileCsName
     rbv_suffix: _RBV
 
 - ca.parts.CAStringPart:
     name: pmac
     description: Port name of parent PMAC object
-    rbv: $(prefix):ParentPort
+    rbv: $(pv_prefix):ParentPort
     sink_port: motor
 
 - ca.parts.CAActionPart:
     name: buildProfile
     description: command to build the profile once times and positions are set
-    pv: $(prefix):ProfileBuild
-    status_pv: $(prefix):ProfileBuildStatus_RBV
-    message_pv: $(prefix):ProfileBuildMessage_RBV
+    pv: $(pv_prefix):ProfileBuild
+    status_pv: $(pv_prefix):ProfileBuildStatus_RBV
+    message_pv: $(pv_prefix):ProfileBuildMessage_RBV
     good_status: Success
 
 - ca.parts.CACharArrayPart:
     name: buildMessage
     description: message of last profile build
-    rbv: $(prefix):ProfileBuildMessage_RBV
+    rbv: $(pv_prefix):ProfileBuildMessage_RBV
 
 - ca.parts.CAActionPart:
     name: executeProfile
     description: command to execute the profile once built
-    pv: $(prefix):ProfileExecute
-    status_pv: $(prefix):ProfileExecuteStatus_RBV
-    message_pv: $(prefix):ProfileExecuteMessage_RBV
+    pv: $(pv_prefix):ProfileExecute
+    status_pv: $(pv_prefix):ProfileExecuteStatus_RBV
+    message_pv: $(pv_prefix):ProfileExecuteMessage_RBV
     good_status: Success
 
 - ca.parts.CACharArrayPart:
     name: executeMessage
     description: message of last profile execute
-    rbv: $(prefix):ProfileExecuteMessage_RBV
+    rbv: $(pv_prefix):ProfileExecuteMessage_RBV
 
 - ca.parts.CAActionPart:
     name: appendProfile
     description: command to append the profile once built
-    pv: $(prefix):ProfileAppend
-    status_pv: $(prefix):ProfileAppendStatus_RBV
-    message_pv: $(prefix):ProfileAppendMessage_RBV
+    pv: $(pv_prefix):ProfileAppend
+    status_pv: $(pv_prefix):ProfileAppendStatus_RBV
+    message_pv: $(pv_prefix):ProfileAppendMessage_RBV
     good_status: Success
 
 - ca.parts.CACharArrayPart:
     name: appendMessage
     description: message of last profile append
-    rbv: $(prefix):ProfileAppendMessage_RBV
+    rbv: $(pv_prefix):ProfileAppendMessage_RBV
 
 - ca.parts.CALongPart:
     name: scanPercentage
     description: percentage complete on current scan
-    rbv: $(prefix):TscanPercent_RBV
+    rbv: $(pv_prefix):TscanPercent_RBV
 
 - ca.parts.CALongPart:
     name: pointsScanned
     description: Number of point scanned so far
-    rbv: $(prefix):TotalPoints_RBV
+    rbv: $(pv_prefix):TotalPoints_RBV
 
 - ca.parts.CAActionPart:
     name: abortProfile
     description: command to abort a currently running profile
-    pv: $(prefix):ProfileAbort
+    pv: $(pv_prefix):ProfileAbort
 
 - ca.parts.CALongArrayPart:
     name: timeArray
     description: time slices for each step in the profile in 0.25ms ticks
-    pv: $(prefix):ProfileTimeArray
+    pv: $(pv_prefix):ProfileTimeArray
     config: False
 
 - ca.parts.CALongArrayPart:
     name: velocityMode
     description: a list of the velocity mode masks, lower bit is Prev->Current
-    pv: $(prefix):VelocityMode
+    pv: $(pv_prefix):VelocityMode
     config: False
 
 - ca.parts.CALongArrayPart:
     name: userPrograms
     description: a list of the user programs to run at each point
-    pv: $(prefix):UserArray
+    pv: $(pv_prefix):UserArray
     config: False
 
 - ca.parts.CALongPart:
     name: numPoints
     description: Number of points in scan
-    pv: $(prefix):ProfileNumPoints
+    pv: $(pv_prefix):ProfileNumPoints
     rbv_suffix: _RBV
 
 - ca.parts.CALongPart:
     name: pointsToBuild
     description: Number of points to build or append
-    pv: $(prefix):ProfilePointsToBuild
+    pv: $(pv_prefix):ProfilePointsToBuild
     rbv_suffix: _RBV
 
 - ca.parts.CAChoicePart:
     name: useA
     description: is this axis is used in the trajectory scan? yes/no
-    pv: $(prefix):A:UseAxis
+    pv: $(pv_prefix):A:UseAxis
 
 - ca.parts.CADoubleArrayPart:
     name: positionsA
     description: a list of positions for CoordSys axis A
-    pv: $(prefix):A:Positions
+    pv: $(pv_prefix):A:Positions
     config: False
 
 - ca.parts.CAChoicePart:
     name: useB
     description: is this axis is used in the trajectory scan? yes/no
-    pv: $(prefix):B:UseAxis
+    pv: $(pv_prefix):B:UseAxis
 
 - ca.parts.CADoubleArrayPart:
     name: positionsB
     description: a list of positions for CoordSys axis B
-    pv: $(prefix):B:Positions
+    pv: $(pv_prefix):B:Positions
     config: False
 
 - ca.parts.CAChoicePart:
     name: useC
     description: is this axis is used in the trajectory scan? yes/no
-    pv: $(prefix):C:UseAxis
+    pv: $(pv_prefix):C:UseAxis
 
 - ca.parts.CADoubleArrayPart:
     name: positionsC
     description: a list of positions for CoordSys axis C
-    pv: $(prefix):C:Positions
+    pv: $(pv_prefix):C:Positions
     config: False
 
 - ca.parts.CAChoicePart:
     name: useU
     description: is this axis is used in the trajectory scan? yes/no
-    pv: $(prefix):U:UseAxis
+    pv: $(pv_prefix):U:UseAxis
 
 - ca.parts.CADoubleArrayPart:
     name: positionsU
     description: a list of positions for CoordSys axis U
-    pv: $(prefix):U:Positions
+    pv: $(pv_prefix):U:Positions
     config: False
 
 - ca.parts.CAChoicePart:
     name: useV
     description: is this axis is used in the trajectory scan? yes/no
-    pv: $(prefix):V:UseAxis
+    pv: $(pv_prefix):V:UseAxis
 
 - ca.parts.CADoubleArrayPart:
     name: positionsV
     description: a list of positions for CoordSys axis V
-    pv: $(prefix):V:Positions
+    pv: $(pv_prefix):V:Positions
     config: False
 
 - ca.parts.CAChoicePart:
     name: useW
     description: is this axis is used in the trajectory scan? yes/no
-    pv: $(prefix):W:UseAxis
+    pv: $(pv_prefix):W:UseAxis
 
 - ca.parts.CADoubleArrayPart:
     name: positionsW
     description: a list of positions for CoordSys axis W
-    pv: $(prefix):W:Positions
+    pv: $(pv_prefix):W:Positions
     config: False
 
 - ca.parts.CAChoicePart:
     name: useX
     description: is this axis is used in the trajectory scan? yes/no
-    pv: $(prefix):X:UseAxis
+    pv: $(pv_prefix):X:UseAxis
 
 - ca.parts.CADoubleArrayPart:
     name: positionsX
     description: a list of positions for CoordSys axis X
-    pv: $(prefix):X:Positions
+    pv: $(pv_prefix):X:Positions
     config: False
 
 - ca.parts.CAChoicePart:
     name: useY
     description: is this axis is used in the trajectory scan? yes/no
-    pv: $(prefix):Y:UseAxis
+    pv: $(pv_prefix):Y:UseAxis
 
 - ca.parts.CADoubleArrayPart:
     name: positionsY
     description: a list of positions for CoordSys axis Y
-    pv: $(prefix):Y:Positions
+    pv: $(pv_prefix):Y:Positions
     config: False
 
 - ca.parts.CAChoicePart:
     name: useZ
     description: is this axis is used in the trajectory scan? yes/no
-    pv: $(prefix):Z:UseAxis
+    pv: $(pv_prefix):Z:UseAxis
 
 - ca.parts.CADoubleArrayPart:
     name: positionsZ
     description: a list of positions for CoordSys axis Z
-    pv: $(prefix):Z:Positions
+    pv: $(pv_prefix):Z:Positions
     config: False
 
 

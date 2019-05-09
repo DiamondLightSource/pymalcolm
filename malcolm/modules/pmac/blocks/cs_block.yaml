@@ -3,7 +3,7 @@
     description: Malcolm resource id of the Block
 
 - builtin.parameters.string:
-    name: prefix
+    name: pv_prefix
     description: The root PV for the CS Controller records (including :CS)
 
 - builtin.controllers.StatefulController:
@@ -12,90 +12,90 @@
 - ca.parts.CAChoicePart:
     name: deferMoves
     description: Defer moves for this CS
-    pv: $(prefix):DeferMoves
+    pv: $(pv_prefix):DeferMoves
 
 - ca.parts.CADoublePart:
     name: csMoveTime
     description: Time to do a single deferred move
-    pv: $(prefix):CsMoveTime
+    pv: $(pv_prefix):CsMoveTime
     rbv_suffix: _RBV
 
 - pmac.parts.CSSourcePortsPart:
     name: port
-    rbv: $(prefix):Port
+    rbv: $(pv_prefix):Port
 
 - ca.parts.CAStringPart:
     name: pmac
     description: Port name of parent PMAC object
-    rbv: $(prefix):ParentPort
+    rbv: $(pv_prefix):ParentPort
     sink_port: motor
 
 - ca.parts.CAActionPart:
     name: abort
     description: Abort the current CS move
-    pv: $(prefix):Abort
+    pv: $(pv_prefix):Abort
 
 # No timeouts on the following parts because they take an arbitrary motor move
 # time to go
 - ca.parts.CADoublePart:
     name: demandA
     description: set the demand position of CS Motor A
-    pv: $(prefix):M1:DirectDemand
+    pv: $(pv_prefix):M1:DirectDemand
     config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandB
     description: set the demand position of CS Motor B
-    pv: $(prefix):M2:DirectDemand
+    pv: $(pv_prefix):M2:DirectDemand
     config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandC
     description: set the demand position of CS Motor C
-    pv: $(prefix):M3:DirectDemand
+    pv: $(pv_prefix):M3:DirectDemand
     config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandU
     description: set the demand position of CS Motor U
-    pv: $(prefix):M4:DirectDemand
+    pv: $(pv_prefix):M4:DirectDemand
     config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandV
     description: set the demand position of CS Motor V
-    pv: $(prefix):M5:DirectDemand
+    pv: $(pv_prefix):M5:DirectDemand
     config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandW
     description: set the demand position of CS Motor W
-    pv: $(prefix):M6:DirectDemand
+    pv: $(pv_prefix):M6:DirectDemand
     config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandX
     description: set the demand position of CS Motor X
-    pv: $(prefix):M7:DirectDemand
+    pv: $(pv_prefix):M7:DirectDemand
     config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandY
     description: set the demand position of CS Motor Y
-    pv: $(prefix):M8:DirectDemand
+    pv: $(pv_prefix):M8:DirectDemand
     config: False
     timeout: -1
 
 - ca.parts.CADoublePart:
     name: demandZ
     description: set the demand position of CS Motor Z
-    pv: $(prefix):M9:DirectDemand
+    pv: $(pv_prefix):M9:DirectDemand
     config: False
     timeout: -1
