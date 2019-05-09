@@ -18,6 +18,7 @@
     name: arrayCounter
     description: Reset unique id for next frame
     pv: $(prefix):ArrayCounter
+    config: 0
 
 - ca.parts.CALongPart:
     name: arrayCounterReadback

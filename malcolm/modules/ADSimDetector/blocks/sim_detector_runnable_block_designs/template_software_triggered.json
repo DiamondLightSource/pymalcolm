@@ -33,7 +33,7 @@
       "dataType": [], 
       "datasetType": []
     }, 
-    "label": "Ramp detector", 
+    "label": "Ramping SimDetector",
     "readoutTime": 4e-05, 
     "exposure": 0.0, 
     "writeAllNdAttributes": true
@@ -47,13 +47,11 @@
     }, 
     "STAT": {
       "arrayCallbacks": true, 
-      "arrayCounter": 2571, 
       "input": "ADSIM.POS"
     }, 
     "POS": {
       "arrayCallbacks": true, 
-      "arrayCounter": 2571, 
-      "attributesFile": "", 
+      "attributesFile": "",
       "input": "ADSIM.CAM"
     }, 
     "HDF5": {

@@ -31,7 +31,7 @@
     description: Filename of xml or xml text
     pv: $(prefix):Filename
     rbv_suffix: _RBV
-    config: False
+    config: 0
 
 - ca.parts.CALongPart:
     name: idStart
