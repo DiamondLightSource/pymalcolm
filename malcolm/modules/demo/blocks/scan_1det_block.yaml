@@ -6,10 +6,6 @@
     name: config_dir
     description: Where to store saved configs
 
-- builtin.parameters.string:
-    name: label
-    description: Instance specific label for the scan
-
 - builtin.defines.docstring:
     value: |
       Demo scan that drives an detector like block called DETECTOR and a demo
@@ -23,7 +19,7 @@
       making an interesting pattern when scanning x and y in range -10 to 10
 
 - builtin.parts.LabelPart:
-    value: $(label)
+    value: Mapping x, y with demo detector
 
 - scanning.parts.DatasetTablePart:
     name: DSET

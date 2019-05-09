@@ -11,7 +11,7 @@ with Anno("Initial value of Block label"):
 
 class LabelPart(Part):
     """Part representing a the title of the Block a GUI should display"""
-    def __init__(self, value):
+    def __init__(self, value=None):
         # type: (ALabelValue) -> None
         super(LabelPart, self).__init__("label")
         meta = StringMeta("Label for the block")

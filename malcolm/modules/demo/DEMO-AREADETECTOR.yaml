@@ -35,7 +35,6 @@
 - demo.blocks.scan_2det_block:
     mri: $(hostname)-ML-SCAN-01
     config_dir: $(config_dir)
-    label: Mapping x, y with Interference and Ramp detectors
     initial_design: template_both_detectors
 
 # Add a webserver comms

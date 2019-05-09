@@ -15,7 +15,6 @@
 - demo.blocks.scan_1det_block:
     mri: SCAN
     config_dir: $(config_dir)
-    label: Mapping x, y with demo detector
 
 # Add a webserver
 - web.blocks.web_server_block:
