@@ -48,7 +48,7 @@ will make our Detector Block understand these generators.
 Creating Runnable Device Blocks
 -------------------------------
 
-Let's take a look at the `process definition file<process_def_>`
+Let's take a look at the `process_definition_`
 ``./malcolm/modules/demo/DEMO-DETECTOR.yaml``:
 
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-DETECTOR.yaml
@@ -66,7 +66,8 @@ a `FileWritePart` to write some dummy data to an HDF file, and then use a
 `RunnableController` to construct our Block.
 
 We also instantiate a `LabelPart` which simply allows us to give this detector
-a name.
+a human readable label (a couple of words long) that is suitable
+for display on GUIs.
 
 This produces a single ``DETECTOR`` Device Block.
 

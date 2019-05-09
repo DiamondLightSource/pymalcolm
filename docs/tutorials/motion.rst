@@ -20,7 +20,7 @@ controller hardware moving two motors. A pair of counter Blocks will serve as
 Creating Device Blocks
 ----------------------
 
-Let's dive right in and look at the `process definition file<process_def_>`
+Let's dive right in and look at the `process_definition_`
 ``./malcolm/modules/demo/DEMO-MOTION.yaml``:
 
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-MOTION.yaml

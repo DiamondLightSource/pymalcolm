@@ -2,13 +2,13 @@
 
 Datasets and Detectors
 ======================
-Every scan must include at least one detector.
+A scan typically includes at least one detector.
 
 Detectors are defined as devices that produce data. The data produced by
 a detector is described by a table of Datasets. Each Dataset typically describes
 a path within an HDF file.
 
-All scans include at least one detector block in the device layer and that
+Most scans include at least one detector block in the device layer and that
 block must include a `DatasetTablePart`. This part adds a ``datasets``
 attribute to the block which allows clients to determine the location and
 shape of the data being produced by the detector.

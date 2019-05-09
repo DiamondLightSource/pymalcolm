@@ -133,7 +133,7 @@ Parts `Hooked <hook_>` methods in the right order.
 Creating the Blocks
 -------------------
 
-So let's start with the `process definition file<process_def_>`
+So let's start with the `process_definition_`
 ``./malcolm/modules/demo/DEMO-AREADETECTOR.yaml``:
 
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-AREADETECTOR.yaml

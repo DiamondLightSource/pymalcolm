@@ -212,16 +212,17 @@ requests meant for a particular `block_`.
 Introduced in the `hello_tutorial`.
 
 
-.. _process_def_:
+.. _process_definition_:
 
-Process Definition File
------------------------
+Process Definition
+------------------
 
-The top level YAML file which defines a scan. This will only
+The top level YAML file which defines the Blocks that will be hosted by
+a single Malcolm Process. This will only
 instantiate blocks defined in other YAML files and optionally provide
 one or more defines. This file may not contain controllers or parts.
 
-A process definition file passed to imalcolm.py at startup via a
+A process definition file is passed to imalcolm.py at startup via a
 command line parameter.
 
 Introduced in the `hello_tutorial`.

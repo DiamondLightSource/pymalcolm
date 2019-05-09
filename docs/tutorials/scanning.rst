@@ -136,7 +136,7 @@ scan.
 Creating the Blocks
 -------------------
 
-Let's have a look at the `process definition file<process_def_>`
+Let's have a look at the `process_definition_`
 ``./malcolm/modules/demo/DEMO-SCANNING.yaml``:
 
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-SCANNING.yaml
