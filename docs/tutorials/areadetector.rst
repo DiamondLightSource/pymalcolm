@@ -285,7 +285,19 @@ we will see just how few entries there are:
 .. literalinclude:: ../../malcolm/modules/demo/blocks/scan_2det_block_designs/template_both_detectors.json
     :language: json
 
-Basically we imagine that each Device Block will have a number of designs for
+There are a couple of scan Block Attributes that are saved here:
+
+- simultaneousAxes: The superset of axes that are allowed in axesToMove. This
+  is used to specify the set of axes that are currently movable in a single
+  run()
+- label: A short human readable label that identifies to a user what the scan
+  will do if run
+
+The reason that these are saved rather than specified in the scan Block
+definition or Process Definition is that multiple instances of this scan can
+be created with different values for these Attributes.
+
+We imagine that each Device Block will have a number of designs for
 hardware or software triggering or different motor setups, and the Scan Block
 will say "I need DET with the hardware_trigger design and MOTORS with
 hkl_geometry". The Scan Block will not load its children's designs at init, but

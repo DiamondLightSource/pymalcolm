@@ -17,6 +17,7 @@ Contents
     tutorials/detector
     tutorials/scanning
     tutorials/areadetector
+    tutorials/pmac
 
 .. _reference-doc:
 
