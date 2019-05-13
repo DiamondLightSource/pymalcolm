@@ -12,6 +12,7 @@ class TestZebraBlocks(ChildTestCase):
             mri="mri", prefix="prefix")
 
     def test_zebra_runnable_block(self):
-        self.create_child_block(
+        c = self.create_child_block(
             zebra_runnable_block, Mock(),
             mri_prefix="mri_prefix", pv_prefix="pv_prefix", config_dir="/tmp")
+        assert c.parts["label"].initial_value == "Zebra"

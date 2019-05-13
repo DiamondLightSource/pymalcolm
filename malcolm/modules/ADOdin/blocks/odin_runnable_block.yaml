@@ -11,6 +11,11 @@
     description: Where to store saved configs
 
 - builtin.parameters.string:
+    name: label
+    description: Beamline specific label for the detector
+    default: Odin
+
+- builtin.parameters.string:
     name: drv_suffix
     description: PV suffix for detector driver
     default: DET
@@ -32,8 +37,12 @@
 - scanning.controllers.RunnableController:
     mri: $(mri_prefix)
     config_dir: $(config_dir)
-    description: $(docstring)
     initial_design: $(initial_design)
+    description: |
+      Odin is a set of libraries for capturing data from high speed detectors
+
+- builtin.parts.LabelPart:
+    value: $(label)
 
 # Add Odin Driver
 - ADOdin.blocks.odin_driver_block:
