@@ -5,11 +5,13 @@ from annotypes import add_call_types, Anno, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, \
     ReshapeVDSGenerator
 
+from scanpointgenerator import CompoundGenerator
+from malcolm.modules.ADCore.infos import DatasetType, DatasetProducedInfo
 from malcolm.core import APartName, Future, Info, PartRegistrar
 from malcolm.modules import builtin, scanning
 
 if TYPE_CHECKING:
-    from typing import List, Dict
+    from typing import List, Dict, Iterator
 
     PartInfo = Dict[str, List[Info]]
 
@@ -30,6 +32,40 @@ with Anno("Argument for fileTemplate, normally filename without extension"):
 def greater_than_zero(v):
     # type: (int) -> bool
     return v > 0
+
+
+def create_dataset_infos(name, generator, filename):
+    # type: (str, CompoundGenerator, str) -> Iterator[Info]
+    # Update the dataset table
+    generator_rank = len(generator.dimensions)
+
+    # Add the primary datasource
+    yield DatasetProducedInfo(
+        name="%s.data" % name,
+        filename=filename,
+        type=DatasetType.PRIMARY,
+        rank=generator_rank + 2,
+        path="/entry/detector/data",
+        uniqueid="/entry/detector_uid/uid")
+
+    # Add other datasources
+    yield DatasetProducedInfo(
+        name="%s.uid" % name,
+        filename=filename,
+        type=DatasetType.SECONDARY,
+        rank=generator_rank + 2,
+        path="/entry/detector_uid/uid",
+        uniqueid="/entry/detector_uid/uid")
+
+    # Add any setpoint dimensions
+    for dim in generator.axes:
+        yield DatasetProducedInfo(
+            name="%s.value_set" % dim,
+            filename=filename,
+            type=DatasetType.POSITION_SET,
+            rank=1,
+            path="/entry/detector/%s_set" % dim,
+            uniqueid="")
 
 
 def files_shape(frames, block_size, file_count):
@@ -283,7 +319,10 @@ class OdinWriterPart(builtin.parts.ChildPart):
                    vds_full_filename, child)
         add_nexus_nodes(generator, vds_full_filename)
 
-        return None
+        # Return the dataset information
+        dataset_infos = list(
+            create_dataset_infos(formatName, generator, fileName))
+        return dataset_infos
 
     @add_call_types
     def seek(self,
