@@ -133,7 +133,7 @@ Parts `Hooked <hook_>` methods in the right order.
 Creating the Blocks
 -------------------
 
-So let's start with the Process definition
+So let's start with the `process_definition_`
 ``./malcolm/modules/demo/DEMO-AREADETECTOR.yaml``:
 
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-AREADETECTOR.yaml
@@ -463,7 +463,8 @@ You can open the web GUI again to inspect the state of the various objects,
 and you will see that both the ``RAMP`` and ``INTERFERENCE`` detector objects
 are in state ``Armed``, as is the ``SCAN``. You can then run a scan, either from
 the web GUI, or the commandline, resetting when it is done to close the file
-(only needed so that the commandline tools will work)::
+(only needed so that the commandline tools will work - the commandline tools
+are not SWMR aware so require the reset)::
 
     In [9]: scan.run()
 

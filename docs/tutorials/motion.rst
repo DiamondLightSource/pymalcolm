@@ -20,7 +20,7 @@ controller hardware moving two motors. A pair of counter Blocks will serve as
 Creating Device Blocks
 ----------------------
 
-Let's dive right in and look at the Process definition
+Let's dive right in and look at the `process_definition_`
 ``./malcolm/modules/demo/DEMO-MOTION.yaml``:
 
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-MOTION.yaml
@@ -133,9 +133,8 @@ It has the following Attributes:
         contents of the design file
 
     * - ``exports``
-      - A Table of extra child fields that can be promoted up to the parent,
-        either for better visibility, or to provide part of the parent's
-        interface to higher levels
+      - A Table of extra fields that can be promoted up to the parent.
+        (Use to be demonstrated in a later tutorial.)
 
     * - ``modified``
       - A read-only LED indicating if any of our settings or our children have
