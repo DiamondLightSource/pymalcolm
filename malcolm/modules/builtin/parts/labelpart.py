@@ -19,12 +19,15 @@ class LabelPart(Part):
         self.initial_value = value
         self.attr = meta.create_attribute_model(self.initial_value)
 
+    def _report(self):
+        self.registrar.report(LabelInfo(self.attr.value))
+
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(LabelPart, self).setup(registrar)
         registrar.add_attribute_model(self.name, self.attr, self.set_label)
-        self.registrar.report(LabelInfo(self.initial_value))
+        self._report()
 
     def set_label(self, value, ts=None):
         self.attr.set_value(value, ts=ts)
-        self.registrar.report(LabelInfo(value))
+        self._report()
