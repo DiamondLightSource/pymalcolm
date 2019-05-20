@@ -9,6 +9,21 @@ look at how we can control a real motor controller (a Delta Tau Turbo PMAC
 based system like the `GeoBrick LV IMS-II`_) and capture encoder positions with
 a PandABox_.
 
+EPICS Prerequisites
+-------------------
+
+We assume for this tutorial that you have created one or more IOCS that contain:
+
+- A GeoBrick Controller template from the `EPICS pmac`_ module with PV prefix
+  that looks like ``BLxxI-MO-BRICK-01``.
+- A GeoBrick Trajectory template with the same prefix.
+- One or more CS templates.
+- One or more dls_pmac_asyn_motor or dls_pmac_cs_asyn_motor instances.
+- An ADPandABlocks template from the `ADPandaBlocks`_ module with a PV prefix
+  that looks like ``BLxxI-MO-PANDA-01:DRV:``
+- NDPosPlugin and NDFileHDF5 `areaDetector` plugins with the PV prefixes of
+  ``BLxxI-MO-PANDA-01:POS:`` and ``BLxxI-MO-PANDA-01:HDF5:``
+
 
 Make a Malcolm directory for a beamline
 ---------------------------------------
@@ -167,6 +182,7 @@ In the ``etc/malcolm/blocks`` subdirectory we will also make
         description: |
           Hardware triggered scan, with PMAC providing trigger signals at
           up to 300Hz
+        initial_design: $(initial_design)
 
     - builtin.parts.LabelPart:
 
@@ -189,19 +205,85 @@ In the ``etc/malcolm/blocks`` subdirectory we will also make
 Again we take the ``mri_prefix`` and ``config_dir`` needed to create the Block,
 but this time we also take an ``initial_design``. This will allow us to create
 multiple instances of this scan Block with different configurations, and load
-the correct configuration for each Block.
+the correct configuration for each Block. We pass this ``initial_design``
+through to the `RunnableController`, then add a number of parts:
 
+.. list-table::
+    :widths: 20, 80
+    :header-rows: 1
 
+    * - Part
+      - Description
+
+    * - `LabelPart`
+      - Defines a human readable label for the Block. Typically 4 or 5 words
+        that describe the science case for this scan instance. Initially blank.
+
+    * - `SimultaneousAxesPart`
+      - Defines the superset of all axes that can be supplied as ``axesToMove``
+        at ``configure()``. Typically the scannable names of all of the motors
+        in a single co-ordinate system with fastest moving motor first, like
+        ``["stagex", "stagey", "stagez"]``. Initially blank.
+
+    * - `DatasetTablePart`
+      - As introduced in the `detector_tutorial`, this part will report the
+        datasets that any detectors produce.
+
+    * - `PmacChildPart`
+      - Takes the generator passed to ``configure()``, and iterates through it
+        in chunks, producing trajectory scan points that can be passed down to
+        a Pmac Block, like the one we created above.
+
+    * - `DetectorChildPart`
+      - As in the `scanning_tutorial`, this part controls a detector, which is
+        a runnable child block with a ``datasets`` Attribute.
+
+.. note::
+
+    The fields that are likely to differ between scan instances (like
+    simultaneousAxes and label) are not given defaults here to avoid confusion.
+    They will be filled in at runtime and be placed in saved designs.
 
 
 Expose Blocks in a module
 -------------------------
 
-We've made two YAML files
+We've made two YAML files to represent Blocks that can be instantiated by
+passing them parameters, but Malcolm expects Blocks creators to be
+Python callables that it can pass parameters to. This means we need to turn
+the YAML files into Python objects in some way. We could insert some magic here,
+but as `PEP 20`_ says:
 
+    Explicit is better than implicit.
 
-Setup PandA
------------
+So let's declare to Malcolm exactly which YAML files should be turned into
+Python objects. We do this by placing a special file called ``__init__.py``
+into the ``etc/malcolm/blocks`` directory. This tells Python that this directory
+is a Python module, and to run the contents of ``__init__.py`` whenever the
+module is imported. We can place the following lines into this file to make a
+couple of Block creators from the YAML file::
+
+    from malcolm.yamlutil import make_block_creator, check_yaml_names
+
+    # Create some Block definitions from YAML files
+    brick01_block = make_block_creator(
+        __file__, "brick01_block.yaml")
+    pmac_master_scan_block = make_block_creator(
+        __file__, "pmac_master_scan_block.yaml")
+
+    # Expose all of the Block definitions, and nothing else
+    __all__ = check_yaml_names(globals())
+
+This calls `make_block_creator` a number of times on YAML files to turn them
+into Python objects, then `check_yaml_names` filters out anything that hasn't
+been derived from a YAML file, creating the ``__all__`` variable that tells
+Python what the public API of this module is.
+
+Setup the Scan
+--------------
+
+We can now run up imalcolm by executing ``etc/malcolm/BLxxI-ML-MALC-01.yaml``,
+and open http://localhost:8008/gui/BLxxI-ML-SCAN-01 to see our scan Block.
 
 
 Conclusion
@@ -214,3 +296,12 @@ Conclusion
 
 .. _PandABox:
     https://www.ohwr.org/project/pandabox/wikis/home
+
+.. _PEP 20:
+    https://www.python.org/dev/peps/pep-0020/
+
+.. _EPICS pmac:
+    https://github.com/dls-controls/pmac
+
+.. _ADPandaBlocks:
+    https://github.com/PandABlocks/ADPandABlocks
