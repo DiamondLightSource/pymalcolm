@@ -137,8 +137,8 @@ class PandABoxBlockMakerTest(unittest.TestCase):
 
         # check updated with nothing
         o.handle_changes(dict(LABEL=""), ts=TimeStamp())
-        assert b.meta.label == "A new label"
-        assert b.label.value == "A new label"
+        assert b.meta.label == "Pulse description 2"
+        assert b.label.value == "Pulse description 2"
         self.client.set_field.assert_not_called()
 
         # check updated with something from the server

@@ -9,16 +9,17 @@ ALabelValue = builtin.parts.ALabelValue
 
 
 class PandALabelPart(builtin.parts.LabelPart):
-    def __init__(self, client, metedata_field, value):
+    def __init__(self, client, metadata_field, value):
         # type: (AClient, AMetadataField, ALabelValue) -> None
         super(PandALabelPart, self).__init__(value)
         self.client = client
-        self.metedata_field = metedata_field
+        self.metadata_field = metadata_field
 
     def handle_change(self, value, ts):
-        if value:
-            super(PandALabelPart, self).set_label(value, ts)
+        if not value:
+            value = self.initial_value
+        super(PandALabelPart, self).set_label(value, ts)
 
     def set_label(self, value, ts=None):
-        self.client.set_field("*METADATA", self.metedata_field, value)
         super(PandALabelPart, self).set_label(value, ts)
+        self.client.set_field("*METADATA", self.metadata_field, self.attr.value)
