@@ -92,7 +92,7 @@ def check_yaml_names(globals_d):
 def make_include_creator(yaml_path, filename=None):
     # type: (str, str) -> Callable[..., Tuple[List[Controller], List[Part]]]
     sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
-    yamldir = os.path.dirname(yaml_path)
+    yamldir = os.path.dirname(os.path.abspath(yaml_path))
 
     # Check we don't have any controllers
     controller_sections = [s for s in sections if s.section == "controllers"]
@@ -153,7 +153,7 @@ def make_block_creator(yaml_path, filename=None):
             by this or any sub collection will be returned
     """
     sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
-    yamldir = os.path.dirname(yaml_path)
+    yamldir = os.path.dirname(os.path.abspath(yaml_path))
 
     # Check we have only one controller
     controller_sections = [s for s in sections if s.section == "controllers"]
