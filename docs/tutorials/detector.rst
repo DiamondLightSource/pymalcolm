@@ -48,7 +48,7 @@ will make our Detector Block understand these generators.
 Creating Runnable Device Blocks
 -------------------------------
 
-Let's take a look at the Process definition
+Let's take a look at the `process_definition_`
 ``./malcolm/modules/demo/DEMO-DETECTOR.yaml``:
 
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-DETECTOR.yaml
@@ -60,9 +60,14 @@ Again, apart from the web server there is just one Block, specified in
 .. literalinclude:: ../../malcolm/modules/demo/blocks/detector_block.yaml
     :language: yaml
 
-We instantiate a `DatasetTablePart` to report the datasets that we will write,
+We instantiate a `DatasetTablePart` to report the datasets that we will write
+(see `datasets`),
 a `FileWritePart` to write some dummy data to an HDF file, and then use a
 `RunnableController` to construct our Block.
+
+We also instantiate a `LabelPart` which simply allows us to give this detector
+a human readable label (a couple of words long) that is suitable
+for display on GUIs.
 
 This produces a single ``DETECTOR`` Device Block.
 

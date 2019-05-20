@@ -29,6 +29,8 @@ Contents
     reference/messages
     reference/tags
     reference/statesets
+    reference/infos
+    reference/datasets
     reference/contributing
     reference/release_notes
 

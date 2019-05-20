@@ -122,7 +122,9 @@ class Part(Hookable):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        """Use the given Registrar to populate the hooks and fields"""
+        """Use the given `PartRegistrar` to populate the hooks and fields.
+        This function is called for all parts in a block when the block's
+        `Controller` is added to a `Process`"""
         self.registrar = registrar
 
     def notify_dispatch_request(self, request):
