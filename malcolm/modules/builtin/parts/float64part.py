@@ -7,6 +7,18 @@ from ..util import set_tags, AWriteable, AConfig, AGroup, AWidget
 with Anno("Initial value of the created attribute"):
     AValue = float
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMetaDescription = AMetaDescription
+APrecision = APrecision
+AUnits = AUnits
+ALimitHigh = ALimitHigh
+ALimitLow = ALimitLow
+AWriteable = AWriteable
+AConfig = AConfig
+AGroup = AGroup
+AWidget = AWidget
+
 
 class Float64Part(Part):
     """Create a single float64 Attribute on the Block"""

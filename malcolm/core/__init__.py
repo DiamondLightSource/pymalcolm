@@ -20,7 +20,8 @@ from .moduleutil import submodule_all
 from .notifier import Notifier
 from .part import Part, PartRegistrar, APartName
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
-    ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos
+    ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos, \
+    AHookable
 from .request import Request, PathRequest, Subscribe, Unsubscribe, Get, Put, \
     Post
 from .response import Response, Delta, Update, Return, Error

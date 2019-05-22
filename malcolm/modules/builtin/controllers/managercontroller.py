@@ -39,6 +39,10 @@ with Anno("A directory of templates with which to initially populate designs "
           "Attribute. These cannot be saved over."):
     ATemplateDesigns = str
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = AMri
+ADescription = ADescription
+
 
 def check_git_version(required_version):
     output = subprocess.check_output(("git", "--version",))
@@ -91,7 +95,7 @@ class ManagerController(StatefulController):
         self.context_modified = {}  # type: Dict[Part, Set[str]]
         self.part_modified = {}  # type: Dict[Part, PartModifiedInfo]
         # The attributes our part has published
-        self.our_config_attributes = {}  # type: Dict[str, AttributeModel]]
+        self.our_config_attributes = {}  # type: Dict[str, AttributeModel]
         # The reportable infos we are listening for
         self.info_registry.add_reportable(
             PartModifiedInfo, self.update_modified)

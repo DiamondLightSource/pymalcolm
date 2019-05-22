@@ -1,6 +1,10 @@
 from malcolm.core import Controller, StringMeta, AMri, ADescription, Widget
 from ..infos import LabelInfo, HealthInfo
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = AMri
+ADescription = ADescription
+
 
 class BasicController(Controller):
     """Basic Controller with Health and Title updating"""

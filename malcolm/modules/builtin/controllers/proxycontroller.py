@@ -13,6 +13,9 @@ with Anno("Malcolm resource id of client comms"):
 with Anno("Whether to re-publish this block via server comms"):
     APublish = bool
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = AMri
+
 
 class ProxyController(BasicController):
     """Sync a local block with a given remote block"""

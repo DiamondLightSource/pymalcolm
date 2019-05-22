@@ -16,6 +16,10 @@ if TYPE_CHECKING:
 
 ss = StatefulStates
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = AMri
+ADescription = ADescription
+
 
 class StatefulController(BasicController):
     """A controller that implements `StatefulStates`"""

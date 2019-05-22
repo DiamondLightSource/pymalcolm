@@ -4,12 +4,11 @@ from malcolm.compat import OrderedDict, clean_repr
 from malcolm.core import Part, Attribute, Subscribe, \
     Unsubscribe, APartName, Port, Controller, Response, \
     get_config_tag, Update, Return, Put, Request
-from malcolm.modules.builtin.hooks import AInit
 from ..infos import PortInfo, LayoutInfo, SourcePortInfo, SinkPortInfo, \
     PartExportableInfo, PartModifiedInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
     AContext, APortMap, ALayoutTable, LoadHook, SaveHook, AStructure, \
-    ULayoutInfos
+    ULayoutInfos, AInit
 from ..util import StatefulStates, wait_for_stateful_block_init
 
 if TYPE_CHECKING:
@@ -26,6 +25,8 @@ with Anno("Whether the part is initially visible with no config loaded, None "
 with Anno("If the child is a StatefulController then this should be True"):
     AStateful = bool
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
 
 ss = StatefulStates
 

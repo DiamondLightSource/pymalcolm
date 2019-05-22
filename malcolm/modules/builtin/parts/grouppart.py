@@ -2,6 +2,10 @@ from malcolm.core import Part, PartRegistrar, ChoiceMeta, APartName, \
     AMetaDescription, Widget
 from ..util import set_tags
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMetaDescription = AMetaDescription
+
 
 class GroupPart(Part):
     """Part representing a GUI group other Attributes attach to"""

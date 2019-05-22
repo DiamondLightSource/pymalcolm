@@ -28,6 +28,9 @@ STOPPING = 3
 with Anno("The list of currently published Controller mris"):
     APublished = Array[str]
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+AHookable = AHookable
+
 
 class UnpublishedInfo(Info):
     def __init__(self, mri):
