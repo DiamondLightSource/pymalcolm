@@ -402,6 +402,9 @@ class NTUnion(AttributeModel):
     __slots__ = []
 
 
+FALSE_STRINGS = {'0', 'False', 'false', 'FALSE', 'No', 'no', 'NO'}
+
+
 @Serializable.register_subclass("malcolm:core/BooleanMeta:1.0")
 @VMeta.register_annotype_converter(bool)
 class BooleanMeta(VMeta):
@@ -412,7 +415,10 @@ class BooleanMeta(VMeta):
     def validate(self, value):
         # type: (Any) -> bool
         """Cast value to boolean and return it"""
-        return bool(value)
+        if value in FALSE_STRINGS:
+            return False
+        else:
+            return bool(value)
 
     def doc_type_string(self):
         # type: () -> str
