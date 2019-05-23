@@ -38,6 +38,7 @@ Contents
     :caption: API
 
     api/core_api
+    api/yamlutil_api
     build/modules_api
     api/external_api
 

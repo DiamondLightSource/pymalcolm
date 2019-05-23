@@ -41,6 +41,7 @@ Fixed:
 ---------------------
 
 Fixed:
+
 - no_save now saves everything apart from what is passed. Previously it was
   updating a set that was common to all ChildPart subclasses
 - pmactrajectorypart no longer checks CS numbers on validate in case they are

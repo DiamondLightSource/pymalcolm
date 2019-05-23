@@ -78,6 +78,9 @@ def _create_defines(sections,  # type: List[Section]
 
 
 def check_yaml_names(globals_d):
+    """Check that all include_creators and block_creators have the same
+    name as the base of their file path, and return them in a list suitable
+    for publishing as __all__"""
     # type: (Dict[str, Any]) -> List[str]
     all_list = []
     for k, v in sorted(globals_d.items()):

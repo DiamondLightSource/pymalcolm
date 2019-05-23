@@ -21,7 +21,7 @@ We assume for this tutorial that you have created one or more IOCS that contain:
 - One or more dls_pmac_asyn_motor or dls_pmac_cs_asyn_motor instances.
 - An ADPandABlocks template from the `ADPandaBlocks`_ module with a PV prefix
   that looks like ``BLxxI-MO-PANDA-01:DRV:``
-- NDPosPlugin and NDFileHDF5 `areaDetector` plugins with the PV prefixes of
+- NDPosPlugin and NDFileHDF5 `areaDetector`_ plugins with the PV prefixes of
   ``BLxxI-MO-PANDA-01:POS:`` and ``BLxxI-MO-PANDA-01:HDF5:``
 
 
@@ -261,7 +261,9 @@ Python objects. We do this by placing a special file called ``__init__.py``
 into the ``etc/malcolm/blocks`` directory. This tells Python that this directory
 is a Python module, and to run the contents of ``__init__.py`` whenever the
 module is imported. We can place the following lines into this file to make a
-couple of Block creators from the YAML file::
+couple of Block creators from the YAML file:
+
+.. highlight:: python
 
     from malcolm.yamlutil import make_block_creator, check_yaml_names
 
@@ -279,17 +281,145 @@ into Python objects, then `check_yaml_names` filters out anything that hasn't
 been derived from a YAML file, creating the ``__all__`` variable that tells
 Python what the public API of this module is.
 
+Setup the Devices
+-----------------
+
+We can now run up imalcolm by executing ``etc/malcolm/BLxxI-ML-MALC-01.yaml``,
+and open http://localhost:8008/gui/BLxxI-ML-SCAN-01 to see our scan Block. The
+first thing we should do it setup the motion controller. If we click the Auto
+Layout button, then click through to the ``BRICK-01`` layout and Auto Layout
+that, we will see the layout of motors in co-ordinate systems. We need to
+assign the two raw motors to any axes a-z in the co-ordinate system so that
+they can be trajectory scanned, then save the brick design:
+
+.. image:: pmac_0.png
+
+The Brick is now in such a state that the `PmacChildPart` can run a scan on
+any motors in CS1.
+
+.. note::
+
+    Output Triggers is checked, this means that the PMAC will be told to output
+    GPIO triggers according to the scanpointgenerator point requested. A live
+    frame signal will be sent at the beginning of each point, then a dead frame
+    signal will be sent at the end of each point if it doesn't join onto the
+    next point.
+
+We can then navigate back up and to the PandA, and load the `template_design_`
+``template_live_dead_framed_pcap``:
+
+.. image:: pmac_1.png
+
+This design assumes you have the live and dead frame signals from the PMAC
+connected to TTLIN1 and TTLIN2. If this is not the case, you can connect them
+to the correct inputs, like the FMC_24V_IN signals for example.
+
+Each rising edge of a live frame generates a short trigger pulse, which is sent
+to a detector on TTLOUT2. Again, you can connect detectors on different outputs
+to this signal. The reason we don't connect it directly to the live frame signal
+is because when you interrupt the PMAC it doesn't reset the GPIOs, and the arm
+of the detector may come before these signals are reset, creating one false
+trigger.
+
+Next we come to the Frame Gate. This is set high by a live frame pulse, and
+set low by a dead frame. It will be high for an entire series of joined frames,
+and low during the turnarounds. We use this to gate the PCAP averaging of
+positions so they are not averaged during the turnarounds.
+
+Fed from this is the End of Frame signal. This fires whenever we get a live or
+dead frame signal, but not while the Frame Gate is active. This effectively
+means we will get a short pulse at the end of each frame, which we use to
+trigger PCAP to output the current capture values, and advance to the next
+frame.
+
+Now we have changed the inputs and outputs to this chain of Blocks, we can
+save the design with a new name.
+
 Setup the Scan
 --------------
 
-We can now run up imalcolm by executing ``etc/malcolm/BLxxI-ML-MALC-01.yaml``,
-and open http://localhost:8008/gui/BLxxI-ML-SCAN-01 to see our scan Block.
+Now we have setup each Block in the `device_layer_`, it is time to setup the
+Scan Block. We do this by:
 
+- Setting the scan ``Label`` to a suitable short phrase that can be placed on
+  a GDA GUI. E.g. "Small stage tomography", or "Fine stage XRF + Imaging"
+- Setting ``Simultaneous Axes`` to the scannable names of all of the motors
+  in the CS with fastest moving motor first, like
+  ``["stagex", "stagey", "stagez"]``
+- Saving the design with a name that is similar to the label. E.g. "t1_tomo" or
+  "t2_xspress3_excalibur"
+
+This will make a saved config that captures the device design names::
+
+    {
+      "attributes": {
+        "layout": {
+          "BRICK-01": {
+            "x": 0.0,
+            "y": 139.60000610351562,
+            "visible": true
+          },
+          "PANDA-01": {
+            "x": 0.0,
+            "y": 0.0,
+            "visible": true
+          }
+        },
+        "exports": {},
+        "simultaneousAxes": [
+           "stagea",
+           "stagex"
+        ],
+        "label": "PMAC Master Tomography"
+      },
+      "children": {
+        "BRICK-01": {
+          "design": "a_z_in_cs1"
+        },
+        "PANDA-01": {
+          "design": "pmac_master",
+          "attributesToCapture": {
+            "typeid": "malcolm:core/Table:1.0",
+            "name": [],
+            "sourceId": [],
+            "description": [],
+            "sourceType": [],
+            "dataType": [],
+            "datasetType": []
+          }
+        }
+      }
+    }
+
+We can now run a test scan to make sure the correct data is produced, either
+with a generator on the commandline, or with the Web GUI, as in previous
+tutorials. If it all works as expected, we can set the ``initial_design`` for
+this scan instance in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
+
+    ...
+
+    # Define the Scans
+    - BLxxI.blocks.pmac_master_scan_block:
+        mri_prefix: BLxxI-ML-SCAN-01
+        config_dir: $(config_dir)
+        initial_design: pmac_master_tomo
+
+    # More scans here...
+
+    ...
+
+If we need a similar scan with a different set of detectors active, we can
+just make a new instance of the same scan block, repeat the setup scan steps
+with a new label and design name, and save this design in a similar way.
 
 Conclusion
 ----------
-
-
+This tutorial has given us an understanding of how to perform a scan with the
+PMAC acting as master, sending trigger pulses to a PandA. We are limited to
+about 300Hz as we have to send all the points down to the PMAC via the
+trajectory scan. In the next tutorial we will see how the PandA can act as
+master, using the positions from the encoders to generate pulses, allowing
+kHz rates of scanning.
 
 .. _GeoBrick LV IMS-II:
     http://faradaymotioncontrols.co.uk/geo-brick-lv/
