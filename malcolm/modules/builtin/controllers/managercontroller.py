@@ -468,11 +468,12 @@ class ManagerController(StatefulController):
         names.sort()
         if os.path.isdir(self.template_designs):
             for f in sorted(os.listdir(self.template_designs)):
-                assert f.startswith("template_"), \
-                    "Template design %s/%s should start with 'template_'" % (
-                        self.template_designs, f)
-                if f not in names:
-                    names.append(f)
+                assert f.startswith("template_") and f.endswith(".json"), \
+                    "Template design %s/%s should start with 'template_' " \
+                    "and end with .json" % (self.template_designs, f)
+                t_name = f.split(".json")[0]
+                if t_name not in names:
+                    names.append(t_name)
         self.design.meta.set_choices(names)
 
     def _validated_config_filename(self, name):
