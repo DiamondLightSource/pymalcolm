@@ -28,6 +28,7 @@
 - ADPandABlocks.controllers.PandARunnableController:
     mri: $(mri_prefix)
     config_dir: $(config_dir)
+    template_designs: $(yamldir)/$(yamlname)_designs
     hostname: $(hostname)
     port: $(port)
     prefix: $(pv_prefix):DRV
