@@ -73,15 +73,15 @@ def make_logging_config(args):
                 "stream": "ext://sys.stdout"
             },
 
-            "local_file_handler": {
-                "class": "logging.handlers.RotatingFileHandler",
-                "level": "DEBUG",
-                "formatter": "extended",
-                "filename": "/tmp/malcolm-debug.log",
-                "maxBytes": 100048576,
-                "backupCount": 4,
-                "encoding": "utf8"
-            },
+            #"local_file_handler": {
+            #    "class": "logging.handlers.RotatingFileHandler",
+            #    "level": "DEBUG",
+            #    "formatter": "extended",
+            #    "filename": "/tmp/malcolm-debug.log",
+            #    "maxBytes": 100048576,
+            #    "backupCount": 4,
+            #    "encoding": "utf8"
+            #},
 
             "graylog_gelf": {
                 "class": "pygelf.GelfTcpHandler",
@@ -117,7 +117,7 @@ def make_logging_config(args):
 
         "root": {
             "level": "DEBUG",
-            "handlers": ["graylog_gelf", "console", "local_file_handler"],
+            "handlers": ["graylog_gelf", "console"],
         }
     }
 
