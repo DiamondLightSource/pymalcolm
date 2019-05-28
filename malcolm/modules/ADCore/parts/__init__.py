@@ -1,11 +1,12 @@
 from .detectordriverpart import DetectorDriverPart, APartName, AMri, \
-    AMainDatasetUseful, ASoftTriggerModes, USoftTriggerModes
+    AMainDatasetUseful, ASoftTriggerModes, USoftTriggerModes, \
+    AContext, AStepsToDo, ACompletedSteps, APartInfo
 from .exposuredeadtimepart import ExposureDeadtimePart, AInitialAccuracy, \
-    AInitialReadoutTime
-from .hdfwriterpart import HDFWriterPart
-from .positionlabellerpart import PositionLabellerPart
-from .statspluginpart import StatsPluginPart
-from .filepathtranslatorpart import FilepathTranslatorPart
+    AInitialReadoutTime, APartName
+from .hdfwriterpart import HDFWriterPart, APartName, AMri, APartRunsOnWindows
+from .positionlabellerpart import PositionLabellerPart, APartName, AMri
+from .statspluginpart import StatsPluginPart, APartName
+from .filepathtranslatorpart import FilepathTranslatorPart, APartName
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

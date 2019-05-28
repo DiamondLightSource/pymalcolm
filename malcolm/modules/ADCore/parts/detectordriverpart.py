@@ -1,19 +1,16 @@
-from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
+import os
 from xml.etree import cElementTree as ET
+
+from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
+
 from malcolm.compat import et_to_string
 from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar, \
     config_tag
-from malcolm.modules.builtin.parts import AMri, ChildPart
-from malcolm.modules.builtin.util import no_save
-from malcolm.modules.scanning.hooks import ReportStatusHook, \
-    ConfigureHook, PostRunArmedHook, SeekHook, RunHook, ResumeHook, PauseHook, \
-    AbortHook, AContext, UInfos, AStepsToDo, ACompletedSteps, APartInfo
-from malcolm.modules.scanning.util import AGenerator
+from malcolm.modules import builtin, scanning
 from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, \
     ExposureDeadtimeInfo, FilePathTranslatorInfo
 from ..util import ADBaseActions, ExtraAttributesTable, \
     APartRunsOnWindows, DataType, SourceType
-import os
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
@@ -23,11 +20,19 @@ USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
 with Anno("Directory to write data to"):
     AFileDir = str
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMri = builtin.parts.AMri
+AbortHook = scanning.hooks.AbortHook
+AContext = scanning.hooks.AContext
+AStepsToDo = scanning.hooks.AStepsToDo
+ACompletedSteps = scanning.hooks.ACompletedSteps
+APartInfo = scanning.hooks.APartInfo
 
 # We will set these attributes on the child block, so don't save them
-@no_save('arrayCounter', 'imageMode', 'numImages', 'arrayCallbacks', 'exposure',
-         'acquirePeriod')
-class DetectorDriverPart(ChildPart):
+@builtin.util.no_save('arrayCounter', 'imageMode', 'numImages',
+                      'arrayCallbacks', 'exposure', 'acquirePeriod')
+class DetectorDriverPart(builtin.parts.ChildPart):
     def __init__(self,
                  name,  # type: APartName
                  mri,  # type: AMri
@@ -52,11 +57,16 @@ class DetectorDriverPart(ChildPart):
         ).create_attribute_model()
         self.runs_on_windows = runs_on_windows
         # Hooks
-        self.register_hooked(ReportStatusHook, self.report_status)
-        self.register_hooked((ConfigureHook, PostRunArmedHook, SeekHook),
+        self.register_hooked(
+            scanning.hooks.ReportStatusHook, self.report_status)
+        self.register_hooked((scanning.hooks.ConfigureHook,
+                              scanning.hooks.PostRunArmedHook,
+                              scanning.hooks.SeekHook),
                              self.configure, self.configure_args_with_exposure)
-        self.register_hooked((RunHook, ResumeHook), self.run)
-        self.register_hooked((PauseHook, AbortHook), self.abort)
+        self.register_hooked(
+            (scanning.hooks.RunHook, scanning.hooks.ResumeHook), self.run)
+        self.register_hooked(
+            (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.abort)
 
     def build_attribute_xml(self):
         root_el = ET.Element("Attributes")
@@ -117,7 +127,7 @@ class DetectorDriverPart(ChildPart):
 
     @add_call_types
     def report_status(self):
-        # type: () -> UInfos
+        # type: () -> scanning.hooks.UInfos
         ret = []
         if self.main_dataset_useful:
             ret.append(NDArrayDatasetInfo(rank=2))
@@ -141,7 +151,7 @@ class DetectorDriverPart(ChildPart):
                   completed_steps,  # type: ACompletedSteps
                   steps_to_do,  # type: AStepsToDo
                   part_info,  # type: APartInfo
-                  generator,  # type: AGenerator
+                  generator,  # type: scanning.util.AGenerator
                   fileDir,  # type: AFileDir
                   **kwargs  # type: **Any
                   ):
@@ -185,7 +195,7 @@ class DetectorDriverPart(ChildPart):
             if self.runs_on_windows:
                 attributes_filename = \
                     FilePathTranslatorInfo.translate_filepath(
-                     part_info, self.attributes_filename)
+                        part_info, self.attributes_filename)
             child.attributesFile.put_value(attributes_filename)
 
     @add_call_types
@@ -200,4 +210,3 @@ class DetectorDriverPart(ChildPart):
     def abort(self, context):
         # type: (AContext) -> None
         self.actions.abort_detector(context)
-

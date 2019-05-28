@@ -16,6 +16,9 @@ path_prefix_desc = \
 with Anno(path_prefix_desc):
     APathPrefix = str
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+
 
 class FilepathTranslatorPart(Part):
     def __init__(self,

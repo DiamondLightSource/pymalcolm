@@ -1,8 +1,7 @@
 from annotypes import TYPE_CHECKING
 
 from malcolm.core import PartRegistrar
-from malcolm.modules.pandablocks.parts.pandabussespart import PandABussesPart
-from malcolm.modules.pandablocks.util import PositionCapture
+from malcolm.modules import pandablocks
 from malcolm.modules import scanning, ADCore
 from ..util import DatasetBitsTable, DatasetPositionsTable
 
@@ -10,7 +9,7 @@ if TYPE_CHECKING:
     from typing import List
 
 
-class PandADatasetBussesPart(PandABussesPart):
+class PandADatasetBussesPart(pandablocks.parts.pandabussespart.PandABussesPart):
     bits_table_cls = DatasetBitsTable
     positions_table_cls = DatasetPositionsTable
 
@@ -49,7 +48,7 @@ class PandADatasetBussesPart(PandABussesPart):
             units=[""] * len(pos_names),
             scale=[1.0] * len(pos_names),
             offset=[0.0] * len(pos_names),
-            capture=[PositionCapture.NO] * len(pos_names),
+            capture=[pandablocks.util.PositionCapture.NO] * len(pos_names),
             datasetName=[""] * len(pos_names),
             datasetType=ds_types
         )
@@ -69,7 +68,7 @@ class PandADatasetBussesPart(PandABussesPart):
         pos_table = self.positions.value  # type: DatasetPositionsTable
         for i, capture in enumerate(pos_table.capture):
             ds_name = pos_table.datasetName[i]
-            if ds_name and capture != PositionCapture.NO:
+            if ds_name and capture != pandablocks.util.PositionCapture.NO:
                 # If we have Min Max Mean, just take Mean
                 capture_suffix = capture.value.split(" ")[-1]
                 ret.append(ADCore.infos.NDAttributeDatasetInfo(

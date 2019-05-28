@@ -18,6 +18,9 @@ with Anno(frequency_accuracy_desc):
 with Anno("The minimum exposure time this detector will accept"):
     AMinExposure = float
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+
 
 class ExposureDeadtimePart(Part):
     def __init__(self,

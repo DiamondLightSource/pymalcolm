@@ -17,6 +17,10 @@ if TYPE_CHECKING:
 # stalled and raise
 FRAME_TIMEOUT = 60
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMri = builtin.parts.AMri
+
 
 def greater_than_zero(v):
     # type: (int) -> bool
@@ -184,7 +188,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
     def __init__(self, name, mri):
-        # type: (APartName, builtin.parts.AMri) -> None
+        # type: (APartName, AMri) -> None
         super(OdinWriterPart, self).__init__(name, mri)
         # Future for the start action
         self.start_future = None  # type: Future

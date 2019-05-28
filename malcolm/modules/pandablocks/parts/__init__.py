@@ -1,1 +1,3 @@
-# No imports as nothing should be instantiated from YAML
+# nothing should be instantiated from YAML but pandabussespart is imported
+# from ADPandaBlocks
+import pandabussespart

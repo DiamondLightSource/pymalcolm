@@ -1,5 +1,4 @@
 import os
-import math
 import time
 from xml.etree import cElementTree as ET
 
@@ -13,8 +12,6 @@ from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, NDArrayDatasetInfo, \
     NDAttributeDatasetInfo, \
     AttributeDatasetType, FilePathTranslatorInfo
-from malcolm.modules.scanning.infos import DatasetProducedInfo
-from malcolm.modules.scanning.util import DatasetType
 from ..util import APartRunsOnWindows
 
 if TYPE_CHECKING:
@@ -30,6 +27,11 @@ FRAME_TIMEOUT = 60
 
 with Anno("Toggle writing of all ND attributes to HDF file"):
     AWriteAllNDAttributes = bool
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMri = builtin.parts.AMri
+APartRunsOnWindows = APartRunsOnWindows
 
 
 def greater_than_zero(v):
@@ -51,10 +53,10 @@ def create_dataset_infos(name, part_info, generator, filename):
     # Add the primary datasource
     if ndarray_infos:
         ndarray_info = ndarray_infos[0]
-        yield DatasetProducedInfo(
+        yield scanning.infos.DatasetProducedInfo(
             name="%s.data" % name,
             filename=filename,
-            type=DatasetType.PRIMARY,
+            type=scanning.util.DatasetType.PRIMARY,
             rank=ndarray_info.rank + generator_rank,
             path="/entry/detector/detector",
             uniqueid=uniqueid)
@@ -62,10 +64,10 @@ def create_dataset_infos(name, part_info, generator, filename):
         # Add any secondary datasources
         for calculated_info in \
                 CalculatedNDAttributeDatasetInfo.filter_values(part_info):
-            yield DatasetProducedInfo(
+            yield scanning.infos.DatasetProducedInfo(
                 name="%s.%s" % (name, calculated_info.name),
                 filename=filename,
-                type=DatasetType.SECONDARY,
+                type=scanning.util.DatasetType.SECONDARY,
                 rank=ndarray_info.rank + generator_rank,
                 path="/entry/%s/%s" % (
                     calculated_info.name, calculated_info.name),
@@ -76,32 +78,32 @@ def create_dataset_infos(name, part_info, generator, filename):
         if dataset_info.type is AttributeDatasetType.DETECTOR:
             # Something like I0
             name = "%s.data" % dataset_info.name
-            type = DatasetType.PRIMARY
+            dtype = scanning.util.DatasetType.PRIMARY
         elif dataset_info.type is AttributeDatasetType.MONITOR:
             # Something like Iref
             name = "%s.data" % dataset_info.name
-            type = DatasetType.MONITOR
+            dtype = scanning.util.DatasetType.MONITOR
         elif dataset_info.type is AttributeDatasetType.POSITION:
             # Something like x
             name = "%s.value" % dataset_info.name
-            type = DatasetType.POSITION_VALUE
+            dtype = scanning.util.DatasetType.POSITION_VALUE
         else:
             raise AttributeError("Bad dataset type %r, should be a %s" % (
                 dataset_info.type, AttributeDatasetType))
-        yield DatasetProducedInfo(
+        yield scanning.infos.DatasetProducedInfo(
             name=name,
             filename=filename,
-            type=type,
+            type=dtype,
             rank=dataset_info.rank + generator_rank,
             path="/entry/%s/%s" % (dataset_info.name, dataset_info.name),
             uniqueid=uniqueid)
 
     # Add any setpoint dimensions
     for dim in generator.axes:
-        yield DatasetProducedInfo(
+        yield scanning.infos.DatasetProducedInfo(
             name="%s.value_set" % dim,
             filename=filename,
-            type=DatasetType.POSITION_SET,
+            type=scanning.util.DatasetType.POSITION_SET,
             rank=1,
             path="/entry/detector/%s_set" % dim, uniqueid="")
 
@@ -175,7 +177,7 @@ def make_nxdata(name, rank, entry_el, generator, link=False):
 
 
 def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
-    # type: (CompoundGenerator, PartInfo) -> str
+    # type: (CompoundGenerator, PartInfo, bool) -> str
     # Make a root element with an NXEntry
     root_el = ET.Element("hdf5_layout", auto_ndattr_default="false")
     entry_el = ET.SubElement(root_el, "group", name="entry")
@@ -218,13 +220,13 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
 
     # Add a group for attributes
     ndattr_default = "true" if write_all_nd_attributes else "false"
-    NDAttributes_el = ET.SubElement(entry_el, "group", name="NDAttributes",
-                                    ndattr_default=ndattr_default)
-    ET.SubElement(NDAttributes_el, "attribute", name="NX_class",
+    nd_attributes_el = ET.SubElement(entry_el, "group", name="NDAttributes",
+                                     ndattr_default=ndattr_default)
+    ET.SubElement(nd_attributes_el, "attribute", name="NX_class",
                   source="constant", value="NXcollection", type="string")
-    ET.SubElement(NDAttributes_el, "dataset", name="NDArrayUniqueId",
+    ET.SubElement(nd_attributes_el, "dataset", name="NDArrayUniqueId",
                   source="ndattribute", ndattribute="NDArrayUniqueId")
-    ET.SubElement(NDAttributes_el, "dataset", name="NDArrayTimeStamp",
+    ET.SubElement(nd_attributes_el, "dataset", name="NDArrayTimeStamp",
                   source="ndattribute", ndattribute="NDArrayTimeStamp")
 
     xml = et_to_string(root_el)
@@ -241,10 +243,11 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
 @builtin.util.no_save("extraDimSize%s" % SUFFIXES[i] for i in range(10))
 class HDFWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
+
     def __init__(self,
-                 name,                          # type: APartName
-                 mri,                           # type: builtin.parts.AMri
-                 runs_on_windows=False,         # type: APartRunsOnWindows
+                 name,  # type: APartName
+                 mri,  # type: AMri
+                 runs_on_windows=False,  # type: APartRunsOnWindows
                  write_all_nd_attributes=True,  # type: AWriteAllNDAttributes
                  ):
         # type: (...) -> None

@@ -14,6 +14,9 @@ with Anno("Which statistic to capture"):
 with Anno("Directory to write data to"):
     AFileDir = str
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save(

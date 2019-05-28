@@ -18,6 +18,10 @@ N_LOAD_AHEAD = 4
 if TYPE_CHECKING:
     from typing import Tuple
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMri = builtin.parts.AMri
+
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save(
@@ -26,7 +30,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
     """Part for controlling a `position_labeller_block` in a scan"""
 
     def __init__(self, name, mri):
-        # type: (APartName, builtin.parts.AMri) -> None
+        # type: (APartName, AMri) -> None
         super(PositionLabellerPart, self).__init__(name, mri)
         # Stored generator for positions
         self.generator = None

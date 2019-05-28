@@ -1,4 +1,4 @@
-from .andordriverpart import AndorDriverPart
+from .andordriverpart import AndorDriverPart, APartName, AMri
 
 # Expose a nice namespace
 from malcolm.core import submodule_all
