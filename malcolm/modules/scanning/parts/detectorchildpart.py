@@ -1,9 +1,9 @@
 from annotypes import add_call_types, Anno, Any, TYPE_CHECKING, stringify_error
 
-from malcolm.core import BadValueError, APartName ,Future, Put, Request
-from malcolm.modules.scanning.infos import DatasetProducedInfo
-from malcolm.modules.builtin.parts import ChildPart, AMri, AInitialVisibility
-from malcolm.modules.scanning.hooks import UInfos
+from malcolm.core import BadValueError, APartName, Future, Put, Request
+from malcolm.modules import builtin
+from ..infos import DatasetProducedInfo
+from ..hooks import UInfos
 from ..hooks import ConfigureHook, PostRunArmedHook, \
     SeekHook, RunHook, ResumeHook, ACompletedSteps, AContext, ValidateHook, \
     UParameterTweakInfos, PostRunReadyHook, AbortHook, PreConfigureHook, \
@@ -18,18 +18,23 @@ if TYPE_CHECKING:
 with Anno("The detectors that should be active and their exposures"):
     ADetectorTable = DetectorTable
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMri = builtin.parts.AMri
+AInitialVisibility = builtin.parts.AInitialVisibility
 
 ss = RunnableStates
 
 
-class DetectorChildPart(ChildPart):
+class DetectorChildPart(builtin.parts.ChildPart):
     """Part controlling a child detector Block that exposes a configure/run
     interface with fileDir and fileTemplate"""
 
     def __init__(self,
                  name,  # type: APartName
                  mri,  # type: AMri
-                 initial_visibility=False,  # type: AInitialVisibility
+                 initial_visibility=False,
+                 # type: AInitialVisibility
                  ):
         # type: (...) -> None
         super(DetectorChildPart, self).__init__(name, mri, initial_visibility)
@@ -176,7 +181,8 @@ class DetectorChildPart(ChildPart):
             "Detector %s doesn't have a dataset table, did you add a " \
             "DatasetTablePart to it?" % self.mri
         datasets_table = child.datasets.value
-        info_list = [DatasetProducedInfo(*row) for row in datasets_table.rows()]
+        info_list = [DatasetProducedInfo(*row) for
+                     row in datasets_table.rows()]
         return info_list
 
     @add_call_types

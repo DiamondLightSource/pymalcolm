@@ -14,11 +14,9 @@ from malcolm.core import Unsubscribe, Subscribe, \
     TableMeta, ChoiceMeta, config_tag, \
     CAMEL_RE, camel_to_title, StringMeta
 from malcolm.core.tags import without_group_tags, Port
-from malcolm.modules.builtin.infos import PortInfo
-from malcolm.modules.builtin.util import ManagerStates
 from ..hooks import LayoutHook, LoadHook, SaveHook
-from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo
-from ..util import LayoutTable, ExportTable
+from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo, PortInfo
+from ..util import LayoutTable, ExportTable, ManagerStates
 from .statefulcontroller import StatefulController, AMri, ADescription
 
 if TYPE_CHECKING:

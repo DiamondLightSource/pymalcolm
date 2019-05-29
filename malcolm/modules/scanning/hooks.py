@@ -3,7 +3,7 @@ from annotypes import Mapping, Sequence, Anno, Array, Union, Any, \
 
 from malcolm.compat import OrderedDict
 from malcolm.core import VMeta
-from malcolm.modules.builtin.hooks import ControllerHook, APart, AContext
+from malcolm.modules import builtin
 from .infos import ParameterTweakInfo, Info, ConfigureParamsInfo
 from .util import AGenerator, AAxesToMove
 
@@ -19,6 +19,12 @@ with Anno("Parameters that need to be changed to make them compatible"):
 UInfos = Union[AInfos, Sequence[Info], Info, None]
 UParameterTweakInfos = Union[AParameterTweakInfos, Sequence[ParameterTweakInfo],
                              ParameterTweakInfo, None]
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+APart = builtin.hooks.APart
+AContext = builtin.hooks.AContext
+# also bring in superclass which subclasses may refer to
+ControllerHook = builtin.hooks.ControllerHook
 
 
 class ValidateHook(ControllerHook[UParameterTweakInfos]):

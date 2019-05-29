@@ -2,7 +2,6 @@
 from __future__ import division
 
 import re
-import time
 
 import numpy as np
 from annotypes import add_call_types, TYPE_CHECKING
@@ -10,7 +9,6 @@ from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import Future, Block
 from malcolm.modules import builtin, scanning
-from malcolm.modules.scanning.infos import MinTurnaroundInfo
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
     profile_between_points
@@ -46,11 +44,15 @@ PROFILE_POINTS = 10000
 # 80 char line lengths...
 AIV = builtin.parts.AInitialVisibility
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = builtin.parts.APartName
+AMri = builtin.parts.AMri
+
 
 class PmacChildPart(builtin.parts.ChildPart):
     def __init__(self,
-                 name,  # type: builtin.parts.APartName
-                 mri,  # type: builtin.parts.AMri
+                 name,  # type: APartName
+                 mri,  # type: AMri
                  initial_visibility=None  # type: AIV
                  ):
         # type: (...) -> None
@@ -172,7 +174,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Store if we need to output triggers
         self.output_triggers = child.outputTriggers.value
         # See if there is a minimum turnaround
-        infos = MinTurnaroundInfo.filter_values(part_info)
+        infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
         if infos:
             assert len(infos) == 1, \
                 "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(infos)

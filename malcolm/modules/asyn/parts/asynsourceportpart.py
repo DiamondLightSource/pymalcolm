@@ -7,17 +7,23 @@ from malcolm.modules import ca
 with Anno("Source Port type"):
     APortType = Port
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = ca.util.APartName
+AMetaDescription = ca.util.AMetaDescription
+ARbv = ca.util.ARbv
+AGroup = ca.util.AGroup
+
 
 class AsynSourcePortPart(Part):
     """Defines a string `Attribute` representing a asyn port that should be
     depicted as an Source Port on a Block"""
 
     def __init__(self,
-                 name,  # type: ca.util.APartName
-                 description,  # type: ca.util.AMetaDescription
-                 rbv,  # type: ca.util.ARbv
+                 name,  # type: APartName
+                 description,  # type: AMetaDescription
+                 rbv,  # type: ARbv
                  port_type,  # type: APortType
-                 group=None  # type: ca.util.AGroup
+                 group=None  # type: AGroup
                  ):
         # type: (...) -> None
         super(AsynSourcePortPart, self).__init__(name)

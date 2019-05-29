@@ -5,7 +5,7 @@ import numpy as np
 
 from malcolm.core import VMeta, NTUnion, Table, NumberMeta, Widget, \
     Display, AttributeModel
-from malcolm.modules.builtin.util import ManagerStates
+from malcolm.modules import builtin
 
 with Anno("Generator instance providing specification for scan"):
     AGenerator = CompoundGenerator
@@ -175,7 +175,7 @@ class DetectorTable(Table):
         self.framesPerStep = AFramesPerStep(framesPerStep)
 
 
-class RunnableStates(ManagerStates):
+class RunnableStates(builtin.util.ManagerStates):
     """This state set covers controllers and parts that can be configured and
     then run, and have the ability to pause and rewind"""
 

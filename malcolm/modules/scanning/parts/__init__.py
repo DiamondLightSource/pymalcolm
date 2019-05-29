@@ -1,5 +1,6 @@
 from .datasettablepart import DatasetTablePart
-from .detectorchildpart import DetectorChildPart
+from .detectorchildpart import DetectorChildPart, AMri, ADetectorTable, \
+    AInitialVisibility, APartName
 from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes
 
 # Expose a nice namespace

@@ -1,6 +1,6 @@
 from annotypes import Any
 
-from malcolm.modules.builtin.controllers import ProxyController, AMri, AComms, \
+from ..controllers import ProxyController, AMri, AComms, \
     APublish
 
 

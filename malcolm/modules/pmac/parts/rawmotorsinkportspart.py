@@ -3,10 +3,13 @@ from annotypes import Anno
 from malcolm.core import Part, PartRegistrar, ChoiceMeta, Port, Alarm, \
     StringMeta
 from malcolm.modules import ca, builtin
-from malcolm.modules.pmac.util import CS_AXIS_NAMES
+from ..util import CS_AXIS_NAMES
 
 with Anno("PV prefix for CSPort and CSAxis records"):
     APvPrefix = str
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+AGroup = ca.util.AGroup
 
 
 class RawMotorSinkPortsPart(Part):
