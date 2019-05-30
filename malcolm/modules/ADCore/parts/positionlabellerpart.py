@@ -29,21 +29,18 @@ AMri = builtin.parts.AMri
 class PositionLabellerPart(builtin.parts.ChildPart):
     """Part for controlling a `position_labeller_block` in a scan"""
 
-    def __init__(self, name, mri):
-        # type: (APartName, AMri) -> None
-        super(PositionLabellerPart, self).__init__(name, mri)
-        # Stored generator for positions
-        self.generator = None
-        # The last index we have loaded
-        self.end_index = 0
-        # Where we should stop loading points
-        self.steps_up_to = 0
-        # Future for plugin run
-        self.start_future = None
-        # If we are currently loading then block loading more points
-        self.loading = False
-        # When arrayCounter gets to here we are done
-        self.done_when_reaches = 0
+    # Stored generator for positions
+    generator = None
+    # The last index we have loaded
+    end_index = None
+    # Where we should stop loading points
+    steps_up_to = None
+    # Future for plugin run
+    start_future = None
+    # If we are currently loading then block loading more points
+    loading = None
+    # When arrayCounter gets to here we are done
+    done_when_reaches = None
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
