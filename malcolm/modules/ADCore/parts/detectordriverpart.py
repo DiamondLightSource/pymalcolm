@@ -56,17 +56,6 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             extra_tags=[config_tag()]
         ).create_attribute_model()
         self.runs_on_windows = runs_on_windows
-        # Hooks
-        self.register_hooked(
-            scanning.hooks.ReportStatusHook, self.report_status)
-        self.register_hooked((scanning.hooks.ConfigureHook,
-                              scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook),
-                             self.configure, self.configure_args_with_exposure)
-        self.register_hooked(
-            (scanning.hooks.RunHook, scanning.hooks.ResumeHook), self.run)
-        self.register_hooked(
-            (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.abort)
 
     def build_attribute_xml(self):
         root_el = ET.Element("Attributes")
@@ -109,6 +98,17 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(DetectorDriverPart, self).setup(registrar)
+        # Hooks
+        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
+        registrar.hook((scanning.hooks.ConfigureHook,
+                        scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook),
+                       self.configure, self.configure_args_with_exposure)
+        registrar.hook(
+            (scanning.hooks.RunHook, scanning.hooks.ResumeHook), self.run)
+        registrar.hook(
+            (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.abort)
+        # Attributes
         registrar.add_attribute_model("attributesToCapture",
                                       self.extra_attributes,
                                       self.set_extra_attributes)

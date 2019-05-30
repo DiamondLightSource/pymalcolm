@@ -45,13 +45,14 @@ class CAActionPart(Part):
         self.message_pv = message_pv
         self.value = value
         self.wait = wait
-        # Hooks
-        self.register_hooked((builtin.hooks.InitHook,
-                              builtin.hooks.ResetHook), self.connect_pvs)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(CAActionPart, self).setup(registrar)
+        # Hooks
+        registrar.hook((builtin.hooks.InitHook,
+                        builtin.hooks.ResetHook), self.connect_pvs)
+        # Methods
         registrar.add_method_model(self.caput, self.name, self.description)
 
     def connect_pvs(self):

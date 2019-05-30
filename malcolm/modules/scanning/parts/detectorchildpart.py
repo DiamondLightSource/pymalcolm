@@ -42,18 +42,18 @@ class DetectorChildPart(builtin.parts.ChildPart):
         self.frames_per_step = 0
         # Stored between runs
         self.run_future = None  # type: Future
-        # Hooks
-        self.register_hooked(ValidateHook, self.validate)
-        self.register_hooked(PreConfigureHook, self.reload)
-        self.register_hooked(ConfigureHook, self.configure)
-        self.register_hooked((RunHook, ResumeHook), self.run)
-        self.register_hooked((PostRunArmedHook, PostRunReadyHook),
-                             self.post_run)
-        self.register_hooked(SeekHook, self.seek)
-        self.register_hooked(AbortHook, self.abort)
 
     def setup(self, registrar):
         super(DetectorChildPart, self).setup(registrar)
+        # Hooks
+        registrar.hook(ValidateHook, self.validate)
+        registrar.hook(PreConfigureHook, self.reload)
+        registrar.hook(ConfigureHook, self.configure)
+        registrar.hook((RunHook, ResumeHook), self.run)
+        registrar.hook((PostRunArmedHook, PostRunReadyHook),
+                             self.post_run)
+        registrar.hook(SeekHook, self.seek)
+        registrar.hook(AbortHook, self.abort)
         # Tell the controller to expose some extra configure parameters
         configure_info = ConfigureHook.create_info(self.configure)
         # Override the detector table defaults and writeable

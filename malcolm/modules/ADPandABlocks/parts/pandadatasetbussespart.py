@@ -17,8 +17,8 @@ class PandADatasetBussesPart(pandablocks.parts.pandabussespart.PandABussesPart):
         # type: (PartRegistrar) -> None
         super(PandADatasetBussesPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(scanning.hooks.ReportStatusHook,
-                             self.report_status)
+        registrar.hook(scanning.hooks.ReportStatusHook,
+                       self.report_status)
 
     @staticmethod
     def _make_initial_bits_table(bit_names):

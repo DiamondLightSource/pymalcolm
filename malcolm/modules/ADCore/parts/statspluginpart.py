@@ -4,7 +4,7 @@ from xml.etree import cElementTree as ET
 from annotypes import Anno, add_call_types
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName
+from malcolm.core import APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, FilePathTranslatorInfo
 from ..util import StatisticsName, APartRunsOnWindows
@@ -36,10 +36,13 @@ class StatsPluginPart(builtin.parts.ChildPart):
         # The NDAttributes file we write to say what to capture
         self.attributes_filename = None  # type: str
         self.runs_on_windows = runs_on_windows
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(StatsPluginPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(scanning.hooks.ReportStatusHook,
-                             self.report_status)
-        self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
+        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
 
     @add_call_types
     def report_status(self):

@@ -34,15 +34,15 @@ class RawMotorSinkPortsPart(Part):
         self.port = None
         self.axis = None
         self.port_choices = []
-        # Hooks
-        self.register_hooked(builtin.hooks.DisableHook, self.disconnect)
-        self.register_hooked((builtin.hooks.InitHook,
-                              builtin.hooks.ResetHook), self.reconnect)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         registrar.add_attribute_model("pmac", self.pmac_attr)
         registrar.add_attribute_model("cs", self.cs_attr, self.caput)
+        # Hooks
+        registrar.hook(builtin.hooks.DisableHook, self.disconnect)
+        registrar.hook((builtin.hooks.InitHook,
+                        builtin.hooks.ResetHook), self.reconnect)
 
     def reconnect(self):
         # release old monitors

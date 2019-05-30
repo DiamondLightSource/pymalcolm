@@ -3,7 +3,7 @@ from annotypes import Anno, add_call_types, TYPE_CHECKING
 from malcolm.compat import OrderedDict, clean_repr
 from malcolm.core import Part, Attribute, Subscribe, \
     Unsubscribe, APartName, Port, Controller, Response, \
-    get_config_tag, Update, Return, Put, Request
+    get_config_tag, Update, Return, Put, Request, PartRegistrar
 from ..infos import PortInfo, LayoutInfo, SourcePortInfo, SinkPortInfo, \
     PartExportableInfo, PartModifiedInfo
 from ..hooks import InitHook, HaltHook, ResetHook, LayoutHook, DisableHook, \
@@ -78,14 +78,18 @@ class ChildPart(Part):
         self.config_subscriptions = {}  # type: Dict[int, Subscribe]
         # {attr_name: PortInfo}
         self.port_infos = {}  # type: Dict[str, PortInfo]
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(ChildPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(InitHook, self.init)
-        self.register_hooked(HaltHook, self.halt)
-        self.register_hooked(LayoutHook, self.layout)
-        self.register_hooked(LoadHook, self.load)
-        self.register_hooked(SaveHook, self.save)
-        self.register_hooked(DisableHook, self.disable)
-        self.register_hooked(ResetHook, self.reset)
+        registrar.hook(InitHook, self.init)
+        registrar.hook(HaltHook, self.halt)
+        registrar.hook(LayoutHook, self.layout)
+        registrar.hook(LoadHook, self.load)
+        registrar.hook(SaveHook, self.save)
+        registrar.hook(DisableHook, self.disable)
+        registrar.hook(ResetHook, self.reset)
 
     @add_call_types
     def init(self, context):

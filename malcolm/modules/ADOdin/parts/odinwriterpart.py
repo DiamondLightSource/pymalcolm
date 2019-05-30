@@ -187,28 +187,14 @@ def add_nexus_nodes(generator, vds_file_path):
 class OdinWriterPart(builtin.parts.ChildPart):
     """Part for controlling an `hdf_writer_block` in a Device"""
 
-    def __init__(self, name, mri):
-        # type: (APartName, AMri) -> None
-        super(OdinWriterPart, self).__init__(name, mri)
-        # Future for the start action
-        self.start_future = None  # type: Future
-        self.array_future = None  # type: Future
-        self.done_when_reaches = 0
-        # CompletedSteps = arrayCounter + self.uniqueid_offset
-        self.unique_id_offset = 0
-        # The HDF5 layout file we write to say where the datasets go
-        self.layout_filename = None  # type: str
-        # Hooks
-        self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
-        self.register_hooked((scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook), self.seek)
-        self.register_hooked((scanning.hooks.RunHook,
-                              scanning.hooks.ResumeHook), self.run)
-        self.register_hooked(scanning.hooks.PostRunReadyHook,
-                             self.post_run_ready)
-        self.register_hooked(scanning.hooks.AbortHook, self.abort)
-        self.register_hooked(scanning.hooks.PauseHook, self.pause)
-        self.exposure_time = 0
+    # Future for the start action
+    start_future = None  # type: Future
+    array_future = None  # type: Future
+    done_when_reaches = None  # type: int
+    unique_id_offset = None  # type: int
+    # The HDF5 layout file we write to say where the datasets go
+    layout_filename = None  # type: str
+    exposure_time = None  # type: float
 
     @add_call_types
     def reset(self, context):
@@ -222,6 +208,15 @@ class OdinWriterPart(builtin.parts.ChildPart):
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
+        # Hooks
+        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook((scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook), self.seek)
+        registrar.hook((scanning.hooks.RunHook,
+                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook(scanning.hooks.PostRunReadyHook, self.post_run_ready)
+        registrar.hook(scanning.hooks.AbortHook, self.abort)
+        registrar.hook(scanning.hooks.PauseHook, self.pause)
 
     @add_call_types
     def pause(self, context):

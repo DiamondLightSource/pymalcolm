@@ -23,14 +23,14 @@ class CompoundMotorSinkPortsPart(Part):
         self.attr = meta.create_attribute_model()
         # Subscriptions
         self.monitor = None
-        # Hooks
-        self.register_hooked(builtin.hooks.DisableHook, self.disconnect)
-        self.register_hooked((builtin.hooks.InitHook,
-                              builtin.hooks.ResetHook), self.reconnect)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         registrar.add_attribute_model(self.name, self.attr)
+        # Hooks
+        registrar.hook(builtin.hooks.DisableHook, self.disconnect)
+        registrar.hook((builtin.hooks.InitHook,
+                        builtin.hooks.ResetHook), self.reconnect)
 
     def reconnect(self):
         # release old monitors

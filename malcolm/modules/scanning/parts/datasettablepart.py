@@ -15,11 +15,12 @@ class DatasetTablePart(Part):
         self.datasets = TableMeta.from_table(
             DatasetTable, "Datasets produced in HDF file"
         ).create_attribute_model()
-        self.register_hooked(PostConfigureHook, self.post_configure)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         registrar.add_attribute_model("datasets", self.datasets)
+        # Hooks
+        registrar.hook(PostConfigureHook, self.post_configure)
 
     @add_call_types
     def post_configure(self, part_info):

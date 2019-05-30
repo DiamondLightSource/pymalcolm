@@ -4,7 +4,7 @@ from __future__ import division
 from annotypes import add_call_types, Anno, TYPE_CHECKING
 from scanpointgenerator import Point
 
-from malcolm.core import APartName, Block, Attribute, Context
+from malcolm.core import APartName, Block, Attribute, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
 
 from ..util import SequencerTable, Trigger
@@ -141,11 +141,13 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         self.min_turnaround = 0
         # The sequencer tables
         self.seq_tables = []
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(PandABlocksPcompPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(scanning.hooks.ConfigureHook,
-                             self.configure)
-        self.register_hooked(scanning.hooks.RunHook,
-                             self.run)
+        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook(scanning.hooks.RunHook, self.run)
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming

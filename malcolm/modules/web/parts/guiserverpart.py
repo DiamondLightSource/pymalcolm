@@ -3,7 +3,7 @@ import os
 from annotypes import Anno, add_call_types
 from tornado.web import StaticFileHandler, RedirectHandler
 
-from malcolm.core import Part, APartName
+from malcolm.core import Part, APartName, PartRegistrar
 from ..hooks import ReportHandlersHook, UHandlerInfos
 from ..infos import HandlerInfo
 
@@ -30,8 +30,12 @@ class GuiServerPart(Part):
         # type: (APartName, APath) -> None
         super(GuiServerPart, self).__init__(name)
         self.path = path
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(GuiServerPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(ReportHandlersHook, self.report_handlers)
+        registrar.hook(ReportHandlersHook, self.report_handlers)
 
     @add_call_types
     def report_handlers(self):

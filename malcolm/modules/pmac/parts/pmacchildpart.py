@@ -7,7 +7,7 @@ import numpy as np
 from annotypes import add_call_types, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import Future, Block
+from malcolm.core import Future, Block, PartRegistrar
 from malcolm.modules import builtin, scanning
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
@@ -76,16 +76,20 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.profile = {}
         # Stored generator for positions
         self.generator = None  # type: CompoundGenerator
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(PmacChildPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(scanning.hooks.ValidateHook, self.validate)
-        self.register_hooked(scanning.hooks.PreConfigureHook, self.reload)
-        self.register_hooked((scanning.hooks.ConfigureHook,
-                              scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook), self.configure)
-        self.register_hooked((scanning.hooks.RunHook,
-                              scanning.hooks.ResumeHook), self.run)
-        self.register_hooked((scanning.hooks.AbortHook,
-                              scanning.hooks.PauseHook), self.abort)
+        registrar.hook(scanning.hooks.ValidateHook, self.validate)
+        registrar.hook(scanning.hooks.PreConfigureHook, self.reload)
+        registrar.hook((scanning.hooks.ConfigureHook,
+                        scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook), self.configure)
+        registrar.hook((scanning.hooks.RunHook,
+                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook((scanning.hooks.AbortHook,
+                        scanning.hooks.PauseHook), self.abort)
 
     @add_call_types
     def reset(self, context):

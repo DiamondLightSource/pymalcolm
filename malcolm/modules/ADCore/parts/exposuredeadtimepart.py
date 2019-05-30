@@ -43,17 +43,14 @@ class ExposureDeadtimePart(Part):
         ).create_attribute_model(initial_frequency_accuracy)
         self.min_exposure = min_exposure
         self.exposure = scanning.util.exposure_attribute(min_exposure)
-        # Hooks
-        self.register_hooked(
-            scanning.hooks.ReportStatusHook, self.report_status)
-        self.register_hooked(
-            scanning.hooks.ValidateHook, self.validate)
-        self.register_hooked(
-            scanning.hooks.ConfigureHook, self.configure)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(ExposureDeadtimePart, self).setup(registrar)
+        # Hooks
+        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
+        registrar.hook(scanning.hooks.ValidateHook, self.validate)
+        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
         # Attributes
         registrar.add_attribute_model(
             "readoutTime", self.readout_time, self.readout_time.set_value)

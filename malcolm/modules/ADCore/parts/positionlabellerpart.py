@@ -3,7 +3,7 @@ from xml.etree import cElementTree as ET
 from annotypes import TYPE_CHECKING, add_call_types, Any
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Hook
+from malcolm.core import APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
 
 # How big an XML file can the EPICS waveform receive?
@@ -44,15 +44,19 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.loading = False
         # When arrayCounter gets to here we are done
         self.done_when_reaches = 0
-        # Hooks
-        self.register_hooked((scanning.hooks.ConfigureHook,
-                              scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook), self.configure)
-        self.register_hooked((scanning.hooks.RunHook,
-                              scanning.hooks.ResumeHook), self.run)
-        self.register_hooked((scanning.hooks.AbortHook,
-                              scanning.hooks.PauseHook), self.abort)
 
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(PositionLabellerPart, self).setup(registrar)
+        # Hooks
+        registrar.hook((scanning.hooks.ConfigureHook,
+                        scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook), self.configure)
+        registrar.hook((scanning.hooks.RunHook,
+                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook((scanning.hooks.AbortHook,
+                        scanning.hooks.PauseHook), self.abort)
+        
     @add_call_types
     def reset(self, context):
         # type: (scanning.hooks.AContext) -> None

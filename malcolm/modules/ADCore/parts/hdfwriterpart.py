@@ -265,21 +265,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.runs_on_windows = runs_on_windows
         # How long to wait between frame updates before error
         self.frame_timeout = 0.0
-        # Hooks
         self.write_all_nd_attributes = BooleanMeta(
             "Toggles whether all NDAttributes are written to "
             "file, or only those specified in the dataset",
             writeable=True,
             tags=[Widget.CHECKBOX.tag(), config_tag()]).create_attribute_model(
             write_all_nd_attributes)
-        self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
-        self.register_hooked((scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook), self.seek)
-        self.register_hooked((scanning.hooks.RunHook,
-                              scanning.hooks.ResumeHook), self.run)
-        self.register_hooked(scanning.hooks.PostRunReadyHook,
-                             self.post_run_ready)
-        self.register_hooked(scanning.hooks.AbortHook, self.abort)
 
     @add_call_types
     def reset(self, context):
@@ -299,6 +290,15 @@ class HDFWriterPart(builtin.parts.ChildPart):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(HDFWriterPart, self).setup(registrar)
+        # Hooks
+        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook((scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook), self.seek)
+        registrar.hook((scanning.hooks.RunHook,
+                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook(scanning.hooks.PostRunReadyHook, self.post_run_ready)
+        registrar.hook(scanning.hooks.AbortHook, self.abort)
+        # Attributes
         registrar.add_attribute_model("writeAllNdAttributes",
                                       self.write_all_nd_attributes,
                                       self.write_all_nd_attributes.set_value)
