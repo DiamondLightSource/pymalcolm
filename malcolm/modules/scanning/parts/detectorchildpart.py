@@ -59,6 +59,16 @@ class DetectorChildPart(ChildPart):
         columns["mri"].set_writeable(False)
         registrar.report(configure_info)
 
+    def notify_dispatch_request(self, request):
+        # type: (Request) -> None
+        if isinstance(request, Put) and request.path[1] == "design":
+            # We have hooked self.reload to PreConfigure, and reload() will
+            # set design attribute, so explicitly allow this without checking
+            # it is in no_save (as it won't be in there)
+            pass
+        else:
+            super(DetectorChildPart, self).notify_dispatch_request(request)
+
     @add_call_types
     def reset(self, context):
         # type: (AContext) -> None
@@ -101,14 +111,6 @@ class DetectorChildPart(ChildPart):
             if kwargs.get(k, v) != v:
                 ret.append(ParameterTweakInfo(k, v))
         return ret
-
-    def notify_dispatch_request(self, request):
-        # type: (Request) -> None
-        if isinstance(request, Put) and request.path[1] == "design":
-            # This is ok
-            pass
-        else:
-            super(DetectorChildPart, self).notify_dispatch_request(request)
 
     def _configure_args(self,
                         generator,  # type: AGenerator

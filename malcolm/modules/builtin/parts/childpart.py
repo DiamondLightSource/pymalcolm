@@ -47,7 +47,6 @@ class ChildPart(Part):
             # This means the context we were passed has just made a Put request
             # so mark the field as "we_modified" so it doesn't screw up the
             # modified led
-            # TODO: does this moan during load?
             attribute_name = request.path[-2]
             if self._unmanaged_attr(attribute_name):
                 self.log.warning(
