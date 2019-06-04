@@ -23,11 +23,6 @@ with Anno("Directory to write data to"):
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
 AMri = builtin.parts.AMri
-AbortHook = scanning.hooks.AbortHook
-AContext = scanning.hooks.AContext
-AStepsToDo = scanning.hooks.AStepsToDo
-ACompletedSteps = scanning.hooks.ACompletedSteps
-APartInfo = scanning.hooks.APartInfo
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save('arrayCounter', 'imageMode', 'numImages',
@@ -115,7 +110,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
 
     @add_call_types
     def reset(self, context):
-        # type: (AContext) -> None
+        # type: (scanning.hooks.AContext) -> None
         super(DetectorDriverPart, self).reset(context)
         self.actions.abort_detector(context)
         # Delete the layout XML file
@@ -147,10 +142,10 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(self,
-                  context,  # type: AContext
-                  completed_steps,  # type: ACompletedSteps
-                  steps_to_do,  # type: AStepsToDo
-                  part_info,  # type: APartInfo
+                  context,  # type: scanning.hooks.AContext
+                  completed_steps,  # type: scanning.hooks.ACompletedSteps
+                  steps_to_do,  # type: scanning.hooks.AStepsToDo
+                  part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.util.AGenerator
                   fileDir,  # type: AFileDir
                   **kwargs  # type: **Any
@@ -200,7 +195,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
 
     @add_call_types
     def run(self, context):
-        # type: (AContext) -> None
+        # type: (scanning.hooks.AContext) -> None
         if not self.is_hardware_triggered:
             # Start now if we are software triggered
             self.actions.arm_detector(context)
@@ -208,5 +203,5 @@ class DetectorDriverPart(builtin.parts.ChildPart):
 
     @add_call_types
     def abort(self, context):
-        # type: (AContext) -> None
+        # type: (scanning.hooks.AContext) -> None
         self.actions.abort_detector(context)

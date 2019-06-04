@@ -1,15 +1,14 @@
 from annotypes import TYPE_CHECKING
 
 from malcolm.core import PartRegistrar
-from malcolm.modules import pandablocks
-from malcolm.modules import scanning, ADCore
+from malcolm.modules import scanning, ADCore, pandablocks
 from ..util import DatasetBitsTable, DatasetPositionsTable
 
 if TYPE_CHECKING:
     from typing import List
 
 
-class PandADatasetBussesPart(pandablocks.parts.pandabussespart.PandABussesPart):
+class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
     bits_table_cls = DatasetBitsTable
     positions_table_cls = DatasetPositionsTable
 

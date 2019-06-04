@@ -1,10 +1,9 @@
 from .detectordriverpart import DetectorDriverPart, APartName, AMri, \
-    AMainDatasetUseful, ASoftTriggerModes, USoftTriggerModes, \
-    AContext, AStepsToDo, ACompletedSteps, APartInfo
+    AMainDatasetUseful, ASoftTriggerModes, USoftTriggerModes
 from .exposuredeadtimepart import ExposureDeadtimePart, AInitialAccuracy, \
     AInitialReadoutTime, APartName
 from .hdfwriterpart import HDFWriterPart, APartName, AMri, APartRunsOnWindows
-from .positionlabellerpart import PositionLabellerPart, APartName, AMri
+from .positionlabellerpart import PositionLabellerPart
 from .statspluginpart import StatsPluginPart, APartName
 from .filepathtranslatorpart import FilepathTranslatorPart, APartName
 

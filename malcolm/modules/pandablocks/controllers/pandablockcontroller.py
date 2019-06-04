@@ -12,7 +12,7 @@ from ..parts.pandaluticonpart import PandALutIconPart
 from ..parts.pandaactionpart import PandAActionPart
 from ..parts.pandafieldpart import PandAFieldPart
 from ..parts.pandatablepart import PandATablePart
-from .. import util
+from ..util import SVG_DIR, AClient, ADocUrlBase, ABlockName
 from ..pandablocksclient import BlockData, FieldData
 
 if TYPE_CHECKING:
@@ -26,9 +26,9 @@ with Anno("The BlockData object showing the fields of the Block"):
     ABlockData = BlockData
 
 # Pull re-used annotypes into our namespace in case we are subclassed
-AClient = util.AClient
-ADocUrlBase = util.ADocUrlBase
-ABlockName = util.ABlockName
+AClient = AClient
+ADocUrlBase = ADocUrlBase
+ABlockName = ABlockName
 
 
 def make_meta(subtyp, description, tags, writeable=True, labels=None):
@@ -123,7 +123,7 @@ class PandABlockController(builtin.controllers.BasicController):
         # type: () -> PandAIconPart
         block_type = self.block_name.rstrip("0123456789")
         block_number = self.block_name[len(block_type):]
-        svg_path = os.path.join(util.SVG_DIR, block_type + ".svg")
+        svg_path = os.path.join(SVG_DIR, block_type + ".svg")
         if block_type == "LUT":
             icon_cls = PandALutIconPart
         else:

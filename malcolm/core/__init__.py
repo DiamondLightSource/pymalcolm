@@ -7,7 +7,7 @@ from .define import Define
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
     UnexpectedError, YamlError, FieldError, NotWriteableError
 from .future import Future
-from .hook import Hook, Hookable
+from .hook import Hook, Hookable, AHookable
 from .info import Info
 from .loggable import Loggable
 from .models import BlockModel, AttributeModel, MethodModel, MapMeta, \
@@ -20,8 +20,7 @@ from .moduleutil import submodule_all
 from .notifier import Notifier
 from .part import Part, PartRegistrar, APartName
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
-    ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos, \
-    AHookable
+    ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos
 from .request import Request, PathRequest, Subscribe, Unsubscribe, Get, Put, \
     Post
 from .response import Response, Delta, Update, Return, Error
