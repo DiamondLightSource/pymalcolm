@@ -7,7 +7,7 @@ import numpy as np
 from annotypes import add_call_types, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import Future, Block, PartRegistrar
+from malcolm.core import Future, Block, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
@@ -90,6 +90,16 @@ class PmacChildPart(builtin.parts.ChildPart):
                         scanning.hooks.ResumeHook), self.run)
         registrar.hook((scanning.hooks.AbortHook,
                         scanning.hooks.PauseHook), self.abort)
+
+    def notify_dispatch_request(self, request):
+        # type: (Request) -> None
+        if isinstance(request, Put) and request.path[1] == "design":
+            # We have hooked self.reload to PreConfigure, and reload() will
+            # set design attribute, so explicitly allow this without checking
+            # it is in no_save (as it won't be in there)
+            pass
+        else:
+            super(PmacChildPart, self).notify_dispatch_request(request)
 
     @add_call_types
     def reset(self, context):

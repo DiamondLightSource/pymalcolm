@@ -65,7 +65,7 @@ Let's make a Process Definition in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
     # More motion controllers here...
 
     # Define the Detectors
-    - ADPandABlocks.blocks.pandablocks_runnable_block:
+    - ADPandABlocks.blocks.panda_runnable_block:
         mri_prefix: BLxxI-ML-PANDA-01
         pv_prefix: BLxxI-MO-PANDA-01
         hostname: blxxi-mo-panda-01
@@ -129,12 +129,12 @@ In the ``etc/malcolm/blocks`` subdirectory we will make ``brick01_block.yaml``::
     # Raw motor Blocks and their corresponding Parts
     - pmac.includes.rawmotor_collection:
         mri: BLxxI-ML-STAGE-01:X
-        prefix: BLxxI-MO-STAGE-01:X
+        pv_prefix: BLxxI-MO-STAGE-01:X
         scannable: stagex
 
     - pmac.includes.rawmotor_collection:
         mri: BLxxI-ML-STAGE-01:Y
-        prefix: BLxxI-MO-STAGE-01:Y
+        pv_prefix: BLxxI-MO-STAGE-01:Y
         scannable: stagey
 
     # Co-ordinate system Block and its corresponding Part
@@ -280,6 +280,12 @@ This calls `make_block_creator` a number of times on YAML files to turn them
 into Python objects, then `check_yaml_names` filters out anything that hasn't
 been derived from a YAML file, creating the ``__all__`` variable that tells
 Python what the public API of this module is.
+
+Finally, we also need an ``__init__.py`` in ``etc/malcolm`` so that Python
+knows the whole directory is a Python module. You can create it just by
+running::
+
+    touch etc/malcolm/__init__.py
 
 Setup the Devices
 -----------------
