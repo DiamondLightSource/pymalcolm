@@ -64,7 +64,7 @@ class ExposureDeadtimePart(Part):
 
     @add_call_types
     def validate(self, generator, exposure=0.0):
-        # type: (scanning.hooks.AGenerator, scanning.util.AExposure) -> None
+        # type: (scanning.hooks.AGenerator, scanning.hooks.AExposure) -> None
         info = self.report_status()
         info.calculate_exposure(generator.duration, exposure)
 
@@ -81,7 +81,7 @@ class ExposureDeadtimePart(Part):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(self, generator, exposure=0.0):
-        # type: (scanning.hooks.AGenerator, scanning.util.AExposure) -> None
+        # type: (scanning.hooks.AGenerator, scanning.hooks.AExposure) -> None
         info = self.report_status()
         self.exposure.set_value(
             info.calculate_exposure(generator.duration, exposure))

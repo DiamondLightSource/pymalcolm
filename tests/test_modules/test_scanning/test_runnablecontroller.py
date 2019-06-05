@@ -6,7 +6,7 @@ from annotypes import add_call_types
 
 from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
 from malcolm.modules.scanning.hooks import ACompletedSteps, AContext, \
-    AStepsToDo, ValidateHook, UInfos
+    AStepsToDo, ValidateHook, UInfos, AAxesToMove, AGenerator
 from malcolm.core import Process, Context, AlarmStatus, \
     AlarmSeverity, AbortedError
 from malcolm.modules.demo.parts import MotionChildPart
@@ -15,8 +15,7 @@ from malcolm.compat import OrderedDict
 from malcolm.modules.scanning.controllers import \
     RunnableController
 from malcolm.modules.scanning.infos import ParameterTweakInfo
-from malcolm.modules.scanning.util import RunnableStates, AGenerator, \
-    AAxesToMove
+from malcolm.modules.scanning.util import RunnableStates
 
 
 class MisbehavingPauseException(Exception):

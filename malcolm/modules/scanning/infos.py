@@ -1,10 +1,26 @@
+from enum import Enum
+
 from annotypes import TYPE_CHECKING
 
 from malcolm.core import Info, VMeta
-from .util import DatasetType
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List
+
+
+class DatasetType(Enum):
+    """NeXus type of a produced dataset"""
+    #: Detector data, like the 2D data from an imaging detector
+    PRIMARY = "primary"
+    #: Calculated from detector data, like the sum of each frame
+    SECONDARY = "secondary"
+    #: Data that only makes sense when considered with detector data, like a
+    #: measure of beam current with an ion chamber
+    MONITOR = "monitor"
+    #: The demand positions of an axis as specified by the generator
+    POSITION_SET = "position_set"
+    #: The readback positions of an axis that moves during the sacn
+    POSITION_VALUE = "position_value"
 
 
 class ParameterTweakInfo(Info):

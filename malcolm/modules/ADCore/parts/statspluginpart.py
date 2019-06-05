@@ -70,7 +70,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
     def configure(self,
                   context,  # type: scanning.hooks.AContext
                   part_info,  # type: scanning.hooks.APartInfo
-                  fileDir  # type: scanning.util.AFileDir
+                  fileDir  # type: scanning.hooks.AFileDir
                   ):
         # type: (...) -> None
         child = context.block_view(self.mri)

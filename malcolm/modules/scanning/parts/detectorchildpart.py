@@ -3,13 +3,12 @@ from annotypes import add_call_types, Anno, Any, TYPE_CHECKING, stringify_error
 from malcolm.core import BadValueError, APartName, Future, Put, Request
 from malcolm.modules import builtin
 from ..infos import DatasetProducedInfo
-from ..hooks import UInfos
 from ..hooks import ConfigureHook, PostRunArmedHook, \
     SeekHook, RunHook, ResumeHook, ACompletedSteps, AContext, ValidateHook, \
     UParameterTweakInfos, PostRunReadyHook, AbortHook, PreConfigureHook, \
-    AGenerator, AAxesToMove
+    AGenerator, AAxesToMove, UInfos, AFileDir, AFileTemplate
 from ..infos import ParameterTweakInfo, RunProgressInfo
-from ..util import RunnableStates, AFileDir, AFileTemplate, DetectorTable
+from ..util import RunnableStates, DetectorTable
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple

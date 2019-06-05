@@ -7,10 +7,11 @@ from malcolm.compat import OrderedDict
 from malcolm.core.models import MapMeta, MethodMeta, TableMeta
 from malcolm.modules import builtin
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
-from ..util import RunnableStates, AGenerator, AAxesToMove, ConfigureParams
+from ..util import RunnableStates, AGenerator, ConfigureParams
 from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
     RunHook, PostRunArmedHook, PostRunReadyHook, ResumeHook, ReportStatusHook, \
-    AbortHook, PauseHook, SeekHook, ControllerHook, PreConfigureHook
+    AbortHook, PauseHook, SeekHook, ControllerHook, PreConfigureHook, \
+    AAxesToMove
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Iterable, Type, Callable

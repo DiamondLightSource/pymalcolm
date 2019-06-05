@@ -17,8 +17,6 @@ with Anno("Is main detector dataset useful to publish in DatasetTable?"):
 with Anno("List of trigger modes that do not use hardware triggers"):
     ASoftTriggerModes = Array[str]
 USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
-with Anno("Directory to write data to"):
-    AFileDir = str
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
@@ -146,8 +144,8 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   part_info,  # type: scanning.hooks.APartInfo
-                  generator,  # type: scanning.util.AGenerator
-                  fileDir,  # type: AFileDir
+                  generator,  # type: scanning.hooks.AGenerator
+                  fileDir,  # type: scanning.hooks.AFileDir
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None

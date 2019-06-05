@@ -315,9 +315,9 @@ class HDFWriterPart(builtin.parts.ChildPart):
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.util.AFileDir
-                  formatName="det",  # type: scanning.util.AFormatName
-                  fileTemplate="%s.h5",  # type: scanning.util.AFileTemplate
+                  fileDir,  # type: scanning.hooks.AFileDir
+                  formatName="det",  # type: scanning.hooks.AFormatName
+                  fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
                   ):
         # type: (...) -> scanning.hooks.UInfos
         # On initial configure, expect to get the demanded number of frames

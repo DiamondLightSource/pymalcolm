@@ -31,8 +31,8 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.util.AFileDir
-                  exposure=0.0,  # type: scanning.util.AExposure
+                  fileDir,  # type: scanning.hooks.AFileDir
+                  exposure=0.0,  # type: scanning.hooks.AExposure
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None

@@ -1,27 +1,13 @@
 from annotypes import Anno, Array, Union, Sequence, Any, Serializable
-from enum import Enum
 from scanpointgenerator import CompoundGenerator
 import numpy as np
 
 from malcolm.core import VMeta, NTUnion, Table, NumberMeta, Widget, \
     Display, AttributeModel
 from malcolm.modules import builtin
+from .infos import DatasetType
 
-with Anno("Generator instance providing specification for scan"):
-    AGenerator = CompoundGenerator
-with Anno("List of axes in inner dimension of generator that should be moved"):
-    AAxesToMove = Array[str]
-UAxesToMove = Union[AAxesToMove, Sequence[str]]
-with Anno("Directory to write data to"):
-    AFileDir = str
-with Anno("Argument for fileTemplate, normally filename without extension"):
-    AFormatName = str
-with Anno("""Printf style template to generate filename relative to fileDir.
-Arguments are:
-  1) %s: the value of formatName"""):
-    AFileTemplate = str
-with Anno("The demand exposure time of this scan, 0 for the maximum possible"):
-    AExposure = float
+from .hooks import AGenerator, AAxesToMove, UAxesToMove
 
 
 def exposure_attribute(min_exposure):
@@ -88,22 +74,6 @@ class PointGeneratorMeta(VMeta):
         else:
             raise TypeError(
                 "Value %s must be a Generator object or dictionary" % value)
-
-
-class DatasetType(Enum):
-    """NeXus type of a produced dataset"""
-    #: Detector data, like the 2D data from an imaging detector
-    PRIMARY = "primary"
-    #: Calculated from detector data, like the sum of each frame
-    SECONDARY = "secondary"
-    #: Data that only makes sense when considered with detector data, like a
-    #: measure of beam current with an ion chamber
-    MONITOR = "monitor"
-    #: The demand positions of an axis as specified by the generator
-    POSITION_SET = "position_set"
-    #: The readback positions of an axis that moves during the sacn
-    POSITION_VALUE = "position_value"
-
 
 with Anno("Dataset names"):
     ADatasetNames = Array[str]
