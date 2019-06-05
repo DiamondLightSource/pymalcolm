@@ -29,7 +29,7 @@
       "design": ""
     }, 
     "RAMP": {
-      "design": "template_software_triggered.json"
+      "design": "template_software_triggered"
     }, 
     "MOT": {
       "design": ""
