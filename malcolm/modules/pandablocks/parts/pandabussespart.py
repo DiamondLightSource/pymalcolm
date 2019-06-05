@@ -227,21 +227,26 @@ class PandABussesPart(Part):
             return True
 
     def _handle_pcap(self, field_name, value, column_changes):
-        # type: (str, str, Dict[str, List[Any]]) -> None
-        # We are the last in the line, this should be a pcap bits field...
-        capture = value != "No"
-        for i in self._pcap_bit_indexes[field_name]:
-            update_column(column_changes, "capture", self.bits.value)[i] \
-                = capture
+        # type: (str, str, Dict[str, List[Any]]) -> Optional[bool]
+        # This should be a pcap bits field...
+        indexes = self._pcap_bit_indexes.get(field_name, None)
+        if indexes is not None:
+            capture = value != "No"
+            for i in indexes:
+                update_column(column_changes, "capture", self.bits.value)[i] \
+                    = capture
+            return True
 
     def handle_changes(self, changes, ts):
         # type: (Dict[str, Any], TimeStamp) -> None
         bit_column_changes = {}
         pos_column_changes = {}
         for k, v in changes.items():
-            self._handle_bit(k, v, bit_column_changes) or \
+            assert \
+                self._handle_bit(k, v, bit_column_changes) or \
                 self._handle_pos(k, v, pos_column_changes) or \
-                self._handle_pcap(k, v, bit_column_changes)
+                self._handle_pcap(k, v, bit_column_changes), \
+                "Don't know how to handle %s" % k
         # Update the tables
         if bit_column_changes:
             new_value = make_updated_table(self.bits.value, bit_column_changes)
