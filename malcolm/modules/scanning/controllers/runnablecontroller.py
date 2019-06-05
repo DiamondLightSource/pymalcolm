@@ -33,8 +33,9 @@ def get_steps_per_run(generator, axes_to_move):
     steps = 1
     axes_set = set(axes_to_move)
     for dim in reversed(generator.dimensions):
-        # If the axes_set is empty then we are done
-        if not axes_set:
+        # If the axes_set is empty and the dimension has axes then we have done
+        # as many dimensions as we can, so return
+        if dim.axes and not axes_set:
             break
         # Consume the axes that this generator scans
         for axis in dim.axes:
