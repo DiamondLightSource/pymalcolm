@@ -1,4 +1,5 @@
-from .asynsourceportpart import AsynSourcePortPart
+from .asynsourceportpart import AsynSourcePortPart, APartName, \
+    AMetaDescription, ARbv, AGroup
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

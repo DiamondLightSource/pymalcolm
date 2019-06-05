@@ -5,14 +5,13 @@ from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
     NumberMeta, Widget, Part, DEFAULT_TIMEOUT, Table
 from malcolm.compat import OrderedDict
 from malcolm.core.models import MapMeta, MethodMeta, TableMeta
-from malcolm.modules.builtin.controllers import ManagerController, \
-    AConfigDir, AInitialDesign, ADescription, AUseGit, ATemplateDesigns
-from malcolm.modules.builtin.hooks import ResetHook
+from malcolm.modules import builtin
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
-from ..util import RunnableStates, AGenerator, AAxesToMove, ConfigureParams
+from ..util import RunnableStates, AGenerator, ConfigureParams
 from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
     RunHook, PostRunArmedHook, PostRunReadyHook, ResumeHook, ReportStatusHook, \
-    AbortHook, PauseHook, SeekHook, ControllerHook, PreConfigureHook
+    AbortHook, PauseHook, SeekHook, ControllerHook, PreConfigureHook, \
+    AAxesToMove
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Iterable, Type, Callable
@@ -26,6 +25,13 @@ with Anno("The validated configure parameters"):
     AConfigureParams = ConfigureParams
 with Anno("Step to mark as the last completed step, -1 for current"):
     ALastGoodStep = int
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+AConfigDir = builtin.controllers.AConfigDir
+AInitialDesign = builtin.controllers.AInitialDesign
+ADescription = builtin.controllers.ADescription
+AUseGit = builtin.controllers.AUseGit
+ATemplateDesigns = builtin.controllers.ATemplateDesigns
 
 
 def get_steps_per_run(generator, axes_to_move):
@@ -119,7 +125,7 @@ def merge_non_writeable_table(default, supplied, non_writeable):
     return table
 
 
-class RunnableController(ManagerController):
+class RunnableController(builtin.controllers.ManagerController):
     """RunnableDevice implementer that also exposes GUI for child parts"""
     # The state_set that this controller implements
     state_set = ss()
@@ -363,7 +369,8 @@ class RunnableController(ManagerController):
         if state == ss.FINISHED:
             # If we were finished then do a reset before configuring
             self.run_hooks(
-                ResetHook(p, c) for p, c in self.create_part_contexts().items())
+                builtin.hooks.ResetHook(p, c) for p, c in
+                self.create_part_contexts().items())
         # Clear out any old part contexts now rather than letting gc do it
         for context in self.part_contexts.values():
             context.unsubscribe_all()

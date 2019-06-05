@@ -1,4 +1,4 @@
-from .reframepluginpart import ReframePluginPart
+from .reframepluginpart import ReframePluginPart, APartName, AMri
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

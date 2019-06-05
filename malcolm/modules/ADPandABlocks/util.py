@@ -2,11 +2,8 @@ from annotypes import Anno, Array
 import numpy as np
 
 from malcolm.core import Table
-from malcolm.modules.ADCore.util import UAttributeNames, AAttributeNames, \
-    UAttributeTypes, AAttributeTypes
-from malcolm.modules.pandablocks.util import BitsTable, UBitNames, UBitValues, \
-    UBitCaptures, PositionsTable, UPositionNames, UPositionValues, \
-    UPositionUnits, UPositionScales, UPositionOffsets, UPositionCaptures
+from malcolm.modules import ADCore
+from malcolm.modules import pandablocks
 
 
 class Trigger(object):
@@ -38,6 +35,24 @@ with Anno("The time that the phase should take"):
     ATimeArray = Array[np.uint32]
 with Anno("Output value during the phase"):
     AOutArray = Array[bool]
+
+# TODO - WHAT GIVES HERE ?? -
+#  AAttributeNames and AAttributeNames causes an IDE error in references below
+#  wheras "from ADCore.util import AAttributeTypes" does not
+# Pull re-used annotypes into our namespace in case we are subclassed
+AAttributeTypes = ADCore.util.AAttributeTypes
+UAttributeTypes = ADCore.util.UAttributeTypes
+AAttributeNames = ADCore.util.AAttributeNames
+UAttributeNames = ADCore.util.UAttributeNames
+UBitNames = pandablocks.util.UBitNames
+UBitValues = pandablocks.util.UBitValues
+UBitCaptures = pandablocks.util.UBitCaptures
+UPositionNames = pandablocks.util.UPositionNames
+UPositionValues = pandablocks.util.UPositionValues
+UPositionUnits = pandablocks.util.UPositionUnits
+UPositionScales = pandablocks.util.UPositionScales
+UPositionOffsets = pandablocks.util.UPositionOffsets
+UPositionCaptures = pandablocks.util.UPositionCaptures
 
 
 class SequencerTable(Table):
@@ -81,7 +96,7 @@ class SequencerTable(Table):
         self.outf2 = AOutArray(outf2)
 
 
-class DatasetBitsTable(BitsTable):
+class DatasetBitsTable(pandablocks.util.BitsTable):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     def __init__(self,
@@ -97,7 +112,7 @@ class DatasetBitsTable(BitsTable):
         self.datasetType = AAttributeTypes(datasetType)
 
 
-class DatasetPositionsTable(PositionsTable):
+class DatasetPositionsTable(pandablocks.util.PositionsTable):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     def __init__(self,

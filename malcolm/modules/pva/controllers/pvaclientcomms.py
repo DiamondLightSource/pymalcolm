@@ -4,7 +4,7 @@ from p4p.nt import NTURI
 from p4p.client.cothread import Context, Subscription
 from annotypes import TYPE_CHECKING
 
-from malcolm.modules.builtin.controllers import ClientComms
+from malcolm.modules import builtin
 from malcolm.core import Queue, Model, DEFAULT_TIMEOUT, BlockMeta, \
     BlockModel, Alarm
 from .pvaconvert import convert_value_to_dict, convert_to_type_tuple_value, Type
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from typing import Set, Dict
 
 
-class PvaClientComms(ClientComms):
+class PvaClientComms(builtin.controllers.ClientComms):
     """A class for a client to communicate with the server"""
 
     _monitors = None

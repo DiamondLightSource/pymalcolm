@@ -4,13 +4,18 @@ from malcolm.core import Part, PartRegistrar, StringMeta, Port
 from malcolm.modules import ca
 from ..util import CS_AXIS_NAMES
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = ca.util.APartName
+ARbv = ca.util.ARbv
+AGroup = ca.util.AGroup
+
 
 class CSSourcePortsPart(Part):
     """Defines a string `Attribute` for the CS Port name, and 10 Source Ports
     for the axes A-Z and I for the axis assignments"""
 
     def __init__(self, name, rbv, group=None):
-        # type: (ca.util.APartName, ca.util.ARbv, ca.util.AGroup) -> None
+        # type: (APartName, ARbv, AGroup) -> None
         super(CSSourcePortsPart, self).__init__(name)
         self.meta = StringMeta("CS Port name")
         # This gives the port name

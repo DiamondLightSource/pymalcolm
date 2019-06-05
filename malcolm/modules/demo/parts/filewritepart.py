@@ -66,9 +66,9 @@ class FileWritePart(Part):
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.util.AFileDir
-                  formatName="det",  # type: scanning.util.AFormatName
-                  fileTemplate="%s.h5",  # type: scanning.util.AFileTemplate
+                  fileDir,  # type: scanning.hooks.AFileDir
+                  formatName="det",  # type: scanning.hooks.AFormatName
+                  fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
                   ):
         # type: (...) -> scanning.hooks.UInfos
         """On `ConfigureHook` create HDF file with datasets"""

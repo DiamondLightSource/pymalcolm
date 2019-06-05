@@ -7,7 +7,7 @@ from .define import Define
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
     UnexpectedError, YamlError, FieldError, NotWriteableError
 from .future import Future
-from .hook import Hook, Hookable
+from .hook import Hook, Hookable, AHookable
 from .info import Info
 from .loggable import Loggable
 from .models import BlockModel, AttributeModel, MethodModel, MapMeta, \

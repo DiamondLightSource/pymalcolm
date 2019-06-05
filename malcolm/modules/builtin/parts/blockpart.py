@@ -7,6 +7,14 @@ from ..util import set_tags, AWriteable, AConfig, AGroup, AWidget
 with Anno("Initial value of the created attribute"):
     AValue = str
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMetaDescription = AMetaDescription
+AWriteable = AWriteable
+AConfig = AConfig
+AGroup = AGroup
+AWidget = AWidget
+
 
 class BlockPart(Part):
     """Create a single string SinkPort for connecting to another Block"""

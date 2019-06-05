@@ -1,33 +1,31 @@
-from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
+import os
 from xml.etree import cElementTree as ET
+
+from annotypes import Anno, add_call_types, Any, Array, Union, Sequence
+
 from malcolm.compat import et_to_string
 from malcolm.core import APartName, BadValueError, TableMeta, PartRegistrar, \
     config_tag
-from malcolm.modules.builtin.parts import AMri, ChildPart
-from malcolm.modules.builtin.util import no_save
-from malcolm.modules.scanning.hooks import ReportStatusHook, \
-    ConfigureHook, PostRunArmedHook, SeekHook, RunHook, ResumeHook, PauseHook, \
-    AbortHook, AContext, UInfos, AStepsToDo, ACompletedSteps, APartInfo
-from malcolm.modules.scanning.util import AGenerator
+from malcolm.modules import builtin, scanning
 from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, \
     ExposureDeadtimeInfo, FilePathTranslatorInfo
 from ..util import ADBaseActions, ExtraAttributesTable, \
     APartRunsOnWindows, DataType, SourceType
-import os
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
 with Anno("List of trigger modes that do not use hardware triggers"):
     ASoftTriggerModes = Array[str]
 USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
-with Anno("Directory to write data to"):
-    AFileDir = str
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMri = builtin.parts.AMri
 
 # We will set these attributes on the child block, so don't save them
-@no_save('arrayCounter', 'imageMode', 'numImages', 'arrayCallbacks', 'exposure',
-         'acquirePeriod')
-class DetectorDriverPart(ChildPart):
+@builtin.util.no_save('arrayCounter', 'imageMode', 'numImages',
+                      'arrayCallbacks', 'exposure', 'acquirePeriod')
+class DetectorDriverPart(builtin.parts.ChildPart):
     def __init__(self,
                  name,  # type: APartName
                  mri,  # type: AMri
@@ -51,12 +49,6 @@ class DetectorDriverPart(ChildPart):
             extra_tags=[config_tag()]
         ).create_attribute_model()
         self.runs_on_windows = runs_on_windows
-        # Hooks
-        self.register_hooked(ReportStatusHook, self.report_status)
-        self.register_hooked((ConfigureHook, PostRunArmedHook, SeekHook),
-                             self.configure, self.configure_args_with_exposure)
-        self.register_hooked((RunHook, ResumeHook), self.run)
-        self.register_hooked((PauseHook, AbortHook), self.abort)
 
     def build_attribute_xml(self):
         root_el = ET.Element("Attributes")
@@ -99,13 +91,24 @@ class DetectorDriverPart(ChildPart):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(DetectorDriverPart, self).setup(registrar)
+        # Hooks
+        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
+        registrar.hook((scanning.hooks.ConfigureHook,
+                        scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook),
+                       self.configure, self.configure_args_with_exposure)
+        registrar.hook(
+            (scanning.hooks.RunHook, scanning.hooks.ResumeHook), self.run)
+        registrar.hook(
+            (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.abort)
+        # Attributes
         registrar.add_attribute_model("attributesToCapture",
                                       self.extra_attributes,
                                       self.set_extra_attributes)
 
     @add_call_types
     def reset(self, context):
-        # type: (AContext) -> None
+        # type: (scanning.hooks.AContext) -> None
         super(DetectorDriverPart, self).reset(context)
         self.actions.abort_detector(context)
         # Delete the layout XML file
@@ -117,7 +120,7 @@ class DetectorDriverPart(ChildPart):
 
     @add_call_types
     def report_status(self):
-        # type: () -> UInfos
+        # type: () -> scanning.hooks.UInfos
         ret = []
         if self.main_dataset_useful:
             ret.append(NDArrayDatasetInfo(rank=2))
@@ -137,12 +140,12 @@ class DetectorDriverPart(ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(self,
-                  context,  # type: AContext
-                  completed_steps,  # type: ACompletedSteps
-                  steps_to_do,  # type: AStepsToDo
-                  part_info,  # type: APartInfo
-                  generator,  # type: AGenerator
-                  fileDir,  # type: AFileDir
+                  context,  # type: scanning.hooks.AContext
+                  completed_steps,  # type: scanning.hooks.ACompletedSteps
+                  steps_to_do,  # type: scanning.hooks.AStepsToDo
+                  part_info,  # type: scanning.hooks.APartInfo
+                  generator,  # type: scanning.hooks.AGenerator
+                  fileDir,  # type: scanning.hooks.AFileDir
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
@@ -185,12 +188,12 @@ class DetectorDriverPart(ChildPart):
             if self.runs_on_windows:
                 attributes_filename = \
                     FilePathTranslatorInfo.translate_filepath(
-                     part_info, self.attributes_filename)
+                        part_info, self.attributes_filename)
             child.attributesFile.put_value(attributes_filename)
 
     @add_call_types
     def run(self, context):
-        # type: (AContext) -> None
+        # type: (scanning.hooks.AContext) -> None
         if not self.is_hardware_triggered:
             # Start now if we are software triggered
             self.actions.arm_detector(context)
@@ -198,6 +201,5 @@ class DetectorDriverPart(ChildPart):
 
     @add_call_types
     def abort(self, context):
-        # type: (AContext) -> None
+        # type: (scanning.hooks.AContext) -> None
         self.actions.abort_detector(context)
-

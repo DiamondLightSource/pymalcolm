@@ -61,8 +61,12 @@ class RestfulServerPart(Part):
     def __init__(self, name="rest"):
         # type: (AName) -> None
         super(RestfulServerPart, self).__init__(name)
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(RestfulServerPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(ReportHandlersHook, self.report_handlers)
+        registrar.hook(ReportHandlersHook, self.report_handlers)
 
     @add_call_types
     def report_handlers(self):

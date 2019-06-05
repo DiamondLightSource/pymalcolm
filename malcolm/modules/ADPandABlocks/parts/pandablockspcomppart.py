@@ -4,9 +4,8 @@ from __future__ import division
 from annotypes import add_call_types, Anno, TYPE_CHECKING
 from scanpointgenerator import Point
 
-from malcolm.core import APartName, Block, Attribute, Context
+from malcolm.core import APartName, Block, Attribute, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
-from malcolm.modules.scanning.infos import MinTurnaroundInfo
 
 from ..util import SequencerTable, Trigger
 
@@ -21,6 +20,10 @@ SEQ_TABLE_ROWS = 4096
 
 with Anno("Scannable name for sequencer input"):
     APos = str
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = builtin.parts.AMri
+APartName = APartName
 
 # How long is a single tick if prescaler is 0
 TICK = 8e-9
@@ -85,7 +88,7 @@ def _get_blocks(context, panda_mri):
     for source, export in panda.exports.value.rows():
         if export in SEQ_TABLES:
             assert source.endswith(".table"), \
-                "Expected export %s to come from SEQx.table, got %s" %(
+                "Expected export %s to come from SEQx.table, got %s" % (
                     export, source)
             seq_part_names[source[:-len(".table")]] = export
     assert tuple(sorted(seq_part_names.values())) == SEQ_TABLES, \
@@ -110,7 +113,7 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
     compare"""
 
     def __init__(self, name, mri, posa, posb="", posc=""):
-        # type: (APartName, builtin.parts.AMri, APos, APos, APos) -> None
+        # type: (APartName, AMri, APos, APos, APos) -> None
         super(PandABlocksPcompPart, self).__init__(name, mri, stateful=False)
         # Store scannable names
         self.scannables = (posa, posb, posc)
@@ -138,11 +141,13 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         self.min_turnaround = 0
         # The sequencer tables
         self.seq_tables = []
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(PandABlocksPcompPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(scanning.hooks.ConfigureHook,
-                             self.configure)
-        self.register_hooked(scanning.hooks.RunHook,
-                             self.run)
+        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook(scanning.hooks.RunHook, self.run)
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
@@ -165,7 +170,7 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
         panda_mri = context.block_view(self.mri).panda.value
         pmac_mri = context.block_view(self.mri).pmac.value
         # See if there is a minimum turnaround
-        infos = MinTurnaroundInfo.filter_values(part_info)
+        infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
         if infos:
             assert len(infos) == 1, \
                 "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(infos)
@@ -282,5 +287,3 @@ class PandABlocksPcompPart(builtin.parts.ChildPart):
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
         pass
-
-

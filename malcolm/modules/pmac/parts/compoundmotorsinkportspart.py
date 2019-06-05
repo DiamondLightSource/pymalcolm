@@ -4,13 +4,18 @@ from malcolm.core import Part, PartRegistrar, StringMeta, Port, Alarm
 from malcolm.modules import ca, builtin
 from ..util import CS_AXIS_NAMES
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = ca.util.APartName
+ARbv = ca.util.ARbv
+AGroup = ca.util.AGroup
+
 
 class CompoundMotorSinkPortsPart(Part):
     """Defines a string `Attribute` representing the CS this compound motor
     is permanently assigned to by reading its motor record OUT link"""
 
     def __init__(self, name, rbv, group=None):
-        # type: (ca.util.APartName, ca.util.ARbv, ca.util.AGroup) -> None
+        # type: (APartName, ARbv, AGroup) -> None
         super(CompoundMotorSinkPortsPart, self).__init__(name)
         meta = StringMeta("CS Axis")
         builtin.util.set_tags(meta, group=group, sink_port=Port.MOTOR)
@@ -18,14 +23,14 @@ class CompoundMotorSinkPortsPart(Part):
         self.attr = meta.create_attribute_model()
         # Subscriptions
         self.monitor = None
-        # Hooks
-        self.register_hooked(builtin.hooks.DisableHook, self.disconnect)
-        self.register_hooked((builtin.hooks.InitHook,
-                              builtin.hooks.ResetHook), self.reconnect)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         registrar.add_attribute_model(self.name, self.attr)
+        # Hooks
+        registrar.hook(builtin.hooks.DisableHook, self.disconnect)
+        registrar.hook((builtin.hooks.InitHook,
+                        builtin.hooks.ResetHook), self.reconnect)
 
     def reconnect(self):
         # release old monitors

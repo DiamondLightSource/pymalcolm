@@ -2,6 +2,10 @@ from malcolm.core import Part
 from .statefulcontroller import StatefulController, AMri, ADescription
 from ..infos import RequestInfo
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = AMri
+ADescription = ADescription
+
 
 class ServerComms(StatefulController):
     """Abstract class for dealing with requests from outside"""

@@ -16,6 +16,9 @@ path_prefix_desc = \
 with Anno(path_prefix_desc):
     APathPrefix = str
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+
 
 class FilepathTranslatorPart(Part):
     def __init__(self,
@@ -33,13 +36,12 @@ class FilepathTranslatorPart(Part):
             path_prefix_desc,
             tags=[Widget.TEXTINPUT.tag(), config_tag()],
         ).create_attribute_model(initial_path_prefix)
-        # Hooks
-        self.register_hooked(
-            scanning.hooks.ReportStatusHook, self.report_status)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(FilepathTranslatorPart, self).setup(registrar)
+        # Hooks
+        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
         # Attributes
         registrar.add_attribute_model(
             "windowsDriveLetter", self.windows_drive_letter,

@@ -2,7 +2,6 @@ from annotypes import add_call_types, Anno
 
 from malcolm.core import DEFAULT_TIMEOUT, PartRegistrar
 from malcolm.modules import builtin
-from malcolm.modules.builtin.parts import ChildPart
 from ..util import CS_AXIS_NAMES
 
 
@@ -13,10 +12,13 @@ with Anno("Motor position to move to in EGUs"):
 with Anno("Time to take to perform move"):
     AMoveTime = float
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = builtin.parts.AMri
 
-class CSPart(ChildPart):
+
+class CSPart(builtin.parts.ChildPart):
     def __init__(self, mri, cs):
-        # type: (builtin.parts.AMri, ACS) -> None
+        # type: (AMri, ACS) -> None
         super(CSPart, self).__init__("CS%d" % cs, mri, initial_visibility=True)
         self.cs = cs
 

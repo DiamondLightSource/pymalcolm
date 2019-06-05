@@ -7,6 +7,9 @@ from ..util import set_tags
 with Anno("The URL that gives some help documentation for this Block"):
     AHelpUrl = str
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+
 
 class HelpPart(Part):
     """Part representing a link to some help documentation for the GUI"""

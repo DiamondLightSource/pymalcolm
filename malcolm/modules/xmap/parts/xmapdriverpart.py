@@ -19,7 +19,7 @@ class XmapDriverPart(ADCore.parts.DetectorDriverPart):
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.util.AFileDir
+                  fileDir,  # type: scanning.hooks.AFileDir
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None

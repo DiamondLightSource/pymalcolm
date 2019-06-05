@@ -3,7 +3,7 @@ from annotypes import TYPE_CHECKING
 from malcolm.compat import OrderedDict
 from malcolm.core import Alarm, MethodModel, AttributeModel, ProcessStartHook, \
     ProcessStopHook, ChoiceMeta, Widget, Context, Part, NotWriteableError
-from malcolm.modules.builtin.util import StatefulStates
+from ..util import StatefulStates
 from .basiccontroller import BasicController, AMri, ADescription
 from ..hooks import InitHook, ResetHook, DisableHook, HaltHook
 from ..infos import HealthInfo
@@ -15,6 +15,10 @@ if TYPE_CHECKING:
 
 
 ss = StatefulStates
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = AMri
+ADescription = ADescription
 
 
 class StatefulController(BasicController):

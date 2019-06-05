@@ -1,10 +1,7 @@
 from annotypes import Anno
 
-from malcolm.modules.pandablocks.controllers.pandablockcontroller import \
-    PandABlockController
 from malcolm.modules import ADCore, scanning, pandablocks, builtin
 from ..parts.pandadatasetbussespart import PandADatasetBussesPart
-
 
 with Anno("Prefix for areaDetector records"):
     APrefix = str
@@ -20,8 +17,9 @@ AUseGit = pandablocks.controllers.AUseGit
 ADescription = pandablocks.controllers.ADescription
 
 
-class PandAStatefulBlockController(PandABlockController,
-                                   builtin.controllers.StatefulController):
+class PandAStatefulBlockController(
+    pandablocks.controllers.pandablockcontroller.PandABlockController,
+        builtin.controllers.StatefulController):
     pass
 
 
@@ -70,5 +68,5 @@ class PandARunnableController(pandablocks.controllers.PandAManagerController,
                 name=block_name, mri=controller.mri, main_dataset_useful=False)
             return controller, child_part
         else:
-            return super(PandARunnableController, self).\
+            return super(PandARunnableController, self). \
                 _make_child_block(block_name, block_data)
