@@ -9,6 +9,13 @@ from .infos import DatasetType
 
 from .hooks import AGenerator, AAxesToMove, UAxesToMove
 
+""" scanning.utils provides shared utility functions and classes.
+For consistency and to avoid circular dependencies, the following
+rules are applied:
+- All types required to initialize hook classes are in the hooks namespace
+- All types required to initialize info classes are in the infos namespace
+- util depends on hooks and infos (not vice versa)"""
+
 
 def exposure_attribute(min_exposure):
     # type: (float) -> AttributeModel
