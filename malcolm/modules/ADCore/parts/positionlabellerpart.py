@@ -49,7 +49,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
                         scanning.hooks.ResumeHook), self.run)
         registrar.hook((scanning.hooks.AbortHook,
                         scanning.hooks.PauseHook), self.abort)
-        
+
     @add_call_types
     def reset(self, context):
         # type: (scanning.hooks.AContext) -> None
