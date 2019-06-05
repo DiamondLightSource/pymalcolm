@@ -5,7 +5,7 @@ from mock import MagicMock as Mock, patch
 
 from malcolm.core import Hook, Part, Controller, Process, ProcessPublishHook, \
     APublished, ProcessStartHook, UnpublishedInfo
-from malcolm.modules.builtin.controllers import ManagerController
+from malcolm.modules import builtin
 
 if TYPE_CHECKING:
     from typing import List, Any, Type, Callable, Optional
@@ -32,7 +32,8 @@ class ChildTestCase(unittest.TestCase):
         controllers = child_block(**params)
         for controller in controllers:
             process.add_controller(controller)
-            if not isinstance(controller, ManagerController):
+            if not isinstance(controller,
+                              builtin.controllers.ManagerController):
                 # We've already setup the CAParts and added to the block, so we
                 # can safely delete them so they don't try to connect
                 controller.parts = {}

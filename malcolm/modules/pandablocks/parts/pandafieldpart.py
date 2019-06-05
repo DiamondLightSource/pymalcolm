@@ -2,7 +2,7 @@ from annotypes import Anno, Any
 
 from malcolm.core import Part, snake_to_camel, BooleanMeta, VMeta, \
     PartRegistrar, TimeStamp, Alarm
-from malcolm.modules.pandablocks.pandablocksclient import PandABlocksClient
+from ..pandablocksclient import PandABlocksClient
 
 
 with Anno("Client for setting and getting field"):

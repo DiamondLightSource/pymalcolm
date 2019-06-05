@@ -18,8 +18,6 @@ class SimultaneousAxesPart(Part):
             "Set of axes that can be specified in axesToMove at configure",
             tags=[Widget.TEXTINPUT.tag(), config_tag()]
         ).create_attribute_model(value)
-        # Hooks
-        self.register_hooked(ValidateHook, self.validate)
 
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
@@ -34,3 +32,5 @@ class SimultaneousAxesPart(Part):
         # type: (PartRegistrar) -> None
         registrar.add_attribute_model(
             "simultaneousAxes", self.attr, self.attr.set_value)
+        # Hooks
+        registrar.hook(ValidateHook, self.validate)

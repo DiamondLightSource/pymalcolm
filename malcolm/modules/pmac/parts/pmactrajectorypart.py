@@ -22,6 +22,10 @@ with Anno("Which user program to run for each point"):
 with Anno("The position the axis should be at for each point in the scan"):
     ADemandTrajectory = Array[np.float64]
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = builtin.parts.APartName
+AMri = builtin.parts.AMri
+
 
 def _zeros_or_right_length(array, num_points):
     if array is None:
@@ -41,8 +45,8 @@ def _zeros_or_right_length(array, num_points):
 @builtin.util.no_save("positions%s" % x for x in CS_AXIS_NAMES)
 class PmacTrajectoryPart(builtin.parts.ChildPart):
     def __init__(self,
-                 name,  # type: builtin.parts.APartName
-                 mri,  # type: builtin.parts.AMri
+                 name,  # type: APartName
+                 mri,  # type: AMri
                  initial_output_triggers=True  # type: AOutputTriggers
                  ):
         # type: (...) -> None

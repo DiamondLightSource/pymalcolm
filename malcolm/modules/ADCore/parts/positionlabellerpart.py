@@ -3,7 +3,7 @@ from xml.etree import cElementTree as ET
 from annotypes import TYPE_CHECKING, add_call_types, Any
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName, Hook
+from malcolm.core import APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
 
 # How big an XML file can the EPICS waveform receive?
@@ -25,29 +25,30 @@ if TYPE_CHECKING:
 class PositionLabellerPart(builtin.parts.ChildPart):
     """Part for controlling a `position_labeller_block` in a scan"""
 
-    def __init__(self, name, mri):
-        # type: (APartName, builtin.parts.AMri) -> None
-        super(PositionLabellerPart, self).__init__(name, mri)
-        # Stored generator for positions
-        self.generator = None
-        # The last index we have loaded
-        self.end_index = 0
-        # Where we should stop loading points
-        self.steps_up_to = 0
-        # Future for plugin run
-        self.start_future = None
-        # If we are currently loading then block loading more points
-        self.loading = False
-        # When arrayCounter gets to here we are done
-        self.done_when_reaches = 0
+    # Stored generator for positions
+    generator = None
+    # The last index we have loaded
+    end_index = None
+    # Where we should stop loading points
+    steps_up_to = None
+    # Future for plugin run
+    start_future = None
+    # If we are currently loading then block loading more points
+    loading = None
+    # When arrayCounter gets to here we are done
+    done_when_reaches = None
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(PositionLabellerPart, self).setup(registrar)
         # Hooks
-        self.register_hooked((scanning.hooks.ConfigureHook,
-                              scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook), self.configure)
-        self.register_hooked((scanning.hooks.RunHook,
-                              scanning.hooks.ResumeHook), self.run)
-        self.register_hooked((scanning.hooks.AbortHook,
-                              scanning.hooks.PauseHook), self.abort)
+        registrar.hook((scanning.hooks.ConfigureHook,
+                        scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook), self.configure)
+        registrar.hook((scanning.hooks.RunHook,
+                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook((scanning.hooks.AbortHook,
+                        scanning.hooks.PauseHook), self.abort)
 
     @add_call_types
     def reset(self, context):

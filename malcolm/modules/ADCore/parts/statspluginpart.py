@@ -4,7 +4,7 @@ from xml.etree import cElementTree as ET
 from annotypes import Anno, add_call_types
 
 from malcolm.compat import et_to_string
-from malcolm.core import APartName
+from malcolm.core import APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, FilePathTranslatorInfo
 from ..util import StatisticsName, APartRunsOnWindows
@@ -13,6 +13,9 @@ with Anno("Which statistic to capture"):
     AStatsName = StatisticsName
 with Anno("Directory to write data to"):
     AFileDir = str
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
 
 
 # We will set these attributes on the child block, so don't save them
@@ -33,10 +36,13 @@ class StatsPluginPart(builtin.parts.ChildPart):
         # The NDAttributes file we write to say what to capture
         self.attributes_filename = None  # type: str
         self.runs_on_windows = runs_on_windows
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(StatsPluginPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(scanning.hooks.ReportStatusHook,
-                             self.report_status)
-        self.register_hooked(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
+        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
 
     @add_call_types
     def report_status(self):
@@ -64,7 +70,7 @@ class StatsPluginPart(builtin.parts.ChildPart):
     def configure(self,
                   context,  # type: scanning.hooks.AContext
                   part_info,  # type: scanning.hooks.APartInfo
-                  fileDir  # type: scanning.util.AFileDir
+                  fileDir  # type: scanning.hooks.AFileDir
                   ):
         # type: (...) -> None
         child = context.block_view(self.mri)

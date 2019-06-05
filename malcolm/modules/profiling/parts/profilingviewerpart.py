@@ -4,9 +4,8 @@ import inspect
 from tornado.options import options
 from plop.viewer import IndexHandler, ViewFlatHandler
 
-from malcolm.core import Part, APartName
-from malcolm.modules.web.hooks import ReportHandlersHook
-from malcolm.modules.web.infos import HandlerInfo
+from malcolm.core import Part, APartName, PartRegistrar
+from malcolm.modules import web
 from malcolm.compat import get_profiler_dir
 
 
@@ -33,11 +32,15 @@ class ProfilingViewerPart(Part):
         # type: (APartName) -> None
         super(ProfilingViewerPart, self).__init__(name)
         options.datadir = get_profiler_dir()
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(ProfilingViewerPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(ReportHandlersHook, self.report_handlers)
+        registrar.hook(web.hooks.ReportHandlersHook, self.report_handlers)
 
     def report_handlers(self):
         infos = [
-            HandlerInfo("/%s" % self.name, MalcolmIndexHandler),
-            HandlerInfo("/view", MalcolmViewHandler)]
+            web.infos.HandlerInfo("/%s" % self.name, MalcolmIndexHandler),
+            web.infos.HandlerInfo("/view", MalcolmViewHandler)]
         return infos

@@ -163,8 +163,12 @@ class WebsocketServerPart(Part):
         # type: (AName, ASubnetValidation) -> None
         super(WebsocketServerPart, self).__init__(name)
         self.subnet_validation = subnet_validation
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(WebsocketServerPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(ReportHandlersHook, self.report_handlers)
+        registrar.hook(ReportHandlersHook, self.report_handlers)
 
     @add_call_types
     def report_handlers(self):

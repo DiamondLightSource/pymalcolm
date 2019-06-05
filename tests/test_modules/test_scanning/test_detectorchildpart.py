@@ -10,11 +10,11 @@ from malcolm.core import Part, Process, Context, APartName, PartRegistrar, \
     NumberMeta, BadValueError
 from malcolm.modules.builtin.hooks import AContext
 from malcolm.modules.builtin.util import set_tags
-from malcolm.modules.scanning.hooks import RunHook,ConfigureHook
 from malcolm.modules.scanning.parts import DetectorChildPart, DatasetTablePart
 from malcolm.modules.scanning.controllers import RunnableController
-from malcolm.modules.scanning.util import AFileDir, AFormatName, AFileTemplate, \
-    DetectorTable
+from malcolm.modules.scanning.hooks import AFileDir, AFormatName, \
+    AFileTemplate, RunHook, ConfigureHook
+from malcolm.modules.scanning.util import DetectorTable
 
 with Anno("How long to wait"):
     AWait = float

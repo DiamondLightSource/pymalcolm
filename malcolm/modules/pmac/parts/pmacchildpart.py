@@ -2,15 +2,13 @@
 from __future__ import division
 
 import re
-import time
 
 import numpy as np
 from annotypes import add_call_types, TYPE_CHECKING
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import Future, Block, Put, Request
+from malcolm.core import Future, Block, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
-from malcolm.modules.scanning.infos import MinTurnaroundInfo
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
     profile_between_points, cs_port_with_motors_in
@@ -46,11 +44,15 @@ PROFILE_POINTS = 10000
 # 80 char line lengths...
 AIV = builtin.parts.AInitialVisibility
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = builtin.parts.APartName
+AMri = builtin.parts.AMri
+
 
 class PmacChildPart(builtin.parts.ChildPart):
     def __init__(self,
-                 name,  # type: builtin.parts.APartName
-                 mri,  # type: builtin.parts.AMri
+                 name,  # type: APartName
+                 mri,  # type: AMri
                  initial_visibility=None  # type: AIV
                  ):
         # type: (...) -> None
@@ -74,16 +76,20 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.profile = {}
         # Stored generator for positions
         self.generator = None  # type: CompoundGenerator
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(PmacChildPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(scanning.hooks.ValidateHook, self.validate)
-        self.register_hooked(scanning.hooks.PreConfigureHook, self.reload)
-        self.register_hooked((scanning.hooks.ConfigureHook,
-                              scanning.hooks.PostRunArmedHook,
-                              scanning.hooks.SeekHook), self.configure)
-        self.register_hooked((scanning.hooks.RunHook,
-                              scanning.hooks.ResumeHook), self.run)
-        self.register_hooked((scanning.hooks.AbortHook,
-                              scanning.hooks.PauseHook), self.abort)
+        registrar.hook(scanning.hooks.ValidateHook, self.validate)
+        registrar.hook(scanning.hooks.PreConfigureHook, self.reload)
+        registrar.hook((scanning.hooks.ConfigureHook,
+                        scanning.hooks.PostRunArmedHook,
+                        scanning.hooks.SeekHook), self.configure)
+        registrar.hook((scanning.hooks.RunHook,
+                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook((scanning.hooks.AbortHook,
+                        scanning.hooks.PauseHook), self.abort)
 
     def notify_dispatch_request(self, request):
         # type: (Request) -> None
@@ -194,7 +200,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             self.generator = generator
 
         # See if there is a minimum turnaround
-        infos = MinTurnaroundInfo.filter_values(part_info)
+        infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
         if infos:
             assert len(infos) == 1, \
                 "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(infos)

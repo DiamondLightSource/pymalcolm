@@ -18,8 +18,6 @@ class MinTurnaroundPart(Part):
             tags=[Widget.TEXTINPUT.tag(), config_tag()],
             display=Display(precision=6, units="s")
         ).create_attribute_model(value)
-        # Hooks
-        self.register_hooked(ReportStatusHook, self.report_status)
 
     @add_call_types
     def report_status(self):
@@ -30,3 +28,5 @@ class MinTurnaroundPart(Part):
         # type: (PartRegistrar) -> None
         registrar.add_attribute_model(
             "minTurnaround", self.attr, self.attr.set_value)
+        # Hooks
+        registrar.hook(ReportStatusHook, self.report_status)

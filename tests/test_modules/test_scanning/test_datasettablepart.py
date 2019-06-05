@@ -4,11 +4,15 @@ from malcolm.modules.scanning.parts import DatasetTablePart
 from malcolm.modules.scanning.infos import DatasetProducedInfo
 from malcolm.modules.scanning.util import DatasetType
 
+from mock import MagicMock
+
 
 class TestDatasetReportingPart(unittest.TestCase):
 
     def setUp(self):
+        self.r = MagicMock()
         self.o = DatasetTablePart(name="n")
+        self.o.setup(self.r)
 
     def test_init(self):
         assert list(self.o.datasets.meta.elements) == (

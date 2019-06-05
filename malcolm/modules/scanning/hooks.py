@@ -1,11 +1,13 @@
-from annotypes import Mapping, Sequence, Anno, Array, Union, Any, \
-    TYPE_CHECKING, NO_DEFAULT
+from annotypes import Anno, Any, Array, Mapping, TYPE_CHECKING, NO_DEFAULT, \
+    Sequence, Union
+
+from scanpointgenerator import CompoundGenerator
+from .infos import ParameterTweakInfo, Info
 
 from malcolm.compat import OrderedDict
 from malcolm.core import VMeta
-from malcolm.modules.builtin.hooks import ControllerHook, APart, AContext
-from .infos import ParameterTweakInfo, Info, ConfigureParamsInfo
-from .util import AGenerator, AAxesToMove
+from malcolm.modules import builtin
+from .infos import ConfigureParamsInfo
 
 if TYPE_CHECKING:
     from typing import Dict, Callable
@@ -14,11 +16,33 @@ with Anno("The Infos returned from other Parts"):
     APartInfo = Mapping[str, Array[Info]]
 with Anno("Infos about current Part status to be passed to other parts"):
     AInfos = Array[Info]
+
+with Anno("Generator instance providing specification for scan"):
+    AGenerator = CompoundGenerator
+with Anno("List of axes in inner dimension of generator that should be moved"):
+    AAxesToMove = Array[str]
+UAxesToMove = Union[AAxesToMove, Sequence[str]]
 with Anno("Parameters that need to be changed to make them compatible"):
     AParameterTweakInfos = Array[ParameterTweakInfo]
 UInfos = Union[AInfos, Sequence[Info], Info, None]
 UParameterTweakInfos = Union[AParameterTweakInfos, Sequence[ParameterTweakInfo],
                              ParameterTweakInfo, None]
+with Anno("Directory to write data to"):
+    AFileDir = str
+with Anno("Argument for fileTemplate, normally filename without extension"):
+    AFormatName = str
+with Anno("""Printf style template to generate filename relative to fileDir.
+Arguments are:
+  1) %s: the value of formatName"""):
+    AFileTemplate = str
+with Anno("The demand exposure time of this scan, 0 for the maximum possible"):
+    AExposure = float
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+APart = builtin.hooks.APart
+AContext = builtin.hooks.AContext
+# also bring in superclass which a subclasses may refer to
+ControllerHook = builtin.hooks.ControllerHook
 
 
 class ValidateHook(ControllerHook[UParameterTweakInfos]):

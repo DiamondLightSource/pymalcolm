@@ -1,6 +1,6 @@
 from annotypes import add_call_types
 
-from malcolm.core import Part, PartRegistrar, APartName, TableMeta
+from malcolm.core import Part, PartRegistrar, TableMeta, AttributeModel
 from ..infos import DatasetProducedInfo
 from ..util import DatasetTable
 from ..hooks import PostConfigureHook, APartInfo
@@ -9,17 +9,16 @@ from ..hooks import PostConfigureHook, APartInfo
 class DatasetTablePart(Part):
     """Exposes an Attribute that reports the datasets that will be written
     during a scan"""
-    def __init__(self, name):
-        # type: (APartName) -> None
-        super(DatasetTablePart, self).__init__(name)
-        self.datasets = TableMeta.from_table(
-            DatasetTable, "Datasets produced in HDF file"
-        ).create_attribute_model()
-        self.register_hooked(PostConfigureHook, self.post_configure)
+    datasets = None  # type: AttributeModel
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
+        self.datasets = TableMeta.from_table(
+            DatasetTable, "Datasets produced in HDF file"
+        ).create_attribute_model()
         registrar.add_attribute_model("datasets", self.datasets)
+        # Hooks
+        registrar.hook(PostConfigureHook, self.post_configure)
 
     @add_call_types
     def post_configure(self, part_info):

@@ -1,4 +1,4 @@
-from .pandablockspcomppart import PandABlocksPcompPart
+from .pandablockspcomppart import PandABlocksPcompPart, APartName, AMri
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

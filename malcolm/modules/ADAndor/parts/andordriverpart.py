@@ -3,10 +3,14 @@ from annotypes import add_call_types, Any
 from malcolm.core import PartRegistrar
 from malcolm.modules import ADCore, scanning, builtin
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = builtin.parts.APartName
+AMri = builtin.parts.AMri
+
 
 class AndorDriverPart(ADCore.parts.DetectorDriverPart):
     def __init__(self, name, mri):
-        # type: (builtin.parts.APartName, builtin.parts.AMri) -> None
+        # type: (APartName, AMri) -> None
         super(AndorDriverPart, self).__init__(name, mri, soft_trigger_modes=[
                 "Internal", "Software"])
         self.exposure = scanning.util.exposure_attribute(min_exposure=0.0)
@@ -27,8 +31,8 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.util.AFileDir
-                  exposure=0.0,  # type: scanning.util.AExposure
+                  fileDir,  # type: scanning.hooks.AFileDir
+                  exposure=0.0,  # type: scanning.hooks.AExposure
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None

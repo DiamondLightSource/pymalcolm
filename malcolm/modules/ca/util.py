@@ -4,9 +4,7 @@ from annotypes import Anno, Array, TYPE_CHECKING
 
 from malcolm.core import sleep, VMeta, Alarm, AlarmStatus, TimeStamp, \
     Loggable, APartName, AMetaDescription, Hook, PartRegistrar, DEFAULT_TIMEOUT
-from malcolm.modules.builtin.util import set_tags, AWidget, AGroup, AConfig, \
-    ASinkPort
-from malcolm.modules.builtin.hooks import InitHook, ResetHook, DisableHook
+from malcolm.modules import builtin
 
 if TYPE_CHECKING:
     from typing import Callable, Any, Union, Type, Sequence, Optional, List
@@ -18,6 +16,10 @@ if TYPE_CHECKING:
 # Store them here for re-export
 APartName = APartName
 AMetaDescription = AMetaDescription
+AWidget = builtin.util.AWidget
+AGroup = builtin.util.AGroup
+AConfig = builtin.util.AConfig
+ASinkPort = builtin.util.ASinkPort
 
 
 class CatoolsDeferred(object):
@@ -63,7 +65,8 @@ class CABase(Loggable):
                  ):
         # type: (...) -> None
         self.writeable = writeable
-        set_tags(meta, writeable, config, group, widget, sink_port)
+        builtin.util.set_tags(
+            meta, writeable, config, group, widget, sink_port)
         self.datatype = datatype
         self.min_delta = min_delta
         self.timeout = timeout
@@ -116,8 +119,9 @@ class CABase(Loggable):
         else:
             writeable_func = None
         registrar.add_attribute_model(name, self.attr, writeable_func)
-        register_hooked(DisableHook, self.disconnect)
-        register_hooked((InitHook, ResetHook), self.reconnect)
+        register_hooked(builtin.hooks.DisableHook, self.disconnect)
+        register_hooked((builtin.hooks.InitHook, builtin.hooks.ResetHook),
+                        self.reconnect)
 
     def _monitor_callback(self, value, value_index=None):
         now = time.time()

@@ -12,6 +12,14 @@ with Anno("Initial value of the created attribute"):
     AValue = str
 UChoices = Union[AChoices, Sequence[Enum], Sequence[str], str]
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = APartName
+AMetaDescription = AMetaDescription
+AWriteable = AWriteable
+AConfig = AConfig
+AGroup = AGroup
+AWidget = AWidget
+
 
 class ChoicePart(Part):
     """Create a single choice Attribute on the Block"""
@@ -35,4 +43,3 @@ class ChoicePart(Part):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         registrar.add_attribute_model(self.name, self.attr, self.writeable_func)
-

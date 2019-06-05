@@ -1,20 +1,28 @@
 from annotypes import Anno, add_call_types, Any
 
+from malcolm.core import PartRegistrar
 from malcolm.modules import ADCore, scanning, builtin
 
 with Anno("Sample frequency of ADC signal in Hz"):
     ASampleFreq = float
 
+# Pull re-used annotypes into our namespace in case we are subclassed
+APartName = ADCore.parts.APartName
+AMri = ADCore.parts.AMri
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save('postCount')
 class ReframePluginPart(ADCore.parts.DetectorDriverPart):
     def __init__(self, name, mri, sample_freq=10000.0):
-        # type: (ADCore.parts.APartName, ADCore.parts.AMri, ASampleFreq) -> None
+        # type: (APartName, AMri, ASampleFreq) -> None
         super(ReframePluginPart, self).__init__(name, mri)
         self.sample_freq = sample_freq
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        super(ReframePluginPart, self).setup(registrar)
         # Hooks
-        self.register_hooked(scanning.hooks.ValidateHook, self.validate)
+        registrar.hook(scanning.hooks.ValidateHook, self.validate)
 
     @add_call_types
     def validate(self, generator):

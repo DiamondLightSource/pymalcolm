@@ -14,11 +14,9 @@ from malcolm.core import Unsubscribe, Subscribe, \
     TableMeta, ChoiceMeta, config_tag, \
     CAMEL_RE, camel_to_title, StringMeta
 from malcolm.core.tags import without_group_tags, Port
-from malcolm.modules.builtin.infos import PortInfo
-from malcolm.modules.builtin.util import ManagerStates
 from ..hooks import LayoutHook, LoadHook, SaveHook
-from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo
-from ..util import LayoutTable, ExportTable
+from ..infos import LayoutInfo, PartExportableInfo, PartModifiedInfo, PortInfo
+from ..util import LayoutTable, ExportTable, ManagerStates
 from .statefulcontroller import StatefulController, AMri, ADescription
 
 if TYPE_CHECKING:
@@ -38,6 +36,10 @@ with Anno("Name of design to save, if different from current design"):
 with Anno("A directory of templates with which to initially populate designs "
           "Attribute. These cannot be saved over."):
     ATemplateDesigns = str
+
+# Pull re-used annotypes into our namespace in case we are subclassed
+AMri = AMri
+ADescription = ADescription
 
 
 def check_git_version(required_version):
@@ -91,7 +93,7 @@ class ManagerController(StatefulController):
         self.context_modified = {}  # type: Dict[Part, Set[str]]
         self.part_modified = {}  # type: Dict[Part, PartModifiedInfo]
         # The attributes our part has published
-        self.our_config_attributes = {}  # type: Dict[str, AttributeModel]]
+        self.our_config_attributes = {}  # type: Dict[str, AttributeModel]
         # The reportable infos we are listening for
         self.info_registry.add_reportable(
             PartModifiedInfo, self.update_modified)
