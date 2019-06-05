@@ -13,7 +13,7 @@ from malcolm.modules import builtin, scanning
 from malcolm.modules.scanning.infos import MinTurnaroundInfo
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
-    profile_between_points
+    profile_between_points, cs_port_with_motors_in
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -111,9 +111,11 @@ class PmacChildPart(builtin.parts.ChildPart):
                  ):
         # type: (...) -> scanning.hooks.UParameterTweakInfos
         child = context.block_view(self.mri)
-        # Check that we are asking to move some motors
-        assert axesToMove, \
-            "Cannot do a PMAC trajectory scan with no axesToMove"
+        # Check that we can move all the requested axes
+        available = set(child.layout.value.name)
+        assert available.issuperset(axesToMove), \
+            "Some of the requested axes %s are not on the motor list %s" % (
+                list(axesToMove), sorted(available))
         # If GPIO not demanded we don't need to align to the servo cycle
         if not child.outputTriggers.value:
             return
@@ -178,9 +180,19 @@ class PmacChildPart(builtin.parts.ChildPart):
         # type: (...) -> None
         context.unsubscribe_all()
         child = context.block_view(self.mri)
-        self.generator = generator
+
         # Store if we need to output triggers
         self.output_triggers = child.outputTriggers.value
+
+        # Check if we should be taking part in the scan
+        taking_part = axesToMove or self.output_triggers
+        if not taking_part:
+            # Flag as not taking part
+            self.generator = None
+            return
+        else:
+            self.generator = generator
+
         # See if there is a minimum turnaround
         infos = MinTurnaroundInfo.filter_values(part_info)
         if infos:
@@ -189,26 +201,39 @@ class PmacChildPart(builtin.parts.ChildPart):
             self.min_turnaround = max(MIN_TIME, infos[0].gap)
         else:
             self.min_turnaround = MIN_TIME
-        # Work out the axes for the motors we need
-        self.axis_mapping = cs_axis_mapping(
-            context, child.layout.value, axesToMove)
-        # Check units for everything in the axis mapping
-        # TODO: reinstate this when GDA does it properly
-        # for axis_name, motor_info in sorted(self.axis_mapping.items()):
-        #     assert motor_info.units == generator.units[axis_name], \
-        #         "%s: Expected scan units of %r, got %r" % (
-        #             axis_name, motor_info.units, generator.units[axis_name])
-        # Guaranteed to have axesToMove as validate has been called, which
-        # meants there will be at least one entry in axis_mapping
-        cs_port = list(self.axis_mapping.values())[0].cs_port
+
+        # Work out the cs_port we should be using
+        layout_table = child.layout.value
+        if axesToMove:
+            self.axis_mapping = cs_axis_mapping(
+                context, layout_table, axesToMove)
+            # Check units for everything in the axis mapping
+            # TODO: reinstate this when GDA does it properly
+            # for axis_name, motor_info in sorted(self.axis_mapping.items()):
+            #     assert motor_info.units == generator.units[axis_name], \
+            #         "%s: Expected scan units of %r, got %r" % (
+            #             axis_name, motor_info.units, generator.units[axis_name])
+            # Guaranteed to have axesToMove as validate has been called, which
+            # meants there will be at least one entry in axis_mapping
+            cs_port = list(self.axis_mapping.values())[0].cs_port
+        else:
+            # No axes to move, but if told to output triggers we still need to
+            # do something
+            self.axis_mapping = {}
+            # Pick the first cs we find that has an axis assigned
+            cs_port = cs_port_with_motors_in(context, layout_table)
+
         # Reset GPIOs
         # TODO: we might need to put this in pause if the PandA logic doesn't
         # copy with a trigger staying high
         child.writeProfile(csPort=cs_port, timeArray=[MIN_TIME],
                            userPrograms=[ZERO_PROGRAM])
         child.executeProfile()
-        # Start off the move to the start
-        fs = self.move_to_start(child, cs_port, completed_steps)
+        if axesToMove:
+            # Start off the move to the start
+            fs = self.move_to_start(child, cs_port, completed_steps)
+        else:
+            fs = []
         # Set how far we should be going and the completed steps lookup
         self.steps_up_to = completed_steps + steps_to_do
         self.completed_steps_lookup = []
@@ -227,19 +252,21 @@ class PmacChildPart(builtin.parts.ChildPart):
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
-        self.loading = False
-        child = context.block_view(self.mri)
-        # Wait for the trajectory to run and complete
-        child.pointsScanned.subscribe_value(self.update_step, child)
-        # TODO: we should return at the end of the last point for PostRun
-        child.executeProfile()
+        if self.generator:
+            self.loading = False
+            child = context.block_view(self.mri)
+            # Wait for the trajectory to run and complete
+            child.pointsScanned.subscribe_value(self.update_step, child)
+            # TODO: we should return at the end of the last point for PostRun
+            child.executeProfile()
 
     @add_call_types
     def abort(self, context):
         # type: (scanning.hooks.AContext) -> None
-        child = context.block_view(self.mri)
-        # TODO: if we abort during move to start, what happens?
-        child.abortProfile()
+        if self.generator:
+            child = context.block_view(self.mri)
+            # TODO: if we abort during move to start, what happens?
+            child.abortProfile()
 
     def update_step(self, scanned, child):
         # scanned is an index into the completed_steps_lookup, so a

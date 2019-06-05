@@ -12,7 +12,7 @@ from malcolm.modules import builtin
 from .infos import MotorInfo
 
 if TYPE_CHECKING:
-    from typing import Tuple, Dict, Sequence, Optional, Set, List
+    from typing import Tuple, Dict, Set, List
     Profiles = Dict[str, List[float]]
 
 
@@ -21,6 +21,20 @@ CS_AXIS_NAMES = list("ABCUVWXYZ")
 
 # Minimum move time for any move
 MIN_TIME = 0.002
+
+
+def cs_port_with_motors_in(context,  # type: Context
+                           layout_table,  # type: builtin.util.LayoutTable
+                           ):
+    # type: (...) -> str
+    for mri in layout_table.mri:
+        child = context.block_view(mri)
+        cs = child.cs.value
+        if cs:
+            cs_port, cs_axis = child.cs.value.split(",", 1)
+            if cs_axis in CS_AXIS_NAMES:
+                return cs_port
+    raise ValueError("Can't find a cs port to use in %s" % layout_table.name)
 
 
 def cs_axis_mapping(context,  # type: Context

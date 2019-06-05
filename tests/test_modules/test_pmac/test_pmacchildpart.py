@@ -1,9 +1,8 @@
-import os
-
 import numpy as np
 import pytest
-from mock import Mock, call, patch
-from scanpointgenerator import LineGenerator, CompoundGenerator
+from mock import Mock, call, patch, ANY
+from scanpointgenerator import LineGenerator, CompoundGenerator, \
+    StaticPointGenerator
 
 from malcolm.core import Context, Process
 from malcolm.modules.pmac.parts import PmacChildPart
@@ -128,6 +127,30 @@ class TestPMACChildPart(ChildTestCase):
             0, 0, 1, 1, 2, 2, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
+    def test_configure_no_axes(self):
+        self.set_motor_attributes()
+        generator = CompoundGenerator(
+            [StaticPointGenerator(6)], [], [], duration=0.1)
+        generator.prepare()
+        self.o.configure(self.context, 0, 6, {}, generator, [])
+        assert self.child.handled_requests.mock_calls == [
+            call.post('writeProfile',
+                      csPort='CS1', timeArray=[0.002], userPrograms=[8]),
+            call.post('executeProfile'),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post('writeProfile',
+                      csPort='CS1',
+                      timeArray=pytest.approx([
+                          2000, 50000, 50000, 50000, 50000, 50000, 50000,
+                          50000, 50000, 50000, 50000, 50000, 50000, 2000]),
+                      userPrograms=pytest.approx([
+                          1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 2, 8]),
+                      velocityMode=pytest.approx([
+                          2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3]))
+            ]
+        assert self.o.completed_steps_lookup == [
+            0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
+
     @patch("malcolm.modules.pmac.parts.pmacchildpart.PROFILE_POINTS", 4)
     @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
            0.2)
@@ -164,11 +187,13 @@ class TestPMACChildPart(ChildTestCase):
         assert len(self.o.profile["timeArray"]) == 1
 
     def test_run(self):
+        self.o.generator = ANY
         self.o.run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('executeProfile')]
 
     def test_reset(self):
+        self.o.generator = ANY
         self.o.reset(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('abortProfile')]
