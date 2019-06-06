@@ -7,6 +7,10 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
+Changed:
+
+- Removed local file logging
+
 `4-0b1`_ - 2019-05-03
 ---------------------
 
@@ -35,7 +39,6 @@ Fixed:
 
 - caactionpart now waits for good status, prevents timeout errors when doing
   caputs
-
 
 `3-4-1`_ - 2019-05-08
 ---------------------

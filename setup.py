@@ -76,6 +76,9 @@ setup(
         'hdf5': ['h5py', 'vds-gen'],
     },
     include_package_data=True,
+    data_files=[
+        ('', ['README.rst', 'CHANGELOG.rst', 'LICENSE'])
+    ],
     test_suite='nose.collector',
     tests_require=[
  #       'coverage>=3.7.1',
