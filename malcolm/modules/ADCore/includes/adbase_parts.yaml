@@ -7,6 +7,11 @@
     description: The value of ADStatus when acquire returns at the end of an acquisition
     default: Idle
 
+- builtin.parameters.string:
+    name: num_images_pv_suffix
+    description: The PV suffix for number of images
+    default: NumImages
+
 - ADCore.includes.ndarraybase_parts:
     prefix: $(prefix)
 
@@ -19,7 +24,7 @@
 - ca.parts.CALongPart:
     name: numImages
     description: Number of images to take if imageMode=Multiple
-    pv: $(prefix):NumImages
+    pv: $(prefix):$(num_images_pv_suffix)
     rbv_suffix: _RBV
 
 - ca.parts.CAActionPart:
