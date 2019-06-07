@@ -1,6 +1,8 @@
+import time
+
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar
+from malcolm.core import Part, PartRegistrar, Queue, TimeoutError
 from malcolm.modules import builtin
 from .. import util
 
@@ -14,6 +16,8 @@ with Anno("Value to write to pv when method called"):
     AValue = int
 with Anno("Wait for caput callback?"):
     AWait = bool
+with Anno("How long to wait for status_pv == good_status before returning"):
+    AStatusTimeout = int
 
 
 class CAActionPart(Part):
@@ -26,6 +30,7 @@ class CAActionPart(Part):
                  pv="",  # type: util.APv
                  status_pv="",  # type: AStatusPv
                  good_status="",  # type: AGoodStatus
+                 status_timeout=1,  # type: AStatusTimeout
                  message_pv="",  # type: AMessagePv
                  value=1,  # type: AValue
                  wait=True,  # type: AWait
@@ -36,6 +41,7 @@ class CAActionPart(Part):
         self.pv = pv
         self.status_pv = status_pv
         self.good_status = good_status
+        self.status_timeout = status_timeout
         self.message_pv = message_pv
         self.value = value
         self.wait = wait
@@ -59,12 +65,30 @@ class CAActionPart(Part):
         for i, v in enumerate(ca_values):
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
 
+    def wait_for_good_status(self, deadline):
+        q = Queue()
+        m = util.catools.camonitor(
+            self.status_pv, q.put, datatype=util.catools.DBR_STRING)
+        status = None
+        try:
+            while True:
+                try:
+                    status = q.get(deadline - time.time())
+                except TimeoutError:
+                    return status
+                else:
+                    if status == self.good_status:
+                        return status
+        finally:
+            m.close()
+
     def caput(self):
         self.log.info("caput %s %s", self.pv, self.value)
         util.catools.caput(self.pv, self.value, wait=self.wait, timeout=None)
         if self.status_pv:
-            status = util.catools.caget(
-                self.status_pv, datatype=util.catools.DBR_STRING)
+            # Wait for up to status_timeout for the right results to come in
+            deadline = time.time() + self.status_timeout
+            status = self.wait_for_good_status(deadline)
             if self.message_pv:
                 message = " %s:" % util.catools.caget(
                     self.message_pv, datatype=util.catools.DBR_CHAR_STR)
