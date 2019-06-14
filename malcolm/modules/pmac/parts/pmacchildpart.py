@@ -220,7 +220,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             # for axis_name, motor_info in sorted(self.axis_mapping.items()):
             #     assert motor_info.units == generator.units[axis_name], \
             #         "%s: Expected scan units of %r, got %r" % (
-            #             axis_name, motor_info.units, generator.units[axis_name])
+            #         axis_name, motor_info.units, generator.units[axis_name])
             # Guaranteed to have an entry in axis_mapping otherwise
             # cs_axis_mapping would fail, so pick its cs_port
             cs_port = list(self.axis_mapping.values())[0].cs_port

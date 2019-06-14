@@ -104,7 +104,7 @@ class PandATablePart(PandAFieldPart):
                 # Array, unwrap to get the numpy array
                 column_value = column_value.seq
             # Left shift the value so it is aligned with the int columns
-            nbits, mask = get_nbits_mask(field_data)
+            _, mask = get_nbits_mask(field_data)
             shifted_column = (column_value & mask) << field_data.bits_lo % 32
             # Or it with what we currently have
             column_index = get_column_index(field_data)
