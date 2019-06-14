@@ -1,9 +1,40 @@
+import numpy as np
+
 from malcolm.compat import OrderedDict
 from malcolm.core import snake_to_camel, camel_to_title, Widget, \
     BooleanArrayMeta, NumberArrayMeta, ChoiceArrayMeta, TimeStamp, Alarm
 from .pandafieldpart import PandAFieldPart, AClient, AMeta, \
     ABlockName, AFieldName
 from ..pandablocksclient import TableFieldData
+
+
+def get_dtype(nbits, signed):
+    if nbits <= 8:
+        dtype = "int8"
+    elif nbits <= 16:
+        dtype = "int16"
+    elif nbits <= 32:
+        dtype = "int32"
+    elif nbits <= 64:
+        dtype = "int64"
+    else:
+        raise ValueError("Bad number of bits %s" % nbits)
+    if not signed:
+        dtype = "u" + dtype
+    return dtype
+
+
+def get_column_index(field_data):
+    column_index = field_data.bits_lo // 32
+    assert field_data.bits_hi // 32 == column_index, \
+        "Column %s spans multiple uint32 values" % (field_data,)
+    return column_index
+
+
+def get_nbits_mask(field_data):
+    nbits = field_data.bits_hi - field_data.bits_lo + 1
+    mask = 2 ** nbits - 1
+    return nbits, mask
 
 
 class PandATablePart(PandAFieldPart):
@@ -30,16 +61,7 @@ class PandATablePart(PandAFieldPart):
                 column_meta = BooleanArrayMeta()
                 widget = Widget.CHECKBOX
             else:
-                if nbits <= 8:
-                    dtype = "uint8"
-                elif nbits <= 16:
-                    dtype = "uint16"
-                elif nbits <= 32:
-                    dtype = "uint32"
-                elif nbits <= 64:
-                    dtype = "uint64"
-                else:
-                    raise ValueError("Bad bits in %s" % (field_data,))
+                dtype = get_dtype(nbits, field_data.signed)
                 column_meta = NumberArrayMeta(dtype)
                 widget = Widget.TEXTINPUT
             column_name = snake_to_camel(column_name)
@@ -50,6 +72,10 @@ class PandATablePart(PandAFieldPart):
             columns[column_name] = column_meta
             self.field_data[column_name] = field_data
         meta.set_elements(columns)
+        # Work out how many ints per row
+        # TODO: this should be in the block data
+        max_bits_hi = max(f.bits_hi for f in self.field_data.values())
+        self.ints_per_row = int((max_bits_hi + 31) / 32)
         # Superclass will make the attribute for us
         super(PandATablePart, self).__init__(
             client, meta, block_name, field_name)
@@ -63,50 +89,56 @@ class PandATablePart(PandAFieldPart):
         int_values = self.list_from_table(value)
         self.client.set_table(self.block_name, self.field_name, int_values)
 
-    def _calc_nconsume(self):
-        max_bits_hi = max(f.bits_hi for f in self.field_data.values())
-        nconsume = int((max_bits_hi + 31) / 32)
-        return nconsume
-
     def list_from_table(self, table):
-        int_values = []
-        nconsume = self._calc_nconsume()
-        for row in table.rows():
-            int_value = 0
-            for name, value in zip(table.call_types, row):
-                field_data = self.field_data[name]
-                max_value = 2 ** (field_data.bits_hi - field_data.bits_lo + 1)
-                if field_data.labels:
-                    field_value = field_data.labels.index(value)
-                else:
-                    field_value = int(value)
-                assert field_value < max_value, \
-                    "Expected %s[%d] < %s, got %s" % (
-                        name, row, max_value, field_value)
-                int_value |= field_value << field_data.bits_lo
-            # Split the big int into 32-bit numbers
-            for _ in range(nconsume):
-                int_values.append(int_value & (2 ** 32 - 1))
-                int_value = int_value >> 32
+        # Create a bit array we can contribute to
+        nrows = len(table[list(self.field_data)[0]])
+        int_matrix = np.zeros((nrows, self.ints_per_row), dtype=np.uint32)
+        # For each row, or the right bits of the int values
+        for column_name, field_data in self.field_data.items():
+            column_value = table[column_name]
+            if field_data.labels:
+                # Choice, lookup indexes of the label values
+                indexes = [field_data.labels.index(v) for v in column_value]
+                column_value = np.array(indexes, dtype=np.uint32)
+            else:
+                # Array, unwrap to get the numpy array
+                column_value = column_value.seq
+            # Left shift the value so it is aligned with the int columns
+            nbits, mask = get_nbits_mask(field_data)
+            shifted_column = (column_value & mask) << field_data.bits_lo % 32
+            # Or it with what we currently have
+            column_index = get_column_index(field_data)
+            int_matrix[..., column_index] |= shifted_column.astype(np.uint32)
+        # Flatten it to a list of uints
+        int_values = int_matrix.reshape((nrows*self.ints_per_row,))
         return int_values
 
     def table_from_list(self, int_values):
-        rows = []
-        nconsume = self._calc_nconsume()
-        for i in range(int(len(int_values) / nconsume)):
-            int_value = 0
-            for c in range(nconsume):
-                int_value += int(int_values[i*nconsume+c]) << (32 * c)
-            row = []
-            for field_data in self.field_data.values():
-                mask = 2 ** (field_data.bits_hi + 1) - 1
-                field_value = (int_value & mask) >> field_data.bits_lo
-                if field_data.labels:
-                    # This is a choice meta, so write the string value
-                    row.append(field_data.labels[field_value])
-                else:
-                    row.append(field_value)
-            rows.append(row)
-        table = self.meta.table_cls.from_rows(rows)
+        columns = {}
+        nrows = len(int_values) // self.ints_per_row
+        # Convert to a 1D uint32 array
+        u32 = np.array([int(x) for x in int_values], dtype=np.uint32)
+        # Reshape to a 2D array
+        int_matrix = u32.reshape((nrows, self.ints_per_row))
+        # Create the data for each column
+        for column_name, field_data in self.field_data.items():
+            # Find the right int to operate on
+            column_index = get_column_index(field_data)
+            int_column = int_matrix[..., column_index]
+            # Right shift data, and mask it
+            nbits, mask = get_nbits_mask(field_data)
+            shifted_column = (int_column >> field_data.bits_lo % 32) & mask
+            # If we wanted labels, convert to values here
+            if field_data.labels:
+                column_value = [field_data.labels[i] for i in shifted_column]
+            elif nbits == 1:
+                column_value = shifted_column.astype(np.bool)
+            else:
+                # View as the correct type
+                dtype = self.meta.elements[column_name].dtype
+                column_value = shifted_column.astype(dtype)
+            columns[column_name] = column_value
+        # Create a table from it
+        table = self.meta.validate(self.meta.table_cls(**columns))
         return table
 

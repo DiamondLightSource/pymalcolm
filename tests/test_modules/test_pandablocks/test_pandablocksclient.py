@@ -198,8 +198,8 @@ class PandABoxControlTest(unittest.TestCase):
             call("*DESC.SEQ1.TABLE[].INPB?\n"),
         ]
         expected = OrderedDict()
-        expected["REPEATS"] = (31, 0, "Repeats", None)
-        expected["USE_INPA"] = (32, 32, "Use", None)
-        expected["STUFF"] = (64, 54, "Stuff", None)
-        expected["INPB"] = (38, 37, "Inp B", ["None", "First", "Second"])
+        expected["REPEATS"] = (31, 0, "Repeats", None, False)
+        expected["USE_INPA"] = (32, 32, "Use", None, False)
+        expected["STUFF"] = (64, 54, "Stuff", None, False)
+        expected["INPB"] = (38, 37, "Inp B", ["None", "First", "Second"], False)
         assert fields == expected

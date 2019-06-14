@@ -10,7 +10,7 @@ BlockData = namedtuple(
 FieldData = namedtuple(
     "FieldData", "field_type,field_subtype,description,labels")
 TableFieldData = namedtuple(
-    "TableFieldData", "bits_hi,bits_lo,description,labels")
+    "TableFieldData", "bits_hi,bits_lo,description,labels,signed")
 
 
 def strip_ok(resp):
@@ -307,23 +307,28 @@ class PandABlocksClient(object):
         for line in self.send_recv("%s.%s.FIELDS?\n" % (block, field)):
             split = line.split()
             name = split[1].strip()
-            # Field is an enum, get its values
-            if len(split) > 2 and split[2] == "enum":
-                enum_queues[name] = self.send(
-                    "*ENUMS.%s.%s[].%s?\n" % (block, field, name))
-            fields[name] = split[0]
+            signed = False
+            if len(split) > 2:
+                # Field is an enum, get its values
+                if split[2] == "enum":
+                    enum_queues[name] = self.send(
+                        "*ENUMS.%s.%s[].%s?\n" % (block, field, name))
+                elif split[2] == "int":
+                    signed = True
+            fields[name] = (split[0], signed)
 
         # Request description for each field
         desc_queues = self.parameterized_send(
             "*DESC.%s.%s[].%%s?\n" % (block, field), list(fields))
-        for name, bits_str in fields.items():
+        for name, (bits_str, signed) in fields.items():
             bits_hi, bits_lo = [int(x) for x in bits_str.split(":")]
             description = strip_ok(self.recv(desc_queues[name]))
             if name in enum_queues:
                 labels = self.recv(enum_queues[name])
             else:
                 labels = None
-            fields[name] = TableFieldData(bits_hi, bits_lo, description, labels)
+            fields[name] = TableFieldData(
+                bits_hi, bits_lo, description, labels, signed)
         return fields
 
     def get_field(self, block, field):
