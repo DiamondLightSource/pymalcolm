@@ -182,6 +182,7 @@ class Process(Loggable):
                 self.log.warning(
                     "Timeout waiting for %s *%s **%s",
                     s._function, s._args, s._kwargs)
+                raise
         self._spawned = []
         self._controllers = OrderedDict()
         self._unpublished = set()
