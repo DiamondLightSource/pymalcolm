@@ -369,15 +369,16 @@ class ManagerController(StatefulController):
             if not ret:
                 # First call, create the initial object
                 export = deserialize_object(response.changes[0][1])
-                context = Context(self.process)
                 if isinstance(export, AttributeModel):
                     def setter(v):
+                        context = Context(self.process)
                         context.put(path, v)
                     # Strip out group tags
                     # TODO: need to strip out port tags too...
                     export.meta.set_tags(without_group_tags(export.meta.tags))
                 else:
                     def setter(*args):
+                        context = Context(self.process)
                         context.post(path, *args)
                 # Regenerate label
                 export.meta.set_label(label)
