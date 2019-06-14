@@ -91,7 +91,7 @@ class PandABussesPart(Part):
         self.positions = TableMeta.from_table(
             self.positions_table_cls,
             "Current values, scaling, and capture status of Position fields",
-            writeable=[x for x in self.bits_table_cls.call_types
+            writeable=[x for x in self.positions_table_cls.call_types
                        if x not in ("name", "value")],
             extra_tags=[config_tag()]
         ).create_attribute_model()

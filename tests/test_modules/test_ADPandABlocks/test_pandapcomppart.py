@@ -1,23 +1,48 @@
 import os
 
-import numpy as np
+from mock import MagicMock
 
-from annotypes import Anno, Array
-from mock import MagicMock, ANY, call
+from scanpointgenerator import LineGenerator, CompoundGenerator, \
+    StaticPointGenerator
 
-from scanpointgenerator import LineGenerator, CompoundGenerator
-
-from malcolm.core import Context, Process, Part, TableMeta, PartRegistrar
+from malcolm.core import Context, Process, Part, TableMeta, PartRegistrar, \
+    StringMeta
+from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.ADPandABlocks.blocks import panda_pcomp_block
-from malcolm.modules.ADPandABlocks.parts import PandABlocksPcompPart
-from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger
+from malcolm.modules.ADPandABlocks.parts import PandAPcompPart
+from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger, \
+    DatasetPositionsTable
 from malcolm.modules.builtin.controllers import ManagerController, \
     BasicController
 from malcolm.modules.builtin.parts import ChildPart
 from malcolm.modules.builtin.util import ExportTable
-from malcolm.modules.pmac.infos import MotorInfo
+from malcolm.modules.pandablocks.util import PositionCapture
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
+
+
+class PositionsPart(Part):
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        pos_table = DatasetPositionsTable(
+            name=["COUNTER1.VALUE", "INENC1.VAL", "INENC2.VAL"],
+            value=[0.0] * 3,
+            units=[""] * 3,
+            # NOTE: x inverted from MRES below to simulate inversion of
+            # encoder in the geobrick layer
+            scale=[1.0, -0.001, 0.001],
+            offset=[0.0, 0.0, 0.0],
+            capture=[PositionCapture.NO] * 3,
+            datasetName=["I0", 'x', 'y'],
+            datasetType=[AttributeDatasetType.MONITOR,
+                         AttributeDatasetType.POSITION,
+                         AttributeDatasetType.POSITION]
+        )
+        attr = TableMeta.from_table(
+            DatasetPositionsTable, "Sequencer Table",
+            writeable=list(SequencerTable.call_types)
+        ).create_attribute_model(pos_table)
+        registrar.add_attribute_model("positions", attr)
 
 
 class SequencerPart(Part):
@@ -25,21 +50,29 @@ class SequencerPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        table = TableMeta.from_table(
+        attr = TableMeta.from_table(
             SequencerTable, "Sequencer Table",
             writeable=list(SequencerTable.call_types)
         ).create_attribute_model()
-        self.table_set = MagicMock(side_effect=table.set_value)
-        registrar.add_attribute_model("table", table, self.table_set)
+        self.table_set = MagicMock(side_effect=attr.set_value)
+        registrar.add_attribute_model("table", attr, self.table_set)
+        for suff, val in (("a", "INENC1.VAL"),
+                          ("b", "INENC2.VAL"),
+                          ("c", "ZERO")):
+            attr = StringMeta("Input").create_attribute_model(val)
+            registrar.add_attribute_model("pos%s" % suff, attr)
 
 
 class GatePart(Part):
     enable_set = None
 
+    def enable(self):
+        self.enable_set()
+
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         self.enable_set = MagicMock()
-        registrar.add_method_model(MagicMock, "forceSet")
+        registrar.add_method_model(self.enable, "forceSet")
 
 
 class TestPcompPart(ChildTestCase):
@@ -50,6 +83,8 @@ class TestPcompPart(ChildTestCase):
 
         # Create a fake PandA
         self.panda = ManagerController("PANDA", "/tmp")
+        self.busses = PositionsPart("busses")
+        self.panda.add_part(self.busses)
 
         # Make 2 sequencers we can prod
         self.seq_parts = {}
@@ -63,7 +98,8 @@ class TestPcompPart(ChildTestCase):
                           initial_visibility=True, stateful=False))
         # And an srgate
         controller = BasicController("PANDA:SRGATE1")
-        controller.add_part(GatePart("part"))
+        self.gate_part = GatePart("part")
+        controller.add_part(self.gate_part)
         self.process.add_controller(controller)
         self.panda.add_part(
             ChildPart("SRGATE1", "PANDA:SRGATE1",
@@ -90,7 +126,7 @@ class TestPcompPart(ChildTestCase):
             mri="SCAN:PCOMP", panda="PANDA", pmac="PMAC")
 
         # And our part under test
-        self.o = PandABlocksPcompPart("pcomp", "SCAN:PCOMP", "x", "y")
+        self.o = PandAPcompPart("pcomp", "SCAN:PCOMP")
 
         # Now start the process off and tell the panda which sequencer tables
         # to use
@@ -98,7 +134,7 @@ class TestPcompPart(ChildTestCase):
         exports = ExportTable.from_rows([
             ('SEQ1.table', 'seqTableA'),
             ('SEQ2.table', 'seqTableB'),
-            ('SRGATE1.forceSet', 'seqTableEnable')
+            ('SRGATE1.forceSet', 'seqSetEnable')
         ])
         self.panda.set_exports(exports)
 
@@ -121,7 +157,7 @@ class TestPcompPart(ChildTestCase):
             offset=0.0, maxVelocity=y_velocity, readback=y_pos,
             velocitySettle=0.0, units=units)
 
-    def test_configure(self):
+    def test_configure_continuous(self):
         xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
@@ -141,30 +177,67 @@ class TestPcompPart(ChildTestCase):
         I = Trigger.IMMEDIATE
         LT = Trigger.POSA_LT
         # Half a frame
-        t = 62500000
-        # How long to be blind for
-        b = 44999999
+        hf = 62500000
+        # Half how long to be blind for
+        hb = 22500000
         self.seq_parts[1].table_set.assert_called_once()
         table = self.seq_parts[1].table_set.call_args[0][0]
         assert table.repeats == [1, 3, 1, 1, 3, 1]
-        assert table.trigger == [GT, I, I, LT, I, I]
-        assert table.position == [-50, 0, 0, 350, 0, 0]
-        assert table.time1 == [t, t, 1, t, t, 1]
+        assert table.trigger == [LT, I, I, GT, I, I]
+        assert table.position == [50, 0, 0, -350, 0, 0]
+        assert table.time1 == [hf, hf, hb, hf, hf, 125]
         assert table.outa1 == [1, 1, 0, 1, 1, 0]  # Live
-        assert table.outb1 == [1, 1, 0, 1, 1, 0]  # Gate
-        assert table.outc1 == [0, 1, 1, 0, 1, 1]  # PCAP
-        assert table.outd1 == [0, 0, 0, 0, 0, 0]
-        assert table.oute1 == [0, 0, 0, 0, 0, 0]
-        assert table.outf1 == [0, 0, 0, 0, 0, 0]
-        assert table.time2 == [t, t, b, t, t, 1]
-        assert table.outa2 == [0, 0, 0, 0, 0, 0]  # Live
-        assert table.outb2 == [1, 1, 0, 1, 1, 0]  # Gate
-        assert table.outc2 == [0, 0, 0, 0, 0, 0]  # PCAP
-        assert table.outd2 == [0, 0, 0, 0, 0, 0]
-        assert table.oute2 == [0, 0, 0, 0, 0, 0]
-        assert table.outf2 == [0, 0, 0, 0, 0, 0]
+        assert table.outb1 == [0, 0, 1, 0, 0, 1]  # Dead
+        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
+               [0, 0, 0, 0, 0, 0]
+        assert table.time2 == [hf, hf, hb, hf, hf, 125]
+        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
+               table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
+        # Check we pressed the gate part
+        self.gate_part.enable_set.assert_called_once()
 
+    def test_configure_stepped(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0, continuous=False)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 8
+        self.set_motor_attributes()
+        axes_to_move = ["x", "y"]
+        with self.assertRaises(AssertionError):
+            self.o.configure(
+                self.context, completed_steps, steps_to_do, {}, generator,
+                axes_to_move)
 
-
-
-
+    def test_acquire_scan(self):
+        generator = CompoundGenerator(
+            [StaticPointGenerator(size=5)], [], [], 1.0)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 5
+        self.o.configure(
+            self.context, completed_steps, steps_to_do, {}, generator,
+            [])
+        assert self.o.generator is generator
+        assert self.o.loaded_up_to == completed_steps
+        assert self.o.scan_up_to == completed_steps + steps_to_do
+        # Triggers
+        I = Trigger.IMMEDIATE
+        # Half a frame
+        hf = 62500000
+        self.seq_parts[1].table_set.assert_called_once()
+        table = self.seq_parts[1].table_set.call_args[0][0]
+        assert table.repeats == [5, 1]
+        assert table.trigger == [I, I]
+        assert table.position == [0, 0]
+        assert table.time1 == [hf, 125]
+        assert table.outa1 == [1, 0]  # Live
+        assert table.outb1 == [0, 1]  # Dead
+        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
+            [0, 0]
+        assert table.time2 == [hf, 125]
+        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
+            table.oute2 == table.outf2 == [0, 0]
+        # Check we didn't press the gate part
+        self.gate_part.enable_set.assert_not_called()

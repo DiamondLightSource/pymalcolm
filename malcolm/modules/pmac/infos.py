@@ -212,4 +212,9 @@ class MotorInfo(Info):
             velocity_array.append(v2)
         return time_array, velocity_array
 
+    def in_cts(self, position):
+        # type: (float) -> int
+        """Return the position (in EGUs) translated to counts"""
+        cts = int(round((position - self.offset) / self.resolution))
+        return cts
 
