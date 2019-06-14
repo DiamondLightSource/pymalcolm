@@ -3,8 +3,15 @@ import re
 from enum import Enum
 from annotypes import TYPE_CHECKING
 
+from malcolm.version import __version__
+
 if TYPE_CHECKING:
     from typing import Sequence, Union, Tuple, List
+
+
+def version_tag():
+    """Tag with the current version of pymalcolm"""
+    return "version:pymalcolm:%s" % __version__
 
 
 class Widget(Enum):

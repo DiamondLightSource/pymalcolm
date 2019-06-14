@@ -125,3 +125,10 @@ function. Its purpose is defined in the docstring:
 .. autofunction:: malcolm.core.method_return_unpacked
     :noindex:
 
+
+Version Tag
+-----------
+
+A ``version:pymalcolm:<version>`` tag is created and attached to every Block so
+that clients know the version of pymalcolm that is hosting the Block.
+

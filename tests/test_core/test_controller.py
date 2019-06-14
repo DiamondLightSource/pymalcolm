@@ -5,6 +5,7 @@ from annotypes import add_call_types, Anno
 from malcolm.core import Controller, Part, PartRegistrar, StringMeta, \
     Process, Queue, Get, Return, Put, Error, Post, Subscribe, Update, \
     Unsubscribe
+from malcolm.version import __version__
 
 with Anno("The return value"):
     AWorld = str
@@ -58,6 +59,7 @@ class TestController(unittest.TestCase):
         assert attribute_view.value == "hello_block"
         assert dict_view['return'].description == "The return value"
         assert list_view[0] == "return"
+        assert b.meta.tags == ["version:pymalcolm:%s" % __version__]
 
     def test_handle_request(self):
         q = Queue()

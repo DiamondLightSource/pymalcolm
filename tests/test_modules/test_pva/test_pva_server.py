@@ -16,6 +16,7 @@ from malcolm.core import Process, Queue
 from malcolm.modules.demo.blocks import hello_block, counter_block
 from malcolm.modules.pva.blocks import pva_server_block
 from malcolm.modules.pva.controllers.pvaconvert import EMPTY
+from malcolm.version import __version__
 
 
 block_meta_tuple = ('S', 'malcolm:core/BlockMeta:1.0', [
@@ -136,7 +137,7 @@ counter_block_t = Type([
 counter_dict = {
     'meta': {
         'description': 'Hardware Block simulating a single float64 counter',
-        'tags': [],
+        'tags': ["version:pymalcolm:%s" % __version__],
         'writeable': True,
         'label': 'TESTCOUNTER',
         'fields': ['health', 'counter', 'delta', 'zero', 'increment']
@@ -277,7 +278,7 @@ hello_block_t = Type([
 hello_dict = {
     'meta': {
         'description': 'Hardware Block with a greet() Method',
-        'tags': [],
+        'tags': ["version:pymalcolm:%s" % __version__],
         'writeable': True,
         'label': 'TESTHELLO',
         'fields': ['health', 'greet', 'error']

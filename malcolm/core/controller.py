@@ -16,7 +16,7 @@ from .request import Get, Subscribe, Unsubscribe, Put, Post, Request
 from .response import Response
 from .camel import camel_to_title
 from .timestamp import TimeStamp
-from .tags import method_return_unpacked
+from .tags import method_return_unpacked, version_tag
 from .views import make_view, Block
 
 if TYPE_CHECKING:
@@ -49,6 +49,7 @@ class Controller(Hookable):
         self._block = BlockModel()
         self._block.meta.set_description(description)
         self._block.meta.set_label(mri)
+        self._block.meta.set_tags([version_tag()])
         self._notifier = Notifier(mri, self._lock, self._block)
         self._block.set_notifier_path(self._notifier, [mri])
         self._write_functions = {}
