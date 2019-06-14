@@ -150,7 +150,7 @@ class BlockHandler(Handler):
                         # Update it with values
                         self._update_value(response)
                 except Exception:
-                    self.controller.log.warning(
+                    self.controller.log.debug(
                         "Closing pv because of error in response %s",
                         response, exc_info=True)
                     # We got a return or error, close the connection to clients
