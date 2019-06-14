@@ -11,7 +11,7 @@ from malcolm.core import Future, Block, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
-    profile_between_points, cs_port_with_motors_in
+    profile_between_points, cs_port_with_motors_in, get_motion_axes
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -119,7 +119,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         # Check that we can move all the requested axes
         available = set(child.layout.value.name)
-        assert available.issuperset(axesToMove), \
+        motion_axes = get_motion_axes(generator, axesToMove)
+        assert available.issuperset(motion_axes), \
             "Some of the requested axes %s are not on the motor list %s" % (
                 list(axesToMove), sorted(available))
         # If GPIO not demanded we don't need to align to the servo cycle
@@ -191,7 +192,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.output_triggers = child.outputTriggers.value
 
         # Check if we should be taking part in the scan
-        taking_part = axesToMove or self.output_triggers
+        motion_axes = get_motion_axes(generator, axesToMove)
+        taking_part = motion_axes or self.output_triggers
         if not taking_part:
             # Flag as not taking part
             self.generator = None
@@ -210,17 +212,17 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         # Work out the cs_port we should be using
         layout_table = child.layout.value
-        if axesToMove:
+        if motion_axes:
             self.axis_mapping = cs_axis_mapping(
-                context, layout_table, axesToMove)
+                context, layout_table, motion_axes)
             # Check units for everything in the axis mapping
             # TODO: reinstate this when GDA does it properly
             # for axis_name, motor_info in sorted(self.axis_mapping.items()):
             #     assert motor_info.units == generator.units[axis_name], \
             #         "%s: Expected scan units of %r, got %r" % (
             #             axis_name, motor_info.units, generator.units[axis_name])
-            # Guaranteed to have axesToMove as validate has been called, which
-            # meants there will be at least one entry in axis_mapping
+            # Guaranteed to have an entry in axis_mapping otherwise
+            # cs_axis_mapping would fail, so pick its cs_port
             cs_port = list(self.axis_mapping.values())[0].cs_port
         else:
             # No axes to move, but if told to output triggers we still need to
@@ -235,7 +237,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         child.writeProfile(csPort=cs_port, timeArray=[MIN_TIME],
                            userPrograms=[ZERO_PROGRAM])
         child.executeProfile()
-        if axesToMove:
+        if motion_axes:
             # Start off the move to the start
             fs = self.move_to_start(child, cs_port, completed_steps)
         else:

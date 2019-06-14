@@ -11,6 +11,8 @@ Changed:
 
 - Removed local file logging
 - Add pymalcolm version tag to Block meta
+- Support no axis scans in PMAC. Requires pmac xxxx
+- Do as many scanpointgenerator dimensions as possible to support acquire scans
 
 `4-0b1`_ - 2019-05-03
 ---------------------
