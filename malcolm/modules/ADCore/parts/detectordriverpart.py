@@ -199,7 +199,8 @@ class DetectorDriverPart(ChildPart):
         self.actions.abort_detector(context)
 
     @add_call_types
-    def post_run_ready(self):
-        # type: () -> None
+    def post_run_ready(self, context):
+        # type: (AContext) -> None
         # Delete the attribute XML file
-        os.remove(self.attributes_filename)
+        if os.path.isfile(self.attributes_filename):
+            os.remove(self.attributes_filename)

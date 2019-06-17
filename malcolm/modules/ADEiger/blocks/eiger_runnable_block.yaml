@@ -35,12 +35,15 @@
     description: $(docstring)
     initial_design: $(initial_design)
 
-# Add Odin Driver
-- ADOdin.blocks.odin_driver_block:
+# Eiger driver block
+- ADEiger.blocks.eiger_driver_block:
     mri: $(mri_prefix):DRV
     prefix: $(pv_prefix):$(drv_suffix)
+    post_acquire_status: Idle
+    num_images_pv_suffix: NumTriggers
+    fan_prefix: $(pv_prefix):$(writer_suffix):FAN
 
-- ADCore.parts.DetectorDriverPart:
+- ADEiger.parts.EigerDriverPart:
     name: DRV
     mri: $(mri_prefix):DRV
     soft_trigger_modes:
@@ -48,7 +51,7 @@
 
 - ADCore.parts.ExposureDeadtimePart:
     name: DEADTIME
-    initial_readout_time: 1e-3  # todo check correct readout time
+    initial_readout_time: 1e-3
 
 # Add an Odin Filewriter
 - ADOdin.blocks.odin_writer_block:
