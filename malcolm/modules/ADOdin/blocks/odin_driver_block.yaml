@@ -6,6 +6,11 @@
     name: prefix
     description: The root PV for the all records
 
+- builtin.parameters.string:
+    name: post_acquire_status
+    description: what state to expect when waiting for acquire status
+    default: Idle
+
 - builtin.defines.docstring:
     value: Hardware block corresponding to PVs used for ADOdin detector driver
 
@@ -15,5 +20,6 @@
 
 - ADCore.includes.adbase_parts:
     prefix: $(prefix)
+    post_acquire_status: $(post_acquire_status)
 
 

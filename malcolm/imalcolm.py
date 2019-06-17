@@ -23,11 +23,14 @@ def make_async_logging(log_config):
     log_config["handlers"]["queue"] = {
         "class": "malcolm.compat.QueueHandler", "queue": q}
     log_config["root"]["handlers"] = ["queue"]
-    logging.config.dictConfig(log_config)
+    configurator = logging.config.DictConfigurator(log_config)
+    configurator.configure()
+
+    # Our handlers can be got from the converted config dict
+    handlers = [configurator.config["handlers"][h] for h in root_handlers]
 
     # Now make a queue listener that consumes messages on the queue and forwards
     # them to any of the appropriate original root handlers
-    handlers = [logging._handlers[h] for h in root_handlers]
     listener = QueueListener(q, *handlers, respect_handler_level=True)
     return listener
 

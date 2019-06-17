@@ -22,6 +22,7 @@ USoftTriggerModes = Union[ASoftTriggerModes, Sequence[str]]
 APartName = APartName
 AMri = builtin.parts.AMri
 
+
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save('arrayCounter', 'imageMode', 'numImages',
                       'arrayCallbacks', 'exposure', 'acquirePeriod')

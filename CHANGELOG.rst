@@ -7,12 +7,7 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
-Changed:
-
-- Removed local file logging
-- Add pymalcolm version tag to Block meta
-- Support no axis scans in PMAC. Requires pmac xxxx
-- Do as many scanpointgenerator dimensions as possible to support acquire scans
+Nothing yet
 
 `4-0b1`_ - 2019-05-03
 ---------------------
@@ -42,6 +37,25 @@ Fixed:
 
 - caactionpart now waits for good status, prevents timeout errors when doing
   caputs
+
+Added:
+
+- ADEiger support
+- Improved ADAndor support with knowledge of frame transfer mode
+
+Fixed:
+
+- Race condition on making async logging at imalcolm startup
+
+`3-5`_ - 2019-06-17
+-------------------
+
+Changed:
+
+- Removed local file logging
+- Add pymalcolm version tag to Block meta
+- Support no axis scans in PMAC. Requires pmac xxxx
+- Do as many scanpointgenerator dimensions as possible to support acquire scans
 
 `3-4-1`_ - 2019-05-08
 ---------------------
@@ -357,6 +371,7 @@ Added:
 
 .. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-0b1...HEAD
 .. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-4-1..4-0b1
+.. _3-5: https://github.com/dls-controls/pymalcolm/compare/3-4-1...3-5
 .. _3-4-1: https://github.com/dls-controls/pymalcolm/compare/3-4...3-4-1
 .. _3-4: https://github.com/dls-controls/pymalcolm/compare/3-3...3-4
 .. _3-3: https://github.com/dls-controls/pymalcolm/compare/3-2...3-3

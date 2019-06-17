@@ -2,14 +2,14 @@ import os
 
 import h5py
 from annotypes import add_call_types, TYPE_CHECKING
-from vdsgen import InterleaveVDSGenerator, \
-    ReshapeVDSGenerator
+from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
+from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import APartName, Future, Info, PartRegistrar
 from malcolm.modules import builtin, scanning
 
 if TYPE_CHECKING:
-    from typing import List, Dict
+    from typing import List, Dict, Iterator
 
     PartInfo = Dict[str, List[Info]]
 
@@ -25,6 +25,40 @@ AMri = builtin.parts.AMri
 def greater_than_zero(v):
     # type: (int) -> bool
     return v > 0
+
+
+def create_dataset_infos(name, generator, filename):
+    # type: (str, CompoundGenerator, str) -> Iterator[Info]
+    # Update the dataset table
+    generator_rank = len(generator.dimensions)
+
+    # Add the primary datasource
+    yield scanning.infos.DatasetProducedInfo(
+        name="%s.data" % name,
+        filename=filename,
+        type=scanning.infos.DatasetType.PRIMARY,
+        rank=generator_rank + 2,
+        path="/entry/detector/data",
+        uniqueid="/entry/detector_uid/uid")
+
+    # Add other datasources
+    yield scanning.infos.DatasetProducedInfo(
+        name="%s.uid" % name,
+        filename=filename,
+        type=scanning.infos.DatasetType.SECONDARY,
+        rank=generator_rank + 2,
+        path="/entry/detector_uid/uid",
+        uniqueid="/entry/detector_uid/uid")
+
+    # Add any setpoint dimensions
+    for dim in generator.axes:
+        yield scanning.infos.DatasetProducedInfo(
+            name="%s.value_set" % dim,
+            filename=filename,
+            type=scanning.infos.DatasetType.POSITION_SET,
+            rank=1,
+            path="/entry/detector/%s_set" % dim,
+            uniqueid="")
 
 
 def files_shape(frames, block_size, file_count):
@@ -63,18 +97,22 @@ def one_vds(vds_folder, vds_name, files, width, height,
         log_level=1)
     gen.generate_vds()
 
-    # this VDS shapes the data to match the dimensions of the scan
-    gen = ReshapeVDSGenerator(path=vds_folder,
-                              files=[vds_name],
-                              source_node="process/" + target_node +
-                                          "_interleave",
-                              target_node=target_node,
-                              output=vds_name,
-                              shape=generator.shape,
-                              alternate=alternates,
-                              log_level=1)
+    # Don't make the reshape VDS if snaking, as it's not performant
+    if not any(alternates):
+        alternates = None
 
-    gen.generate_vds()
+        # this VDS shapes the data to match the dimensions of the scan
+        gen = ReshapeVDSGenerator(path=vds_folder,
+                                  files=[vds_name],
+                                  source_node="process/" + target_node +
+                                              "_interleave",
+                                  target_node=target_node,
+                                  output=vds_name,
+                                  shape=generator.shape,
+                                  alternate=alternates,
+                                  log_level=1)
+
+        gen.generate_vds()
 
 
 def create_vds(generator, raw_name, vds_path, child):
@@ -90,10 +128,6 @@ def create_vds(generator, raw_name, vds_path, child):
     hdf_shape = files_shape(generator.size, block_size, hdf_count)
 
     alternates = (gen.alternate for gen in generator.generators)
-    if any(alternates):
-        raise ValueError("Snake scans are not yet supported")
-    else:
-        alternates = None
 
     files = [os.path.join(
         vds_folder, '{}_{:06d}.h5'.format(raw_name, i + 1))
@@ -115,6 +149,9 @@ def create_vds(generator, raw_name, vds_path, child):
     one_vds(vds_folder, vds_name, files, 1, 1,
             shape, generator, alternates, block_size,
             'SUM', 'sum', 'uint64')
+
+    made_top_level = not any(alternates)
+    return made_top_level
 
 
 set_bases = ["/entry/detector/", "/entry/detector_sum/",
@@ -269,11 +306,15 @@ class OdinWriterPart(builtin.parts.ChildPart):
         self.array_future = child.when_value_matches_async(
             "numCaptured", greater_than_zero)
 
-        create_vds(generator, raw_file_basename,
-                   vds_full_filename, child)
-        add_nexus_nodes(generator, vds_full_filename)
+        made_top_level = create_vds(
+            generator, raw_file_basename, vds_full_filename, child)
+        if made_top_level:
+            add_nexus_nodes(generator, vds_full_filename)
 
-        return None
+            # Return the dataset information
+            dataset_infos = list(
+                create_dataset_infos(formatName, generator, fileName))
+            return dataset_infos
 
     @add_call_types
     def seek(self,

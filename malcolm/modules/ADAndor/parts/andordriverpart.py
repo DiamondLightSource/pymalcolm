@@ -1,4 +1,4 @@
-from annotypes import add_call_types, Any
+from annotypes import Anno, add_call_types, Any
 
 from malcolm.core import PartRegistrar
 from malcolm.modules import ADCore, scanning, builtin
@@ -6,6 +6,9 @@ from malcolm.modules import ADCore, scanning, builtin
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = builtin.parts.APartName
 AMri = builtin.parts.AMri
+
+with Anno("Directory to write data to"):
+    AFileDir = str
 
 
 class AndorDriverPart(ADCore.parts.DetectorDriverPart):
@@ -24,6 +27,8 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
 
+    # Allow camelCase as arguments are serialized
+    # noinspection PyPep8Naming
     @add_call_types
     def configure(self,
                   context,  # type: scanning.hooks.AContext
@@ -36,32 +41,54 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                   **kwargs  # type: **Any
                   ):
         # type: (...) -> None
+
+        # Calculate the readout time
         child = context.block_view(self.mri)
-        readout_time = self.get_readout_time(child, generator.duration)
+
+        if child.andorFrameTransferMode.value:
+            # Set exposure to zero and use accumulation period for readout time
+            child.exposure.put_value(0.0)
+            child.acquirePeriod.put_value(0.0)
+            readout_time = child.andorAccumulatePeriod.value
+            # We need to use the custom DeadTimeInfoPart to handle frame
+            # transfer mode
+            info_cls = Andor2FrameTransferModeDeadTimeInfo
+        else:
+            # Behaves like a "normal" detector
+            child.exposure.put_value(generator.duration)
+            child.acquirePeriod.put_value(generator.duration)
+            # Readout time can be approximated from difference in exposure time
+            # and acquire period
+            readout_time = child.acquirePeriod.value - child.exposure.value
+            # It seems that the difference between acquirePeriod and exposure
+            # doesn't tell the whole story, we seem to need an additional bit
+            # of readout (or something) time on top
+            fudge_factor = generator.duration * 0.004 + 0.001
+            readout_time = readout_time + fudge_factor
+            # Otherwise we can behave like a "normal" detector
+            info_cls = ADCore.infos.ExposureDeadtimeInfo
 
         # Create an ExposureInfo to pass to the superclass
-        info = ADCore.infos.ExposureDeadtimeInfo(
+        info = info_cls(
             readout_time, frequency_accuracy=50, min_exposure=0.0)
         exposure = info.calculate_exposure(generator.duration, exposure)
         self.exposure.set_value(exposure)
         part_info[""] = [info]
+
         super(AndorDriverPart, self).configure(
             context, completed_steps, steps_to_do, part_info, generator,
-            fileDir, exposure=exposure, **kwargs)
+            fileDir, **kwargs)
 
-    def get_readout_time(self, child, duration):
-        """Calculate the readout time of the detector from the EPICS driver:
 
-        - Set exposure and acquire period to same value
-        - Acquire period will be set to lowest acceptable value
-        - Difference will be readout time (this value is affected by
-          detector settings)
+class Andor2FrameTransferModeDeadTimeInfo(ADCore.infos.ExposureDeadtimeInfo):
+    def calculate_exposure(self, duration, exposure=0.0):
+        """With frame transfer mode enabled, the exposure is the time between
+        triggers. The epics 'acquireTime' actually becomes the User Defined
+        delay before acquisition start after the trigger. The duration floor
+        becomes the readout time.
         """
-        child.exposure.put_value(duration)
-        child.acquirePeriod.put_value(duration)
-        readout_time = child.acquirePeriod.value - child.exposure.value
-        # It seems that the difference between acquirePeriod and exposure
-        # doesn't tell the whole story, we seem to need an additional bit
-        # of readout (or something) time on top
-        fudge_factor = duration * 0.004 + 0.001
-        return readout_time + fudge_factor
+        assert duration > self.readout_time, \
+            "The duration: %s has to be longer than the Andor 2 readout " \
+            "time: %s." % (duration, self.readout_time)
+        exposure = 0.0
+        return exposure
