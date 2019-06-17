@@ -7,14 +7,25 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
+Nothing yet
+
+`3-5`_ - 2019-06-17
+-------------------
+
 Changed:
 
 - Removed local file logging
+
+Added:
+
+- ADEiger support
+- Improved ADAndor support with knowledge of frame transfer mode
 
 `3-4-1`_ - 2019-05-08
 ---------------------
 
 Fixed:
+
 - no_save now saves everything apart from what is passed. Previously it was
   updating a set that was common to all ChildPart subclasses
 - pmactrajectorypart no longer checks CS numbers on validate in case they are
@@ -25,12 +36,14 @@ Fixed:
 -------------------
 
 Added:
+
 - ADOdin VDS and nexus file generation
 - HDF Attributes control of NDAttributes written
 - Windows detector file path support
 - added precision and units to number attributes
 
-Fixes
+Fixed:
+
 - Update to malcolmjs 1.6.2 to fix cryptic errors
 
 
@@ -320,7 +333,10 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-3...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-5...HEAD
+.. _3-5: https://github.com/dls-controls/pymalcolm/compare/3-4-1...3-5
+.. _3-4-1: https://github.com/dls-controls/pymalcolm/compare/3-4...3-4-1
+.. _3-4: https://github.com/dls-controls/pymalcolm/compare/3-3...3-4
 .. _3-3: https://github.com/dls-controls/pymalcolm/compare/3-2...3-3
 .. _3-2: https://github.com/dls-controls/pymalcolm/compare/3-0...3-2
 .. _3-0: https://github.com/dls-controls/pymalcolm/compare/3-0b2...3-0
