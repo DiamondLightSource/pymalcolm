@@ -21,7 +21,7 @@
     description: Readout time from the Andor2 SDK
     rbv: $(prefix):ReadoutTime_RBV
 
-- ca.parts.CALongPart:
+- ca.parts.CABooleanPart:
     name: andorFrameTransferMode
     description: Frame transfer mode setting
     rbv: $(prefix):AndorFTMode_RBV
