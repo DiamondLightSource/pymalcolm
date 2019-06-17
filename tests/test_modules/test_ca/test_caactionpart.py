@@ -48,20 +48,30 @@ class TestCAActionPart(unittest.TestCase):
         catools.caput.assert_called_once_with(
             "pv", 1, wait=True, timeout=None)
 
+    def make_camonitor_return(self, catools, values):
+        if not isinstance(values, (list, tuple)):
+            values = [values]
+
+        def side_effect(pv, cb, **kwargs):
+            for v in values:
+                cb(v)
+            return Mock()
+
+        catools.camonitor.side_effect = side_effect
+
     def test_caput_status_pv_ok(self, catools):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", status_pv="spv",
             good_status="All Good"))
-        catools.caput.reset_mock()
-        catools.caget.return_value = "All Good"
+
+        self.make_camonitor_return(catools, ["Still going", "All Good"])
         p.caput()
 
     def test_caput_status_pv_no_good(self, catools):
         p = self.create_part(dict(
             name="mname", description="desc", pv="pv", status_pv="spv",
             good_status="All Good"))
-        catools.caput.reset_mock()
-        catools.caget.return_value = "No Good"
+        self.make_camonitor_return(catools, "No Good")
         with self.assertRaises(AssertionError) as cm:
             p.caput()
         assert str(cm.exception) == \
@@ -79,8 +89,8 @@ class TestCAActionPart(unittest.TestCase):
         proc.start()
         self.addCleanup(proc.stop)
         b = proc.block_view("mri")
-        catools.caput.reset_mock()
-        catools.caget.side_effect = ["No Good", "Bad things happened"]
+        self.make_camonitor_return(catools, "No Good")
+        catools.caget.return_value = "Bad things happened"
         with self.assertRaises(AssertionError) as cm:
             b.mname()
         assert str(cm.exception) == "Status No Good: Bad things happened: " \
