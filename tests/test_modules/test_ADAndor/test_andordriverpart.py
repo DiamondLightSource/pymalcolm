@@ -31,13 +31,14 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         generator.prepare()
         completed_steps = 0
         steps_to_do = 2000*3000
+        file_dir = "/tmp"
         # We wait to be armed, so set this here
         self.set_attributes(self.child, acquiring=True)
         # This is what the detector does when exposure and acquirePeriod are
         # both set to 0.1
         self.set_attributes(self.child, exposure=0.1, acquirePeriod=0.105)
         self.o.configure(
-            self.context, completed_steps, steps_to_do, {}, generator=generator, fileDir="/tmp")
+            self.context, completed_steps, steps_to_do, {}, generator=generator, fileDir=file_dir)
         assert self.child.handled_requests.mock_calls == [
             call.put('exposure', 0.1),
             call.put('acquirePeriod', 0.1),
