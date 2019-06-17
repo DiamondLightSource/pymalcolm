@@ -157,7 +157,7 @@ def create_vds(generator, raw_name, vds_path, child):
             shape, generator, alternates, block_size,
             'SUM', 'sum', 'uint64')
 
-    made_top_level = any(alternates)
+    made_top_level = not any(alternates)
     return made_top_level
 
 
@@ -318,8 +318,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
         self.array_future = child.when_value_matches_async(
             "numCaptured", greater_than_zero)
 
-        made_top_level = create_vds(generator, raw_file_basename,
-                   vds_full_filename, child)
+        made_top_level = create_vds(
+            generator, raw_file_basename, vds_full_filename, child)
         if made_top_level:
             add_nexus_nodes(generator, vds_full_filename)
 
