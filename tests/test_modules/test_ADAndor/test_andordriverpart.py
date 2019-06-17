@@ -38,7 +38,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         # both set to 0.1
         self.set_attributes(self.child, exposure=0.1, acquirePeriod=0.105)
         self.o.configure(
-            self.context, completed_steps, steps_to_do, {}, generator=generator, fileDir=file_dir)
+            self.context, completed_steps, steps_to_do, {}, generator=generator,
+            fileDir=file_dir)
         assert self.child.handled_requests.mock_calls == [
             call.put('exposure', 0.1),
             call.put('acquirePeriod', 0.1),
@@ -49,5 +50,36 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             call.put('imageMode', 'Multiple'),
             call.put('numImages', 6000000),
             call.put('acquirePeriod', 0.1 - 5e-6),
+            call.post('start'),
+            call.when_values_matches('acquiring', True, None, 10.0, None)]
+
+    def test_configure_frame_transfer(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3000, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2000)
+        generator = CompoundGenerator([ys, xs], [], [], 0.1)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 2000*3000
+        file_dir = "/tmp"
+        accumulate_period = 0.08
+        # We wait to be armed, so set this here
+        self.set_attributes(self.child, acquiring=True)
+        # Set what we need to simulate frame transfer mode
+        self.set_attributes(
+            self.child, andorFrameTransferMode=True,
+            andorAccumulatePeriod=accumulate_period)
+        self.o.configure(
+            self.context, completed_steps, steps_to_do, {}, generator=generator,
+            fileDir=file_dir)
+        assert self.child.handled_requests.mock_calls == [
+            call.put('exposure', 0.0),
+            call.put('acquirePeriod', 0.0),
+            call.put('arrayCallbacks', True),
+            call.put('arrayCounter', 0),
+            # duration - readout - fudge_factor - crystal offset
+            call.put('exposure', 0.0),
+            call.put('imageMode', 'Multiple'),
+            call.put('numImages', 6000000),
+            call.put('acquirePeriod', accumulate_period),
             call.post('start'),
             call.when_values_matches('acquiring', True, None, 10.0, None)]
