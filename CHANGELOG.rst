@@ -21,6 +21,10 @@ Added:
 - ADEiger support
 - Improved ADAndor support with knowledge of frame transfer mode
 
+Fixed:
+
+- Race condition on making async logging at imalcolm startup
+
 `3-4-1`_ - 2019-05-08
 ---------------------
 
