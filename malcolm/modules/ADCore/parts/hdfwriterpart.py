@@ -238,7 +238,7 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save(
-    'positionMode', 'enableCallbacks', 'fileWriteMode', 'swmrMode',
+    'positionMode', 'enableCallbacks', 'fileWriteMode', 'swmrMode', 'storeAttr',
     'dimAttDatasets', 'lazyOpen', 'arrayCounter', 'filePath', 'fileName',
     'fileTemplate', 'numExtraDims', 'flushAttrPerNFrames', 'xml',
     'flushDataPerNFrames', 'numCapture')
@@ -327,6 +327,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
             enableCallbacks=True,
             fileWriteMode="Stream",
             swmrMode=True,
+            storeAttr=True,
             positionMode=True,
             dimAttDatasets=True,
             lazyOpen=True,
