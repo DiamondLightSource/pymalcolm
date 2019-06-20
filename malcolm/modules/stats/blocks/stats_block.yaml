@@ -6,6 +6,6 @@
     name: prefix
     description: Prefix for stats PVs
 
-- devMalcolmStats.controllers.DevMalcolmStatsController:
+- stats.controllers.StatsController:
     mri: $(mri)
     prefix: $(prefix)
