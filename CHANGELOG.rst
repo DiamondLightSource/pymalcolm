@@ -7,7 +7,7 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
-Nothing yet
+- all identifiers in YAML must now be in snake_case
 
 `4-0b1`_ - 2019-05-03
 ---------------------
