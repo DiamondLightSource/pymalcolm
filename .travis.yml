@@ -32,9 +32,9 @@ install:
   - sudo apt-get install apt-transport-https
   - wget https://epics.nsls2.bnl.gov/debian/repo-key.pub
   - sudo apt-key add repo-key.pub
-  - sudo add-apt-repository deb https://epics.nsls2.bnl.gov/debian/ jessie main contrib
-  - sudo add-apt-repository deb-src https://epics.nsls2.bnl.gov/debian/ jessie main contrib
-  - sudo apt-get install epics-dev build-essential 
+  - sudo add-apt-repository 'deb https://epics.nsls2.bnl.gov/debian/ jessie main contrib'
+  - sudo add-apt-repository 'deb-src https://epics.nsls2.bnl.gov/debian/ jessie main contrib'
+  - sudo apt-get install epics-dev build-essential
   - pip install "setuptools>=36"
   - pip install setuptools_dso epicscorelibs
   - pip install -r requirements/test.txt
