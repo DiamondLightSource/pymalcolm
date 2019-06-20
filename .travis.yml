@@ -36,7 +36,7 @@ install:
   - echo 'deb-src https://epics.nsls2.bnl.gov/debian/ wheezy main contrib' | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update
   - sudo apt-get install epics-dev build-essential
-  - export CATOOLS_LIBCA_PATH=/usr/lib/epics/lib
+  - export CATOOLS_LIBCA_PATH=/usr/lib/epics/lib/linux-x86_64
   - pip install "setuptools>=36"
   - pip install setuptools_dso epicscorelibs
   - pip install -r requirements/test.txt
