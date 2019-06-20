@@ -68,9 +68,9 @@ class StatsController(BasicController):
             os.chdir(cwd)
 
         stats["pymalcolm_ver"] = version.__version__
-
+        hostname = os.uname()[1]
         stats["kernel"] = "%s %s" % (os.uname()[0], os.uname()[2])
-        stats["hostname"] = os.uname()[1]
+        stats["hostname"] = hostname if len(hostname) < 39 else hostname[:35] + '...'
         stats["pid"] = os.getpid()
 
         self.pymalcolm_path = StringMeta(
