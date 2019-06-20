@@ -126,10 +126,10 @@ class PandAPcompPart(builtin.parts.ChildPart):
         self.axis_mapping = {}
         # The minimum turnaround time for non-joined points
         self.min_turnaround = 0
-        # The sequencer tables that we are allowed to do a put to
-        self.seq_tables = []
         # {(scannable, increasing): trigger_enum}
         self.trigger_enums = {}
+        # The panda Block we will be prodding
+        self.panda = None
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -170,7 +170,7 @@ class PandAPcompPart(builtin.parts.ChildPart):
             self.min_turnaround = pmac.util.MIN_TIME
 
         # Get panda Block, and the sequencer Blocks so we can do some checking
-        panda, seqa, seqb = _get_blocks(context, panda_mri)
+        self.panda, seqa, seqb = _get_blocks(context, panda_mri)
 
         # Check that both sequencers are pointing to the same encoders
         seq_pos = {}
@@ -193,7 +193,7 @@ class PandAPcompPart(builtin.parts.ChildPart):
             axis_mapping = pmac.util.cs_axis_mapping(
                 context, context.block_view(pmac_mri).layout.value, motion_axes)
             # Fix the mres and offsets from the panda positions table
-            positions_table = panda.positions.value
+            positions_table = self.panda.positions.value
             for i, name in enumerate(positions_table.name):
                 try:
                     pos = seq_pos[name]
@@ -227,16 +227,8 @@ class PandAPcompPart(builtin.parts.ChildPart):
         assert seqa
         assert seqb
 
-        # Now grab the exported attribute on the PandA Block that we are
-        # allowed to do a put to
-        self.seq_tables = [panda[attr] for attr in SEQ_TABLES]
-
         # load up the first SEQ
-        self._fill_sequencer(self.seq_tables[0])
-
-        # Call sequence table enable as long as we are comparing on something
-        if self.axis_mapping:
-            panda.seqSetEnable()
+        self._fill_sequencer(self.panda[SEQ_TABLES[0]])
 
     def _how_long_moving_wrong_way(self, axis_name, point, increasing):
         # type: (str, Point, bool) -> float
@@ -311,5 +303,4 @@ class PandAPcompPart(builtin.parts.ChildPart):
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
         # Call sequence table enable
-        if not self.axis_mapping:
-            panda.seqSetEnable()
+        self.panda.seqSetEnable()
