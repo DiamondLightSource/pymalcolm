@@ -14,12 +14,14 @@ def start_ioc(stats, prefix):
         db_macros += ",%s='%s'" % (key, value)
     root = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
     db_template = os.path.join(root, 'db', 'stats.template')
-    ioc = subprocess.Popen("softIoc" + " -m %s" % db_macros + " -d %s" % db_template, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    ioc = subprocess.Popen(
+        "softIoc" + " -m %s" % db_macros + " -d %s" % db_template, shell=True,
+        stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     # wait for IOC to start
     pid_rbv = catools.caget("%s:PID" % prefix, timeout=5)
     if int(pid_rbv) != os.getpid():
-       raise Exception(
-           "Got back different PID: is there another stats instance on the machine?")
+        raise Exception("Got back different PID: " +
+                        "is there another stats instance on the machine?")
     catools.caput("%s:YAML:PATH" % prefix, stats["yaml_path"],
                   datatype=catools.DBR_CHAR_STR)
     catools.caput("%s:PYMALCOLM:PATH" % prefix, stats["pymalcolm_path"],
@@ -57,7 +59,8 @@ class StatsController(BasicController):
             cwd = os.getcwd()
             os.chdir(stats["yaml_path"])
             try:
-                stats["yaml_ver"] = subprocess.check_output(['git', 'describe', '--exact-match']).strip('\n')
+                stats["yaml_ver"] = subprocess.check_output(
+                    ['/usr/bin/git', 'describe', '--exact-match']).strip('\n')
             except subprocess.CalledProcessError:
                 stats["yaml_ver"] = "Prod (unknown version)"
                 print("Git error when parsing yaml version")
@@ -74,12 +77,14 @@ class StatsController(BasicController):
             "Path to pymalcolm executable",
             tags=[Widget.MULTILINETEXTUPDATE.tag()]).create_attribute_model(
             stats["pymalcolm_path"])
-        self.field_registry.add_attribute_model("pymalcolmPath", self.pymalcolm_path)
+        self.field_registry.add_attribute_model("pymalcolmPath",
+                                                self.pymalcolm_path)
         self.pymalcolm_ver = StringMeta(
             "Version of pymalcolm executable",
             tags=[Widget.TEXTUPDATE.tag()]).create_attribute_model(
             stats["pymalcolm_ver"])
-        self.field_registry.add_attribute_model("pymalcolmVer", self.pymalcolm_ver)
+        self.field_registry.add_attribute_model("pymalcolmVer",
+                                                self.pymalcolm_ver)
         self.yaml_path = StringMeta(
             "Path to yaml configuration file",
             tags=[Widget.MULTILINETEXTUPDATE.tag()]).create_attribute_model(
