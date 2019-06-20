@@ -5,7 +5,7 @@ from malcolm.core import StringMeta, Widget
 from malcolm.modules.builtin.hooks import HaltHook
 from malcolm.modules.builtin.controllers import BasicController, AMri
 from malcolm import version
-from cothread import catools
+from malcolm.modules.ca.util import catools
 
 
 def start_ioc(stats, prefix):

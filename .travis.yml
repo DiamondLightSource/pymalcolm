@@ -34,8 +34,8 @@ install:
   - sudo apt-get install apt-transport-https
   - wget https://epics.nsls2.bnl.gov/debian/repo-key.pub
   - sudo apt-key add repo-key.pub
-  - sudo add-apt-repository 'deb https://epics.nsls2.bnl.gov/debian/ jessie main contrib'
-  - sudo add-apt-repository 'deb-src https://epics.nsls2.bnl.gov/debian/ jessie main contrib'
+  - echo 'deb https://epics.nsls2.bnl.gov/debian/ jessie main contrib' | sudo tee -a /etc/apt/sources.list
+  - echo 'deb-src https://epics.nsls2.bnl.gov/debian/ jessie main contrib' | sudo tee -a /etc/apt/sources.list
   - sudo apt-get install epics-dev build-essential
   - pip install "setuptools>=36"
   - pip install -r requirements/test.txt
