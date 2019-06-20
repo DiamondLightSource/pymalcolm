@@ -36,6 +36,7 @@ install:
   - sudo apt-key add repo-key.pub
   - echo 'deb https://epics.nsls2.bnl.gov/debian/ jessie main contrib' | sudo tee -a /etc/apt/sources.list
   - echo 'deb-src https://epics.nsls2.bnl.gov/debian/ jessie main contrib' | sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update
   - sudo apt-get install epics-dev build-essential
   - pip install "setuptools>=36"
   - pip install -r requirements/test.txt
