@@ -193,6 +193,9 @@ class TestPcompPart(ChildTestCase):
         assert table.time2 == [hf, hf, hb, hf, hf, 125]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
                table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
+        # Check we didn't press the gate part
+        self.gate_part.enable_set.assert_not_called()
+        self.o.run(self.context)
         # Check we pressed the gate part
         self.gate_part.enable_set.assert_called_once()
 
