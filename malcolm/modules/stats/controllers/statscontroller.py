@@ -1,17 +1,11 @@
 import os
 import subprocess
 from annotypes import Anno
-from malcolm.core import Part, APartName, StringMeta, Widget
+from malcolm.core import StringMeta, Widget
 from malcolm.modules.builtin.hooks import HaltHook
 from malcolm.modules.builtin.controllers import BasicController, AMri
 from malcolm import version
 from cothread import catools
-import time
-
-from pkg_resources import require
-
-require("GitPython")
-import git
 
 
 def start_ioc(stats, prefix):
@@ -19,13 +13,13 @@ def start_ioc(stats, prefix):
     for key, value in stats.items():
         db_macros += ",%s='%s'" % (key, value)
     root = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
-    db_template = os.path.join(root, 'db', 'devMalcolmStats.template')
+    db_template = os.path.join(root, 'db', 'stats.template')
     ioc = subprocess.Popen("softIoc" + " -m %s" % db_macros + " -d %s" % db_template, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     # wait for IOC to start
     pid_rbv = catools.caget("%s:PID" % prefix, timeout=5)
     if int(pid_rbv) != os.getpid():
        raise Exception(
-           "Got back different PID: is there another devMalcolmStats instance on the machine?")
+           "Got back different PID: is there another stats instance on the machine?")
     catools.caput("%s:YAML:PATH" % prefix, stats["yaml_path"],
                   datatype=catools.DBR_CHAR_STR)
     catools.caput("%s:PYMALCOLM:PATH" % prefix, stats["pymalcolm_path"],
@@ -37,10 +31,10 @@ with Anno("prefix for stats PVs"):
     APvPrefix = str
 
 
-class DevMalcolmStatsController(BasicController):
+class StatsController(BasicController):
     def __init__(self, mri="devStats", prefix=""):
         # type: (AMri, APvPrefix) -> None
-        super(DevMalcolmStatsController, self).__init__(mri)
+        super(StatsController, self).__init__(mri)
 
         stats = dict()
         cwd = os.getcwd()
@@ -60,15 +54,15 @@ class DevMalcolmStatsController(BasicController):
         if stats["yaml_path"].startswith('/dls_sw/work'):
             stats["yaml_ver"] = "Work"
         elif stats["yaml_path"].startswith('/dls_sw/prod'):
-            yaml_repo = git.Repo(stats["yaml_path"])
+            cwd = os.getcwd()
+            os.chdir(stats["yaml_path"])
             try:
-                releases = yaml_repo.tags
-                for release in releases:
-                    if release.commit == yaml_repo.head.commit:
-                        stats["yaml_ver"] = release.name
-            except TypeError:
+                stats["yaml_ver"] = subprocess.check_output(['git', 'describe', '--exact-match']).strip('\n')
+            except subprocess.CalledProcessError:
                 stats["yaml_ver"] = "Prod (unknown version)"
-                print("Git version mismatch when parsing yaml version")
+                print("Git error when parsing yaml version")
+
+            os.chdir(cwd)
 
         stats["pymalcolm_ver"] = version.__version__
 

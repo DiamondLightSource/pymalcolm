@@ -1,4 +1,4 @@
-from .devmalcolmstatscontroller import DevMalcolmStatsController
+from .statscontroller import StatsController
 
 # Expose a nice namespace
 from malcolm.core import submodule_all
