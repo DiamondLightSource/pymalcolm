@@ -25,7 +25,9 @@ class TestBasicController(unittest.TestCase):
 
     def test_sets_stats(self):
         assert self.b.pymalcolmVer.value == __version__
-        assert self.b.hostname.value == os.uname()[1]
+        hostname = os.uname()[1]
+        hostname = hostname if len(hostname) < 39 else hostname[:35] + '...'
+        assert self.b.hostname.value == hostname
 
     def test_starts_ioc(self):
         assert catools.caget(self.prefix + ":PYMALCOLM:VER") == __version__
