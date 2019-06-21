@@ -1,11 +1,11 @@
 # import multiprocessing to avoid this bug
 # (http://bugs.python.org/issue15881#msg170215)
 import multiprocessing
-assert multiprocessing
 import re
 import os
 from setuptools import setup, find_packages
 
+assert multiprocessing
 module_name = "malcolm"
 
 
@@ -26,7 +26,9 @@ def get_version():
         raise RuntimeError('Unable to find version string in {0}.'
                            .format(VERSION_FILE))
 
-install_requires = ['numpy', 'scanpointgenerator>=1.5', 'annotypes', 'cothread']
+install_requires = [
+    'enum34==1.1.6', "numpy==1.13.1", "annotypes==0.17", "cothread==2.14"]
+
 
 def add_multiversion_require(module):
     try:
@@ -44,8 +46,15 @@ def add_multiversion_require(module):
             global install_requires
             install_requires.append(module)
 
+
 add_multiversion_require("tornado")
 add_multiversion_require("ruamel.yaml")
+add_multiversion_require("h5py")
+add_multiversion_require("p4p")
+add_multiversion_require("pygelf")
+add_multiversion_require("plop")
+add_multiversion_require("scanpointgenerator")
+add_multiversion_require("vdsgen")
 
 packages = [x for x in find_packages() if x.startswith("malcolm")]
 setup(
@@ -76,6 +85,7 @@ setup(
         'hdf5': ['h5py', 'vds-gen'],
     },
     include_package_data=True,
+    package_data={'malcolm': ['modules/*/*/*.yaml', 'modules/*/*/*.svg']},
     data_files=[
         ('', ['README.rst', 'CHANGELOG.rst', 'LICENSE'])
     ],

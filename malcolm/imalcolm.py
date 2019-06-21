@@ -1,4 +1,4 @@
-#!/bin/env dls-python
+#!/dls_sw/prod/tools/RHEL7-x86_64/defaults/bin/dls-python
 import logging.config
 import threading
 import argparse
@@ -186,6 +186,7 @@ def try_prepare_locals(q, args):
 
 
 def main():
+    print("Loading malcolm...")
     from malcolm.compat import queue
     from malcolm.profiler import Profiler
 
@@ -287,7 +288,7 @@ block = self.block_view("<mri>")
 
 if __name__ == "__main__":
     from pkg_resources import require
-    print("Loading...")
+    print("Loading external modules...")
 
     os.environ["EPICS_CA_MAX_ARRAY_BYTES"] = "6000000"
 
