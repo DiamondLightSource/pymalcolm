@@ -43,7 +43,7 @@ Define the Process Definition
 
 Let's make a Process Definition in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
 
-    #!/dls_sw/prod/common/python/RHEL7-x86_64/pymalcolm/4-0/malcolm/imalcolm.py
+    #!/dls_sw/prod/common/python/RHEL7-x86_64/pymalcolm/4-x/prefix/bin/imalcolm
 
     # Define the directory that this YAML file lives in as a Malcolm module
     # so we can use Blocks defined there as BLxxI.blocks.yyy
@@ -95,7 +95,7 @@ argument. The full path to ``imalcolm.py`` allows us to pin to a particular
 version of Malcolm.
 
 After this, we've defined a ``BLxxI`` module, and created two beamline specific
-Blocks from it (``brick01_block`` and ``pmac_master_scan_block``), and then
+Blocks from it (``brick01_block`` and ``scan_block``), and then
 created three Blocks from definitions already in Malcolm (
 ``pandablocks_runnable_block``, ``web_server_block``, ``pva_server_block``).
 Let's look at how those beamline specific Blocks are defined.
@@ -157,12 +157,24 @@ We then create a `ManagerController`, with a number of child Blocks and Parts
 (produced by ``includes``) that represent raw motors, co-ordinate systems,
 the trajectory scan and PMAC status EPICS templates.
 
+.. note::
+
+    The Motors we define are raw motors. These correspond to physical axes in
+    the motor controller. If there is a co-ordinate system with kinematics, then
+    the compound co-ordinate system motors should also be exposed with a
+    `compoundmotor_collection`.
+
+    In this example we have raw motors ``stagex`` and ``stagey`` which we could
+    demand a scan in, but if we had a 2-jack system, our raw motors would be
+    ``t1jack1`` and ``t1jack2``, so we would expose compound motors ``t1x`` and
+    ``t1pitch`` to demand a scan in.
+
 
 Define a scan Block
 -------------------
 
 In the ``etc/malcolm/blocks`` subdirectory we will also make
-``pmac_master_scan_block.yaml``::
+``scan_block.yaml``::
 
     - builtin.parameters.string:
         name: mri_prefix
@@ -270,8 +282,8 @@ couple of Block creators from the YAML file:
     # Create some Block definitions from YAML files
     brick01_block = make_block_creator(
         __file__, "brick01_block.yaml")
-    pmac_master_scan_block = make_block_creator(
-        __file__, "pmac_master_scan_block.yaml")
+    scan_block = make_block_creator(
+        __file__, "scan_block.yaml")
 
     # Expose all of the Block definitions, and nothing else
     __all__ = check_yaml_names(globals())
@@ -405,7 +417,7 @@ this scan instance in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
     ...
 
     # Define the Scans
-    - BLxxI.blocks.pmac_master_scan_block:
+    - BLxxI.blocks.scan_block:
         mri_prefix: BLxxI-ML-SCAN-01
         config_dir: $(config_dir)
         initial_design: pmac_master_tomo
