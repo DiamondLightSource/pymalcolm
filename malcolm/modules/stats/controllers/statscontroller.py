@@ -40,7 +40,8 @@ class StatsController(BasicController):
 
         stats = dict()
         cwd = os.getcwd()
-        sys_call_bytes = open('/proc/%s/cmdline' % os.getpid(), 'rb').read().split(
+        sys_call_bytes = open('/proc/%s/cmdline' % os.getpid(),
+                              'rb').read().split(
             b'\0')
         sys_call = [el.decode("utf-8") for el in sys_call_bytes]
         if sys_call[1].startswith('/'):
@@ -71,7 +72,8 @@ class StatsController(BasicController):
         stats["pymalcolm_ver"] = version.__version__
         hostname = os.uname()[1]
         stats["kernel"] = "%s %s" % (os.uname()[0], os.uname()[2])
-        stats["hostname"] = hostname if len(hostname) < 39 else hostname[:35] + '...'
+        stats["hostname"] = hostname if len(hostname) < 39 else hostname[
+                                                                :35] + '...'
         stats["pid"] = os.getpid()
 
         self.pymalcolm_path = StringMeta(
