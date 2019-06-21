@@ -15,7 +15,7 @@ def start_ioc(stats, prefix):
     root = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
     db_template = os.path.join(root, 'db', 'stats.template')
     ioc = subprocess.Popen(
-        "softIoc" + " -m %s" % db_macros + " -d %s" % db_template, shell=True,
+        ["softIoc", "-m", db_macros, "-d", db_template],
         stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     # wait for IOC to start
     pid_rbv = catools.caget("%s:PID" % prefix, timeout=5)
