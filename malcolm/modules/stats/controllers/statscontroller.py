@@ -42,12 +42,12 @@ class StatsController(BasicController):
         cwd = os.getcwd()
         sys_call = open('/proc/%s/cmdline' % os.getpid(), 'rb').read().split(
             b'\0')
-        if sys_call[1].startswith('/'):
+        if sys_call[1].startswith(b'/'):
             stats["pymalcolm_path"] = sys_call[1]
         else:
             stats["pymalcolm_path"] = os.path.join(cwd, sys_call[1])
 
-        if sys_call[2].startswith('/'):
+        if sys_call[2].startswith(b'/'):
             stats["yaml_path"] = sys_call[2]
         else:
             stats["yaml_path"] = os.path.join(cwd, sys_call[2])
