@@ -83,6 +83,7 @@ def _what_moves_most(point, axis_mapping):
     # type: (Point, Dict[str, MotorInfo]) -> Tuple[str, int, bool]
     """Work out which axis from the given axis mapping moves most for this
     point"""
+    # TODO: should use new velocity calcs when Giles has finished
     # {axis_name: abs(diff_cts)}
     diffs = {}
     # {axis_name: (compare_cts, increasing)}

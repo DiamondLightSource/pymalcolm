@@ -18,6 +18,7 @@ Contents
     tutorials/scanning
     tutorials/areadetector
     tutorials/pmac
+    tutorials/panda
 
 .. _reference-doc:
 

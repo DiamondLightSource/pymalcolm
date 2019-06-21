@@ -8,312 +8,85 @@ can control a Delta Tau PMAC, sending triggers to a PandABox_ and capturing
 encoder positions. We now move onto using the PandA in a more intelligent way,
 listening to the encoder positions, and generating the trigger stream itself.
 
-EPICS Prerequisites
--------------------
+Strategy
+--------
 
-We assume for this tutorial that you have created one or more IOCS that contain:
+Imagine a 2D Grid scan. The strategy for this trigger scheme is that at the
+start of each row, PandA should do a position compare on the axis that moves
+most, then generate a series of time based triggers during the row. During the
+turnaround it should then wait until the motor has cleared the start of the
+next row before doing a position compare on that value.
 
-- A GeoBrick Controller template from the `EPICS pmac`_ module with PV prefix
-  that looks like ``BLxxI-MO-BRICK-01``.
-- A GeoBrick Trajectory template with the same prefix.
-- One or more CS templates.
-- One or more dls_pmac_asyn_motor or dls_pmac_cs_asyn_motor instances.
-- An ADPandABlocks template from the `ADPandaBlocks`_ module with a PV prefix
-  that looks like ``BLxxI-MO-PANDA-01:DRV:``
-- NDPosPlugin and NDFileHDF5 `areaDetector`_ plugins with the PV prefixes of
-  ``BLxxI-MO-PANDA-01:POS:`` and ``BLxxI-MO-PANDA-01:HDF5:``
+This strategy can be extended to any sort of scan trajectory. It is implemented
+by Malcolm generating a table of sequencer rows, with 3 sequencer rows per scan
+section without gaps:
 
+1. Compare on the lower bound of the motor that moves by the biggest number of
+   counts during the first point of the row, producing one live trigger pulse
+2. Produce the rest of the live triggers for the row
+3. Produce a dead trigger for the start of the turnaround, waiting for the
+   amount of time that the motor is going in the wrong direction during the
+   turnaround
 
-Make a Malcolm directory for a beamline
----------------------------------------
+Adding to the a scan Block
+--------------------------
 
-The first thing we need is a directory for our beamline specific Blocks and
-`process_definition_` to live in. At DLS we will typically make a directory
-``etc/malcolm`` in the ``BL`` IOC directory for this purpose, but it could be
-anywhere. We will refer to this directory as ``etc/malcolm`` for the rest of
-the tutorial. We will also create an ``etc/malcolm/blocks`` subdirectory for
-any beamline specific Blocks we create.
+In the `pmac_tutorial` you should have created a ``scan_block.yaml`` in the
+``etc/malcolm/blocks`` subdirectory. We will now add a new `panda_pcomp_block`
+and its corresponding `PandAPcompPart` to it. It will hold the `mri_` of the
+PandA and Brick that are performing the scan, and will set the PandA sequencer
+tables to the correct values::
 
-
-Define the Process Definition
------------------------------
-
-.. highlight:: yaml
-
-Let's make a Process Definition in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
-
-    #!/dls_sw/prod/common/python/RHEL7-x86_64/pymalcolm/4-0/malcolm/imalcolm.py
-
-    # Define the directory that this YAML file lives in as a Malcolm module
-    # so we can use Blocks defined there as BLxxI.blocks.yyy
-    - builtin.defines.module_path:
-        name: BLxxI
-        path: $(yamldir)
-
-    # This is where all the saved and loaded designs will live
-    - builtin.defines.string:
-        name: config_dir
-        value: /dls_sw/ixx/epics/malcolm
-
-    # Define the motion controllers
-    - BLxxI.blocks.brick01_block:
-        mri_prefix: BLxxI-ML-BRICK-01
-        pv_prefix: BLxxI-MO-BRICK-01
-        config_dir: $(config_dir)
-
-    # More motion controllers here...
-
-    # Define the Detectors
-    - ADPandABlocks.blocks.panda_runnable_block:
-        mri_prefix: BLxxI-ML-PANDA-01
-        pv_prefix: BLxxI-MO-PANDA-01
-        hostname: blxxi-mo-panda-01
-        config_dir: $(config_dir)
-
-    # More non-panda detectors here...
-
-    # Define the Scans
-    - BLxxI.blocks.pmac_master_scan_block:
-        mri_prefix: BLxxI-ML-SCAN-01
-        config_dir: $(config_dir)
-        initial_design:
-
-    # More scans here...
-
-    # Define the ServerComms
-    - web.blocks.web_server_block:
-        mri: $(yamlname):WEB
-
-    - pva.blocks.pva_server_block:
-        mri: $(yamlname):PVA
-
-The first thing to note is the ``#!`` line at the top of the file. This means
-that we can make the YAML file executable, and when it is executed
-``imalcolm.py`` will be run with the path of the YAML file passed as an
-argument. The full path to ``imalcolm.py`` allows us to pin to a particular
-version of Malcolm.
-
-After this, we've defined a ``BLxxI`` module, and created two beamline specific
-Blocks from it (``brick01_block`` and ``pmac_master_scan_block``), and then
-created three Blocks from definitions already in Malcolm (
-``pandablocks_runnable_block``, ``web_server_block``, ``pva_server_block``).
-Let's look at how those beamline specific Blocks are defined.
-
-
-Define a PMAC Block
--------------------
-
-In the ``etc/malcolm/blocks`` subdirectory we will make ``brick01_block.yaml``::
-
-    - builtin.parameters.string:
-        name: mri_prefix
-        description: MRI for created block
-
-    - builtin.parameters.string:
-        name: pv_prefix
-        description: PV prefix that was used to construct the pmac controller
-
-    - builtin.parameters.string:
-        name: config_dir
-        description: Where to store saved configs
-
-    - builtin.controllers.ManagerController:
-        mri: $(mri_prefix)
-        config_dir: $(config_dir)
-
-    # Label so that we can tell at a glance what this PMAC controls at runtime
-    - builtin.parts.LabelPart:
-        value: Brick with X and Y Sample stage motors
-
-    # Raw motor Blocks and their corresponding Parts
-    - pmac.includes.rawmotor_collection:
-        mri: BLxxI-ML-STAGE-01:X
-        pv_prefix: BLxxI-MO-STAGE-01:X
-        scannable: stagex
-
-    - pmac.includes.rawmotor_collection:
-        mri: BLxxI-ML-STAGE-01:Y
-        pv_prefix: BLxxI-MO-STAGE-01:Y
-        scannable: stagey
-
-    # Co-ordinate system Block and its corresponding Part
-    - pmac.includes.cs_collection:
-        mri_prefix: $(mri_prefix)
-        pv_prefix: $(pv_prefix)
-        cs: 1
-
-    # Trajectory scan and status Blocks and their corresponding Parts
-    - pmac.includes.trajectory_collection:
-        mri_prefix: $(mri_prefix)
-        pv_prefix: $(pv_prefix)
-
-
-Here we are constructing a Block specific to ``BLxxI-MO-BRICK-01``. We still
-pass in ``mri_prefix`` and ``pv_prefix`` because it makes it easier to see
-from the top level what is creating what.
-
-We then create a `ManagerController`, with a number of child Blocks and Parts
-(produced by ``includes``) that represent raw motors, co-ordinate systems,
-the trajectory scan and PMAC status EPICS templates.
-
-
-Define a scan Block
--------------------
-
-In the ``etc/malcolm/blocks`` subdirectory we will also make
-``pmac_master_scan_block.yaml``::
-
-    - builtin.parameters.string:
-        name: mri_prefix
-        description: MRI for created block
-
-    - builtin.parameters.string:
-        name: config_dir
-        description: Where to store saved configs
-
-    - builtin.parameters.string:
-        name: initial_design
-        description: Initial design to load for the scan
-
-    - scanning.controllers.RunnableController:
-        mri: $(mri_prefix)
-        config_dir: $(config_dir)
-        description: |
-          Hardware triggered scan, with PMAC providing trigger signals at
-          up to 300Hz
-        initial_design: $(initial_design)
-
-    - builtin.parts.LabelPart:
-
-    - scanning.parts.SimultaneousAxesPart:
-
-    - scanning.parts.DatasetTablePart:
-        name: DSET
-
-    - pmac.parts.PmacChildPart:
-        name: BRICK-01
-        mri: BLxxI-ML-BRICK-01
-        initial_visibility: True
+    ...
 
     - scanning.parts.DetectorChildPart:
         name: PANDA-01
         mri: BLxxI-ML-PANDA-01
         initial_visibility: True
 
+    - ADPandABlocks.blocks.panda_pcomp_block:
+        mri: $(mri_prefix):PCOMP
+        panda: BLxxI-ML-PANDA-01
+        pmac: BLxxI-ML-BRICK-01
 
-Again we take the ``mri_prefix`` and ``config_dir`` needed to create the Block,
-but this time we also take an ``initial_design``. This will allow us to create
-multiple instances of this scan Block with different configurations, and load
-the correct configuration for each Block. We pass this ``initial_design``
-through to the `RunnableController`, then add a number of parts:
+    # Make this initially invisible so it doesn't disturb existing scans
+    - ADPandABlocks.parts.PandAPcompPart:
+        name: PCOMP
+        mri: $(mri_prefix):PCOMP
+        initial_visibility: False
 
-.. list-table::
-    :widths: 20, 80
-    :header-rows: 1
-
-    * - Part
-      - Description
-
-    * - `LabelPart`
-      - Defines a human readable label for the Block. Typically 4 or 5 words
-        that describe the science case for this scan instance. Initially blank.
-
-    * - `SimultaneousAxesPart`
-      - Defines the superset of all axes that can be supplied as ``axesToMove``
-        at ``configure()``. Typically the scannable names of all of the motors
-        in a single co-ordinate system with fastest moving motor first, like
-        ``["stagex", "stagey", "stagez"]``. Initially blank.
-
-    * - `DatasetTablePart`
-      - As introduced in the `detector_tutorial`, this part will report the
-        datasets that any detectors produce.
-
-    * - `PmacChildPart`
-      - Takes the generator passed to ``configure()``, and iterates through it
-        in chunks, producing trajectory scan points that can be passed down to
-        a Pmac Block, like the one we created above.
-
-    * - `DetectorChildPart`
-      - As in the `scanning_tutorial`, this part controls a detector, which is
-        a runnable child block with a ``datasets`` Attribute.
+The `DetectorChildPart` definition for the PandA is unchanged, the PCOMP Block
+purely holds the data of which panda and which pmac to use, so all of the logic
+is contained in the PCOMP Part.
 
 .. note::
 
-    The fields that are likely to differ between scan instances (like
-    simultaneousAxes and label) are not given defaults here to avoid confusion.
-    They will be filled in at runtime and be placed in saved designs.
-
-
-Expose Blocks in a module
--------------------------
-
-We've made two YAML files to represent Blocks that can be instantiated by
-passing them parameters, but Malcolm expects Blocks creators to be
-Python callables that it can pass parameters to. This means we need to turn
-the YAML files into Python objects in some way. We could insert some magic here,
-but as `PEP 20`_ says:
-
-    Explicit is better than implicit.
-
-So let's declare to Malcolm exactly which YAML files should be turned into
-Python objects. We do this by placing a special file called ``__init__.py``
-into the ``etc/malcolm/blocks`` directory. This tells Python that this directory
-is a Python module, and to run the contents of ``__init__.py`` whenever the
-module is imported. We can place the following lines into this file to make a
-couple of Block creators from the YAML file:
-
-.. code-block:: python
-
-    from malcolm.yamlutil import make_block_creator, check_yaml_names
-
-    # Create some Block definitions from YAML files
-    brick01_block = make_block_creator(
-        __file__, "brick01_block.yaml")
-    pmac_master_scan_block = make_block_creator(
-        __file__, "pmac_master_scan_block.yaml")
-
-    # Expose all of the Block definitions, and nothing else
-    __all__ = check_yaml_names(globals())
-
-This calls `make_block_creator` a number of times on YAML files to turn them
-into Python objects, then `check_yaml_names` filters out anything that hasn't
-been derived from a YAML file, creating the ``__all__`` variable that tells
-Python what the public API of this module is.
-
-Finally, we also need an ``__init__.py`` in ``etc/malcolm`` so that Python
-knows the whole directory is a Python module. You can create it just by
-running::
-
-    touch etc/malcolm/__init__.py
+    The PandAPcompPart has initial_visibility set to False. This is because we
+    are adding this Part to an existing scan Block definition, which already has
+    instances and possibly saved configs. Loading a saved config will only
+    affect Parts and Blocks contained within it, so any existing saved config
+    will not touch this new PCOMP Part. If it was visible, it would contribute
+    to the existing scans too, which would make them error as the PandA wouldn't
+    have been setup for it.
 
 Setup the Devices
 -----------------
 
 We can now run up imalcolm by executing ``etc/malcolm/BLxxI-ML-MALC-01.yaml``,
-and open http://localhost:8008/gui/BLxxI-ML-SCAN-01 to see our scan Block. The
-first thing we should do it setup the motion controller. If we click the Auto
-Layout button, then click through to the ``BRICK-01`` layout and Auto Layout
-that, we will see the layout of motors in co-ordinate systems. We need to
-assign the two raw motors to any axes a-z in the co-ordinate system so that
-they can be trajectory scanned, then save the brick design:
+and open http://localhost:8008/gui/BLxxI-ML-SCAN-01 to see our scan Block.
+First, just check that the config we saved in the previous tutorial still works.
+It should run with no modifications. If this is all fine, we can move onto
+setting up the motion controller. We can start from our previous co-ordinate
+system design, then just uncheck the ``Output Triggers`` Attribute:
 
-.. image:: pmac_0.png
-
-The Brick is now in such a state that the `PmacChildPart` can run a scan on
-any motors in CS1.
-
-.. note::
-
-    Output Triggers is checked, this means that the PMAC will be told to output
-    GPIO triggers according to the scanpointgenerator point requested. A live
-    frame signal will be sent at the beginning of each point, then a dead frame
-    signal will be sent at the end of each point if it doesn't join onto the
-    next point.
+.. image:: panda_0.png
 
 We can then navigate back up and to the PandA, and load the `template_design_`
-``template_live_dead_framed_pcap``:
+``template_double_seq_pcomp``:
 
-.. image:: pmac_1.png
+.. image:: panda_1.png
+
+
 
 This design assumes you have the live and dead frame signals from the PMAC
 connected to TTLIN1 and TTLIN2. If this is not the case, you can connect them
@@ -404,7 +177,7 @@ this scan instance in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
     ...
 
     # Define the Scans
-    - BLxxI.blocks.pmac_master_scan_block:
+    - BLxxI.blocks.scan_block:
         mri_prefix: BLxxI-ML-SCAN-01
         config_dir: $(config_dir)
         initial_design: pmac_master_tomo
