@@ -5,12 +5,23 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
+=======
+
+env:
+    - PYMALCOLM_FULL_ORDEREDDICT=NO
+    - PYMALCOLM_FULL_ORDEREDDICT=YES
+    - EPICS_BASE=/usr/lib/epics EPICS_HOST_ARCH=linux-x86_64
 
 addons:
   apt:
+    sources:
+      - sourceline: 'deb https://epics.nsls2.bnl.gov/debian/ wheezy main contrib'
+        key_url: 'https://epics.nsls2.bnl.gov/debian/repo-key.pub'
     packages:
       - libhdf5-serial-dev
       - gdb
+      - epics-dev
+      - build-essential
 
 cache:
   directories:
@@ -29,14 +40,6 @@ install:
   - ifconfig
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
-  - sudo apt-get install apt-transport-https
-  - wget https://epics.nsls2.bnl.gov/debian/repo-key.pub
-  - sudo apt-key add repo-key.pub
-  - echo 'deb https://epics.nsls2.bnl.gov/debian/ wheezy main contrib' | sudo tee -a /etc/apt/sources.list
-  - echo 'deb-src https://epics.nsls2.bnl.gov/debian/ wheezy main contrib' | sudo tee -a /etc/apt/sources.list
-  - sudo apt-get update
-  - sudo apt-get install epics-dev build-essential
-  - export CATOOLS_LIBCA_PATH=/usr/lib/epics/lib/linux-x86_64
   - pip install "setuptools>=36"
   - pip install setuptools_dso epicscorelibs
   - pip install -r requirements/test.txt
