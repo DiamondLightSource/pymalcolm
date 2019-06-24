@@ -49,7 +49,7 @@ class PandATablePart(PandAFieldPart):
         fields = client.get_table_fields(block_name, field_name)
         if not fields:
             # Didn't put any metadata in, make some up
-            fields["VALUE"] = TableFieldData(31, 0, "The Value", None)
+            fields["VALUE"] = TableFieldData(31, 0, "The Value", None, True)
         for column_name, field_data in fields.items():
             nbits = field_data.bits_hi - field_data.bits_lo + 1
             if nbits < 1:
