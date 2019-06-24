@@ -38,7 +38,8 @@ def parse_yaml_version(file_path, work_area, prod_area):
         os.chdir(os.path.split(file_path)[0])
         try:
             ver = subprocess.check_output(
-                ['/usr/bin/git', 'describe', '--tags', '--exact-match']).strip('\n')
+                ['/usr/bin/git', 'describe',
+                 '--tags', '--exact-match']).strip('\n')
         except subprocess.CalledProcessError:
             ver = "Prod (unknown version)"
             print("Git error when parsing yaml version")
@@ -72,7 +73,8 @@ class StatsController(BasicController):
         else:
             stats["yaml_path"] = os.path.join(cwd, sys_call[2])
 
-        stats["yaml_ver"] = parse_yaml_version(stats["yaml_path"], '/dls_sw/work', '/dls_sw/prod')
+        stats["yaml_ver"] = parse_yaml_version(stats["yaml_path"],
+                                               '/dls_sw/work', '/dls_sw/prod')
 
         stats["pymalcolm_ver"] = version.__version__
         hostname = os.uname()[1]
