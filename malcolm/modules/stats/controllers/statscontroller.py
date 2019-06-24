@@ -39,7 +39,7 @@ def parse_yaml_version(file_path, work_area, prod_area):
         try:
             ver = subprocess.check_output(
                 ['/usr/bin/git', 'describe',
-                 '--tags', '--exact-match']).strip('\n')
+                 '--tags', '--exact-match']).strip(b'\n')
         except subprocess.CalledProcessError:
             ver = "Prod (unknown version)"
             print("Git error when parsing yaml version")
