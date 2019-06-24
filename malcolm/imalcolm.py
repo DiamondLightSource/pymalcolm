@@ -1,4 +1,4 @@
-#!/bin/env dls-python
+#!/dls_sw/prod/tools/RHEL7-x86_64/defaults/bin/dls-python
 import logging.config
 import threading
 import argparse
