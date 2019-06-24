@@ -47,7 +47,8 @@ class TestParseYamlVersion(unittest.TestCase):
             os.mkdir('/tmp/prod')
         except OSError:
             pass
-        self.testArea = '/tmp/prod/testpath-%s' % floor(time.time()).__repr__()[:-2]
+        self.testArea = '/tmp/prod/testpath-' +\
+                        floor(time.time()).__repr__()[:-2]
         os.mkdir(self.testArea)
         self.cwd = os.getcwd()
 
@@ -55,7 +56,6 @@ class TestParseYamlVersion(unittest.TestCase):
         os.chdir(self.cwd)
         subprocess.call(['rm', '-rf', self.testArea])
         os.rmdir('/tmp/prod')
-
 
     def test_simple_path_parse(self):
         assert parse_yaml_version('/not/work/or/prod/something.yaml',
