@@ -29,6 +29,24 @@ def start_ioc(stats, prefix):
     return ioc
 
 
+def parse_yaml_version(file_path, work_area, prod_area):
+    ver = "unknown"
+    if file_path.startswith(work_area):
+        ver = "Work"
+    elif file_path.startswith(prod_area):
+        cwd = os.getcwd()
+        os.chdir(os.path.split(file_path)[0])
+        try:
+            ver = subprocess.check_output(
+                ['/usr/bin/git', 'describe', '--tags', '--exact-match']).strip('\n')
+        except subprocess.CalledProcessError:
+            ver = "Prod (unknown version)"
+            print("Git error when parsing yaml version")
+
+        os.chdir(cwd)
+    return ver
+
+
 with Anno("prefix for stats PVs"):
     APvPrefix = str
 
@@ -54,20 +72,7 @@ class StatsController(BasicController):
         else:
             stats["yaml_path"] = os.path.join(cwd, sys_call[2])
 
-        stats["yaml_ver"] = "unknown"
-        if stats["yaml_path"].startswith('/dls_sw/work'):
-            stats["yaml_ver"] = "Work"
-        elif stats["yaml_path"].startswith('/dls_sw/prod'):
-            cwd = os.getcwd()
-            os.chdir(stats["yaml_path"])
-            try:
-                stats["yaml_ver"] = subprocess.check_output(
-                    ['/usr/bin/git', 'describe', '--exact-match']).strip('\n')
-            except subprocess.CalledProcessError:
-                stats["yaml_ver"] = "Prod (unknown version)"
-                print("Git error when parsing yaml version")
-
-            os.chdir(cwd)
+        stats["yaml_ver"] = parse_yaml_version(stats["yaml_path"], '/dls_sw/work', '/dls_sw/prod')
 
         stats["pymalcolm_ver"] = version.__version__
         hostname = os.uname()[1]
