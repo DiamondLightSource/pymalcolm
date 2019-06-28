@@ -6,6 +6,10 @@
     name: prefix
     description: Prefix for stats PVs
 
-- stats.controllers.StatsController:
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+
+- stats.parts.StatsPart:
+    name: $(prefix)
     mri: $(mri)
     prefix: $(prefix)
