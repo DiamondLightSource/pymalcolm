@@ -1,15 +1,17 @@
 import unittest
 
 from malcolm.core import Process
-from malcolm.modules.stats.controllers import StatsController, \
+from malcolm.modules.builtin.controllers import StatefulController
+from malcolm.modules.stats.parts import StatsPart, \
     parse_yaml_version
 
-from malcolm.version import __version__
 from cothread import catools
 import time
 import os
 import subprocess
 from math import floor
+
+from malcolm.version import __version__
 
 
 class TestBasicController(unittest.TestCase):
@@ -17,7 +19,8 @@ class TestBasicController(unittest.TestCase):
 
     def setUp(self):
         self.process = Process("proc")
-        self.o = StatsController("MyMRI", prefix=self.prefix)
+        self.o = StatefulController("MyMRI")
+        self.o.add_part(StatsPart("stats", "MyMRI", prefix=self.prefix))
         self.process.add_controller(self.o)
         self.process.start()
         self.b = self.process.block_view("MyMRI")
@@ -26,13 +29,15 @@ class TestBasicController(unittest.TestCase):
         self.process.stop(timeout=2)
 
     def test_sets_stats(self):
-        assert self.b.pymalcolmVer.value == __version__
+        # In unit tests, this depends on where the test-runner is run from
+        assert self.b.pymalcolmVer.value in ["Work", __version__]
         hostname = os.uname()[1]
         hostname = hostname if len(hostname) < 39 else hostname[:35] + '...'
         assert self.b.hostname.value == hostname
 
     def test_starts_ioc(self):
-        assert catools.caget(self.prefix + ":PYMALCOLM:VER") == __version__
+        assert catools.caget(self.prefix + ":PYMALCOLM:VER") in ["Work",
+                                                                 __version__]
 
     def test_ioc_ticks(self):
         uptime = catools.caget(self.prefix + ":UPTIME:RAW")
@@ -47,7 +52,7 @@ class TestParseYamlVersion(unittest.TestCase):
             os.mkdir('/tmp/prod')
         except OSError:
             pass
-        self.testArea = '/tmp/prod/testpath-' +\
+        self.testArea = '/tmp/prod/testpath-' + \
                         floor(time.time()).__repr__()[:-2]
         os.mkdir(self.testArea)
         self.cwd = os.getcwd()
