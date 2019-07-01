@@ -324,12 +324,13 @@ not_malcolm_logo_svg = """\
 
 def start_ioc(stats, prefix):
     db_macros = "prefix='%s'" % prefix
+    softIoc_bin = os.environ["EPICS_BASE"] + "/bin/linux-x86_64/softIoc"
     for key, value in stats.items():
         db_macros += ",%s='%s'" % (key, value)
     root = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
     db_template = os.path.join(root, 'db', 'stats.template')
     ioc = subprocess.Popen(
-        ["softIoc", "-m", db_macros, "-d", db_template],
+        [softIoc_bin, "-m", db_macros, "-d", db_template],
         stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     # wait for IOC to start
     pid_rbv = catools.caget("%s:PID" % prefix, timeout=5)
