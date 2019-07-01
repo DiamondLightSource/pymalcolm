@@ -392,7 +392,10 @@ class StatsPart(parts.ChildPart):
                                                     '/dls_sw/work',
                                                     '/dls_sw/prod')
 
-        self.stats["pymalcolm_ver"] = version.__version__
+        if self.stats["pymalcolm_path"].startswith('/dls_sw/prod'):
+            self.stats["pymalcolm_ver"] = version.__version__
+        else:
+            self.stats["pymalcolm_ver"] = "Work"
         hostname = os.uname()[1]
         self.stats["kernel"] = "%s %s" % (os.uname()[0], os.uname()[2])
         self.stats["hostname"] = hostname if len(hostname) < 39 else hostname[
