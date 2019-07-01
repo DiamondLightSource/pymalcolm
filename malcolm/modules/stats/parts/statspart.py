@@ -324,7 +324,12 @@ not_malcolm_logo_svg = """\
 
 def start_ioc(stats, prefix):
     db_macros = "prefix='%s'" % prefix
-    softIoc_bin = os.environ["EPICS_BASE"] + "/bin/linux-x86_64/softIoc"
+    epics_base = None
+    try:
+        epics_base = os.environ["EPICS_BASE"]
+    except KeyError:
+        epics_base = "/dls_sw/epics/R3.14.12.7/base"
+    softIoc_bin = epics_base + "/bin/linux-x86_64/softIoc"
     for key, value in stats.items():
         db_macros += ",%s='%s'" % (key, value)
     root = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
