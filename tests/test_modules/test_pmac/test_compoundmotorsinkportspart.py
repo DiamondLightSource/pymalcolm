@@ -42,5 +42,5 @@ class TestCompoundMotorSinkPortsPart(unittest.TestCase):
         update.ok = False
         self.o._update_value(update)
         assert self.b.cs.value == ""
-        assert self.b.cs.alarm.severity == AlarmSeverity.INVALID_ALARM
+        assert self.b.cs.alarm.severity == AlarmSeverity.UNDEFINED_ALARM
 

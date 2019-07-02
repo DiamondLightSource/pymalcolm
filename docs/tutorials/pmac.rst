@@ -263,7 +263,7 @@ is a Python module, and to run the contents of ``__init__.py`` whenever the
 module is imported. We can place the following lines into this file to make a
 couple of Block creators from the YAML file:
 
-.. highlight:: python
+.. code-block:: python
 
     from malcolm.yamlutil import make_block_creator, check_yaml_names
 

@@ -7,7 +7,20 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
-- all identifiers in YAML must now be in snake_case
+Nothing yet
+
+`4-0b2`_ - 2019-06-20
+---------------------
+
+Changed:
+
+- All PV arguments are now pv_prefix, not prefix
+
+Added:
+
+- PMAC Tutorial
+- Live and Dead frame template for PandA
+
 
 `4-0b1`_ - 2019-05-03
 ---------------------
@@ -26,6 +39,7 @@ Changed:
 - PMAC should now be a ManagerController, with PmacChildPart in the scan
 - PandA now specifies datasets in a Bits and Positions table
 - Web GUI now takes last run parameters from server for methods
+- All identifiers in YAML must now be in snake_case
 
 Added:
 
@@ -369,7 +383,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-0b1...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-0b2...HEAD
+.. _4-0b2: https://github.com/dls-controls/pymalcolm/compare/4-0b1..4-0b2
 .. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-4-1..4-0b1
 .. _3-5: https://github.com/dls-controls/pymalcolm/compare/3-4-1...3-5
 .. _3-4-1: https://github.com/dls-controls/pymalcolm/compare/3-4...3-4-1

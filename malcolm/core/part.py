@@ -11,6 +11,7 @@ from .camel import CAMEL_RE
 from .concurrency import Spawned
 from .models import MethodModel, AttributeModel, MethodMeta
 
+
 T = TypeVar("T")
 
 if TYPE_CHECKING:
@@ -105,7 +106,14 @@ class InfoRegistry(object):
 
     def report(self, reporter, info):
         # type: (object, Info) -> None
-        callback = self._reportable_infos[type(info)]
+        typ = type(info)
+        try:
+            callback = self._reportable_infos[typ]
+        except KeyError:
+            raise ValueError(
+                "Don't know how to report a %s, only %s\n"
+                "Did you use the wrong type of Controller?" % (
+                    typ.__name__, [x.__name__ for x in self._reportable_infos]))
         callback(reporter, info)
 
 

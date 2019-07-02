@@ -52,8 +52,9 @@ class CompoundMotorSinkPortsPart(Part):
 
     def _update_value(self, value):
         # type: (Any) -> None
-        if not value.ok or value.severity != 0:
-            self.attr.set_value(None, alarm=Alarm.invalid("Bad PV value"))
+        if not value.ok:
+            self.attr.set_value(
+                None, alarm=Alarm.disconnected("PV Disconnected"))
         else:
             # Split "@asyn(PORT,num)" into ["PORT", "num"]
             split = value.split("(")[1].rstrip(")").split(",")
