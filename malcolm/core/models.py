@@ -2,7 +2,8 @@ import inspect
 
 from annotypes import Array, Anno, Union, Sequence, Mapping, Any, to_array, \
     Optional, TYPE_CHECKING, WithCallTypes, NO_DEFAULT, Serializable, \
-    deserialize_object, FrozenOrderedDict
+    deserialize_object, FrozenOrderedDict, issubclass
+
 import numpy as np
 from enum import Enum
 
