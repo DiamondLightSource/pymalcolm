@@ -93,6 +93,19 @@ in the `hardware_layer_`.
 Introduced in the `motion_tutorial` and expanded on in the `detector_tutorial`.
 
 
+.. _exports_:
+
+Exports
+-------
+
+An `attribute_` of a `ManagerController`, this allows promoting of child
+`Attributes <attribute_>` and `Methods <method_>` to the parent. It can be used
+to define an interface for a top level part like the `PandAPcompPart` to use,
+while allowing flexibility of the exact layout of the `block_` design.
+
+Introduced in the `panda_tutorial`.
+
+
 .. _future_:
 
 Future

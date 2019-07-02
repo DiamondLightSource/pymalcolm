@@ -185,12 +185,12 @@ class TestPcompPart(ChildTestCase):
         assert table.repeats == [1, 3, 1, 1, 3, 1]
         assert table.trigger == [LT, I, I, GT, I, I]
         assert table.position == [50, 0, 0, -350, 0, 0]
-        assert table.time1 == [hf, hf, hb, hf, hf, 125]
+        assert table.time1 == [hf, hf, hb, hf, hf, 125000000]
         assert table.outa1 == [1, 1, 0, 1, 1, 0]  # Live
         assert table.outb1 == [0, 0, 1, 0, 0, 1]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
                [0, 0, 0, 0, 0, 0]
-        assert table.time2 == [hf, hf, hb, hf, hf, 125]
+        assert table.time2 == [hf, hf, hb, hf, hf, 125000000]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
                table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
         # Check we didn't press the gate part
@@ -234,12 +234,12 @@ class TestPcompPart(ChildTestCase):
         assert table.repeats == [5, 1]
         assert table.trigger == [I, I]
         assert table.position == [0, 0]
-        assert table.time1 == [hf, 125]
+        assert table.time1 == [hf, 125000000]
         assert table.outa1 == [1, 0]  # Live
         assert table.outb1 == [0, 1]  # Dead
         assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
             [0, 0]
-        assert table.time2 == [hf, 125]
+        assert table.time2 == [hf, 125000000]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
             table.oute2 == table.outf2 == [0, 0]
         # Check we didn't press the gate part

@@ -1,0 +1,335 @@
+{
+  "attributes": {
+    "layout": {
+      "POS": {
+        "x": 467.3979460847238, 
+        "y": 122.31851866970635, 
+        "visible": true
+      }, 
+      "HDF5": {
+        "x": 636.5712451861359, 
+        "y": 122.31851866970635, 
+        "visible": true
+      }, 
+      "LUT1": {
+        "x": 137.45699614890896, 
+        "y": 118.291768034126, 
+        "visible": true
+      }, 
+      "LUT2": {
+        "x": -1031.305462653289, 
+        "y": -207.40439867785412, 
+        "visible": true
+      }, 
+      "LUT3": {
+        "x": -1035.7146575773581, 
+        "y": 94.86104754640252, 
+        "visible": true
+      }, 
+      "LUT4": {
+        "x": -260.13958810068584, 
+        "y": -191.4928807526062, 
+        "visible": true
+      }, 
+      "LUT5": {
+        "x": -302.29316043732456, 
+        "y": 94.80765319094854, 
+        "visible": true
+      }, 
+      "PCAP": {
+        "x": 316.86392811296537, 
+        "y": -48.55364625120353, 
+        "visible": true
+      }, 
+      "SEQ1": {
+        "x": -569.7226036104753, 
+        "y": -224.5744978387999, 
+        "visible": true
+      }, 
+      "SEQ2": {
+        "x": -563.1678108314261, 
+        "y": 78.86562420544129, 
+        "visible": true
+      }, 
+      "SRGATE1": {
+        "x": 29.625873627157716, 
+        "y": -50.98889607712573, 
+        "visible": true
+      }, 
+      "SRGATE2": {
+        "x": -1326.2162783993454, 
+        "y": -35.3187952879029, 
+        "visible": true
+      }, 
+      "TTLOUT1": {
+        "x": -38.840821566110094, 
+        "y": -320.8084578821383, 
+        "visible": true
+      }
+    },
+    "exports": {
+      "SEQ1.table": "seqTableA", 
+      "SEQ2.table": "seqTableB", 
+      "SRGATE2.forceSet": "seqSetEnable"
+    }
+  },
+  "children": {
+    "POS": {
+      "arrayCallbacks": true, 
+      "attributesFile": ""
+    },
+    "HDF5": {
+      "arrayCallbacks": false, 
+      "attributesFile": ""
+    },
+    "LUT1": {
+      "label": "End of Frame", 
+      "inputs": "expanded", 
+      "inpa": "LUT4.OUT", 
+      "inpaDelay": 0, 
+      "inpb": "LUT5.OUT", 
+      "inpbDelay": 0, 
+      "inpc": "SRGATE1.OUT", 
+      "inpcDelay": 0, 
+      "inpd": "ZERO", 
+      "inpdDelay": 0, 
+      "inpe": "ZERO", 
+      "inpeDelay": 0, 
+      "parameters": "expanded", 
+      "typea": "Pulse-On-Rising-Edge", 
+      "typeb": "Pulse-On-Rising-Edge", 
+      "typec": "Input-Level", 
+      "typed": "Input-Level", 
+      "typee": "Input-Level", 
+      "func": "(A|B)&C", 
+      "outputs": "expanded"
+    }, 
+    "LUT2": {
+      "label": "SeqA Enable", 
+      "inputs": "expanded", 
+      "inpa": "SEQ2.ACTIVE", 
+      "inpaDelay": 0, 
+      "inpb": "PCAP.ACTIVE", 
+      "inpbDelay": 0, 
+      "inpc": "SRGATE2.OUT", 
+      "inpcDelay": 0, 
+      "inpd": "ZERO", 
+      "inpdDelay": 0, 
+      "inpe": "ZERO", 
+      "inpeDelay": 0, 
+      "parameters": "expanded", 
+      "typea": "Input-Level", 
+      "typeb": "Input-Level", 
+      "typec": "Input-Level", 
+      "typed": "Input-Level", 
+      "typee": "Input-Level", 
+      "func": "~A&B&C", 
+      "outputs": "expanded"
+    }, 
+    "LUT3": {
+      "label": "SeqB Enable", 
+      "inputs": "expanded", 
+      "inpa": "SEQ1.ACTIVE", 
+      "inpaDelay": 0, 
+      "inpb": "PCAP.ACTIVE", 
+      "inpbDelay": 8, 
+      "inpc": "SRGATE2.OUT", 
+      "inpcDelay": 8, 
+      "inpd": "ZERO", 
+      "inpdDelay": 0, 
+      "inpe": "ZERO", 
+      "inpeDelay": 0, 
+      "parameters": "expanded", 
+      "typea": "Input-Level", 
+      "typeb": "Input-Level", 
+      "typec": "Input-Level", 
+      "typed": "Input-Level", 
+      "typee": "Input-Level", 
+      "func": "~A&B&C", 
+      "outputs": "expanded"
+    }, 
+    "LUT4": {
+      "label": "Live Frame", 
+      "inputs": "expanded", 
+      "inpa": "SEQ1.OUTA", 
+      "inpaDelay": 0, 
+      "inpb": "SEQ2.OUTA", 
+      "inpbDelay": 0, 
+      "inpc": "ZERO", 
+      "inpcDelay": 0, 
+      "inpd": "ZERO", 
+      "inpdDelay": 0, 
+      "inpe": "ZERO", 
+      "inpeDelay": 0, 
+      "parameters": "expanded", 
+      "typea": "Input-Level", 
+      "typeb": "Input-Level", 
+      "typec": "Input-Level", 
+      "typed": "Input-Level", 
+      "typee": "Input-Level", 
+      "func": "A|B", 
+      "outputs": "expanded"
+    }, 
+    "LUT5": {
+      "label": "Dead Frame", 
+      "inputs": "expanded", 
+      "inpa": "SEQ1.OUTB", 
+      "inpaDelay": 0, 
+      "inpb": "SEQ2.OUTB", 
+      "inpbDelay": 0, 
+      "inpc": "ZERO", 
+      "inpcDelay": 0, 
+      "inpd": "ZERO", 
+      "inpdDelay": 0, 
+      "inpe": "ZERO", 
+      "inpeDelay": 0, 
+      "parameters": "expanded", 
+      "typea": "Input-Level", 
+      "typeb": "Input-Level", 
+      "typec": "Input-Level", 
+      "typed": "Input-Level", 
+      "typee": "Input-Level", 
+      "func": "A|B", 
+      "outputs": "expanded"
+    }, 
+    "PCAP": {
+      "label": "Position Capture", 
+      "inputs": "expanded", 
+      "enable": "ONE", 
+      "enableDelay": 0, 
+      "gate": "SRGATE1.OUT", 
+      "gateDelay": 0, 
+      "trig": "LUT1.OUT", 
+      "trigDelay": 0, 
+      "parameters": "expanded", 
+      "trigEdge": "Rising", 
+      "shiftSum": 0, 
+      "outputs": "expanded", 
+      "tsStartCapture": "Value", 
+      "tsEndCapture": "No", 
+      "tsTrigCapture": "No", 
+      "samplesCapture": "Value", 
+      "readbacks": "expanded", 
+      "attributesFile": "", 
+      "triggerMode": "Internal"
+    }, 
+    "SEQ1": {
+      "label": "SeqA", 
+      "inputs": "expanded", 
+      "enable": "LUT2.OUT", 
+      "enableDelay": 0, 
+      "bita": "ZERO", 
+      "bitaDelay": 0, 
+      "bitb": "ZERO", 
+      "bitbDelay": 0, 
+      "bitc": "ZERO", 
+      "bitcDelay": 0, 
+      "posa": "INENC2.VAL", 
+      "posb": "INENC1.VAL", 
+      "posc": "ZERO", 
+      "parameters": "expanded", 
+      "table": {
+        "typeid": "malcolm:core/Table:1.0",
+        "repeats": [],
+        "trigger": [],
+        "position": [],
+        "time1": [],
+        "outa1": [],
+        "outb1": [],
+        "outc1": [],
+        "outd1": [],
+        "oute1": [],
+        "outf1": [],
+        "time2": [],
+        "outa2": [],
+        "outb2": [],
+        "outc2": [],
+        "outd2": [],
+        "oute2": [],
+        "outf2": []
+      },
+      "prescale": 0.0, 
+      "prescaleUnits": "s", 
+      "repeats": 0, 
+      "outputs": "expanded", 
+      "readbacks": "expanded"
+    }, 
+    "SEQ2": {
+      "label": "SeqB", 
+      "inputs": "expanded", 
+      "enable": "LUT3.OUT", 
+      "enableDelay": 0, 
+      "bita": "ZERO", 
+      "bitaDelay": 0, 
+      "bitb": "ZERO", 
+      "bitbDelay": 0, 
+      "bitc": "ZERO", 
+      "bitcDelay": 0, 
+      "posa": "INENC2.VAL", 
+      "posb": "INENC1.VAL", 
+      "posc": "ZERO", 
+      "parameters": "expanded", 
+      "table": {
+        "typeid": "malcolm:core/Table:1.0",
+        "repeats": [],
+        "trigger": [],
+        "position": [],
+        "time1": [],
+        "outa1": [],
+        "outb1": [],
+        "outc1": [],
+        "outd1": [],
+        "oute1": [],
+        "outf1": [],
+        "time2": [],
+        "outa2": [],
+        "outb2": [],
+        "outc2": [],
+        "outd2": [],
+        "oute2": [],
+        "outf2": []
+      }, 
+      "prescale": 0.0, 
+      "prescaleUnits": "s", 
+      "repeats": 0, 
+      "outputs": "expanded", 
+      "readbacks": "expanded"
+    }, 
+    "SRGATE1": {
+      "label": "Frame Gate", 
+      "inputs": "expanded", 
+      "enable": "PCAP.ACTIVE", 
+      "enableDelay": 0, 
+      "set": "LUT4.OUT", 
+      "setDelay": 0, 
+      "rst": "LUT5.OUT", 
+      "rstDelay": 0, 
+      "parameters": "expanded", 
+      "whenDisabled": "Set output low", 
+      "setEdge": "Rising", 
+      "rstEdge": "Rising", 
+      "outputs": "expanded"
+    }, 
+    "SRGATE2": {
+      "label": "Seq Enable", 
+      "inputs": "expanded", 
+      "enable": "ONE", 
+      "enableDelay": 0, 
+      "set": "ZERO", 
+      "setDelay": 0, 
+      "rst": "PCAP.ACTIVE", 
+      "rstDelay": 0, 
+      "parameters": "expanded", 
+      "whenDisabled": "Set output low", 
+      "setEdge": "Rising", 
+      "rstEdge": "Falling", 
+      "outputs": "expanded"
+    }, 
+    "TTLOUT1": {
+      "label": "Detector Trigger", 
+      "inputs": "expanded", 
+      "val": "LUT4.OUT", 
+      "valDelay": 0
+    }
+  }
+}

@@ -395,16 +395,7 @@ This will make a saved config that captures the device design names::
           "design": "a_z_in_cs1"
         },
         "PANDA-01": {
-          "design": "pmac_master",
-          "attributesToCapture": {
-            "typeid": "malcolm:core/Table:1.0",
-            "name": [],
-            "sourceId": [],
-            "description": [],
-            "sourceType": [],
-            "dataType": [],
-            "datasetType": []
-          }
+          "design": "pmac_master"
         }
       }
     }

@@ -51,15 +51,12 @@
   "children": {
     "POS": {
       "arrayCallbacks": true, 
-      "attributesFile": "", 
-      "input": "PANDA.DRV"
-    }, 
+      "attributesFile": ""
+    },
     "HDF5": {
       "arrayCallbacks": false, 
-      "attributesFile": "", 
-      "input": "PANDA.POS", 
-      "cacheFramesPerChunk": 1
-    }, 
+      "attributesFile": ""
+    },
     "LUT1": {
       "label": "End of Frame", 
       "inputs": "expanded", 

@@ -86,29 +86,44 @@ We can then navigate back up and to the PandA, and load the `template_design_`
 
 .. image:: panda_1.png
 
+This design sets up a pair of SEQ blocks that Malcolm will write to to produce
+the live and dead signals based on encoder inputs. You should wire any input
+encoders to ``posa``, ``posb``, ``posc`` of **both** SEQ Blocks.
 
+The Blocks after the SEQ blocks are very similar to the PMAC live and dead
+frame processing (minus the PULSE block as PandA will drop its pulse outputs
+on disable). The live and dead signals are turned into a detector trigger, PCAP
+trigger and gate.
 
-This design assumes you have the live and dead frame signals from the PMAC
-connected to TTLIN1 and TTLIN2. If this is not the case, you can connect them
-to the correct inputs, like the FMC_24V_IN signals for example.
+The Blocks before the SEQ blocks make sure that the SEQ Blocks act as a double
+buffered design, when one ends it flips to the other, until no more frames are
+to be output. There is a delay on the inputs of LUT3 to make sure that SEQ1 is
+always the first to fire. There is also an SRGATE that acts as a trigger to
+start when the motors are in position.
 
-Each rising edge of a live frame generates a short trigger pulse, which is sent
-to a detector on TTLOUT2. Again, you can connect detectors on different outputs
-to this signal. The reason we don't connect it directly to the live frame signal
-is because when you interrupt the PMAC it doesn't reset the GPIOs, and the arm
-of the detector may come before these signals are reset, creating one false
-trigger.
+So that Malcolm knows which scannable is connected to which input of the SEQ
+Blocks, the Positions table needs to be setup:
 
-Next we come to the Frame Gate. This is set high by a live frame pulse, and
-set low by a dead frame. It will be high for an entire series of joined frames,
-and low during the turnarounds. We use this to gate the PCAP averaging of
-positions so they are not averaged during the turnarounds.
+.. image:: panda_2.png
 
-Fed from this is the End of Frame signal. This fires whenever we get a live or
-dead frame signal, but not while the Frame Gate is active. This effectively
-means we will get a short pulse at the end of each frame, which we use to
-trigger PCAP to output the current capture values, and advance to the next
-frame.
+The positions the sequencer inputs are connected to need to be setup with the
+correct scale and offset (normally inherited from the EPICS motor records with
+ADPandABlocksMotorSync.template), and a dataset name that matches the scannable
+name.
+
+We also need to tell Malcolm what sequencers to use and how to enable when the
+motors are in position. We do this with the `exports_` table:
+
+.. image:: panda_3.png
+
+The names on the right are listed in the documentation for the `PandAPcompPart`
+as the interface it expects to be exported by the PandA. This allows for mixing
+of functionality in a single design, with multiple parts possibly working
+on different parts of the same PandA. The names on the left are the child
+fields that should be exported.
+
+In this case we are exporting everything that needs to change, namely the two
+SEQ tables, and the SRGATE ``forceSet()`` Method.
 
 Now we have changed the inputs and outputs to this chain of Blocks, we can
 save the design with a new name.
@@ -116,16 +131,11 @@ save the design with a new name.
 Setup the Scan
 --------------
 
-Now we have setup each Block in the `device_layer_`, it is time to setup the
-Scan Block. We do this by:
+We can now setup the scan Block in the same way as the `pmac_tutorial` by:
 
-- Setting the scan ``Label`` to a suitable short phrase that can be placed on
-  a GDA GUI. E.g. "Small stage tomography", or "Fine stage XRF + Imaging"
-- Setting ``Simultaneous Axes`` to the scannable names of all of the motors
-  in the CS with fastest moving motor first, like
-  ``["stagex", "stagey", "stagez"]``
-- Saving the design with a name that is similar to the label. E.g. "t1_tomo" or
-  "t2_xspress3_excalibur"
+- Setting the scan ``Label``
+- Setting ``Simultaneous Axes``
+- Saving the design with a name that is similar to the label
 
 This will make a saved config that captures the device design names::
 
@@ -141,6 +151,11 @@ This will make a saved config that captures the device design names::
             "x": 0.0,
             "y": 0.0,
             "visible": true
+          },
+          "PCOMP": {
+            "x": 258.5,
+            "y": 116.5,
+            "visible": true
           }
         },
         "exports": {},
@@ -148,31 +163,33 @@ This will make a saved config that captures the device design names::
            "stagea",
            "stagex"
         ],
-        "label": "PMAC Master Tomography"
+        "label": "PandA Master Tomography"
       },
       "children": {
         "BRICK-01": {
-          "design": "a_z_in_cs1"
+          "design": "a_z_in_cs1_no_triggers"
         },
         "PANDA-01": {
-          "design": "pmac_master",
-          "attributesToCapture": {
-            "typeid": "malcolm:core/Table:1.0",
-            "name": [],
-            "sourceId": [],
-            "description": [],
-            "sourceType": [],
-            "dataType": [],
-            "datasetType": []
-          }
+          "design": "panda_master"
+        }
+        "PCOMP": {
+          "panda": "BLxxI-ML-PANDA-01",
+          "pmac": "BLxxI-ML-BRICK-01"
         }
       }
     }
 
-We can now run a test scan to make sure the correct data is produced, either
-with a generator on the commandline, or with the Web GUI, as in previous
-tutorials. If it all works as expected, we can set the ``initial_design`` for
-this scan instance in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
+.. note::
+
+    We have made a new design for SCAN-01. This means we can switch between
+    trigger schemes on the same scan Block without having to change anything in
+    GDA. If you need both trigger schemes to be available in GDA, then leave the
+    first scan as it was, and make a second scan Block, setting it up according
+    to the intructions above
+
+If we now want this to always be the default setup for this Scan, then we
+can set the ``initial_design`` for this scan instance in
+``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
 
     ...
 
@@ -180,36 +197,18 @@ this scan instance in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
     - BLxxI.blocks.scan_block:
         mri_prefix: BLxxI-ML-SCAN-01
         config_dir: $(config_dir)
-        initial_design: pmac_master_tomo
+        initial_design: panda_master_tomo
 
     # More scans here...
 
     ...
 
-If we need a similar scan with a different set of detectors active, we can
-just make a new instance of the same scan block, repeat the setup scan steps
-with a new label and design name, and save this design in a similar way.
 
 Conclusion
 ----------
 This tutorial has given us an understanding of how to perform a scan with the
-PMAC acting as master, sending trigger pulses to a PandA. We are limited to
-about 300Hz as we have to send all the points down to the PMAC via the
-trajectory scan. In the next tutorial we will see how the PandA can act as
-master, using the positions from the encoders to generate pulses, allowing
-kHz rates of scanning.
-
-.. _GeoBrick LV IMS-II:
-    http://faradaymotioncontrols.co.uk/geo-brick-lv/
+PandA acting as master, doing position compare on encoders and sending time
+based triggers to a detector.
 
 .. _PandABox:
     https://www.ohwr.org/project/pandabox/wikis/home
-
-.. _PEP 20:
-    https://www.python.org/dev/peps/pep-0020/
-
-.. _EPICS pmac:
-    https://github.com/dls-controls/pmac
-
-.. _ADPandaBlocks:
-    https://github.com/PandABlocks/ADPandABlocks

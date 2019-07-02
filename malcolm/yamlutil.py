@@ -148,12 +148,11 @@ def make_block_creator(yaml_path, filename=None):
             the yaml_path (so yaml_path can be __file__)
 
     Returns:
-        function: A collection function decorated with @takes. This can be
-            used in other blocks or instantiated by the process. If the
-            YAML text specified controllers or parts then a block instance
-            with the given name will be instantiated. If there are any
-            blocks listed then they will be called. All created blocks
-            by this or any sub collection will be returned
+        A collection function decorated with @takes. This can be used in other
+        blocks or instantiated by the process. If the YAML text specified
+        controllers or parts then a block instance with the given name will be
+        instantiated. If there are any blocks listed then they will be called.
+        All created controllers by this or any sub collection will be returned
     """
     sections, yamlname, docstring = Section.from_yaml(yaml_path, filename)
     yamldir = os.path.dirname(os.path.abspath(yaml_path))

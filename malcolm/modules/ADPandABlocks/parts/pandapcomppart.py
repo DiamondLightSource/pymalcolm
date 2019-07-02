@@ -30,16 +30,16 @@ AInitialVisibility = builtin.parts.AInitialVisibility
 # How long is a single tick if prescaler is 0
 TICK = 8e-9
 
-# Minimum number of ticks for a phase to generate a reasonable length pulse
-# that might travel over ttl
-MIN_PHASE = 125  # 125 ticks = 1 us
+# How long the last pulse should be (50% duty cycle) to make sure we don't flip
+# to an unfilled sequencer and produce a false pulse
+LAST_PULSE = 125000000  # ticks = 1s
 
 # Maximum repeats of a single row
 MAX_REPEATS = 4096
 
 
 def seq_row(repeats=1, trigger=Trigger.IMMEDIATE, position=0,
-            half_duration=MIN_PHASE, live=0, dead=0):
+            half_duration=LAST_PULSE, live=0, dead=0):
     # type: (int, str, int, int, int, int) -> List
     """Create a 50% duty cycle pulse with phase1 having given live/dead values
     """
@@ -107,7 +107,13 @@ def _what_moves_most(point, axis_mapping):
 
 class PandAPcompPart(builtin.parts.ChildPart):
     """Part for operating a pair of SEQ blocks in a PandA to do position
-    compare"""
+    compare at the start of each row and time based pulses within the row.
+    Needs the following exports:
+
+    - seqTableA: table Attribute of the first SEQ block
+    - seqTableB: table Attribute of the second SEQ block
+    - seqSetEnable: forceSet Method of an SRGATE that is used to gate both SEQs
+    """
 
     def __init__(self, name, mri, initial_visibility=None):
         # type: (APartName, AMri, AInitialVisibility) -> None
@@ -291,7 +297,7 @@ class PandAPcompPart(builtin.parts.ChildPart):
                 rows.append(seq_row(half_duration=half_frame, live=1))
             if i == self.scan_up_to - 1:
                 # Last row, one last dead frame signal
-                rows.append(seq_row(dead=1))
+                rows.append(seq_row(half_duration=LAST_PULSE, dead=1))
             self.last_point = point
             if len(rows) > SEQ_TABLE_ROWS - 3:
                 # If we don't have enough space for more rows, stop here
