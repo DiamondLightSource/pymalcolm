@@ -2,7 +2,7 @@ import inspect
 
 from annotypes import Array, Anno, Union, Sequence, Mapping, Any, to_array, \
     Optional, TYPE_CHECKING, WithCallTypes, NO_DEFAULT, Serializable, \
-    deserialize_object, FrozenOrderedDict, issubclass
+    deserialize_object, FrozenOrderedDict
 
 import numpy as np
 from enum import Enum
@@ -49,10 +49,10 @@ class Model(Serializable):
         for name, ct in self.call_types.items():
             if ct.is_mapping:
                 child = getattr(self, name)
-                if child and issubclass(ct.typ[1], Model):
+                if child and Model.matches_type(ct.typ[1]):
                     for k, v in child.items():
                         v.set_notifier_path(notifier, self.path + [name, k])
-            elif issubclass(ct.typ, Model):
+            elif Model.matches_type(ct.typ):
                 assert not ct.is_array, \
                     "Can't deal with Arrays of Models %s" % ct
                 child = getattr(self, name)
@@ -70,7 +70,7 @@ class Model(Serializable):
                 # Cast to right type, this will do some cheap validation
                 value = ct(value)  # type: Array
                 # Check we have the right type
-                assert not issubclass(ct.typ, Model), \
+                assert not Model.matches_type(ct.typ), \
                     "Can't handle Array[Model] at the moment"
                 if isinstance(value.seq, (tuple, list)):
                     # Variable array, check types of each instance
@@ -89,7 +89,7 @@ class Model(Serializable):
                     check_type(k, ktype)
                     check_type(v, vtype)
                 # If we are setting structures of Models then sort notification
-                if issubclass(ct.typ[1], Model):
+                if Model.matches_type(ct.typ[1]):
                     # If we have old Models then stop them notifying
                     child = getattr(self, name, {})
                     if child:
@@ -100,7 +100,7 @@ class Model(Serializable):
                                             self.path + [name, k])
             else:
                 # If we are setting a Model then sort notification
-                if issubclass(ct.typ, Model):
+                if Model.matches_type(ct.typ):
                     # If we have an old Model then stop it notifying
                     child = getattr(self, name, None)
                     if child:
@@ -492,7 +492,7 @@ class ChoiceMeta(VMeta):
             # There are no choices, so the default value is the empty string
             choices_lookup[None] = ""
         self.choices_lookup = choices_lookup
-        if enum_typ is None or issubclass(enum_typ, str_):
+        if enum_typ is None or Model.matches_type(enum_typ):
             # We are producing strings
             self.enum_cls = str
         else:
@@ -878,7 +878,7 @@ class TableMeta(VMeta):
                 table_cls.call_types[k] = anno
         else:
             # User supplied, check it matches element names
-            assert issubclass(table_cls, Table), \
+            assert Table.matches_type(table_cls), \
                 "Expecting table subclass, got %s" % (table_cls,)
             missing = set(self.elements) - set(table_cls.call_types)
             assert not missing, "Supplied Table missing fields %s" % (missing,)
@@ -952,7 +952,7 @@ class TableMeta(VMeta):
     @classmethod
     def from_annotype(cls, anno, writeable, **kwargs):
         # type: (Anno, bool, **Any) -> VMeta
-        assert issubclass(anno.typ, Table), \
+        assert Table.matches_type(anno.typ), \
             "Expected Table, got %s" % anno.typ
         if writeable:
             # All fields are writeable
@@ -1119,7 +1119,7 @@ class MethodMeta(Meta):
             return_type = getattr(func, "return_type", None)  # type: Anno
             if return_type is None or return_type.typ is None:
                 call_types = {}
-            elif issubclass(return_type.typ, WithCallTypes):
+            elif WithCallTypes.matches_type(return_type.typ):
                 call_types = return_type.typ.call_types
             else:
                 tags.append(method_return_unpacked())

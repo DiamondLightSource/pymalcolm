@@ -10,7 +10,7 @@ plop==0.3.0
 pytest>=3.10.1
 pytest-cov>=2.6.1
 h5py>=2.8.0
-annotypes>=0.18
+annotypes>=0.20
 p4p>=3.3.0
 vdsgen>=0.5
 numpy>=1.16.4
