@@ -304,10 +304,11 @@ if __name__ == "__main__":
         "p4p==3.2.0",
         "pygelf==0.3.5",
         "plop==0.3.0",
+        "typing==3.6.1",
         # scipy only needed for scanpointgenerator.plot_generator
         "scipy==0.19.1",
         # DLS developed
-        "annotypes==0.17",
+        "annotypes==0.20",
         "cothread==2.14",
         "scanpointgenerator==2.2.1",
         "vdsgen==0.5.1"
