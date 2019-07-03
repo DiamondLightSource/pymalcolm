@@ -11,7 +11,7 @@ from malcolm.compat import OrderedDict
 from malcolm.core import Unsubscribe, Subscribe, \
     Delta, Context, AttributeModel, Alarm, AlarmSeverity, \
     AlarmStatus, Part, BooleanMeta, get_config_tag, Widget, ChoiceArrayMeta, \
-    TableMeta, ChoiceMeta, config_tag, \
+    TableMeta, ChoiceMeta, config_tag, without_config_tags, \
     CAMEL_RE, camel_to_title, StringMeta
 from malcolm.core.tags import without_group_tags, Port
 from ..hooks import LayoutHook, LoadHook, SaveHook
@@ -297,23 +297,25 @@ class ManagerController(StatefulController):
                 self._current_part_fields:
             self.add_block_field(name, child, writeable_func, needs_context)
 
+    def add_part(self, part):
+        # type: (Part) -> None
+        super(ManagerController, self).add_part(part)
+        # Strip out the config tags of what we just added, as we will be
+        # saving them ourself
+        for name, field, writeable_func, needs_context in \
+                self.field_registry.fields.get(part, []):
+            if isinstance(field, AttributeModel):
+                tags = field.meta.tags
+                if get_config_tag(tags):
+                    # Strip off the "config" tags from attributes
+                    field.meta.set_tags(without_config_tags(tags))
+                    self.our_config_attributes[name] = field
+
     def add_initial_part_fields(self):
         # Only add our own fields to start with, the rest will be added on load
         for name, child, writeable_func, needs_context in \
                 self.field_registry.fields[None]:
             self.add_block_field(name, child, writeable_func, needs_context)
-        for part in self.parts.values():
-            for name, field, writeable_func, needs_context in \
-                    self.field_registry.fields.get(part, []):
-                if isinstance(field, AttributeModel):
-                    tag = get_config_tag(field.meta.tags)
-                    if tag:
-                        # Strip off the "config" tags from attributes
-                        no_config = [x for x in field.meta.tags if x != tag]
-                        assert not get_config_tag(no_config), \
-                            "Field %s has more than one config tag" % field
-                        field.meta.set_tags(no_config)
-                        self.our_config_attributes[name] = field
 
     def _get_current_part_fields(self):
         # Clear out the current subscriptions
@@ -373,9 +375,11 @@ class ManagerController(StatefulController):
                     def setter(v):
                         context = Context(self.process)
                         context.put(path, v)
-                    # Strip out group tags
+                    # Strip out tags that we shouldn't export
                     # TODO: need to strip out port tags too...
-                    export.meta.set_tags(without_group_tags(export.meta.tags))
+                    export.meta.set_tags(
+                        without_config_tags(
+                            without_group_tags(export.meta.tags)))
                 else:
                     def setter(*args):
                         context = Context(self.process)

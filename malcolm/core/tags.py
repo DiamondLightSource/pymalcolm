@@ -146,6 +146,12 @@ def get_config_tag(tags):
             return tag
 
 
+def without_config_tags(tags):
+    """Return a new list of tags without any config tags"""
+    new_tags = [x for x in tags if not x.startswith("config:")]
+    return new_tags
+
+
 def method_return_unpacked():
     """This method has a single element returns, and when called will return
     this single element unpacked rather than in a single element map

@@ -4,7 +4,6 @@ from malcolm.core import PartRegistrar
 from malcolm.modules import builtin
 
 # Pull re-used annotypes into our namespace in case we are subclassed
-# TODO: Add this to CONTRIBUTING.rst
 APartName = builtin.parts.APartName
 AMri = builtin.parts.AMri
 

@@ -10,6 +10,7 @@ from malcolm.modules.ADCore.util import AttributeDatasetType
 from malcolm.modules.ADPandABlocks.controllers import \
     PandARunnableController
 from malcolm.modules.ADPandABlocks.util import DatasetPositionsTable
+from malcolm.modules.builtin.util import LayoutTable
 from malcolm.modules.pandablocks.pandablocksclient import \
     FieldData, BlockData
 from malcolm.modules.scanning.hooks import APartInfo, ConfigureHook
@@ -63,6 +64,13 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
         assert inenc.val.value == 0.0
         with self.assertRaises(Exception):
             inenc.valCapture
+
+    def test_pcap_visible(self):
+        t = LayoutTable.from_rows([["PCAP", "", 0, 0, True]])
+        block = self.process.block_view("P")
+        assert "attributesToCapture" not in block
+        block.layout.put_value(t)
+        assert block.attributesToCapture.meta.tags == ["widget:table"]
 
     def test_report_configuration(self):
         p = DSGather("DS")

@@ -31,7 +31,5 @@ class TestPart(unittest.TestCase):
 
     def test_bad_field_name(self):
         p = BadPart("name")
-        self.c.add_part(p)
         with self.assertRaises(AssertionError):
-            self.c.setup(self.p)
-
+            self.c.add_part(p)

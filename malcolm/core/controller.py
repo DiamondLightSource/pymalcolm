@@ -56,16 +56,8 @@ class Controller(Hookable):
         self.field_registry = FieldRegistry()
         self.info_registry = InfoRegistry()
 
-    def _setup_part(self, part):
-        # type: (Part) -> None
-        part.setup(PartRegistrar(self.field_registry, self.info_registry, part))
-
     def setup(self, process):
         # type: (Process) -> None
-        for part in self.parts.values():
-            self._setup_part(part)
-        # Store this after, so that part reports can tell that we aren't ready
-        # for Block updates yet
         self.process = process
         self.add_initial_part_fields()
 
@@ -73,11 +65,8 @@ class Controller(Hookable):
         # type: (Part) -> None
         assert part.name not in self.parts, \
             "Part %r already exists in Controller %r" % (part.name, self.mri)
+        part.setup(PartRegistrar(self.field_registry, self.info_registry, part))
         self.parts[part.name] = part
-        if self.process is not None:
-            # If we added a part after we were setup ourselves, then setup the
-            # part now
-            self._setup_part(part)
 
     def add_block_field(self, name, child, writeable_func, needs_context):
         # type: (str, Field, Callable[..., Any]) -> None
