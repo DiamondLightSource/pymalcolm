@@ -4,12 +4,19 @@ All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 
-`Unreleased`_
--------------
+`4-0`_ - 2019-07-05
+-------------------
 
 Added:
 
 - PMAC Row Gate only trigger option for use with PandASeqTriggerPart
+- PandA tutorial
+
+Fixed:
+
+- Now works with Python3.7
+- ADCore HDF Writer now always writes at least some Attributes
+
 
 `4-0b2`_ - 2019-06-20
 ---------------------
@@ -385,7 +392,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-0b2...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-0...HEAD
+.. _4-0: https://github.com/dls-controls/pymalcolm/compare/4-0b2..4-0
 .. _4-0b2: https://github.com/dls-controls/pymalcolm/compare/4-0b1..4-0b2
 .. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-4-1..4-0b1
 .. _3-5: https://github.com/dls-controls/pymalcolm/compare/3-4-1...3-5
