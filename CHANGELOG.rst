@@ -7,7 +7,9 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`_
 -------------
 
-Nothing yet
+Added:
+
+- PMAC Row Gate only trigger option for use with PandASeqTriggerPart
 
 `4-0b2`_ - 2019-06-20
 ---------------------

@@ -5,10 +5,12 @@ import re
 
 import numpy as np
 from annotypes import add_call_types, TYPE_CHECKING
+from enum import Enum
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import Future, Block, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
+from malcolm.modules.pmac.util import get_motion_trigger
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
     profile_between_points, cs_port_with_motors_in, get_motion_axes
@@ -37,6 +39,15 @@ LIVE_PROGRAM = 1  # GPIO123 = 1, 0, 0
 DEAD_PROGRAM = 2  # GPIO123 = 0, 1, 0
 MID_PROGRAM = 4   # GPIO123 = 0, 0, 1
 ZERO_PROGRAM = 8  # GPIO123 = 0, 0, 0
+
+
+class PointType(Enum):
+    START_OF_ROW = 0  # Lower bound of first point of row
+    MID_POINT = 1  # Position of any point
+    POINT_JOIN = 2  # Boundary of two joined points
+    END_OF_ROW = 3  # Upper boundary of last point of row
+    TURNAROUND = 4  # Between rows
+
 
 # How many profile points to write each time
 PROFILE_POINTS = 10000
@@ -69,8 +80,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.end_index = 0
         # Where we should stop loading points
         self.steps_up_to = 0
-        # Whether to output triggers
-        self.output_triggers = True
+        # What sort of triggers to output
+        self.output_triggers = None
         # Profile points that haven't been sent yet
         # {timeArray/velocityMode/userPrograms/a/b/c/u/v/w/x/y/z: [elements]}
         self.profile = {}
@@ -114,6 +125,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                  context,  # type: scanning.hooks.AContext
                  generator,  # type: scanning.hooks.AGenerator
                  axesToMove,  # type: scanning.hooks.AAxesToMove
+                 part_info,  # type: scanning.hooks.APartInfo
                  ):
         # type: (...) -> scanning.hooks.UParameterTweakInfos
         child = context.block_view(self.mri)
@@ -123,8 +135,10 @@ class PmacChildPart(builtin.parts.ChildPart):
         assert available.issuperset(motion_axes), \
             "Some of the requested axes %s are not on the motor list %s" % (
                 list(axesToMove), sorted(available))
-        # If GPIO not demanded we don't need to align to the servo cycle
-        if not child.outputTriggers.value:
+        # If GPIO not demanded for every point we don't need to align to the
+        # servo cycle
+        trigger = get_motion_trigger(part_info)
+        if trigger != scanning.infos.MotionTrigger.EVERY_POINT:
             return
         # Find the duration
         assert generator.duration > 0, \
@@ -188,18 +202,19 @@ class PmacChildPart(builtin.parts.ChildPart):
         context.unsubscribe_all()
         child = context.block_view(self.mri)
 
-        # Store if we need to output triggers
-        self.output_triggers = child.outputTriggers.value
+        # Store what sort of triggers we need to output
+        self.output_triggers = get_motion_trigger(part_info)
 
         # Check if we should be taking part in the scan
         motion_axes = get_motion_axes(generator, axesToMove)
-        taking_part = motion_axes or self.output_triggers
-        if not taking_part:
+        need_gpio = self.output_triggers != scanning.infos.MotionTrigger.NONE
+        if motion_axes or need_gpio:
+            # Taking part, so store generator
+            self.generator = generator
+        else:
             # Flag as not taking part
             self.generator = None
             return
-        else:
-            self.generator = generator
 
         # See if there is a minimum turnaround
         infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
@@ -340,6 +355,31 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         child.writeProfile(**args)
 
+    def get_user_program(self, point_type):
+        # type: (PointType) -> int
+        if self.output_triggers == scanning.infos.MotionTrigger.NONE:
+            # Always produce no program
+            return NO_PROGRAM
+        elif self.output_triggers == scanning.infos.MotionTrigger.ROW_GATE:
+            if point_type == PointType.START_OF_ROW:
+                # Produce a gate for the whole row
+                return LIVE_PROGRAM
+            elif point_type == PointType.END_OF_ROW:
+                # Falling edge of row gate
+                return ZERO_PROGRAM
+            else:
+                # Otherwise don't change anything
+                return NO_PROGRAM
+        else:
+            if point_type in (PointType.START_OF_ROW, PointType.POINT_JOIN):
+                return LIVE_PROGRAM
+            elif point_type == PointType.END_OF_ROW:
+                return DEAD_PROGRAM
+            elif point_type == PointType.MID_POINT:
+                return MID_PROGRAM
+            else:
+                return ZERO_PROGRAM
+
     def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,
                                           current_positions, completed_steps):
         trajectory = {}
@@ -352,7 +392,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.profile["timeArray"] += [interval] * num_intervals
         self.profile["velocityMode"] += \
             [PREV_TO_NEXT] * (num_intervals - 1) + [CURRENT_TO_NEXT]
-        self.profile["userPrograms"] += [ZERO_PROGRAM] * num_intervals
+        user_program = self.get_user_program(PointType.TURNAROUND)
+        self.profile["userPrograms"] += [user_program] * num_intervals
         self.completed_steps_lookup += [completed_steps] * num_intervals
 
         # Do this for each velocity array
@@ -392,7 +433,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 self.profile[motor_info.cs_axis.lower()].append(
                     position + part_position)
 
-    def add_profile_point(self, time_point, velocity_point, user_point,
+    def add_profile_point(self, time_point, velocity_mode, user_program,
                           completed_step, axis_points):
 
         # Add padding if the move time exceeds the max pmac move time
@@ -420,10 +461,8 @@ class PmacChildPart(builtin.parts.ChildPart):
             self.profile["timeArray"].append(time_point)
 
         # Set the requested point
-        self.profile["velocityMode"].append(velocity_point)
-        if not self.output_triggers:
-            user_point = NO_PROGRAM
-        self.profile["userPrograms"].append(user_point)
+        self.profile["velocityMode"].append(velocity_mode)
+        self.profile["userPrograms"].append(user_program)
         self.completed_steps_lookup.append(completed_step)
         for k, v in axis_points.items():
             cs_axis = self.axis_mapping[k].cs_axis.lower()
@@ -446,16 +485,18 @@ class PmacChildPart(builtin.parts.ChildPart):
                                   motor_info.acceleration_time(0, velocity))
 
             # Add lower bound
+            user_program = self.get_user_program(PointType.START_OF_ROW)
             self.add_profile_point(
-                run_up_time, CURRENT_TO_NEXT, LIVE_PROGRAM, start_index,
+                run_up_time, CURRENT_TO_NEXT, user_program, start_index,
                 axis_points)
 
         for i in range(start_index, self.steps_up_to):
             point = self.generator.get_point(i)
 
             # Add position
+            user_program = self.get_user_program(PointType.MID_POINT)
             self.add_profile_point(
-                point.duration / 2.0, PREV_TO_NEXT, MID_PROGRAM, i,
+                point.duration / 2.0, PREV_TO_NEXT, user_program, i,
                 {name: point.positions[name] for name in self.axis_mapping})
 
             # If there will be more frames, insert next live frame
@@ -466,12 +507,11 @@ class PmacChildPart(builtin.parts.ChildPart):
                     self.axis_mapping, point, next_point)
 
                 if points_are_joined:
-                    user_program = LIVE_PROGRAM
+                    user_program = self.get_user_program(PointType.POINT_JOIN)
                     velocity_point = PREV_TO_NEXT
                 else:
-                    user_program = DEAD_PROGRAM
+                    user_program = self.get_user_program(PointType.END_OF_ROW)
                     velocity_point = PREV_TO_CURRENT
-
                 self.add_profile_point(
                     point.duration / 2.0, velocity_point, user_program, i + 1,
                     {name: point.upper[name] for name in self.axis_mapping})
@@ -480,8 +520,9 @@ class PmacChildPart(builtin.parts.ChildPart):
                     self.insert_gap(point, next_point, i + 1)
             else:
                 # No more frames, dead frame to finish
+                user_program = self.get_user_program(PointType.END_OF_ROW)
                 self.add_profile_point(
-                    point.duration / 2.0, PREV_TO_CURRENT, DEAD_PROGRAM, i + 1,
+                    point.duration / 2.0, PREV_TO_CURRENT, user_program, i + 1,
                     {name: point.upper[name] for name in self.axis_mapping})
 
             # Check if we have exceeded the points number and need to write
@@ -507,7 +548,8 @@ class PmacChildPart(builtin.parts.ChildPart):
             axis_points[axis_name] = point.upper[axis_name] + tail_off
 
         # Do the last move
-        self.add_profile_point(tail_off_time, ZERO_VELOCITY, ZERO_PROGRAM,
+        user_program = self.get_user_program(PointType.TURNAROUND)
+        self.add_profile_point(tail_off_time, ZERO_VELOCITY, user_program,
                                self.steps_up_to, axis_points)
         self.end_index = self.steps_up_to
 
@@ -526,4 +568,5 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         # Change the last point to be a live frame
         self.profile["velocityMode"][-1] = CURRENT_TO_NEXT
-        self.profile["userPrograms"][-1] = LIVE_PROGRAM
+        user_program = self.get_user_program(PointType.START_OF_ROW)
+        self.profile["userPrograms"][-1] = user_program

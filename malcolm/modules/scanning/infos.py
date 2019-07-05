@@ -96,3 +96,22 @@ class DatasetProducedInfo(Info):
         self.rank = rank
         self.path = path
         self.uniqueid = uniqueid
+
+
+class MotionTrigger(Enum):
+    """Request from a trigger source to the motion controller of what triggers
+    it needs"""
+    NONE = 0  #: No Triggers required
+    ROW_GATE = 1  #: Trigger that spans each continuous joined section
+    EVERY_POINT = 2  #: One trigger for each point
+
+
+class MotionTriggerInfo(Info):
+    """Declare that we need triggers of a certain sort from the motor controller
+
+    Args:
+        trigger: What type is required
+    """
+    def __init__(self, trigger):
+        # type: (MotionTrigger) -> None
+        self.trigger = trigger

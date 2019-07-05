@@ -1,4 +1,4 @@
-from .pandapcomppart import PandAPcompPart, APartName, AMri
+from .pandaseqtriggerpart import PandASeqTriggerPart, APartName, AMri
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

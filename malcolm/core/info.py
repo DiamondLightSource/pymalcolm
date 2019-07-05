@@ -6,9 +6,9 @@ from malcolm.compat import OrderedDict
 from .errors import BadValueError
 
 if TYPE_CHECKING:
-    from typing import Type, Dict, List, Union, Sequence
+    from typing import Type, Mapping, List, Optional, Sequence, Dict
 
-    PartInfo = Dict[str, Union[None, Sequence]]
+    PartInfo = Mapping[str, Optional[Sequence]]
 
 T = TypeVar("T")
 

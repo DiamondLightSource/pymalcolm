@@ -8,7 +8,7 @@ from scanpointgenerator import Point, CompoundGenerator, StaticPointGenerator
 import numpy as np
 
 from malcolm.core import Context
-from malcolm.modules import builtin
+from malcolm.modules import builtin, scanning
 from .infos import MotorInfo
 
 if TYPE_CHECKING:
@@ -198,3 +198,15 @@ def profile_between_points(axis_mapping, point, next_point, min_time=MIN_TIME):
             min_time = new_min_time
             iterations -= 1
     raise ValueError("Can't get a consistent time in 5 iterations")
+
+
+def get_motion_trigger(part_info):
+    # type: (scanning.hooks.APartInfo) -> scanning.infos.MotionTrigger
+    infos = scanning.infos.MotionTriggerInfo.filter_values(part_info)
+    if infos:
+        assert len(infos) == 1, \
+            "Expected 0 or 1 MotionTriggerInfo, got %d" % len(infos)
+        trigger = infos[0].trigger
+    else:
+        trigger = scanning.infos.MotionTrigger.EVERY_POINT
+    return trigger

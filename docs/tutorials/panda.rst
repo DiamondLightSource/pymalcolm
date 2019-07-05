@@ -75,9 +75,8 @@ Setup the Devices
 We can now run up imalcolm by executing ``etc/malcolm/BLxxI-ML-MALC-01.yaml``,
 and open http://localhost:8008/gui/BLxxI-ML-SCAN-01 to see our scan Block.
 First, just check that the config we saved in the previous tutorial still works.
-It should run with no modifications. If this is all fine, we can move onto
-setting up the motion controller. We can start from our previous co-ordinate
-system design, then just uncheck the ``Output Triggers`` Attribute:
+It should run with no modifications. If this is all fine, then the motion
+controller will require no changes:
 
 .. image:: panda_0.png
 
@@ -167,7 +166,7 @@ This will make a saved config that captures the device design names::
       },
       "children": {
         "BRICK-01": {
-          "design": "a_z_in_cs1_no_triggers"
+          "design": "a_z_in_cs1"
         },
         "PANDA-01": {
           "design": "panda_master"
@@ -185,7 +184,7 @@ This will make a saved config that captures the device design names::
     trigger schemes on the same scan Block without having to change anything in
     GDA. If you need both trigger schemes to be available in GDA, then leave the
     first scan as it was, and make a second scan Block, setting it up according
-    to the intructions above
+    to the instructions above
 
 If we now want this to always be the default setup for this Scan, then we
 can set the ``initial_design`` for this scan instance in

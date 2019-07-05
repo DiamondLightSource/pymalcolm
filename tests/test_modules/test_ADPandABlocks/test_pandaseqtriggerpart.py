@@ -8,8 +8,8 @@ from scanpointgenerator import LineGenerator, CompoundGenerator, \
 from malcolm.core import Context, Process, Part, TableMeta, PartRegistrar, \
     StringMeta
 from malcolm.modules.ADCore.util import AttributeDatasetType
-from malcolm.modules.ADPandABlocks.blocks import panda_pcomp_block
-from malcolm.modules.ADPandABlocks.parts import PandAPcompPart
+from malcolm.modules.ADPandABlocks.blocks import panda_seq_trigger_block
+from malcolm.modules.ADPandABlocks.parts import PandASeqTriggerPart
 from malcolm.modules.ADPandABlocks.util import SequencerTable, Trigger, \
     DatasetPositionsTable
 from malcolm.modules.builtin.controllers import ManagerController, \
@@ -61,6 +61,8 @@ class SequencerPart(Part):
                           ("c", "ZERO")):
             attr = StringMeta("Input").create_attribute_model(val)
             registrar.add_attribute_model("pos%s" % suff, attr)
+        attr = StringMeta("Input").create_attribute_model("ZERO")
+        registrar.add_attribute_model("bita", attr)
 
 
 class GatePart(Part):
@@ -96,6 +98,9 @@ class TestPcompPart(ChildTestCase):
             self.panda.add_part(
                 ChildPart("SEQ%d" % i, "PANDA:SEQ%d" % i,
                           initial_visibility=True, stateful=False))
+        self.child_seq1 = self.process.get_controller("PANDA:SEQ1")
+        self.child_seq2 = self.process.get_controller("PANDA:SEQ2")
+
         # And an srgate
         controller = BasicController("PANDA:SRGATE1")
         self.gate_part = GatePart("part")
@@ -122,11 +127,11 @@ class TestPcompPart(ChildTestCase):
 
         # Make the child block holding panda and pmac mri
         self.child = self.create_child_block(
-            panda_pcomp_block, self.process,
+            panda_seq_trigger_block, self.process,
             mri="SCAN:PCOMP", panda="PANDA", pmac="PMAC")
 
         # And our part under test
-        self.o = PandAPcompPart("pcomp", "SCAN:PCOMP")
+        self.o = PandASeqTriggerPart("pcomp", "SCAN:PCOMP")
 
         # Now start the process off and tell the panda which sequencer tables
         # to use
@@ -193,6 +198,49 @@ class TestPcompPart(ChildTestCase):
         assert table.time2 == [hf, hf, hb, hf, hf, 125000000]
         assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
                table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
+        # Check we didn't press the gate part
+        self.gate_part.enable_set.assert_not_called()
+        self.o.run(self.context)
+        # Check we pressed the gate part
+        self.gate_part.enable_set.assert_called_once()
+
+    def test_configure_motion_controller_trigger(self):
+        xs = LineGenerator("x", "mm", 0.0, 0.3, 4, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
+        generator.prepare()
+        completed_steps = 0
+        steps_to_do = 8
+        self.set_motor_attributes()
+        self.set_attributes(self.child, rowTrigger="Motion Controller")
+        self.set_attributes(self.child_seq1, bita="TTLIN1.VAL")
+        self.set_attributes(self.child_seq2, bita="TTLIN1.VAL")
+        axes_to_move = ["x", "y"]
+        self.o.configure(
+            self.context, completed_steps, steps_to_do, {}, generator,
+            axes_to_move)
+        assert self.o.generator is generator
+        assert self.o.loaded_up_to == completed_steps
+        assert self.o.scan_up_to == completed_steps + steps_to_do
+        # Triggers
+        B0 = Trigger.BITA_0
+        B1 = Trigger.BITA_1
+        I = Trigger.IMMEDIATE
+        # Half a frame
+        hf = 62500000
+        self.seq_parts[1].table_set.assert_called_once()
+        table = self.seq_parts[1].table_set.call_args[0][0]
+        assert table.repeats == [1, 3, 1, 1, 3, 1]
+        assert table.trigger == [B1, I, B0, B1, I, I]
+        assert table.time1 == [hf, hf, 1250, hf, hf, 125000000]
+        assert table.position == [0, 0, 0, 0, 0, 0]
+        assert table.outa1 == [1, 1, 0, 1, 1, 0]  # Live
+        assert table.outb1 == [0, 0, 1, 0, 0, 1]  # Dead
+        assert table.outc1 == table.outd1 == table.oute1 == table.outf1 == \
+            [0, 0, 0, 0, 0, 0]
+        assert table.time2 == [hf, hf, 1250, hf, hf, 125000000]
+        assert table.outa2 == table.outb2 == table.outc2 == table.outd2 == \
+            table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
         self.o.run(self.context)

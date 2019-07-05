@@ -6,12 +6,14 @@ from scanpointgenerator import LineGenerator, CompoundGenerator, \
 
 from malcolm.core import Context, Process
 from malcolm.modules.pmac.parts import PmacChildPart
+from malcolm.modules.scanning.infos import MotionTrigger, MotionTriggerInfo
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 
 SHOW_GRAPHS = False
 # Uncomment this to show graphs when running under PyCharm
 # SHOW_GRAPHS = "PYCHARM_HOSTED" in os.environ
+
 
 
 class TestPMACChildPart(ChildTestCase):
@@ -34,7 +36,6 @@ class TestPMACChildPart(ChildTestCase):
         self.o = PmacChildPart(name="pmac", mri="PMAC")
         self.context.set_notify_dispatch_request(self.o.notify_dispatch_request)
         self.process.start()
-        self.set_attributes(self.child, outputTriggers=True)
 
     def tearDown(self):
         del self.context
@@ -75,7 +76,7 @@ class TestPMACChildPart(ChildTestCase):
             velocitySettle=0.0, units=units)
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
-                     y_pos=0.0, duration=1.0, units="mm"):
+                     y_pos=0.0, duration=1.0, units="mm", infos=None):
         self.set_motor_attributes(x_pos, y_pos, units)
         steps_to_do = 3 * len(axes_to_scan)
         xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
@@ -83,7 +84,7 @@ class TestPMACChildPart(ChildTestCase):
         generator = CompoundGenerator([ys, xs], [], [], duration)
         generator.prepare()
         self.o.configure(
-            self.context, completed_steps, steps_to_do, {},
+            self.context, completed_steps, steps_to_do, {"part": infos},
             generator, axes_to_scan)
 
     def test_validate(self):
@@ -91,14 +92,14 @@ class TestPMACChildPart(ChildTestCase):
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
-        ret = self.o.validate(self.context, generator, axesToMove)
+        ret = self.o.validate(self.context, generator, axesToMove, {})
         expected = 0.010166
         assert ret.value.duration == expected
 
-    @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
-           0.2)
-    def test_configure(self):
-        self.do_configure(axes_to_scan=["x", "y"])
+    def do_check_output(self, user_programs=None):
+        if user_programs is None:
+            user_programs = [
+                       1, 4, 1, 4, 1, 4, 2, 8, 1, 4, 1, 4, 1, 4, 2, 8]
         assert self.child.handled_requests.mock_calls == [
             call.post('writeProfile',
                       csPort='CS1', timeArray=[0.002], userPrograms=[8]),
@@ -117,8 +118,7 @@ class TestPMACChildPart(ChildTestCase):
                        100000, 500000, 500000, 500000, 500000, 500000, 500000,
                        200000, 200000, 500000, 500000, 500000, 500000, 500000,
                        500000, 100000]),
-                      userPrograms=pytest.approx([
-                       1, 4, 1, 4, 1, 4, 2, 8, 1, 4, 1, 4, 1, 4, 2, 8]),
+                      userPrograms=pytest.approx(user_programs),
                       velocityMode=pytest.approx([
                        2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 1, 3])
                       )
@@ -126,6 +126,27 @@ class TestPMACChildPart(ChildTestCase):
         assert self.o.completed_steps_lookup == [
             0, 0, 1, 1, 2, 2, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
+
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
+           0.2)
+    def test_configure(self):
+        self.do_configure(axes_to_scan=["x", "y"])
+        self.do_check_output()
+
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
+           0.2)
+    def test_configure_no_pulses(self):
+        self.do_configure(axes_to_scan=["x", "y"],
+                          infos=[MotionTriggerInfo(MotionTrigger.NONE)])
+        self.do_check_output(user_programs=[0]*16)
+
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
+           0.2)
+    def test_configure_start_of_row_pulses(self):
+        self.do_configure(axes_to_scan=["x", "y"],
+                          infos=[MotionTriggerInfo(MotionTrigger.ROW_GATE)])
+        self.do_check_output(user_programs=[
+                       1, 0, 0, 0, 0, 0, 8, 0, 1, 0, 0, 0, 0, 0, 8, 0])
 
     def test_configure_no_axes(self):
         self.set_motor_attributes()

@@ -6,7 +6,6 @@ from scanpointgenerator import Point
 
 from malcolm.core import APartName, Block, Attribute, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
-from malcolm.modules.pmac.infos import MotorInfo
 
 from ..util import SequencerTable, Trigger
 
@@ -30,8 +29,13 @@ AInitialVisibility = builtin.parts.AInitialVisibility
 # How long is a single tick if prescaler is 0
 TICK = 8e-9
 
+# How long is the smallest pulse that will travel across TTL
+MIN_PULSE = 1250  # ticks = 10us
+
 # How long the last pulse should be (50% duty cycle) to make sure we don't flip
-# to an unfilled sequencer and produce a false pulse
+# to an unfilled sequencer and produce a false pulse. This should be at least
+# as long as it takes the PandA EPICS driver to see that we got the last frame
+# and disarm PCAP
 LAST_PULSE = 125000000  # ticks = 1s
 
 # Maximum repeats of a single row
@@ -39,7 +43,7 @@ MAX_REPEATS = 4096
 
 
 def seq_row(repeats=1, trigger=Trigger.IMMEDIATE, position=0,
-            half_duration=LAST_PULSE, live=0, dead=0):
+            half_duration=MIN_PULSE, live=0, dead=0):
     # type: (int, str, int, int, int, int) -> List
     """Create a 50% duty cycle pulse with phase1 having given live/dead values
     """
@@ -80,7 +84,7 @@ def _get_blocks(context, panda_mri):
 
 
 def _what_moves_most(point, axis_mapping):
-    # type: (Point, Dict[str, MotorInfo]) -> Tuple[str, int, bool]
+    # type: (Point, Dict[str, pmac.infos.MotorInfo]) -> Tuple[str, int, bool]
     """Work out which axis from the given axis mapping moves most for this
     point"""
     # TODO: should use new velocity calcs when Giles has finished
@@ -105,7 +109,12 @@ def _what_moves_most(point, axis_mapping):
     return axis_name, compare_cts, increasing
 
 
-class PandAPcompPart(builtin.parts.ChildPart):
+def doing_pcomp(row_trigger_value):
+    # type: (str) -> bool
+    return row_trigger_value == "Position Compare"
+
+
+class PandASeqTriggerPart(builtin.parts.ChildPart):
     """Part for operating a pair of SEQ blocks in a PandA to do position
     compare at the start of each row and time based pulses within the row.
     Needs the following exports:
@@ -117,7 +126,7 @@ class PandAPcompPart(builtin.parts.ChildPart):
 
     def __init__(self, name, mri, initial_visibility=None):
         # type: (APartName, AMri, AInitialVisibility) -> None
-        super(PandAPcompPart, self).__init__(
+        super(PandASeqTriggerPart, self).__init__(
             name, mri, initial_visibility=initial_visibility, stateful=False)
         # Stored generator for positions
         self.generator = None
@@ -140,10 +149,70 @@ class PandAPcompPart(builtin.parts.ChildPart):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        super(PandAPcompPart, self).setup(registrar)
+        super(PandASeqTriggerPart, self).setup(registrar)
         # Hooks
+        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
         registrar.hook(scanning.hooks.ConfigureHook, self.configure)
         registrar.hook(scanning.hooks.RunHook, self.run)
+
+    @add_call_types
+    def report_status(self, context):
+        # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
+        child = context.block_view(self.mri)
+        # Work out if we need the motor controller to send start of row triggers
+        # or no triggers
+        if doing_pcomp(child.rowTrigger.value):
+            # Doing position compare, don't need any triggers
+            trigger = scanning.infos.MotionTrigger.NONE
+        else:
+            # Waiting for bit at the start of each row, so need this signal
+            trigger = scanning.infos.MotionTrigger.ROW_GATE
+        info = scanning.infos.MotionTriggerInfo(trigger)
+        return info
+
+    def setup_pcomp_dicts(self, seqa, seqb, axis_mapping):
+        """Setup the axis_mapping and trigger_enum dicts for position compare"""
+        # type: (Block, Block, Dict[str, pmac.infos.MotorInfo]) -> None
+        # Check that both sequencers are pointing to the same encoders
+        seq_pos = {}
+        for suff in "abc":
+            # Something like INENC1.VAL or ZERO
+            seqa_pos_inp = seqa["pos" + suff].value
+            seqb_pos_inp = seqb["pos" + suff].value
+            assert seqa_pos_inp == seqb_pos_inp, \
+                "SeqA Pos%s = %s != SeqB Pos%s = %s" % (
+                    suff, seqa_pos_inp, suff, seqb_pos_inp)
+            seq_pos[seqa_pos_inp] = "POS%s" % suff.upper()
+
+        # Fix the mres and offsets from the panda positions table
+        positions_table = self.panda.positions.value
+        for i, name in enumerate(positions_table.name):
+            try:
+                pos = seq_pos[name]
+            except KeyError:
+                # This is a position not connected to the seq, this is fine
+                pass
+            else:
+                # This is a position that we can compare on, check its
+                # dataset name which is the scannable name
+                scannable = positions_table.datasetName[i]
+                info = axis_mapping.get(scannable, None)
+                if info:
+                    # We are asked to scan this, so correct its resolution
+                    # and store
+                    info.resolution = positions_table.scale[i]
+                    info.offset = positions_table.offset[i]
+                    self.axis_mapping[scannable] = info
+                    self.trigger_enums[(scannable, True)] = \
+                        "%s>=POSITION" % pos
+                    self.trigger_enums[(scannable, False)] = \
+                        "%s<=POSITION" % pos
+        # Check we have at least one entry
+        assert self.axis_mapping, \
+            "None of the seq inputs %s can be mapped to scannable names " \
+            "in %s. Did you define datasetName entries for these rows in " \
+            "the PandA positions table?" % (
+                sorted(seq_pos), sorted(axis_mapping))
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
@@ -164,8 +233,10 @@ class PandAPcompPart(builtin.parts.ChildPart):
         self.last_point = None
 
         # Get the panda and the pmac we will be using
-        panda_mri = context.block_view(self.mri).panda.value
-        pmac_mri = context.block_view(self.mri).pmac.value
+        child = context.block_view(self.mri)
+        panda_mri = child.panda.value
+        pmac_mri = child.pmac.value
+        row_trigger = child.rowTrigger.value
 
         # See if there is a minimum turnaround
         infos = scanning.infos.MinTurnaroundInfo.filter_values(part_info)
@@ -179,54 +250,24 @@ class PandAPcompPart(builtin.parts.ChildPart):
         # Get panda Block, and the sequencer Blocks so we can do some checking
         self.panda, seqa, seqb = _get_blocks(context, panda_mri)
 
-        # Check that both sequencers are pointing to the same encoders
-        seq_pos = {}
-        for suff in "abc":
-            # Something like INENC1.VAL or ZERO
-            seqa_pos_inp = seqa["pos" + suff].value
-            seqb_pos_inp = seqb["pos" + suff].value
-            assert seqa_pos_inp == seqb_pos_inp, \
-                "SeqA Pos%s = %s != SeqB Pos%s = %s" % (
-                    suff, seqa_pos_inp, suff, seqb_pos_inp)
-            seq_pos[seqa_pos_inp] = "POS%s" % suff.upper()
-
         # Fill in motor infos and trigger lookups
         motion_axes = pmac.util.get_motion_axes(generator, axesToMove)
         self.axis_mapping = {}
         self.trigger_enums = {}
+
         if motion_axes:
-            # We need to do a compare, so only place the infos into the
-            # axis_mapping that our sequencer can see
+            # Need to fill in the axis mapping
             axis_mapping = pmac.util.cs_axis_mapping(
                 context, context.block_view(pmac_mri).layout.value, motion_axes)
-            # Fix the mres and offsets from the panda positions table
-            positions_table = self.panda.positions.value
-            for i, name in enumerate(positions_table.name):
-                try:
-                    pos = seq_pos[name]
-                except KeyError:
-                    # This is a position not connected to the seq, this is fine
-                    pass
-                else:
-                    # This is a position that we can compare on, check its
-                    # dataset name which is the scannable name
-                    scannable = positions_table.datasetName[i]
-                    info = axis_mapping.get(scannable, None)
-                    if info:
-                        # We are asked to scan this, so correct its resolution
-                        # and store
-                        info.resolution = positions_table.scale[i]
-                        info.offset = positions_table.offset[i]
-                        self.axis_mapping[scannable] = info
-                        self.trigger_enums[(scannable, True)] = \
-                            "%s>=POSITION" % pos
-                        self.trigger_enums[(scannable, False)] = \
-                            "%s<=POSITION" % pos
-            # Check we have at least one entry
-            assert self.axis_mapping, \
-                "None of the seq inputs %s can be mapped to scannable names " \
-                "in %s. Did you define datasetName entries for these rows in " \
-                "the PandA positions table?" % (sorted(seq_pos), motion_axes)
+            if doing_pcomp(row_trigger):
+                # We need to do position compare, so only place the infos into
+                # axis_mapping that our sequencer can see
+                self.setup_pcomp_dicts(seqa, seqb, axis_mapping)
+            else:
+                # We rely on the inputs coming into SEQ bitA
+                assert seqa["bita"].value == seqb["bita"].value != "ZERO", \
+                    "SEQ.bita inputs need to point to the same non-zero input"
+                self.axis_mapping = axis_mapping
 
         # TODO:
         # Check that the sequencer blocks have the correct wiring, delays, and
@@ -269,25 +310,37 @@ class PandAPcompPart(builtin.parts.ChildPart):
         for i in range(self.loaded_up_to, self.scan_up_to):
             point = self.generator.get_point(i)
             half_frame = int(round(point.duration / TICK / 2))
-            if self.axis_mapping and (
-                    self.last_point is None or not pmac.util.points_joined(
-                    self.axis_mapping, self.last_point, point)):
+            start_of_row = False
+            if self.axis_mapping:
+                if self.last_point is None or not pmac.util.points_joined(
+                        self.axis_mapping, self.last_point, point):
+                    start_of_row = True
+            if start_of_row and self.trigger_enums:
+                # Position compare
                 # First row, or rows not joined
                 # Work out which axis moves most during this point
                 axis_name, compare_cts, increasing = _what_moves_most(
                     point, self.axis_mapping)
-                # If we have a previous point, how long to be blind for during
-                # the turnaround
+                # If we have a previous point, how long to be blind for
+                # during the turnaround
                 if self.last_point is not None:
                     blind = self._how_long_moving_wrong_way(
                         axis_name, point, increasing)
                     half_blind = int(round(blind / TICK / 2))
                     rows.append(seq_row(half_duration=half_blind, dead=1))
                 # Create a compare point for the next row
-                trigger_enum = self.trigger_enums[(axis_name, increasing)]
                 rows.append(seq_row(
-                    trigger=trigger_enum, position=compare_cts,
-                    half_duration=half_frame, live=1))
+                    trigger=self.trigger_enums[(axis_name, increasing)],
+                    position=compare_cts, half_duration=half_frame, live=1))
+            elif start_of_row:
+                # Row trigger coming in on BITA
+                # Produce dead pulse as soon as row has finished
+                if self.last_point is not None:
+                    rows.append(seq_row(
+                        half_duration=MIN_PULSE, dead=1,
+                        trigger=Trigger.BITA_0))
+                rows.append(seq_row(
+                    trigger=Trigger.BITA_1, half_duration=half_frame, live=1))
             elif rows and rows[-1][1] == Trigger.IMMEDIATE and \
                     rows[-1][3] == half_frame and rows[-1][0] < MAX_REPEATS:
                 # Repeated time row, just increment the last row repeats

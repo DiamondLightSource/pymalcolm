@@ -302,8 +302,7 @@ class ManagerController(StatefulController):
         super(ManagerController, self).add_part(part)
         # Strip out the config tags of what we just added, as we will be
         # saving them ourself
-        for name, field, writeable_func, needs_context in \
-                self.field_registry.fields.get(part, []):
+        for name, field, _, _ in self.field_registry.fields.get(part, []):
             if isinstance(field, AttributeModel):
                 tags = field.meta.tags
                 if get_config_tag(tags):

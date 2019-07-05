@@ -30,7 +30,6 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.process.stop(timeout=1)
 
     def test_init(self):
-        assert self.b.outputTriggers.meta.writeable
         assert not self.b.pointsScanned.meta.writeable
         assert list(self.b.writeProfile.meta.takes.elements) == [
             'timeArray', 'csPort', 'velocityMode', 'userPrograms',

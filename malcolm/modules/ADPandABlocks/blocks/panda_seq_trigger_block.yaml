@@ -22,3 +22,12 @@
     name: pmac
     description: PMAC mri holding the motors taking part in the scan
     value: $(pmac)
+
+- builtin.parts.ChoicePart:
+    name: rowTrigger
+    description: What should trigger each row of joined points?
+    choices:
+      - Position Compare
+      - Motion Controller
+    value: Position Compare
+    writeable: True

@@ -9,8 +9,6 @@ from ..util import CS_AXIS_NAMES
 # The maximum number of points in a single trajectory scan
 MAX_NUM_POINTS = 4000000
 
-with Anno("Initial value for whether to send GPIO triggers for frame signals"):
-    AOutputTriggers = bool
 with Anno("The Asyn Port name of the Co-ordinate system port we want to scan"):
     ACSPort = str
 with Anno("The relative time points to scan in microseconds"):
@@ -47,17 +45,12 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
     def __init__(self,
                  name,  # type: APartName
                  mri,  # type: AMri
-                 initial_output_triggers=True  # type: AOutputTriggers
                  ):
         # type: (...) -> None
         super(PmacTrajectoryPart, self).__init__(
             name, mri, initial_visibility=True)
         # The total number of points we have written
         self.total_points = 0
-        self.output_triggers = BooleanMeta(
-            "Whether to send GPIO triggers for frame signals",
-            tags=[Widget.CHECKBOX.tag(), config_tag()]
-        ).create_attribute_model(initial_output_triggers)
         self.points_scanned = NumberMeta(
             "int32", "The number of points scanned",
             tags=[Widget.TEXTUPDATE.tag()]
@@ -74,8 +67,6 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         registrar.add_method_model(
             self.abort_profile, "abortProfile", needs_context=True)
         # Add Attributes
-        registrar.add_attribute_model("outputTriggers", self.output_triggers,
-                                      self.output_triggers.set_value)
         registrar.add_attribute_model("pointsScanned", self.points_scanned)
 
     # Serialized, so use camelCase
