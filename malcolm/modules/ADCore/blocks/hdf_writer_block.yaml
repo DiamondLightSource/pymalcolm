@@ -33,6 +33,12 @@
     rbv_suffix: _RBV
 
 - ca.parts.CABooleanPart:
+    name: storeAttr
+    description: Whether to write single writer multiple reader files
+    pv: $(prefix):StoreAttr
+    rbv_suffix: _RBV
+
+- ca.parts.CABooleanPart:
     name: positionMode
     description: Whether to write in block got from attributes PosName<dim>
     pv: $(prefix):PositionMode

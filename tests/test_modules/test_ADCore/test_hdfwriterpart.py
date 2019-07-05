@@ -228,6 +228,7 @@ class TestHDFWriterPart(ChildTestCase):
             call.put('fileTemplate', '%sthing-%s.h5'),
             call.put('fileWriteMode', 'Stream'),
             call.put('lazyOpen', True),
+            call.put('storeAttr', True),
             call.put('swmrMode', True),
             call.put('extraDimSize3', 1),
             call.put('extraDimSize4', 1),
