@@ -61,7 +61,8 @@ def cs_axis_mapping(context,  # type: Context
     for name, mri in zip(layout_table.name, layout_table.mri):
         if name in axes_to_move:
             child = context.block_view(mri)
-            max_velocity = child.maxVelocity.value
+            max_velocity = child.maxVelocity.value * (
+                    child.maxVelocityPercent.value / 100.0)
             acceleration = float(max_velocity) / child.accelerationTime.value
             cs = child.cs.value
             if cs:

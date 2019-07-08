@@ -28,3 +28,11 @@
     value: $(initial_velocity_settle)
     precision: 3
     units: s
+
+- builtin.parts.Float64Part:
+    name: maxVelocityPercent
+    description: What percentage of maxVelocity to use for turnarounds
+    writeable: True
+    value: 100
+    precision: 3
+    units: "%"

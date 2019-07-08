@@ -96,7 +96,7 @@ class TestPMACChildPart(ChildTestCase):
         expected = 0.010166
         assert ret.value.duration == expected
 
-    def do_check_output(self, user_programs=None):
+    def do_check_output(self, user_programs=None, turnaround=200000):
         if user_programs is None:
             user_programs = [
                        1, 4, 1, 4, 1, 4, 2, 8, 1, 4, 1, 4, 1, 4, 2, 8]
@@ -116,8 +116,8 @@ class TestPMACChildPart(ChildTestCase):
                        0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]),
                       timeArray=pytest.approx([
                        100000, 500000, 500000, 500000, 500000, 500000, 500000,
-                       200000, 200000, 500000, 500000, 500000, 500000, 500000,
-                       500000, 100000]),
+                       turnaround, turnaround, 500000, 500000, 500000, 500000,
+                       500000, 500000, 100000]),
                       userPrograms=pytest.approx(user_programs),
                       velocityMode=pytest.approx([
                        2, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 1, 3])
@@ -132,6 +132,13 @@ class TestPMACChildPart(ChildTestCase):
     def test_configure(self):
         self.do_configure(axes_to_scan=["x", "y"])
         self.do_check_output()
+
+    @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
+           0.2)
+    def test_configure_slower_vmax(self):
+        self.set_attributes(self.child_y, maxVelocityPercent=49.4)
+        self.do_configure(axes_to_scan=["x", "y"])
+        self.do_check_output(turnaround=284555)
 
     @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
            0.2)
