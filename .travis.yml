@@ -5,7 +5,6 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
-=======
 
 env:
     - PYMALCOLM_FULL_ORDEREDDICT=NO EPICS_BASE=/usr/lib/epics EPICS_HOST_ARCH=linux-x86_64 CATOOLS_LIBCA_PATH=/usr/lib/epics/lib/linux-x86_64
