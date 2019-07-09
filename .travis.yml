@@ -13,7 +13,7 @@ env:
 addons:
   apt:
     sources:
-      - sourceline: 'deb https://epics.nsls2.bnl.gov/debian/ jessie main contrib'
+      - sourceline: 'deb https://epics.nsls2.bnl.gov/debian/ wheezy main contrib'
         key_url: 'https://epics.nsls2.bnl.gov/debian/repo-key.pub'
     packages:
       - libhdf5-serial-dev
