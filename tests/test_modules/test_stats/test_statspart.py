@@ -14,7 +14,7 @@ from math import floor
 from malcolm.version import __version__
 
 
-class TestBasicController(unittest.TestCase):
+class TestStatsPart(unittest.TestCase):
     prefix = "unitTest:%s" % floor(time.time()).__repr__()[:-2]
 
     def setUp(self):

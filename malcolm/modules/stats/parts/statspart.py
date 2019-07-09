@@ -441,15 +441,12 @@ class StatsPart(parts.ChildPart):
             "block logo", [Widget.ICON.tag()]).create_attribute_model(
             malcolm_logo_svg)
 
-        self.not_logo = StringMeta(
-            "block logo", [Widget.ICON.tag()]).create_attribute_model(
-            not_malcolm_logo_svg)
-
         self.register_hooked(hooks.InitHook, self.start_ioc)
 
         self.register_hooked(hooks.HaltHook, self.stop_ioc)
 
     def start_ioc(self):
+        print "--------------- starting IOC"
         if self.ioc is None:
             self.ioc = start_ioc(self.stats, self.prefix)
 

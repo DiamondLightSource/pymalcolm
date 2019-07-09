@@ -18,11 +18,6 @@
     name: ioc5
     description: IOC 5 name
 
-
-- builtin.parameters.string:
-    name: panda
-    description: PandA to include in status
-
 - builtin.parameters.string:
     name: malcolm_stats
     description: MRI of malcolm stats block
@@ -62,11 +57,6 @@
 - builtin.parts.ChildPart:
     mri: $(ioc5):STATUS
     name: $(ioc5)
-    initial_visibility: True
-
-- builtin.parts.ChildPart:
-    mri: $(panda)
-    name: $(panda)
     initial_visibility: True
 
 - builtin.parts.ChildPart:

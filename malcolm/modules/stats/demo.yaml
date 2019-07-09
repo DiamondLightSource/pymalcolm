@@ -18,18 +18,12 @@
     ioc: BL18I-EA-IOC-07
     has_autosave: False
 
-- stats.blocks.panda_status_block:
-    mri_prefix: BL18I-ML-PANDA-01
-    hostname: bl18i-mo-panda-01
-    config_dir: /dls_sw/i18/epics/malcolm
-
 - stats.blocks.wrapper_block:
     ioc1: BL18I-MO-IOC-06
     ioc2: BL18I-EA-IOC-07
     ioc3: BL18I-EA-IOC-08
     ioc4: BL18I-MO-IOC-07
     ioc5: BL18I-MO-IOC-10
-    panda: BL18I-ML-PANDA-01
     malcolm_stats: $(yamlname):STATS
     malcolm_name: $(yamlname)
     mri: BL18I-HDWR-STATUS
