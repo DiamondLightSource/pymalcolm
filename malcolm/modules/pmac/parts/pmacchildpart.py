@@ -34,10 +34,10 @@ CURRENT_TO_NEXT = 2
 ZERO_VELOCITY = 3
 
 # user programs
-NO_PROGRAM = 0    # Do nothing
+NO_PROGRAM = 0  # Do nothing
 LIVE_PROGRAM = 1  # GPIO123 = 1, 0, 0
 DEAD_PROGRAM = 2  # GPIO123 = 0, 1, 0
-MID_PROGRAM = 4   # GPIO123 = 0, 0, 1
+MID_PROGRAM = 4  # GPIO123 = 0, 0, 1
 ZERO_PROGRAM = 8  # GPIO123 = 0, 0, 0
 
 
@@ -392,22 +392,23 @@ class PmacChildPart(builtin.parts.ChildPart):
         t_list = []
         for time_array in time_arrays.values():
             t_list.extend(time_array)
-        times = np.array(t_list)
-        times = np.unique(times)
+        combined_times = np.array(t_list)
+        combined_times = np.unique(combined_times)
         # remove the 0 time initial point
-        times = list(np.sort(times))[1:]
-        num_intervals = len(times)
+        combined_times = list(np.sort(combined_times))[1:]
+        num_intervals = len(combined_times)
 
         # set up the time, mode and user arrays for the trajectory
         prev_time = 0
         time_intervals = []
-        for t in times:
+        for t in combined_times:
             # times are absolute - convert to intervals
             time_intervals.append(t - prev_time)
             prev_time = t
+
         self.profile["timeArray"] += time_intervals
         self.profile["velocityMode"] += \
-            [PREV_TO_NEXT] * (num_intervals - 1) + [PREV_TO_CURRENT]
+            [PREV_TO_CURRENT] * num_intervals
         user_program = self.get_user_program(PointType.TURNAROUND)
         self.profile["userPrograms"] += [user_program] * num_intervals
         self.completed_steps_lookup += [completed_steps] * num_intervals
@@ -416,89 +417,38 @@ class PmacChildPart(builtin.parts.ChildPart):
         for axis_name, motor_info in self.axis_mapping.items():
             axis_times = time_arrays[axis_name]
             axis_velocities = velocity_arrays[axis_name]
+            prev_velocity = axis_velocities[0]
             position = current_positions[axis_name]
             # At this point we have time/velocity arrays with multiple values
             # some of which align with the axis_times and some interleave.
             # We want to create a matching move profile of 'num_intervals'
             axis_pt = 1
             for i in range(num_intervals):
-                axis_interval = axis_times[axis_pt] - axis_times[axis_pt-1]
-                prev_velocity = axis_velocities[axis_pt-1]
-                if times[i] == axis_times[axis_pt]:
-                    fraction = 1  # todo remove - helps with debug
+                axis_velocity = axis_velocities[axis_pt]
+                axis_prev_velocity = axis_velocities[axis_pt - 1]
+                axis_interval = axis_times[axis_pt] - axis_times[axis_pt - 1]
+
+                if combined_times[i] == axis_times[axis_pt]:
+                    # this combined point matches the axis point
+                    # use the axis velocity and move to the next axis point
                     this_velocity = axis_velocities[axis_pt]
                     axis_pt += 1
                 else:
+                    # this combined point is between two axis points,
+                    # interpolate the velocity between those axis points
                     fraction = time_intervals[i] / axis_interval
-                    this_velocity = prev_velocity + \
-                        fraction * (axis_velocities[axis_pt] - prev_velocity)
+                    dv = axis_velocity - axis_prev_velocity
+                    this_velocity = axis_prev_velocity + fraction * dv
 
                 part_position = motor_info.ramp_distance(
                     prev_velocity, this_velocity, time_intervals[i])
+                prev_velocity = this_velocity
+
                 position += part_position
                 self.profile[motor_info.cs_axis.lower()].append(position)
 
-        pass  # todo remove - helps with debug
-
-    # todo remove - helps with debug
-    def old_calculate_profile_from_velocities(self, time_arrays,
-                                              velocity_arrays,
-                                              current_positions,
-                                              completed_steps):
-        trajectory = {}
-
-        # Interpolate the velocity arrays at about INTERPOLATE_INTERVAL
-        move_time = max(t[-1] for t in time_arrays.values())
-        # Make sure there are at least 2 of them
-        num_intervals = max(int(np.floor(move_time / INTERPOLATE_INTERVAL)), 2)
-        interval = move_time / num_intervals
-        self.profile["timeArray"] += [interval] * num_intervals
-        self.profile["velocityMode"] += \
-            [PREV_TO_NEXT] * (num_intervals - 1) + [CURRENT_TO_NEXT]
-        user_program = self.get_user_program(PointType.TURNAROUND)
-        self.profile["userPrograms"] += [user_program] * num_intervals
-        self.completed_steps_lookup += [completed_steps] * num_intervals
-
-        # Do this for each velocity array
-        for axis_name, motor_info in self.axis_mapping.items():
-            trajectory[axis_name] = []
-            ts = time_arrays[axis_name]
-            vs = velocity_arrays[axis_name]
-            position = current_positions[axis_name]
-            # at this point we have time/velocity arrays with 5-7 values and
-            # want to create a matching move profile with 'num_intervals'
-            # steps, each separated by 'interval' seconds. Walk through the
-            # profile steps aiming for the next time/velocity. Pop a
-            # time/velocity pair off of the lists as the total elapsed profile
-            # time exceeds the next point in the time/velocity pair.
-            #
-            # As we get to each profile point we set its velocity to be
-            # between the velocities of the two surrounding velocity points.
-            # The fraction of the time interval between the previous and next
-            # velocity points is used to determine what fraction of the change
-            # in velocity is applied at this profile point.
-            for i in range(num_intervals):
-                time = interval * (i + 1)
-                # If we have exceeded the current segment, pop it and add it's
-                # position in time
-                # use while on this check in case multiple segments exceeded
-                while time > ts[1] and not np.isclose(time, ts[1]):
-                    position += motor_info.ramp_distance(
-                        vs[0], vs[1], ts[1] - ts[0])
-                    vs = vs[1:]
-                    ts = ts[1:]
-                assert len(ts) > 1, \
-                    "Bad %s time %s velocity %s" % (time, ts, vs)
-                fraction = (time - ts[0]) / (ts[1] - ts[0])
-                velocity = fraction * (vs[1] - vs[0]) + vs[0]
-                part_position = motor_info.ramp_distance(
-                    vs[0], velocity, time - ts[0])
-                self.profile[motor_info.cs_axis.lower()].append(
-                    position + part_position)
-
     def add_profile_point(self, time_point, velocity_mode, user_program,
                           completed_step, axis_points):
-
         # Add padding if the move time exceeds the max pmac move time
         if time_point > MAX_MOVE_TIME:
             assert self.profile["timeArray"], \
