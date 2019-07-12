@@ -2,15 +2,15 @@
 from __future__ import division
 
 import re
+from enum import Enum
 
 import numpy as np
 from annotypes import add_call_types, TYPE_CHECKING
-from enum import Enum
-from scanpointgenerator import CompoundGenerator
-
 from malcolm.core import Future, Block, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
 from malcolm.modules.pmac.util import get_motion_trigger
+from scanpointgenerator import CompoundGenerator
+
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
     profile_between_points, cs_port_with_motors_in, get_motion_axes
@@ -382,6 +382,69 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,
                                           current_positions, completed_steps):
+        # at this point we have time/velocity arrays with 5-7 values for each
+        # axis. Each time represents a (instantaneous) change in acceleration.
+        # We want to translate this into a move profile (time/position).
+        # Every axis profile must have a point for each of the times from
+        # all axes combined
+
+        # extract the time points from all axes
+        t_list = []
+        for time_array in time_arrays.values():
+            t_list.extend(time_array)
+        times = np.array(t_list)
+        times = np.unique(times)
+        # remove the 0 time initial point
+        times = list(np.sort(times))[1:]
+        num_intervals = len(times)
+
+        # set up the time, mode and user arrays for the trajectory
+        prev_time = 0
+        time_intervals = []
+        for t in times:
+            # times are absolute - convert to intervals
+            time_intervals.append(t - prev_time)
+            prev_time = t
+        self.profile["timeArray"] += time_intervals
+        self.profile["velocityMode"] += \
+            [PREV_TO_NEXT] * (num_intervals - 1) + [PREV_TO_CURRENT]
+        user_program = self.get_user_program(PointType.TURNAROUND)
+        self.profile["userPrograms"] += [user_program] * num_intervals
+        self.completed_steps_lookup += [completed_steps] * num_intervals
+
+        # Do this for each axis' velocity and time arrays
+        for axis_name, motor_info in self.axis_mapping.items():
+            axis_times = time_arrays[axis_name]
+            axis_velocities = velocity_arrays[axis_name]
+            position = current_positions[axis_name]
+            # At this point we have time/velocity arrays with multiple values
+            # some of which align with the axis_times and some interleave.
+            # We want to create a matching move profile of 'num_intervals'
+            axis_pt = 1
+            for i in range(num_intervals):
+                axis_interval = axis_times[axis_pt] - axis_times[axis_pt-1]
+                prev_velocity = axis_velocities[axis_pt-1]
+                if times[i] == axis_times[axis_pt]:
+                    fraction = 1  # todo remove - helps with debug
+                    this_velocity = axis_velocities[axis_pt]
+                    axis_pt += 1
+                else:
+                    fraction = time_intervals[i] / axis_interval
+                    this_velocity = prev_velocity + \
+                        fraction * (axis_velocities[axis_pt] - prev_velocity)
+
+                part_position = motor_info.ramp_distance(
+                    prev_velocity, this_velocity, time_intervals[i])
+                position += part_position
+                self.profile[motor_info.cs_axis.lower()].append(position)
+
+        pass  # todo remove - helps with debug
+
+    # todo remove - helps with debug
+    def old_calculate_profile_from_velocities(self, time_arrays,
+                                              velocity_arrays,
+                                              current_positions,
+                                              completed_steps):
         trajectory = {}
 
         # Interpolate the velocity arrays at about INTERPOLATE_INTERVAL

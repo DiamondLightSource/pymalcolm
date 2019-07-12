@@ -124,15 +124,15 @@ def point_velocities(axis_mapping, point, entry=True):
         vp = dp / point.duration
         if entry:
             # Halfway point is vlp, so calculate dlp
-            dhalf = point.positions[axis_name] - point.lower[axis_name]
+            d_half = point.positions[axis_name] - point.lower[axis_name]
         else:
             # Halfway point is vpu, so calculate dpu
-            dhalf = point.upper[axis_name] - point.positions[axis_name]
+            d_half = point.upper[axis_name] - point.positions[axis_name]
         # Extrapolate to get our entry or exit velocity
         # (vl + vp) / 2 = vlp
         # so vl = 2 * vlp - vp
         # where vlp = dlp / (t/2)
-        velocity = 4 * dhalf / point.duration - vp
+        velocity = 4 * d_half / point.duration - vp
         assert abs(velocity) < motor_info.max_velocity, \
             "Velocity %s invalid for %r with max_velocity %s" % (
                 velocity, axis_name, motor_info.max_velocity)
@@ -141,7 +141,7 @@ def point_velocities(axis_mapping, point, entry=True):
 
 
 def profile_between_points(axis_mapping, point, next_point, min_time=MIN_TIME):
-    # type: (Dict[str, MotorInfo], Point, Point) -> Tuple[Profiles, Profiles]
+    # type: (Dict[str, MotorInfo], Point, Point, float) -> Tuple[Profiles, Profiles]
     """Make consistent time and velocity arrays for each axis
 
     Try to create velocity profiles for all axes that all arrive at
