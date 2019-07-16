@@ -323,45 +323,14 @@ class TestPMACChildPart(ChildTestCase):
         assert self.o.completed_steps_lookup == (
             [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
 
-    def turnaround_overshoot(
-            self, go_really_fast=False, title='', points=30):
-        """ check for a previous bug in a sawtooth X,Y scan
-        The issue was that the first point at the start of each rising edge
-        overshot in Y. The parameters for each rising edge are below.
+    def do_2d_trajectory_with_plot(self, gen, xv, yv, xa, ya, title):
+        gen.prepare()
 
-        Line Y, start=-2.5, stop= -2.5 +0.025, points=30
-        Line X, start=-0.95, stop= -0.95 +0.025, points=30
-        duration=0.15
+        self.set_motor_attributes(
+            x_acceleration=xv / xa, y_acceleration=yv / ya,
+            x_velocity=xv, y_velocity=yv)
 
-        X motor: VMAX=17, ACCL=0.1 (time to VMAX)
-        Y motor: VMAX=1, ACCL=0.2
-        """
-        x = -2.5
-        y = -.95
-        p = points  # set to 30 for Tom's original numbers
-        d = .025 * p / 30
-        xs = LineGenerator("x", "mm", x, x + d, p)
-        ys = LineGenerator("y", "mm", y, y + d, p)
-        # Toms original parameters below
-        # xs = LineGenerator("x", "mm", -2.5, -2.475, 30)
-        # ys = LineGenerator("y", "mm", -0.95, -0.925, 30)
-
-        generator = CompoundGenerator([ys, xs], [], [], 0.15)
-        generator.prepare()
-
-        if go_really_fast:
-            self.set_motor_attributes(
-                x_acceleration=17.0 / 0.1, y_acceleration=1. / 0.2,
-                x_velocity=17, y_velocity=1,
-                x_pos=-2.5, y_pos=-.95)
-        else:
-            self.set_motor_attributes(
-                x_acceleration=1. / 0.1, y_acceleration=1. / 0.2,
-                x_velocity=17, y_velocity=1,
-                x_pos=-2.5, y_pos=-.95)
-
-        self.o.configure(self.context, 0, p * 2, {}, generator,
-                         ["x", "y"])
+        self.o.configure(self.context, 0, gen.size, {}, gen, ["x", "y"])
 
         name, args, kwargs = self.child.handled_requests.mock_calls[2]
         assert name == "post"
@@ -382,37 +351,54 @@ class TestPMACChildPart(ChildTestCase):
         # to help diagnose issues
         if SHOW_GRAPHS:
             import matplotlib.pyplot as plt
-            # plt.title("{} x/y {} points".format(title, xp.size))
-            # plt.plot(xp, yp, '+', ms=2.5)
-            # plt.show()
-
-            # plt.title("{} x/point {} points".format(title, xp.size))
-            # plt.plot(xp, range(xp.size), '+', ms=2.5)
-            # plt.show()
 
             times = np.cumsum(tp / 1000)  # show in millisecs
-            plt.title("{} x/time {} points".format(title, xp.size))
 
+            fig1 = plt.figure(figsize=(8, 6), dpi=300)
+            plt.title("{} x/time {} points".format(title, xp.size))
             plt.plot(xp, times, '+', ms=2.5)
+            fig2 = plt.figure(figsize=(8, 6), dpi=300)
+            plt.title("{} x/y".format(title))
+            plt.plot(xp, yp, '+', ms=2.5)
             plt.show()
 
         return xp
 
     def test_turnaround_overshoot(self):
-        x1 = self.turnaround_overshoot(
-            go_really_fast=False,
-            title='test_turnaround_overshoot 10 slower',
-            points=30)
+        """ check for a previous bug in a sawtooth X,Y scan
+        The issue was that the first point at the start of each rising edge
+        overshot in Y. The parameters for each rising edge are below.
+
+        Line Y, start=-2.5, stop= -2.5 +0.025, points=30
+        Line X, start=-0.95, stop= -0.95 +0.025, points=30
+        duration=0.15
+
+        X motor: VMAX=17, ACCL=0.1 (time to VMAX)
+        Y motor: VMAX=1, ACCL=0.2
+        """
+        xs = LineGenerator("x", "mm", -2.5, -2.475, 30)
+        ys = LineGenerator("y", "mm", -.95, -.925, 2)
+
+        generator = CompoundGenerator([ys, xs], [], [], 0.15)
+
+        x1 = self.do_2d_trajectory_with_plot(
+            generator, xv=17, yv=1, xa=.1, ya=.2,
+            title='test_turnaround_overshoot 10 fast')
         self.child.handled_requests.reset_mock()
-        x2 = self.turnaround_overshoot(
-            go_really_fast=True,
-            title='test_turnaround_overshoot 10 fast',
-            points=30)
+
+        x2 = self.do_2d_trajectory_with_plot(
+            generator, xv=17, yv=1, xa=1.7, ya=.2,
+            title='test_turnaround_overshoot 10 slower')
         self.child.handled_requests.reset_mock()
 
         # checks that the two turnarounds only contain points
         # between the first line end and the second line start
-        assert x2[61] > x2[62] > x2[63], \
-            "Bad turnaround point in fast profile"
-        assert x1[61] > x1[62] > x1[63] > x1[64] > x1[65] > x1[66], \
+        # (each line is 62 pt and there are 5 turnaround pt = 129 total)
+        assert len(x1) == 129 and len(x2) == 129
+        print(x1[63], x1[64], x1[65], x1[66], x1[67])
+        # todo add [67]
+        assert x1[63] > x1[64] > x1[65] > x1[66],  \
             "Bad turnaround point in slow profile"
+        print(x2[63], x2[64], x2[65], x2[66], x2[67])
+        assert x2[63] > x2[64] > x2[65] > x2[66] > x2[67], \
+            "Bad turnaround point in fast profile"

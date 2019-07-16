@@ -391,6 +391,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         # extract the time points from all axes
         t_list = []
         for time_array in time_arrays.values():
+            # round the final points to make sure they all match up
+            time_array[-1] = time_array[-1].round(decimals=12)
             t_list.extend(time_array)
         combined_times = np.array(t_list)
         combined_times = np.unique(combined_times)
@@ -419,6 +421,9 @@ class PmacChildPart(builtin.parts.ChildPart):
             axis_velocities = velocity_arrays[axis_name]
             prev_velocity = axis_velocities[0]
             position = current_positions[axis_name]
+            # tracks the accumulated interpolated interval time since the
+            # last axis velocity profile point
+            time_interval = 0
             # At this point we have time/velocity arrays with multiple values
             # some of which align with the axis_times and some interleave.
             # We want to create a matching move profile of 'num_intervals'
@@ -433,10 +438,12 @@ class PmacChildPart(builtin.parts.ChildPart):
                     # use the axis velocity and move to the next axis point
                     this_velocity = axis_velocities[axis_pt]
                     axis_pt += 1
+                    time_interval = 0
                 else:
                     # this combined point is between two axis points,
                     # interpolate the velocity between those axis points
-                    fraction = time_intervals[i] / axis_interval
+                    time_interval += time_intervals[i]
+                    fraction = time_interval / axis_interval
                     dv = axis_velocity - axis_prev_velocity
                     this_velocity = axis_prev_velocity + fraction * dv
 
