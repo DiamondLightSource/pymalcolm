@@ -14,4 +14,4 @@
     prefix: $(prefix)
 
 - builtin.parts.IconPart:
-    svg: /dls_sw/prod/common/python/RHEL7-x86_64/4-0/docs/malcolm-logo.svg
+    svg: /dls_sw/prod/common/python/RHEL7-x86_64/pymalcolm/4-0/docs/malcolm-logo.svg
