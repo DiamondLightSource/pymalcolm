@@ -1,6 +1,6 @@
 from malcolm.modules.builtin import parts, hooks, infos
 from malcolm.core import Subscribe, ChoiceMeta, TableMeta, StringMeta, \
-    StringArrayMeta, Widget, PartRegistrar
+    StringArrayMeta, Widget, PartRegistrar, Part
 from malcolm.core.alarm import AlarmSeverity, Alarm
 from malcolm.modules.ca.parts import CAStringPart
 
@@ -28,15 +28,15 @@ with Anno("does the IOC have autosave?"):
     AHasAutosave = bool
 
 
-class IocStatusPart(parts.ChildPart):
+class IocStatusPart(Part):
     controller = None
     registrar = None
     ioc_prod_root = ''
     dls_version = None
 
-    def __init__(self, name, mri, has_autosave=True, initial_visibility=True):
-        # type: (parts.APartName, parts.AMri, AHasAutosave, parts.AInitialVisibility) -> None
-        super(IocStatusPart, self).__init__(name, mri, initial_visibility)
+    def __init__(self, name, has_autosave=True):
+        # type: (parts.APartName, AHasAutosave) -> None
+        super(IocStatusPart, self).__init__(name)
         # Hooks
         self.dir1 = ""
         self.dir2 = ""

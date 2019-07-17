@@ -1,5 +1,5 @@
-from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity
-from malcolm.modules.builtin import hooks, parts, infos
+from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, Part
+from malcolm.modules.builtin import hooks, infos, parts
 from malcolm import version
 from malcolm.modules.ca.util import catools
 
@@ -372,10 +372,10 @@ with Anno("prefix for self.stats PVs"):
     APvPrefix = str
 
 
-class StatsPart(parts.ChildPart):
-    def __init__(self, name, mri, prefix, initial_visibility=True):
-        # type: (parts.APartName, parts.AMri, APvPrefix, parts.AInitialVisibility) -> None
-        super(StatsPart, self).__init__(name, mri, initial_visibility)
+class StatsPart(Part):
+    def __init__(self, name, prefix):
+        # type: (parts.APartName, APvPrefix,) -> None
+        super(StatsPart, self).__init__(name)
         self.ioc = None
         self.prefix = prefix
         self.stats = dict()
@@ -441,12 +441,7 @@ class StatsPart(parts.ChildPart):
             "block logo", [Widget.ICON.tag()]).create_attribute_model(
             malcolm_logo_svg)
 
-        self.register_hooked(hooks.InitHook, self.start_ioc)
-
-        self.register_hooked(hooks.HaltHook, self.stop_ioc)
-
     def start_ioc(self):
-        print "--------------- starting IOC"
         if self.ioc is None:
             self.ioc = start_ioc(self.stats, self.prefix)
 
@@ -472,3 +467,7 @@ class StatsPart(parts.ChildPart):
             registrar.report(infos.HealthInfo(alarm))
 
         registrar.add_attribute_model("logo", self.logo)
+
+        registrar.hook(hooks.InitHook, self.start_ioc)
+
+        registrar.hook(hooks.HaltHook, self.stop_ioc)

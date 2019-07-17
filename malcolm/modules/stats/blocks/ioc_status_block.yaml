@@ -12,7 +12,6 @@
 
 - stats.parts.IocStatusPart:
     name: $(ioc)
-    mri: $(ioc):STATUS
     has_autosave: $(has_autosave)
 
 - ca.parts.CAStringPart:

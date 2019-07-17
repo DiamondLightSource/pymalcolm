@@ -11,5 +11,4 @@
 
 - stats.parts.StatsPart:
     name: $(prefix)
-    mri: $(mri)
     prefix: $(prefix)
