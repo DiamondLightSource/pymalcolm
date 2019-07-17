@@ -34,13 +34,15 @@ class IocStatusPart(Part):
     ioc_prod_root = ''
     dls_version = None
 
-    def __init__(self, name, has_autosave=True):
-        # type: (parts.APartName, AHasAutosave) -> None
+    def __init__(self, name, mri, has_autosave=True):
+        # type: (parts.APartName, parts.AMri, AHasAutosave) -> None
         super(IocStatusPart, self).__init__(name)
         # Hooks
         self.dir1 = ""
         self.dir2 = ""
         self.dir = ""
+        self.mri = mri
+        self.has_autosave = has_autosave
         self.register_hooked(hooks.InitHook, self.init_handler)
         self.available_versions = ChoiceMeta(
             "Available IOC versions (for same EPICS base)", writeable=True,
@@ -69,7 +71,8 @@ class IocStatusPart(Part):
     def init_handler(self, context):
         # type: (hooks.AContext) -> None
         self.controller = context.get_controller(self.mri)
-        self.controller.add_part(self.autosave_pv)
+        if self.has_autosave:
+            self.controller.add_part(self.autosave_pv)
         subscribe_ver = Subscribe(path=[self.mri, "currentVersion"])
         subscribe_ver.set_callback(self.version_updated)
         self.controller.handle_request(subscribe_ver).wait()
