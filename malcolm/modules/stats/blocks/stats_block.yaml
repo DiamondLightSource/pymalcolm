@@ -12,3 +12,6 @@
 - stats.parts.StatsPart:
     name: $(prefix)
     prefix: $(prefix)
+
+- builtin.parts.IconPart:
+    svg: /dls_sw/prod/common/python/RHEL7-x86_64/4-0/docs/malcolm-logo.svg
