@@ -6,11 +6,11 @@ from enum import Enum
 
 import numpy as np
 from annotypes import add_call_types, TYPE_CHECKING
+from scanpointgenerator import CompoundGenerator
+
 from malcolm.core import Future, Block, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
 from malcolm.modules.pmac.util import get_motion_trigger
-from scanpointgenerator import CompoundGenerator
-
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
     profile_between_points, cs_port_with_motors_in, get_motion_axes
@@ -20,9 +20,6 @@ if TYPE_CHECKING:
 
 # Number of seconds that a trajectory tick is
 TICK_S = 0.000001
-
-# Interval for interpolating velocity curves
-INTERPOLATE_INTERVAL = 0.02
 
 # Longest move time we can request
 MAX_MOVE_TIME = 4.0
