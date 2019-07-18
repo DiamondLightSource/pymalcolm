@@ -504,7 +504,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             # Add lower bound
             user_program = self.get_user_program(PointType.START_OF_ROW)
             self.add_profile_point(
-                run_up_time, CURRENT_TO_NEXT, user_program, start_index,
+                run_up_time, PREV_TO_CURRENT, user_program, start_index,
                 axis_points)
 
         for i in range(start_index, self.steps_up_to):
@@ -584,6 +584,6 @@ class PmacChildPart(builtin.parts.ChildPart):
             time_arrays, velocity_arrays, start_positions, completed_steps)
 
         # Change the last point to be a live frame
-        self.profile["velocityMode"][-1] = CURRENT_TO_NEXT
+        self.profile["velocityMode"][-1] = PREV_TO_CURRENT
         user_program = self.get_user_program(PointType.START_OF_ROW)
         self.profile["userPrograms"][-1] = user_program

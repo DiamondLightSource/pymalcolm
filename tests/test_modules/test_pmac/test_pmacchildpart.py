@@ -119,7 +119,7 @@ class TestPMACChildPart(ChildTestCase):
                            500000, 500000, 500000, 500000, 500000, 100000]),
                       userPrograms=pytest.approx(user_programs),
                       velocityMode=pytest.approx(
-                          [2, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 0, 0, 0,
+                          [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
                            0, 0, 1, 3])
                       )
         ]
@@ -152,7 +152,7 @@ class TestPMACChildPart(ChildTestCase):
                           [1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 8, 1, 4, 1, 4, 1, 4,
                            2, 8]),
                       velocityMode=pytest.approx(
-                          [2, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0, 0, 1,
+                          [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1,
                            3])
                       )
         ]
@@ -199,7 +199,7 @@ class TestPMACChildPart(ChildTestCase):
                       userPrograms=pytest.approx([
                           1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 2, 8]),
                       velocityMode=pytest.approx([
-                          2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3]))
+                          1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3]))
             ]
         assert self.o.completed_steps_lookup == [
             0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
@@ -270,7 +270,7 @@ class TestPMACChildPart(ChildTestCase):
                     100000, 500000, 500000, 500000, 500000, 500000, 500000,
                     100000]),
                 userPrograms=pytest.approx([1, 4, 1, 4, 1, 4, 2, 8]),
-                velocityMode=pytest.approx([2, 0, 0, 0, 0, 0, 1, 3])),
+                velocityMode=pytest.approx([1, 0, 0, 0, 0, 0, 1, 3])),
             ]
 
     def test_long_steps_lookup(self):
@@ -290,7 +290,7 @@ class TestPMACChildPart(ChildTestCase):
             userPrograms=pytest.approx([
                 1, 0, 4, 0, 1, 0, 4, 0, 1, 0, 4, 0, 2, 8]),
             velocityMode=pytest.approx([
-                2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3]))
+                1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3]))
         assert self.o.completed_steps_lookup == (
             [3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6])
 
@@ -313,7 +313,7 @@ class TestPMACChildPart(ChildTestCase):
             userPrograms=pytest.approx([
                 1, 0, 4, 0, 1, 0, 4, 0, 1]),
             velocityMode=pytest.approx([
-                2, 0, 0, 0, 0, 0, 0, 0, 0]))
+                1, 0, 0, 0, 0, 0, 0, 0, 0]))
         # The completed steps works on complete (not split) steps, so we expect
         # the last value to be the end of step 6, even though it doesn't
         # actually appear in the velocity arrays
