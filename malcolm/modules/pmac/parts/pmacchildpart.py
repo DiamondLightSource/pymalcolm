@@ -504,13 +504,15 @@ class PmacChildPart(builtin.parts.ChildPart):
                 point.duration / 2.0, PREV_TO_CURRENT, user_program, num + 1,
                 {name: point.upper[name] for name in self.axis_mapping})
 
-    def add_sparse_point_pair(
+    def add_sparse_point(
             self, point, num, next_point, is_final_point, points_are_joined):
         pvt_point = None
         if not is_final_point:
+            self.time_since_last_pvt += point.duration
             if points_are_joined:
-                # skip this point TODO more logic required for non linear
-                self.time_since_last_pvt += point.interval
+                # skip this point
+                # TODO more logic required for non linear generators
+                pass
             else:
                 user_program = self.get_user_program(PointType.END_OF_ROW)
                 velocity_point = PREV_TO_CURRENT
@@ -518,6 +520,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                     self.time_since_last_pvt, velocity_point,
                     user_program, num + 1,
                     {name: point.upper[name] for name in self.axis_mapping})
+                self.time_since_last_pvt = 0
 
             if not points_are_joined:
                 self.insert_gap(point, next_point, num + 1)
@@ -576,12 +579,9 @@ class PmacChildPart(builtin.parts.ChildPart):
                     point, i, next_point, is_final_point, points_are_joined
                 )
             else:
-                self.add_generator_point_pair(
+                self.add_sparse_point(
                     point, i, next_point, is_final_point, points_are_joined
                 )
-                # self.add_sparse_point_pair(
-                #     point, i, next_point, is_final_point, points_are_joined
-                # )
 
             # Check if we have exceeded the points number and need to write
             # Strictly less than so we always add one more point to the time

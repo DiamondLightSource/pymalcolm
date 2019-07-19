@@ -44,15 +44,15 @@ tables to the correct values::
         mri: BLxxI-ML-PANDA-01
         initial_visibility: True
 
-    - ADPandABlocks.blocks.panda_pcomp_block:
-        mri: $(mri_prefix):PCOMP
+    - ADPandABlocks.blocks.panda_seq_trigger_block:
+        mri: $(mri_prefix):TRIG
         panda: BLxxI-ML-PANDA-01
         pmac: BLxxI-ML-BRICK-01
 
     # Make this initially invisible so it doesn't disturb existing scans
-    - ADPandABlocks.parts.PandAPcompPart:
-        name: PCOMP
-        mri: $(mri_prefix):PCOMP
+    - ADPandABlocks.parts.PandASeqTriggerPart:
+        name: TRIG
+        mri: $(mri_prefix):TRIG
         initial_visibility: False
 
 The `DetectorChildPart` definition for the PandA is unchanged, the PCOMP Block
