@@ -1,4 +1,29 @@
-dist: xenial # required for python 3.7
+dist: xenial # required for python 3.7- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: The root PV for the trajectory scan template
+
+- builtin.defines.docstring:
+    value: Hardware block corresponding to PVs used for trajectory scan
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: $(docstring)
+
+- ca.parts.CAChoicePart:
+    name: cs
+    description: Co-ordinate system name that should be trajectory scanned
+    pv: $(pv_prefix):ProfileCsName
+    rbv_suffix: _RBV
+
+- ca.parts.CAStringPart:
+    name: pmac
+    description: Port name of parent PMAC object
+    rbv: $(pv_prefix):ParentPort
+    sink_port: motor
 language: python
 python:
   - "2.7"

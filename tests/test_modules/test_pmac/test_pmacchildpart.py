@@ -351,7 +351,11 @@ class TestPMACChildPart(ChildTestCase):
             x_acceleration=xv / xa, y_acceleration=yv / ya,
             x_velocity=xv, y_velocity=yv)
 
-        self.o.configure(self.context, 0, gen.size, {}, gen, ["x", "y"])
+        infos = [MotionTriggerInfo(MotionTrigger.ROW_GATE)]
+        infos = [MotionTriggerInfo(MotionTrigger.EVERY_POINT)]
+        self.o.configure(self.context, 0, gen.size,
+                         {"part": infos},
+                         gen, ["x", "y"])
 
         name, args, kwargs = self.child.handled_requests.mock_calls[2]
         assert name == "post"
@@ -409,6 +413,7 @@ class TestPMACChildPart(ChildTestCase):
         X motor: VMAX=17, ACCL=0.1 (time to VMAX)
         Y motor: VMAX=1, ACCL=0.2
         """
+        self.o.output_triggers = MotionTrigger.ROW_GATE
         xs = LineGenerator("x", "mm", -2.5, -2.475, 30)
         ys = LineGenerator("y", "mm", -.95, -.925, 2)
 
