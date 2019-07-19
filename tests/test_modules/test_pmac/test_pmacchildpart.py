@@ -352,7 +352,7 @@ class TestPMACChildPart(ChildTestCase):
             x_velocity=xv, y_velocity=yv)
 
         infos = [MotionTriggerInfo(MotionTrigger.ROW_GATE)]
-        infos = [MotionTriggerInfo(MotionTrigger.EVERY_POINT)]
+        # infos = [MotionTriggerInfo(MotionTrigger.EVERY_POINT)]
         self.o.configure(self.context, 0, gen.size,
                          {"part": infos},
                          gen, ["x", "y"])
@@ -374,7 +374,7 @@ class TestPMACChildPart(ChildTestCase):
 
         # if this test is run in pycharm then it plots some results
         # to help diagnose issues
-        if environ.get("TESTS_SHOW_GRAPHS") == '1':
+        if environ.get("PLOTS") == '1':
             import matplotlib.pyplot as plt
 
             times = np.cumsum(tp / 1000)  # show in millisecs
@@ -413,7 +413,6 @@ class TestPMACChildPart(ChildTestCase):
         X motor: VMAX=17, ACCL=0.1 (time to VMAX)
         Y motor: VMAX=1, ACCL=0.2
         """
-        self.o.output_triggers = MotionTrigger.ROW_GATE
         xs = LineGenerator("x", "mm", -2.5, -2.475, 30)
         ys = LineGenerator("y", "mm", -.95, -.925, 2)
 
