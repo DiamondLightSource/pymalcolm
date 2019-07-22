@@ -29,7 +29,6 @@ with Anno("does the IOC have autosave?"):
 
 
 class IocStatusPart(Part):
-    controller = None
     registrar = None
     ioc_prod_root = ''
     dls_version = None
@@ -41,13 +40,15 @@ class IocStatusPart(Part):
         self.dir1 = ""
         self.dir2 = ""
         self.dir = ""
-        self.mri = mri
+        self.controller_mri = mri
         self.has_autosave = has_autosave
         self.register_hooked(hooks.InitHook, self.init_handler)
-        self.available_versions = ChoiceMeta(
-            "Available IOC versions (for same EPICS base)", writeable=True,
-            choices=['unknown'],
-            tags=[Widget.COMBO.tag()]).create_attribute_model('unknown')
+
+        # self.available_versions = ChoiceMeta(
+        #     "Available IOC versions (for same EPICS base)", writeable=True,
+        #     choices=['unknown'],
+        #     tags=[Widget.COMBO.tag()]).create_attribute_model('unknown')
+
         self.epics_logo = StringMeta("block logo", [
             Widget.ICON.tag()]).create_attribute_model(epics_logo_svg)
 
@@ -70,28 +71,28 @@ class IocStatusPart(Part):
     @add_call_types
     def init_handler(self, context):
         # type: (hooks.AContext) -> None
-        self.controller = context.get_controller(self.mri)
+        controller = context.get_controller(self.controller_mri)
         if self.has_autosave:
-            self.controller.add_part(self.autosave_pv)
-        subscribe_ver = Subscribe(path=[self.mri, "currentVersion"])
+            controller.add_part(self.autosave_pv)
+        subscribe_ver = Subscribe(path=[self.controller_mri, "currentVersion"])
         subscribe_ver.set_callback(self.version_updated)
-        self.controller.handle_request(subscribe_ver).wait()
-        subscribe_epics = Subscribe(path=[self.mri, "epicsVersion"])
-        subscribe_epics.set_callback(self.check_available_versions)
-        self.controller.handle_request(subscribe_epics).wait()
-        subscribe_dir1 = Subscribe(path=[self.mri, "iocDirectory1"])
+        controller.handle_request(subscribe_ver).wait()
+        # subscribe_epics = Subscribe(path=[self.controller_mri, "epicsVersion"])
+        # subscribe_epics.set_callback(self.check_available_versions)
+        # controller.handle_request(subscribe_epics).wait()
+        subscribe_dir1 = Subscribe(path=[self.controller_mri, "iocDirectory1"])
         subscribe_dir1.set_callback(self.set_dir1)
-        self.controller.handle_request(subscribe_dir1).wait()
-        subscribe_dir2 = Subscribe(path=[self.mri, "iocDirectory2"])
+        controller.handle_request(subscribe_dir1).wait()
+        subscribe_dir2 = Subscribe(path=[self.controller_mri, "iocDirectory2"])
         subscribe_dir2.set_callback(self.set_dir2)
-        self.controller.handle_request(subscribe_dir2).wait()
+        controller.handle_request(subscribe_dir2).wait()
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(IocStatusPart, self).setup(registrar)
-        registrar.add_attribute_model("availableVersions",
-                                      self.available_versions,
-                                      self.configure_ioc)
+        # registrar.add_attribute_model("availableVersions",
+        #                               self.available_versions,
+        #                               self.configure_ioc)
         registrar.add_attribute_model("epicsLogo",
                                       self.epics_logo)
         registrar.add_attribute_model("dependencies", self.dependencies)
@@ -102,21 +103,21 @@ class IocStatusPart(Part):
             message = "IOC running from work area"
             alarm = Alarm(message=message, severity=AlarmSeverity.MINOR_ALARM)
             self.registrar.report(infos.HealthInfo(alarm))
-        elif update.value["value"] in self.available_versions.meta.choices:
-            self.available_versions.set_value(update.value["value"])
+        # elif update.value["value"] in self.available_versions.meta.choices:
+        #     self.available_versions.set_value(update.value["value"])
 
-    def check_available_versions(self, update):
-        epics_ver = None
-        if len(update.value["value"]) > 15:
-            epics_ver = update.value["value"][6:16]
-        if epics_ver is not None and epics_ver in os.listdir('/dls_sw/prod'):
-            ioc_name = self.name.split('-')
-            self.ioc_prod_root = '/dls_sw/prod/%s/ioc/%s/%s' % (
-                epics_ver, ioc_name[0], self.name)
-            prod_versions = os.listdir(self.ioc_prod_root)
-            self.available_versions.meta.set_choices(prod_versions)
-            if self.dls_version in prod_versions:
-                self.available_versions.set_value(self.dls_version)
+    # def check_available_versions(self, update):
+    #     epics_ver = None
+    #     if len(update.value["value"]) > 15:
+    #         epics_ver = update.value["value"][6:16]
+    #     if epics_ver is not None and epics_ver in os.listdir('/dls_sw/prod'):
+    #         ioc_name = self.name.split('-')
+    #         self.ioc_prod_root = '/dls_sw/prod/%s/ioc/%s/%s' % (
+    #             epics_ver, ioc_name[0], self.name)
+    #         prod_versions = os.listdir(self.ioc_prod_root)
+    #         self.available_versions.meta.set_choices(prod_versions)
+    #         if self.dls_version in prod_versions:
+    #             self.available_versions.set_value(self.dls_version)
 
     def set_dir1(self, update):
         self.dir1 = update.value["value"]
@@ -154,13 +155,14 @@ class IocStatusPart(Part):
         if len(dep_list) > 0:
             self.dependencies.set_value(dependency_table)
 
-    def configure_ioc(self, version):
-        bin_path = os.path.join(self.ioc_prod_root, version, 'bin',
-                                'linux-x86_64', 'st%s.sh' % self.name)
-        if os.path.exists(bin_path):
-            subprocess.call(["configure-ioc", "e", self.name, bin_path])
-        check = subprocess.check_output(["configure-ioc", "s", "-p", self.name])
-        if check.strip('\n') == bin_path:
-            self.available_versions.set_value(version)
-        else:
-            raise Exception("configure-ioc call failed: %s" % check)
+    # The world isn't ready for this yet
+    # def configure_ioc(self, version):
+    #     bin_path = os.path.join(self.ioc_prod_root, version, 'bin',
+    #                             'linux-x86_64', 'st%s.sh' % self.name)
+    #     if os.path.exists(bin_path):
+    #         subprocess.call(["configure-ioc", "e", self.name, bin_path])
+    #     check = subprocess.check_output(["configure-ioc", "s", "-p", self.name])
+    #     if check.strip('\n') == bin_path:
+    #         self.available_versions.set_value(version)
+    #     else:
+    #         raise Exception("configure-ioc call failed: %s" % check)
