@@ -360,8 +360,11 @@ class TestPMACChildPart(ChildTestCase):
                 x_velocity=17, y_velocity=1,
                 x_pos=-2.5, y_pos=-.95)
 
-        self.o.configure(self.context, 0, p * 2, {}, generator,
-                         ["x", "y"])
+        infos = [MotionTriggerInfo(MotionTrigger.ROW_GATE)]
+        infos = [MotionTriggerInfo(MotionTrigger.EVERY_POINT)]
+        self.o.configure(self.context, 0, gen.size,
+                         {"part": infos},
+                         gen, ["x", "y"])
 
         name, args, kwargs = self.child.handled_requests.mock_calls[2]
         assert name == "post"
@@ -399,10 +402,26 @@ class TestPMACChildPart(ChildTestCase):
         return xp
 
     def test_turnaround_overshoot(self):
-        x1 = self.turnaround_overshoot(
-            go_really_fast=False,
-            title='test_turnaround_overshoot 10 slower',
-            points=30)
+        """ check for a previous bug in a sawtooth X,Y scan
+        The issue was that the first point at the start of each rising edge
+        overshot in Y. The parameters for each rising edge are below.
+
+        Line Y, start=-2.5, stop= -2.5 +0.025, points=30
+        Line X, start=-0.95, stop= -0.95 +0.025, points=30
+        duration=0.15
+
+        X motor: VMAX=17, ACCL=0.1 (time to VMAX)
+        Y motor: VMAX=1, ACCL=0.2
+        """
+        self.o.output_triggers = MotionTrigger.ROW_GATE
+        xs = LineGenerator("x", "mm", -2.5, -2.475, 30)
+        ys = LineGenerator("y", "mm", -.95, -.925, 2)
+
+        generator = CompoundGenerator([ys, xs], [], [], 0.15)
+
+        x1, y1 = self.do_2d_trajectory_with_plot(
+            generator, xv=17, yv=1, xa=.1, ya=.2,
+            title='test_turnaround_overshoot 10 fast')
         self.child.handled_requests.reset_mock()
         x2 = self.turnaround_overshoot(
             go_really_fast=True,
