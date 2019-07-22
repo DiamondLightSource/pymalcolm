@@ -482,7 +482,13 @@ class PmacChildPart(builtin.parts.ChildPart):
             {name: point.positions[name] for name in self.axis_mapping})
 
         # If there will be more frames, insert next live frame
-        if not is_final_point:
+        if is_final_point:
+            # No more frames, dead frame to finish
+            user_program = self.get_user_program(PointType.END_OF_ROW)
+            self.add_profile_point(
+                point.duration / 2.0, PREV_TO_CURRENT, user_program, num + 1,
+                {name: point.upper[name] for name in self.axis_mapping})
+        else:
             # insert the lower bound of the next frame if required
             if points_are_joined:
                 user_program = self.get_user_program(PointType.POINT_JOIN)
@@ -497,34 +503,12 @@ class PmacChildPart(builtin.parts.ChildPart):
 
             if not points_are_joined:
                 self.insert_gap(point, next_point, num + 1)
-        else:
-            # No more frames, dead frame to finish
-            user_program = self.get_user_program(PointType.END_OF_ROW)
-            self.add_profile_point(
-                point.duration / 2.0, PREV_TO_CURRENT, user_program, num + 1,
-                {name: point.upper[name] for name in self.axis_mapping})
 
     def add_sparse_point(
             self, point, num, next_point, is_final_point, points_are_joined):
         pvt_point = None
-        if not is_final_point:
-            self.time_since_last_pvt += point.duration
-            if points_are_joined:
-                # skip this point
-                # TODO more logic required for non linear generators
-                pass
-            else:
-                user_program = self.get_user_program(PointType.END_OF_ROW)
-                velocity_point = PREV_TO_CURRENT
-                self.add_profile_point(
-                    self.time_since_last_pvt, velocity_point,
-                    user_program, num + 1,
-                    {name: point.upper[name] for name in self.axis_mapping})
-                self.time_since_last_pvt = 0
-
-            if not points_are_joined:
-                self.insert_gap(point, next_point, num + 1)
-        else:
+        self.time_since_last_pvt += point.duration
+        if is_final_point:
             # No more frames, dead frame to finish
             user_program = self.get_user_program(PointType.END_OF_ROW)
             self.add_profile_point(
@@ -533,6 +517,22 @@ class PmacChildPart(builtin.parts.ChildPart):
                 {name: point.upper[name] for name in self.axis_mapping}
             )
             self.time_since_last_pvt = 0
+        else:
+            if points_are_joined:
+                # skip this point
+                # TODO more logic required for non linear generators
+                pass
+            else:
+                user_program = self.get_user_program(PointType.END_OF_ROW)
+                velocity_point = CURRENT_TO_NEXT
+                self.add_profile_point(
+                    self.time_since_last_pvt, velocity_point,
+                    user_program, num + 1,
+                    {name: point.upper[name] for name in self.axis_mapping})
+                self.time_since_last_pvt = 0
+
+            if not points_are_joined:
+                self.insert_gap(point, next_point, num + 1)
 
         return pvt_point
 
