@@ -115,25 +115,28 @@ class IocStatusPart(Part):
         release_file = os.path.join(self.dir, 'configure', 'RELEASE')
         dependencies = OrderedDict()
         dependency_table = OrderedDict()
-        with open(release_file, 'r') as release:
-            dep_list = release.readlines()
-            dep_list = [dep.strip('\n') for dep in dep_list if
-                        not dep.startswith('#')]
-            for dep in dep_list:
-                dep_split = dep.replace(' ', '').split('=')
-                dependencies[dep_split[0]] = dep_split[1]
-            dependency_table["module"] = []
-            dependency_table["path"] = []
-            for k1, v1 in dependencies.items():
-                for k2, v2 in dependencies.items():
-                    dependencies[k2] = v2.replace('$(%s)' % k1, v1)
+        if os.path.isdir(self.dir):
+            with open(release_file, 'r') as release:
+                dep_list = release.readlines()
+                dep_list = [dep.strip('\n') for dep in dep_list if
+                            not dep.startswith('#')]
+                for dep in dep_list:
+                    dep_split = dep.replace(' ', '').split('=')
+                    dependencies[dep_split[0]] = dep_split[1]
+                dependency_table["module"] = []
+                dependency_table["path"] = []
+                for k1, v1 in dependencies.items():
+                    for k2, v2 in dependencies.items():
+                        dependencies[k2] = v2.replace('$(%s)' % k1, v1)
 
-            for k1, v1 in dependencies.items():
-                dependency_table["module"] += [k1]
-                dependency_table["path"] += [v1]
+                for k1, v1 in dependencies.items():
+                    dependency_table["module"] += [k1]
+                    dependency_table["path"] += [v1]
 
-        if len(dep_list) > 0:
-            self.dependencies.set_value(dependency_table)
+            if len(dep_list) > 0:
+                self.dependencies.set_value(dependency_table)
+        else:
+            self.dependencies.set_alarm(Alarm(message="reported IOC directory not found", severity=AlarmSeverity.MINOR_ALARM))
 
     # The world isn't ready for this yet
     # def configure_ioc(self, version):

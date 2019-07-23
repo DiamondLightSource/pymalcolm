@@ -32,11 +32,6 @@
     rbv: $(ioc):APP_DIR2
     widget:
 
-- ca.parts.CALongPart:
-    name: iocLoad
-    description: IOC run status
-    rbv: $(ioc):LOAD.SEVR
-
 - ca.parts.CAStringPart:
     name: epicsVersion
     description: EPICS version

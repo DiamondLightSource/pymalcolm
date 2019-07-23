@@ -20,7 +20,7 @@ class TestStatsPart(unittest.TestCase):
     def setUp(self):
         self.process = Process("proc")
         self.o = StatefulController("MyMRI")
-        self.o.add_part(StatsPart("stats", "MyMRI", prefix=self.prefix))
+        self.o.add_part(StatsPart("stats", prefix=self.prefix))
         self.process.add_controller(self.o)
         self.process.start()
         self.b = self.process.block_view("MyMRI")
