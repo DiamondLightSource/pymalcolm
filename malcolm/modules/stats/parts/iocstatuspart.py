@@ -1,28 +1,13 @@
 from malcolm.modules.builtin import parts, hooks, infos
-from malcolm.core import Subscribe, ChoiceMeta, TableMeta, StringMeta, \
+from malcolm.core import Subscribe, TableMeta, StringMeta, \
     StringArrayMeta, Widget, PartRegistrar, Part
 from malcolm.core.alarm import AlarmSeverity, Alarm
 from malcolm.modules.ca.parts import CAStringPart
 
 import os
-import subprocess
 from collections import OrderedDict
 
 from annotypes import add_call_types, Anno
-
-epics_logo_svg = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100px" height="50px" viewBox="0 0 100 50" xml:space="preserve">
-<g id="logo" transform="scale(0.1, 0.1) translate(-160, -200)">
-<path id="S" fill="#69ccff" d="M880.5,474.714l24.796-29.844c13.879,11.817,31.589,20.094,47.529,20.094   c18.003,0,26.866-7.098,26.866-18.622c0-12.118-10.922-15.954-27.753-23.056l-25.089-10.628   c-19.785-7.985-38.679-24.537-38.679-52.604c0-31.927,28.343-57.334,68.493-57.334c22.141,0,45.46,8.863,61.998,25.407   l-22.143,27.485c-12.691-9.751-24.504-15.359-39.855-15.359c-15.057,0-24.511,6.496-24.511,17.438   c0,11.817,12.704,15.954,29.23,22.751l24.795,10.047c23.333,9.461,38.089,25.122,38.089,52.31   c0,31.915-26.573,59.693-72.621,59.693C926.557,502.493,899.988,493.031,880.5,474.714"/>
-<path id="C" fill="#69ccff" d="M720.193,403.782c0-63.822,42.208-101.057,90.926-101.057c24.796,0,44.865,11.821,57.849,25.118   l-23.018,27.774c-9.742-8.867-20.073-15.359-33.949-15.359c-26.272,0-47.228,23.336-47.228,62.057   c0,39.595,18.295,62.65,46.63,62.65c15.653,0,28.042-7.985,37.496-18.028l23.03,27.185c-15.945,18.617-37.211,28.372-62.291,28.372   C760.934,502.493,720.193,468.503,720.193,403.782"/>
-<rect id="I" x="640.47" y="306.263" fill="#69ccff" width="43.399" height="192.687"/>
-<path id="P" fill="#69ccff" d="M529.165,399.056c23.905,0,35.422-10.641,35.422-30.731c0-20.095-12.992-27.486-36.61-27.486   h-20.076v58.217H529.165z M464.518,306.263h66.115c42.215,0,76.456,15.373,76.456,62.062c0,45.212-34.536,65.31-75.275,65.31   h-23.913v65.311h-43.383V306.263z"/>
-<polygon id="E" fill="#69ccff" points="302.721,306.263 302.721,498.95 426.121,498.95 426.121,462.304 346.117,462.304    346.117,417.966 411.651,417.966 411.651,381.617 346.117,381.617 346.117,342.909 423.166,342.909 423.166,306.263  "/>
-<polygon id="signe" fill="#69ccff" points="892.313,531.786 892.313,645.119 853.5,645.119 853.5,531.786 721.535,531.786    721.535,645.119 682.819,645.119 682.819,531.786 302.723,531.786 302.723,683.702 434.676,683.702 434.676,570.368    473.495,570.368 473.495,683.702 605.444,683.702 605.444,570.368 644.246,570.368 644.246,683.702 1024.268,683.702    1024.268,531.786  "/>
-</g>
-</svg
-"""
 
 with Anno("does the IOC have autosave?"):
     AHasAutosave = bool
@@ -37,8 +22,8 @@ class IocStatusPart(Part):
         # type: (parts.APartName, parts.AMri, AHasAutosave) -> None
         super(IocStatusPart, self).__init__(name)
         # Hooks
-        self.dir1 = ""
-        self.dir2 = ""
+        self.dir1 = None
+        self.dir2 = None
         self.dir = ""
         self.controller_mri = mri
         self.has_autosave = has_autosave
@@ -48,9 +33,6 @@ class IocStatusPart(Part):
         #     "Available IOC versions (for same EPICS base)", writeable=True,
         #     choices=['unknown'],
         #     tags=[Widget.COMBO.tag()]).create_attribute_model('unknown')
-
-        self.epics_logo = StringMeta("block logo", [
-            Widget.ICON.tag()]).create_attribute_model(epics_logo_svg)
 
         elements = OrderedDict()
         elements["module"] = StringArrayMeta("Module",
@@ -93,8 +75,6 @@ class IocStatusPart(Part):
         # registrar.add_attribute_model("availableVersions",
         #                               self.available_versions,
         #                               self.configure_ioc)
-        registrar.add_attribute_model("epicsLogo",
-                                      self.epics_logo)
         registrar.add_attribute_model("dependencies", self.dependencies)
 
     def version_updated(self, update):
@@ -121,13 +101,13 @@ class IocStatusPart(Part):
 
     def set_dir1(self, update):
         self.dir1 = update.value["value"]
-        if self.dir1 != "" and self.dir2 != "":
+        if self.dir1 is not None and self.dir2 is not None:
             self.dir = self.dir1 + self.dir2
             self.parse_release()
 
     def set_dir2(self, update):
         self.dir2 = update.value["value"]
-        if self.dir1 != "" and self.dir2 != "":
+        if self.dir1 is not None and self.dir2 is not None:
             self.dir = self.dir1 + self.dir2
             self.parse_release()
 

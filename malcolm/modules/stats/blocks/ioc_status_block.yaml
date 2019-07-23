@@ -46,3 +46,6 @@
     name: restartIoc
     description: Restart IOC
     pv: $(ioc):RESTART
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/epics-logo.svg
