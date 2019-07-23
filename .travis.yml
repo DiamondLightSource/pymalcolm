@@ -6,11 +6,20 @@ python:
   - "3.6"
   - "3.7"
 
+env:
+    - PYMALCOLM_FULL_ORDEREDDICT=NO EPICS_BASE=/usr/lib/epics EPICS_HOST_ARCH=linux-x86_64 CATOOLS_LIBCA_PATH=/usr/lib/epics/lib/linux-x86_64
+    - PYMALCOLM_FULL_ORDEREDDICT=YES EPICS_BASE=/usr/lib/epics EPICS_HOST_ARCH=linux-x86_64 CATOOLS_LIBCA_PATH=/usr/lib/epics/lib/linux-x86_64
+
 addons:
   apt:
+    sources:
+      - sourceline: 'deb https://epics.nsls2.bnl.gov/debian/ wheezy main contrib'
+        key_url: 'https://epics.nsls2.bnl.gov/debian/repo-key.pub'
     packages:
       - libhdf5-serial-dev
       - gdb
+      - epics-dev
+      - build-essential
 
 cache:
   directories:
