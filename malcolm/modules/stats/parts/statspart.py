@@ -7,12 +7,6 @@ import os
 import subprocess
 from annotypes import Anno
 
-not_malcolm_logo_svg = """\
-<iframe id="ytplayer" type="text/html" width="100" height="100"
-  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&origin=http://localhost"
-  frameborder="0"></iframe>
-"""
-
 def start_ioc(stats, prefix):
     db_macros = "prefix='%s'" % prefix
     epics_base = None
