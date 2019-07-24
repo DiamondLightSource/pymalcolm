@@ -2,10 +2,10 @@
 from __future__ import division
 
 import re
+from enum import Enum
 
 import numpy as np
 from annotypes import add_call_types, TYPE_CHECKING
-from enum import Enum
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import Future, Block, PartRegistrar, Put, Request
@@ -58,7 +58,6 @@ AIV = builtin.parts.AInitialVisibility
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = builtin.parts.APartName
 AMri = builtin.parts.AMri
-
 
 class PmacChildPart(builtin.parts.ChildPart):
     def __init__(self,
@@ -440,7 +439,6 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def add_profile_point(self, time_point, velocity_mode, user_program,
                           completed_step, axis_points):
-
         # Add padding if the move time exceeds the max pmac move time
         if time_point > MAX_MOVE_TIME:
             assert self.profile["timeArray"], \
@@ -481,7 +479,6 @@ class PmacChildPart(builtin.parts.ChildPart):
             point.duration / 2.0, PREV_TO_NEXT, user_program, num,
             {name: point.positions[name] for name in self.axis_mapping})
 
-        # If there will be more frames, insert next live frame
         if is_final_point:
             # No more frames, dead frame to finish
             user_program = self.get_user_program(PointType.END_OF_ROW)
@@ -505,7 +502,8 @@ class PmacChildPart(builtin.parts.ChildPart):
                 self.insert_gap(point, next_point, num + 1)
 
     def add_sparse_point(
-            self, point, num, next_point, is_final_point, points_are_joined):
+            self, point, num, next_point, is_final_point, points_are_joined
+    ):
         pvt_point = None
         self.time_since_last_pvt += point.duration
         if is_final_point:
@@ -519,19 +517,28 @@ class PmacChildPart(builtin.parts.ChildPart):
             self.time_since_last_pvt = 0
         else:
             if points_are_joined:
-                # skip this point
-                # TODO more logic required for non linear generators
-                pass
+                # skip this point if is is linear with respect to previous
+                # todo when branch velocity-mode-changes is merged we will
+                #  need to set velocity mode CURRENT_TO_NEXT on the previous
+                #  point whenever we drop a point
+                if self.is_equidistant(point, next_point):
+                    # skip this point
+                    pass
+                else:
+                    user_program = self.get_user_program(PointType.POINT_JOIN)
+                    self.add_profile_point(
+                        self.time_since_last_pvt, PREV_TO_NEXT,
+                        user_program, num + 1,
+                        {name: point.upper[name] for name in self.axis_mapping})
+                    self.time_since_last_pvt = 0
             else:
                 user_program = self.get_user_program(PointType.END_OF_ROW)
-                velocity_point = CURRENT_TO_NEXT
                 self.add_profile_point(
-                    self.time_since_last_pvt, velocity_point,
+                    self.time_since_last_pvt, PREV_TO_CURRENT,
                     user_program, num + 1,
                     {name: point.upper[name] for name in self.axis_mapping})
                 self.time_since_last_pvt = 0
 
-            if not points_are_joined:
                 self.insert_gap(point, next_point, num + 1)
 
         return pvt_point
@@ -574,7 +581,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 points_are_joined = False
                 next_point = None
 
-            if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
+            if self.output_triggers != scanning.infos.MotionTrigger.ROW_GATE:
                 self.add_generator_point_pair(
                     point, i, next_point, is_final_point, points_are_joined
                 )
@@ -582,6 +589,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 self.add_sparse_point(
                     point, i, next_point, is_final_point, points_are_joined
                 )
+            prev_point = point
 
             # Check if we have exceeded the points number and need to write
             # Strictly less than so we always add one more point to the time
@@ -628,3 +636,17 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.profile["velocityMode"][-1] = CURRENT_TO_NEXT
         user_program = self.get_user_program(PointType.START_OF_ROW)
         self.profile["userPrograms"][-1] = user_program
+
+    def is_equidistant(self, p1, p2):
+        result = False
+        # handle p1 = None, i.e. no previous point
+        if p2.duration == p2.duration:
+            result = True
+            for axis_name, motor_info in self.axis_mapping.items():
+                if not np.isclose(
+                    p1.lower[axis_name] - p1.positions[axis_name],
+                    p2.lower[axis_name] - p2.positions[axis_name]
+                ):
+                    result = False
+                    break
+        return result
