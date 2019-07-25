@@ -127,6 +127,28 @@ class TestPMACChildPart(ChildTestCase):
             0, 0, 1, 1, 2, 2, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
+    def do_check_sparse_output(self, turnaround=200000):
+        assert self.child.handled_requests.mock_calls == [
+            call.post('writeProfile',
+                      csPort='CS1', timeArray=[0.002], userPrograms=[8]),
+            call.post('executeProfile'),
+            call.post('moveCS1', a=-0.1375, b=0.0, moveTime=1.0375),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post('writeProfile',
+                      csPort='CS1',
+                      a=pytest.approx([
+                       -0.125, 0.625, 0.6375, 0.625, -0.125, -0.1375]),
+                      b=pytest.approx([
+                       0., 0., 0.05, 0.1, 0.1, 0.1]),
+                      timeArray=pytest.approx([
+                       100000, 3000000, turnaround, turnaround, 3000000, 100000
+                      ]),
+                      userPrograms=pytest.approx([1, 8, 0, 1, 8, 0]),
+                      velocityMode=pytest.approx([2, 1, 0, 2, 1, 3])
+                      )
+        ]
+        assert self.o.completed_steps_lookup == [0, 3, 3, 3, 6, 6]
+
     @patch("malcolm.modules.pmac.parts.pmacchildpart.INTERPOLATE_INTERVAL",
            0.2)
     def test_configure(self):
@@ -152,8 +174,7 @@ class TestPMACChildPart(ChildTestCase):
     def test_configure_start_of_row_pulses(self):
         self.do_configure(axes_to_scan=["x", "y"],
                           infos=[MotionTriggerInfo(MotionTrigger.ROW_GATE)])
-        self.do_check_output(user_programs=[
-                       1, 0, 0, 0, 0, 0, 8, 0, 1, 0, 0, 0, 0, 0, 8, 0])
+        self.do_check_sparse_output()
 
     def test_configure_no_axes(self):
         self.set_motor_attributes()
