@@ -501,7 +501,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         else:
             # otherwise skip this point if is is linear to previous point
             do_skip = next_point and points_are_joined and \
-                      self.is_equidistant(point, next_point)
+                      self.is_same_velocity(point, next_point)
 
         if do_skip:
             self.time_since_last_pvt += point.duration
@@ -623,15 +623,17 @@ class PmacChildPart(builtin.parts.ChildPart):
         user_program = self.get_user_program(PointType.START_OF_ROW)
         self.profile["userPrograms"][-1] = user_program
 
-    def is_equidistant(self, p1, p2):
+    def is_same_velocity(self, p1, p2):
         result = False
-        # handle p1 = None, i.e. no previous point
         if p2.duration == p2.duration:
             result = True
-            for axis_name, motor_info in self.axis_mapping.items():
+            for axis_name, _ in self.axis_mapping.items():
                 if not np.isclose(
                     p1.lower[axis_name] - p1.positions[axis_name],
                     p2.lower[axis_name] - p2.positions[axis_name]
+                ) or not np.isclose(
+                    p1.positions[axis_name] - p1.upper[axis_name],
+                    p2.positions[axis_name] - p2.upper[axis_name]
                 ):
                     result = False
                     break
