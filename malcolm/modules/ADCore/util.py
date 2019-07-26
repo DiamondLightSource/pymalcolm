@@ -146,7 +146,8 @@ class ADBaseActions(object):
         child = context.block_view(self.mri)
         child.arrayCounterReadback.subscribe_value(
             self.update_completed_steps, registrar)
-        context.wait_all_futures(self.start_future)
+        # If no new frames produced in 120 seconds, consider scan dead
+        context.wait_all_futures(self.start_future, event_timeout=120)
         # Now wait to make sure any update_completed_steps come in. Give
         # it 5 seconds to timeout just in case there are any stray frames that
         # haven't made it through yet

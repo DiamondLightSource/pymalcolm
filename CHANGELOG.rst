@@ -78,6 +78,15 @@ Fixed:
 
 - Race condition on making async logging at imalcolm startup
 
+
+`3-5-1`_ - 2019-07-26
+---------------------
+
+Fixed:
+
+- Added timeout if detector doesn't produce frames for 120 seconds
+
+
 `3-5`_ - 2019-06-17
 -------------------
 
@@ -403,7 +412,8 @@ Added:
 .. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-0...HEAD
 .. _4-0: https://github.com/dls-controls/pymalcolm/compare/4-0b2..4-0
 .. _4-0b2: https://github.com/dls-controls/pymalcolm/compare/4-0b1..4-0b2
-.. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-4-1..4-0b1
+.. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-5-1..4-0b1
+.. _3-5-1: https://github.com/dls-controls/pymalcolm/compare/3-5...3-5-1
 .. _3-5: https://github.com/dls-controls/pymalcolm/compare/3-4-1...3-5
 .. _3-4-1: https://github.com/dls-controls/pymalcolm/compare/3-4...3-4-1
 .. _3-4: https://github.com/dls-controls/pymalcolm/compare/3-3...3-4
