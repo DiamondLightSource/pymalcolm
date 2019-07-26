@@ -9,6 +9,14 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
 Nothing yet
 
+`3-5-1`_ - 2019-07-26
+---------------------
+
+Fixed:
+
+- Added timeout if detector doesn't produce frames for 120 seconds
+
+
 `3-5`_ - 2019-06-17
 -------------------
 
@@ -337,7 +345,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-5...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/3-5-1...HEAD
+.. _3-5-1: https://github.com/dls-controls/pymalcolm/compare/3-5...3-5-1
 .. _3-5: https://github.com/dls-controls/pymalcolm/compare/3-4-1...3-5
 .. _3-4-1: https://github.com/dls-controls/pymalcolm/compare/3-4...3-4-1
 .. _3-4: https://github.com/dls-controls/pymalcolm/compare/3-3...3-4
