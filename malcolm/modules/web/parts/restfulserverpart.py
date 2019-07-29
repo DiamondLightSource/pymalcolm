@@ -1,5 +1,6 @@
 from annotypes import Anno, add_call_types, json_decode, json_encode
-from tornado.web import RequestHandler, asynchronous
+from tornado import gen
+from tornado.web import RequestHandler
 
 from malcolm.core import Part, Get, Post, Return, Error, PartRegistrar
 from malcolm.modules import builtin
@@ -16,7 +17,7 @@ class RestfulHandler(RequestHandler):
     def initialize(self, registrar=None):
         self._registrar = registrar  # type: PartRegistrar
 
-    @asynchronous
+    @gen.coroutine
     def get(self, endpoint_str):
         # called from tornado thread
         path = endpoint_str.split("/")
@@ -25,7 +26,7 @@ class RestfulHandler(RequestHandler):
 
     # curl --data 'parameters={"name": "me"}' \
     #     http://localhost:8008/blocks/hello/say_hello
-    @asynchronous
+    @gen.coroutine
     def post(self, endpoint_str):
         # called from tornado thread
         path = endpoint_str.split("/")
