@@ -27,7 +27,10 @@ def get_version():
                            .format(VERSION_FILE))
 
 install_requires = [
-    "enum34==1.1.6", "numpy==1.16.4", "annotypes==0.20", "cothread==2.16"]
+    "enum34==1.1.6", "numpy==1.16.4", "annotypes==0.20", "cothread==2.16",
+    "ruamel.yaml==0.15.97", "h5py==2.9.0", "pygelf==0.3.5",
+    "scanpointgenerator==2.2.1", "tornado==6.0.3", "six==1.12.0",
+    "vdsgen==0.5.2", "p4p==3.3.0", "plop==0.3.0"]
 
 
 def add_multiversion_require(module):
