@@ -2,7 +2,6 @@ from xml.etree import cElementTree as ET
 
 from annotypes import TYPE_CHECKING, add_call_types, Any
 
-from malcolm.compat import et_to_string
 from malcolm.core import APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
 
@@ -120,15 +119,14 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         # type: (int) -> Tuple[str, int]
 
         # Make xml root
-        root_el = ET.Element("pos_layout")
-        dimensions_el = ET.SubElement(root_el, "dimensions")
+        xml = '<?xml version="1.0" ?><pos_layout><dimensions>'
 
         # Make an index for every hdf index
         for i in range(len(self.generator.dimensions)):
-            ET.SubElement(dimensions_el, "dimension", name="d%d" % i)
+            xml += '<dimension name="d%d" />' % i
 
         # Add the actual positions
-        positions_el = ET.SubElement(root_el, "positions")
+        xml += "</dimensions><positions>"
 
         end_index = start_index + POSITIONS_PER_XML
         if end_index > self.steps_up_to:
@@ -136,13 +134,12 @@ class PositionLabellerPart(builtin.parts.ChildPart):
 
         for i in range(start_index, end_index):
             point = self.generator.get_point(i)
-            positions = {}
+            xml += "<position"
             for j, value in enumerate(point.indexes):
-                positions["d%d" % j] = str(value)
-            position_el = ET.Element("position", **positions)
-            positions_el.append(position_el)
+                xml += ' d%d="%s"' % (j, value)
+            xml += " />"
 
-        xml = et_to_string(root_el)
+        xml += "</positions></pos_layout>"
         xml_length = len(xml)
         assert xml_length < XML_MAX_SIZE, "XML size %d too big" % xml_length
         return xml, end_index
