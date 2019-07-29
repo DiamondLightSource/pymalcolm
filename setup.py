@@ -27,7 +27,7 @@ def get_version():
                            .format(VERSION_FILE))
 
 install_requires = [
-    'enum34==1.1.6', "numpy==1.13.1", "annotypes==0.17", "cothread==2.14"]
+    "enum34==1.1.6", "numpy==1.16.4", "annotypes==0.20", "cothread==2.16"]
 
 
 def add_multiversion_require(module):
