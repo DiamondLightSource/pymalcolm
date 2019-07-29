@@ -2,6 +2,7 @@ from threading import Thread
 import atexit
 
 from annotypes import Anno, Array
+from six import PY3
 from tornado.ioloop import IOLoop
 
 from malcolm.core import Table
@@ -14,6 +15,11 @@ class IOLoopHelper(object):
     @classmethod
     def loop(cls):
         if cls._loop is None:
+            if PY3:
+                # the event loop is not created automatically if we are not
+                # the main thread
+                import asyncio
+                asyncio.set_event_loop(asyncio.new_event_loop())
             loop = IOLoop.current()
             cls._loop = loop
 
