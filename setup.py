@@ -32,6 +32,9 @@ install_requires = [
     "scanpointgenerator==2.2.1", "tornado==6.0.3", "six==1.12.0",
     "vdsgen==0.5.2", "p4p==3.3.0", "plop==0.3.0"]
 
+tests_require = [
+    'mock>=2.0.0', 'nose>=1.3.0', 'coverage>=3.7.1', 'pytest>=3.10.1',
+    'pytest-cov>=2.6.1']
 
 def add_multiversion_require(module):
     try:
@@ -86,6 +89,7 @@ setup(
         'websocket':  ['tornado'],
         'ca': ['cothread'],
         'hdf5': ['h5py', 'vds-gen'],
+        'test': tests_require
     },
     include_package_data=True,
     package_data={'malcolm': ['modules/*/*/*.yaml', 'modules/*/*/*.svg']},
@@ -93,11 +97,7 @@ setup(
         ('', ['README.rst', 'CHANGELOG.rst', 'LICENSE'])
     ],
     test_suite='nose.collector',
-    tests_require=[
- #       'coverage>=3.7.1',
- #       'mock>=1.0.1',
-        'nose>=1.3.0',
-    ],
+    tests_require=tests_require,
     zip_safe=False,
     entry_points={'console_scripts':
                   ["imalcolm = malcolm.imalcolm:main"]

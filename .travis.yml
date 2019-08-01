@@ -32,7 +32,7 @@ install:
   # attempt to clear issue with numpy requiring cache clearing
   - pip uninstall --yes numpy
   - pip uninstall --yes numpy
-  - pip install -r requirements/test.txt
+  - pip install .[test]
   - pip install codecov
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
