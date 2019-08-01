@@ -36,32 +36,6 @@ tests_require = [
     'mock>=2.0.0', 'nose>=1.3.0', 'coverage>=3.7.1', 'pytest>=3.10.1',
     'pytest-cov>=2.6.1']
 
-def add_multiversion_require(module):
-    try:
-        # Can we import it?
-        __import__(module)
-    except ImportError:
-        try:
-            # What about if we require?
-            from pkg_resources import require
-            require(module)
-        except Exception:
-            pass
-        else:
-            # So it is there if we require, lets use it
-            global install_requires
-            install_requires.append(module)
-
-
-add_multiversion_require("tornado")
-add_multiversion_require("ruamel.yaml")
-add_multiversion_require("h5py")
-add_multiversion_require("p4p")
-add_multiversion_require("pygelf")
-add_multiversion_require("plop")
-add_multiversion_require("scanpointgenerator")
-add_multiversion_require("vdsgen")
-
 packages = [x for x in find_packages() if x.startswith("malcolm")]
 setup(
     name=module_name,
