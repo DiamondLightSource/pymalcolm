@@ -9,7 +9,7 @@ with Anno("Co-ordinate system number"):
     ACS = int
 with Anno("Motor position to move to in EGUs"):
     ADemandPosition = float
-with Anno("Time to take to perform move"):
+with Anno("Time to take to perform move in seconds"):
     AMoveTime = float
 
 # Pull re-used annotypes into our namespace in case we are subclassed
@@ -59,7 +59,8 @@ class CSPart(builtin.parts.ChildPart):
         """Move the given CS axes using a deferred co-ordinated move"""
         child = context.block_view(self.mri)
         child.deferMoves.put_value(True)
-        child.csMoveTime.put_value(moveTime)
+        # Convert move time into milliseconds
+        child.csMoveTime.put_value(moveTime*1000.0)
         # Add in the motors we need to move
         attribute_values = {}
         for axis in CS_AXIS_NAMES:
