@@ -11,6 +11,7 @@ Added:
 
 - maxVelocityPercent added to motors. Allows turnaround times to be tweaked
   without changing VMAX
+- axisNumber attribute to
 
 `4-0`_ - 2019-07-05
 -------------------
