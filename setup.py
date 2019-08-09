@@ -29,7 +29,7 @@ def get_version():
 install_requires = [
     "enum34==1.1.6", "numpy==1.16.4", "annotypes==0.20", "cothread==2.16",
     "ruamel.yaml==0.15.97", "h5py==2.9.0", "pygelf==0.3.5",
-    "scanpointgenerator==2.2.1", "tornado>=5.1.1", "vdsgen==0.5.2",
+    "scanpointgenerator==2.3", "tornado>=5.1.1", "vdsgen==0.5.2",
     "p4p==3.3.0", "plop==0.3.0"]
 
 tests_require = [
