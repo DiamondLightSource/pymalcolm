@@ -6,12 +6,13 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 `Unreleased`
 ------------
 
-
 Added:
 
 - maxVelocityPercent added to motors. Allows turnaround times to be tweaked
   without changing VMAX
 - axisNumber attribute to
+- UnrollingPart to allow Odin detectors to squash scan dimensions together
+  to avoid unperformant VDS snake scans
 
 `4-0`_ - 2019-07-05
 -------------------
