@@ -1,6 +1,5 @@
 import unittest
 
-from annotypes import json_encode
 from scanpointgenerator import LineGenerator, CompoundGenerator, \
     SquashingExcluder
 
@@ -51,54 +50,7 @@ class TestUnrollingPart(unittest.TestCase):
         generator = results["generator"]
         generator.prepare()
         assert len(generator.dimensions) == 1
-        assert json_encode(generator, indent=2) == """{
-  "typeid": "scanpointgenerator:generator/CompoundGenerator:1.0", 
-  "generators": [
-    {
-      "typeid": "scanpointgenerator:generator/LineGenerator:1.0", 
-      "axes": [
-        "y"
-      ], 
-      "units": [
-        "mm"
-      ], 
-      "start": [
-        0
-      ], 
-      "stop": [
-        2
-      ], 
-      "size": 3, 
-      "alternate": false
-    }, 
-    {
-      "typeid": "scanpointgenerator:generator/LineGenerator:1.0", 
-      "axes": [
-        "x"
-      ], 
-      "units": [
-        "mm"
-      ], 
-      "start": [
-        0
-      ], 
-      "stop": [
-        2
-      ], 
-      "size": 2, 
-      "alternate": true
-    }
-  ], 
-  "excluders": [
-    {
-      "typeid": "scanpointgenerator:excluder/SquashingExcluder:1.0", 
-      "axes": [
-        "x", 
-        "y"
-      ]
-    }
-  ], 
-  "mutators": [], 
-  "duration": -1.0, 
-  "continuous": true
-}"""
+        assert len(generator.excluders) == 1
+        excluder = generator.excluders[0]
+        assert isinstance(excluder, SquashingExcluder)
+        assert excluder.axes == ["x", "y"]

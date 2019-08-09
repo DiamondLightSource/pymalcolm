@@ -51,7 +51,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
         )
         self.o.extra_attributes.set_value(extra_attributes)
         self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info, MagicMock(), fileDir="/tmp")
+            self.context, completed_steps, steps_to_do, part_info, generator=MagicMock(duration=1.0), fileDir="/tmp")
         # Wait for the start_future so the post gets through to our child
         # even on non-cothread systems
         self.o.actions.start_future.result(timeout=1)
