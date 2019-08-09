@@ -10,7 +10,7 @@ from malcolm.modules import builtin, scanning
 from ..infos import NDArrayDatasetInfo, NDAttributeDatasetInfo, \
     ExposureDeadtimeInfo, FilePathTranslatorInfo
 from ..util import ADBaseActions, ExtraAttributesTable, \
-    APartRunsOnWindows, DataType, SourceType
+    APartRunsOnWindows, DataType, SourceType, FRAME_TIMEOUT
 
 with Anno("Is main detector dataset useful to publish in DatasetTable?"):
     AMainDatasetUseful = bool
@@ -50,6 +50,8 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             extra_tags=[config_tag()]
         ).create_attribute_model()
         self.runs_on_windows = runs_on_windows
+        # How long to wait between frame updates before error
+        self.frame_timeout = 0.0
 
     def build_attribute_xml(self):
         root_el = ET.Element("Attributes")
@@ -162,6 +164,13 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                 generator.duration, kwargs.get("exposure", 0.0))
         self.actions.setup_detector(
             context, completed_steps, steps_to_do, **kwargs)
+        # Calculate how long to wait before marking this scan as stalled
+        self.frame_timeout = FRAME_TIMEOUT
+        if generator.duration > 0:
+            self.frame_timeout += generator.duration
+        else:
+            # Double it to be safe
+            self.frame_timeout += FRAME_TIMEOUT
         # If detector can be soft triggered, then we might need to defer
         # starting it until run. Check triggerMode to find out
         if self.soft_trigger_modes:
@@ -198,7 +207,8 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         if not self.is_hardware_triggered:
             # Start now if we are software triggered
             self.actions.arm_detector(context)
-        self.actions.wait_for_detector(context, self.registrar)
+        self.actions.wait_for_detector(
+            context, self.registrar, event_timeout=self.frame_timeout)
 
     @add_call_types
     def abort(self, context):
