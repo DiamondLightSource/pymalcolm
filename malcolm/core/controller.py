@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from annotypes import TYPE_CHECKING, Anno, Sequence, stringify_error
+from annotypes import TYPE_CHECKING, Anno, stringify_error
 
 from malcolm.compat import OrderedDict
 from .alarm import Alarm
@@ -20,7 +20,7 @@ from .tags import method_return_unpacked, version_tag
 from .views import make_view, Block
 
 if TYPE_CHECKING:
-    from typing import List, Dict, Tuple, Union, Callable, Any
+    from typing import List, Dict, Tuple, Union, Callable, Any, Iterable
     from .process import Process
     Field = Union[AttributeModel, MethodModel]
     CallbackResponses = List[Tuple[Callable[[Response], None], Response]]
@@ -277,11 +277,11 @@ class Controller(Hookable):
         return ret
 
     def run_hooks(self, hooks):
-        # type: (Sequence[Hook]) -> Dict[str, List[Info]]
+        # type: (Iterable[Hook]) -> Dict[str, List[Info]]
         return self.wait_hooks(*self.start_hooks(hooks))
 
     def start_hooks(self, hooks):
-        # type: (Sequence[Hook]) -> Tuple[Queue, List[Hook]]
+        # type: (Iterable[Hook]) -> Tuple[Queue, List[Hook]]
         # Hooks might be a generator, so convert to a list
         hooks = list(hooks)
         if not hooks:

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 with Anno("The Infos returned from other Parts"):
     APartInfo = Mapping[str, Array[Info]]
+UPartInfo = Union[APartInfo, Mapping[str, Sequence[Info]]]
 with Anno("Infos about current Part status to be passed to other parts"):
     AInfos = Array[Info]
 
@@ -55,10 +56,10 @@ class ValidateHook(ControllerHook[UParameterTweakInfos]):
     def __init__(self,
                  part,  # type: APart
                  context,  # type: AContext
-                 part_info,  # type: APartInfo
+                 part_info,  # type: UPartInfo
                  generator,  # type: AGenerator
                  axesToMove,  # type: AAxesToMove
-                 **kwargs  # type: **Any
+                 **kwargs  # type: Any
                  ):
         # type: (...) -> None
         super(ValidateHook, self).__init__(
@@ -170,10 +171,10 @@ class PostRunArmedHook(ControllerHook[None]):
                  context,  # type: AContext
                  completed_steps,  # type: ACompletedSteps
                  steps_to_do,  # type: AStepsToDo
-                 part_info,  # type: APartInfo
+                 part_info,  # type: UPartInfo
                  generator,  # type: AGenerator
                  axesToMove,  # type: AAxesToMove
-                 **kwargs  # type: **Any
+                 **kwargs  # type: Any
                  ):
         # type: (...) -> None
         super(PostRunArmedHook, self).__init__(
