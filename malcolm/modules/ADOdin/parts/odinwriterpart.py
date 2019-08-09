@@ -127,7 +127,7 @@ def create_vds(generator, raw_name, vds_path, child):
     # hdf_shape tuple represents the number of images in each file
     hdf_shape = files_shape(generator.size, block_size, hdf_count)
 
-    alternates = (gen.alternate for gen in generator.generators)
+    alternates = list(gen.alternate for gen in generator.generators)
 
     files = [os.path.join(
         vds_folder, '{}_{:06d}.h5'.format(raw_name, i + 1))
@@ -149,7 +149,7 @@ def create_vds(generator, raw_name, vds_path, child):
     one_vds(vds_folder, vds_name, files, 1, 1,
             shape, generator, alternates, block_size,
             'SUM', 'sum', 'uint64')
-
+    
     made_top_level = not any(alternates)
     return made_top_level
 

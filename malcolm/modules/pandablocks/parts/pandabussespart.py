@@ -24,26 +24,6 @@ def update_column(column_changes, column, table_value):
     return column_value
 
 
-def get_column_changes(old, new):
-    # type: (Table, Table) -> Dict[str, List[Any]]
-    column_changes = {}
-    lookup = {k: i for i, k in enumerate(old.name)}
-    for i, name in enumerate(new.name):
-        for k in old:
-            if k not in ("name", "value"):
-                new_value = new[k][i]
-                # Lookup row index in actual table
-                try:
-                    j = lookup[name]
-                except KeyError:
-                    raise BadValueError(
-                        "Table contains name '%s' which is not in %s" % (
-                            name, sorted(list(lookup))))
-                if old[k][j] != new_value:
-                    # row changed
-                    update_column(column_changes, k, old)[j] = new_value
-    return column_changes
-
 
 def make_updated_table(old_value, column_changes):
     # type: (Table, Dict[str, List[Any]]) -> Table
@@ -100,9 +80,29 @@ class PandABussesPart(Part):
         registrar.add_attribute_model(
             "positions", self.positions, self.set_positions)
 
+    def get_column_changes(self, old, new):
+        # type: (Table, Table) -> Dict[str, List[Any]]
+        column_changes = {}
+        lookup = {k: i for i, k in enumerate(old.name)}
+        for i, name in enumerate(new.name):
+            for k in old:
+                if k not in ("name", "value"):
+                    new_value = new[k][i]
+                    # Lookup row index in actual table
+                    try:
+                        j = lookup[name]
+                    except KeyError:
+                        self.log.warning(
+                                "Ignoring table row with name %s" % name)
+                    else:
+                        if old[k][j] != new_value:
+                            # row changed
+                            update_column(column_changes, k, old)[j] = new_value
+        return column_changes
+
     def set_bits(self, value):
         # type: (BitsTable) -> None
-        column_changes = get_column_changes(self.bits.value, value)
+        column_changes = self.get_column_changes(self.bits.value, value)
         if "capture" in column_changes:
             # If capture changed, set PCAP bits
             field_values = {}
@@ -123,7 +123,7 @@ class PandABussesPart(Part):
 
     def set_positions(self, value):
         # type: (PositionsTable) -> None
-        column_changes = get_column_changes(self.positions.value, value)
+        column_changes = self.get_column_changes(self.positions.value, value)
         for attr in ("capture", "scale", "offset", "units"):
             if attr in column_changes:
                 # If attribute changed, set field bits

@@ -51,7 +51,7 @@
 
 - ADCore.parts.ExposureDeadtimePart:
     name: DEADTIME
-    initial_readout_time: 1e-3
+    initial_readout_time: 1e-4
 
 # Add an Odin Filewriter
 - ADOdin.blocks.odin_writer_block:
