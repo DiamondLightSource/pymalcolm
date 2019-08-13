@@ -144,6 +144,15 @@ class TestDetectorChildPart(unittest.TestCase):
         assert self.bs.state.value == "Aborted"
         assert self.bf.state.value == "Aborted"
 
+    def test_multi_frame_fast_det(self):
+        self.b.configure(
+            self.make_generator(), self.tmpdir,
+            detectors=DetectorTable.from_rows([
+                ("SLOW", "slow", 0.0, 1),
+                ("FAST", "fast", 0.0, 5)
+            ])
+        )
+
     def test_bad_det_mri(self):
         # Send mismatching rows
         with self.assertRaises(ValueError) as cm:

@@ -1,4 +1,6 @@
 from annotypes import add_call_types, Anno, Any, TYPE_CHECKING, stringify_error
+from scanpointgenerator import StaticPointGenerator, SquashingExcluder, \
+    CompoundGenerator
 
 from malcolm.core import BadValueError, APartName, Future, Put, Request
 from malcolm.modules import builtin
@@ -99,6 +101,9 @@ class DetectorChildPart(builtin.parts.ChildPart):
         if frames_per_step < 1:
             # We aren't
             return
+        if frames_per_step > 1:
+            # Check something else is multiplying out triggers
+            assert False, "Don't support multiple frames per step yet"
         child = context.block_view(self.mri)
         # This is a Serializable with the correct entries
         try:
@@ -118,13 +123,12 @@ class DetectorChildPart(builtin.parts.ChildPart):
 
     def _configure_args(self,
                         generator,  # type: AGenerator
-                        fileDir,  # type: AFileDir
+                        file_dir,  # type: AFileDir
                         detectors=None,  # type: ADetectorTable
-                        axesToMove=None,  # type: AAxesToMove
-                        fileTemplate="%s.h5",  # type: AFileTemplate
+                        axes_to_move=None,  # type: AAxesToMove
+                        file_template="%s.h5",  # type: AFileTemplate
                         ):
         # type: (...) -> Tuple[int, Dict[str, Any]]
-        need_extra_dim = max(detectors.framesPerStep) > 1
         # Check the detector table to see what we need to do
         for name, mri, exposure, frames in detectors.rows():
             if name == self.name and frames > 0:
@@ -136,22 +140,28 @@ class DetectorChildPart(builtin.parts.ChildPart):
             # Didn't find a row or no frames, don't take part
             return 0, {}
         # If we had more than one frame per point, multiply out
-        if need_extra_dim or frames > 1:
-            # If the last dimension has axes related to it, use an
-            # InterpolatedGenerator on the last generator in the list to
-            # multiply up demand values without adding a new dimension.
-            # If the last dimension has no axes related to it, add a
-            # RepeatedGenerator on the end to# make a new dimension with the
-            # repeats in it
-            raise BadValueError("Don't support multiple frames yet")
+        if frames > 1:
+            axis_name = name + "_frames_per_step"
+            axes_to_move = list(axes_to_move) + [axis_name]
+            # We need to multiply up the last dimension by frames
+            serialized = dict(generator.to_dict())
+            serialized["generators"] = list(serialized["generators"]) + [
+                StaticPointGenerator(frames, axes=[axis_name])
+            ]
+            # Squash it down with the axes of the fastest generator
+            squash_axes = list(generator.generators[-1].axes) + [axis_name]
+            serialized["excluders"] = list(serialized["excluders"]) + [
+                SquashingExcluder(axes=squash_axes)
+            ]
+            generator = CompoundGenerator.from_dict(serialized)
         kwargs = dict(
             generator=generator,
-            axesToMove=axesToMove,
-            fileDir=fileDir,
+            axesToMove=axes_to_move,
+            fileDir=file_dir,
             # formatName is the unique part of the HDF filename, so use the part
             # name for this
             formatName=self.name,
-            fileTemplate=fileTemplate
+            fileTemplate=file_template
         )
         if exposure > 0.0:
             kwargs["exposure"] = exposure
