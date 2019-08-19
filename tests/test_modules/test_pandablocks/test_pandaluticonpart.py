@@ -35,10 +35,12 @@ class PandABLutIconTest(unittest.TestCase):
             'AND', 'C', 'D', 'E', 'LUT', 'NOT', 'notA', 'notB', 'notC', 'notD', 'notE'}
 
     def test_symbol(self):
-        # !A&!B&!C&!D&!E
-        self.o.client.get_field.return_value = "1"
+        # !A&!B&!C&!D
+        self.o.client.get_field.return_value = "0x00000003"
         ts = TimeStamp()
-        self.o.update_icon({}, ts)
+        self.o.update_icon(dict(
+            FUNC="~A&~B&~C&~D", TYPEA="level", TYPEB="rising",
+            TYPEC="falling", TYPED="either", TYPEE="rising"), ts)
         self.o.client.get_field.assert_called_once_with("LUT1", "FUNC.RAW")
         svg_text = self.o.attr.value
         root = ET.fromstring(svg_text)
@@ -46,4 +48,14 @@ class PandABLutIconTest(unittest.TestCase):
         assert len(root.findall(".//*[@id='notA']")) == 1
         assert len(root.findall(".//*[@id='OR']")) == 0
         assert len(root.findall(".//*[@id='AND']")) == 1
+        assert len(root.findall(".//*[@id='edgeA']")) == 0
+        edgebs = root.findall(".//*[@id='edgeB']")
+        assert len(edgebs) == 1
+        assert "marker-end" not in edgebs[0].attrib
+        edgecs = root.findall(".//*[@id='edgeC']")
+        assert len(edgecs) == 1
+        assert "marker-start" not in edgecs[0].attrib
+        assert len(root.findall(".//*[@id='edgeD']")) == 1
+        assert len(root.findall(".//*[@id='edgeE']")) == 0
+        assert root[-1].text == "~A&~B&~C&~D"
         assert self.o.attr.timeStamp is ts

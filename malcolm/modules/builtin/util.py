@@ -8,7 +8,7 @@ from malcolm.core import VMeta, Widget, group_tag, config_tag, Port, Table, \
     StateSet, DEFAULT_TIMEOUT
 
 if TYPE_CHECKING:
-    from typing import Type
+    from typing import Type, Iterable
     from .parts import ChildPart
 
 with Anno("Is the attribute writeable?"):
@@ -175,19 +175,49 @@ def no_save(*attribute_names):
     return decorator
 
 
-def svg_text_without_elements(svg_text, ids):
-    # type: (str, Sequence[str]) -> str
-    """Take some SVG and remove all elements with the given ids before returning
-    it
-    """
-    # https://stackoverflow.com/a/8998773
-    ET.register_namespace('', "http://www.w3.org/2000/svg")
-    root = ET.fromstring(svg_text)
-    for i in ids:
+class SVGIcon(object):
+    """Helper object for working with SVG icons"""
+    def __init__(self, svg_text):
+        # type: (str) -> None
+        # https://stackoverflow.com/a/8998773
+        ET.register_namespace('', "http://www.w3.org/2000/svg")
+        self.root = ET.fromstring(svg_text)
+
+    def find_parent_child(self, id):
+        child = None
         # Find the first parent which has a child with id i
-        parent = root.find('.//*[@id=%r]/..' % i)
+        parent = self.root.find('.//*[@id=%r]/..' % id)
         # Find the child and remove it
-        child = parent.find('./*[@id=%r]' % i)
-        parent.remove(child)
-    svg_text = et_to_string(root)
-    return svg_text
+        if parent:
+            child = parent.find('./*[@id=%r]' % id)
+        return parent, child
+
+    def remove_elements(self, ids):
+        # type: (Iterable[str]) -> None
+        for i in ids:
+            parent, child = self.find_parent_child(i)
+            parent.remove(child)
+
+    def add_text(self, text, x=0, y=0, transform="rotate(90 20,40)"):
+        attr = ET.SubElement(self.root, "text", x=str(x), y=str(y),
+                             transform=transform, style="font: bold 9px sans")
+        attr.set("text-anchor", "middle")
+        attr.text = text
+
+    def update_edge_arrow(self, id, edge):
+        edge = edge.lower()
+        parent, child = self.find_parent_child(id)
+        # Check that it still exists, it might have been removed
+        if parent is not None:
+            if "level" in edge:
+                # Remove it
+                parent.remove(child)
+            elif "rising" in edge:
+                # Remove the falling marker
+                del child.attrib["marker-end"]
+            elif "falling" in edge:
+                # Remove the falling marker
+                del child.attrib["marker-start"]
+
+    def __str__(self):
+        return et_to_string(self.root)

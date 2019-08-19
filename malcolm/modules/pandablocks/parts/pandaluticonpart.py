@@ -28,6 +28,7 @@ def _calc_visibility(func, op, nargs, permutation):
             # invisible
             invis.add(inp)
             invis.add("not%s" % inp)
+            invis.add("edge%s" % inp)
         else:
             # visible
             if negations[i] == "1":
@@ -83,13 +84,18 @@ def get_lut_icon_elements(fnum):
 
 
 class PandALutIconPart(PandAIconPart):
-    update_fields = {"FUNC"}
+    update_fields = {"FUNC", "TYPEA", "TYPEB", "TYPEC", "TYPED", "TYPEE"}
 
     def update_icon(self, field_values, ts):
         """Update the icon using the given field values"""
         with open(os.path.join(SVG_DIR, "LUT.svg")) as f:
             svg_text = f.read()
         fnum = int(self.client.get_field(self.block_name, "FUNC.RAW"), 0)
+        icon = builtin.util.SVGIcon(svg_text)
         invis = get_lut_icon_elements(fnum)
-        svg_text = builtin.util.svg_text_without_elements(svg_text, invis)
-        self.attr.set_value(svg_text, ts=ts)
+        icon.remove_elements(invis)
+        for inp in "ABCDE":
+            icon.update_edge_arrow("edge" + inp, field_values["TYPE" + inp])
+        icon.add_text(field_values["FUNC"], x=30)
+        self.attr.set_value(str(icon), ts=ts)
+
