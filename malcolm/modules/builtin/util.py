@@ -198,9 +198,11 @@ class SVGIcon(object):
             parent, child = self.find_parent_child(i)
             parent.remove(child)
 
-    def add_text(self, text, x=0, y=0, transform="rotate(90 20,40)"):
+    def add_text(self, text, x=0, y=0, transform=None):
         attr = ET.SubElement(self.root, "text", x=str(x), y=str(y),
-                             transform=transform, style="font: bold 9px sans")
+                             style="font: bold 9px sans")
+        if transform:
+            attr.set("transform", transform)
         attr.set("text-anchor", "middle")
         attr.text = text
 

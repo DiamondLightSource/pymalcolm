@@ -63,6 +63,7 @@ def _generate_lut_elements():
         for inp in "ABCDE":
             if inp != ninp:
                 invis.add(inp)
+                invis.add("edge%s" % inp)
             invis.add("not%s" % inp)
         lut_elements[~LUT_CONSTANTS[ninp] & (2 ** 32 - 1)] = invis
     # And catchall for LUT in 0
@@ -96,6 +97,7 @@ class PandALutIconPart(PandAIconPart):
         icon.remove_elements(invis)
         for inp in "ABCDE":
             icon.update_edge_arrow("edge" + inp, field_values["TYPE" + inp])
-        icon.add_text(field_values["FUNC"], x=30)
+        icon.add_text(field_values["FUNC"], x=30, y=-8,
+                      transform="rotate(90 20,40)")
         self.attr.set_value(str(icon), ts=ts)
 
