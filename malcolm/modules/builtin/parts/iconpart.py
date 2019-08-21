@@ -17,10 +17,10 @@ class IconPart(Part):
         set_tags(meta, widget=Widget.ICON)
         try:
             with open(svg) as f:
-                svg_text = f.read()
+                self.svg_text = f.read()
         except IOError:
-            svg_text = "<svg/>"
-        self.attr = meta.create_attribute_model(svg_text)
+            self.svg_text = "<svg/>"
+        self.attr = meta.create_attribute_model(self.svg_text)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

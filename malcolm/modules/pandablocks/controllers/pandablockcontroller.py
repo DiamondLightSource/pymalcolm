@@ -108,7 +108,9 @@ class PandABlockController(builtin.controllers.BasicController):
                 d = {k: self.field_parts[k].attr.value
                      for k in self.icon_part.update_fields
                      if k in self.field_parts}
-                self.icon_part.update_icon(d, ts)
+                icon = builtin.util.SVGIcon(self.icon_part.svg_text)
+                self.icon_part.update_icon(icon, d)
+                self.icon_part.attr.set_value(str(icon), ts=ts)
 
     def _handle_mux_update(self, mux_meta, v):
         # Mux changed its value, update its link to a different
@@ -129,7 +131,7 @@ class PandABlockController(builtin.controllers.BasicController):
         svg_path = os.path.join(SVG_DIR, block_type + ".svg")
         if block_type == "LUT":
             icon_cls = PandALutIconPart
-        elif block_type == "PULSE":
+        elif block_type in ("PULSE", "PCAP"):
             icon_cls = PandAPulseIconPart
         elif block_type == "SRGATE":
             icon_cls = PandASRGateIconPart

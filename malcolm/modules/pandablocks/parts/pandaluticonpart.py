@@ -1,11 +1,9 @@
-import os
 import operator
 
 from annotypes import TYPE_CHECKING
 
 from malcolm.modules import builtin
 from .pandaiconpart import PandAIconPart
-from ..util import SVG_DIR
 
 if TYPE_CHECKING:
     from typing import Callable, Tuple, Set, Dict
@@ -87,10 +85,9 @@ def get_lut_icon_elements(fnum):
 class PandALutIconPart(PandAIconPart):
     update_fields = {"FUNC", "TYPEA", "TYPEB", "TYPEC", "TYPED", "TYPEE"}
 
-    def update_icon(self, field_values, ts):
+    def update_icon(self, icon, field_values):
+        # type: (builtin.util.SVGIcon, dict) -> None
         """Update the icon using the given field values"""
-        with open(os.path.join(SVG_DIR, "LUT.svg")) as f:
-            icon = builtin.util.SVGIcon(f.read())
         fnum = int(self.client.get_field(self.block_name, "FUNC.RAW"), 0)
         invis = get_lut_icon_elements(fnum)
         icon.remove_elements(invis)
@@ -100,5 +97,3 @@ class PandALutIconPart(PandAIconPart):
             icon.update_edge_arrow("edge" + inp, edge)
         icon.add_text(field_values["FUNC"], x=30, y=-8, anchor="middle",
                       transform="rotate(90 20,40)")
-        self.attr.set_value(str(icon), ts=ts)
-
