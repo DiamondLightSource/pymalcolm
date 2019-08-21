@@ -9,6 +9,8 @@ from malcolm.modules import builtin
 from ..parts.pandaiconpart import PandAIconPart
 from ..parts.pandalabelpart import PandALabelPart
 from ..parts.pandaluticonpart import PandALutIconPart
+from ..parts.pandapulseiconpart import PandAPulseIconPart
+from ..parts.pandasrgateiconpart import PandASRGateIconPart
 from ..parts.pandaactionpart import PandAActionPart
 from ..parts.pandafieldpart import PandAFieldPart
 from ..parts.pandatablepart import PandATablePart
@@ -104,7 +106,8 @@ class PandABlockController(builtin.controllers.BasicController):
                     self._handle_mux_update(mux_meta, v)
             if icon_needs_update:
                 d = {k: self.field_parts[k].attr.value
-                     for k in self.icon_part.update_fields}
+                     for k in self.icon_part.update_fields
+                     if k in self.field_parts}
                 self.icon_part.update_icon(d, ts)
 
     def _handle_mux_update(self, mux_meta, v):
@@ -126,6 +129,10 @@ class PandABlockController(builtin.controllers.BasicController):
         svg_path = os.path.join(SVG_DIR, block_type + ".svg")
         if block_type == "LUT":
             icon_cls = PandALutIconPart
+        elif block_type == "PULSE":
+            icon_cls = PandAPulseIconPart
+        elif block_type == "SRGATE":
+            icon_cls = PandASRGateIconPart
         else:
             icon_cls = PandAIconPart
         icon_part = icon_cls(self.client, self.block_name, svg_path)

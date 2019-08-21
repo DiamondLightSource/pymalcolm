@@ -1,4 +1,5 @@
 import collections
+import math
 from xml.etree import cElementTree as ET
 
 from annotypes import Anno, Array, Union, Sequence, TYPE_CHECKING
@@ -198,12 +199,12 @@ class SVGIcon(object):
             parent, child = self.find_parent_child(i)
             parent.remove(child)
 
-    def add_text(self, text, x=0, y=0, transform=None):
-        attr = ET.SubElement(self.root, "text", x=str(x), y=str(y),
-                             style="font: bold 9px sans")
+    def add_text(self, text, x=0, y=0, anchor="left", transform=None,
+                 style="font: bold 9px mono"):
+        attr = ET.SubElement(self.root, "text", x=str(x), y=str(y), style=style)
         if transform:
             attr.set("transform", transform)
-        attr.set("text-anchor", "middle")
+        attr.set("text-anchor", anchor)
         attr.text = text
 
     def update_edge_arrow(self, id, edge):

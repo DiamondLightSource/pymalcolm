@@ -90,14 +90,15 @@ class PandALutIconPart(PandAIconPart):
     def update_icon(self, field_values, ts):
         """Update the icon using the given field values"""
         with open(os.path.join(SVG_DIR, "LUT.svg")) as f:
-            svg_text = f.read()
+            icon = builtin.util.SVGIcon(f.read())
         fnum = int(self.client.get_field(self.block_name, "FUNC.RAW"), 0)
-        icon = builtin.util.SVGIcon(svg_text)
         invis = get_lut_icon_elements(fnum)
         icon.remove_elements(invis)
         for inp in "ABCDE":
-            icon.update_edge_arrow("edge" + inp, field_values["TYPE" + inp])
-        icon.add_text(field_values["FUNC"], x=30, y=-8,
+            # Old versions don't have type, default to level
+            edge = field_values.get("TYPE" + inp, "level")
+            icon.update_edge_arrow("edge" + inp, edge)
+        icon.add_text(field_values["FUNC"], x=30, y=-8, anchor="middle",
                       transform="rotate(90 20,40)")
         self.attr.set_value(str(icon), ts=ts)
 
