@@ -68,11 +68,23 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
         for i, capture in enumerate(pos_table.capture):
             ds_name = pos_table.datasetName[i]
             if ds_name and capture != pandablocks.util.PositionCapture.NO:
-                # If we have Min Max Mean, just take Mean
-                capture_suffix = capture.value.split(" ")[-1]
-                ret.append(ADCore.infos.NDAttributeDatasetInfo(
-                    name=ds_name,
-                    type=pos_table.datasetType[i],
-                    rank=2,
-                    attr="%s.%s" % (pos_table.name[i], capture_suffix)))
+                info = None
+                capture_split = capture.value.split(" ")
+                for suffix in capture_split:
+                    info = ADCore.infos.NDAttributeDatasetInfo.\
+                        from_attribute_type(
+                            name=ds_name,
+                            type=pos_table.datasetType[i],
+                            attr="%s.%s" % (pos_table.name[i], suffix),
+                            rank=2)
+                    # Override special cases
+                    if type == ADCore.infos.AttributeDatasetType.POSITION:
+                        if suffix == "Min":
+                            info.name = "%s.min" % ds_name
+                            info.type = scanning.infos.DatasetType.POSITION_MIN
+                        if suffix == "Max":
+                            info.name = "%s.max" % ds_name
+                            info.type = scanning.infos.DatasetType.POSITION_MAX
+                if info:
+                    ret.append(info)
         return ret

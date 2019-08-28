@@ -21,6 +21,10 @@ class DatasetType(Enum):
     POSITION_SET = "position_set"
     #: The readback positions of an axis that moves during the sacn
     POSITION_VALUE = "position_value"
+    #: The maximum readback position of an axis that moves during the sacn
+    POSITION_MAX = "position_max"
+    #: The minimum readback position of an axis that moves during the sacn
+    POSITION_MIN = "position_min"
 
 
 class ParameterTweakInfo(Info):

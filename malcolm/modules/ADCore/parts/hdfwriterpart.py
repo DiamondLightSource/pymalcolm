@@ -71,25 +71,10 @@ def create_dataset_infos(name, part_info, generator, filename):
 
     # Add all the other datasources
     for dataset_info in NDAttributeDatasetInfo.filter_values(part_info):
-        if dataset_info.type is AttributeDatasetType.DETECTOR:
-            # Something like I0
-            name = "%s.data" % dataset_info.name
-            dtype = scanning.util.DatasetType.PRIMARY
-        elif dataset_info.type is AttributeDatasetType.MONITOR:
-            # Something like Iref
-            name = "%s.data" % dataset_info.name
-            dtype = scanning.util.DatasetType.MONITOR
-        elif dataset_info.type is AttributeDatasetType.POSITION:
-            # Something like x
-            name = "%s.value" % dataset_info.name
-            dtype = scanning.util.DatasetType.POSITION_VALUE
-        else:
-            raise AttributeError("Bad dataset type %r, should be a %s" % (
-                dataset_info.type, AttributeDatasetType))
         yield scanning.infos.DatasetProducedInfo(
-            name=name,
+            name=dataset_info.name,
             filename=filename,
-            type=dtype,
+            type=dataset_info.type,
             rank=dataset_info.rank + generator_rank,
             path="/entry/%s/%s" % (dataset_info.name, dataset_info.name),
             uniqueid=uniqueid)

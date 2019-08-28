@@ -37,6 +37,22 @@ def cs_port_with_motors_in(context,  # type: Context
     raise ValueError("Can't find a cs port to use in %s" % layout_table.name)
 
 
+def get_axis_in_table(context,  # type: Context
+                           layout_table,  # type: builtin.util.LayoutTable
+                           ):
+    # type: (...) -> [str]
+    axes = []
+    for mri in layout_table.mri:
+        child = context.block_view(mri)
+        if hasattr(child, 'cs'):
+            cs = child.cs.value
+            if cs:
+                cs_port, cs_axis = child.cs.value.split(",", 1)
+                if cs_axis in CS_AXIS_NAMES:
+                    axes.append(cs_axis)
+    return axes
+
+
 def get_motion_axes(generator, axes_to_move):
     # type: (CompoundGenerator, Sequence[str]) -> List[str]
     """Filter axes_to_move to only contain motion axes"""
@@ -99,6 +115,31 @@ def cs_axis_mapping(context,  # type: Context
         "CS axis defs %s have more that one raw motor attached" % overlap
     return axis_mapping
 
+def cs_axis_numbers(context,  # type: Context
+                    layout_table,  # type: builtin.util.LayoutTable
+                    cs_port  # type: str
+                    ):
+    # type: (...) -> Dict[str, int]
+    #     """asdasd"""
+    axis_numbers = {}
+    for name, mri in zip(layout_table.name, layout_table.mri):
+        child = context.block_view(mri)
+        if hasattr(child, 'axisNumber'):
+            axis_number = child.axisNumber.value
+        else:
+            axis_number = -1
+            # TODO throw error?
+        if hasattr(child, 'cs'):
+            cs = child.cs.value
+            if cs:
+                child_cs_port, child_cs_axis = child.cs.value.split(",", 1)
+                if cs_port == child_cs_port:
+                    if name in axis_numbers:
+                        # TODO error?
+                        axis_numbers[name] = axis_number
+                    else:
+                        axis_numbers[name] = axis_number
+    return axis_numbers
 
 def points_joined(axis_mapping, point, next_point):
     # type: (Dict[str, MotorInfo], Point, Point) -> bool

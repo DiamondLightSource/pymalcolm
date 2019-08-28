@@ -1,5 +1,5 @@
 from malcolm.core import Info
-
+from malcolm.modules import scanning
 from .util import AttributeDatasetType
 
 
@@ -95,17 +95,35 @@ class NDAttributeDatasetInfo(Info):
     dataset to store to file
 
     Args:
-        name: Dataset name that should be written to
-        type: What NeXuS dataset type it produces
+        name: Dataset name that should be written to, like x.value or det.data
+        type: What NeXuS dataset type it produces, like position_value
         attr: NDAttribute name to get data from
         rank: The rank of the dataset
     """
 
     def __init__(self, name, type, attr, rank):
-        # type: (str, AttributeDatasetType, str, int) -> None
+        # type: (str, scanning.util.DatasetType, str, int) -> None
         self.name = name
         self.type = type
         self.attr = attr
         self.rank = rank
 
+    @classmethod
+    def from_attribute_type(cls, name, type, attr, rank):
+        # type: (str, AttributeDatasetType, str, str) -> NDArrayDatasetInfo
+        if type is AttributeDatasetType.DETECTOR:
+            # Something like I0
+            name = "%s.data" % name
+            type = scanning.util.DatasetType.PRIMARY
+        elif type is AttributeDatasetType.MONITOR:
+            # Something like Iref
+            name = "%s.data" % name
+            type = scanning.util.DatasetType.MONITOR
+        elif type is AttributeDatasetType.POSITION:
+            # Something like x
+            name = "%s.value" % name
+            type = scanning.util.DatasetType.POSITION_VALUE
+        else:
+            raise TypeError("Bad AttributeDatasetType %s" % type)
+        return cls(name, type, attr, rank)
 
