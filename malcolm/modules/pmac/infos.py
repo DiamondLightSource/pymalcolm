@@ -27,12 +27,14 @@ class PmacCsKinematicsInfo(Info):
     """Coordinate sys kinematics programs and Q variable values
 
     Args:
+        cs_port: the port name for this coordinate system
         q_variables: i variable list
         forward: forward kinematic code
         inverse: inverse kinematic code
     """
-    def __init__(self, q_variables, forward, inverse):
-        # type: (str, str, str) -> None
+    def __init__(self, cs_port, q_variables, forward, inverse):
+        # type: (str, str, str, str) -> None
+        self.cs_port = cs_port
         self.q_variables = q_variables
         self.forward = forward
         self.inverse = inverse
