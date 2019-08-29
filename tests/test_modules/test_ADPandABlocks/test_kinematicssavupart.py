@@ -13,10 +13,13 @@ from malcolm.modules.ADPandABlocks.parts.kinematicssavupart \
     import KinematicsSavuPart
 from malcolm.modules.builtin.controllers import ManagerController
 from malcolm.modules.scanning.infos import DatasetProducedInfo, DatasetType
+from malcolm.modules.scanning.hooks import AAxesToMove
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 from tests.test_modules.test_ADPandABlocks.test_pandaseqtriggerpart import \
     PositionsPart
+
+AXES = AAxesToMove(['x', 'y'])
 
 
 class TestKinematicsSavuPart(ChildTestCase):
@@ -89,14 +92,16 @@ class TestKinematicsSavuPart(ChildTestCase):
 
         start_time = datetime.now()
         self.o.configure(
-            self.context, fileDir=tmp_dir, axesToMove=['x', 'y'], formatName=vds_file)
-        #assert self.child.handled_requests.mock_calls == [
+            self.context, fileDir=tmp_dir,
+            axesToMove=AXES, formatName=vds_file
+        )
+        # assert self.child.handled_requests.mock_calls == [
         #    call.put('fileName', 'odin2_raw_data'),
         #    call.put('filePath', tmp_dir),
         #    call.put('numCapture', self.steps_to_do),
         #    call.post('start')]
 
-        self.o.post_configure(self.context)
+        self.o.post_configure(self.context, dict())
 
         print(self.child.handled_requests.mock_calls)
         print('KinematicsSavu configure {} points took {} secs'.format(
@@ -110,8 +115,10 @@ class TestKinematicsSavuPart(ChildTestCase):
 
         start_time = datetime.now()
         self.o.configure(
-            self.context, fileDir=tmp_dir, axesToMove=['x', 'y'], formatName=data_name)
-        #assert self.child.handled_requests.mock_calls == [
+            self.context, fileDir=tmp_dir, 
+            axesToMove=AXES, formatName=data_name
+        )
+        # assert self.child.handled_requests.mock_calls == [
         #    call.put('fileName', 'odin2_raw_data'),
         #    call.put('filePath', tmp_dir),
         #    call.put('numCapture', self.steps_to_do),
@@ -119,20 +126,41 @@ class TestKinematicsSavuPart(ChildTestCase):
 
         part_info = dict(
             HDF=[
-                DatasetProducedInfo("y.data", "kinematics_PANDABOX.h5", DatasetType.POSITION_VALUE, 2,
-                                    "/entry/NDAttributes/INENC1.VAL", "/p/uid"),
-                DatasetProducedInfo("x.data", "kinematics_PANDABOX2.h5", DatasetType.POSITION_VALUE, 0,
-                                    "/entry/NDAttributes/INENC1.VAL", "/p/uid"),
-                DatasetProducedInfo("y.max", "kinematics_PANDABOX.h5", DatasetType.POSITION_MAX, 0,
-                                    "/entry/NDAttributes/INENC1_MAX.VAL", "/p/uid"),
-                DatasetProducedInfo("y.min", "kinematics_PANDABOX.h5", DatasetType.POSITION_MIN, 0,
-                                    "/entry/NDAttributes/INENC1_MIN.VAL", "/p/uid"),
-                DatasetProducedInfo("x.max", "kinematics_PANDABOX2.h5", DatasetType.POSITION_MAX, 0,
-                                    "/entry/NDAttributes/INENC1_MAX.VAL", "/p/uid"),
-                DatasetProducedInfo("x.min", "kinematics_PANDABOX2.h5", DatasetType.POSITION_MIN, 0,
-                                    "/entry/NDAttributes/INENC1_MIN.VAL", "/p/uid"),
-                DatasetProducedInfo("det.min", "fn1", DatasetType.SECONDARY, 0,
-                                    "/p/s2", "/p/uid"),
+                DatasetProducedInfo(
+                    "y.data", "kinematics_PANDABOX.h5", 
+                    DatasetType.POSITION_VALUE, 2,
+                    "/entry/NDAttributes/INENC1.VAL", "/p/uid"
+                ),
+                DatasetProducedInfo(
+                    "x.data", "kinematics_PANDABOX2.h5", 
+                    DatasetType.POSITION_VALUE, 0,
+                    "/entry/NDAttributes/INENC1.VAL", "/p/uid"
+                ),
+                DatasetProducedInfo(
+                    "y.max", "kinematics_PANDABOX.h5", 
+                    DatasetType.POSITION_MAX, 0,
+                    "/entry/NDAttributes/INENC1_MAX.VAL", "/p/uid"
+                ),
+                DatasetProducedInfo(
+                    "y.min", "kinematics_PANDABOX.h5", 
+                    DatasetType.POSITION_MIN, 0,
+                    "/entry/NDAttributes/INENC1_MIN.VAL", "/p/uid"
+                ),
+                DatasetProducedInfo(
+                    "x.max", "kinematics_PANDABOX2.h5", 
+                    DatasetType.POSITION_MAX, 0,
+                    "/entry/NDAttributes/INENC1_MAX.VAL", "/p/uid"
+                ),
+                DatasetProducedInfo(
+                    "x.min", "kinematics_PANDABOX2.h5", 
+                    DatasetType.POSITION_MIN, 0,
+                    "/entry/NDAttributes/INENC1_MIN.VAL", "/p/uid"
+                ),
+                DatasetProducedInfo(
+                    "det.min", "fn1", 
+                    DatasetType.SECONDARY, 0,
+                    "/p/s2", "/p/uid"
+                ),
             ]
         )
 
@@ -187,13 +215,17 @@ class TestKinematicsSavuPart(ChildTestCase):
         # First create a fake Savu output file that the vds will link to
         raw_savu_path = os.path.join(tmp_dir, 'savuproc')
         os.mkdir(raw_savu_path)
-        raw_savu_path = os.path.join(raw_savu_path, data_name + '_processed.nxs')
+        raw_savu_path = os.path.join(
+            raw_savu_path, data_name + '_processed.nxs'
+        )
         raw_savu = h5py.File(raw_savu_path, "w")
         raw_savu.require_group('/entry/final_result_qmean/')
         savu_proc = np.ones((9, 5, 5))
         savu_proc[0][0][0] = 555
         savu_proc[0][2][1] = 666
-        raw_savu.create_dataset('/entry/final_result_qmean/data', data=savu_proc)
+        raw_savu.create_dataset(
+            '/entry/final_result_qmean/data', data=savu_proc
+        )
         raw_savu.close()
 
         # Check q1mean is there
