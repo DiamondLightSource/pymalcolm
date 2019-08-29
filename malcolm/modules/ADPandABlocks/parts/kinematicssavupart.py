@@ -155,8 +155,25 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                 self.use_min_max = False
 
         # Get Forward Kinematics code lines
-        raw_kinematics_program_code = "Q1=P1+10\nQ5=Q22+4\nQ7=8+4"
-        raw_input_vars = "Q22=12345 Q23=999"
+        # TODO : this assumes only one pmac - is that OK ?
+        infos = pmac.infos.PmacVariablesInfo.filter_values(part_info)
+        if infos:
+            assert len(infos) == 1, \
+                "Expected 0 or 1 PmacVariablesInfo, got %d" % len(infos)
+            raw_input_vars = infos[0].all_variables
+        else:
+            raw_input_vars = ''
+
+        # get any variables required for the kinematic
+        infos = pmac.infos.PmacCsKinematicsInfo.filter_values(part_info)
+        if infos:
+            assert len(infos) == 1, \
+                "Expected 0 or 1 PmacCsKinematicsInfo, got %d" % len(infos)
+            raw_kinematics_program_code = infos[0].forward
+            raw_input_vars += " " + infos[0].q_variables
+        else:
+            raw_kinematics_program_code = ''
+
         self.savu_code_lines = raw_kinematics_program_code.splitlines()
         self.parse_input_variables(raw_input_vars)
 

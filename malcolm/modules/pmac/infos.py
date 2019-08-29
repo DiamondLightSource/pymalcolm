@@ -19,6 +19,8 @@ class PmacVariablesInfo(Info):
         self.i_variables = i_variables
         self.p_variables = p_variables
         self.m_variables = m_variables
+        self.all_variables = \
+            i_variables + " " + p_variables + " " + m_variables
 
 
 class PmacCsKinematicsInfo(Info):
