@@ -5,7 +5,12 @@ from malcolm.core import Future, Context, PartRegistrar, DEFAULT_TIMEOUT, Table
 from malcolm.modules import scanning
 
 if TYPE_CHECKING:
-    from typing import List, Any
+    from typing import List, Any, Optional
+
+
+# If things don't get new frames in this time (seconds), consider them
+# stalled and raise
+FRAME_TIMEOUT = 60
 
 
 class AttributeDatasetType(Enum):
@@ -141,12 +146,13 @@ class ADBaseActions(object):
         self.start_future = child.start_async()
         child.when_value_matches("acquiring", True, timeout=DEFAULT_TIMEOUT)
 
-    def wait_for_detector(self, context, registrar):
-        # type: (Context, PartRegistrar) -> None
+    def wait_for_detector(self, context, registrar, event_timeout=None):
+        # type: (Context, PartRegistrar, Optional[float]) -> None
         child = context.block_view(self.mri)
         child.arrayCounterReadback.subscribe_value(
             self.update_completed_steps, registrar)
-        context.wait_all_futures(self.start_future)
+        # If no new frames produced in event_timeout seconds, consider scan dead
+        context.wait_all_futures(self.start_future, event_timeout=event_timeout)
         # Now wait to make sure any update_completed_steps come in. Give
         # it 5 seconds to timeout just in case there are any stray frames that
         # haven't made it through yet

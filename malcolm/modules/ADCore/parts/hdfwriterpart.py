@@ -12,7 +12,7 @@ from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, NDArrayDatasetInfo, \
     NDAttributeDatasetInfo, \
     AttributeDatasetType, FilePathTranslatorInfo
-from ..util import APartRunsOnWindows
+from ..util import APartRunsOnWindows, FRAME_TIMEOUT
 
 if TYPE_CHECKING:
     from typing import Iterator, List, Dict
@@ -20,10 +20,6 @@ if TYPE_CHECKING:
     PartInfo = Dict[str, List[Info]]
 
 SUFFIXES = "NXY3456789"
-
-# If the HDF writer doesn't get new frames in this time (seconds), consider it
-# stalled and raise
-FRAME_TIMEOUT = 60
 
 with Anno("Toggle writing of all ND attributes to HDF file"):
     AWriteAllNDAttributes = bool
@@ -324,9 +320,12 @@ class HDFWriterPart(builtin.parts.ChildPart):
         self.done_when_reaches = completed_steps + steps_to_do
         self.uniqueid_offset = 0
         # Calculate how long to wait before marking this scan as stalled
-        assert generator.duration > 0, \
-            "Can only do constant exposure for now"
-        self.frame_timeout = FRAME_TIMEOUT + generator.duration
+        self.frame_timeout = FRAME_TIMEOUT
+        if generator.duration > 0:
+            self.frame_timeout += generator.duration
+        else:
+            # Double it to be safe
+            self.frame_timeout += FRAME_TIMEOUT
         child = context.block_view(self.mri)
         # For first run then open the file
         # Enable position mode before setting any position related things

@@ -1,7 +1,7 @@
 from annotypes import Anno
 
 from malcolm.core import Part, PartRegistrar, ChoiceMeta, Port, Alarm, \
-    StringMeta
+    StringMeta, NumberMeta
 from malcolm.modules import ca, builtin
 from ..util import CS_AXIS_NAMES
 
@@ -29,6 +29,9 @@ class RawMotorSinkPortsPart(Part):
         meta = StringMeta("Parent PMAC Port name")
         builtin.util.set_tags(meta, group=group, sink_port=Port.MOTOR)
         self.pmac_attr = meta.create_attribute_model()
+        meta = NumberMeta("int32", "Parent PMAC Axis number")
+        builtin.util.set_tags(meta, group=group)
+        self.axis_num_attr = meta.create_attribute_model()
         # Subscriptions
         self.monitors = []
         self.port = None
@@ -38,6 +41,7 @@ class RawMotorSinkPortsPart(Part):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         registrar.add_attribute_model("pmac", self.pmac_attr)
+        registrar.add_attribute_model("axisNumber", self.axis_num_attr)
         registrar.add_attribute_model("cs", self.cs_attr, self.caput)
         # Hooks
         registrar.hook(builtin.hooks.DisableHook, self.disconnect)
@@ -91,8 +95,11 @@ class RawMotorSinkPortsPart(Part):
                 # Split "@asyn(PORT,num)" into ["PORT", "num"]
                 split = value.split("(")[1].rstrip(")").split(",")
                 self.pmac_attr.set_value(split[0].strip())
+                self.axis_num_attr.set_value(split[1].strip())
             else:
                 self.pmac_attr.set_value(
+                    None, alarm=Alarm.invalid("Bad PV value"))
+                self.axis_num_attr.set_value(
                     None, alarm=Alarm.invalid("Bad PV value"))
         if self.port is None or self.axis is None:
             # Bad value or PV disconnected

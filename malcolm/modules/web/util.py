@@ -1,5 +1,6 @@
 from threading import Thread
 import atexit
+import sys
 
 from annotypes import Anno, Array
 from tornado.ioloop import IOLoop
@@ -14,6 +15,11 @@ class IOLoopHelper(object):
     @classmethod
     def loop(cls):
         if cls._loop is None:
+            if sys.version_info.major == 3:
+                # the event loop is not created automatically if we are not
+                # the main thread
+                import asyncio
+                asyncio.set_event_loop(asyncio.new_event_loop())
             loop = IOLoop.current()
             cls._loop = loop
 

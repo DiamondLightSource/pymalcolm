@@ -270,7 +270,7 @@ class Context(object):
         if futures:
             for future, request in futures:
                 if callback:
-                    log.warn("Unsubscribing from %s", request.path)
+                    log.warning("Unsubscribing from %s", request.path)
                     cothread.Callback(self.unsubscribe, future)
                 else:
                     self.unsubscribe(future)

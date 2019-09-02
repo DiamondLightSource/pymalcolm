@@ -42,9 +42,11 @@ class TestRawMotorSinkPortsPart(unittest.TestCase):
              "PV:PRE:CsAxis_RBV", "PV:PRE.OUT"],
             format=catools.FORMAT_CTRL)
         assert list(self.b) == [
-            'meta', 'health', 'state', 'disable', 'reset', "pmac", 'cs']
+            'meta', 'health', 'state', 'disable',
+            'reset', "pmac", 'axisNumber', 'cs']
         assert self.b.cs.value == "BRICK1CS1,A"
         assert self.b.pmac.value == "PMAC"
+        assert self.b.axisNumber.value == 1
 
     def test_update_axis(self, catools):
         self.do_init(catools)
