@@ -18,6 +18,7 @@ from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 from tests.test_modules.test_ADPandABlocks.test_pandaseqtriggerpart import \
     PositionsPart
+from malcolm.modules.pmac.infos import PmacCsKinematicsInfo, PmacVariablesInfo
 
 AXES = AAxesToMove(['x', 'y'])
 
@@ -90,9 +91,13 @@ class TestKinematicsSavuPart(ChildTestCase):
         vds_file = 'odin2'
         self.set_motor_attributes(0.5, 0.0, "mm")
 
-        start_time = datetime.now()
+        xs = LineGenerator("x", "mm", 0.0, 0.4, 5, alternate=False)
+        ys = LineGenerator("y", "mm", 1.2, 1.6, 5)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
+        generator.prepare()
+
         self.o.configure(
-            self.context, fileDir=tmp_dir,
+            self.context, fileDir=tmp_dir, generator=generator,
             axesToMove=AXES, formatName=vds_file
         )
         # assert self.child.handled_requests.mock_calls == [
@@ -100,12 +105,32 @@ class TestKinematicsSavuPart(ChildTestCase):
         #    call.put('filePath', tmp_dir),
         #    call.put('numCapture', self.steps_to_do),
         #    call.post('start')]
+        part_info = dict(
+            HDF=[
+                DatasetProducedInfo(
+                    "y.data", "kinematics_PANDABOX.h5",
+                    DatasetType.POSITION_VALUE, 2,
+                    "/entry/NDAttributes/INENC1.VAL", "/p/uid"),
+                DatasetProducedInfo(
+                    "x.data", "kinematics_PANDABOX2.h5",
+                    DatasetType.POSITION_VALUE, 0,
+                    "/entry/NDAttributes/INENC1.VAL", "/p/uid"),
+                PmacCsKinematicsInfo(
+                    "CS1",
+                    "Q1=5 Q2=4",
+                    "Q1=P1+10\nQ5=Q22+4\nQ7=8+4",
+                    ""
+                ),
+                PmacVariablesInfo(
+                    "I1=13 I3=45",
+                    "",
+                    ""
+                )
+            ]
+        )
 
-        self.o.post_configure(self.context, dict())
+        self.o.post_configure(self.context, part_info)
 
-        print(self.child.handled_requests.mock_calls)
-        print('KinematicsSavu configure {} points took {} secs'.format(
-            self.steps_to_do, datetime.now() - start_time))
         rmtree(tmp_dir)
 
     def test_file_creation(self):
@@ -113,9 +138,13 @@ class TestKinematicsSavuPart(ChildTestCase):
         data_name = 'odin2'
         self.set_motor_attributes(0.5, 0.0, "mm")
 
-        start_time = datetime.now()
+        xs = LineGenerator("x", "mm", 0.0, 0.4, 5, alternate=False)
+        ys = LineGenerator("y", "mm", 1.2, 1.6, 5)
+        generator = CompoundGenerator([ys, xs], [], [], 1.0)
+        generator.prepare()
+
         self.o.configure(
-            self.context, fileDir=tmp_dir, 
+            self.context, fileDir=tmp_dir, generator=generator,
             axesToMove=AXES, formatName=data_name
         )
         # assert self.child.handled_requests.mock_calls == [
@@ -161,6 +190,23 @@ class TestKinematicsSavuPart(ChildTestCase):
                     DatasetType.SECONDARY, 0,
                     "/p/s2", "/p/uid"
                 ),
+                PmacCsKinematicsInfo(
+                    "CS2",
+                    "Q15=1",
+                    "Q3=P2+5",
+                    ""
+                ),
+                PmacCsKinematicsInfo(
+                    "CS1",
+                    "Q22=12345 Q23=999",
+                    "Q1=P1+10\nQ5=Q22+4\nQ7=8+4",
+                    ""
+                ),
+                PmacVariablesInfo(
+                    "",
+                    "",
+                    ""
+                )
             ]
         )
 
@@ -237,7 +283,4 @@ class TestKinematicsSavuPart(ChildTestCase):
         self.assertEquals(q1mean[2][1], 666)
         vds_file.close()
 
-        print(self.child.handled_requests.mock_calls)
-        print('KinematicsSavu configure {} points took {} secs'.format(
-            self.steps_to_do, datetime.now() - start_time))
         rmtree(tmp_dir)

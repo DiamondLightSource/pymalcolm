@@ -21,13 +21,14 @@ PVar = collections.namedtuple('PVar', 'path file p_number')
 
 
 # QUESTIONS:
-# Where does code come from? Which object etc.
+# Assuming 1 pmac ok? See TODO
 # Where should files be created? links etc?
 # Savu folder?
 # When create files. post configure ok? or post run?
-# Where get shape from?
+# context wait in postrun?
 # Output Q names?
-
+# TODOs in utils.py
+# failing tests
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save("fileName", "filePath")
@@ -47,6 +48,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.savu_file = None
         self.layout_table = None
         self.cs_port = None
+        self.shape = None
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -65,6 +67,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     def configure(self,
                   context,  # type: scanning.hooks.AContext
                   fileDir,  # type: scanning.hooks.AFileDir
+                  generator,  # type: scanning.hooks.AGenerator
                   axesToMove,  # type: scanning.hooks.AAxesToMove
                   formatName="savu",  # type: scanning.hooks.AFormatName
                   fileTemplate="%s.nxs",  # type: scanning.hooks.AFileTemplate
@@ -75,6 +78,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.use_min_max = True
         self.savu_variables = {}
         self.savu_code_lines = []
+        self.shape = generator.shape
 
         # On initial configure, expect to get the demanded number of frames
         child = context.block_view(self.mri)
@@ -166,13 +170,14 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 
         # get any variables required for the kinematic
         infos = pmac.infos.PmacCsKinematicsInfo.filter_values(part_info)
-        if infos:
-            assert len(infos) == 1, \
-                "Expected 0 or 1 PmacCsKinematicsInfo, got %d" % len(infos)
-            raw_kinematics_program_code = infos[0].forward
-            raw_input_vars += " " + infos[0].q_variables
-        else:
-            raw_kinematics_program_code = ''
+
+        cs_infos = [info for info in infos if info.cs_port == self.cs_port]
+
+        assert len(cs_infos) == 1, \
+            "No PmacCsKinematicsInfo found for %s" % self.cs_port
+        cs_info = cs_infos[0]
+        raw_kinematics_program_code = cs_info.forward
+        raw_input_vars += " " + cs_info.q_variables
 
         self.savu_code_lines = raw_kinematics_program_code.splitlines()
         self.parse_input_variables(raw_input_vars)
@@ -180,8 +185,9 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     def parse_input_variables(self, raw_input_vars):
         try:
             for var in raw_input_vars.split(' '):
-                split_var = var.split('=')
-                self.savu_variables[split_var[0]] = split_var[1]
+                if var:
+                    split_var = var.split('=')
+                    self.savu_variables[split_var[0]] = split_var[1]
         except IndexError:
             raise ValueError("Error getting kinematic input variables")
 
@@ -247,21 +253,17 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     def create_vds_file(self):
         # hmm
 
-        # original_shape = (9, 5, 5)
-        # shape = original_shape[-2:]
-        # or
-        shape = (5, 5)
-        original_shape = (9,) + shape
+        virtual_shape = (9,) + self.shape
 
         with h5py.File(self.vds_full_filename, 'w', libver='latest') as f:
             f.require_group('/entry/')
             for datatype in ['min', 'mean', 'max']:
                 for i in range(9):
-                    layout = h5py.VirtualLayout(shape=shape, dtype=np.float)
+                    layout = h5py.VirtualLayout(shape=self.shape, dtype=np.float)
                     v_source = h5py.VirtualSource(
                         self.savu_full_filename,
                         '/entry/final_result_q%s/data' % datatype,
-                        shape=original_shape
+                        shape=virtual_shape
                     )
                     layout[:] = v_source[i]
 
