@@ -200,7 +200,7 @@ class SVGIcon(object):
             parent.remove(child)
 
     def add_text(self, text, x=0, y=0, anchor="left", transform=None,
-                 style="font: bold 9px mono"):
+                 style="font: 10px sans"):
         attr = ET.SubElement(self.root, "text", x=str(x), y=str(y), style=style)
         if transform:
             attr.set("transform", transform)
