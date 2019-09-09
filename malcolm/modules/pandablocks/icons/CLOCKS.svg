@@ -1,7 +1,0 @@
-<svg version="1.1" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
- <ellipse transform="matrix(1 0 0 .99997 .013935 29.99)" cx="180" rx="0" ry="0" stroke="#000"/>
- <path d="m80 15h-10v-10h-10v10h-10v-10h-10v10h-10v-10h-10v10h-10" fill="none" stroke="#000" stroke-linecap="square" stroke-width="1px"/>
- <path d="m80 35h-10v-10h-15v10h-15v-10h-15v10h-15" fill="none" stroke="#000" stroke-linecap="square" stroke-width="1px"/>
- <path d="m80 55h-70" fill="none" stroke="#000" stroke-linecap="square" stroke-width="1px"/>
- <path d="m80 65h-2v10h-4v-10h-4v10h-4v-10h-4v10h-4m0 0v-10h-4v10h-4v-10h-4v10h-4v-10h-4v10h-4m0 0v-10h-4v10h-4v-10h-4v10h-4v-10h-4v10h-4" fill="none" stroke="#000" stroke-linecap="square" stroke-width="1px"/>
-</svg>

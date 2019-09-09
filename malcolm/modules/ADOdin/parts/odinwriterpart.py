@@ -5,7 +5,7 @@ from annotypes import add_call_types, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
 from scanpointgenerator import CompoundGenerator
 
-from malcolm.core import APartName, Future, Info, PartRegistrar
+from malcolm.core import APartName, Future, Info, PartRegistrar, BadValueError
 from malcolm.modules import builtin, scanning
 
 if TYPE_CHECKING:
@@ -97,22 +97,18 @@ def one_vds(vds_folder, vds_name, files, width, height,
         log_level=1)
     gen.generate_vds()
 
-    # Don't make the reshape VDS if snaking, as it's not performant
-    if not any(alternates):
-        alternates = None
+    # this VDS shapes the data to match the dimensions of the scan
+    gen = ReshapeVDSGenerator(path=vds_folder,
+                              files=[vds_name],
+                              source_node="process/" + target_node +
+                                          "_interleave",
+                              target_node=target_node,
+                              output=vds_name,
+                              shape=generator.shape,
+                              alternate=alternates,
+                              log_level=1)
 
-        # this VDS shapes the data to match the dimensions of the scan
-        gen = ReshapeVDSGenerator(path=vds_folder,
-                                  files=[vds_name],
-                                  source_node="process/" + target_node +
-                                              "_interleave",
-                                  target_node=target_node,
-                                  output=vds_name,
-                                  shape=generator.shape,
-                                  alternate=alternates,
-                                  log_level=1)
-
-        gen.generate_vds()
+    gen.generate_vds()
 
 
 def create_vds(generator, raw_name, vds_path, child):
@@ -127,7 +123,12 @@ def create_vds(generator, raw_name, vds_path, child):
     # hdf_shape tuple represents the number of images in each file
     hdf_shape = files_shape(generator.size, block_size, hdf_count)
 
-    alternates = list(gen.alternate for gen in generator.generators)
+    alternates = [gen.alternate for gen in generator.generators]
+    if any(alternates):
+        raise BadValueError(
+            "Snake scans are not supported as the VDS is not performant")
+    else:
+        alternates = None
 
     files = [os.path.join(
         vds_folder, '{}_{:06d}.h5'.format(raw_name, i + 1))
@@ -150,9 +151,6 @@ def create_vds(generator, raw_name, vds_path, child):
             shape, generator, alternates, block_size,
             'SUM', 'sum', 'uint64')
     
-    made_top_level = not any(alternates)
-    return made_top_level
-
 
 set_bases = ["/entry/detector/", "/entry/detector_sum/",
              "/entry/detector_uid/"]
@@ -306,15 +304,13 @@ class OdinWriterPart(builtin.parts.ChildPart):
         self.array_future = child.when_value_matches_async(
             "numCaptured", greater_than_zero)
 
-        made_top_level = create_vds(
-            generator, raw_file_basename, vds_full_filename, child)
-        if made_top_level:
-            add_nexus_nodes(generator, vds_full_filename)
+        create_vds(generator, raw_file_basename, vds_full_filename, child)
+        add_nexus_nodes(generator, vds_full_filename)
 
-            # Return the dataset information
-            dataset_infos = list(
-                create_dataset_infos(formatName, generator, fileName))
-            return dataset_infos
+        # Return the dataset information
+        dataset_infos = list(
+            create_dataset_infos(formatName, generator, fileName))
+        return dataset_infos
 
     @add_call_types
     def seek(self,
