@@ -61,12 +61,16 @@ class Controller(Hookable):
         self.process = process
         self.add_initial_part_fields()
 
-    def add_part(self, part):
+    def add_part(self, part, add_fields=False):
         # type: (Part) -> None
         assert part.name not in self.parts, \
             "Part %r already exists in Controller %r" % (part.name, self.mri)
         part.setup(PartRegistrar(self.field_registry, self.info_registry, part))
         self.parts[part.name] = part
+        if add_fields:
+            part_fields = self.field_registry.fields[part]
+            for name, child, writeable_func, needs_context in part_fields:
+                self.add_block_field(name, child, writeable_func, needs_context)
 
     def add_block_field(self, name, child, writeable_func, needs_context):
         # type: (str, Field, Callable[..., Any]) -> None

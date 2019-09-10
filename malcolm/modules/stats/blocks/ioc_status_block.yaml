@@ -5,7 +5,7 @@
 - builtin.parameters.int32:
     name: has_autosave
     description: does the IOC have autosave?
-    default: True
+    default: False
 
 - builtin.controllers.StatefulController:
     mri: $(ioc):STATUS
@@ -13,34 +13,32 @@
 - stats.parts.IocStatusPart:
     name: $(ioc)
     mri: $(ioc):STATUS
-    has_autosave: $(has_autosave)
 
 - ca.parts.CAStringPart:
     name: currentVersion
     description: IOC version
     rbv: $(ioc):DLSVER
+    throw: False
 
 - ca.parts.CAStringPart:
     name: iocDirectory1
     description: IOC directory
     rbv: $(ioc):APP_DIR1
+    throw: False
     widget:
 
 - ca.parts.CAStringPart:
     name: iocDirectory2
     description: IOC directory
     rbv: $(ioc):APP_DIR2
+    throw: False
     widget:
 
 - ca.parts.CAStringPart:
     name: epicsVersion
     description: EPICS version
     rbv: $(ioc):EPICS_VERS
-
-- ca.parts.CAActionPart:
-    name: restartIoc
-    description: Restart IOC
-    pv: $(ioc):RESTART
+    throw: False
 
 - builtin.parts.IconPart:
     svg: $(yamldir)/../icons/epics-logo.svg

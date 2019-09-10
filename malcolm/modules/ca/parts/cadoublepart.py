@@ -19,6 +19,7 @@ class CADoublePart(Part):
                  group=None,  # type: util.AGroup
                  config=True,  # type: util.AConfig
                  display_from_pv=True,  # type: util.AGetLimits
+                 throw=True,  # type: util.AThrow
                  ):
         # type: (...) -> None
         super(CADoublePart, self).__init__(name)
@@ -26,7 +27,7 @@ class CADoublePart(Part):
         self.caa = util.CAAttribute(
             NumberMeta("float64", description), util.catools.DBR_DOUBLE, pv,
             rbv, rbv_suffix, min_delta, timeout, sink_port, widget, group,
-            config, on_connect=self._update_display)
+            config, on_connect=self._update_display, throw=throw)
 
     def _update_display(self, connected_pv):
         if self.display_from_pv:

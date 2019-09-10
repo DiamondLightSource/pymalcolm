@@ -17,12 +17,13 @@ class CALongPart(Part):
                  widget=None,  # type: util.AWidget
                  group=None,  # type: util.AGroup
                  config=True,  # type: util.AConfig
+                 throw=True,  # type: util.AThrow
                  ):
         # type: (...) -> None
         super(CALongPart, self).__init__(name)
         self.caa = util.CAAttribute(
             NumberMeta("int32", description), util.catools.DBR_LONG, pv, rbv,
-            rbv_suffix, min_delta, timeout, sink_port, widget, group, config)
+            rbv_suffix, min_delta, timeout, sink_port, widget, group, config, throw=throw)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

@@ -2,31 +2,5 @@
     mri: $(yamlname):STATS
     prefix: $(yamlname)
 
-- stats.blocks.ioc_status_block:
-    ioc: BL18I-MO-IOC-06
-
-- stats.blocks.ioc_status_block:
-    ioc: BL18I-MO-IOC-07
-
-- stats.blocks.ioc_status_block:
-    ioc: BL18I-MO-IOC-10
-
-- stats.blocks.ioc_status_block:
-    ioc: BL18I-EA-IOC-08
-
-- stats.blocks.ioc_status_block:
-    ioc: BL18I-EA-IOC-07
-    has_autosave: False
-
-- stats.blocks.wrapper_block:
-    ioc1: BL18I-MO-IOC-06
-    ioc2: BL18I-EA-IOC-07
-    ioc3: BL18I-EA-IOC-08
-    ioc4: BL18I-MO-IOC-07
-    ioc5: BL18I-MO-IOC-10
-    malcolm_stats: $(yamlname):STATS
-    malcolm_name: $(yamlname)
-    mri: BL18I-HDWR-STATUS
-
 - web.blocks.web_server_block:
     mri: WEB

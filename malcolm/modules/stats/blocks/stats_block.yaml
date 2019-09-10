@@ -6,11 +6,9 @@
     name: prefix
     description: Prefix for stats PVs
 
-- builtin.controllers.StatefulController:
+- stats.controllers.ProcessController:
     mri: $(mri)
-
-- stats.parts.StatsPart:
-    name: $(prefix)
+    config_dir: /tmp
     prefix: $(prefix)
 
 - builtin.parts.IconPart:

@@ -1,4 +1,4 @@
-from .iocstatuspart import IocStatusPart
+from .ProcessController import ProcessController, parse_yaml_version
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

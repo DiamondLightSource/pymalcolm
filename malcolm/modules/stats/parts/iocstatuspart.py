@@ -2,15 +2,12 @@ from malcolm.modules.builtin import parts, hooks, infos
 from malcolm.core import Subscribe, TableMeta, \
     StringArrayMeta, Widget, PartRegistrar, Part
 from malcolm.core.alarm import AlarmSeverity, Alarm
-from malcolm.modules.ca.parts import CAStringPart
-
+from malcolm.modules.ca.parts import CAStringPart, CAActionPart
+from malcolm.modules.ca.util import catools
 import os
 from collections import OrderedDict
 
-from annotypes import add_call_types, Anno
-
-with Anno("does the IOC have autosave?"):
-    AHasAutosave = bool
+from annotypes import add_call_types
 
 
 class IocStatusPart(Part):
@@ -18,16 +15,17 @@ class IocStatusPart(Part):
     ioc_prod_root = ''
     dls_version = None
 
-    def __init__(self, name, mri, has_autosave=True):
-        # type: (parts.APartName, parts.AMri, AHasAutosave) -> None
+    def __init__(self, name, mri):
+        # type: (parts.APartName, parts.AMri) -> None
         super(IocStatusPart, self).__init__(name)
         # Hooks
         self.dir1 = None
         self.dir2 = None
         self.dir = ""
         self.controller_mri = mri
-        self.has_autosave = has_autosave
         self.register_hooked(hooks.InitHook, self.init_handler)
+        self.autosave_pv = None
+        self.restart_pv = None
 
         elements = OrderedDict()
         elements["module"] = StringArrayMeta("Module",
@@ -40,17 +38,28 @@ class IocStatusPart(Part):
                                       writeable=False,
                                       elements=elements).create_attribute_model(
             {"module": [], "path": []})
-        if has_autosave:
-            self.autosave_pv = CAStringPart("autosaveStatus",
-                                            description="status of Autosave",
-                                            rbv="%s:SRSTATUS" % name)
+
 
     @add_call_types
     def init_handler(self, context):
         # type: (hooks.AContext) -> None
         controller = context.get_controller(self.controller_mri)
-        if self.has_autosave:
-            controller.add_part(self.autosave_pv)
+        pv_test = catools.caget(["%s:SRSTATUS" % self.name, "%s:RESTART" % self.name],
+                                throw=False)
+
+        if pv_test[0].ok:
+            self.autosave_pv = CAStringPart("autosaveStatus",
+                                            description="status of Autosave",
+                                            rbv="%s:SRSTATUS" % self.name)
+            controller.add_part(self.autosave_pv, add_fields=True)
+
+        if pv_test[1].ok:
+            self.restart_pv = CAActionPart("restartIoc",
+                                           description="restart IOC via procServ",
+                                           pv="%s:RESTART" % self.name)
+
+            controller.add_part(self.restart_pv, add_fields=True)
+
         subscribe_ver = Subscribe(path=[self.controller_mri, "currentVersion"])
         subscribe_ver.set_callback(self.version_updated)
         controller.handle_request(subscribe_ver).wait()
@@ -68,10 +77,20 @@ class IocStatusPart(Part):
 
     def version_updated(self, update):
         self.dls_version = update.value["value"]
-        if update.value["value"] == "Work":
+        if isinstance(update.value["value"], str) and update.value["value"].lower() == "work":
             message = "IOC running from work area"
             alarm = Alarm(message=message, severity=AlarmSeverity.MINOR_ALARM)
             self.registrar.report(infos.HealthInfo(alarm))
+        elif update.value["alarm"].severity == AlarmSeverity.UNDEFINED_ALARM:
+            if self.restart_pv is None:
+                message = "neither IOC nor procServ are running"
+                alarm = Alarm(message=message,
+                              severity=AlarmSeverity.INVALID_ALARM)
+                self.registrar.report(infos.HealthInfo(alarm))
+            else:
+                message = "IOC not running (procServ enabled)"
+                alarm = Alarm(message=message, severity=AlarmSeverity.UNDEFINED_ALARM)
+                self.registrar.report(infos.HealthInfo(alarm))
 
     def set_dir1(self, update):
         self.dir1 = update.value["value"]
@@ -89,14 +108,15 @@ class IocStatusPart(Part):
         release_file = os.path.join(self.dir, 'configure', 'RELEASE')
         dependencies = OrderedDict()
         dependency_table = OrderedDict()
-        if os.path.isdir(self.dir):
+        if os.path.isdir(self.dir) and os.path.isfile(release_file):
             with open(release_file, 'r') as release:
                 dep_list = release.readlines()
                 dep_list = [dep.strip('\n') for dep in dep_list if
                             not dep.startswith('#')]
                 for dep in dep_list:
                     dep_split = dep.replace(' ', '').split('=')
-                    dependencies[dep_split[0]] = dep_split[1]
+                    if len(dep_split) == 2:
+                        dependencies[dep_split[0]] = dep_split[1]
                 dependency_table["module"] = []
                 dependency_table["path"] = []
                 for k1, v1 in dependencies.items():
