@@ -220,7 +220,7 @@ class ProcessController(builtin.controllers.ManagerController):
             if isinstance(controller, PandAManagerController):
                 num_pandas += 1
                 self.add_part(
-                    builtin.parts.ChildPart(name="PandA%02d" % num_pandas, mri=controller.mri))
+                    builtin.parts.ChildPart(name="PandA-%02d" % num_pandas, mri=controller.mri))
         self.set_layout(builtin.util.LayoutTable([], [], [], [], []))
 
     def showValidIocs(self):
