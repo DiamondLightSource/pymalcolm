@@ -1,6 +1,7 @@
 - stats.blocks.stats_block:
     mri: $(yamlname):STATS
     prefix: $(yamlname)
+    bl_prefix: BL18I
 
 - web.blocks.web_server_block:
     mri: WEB

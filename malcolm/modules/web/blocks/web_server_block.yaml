@@ -22,3 +22,6 @@
     subnet_validation: $(subnet_validation)
 
 - web.parts.GuiServerPart:
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/socket_alt.svg

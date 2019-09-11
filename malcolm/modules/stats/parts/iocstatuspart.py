@@ -39,13 +39,13 @@ class IocStatusPart(Part):
                                       elements=elements).create_attribute_model(
             {"module": [], "path": []})
 
-
     @add_call_types
     def init_handler(self, context):
         # type: (hooks.AContext) -> None
         controller = context.get_controller(self.controller_mri)
-        pv_test = catools.caget(["%s:SRSTATUS" % self.name, "%s:RESTART" % self.name],
-                                throw=False)
+        pv_test = catools.caget(
+            ["%s:SRSTATUS" % self.name, "%s:RESTART" % self.name],
+            throw=False)
 
         if pv_test[0].ok:
             self.autosave_pv = CAStringPart("autosaveStatus",
@@ -77,7 +77,8 @@ class IocStatusPart(Part):
 
     def version_updated(self, update):
         self.dls_version = update.value["value"]
-        if isinstance(update.value["value"], str) and update.value["value"].lower() == "work":
+        if isinstance(update.value["value"], str) and update.value[
+            "value"].lower() == "work":
             message = "IOC running from work area"
             alarm = Alarm(message=message, severity=AlarmSeverity.MINOR_ALARM)
             self.registrar.report(infos.HealthInfo(alarm))
@@ -89,7 +90,8 @@ class IocStatusPart(Part):
                 self.registrar.report(infos.HealthInfo(alarm))
             else:
                 message = "IOC not running (procServ enabled)"
-                alarm = Alarm(message=message, severity=AlarmSeverity.UNDEFINED_ALARM)
+                alarm = Alarm(message=message,
+                              severity=AlarmSeverity.UNDEFINED_ALARM)
                 self.registrar.report(infos.HealthInfo(alarm))
 
     def set_dir1(self, update):
