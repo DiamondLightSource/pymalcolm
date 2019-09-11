@@ -1,6 +1,6 @@
 from malcolm.modules.builtin import parts, hooks, infos
 from malcolm.core import Subscribe, TableMeta, \
-    StringArrayMeta, Widget, PartRegistrar, Part
+    StringArrayMeta, BooleanMeta, Widget, Port, PartRegistrar, Part
 from malcolm.core.alarm import AlarmSeverity, Alarm
 from malcolm.modules.ca.parts import CAStringPart, CAActionPart
 from malcolm.modules.ca.util import catools
@@ -15,7 +15,7 @@ class IocStatusPart(Part):
     registrar = None
     ioc_prod_root = ''
     dls_version = None
-    dbl = []
+    # dbl = []
 
     def __init__(self, name, mri):
         # type: (parts.APartName, parts.AMri) -> None
@@ -40,8 +40,8 @@ class IocStatusPart(Part):
                                       writeable=False,
                                       elements=elements).create_attribute_model(
             {"module": [], "path": []})
-        self.pvs = StringArrayMeta("publishedPvs",
-                                    tags=[Widget.TEXTUPDATE.tag()]).create_attribute_model([])
+        # self.pvs = StringArrayMeta("publishedPvs",
+        #                             tags=[Widget.TEXTUPDATE.tag()]).create_attribute_model([])
 
     @add_call_types
     def init_handler(self, context):
@@ -136,9 +136,6 @@ class IocStatusPart(Part):
 
             if len(dep_list) > 0:
                 self.dependencies.set_value(dependency_table)
-            if "PMAC" in dependency_table["module"] or \
-                "ADPANDABLOCKS" in dependency_table["module"]:
-                    self.parse_db(self.dir)
 
         else:
             self.dependencies.set_alarm(
@@ -146,13 +143,12 @@ class IocStatusPart(Part):
                       severity=AlarmSeverity.MINOR_ALARM)
             )
 
-    def parse_db(self, ioc_dir):
-        db_path = ioc_dir + '/db/%s_expanded.db' % self.name
-        if not os.path.isfile(db_path):
-            return
-        with open(db_path, 'r') as db_file:
-            db = db_file.read()
-        records = re.findall("record\(([^)]+)\)", db)
-        self.dbl = [record.split(',')[-1].replace('"', '').strip() for record in records]
-        self.pvs.set_value(self.dbl)
-
+    # def parse_db(self, ioc_dir):
+    #     db_path = ioc_dir + '/db/%s_expanded.db' % self.name
+    #     if not os.path.isfile(db_path):
+    #         return
+    #     with open(db_path, 'r') as db_file:
+    #         db = db_file.read()
+    #     records = re.findall("record\(([^)]+)\)", db)
+    #     self.dbl = [record.split(',')[-1].replace('"', '').strip() for record in records]
+    #     self.pvs.set_value(self.dbl)
