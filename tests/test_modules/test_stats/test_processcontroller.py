@@ -2,7 +2,7 @@ import unittest
 
 from malcolm.core import Process
 from malcolm.modules.stats.controllers import ProcessController, \
-    parse_yaml_version
+    parse_yaml_version, parse_redirect_table
 
 from cothread import catools
 import time
@@ -85,3 +85,39 @@ class TestParseYamlVersion(unittest.TestCase):
         assert parse_yaml_version(self.testArea + '/something.yaml',
                                   '/tmp/work/',
                                   self.testArea) == 'TEST_VER'
+
+
+class TestParseRedirectTable(unittest.TestCase):
+    def setUp(self):
+        try:
+            os.mkdir('/tmp/redirector')
+        except OSError:
+            pass
+        self.testArea = '/tmp/redirector/testpath-' + \
+                        floor(time.time()).__repr__()[:-2]
+        os.mkdir(self.testArea)
+        self.cwd = os.getcwd()
+        with open(self.testArea + '/redirect_table', 'w') as table:
+            table.writelines([
+                'TS01I-EA-IOC-01 anyarbitrarystringhere\n',
+                'TS01I-gui thisshouldntmatchourregexp\n',
+                'ME99P-XX-IOC-99 butthisoneshould\n',
+                'TS01I-TS-IOC-69 foobarbaz\n',
+                'TS01J-XY-IOC-07 splat\n',
+                'TS10I-AB-IOC-01 bang\n'
+            ])
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        subprocess.call(['rm', '-rf', self.testArea])
+        os.rmdir('/tmp/redirector')
+
+    def test_parse(self):
+        list0 = parse_redirect_table(self.testArea + '/redirect_table', 'TS01I')
+        list1 = parse_redirect_table(self.testArea + '/redirect_table', 'ME99P')
+        assert len(list0) == 2
+        assert list0[0] == "TS01I-EA-IOC-01 "
+        assert list0[1] == "TS01I-TS-IOC-69 "
+        assert len(list1) == 1
+        assert list1[0] == "ME99P-XX-IOC-99 "
+

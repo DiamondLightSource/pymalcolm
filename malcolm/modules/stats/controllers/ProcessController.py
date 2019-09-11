@@ -1,6 +1,7 @@
 from malcolm.modules import builtin
 
-from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, ProcessStartHook, ProcessStopHook
+from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, \
+    ProcessStartHook, ProcessStopHook
 from malcolm import version
 from malcolm.modules.ca.util import catools
 
@@ -64,10 +65,18 @@ with Anno("parse beamline IOCs from redirect table"):
     AParseIOCs = bool
 
 
+def parse_redirect_table(file_path, bl_prefix):
+    with open(file_path, 'r') as redirector:
+        table = redirector.read()
+        bl_iocs = re.findall(bl_prefix + "-[A-Z][A-Z]-IOC-[0-9][0-9] ",
+                             table)
+    return bl_iocs
+
+
 class ProcessController(builtin.controllers.ManagerController):
     def __init__(self,
-                 mri,        # type: builtin.controllers.AMri
-                 prefix,     # type: APvPrefix
+                 mri,  # type: builtin.controllers.AMri
+                 prefix,  # type: APvPrefix
                  config_dir,  # type: builtin.controllers.AConfigDir
                  parse_iocs=False,  # type: AParseIOCs
                  ):
@@ -77,6 +86,7 @@ class ProcessController(builtin.controllers.ManagerController):
         self.bl_iocs = []
         self.ioc_blocks = []
         self.prefix = prefix
+        self.parse_iocs = parse_iocs
         self.stats = dict()
         cwd = os.getcwd()
         sys_call_bytes = open('/proc/%s/cmdline' % os.getpid(),
@@ -136,8 +146,10 @@ class ProcessController(builtin.controllers.ManagerController):
             tags=[Widget.TEXTUPDATE.tag()]).create_attribute_model(
             self.stats["pid"])
 
-        self.field_registry.add_attribute_model("pymalcolmPath", self.pymalcolm_path)
-        self.field_registry.add_attribute_model("pymalcolmVer", self.pymalcolm_ver)
+        self.field_registry.add_attribute_model("pymalcolmPath",
+                                                self.pymalcolm_path)
+        self.field_registry.add_attribute_model("pymalcolmVer",
+                                                self.pymalcolm_ver)
         self.field_registry.add_attribute_model("yamlPath", self.yaml_path)
         self.field_registry.add_attribute_model("yamlVer", self.yaml_ver)
         self.field_registry.add_attribute_model("hostname", self.hostname)
@@ -155,8 +167,9 @@ class ProcessController(builtin.controllers.ManagerController):
 
     def setup(self, process):
         super(ProcessController, self).setup(process)
-        self.parse_redirect_table('/dls_sw/prod/etc/redirector/redirect_table',
-                                  'BL18I')
+        if self.parse_iocs:
+            self.get_ioc_list('/dls_sw/prod/etc/redirector/redirect_table',
+                              'BL18I')
 
     def init_ioc(self):
         if self.ioc is None:
@@ -167,15 +180,12 @@ class ProcessController(builtin.controllers.ManagerController):
             self.ioc.terminate()
             self.ioc = None
 
-    def parse_redirect_table(self, file_path, bl_prefix):
-        with open(file_path, 'r') as redirector:
-            table = redirector.read()
-            self.bl_iocs = re.findall(bl_prefix + "-[A-Z][A-Z]-IOC-[0-9][0-9] ",
-                                 table)
+    def get_ioc_list(self, file_path, bl_prefix):
+        self.bl_iocs = parse_redirect_table(file_path, bl_prefix)
         for ioc in self.bl_iocs:
             ioc = ioc[:-1]
             block = ioc_status_block(ioc)
             self.ioc_blocks += [block[0]]
             self.process.add_controller(block[0])
-            self.add_part(builtin.parts.ChildPart(name=ioc, mri=ioc+":STATUS"))
-
+            self.add_part(
+                builtin.parts.ChildPart(name=ioc, mri=ioc + ":STATUS"))
