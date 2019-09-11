@@ -78,7 +78,7 @@ class IocStatusPart(Part):
         # type: (PartRegistrar) -> None
         super(IocStatusPart, self).setup(registrar)
         registrar.add_attribute_model("dependencies", self.dependencies)
-        registrar.add_method_model("publishedPvs", self.pvs)
+        registrar.add_attribute_model("publishedPvs", self.pvs)
 
     def version_updated(self, update):
         self.dls_version = update.value["value"]
