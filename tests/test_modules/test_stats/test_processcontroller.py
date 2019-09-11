@@ -1,7 +1,6 @@
 import unittest
 
 from malcolm.core import Process
-from malcolm.modules.builtin.controllers import StatefulController
 from malcolm.modules.stats.controllers import ProcessController, \
     parse_yaml_version
 
@@ -14,12 +13,12 @@ from math import floor
 from malcolm.version import __version__
 
 
-class TestStatsPart(unittest.TestCase):
+class TestProcessController(unittest.TestCase):
     prefix = "unitTest:%s" % floor(time.time()).__repr__()[:-2]
 
     def setUp(self):
         self.process = Process("proc")
-        self.o = ProcessController("MyMRI")
+        self.o = ProcessController("MyMRI", self.prefix, "/tmp")
         self.process.add_controller(self.o)
         self.process.start()
         self.b = self.process.block_view("MyMRI")

@@ -1,6 +1,6 @@
 from malcolm.modules import builtin
 
-from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity
+from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, ProcessStartHook, ProcessStopHook
 from malcolm import version
 from malcolm.modules.ca.util import catools
 
@@ -149,16 +149,16 @@ class ProcessController(builtin.controllers.ManagerController):
             alarm = Alarm(message=message, severity=AlarmSeverity.MINOR_ALARM)
             self.update_health("", builtin.infos.HealthInfo(alarm))
 
-        self.register_hooked(builtin.hooks.InitHook, self.start_ioc)
+        self.register_hooked(ProcessStartHook, self.init_ioc)
 
-        self.register_hooked(builtin.hooks.HaltHook, self.stop_ioc)
+        self.register_hooked(ProcessStopHook, self.stop_ioc)
 
     def setup(self, process):
         super(ProcessController, self).setup(process)
         self.parse_redirect_table('/dls_sw/prod/etc/redirector/redirect_table',
                                   'BL18I')
 
-    def start_ioc(self):
+    def init_ioc(self):
         if self.ioc is None:
             self.ioc = start_ioc(self.stats, self.prefix)
 

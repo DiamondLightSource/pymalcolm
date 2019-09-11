@@ -39,7 +39,7 @@ class TestCAActionPart(unittest.TestCase):
         catools.caget.reset_mock()
         catools.caget.return_value = [caint(4)]
         p.connect_pvs()
-        catools.caget.assert_called_with(["pv"])
+        catools.caget.assert_called_with(["pv"], throw=True)
 
     def test_caput(self, catools):
         p = self.create_part()
