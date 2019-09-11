@@ -6,6 +6,7 @@ from malcolm.modules.ca.parts import CAStringPart, CAActionPart
 from malcolm.modules.ca.util import catools
 import os
 from collections import OrderedDict
+import re
 
 from annotypes import add_call_types
 
@@ -14,6 +15,7 @@ class IocStatusPart(Part):
     registrar = None
     ioc_prod_root = ''
     dls_version = None
+    dbl = []
 
     def __init__(self, name, mri):
         # type: (parts.APartName, parts.AMri) -> None
@@ -38,6 +40,8 @@ class IocStatusPart(Part):
                                       writeable=False,
                                       elements=elements).create_attribute_model(
             {"module": [], "path": []})
+        self.pvs = StringArrayMeta("publishedPvs",
+                                    tags=[Widget.TEXTUPDATE.tag()]).create_attribute_model([])
 
     @add_call_types
     def init_handler(self, context):
@@ -74,6 +78,7 @@ class IocStatusPart(Part):
         # type: (PartRegistrar) -> None
         super(IocStatusPart, self).setup(registrar)
         registrar.add_attribute_model("dependencies", self.dependencies)
+        registrar.add_method_model("publishedPvs", self.pvs)
 
     def version_updated(self, update):
         self.dls_version = update.value["value"]
@@ -131,8 +136,23 @@ class IocStatusPart(Part):
 
             if len(dep_list) > 0:
                 self.dependencies.set_value(dependency_table)
+            if "PMAC" in dependency_table["module"] or \
+                "ADPANDABLOCKS" in dependency_table["module"]:
+                    self.parse_db(self.dir)
+
         else:
             self.dependencies.set_alarm(
                 Alarm(message="reported IOC directory not found",
                       severity=AlarmSeverity.MINOR_ALARM)
             )
+
+    def parse_db(self, ioc_dir):
+        db_path = ioc_dir + '/db/%s_expanded.db' % self.name
+        if not os.path.isfile(db_path):
+            return
+        with open(db_path, 'r') as db_file:
+            db = db_file.read()
+        records = re.findall("record\(([^)]+)\)", db)
+        self.dbl = [record.split(',')[-1].replace('"', '').strip() for record in records]
+        self.pvs.set_value(self.dbl)
+
