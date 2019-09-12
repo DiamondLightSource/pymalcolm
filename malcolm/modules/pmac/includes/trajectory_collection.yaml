@@ -22,3 +22,6 @@
 - pmac.parts.PmacTrajectoryPart:
     name: TRAJ
     mri: $(mri_prefix):TRAJ
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/delta_tau.svg

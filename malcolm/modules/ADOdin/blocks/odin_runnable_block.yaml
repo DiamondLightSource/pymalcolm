@@ -70,3 +70,6 @@
 
 - scanning.parts.DatasetTablePart:
     name: DSET
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/odin_logo.svg
