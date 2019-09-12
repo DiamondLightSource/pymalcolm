@@ -97,31 +97,31 @@
      id="layer1"
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     transform="scale(1.5, 1.5)"
+     transform="scale(1.5625, 1.5625)"
   >
     <rect
-       style="fill:none;stroke:#2523A8;stroke-width:1.10002315px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+       style="fill:#2523A8;stroke:#2523A8;stroke-width:1.10002315px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
        id="rect2826"
        width="14.899977"
        height="14.899977"
        x="24.550011"
        y="10.550013" />
     <rect
-       style="fill:none;stroke:#2523A8;stroke-width:0.55000001;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#2523A8;stroke:#2523A8;stroke-width:0.55000001;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect2826-4"
        width="7.4499884"
        height="7.4499884"
        x="8.2749996"
        y="32.275013" />
     <rect
-       style="fill:none;stroke:#2523A8;stroke-width:0.55001163px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+       style="fill:#2523A8;stroke:#2523A8;stroke-width:0.55001163px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
        id="rect2826-4-7"
        width="7.4499884"
        height="7.4499884"
        x="28.275005"
        y="32.275005" />
     <rect
-       style="fill:none;stroke:#2523A8;stroke-width:0.55001158px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+       style="fill:#2523A8;stroke:#2523A8;stroke-width:0.55001158px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
        id="rect2826-4-7-2"
        width="7.4499884"
        height="7.4499884"
@@ -141,7 +141,7 @@
        id="path3720" />
     <text
        xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-weight:normal;fill:#0F0F0F;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       style="font-size:10px;font-style:normal;font-weight:normal;fill:#8F8F8F;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
        x="25.544233"
        y="20.866486"
        id="text3722"><tspan
@@ -150,21 +150,21 @@
          x="25.544233"
          y="20.866486">{}</tspan></text>
     <rect
-       style="fill:none;stroke:#2523A8;stroke-width:0.35771561;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#2523A8;stroke:#2523A8;stroke-width:0.35771561;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        id="rect2826-4-8"
        width="4.6900725"
        height="5.005898"
        x="17.104919"
        y="44.327534" />
     <rect
-       style="fill:none;stroke:#2523A8;stroke-width:0.35772315px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+       style="fill:#2523A8;stroke:#2523A8;stroke-width:0.35772315px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
        id="rect2826-4-7-23"
        width="4.6900725"
        height="5.005898"
        x="29.69574"
        y="44.327526" />
     <rect
-       style="fill:none;stroke:#2523A8;stroke-width:0.35772312px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+       style="fill:#2523A8;stroke:#2523A8;stroke-width:0.35772312px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
        id="rect2826-4-7-2-6"
        width="4.6900725"
        height="5.005898"
