@@ -10,7 +10,7 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="100px"
-   height="100px"
+   height="70px"
    id="svg2816"
    version="1.1"
    inkscape:version="0.47 r22583"
@@ -81,7 +81,7 @@
      id="layer1"
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     transform="scale(1.5625, 1.5625)"
+     transform="scale(1.4, 1.4) translate(4,-7)"
   >
     <path
        sodipodi:type="arc"
