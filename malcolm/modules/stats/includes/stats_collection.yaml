@@ -1,0 +1,55 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: prefix for Malcolm resource ids of the Blocks
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: Prefix for stats PVs
+
+- builtin.parameters.string:
+    name: bl_prefix
+    description: Beamline prefix (e.g. BLxxI) for IOCs
+
+- builtin.parameters.int32:
+    name: subnet_validation
+    description: If non-zero, check any client is in the same subnet as the host
+    default: 1
+
+- builtin.parameters.string:
+    name: mri
+    description: Malcolm resource id of the Block
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: Prefix for stats PVs
+
+- builtin.parameters.string:
+    name: bl_prefix
+    description: Beamline prefix (e.g. BLxxI) for IOCs
+
+- stats.controllers.ProcessController:
+    mri: $(mri):STATS
+    config_dir: /tmp
+    prefix: $(pv_prefix)
+    bl_prefix: $(bl_prefix)
+    parse_iocs: True
+
+- builtin.parts.ChildPart:
+    name: WEB
+    mri: $(mri_prefix):WEB
+    initial_visibility: True
+
+- builtin.parts.ChildPart:
+    name: PVA
+    mri: $(mri_prefix):PVA
+    initial_visibility: True
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../../../../docs/malcolm-logo.svg
+
+- pva.blocks.pva_server_block:
+    mri: $(mri_prefix):PVA
+
+- web.blocks.web_server_block:
+    mri: $(mri_prefix):WEB
+    subnet_validation: $(subnet_validation)

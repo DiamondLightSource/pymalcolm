@@ -190,7 +190,6 @@ class ProcessController(builtin.controllers.ManagerController):
         if self.ioc is None:
             self.ioc = start_ioc(self.stats, self.prefix)
         super(ProcessController, self).init()
-        self.check_all_blocks()
 
     def stop_ioc(self):
         if self.ioc is not None:
@@ -207,21 +206,24 @@ class ProcessController(builtin.controllers.ManagerController):
             self.add_part(
                 builtin.parts.ChildPart(name=ioc, mri=ioc + ":STATUS"))
 
-    def check_all_blocks(self):
-        num_pandas = 0
-        for mri in self.process.mri_list:
-            controller = self.process.get_controller(mri)
-            if isinstance(controller, HTTPServerComms):
-                self.add_part(
-                    builtin.parts.ChildPart(name="WEB", mri=controller.mri))
-            if isinstance(controller, PvaServerComms):
-                self.add_part(
-                    builtin.parts.ChildPart(name="PVA", mri=controller.mri))
-            if isinstance(controller, PandAManagerController):
-                num_pandas += 1
-                self.add_part(
-                    builtin.parts.ChildPart(name="PandA-%02d" % num_pandas, mri=controller.mri))
-        self.set_layout(builtin.util.LayoutTable([], [], [], [], []))
+    # Following code is not needed:
+    # Have the web & PVA server blocks included as part of the stats block
+
+    # def check_all_blocks(self):
+    #     num_pandas = 0
+    #     for mri in self.process.mri_list:
+    #         controller = self.process.get_controller(mri)
+    #         if isinstance(controller, HTTPServerComms):
+    #             self.add_part(
+    #                 builtin.parts.ChildPart(name="WEB", mri=controller.mri))
+    #         if isinstance(controller, PvaServerComms):
+    #             self.add_part(
+    #                 builtin.parts.ChildPart(name="PVA", mri=controller.mri))
+    #         if isinstance(controller, PandAManagerController):
+    #             num_pandas += 1
+    #             self.add_part(
+    #                 builtin.parts.ChildPart(name="PandA-%02d" % num_pandas, mri=controller.mri))
+    #     self.set_layout(builtin.util.LayoutTable([], [], [], [], []))
 
     def showValidIocs(self):
         layout = self.layout.value

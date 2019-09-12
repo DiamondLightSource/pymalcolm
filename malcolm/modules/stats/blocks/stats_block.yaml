@@ -3,7 +3,7 @@
     description: Malcolm resource id of the Block
 
 - builtin.parameters.string:
-    name: prefix
+    name: pv_prefix
     description: Prefix for stats PVs
 
 - builtin.parameters.string:
@@ -13,10 +13,14 @@
 - stats.controllers.ProcessController:
     mri: $(mri)
     config_dir: /tmp
-    prefix: $(prefix)
+    prefix: $(pv_prefix)
     bl_prefix: $(bl_prefix)
     parse_iocs: True
 
+- builtin.parts.ChildPart:
+    name: WEB
+    mri: $(web)
+    initial_visibility: True
 
 - builtin.parts.IconPart:
     svg: $(yamldir)/../../../../docs/malcolm-logo.svg

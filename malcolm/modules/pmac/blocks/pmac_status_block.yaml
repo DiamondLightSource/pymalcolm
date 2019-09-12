@@ -19,3 +19,6 @@
     name: i10
     description: Value of i10 (servo ticks)
     rbv: $(pv_prefix):I10
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/delta_tau.svg
