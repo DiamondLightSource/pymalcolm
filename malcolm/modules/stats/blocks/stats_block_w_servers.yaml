@@ -32,10 +32,12 @@
 - builtin.parts.ChildPart:
     name: WEB
     mri: $(mri_prefix):WEB
+    initial_visibility: True
 
 - builtin.parts.ChildPart:
     name: PVA
     mri: $(mri_prefix):PVA
+    initial_visibility: True
 
 - builtin.parts.IconPart:
     svg: $(yamldir)/../../../../docs/malcolm-logo.svg
