@@ -1,12 +1,11 @@
 from malcolm.modules.builtin import parts, hooks, infos
 from malcolm.core import Subscribe, TableMeta, \
-    StringArrayMeta, BooleanMeta, Widget, Port, PartRegistrar, Part
+    StringArrayMeta, Widget, PartRegistrar, Part
 from malcolm.core.alarm import AlarmSeverity, Alarm
 from malcolm.modules.ca.parts import CAStringPart, CAActionPart
 from malcolm.modules.ca.util import catools
 import os
 from collections import OrderedDict
-import re
 
 from annotypes import add_call_types
 
@@ -40,8 +39,6 @@ class IocStatusPart(Part):
                                       writeable=False,
                                       elements=elements).create_attribute_model(
             {"module": [], "path": []})
-        # self.pvs = StringArrayMeta("publishedPvs",
-        #                             tags=[Widget.TEXTUPDATE.tag()]).create_attribute_model([])
 
     @add_call_types
     def init_handler(self, context):
@@ -78,7 +75,6 @@ class IocStatusPart(Part):
         # type: (PartRegistrar) -> None
         super(IocStatusPart, self).setup(registrar)
         registrar.add_attribute_model("dependencies", self.dependencies)
-        registrar.add_attribute_model("publishedPvs", self.pvs)
 
     def version_updated(self, update):
         self.dls_version = update.value["value"]

@@ -17,10 +17,5 @@
     bl_prefix: $(bl_prefix)
     parse_iocs: True
 
-- builtin.parts.ChildPart:
-    name: WEB
-    mri: $(web)
-    initial_visibility: True
-
 - builtin.parts.IconPart:
     svg: $(yamldir)/../../../../docs/malcolm-logo.svg
