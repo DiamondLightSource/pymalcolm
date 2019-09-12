@@ -15,10 +15,12 @@
     description: If non-zero, check any client is in the same subnet as the host
     default: 1
 
-- stats.blocks.stats_block:
+- stats.controllers.ProcessController:
     mri: $(mri_prefix):STATS
-    pv_prefix: $(pv_prefix)
+    config_dir: /tmp
+    prefix: $(pv_prefix)
     bl_prefix: $(bl_prefix)
+    parse_iocs: True
 
 - pva.blocks.pva_server_block:
     mri: $(mri_prefix):PVA
@@ -26,3 +28,14 @@
 - web.blocks.web_server_block:
     mri: $(mri_prefix):WEB
     subnet_validation: $(subnet_validation)
+
+- builtin.parts.ChildPart:
+    name: WEB
+    mri: $(mri_prefix):WEB
+
+- builtin.parts.ChildPart:
+    name: PVA
+    mri: $(mri_prefix):PVA
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../../../../docs/malcolm-logo.svg
