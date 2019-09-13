@@ -2,11 +2,6 @@
     name: ioc
     description: Prefix for IOC status PVs
 
-- builtin.parameters.int32:
-    name: has_autosave
-    description: does the IOC have autosave?
-    default: False
-
 - builtin.controllers.StatefulController:
     mri: $(ioc):STATUS
 

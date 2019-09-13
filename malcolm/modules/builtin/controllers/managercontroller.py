@@ -173,7 +173,10 @@ class ManagerController(StatefulController):
             # This will trigger all parts to report their layout, making sure
             # the layout table has a valid value. This will also call
             # self._update_block_endpoints()
-            self.set_layout(LayoutTable([], [], [], [], []))
+            self.set_default_layout()
+
+    def set_default_layout(self):
+        self.set_layout(LayoutTable([], [], [], [], []))
 
     def set_layout(self, value):
         """Set the layout table value. Called on attribute put"""

@@ -1,13 +1,9 @@
-from malcolm.modules.builtin import parts, hooks, infos
-from malcolm.core import Subscribe, TableMeta, \
+from malcolm.modules.builtin import parts, infos
+from malcolm.core import TableMeta, \
     StringArrayMeta, Widget, PartRegistrar, Part
 from malcolm.core.alarm import AlarmSeverity, Alarm
-from malcolm.modules.ca.parts import CAStringPart, CAActionPart
-from malcolm.modules.ca.util import catools
 import os
 from collections import OrderedDict
-
-from annotypes import add_call_types
 
 
 class IocStatusPart(Part):
@@ -16,15 +12,13 @@ class IocStatusPart(Part):
     dls_version = None
     # dbl = []
 
-    def __init__(self, name, mri):
-        # type: (parts.APartName, parts.AMri) -> None
+    def __init__(self, name):
+        # type: (parts.APartName) -> None
         super(IocStatusPart, self).__init__(name)
         # Hooks
         self.dir1 = None
         self.dir2 = None
         self.dir = ""
-        self.controller_mri = mri
-        self.register_hooked(hooks.InitHook, self.init_handler)
         self.autosave_pv = None
         self.restart_pv = None
 
@@ -39,37 +33,6 @@ class IocStatusPart(Part):
                                       writeable=False,
                                       elements=elements).create_attribute_model(
             {"module": [], "path": []})
-
-    @add_call_types
-    def init_handler(self, context):
-        # type: (hooks.AContext) -> None
-        controller = context.get_controller(self.controller_mri)
-        pv_test = catools.caget(
-            ["%s:SRSTATUS" % self.name, "%s:RESTART" % self.name],
-            throw=False)
-
-        if pv_test[0].ok:
-            self.autosave_pv = CAStringPart("autosaveStatus",
-                                            description="status of Autosave",
-                                            rbv="%s:SRSTATUS" % self.name)
-            controller.add_part(self.autosave_pv, add_fields=True)
-
-        if pv_test[1].ok:
-            self.restart_pv = CAActionPart("restartIoc",
-                                           description="restart IOC via procServ",
-                                           pv="%s:RESTART" % self.name)
-
-            controller.add_part(self.restart_pv, add_fields=True)
-
-        subscribe_ver = Subscribe(path=[self.controller_mri, "currentVersion"])
-        subscribe_ver.set_callback(self.version_updated)
-        controller.handle_request(subscribe_ver).wait()
-        subscribe_dir1 = Subscribe(path=[self.controller_mri, "iocDirectory1"])
-        subscribe_dir1.set_callback(self.set_dir1)
-        controller.handle_request(subscribe_dir1).wait()
-        subscribe_dir2 = Subscribe(path=[self.controller_mri, "iocDirectory2"])
-        subscribe_dir2.set_callback(self.set_dir2)
-        controller.handle_request(subscribe_dir2).wait()
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

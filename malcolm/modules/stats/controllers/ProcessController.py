@@ -1,18 +1,17 @@
 from malcolm.modules import builtin
 
 from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, \
-    ProcessStartHook, ProcessStopHook
+    ProcessStartHook, ProcessStopHook, Subscribe
+from malcolm.modules.builtin.util import LayoutTable
 from malcolm import version
 from malcolm.modules.ca.util import catools
-from malcolm.modules.stats.blocks import ioc_status_block
-from malcolm.modules.web.controllers import HTTPServerComms
-from malcolm.modules.pva.controllers import PvaServerComms
-from malcolm.modules.pandablocks.controllers import PandAManagerController
+from malcolm.modules.ca.parts import CAActionPart, CAStringPart
+from malcolm.modules.stats.parts import IocStatusPart
 
 import os
 import subprocess
 import re
-from annotypes import Anno
+from annotypes import Anno, add_call_types
 import cothread
 
 
@@ -166,8 +165,6 @@ class ProcessController(builtin.controllers.ManagerController):
         self.field_registry.add_attribute_model("hostname", self.hostname)
         self.field_registry.add_attribute_model("kernel", self.kernel)
         self.field_registry.add_attribute_model("pid", self.pid)
-        if self.parse_iocs:
-            self.field_registry.add_method_model(self.showValidIocs)
 
         if self.stats["yaml_ver"] in ["Work", "unknown"]:
             message = "Non-prod YAML config"
@@ -178,18 +175,38 @@ class ProcessController(builtin.controllers.ManagerController):
 
         self.register_hooked(ProcessStopHook, self.stop_ioc)
 
-    def setup(self, process):
-        super(ProcessController, self).setup(process)
-        if self.parse_iocs:
-            assert self.bl_prefix != "",\
-                'parse_iocs set to True but no bl_prefix given'
-            self.get_ioc_list('/dls_sw/prod/etc/redirector/redirect_table',
-                              self.bl_prefix)
-
     def init(self):
         if self.ioc is None:
             self.ioc = start_ioc(self.stats, self.prefix)
+        if self.parse_iocs:
+            assert self.bl_prefix != "", \
+                'parse_iocs set to True but no bl_prefix given'
+            self.get_ioc_list('/dls_sw/prod/etc/redirector/redirect_table',
+                              self.bl_prefix)
         super(ProcessController, self).init()
+
+    def set_default_layout(self):
+        name = []
+        mri = []
+        x = []
+        y = []
+        visible = []
+        for part_name in self.parts.keys():
+            if isinstance(self.parts[part_name], builtin.parts.ChildPart):
+                part_mri = self.parts[part_name].mri
+                if part_mri in self.ioc_blocks.keys():
+                    visible += [self.ioc_blocks[
+                                     part_mri].controller.health.alarm.severity != \
+                                 AlarmSeverity.INVALID_ALARM]
+
+                else:
+                    visible += [True]
+                x += [0]
+                y += [0]
+                name += [part_name]
+                mri += [part_mri]
+
+        self.set_layout(LayoutTable(name, mri, x, y, visible))
 
     def stop_ioc(self):
         if self.ioc is not None:
@@ -200,9 +217,9 @@ class ProcessController(builtin.controllers.ManagerController):
         self.bl_iocs = parse_redirect_table(file_path, bl_prefix)
         for ioc in self.bl_iocs:
             ioc = ioc[:-1]
-            block = ioc_status_block(ioc)
-            self.ioc_blocks[ioc + ':STATUS'] = block[0]
-            self.process.add_controller(block[0])
+            self.ioc_blocks[ioc + ':STATUS'] = IocStatusBlock(ioc)
+            self.process.add_controller(
+                self.ioc_blocks[ioc + ':STATUS'].controller)
             self.add_part(
                 builtin.parts.ChildPart(name=ioc, mri=ioc + ":STATUS"))
 
@@ -222,18 +239,105 @@ class ProcessController(builtin.controllers.ManagerController):
     #         if isinstance(controller, PandAManagerController):
     #             num_pandas += 1
     #             self.add_part(
-    #                 builtin.parts.ChildPart(name="PandA-%02d" % num_pandas, mri=controller.mri))
+    #                 builtin.parts.ChildPart(name="PandA-%02d" % num_pandas,
+    #                                         mri=controller.mri))
     #     self.set_layout(builtin.util.LayoutTable([], [], [], [], []))
 
-    def showValidIocs(self):
-        layout = self.layout.value
-        visible = list(layout.visible)
-        for index, mri in enumerate(layout.mri):
-            if mri in self.ioc_blocks.keys():
-                visible[index] = self.ioc_blocks[mri].health.alarm.severity !=\
-                                AlarmSeverity.INVALID_ALARM
-        layout.visible = visible
-        self.layout.set_value(layout)
 
+class IocStatusBlock(object):
+    def __init__(self, ioc):
+        self.ioc = ioc
+        self.mri = (ioc + ":STATUS")
+        self.controller = builtin.controllers.StatefulController(self.mri)
+        self.dirParsePart = IocStatusPart(name=ioc)
+        self.dirParsePart.register_hooked(builtin.hooks.InitHook,
+                                          self.init_handler)
+        self.controller.add_part(self.dirParsePart)
 
+        self.host_arch = CAStringPart(
+            name="hostArch",
+            description="Host Architecture",
+            rbv=(ioc + ":KERNEL_VERS"),
+            throw=False)
 
+        self.controller.add_part(self.host_arch)
+
+        self.controller.add_part(CAStringPart(
+            name="currentVersion",
+            description="IOC version",
+            rbv=(ioc + ":DLSVER"),
+            throw=False))
+
+        self.controller.add_part(CAStringPart(
+            name="iocDirectory1",
+            description="IOC directory",
+            rbv=(ioc + ":APP_DIR1"),
+            throw=False,
+            widget=Widget.NONE))
+
+        self.controller.add_part(CAStringPart(
+            name="iocDirectory2",
+            description="IOC directory",
+            rbv=(ioc + ":APP_DIR2"),
+            throw=False,
+            widget=Widget.NONE))
+
+        self.controller.add_part(CAStringPart(
+            name="epicsVersion",
+            description="EPICS version",
+            rbv=(ioc + ":EPICS_VERS"),
+            throw=False))
+
+    @add_call_types
+    def init_handler(self):
+        # type: () -> None
+        print "init IOC %s" % self.ioc
+        cothread.Spawn(self.check_pvs_and_subscribe)
+
+    def check_pvs_and_subscribe(self):
+        cothread.Yield()
+        pv_test = catools.caget(
+            [self.ioc + ":SRSTATUS", self.ioc + ":RESTART"],
+            throw=False)
+
+        if pv_test[0].ok:
+            self.dirParsePart.autosave_pv = CAStringPart("autosaveStatus",
+                                                         description="status of Autosave",
+                                                         rbv=(self.ioc + ":SRSTATUS"))
+            self.controller.add_part(self.dirParsePart.autosave_pv,
+                                     add_fields=True)
+
+        if pv_test[1].ok:
+            self.dirParsePart.restart_pv = CAActionPart("restartIoc",
+                                                        description="restart IOC via procServ",
+                                                        pv=(self.ioc + ":RESTART"))
+            self.controller.add_part(self.dirParsePart.restart_pv,
+                                     add_fields=True)
+        arch = self.host_arch.caa.attr.value
+        if arch.startswith("WIND"):
+            self.controller.add_part(builtin.parts.IconPart(
+                svg=(os.path.split(__file__)[0] + "/../icons/vx_epics.svg")),
+                add_fields=True)
+        elif arch.startswith("Linux"):
+            self.controller.add_part(builtin.parts.IconPart(
+                svg=(os.path.split(__file__)[0] + "/../icons/linux_epics.svg")),
+                add_fields=True)
+        elif arch.startswith("Windows"):
+            self.controller.add_part(builtin.parts.IconPart(
+                svg=(os.path.split(__file__)[0] + "/../icons/win_epics.svg")),
+                add_fields=True)
+        else:
+            self.controller.add_part(builtin.parts.IconPart(
+                svg=(os.path.split(__file__)[0] + "/../icons/epics-logo.svg")),
+                add_fields=True)
+
+        subscribe_ver = Subscribe(path=[self.mri, "currentVersion"])
+        subscribe_ver.set_callback(self.dirParsePart.version_updated)
+        self.controller.handle_request(subscribe_ver).wait()
+        subscribe_dir1 = Subscribe(path=[self.mri, "iocDirectory1"])
+        subscribe_dir1.set_callback(self.dirParsePart.set_dir1)
+        self.controller.handle_request(subscribe_dir1).wait()
+        subscribe_dir2 = Subscribe(path=[self.mri, "iocDirectory2"])
+        subscribe_dir2.set_callback(self.dirParsePart.set_dir2)
+        self.controller.handle_request(subscribe_dir2).wait()
+        print "pvs added for %s" % self.ioc

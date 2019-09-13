@@ -1,5 +1,5 @@
 from .ProcessController import ProcessController, parse_yaml_version, \
-    parse_redirect_table
+    parse_redirect_table, IocStatusBlock
 
 # Expose a nice namespace
 from malcolm.core import submodule_all
