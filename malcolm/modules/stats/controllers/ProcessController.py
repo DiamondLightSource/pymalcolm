@@ -291,7 +291,6 @@ class IocStatusBlock(object):
     @add_call_types
     def init_handler(self):
         # type: () -> None
-        print "init IOC %s" % self.ioc
         cothread.Spawn(self.check_pvs_and_subscribe)
 
     def check_pvs_and_subscribe(self):
@@ -340,4 +339,3 @@ class IocStatusBlock(object):
         subscribe_dir2 = Subscribe(path=[self.mri, "iocDirectory2"])
         subscribe_dir2.set_callback(self.dirParsePart.set_dir2)
         self.controller.handle_request(subscribe_dir2).wait()
-        print "pvs added for %s" % self.ioc
