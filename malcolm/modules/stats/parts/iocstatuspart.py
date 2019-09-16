@@ -31,8 +31,8 @@ class IocStatusPart(Part):
         self.dependencies = TableMeta("Modules which this IOC depends on",
                                       tags=[Widget.TABLE.tag()],
                                       writeable=False,
-                                      elements=elements).create_attribute_model(
-            {"module": [], "path": []})
+                                      elements=elements)\
+            .create_attribute_model({"module": [], "path": []})
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -109,5 +109,6 @@ class IocStatusPart(Part):
     #     with open(db_path, 'r') as db_file:
     #         db = db_file.read()
     #     records = re.findall("record\(([^)]+)\)", db)
-    #     self.dbl = [record.split(',')[-1].replace('"', '').strip() for record in records]
+    #     self.dbl = [record.split(',')[-1].replace('"', '')
+    #                     .strip() for record in records]
     #     self.pvs.set_value(self.dbl)

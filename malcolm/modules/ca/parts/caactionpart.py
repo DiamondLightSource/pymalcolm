@@ -58,7 +58,9 @@ class CAActionPart(Part):
         registrar.hook((builtin.hooks.InitHook,
                         builtin.hooks.ResetHook), self.connect_pvs)
         # Methods
-        self.method = registrar.add_method_model(self.caput, self.name, self.description)
+        self.method = registrar.add_method_model(self.caput,
+                                                 self.name,
+                                                 self.description)
 
     def connect_pvs(self):
         pvs = [self.pv]
@@ -70,7 +72,8 @@ class CAActionPart(Part):
         # check connection is ok
         if self.throw:
             for i, v in enumerate(ca_values):
-                assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
+                assert v.ok, "CA connect failed with %s" %\
+                             v.state_strings[v.state]
 
     def wait_for_good_status(self, deadline):
         q = Queue()

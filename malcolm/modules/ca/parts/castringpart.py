@@ -23,7 +23,8 @@ class CAStringPart(Part):
         super(CAStringPart, self).__init__(name)
         self.caa = util.CAAttribute(
             StringMeta(description), util.catools.DBR_STRING, pv, rbv,
-            rbv_suffix, min_delta, timeout, sink_port, widget, group, config, throw=throw)
+            rbv_suffix, min_delta, timeout,
+            sink_port, widget, group, config, throw=throw)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
