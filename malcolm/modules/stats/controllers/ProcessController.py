@@ -195,9 +195,9 @@ class ProcessController(builtin.controllers.ManagerController):
             if isinstance(self.parts[part_name], builtin.parts.ChildPart):
                 part_mri = self.parts[part_name].mri
                 if part_mri in self.ioc_blocks.keys():
-                    visible += [self.ioc_blocks[
-                                     part_mri].controller.health.alarm.severity != \
-                                 AlarmSeverity.INVALID_ALARM]
+                    visible += [self.ioc_blocks[part_mri]
+                                    .controller.health.alarm.severity !=
+                                AlarmSeverity.INVALID_ALARM]
 
                 else:
                     visible += [True]
@@ -300,16 +300,18 @@ class IocStatusBlock(object):
             throw=False)
 
         if pv_test[0].ok:
-            self.dirParsePart.autosave_pv = CAStringPart("autosaveStatus",
-                                                         description="status of Autosave",
-                                                         rbv=(self.ioc + ":SRSTATUS"))
+            part = CAStringPart("autosaveStatus",
+                                description="status of Autosave",
+                                rbv=(self.ioc + ":SRSTATUS"))
+            self.dirParsePart.autosave_pv = part
             self.controller.add_part(self.dirParsePart.autosave_pv,
                                      add_fields=True)
 
         if pv_test[1].ok:
-            self.dirParsePart.restart_pv = CAActionPart("restartIoc",
-                                                        description="restart IOC via procServ",
-                                                        pv=(self.ioc + ":RESTART"))
+            part = CAActionPart("restartIoc",
+                                description="restart IOC via procServ",
+                                pv=(self.ioc + ":RESTART"))
+            self.dirParsePart.restart_pv = part
             self.controller.add_part(self.dirParsePart.restart_pv,
                                      add_fields=True)
         arch = self.host_arch.caa.attr.value
