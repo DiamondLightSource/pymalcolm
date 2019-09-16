@@ -30,7 +30,7 @@ install_requires = [
     # External
     "enum34==1.1.6",
     "tornado>=5.1.1",
-    "numpy==1.17.2",
+    "numpy==1.16.4",
     "ruamel.yaml==0.15.97",
     "h5py==2.9.0",
     "p4p==3.3.2",
