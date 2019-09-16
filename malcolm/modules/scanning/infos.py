@@ -115,3 +115,15 @@ class MotionTriggerInfo(Info):
     def __init__(self, trigger):
         # type: (MotionTrigger) -> None
         self.trigger = trigger
+
+
+class DetectorMutiframeInfo(Info):
+    """Declare that we are able to produce mutiple frames per point for this
+    detector
+
+    Args:
+        mri: The mri of the detector in the DetectorTable
+    """
+    def __init__(self, mri):
+        # type: (str) -> None
+        self.mri = mri

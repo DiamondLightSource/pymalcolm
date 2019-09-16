@@ -116,7 +116,7 @@ class Process(Loggable):
                 is_child.add(part_mri)
                 if part_mri in tree:
                     children[part_mri] = tree[part_mri]
-                elif part_mri:
+                elif part_mri in self._controllers:
                     children[part_mri] = add_controller(
                         self._controllers[part_mri])
             return tree[controller.mri]

@@ -7,13 +7,14 @@ from annotypes import add_call_types, Anno
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Part, Process, Context, APartName, PartRegistrar, \
-    NumberMeta, BadValueError
+    NumberMeta, BadValueError, AMri
 from malcolm.modules.builtin.hooks import AContext
 from malcolm.modules.builtin.util import set_tags
+from malcolm.modules.scanning.infos import DetectorMutiframeInfo
 from malcolm.modules.scanning.parts import DetectorChildPart, DatasetTablePart
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.hooks import AFileDir, AFormatName, \
-    AFileTemplate, RunHook, ConfigureHook
+    AFileTemplate, RunHook, ConfigureHook, ReportStatusHook
 from malcolm.modules.scanning.util import DetectorTable
 
 with Anno("How long to wait"):
@@ -54,6 +55,23 @@ class WaitingPart(Part):
         context.sleep(self.attr.value)
 
 
+class MaybeMultiPart(Part):
+    def __init__(self, mri):
+        # type: (AMri) -> None
+        super(MaybeMultiPart, self).__init__("MULTI")
+        self.mri = mri
+        self.active = False
+
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        registrar.hook(ReportStatusHook, self.report_status)
+
+    @add_call_types
+    def report_status(self):
+        if self.active:
+            return DetectorMutiframeInfo(self.mri)
+
+
 DESIGN_PATH = os.path.join(os.path.dirname(__file__), "designs")
 
 
@@ -89,6 +107,8 @@ class TestDetectorChildPart(unittest.TestCase):
             DetectorChildPart(name="FAST", mri="fast", initial_visibility=True))
         c3.add_part(
             DetectorChildPart(name="SLOW", mri="slow", initial_visibility=True))
+        self.multi = MaybeMultiPart("fast")
+        c3.add_part(self.multi)
         self.p.add_controller(c3)
 
         # Some blocks to interface to them
@@ -144,7 +164,19 @@ class TestDetectorChildPart(unittest.TestCase):
         assert self.bs.state.value == "Aborted"
         assert self.bf.state.value == "Aborted"
 
+    def test_multi_frame_no_infos_fails(self):
+        with self.assertRaises(AssertionError) as cm:
+            self.b.configure(
+                self.make_generator(), self.tmpdir,
+                detectors=DetectorTable.from_rows([
+                    ("SLOW", "slow", 0.0, 1),
+                    ("FAST", "fast", 0.0, 5)
+                ])
+            )
+        assert str(cm.exception) == "There are no trigger multipliers setup for Detector 'FAST' so framesPerStep can only be 0 or 1 for this row in the detectors table"
+
     def test_multi_frame_fast_det(self):
+        self.multi.active = True
         self.b.configure(
             self.make_generator(), self.tmpdir,
             detectors=DetectorTable.from_rows([
@@ -152,6 +184,15 @@ class TestDetectorChildPart(unittest.TestCase):
                 ("FAST", "fast", 0.0, 5)
             ])
         )
+        assert self.b.completedSteps.value == 0
+        assert self.b.totalSteps.value == 6
+        assert self.b.configuredSteps.value == 6
+        assert self.bs.completedSteps.value == 0
+        assert self.bs.totalSteps.value == 6
+        assert self.bs.configuredSteps.value == 6
+        assert self.bf.completedSteps.value == 0
+        assert self.bf.totalSteps.value == 30
+        assert self.bf.configuredSteps.value == 30
 
     def test_bad_det_mri(self):
         # Send mismatching rows

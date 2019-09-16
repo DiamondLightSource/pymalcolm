@@ -4,11 +4,11 @@ from scanpointgenerator import StaticPointGenerator, SquashingExcluder, \
 
 from malcolm.core import BadValueError, APartName, Future, Put, Request
 from malcolm.modules import builtin
-from ..infos import DatasetProducedInfo
+from ..infos import DatasetProducedInfo, DetectorMutiframeInfo
 from ..hooks import ConfigureHook, PostRunArmedHook, \
     SeekHook, RunHook, ResumeHook, ACompletedSteps, AContext, ValidateHook, \
     UParameterTweakInfos, PostRunReadyHook, AbortHook, PreConfigureHook, \
-    AGenerator, AAxesToMove, UInfos, AFileDir, AFileTemplate
+    AGenerator, AAxesToMove, UInfos, AFileDir, AFileTemplate, APartInfo
 from ..infos import ParameterTweakInfo, RunProgressInfo
 from ..util import RunnableStates, DetectorTable
 
@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 with Anno("The detectors that should be active and their exposures"):
     ADetectorTable = DetectorTable
+with Anno("The initial value of FramesPerStep for this detector at configure"):
+    AInitialFramesPerStep = int
 
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
@@ -34,13 +36,13 @@ class DetectorChildPart(builtin.parts.ChildPart):
     def __init__(self,
                  name,  # type: APartName
                  mri,  # type: AMri
-                 initial_visibility=False,
-                 # type: AInitialVisibility
+                 initial_visibility=False,  # type: AInitialVisibility
+                 initial_frames_per_step=1,  # type: AInitialFramesPerStep
                  ):
         # type: (...) -> None
         super(DetectorChildPart, self).__init__(name, mri, initial_visibility)
         # frames per scan step given by the detector table at configure()
-        self.frames_per_step = 0
+        self.frames_per_step = initial_frames_per_step
         # Stored between runs
         self.run_future = None  # type: Future
 
@@ -51,15 +53,14 @@ class DetectorChildPart(builtin.parts.ChildPart):
         registrar.hook(PreConfigureHook, self.reload)
         registrar.hook(ConfigureHook, self.configure)
         registrar.hook((RunHook, ResumeHook), self.run)
-        registrar.hook((PostRunArmedHook, PostRunReadyHook),
-                             self.post_run)
+        registrar.hook((PostRunArmedHook, PostRunReadyHook), self.post_run)
         registrar.hook(SeekHook, self.seek)
         registrar.hook(AbortHook, self.abort)
         # Tell the controller to expose some extra configure parameters
         configure_info = ConfigureHook.create_info(self.configure)
         # Override the detector table defaults and writeable
         configure_info.defaults["detectors"] = DetectorTable.from_rows(
-            [(self.name, self.mri, 0.0, 1)])
+            [(self.name, self.mri, 0.0, self.frames_per_step)])
         columns = configure_info.metas["detectors"].elements
         columns["name"].set_writeable(False)
         columns["mri"].set_writeable(False)
@@ -88,6 +89,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
     @add_call_types
     def validate(self,
                  context,  # type: AContext
+                 part_info,  # type: APartInfo
                  generator,  # type: AGenerator
                  fileDir,  # type: AFileDir
                  detectors=None,  # type: ADetectorTable
@@ -103,7 +105,12 @@ class DetectorChildPart(builtin.parts.ChildPart):
             return
         if frames_per_step > 1:
             # Check something else is multiplying out triggers
-            assert False, "Don't support multiple frames per step yet"
+            infos = [i for i in DetectorMutiframeInfo.filter_values(part_info)
+                     if i.mri == self.mri]
+            assert infos, \
+                "There are no trigger multipliers setup for Detector '%s' " \
+                "so framesPerStep can only be 0 or 1 for this row in the " \
+                "detectors table" % self.name
         child = context.block_view(self.mri)
         # This is a Serializable with the correct entries
         try:
