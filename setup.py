@@ -27,10 +27,22 @@ def get_version():
                            .format(VERSION_FILE))
 
 install_requires = [
-    "enum34==1.1.6", "numpy==1.16.4", "annotypes==0.20", "cothread==2.16",
-    "ruamel.yaml==0.15.97", "h5py==2.9.0", "pygelf==0.3.5",
-    "scanpointgenerator==2.3", "tornado>=5.1.1", "vdsgen==0.5.2",
-    "p4p==3.3.0", "plop==0.3.0"]
+    # External
+    "enum34==1.1.6",
+    "tornado>=5.1.1",
+    "numpy==1.17.2",
+    "ruamel.yaml==0.15.97",
+    "h5py==2.9.0",
+    "p4p==3.3.2",
+    "pygelf==0.3.5",
+    "plop==0.3.0",
+    "typing==3.6.1",
+    # DLS developed
+    "annotypes==0.20",
+    "cothread==2.16",
+    "scanpointgenerator==2.3",
+    "vdsgen==0.5.2",
+    ]
 
 tests_require = [
     'mock>=2.0.0', 'nose>=1.3.0', 'coverage>=3.7.1', 'pytest>=3.10.1',
