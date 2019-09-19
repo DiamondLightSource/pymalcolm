@@ -15,9 +15,13 @@
     description: If non-zero, check any client is in the same subnet as the host
     default: 1
 
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
 - stats.controllers.ProcessController:
     mri: $(mri_prefix):STATS
-    config_dir: /tmp
+    config_dir: $(config_dir)
     prefix: $(pv_prefix)
     bl_prefix: $(bl_prefix)
     parse_iocs: True

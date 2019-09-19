@@ -144,13 +144,18 @@ class ManagerController(StatefulController):
         self.set_writeable_in(
             self.field_registry.add_method_model(self.save), ss.READY)
 
-    def _run_git_cmd(self, *args):
+    def _run_git_cmd(self, *args, **kwargs):
         # Run git command, don't care if it fails, logging the output
-        if self.use_git and os.path.isdir(
-                os.path.join(self.config_dir, ".git")):
+        if (self.use_git and os.path.isdir(
+                os.path.join(self.config_dir, ".git"))) or\
+           "dir" in kwargs.keys():
             try:
+                cwd = self.config_dir
+                if "dir" in kwargs.keys():
+                    cwd = kwargs["dir"]
+                print
                 output = subprocess.check_output(
-                    ("git",) + self.git_config + args, cwd=self.config_dir)
+                    ("git",) + self.git_config + args, cwd=cwd)
             except subprocess.CalledProcessError as e:
                 self.log.warning("Git command failed: %s\n%s", e, e.output)
                 return None

@@ -2,7 +2,7 @@ import unittest
 
 from malcolm.core import Process
 from malcolm.modules.stats.controllers import ProcessController, \
-    parse_yaml_version, parse_redirect_table
+    parse_redirect_table
 
 from cothread import catools
 import time
@@ -55,18 +55,21 @@ class TestParseYamlVersion(unittest.TestCase):
         os.mkdir(self.testArea)
         self.cwd = os.getcwd()
 
+        self.obj = ProcessController("", "", "/tmp")
+
     def tearDown(self):
         os.chdir(self.cwd)
+        print(['rm', '-rf', self.testArea])
         subprocess.call(['rm', '-rf', self.testArea])
         os.rmdir('/tmp/prod')
 
     def test_simple_path_parse(self):
-        assert parse_yaml_version('/not/work/or/prod/something.yaml',
+        assert self.obj.parse_yaml_version('/not/work/or/prod/something.yaml',
                                   '/tmp/work/',
                                   '/tmp/prod') == 'unknown'
-        assert parse_yaml_version('/tmp/work/something.yaml', '/tmp/work/',
+        assert self.obj.parse_yaml_version('/tmp/work/something.yaml', '/tmp/work/',
                                   '/tmp/prod') == 'Work'
-        assert parse_yaml_version(self.testArea + '/something.yaml',
+        assert self.obj.parse_yaml_version(self.testArea + '/something.yaml',
                                   '/tmp/work/',
                                   self.testArea) == 'Prod (unknown version)'
 
@@ -82,7 +85,7 @@ class TestParseYamlVersion(unittest.TestCase):
         subprocess.call(['/usr/bin/git', 'add', '*'])
         subprocess.call(['/usr/bin/git', 'commit', '-m', 'testing'])
         subprocess.call(['/usr/bin/git', 'tag', 'TEST_VER'])
-        assert parse_yaml_version(self.testArea + '/something.yaml',
+        assert self.obj.parse_yaml_version(self.testArea + '/something.yaml',
                                   '/tmp/work/',
                                   self.testArea) == 'TEST_VER'
 

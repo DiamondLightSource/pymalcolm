@@ -1,5 +1,6 @@
-- stats.blocks.stats_block_w_servers:
+- stats.blocks.system_block:
     mri_prefix: TS01P-ML-MALC-01
     bl_prefix: BL18B
     pv_prefix: TS01P-ML-MALC-01
     subnet_validation: 0
+    config_dir: /tmp

@@ -1,4 +1,4 @@
-from .ProcessController import ProcessController, parse_yaml_version, \
+from .ProcessController import ProcessController,\
     parse_redirect_table, IocStatusBlock
 
 # Expose a nice namespace

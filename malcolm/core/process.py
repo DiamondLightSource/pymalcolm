@@ -234,6 +234,25 @@ class Process(Loggable):
             if self.state == STARTED and should_publish:
                 self._publish_controllers(timeout)
 
+    def add_controllers(self, controllers, timeout=None):
+        # type: (List[Controller], float) -> None
+        """Add many controllers to be hosted by this process
+
+        Args:
+            controllers (List[Controller]): List of its controller
+            timeout (float): Maximum amount of time to wait for each spawned
+                object. None means forever
+        """
+        for controller in controllers:
+            assert controller.mri not in self._controllers, \
+                "Controller already exists for %s" % controller.mri
+            self._controllers[controller.mri] = controller
+            controller.setup(self)
+        if self.state:
+            should_publish = self._start_controllers(controllers, timeout)
+            if self.state == STARTED and should_publish:
+                self._publish_controllers(timeout)
+
     @property
     def mri_list(self):
         # type: () -> List[str]

@@ -19,8 +19,6 @@ with Anno("Wait for caput callback?"):
     AWait = bool
 with Anno("How long to wait for status_pv == good_status before returning"):
     AStatusTimeout = int
-with Anno("Throw an error on failed connection?"):
-    AThrow = bool
 
 class CAActionPart(Part):
     """Group a number of PVs together that represent a method like acquire()
@@ -36,7 +34,7 @@ class CAActionPart(Part):
                  message_pv="",  # type: AMessagePv
                  value=1,  # type: AValue
                  wait=True,  # type: AWait
-                 throw=True,  # type: AThrow
+                 throw=True,  # type: util.AThrow
                  ):
         # type: (...) -> None
         super(CAActionPart, self).__init__(name)

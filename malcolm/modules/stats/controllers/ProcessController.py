@@ -33,7 +33,7 @@ def start_ioc(stats, prefix):
     try:
         epics_base = os.environ["EPICS_BASE"]
     except KeyError:
-        epics_base = "/dls_sw/epics/R3.14.12.7/base"
+        raise Exception("EPICS base not defined in environment")
     softIoc_bin = epics_base + "/bin/linux-x86_64/softIoc"
     for key, value in stats.items():
         db_macros += ",%s='%s'" % (key, value)
@@ -44,25 +44,6 @@ def start_ioc(stats, prefix):
         stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     cothread.Spawn(await_ioc_start, stats, prefix)
     return ioc
-
-
-def parse_yaml_version(file_path, work_area, prod_area):
-    ver = "unknown"
-    if file_path.startswith(work_area):
-        ver = "Work"
-    elif file_path.startswith(prod_area):
-        cwd = os.getcwd()
-        os.chdir(os.path.split(file_path)[0])
-        try:
-            ver = subprocess.check_output(
-                ['/usr/bin/git', 'describe',
-                 '--tags', '--exact-match']).strip(b'\n').decode("utf-8")
-        except subprocess.CalledProcessError:
-            ver = "Prod (unknown version)"
-            print("Git error when parsing yaml version")
-
-        os.chdir(cwd)
-    return ver
 
 
 with Anno("prefix for self.stats PVs"):
@@ -78,6 +59,8 @@ def parse_redirect_table(file_path, bl_prefix):
         table = redirector.read()
         bl_iocs = re.findall(bl_prefix + "-[A-Z][A-Z]-IOC-[0-9][0-9] ",
                              table)
+    for ind, ioc in enumerate(bl_iocs):
+        bl_iocs[ind] = ioc.strip()
     return bl_iocs
 
 
@@ -113,7 +96,7 @@ class ProcessController(builtin.controllers.ManagerController):
         else:
             self.stats["yaml_path"] = os.path.join(cwd, sys_call[2])
 
-        self.stats["yaml_ver"] = parse_yaml_version(self.stats["yaml_path"],
+        self.stats["yaml_ver"] = self.parse_yaml_version(self.stats["yaml_path"],
                                                     '/dls_sw/work',
                                                     '/dls_sw/prod')
 
@@ -215,17 +198,32 @@ class ProcessController(builtin.controllers.ManagerController):
 
     def get_ioc_list(self, file_path, bl_prefix):
         self.bl_iocs = parse_redirect_table(file_path, bl_prefix)
+        ioc_controllers = []
         for ioc in self.bl_iocs:
-            ioc = ioc[:-1]
-            self.ioc_blocks[ioc + ':STATUS'] = IocStatusBlock(ioc)
-            self.process.add_controller(
-                self.ioc_blocks[ioc + ':STATUS'].controller)
+            block = IocStatusBlock(ioc)
+            self.ioc_blocks[ioc + ':STATUS'] = block
+            ioc_controllers += [block.controller]
+        self.process.add_controllers(ioc_controllers)
+        for ioc in self.bl_iocs:
             self.add_part(
                 builtin.parts.ChildPart(name=ioc, mri=ioc + ":STATUS"))
+
+    def parse_yaml_version(self, file_path, work_area, prod_area):
+        ver = "unknown"
+        if file_path.startswith(work_area):
+            ver = "Work"
+        elif file_path.startswith(prod_area):
+            ver = self._run_git_cmd('describe', '--tags', '--exact-match',
+                                    dir=os.path.split(file_path)[0])
+            if ver is None:
+                return "Prod (unknown version)"
+            ver = ver.strip(b'\n').decode("utf-8")
+        return ver
 
 
 class IocStatusBlock(object):
     def __init__(self, ioc):
+        self.pvs_checked = False
         self.ioc = ioc
         self.mri = (ioc + ":STATUS")
         self.controller = builtin.controllers.StatefulController(self.mri)
@@ -268,13 +266,13 @@ class IocStatusBlock(object):
             rbv=(ioc + ":EPICS_VERS"),
             throw=False))
 
+
     @add_call_types
     def init_handler(self):
         # type: () -> None
         cothread.Spawn(self.check_pvs_and_subscribe)
 
     def check_pvs_and_subscribe(self):
-        cothread.Yield()
         pv_test = catools.caget(
             [self.ioc + ":SRSTATUS", self.ioc + ":RESTART"],
             throw=False)
@@ -286,7 +284,6 @@ class IocStatusBlock(object):
             self.dirParsePart.autosave_pv = part
             self.controller.add_part(self.dirParsePart.autosave_pv,
                                      add_fields=True)
-
         if pv_test[1].ok:
             part = CAActionPart("restartIoc",
                                 description="restart IOC via procServ",
