@@ -101,14 +101,3 @@ class IocStatusPart(Part):
                 Alarm(message="reported IOC directory not found",
                       severity=AlarmSeverity.MINOR_ALARM)
             )
-
-    # def parse_db(self, ioc_dir):
-    #     db_path = ioc_dir + '/db/%s_expanded.db' % self.name
-    #     if not os.path.isfile(db_path):
-    #         return
-    #     with open(db_path, 'r') as db_file:
-    #         db = db_file.read()
-    #     records = re.findall("record\(([^)]+)\)", db)
-    #     self.dbl = [record.split(',')[-1].replace('"', '')
-    #                     .strip() for record in records]
-    #     self.pvs.set_value(self.dbl)
