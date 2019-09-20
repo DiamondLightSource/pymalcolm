@@ -96,9 +96,10 @@ class ProcessController(builtin.controllers.ManagerController):
         else:
             self.stats["yaml_path"] = os.path.join(cwd, sys_call[2])
 
-        self.stats["yaml_ver"] = self.parse_yaml_version(self.stats["yaml_path"],
-                                                    '/dls_sw/work',
-                                                    '/dls_sw/prod')
+        self.stats["yaml_ver"] = self.parse_yaml_version(
+            self.stats["yaml_path"],
+            '/dls_sw/work',
+            '/dls_sw/prod')
 
         if self.stats["pymalcolm_path"].startswith('/dls_sw/prod'):
             self.stats["pymalcolm_ver"] = version.__version__

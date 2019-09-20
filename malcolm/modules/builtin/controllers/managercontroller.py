@@ -153,7 +153,6 @@ class ManagerController(StatefulController):
                 cwd = self.config_dir
                 if "dir" in kwargs.keys():
                     cwd = kwargs["dir"]
-                print
                 output = subprocess.check_output(
                     ("git",) + self.git_config + args, cwd=cwd)
             except subprocess.CalledProcessError as e:
