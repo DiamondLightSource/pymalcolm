@@ -157,6 +157,8 @@ class PandAManagerController(builtin.controllers.ManagerController):
 
     def _make_child_controllers(self):
         self._child_controllers = {}
+        controllers = []
+        child_parts = []
         pos_names = []
         blocks_data = self._client.get_blocks_data()
         for block_rootname, block_data in blocks_data.items():
@@ -175,13 +177,18 @@ class PandAManagerController(builtin.controllers.ManagerController):
                 # Make the child controller and add it to the process
                 controller, child_part = self._make_child_block(
                     block_name, block_data)
-                self.process.add_controller(controller, timeout=5)
+                controllers += [controller]
+                child_parts += [child_part]
                 self._child_controllers[block_name] = controller
                 # If there is only one, make an alias with "1" appended for
                 # *METADATA.LABEL lookup
                 if block_data.number == 1:
                     self._child_controllers[block_name + "1"] = controller
-                self.add_part(child_part)
+
+        self.process.add_controllers(controllers)
+        for part in child_parts:
+            self.add_part(part)
+
 
         # Create the busses from their initial sets of values
         pcap_bit_fields = self._client.get_pcap_bits_fields()
