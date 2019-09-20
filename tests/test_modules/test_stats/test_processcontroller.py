@@ -119,8 +119,8 @@ class TestParseRedirectTable(unittest.TestCase):
         list0 = parse_redirect_table(self.testArea + '/redirect_table', 'TS01I')
         list1 = parse_redirect_table(self.testArea + '/redirect_table', 'ME99P')
         assert len(list0) == 2
-        assert list0[0] == "TS01I-EA-IOC-01 "
-        assert list0[1] == "TS01I-TS-IOC-69 "
+        assert list0[0] == "TS01I-EA-IOC-01"
+        assert list0[1] == "TS01I-TS-IOC-69"
         assert len(list1) == 1
-        assert list1[0] == "ME99P-XX-IOC-99 "
+        assert list1[0] == "ME99P-XX-IOC-99"
 
