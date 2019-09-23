@@ -1,18 +1,18 @@
-from malcolm.modules import builtin
+import os
+import subprocess
+import re
 
+import cothread
+from annotypes import Anno, add_call_types
+
+from malcolm.modules import builtin
 from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, \
     ProcessStartHook, ProcessStopHook, Subscribe
 from malcolm.modules.builtin.util import LayoutTable
 from malcolm import version
 from malcolm.modules.ca.util import catools
 from malcolm.modules.ca.parts import CAActionPart, CAStringPart
-from malcolm.modules.stats.parts import IocStatusPart
-
-import os
-import subprocess
-import re
-from annotypes import Anno, add_call_types
-import cothread
+from malcolm.modules.stats.parts import DirParsePart
 
 
 def await_ioc_start(stats, prefix):
@@ -228,7 +228,7 @@ class IocStatusBlock(object):
         self.ioc = ioc
         self.mri = (ioc + ":STATUS")
         self.controller = builtin.controllers.StatefulController(self.mri)
-        self.dirParsePart = IocStatusPart(name=ioc)
+        self.dirParsePart = DirParsePart(name=ioc)
         self.dirParsePart.register_hooked(builtin.hooks.InitHook,
                                           self.init_handler)
         self.controller.add_part(self.dirParsePart)

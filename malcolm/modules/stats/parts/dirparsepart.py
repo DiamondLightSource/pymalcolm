@@ -1,12 +1,13 @@
+import os
+from collections import OrderedDict
+
 from malcolm.modules.builtin import parts, infos
 from malcolm.core import TableMeta, \
     StringArrayMeta, Widget, PartRegistrar, Part
 from malcolm.core.alarm import AlarmSeverity, Alarm
-import os
-from collections import OrderedDict
 
 
-class IocStatusPart(Part):
+class DirParsePart(Part):
     registrar = None
     ioc_prod_root = ''
     dls_version = None
@@ -14,7 +15,7 @@ class IocStatusPart(Part):
 
     def __init__(self, name):
         # type: (parts.APartName) -> None
-        super(IocStatusPart, self).__init__(name)
+        super(DirParsePart, self).__init__(name)
         # Hooks
         self.dir1 = None
         self.dir2 = None
@@ -36,7 +37,7 @@ class IocStatusPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        super(IocStatusPart, self).setup(registrar)
+        super(DirParsePart, self).setup(registrar)
         registrar.add_attribute_model("dependencies", self.dependencies)
 
     def version_updated(self, update):

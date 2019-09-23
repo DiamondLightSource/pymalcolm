@@ -1,4 +1,4 @@
-from .iocstatuspart import IocStatusPart
+from .dirparsepart import DirParsePart
 
 # Expose a nice namespace
 from malcolm.core import submodule_all
