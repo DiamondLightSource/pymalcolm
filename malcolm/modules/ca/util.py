@@ -293,6 +293,6 @@ class WaveformTableAttribute(CABase):
 def assert_connected(ca_values, throw=False):
     # check connection is ok
     if throw:
-        for i, v in enumerate(ca_values):
+        for v in ca_values:
             assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
     return ca_values

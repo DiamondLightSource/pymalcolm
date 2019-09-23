@@ -69,7 +69,7 @@ class CAActionPart(Part):
         ca_values = util.catools.caget(pvs, throw=self.throw)
         # check connection is ok
         if self.throw:
-            for i, v in enumerate(ca_values):
+            for v in ca_values:
                 assert v.ok, "CA connect failed with %s" %\
                              v.state_strings[v.state]
 
