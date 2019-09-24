@@ -1,11 +1,15 @@
 import os
 from collections import OrderedDict
 
+from annotypes import Anno
+
 from malcolm.modules.builtin import parts, infos
 from malcolm.core import TableMeta, \
     StringArrayMeta, Widget, PartRegistrar, Part
 from malcolm.core.alarm import AlarmSeverity, Alarm
 
+with Anno("is procserv running for this IOC?"):
+    AHasProcserv = bool
 
 class DirParsePart(Part):
     registrar = None
@@ -13,15 +17,14 @@ class DirParsePart(Part):
     dls_version = None
     # dbl = []
 
-    def __init__(self, name):
-        # type: (parts.APartName) -> None
+    def __init__(self, name, has_procserv):
+        # type: (parts.APartName, AHasProcserv) -> None
         super(DirParsePart, self).__init__(name)
         # Hooks
         self.dir1 = None
         self.dir2 = None
         self.dir = ""
-        self.autosave_pv = None
-        self.restart_pv = None
+        self.has_procserv = has_procserv
 
         elements = OrderedDict()
         elements["module"] = StringArrayMeta("Module",
@@ -48,15 +51,15 @@ class DirParsePart(Part):
             alarm = Alarm(message=message, severity=AlarmSeverity.MINOR_ALARM)
             self.registrar.report(infos.HealthInfo(alarm))
         elif update.value["alarm"].severity == AlarmSeverity.UNDEFINED_ALARM:
-            if self.restart_pv is None:
-                message = "neither IOC nor procServ are running"
-                alarm = Alarm(message=message,
-                              severity=AlarmSeverity.INVALID_ALARM)
-                self.registrar.report(infos.HealthInfo(alarm))
-            else:
+            if self.has_procserv:
                 message = "IOC not running (procServ enabled)"
                 alarm = Alarm(message=message,
                               severity=AlarmSeverity.UNDEFINED_ALARM)
+                self.registrar.report(infos.HealthInfo(alarm))                
+            else:
+                message = "neither IOC nor procServ are running"
+                alarm = Alarm(message=message,
+                              severity=AlarmSeverity.INVALID_ALARM)
                 self.registrar.report(infos.HealthInfo(alarm))
 
     def set_dir1(self, update):
