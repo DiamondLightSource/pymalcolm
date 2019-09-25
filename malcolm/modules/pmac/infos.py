@@ -2,6 +2,7 @@
 from __future__ import division
 
 import numpy as np
+import math
 
 from malcolm.core import Info
 
@@ -77,6 +78,33 @@ class MotorInfo(Info):
         tm = dm / vm
         return t1, tm, t2, vm
 
+    @staticmethod
+    def _quantize_hat(t1, tm, t2, v1, v2, d):
+        # quantize the hat's time intervals to the nearest 1 millisecond
+        # this is to avoid points being too close together when we combine
+        # multiple axes' hat profiles (in calculate_profile_from_velocities)
+
+        # first bring all the times up to the nearest integer
+        # (they can't overlap since they are intervals)
+        t1_, tm_, t2_ = math.ceil(t1), math.ceil(tm), math.ceil(t2)
+
+        # next re-calculate vm based on the new 'change of acceleration' times
+        # Do this by inverting the function for area under the graph.
+        # Summing the area of two trapezoids and a rectangle gives:-
+        #  d =
+        #   (v1 + vm) * t1 / 2 +      # 1st trapezoid
+        #   vm * tm +                 # rectangle
+        #   (v2 + vm) * t2 / 2        # 2nd trapezoid
+        # Inverted :-
+        #  vm = (2 * d - v1 * t1_ - v2 * t2_) / (t1_ + 2 * tm_ + t2_)
+        times = t1_ + 2 * tm_ + t2_
+        if times != 0:
+            vm = (2 * d - v1 * t1_ - v2 * t2_) / times
+        else:
+            vm = 0
+
+        return t1_, tm_, t2_, vm
+
     def _make_hat(self, v1, v2, acceleration, distance, min_time):
         """Make a hat that looks like this:
 
@@ -140,6 +168,7 @@ class MotorInfo(Info):
             t2 = self.acceleration_time(vm, v2)
             tm = 0
 
+        t1, tm, t2, vm = self._quantize_hat(t1, tm, t2, v1, v2, distance)
         # Yield the result
         yield t1, vm
         yield tm, vm
