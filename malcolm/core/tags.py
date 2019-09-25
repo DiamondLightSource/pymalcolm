@@ -161,3 +161,8 @@ def method_return_unpacked():
     """
     tag = "method:return:unpacked"
     return tag
+
+def hidden_method():
+    """Hide this method on the GUI"""
+    tag = "method:hidden"
+    return tag

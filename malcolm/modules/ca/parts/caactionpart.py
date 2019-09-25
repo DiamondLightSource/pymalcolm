@@ -2,7 +2,7 @@ import time
 
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, Queue, TimeoutError
+from malcolm.core import Part, PartRegistrar, Queue, TimeoutError, tags
 from malcolm.core.alarm import AlarmSeverity, Alarm
 from malcolm.modules import builtin
 from .. import util
@@ -68,10 +68,20 @@ class CAActionPart(Part):
             pvs.append(self.message_pv)
         ca_values = util.catools.caget(pvs, throw=self.throw)
         # check connection is ok
-        if self.throw:
+        try:
             for v in ca_values:
-                assert v.ok, "CA connect failed with %s" %\
-                             v.state_strings[v.state]
+                if not isinstance(v, util.catools.ca_nothing):
+                    assert v.ok, "CA connect failed with %s" %\
+                                v.state_strings[v.state]
+                else:
+                    print "%s not connected!" % self.pv
+                    raise AssertionError("CA connect failed")
+        except AssertionError as e:
+            if self.throw:
+                raise e
+            else:
+                self.method.meta.set_tags(list(self.method.meta.tags) +
+                                          [tags.hidden_method()])
 
     def wait_for_good_status(self, deadline):
         q = Queue()

@@ -1,4 +1,5 @@
 from .dirparsepart import DirParsePart
+from .iociconpart import IocIconPart
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

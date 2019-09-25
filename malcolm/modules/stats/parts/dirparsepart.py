@@ -3,28 +3,47 @@ from collections import OrderedDict
 
 from annotypes import Anno
 
-from malcolm.modules.builtin import parts, infos
-from malcolm.core import TableMeta, \
+from malcolm.modules.builtin import parts, infos, hooks
+from malcolm.core import TableMeta, StringMeta, \
     StringArrayMeta, Widget, PartRegistrar, Part
 from malcolm.core.alarm import AlarmSeverity, Alarm
+from malcolm.modules import ca
 
-with Anno("is procserv running for this IOC?"):
-    AHasProcserv = bool
+with Anno("name of IOC"):
+    AIoc = str
+
 
 class DirParsePart(Part):
     registrar = None
     ioc_prod_root = ''
     dls_version = None
-    # dbl = []
 
-    def __init__(self, name, has_procserv):
-        # type: (parts.APartName, AHasProcserv) -> None
+    def __init__(self, name, ioc):
+        # type: (parts.APartName, AIoc) -> None
         super(DirParsePart, self).__init__(name)
-        # Hooks
+
+        self.dls_ver_pv = ca.util.CAAttribute(
+            StringMeta("IOC version"), ca.util.catools.DBR_STRING,
+            "", ioc + ":DLSVER", throw=False, callback=self.version_updated)
+        self.dir1_pv = ca.util.CAAttribute(
+            StringMeta("IOC directory pt1"), ca.util.catools.DBR_STRING,
+            "", ioc + ":APP_DIR1", widget=Widget.NONE,
+            throw=False, callback=self.set_dir1)
+        self.dir2_pv = ca.util.CAAttribute(
+                StringMeta("IOC directory pt2"), ca.util.catools.DBR_STRING,
+                "", ioc + ":APP_DIR2", widget=Widget.NONE,
+                throw=False, callback=self.set_dir2)
+
+        self.status_pv = ca.util.CAAttribute(
+            StringMeta("IOC Status"), ca.util.catools.DBR_STRING,
+            "", ioc + ":STATUS",
+            throw=False, callback=self.set_procserv_state)
+
         self.dir1 = None
         self.dir2 = None
         self.dir = ""
-        self.has_procserv = has_procserv
+
+        self.has_procserv = False
 
         elements = OrderedDict()
         elements["module"] = StringArrayMeta("Module",
@@ -41,35 +60,61 @@ class DirParsePart(Part):
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(DirParsePart, self).setup(registrar)
+        registrar.add_attribute_model("dlsVersion", self.dls_ver_pv.attr)
+        registrar.add_attribute_model("dir1", self.dir1_pv.attr)
+        registrar.add_attribute_model("dir2", self.dir2_pv.attr)
+        registrar.add_attribute_model("status", self.status_pv.attr)
         registrar.add_attribute_model("dependencies", self.dependencies)
 
-    def version_updated(self, update):
-        self.dls_version = update.value["value"]
-        if isinstance(update.value["value"], str) and update.value[
-            "value"].lower() == "work":
-            message = "IOC running from work area"
-            alarm = Alarm(message=message, severity=AlarmSeverity.MINOR_ALARM)
-            self.registrar.report(infos.HealthInfo(alarm))
-        elif update.value["alarm"].severity == AlarmSeverity.UNDEFINED_ALARM:
+        self.register_hooked(hooks.DisableHook, self.disconnect)
+        self.register_hooked((hooks.InitHook, hooks.ResetHook), self.reconnect)
+
+    def reconnect(self):
+        self.dls_ver_pv.reconnect()
+        self.dir1_pv.reconnect()
+        self.dir2_pv.reconnect()
+        self.status_pv.reconnect()
+
+    def disconnect(self):
+        self.dls_ver_pv.disconnect()
+        self.dir1_pv.disconnect()
+        self.dir2_pv.disconnect()
+        self.status_pv.disconnect()
+
+    def set_procserv_state(self, value):
+        if value.ok:
+            self.has_procserv = True
+
+    def version_updated(self, value):
+        if value.ok:
+            self.dls_version = value
+            if isinstance(value, str) and value.lower() == "work":
+                message = "IOC running from work area"
+                alarm = Alarm(message=message,
+                              severity=AlarmSeverity.MINOR_ALARM)
+                self.registrar.report(infos.HealthInfo(alarm))
+        else:
             if self.has_procserv:
                 message = "IOC not running (procServ enabled)"
                 alarm = Alarm(message=message,
                               severity=AlarmSeverity.UNDEFINED_ALARM)
-                self.registrar.report(infos.HealthInfo(alarm))                
+                self.registrar.report(infos.HealthInfo(alarm))
             else:
                 message = "neither IOC nor procServ are running"
                 alarm = Alarm(message=message,
                               severity=AlarmSeverity.INVALID_ALARM)
                 self.registrar.report(infos.HealthInfo(alarm))
 
-    def set_dir1(self, update):
-        self.dir1 = update.value["value"]
+    def set_dir1(self, value):
+        if value.ok:
+            self.dir1 = value
         if self.dir1 is not None and self.dir2 is not None:
             self.dir = self.dir1 + self.dir2
             self.parse_release()
 
-    def set_dir2(self, update):
-        self.dir2 = update.value["value"]
+    def set_dir2(self, value):
+        if value.ok:
+            self.dir2 = value
         if self.dir1 is not None and self.dir2 is not None:
             self.dir = self.dir1 + self.dir2
             self.parse_release()

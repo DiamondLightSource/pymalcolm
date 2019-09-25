@@ -1,5 +1,6 @@
 from .ProcessController import ProcessController,\
-    parse_redirect_table, IocStatusThing
+    parse_redirect_table
+from .IocStatusController import IocStatusController
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

@@ -8,7 +8,6 @@ from malcolm.modules import builtin
 
 if TYPE_CHECKING:
     from typing import Callable, Any, Union, Type, Sequence, Optional, List
-
     Hooks = Union[Type[Hook], Sequence[Type[Hook]]]
     ArgsGen = Callable[(), List[str]]
     Register = Callable[(Hooks, Callable, Optional[ArgsGen]), None]
@@ -63,7 +62,8 @@ class CABase(Loggable):
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
                  on_connect=None,  # type: Callable[[Any], None]
-                 throw=True  # type: AThrow
+                 throw=True,  # type: AThrow
+                 callback=None  # type: ACallback
                  ):
         # type: (...) -> None
         self.writeable = writeable
@@ -79,6 +79,7 @@ class CABase(Loggable):
         self.monitor = None
         self._update_after = 0
         self._local_value = None
+        self._user_callback = callback
 
     def disconnect(self):
         if self.monitor is not None:
@@ -92,6 +93,8 @@ class CABase(Loggable):
     def _update_value(self, value):
         # Attribute value might not be raw PV, PV which triggered update is
         # passed as status
+        if self._user_callback is not None:
+            self._user_callback(value)
         if not value.ok:
             self.attr.set_value(
                 self.attr.value, alarm=Alarm.disconnected("PV disconnected"))
@@ -167,7 +170,8 @@ class CAAttribute(CABase):
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
                  on_connect=None,  # type: Callable[[Any], None]
-                 throw=True  # type: AThrow
+                 throw=True,  # type: AThrow
+                 callback=None # type: Callable[[Any], None]
                  ):
         # type: (...) -> None
         self.set_logger(pv=pv, rbv=rbv)
@@ -175,7 +179,7 @@ class CAAttribute(CABase):
         super(CAAttribute, self).__init__(meta, datatype, writeable,
                                           min_delta, timeout,
                                           sink_port, widget, group,
-                                          config, on_connect, throw)
+                                          config, on_connect, throw, callback)
         if not rbv and not pv:
             raise ValueError('Must pass pv or rbv')
         if not rbv:
@@ -222,7 +226,6 @@ class CAAttribute(CABase):
             datatype=self.datatype, throw=self.throw)
         self._update_value(value)
 
-
 class CATable(dict):
     ok = True
     severity = 0
@@ -242,7 +245,8 @@ class WaveformTableAttribute(CABase):
                  config=1,  # type: AConfig
                  limits_from_pv=False,  # type: AGetLimits
                  on_connect=None,  # type: Callable[[Any], None]
-                 throw=True  # type: AThrow
+                 throw=True,  # type: AThrow
+                 callback=None  # type: ACallback
                  ):
         # type: (...) -> None
         logs = {}
@@ -254,7 +258,8 @@ class WaveformTableAttribute(CABase):
         super(WaveformTableAttribute, self).__init__(meta, datatype, writeable,
                                                      min_delta, timeout,
                                                      None, widget,
-                                                     group, config, on_connect)
+                                                     group, config, on_connect,
+                                                     throw, callback)
         if len(pv_list) == 0:
             raise ValueError('Must pass at least one PV')
         self.pv_list = pv_list

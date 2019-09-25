@@ -3,17 +3,18 @@ import subprocess
 import re
 
 import cothread
-from annotypes import Anno, add_call_types
+from annotypes import Anno
 from collections import OrderedDict
 
 from malcolm.modules import builtin
+from malcolm.modules.ca.parts import CAStringPart, CAActionPart
 from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, \
-    ProcessStartHook, ProcessStopHook, Subscribe
+    ProcessStartHook, ProcessStopHook
 from malcolm.modules.builtin.util import LayoutTable
 from malcolm import version
 from malcolm.modules.ca.util import catools
-from malcolm.modules.ca.parts import CAActionPart, CAStringPart
-from malcolm.modules.stats.parts import DirParsePart
+from ..parts.iociconpart import IocIconPart
+from ..parts.dirparsepart import DirParsePart
 
 
 def await_ioc_start(stats, prefix):
@@ -201,14 +202,9 @@ class ProcessController(builtin.controllers.ManagerController):
     def get_ioc_list(self, file_path, bl_prefix):
         self.bl_iocs = parse_redirect_table(file_path, bl_prefix)
         ioc_controllers = []
-        pvs = []
         for ioc in self.bl_iocs:
-            pvs += [ioc + ":SRSTATUS", ioc + ":RESTART"]
-        pv_test = catools.caget(pvs, throw=False)
-        for ind, ioc in enumerate(self.bl_iocs):
-            block = IocStatusThing(ioc, pv_test[2*ind:(2*ind+2)])
-            self.ioc_blocks[ioc + ':STATUS'] = block
-            ioc_controllers += [block.controller]
+            ioc_controller = make_ioc_status(ioc)
+            ioc_controllers += [ioc_controller]
         self.process.add_controllers(ioc_controllers)
         for ioc in self.bl_iocs:
             self.add_part(
@@ -227,93 +223,24 @@ class ProcessController(builtin.controllers.ManagerController):
         return ver
 
 
-class IocStatusThing(object):
-    def __init__(self, ioc, pv_test):
-        self.pvs_checked = False
-        self.ioc = ioc
-        self.mri = (ioc + ":STATUS")
-        self.controller = builtin.controllers.StatefulController(self.mri)
+def make_ioc_status(ioc):
+    controller = builtin.controllers.StatefulController(ioc + ":STATUS")
 
-        self.host_arch = CAStringPart(
-            name="hostArch",
-            description="Host Architecture",
-            rbv=(ioc + ":KERNEL_VERS"),
-            throw=False)
+    controller.add_part(CAStringPart(
+        name="epicsVersion",
+        description="EPICS version",
+        rbv=(ioc + ":EPICS_VERS"),
+        throw=False))
 
-        self.controller.add_part(self.host_arch)
+    controller.add_part(IocIconPart(ioc, (os.path.split(__file__)[0] +
+                                      "/../icons/epics-logo.svg")))
+    controller.add_part(DirParsePart(ioc, ioc))
 
-        self.controller.add_part(CAStringPart(
-            name="currentVersion",
-            description="IOC version",
-            rbv=(ioc + ":DLSVER"),
-            throw=False))
+    controller.add_part(CAActionPart("restartIoc",
+                                     description="restart IOC via procServ",
+                                     pv=(ioc + ":RESTART"), throw=False))
 
-        self.controller.add_part(CAStringPart(
-            name="iocDirectory1",
-            description="IOC directory",
-            rbv=(ioc + ":APP_DIR1"),
-            throw=False,
-            widget=Widget.NONE))
+    return controller
 
-        self.controller.add_part(CAStringPart(
-            name="iocDirectory2",
-            description="IOC directory",
-            rbv=(ioc + ":APP_DIR2"),
-            throw=False,
-            widget=Widget.NONE))
 
-        self.controller.add_part(CAStringPart(
-            name="epicsVersion",
-            description="EPICS version",
-            rbv=(ioc + ":EPICS_VERS"),
-            throw=False))
 
-        self.icon = builtin.parts.IconPart(
-            svg=(os.path.split(__file__)[0] + "/../icons/epics-logo.svg"))
-
-        self.controller.add_part(self.icon)
-
-        if pv_test[0].ok:
-            self.controller.add_part(CAStringPart("autosaveStatus",
-                                description="status of Autosave",
-                                rbv=(self.ioc + ":SRSTATUS")))
-        if pv_test[1].ok:
-            self.controller.add_part(CAActionPart("restartIoc",
-                                description="restart IOC via procServ",
-                                pv=(self.ioc + ":RESTART")))
-            self.dirParsePart = DirParsePart(ioc, True)
-        else:
-            self.dirParsePart = DirParsePart(ioc, False)
-        self.dirParsePart.register_hooked(builtin.hooks.InitHook,
-                                          self.init_handler)
-        self.controller.add_part(self.dirParsePart)
-
-    def update_icon(self, update):
-        arch = update.value["value"]
-        if arch.startswith("WIND"):
-            svg = os.path.split(__file__)[0] + "/../icons/vx_epics.svg"
-        elif arch.startswith("Linux"):
-            svg = os.path.split(__file__)[0] + "/../icons/linux_epics.svg"
-        elif arch.startswith("Windows"):
-            svg = os.path.split(__file__)[0] + "/../icons/win_epics.svg"
-        else:
-            svg = os.path.split(__file__)[0] + "/../icons/epics-logo.svg"
-        with open(svg) as f:
-            svg_text = f.read()
-            self.icon.attr.set_value(svg_text)
-
-    @add_call_types
-    def init_handler(self):
-        # type: () -> None
-        subscribe_ver = Subscribe(path=[self.mri, "currentVersion"])
-        subscribe_ver.set_callback(self.dirParsePart.version_updated)
-        self.controller.handle_request(subscribe_ver).wait()
-        subscribe_dir1 = Subscribe(path=[self.mri, "iocDirectory1"])
-        subscribe_dir1.set_callback(self.dirParsePart.set_dir1)
-        self.controller.handle_request(subscribe_dir1).wait()
-        subscribe_dir2 = Subscribe(path=[self.mri, "iocDirectory2"])
-        subscribe_dir2.set_callback(self.dirParsePart.set_dir2)
-        self.controller.handle_request(subscribe_dir2).wait()
-        subscribe_arch = Subscribe(path=[self.mri, "hostArch"])
-        subscribe_arch.set_callback(self.update_icon)
-        self.controller.handle_request(subscribe_arch).wait()
