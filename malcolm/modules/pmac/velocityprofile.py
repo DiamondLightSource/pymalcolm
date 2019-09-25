@@ -1,6 +1,6 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import math
+
+import numpy as np
 
 HAT = 1
 INVERSE_HAT = 2
@@ -194,25 +194,28 @@ class VelocityProfile:
         d_z3 = z3_height * zones_width / 2
         d_total = d_z1 + d_z2 + d_z3
         assert np.isclose(d_total, self.d_peak - self.d_trough), \
-                "Distance calculation is incorrect, check the math"
+            "Distance calculation is incorrect, check the math"
 
         # find out which zone d is in and then determine how far into that
         # zone vm needs to extend to get the correct d. For each calculation
         # more_d is the difference between distance described by the lower
         # zones and the target distance
-        if self.d < d_z1 - d_ramps:
+        if self.d < self.d_trough + d_z1:
             # its in zone 1
             more_d = self.d - self.d_trough
             self.vm = self.v_trough + math.sqrt(more_d) * math.sqrt(self.a)
-        elif self.d < d_z1 + d_z2 - d_ramps:
+        elif self.d < self.d_trough + d_z1 + d_z2:
             # its zone 2
             more_d = self.d - self.d_trough - d_z1
             self.vm = v_low + more_d / zones_width
         else:
             # its zone 3
             more_d = self.d - self.d_trough - d_z1 - d_z2
-            self.vm = self.v_peak - math.sqrt(
-                self.a * (d_z3 - more_d))
+            if np.isclose(d_z3 - more_d, 0):
+                self.vm = self.v_peak
+            else:
+                self.vm = self.v_peak - math.sqrt(
+                    self.a * (d_z3 - more_d))
         """
         The above Calculations for the area under vm in each zone are
         as follows:
@@ -231,16 +234,8 @@ class VelocityProfile:
         it is much neater to subtract the area of top triangle from z3 area
         more_d = d_z1 - Height * Width / 2
         more_d = d_z1 - (v_peak-vm) * (2*v_peak-vm/a) /2
-        invert for vm
+        invert for vm (but cope with singularity) 
         """
-
-        print("zone distances {}, {}, {}, ramp {}, total {}".format(
-            d_z1, d_z2, d_z3, d_ramps, d_total))
-        print("velocity peak {:03.3f}, trough {:3.3f}".format(
-            self.v_peak, self.v_trough))
-        print("distance peak {:03.3f}, trough {:3.3f}".format(
-            self.d_peak, self.d_trough))
-        print("vm {}".format(self.vm))
 
     def stretch_time(self):
         """
@@ -257,8 +252,10 @@ class VelocityProfile:
         self.calculate_vm()
         if self.stretch_time():
             self.calculate_vm()
-        if not self.d_trough <= self.d <= self.d_peak:
-            return None
+        assert np.isclose(self.d_peak, self.d) or \
+               np.isclose(self.d_trough, self.d) or \
+               self.d_trough <= self.d <= self.d_peak, \
+            "distance is outside of allowed trough and peak, check the math"
 
         # derive the remaining results from vm
         self.t1 = math.fabs(self.vm - self.v1) / self.a

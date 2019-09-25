@@ -1,13 +1,8 @@
-import pytest
-from cothread import cothread
-from mock import Mock, call
-from malcolm.modules.pmac import VelocityProfile
-import matplotlib.pyplot as plt
-import numpy as np
-import math
-
-from os import environ
 import unittest
+
+import numpy as np
+
+from malcolm.modules.pmac import VelocityProfile
 
 ASSERT_RESULT = False
 
@@ -19,42 +14,55 @@ class TestPmacStatusPart(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def plot_hat(title, result, expected, show_expected=True):
-        fig1 = plt.figure(figsize=(8, 6), dpi=150, frameon=False, num=title)
-        if show_expected:
-            t, v = make_points(*expected, accumulate=False)
-            plt.plot(t, v, color='red', lw=4, alpha=80)
-        t, v = make_points(*result)
-        plt.plot(t, v)
-        plt.show()
+    # def plot_hat(title, result, expected, show_expected=True):
+    #     fig1 = plt.figure(figsize=(8, 6), dpi=150, frameon=False, num=title)
+    #     if show_expected:
+    #         t, v = make_points(*expected, accumulate=False)
+    #         plt.plot(t, v, color='red', lw=4, alpha=80)
+    #     t, v = make_points(*result)
+    #     plt.plot(t, v)
+    #     plt.show()
 
-    def try_test(self, v1, v2, d, t, a, v_max, title, expected=None):
-        title_mode = title
-        print(title_mode)
+    @staticmethod
+    def check_distance(v1, v2, d, t, a, v_max, title, expected=None):
+        print(title)
         profile = VelocityProfile(v1, v2, d, t, a, v_max)
         res = profile.get_profile()
         d_res = profile.calc_distance()
 
-        print
         # if the calculated distance matches the requested then all is good
         assert np.isclose(d, d_res), "d {} <> {}".format(d, d_res)
 
-        if environ.get("PLOTS") == '1':
-            self.plot_hat(title_mode, res, expected)
+        # if environ.get("PLOTS") == '1':
+        #     self.plot_hat(title_mode, res, expected)
 
-    def test_all_zones(self):
-        v1 = 4
-        v2 = 2
-        a = 2
-        t = 8
-        # the following distances are chosen to place vm in:
-        # (a) the lower bound of z1 z2 z3 + upper bound z3
-        ds = [7.5, 17, 31, 55.5]
-        # (b) the mid points
-        ds += [-1.375, 24, 7.5]
-        # (d) the intermediate points above mid
-        ds += [10.5, 24, 55]
-        # (d) the intermediate points below mid
-        ds += [-7, 20.5, 32.5]
-        for d in ds:
-            self.try_test(v1, v2, d, t, a, 1000, "4to2in8over_{}".format(d))
+    @staticmethod
+    def do_test_full_range(v1, v2):
+        range_profile = VelocityProfile(v1, v2, 1, 8.0, 2.0, 10000)
+        range_profile.check_range()
+        d = range_profile.d_trough
+        print("PEAK", range_profile.d_peak)
+
+        top = range_profile.d_peak
+        while d <= top or np.isclose(top, d):
+            profile = VelocityProfile(v1, v2, d, 8.0, 2.0, 10000)
+            res = profile.get_profile()
+            d_res = profile.calc_distance()
+            assert np.isclose(d_res, d), \
+                "Incorrect d returned at d {:03.1f}, vm {:02.03f} " \
+                "difference {:02.03f}".format(d, profile.vm, d - d_res)
+
+            print("v1 {} v2 {} vm {} d {}".format(v1, v2, profile.vm, d_res))
+            d += .1
+
+    def test_all_pos(self):
+        self.do_test_full_range(4.0, 2.0)
+
+    def test_neg_pos(self):
+        self.do_test_full_range(-2.0, 2.0)
+
+    def test_pos_neg(self):
+        self.do_test_full_range(4.0, -4.0)
+
+    def test_neg_neg(self):
+        self.do_test_full_range(-4.0, -4.0)
