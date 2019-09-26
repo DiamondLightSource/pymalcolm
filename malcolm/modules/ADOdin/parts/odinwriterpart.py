@@ -123,12 +123,16 @@ def create_vds(generator, raw_name, vds_path, child):
     # hdf_shape tuple represents the number of images in each file
     hdf_shape = files_shape(generator.size, block_size, hdf_count)
 
-    alternates = [gen.alternate for gen in generator.generators]
-    if any(alternates):
+    # The first dimension alternating has no meaning. If any subsequent ones
+    # alternate then it will radically slow down the VDS creation and reading.
+    # We rely on a scanning.parts.UnrollingPart to
+    if any(dim.alternate for dim in generator.dimensions[1:]):
         raise BadValueError(
-            "Snake scans are not supported as the VDS is not performant")
-    else:
-        alternates = None
+            "Snake scans are not supported as the VDS is not performant. You "
+            "can add a scanning.parts.UnrollingPart to the top level scan "
+            "block to unroll the scan into one long line"
+        )
+    alternates = None
 
     files = [os.path.join(
         vds_folder, '{}_{:06d}.h5'.format(raw_name, i + 1))
