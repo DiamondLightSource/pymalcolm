@@ -179,18 +179,11 @@ class ProcessController(builtin.controllers.ManagerController):
         visible = []
         for part_name in self.parts.keys():
             if isinstance(self.parts[part_name], builtin.parts.ChildPart):
-                part_mri = self.parts[part_name].mri
-                if part_mri in self.ioc_blocks.keys():
-                    visible += [self.ioc_blocks[part_mri]
-                                    .controller.health.alarm.severity !=
-                                AlarmSeverity.INVALID_ALARM]
-
-                else:
-                    visible += [True]
+                visible += [True]
                 x += [0]
                 y += [0]
                 name += [part_name]
-                mri += [part_mri]
+                mri += [self.parts[part_name].mri]
 
         self.set_layout(LayoutTable(name, mri, x, y, visible))
 

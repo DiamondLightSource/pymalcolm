@@ -84,11 +84,10 @@ class DirParsePart(Part):
     def set_procserv_state(self, value):
         if value.ok:
             self.has_procserv = True
-            if self.dls_version is not None:
-                self.version_updated(self.dls_version)
+            self.version_updated(self.dls_version)
 
     def version_updated(self, value):
-        if value.ok:
+        if value is not None and value.ok:
             self.dls_version = value
             if isinstance(value, str) and value.lower() == "work":
                 message = "IOC running from work area"
