@@ -233,7 +233,7 @@ def make_ioc_status(ioc):
         throw=False))
 
     controller.add_part(IocIconPart(ioc, (os.path.split(__file__)[0] +
-                                      "/../icons/epics-logo.svg")))
+                                          "/../icons/epics-logo.svg")))
     controller.add_part(DirParsePart(ioc, ioc))
 
     controller.add_part(CAActionPart("restartIoc",
