@@ -3,7 +3,6 @@ import time
 from annotypes import Anno
 
 from malcolm.core import Part, PartRegistrar, Queue, TimeoutError, tags
-from malcolm.core.alarm import AlarmSeverity, Alarm
 from malcolm.modules import builtin
 from .. import util
 

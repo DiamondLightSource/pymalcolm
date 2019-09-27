@@ -71,7 +71,6 @@ class ProcessController(builtin.controllers.ManagerController):
                  mri,  # type: builtin.controllers.AMri
                  prefix,  # type: APvPrefix
                  config_dir,  # type: builtin.controllers.AConfigDir
-                 parse_iocs=False,  # type: AParseIOCs
                  bl_prefix="",  # type: ABLPrefix
                  ):
         # type: (...) -> None
@@ -80,7 +79,6 @@ class ProcessController(builtin.controllers.ManagerController):
         self.bl_iocs = []
         self.ioc_blocks = OrderedDict()
         self.prefix = prefix
-        self.parse_iocs = parse_iocs
         self.bl_prefix = bl_prefix
         self.stats = dict()
         cwd = os.getcwd()
@@ -164,9 +162,7 @@ class ProcessController(builtin.controllers.ManagerController):
     def init(self):
         if self.ioc is None:
             self.ioc = start_ioc(self.stats, self.prefix)
-        if self.parse_iocs:
-            assert self.bl_prefix != "", \
-                'parse_iocs set to True but no bl_prefix given'
+        if self.bl_prefix:
             self.get_ioc_list('/dls_sw/prod/etc/redirector/redirect_table',
                               self.bl_prefix)
         super(ProcessController, self).init()

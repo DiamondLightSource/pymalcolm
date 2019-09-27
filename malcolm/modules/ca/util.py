@@ -295,7 +295,7 @@ class WaveformTableAttribute(CABase):
                                          notify_disconnect=True)
 
 
-def assert_connected(ca_values, throw=False):
+def assert_connected(ca_values, throw=True):
     # check connection is ok
     if throw:
         for v in ca_values:
