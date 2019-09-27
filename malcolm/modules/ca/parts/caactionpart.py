@@ -74,7 +74,6 @@ class CAActionPart(Part):
                     assert v.ok, "CA connect failed with %s" %\
                                 v.state_strings[v.state]
                 else:
-                    print "%s not connected!" % self.pv
                     raise AssertionError("CA connect failed")
         except AssertionError as e:
             if self.throw:

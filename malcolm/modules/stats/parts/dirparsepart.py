@@ -84,6 +84,8 @@ class DirParsePart(Part):
     def set_procserv_state(self, value):
         if value.ok:
             self.has_procserv = True
+            if self.dls_version is not None:
+                self.version_updated(self.dls_version)
 
     def version_updated(self, value):
         if value.ok:
