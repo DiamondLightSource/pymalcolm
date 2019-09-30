@@ -54,6 +54,8 @@ with Anno("parse beamline IOCs from redirect table"):
     AParseIOCs = bool
 with Anno("prefix to search for when parsing redirect table"):
     ABLPrefix = str
+with Anno("path to IOC redirect table"):
+    AIocLookupPath = str
 
 
 def parse_redirect_table(file_path, bl_prefix):
@@ -71,6 +73,7 @@ class ProcessController(builtin.controllers.ManagerController):
                  mri,  # type: builtin.controllers.AMri
                  prefix,  # type: APvPrefix
                  config_dir,  # type: builtin.controllers.AConfigDir
+                 ioc_lookup_path="",  # type: AIocLookupPath
                  bl_prefix="",  # type: ABLPrefix
                  ):
         # type: (...) -> None
@@ -80,6 +83,7 @@ class ProcessController(builtin.controllers.ManagerController):
         self.ioc_blocks = OrderedDict()
         self.prefix = prefix
         self.bl_prefix = bl_prefix
+        self.ioc_lookup_path = ioc_lookup_path
         self.stats = dict()
         cwd = os.getcwd()
         sys_call_bytes = open('/proc/%s/cmdline' % os.getpid(),
@@ -162,9 +166,8 @@ class ProcessController(builtin.controllers.ManagerController):
     def init(self):
         if self.ioc is None:
             self.ioc = start_ioc(self.stats, self.prefix)
-        if self.bl_prefix:
-            self.get_ioc_list('/dls_sw/prod/etc/redirector/redirect_table',
-                              self.bl_prefix)
+        if self.bl_prefix and self.ioc_lookup_path:
+            self.get_ioc_list(self.ioc_lookup_path, self.bl_prefix)
         super(ProcessController, self).init()
 
     def set_default_layout(self):

@@ -23,6 +23,7 @@
     mri: $(mri_prefix):STATS
     config_dir: $(config_dir)
     prefix: $(pv_prefix)
+    ioc_lookup_path: /dls_sw/prod/etc/redirector/redirect_table
     bl_prefix: $(bl_prefix)
 
 - pva.blocks.pva_server_block:
