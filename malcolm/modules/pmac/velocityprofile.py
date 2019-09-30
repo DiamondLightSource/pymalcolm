@@ -95,18 +95,17 @@ class VelocityProfile:
         and minimum distance attainable. It deliberately ignores v_max so that
         we get the parallelogram below.
 
-               v_peak     ____
+               v_peak
                 /\
-              /   \            zone 3
-            /      \v2    ____
-        v1/        /      ____ zone 2
+              /   \
+            /      \v2
+        v1/        /
           \      /
-           \   /               zone 1
-            \/            ____
+           \   /
+            \/
           v_trough
-
-         |  |   |  |    (times relative to v1 time)
-        0  tt  tp  tv2
+         |  |   |  |
+        0  tt  tp  tv2  - times relative to v1 time
         """
 
         # first calculate tp by seeing where the acceleration
@@ -181,7 +180,7 @@ class VelocityProfile:
 
         STEP 1
         Stretch time without accounting for v_max. This expands the
-        parallelogram defined in check_range().
+        parallelogram defined in the check_range() docstring.
 
         The area representing d is defined by the top half of the
         parallelogram bisected by the x axis. This can be
@@ -230,13 +229,22 @@ class VelocityProfile:
         calc_distance() however inverting the function does not work since
         the parameters can all be of any sign (giles spent several days proving
         this).
+            v_peak____________
+                /\
+              /   \           zone 3
+            /______\v2________
+        v1/________/__________zone 2
+          \      /
+           \   /              zone 1
+            \/________________
+          v_trough
+         |  |   |  |
+        0  tt  tp  tv2  - times relative to v1 time
 
-        TODO DO THE ASCII ART BUT GET IT WORKING FIRST
-
-        calculate the max distance travelled for each 'Zone' see ascii art above
-        these are zones for Vm and represent areas with different rates of
-        change
-        of distance relative to change in Vm
+        calculate the max distance travelled for each 'Zone' in the diagram
+        above. These are zones for ranges of values for Vm and represent
+        areas with different rates of change of distance relative to
+        change in Vm
         The area calculations are as follows:-
           ramps = 2 triangles representing acceleration to 0 from v1, v2.
                     The area under ramps is the distance that is travelled
