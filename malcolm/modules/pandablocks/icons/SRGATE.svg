@@ -1,0 +1,17 @@
+<svg width="120" height="60" version="1.1" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <marker id="TriangleIn" overflow="visible" orient="auto">
+   <path transform="scale(-.5)" d="m5.77 0-8.65 5v-10z" fill-rule="evenodd" stroke="#e6e6e6" stroke-width="1pt"/>
+  </marker>
+  <marker id="TriangleOut" overflow="visible" orient="auto">
+   <path transform="scale(.5)" d="m5.77 0-8.65 5v-10z" fill-rule="evenodd" stroke="#e6e6e6" stroke-width="1pt"/>
+  </marker>
+ </defs>
+ <path d="m85 30h10" fill="none" stroke="#000" stroke-width="1px"/>
+ <path d="m40 10h15" fill="none" stroke="#000" stroke-width="1px"/>
+ <path d="m25 30h30" fill="none" stroke="#000" stroke-width="1px"/>
+ <path d="m25 50h30" fill="none" stroke="#000" stroke-width="1px"/>
+ <rect x="55" y="5" width="30" height="50" color="#000000" fill="#e6e6e6" fill-rule="evenodd" stroke="#000" stroke-dasharray="1, 1" stroke-linecap="square"/>
+ <path id="edgeSet" d="m45 25v10" fill="none" marker-end="url(#TriangleOut)" marker-start="url(#TriangleIn)" stroke="#e6e6e6" stroke-width="1px"/>
+ <path id="edgeRst" d="m45 45v10" fill="none" marker-end="url(#TriangleOut)" marker-start="url(#TriangleIn)" stroke="#e6e6e6" stroke-width="1px"/>
+</svg>

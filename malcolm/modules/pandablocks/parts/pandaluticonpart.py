@@ -1,11 +1,9 @@
-import os
 import operator
 
 from annotypes import TYPE_CHECKING
 
 from malcolm.modules import builtin
 from .pandaiconpart import PandAIconPart
-from ..util import SVG_DIR
 
 if TYPE_CHECKING:
     from typing import Callable, Tuple, Set, Dict
@@ -28,6 +26,7 @@ def _calc_visibility(func, op, nargs, permutation):
             # invisible
             invis.add(inp)
             invis.add("not%s" % inp)
+            invis.add("edge%s" % inp)
         else:
             # visible
             if negations[i] == "1":
@@ -62,6 +61,7 @@ def _generate_lut_elements():
         for inp in "ABCDE":
             if inp != ninp:
                 invis.add(inp)
+                invis.add("edge%s" % inp)
             invis.add("not%s" % inp)
         lut_elements[~LUT_CONSTANTS[ninp] & (2 ** 32 - 1)] = invis
     # And catchall for LUT in 0
@@ -83,13 +83,17 @@ def get_lut_icon_elements(fnum):
 
 
 class PandALutIconPart(PandAIconPart):
-    update_fields = {"FUNC"}
+    update_fields = {"FUNC", "TYPEA", "TYPEB", "TYPEC", "TYPED", "TYPEE"}
 
-    def update_icon(self, field_values, ts):
+    def update_icon(self, icon, field_values):
+        # type: (builtin.util.SVGIcon, dict) -> None
         """Update the icon using the given field values"""
-        with open(os.path.join(SVG_DIR, "LUT.svg")) as f:
-            svg_text = f.read()
         fnum = int(self.client.get_field(self.block_name, "FUNC.RAW"), 0)
         invis = get_lut_icon_elements(fnum)
-        svg_text = builtin.util.svg_text_without_elements(svg_text, invis)
-        self.attr.set_value(svg_text, ts=ts)
+        icon.remove_elements(invis)
+        for inp in "ABCDE":
+            # Old versions don't have type, default to level
+            edge = field_values.get("TYPE" + inp, "level")
+            icon.update_edge_arrow("edge" + inp, edge)
+        icon.add_text(field_values["FUNC"], x=30, y=-8, anchor="middle",
+                      transform="rotate(90 20,40)")

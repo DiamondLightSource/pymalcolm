@@ -1,5 +1,6 @@
 import unittest
 
+import pytest
 from scanpointgenerator import LineGenerator, CompoundGenerator, \
     SquashingExcluder
 
@@ -8,14 +9,19 @@ from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.parts import UnrollingPart
 
 
-def make_generator(squashed=False):
+def make_generator(squashed=False, include_z=False):
+    line0 = LineGenerator('z', 'mm', 0, 2, 4)
     line1 = LineGenerator('y', 'mm', 0, 2, 3)
     line2 = LineGenerator('x', 'mm', 0, 2, 2, alternate=True)
     if squashed:
         excluders = [SquashingExcluder(axes=("x", "y"))]
     else:
         excluders = []
-    compound = CompoundGenerator([line1, line2], excluders, [])
+    if include_z:
+        generators = [line0, line1, line2]
+    else:
+        generators = [line1, line2]
+    compound = CompoundGenerator(generators, excluders, [])
     return compound
 
 
@@ -31,21 +37,21 @@ class TestUnrollingPart(unittest.TestCase):
         self.process.add_controller(c)
         self.b = c.block_view()
 
-    def test_no_changes_needed_1dim(self):
+    def test_2d_generator(self):
         generator = make_generator()
-        results = self.b.validate(generator, ["x"])
-        assert results["generator"] == generator
         generator.prepare()
         assert len(generator.dimensions) == 2
+        assert [dim.alternate for dim in generator.dimensions] == [
+            False, True]
 
-    def test_no_changes_needed_squashed(self):
+    def test_2d_no_changes_needed_as_squashed(self):
         generator = make_generator(squashed=True)
         results = self.b.validate(generator, ["x", "y"])
         assert results["generator"] == generator
         generator.prepare()
         assert len(generator.dimensions) == 1
 
-    def test_changes_needed(self):
+    def test_2d_changes_needed(self):
         results = self.b.validate(make_generator(), ["x", "y"])
         generator = results["generator"]
         generator.prepare()
@@ -54,3 +60,38 @@ class TestUnrollingPart(unittest.TestCase):
         excluder = generator.excluders[0]
         assert isinstance(excluder, SquashingExcluder)
         assert excluder.axes == ["x", "y"]
+
+    def test_2d_no_changes_needed_1dim(self):
+        generator = make_generator()
+        results = self.b.validate(generator, ["x"])
+        assert generator == results["generator"]
+
+    @pytest.mark.skip(reason="need 'alternate' scanpointgenerator changes")
+    def test_3d_generator(self):
+        generator = make_generator()
+        generator.prepare()
+        assert len(generator.dimensions) == 3
+        assert [dim.alternate for dim in generator.dimensions] == [
+            False, False, True]
+
+    @pytest.mark.skip(reason="need 'alternate' scanpointgenerator changes")
+    def test_3d_no_changes_needed_as_squashed(self):
+        generator = make_generator(squashed=True, include_z=True)
+        results = self.b.validate(generator, ["x", "y"])
+        assert results["generator"] == generator
+        generator.prepare()
+        assert len(generator.dimensions) == 2
+        assert [dim.alternate for dim in generator.dimensions] == [
+            False, True]
+
+    @pytest.mark.skip(reason="need 'alternate' scanpointgenerator changes")
+    def test_3d_changes_needed(self):
+        results = self.b.validate(make_generator(include_z=True), ["x", "y"])
+        generator = results["generator"]
+        generator.prepare()
+        assert len(generator.dimensions) == 2
+        assert [dim.alternate for dim in generator.dimensions] == [
+            False, True]
+
+
+
