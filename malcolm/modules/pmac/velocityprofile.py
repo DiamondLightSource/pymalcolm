@@ -38,7 +38,7 @@ class VelocityProfile:
         v1: start velocity
         v2: final velocity
         d: distance to travel
-        t: time between v1 and v2
+        tv2: time between v1 and v2
         a: motor acceleration (always used for the slopes in the result)
         v_max: maximum speed of the motor
 
@@ -48,14 +48,14 @@ class VelocityProfile:
         vm: the velocity in the middle portion of the hat or ramp
         t_out: the adjust time if t is too short to achieve d
 
-        d_trough: minimum distance possible between v1,v2 in t
+        d_trough: minimum distance possible between v1,v2 in tv2
         d_peak: maximum distance possible between v1,v2 in t
         v_trough: minimum velocity possible between v1,v2 with acceleration a
         v_peak: maximum velocity possible between v1,v2  with acceleration a
     """
 
     def __init__(
-            self, v1: float, v2: float, d: float, t: float, a: float,
+            self, v1: float, v2: float, d: float, tv2: float, a: float,
             v_max: float
     ) -> (float, float, float, float, float, float):
         """
@@ -65,14 +65,14 @@ class VelocityProfile:
         v1: start velocity
         v2: final velocity
         d: distance to travel
-        t: time between v1 and v2
+        tv2: time between v1 and v2
         a: motor acceleration (always used for the slopes in the result)
         v_max: motor maximum velocity
         """
         self.v1 = v1
         self.v2 = v2
         self.d = d
-        self.t = t
+        self.tv2 = tv2
         self.a = a
         self.v_max = v_max
 
@@ -82,20 +82,14 @@ class VelocityProfile:
         self.t_peak = self.t_trough = 0
 
         assert not np.isclose(a, 0), "zero acceleration is illegal"
-        assert not np.isclose(t, 0), "zero time is illegal"
-
-    def calculate_times(self):
-        # derive the times from vm
-        self.t1 = fabs(self.vm - self.v1) / self.a
-        self.t2 = fabs(self.v2 - self.vm) / self.a
-        self.tm = self.t - self.t1 - self.t2
+        assert not np.isclose(tv2, 0), "zero time is illegal"
 
     def check_range(self):
         """
         Calculate the positive and negative velocity maxima attainable between
-        v1 and v2 within time t. This allows the calculations of the maximum and
-        minimum distance attainable. It deliberately ignores v_max so that we
-        get the parallelogram below.
+        v1 and v2 within time tv2. This allows the calculations of the maximum
+        and minimum distance attainable. It deliberately ignores v_max so that
+        we get the parallelogram below.
 
                v_peak     ____
                 /\
@@ -108,13 +102,18 @@ class VelocityProfile:
           v_trough
 
          |  |   |  |    (times relative to v1 time)
-        0  tt  tp  t
+        0  tt  tp  tv2
         """
 
         # first calculate tp by seeing where the acceleration
         # lines (-ve and +ve) from v1 and v2 cross each other
-        self.t_peak = (self.a * self.t - self.v1 + self.v2) / (2 * self.a)
-        self.t_trough = self.t - self.t_peak
+        # the acceleration lines for v1 and v2 are
+        # v = v1 + at
+        # v = v2 + a(tv2-t)
+        # solving simultaneous equations for t
+        # t = (at - v1 + v2) / 2 a
+        self.t_peak = (self.a * self.tv2 - self.v1 + self.v2) / (2 * self.a)
+        self.t_trough = self.tv2 - self.t_peak
 
         # calculate the velocities at the peak and trough
         self.v_peak = self.v1 + self.a * self.t_peak
@@ -124,13 +123,23 @@ class VelocityProfile:
         # above maxima. i.e. sum 2 trapezoids described by v1, v_peak, v2
         # and the x axis
         self.d_peak = (self.v1 + self.v_peak) * self.t_peak / 2 + \
-                      (self.v2 + self.v_peak) * (self.t - self.t_peak) / 2
+                      (self.v2 + self.v_peak) * (self.tv2 - self.t_peak) / 2
         self.d_trough = (self.v1 + self.v_trough) * self.t_trough / 2 + \
-                        (self.v2 + self.v_trough) * (self.t - self.t_trough) / 2
+                        (self.v2 + self.v_trough) * (
+                                    self.tv2 - self.t_trough) / 2
+        # this helps with the domain checks in calculate_vm()
+        if np.isclose(self.d, self.d_trough):
+            self.d_trough = self.d
+        if np.isclose(self.d, self.d_peak):
+            self.d_peak = self.d
 
-        # pull vm in if it is outside reachable range
-        self.vm = self.v_peak if self.vm > self.v_peak else self.vm
-        self.vm = self.v_trough if self.vm < self.v_trough else self.vm
+    def calculate_times(self, vm=None):
+        vm = self.vm if vm is None else vm
+
+        # derive the times from vm
+        self.t1 = fabs(vm - self.v1) / self.a
+        self.t2 = fabs(self.v2 - vm) / self.a
+        self.tm = self.tv2 - self.t1 - self.t2
 
     def calculate_distance(self, vm=None):
         """
@@ -138,19 +147,26 @@ class VelocityProfile:
 
         The math simply sums the area of two trapezoids and a rectangle.
         Note that this works even when 1 or more of the shapes straddles zero
-        (or one of the t values is zero)
+        (or one of t1, tm, t2 is zero)
 
         Args:
             vm: override the internal value of vm for this calculation
         """
-        if vm is not None:
-            self.vm = vm
-        self.check_range()
-        self.calculate_times()
+        vm = self.vm if vm is None else vm
 
-        d1 = (self.v1 + self.vm) * self.t1 / 2
-        d2 = self.vm * self.tm
-        d3 = (self.v2 + self.vm) * self.t2 / 2
+        # make sure the peak and troughs are set correctly
+        self.check_range()
+
+        # pull vm in if it is outside reachable range
+        vm = self.v_peak if vm > self.v_peak else vm
+        vm = self.v_trough if vm < self.v_trough else vm
+
+        # set the times for t1, tp, t2
+        self.calculate_times(vm=vm)
+
+        d1 = (self.v1 + vm) * self.t1 / 2
+        d2 = vm * self.tm
+        d3 = (self.v2 + vm) * self.t2 / 2
         d_out = d1 + d2 + d3
         return d_out
 
@@ -163,47 +179,49 @@ class VelocityProfile:
         Stretch time without accounting for v_max. This expands the
         parallelogram defined in check_range().
 
-        To increase range we are using the top half of the parallelogram
-        bisected by the zero defines our area d. This can be described
-        as two trapezoids z1, z2
+        The area representing d is defined by the top half of the
+        parallelogram bisected by the x axis. This can be
+        described as two trapezoids z1, z2
         with height1, height2, width as follows:-
           v1, v_peak, t_peak     for z1
-          v2, v_peak, t-t_peak   for z2
+          v2, v_peak, tv2-t_peak   for z2
         combining nd simplifying the two functions for area of trapezoid:
           d = (t * (vp+v2)-tp * (v2-v1)) / 2
         substitute in the peak functions from check_range for vp, tp and
         solve for t:
-          t = (sqrt(2) * sqrt(2*a*d3+v1**2+v2**2)-v1-v2) / a
+          tv2 = (sqrt(2) * sqrt(2*a*d3+v1**2+v2**2)-v1-v2) / a
 
         STEP 2
         Now apply v_max and recalculate the d. If it needs stretching
         further then we are only expanding the rectangle described by
            height = v_max
-           width = increase in t from the one calculated above
+           width = increase in tv2 from the one calculated above
         To reduce range use trough instead of peak to derive similar functions.
         """
 
         # STEP 1
         if self.d > self.calculate_distance(vm=100000):
-            self.t = (sqrt(2) * sqrt(
+            self.tv2 = (sqrt(2) * sqrt(
                 2 * self.a * self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1
-                      - self.v2) / self.a
+                        - self.v2) / self.a
         elif self.d < self.calculate_distance(vm=-100000):
-            self.t = -(-sqrt(2) * sqrt(
+            self.tv2 = -(-sqrt(2) * sqrt(
                 2 * self.a * -self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1
-                       - self.v2) / self.a
+                         - self.v2) / self.a
         # STEP2
         dc = self.calculate_distance(vm=self.v_max)
         if self.d > dc:
-            self.t += self.d - dc
+            self.tv2 += (self.d - dc) / self.v_max
         else:
             dc = self.calculate_distance(vm=-self.v_max)
             if self.d < dc:
-                self.t += dc - self.d
+                self.tv2 += (dc - self.d) / self.v_max
 
     def calculate_vm(self):
         """
-        Once we have adjusted t to ensure that d is attainable we can now
+        to ensure this function will succeed, call stretch_time() first.
+
+        Once we have adjusted tv2 to ensure that d is attainable we can now
         calculate the value for vm. This is in effect the inverse of
         calc_distance() however inverting the function does not work since
         the parameters can all be of any sign (giles spent several days proving
@@ -239,7 +257,7 @@ class VelocityProfile:
             v_low, v_high = self.v2, self.v1
         else:
             v_low, v_high = self.v1, self.v2
-        zones_width = self.t - (v_high - v_low) / self.a
+        zones_width = self.tv2 - (v_high - v_low) / self.a
         z1_height = v_low - self.v_trough
         z3_height = self.v_peak - v_high
         z2_height = self.v_peak - self.v_trough - z1_height - z3_height
@@ -256,6 +274,8 @@ class VelocityProfile:
         # zone vm needs to extend to get the correct d. For each calculation
         # more_d is the difference between distance described by the lower
         # zones and the target distance
+        assert self.d >= self.d_trough and self.d <= self.d_peak, \
+            "cannot achieve distance d, time stretch required"
         if self.d < self.d_trough + d_z1:
             # its in zone 1
             more_d = self.d - self.d_trough
@@ -264,7 +284,7 @@ class VelocityProfile:
             # its zone 2
             more_d = self.d - self.d_trough - d_z1
             self.vm = v_low + more_d / zones_width
-        else:
+        elif self.d <= self.d_peak:
             # its zone 3
             more_d = self.d - self.d_trough - d_z1 - d_z2
             if np.isclose(d_z3 - more_d, 0):
@@ -272,6 +292,8 @@ class VelocityProfile:
             else:
                 self.vm = self.v_peak - sqrt(
                     self.a * (d_z3 - more_d))
+        else:
+            assert False, "should not reach here"
         """
         The above Calculations for the area under vm in each zone are
         as follows:
@@ -292,26 +314,6 @@ class VelocityProfile:
         more_d = d_z1 - (v_peak-vm) * (2*v_peak-vm/a) /2
         invert for vm (but cope with singularity) 
         """
-
-    def get_profile(self):
-        """
-        determine what profile can achieve d in t between v1 and v2
-        with a and v_max.
-        """
-        self.check_range()
-        t = self.t
-        self.stretch_time()
-        if self.t == t:
-            # if time did not stretch we need to adjust vm within
-            # the original time range to get the correct distance
-            self.calculate_vm()
-        self.check_range()
-
-        # validate the results
-        assert np.isclose(self.d_peak, self.d) or \
-               np.isclose(self.d_trough, self.d) or \
-               self.d_trough <= self.d <= self.d_peak, \
-            "distance is outside of allowed trough and peak, check the math"
         assert np.isclose(self.v_peak, self.vm) or \
                np.isclose(self.v_trough, self.vm) or \
                self.v_trough <= self.vm <= self.v_peak, \
@@ -319,6 +321,30 @@ class VelocityProfile:
         assert np.isclose(self.v_max, self.vm) or \
                self.vm <= self.v_max, \
             "velocity exceeds maximum, check the math"
+
+    def get_profile(self):
+        """
+        determine what profile can achieve d in tv2 between v1 and v2
+        with a and v_max. Stretch tv2 if necessary.
+
+        The results are stored in the following properties which give the
+        profile to take:
+        t1, tm, t2, vm
+        """
+        min_time = fabs(self.v1 - self.v2) / self.a
+        self.tv2 = max(self.tv2, min_time)
+
+        t = self.tv2
+        self.stretch_time()
+        if self.tv2 != t:
+            self.check_range()
+        self.calculate_vm()
+
+        # validate the results
+        assert np.isclose(self.d_peak, self.d) or \
+               np.isclose(self.d_trough, self.d) or \
+               self.d_trough <= self.d <= self.d_peak, \
+            "distance is outside of allowed trough and peak, check the math"
 
         # return a convenience tuple (for tests only)
         return self.v1, self.vm, self.v2, self.t1, self.tm, self.t2
