@@ -7,6 +7,8 @@ INVERSE_HAT = 2
 RAMP = 3
 INVERSE_RAMP = 4
 
+R_TOL = 1e-10
+
 
 class VelocityProfile:
     """
@@ -57,7 +59,7 @@ class VelocityProfile:
     def __init__(
             self, v1: float, v2: float, d: float, tv2: float, a: float,
             v_max: float
-    ) -> (float, float, float, float, float, float):
+    ):
         """
         Initialize the properties that define the desired profile
 
@@ -82,7 +84,9 @@ class VelocityProfile:
         self.t_peak = self.t_trough = 0
 
         assert not np.isclose(a, 0), "zero acceleration is illegal"
-        assert not np.isclose(tv2, 0), "zero time is illegal"
+        assert fabs(v1) <= v_max and fabs(v2) <= v_max, \
+            "v1, v2 must be <= v_max"
+        assert v_max > 0 and a > 0, "v_max, acceleration must be > 0"
 
     def check_range(self):
         """
@@ -126,11 +130,11 @@ class VelocityProfile:
                       (self.v2 + self.v_peak) * (self.tv2 - self.t_peak) / 2
         self.d_trough = (self.v1 + self.v_trough) * self.t_trough / 2 + \
                         (self.v2 + self.v_trough) * (
-                                    self.tv2 - self.t_trough) / 2
+                                self.tv2 - self.t_trough) / 2
         # this helps with the domain checks in calculate_vm()
-        if np.isclose(self.d, self.d_trough):
+        if np.isclose(self.d, self.d_trough, rtol=R_TOL):
             self.d_trough = self.d
-        if np.isclose(self.d, self.d_peak):
+        if np.isclose(self.d, self.d_peak, rtol=R_TOL):
             self.d_peak = self.d
 
     def calculate_times(self, vm=None):
@@ -266,17 +270,17 @@ class VelocityProfile:
         d_z1 = z1_height * zones_width / 2
         d_z2 = z2_height * zones_width
         d_z3 = z3_height * zones_width / 2
-        d_total = d_z1 + d_z2 + d_z3
-        # assert np.isclose(d_total, self.d_peak - self.d_trough), \
-        #      "Distance calculation is incorrect, check the math"
 
         # find out which zone d is in and then determine how far into that
         # zone vm needs to extend to get the correct d. For each calculation
         # more_d is the difference between distance described by the lower
         # zones and the target distance
-        assert self.d >= self.d_trough and self.d <= self.d_peak, \
+        assert self.d_trough <= self.d <= self.d_peak, \
             "cannot achieve distance d, time stretch required"
-        if self.d < self.d_trough + d_z1:
+        if np.isclose(self.v_peak, v_high, rtol=R_TOL):
+            # the profile is a straight line
+            self.vm = (v_high + v_low) / 2
+        elif self.d < self.d_trough + d_z1:
             # its in zone 1
             more_d = self.d - self.d_trough
             self.vm = self.v_trough + sqrt(more_d) * sqrt(self.a)
@@ -339,6 +343,7 @@ class VelocityProfile:
         if self.tv2 != t:
             self.check_range()
         self.calculate_vm()
+        self.calculate_times()
 
         # validate the results
         assert np.isclose(self.d_peak, self.d) or \
@@ -346,5 +351,10 @@ class VelocityProfile:
                self.d_trough <= self.d <= self.d_peak, \
             "distance is outside of allowed trough and peak, check the math"
 
-        # return a convenience tuple (for tests only)
-        return self.v1, self.vm, self.v2, self.t1, self.tm, self.t2
+        # return time and velocity arrays to describe the profile
+        time_array = [0.0, self.t1, self.tv2]
+        velocity_array = [self.v1, self.vm, self.v2]
+        if self.tm > 0:
+            time_array.insert(2, self.t1 + self.tm)
+            velocity_array.insert(2, self.vm)
+        return list(time_array), list(velocity_array)
