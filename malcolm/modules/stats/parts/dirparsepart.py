@@ -89,11 +89,18 @@ class DirParsePart(Part):
     def version_updated(self, value):
         if value is not None and value.ok:
             self.dls_version = value
-            if isinstance(value, str) and value.lower() == "work":
-                message = "IOC running from work area"
-                alarm = Alarm(message=message,
+            if isinstance(value, str):
+                if value.lower() == "work" or value.lower() == "other":
+                    message = "IOC running from non-prod area"
+                    alarm = Alarm(message=message,
                               severity=AlarmSeverity.MINOR_ALARM)
-                self.registrar.report(infos.HealthInfo(alarm))
+                    self.registrar.report(infos.HealthInfo(alarm))
+                else:
+                    message = "OK"
+                    alarm = Alarm(message=message,
+                                  severity=AlarmSeverity.NO_ALARM)
+                    self.registrar.report(infos.HealthInfo(alarm))
+
         else:
             if self.has_procserv:
                 message = "IOC not running (procServ enabled)"
