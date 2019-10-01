@@ -292,3 +292,23 @@ class TestPcompPart(ChildTestCase):
             table.oute2 == table.outf2 == [0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
+
+    def test_static_point_with_init_move(self):
+        # This test moves the motors to a new position and then takes one reading
+        # at that position
+
+        xs = LineGenerator("x", "mm", 0.0, 0.0, 1, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 1.0, 1)
+        generator = CompoundGenerator([ys,xs], [], [], 1.0)
+        generator.prepare()
+
+        steps_to_do = 1
+        self.assertEqual(steps_to_do, generator.size)
+
+        completed_steps = 0
+        self.set_motor_attributes()
+        axes_to_move = ["x", "y"]
+
+        self.o.configure(self.context, completed_steps, steps_to_do, {}, generator, axes_to_move)
+
+
