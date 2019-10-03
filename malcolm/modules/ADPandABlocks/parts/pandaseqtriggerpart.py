@@ -99,10 +99,12 @@ def _what_moves_most(point, axis_mapping):
         if diff_cts != 0:
             diffs[s] = abs(diff_cts)
             compare_increasing[s] = (compare_cts, diff_cts > 0)
+
     assert diffs, \
-        "Can't work out a compare point for %s, maybe none of the axes " \
-        "connected to the PandA are moving during the scan point?" % \
-        point.positions
+            "Can't work out a compare point for %s, maybe none of the axes " \
+            "connected to the PandA are moving during the scan point?" % \
+            point.positions
+
     # Sort on abs(diff), take the biggest
     axis_name = sorted(diffs, key=diffs.get)[-1]
     compare_cts, increasing = compare_increasing[axis_name]
@@ -304,17 +306,31 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         blind = time_array[i]
         return blind
 
+    def isMoving(self, point):
+        # type: (Point) -> Bool
+
+        if point:
+            return not (point.positions == point.lower == point.upper)
+        else:
+            return False
+
     def _fill_sequencer(self, seq_table):
         # type: (Attribute) -> None
         rows = []
         for i in range(self.loaded_up_to, self.scan_up_to):
             point = self.generator.get_point(i)
+            moving = self.isMoving(point)
             half_frame = int(round(point.duration / TICK / 2))
             start_of_row = False
+
             if self.axis_mapping:
-                if self.last_point is None or not pmac.util.points_joined(
-                        self.axis_mapping, self.last_point, point):
+                if self.last_point is None:
                     start_of_row = True
+                    if moving == False and self.generator.continuous == True:
+                        start_of_row = False
+                elif not pmac.util.points_joined(self.axis_mapping, self.last_point, point):
+                    start_of_row = True
+
             if start_of_row and self.trigger_enums:
                 # Position compare
                 # First row, or rows not joined
