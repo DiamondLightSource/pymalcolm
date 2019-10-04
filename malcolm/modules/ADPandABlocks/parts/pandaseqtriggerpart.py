@@ -306,28 +306,21 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         blind = time_array[i]
         return blind
 
-    def isMoving(self, point):
-        # type: (Point) -> Bool
-
-        if point:
-            return not (point.positions == point.lower == point.upper)
-        else:
-            return False
-
     def _fill_sequencer(self, seq_table):
         # type: (Attribute) -> None
         rows = []
         for i in range(self.loaded_up_to, self.scan_up_to):
             point = self.generator.get_point(i)
-            moving = self.isMoving(point)
             half_frame = int(round(point.duration / TICK / 2))
             start_of_row = False
 
             if self.axis_mapping:
                 if self.last_point is None:
-                    start_of_row = True
-                    if moving == False and self.generator.continuous == True:
-                        start_of_row = False
+                    # If no last point, we are the first point in an acquisition.
+                    # If the motors are moving during this point then set
+                    # start_of_row so that we wait for triggers
+                    static = (point.positions == point.lower == point.upper)
+                    start_of_row = not static
                 elif not pmac.util.points_joined(self.axis_mapping, self.last_point, point):
                     start_of_row = True
 
