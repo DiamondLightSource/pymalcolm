@@ -128,8 +128,8 @@ class VelocityProfile:
         self.d_peak = (self.v1 + self.v_peak) * self.t_peak / 2 + \
                       (self.v2 + self.v_peak) * (self.tv2 - self.t_peak) / 2
         self.d_trough = (self.v1 + self.v_trough) * self.t_trough / 2 + \
-                        (self.v2 + self.v_trough) * (
-                                self.tv2 - self.t_trough) / 2
+                        (self.v2 + self.v_trough) * \
+                        (self.tv2 - self.t_trough) / 2
         # this helps with the domain checks in calculate_vm()
         if np.isclose(self.d, self.d_trough, rtol=R_TOL):
             self.d_trough = self.d
@@ -205,12 +205,12 @@ class VelocityProfile:
         # STEP 1
         if self.d > self.calculate_distance(vm=100000):
             self.tv2 = (sqrt(2) * sqrt(
-                2 * self.a * self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1
-                        - self.v2) / self.a
+                2 * self.a * self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1 -
+                self.v2) / self.a
         elif self.d < self.calculate_distance(vm=-100000):
             self.tv2 = -(-sqrt(2) * sqrt(
-                2 * self.a * -self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1
-                         - self.v2) / self.a
+                2 * self.a * -self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1 -
+                self.v2) / self.a
         # STEP2
         dc = self.calculate_distance(vm=self.v_max)
         if self.d > dc:
@@ -324,14 +324,14 @@ class VelocityProfile:
         it is much neater to subtract the area of top triangle from z3 area
         more_d = d_z1 - Height * Width / 2
         more_d = d_z1 - (v_peak-vm) * (2*v_peak-vm/a) /2
-        invert for vm (but cope with singularity) 
+        invert for vm (but cope with singularity)
         """
         assert np.isclose(self.v_peak, self.vm) or \
-               np.isclose(self.v_trough, self.vm) or \
-               self.v_trough <= self.vm <= self.v_peak, \
+            np.isclose(self.v_trough, self.vm) or \
+            self.v_trough <= self.vm <= self.v_peak, \
             "velocity out of range, check the math"
         assert np.isclose(self.v_max, self.vm) or \
-               self.vm <= self.v_max, \
+            self.vm <= self.v_max, \
             "velocity exceeds maximum, check the math"
 
     def get_profile(self):
@@ -339,9 +339,11 @@ class VelocityProfile:
         determine what profile can achieve d in tv2 between v1 and v2
         with a and v_max. Stretch tv2 if necessary.
 
-        The results are stored in the following properties which give the
+        The results are stored in the following properties which describe the
         profile to take:
-        t1, tm, t2, vm
+        t1, tm, t2, vm, tv2 (tv2 is an input property but may be stretched)
+
+        :Returns Array(float), Array(float): absolute time and velocity arrays
         """
         min_time = fabs(self.v1 - self.v2) / self.a
         self.tv2 = max(self.tv2, min_time)
@@ -355,11 +357,52 @@ class VelocityProfile:
 
         # validate the results
         assert np.isclose(self.d_peak, self.d) or \
-               np.isclose(self.d_trough, self.d) or \
-               self.d_trough <= self.d <= self.d_peak, \
+            np.isclose(self.d_trough, self.d) or \
+            self.d_trough <= self.d <= self.d_peak, \
             "distance is outside of allowed trough and peak, check the math"
+        return self.make_arrays()
 
-        # return time and velocity arrays to describe the profile
+    def quantize(self):
+        """
+        ensure that all time points are exactly on 1 millisecond boundaries
+        do this by:
+            add 1 milliseconds to t1, tm, t2 and round down
+            adjust vm downwards so that d is correct
+        When reducing vm, keep t1, tm the same but adjust the
+        acceleration downwards.
+
+        If the time points are already on boundaries do nothing.
+
+        the function for vm was derived by taking the sum of the area of
+        two trapezoids and a rectangle described by v1, vm, v2, t1, tm, t2
+        then solving for vm
+        https://www.wolframalpha.com/input/?i=solve+d%3D%28v1%2Bv0%29%2F2
+        +t1+%2B+v0+t0+%2B+%28v2%2Bv0%29%2F2+t2+for+v0
+
+        :Returns Array(float), Array(float): absolute time and velocity arrays
+        """
+        def is_quantized(val: float):
+            decimals = val % 1 * 1000
+            return np.isclose(decimals, np.round(decimals))
+
+        times = np.array([self.t1, self.tm, self.t2])
+        if not np.vectorize(is_quantized)(times).all():
+            self.t1, self.tm, self.t2 = np.floor(times * 1000 + 1) / 1000
+            self.tv2 = self.t1 + self.tm + self.t2
+
+            i1 = -2 * self.d + self.t1 * self.v1 + self.t2 * self.v2
+            i2 = 2 * self.tm + self.t1 + self.t2
+            self.vm = - i1 / i2
+
+        return self.make_arrays()
+
+    def make_arrays(self):
+        """
+        Convert the properties to arrays for consumption by pmac/util.py
+
+        :Returns Array(float), Array(float): absolute time, velocity arrays
+        """
+        # return ABSOLUTE time and velocity arrays to describe the profile
         time_array = [0.0, self.t1, self.tv2]
         velocity_array = [self.v1, self.vm, self.v2]
         if self.tm > 0:

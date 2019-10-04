@@ -56,6 +56,7 @@ AIV = builtin.parts.AInitialVisibility
 APartName = builtin.parts.APartName
 AMri = builtin.parts.AMri
 
+
 class PmacChildPart(builtin.parts.ChildPart):
     def __init__(self,
                  name,  # type: APartName
@@ -179,8 +180,9 @@ class PmacChildPart(builtin.parts.ChildPart):
             # Time profile that the move is likely to take
             # NOTE: this is only accurate if pmac max velocity in linear motion
             # prog is set to same speed as motor record VMAX
-            times, _ = motor_info.make_velocity_profile(
+            profile = motor_info.make_velocity_profile(
                 0, 0, motor_info.current_position - start_pos, 0)
+            times, _ = profile.make_arrays()
             move_to_start_time = max(times[-1], move_to_start_time)
         # Call the method with the values
         fs = move_async(moveTime=move_to_start_time, **args)
@@ -434,7 +436,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 axis_prev_velocity = axis_velocities[axis_pt - 1]
                 axis_interval = axis_times[axis_pt] - axis_times[axis_pt - 1]
 
-                if combined_times[i] == axis_times[axis_pt]:
+                if np.isclose(combined_times[i], axis_times[axis_pt]):
                     # this combined point matches the axis point
                     # use the axis velocity and move to the next axis point
                     this_velocity = axis_velocities[axis_pt]

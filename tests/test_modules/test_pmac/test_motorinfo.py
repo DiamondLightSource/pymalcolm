@@ -1,5 +1,7 @@
 import unittest
+
 import numpy as np
+
 from malcolm.modules.pmac.infos import MotorInfo
 
 
@@ -37,7 +39,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = -0.1
         distance = 0.0
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, 0.0)
+            v1, v2, distance, 0.0).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.05, 0.1]).all()
         assert np.isclose(velocity_array, [v1, 0, v2]).all()
@@ -49,7 +51,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = 0.1
         distance = 0.0
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, 0.0)
+            v1, v2, distance, 0.0).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.05, 0.1]).all()
         assert np.isclose(velocity_array, [v1, 0, v2]).all()
@@ -62,7 +64,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = 0
         min_time = 2
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.05, 1.95, 2.0]).all()
         assert np.isclose(velocity_array, [v1, 0, 0, v2]).all()
@@ -75,7 +77,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = 0
         min_time = 2
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.05, 1.95, 2.0]).all()
         assert np.isclose(velocity_array, [v1, 0, 0, v2]).all()
@@ -86,7 +88,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = 0
         distance = 0.5
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, 0.0)
+            v1, v2, distance, 0.0).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.5, 1.0]).all()
         assert np.isclose(velocity_array, [v1, 1, 0]).all()
@@ -99,7 +101,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = 0.125
         min_time = 0.5004166666666666
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(
             time_array, [0.0, 0.24, 0.26041666666667, 0.50041666666667]
@@ -114,7 +116,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = -0.125
         min_time = 0.5004166666666666
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         assert np.isclose(
             time_array, [0.0, 0.24, 0.26041666666667, 0.50041666666667]
         ).all()
@@ -127,7 +129,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = 0
         distance = 1.0
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, 0.0)
+            v1, v2, distance, 0.0).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.5, 1.0, 1.5]).all()
         assert np.isclose(velocity_array, [v1, 1, 1, 0]).all()
@@ -140,7 +142,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = 1.02
         min_time = 5.2
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.1, 5.1, 5.2]).all()
         assert np.isclose(velocity_array, [v1, 0.2, 0.2, v2]).all()
@@ -153,7 +155,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = -1.02
         min_time = 5.2
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         assert np.isclose(time_array, [0.0, 0.1, 5.1, 5.2]).all()
         assert np.isclose(velocity_array, [v1, -0.2, -0.2, v2]).all()
 
@@ -164,7 +166,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = 0
         distance = -1.0
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, 0.0)
+            v1, v2, distance, 0.0).make_arrays()
         assert np.isclose(time_array, [0.0, 0.5, 1.0, 1.5]).all()
         assert np.isclose(velocity_array, [v1, -1, -1, 0]).all()
 
@@ -175,7 +177,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = 0.5
         distance = 0.375
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, 0.0)
+            v1, v2, distance, 0.0).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.25, 0.5]).all()
         assert np.isclose(velocity_array, [v1, 1, v2]).all()
@@ -187,7 +189,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = 0.125
         min_time = 0.5
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.25, 0.5]).all()
         assert np.isclose(velocity_array, [v1, 0, v2]).all()
@@ -199,7 +201,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = 0.125
         min_time = 1.0
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.25, 0.75, 1.0]).all()
         assert np.isclose(velocity_array, [v1, 0, 0, v2]).all()
@@ -212,7 +214,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = 0
         min_time = 1.0
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.5, 1.0]).all()
         assert np.isclose(velocity_array, [v1, -0.5, v2]).all()
@@ -225,7 +227,7 @@ class TestMotorPVT(unittest.TestCase):
         distance = -0.25
         min_time = 1.5
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.5, 1.0, 1.5]).all()
         assert np.isclose(velocity_array, [v1, -0.5, -0.5, v2]).all()
@@ -237,7 +239,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = 0.5
         distance = -0.5
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, 0.0)
+            v1, v2, distance, 0.0).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.75, 0.875, 1.625]).all()
         assert np.isclose(velocity_array, [v1, -1, -1, v2]).all()
@@ -250,7 +252,7 @@ class TestMotorPVT(unittest.TestCase):
         v2 = -0.5
         distance = 0.5
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, 0.0)
+            v1, v2, distance, 0.0).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.75, 0.875, 1.625]).all()
         assert np.isclose(velocity_array, [v1, 1, 1, v2]).all()
@@ -266,7 +268,7 @@ class TestMotorPVT(unittest.TestCase):
         self.o.acceleration = 0.02
         self.o.max_velocity = 0.01
         time_array, velocity_array = self.o.make_velocity_profile(
-            v1, v2, distance, min_time)
+            v1, v2, distance, min_time).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
         # assert np.isclose(time_array, [0.0, 0.059482568744500003, min_time]
         # assert np.isclose(velocity_array, [v1, -0.00118965137489, v2]

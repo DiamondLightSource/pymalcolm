@@ -55,21 +55,23 @@ class MotorInfo(Info):
             min_time (float): The minimum time the move should take
 
         Returns:
-            tuple: (time_list, position_list) where time_list is a list of
-                absolute time points in seconds, and position_list is the
-                position in EGUs that the motor should be
+            VelocityProfile: defining a list of times and velocities
         """
 
         # Create the time and velocity arrays
         p = VelocityProfile(v1, v2, distance, min_time, self.acceleration,
                             self.max_velocity)
-        time_array, velocity_array = p.get_profile()
+        p.get_profile()
 
-        # Add on the settle time
-        if self.velocity_settle > 0:
-            time_array.append(time_array[-1] + self.velocity_settle)
-            velocity_array.append(v2)
-        return time_array, velocity_array
+        # todo ignoring settle time for the moment we need pass min_time
+        #  minus settle time to VelocityProfile constructor and work out
+        #  where to insert settle time now that util.profile_between_points
+        #  is using 'p'
+        # # Add on the settle time
+        # if self.velocity_settle > 0:
+        #     time_array.append(time_array[-1] + self.velocity_settle)
+        #     velocity_array.append(v2)
+        return p
 
     def in_cts(self, position):
         # type: (float) -> int
