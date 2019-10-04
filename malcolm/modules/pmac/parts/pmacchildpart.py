@@ -432,13 +432,11 @@ class PmacChildPart(builtin.parts.ChildPart):
             # We want to create a matching move profile of 'num_intervals'
             axis_pt = 1
             for i in range(num_intervals):
-                print("\nCALCULATE profile i = ", i)
                 axis_velocity = axis_velocities[axis_pt]
                 axis_prev_velocity = axis_velocities[axis_pt - 1]
                 axis_interval = axis_times[axis_pt] - axis_times[axis_pt - 1]
 
                 if np.isclose(combined_times[i], axis_times[axis_pt]):
-                    print(combined_times[i], axis_times[axis_pt])
                     # this combined point matches the axis point
                     # use the axis velocity and move to the next axis point
                     this_velocity = axis_velocities[axis_pt]
@@ -448,7 +446,6 @@ class PmacChildPart(builtin.parts.ChildPart):
                     # this combined point is between two axis points,
                     # interpolate the velocity between those axis points
                     time_interval += time_intervals[i]
-                    print("calculate profile i = ", i)
                     fraction = time_interval / axis_interval
                     dv = axis_velocity - axis_prev_velocity
                     this_velocity = axis_prev_velocity + fraction * dv

@@ -200,7 +200,7 @@ class TestPMACChildPart(ChildTestCase):
     def test_configure_no_pulses(self):
         self.do_configure(axes_to_scan=["x", "y"],
                           infos=[MotionTriggerInfo(MotionTrigger.NONE)])
-        self.do_check_output(user_programs=[0] * 16)
+        self.do_check_output(user_programs=[0] * 18)
 
     def test_configure_start_of_row_pulses(self):
         self.do_configure(axes_to_scan=["x", "y"],

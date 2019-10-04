@@ -197,11 +197,9 @@ def profile_between_points(axis_mapping, point, next_point, min_time=MIN_TIME):
                 quantize = quantize or profiles[axis_name].check_quantize()
             for axis_name, _ in axis_mapping.items():
                 if quantize:
-                    time_arrays[axis_name], velocity_arrays[axis_name] = \
-                        profiles[axis_name].quantize().make_arrays()
-                else:
-                    time_arrays[axis_name], velocity_arrays[axis_name] = \
-                        profiles[axis_name].make_arrays()
+                    profiles[axis_name].quantize()
+                time_arrays[axis_name], velocity_arrays[axis_name] = \
+                    profiles[axis_name].make_arrays()
             return time_arrays, velocity_arrays
         else:
             min_time = new_min_time
