@@ -13,8 +13,8 @@ from .infos import MotorInfo
 
 if TYPE_CHECKING:
     from typing import Tuple, Dict, Set, List
-    Profiles = Dict[str, List[float]]
 
+    Profiles = Dict[str, List[float]]
 
 # All possible PMAC CS axis assignment
 CS_AXIS_NAMES = list("ABCUVWXYZ")
@@ -172,6 +172,7 @@ def profile_between_points(axis_mapping, point, next_point, min_time=MIN_TIME):
     start_velocities = point_velocities(axis_mapping, point)
     end_velocities = point_velocities(axis_mapping, next_point, entry=False)
 
+    p = None
     new_min_time = 0
     time_arrays = {}
     velocity_arrays = {}
@@ -183,17 +184,24 @@ def profile_between_points(axis_mapping, point, next_point, min_time=MIN_TIME):
         for axis_name, motor_info in axis_mapping.items():
             distance = next_point.lower[axis_name] - point.upper[axis_name]
             p = motor_info.make_velocity_profile(
-                    start_velocities[axis_name], end_velocities[axis_name],
-                    distance, min_time
+                start_velocities[axis_name], end_velocities[axis_name],
+                distance, min_time
             )
             # Absolute time values that we are at that velocity
             profiles[axis_name] = p
             new_min_time = max(new_min_time, p.tv2)
         if np.isclose(new_min_time, min_time):
-            # We've got our consistent set
+            # We've got our consistent set - see if they require quantization
+            quantize = False
             for axis_name, _ in axis_mapping.items():
-                time_arrays[axis_name], velocity_arrays[axis_name] = \
-                    profiles[axis_name].quantize()
+                quantize = quantize or profiles[axis_name].check_quantize()
+            for axis_name, _ in axis_mapping.items():
+                if quantize:
+                    time_arrays[axis_name], velocity_arrays[axis_name] = \
+                        profiles[axis_name].quantize().make_arrays()
+                else:
+                    time_arrays[axis_name], velocity_arrays[axis_name] = \
+                        profiles[axis_name].make_arrays()
             return time_arrays, velocity_arrays
         else:
             min_time = new_min_time

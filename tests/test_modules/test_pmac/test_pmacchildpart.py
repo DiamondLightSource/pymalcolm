@@ -63,12 +63,12 @@ class TestPMACChildPart(ChildTestCase):
         # create some parts to mock the motion controller and 2 axes in a CS
         self.set_attributes(
             self.child_x, cs="CS1,A",
-            accelerationTime=x_velocity/x_acceleration, resolution=0.001,
+            accelerationTime=x_velocity / x_acceleration, resolution=0.001,
             offset=0.0, maxVelocity=x_velocity, readback=x_pos,
             velocitySettle=0.0, units=units)
         self.set_attributes(
             self.child_y, cs="CS1,B",
-            accelerationTime=y_velocity/y_acceleration, resolution=0.001,
+            accelerationTime=y_velocity / y_acceleration, resolution=0.001,
             offset=0.0, maxVelocity=y_velocity, readback=y_pos,
             velocitySettle=0.0, units=units)
 
@@ -200,7 +200,7 @@ class TestPMACChildPart(ChildTestCase):
     def test_configure_no_pulses(self):
         self.do_configure(axes_to_scan=["x", "y"],
                           infos=[MotionTriggerInfo(MotionTrigger.NONE)])
-        self.do_check_output(user_programs=[0]*18)
+        self.do_check_output(user_programs=[0] * 16)
 
     def test_configure_start_of_row_pulses(self):
         self.do_configure(axes_to_scan=["x", "y"],
@@ -227,7 +227,7 @@ class TestPMACChildPart(ChildTestCase):
                           1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 2, 8]),
                       velocityMode=pytest.approx([
                           1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3]))
-            ]
+        ]
         assert self.o.completed_steps_lookup == [
             0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
 
@@ -258,7 +258,7 @@ class TestPMACChildPart(ChildTestCase):
                           500000, 500000, 500000, 100000]),
                       userPrograms=pytest.approx([1, 4, 2, 8]),
                       velocityMode=pytest.approx([0, 0, 1, 1])
-            )
+                      )
         ]
         assert self.o.end_index == 3
         assert len(self.o.completed_steps_lookup) == 11
@@ -298,7 +298,7 @@ class TestPMACChildPart(ChildTestCase):
                     100000]),
                 userPrograms=pytest.approx([1, 4, 1, 4, 1, 4, 2, 8]),
                 velocityMode=pytest.approx([1, 0, 0, 0, 0, 0, 1, 3])),
-            ]
+        ]
 
     def test_long_steps_lookup(self):
         self.do_configure(

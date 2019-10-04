@@ -360,7 +360,24 @@ class VelocityProfile:
             np.isclose(self.d_trough, self.d) or \
             self.d_trough <= self.d <= self.d_peak, \
             "distance is outside of allowed trough and peak, check the math"
-        return self.make_arrays()
+
+    def check_quantize(self):
+        """
+        Check if this profile has any times that are not on a millisecond
+        boundary. Such profiles require quantization for them to be safely
+        combined with other axis profiles (which will also require
+        quantization). Otherwise the combined profile may contain very small
+        time intervals that pmac PVT cannot achieve.
+
+        Returns bool: true if this profile requires quantization:
+        """
+        def is_quantized(val: float):
+            decimals = val % 1 * 1000
+            return np.isclose(decimals, np.round(decimals))
+
+        times = np.array([self.t1, self.tm, self.t2])
+        result = not np.vectorize(is_quantized)(times).all()
+        return result
 
     def quantize(self):
         """
@@ -371,8 +388,6 @@ class VelocityProfile:
         When reducing vm, keep t1, tm the same but adjust the
         acceleration downwards.
 
-        If the time points are already on boundaries do nothing.
-
         the function for vm was derived by taking the sum of the area of
         two trapezoids and a rectangle described by v1, vm, v2, t1, tm, t2
         then solving for vm
@@ -381,24 +396,18 @@ class VelocityProfile:
 
         :Returns Array(float), Array(float): absolute time and velocity arrays
         """
-        def is_quantized(val: float):
-            decimals = val % 1 * 1000
-            return np.isclose(decimals, np.round(decimals))
-
         times = np.array([self.t1, self.tm, self.t2])
-        if not np.vectorize(is_quantized)(times).all():
-            self.t1, self.tm, self.t2 = np.floor(times * 1000 + 1) / 1000
-            self.tv2 = self.t1 + self.tm + self.t2
+        self.t1, self.tm, self.t2 = np.floor(times * 1000 + 1) / 1000
+        self.tv2 = self.t1 + self.tm + self.t2
 
-            i1 = -2 * self.d + self.t1 * self.v1 + self.t2 * self.v2
-            i2 = 2 * self.tm + self.t1 + self.t2
-            self.vm = - i1 / i2
-
-        return self.make_arrays()
+        i1 = -2 * self.d + self.t1 * self.v1 + self.t2 * self.v2
+        i2 = 2 * self.tm + self.t1 + self.t2
+        self.vm = - i1 / i2
 
     def make_arrays(self):
         """
-        Convert the properties to arrays for consumption by pmac/util.py
+        Convert the time and velocity properties to arrays for consumption
+        by pmac/util.py
 
         :Returns Array(float), Array(float): absolute time, velocity arrays
         """
