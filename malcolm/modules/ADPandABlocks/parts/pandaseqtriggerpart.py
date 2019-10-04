@@ -316,12 +316,14 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
 
             if self.axis_mapping:
                 if self.last_point is None:
-                    # If no last point, we are the first point in an acquisition.
+                    # If no last point, we are the first point in
+                    # an acquisition.
                     # If the motors are moving during this point then set
                     # start_of_row so that we wait for triggers
                     static = (point.positions == point.lower == point.upper)
                     start_of_row = not static
-                elif not pmac.util.points_joined(self.axis_mapping, self.last_point, point):
+                elif not pmac.util.points_joined(self.axis_mapping,
+                                                 self.last_point, point):
                     start_of_row = True
 
             if start_of_row and self.trigger_enums:
