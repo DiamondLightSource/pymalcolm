@@ -20,17 +20,18 @@ class TestMotorPVT(unittest.TestCase):
             units="mm"
         )
 
-    @staticmethod
-    def check_distance(d, times, velocities):
+    def check_distance(self, d, times, velocities):
         # sum the area of two trapezoids z1, z2 and a rectangle r
         z1 = (velocities[0] + velocities[1]) / 2 * times[1]
-        if len(times) == 3:
+        st = self.o.velocity_settle
+        if (len(times) == 3 and st == 0) or (len(times) == 4 and st > 0):
             r = 0
             z2 = (velocities[1] + velocities[2]) / 2 * (times[2] - times[1])
         else:
             r = velocities[1] * (times[2] - times[1])
             z2 = (velocities[2] + velocities[3]) / 2 * (times[3] - times[2])
-        assert np.isclose(z1 + z2 + r, d)
+        sd = velocities[-1] * (times[-1] - times[-2]) if st > 0 else 0
+        assert np.isclose(z1 + z2 + r + sd, d)
 
     def test_turnaround(self):
         # 0_| \
@@ -43,6 +44,24 @@ class TestMotorPVT(unittest.TestCase):
         self.check_distance(distance, time_array, velocity_array)
         assert np.isclose(time_array, [0.0, 0.05, 0.1]).all()
         assert np.isclose(velocity_array, [v1, 0, v2]).all()
+
+    def test_settle(self):
+        # 0_| \
+        #   |  \
+        v1 = 0.05
+        v2 = -0.05
+        distance = 0.0
+        self.o.velocity_settle = 0.1
+        p = self.o.make_velocity_profile(
+            v1, v2, distance, 0.0)
+        p.quantize()
+        time_array, velocity_array = p.make_arrays()
+        self.check_distance(distance, time_array, velocity_array)
+        assert np.isclose(time_array, [0.0, 0.017, 0.051, 0.119, 0.219]).all()
+        assert np.isclose(
+            velocity_array,
+            [v1, 0.0820261437908497, 0.0820261437908497, v2, v2]
+        ).all()
 
     def test_turnaround_invert(self):
         # 0_|  /

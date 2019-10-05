@@ -58,7 +58,7 @@ class VelocityProfile:
 
     def __init__(
             self, v1: float, v2: float, d: float, tv2: float, a: float,
-            v_max: float
+            v_max: float, settle_time: float = 0
     ):
         """
         Initialize the properties that define the desired profile
@@ -70,13 +70,15 @@ class VelocityProfile:
         tv2: time between v1 and v2
         a: motor acceleration (always used for the slopes in the result)
         v_max: motor maximum velocity
+        settle_time: period to stay at final velocity to allow motor to settle
         """
         self.v1 = v1
         self.v2 = v2
-        self.d = d
-        self.tv2 = tv2
+        self.d = d - v2 * settle_time
+        self.tv2 = tv2 - settle_time
         self.a = a
         self.v_max = v_max
+        self.settle_time = settle_time
 
         # these attributes set by calling get_profile()
         self.t1 = self.tm = self.t2 = self.vm = 0
@@ -174,7 +176,7 @@ class VelocityProfile:
         d1 = (self.v1 + vm) * self.t1 / 2
         d2 = vm * self.tm
         d3 = (self.v2 + vm) * self.t2 / 2
-        d_out = d1 + d2 + d3
+        d_out = d1 + d2 + d3 + self.v2 * self.settle_time
         return d_out
 
     def stretch_time(self):
@@ -426,4 +428,7 @@ class VelocityProfile:
         if self.tm > 0:
             time_array.insert(2, self.t1 + self.tm)
             velocity_array.insert(2, self.vm)
+        if self.settle_time > 0:
+            time_array.append(time_array[-1] + self.settle_time)
+            velocity_array.append(self.v2)
         return list(time_array), list(velocity_array)

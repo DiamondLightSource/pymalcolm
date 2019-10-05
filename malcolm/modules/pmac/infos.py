@@ -60,17 +60,8 @@ class MotorInfo(Info):
 
         # Create the time and velocity arrays
         p = VelocityProfile(v1, v2, distance, min_time, self.acceleration,
-                            self.max_velocity)
+                            self.max_velocity, self.velocity_settle)
         p.get_profile()
-
-        # todo ignoring settle time for the moment we need pass min_time
-        #  minus settle time to VelocityProfile constructor and work out
-        #  where to insert settle time now that util.profile_between_points
-        #  is using 'p'
-        # # Add on the settle time
-        # if self.velocity_settle > 0:
-        #     time_array.append(time_array[-1] + self.velocity_settle)
-        #     velocity_array.append(v2)
         return p
 
     def in_cts(self, position):
