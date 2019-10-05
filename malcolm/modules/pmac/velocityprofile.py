@@ -83,6 +83,9 @@ class VelocityProfile:
         self.d_trough = self.d_peak = self.v_trough = self.v_peak = 0
         self.t_peak = self.t_trough = 0
 
+        # once we have quantized it is important to freeze the time intervals
+        self.quantized = False
+
         assert not np.isclose(a, 0), "zero acceleration is illegal"
         assert fabs(v1) <= v_max and fabs(v2) <= v_max, \
             "v1, v2 must be <= v_max"
@@ -165,7 +168,8 @@ class VelocityProfile:
         vm = self.v_trough if vm < self.v_trough else vm
 
         # set the times for t1, tp, t2
-        self.calculate_times(vm=vm)
+        if not self.quantized:
+            self.calculate_times(vm=vm)
 
         d1 = (self.v1 + vm) * self.t1 / 2
         d2 = vm * self.tm
@@ -396,13 +400,18 @@ class VelocityProfile:
 
         :Returns Array(float), Array(float): absolute time and velocity arrays
         """
-        times = np.array([self.t1, self.tm, self.t2])
-        self.t1, self.tm, self.t2 = np.floor(times * 1000 + 1) / 1000
-        self.tv2 = self.t1 + self.tm + self.t2
+
+        # add 1, 2, 3 milliseconds to the ABSOLUTE times
+        self.t1 = np.floor(self.t1 * 1000 + 1) / 1000
+        t2_abs = self.t1 + self.t2
+        self.t2 = np.floor(t2_abs * 1000 + 2) / 1000 - self.t1
+        self.tv2 = np.floor(self.tv2 * 1000 + 3) / 1000
+        self.tm = self.tv2 - self.t1 - self.t2
 
         i1 = -2 * self.d + self.t1 * self.v1 + self.t2 * self.v2
         i2 = 2 * self.tm + self.t1 + self.t2
         self.vm = - i1 / i2
+        self.quantized = True
 
     def make_arrays(self):
         """
