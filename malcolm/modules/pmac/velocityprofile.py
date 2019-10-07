@@ -218,11 +218,11 @@ class VelocityProfile:
         if self.d > self.calculate_distance(vm=100000):
             self.tv2 = (sqrt(2) * sqrt(
                 2 * self.a * self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1 -
-                self.v2) / self.a
+                        self.v2) / self.a
         elif self.d < self.calculate_distance(vm=-100000):
             self.tv2 = -(-sqrt(2) * sqrt(
                 2 * self.a * -self.d + self.v1 ** 2 + self.v2 ** 2) - self.v1 -
-                self.v2) / self.a
+                         self.v2) / self.a
         # STEP2
         dc = self.calculate_distance(vm=self.v_max)
         if self.d > dc:
@@ -274,6 +274,25 @@ class VelocityProfile:
                     of v1, v2.
                     When sliced by vm the lower half is a trapezoid representing
                     the distance in addition to z2 + z1 +ramps
+
+        The Calculations for the area under vm in each zone are
+        as follows:
+
+        Zone 1 triangle:
+        more_d =  Height * Width / 2
+        more_d = (vm - v_trough) * (2 * (vm - v_trough) / a) / 2
+        invert for vm
+
+        Zone 2 parallelogram:
+        more_d = Height * Width
+        more_d = (vm-v_high) * zones_width
+        invert for vm
+
+        Zone 3 trapezoid:
+        it is much neater to subtract the area of top triangle from z3 area
+        more_d = d_z1 - Height * Width / 2
+        more_d = d_z1 - (v_peak-vm) * (2*v_peak-vm/a) /2
+        invert for vm (but cope with singularity)
         """
 
         # v_low is the lower of v1 v2 and v_high the higher of the two
@@ -286,7 +305,6 @@ class VelocityProfile:
         z3_height = self.v_peak - v_high
         z2_height = self.v_peak - self.v_trough - z1_height - z3_height
 
-        d_ramps = (self.v1 ** 2 / self.a + self.v2 ** 2 / self.a) / 2
         d_z1 = z1_height * zones_width / 2
         d_z2 = z2_height * zones_width
         d_z3 = z3_height * zones_width / 2
@@ -318,32 +336,13 @@ class VelocityProfile:
                     self.a * (d_z3 - more_d))
         else:
             assert False, "should not reach here"
-        """
-        The above Calculations for the area under vm in each zone are
-        as follows:
 
-        Zone 1 triangle:
-        more_d =  Height * Width / 2
-        more_d = (vm - v_trough) * (2 * (vm - v_trough) / a) / 2
-        invert for vm
-
-        Zone 2 parallelogram:
-        more_d = Height * Width
-        more_d = (vm-v_high) * zones_width
-        invert for vm
-
-        Zone 3 trapezoid:
-        it is much neater to subtract the area of top triangle from z3 area
-        more_d = d_z1 - Height * Width / 2
-        more_d = d_z1 - (v_peak-vm) * (2*v_peak-vm/a) /2
-        invert for vm (but cope with singularity)
-        """
         assert np.isclose(self.v_peak, self.vm) or \
-            np.isclose(self.v_trough, self.vm) or \
-            self.v_trough <= self.vm <= self.v_peak, \
+               np.isclose(self.v_trough, self.vm) or \
+               self.v_trough <= self.vm <= self.v_peak, \
             "velocity out of range, check the math"
         assert np.isclose(self.v_max, self.vm) or \
-            self.vm <= self.v_max, \
+               self.vm <= self.v_max, \
             "velocity exceeds maximum, check the math"
 
     def get_profile(self):
@@ -369,8 +368,8 @@ class VelocityProfile:
 
         # validate the results
         assert np.isclose(self.d_peak, self.d) or \
-            np.isclose(self.d_trough, self.d) or \
-            self.d_trough <= self.d <= self.d_peak, \
+               np.isclose(self.d_trough, self.d) or \
+               self.d_trough <= self.d <= self.d_peak, \
             "distance is outside of allowed trough and peak, check the math"
 
     def check_quantize(self):
@@ -383,7 +382,9 @@ class VelocityProfile:
 
         Returns bool: true if this profile requires quantization:
         """
-        def is_quantized(val: float):
+
+        def is_quantized(val  # type: float
+                         ):
             decimals = val % 1 * 1000
             return np.isclose(decimals, np.round(decimals))
 
@@ -409,11 +410,15 @@ class VelocityProfile:
         :Returns Array(float), Array(float): absolute time and velocity arrays
         """
 
-        # add 1, 2, 3 milliseconds to the ABSOLUTE times
-        self.t1 = np.floor(self.t1 * 1000 + 1) / 1000
-        t2_abs = self.t1 + self.t2
-        self.t2 = np.floor(t2_abs * 1000 + 2) / 1000 - self.t1
-        self.tv2 = np.floor(self.tv2 * 1000 + 3) / 1000
+        # round up the two acceleration times t1, t2 to the nearest millisecond
+        # then round up the middle constant velocity tm such that the total
+        # time tv2 is tv2 + 2 milliseconds rounded up
+        # This approach preserves symmetry but at the same time ensures that
+        # total time is increased deterministically plus acceleration and
+        # vm are decreased
+        self.t1 = np.ceil(self.t1 * 1000) / 1000
+        self.t2 = np.ceil(self.t2 * 1000) / 1000
+        self.tv2 = np.ceil(self.tv2 * 1000 + 2) / 1000
         self.tm = self.tv2 - self.t1 - self.t2
 
         i1 = -2 * self.d + self.t1 * self.v1 + self.t2 * self.v2
@@ -437,4 +442,10 @@ class VelocityProfile:
         if self.settle_time > 0:
             time_array.append(time_array[-1] + self.settle_time)
             velocity_array.append(self.v2)
+        time_array = np.around(time_array, 10)
+
+        # some of the math results in tiny fractions which affect some of the
+        # tests - round to 10 decimals
+        velocity_array = np.around(velocity_array, 10)
+        time_array = np.around(time_array, 10)
         return list(time_array), list(velocity_array)

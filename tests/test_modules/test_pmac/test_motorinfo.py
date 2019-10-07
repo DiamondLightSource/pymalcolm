@@ -50,17 +50,18 @@ class TestMotorPVT(unittest.TestCase):
         #   |  \
         v1 = 0.05
         v2 = -0.05
-        distance = 0.0
+        distance = 0.1
         self.o.velocity_settle = 0.1
         p = self.o.make_velocity_profile(
             v1, v2, distance, 0.0)
         p.quantize()
         time_array, velocity_array = p.make_arrays()
         self.check_distance(distance, time_array, velocity_array)
-        assert np.isclose(time_array, [0.0, 0.017, 0.051, 0.119, 0.219]).all()
+        assert np.isclose(time_array, [
+            0.0, 0.174, 0.244, 0.468, 0.568]).all()
         assert np.isclose(
             velocity_array,
-            [v1, 0.0820261437908497, 0.0820261437908497, v2, v2]
+            [v1, 0.3949814126, 0.3949814126, v2, v2]
         ).all()
 
     def test_turnaround_invert(self):
