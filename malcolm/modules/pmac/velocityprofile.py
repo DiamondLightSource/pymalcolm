@@ -57,9 +57,15 @@ class VelocityProfile:
     """
 
     def __init__(
-            self, v1: float, v2: float, d: float, tv2: float, a: float,
-            v_max: float, settle_time: float = 0
-    ):
+            self,
+            v1,  # type: float
+            v2,  # type: float
+            d,  # type: float
+            tv2,  # type: float
+            a,  # type: float
+            v_max,  # type: float
+            settle_time=0  # type: float
+    ):  # type: (...) -> None
         """
         Initialize the properties that define the desired profile
 
