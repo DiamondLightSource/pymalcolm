@@ -1,7 +1,7 @@
 import os
 
 import h5py
-from annotypes import add_call_types, TYPE_CHECKING
+from annotypes import Anno, add_call_types, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
 from scanpointgenerator import CompoundGenerator
 
@@ -20,6 +20,14 @@ FRAME_TIMEOUT = 60
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
 AMri = builtin.parts.AMri
+AInitialVisibility = builtin.parts.AInitialVisibility
+
+with Anno("name of uid dataset"):
+    AUidName = str
+with Anno("name of sum dataset"):
+    ASumName = str
+with Anno("name of secondary dataset (e.g. sum)"):
+    ASecondaryDataset = str
 
 
 def greater_than_zero(v):
@@ -27,7 +35,7 @@ def greater_than_zero(v):
     return v > 0
 
 
-def create_dataset_infos(name, generator, filename):
+def create_dataset_infos(name, generator, filename, secondary_set):
     # type: (str, CompoundGenerator, str) -> Iterator[Info]
     # Update the dataset table
     generator_rank = len(generator.dimensions)
@@ -47,7 +55,7 @@ def create_dataset_infos(name, generator, filename):
         filename=filename,
         type=scanning.infos.DatasetType.SECONDARY,
         rank=generator_rank + 2,
-        path="/entry/detector_uid/uid",
+        path="/entry/detector_%s/%s" % (secondary_set, secondary_set),
         uniqueid="/entry/detector_uid/uid")
 
     # Add any setpoint dimensions
@@ -111,7 +119,7 @@ def one_vds(vds_folder, vds_name, files, width, height,
     gen.generate_vds()
 
 
-def create_vds(generator, raw_name, vds_path, child):
+def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
     vds_folder, vds_name = os.path.split(vds_path)
 
     image_width = int(child.imageWidth.value)
@@ -149,12 +157,12 @@ def create_vds(generator, raw_name, vds_path, child):
     # prepare a vds for the unique IDs
     one_vds(vds_folder, vds_name, files, 1, 1,
             shape, generator, alternates, block_size,
-            'UID', 'uid', 'uint64')
+            uid_name, 'uid', 'uint64')
     # prepare a vds for the sums
     one_vds(vds_folder, vds_name, files, 1, 1,
             shape, generator, alternates, block_size,
-            'SUM', 'sum', 'uint64')
-    
+            sum_name, 'sum', 'uint64')
+
 
 set_bases = ["/entry/detector/", "/entry/detector_sum/",
              "/entry/detector_uid/"]
@@ -235,6 +243,20 @@ class OdinWriterPart(builtin.parts.ChildPart):
     layout_filename = None  # type: str
     exposure_time = None  # type: float
 
+    def __init__(self,
+                 name,  # type: APartName
+                 mri,  # type: AMri
+                 initial_visibility=True,  # type: AInitialVisibility
+                 uid_name="UID",  # type: AUidName
+                 sum_name="SUM",  # type: ASumName
+                 secondary_set="sum"  # type: ASecondaryDataset
+                 ):
+        # type: (...) -> None
+        self.uid_name = uid_name
+        self.sum_name = sum_name
+        self.secondary_set = secondary_set
+        super(OdinWriterPart, self).__init__(name, mri, initial_visibility)
+
     @add_call_types
     def reset(self, context):
         # type: (scanning.hooks.AContext) -> None
@@ -308,12 +330,14 @@ class OdinWriterPart(builtin.parts.ChildPart):
         self.array_future = child.when_value_matches_async(
             "numCaptured", greater_than_zero)
 
-        create_vds(generator, raw_file_basename, vds_full_filename, child)
+        create_vds(generator, raw_file_basename, vds_full_filename, child,
+                   self.uid_name, self.sum_name)
         add_nexus_nodes(generator, vds_full_filename)
 
         # Return the dataset information
         dataset_infos = list(
-            create_dataset_infos(formatName, generator, fileName))
+            create_dataset_infos(formatName, generator, fileName,
+                                 self.secondary_set))
         return dataset_infos
 
     @add_call_types
@@ -343,7 +367,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
         child.numCaptured.subscribe_value(self.update_completed_steps)
         child.when_value_matches(
             "numCaptured", self.done_when_reaches,
-            event_timeout=self.exposure_time+FRAME_TIMEOUT)
+            event_timeout=self.exposure_time + FRAME_TIMEOUT)
 
     @add_call_types
     def post_run_ready(self, context):
