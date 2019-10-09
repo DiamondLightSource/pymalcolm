@@ -13,8 +13,8 @@ from .infos import MotorInfo
 
 if TYPE_CHECKING:
     from typing import Tuple, Dict, Set, List
-    Profiles = Dict[str, List[float]]
 
+    Profiles = Dict[str, List[float]]
 
 # All possible PMAC CS axis assignment
 CS_AXIS_NAMES = list("ABCUVWXYZ")
@@ -124,15 +124,15 @@ def point_velocities(axis_mapping, point, entry=True):
         vp = dp / point.duration
         if entry:
             # Halfway point is vlp, so calculate dlp
-            dhalf = point.positions[axis_name] - point.lower[axis_name]
+            d_half = point.positions[axis_name] - point.lower[axis_name]
         else:
             # Halfway point is vpu, so calculate dpu
-            dhalf = point.upper[axis_name] - point.positions[axis_name]
+            d_half = point.upper[axis_name] - point.positions[axis_name]
         # Extrapolate to get our entry or exit velocity
         # (vl + vp) / 2 = vlp
         # so vl = 2 * vlp - vp
         # where vlp = dlp / (t/2)
-        velocity = 4 * dhalf / point.duration - vp
+        velocity = 4 * d_half / point.duration - vp
         assert abs(velocity) < motor_info.max_velocity, \
             "Velocity %s invalid for %r with max_velocity %s" % (
                 velocity, axis_name, motor_info.max_velocity)
@@ -141,64 +141,70 @@ def point_velocities(axis_mapping, point, entry=True):
 
 
 def profile_between_points(axis_mapping, point, next_point, min_time=MIN_TIME):
-    # type: (Dict[str, MotorInfo], Point, Point) -> Tuple[Profiles, Profiles]
+    # type: (Dict[str, MotorInfo], Point, Point, float) -> Tuple[Profiles, Profiles]
     """Make consistent time and velocity arrays for each axis
 
     Try to create velocity profiles for all axes that all arrive at
     'distance' in the same time period. The profiles will contain the
     following points:-
 
-    - start point at 0 secs with velocity v1     start decelerating
-    - zero velocity point                        reached 0 speed
-    - [optional] zero velocity end point         start accelerating
-    - max velocity point                         achieved max speed
-    - [optional] max velocity end point          start decelerating
-    - zero velocity point                        reached 0 speed
+    in the following description acceleration can be -ve or +ve depending
+    on the relative sign of v1 and v2. fabs(vm) is <= maximum velocity
+    - start point at 0 secs with velocity v1     start accelerating
+    - middle velocity start                      reached speed vm
+    - middle velocity end                        start accelerating
     - end point with velocity v2                 reached target speed
 
-    If the profile has to be stretched to achieve min_time then the
-    first zero velocity point is stretched to zero velocity end point.
+    Time at vm may be 0 in which case there are only 3 points and
+    acceleration to v2 starts as soon as vm is reached.
 
-    If the axis never reaches maximum velocity then there is no max_velocity
-    end point. The acceleration just switches direction at max velocity
-    point. There are therefore between 5 and 7 points in a profile.
+    If the profile has to be stretched to achieve min_time then the
+    the middle period at speed vm is extended accordingly.
 
     After generating all the profiles this function checks to ensure they
     have all achieved min_time. If not min_time is reset to the slowest
     profile and all profiles are recalculated.
 
     Note that for each profile the area under the velocity/time plot
-    must equal 'distance'. motor_info.make_velocity_profile uses
-    _make_hat to do this.
+    must equal 'distance'. The class VelocityProfile implements the math
+    to achieve this.
     """
     start_velocities = point_velocities(axis_mapping, point)
     end_velocities = point_velocities(axis_mapping, next_point, entry=False)
 
+    p = None
+    new_min_time = 0
     time_arrays = {}
     velocity_arrays = {}
-    iterations = 5
+    profiles = {}
+    # The first iteration reveals the slowest profile. The second generates
+    # all profiles with the slowest min_time
+    iterations = 2
     while iterations > 0:
         for axis_name, motor_info in axis_mapping.items():
             distance = next_point.lower[axis_name] - point.upper[axis_name]
-            time_array, velocity_array = \
-                motor_info.make_velocity_profile(
-                    start_velocities[axis_name], end_velocities[axis_name],
-                    distance, min_time)
-            assert time_array[-1] >= min_time or np.isclose(
-                time_array[-1], min_time), \
-                "Time %s velocity %s for %s takes less time than %s" % (
-                    time_array, velocity_array, axis_name, min_time)
+            p = motor_info.make_velocity_profile(
+                start_velocities[axis_name], end_velocities[axis_name],
+                distance, min_time
+            )
             # Absolute time values that we are at that velocity
-            time_arrays[axis_name] = time_array
-            velocity_arrays[axis_name] = velocity_array
-        new_min_time = max(t[-1] for t in time_arrays.values())
+            profiles[axis_name] = p
+            new_min_time = max(new_min_time, p.tv2)
         if np.isclose(new_min_time, min_time):
-            # We've got our consistent set
+            # We've got our consistent set - see if they require quantization
+            quantize = False
+            for axis_name, _ in axis_mapping.items():
+                quantize = quantize or profiles[axis_name].check_quantize()
+            for axis_name, _ in axis_mapping.items():
+                if quantize:
+                    profiles[axis_name].quantize()
+                time_arrays[axis_name], velocity_arrays[axis_name] = \
+                    profiles[axis_name].make_arrays()
             return time_arrays, velocity_arrays
         else:
             min_time = new_min_time
             iterations -= 1
-    raise ValueError("Can't get a consistent time in 5 iterations")
+    raise ValueError("Can't get a consistent time in 2 iterations")
 
 
 def get_motion_trigger(part_info):
