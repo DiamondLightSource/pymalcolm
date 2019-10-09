@@ -2,7 +2,7 @@ import numpy as np
 from annotypes import add_call_types, Anno, Array
 
 from malcolm.core import PartRegistrar, Widget, \
-    NumberMeta, errors
+    NumberMeta, IncompatibleError
 from malcolm.modules import builtin
 from ..util import CS_AXIS_NAMES
 
@@ -97,7 +97,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # make sure a matching trajectory program is installed on the pmac
         if child.trajectoryProgVersion.value != TRAJECTORY_PROGRAM_NUM:
             raise (
-                errors.IncompatibleError(
+                IncompatibleError(
                     "pmac trajectory program {} detected. "
                     "Malcolm requires {}".format(
                         child.trajectoryProgVersion.value,

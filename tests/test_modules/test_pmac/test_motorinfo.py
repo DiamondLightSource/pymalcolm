@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+import pytest
 
 from malcolm.modules.pmac.infos import MotorInfo
 
@@ -73,8 +74,8 @@ class TestMotorPVT(unittest.TestCase):
         time_array, velocity_array = self.o.make_velocity_profile(
             v1, v2, distance, 0.0).make_arrays()
         self.check_distance(distance, time_array, velocity_array)
-        assert np.isclose(time_array, [0.0, 0.05, 0.1]).all()
-        assert np.isclose(velocity_array, [v1, 0, v2]).all()
+        assert time_array == pytest.approx([0.0, 0.05, 0.1])
+        assert velocity_array == pytest.approx([v1, 0, v2])
 
     def test_turnaround_with_min_time(self):
         # 0_| \___

@@ -394,8 +394,6 @@ class PmacChildPart(builtin.parts.ChildPart):
         # extract the time points from all axes
         t_list = []
         for time_array in time_arrays.values():
-            # round the final points to make sure they all match up
-            time_array[-1] = time_array[-1].round(decimals=12)
             t_list.extend(time_array)
         combined_times = np.array(t_list)
         combined_times = np.unique(combined_times)

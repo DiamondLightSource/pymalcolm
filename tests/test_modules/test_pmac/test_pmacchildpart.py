@@ -96,32 +96,33 @@ class TestPMACChildPart(ChildTestCase):
     def do_check_output_quantized(self):
         assert self.child.handled_requests.mock_calls[:4] == [
             call.post('writeProfile', csPort='CS1', timeArray=[0.002],
-                      userPrograms=[8]), call.post('executeProfile'),
+                      userPrograms=[8]),
+            call.post('executeProfile'),
             call.post('moveCS1', a=-0.1374875093687539, b=0.0,
                       moveTime=1.0374875094),
-            call.post('writeProfile',
-                      a=pytest.approx(
-                          [-0.125, 0., 0.125, 0.25, 0.375, 0.5, 0.625,
-                           0.63749375, 0.63749375, 0.63749375, 0.63749375,
-                           0.625, 0.5, 0.375, 0.25, 0.125, 0., -0.125,
-                           -0.13748751]),
-                      b=pytest.approx(
-                          [0., 0., 0., 0., 0., 0., 0., 0.01231466, 0.04975248,
-                           0.05024752, 0.08768534, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
-                           0.1, 0.1]),
-                      csPort='CS1',
-                      timeArray=pytest.approx(
-                          [99950, 500250, 500250, 500250, 500250, 500250,
-                           500250, 100000, 101000, 1000, 101000, 100000, 500250,
-                           500250, 500250, 500250, 500250, 500250, 99950]),
-                      userPrograms=pytest.approx(
-                          [1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 8, 1, 4, 1, 4, 1, 4, 2,
-                           8]),
-                      velocityMode=pytest.approx(
-                          [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1,
-                           3]), )]
+            call.post(
+                'writeProfile',
+                csPort='CS1',
+                timeArray=pytest.approx(
+                    [99950, 500250, 500250, 500250, 500250, 500250, 500250,
+                     100000, 101000, 101000, 100000, 500250, 500250, 500250,
+                     500250, 500250, 500250, 99950]),
+                velocityMode=pytest.approx(
+                    [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 3]),
+                userPrograms=pytest.approx(
+                    [1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4, 2, 8]),
+                a=pytest.approx(
+                    [-0.125, 0., 0.125, 0.25, 0.375, 0.5, 0.625, 0.63749375,
+                     0.63749375, 0.63749375, 0.625, 0.5, 0.375, 0.25, 0.125, 0.,
+                     -0.125, -0.13748751]),
+                b=pytest.approx(
+                    [0., 0., 0., 0., 0., 0., 0., 0.01237593, 0.05, 0.08762407,
+                     0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
+            )
+
+        ]
         assert self.o.completed_steps_lookup == [
-            0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 3,
+            0, 0, 1, 1, 2, 2, 3, 3, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
     def do_check_output(self, user_programs=None):

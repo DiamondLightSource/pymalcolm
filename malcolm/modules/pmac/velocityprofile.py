@@ -382,14 +382,9 @@ class VelocityProfile:
 
         Returns bool: true if this profile requires quantization:
         """
-
-        def is_quantized(val  # type: float
-                         ):
-            decimals = val % 1 * 1000
-            return np.isclose(decimals, np.round(decimals))
-
         times = np.array([self.t1, self.tm, self.t2])
-        result = not np.vectorize(is_quantized)(times).all()
+        decimals = (times % 1) * 1000
+        result = not np.isclose(decimals, np.round(decimals)).all()
         return result
 
     def quantize(self):
@@ -410,17 +405,38 @@ class VelocityProfile:
         :Returns Array(float), Array(float): absolute time and velocity arrays
         """
 
-        # round up the two acceleration times t1, t2 to the nearest millisecond
-        # then round up the middle constant velocity tm such that the total
-        # time tv2 is tv2 + 2 milliseconds rounded up
+        # First round the times to remove any tiny fractions that would waste
+        # an extra millisecond when doing match.ceil()
+        #
+        # Next increase total time by 2 ms and round up to the nearest
+        # even number - this is then deterministic for all axes, and includes
+        # at least enough stretch to accommodate up to 1 ms of stretch in each
+        # slope time.
+        #
+        # For a flat hat, round up the two slope times and the flat time is
+        # the remainder.
+        #
+        # For a pointy hat add 1 to t1 and round up, then t2 is the remainder.
+        #
         # This approach preserves symmetry but at the same time ensures that
         # total time is increased deterministically plus acceleration and
-        # vm are decreased
-        self.t1 = np.ceil(self.t1 * 1000) / 1000
-        self.t2 = np.ceil(self.t2 * 1000) / 1000
-        self.tv2 = np.ceil(self.tv2 * 1000 + 2) / 1000
-        self.tm = self.tv2 - self.t1 - self.t2
+        # vm are decreased (thus not exceeding mac acceleration, velocity)
+        self.tv2 = np.round(self.tv2, decimals=14)
+        self.t1 = np.round(self.t1, decimals=14)
+        self.t2 = np.round(self.t2, decimals=14)
+        self.tv2 = np.ceil(self.tv2 * 2000 + 4) / 2000
+        if self.tm == 0:
+            # pointy hat
+            self.t1 = np.ceil(self.t1 * 1000 + 1) / 1000
+            self.t2 = self.tv2 - self.t1
+        else:
+            # flat topped hat
+            self.t1 = np.ceil(self.t1 * 1000) / 1000
+            self.t2 = np.ceil(self.t2 * 1000) / 1000
+            self.tm = self.tv2 - self.t1 - self.t2
 
+        # recalculate the middle velocity (peak velocity for a pointy hat)
+        # using the new times
         i1 = -2 * self.d + self.t1 * self.v1 + self.t2 * self.v2
         i2 = 2 * self.tm + self.t1 + self.t2
         self.vm = - i1 / i2
@@ -445,7 +461,7 @@ class VelocityProfile:
         time_array = np.around(time_array, 10)
 
         # some of the math results in tiny fractions which affect some of the
-        # tests - round to 10 decimals
-        velocity_array = np.around(velocity_array, 10)
-        time_array = np.around(time_array, 10)
+        # tests - round to 12 decimals
+        velocity_array = np.around(velocity_array, 12)
+        time_array = np.around(time_array, 12)
         return list(time_array), list(velocity_array)
