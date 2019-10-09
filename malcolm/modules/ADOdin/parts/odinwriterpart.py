@@ -247,8 +247,8 @@ class OdinWriterPart(builtin.parts.ChildPart):
                  name,  # type: APartName
                  mri,  # type: AMri
                  initial_visibility=True,  # type: AInitialVisibility
-                 uid_name="UID",  # type: AUidName
-                 sum_name="SUM",  # type: ASumName
+                 uid_name="uid",  # type: AUidName
+                 sum_name="sum",  # type: ASumName
                  secondary_set="sum"  # type: ASecondaryDataset
                  ):
         # type: (...) -> None
