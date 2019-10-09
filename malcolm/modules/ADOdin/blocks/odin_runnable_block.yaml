@@ -33,12 +33,12 @@
 - builtin.parameters.string:
     name: sum_name
     description: Name of sum dataset
-    default: SUM
+    default: sum
 
 - builtin.parameters.string:
     name: uid_name
     description: Name of uid dataset
-    default: UID
+    default: uid
 
 - builtin.parameters.string:
     name: secondary_set
