@@ -49,5 +49,9 @@ class BeamSelectorPart(builtin.parts.ChildPart):
     def move(self, context, angle):
         # type: (builtin.hooks.AContext, ADemand) -> None
 
-        self.angle.set_value(self.angle.value)
-        child = None
+        #self.angle.set_value(angle)
+        childBlock = context.block_view(self.mri)
+        #child.put(self.mri, angle)
+        childBlock.demand.put_value(angle)
+
+        pass
