@@ -4,7 +4,7 @@ from scanpointgenerator import CompoundGenerator
 from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
     NumberMeta, Widget, Part, DEFAULT_TIMEOUT, Table
 from malcolm.compat import OrderedDict
-from malcolm.core.models import MapMeta, MethodMeta, TableMeta
+from malcolm.core.models import MapMeta, MethodMeta, TableMeta, Display
 from malcolm.modules import builtin
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, ConfigureParams
@@ -167,7 +167,7 @@ class RunnableController(builtin.controllers.ManagerController):
         # step
         self.completed_steps = NumberMeta(
             "int32", "Readback of number of scan steps",
-            tags=[Widget.TEXTINPUT.tag()]
+            tags=[Widget.METER.tag()]  # Widget.TEXTINPUT.tag()]
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model(
             "completedSteps", self.completed_steps, self.pause)
@@ -410,6 +410,8 @@ class RunnableController(builtin.controllers.ManagerController):
                        for p, c in self.part_contexts.items())
         # Update the completed and configured steps
         self.configured_steps.set_value(steps_to_do)
+        self.completed_steps.meta.set_display(Display(limitLow=0,
+                                                      limitHigh=steps_to_do))
         # Reset the progress of all child parts
         self.progress_updates = {}
         self.resume_queue = Queue()

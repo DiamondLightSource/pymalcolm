@@ -30,6 +30,7 @@ class Widget(Enum):
     FLOWGRAPH = "flowgraph"  #: Boxes with lines for child block connections
     TREE = "tree"  #: A nested tree of object models editor
     PLOT = "plot"  #: Waveform plot
+    METER = "meter"  #: progress meter
 
     def tag(self):
         """Return the actual tag for the given Widget
