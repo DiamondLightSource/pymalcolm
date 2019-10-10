@@ -6,7 +6,7 @@ from .pmacchildpart import PmacChildPart, AMri, APartName
 from .pmacstatuspart import PmacStatusPart
 from .pmactrajectorypart import PmacTrajectoryPart, AMri, APartName
 from .rawmotorsinkportspart import RawMotorSinkPortsPart, AGroup
-from .beamselectorpart import BeamSelectorPart, APartName, AMri
+from .motorpremovepart import MotorPreMovePart, APartName, AMri
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

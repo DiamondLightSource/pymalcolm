@@ -11,25 +11,6 @@
     config_dir: $(config_dir)
 
 - pmac.includes.rawmotor_collection:
-    mri: BL45P-ML-CHOP-01:VER
-    pv_prefix: BL45P-MO-CHOP-01:VER
-    scannable: chopperVer
-
-- pmac.includes.rawmotor_collection:
-    mri: BL45P-ML-STAGE-01:Y
-    pv_prefix: BL45P-MO-MAP-01:STAGE:Y
-    scannable: y
-
-- pmac.includes.rawmotor_collection:
-    mri: BL45P-ML-STAGE-01:Z
-    pv_prefix: BL45P-MO-MAP-01:STAGE:Z
-    scannable: z
-
-- pmac.includes.cs_collection:
-    mri_prefix: $(mri_prefix)
-    pv_prefix: BL45P-MO-STEP-02
-    cs: 1
-
-- pmac.includes.trajectory_collection:
-    mri_prefix: $(mri_prefix)
-    pv_prefix: BL45P-MO-STEP-02
+    mri: BL45P-ML-STAGE-01:BS
+    pv_prefix: BL45P-MO-MAP-01:STAGE:BS
+    scannable: bs
