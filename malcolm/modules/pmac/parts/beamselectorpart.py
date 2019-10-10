@@ -12,6 +12,7 @@ with Anno("The demand value to move our counter motor to"):
     ADemand = float
 
 # TODO Type checking?
+# TODO Rename to motor move part?
 
 class BeamSelectorPart(builtin.parts.ChildPart):
 
@@ -49,9 +50,5 @@ class BeamSelectorPart(builtin.parts.ChildPart):
     def move(self, context, angle):
         # type: (builtin.hooks.AContext, ADemand) -> None
 
-        #self.angle.set_value(angle)
         childBlock = context.block_view(self.mri)
-        #child.put(self.mri, angle)
         childBlock.demand.put_value(angle)
-
-        pass
