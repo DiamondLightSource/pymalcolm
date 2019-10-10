@@ -99,10 +99,12 @@ def _what_moves_most(point, axis_mapping):
         if diff_cts != 0:
             diffs[s] = abs(diff_cts)
             compare_increasing[s] = (compare_cts, diff_cts > 0)
+
     assert diffs, \
-        "Can't work out a compare point for %s, maybe none of the axes " \
-        "connected to the PandA are moving during the scan point?" % \
-        point.positions
+            "Can't work out a compare point for %s, maybe none of the axes " \
+            "connected to the PandA are moving during the scan point?" % \
+            point.positions
+
     # Sort on abs(diff), take the biggest
     axis_name = sorted(diffs, key=diffs.get)[-1]
     compare_cts, increasing = compare_increasing[axis_name]
@@ -311,10 +313,19 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             point = self.generator.get_point(i)
             half_frame = int(round(point.duration / TICK / 2))
             start_of_row = False
+
             if self.axis_mapping:
-                if self.last_point is None or not pmac.util.points_joined(
-                        self.axis_mapping, self.last_point, point):
+                if self.last_point is None:
+                    # If no last point, we are the first point in
+                    # an acquisition.
+                    # If the motors are moving during this point then set
+                    # start_of_row so that we wait for triggers
+                    static = (point.positions == point.lower == point.upper)
+                    start_of_row = not static
+                elif not pmac.util.points_joined(self.axis_mapping,
+                                                 self.last_point, point):
                     start_of_row = True
+
             if start_of_row and self.trigger_enums:
                 # Position compare
                 # First row, or rows not joined
