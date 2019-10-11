@@ -5,7 +5,7 @@ from malcolm.modules import builtin, scanning
 
 APartName = builtin.parts.APartName
 AMri = builtin.parts.AMri
-AIV = builtin.parts.AInitialVisibility
+AInitialVisibility = builtin.parts.AInitialVisibility
 
 with Anno("The demand value to move the axis to"):
     ADemand = float
