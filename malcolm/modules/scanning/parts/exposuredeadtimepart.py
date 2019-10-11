@@ -5,7 +5,7 @@ from annotypes import Anno, add_call_types
 from malcolm.core import Part, NumberMeta, Widget, config_tag, APartName, \
     PartRegistrar, Display
 from malcolm.modules import scanning
-from ..infos import ExposureDeadtimeInfo
+from malcolm.modules.scanning.infos import ExposureDeadtimeInfo
 
 readout_desc = \
     "Subtract this time from frame duration when calculating exposure"
