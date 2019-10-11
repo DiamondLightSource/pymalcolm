@@ -28,6 +28,11 @@
 - scanning.parts.DatasetTablePart:
     name: DSET
 
+- scanning.parts.ExposureDeadtimePart:
+    name: EXPOSURE
+    initial_readout_time: 0.001
+    min_exposure: 0.0001
+
 - demo.parts.FileWritePart:
     name: FW
     width: 160

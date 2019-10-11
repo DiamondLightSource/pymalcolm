@@ -10,14 +10,12 @@ from ..hooks import ConfigureHook, PostRunArmedHook, \
     UParameterTweakInfos, PostRunReadyHook, AbortHook, PreConfigureHook, \
     AGenerator, AAxesToMove, UInfos, AFileDir, AFileTemplate, APartInfo
 from ..infos import ParameterTweakInfo, RunProgressInfo
-from ..util import RunnableStates, DetectorTable
+from ..util import RunnableStates, DetectorTable, ADetectorTable
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple
 
 
-with Anno("The detectors that should be active and their exposures"):
-    ADetectorTable = DetectorTable
 with Anno("The initial value of FramesPerStep for this detector at configure"):
     AInitialFramesPerStep = int
 

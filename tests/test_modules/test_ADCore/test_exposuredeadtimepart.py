@@ -4,7 +4,7 @@ from mock import MagicMock, call
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import PartRegistrar
-from malcolm.modules.ADCore.parts import ExposureDeadtimePart
+from malcolm.modules.scanning.parts import ExposureDeadtimePart
 
 
 def make_generator(duration):
@@ -30,11 +30,10 @@ class TestExposureDeadtimePart(unittest.TestCase):
         assert self.o.exposure.value == 0.0
 
     def test_validate_exposure_too_fast(self):
-        with self.assertRaises(AssertionError) as cm:
-            self.o.validate(
+        tweak = self.o.validate(
                 generator=make_generator(duration=0.1), exposure=0.001)
-        assert str(cm.exception) == \
-            "Exposure 0.01 should be in range 0.001 to 0.099995"
+        assert tweak.parameter == "exposure"
+        assert tweak.value == 0.01
 
     def test_validate_no_duration(self):
         with self.assertRaises(AssertionError) as cm:
@@ -47,7 +46,7 @@ class TestExposureDeadtimePart(unittest.TestCase):
         self.o.validate(generator=make_generator(duration=0.1))
 
     def test_configure(self):
-        self.o.configure(generator=make_generator(duration=0.1))
+        self.o.configure(exposure=0.099995)
         assert self.o.exposure.value == 0.099995
 
     def test_report_status(self):

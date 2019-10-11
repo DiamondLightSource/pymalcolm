@@ -1,6 +1,8 @@
 from .datasettablepart import DatasetTablePart
-from .detectorchildpart import DetectorChildPart, AMri, ADetectorTable, \
-    AInitialVisibility, APartName
+from .detectorchildpart import DetectorChildPart, AMri, APartName, \
+    AInitialVisibility
+from .exposuredeadtimepart import ExposureDeadtimePart, AInitialReadoutTime, \
+    AInitialAccuracy, AMinExposure
 from .minturnaroundpart import MinTurnaroundPart
 from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes
 from .unrollingpart import UnrollingPart

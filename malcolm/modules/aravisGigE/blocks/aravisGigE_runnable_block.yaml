@@ -43,7 +43,7 @@
     soft_trigger_modes:
         - Off
 
-- ADCore.parts.ExposureDeadtimePart:
+- scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
     initial_readout_time: 200e-6
 

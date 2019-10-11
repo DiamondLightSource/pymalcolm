@@ -32,7 +32,7 @@
     name: Xspress3A
     mri: $(mri_prefix):DRV
 
-- ADCore.parts.ExposureDeadtimePart:
+- scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
     initial_readout_time: 7e-5
 

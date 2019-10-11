@@ -55,7 +55,7 @@
     soft_trigger_modes:
         - Internal
 
-- ADCore.parts.ExposureDeadtimePart:
+- scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
     initial_readout_time: 1e-3  # todo check correct readout time
 

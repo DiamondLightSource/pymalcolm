@@ -29,7 +29,7 @@ with Anno("The name of the Part within the Controller"):
 
 # Part names are alphanumeric with underscores and dashes. Dots not allowed as
 # web gui uses dot as "something that can't appear in field or part names"
-PART_NAME_RE = re.compile("[a-zA-Z_\-0-9]*$")
+PART_NAME_RE = re.compile(r"[a-zA-Z_\-0-9]*$")
 
 
 class FieldRegistry(object):
@@ -88,7 +88,7 @@ class FieldRegistry(object):
         return attr
 
     def _add_field(self, owner, name, model, writeable_func, needs_context):
-        # type: (object, str, Field, Callable) -> None
+        # type: (object, str, Field, Callable, bool) -> None
         assert CAMEL_RE.match(name), \
             "Field %r published by %s is not camelCase" % (name, owner)
         part_fields = self.fields.setdefault(owner, [])

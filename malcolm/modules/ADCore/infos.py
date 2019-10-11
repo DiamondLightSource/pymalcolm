@@ -30,38 +30,6 @@ class FilePathTranslatorInfo(Info):
         ).replace("/", "\\")
 
 
-class ExposureDeadtimeInfo(Info):
-    """Detector exposure time should be generator.duration - deadtime
-
-    Args:
-        readout_time: The per frame readout time of the detector
-        frequency_accuracy: The crystal accuracy in ppm
-        min_exposure: The minimum exposure time this detector supports
-    """
-    def __init__(self, readout_time, frequency_accuracy, min_exposure):
-        # type: (float, float, float) -> None
-        self.readout_time = readout_time
-        self.frequency_accuracy = frequency_accuracy
-        self.min_exposure = min_exposure
-
-    def calculate_exposure(self, duration, exposure=0.0):
-        # type: (float) -> float
-        """Calculate the exposure to set the detector to given the duration of
-        the frame and the readout_time and frequency_accuracy"""
-        assert duration > 0, \
-            "Duration %s for generator must be >0 to signify constant " \
-            "exposure" % duration
-        max_exposure = duration - self.readout_time - (
-                self.frequency_accuracy * duration / 1000000.0)
-        # If exposure time is 0, then use the max_exposure for this duration
-        if exposure <= 0.0:
-            exposure = max_exposure
-        assert self.min_exposure <= exposure <= max_exposure, \
-            "Exposure %s should be in range %s to %s" % (
-                self.min_exposure, exposure, max_exposure)
-        return exposure
-
-
 class NDArrayDatasetInfo(Info):
     """Declare the NDArray data this produces as being a useful dataset to store
     to file

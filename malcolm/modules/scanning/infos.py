@@ -24,7 +24,6 @@ class DatasetType(Enum):
 
 
 class ParameterTweakInfo(Info):
-    # type: (str, Any) -> None
     """Info about a configure() parameter that needs to be tweaked
 
     Args:
@@ -32,6 +31,7 @@ class ParameterTweakInfo(Info):
         value: The value it should be changed to
     """
     def __init__(self, parameter, value):
+        # type: (str, Any) -> None
         self.parameter = parameter
         self.value = value
 
@@ -127,3 +127,34 @@ class DetectorMutiframeInfo(Info):
     def __init__(self, mri):
         # type: (str) -> None
         self.mri = mri
+
+
+class ExposureDeadtimeInfo(Info):
+    """Detector exposure time should be generator.duration - deadtime
+
+    Args:
+        readout_time: The per frame readout time of the detector
+        frequency_accuracy: The crystal accuracy in ppm
+        min_exposure: The minimum exposure time this detector supports
+    """
+    def __init__(self, readout_time, frequency_accuracy, min_exposure):
+        # type: (float, float, float) -> None
+        self.readout_time = readout_time
+        self.frequency_accuracy = frequency_accuracy
+        self.min_exposure = min_exposure
+
+    def calculate_exposure(self, duration, exposure=0.0):
+        # type: (float, float) -> float
+        """Calculate the exposure to set the detector to given the duration of
+        the frame and the readout_time and frequency_accuracy"""
+        assert duration > 0, \
+            "Duration %s for generator must be >0 to signify constant " \
+            "exposure" % duration
+        max_exposure = duration - self.readout_time - (
+                self.frequency_accuracy * duration / 1000000.0)
+        # If exposure time is 0, then use the max_exposure for this duration
+        if exposure <= 0.0 or exposure > max_exposure:
+            exposure = max_exposure
+        elif exposure < self.min_exposure:
+            exposure = self.min_exposure
+        return exposure

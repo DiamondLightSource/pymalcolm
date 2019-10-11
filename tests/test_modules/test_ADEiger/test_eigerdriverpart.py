@@ -1,4 +1,3 @@
-import pytest
 from mock import call
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
@@ -6,7 +5,6 @@ from malcolm.core import Context, Process
 from malcolm.modules.ADEiger.parts import EigerDriverPart
 from malcolm.modules.ADEiger.blocks import eiger_driver_block
 from malcolm.testutil import ChildTestCase
-import json
 
 
 class TestEigerDetectorDriverPart(ChildTestCase):

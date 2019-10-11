@@ -152,6 +152,10 @@ class DetectorTable(Table):
         self.framesPerStep = AFramesPerStep(framesPerStep)
 
 
+with Anno("The detectors that should be active and their exposures"):
+    ADetectorTable = DetectorTable
+
+
 class RunnableStates(builtin.util.ManagerStates):
     """This state set covers controllers and parts that can be configured and
     then run, and have the ability to pause and rewind"""
