@@ -38,6 +38,11 @@ class FieldError(MalcolmException):
     pass
 
 
+class IncompatibleError(MalcolmException):
+    """Incompatibility between components of this scan"""
+    pass
+
+
 class NotWriteableError(MalcolmException):
     """The field is not currently writeable, so cannot Put or Post to it"""
 
