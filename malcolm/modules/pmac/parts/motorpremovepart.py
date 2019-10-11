@@ -10,6 +10,7 @@ AIV = builtin.parts.AInitialVisibility
 with Anno("The demand value to move the axis to"):
     ADemand = float
 
+@builtin.util.no_save("demand")
 class MotorPreMovePart(builtin.parts.ChildPart):
 
     def __init__(self,
