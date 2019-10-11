@@ -99,7 +99,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         expected_exports = set(self.name + s for s in suffixes)
         for source, export in self.panda.exports.value.rows():
             if export in expected_exports:
-                part_name, attr_name = source.split(".")
+                part_name = source.split(".")[0]
                 if pulse_name:
                     assert part_name == pulse_name, \
                         "Export %s defined for a different pulse block" % export
