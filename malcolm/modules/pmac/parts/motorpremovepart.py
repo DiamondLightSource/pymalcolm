@@ -10,20 +10,22 @@ AIV = builtin.parts.AInitialVisibility
 with Anno("The demand value to move the axis to"):
     ADemand = float
 
+
 @builtin.util.no_save("demand")
 class MotorPreMovePart(builtin.parts.ChildPart):
 
     def __init__(self,
-                 name, # type: APartName
-                 mri, # type: AMri
+                 name,  # type: APartName
+                 mri,  # type: AMri
                  demand,  # type: ADemand
-                 initial_visibility = False # type: AIV
+                 initial_visibility=False  # type: AIV
                  ):
         # type: (...) -> None
-        super(MotorPreMovePart, self).__init__(name,
-                                               mri,
-                                               stateful=False,
-                                               initial_visibility=initial_visibility)
+        super(MotorPreMovePart,
+              self).__init__(name,
+                             mri,
+                             stateful=False,
+                             initial_visibility=initial_visibility)
         self.demand = demand
 
     def setup(self, registrar):

@@ -19,7 +19,9 @@ class TestMotorPreMovePart(ChildTestCase):
                                              mri="BS",
                                              pv_prefix="PV:PRE")
         # Add Beam Selector object
-        self.o = MotorPreMovePart(name="MotorPreMovePart", mri="BS", demand=50)
+        self.o = MotorPreMovePart(name="MotorPreMovePart",
+                                  mri="BS",
+                                  demand=50)
 
         controller = RunnableController("SCAN", "/tmp")
         controller.add_part(self.o)
@@ -33,7 +35,12 @@ class TestMotorPreMovePart(ChildTestCase):
 
     def test_bs(self):
         b = self.context.block_view("SCAN")
-        generator = CompoundGenerator([LineGenerator("x", "mm", 0, 1, 10)], [], [], 0.1)
+        generator = CompoundGenerator([LineGenerator("x",
+                                                     "mm",
+                                                     0,
+                                                     1,
+                                                     10)],
+                                      [], [], 0.1)
         b.configure(generator)
 
         self.o.configure(self.context)
