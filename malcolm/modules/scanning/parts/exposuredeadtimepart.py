@@ -4,8 +4,10 @@ from annotypes import Anno, add_call_types
 
 from malcolm.core import Part, NumberMeta, Widget, config_tag, APartName, \
     PartRegistrar, Display
-from malcolm.modules import scanning
-from malcolm.modules.scanning.infos import ExposureDeadtimeInfo
+from ..infos import ExposureDeadtimeInfo, ParameterTweakInfo
+from ..util import exposure_attribute
+from ..hooks import ReportStatusHook, ValidateHook, ConfigureHook, \
+    AGenerator, AExposure, UInfos
 
 readout_desc = \
     "Subtract this time from frame duration when calculating exposure"
@@ -42,15 +44,15 @@ class ExposureDeadtimePart(Part):
             display=Display(precision=3, units="ppm")
         ).create_attribute_model(initial_frequency_accuracy)
         self.min_exposure = min_exposure
-        self.exposure = scanning.util.exposure_attribute(min_exposure)
+        self.exposure = exposure_attribute(min_exposure)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(ExposureDeadtimePart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
-        registrar.hook(scanning.hooks.ValidateHook, self.validate)
-        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook(ReportStatusHook, self.report_status)
+        registrar.hook(ValidateHook, self.validate)
+        registrar.hook(ConfigureHook, self.configure)
         # Attributes
         registrar.add_attribute_model(
             "readoutTime", self.readout_time, self.readout_time.set_value)
@@ -59,29 +61,27 @@ class ExposureDeadtimePart(Part):
             self.frequency_accuracy.set_value)
         registrar.add_attribute_model("exposure", self.exposure)
         # Tell the controller to expose some extra configure parameters
-        registrar.report(scanning.hooks.ConfigureHook.create_info(
+        registrar.report(ConfigureHook.create_info(
             self.configure))
 
     @add_call_types
-    def validate(self, generator, exposure=0.0):
-        # type: (scanning.hooks.AGenerator, scanning.hooks.AExposure) -> None
-        info = self.report_status()
-        info.calculate_exposure(generator.duration, exposure)
-
-    @add_call_types
     def report_status(self):
-        # type: () -> scanning.hooks.UInfos
+        # type: () -> UInfos
         # Make an info so we can pass it to the detector
         info = ExposureDeadtimeInfo(
             self.readout_time.value, self.frequency_accuracy.value,
             self.min_exposure)
         return info
 
-    # Allow CamelCase as these parameters will be serialized
-    # noinspection PyPep8Naming
     @add_call_types
-    def configure(self, generator, exposure=0.0):
-        # type: (scanning.hooks.AGenerator, scanning.hooks.AExposure) -> None
+    def validate(self, generator, exposure=0.0):
+        # type: (AGenerator, AExposure) -> UInfos
         info = self.report_status()
-        self.exposure.set_value(
-            info.calculate_exposure(generator.duration, exposure))
+        new_exposure = info.calculate_exposure(generator.duration, exposure)
+        if new_exposure != exposure:
+            return ParameterTweakInfo("exposure", new_exposure)
+
+    @add_call_types
+    def configure(self, exposure=0.0):
+        # type: (AExposure) -> None
+        self.exposure.set_value(exposure)
