@@ -18,7 +18,7 @@ class MotorPreMovePart(builtin.parts.ChildPart):
                  name,  # type: APartName
                  mri,  # type: AMri
                  demand,  # type: ADemand
-                 initial_visibility=False  # type: AIV
+                 initial_visibility=False  # type: AInitialVisibility
                  ):
         # type: (...) -> None
         super(MotorPreMovePart,
