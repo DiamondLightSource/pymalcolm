@@ -158,6 +158,8 @@ class DetectorChildPart(builtin.parts.ChildPart):
             serialized["excluders"] = list(serialized["excluders"]) + [
                 SquashingExcluder(axes=squash_axes)
             ]
+            # Divide it down
+            serialized["duration"] = float(serialized["duration"]) / frames
             generator = CompoundGenerator.from_dict(serialized)
         kwargs = dict(
             generator=generator,
