@@ -44,9 +44,16 @@ class TestKinematicsSavuPart(ChildTestCase):
         # These are the motors we are interested in
         self.child_x = self.process.get_controller("BL45P-ML-STAGE-01:X")
         self.child_y = self.process.get_controller("BL45P-ML-STAGE-01:Y")
+        # Set up port and kinematics on CS1
         self.child_cs1 = self.process.get_controller("PMAC:CS1")
-        # CS1 needs to have the right port otherwise we will error
         self.set_attributes(self.child_cs1, port="CS1")
+        self.set_attributes(self.child_cs1, qVariables="Q22=12345 Q23=999")
+        self.set_attributes(self.child_cs1, forwardKinematic="Q1=P1+10 Q5=Q22+4 Q7=8+4 RET ")
+        # Set up variables on CS1
+        self.child_status = self.process.get_controller("PMAC:STATUS")
+        self.set_attributes(self.child_status, iVariables="I12=3")
+        self.set_attributes(self.child_status, pVariables="")
+        self.set_attributes(self.child_status, mVariables="M45=1 M42=561")
 
         # Make the child block holding panda and pmac mri
         self.child = self.create_child_block(
@@ -62,7 +69,7 @@ class TestKinematicsSavuPart(ChildTestCase):
         # goal for these is 3000, 2000, True
         cols, rows, alternate = 3000, 2000, False
         self.steps_to_do = cols * rows
-        xs = LineGenerator("x", "mm", 0.0, 0.5, cols, alternate=alternate)
+        xs = LineGenerator("x", "mm", 0.0, 0.1, cols, alternate=alternate)
         ys = LineGenerator("y", "mm", 0.0, 0.1, rows)
         self.generator = CompoundGenerator([ys, xs], [], [], 0.1)
         self.generator.prepare()
@@ -81,7 +88,7 @@ class TestKinematicsSavuPart(ChildTestCase):
             offset=0.0, maxVelocity=x_velocity, readback=x_pos,
             velocitySettle=0.0, units=units, axisNumber=1)
         self.set_attributes(
-            self.child_y, cs="CS1,B",
+            self.child_y, cs="CS1,X",
             accelerationTime=y_velocity/y_acceleration, resolution=0.001,
             offset=0.0, maxVelocity=y_velocity, readback=y_pos,
             velocitySettle=0.0, units=units, axisNumber=23)
@@ -98,7 +105,7 @@ class TestKinematicsSavuPart(ChildTestCase):
 
         self.o.configure(
             self.context, fileDir=tmp_dir, generator=generator,
-            axesToMove=AXES, formatName=vds_file
+            axesToMove=AXES
         )
         # assert self.child.handled_requests.mock_calls == [
         #    call.put('fileName', 'odin2_raw_data'),
@@ -108,34 +115,22 @@ class TestKinematicsSavuPart(ChildTestCase):
         part_info = dict(
             HDF=[
                 DatasetProducedInfo(
-                    "y.data", "kinematics_PANDABOX.h5",
+                    "y.data", "kinematics_PANDABOX2.h5",
                     DatasetType.POSITION_VALUE, 2,
                     "/entry/NDAttributes/INENC1.VAL", "/p/uid"),
                 DatasetProducedInfo(
-                    "x.data", "kinematics_PANDABOX2.h5",
+                    "x.data", "kinematics_PANDABOX.h5",
                     DatasetType.POSITION_VALUE, 0,
-                    "/entry/NDAttributes/INENC1.VAL", "/p/uid"),
-                PmacCsKinematicsInfo(
-                    "CS1",
-                    "Q1=5 Q2=4",
-                    "Q1=P1+10\nQ5=Q22+4\nQ7=8+4",
-                    ""
-                ),
-                PmacVariablesInfo(
-                    "I1=13 I3=45",
-                    "",
-                    ""
-                )
+                    "/entry/NDAttributes/INENC1.VAL", "/p/uid")
             ]
         )
-
-        self.o.post_configure(self.context, part_info)
 
         rmtree(tmp_dir)
 
     def test_file_creation(self):
         tmp_dir = mkdtemp() + os.path.sep
-        data_name = 'odin2'
+        data_name = "p00-1234"
+        file_template = data_name + '-%s.h5'
         self.set_motor_attributes(0.5, 0.0, "mm")
 
         xs = LineGenerator("x", "mm", 0.0, 0.4, 5, alternate=False)
@@ -145,7 +140,7 @@ class TestKinematicsSavuPart(ChildTestCase):
 
         self.o.configure(
             self.context, fileDir=tmp_dir, generator=generator,
-            axesToMove=AXES, formatName=data_name
+            axesToMove=AXES, fileTemplate=file_template
         )
         # assert self.child.handled_requests.mock_calls == [
         #    call.put('fileName', 'odin2_raw_data'),
@@ -156,32 +151,32 @@ class TestKinematicsSavuPart(ChildTestCase):
         part_info = dict(
             HDF=[
                 DatasetProducedInfo(
-                    "y.data", "kinematics_PANDABOX.h5", 
+                    "y.data", "kinematics_PANDABOX2.h5",
                     DatasetType.POSITION_VALUE, 2,
                     "/entry/NDAttributes/INENC1.VAL", "/p/uid"
                 ),
                 DatasetProducedInfo(
-                    "x.data", "kinematics_PANDABOX2.h5", 
+                    "x.data", "kinematics_PANDABOX.h5",
                     DatasetType.POSITION_VALUE, 0,
                     "/entry/NDAttributes/INENC1.VAL", "/p/uid"
                 ),
                 DatasetProducedInfo(
-                    "y.max", "kinematics_PANDABOX.h5", 
+                    "y.max", "kinematics_PANDABOX2.h5",
                     DatasetType.POSITION_MAX, 0,
                     "/entry/NDAttributes/INENC1_MAX.VAL", "/p/uid"
                 ),
                 DatasetProducedInfo(
-                    "y.min", "kinematics_PANDABOX.h5", 
+                    "y.min", "kinematics_PANDABOX2.h5",
                     DatasetType.POSITION_MIN, 0,
                     "/entry/NDAttributes/INENC1_MIN.VAL", "/p/uid"
                 ),
                 DatasetProducedInfo(
-                    "x.max", "kinematics_PANDABOX2.h5", 
+                    "x.max", "kinematics_PANDABOX.h5",
                     DatasetType.POSITION_MAX, 0,
                     "/entry/NDAttributes/INENC1_MAX.VAL", "/p/uid"
                 ),
                 DatasetProducedInfo(
-                    "x.min", "kinematics_PANDABOX2.h5", 
+                    "x.min", "kinematics_PANDABOX.h5",
                     DatasetType.POSITION_MIN, 0,
                     "/entry/NDAttributes/INENC1_MIN.VAL", "/p/uid"
                 ),
@@ -189,52 +184,40 @@ class TestKinematicsSavuPart(ChildTestCase):
                     "det.min", "fn1", 
                     DatasetType.SECONDARY, 0,
                     "/p/s2", "/p/uid"
-                ),
-                PmacCsKinematicsInfo(
-                    "CS2",
-                    "Q15=1",
-                    "Q3=P2+5",
-                    ""
-                ),
-                PmacCsKinematicsInfo(
-                    "CS1",
-                    "Q22=12345 Q23=999",
-                    "Q1=P1+10\nQ5=Q22+4\nQ7=8+4",
-                    ""
-                ),
-                PmacVariablesInfo(
-                    "",
-                    "",
-                    ""
                 )
             ]
         )
 
         self.o.post_configure(self.context, part_info)
 
-        self.o.post_run_ready(self.context)
-
         # Check Savu file has been created and contains the correct entries
-        savu_path = os.path.join(tmp_dir, data_name + '.nxs')
+        savu_path = os.path.join(tmp_dir, data_name + '-savu.nxs')
         savu_file = h5py.File(savu_path, "r")
 
         # Check the forward kinematics program has been written
+        useminmax_dataset = savu_file['/entry/inputs/use_minmax']
+        self.assertEquals(useminmax_dataset[0], True)
+
+        # Check the forward kinematics program has been written
         program_dataset = savu_file['/entry/inputs/program']
-        self.assertEquals(program_dataset.shape, (3, ))
-        self.assertEquals(program_dataset[0], "Q1=P1+10")
+        self.assertEquals(program_dataset.shape, (1, ))
+        self.assertEquals(program_dataset[0], "Q1=P1+10 Q5=Q22+4 Q7=8+4 RET ")
 
         # Check the Q and I program variables have been written
         variables_dataset = savu_file['/entry/inputs/variables']
-        self.assertEquals(variables_dataset.shape, (2, ))
-        name = variables_dataset[0][0]
-        val = variables_dataset[0][1]
-        self.assertEquals(name, 'Q22')
-        self.assertEquals(val, 12345)
+        self.assertEquals(variables_dataset.shape, (5, ))
+
+        for dataset in variables_dataset:
+            if dataset[0] == 'Q22':
+                found = True
+                self.assertEquals(dataset[1], 12345)
+        self.assertTrue(found)
 
         # Check the p1 datasets have been written
+
         # Create raw data file first that the file will link to
-        raw_path = os.path.join(tmp_dir, 'kinematics_PANDABOX2.h5')
-        raw = h5py.File(raw_path, "w")
+        raw_path = os.path.join(tmp_dir, 'kinematics_PANDABOX.h5')
+        raw = h5py.File(raw_path, "w", libver="latest")
         raw.require_group('/entry/NDAttributes/')
         fmnd_mean = np.zeros((5, 5, 1, 1))
         fmnd_mean[0][0][0][0] = 61616
@@ -244,7 +227,30 @@ class TestKinematicsSavuPart(ChildTestCase):
         fmnd_max[0][0][0][0] = 27
         fmnd_max[3][4][0][0] = 18
         raw.create_dataset('/entry/NDAttributes/INENC1_MAX.VAL', data=fmnd_max)
-        raw.close()
+        fmnd_max = np.zeros((5, 5, 1, 1))
+        fmnd_max[0][0][0][0] = 54
+        fmnd_max[3][4][0][0] = 76
+        raw.create_dataset('/entry/NDAttributes/INENC1_MIN.VAL', data=fmnd_max)
+
+        # Create raw data file first that the file will link to
+        raw_path2 = os.path.join(tmp_dir, 'kinematics_PANDABOX2.h5')
+        raw2 = h5py.File(raw_path2, "w", libver="latest")
+        raw2.require_group('/entry/NDAttributes/')
+        fmnd_mean = np.zeros((5, 5, 1, 1))
+        fmnd_mean[0][0][0][0] = 12345
+        fmnd_mean[1][2][0][0] = 54321
+        raw2.create_dataset('/entry/NDAttributes/INENC1.VAL', data=fmnd_mean)
+        fmnd_max = np.zeros((5, 5, 1, 1))
+        fmnd_max[0][0][0][0] = 99
+        fmnd_max[3][4][0][0] = 88
+        raw2.create_dataset('/entry/NDAttributes/INENC1_MAX.VAL', data=fmnd_max)
+        fmnd_max = np.zeros((5, 5, 1, 1))
+        fmnd_max[0][0][0][0] = 76
+        fmnd_max[3][4][0][0] = 44
+        raw2.create_dataset('/entry/NDAttributes/INENC1_MIN.VAL', data=fmnd_max)
+
+        raw.swmr_mode = True
+        raw2.swmr_mode = True
 
         # Check p1 mean and max datasets are there
         p1mean_dataset = savu_file['/entry/inputs/p1mean']
@@ -259,10 +265,10 @@ class TestKinematicsSavuPart(ChildTestCase):
 
         # Check the final vds file has been created
         # First create a fake Savu output file that the vds will link to
-        raw_savu_path = os.path.join(tmp_dir, 'savuproc')
+        raw_savu_path = os.path.join(tmp_dir, data_name + '-savuproc')
         os.mkdir(raw_savu_path)
         raw_savu_path = os.path.join(
-            raw_savu_path, data_name + '_processed.nxs'
+            raw_savu_path, data_name + '-savu_processed.nxs'
         )
         raw_savu = h5py.File(raw_savu_path, "w")
         raw_savu.require_group('/entry/final_result_qmean/')
@@ -274,13 +280,15 @@ class TestKinematicsSavuPart(ChildTestCase):
         )
         raw_savu.close()
 
-        # Check q1mean is there
-        vds_path = os.path.join(tmp_dir, data_name + '_vds.nxs')
+        # Check xmean is there
+        vds_path = os.path.join(tmp_dir, data_name + '-vds.nxs')
         vds_file = h5py.File(vds_path, "r")
-        q1mean = vds_file['/entry/q1mean']
-        self.assertEquals(q1mean.shape, (5, 5))
-        self.assertEquals(q1mean[0][0], 555)
-        self.assertEquals(q1mean[2][1], 666)
+        xmean = vds_file['/entry/xmean']
+        self.assertEquals(xmean.shape, (5, 5))
+        self.assertEquals(xmean[0][0], 555)
+        self.assertEquals(xmean[2][1], 666)
         vds_file.close()
+        raw.close()
+        raw2.close()
 
         rmtree(tmp_dir)

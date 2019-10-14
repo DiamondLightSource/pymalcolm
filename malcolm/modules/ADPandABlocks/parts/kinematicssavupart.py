@@ -3,6 +3,9 @@ import os
 
 import h5py
 import numpy as np
+
+from shutil import copyfile
+
 from annotypes import add_call_types, TYPE_CHECKING
 
 from malcolm.core import APartName, Info, PartRegistrar
@@ -22,11 +25,6 @@ PVar = collections.namedtuple('PVar', 'path file p_number')
 
 # QUESTIONS:
 # Assuming 1 pmac ok? See TODO
-# Where should files be created? links etc?
-# Savu folder?
-# When create files. post configure ok? or post run?
-# context wait in postrun?
-# Output Q names?
 # TODOs in utils.py
 # failing tests
 
@@ -40,26 +38,29 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         super(KinematicsSavuPart, self).__init__(name, mri, stateful=False)
         self.nxs_full_filename = ""
         self.vds_full_filename = ""
+        self.savu_pl_filename = ""
         self.savu_full_filename = ""
         self.savu_code_lines = []
         self.savu_variables = {}
+        self.q_value_mapping = {}
         self.p_vars = []
         self.use_min_max = True
         self.savu_file = None
         self.layout_table = None
         self.cs_port = None
         self.shape = None
+        self.pmac_mri = None
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(KinematicsSavuPart, self).setup(registrar)
+        print("In kinsav setup")
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
             self.configure))
         # Hooks
         registrar.hook(scanning.hooks.ConfigureHook, self.configure)
         registrar.hook(scanning.hooks.PostConfigureHook, self.post_configure)
-        registrar.hook(scanning.hooks.PostRunReadyHook, self.post_run_ready)
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
@@ -69,7 +70,6 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                   fileDir,  # type: scanning.hooks.AFileDir
                   generator,  # type: scanning.hooks.AGenerator
                   axesToMove,  # type: scanning.hooks.AAxesToMove
-                  formatName="savu",  # type: scanning.hooks.AFormatName
                   fileTemplate="%s.nxs",  # type: scanning.hooks.AFileTemplate
                   ):
         # type: (...) -> None
@@ -79,18 +79,25 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         self.savu_variables = {}
         self.savu_code_lines = []
         self.shape = generator.shape
+        self.q_value_mapping = {}
 
         # On initial configure, expect to get the demanded number of frames
         child = context.block_view(self.mri)
-        pmac_mri = child.pmac.value
+        self.pmac_mri = child.pmac.value
 
-        # Derive file path from template as AreaDetector would normally do
-        fileName = fileTemplate.replace('%s', formatName)
-        vds_fileName = fileTemplate.replace('%s', formatName + "_vds")
-        savu_fileName = formatName + "_processed.nxs"
+        # Derive file path from template
+        baseTemplate = os.path.splitext(fileTemplate)[0]
+        # Create the various nexus files to pass to Savu and expected output
+        fileName = baseTemplate.replace('%s', "savu") + ".nxs"
+        vds_fileName = baseTemplate.replace('%s', "vds") + ".nxs"
+        savu_pl_fileName = baseTemplate.replace('%s', "savu_pl") + ".nxs"
+        savu_fileName = baseTemplate.replace('%s', "savu_processed") + ".nxs"
 
         # This is path to the file to pass to Savu
         self.nxs_full_filename = os.path.join(fileDir, fileName)
+
+        # This is path to the process list file to pass to Savu
+        self.savu_pl_filename = os.path.join(fileDir, savu_pl_fileName)
 
         # This is the path to the VDS file which links to the processed Savu
         # file with the output datasets
@@ -98,12 +105,12 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 
         # This is the path the the processed file created by Savu after having
         # done the processing
-        savu_path = os.path.join(fileDir, "savuproc")
+        savu_path = os.path.join(fileDir, baseTemplate.replace('%s', "savuproc"))
         self.savu_full_filename = os.path.join(savu_path, savu_fileName)
 
         # Get the cs port mapping for this PMAC
         # {scannable: MotorInfo}
-        self.layout_table = context.block_view(pmac_mri).layout.value
+        self.layout_table = context.block_view(self.pmac_mri).layout.value
         axis_mapping = pmac.util.cs_axis_mapping(
             context, self.layout_table, axesToMove
         )
@@ -113,6 +120,11 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             self.cs_port = mapping.cs_port
             break
 
+        for mapping in axis_mapping.values():
+            if mapping.cs_axis in pmac.util.CS_AXIS_NAMES:
+                q_value = pmac.util.CS_AXIS_NAMES.index(mapping.cs_axis) + 1
+                self.q_value_mapping[q_value] = mapping.scannable
+
         assert "." in self.nxs_full_filename, \
             "File extension for %r should be supplied" % self.nxs_full_filename
 
@@ -120,7 +132,6 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
     def post_configure(self, context, part_info):
         # type: (scanning.hooks.AContext, scanning.hooks.APartInfo) -> None
         # Get the axis number for the inverse kinematics mapped in this cs_port
-        # {scannable: axis_num}
 
         axis_numbers = pmac.util.cs_axis_numbers(
             context, self.layout_table, self.cs_port
@@ -160,43 +171,33 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
 
         # Get Forward Kinematics code lines
         # TODO : this assumes only one pmac - is that OK ?
-        infos = pmac.infos.PmacVariablesInfo.filter_values(part_info)
-        if infos:
-            assert len(infos) == 1, \
-                "Expected 0 or 1 PmacVariablesInfo, got %d" % len(infos)
-            raw_input_vars = infos[0].all_variables
-        else:
-            raw_input_vars = ''
+        pmac_status_child = context.block_view(self.pmac_mri + ":STATUS")
 
-        # get any variables required for the kinematic
-        infos = pmac.infos.PmacCsKinematicsInfo.filter_values(part_info)
+        raw_input_vars = " ".join([pmac_status_child.iVariables.value,
+                                   pmac_status_child.pVariables.value,
+                                   pmac_status_child.mVariables.value])
 
-        cs_infos = [info for info in infos if info.cs_port == self.cs_port]
+        pmac_cs_child = context.block_view(self.pmac_mri + ":" + self.cs_port)
 
-        assert len(cs_infos) == 1, \
-            "No PmacCsKinematicsInfo found for %s" % self.cs_port
-        cs_info = cs_infos[0]
-        raw_kinematics_program_code = cs_info.forward
-        raw_input_vars += " " + cs_info.q_variables
+        raw_kinematics_program_code = pmac_cs_child.forwardKinematic.value
+        raw_input_vars += " " + pmac_cs_child.qVariables.value
 
         self.savu_code_lines = raw_kinematics_program_code.splitlines()
         self.parse_input_variables(raw_input_vars)
+
+        self.create_files()
 
     def parse_input_variables(self, raw_input_vars):
         try:
             for var in raw_input_vars.split(' '):
                 if var:
                     split_var = var.split('=')
-                    self.savu_variables[split_var[0]] = split_var[1]
+                    # ignore any values in hex
+                    if not split_var[1].startswith('$'):
+                        self.savu_variables[split_var[0]] = split_var[1]
         except IndexError:
-            raise ValueError("Error getting kinematic input variables")
-
-    @add_call_types
-    def post_run_ready(self, _):
-        # type: (scanning.hooks.AContext) -> None
-        # If this is the last one, wait until the file is closed
-        # context.wait_all_futures(self.start_future)
-        self.create_files()
+            raise ValueError("Error getting kinematic input variables from %s"
+                             % raw_input_vars)
 
     def create_files(self):
         """ Add in the additional information to make this into a standard nexus
@@ -206,7 +207,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
         (b) save a dataset for each axis in each of the dimensions of the scan
         representing the demand position at every point in the scan.
         """
-        with h5py.File(self.nxs_full_filename, 'x',
+        with h5py.File(self.nxs_full_filename, 'w',
                        libver="latest") as savu_file:
             savu_file.attrs['default'] = 'entry'
             nxentry = savu_file.create_group('entry')
@@ -228,6 +229,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             comp_type = np.dtype(
                 [('Name', h5py.special_dtype(vlen=str)), ('Value', 'f')]
             )
+
             data = np.array(self.savu_variables.items(), dtype=comp_type)
 
             variables_dset = nxcollection.create_dataset("variables",
@@ -248,16 +250,39 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                     u"/entry/inputs/" + p_var.p_number] = h5py.ExternalLink(
                     p_var.file, p_var.path)
 
+            # Create Savu plugin list file
+            src = os.path.realpath(__file__)
+            src = os.path.dirname(src)
+            if self.use_min_max:
+                kinematics_file = "min_mean_max.nxs"
+            else:
+                kinematics_file = "only_mean.nxs"
+
+            src = os.path.join(src, "..")
+            src = os.path.join(src, "kinematics")
+            src = os.path.join(src, kinematics_file)
+
+            copyfile(src, self.savu_pl_filename)
+
         self.create_vds_file()
 
     def create_vds_file(self):
-        # hmm
+        """Create the VDS file that points to the processed savu files.
+        Assumes that savu is called with the argument to specify the location
+        of the processed data is in a data folder with the suffix 'savuproc'
+        """
 
         virtual_shape = (9,) + self.shape
 
         with h5py.File(self.vds_full_filename, 'w', libver='latest') as f:
             f.require_group('/entry/')
-            for datatype in ['min', 'mean', 'max']:
+
+            if self.use_min_max:
+                datatypes = ['min', 'mean', 'max']
+            else:
+                datatypes = ['mean']
+
+            for datatype in datatypes:
                 for i in range(9):
                     layout = h5py.VirtualLayout(shape=self.shape, dtype=np.float)
                     v_source = h5py.VirtualSource(
@@ -267,9 +292,9 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                     )
                     layout[:] = v_source[i]
 
-                    f.create_virtual_dataset(
-                        '/entry/q' + str(i + 1) + datatype,
-                        layout, fillvalue=0
-                    )
-
-            # Q names?
+                    # Use axis name if have it, otherwise use raw Q number
+                    if i + 1 in self.q_value_mapping:
+                        f.create_virtual_dataset(
+                            '/entry/' + self.q_value_mapping[i + 1] + datatype,
+                            layout, fillvalue=-1
+                        )

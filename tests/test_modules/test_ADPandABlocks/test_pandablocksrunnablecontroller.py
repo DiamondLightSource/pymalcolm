@@ -14,6 +14,7 @@ from malcolm.modules.builtin.util import LayoutTable
 from malcolm.modules.pandablocks.pandablocksclient import \
     FieldData, BlockData
 from malcolm.modules.scanning.hooks import APartInfo, ConfigureHook
+from malcolm.modules.scanning.infos import DatasetType
 from malcolm.modules.scanning.parts import DatasetTablePart
 
 
@@ -87,11 +88,11 @@ class PandABlocksRunnableControllerTest(unittest.TestCase):
         b.configure(generator=CompoundGenerator([StaticPointGenerator(1)], [], []))
         dataset_infos = p.part_info["busses"]
         assert len(dataset_infos) == 2
-        assert dataset_infos[0].name == "x2"
-        assert dataset_infos[0].type == AttributeDatasetType.POSITION
+        assert dataset_infos[0].name == "x2.value"
+        assert dataset_infos[0].type == DatasetType.POSITION_VALUE
         assert dataset_infos[0].rank == 2
         assert dataset_infos[0].attr == "INENC3.VAL.Mean"
-        assert dataset_infos[1].name == "x3"
-        assert dataset_infos[1].type == AttributeDatasetType.MONITOR
+        assert dataset_infos[1].name == "x3.data"
+        assert dataset_infos[1].type == DatasetType.MONITOR
         assert dataset_infos[1].rank == 2
         assert dataset_infos[1].attr == "INENC4.VAL.Diff"
