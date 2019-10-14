@@ -7,7 +7,8 @@ from tempfile import mkdtemp
 
 import h5py
 from mock import call, MagicMock
-from scanpointgenerator import LineGenerator, CompoundGenerator
+from scanpointgenerator import LineGenerator, CompoundGenerator, \
+    SquashingExcluder
 
 from malcolm.core import Context, Process, BadValueError
 from malcolm.modules.ADOdin.blocks import odin_writer_block
@@ -87,7 +88,7 @@ class TestOdinWriterPart(ChildTestCase):
                self.steps_to_do
         rmtree(tmp_dir)
 
-    def test_alternate_fails(self):
+    def test_alternate_fails_unless_squashed(self):
         tmp_dir = mkdtemp() + os.path.sep
         cols, rows, alternate = 3000, 2000, True
         self.steps_to_do = cols * rows
@@ -100,6 +101,13 @@ class TestOdinWriterPart(ChildTestCase):
             self.o.configure(
                 self.context, self.completed_steps, self.steps_to_do,
                 generator=self.generator, fileDir=tmp_dir, formatName='odin3')
+
+        self.generator = CompoundGenerator([ys, xs], [
+            SquashingExcluder(axes=["x", "y"])], [], 0.1)
+        self.generator.prepare()
+        self.o.configure(
+            self.context, self.completed_steps, self.steps_to_do,
+            generator=self.generator, fileDir=tmp_dir, formatName='odin2')
 
     @staticmethod
     def make_test_data():

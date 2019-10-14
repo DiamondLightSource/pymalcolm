@@ -3,16 +3,34 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_ after 2-1.
 
-`Unreleased`
-------------
+Unreleased_
+-----------
+
+Nothing yet
+
+`4-1`_ - 2019-09-26
+-------------------
+
+Fixed:
+
+- Increased xml generation performance of position labeller
+- Bugfixes for malcolmjs, bumping release from 1.7.1 -> 1.7.4
+
+Changed:
+
+- panda_pcomp is now panda_seq_trigger
+- Bump dependency on scanpointgenerator to 2.3
+- Mark scans as stalled if detector doesn't produce frames for more than 60s
 
 Added:
 
 - maxVelocityPercent added to motors. Allows turnaround times to be tweaked
   without changing VMAX
-- axisNumber attribute to
+- axisNumber attribute to pmac motors
 - UnrollingPart to allow Odin detectors to squash scan dimensions together
   to avoid unperformant VDS snake scans
+- Some new icons for PandA
+- PMAC now generates sparse points for lines when not being asked to trigger
 
 `4-0`_ - 2019-07-05
 -------------------
@@ -411,7 +429,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-0...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-1...HEAD
+.. _4-1: https://github.com/dls-controls/pymalcolm/compare/4-0..4-1
 .. _4-0: https://github.com/dls-controls/pymalcolm/compare/4-0b2..4-0
 .. _4-0b2: https://github.com/dls-controls/pymalcolm/compare/4-0b1..4-0b2
 .. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-5-1..4-0b1

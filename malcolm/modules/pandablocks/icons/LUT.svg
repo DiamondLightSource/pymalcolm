@@ -1,20 +1,33 @@
 <svg version="1.1" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
- <path id="E" d="m55 70h-15v20l-8 8e-5" color="#000000" fill="none" stroke="#000" stroke-linecap="square" stroke-width=".98616"/>
- <path id="D" d="m55 60h-20v10l-3 8e-5" color="#000000" fill="none" stroke="#000" stroke-linecap="square" stroke-width=".98984"/>
- <path id="C" d="m55 50-23 8e-5" color="#000000" fill="none" stroke="#000" stroke-linecap="square" stroke-width=".99913"/>
- <path id="B" d="m55 40h-20v-10l-3 8e-5" color="#000000" fill="none" stroke="#000" stroke-linecap="square" stroke-width=".99963"/>
- <path id="A" d="m55 30h-15v-20l-8 8e-5" color="#000000" fill="none" stroke="#000" stroke-linecap="square" stroke-width="1.0017"/>
- <ellipse id="notE" transform="translate(0 88)" cx="46.818" cy="-18.17" rx="2.8176" ry="2.8304" d="m 49.635601,-18.17 c 0,1.563187 -1.261483,2.8304 -2.8176,2.8304 -1.556118,0 -2.8176,-1.267213 -2.8176,-2.8304 0,-1.563187 1.261482,-2.8304 2.8176,-2.8304 1.556117,0 2.8176,1.267213 2.8176,2.8304 z" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
- <ellipse id="notD" transform="translate(0 88)" cx="46.818" cy="-28.085" rx="2.8176" ry="2.9152" d="m 49.635601,-28.084999 c 0,1.61002 -1.261483,2.9152 -2.8176,2.9152 -1.556118,0 -2.8176,-1.30518 -2.8176,-2.9152 0,-1.610021 1.261482,-2.9152 2.8176,-2.9152 1.556117,0 2.8176,1.305179 2.8176,2.9152 z" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
- <ellipse id="notC" transform="translate(0 88)" cx="46.818" cy="-38" rx="2.8176" ry="3" d="m 49.635601,-38 c 0,1.656854 -1.261483,3 -2.8176,3 -1.556118,0 -2.8176,-1.343146 -2.8176,-3 0,-1.656854 1.261482,-3 2.8176,-3 1.556117,0 2.8176,1.343146 2.8176,3 z" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
- <ellipse id="notB" transform="translate(0 88)" cx="46.818" cy="-47.915" rx="2.8176" ry="3.0848" d="m 49.635601,-47.915001 c 0,1.703688 -1.261483,3.0848 -2.8176,3.0848 -1.556118,0 -2.8176,-1.381112 -2.8176,-3.0848 0,-1.703688 1.261482,-3.0848 2.8176,-3.0848 1.556117,0 2.8176,1.381112 2.8176,3.0848 z" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
- <ellipse id="notA" transform="translate(0 88)" cx="46.818" cy="-57.83" rx="2.8176" ry="3.1696" d="m 49.635601,-57.830002 c 0,1.750522 -1.261483,3.1696 -2.8176,3.1696 -1.556118,0 -2.8176,-1.419078 -2.8176,-3.1696 0,-1.750522 1.261482,-3.1696 2.8176,-3.1696 1.556117,0 2.8176,1.419078 2.8176,3.1696 z" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
- <path id="OUT" d="m93 50-18-8e-5" color="#000000" fill="none" stroke="#000" stroke-linecap="square" stroke-width=".99913"/>
- <rect id="LUT" x="45" y="20" width="35" height="60" fill="#e6e6e6" stroke="#000"/>
- <path id="OR" d="m45 20c5 10 10 15 10 30s-5 20-10 30h15c15 0 20-16.217 20-30s-5-30-20-30z" color="#000000" fill="#e6e6e6" fill-rule="evenodd" stroke="#000" stroke-linecap="square" stroke-width=".99516"/>
- <path id="AND" d="m50 20c0 15-0.0076 12.569 0 30 8.83e-4 2.0251 0.0016 3.8496 0.0021 5.5085 0.003837 12.62-0.0021 15.653-0.0021 24.492h10c15 0 20-16.217 20-30s-5-30-20-30h-10z" color="#000000" fill="#e6e6e6" fill-rule="evenodd" stroke="#000" stroke-linecap="square" stroke-width=".99516"/>
- <g id="NOT" transform="translate(-.0012096 88)" fill-rule="evenodd" stroke="#000" stroke-linecap="square">
-  <path d="m45-68v60l35-30z" color="#000000" fill="#e6e6e6" stroke-width=".99516"/>
-  <circle cx="80" cy="-38" r="3" d="m 83,-38 c 0,1.656854 -1.343146,3 -3,3 -1.656854,0 -3,-1.343146 -3,-3 0,-1.656854 1.343146,-3 3,-3 1.656854,0 3,1.343146 3,3 z" color="#000000" fill="#fff"/>
+ <defs>
+  <marker id="TriangleIn" overflow="visible" orient="auto">
+   <path transform="scale(-.5)" d="m5.77 0-8.65 5v-10z" fill-rule="evenodd" stroke="#e6e6e6" stroke-width="1pt"/>
+  </marker>
+  <marker id="TriangleOut" overflow="visible" orient="auto">
+   <path transform="scale(.5)" d="m5.77 0-8.65 5v-10z" fill-rule="evenodd" stroke="#e6e6e6" stroke-width="1pt"/>
+  </marker>
+ </defs>
+ <path id="A" d="m55 10h-22" color="#000000" fill="none" stroke="#000" stroke-width="1.0017"/>
+ <path id="B" d="m63 30h-30" color="#000000" fill="none" stroke="#000" stroke-width=".99963"/>
+ <path id="C" d="m63 50h-30" color="#000000" fill="none" stroke="#000" stroke-width=".99913"/>
+ <path id="D" d="m62 70h-29" color="#000000" fill="none" stroke="#000" stroke-width=".98984"/>
+ <path id="E" d="m55 90h-22" color="#000000" fill="none" stroke="#000" stroke-width=".986"/>
+ <path id="OUT" d="m92 50h-12.5" color="#000000" fill="none" stroke="#000" stroke-linecap="square" stroke-width=".99913"/>
+ <rect id="LUT" x="50" y="5.0035" width="35" height="89.994" fill="#e6e6e6" stroke="#000"/>
+ <g id="NOT" transform="matrix(1 0 0 1.4866 5 106.49)" fill-rule="evenodd" stroke="#000" stroke-linecap="square">
+  <path d="m45-68v60l35-30z" color="#000000" fill="#e6e6e6" stroke-width=".81622"/>
+  <ellipse cx="80.001" cy="-37.975" rx="3.0975" ry="2.0457" color="#000000" fill="#fff" stroke-width=".75905"/>
  </g>
+ <path id="OR" d="m50 5c5 14.999 10 22.499 10 44.999s-5 30-10 44.999l15 0.16853c14.999 0.16853 20-24.493 20-45.168 0-20.674-5-44.999-20-44.999z" color="#000000" fill="#e6e6e6" fill-rule="evenodd" stroke="#000" stroke-linecap="square" stroke-width=".99516"/>
+ <path id="AND" d="m55.001 5c0 22.5-0.0079 18.854 0 44.999 8.66e-4 3.0376 2e-3 5.7744 2e-3 8.2627 0.0038 18.93-2e-3 23.48-2e-3 36.738h9.8338c14.751 0 19.668-24.325 19.668-44.999s-4.9169-44.999-19.668-44.999h-9.8338z" color="#000000" fill="#e6e6e6" fill-rule="evenodd" stroke="#000" stroke-linecap="square" stroke-width=".99516"/>
+ <path id="edgeE" d="m40 85v10" fill="none" marker-end="url(#TriangleOut)" marker-start="url(#TriangleIn)" stroke="#e6e6e6" stroke-width="1px"/>
+ <path id="edgeD" d="m40 65v10" fill="none" marker-end="url(#TriangleOut)" marker-start="url(#TriangleIn)" stroke="#e6e6e6" stroke-width="1px"/>
+ <path id="edgeC" d="m40 45v10" fill="none" marker-end="url(#TriangleOut)" marker-start="url(#TriangleIn)" stroke="#e6e6e6" stroke-width="1px"/>
+ <path id="edgeB" d="m40 25v10" fill="none" marker-end="url(#TriangleOut)" marker-start="url(#TriangleIn)" stroke="#e6e6e6" stroke-width="1px"/>
+ <path id="edgeA" d="m40 5v10" fill="none" marker-end="url(#TriangleOut)" marker-start="url(#TriangleIn)" stroke="#e6e6e6" stroke-width="1px"/>
+ <circle id="notA" cx="46.5" cy="10" r="3" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
+ <circle id="notB" cx="46.5" cy="30" r="3" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
+ <circle id="notC" cx="46.5" cy="50" r="3" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
+ <circle id="notD" cx="46.5" cy="70" r="3" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
+ <circle id="notE" cx="46.5" cy="90" r="3" color="#000000" fill="#fff" fill-rule="evenodd" stroke="#000" stroke-linecap="square"/>
 </svg>
