@@ -230,7 +230,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                 [('Name', h5py.special_dtype(vlen=str)), ('Value', 'f')]
             )
 
-            data = np.array(self.savu_variables.items(), dtype=comp_type)
+            data = np.array(list(self.savu_variables.items()), dtype=comp_type)
 
             variables_dset = nxcollection.create_dataset("variables",
                                                          (len(data),),
