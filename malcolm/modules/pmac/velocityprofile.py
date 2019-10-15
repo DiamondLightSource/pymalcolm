@@ -1,6 +1,5 @@
-from math import sqrt, fabs
-
 import numpy as np
+from math import sqrt, fabs
 
 HAT = 1
 INVERSE_HAT = 2
@@ -372,9 +371,11 @@ class VelocityProfile:
                self.d_trough <= self.d <= self.d_peak, \
             "distance is outside of allowed trough and peak, check the math"
 
-    def check_quantize(self):
+    quantize_size = 0.005
+
+    def check_quantize(self, size=quantize_size):
         """
-        Check if this profile has any times that are not on a millisecond
+        Check if this profile has any times that are not on a 'size' second
         boundary. Such profiles require quantization for them to be safely
         combined with other axis profiles (which will also require
         quantization). Otherwise the combined profile may contain very small
@@ -383,13 +384,13 @@ class VelocityProfile:
         Returns bool: true if this profile requires quantization:
         """
         times = np.array([self.t1, self.tm, self.t2])
-        decimals = (times % 1) * 1000
+        decimals = (times % 1) / size
         result = not np.isclose(decimals, np.round(decimals)).all()
         return result
 
-    def quantize(self):
+    def quantize(self, size=quantize_size):
         """
-        ensure that all time points are exactly on 1 millisecond boundaries
+        ensure that all time points are exactly on 'size' second boundaries
         do this by:
             add 1 milliseconds to t1, tm, t2 and round down
             adjust vm downwards so that d is correct
@@ -406,12 +407,12 @@ class VelocityProfile:
         """
 
         # First round the times to remove any tiny fractions that would waste
-        # an extra millisecond when doing match.ceil()
+        # an extra millisecond when doing math.ceil()
         #
-        # Next increase total time by 2 ms and round up to the nearest
-        # even number - this is then deterministic for all axes, and includes
-        # at least enough stretch to accommodate up to 1 ms of stretch in each
-        # slope time.
+        # Next increase total time by 2 'size' and round up to the nearest
+        # even number of 'size' - this is then deterministic for all axes,
+        # and includes at least enough stretch to accommodate up to 'size' of
+        # stretch in each slope time.
         #
         # For a flat hat, round up the two slope times and the flat time is
         # the remainder.
@@ -424,15 +425,15 @@ class VelocityProfile:
         self.tv2 = np.round(self.tv2, decimals=14)
         self.t1 = np.round(self.t1, decimals=14)
         self.t2 = np.round(self.t2, decimals=14)
-        self.tv2 = np.ceil(self.tv2 * 2000 + 4) / 2000
+        self.tv2 = np.ceil(self.tv2 / (size / 2) + 4) * (size / 2)
         if self.tm == 0:
             # pointy hat
-            self.t1 = np.ceil(self.t1 * 1000 + 1) / 1000
+            self.t1 = np.ceil(self.t1 / size + 1) * size
             self.t2 = self.tv2 - self.t1
         else:
             # flat topped hat
-            self.t1 = np.ceil(self.t1 * 1000) / 1000
-            self.t2 = np.ceil(self.t2 * 1000) / 1000
+            self.t1 = np.ceil(self.t1 / size) * size
+            self.t2 = np.ceil(self.t2 / size) * size
             self.tm = self.tv2 - self.t1 - self.t2
 
         # recalculate the middle velocity (peak velocity for a pointy hat)
