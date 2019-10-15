@@ -451,11 +451,15 @@ class VelocityProfile:
         :Returns Array(float), Array(float): absolute time, velocity arrays
         """
         # return ABSOLUTE time and velocity arrays to describe the profile
-        time_array = [0.0, self.t1, self.tv2]
-        velocity_array = [self.v1, self.vm, self.v2]
-        if self.tm > 0:
-            time_array.insert(2, self.t1 + self.tm)
-            velocity_array.insert(2, self.vm)
+        if self.d == 0 and self.v1 == 0 and self.v2 == 0:
+            time_array = [0.0, self.tv2]
+            velocity_array = [self.v1, self.v2]
+        else:
+            time_array = [0.0, self.t1, self.tv2]
+            velocity_array = [self.v1, self.vm, self.v2]
+            if self.tm > 0:
+                time_array.insert(2, self.t1 + self.tm)
+                velocity_array.insert(2, self.vm)
         if self.settle_time > 0:
             time_array.append(time_array[-1] + self.settle_time)
             velocity_array.append(self.v2)
