@@ -42,6 +42,21 @@ class TestPmacStatusPart(unittest.TestCase):
                     d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2)
 
     @staticmethod
+    def do_test_acceleration_range(v1, v2, quantize=False):
+        a = 1000000
+        while a > .001:
+            d = .001
+            profile = VelocityProfile(v1, v2, d, .1, a, 100, 10)
+            profile.get_profile()
+            if quantize:
+                profile.quantize(size=.009)
+            d_res = profile.calculate_distance()
+            assert np.isclose(d_res, d), \
+                "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
+                    d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2)
+            a /= 10
+
+    @staticmethod
     def do_test_v_max_range(v1, v2):
         ms = np.arange(4, 100, 3)
         for v_max in ms:
@@ -52,6 +67,14 @@ class TestPmacStatusPart(unittest.TestCase):
             assert np.isclose(d_res, 100), \
                 "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(
                     d_res, d, profile.vm, profile.v1, profile.v2, profile.tv2)
+
+    def test_zero_zero(self):
+        self.do_test_acceleration_range(0.0, 0.0, quantize=True)
+        self.do_test_distance_range(0.0, 0.0)
+        self.do_test_distance_range(0.0, 0.0)
+        self.do_test_time_range(0.0, 0.0)
+        self.do_test_time_range(0.0, 0.0, quantize=True)
+        self.do_test_v_max_range(0.0, 0.0)
 
     def test_pos_pos(self):
         self.do_test_distance_range(4.0, 2.0)
