@@ -453,7 +453,7 @@ class VelocityProfile:
         # return ABSOLUTE time and velocity arrays to describe the profile
         if self.d == 0 and self.v1 == 0 and self.v2 == 0:
             time_array = [0.0, self.tv2]
-            velocity_array = [self.v1, self.v2]
+            velocity_array = [0, 0]
         else:
             time_array = [0.0, self.t1, self.tv2]
             velocity_array = [self.v1, self.vm, self.v2]

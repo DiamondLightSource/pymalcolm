@@ -496,3 +496,36 @@ class TestPMACChildPart(ChildTestCase):
         self.check_bounds(x2, "x2")
         self.check_bounds(y1, "y1")
         self.check_bounds(y2, "y2")
+
+    def test_step_scan(self):
+        axes_to_scan = ["x", "y"]
+        duration = 1.0005
+        self.set_motor_attributes(0.0, 0.0, "mm")
+        steps_to_do = 3 * len(axes_to_scan)
+        xs = LineGenerator("x", "mm", 0.0, 5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 10, 2)
+        generator = CompoundGenerator(
+            [ys, xs], [], [], duration, continuous=False)
+        generator.prepare()
+
+        self.o.configure(
+            self.context, 0, steps_to_do, {"part": None},
+            generator, axes_to_scan)
+
+        assert self.child.handled_requests.mock_calls[3].kwargs['a'] == \
+               pytest.approx([
+                   0.0, 0.0, 0.0, 0.2, 2.3, 2.5, 2.5, 2.5, 2.7, 4.8, 5.0, 5.0,
+                   5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.8, 2.7, 2.5, 2.5, 2.5, 2.3,
+                   0.2, 0, 0.0, 0.0, 0.0])
+        assert self.child.handled_requests.mock_calls[3].kwargs['b'] == \
+               pytest.approx([
+                   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                   0.0, 0.2, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+                   10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
+        assert self.child.handled_requests.mock_calls[3].kwargs[
+                   'timeArray'] == pytest.approx([
+                   2000, 500250, 500250, 400000, 2100000, 400000, 500250,
+                   500250, 400000, 2100000, 400000, 500250, 500250, 400000,
+                   9600000, 400000, 500250, 500250, 400000, 2100000, 400000,
+                   500250, 500250, 400000, 2100000, 400000, 500250, 500250,
+                   2000])
