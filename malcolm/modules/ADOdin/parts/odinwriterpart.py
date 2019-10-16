@@ -51,7 +51,7 @@ def create_dataset_infos(name, generator, filename, secondary_set):
 
     # Add other datasources
     yield scanning.infos.DatasetProducedInfo(
-        name="%s.uid" % name,
+        name="%s.%s" % (name, secondary_set),
         filename=filename,
         type=scanning.infos.DatasetType.SECONDARY,
         rank=generator_rank + 2,
