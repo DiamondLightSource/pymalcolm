@@ -208,4 +208,8 @@
     pv: $(pv_prefix):Z:Positions
     config: False
 
-
+- ca.parts.CADoublePart:
+    name: trajectoryProgVersion
+    description: the version number of the pmac's trajectory program
+    rbv: $(pv_prefix):ProgramVersion_RBV
+    config: False
