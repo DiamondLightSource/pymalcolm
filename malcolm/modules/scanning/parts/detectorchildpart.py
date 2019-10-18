@@ -58,7 +58,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         configure_info = ConfigureHook.create_info(self.configure)
         # Override the detector table defaults and writeable
         configure_info.defaults["detectors"] = DetectorTable.from_rows(
-            [(self.name, self.mri, 0.0, self.frames_per_step)])
+            [(True, self.name, self.mri, 0.0, self.frames_per_step)])
         columns = configure_info.metas["detectors"].elements
         columns["name"].set_writeable(False)
         columns["mri"].set_writeable(False)
@@ -96,11 +96,39 @@ class DetectorChildPart(builtin.parts.ChildPart):
                  ):
         # type: (...) -> UParameterTweakInfos
         # Work out if we are taking part
-        frames_per_step, kwargs = self._configure_args(
+        enable, frames_per_step, kwargs = self._configure_args(
             generator, fileDir, detectors, axesToMove, fileTemplate)
-        if frames_per_step < 1:
-            # We aren't
-            return
+        ret = []
+        tweak_detectors = False
+        if self.name not in detectors.name:
+            # There isn't a row for us, so add one in on validate, it will be
+            # disabled but that is truthful
+            tweak_detectors = True
+
+        child = context.block_view(self.mri)
+
+        def do_validate(params):
+            try:
+                return child.validate(**params)
+            except Exception as e:
+                raise BadValueError("Validate of %s failed: %s" % (
+                    self.mri, stringify_error(e)))
+
+        if enable and frames_per_step < 1:
+            # We are being asked to guess frames per step
+            if kwargs.get("exposure", 0) == 0:
+                # No exposure given, must be 1
+                frames_per_step = 1
+                tweak_detectors = True
+            else:
+                # Exposure given, so run a validate once without the mutiplier
+                # and see what the detector gives us
+                exposure = kwargs.pop("exposure")
+                returns = do_validate(kwargs)
+                dead_time = generator.duration - returns["exposure"]
+                frames_per_step = generator.duration // (exposure + dead_time)
+                kwargs["exposure"] = exposure
+                tweak_detectors = True
         if frames_per_step > 1:
             # Check something else is multiplying out triggers
             infos = [i for i in DetectorMutiframeInfo.filter_values(part_info)
@@ -109,21 +137,38 @@ class DetectorChildPart(builtin.parts.ChildPart):
                 "There are no trigger multipliers setup for Detector '%s' " \
                 "so framesPerStep can only be 0 or 1 for this row in the " \
                 "detectors table" % self.name
-        child = context.block_view(self.mri)
-        # This is a Serializable with the correct entries
-        try:
-            returns = child.validate(**kwargs)
-        except Exception as e:
-            raise BadValueError("Validate of %s failed: %s" % (
-                self.mri, stringify_error(e)))
-        # TODO: this will fail if we split across 2 Malcolm processes as
-        # scanpointgenerators don't compare equal, but we don't want to
-        # serialize everything as that is expensive for arrays
-        ret = []
-        for k in returns:
-            v = returns[k]
-            if kwargs.get(k, v) != v:
-                ret.append(ParameterTweakInfo(k, v))
+        if enable:
+            # This is a Serializable with the correct entries
+            returns = do_validate(kwargs)
+            # Add in the exposure in case it is returned
+            exposure = kwargs.setdefault("exposure", 0.0)
+            # TODO: this will fail if we split across 2 Malcolm processes as
+            # scanpointgenerators don't compare equal, but we don't want to
+            # serialize everything as that is expensive for arrays
+            for k in returns:
+                v = returns[k]
+                if kwargs.get(k, v) != v:
+                    if k == "exposure":
+                        exposure = v
+                        tweak_detectors = True
+                    else:
+                        ret.append(ParameterTweakInfo(k, v))
+        else:
+            exposure = 0.0
+        if tweak_detectors:
+            # Detector table changed, make a new onw
+            det_row = [enable, self.name, self.mri, exposure, frames_per_step]
+            rows = []
+            for row in detectors.rows():
+                if row[1] == self.name:
+                    rows.append(det_row)
+                    det_row = None
+                else:
+                    rows.append(row)
+            if det_row:
+                rows.append(det_row)
+            new_detectors = DetectorTable.from_rows(rows)
+            ret.append(ParameterTweakInfo("detectors", new_detectors))
         return ret
 
     def _configure_args(self,
@@ -133,17 +178,17 @@ class DetectorChildPart(builtin.parts.ChildPart):
                         axes_to_move=None,  # type: AAxesToMove
                         file_template="%s.h5",  # type: AFileTemplate
                         ):
-        # type: (...) -> Tuple[int, Dict[str, Any]]
+        # type: (...) -> Tuple[bool, int, Dict[str, Any]]
         # Check the detector table to see what we need to do
-        for name, mri, exposure, frames in detectors.rows():
-            if name == self.name and frames > 0:
+        for enable, name, mri, exposure, frames in detectors.rows():
+            if name == self.name and enable:
                 # Found a row saying to take part
                 assert mri == self.mri, \
                     "%s has mri %s, passed %s" % (name, self.mri, mri)
                 break
         else:
             # Didn't find a row or no frames, don't take part
-            return 0, {}
+            return False, 0, {}
         # If we had more than one frame per point, multiply out
         if frames > 1:
             axis_name = name + "_frames_per_step"
@@ -172,7 +217,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         )
         if exposure > 0.0:
             kwargs["exposure"] = exposure
-        return frames, kwargs
+        return enable, frames, kwargs
 
     # Must match those passed in configure() Method, so need to be camelCase
     # noinspection PyPep8Naming
@@ -187,17 +232,21 @@ class DetectorChildPart(builtin.parts.ChildPart):
                   ):
         # type: (...) -> UInfos
         # Work out if we are taking part
-        self.frames_per_step, kwargs = self._configure_args(
+        enable, self.frames_per_step, kwargs = self._configure_args(
             generator, fileDir, detectors, axesToMove, fileTemplate)
-        if self.frames_per_step < 1:
+        if not enable:
             # We aren't taking part in the scan
+            self.frames_per_step = 0
             return
+        else:
+            assert self.frames_per_step > 0, \
+                "Zero frames per step for %s, this shouldn't happen" % self.name
         child = context.block_view(self.mri)
         child.configure(**kwargs)
         # Report back any datasets the child has to our parent
         assert hasattr(child, "datasets"), \
             "Detector %s doesn't have a dataset table, did you add a " \
-            "DatasetTablePart to it?" % self.mri
+            "scanning.parts.DatasetTablePart to it?" % self.mri
         datasets_table = child.datasets.value
         info_list = [DatasetProducedInfo(*row) for
                      row in datasets_table.rows()]

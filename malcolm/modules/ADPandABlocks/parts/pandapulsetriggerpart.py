@@ -83,10 +83,16 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         self.detector = context.block_view(detector_mri)
 
         # Get the framesPerStep for this detector from the detectors table
-        for _, mri, _, frames_per_step in detectors.rows():
+        for enable, _, mri, _, frames_per_step in detectors.rows():
             if mri == detector_mri:
                 # Found a row telling us how many frames per step to generate
-                self.frames_per_step = frames_per_step
+                if enable:
+                    assert frames_per_step > 0, \
+                        "Zero frames per step for %s, how did this happen?" % (
+                            mri)
+                    self.frames_per_step = frames_per_step
+                else:
+                    self.frames_per_step = 0
                 break
         else:
             raise BadValueError(

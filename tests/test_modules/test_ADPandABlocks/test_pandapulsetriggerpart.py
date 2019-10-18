@@ -109,7 +109,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
         detectors = DetectorTable.from_rows([
-            ["det", "DET", 0.0, 5]
+            [True, "det", "DET", 0.0, 5]
         ])
         self.o.configure(
             self.context, generator, detectors)
@@ -130,7 +130,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
         detectors = DetectorTable.from_rows([
-            ["det", "DET", 0.0, 5]
+            [True, "det", "DET", 0.0, 5]
         ])
         b = self.scan.block_view()
         b.configure(generator, self.tmpdir, detectors=detectors)
@@ -142,7 +142,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         generator = CompoundGenerator([ys, xs], [], [], 1.0)
         generator.prepare()
         detectors = DetectorTable.from_rows([
-            ["det", "DET", 0.1, 5]
+            [True, "det", "DET", 0.1, 5]
         ])
         b = self.scan.block_view()
         b.configure(generator, self.tmpdir, detectors=detectors)
