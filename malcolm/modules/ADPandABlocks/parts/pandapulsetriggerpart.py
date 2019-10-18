@@ -135,7 +135,11 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
                     self.detector.mri, detector_state)
             # We are taking part, so calculate pulse values
             step = float(self.generator_duration) / self.frames_per_step
-            width = self.detector.exposure.value
+            try:
+                width = self.detector.exposure.value
+            except KeyError:
+                # No exposure, so assume a very tiny readout time
+                width = step - 1e-6
             assert width < step, \
                 "Width %s is not less than Step %s" % (width, step)
             values = {
