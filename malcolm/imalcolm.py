@@ -282,7 +282,7 @@ block = self.block_view("<mri>")
     if profiler.running and not profiler.stopping:
         profiler.stop()
 
-    cothread.CallbackResult(process.stop)
+    cothread.CallbackResult(process.stop, timeout=0.1)
     cothread.CallbackResult(cothread.Quit)
 
 
