@@ -2,7 +2,7 @@ import numpy as np
 from annotypes import add_call_types, Anno, Array
 
 from malcolm.core import PartRegistrar, Widget, \
-    NumberMeta, IncompatibleError
+    NumberMeta, IncompatibleError, Display
 from malcolm.modules import builtin
 from ..util import CS_AXIS_NAMES
 
@@ -56,7 +56,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         self.total_points = 0
         self.points_scanned = NumberMeta(
             "int32", "The number of points scanned",
-            tags=[Widget.TEXTUPDATE.tag()]
+            tags=[Widget.METER.tag()]
         ).create_attribute_model(0)
 
     def setup(self, registrar):
@@ -147,12 +147,17 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # Record how many points we have now written in total
         self.total_points += num_points
 
+    def set_scan_length(self, value):
+        self.points_scanned.meta.set_display(Display(limitHigh=value))
+
     @add_call_types
     def execute_profile(self, context):
         # type: (builtin.hooks.AContext) -> None
         child = context.block_view(self.mri)
-        fs = context.subscribe([self.mri, "pointsScanned", "value"],
+        fs1 = context.subscribe([self.mri, "pointsScanned", "value"],
                                self.points_scanned.set_value)
+        fs2 = context.subscribe([self.mri, "pointsBuilt", "value"],
+                               self.set_scan_length)
         try:
             child.executeProfile()
             # Now wait for up to 2*min_delta time to make sure any
@@ -160,7 +165,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             child.when_value_matches(
                 "pointsScanned", self.total_points, timeout=0.1)
         finally:
-            context.unsubscribe(fs)
+            context.unsubscribe(fs1)
+            context.unsubscribe(fs2)
 
     @add_call_types
     def abort_profile(self, context):
