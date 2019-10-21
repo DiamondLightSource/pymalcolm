@@ -20,11 +20,11 @@ class ShutterPart(CAChoicePart):
     def __init__(self,
                  name,  # type: util.APartName
                  description,  # type: util.AMetaDescription
+                 open_value,  # type: AOpenVal
+                 close_value,  # type: ACloseVal
                  pv="",  # type: util.APv
                  rbv="",  # type: util.ARbv
                  rbv_suffix="",  # type: util.ARbvSuffix
-                 open_value="",  # type: AOpenVal
-                 close_value="",  # type: ACloseVal
                  open_during_run=False,  # type: AOpenDurRun
                  min_delta=0.05,  # type: util.AMinDelta
                  timeout=DEFAULT_TIMEOUT,  # type: util.ATimeout
@@ -36,6 +36,7 @@ class ShutterPart(CAChoicePart):
         # type: (...) -> None
         super(ShutterPart, self).__init__(name, description, pv, rbv, rbv_suffix, min_delta, timeout, sink_port,
                                           widget, group, config)
+
         self.open_value = open_value
         self.close_value = close_value
         self.open_during_run = open_during_run
