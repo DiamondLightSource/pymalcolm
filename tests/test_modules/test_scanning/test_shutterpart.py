@@ -1,7 +1,9 @@
 import unittest
-from mock import patch, Mock
+from mock import Mock, call
 
 from malcolm.modules.scanning.parts import ShutterPart
+from malcolm.modules.scanning.hooks import RunHook, ConfigureHook, ResumeHook, \
+    PauseHook, AbortHook, PostRunReadyHook
 
 
 class TestShutterPartConstructor(unittest.TestCase):
@@ -51,3 +53,45 @@ class TestShutterPartShutterControl(unittest.TestCase):
         self.part.caput = Mock()
         self.part.close_shutter()
         self.part.caput.assert_called_once_with(self.close_value)
+
+
+class TestShutterPartSetupHooks(unittest.TestCase):
+
+    def setUp(self):
+        self.name = "ShutterPart"
+        self.description = "This is a ShutterPart"
+        self.pv = "TEST:PV"
+        self.open_value = "Open"
+        self.close_value = "Close"
+
+    def test_setup_open_shutter_during_RunHook_if_open_during_run_True(self):
+        self.part = ShutterPart(self.name, self.description, self.open_value, self.close_value, pv=self.pv,
+                                open_during_run=True)
+        registrar_mock = Mock()
+        self.part.setup(registrar_mock)
+
+        # Check calls
+        calls = [
+            call(RunHook, self.part.open_shutter),
+            call(ResumeHook, self.part.open_shutter),
+            call(PauseHook, self.part.close_shutter),
+            call(AbortHook, self.part.close_shutter),
+            call(PostRunReadyHook, self.part.close_shutter)
+            ]
+        registrar_mock.hook.assert_has_calls(calls)
+
+    def test_setup_open_shutter_during_ConfigureHook_if_open_during_run_False(self):
+        self.part = ShutterPart(self.name, self.description, self.open_value, self.close_value, pv=self.pv,
+                                open_during_run=False)
+        registrar_mock = Mock()
+        self.part.setup(registrar_mock)
+
+        # Check calls
+        calls = [
+            call(ConfigureHook, self.part.open_shutter),
+            call(ResumeHook, self.part.open_shutter),
+            call(PauseHook, self.part.close_shutter),
+            call(AbortHook, self.part.close_shutter),
+            call(PostRunReadyHook, self.part.close_shutter)
+            ]
+        registrar_mock.hook.assert_has_calls(calls)
