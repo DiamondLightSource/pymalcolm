@@ -34,8 +34,10 @@ class ShutterPart(CAChoicePart):
                  config=True  # type: util.AConfig
                  ):
         # type: (...) -> None
-        super(ShutterPart, self).__init__(name, description, pv, rbv, rbv_suffix, min_delta,
-                                          timeout, sink_port, widget, group, config)
+        super(ShutterPart, self).__init__(
+            name, description, pv, rbv,
+            rbv_suffix, min_delta, timeout,
+            sink_port, widget, group, config)
 
         self.open_value = open_value
         self.close_value = close_value
