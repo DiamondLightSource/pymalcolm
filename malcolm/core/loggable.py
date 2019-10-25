@@ -1,18 +1,6 @@
 import logging
 
 
-class FieldFilter(object):
-    def __init__(self, fields):
-        assert "name" not in fields, \
-            "Can't log custom field called name, it overwrites the logger name!"
-        self.fields = fields
-
-    def filter(self, record):
-        for k, v in self.fields.items():
-            setattr(record, k, v)
-        return True
-
-
 class Loggable(object):
     """Utility class that provides a named logger for a class instance"""
     log = None  # type: logging.Logger
@@ -30,7 +18,8 @@ class Loggable(object):
         # names should be something like this for one field:
         #   ["malcolm.modules.scanning.controllers.runnablecontroller",
         #    "RunnableController", "BL45P-ML-SCAN-01"]
-        self.log = logging.getLogger(".".join(names))
-        if fields:
-            self.log.addFilter(FieldFilter(fields))
+        logger = logging.getLogger(".".join(names))
+
+        self.log = logging.LoggerAdapter(logger, extra=fields)
+
         return self.log
