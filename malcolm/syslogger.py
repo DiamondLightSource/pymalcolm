@@ -21,9 +21,8 @@ class JsonSysLogHandler(logging.handlers.SysLogHandler):
         Emit a record adding the extra fields as a json string,
         removing any unwanted fields first.
         """
-        extra = record.__dict__.copy()
-        for field_to_remove in self.fields_to_remove:
-            extra.pop(field_to_remove, None)
+        extra = {k: v for k, v in record.__dict__.items()
+                 if k not in self.fields_to_remove}
 
         record.extra = json.dumps(extra)
         super(JsonSysLogHandler, self).emit(record)
