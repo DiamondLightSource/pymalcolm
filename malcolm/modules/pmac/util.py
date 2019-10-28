@@ -114,7 +114,6 @@ def cs_axis_numbers(context,  # type: Context
             axis_number = child.axisNumber.value
         except (AttributeError, KeyError):
             axis_number = None
-            # TODO throw error if no axis number?
         try:
             cs = child.cs.value
         except (AttributeError, KeyError):
@@ -124,7 +123,6 @@ def cs_axis_numbers(context,  # type: Context
             child_cs_port, child_cs_axis = child.cs.value.split(",", 1)
             if cs_port == child_cs_port:
                 if name in axis_numbers:
-                    # TODO throw error if axis number for this name has been set already?
                     axis_numbers[name] = axis_number
                 else:
                     axis_numbers[name] = axis_number

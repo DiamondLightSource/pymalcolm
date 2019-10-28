@@ -1,6 +1,5 @@
 import os
 import numpy as np
-from datetime import datetime
 from shutil import rmtree
 from tempfile import mkdtemp
 
@@ -18,7 +17,6 @@ from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 from tests.test_modules.test_ADPandABlocks.test_pandaseqtriggerpart import \
     PositionsPart
-from malcolm.modules.pmac.infos import PmacCsKinematicsInfo, PmacVariablesInfo
 
 AXES = AAxesToMove(['x', 'y'])
 
@@ -95,7 +93,6 @@ class TestKinematicsSavuPart(ChildTestCase):
 
     def test_configure(self):
         tmp_dir = mkdtemp() + os.path.sep
-        vds_file = 'odin2'
         self.set_motor_attributes(0.5, 0.0, "mm")
 
         xs = LineGenerator("x", "mm", 0.0, 0.4, 5, alternate=False)
@@ -106,23 +103,6 @@ class TestKinematicsSavuPart(ChildTestCase):
         self.o.configure(
             self.context, fileDir=tmp_dir, generator=generator,
             axesToMove=AXES
-        )
-        # assert self.child.handled_requests.mock_calls == [
-        #    call.put('fileName', 'odin2_raw_data'),
-        #    call.put('filePath', tmp_dir),
-        #    call.put('numCapture', self.steps_to_do),
-        #    call.post('start')]
-        part_info = dict(
-            HDF=[
-                DatasetProducedInfo(
-                    "y.data", "kinematics_PANDABOX2.h5",
-                    DatasetType.POSITION_VALUE, 2,
-                    "/entry/NDAttributes/INENC1.VAL", "/p/uid"),
-                DatasetProducedInfo(
-                    "x.data", "kinematics_PANDABOX.h5",
-                    DatasetType.POSITION_VALUE, 0,
-                    "/entry/NDAttributes/INENC1.VAL", "/p/uid")
-            ]
         )
 
         rmtree(tmp_dir)
@@ -207,6 +187,7 @@ class TestKinematicsSavuPart(ChildTestCase):
         variables_dataset = savu_file['/entry/inputs/variables']
         self.assertEquals(variables_dataset.shape, (5, ))
 
+        found = False
         for dataset in variables_dataset:
             if dataset[0] == 'Q22':
                 found = True

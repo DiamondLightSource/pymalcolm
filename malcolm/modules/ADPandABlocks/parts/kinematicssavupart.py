@@ -23,15 +23,17 @@ AMri = builtin.parts.AMri
 PVar = collections.namedtuple('PVar', 'path file p_number')
 
 
-# QUESTIONS:
-# Assuming 1 pmac ok? See TODO
-# TODOs in utils.py
-# failing tests
-
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save("fileName", "filePath")
 class KinematicsSavuPart(builtin.parts.ChildPart):
-    """Part for controlling an `hdf_writer_block` in a Device"""
+    """Part for writing out files to send to Savu for post processing
+    of forward kinematics. Creates the following files:
+
+    - <ID>-savu.nxs - Input data file for Savu. Links to Panda data, and
+        datasets which contain the kinematics code and variables.
+    - <ID>-savu_pl.nxs - Savu process list, copied from /kinematics directory
+    - <ID>-vds.nxs - VDS file linking to Savu processed data (when processed)
+    """
 
     def __init__(self, name, mri):
         # type: (APartName, AMri) -> None
@@ -120,6 +122,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             self.cs_port = mapping.cs_port
             break
 
+        # Create the mapping of output q variables to axis names
         for mapping in axis_mapping.values():
             if mapping.cs_axis in pmac.util.CS_AXIS_NAMES:
                 q_value = pmac.util.CS_AXIS_NAMES.index(mapping.cs_axis) + 1
@@ -169,8 +172,7 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
             else:
                 self.use_min_max = False
 
-        # Get Forward Kinematics code lines
-        # TODO : this assumes only one pmac - is that OK ?
+        # Get Forward Kinematics code lines and I,P,M,Q input variables
         pmac_status_child = context.block_view(self.pmac_mri + ":STATUS")
 
         raw_input_vars = " ".join([pmac_status_child.iVariables.value,
@@ -200,13 +202,15 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                              % raw_input_vars)
 
     def create_files(self):
-        """ Add in the additional information to make this into a standard nexus
-        format file:-
-        (a) create the standard structure under the 'entry' group with a
-        subgroup for each dataset. 'set_bases' lists the data sets we make here.
-        (b) save a dataset for each axis in each of the dimensions of the scan
-        representing the demand position at every point in the scan.
+        """ Create the files that will be used by Savu
+        - <ID>-savu.nxs - Input data file for Savu. Links to Panda data, and
+            datasets which contain the kinematics code and variables, and
+            whether to use min, mean and max datasets, or just the mean.
+        - <ID>-savu_pl.nxs - Savu process list
+        - <ID>-vds.nxs - VDS file linking to Savu processed data
         """
+
+        # Create the -savu.nxs file which contains the input data for Savu
         with h5py.File(self.nxs_full_filename, 'w',
                        libver="latest") as savu_file:
             savu_file.attrs['default'] = 'entry'
@@ -250,26 +254,27 @@ class KinematicsSavuPart(builtin.parts.ChildPart):
                     u"/entry/inputs/" + p_var.p_number] = h5py.ExternalLink(
                     p_var.file, p_var.path)
 
-            # Create Savu plugin list file
-            src = os.path.realpath(__file__)
-            src = os.path.dirname(src)
-            if self.use_min_max:
-                kinematics_file = "min_mean_max.nxs"
-            else:
-                kinematics_file = "only_mean.nxs"
+        # Create Savu plugin list file
+        src = os.path.realpath(__file__)
+        src = os.path.dirname(src)
+        if self.use_min_max:
+            kinematics_file = "min_mean_max.nxs"
+        else:
+            kinematics_file = "only_mean.nxs"
 
-            src = os.path.join(src, "..")
-            src = os.path.join(src, "kinematics")
-            src = os.path.join(src, kinematics_file)
+        src = os.path.join(src, "..")
+        src = os.path.join(src, "kinematics")
+        src = os.path.join(src, kinematics_file)
 
-            copyfile(src, self.savu_pl_filename)
+        copyfile(src, self.savu_pl_filename)
 
+        # Create the finished VDS file which links to the processed Savu data
         self.create_vds_file()
 
     def create_vds_file(self):
         """Create the VDS file that points to the processed savu files.
         Assumes that savu is called with the argument to specify the location
-        of the processed data is in a data folder with the suffix 'savuproc'
+        of the processed data is in a data folder with the suffix '-savuproc'
         """
 
         virtual_shape = (9,) + self.shape
