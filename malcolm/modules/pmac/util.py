@@ -120,7 +120,7 @@ def cs_axis_numbers(context,  # type: Context
             cs = None
 
         if cs and axis_number:
-            child_cs_port, child_cs_axis = child.cs.value.split(",", 1)
+            child_cs_port = child.cs.value.split(",", 1)[0]
             if cs_port == child_cs_port:
                 if name in axis_numbers:
                     axis_numbers[name] = axis_number
