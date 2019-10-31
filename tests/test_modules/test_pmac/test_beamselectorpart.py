@@ -8,6 +8,9 @@ from malcolm.yamlutil import make_block_creator
 from scanpointgenerator import LineGenerator, CompoundGenerator, \
     StaticPointGenerator
 
+import pytest
+from mock import call
+
 class TestBeamSelectorPart(ChildTestCase):
     def setUp(self):
         self.process = Process("Process")
@@ -56,15 +59,51 @@ class TestBeamSelectorPart(ChildTestCase):
                      y_pos=0.0, duration=1.0, units="mm", infos=None):
         self.set_motor_attributes(x_pos, y_pos, units)
         steps_to_do = 3 * len(axes_to_scan)
-        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        #xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
-        generator = CompoundGenerator([ys, xs], [], [], duration)
+        generator = CompoundGenerator([ys], [], [], duration)
         generator.prepare()
         self.o.configure(
             self.context, completed_steps, steps_to_do, {"part": infos},
             generator, axes_to_scan)
         pass
 
+    def do_check_output(self, user_programs=None):
+        if user_programs is None:
+            user_programs = [
+                1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4, 2, 8
+            ]
+        # use a slice here because I'm getting calls to __str__ in debugger
+        assert self.child.handled_requests.mock_calls[:4] == [
+            call.post('writeProfile',
+                      csPort='CS1', timeArray=[0.002], userPrograms=[8]),
+            call.post('executeProfile'),
+            call.post('moveCS1', a=-0.1375, b=0.0, moveTime=1.0375),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post('writeProfile',
+                      a=pytest.approx(
+                          [-0.125, 0., 0.125, 0.25, 0.375, 0.5, 0.625, 0.6375,
+                           0.6375, 0.6375, 0.625, 0.5, 0.375, 0.25, 0.125, 0.,
+                           -0.125, -0.1375]),
+                      b=pytest.approx(
+                          [0., 0., 0., 0., 0., 0., 0., 0.0125, 0.05, 0.0875,
+                           0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]),
+                      csPort='CS1',
+                      timeArray=pytest.approx(
+                          [100000, 500000, 500000, 500000, 500000, 500000,
+                           500000, 100000, 100000, 100000, 100000, 500000,
+                           500000, 500000, 500000, 500000, 500000, 100000]),
+                      userPrograms=pytest.approx(user_programs),
+                      velocityMode=pytest.approx(
+                          [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
+                           0, 0, 1, 3])
+                      )
+        ]
+        assert self.o.completed_steps_lookup == [
+            0, 0, 1, 1, 2, 2, 3, 3, 3, 3,
+            3, 3, 4, 4, 5, 5, 6, 6]
+
+
     def test_configure(self):
-        self.do_configure(axes_to_scan=["x", "y"])
-        pass
+        self.do_configure(axes_to_scan=["y"])
+        self.do_check_output()
