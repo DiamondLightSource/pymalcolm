@@ -2,7 +2,6 @@ from mock import Mock
 
 from malcolm.testutil import ChildTestCase
 from malcolm.modules.scanning.blocks import shutter_block
-from malcolm.modules.ca.parts.cachoicepart import CAChoicePart
 
 
 class TestShutterBlock(ChildTestCase):
@@ -10,6 +9,4 @@ class TestShutterBlock(ChildTestCase):
         c = self.create_child_block(
             shutter_block, Mock(),
             shutter_pv="shutter_pv",
-            mri="mri",
-            config_dir="/tmp")
-        self.assertIsInstance(c.parts["shutter"], CAChoicePart)
+            mri="mri")
