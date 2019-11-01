@@ -4,26 +4,16 @@
 
 - builtin.parameters.string:
     name: mri
-    description: MRI for Runnable Controller
-
-- builtin.parameters.string:
-    name: config_dir
-    description: Config directory to save designs
-
-- builtin.parameters.string:
-    name: initial_design
-    description: Initial design to load
-    default:
+    description: MRI for the stateful controller
 
 - builtin.parameters.string:
     name: shutter_rbv
     description: Readback PV for position of shutter
     default:
 
-- scanning.controllers.RunnableController:
-    config_dir: $(config_dir)
+- builtin.controllers.StatefulController:
     mri: $(mri)
-    initial_design: $(initial_design)
+    description: Controller for the shutter
 
 - ca.parts.CAChoicePart:
     name: shutter
@@ -31,4 +21,3 @@
     pv: $(shutter_pv)
     rbv: $(shutter_rbv)
     widget: combo
-
