@@ -1,0 +1,34 @@
+- builtin.parameters.string:
+    name: shutter_pv
+    description: PV to control position of shutter
+
+- builtin.parameters.string:
+    name: mri
+    description: MRI for Runnable Controller
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Config directory to save designs
+
+- builtin.parameters.string:
+    name: initial_design
+    description: Initial design to load
+    default:
+
+- builtin.parameters.string:
+    name: shutter_rbv
+    description: Readback PV for position of shutter
+    default:
+
+- scanning.controllers.RunnableController:
+    config_dir: $(config_dir)
+    mri: $(mri)
+    initial_design: $(initial_design)
+
+- ca.parts.CAChoicePart:
+    name: shutter
+    description: Shutter positioner
+    pv: $(shutter_pv)
+    rbv: $(shutter_rbv)
+    widget: combo
+
