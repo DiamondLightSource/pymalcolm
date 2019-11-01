@@ -30,8 +30,8 @@ class ShutterPart(builtin.parts.ChildPart):
         super(ShutterPart, self).setup(registrar)
         # Hooks
         registrar.hook(hooks.PreRunHook, self.open_shutter)
-        registrar.hook((
-            hooks.PauseHook, hooks.AbortHook, hooks.PostRunReadyHook), self.close_shutter)
+        registrar.hook((hooks.PauseHook, hooks.AbortHook,
+                        hooks.PostRunReadyHook), self.close_shutter)
 
     @add_call_types
     def open_shutter(self, context):
