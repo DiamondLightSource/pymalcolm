@@ -104,6 +104,35 @@ class TestBeamSelectorPart(ChildTestCase):
             3, 3, 4, 4, 5, 5, 6, 6]
 
 
-    def test_configure(self):
-        self.do_configure(axes_to_scan=["y"])
-        self.do_check_output()
+#    def test_configure_x_y(self):
+#        self.do_configure(axes_to_scan=["y"])
+#        self.do_check_output()
+
+    def test_configure_static(self):
+        self.set_motor_attributes()
+        nRotations = 2
+        generator = CompoundGenerator(
+            [StaticPointGenerator(nRotations)], [], [], duration=1)
+        generator.prepare()
+        self.o.configure(self.context, 0, nRotations, {}, generator, [])
+
+
+        assert self.child.handled_requests.mock_calls == [
+            call.post('writeProfile',
+                      csPort='CS1', timeArray=[0.002], userPrograms=[8]),
+            call.post('executeProfile'),
+            call.post('moveCS1', a=-0.3, moveTime=1.2),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post('writeProfile',
+                      a=pytest.approx([]),
+                      csPort='CS1',
+                      timeArray=pytest.approx([
+                          200000, 500000, 500000, 500000, 500000, 500000, 500000,
+                          500000, 500000, 500000, 500000, 500000, 500000, 200000]),
+                      userPrograms=pytest.approx([
+                          1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 2, 8]),
+                      velocityMode=pytest.approx([
+                          1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3]))
+        ]
+        assert self.o.completed_steps_lookup == [
+            0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
