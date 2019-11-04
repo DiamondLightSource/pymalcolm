@@ -46,10 +46,12 @@ class TestPmacStatusPart(unittest.TestCase):
         a = 1000000
         while a > .001:
             d = .001
-            profile = VelocityProfile(v1, v2, d, .1, a, 100, 10)
+            profile = VelocityProfile(
+                v1, v2, d, .1, a, 100, 10, interval=.009
+            )
             profile.get_profile()
             if quantize:
-                profile.quantize(size=.009)
+                profile.quantize()
             d_res = profile.calculate_distance()
             assert np.isclose(d_res, d), \
                 "Wrong d({}). Expected d {}, vm {}, v1 {}, v2 {}, t {}".format(

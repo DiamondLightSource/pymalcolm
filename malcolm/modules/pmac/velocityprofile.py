@@ -1,5 +1,6 @@
-import numpy as np
 from math import sqrt, fabs
+
+import numpy as np
 
 HAT = 1
 INVERSE_HAT = 2
@@ -48,6 +49,7 @@ class VelocityProfile:
         t2: the time interval from vm to v2
         vm: the velocity in the middle portion of the hat or ramp
         t_out: the adjust time if t is too short to achieve d
+        interval: minimum interval between any two points in a profile
 
         d_trough: minimum distance possible between v1,v2 in tv2
         d_peak: maximum distance possible between v1,v2 in t
@@ -63,7 +65,8 @@ class VelocityProfile:
             tv2,  # type: float
             a,  # type: float
             v_max,  # type: float
-            settle_time=0  # type: float
+            settle_time=0,  # type: float
+            interval=0.002  # type: float
     ):  # type: (...) -> None
         """
         Initialize the properties that define the desired profile
@@ -84,6 +87,7 @@ class VelocityProfile:
         self.a = a
         self.v_max = v_max
         self.settle_time = settle_time
+        self.interval = interval
 
         # these attributes set by calling get_profile()
         self.t1 = self.tm = self.t2 = self.vm = 0
@@ -371,9 +375,7 @@ class VelocityProfile:
                self.d_trough <= self.d <= self.d_peak, \
             "distance is outside of allowed trough and peak, check the math"
 
-    quantize_size = 0.005
-
-    def check_quantize(self, size=quantize_size):
+    def check_quantize(self):
         """
         Check if this profile has any times that are not on a 'size' second
         boundary. Such profiles require quantization for them to be safely
@@ -384,11 +386,11 @@ class VelocityProfile:
         Returns bool: true if this profile requires quantization:
         """
         times = np.array([self.t1, self.tm, self.t2])
-        decimals = (times % 1) / size
+        decimals = (times / self.interval) % 1
         result = not np.isclose(decimals, np.round(decimals)).all()
         return result
 
-    def quantize(self, size=quantize_size):
+    def quantize(self):
         """
         ensure that all time points are exactly on 'size' second boundaries
         do this by:
@@ -425,15 +427,16 @@ class VelocityProfile:
         self.tv2 = np.round(self.tv2, decimals=14)
         self.t1 = np.round(self.t1, decimals=14)
         self.t2 = np.round(self.t2, decimals=14)
-        self.tv2 = np.ceil(self.tv2 / (size / 2) + 4) * (size / 2)
+        self.tv2 = np.ceil(self.tv2 / (self.interval / 2) + 4) * \
+                   (self.interval / 2)
         if self.tm == 0:
             # pointy hat
-            self.t1 = np.ceil(self.t1 / size + 1) * size
+            self.t1 = np.ceil(self.t1 / self.interval + 1) * self.interval
             self.t2 = self.tv2 - self.t1
         else:
             # flat topped hat
-            self.t1 = np.ceil(self.t1 / size) * size
-            self.t2 = np.ceil(self.t2 / size) * size
+            self.t1 = np.ceil(self.t1 / self.interval) * self.interval
+            self.t2 = np.ceil(self.t2 / self.interval) * self.interval
             self.tm = self.tv2 - self.t1 - self.t2
 
         # recalculate the middle velocity (peak velocity for a pointy hat)

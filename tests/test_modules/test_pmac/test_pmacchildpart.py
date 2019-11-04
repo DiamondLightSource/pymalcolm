@@ -8,7 +8,8 @@ from scanpointgenerator import LineGenerator, CompoundGenerator, \
 
 from malcolm.core import Context, Process
 from malcolm.modules.pmac.parts import PmacChildPart
-from malcolm.modules.scanning.infos import MotionTrigger, MotionTriggerInfo
+from malcolm.modules.scanning.infos import MotionTrigger, MotionTriggerInfo, \
+    MinTurnaroundInfo
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 
@@ -225,7 +226,8 @@ class TestPMACChildPart(ChildTestCase):
         self.do_check_output()
 
     def test_configure_quantize(self):
-        self.do_configure(axes_to_scan=["x", "y"], duration=1.0005)
+        m = [MinTurnaroundInfo(0.002, 0.001)]
+        self.do_configure(axes_to_scan=["x", "y"], duration=1.0005, infos=m)
         self.do_check_output_quantized()
 
     def test_configure_slower_vmax(self):
@@ -512,20 +514,64 @@ class TestPMACChildPart(ChildTestCase):
             self.context, 0, steps_to_do, {"part": None},
             generator, axes_to_scan)
 
-        assert self.child.handled_requests.mock_calls[3].kwargs['a'] == \
+        assert self.child.handled_requests.mock_calls[-1].kwargs['a'] == \
                pytest.approx([
                    0.0, 0.0, 0.0, 0.2, 2.3, 2.5, 2.5, 2.5, 2.7, 4.8, 5.0, 5.0,
                    5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.8, 2.7, 2.5, 2.5, 2.5, 2.3,
                    0.2, 0, 0.0, 0.0, 0.0])
-        assert self.child.handled_requests.mock_calls[3].kwargs['b'] == \
+        assert self.child.handled_requests.mock_calls[-1].kwargs['b'] == \
                pytest.approx([
                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                    0.0, 0.2, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
                    10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
-        assert self.child.handled_requests.mock_calls[3].kwargs[
+        assert self.child.handled_requests.mock_calls[-1].kwargs[
                    'timeArray'] == pytest.approx([
                    2000, 500250, 500250, 400000, 2100000, 400000, 500250,
                    500250, 400000, 2100000, 400000, 500250, 500250, 400000,
                    9600000, 400000, 500250, 500250, 400000, 2100000, 400000,
                    500250, 500250, 400000, 2100000, 400000, 500250, 500250,
                    2000])
+
+    def test_minimum_profile(self):
+        # this sets out to prove that for the tiniest of turnarounds, the
+        # quantization will result in a single central point and take
+        # 2 * min_interval to complete
+        # to do so it makes the interval time very high
+        # todo this test proves nothing. In most scenarios
+        #  a hat will be created because we always use a fixed acceleration
+        #  and thus must have a flat spot to achieve correct distance.
+        #  Discuss with Tom
+        axes_to_scan = ["x", "y"]
+        duration = .004
+        self.set_motor_attributes(
+            0.0, 0.0, "mm", x_acceleration=1, x_velocity=1)
+        steps_to_do = 1 * len(axes_to_scan)
+
+        # pick a begin and end point for x motion
+        b, e = 0, 1
+        # this is the time between a mid point and its bounds
+        t = duration * 1000000 / 2
+        # gap is min time between non-continuous points
+        # interval is min time between velocity profile points
+        gap, interval = 0.005, 1
+        us_interval = 1000000 * interval
+
+        xs = LineGenerator("x", "mm", b, e, 2)
+        ys = LineGenerator("y", "mm", 0, 0, 2)
+        generator = CompoundGenerator(
+            [ys, xs], [], [], duration, continuous=False)
+        generator.prepare()
+
+        m = [MinTurnaroundInfo(gap, interval)]
+        self.o.configure(
+            self.context, 0, steps_to_do, {"part": m},
+            generator, axes_to_scan)
+
+        assert self.child.handled_requests.mock_calls[-1].kwargs['a'] == \
+               pytest.approx([b, b, b, e/2, e, e, e, e])
+        assert self.child.handled_requests.mock_calls[-1].kwargs['b'] == \
+               pytest.approx([0, 0, 0, 0, 0, 0, 0, 0])
+        assert self.child.handled_requests.mock_calls[-1].kwargs[
+                   'timeArray'] == pytest.approx([
+            t, t, t, us_interval, us_interval, t, t, t
+        ])

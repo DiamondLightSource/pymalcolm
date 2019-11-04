@@ -13,7 +13,8 @@ from malcolm.modules import builtin, scanning
 from malcolm.modules.pmac.util import get_motion_trigger
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
-    profile_between_points, cs_port_with_motors_in, get_motion_axes
+    MIN_INTERVAL, profile_between_points, cs_port_with_motors_in,\
+    get_motion_axes
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -71,6 +72,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.completed_steps_lookup = []  # type: List[int]
         # The minimum turnaround time for non-joined points
         self.min_turnaround = 0
+        # The minimum turnaround time for non-joined points
+        self.min_interval = 0
         # If we are currently loading then block loading more points
         self.loading = False
         # Where we have generated into profile
@@ -223,8 +226,10 @@ class PmacChildPart(builtin.parts.ChildPart):
             assert len(infos) == 1, \
                 "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(infos)
             self.min_turnaround = max(MIN_TIME, infos[0].gap)
+            self.min_interval = infos[0].interval
         else:
             self.min_turnaround = MIN_TIME
+            self.min_interval = MIN_INTERVAL
 
         # Work out the cs_port we should be using
         layout_table = child.layout.value
@@ -626,7 +631,8 @@ class PmacChildPart(builtin.parts.ChildPart):
     def insert_gap(self, point, next_point, completed_steps):
         # Work out the velocity profiles of how to move to the start
         time_arrays, velocity_arrays = profile_between_points(
-            self.axis_mapping, point, next_point, self.min_turnaround)
+            self.axis_mapping, point, next_point, self.min_turnaround,
+            self.min_interval)
 
         start_positions = {}
         for axis_name in self.axis_mapping:
