@@ -540,7 +540,8 @@ class TestPMACChildPart(ChildTestCase):
         axes_to_scan = ["x", "y"]
         duration = .005
         self.set_motor_attributes(
-            0.0, 0.0, "mm", x_acceleration=100, x_velocity=2)
+            0.0, 0.0, "mm", x_acceleration=100., x_velocity=2.,
+            y_acceleration=100., y_velocity=2.)
         steps_to_do = 1 * len(axes_to_scan)
 
         xs = LineGenerator("x", "mm", 0, .0001, 2)

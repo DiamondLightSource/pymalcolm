@@ -11,7 +11,7 @@ R_TOL = 1e-10
 
 
 class VelocityProfile:
-    """
+    r"""
     Generate a velocity profile that starts at v1 and finishes at v2 in time t
     and travels distance d for a motor with acceleration a and maximum velocity
     v_max.
@@ -103,7 +103,7 @@ class VelocityProfile:
         assert v_max > 0 and a > 0, "v_max, acceleration must be > 0"
 
     def check_range(self):
-        """
+        r"""
         Calculate the positive and negative velocity maxima attainable between
         v1 and v2 within time tv2. This allows the calculations of the maximum
         and minimum distance attainable. It deliberately ignores v_max so that
@@ -236,7 +236,7 @@ class VelocityProfile:
                 self.tv2 += (dc - self.d) / self.v_max
 
     def calculate_vm(self):
-        """
+        r"""
         to ensure this function will succeed, call stretch_time() first.
 
         Once we have adjusted tv2 to ensure that d is attainable we can now
