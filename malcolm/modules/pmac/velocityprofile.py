@@ -386,9 +386,11 @@ class VelocityProfile:
         Returns bool: true if this profile requires quantization:
         """
         times = np.array([self.t1, self.tm, self.t2])
-        decimals = (times / self.interval) % 1
-        result = not np.isclose(decimals, np.round(decimals)).all()
-        return result
+        # don't quantize profiles that are shorter than interval
+        if self.tv2 > self.interval:
+            decimals = (times / self.interval) % 1
+            result = not np.isclose(decimals, np.round(decimals)).all()
+            return result
 
     def quantize(self):
         """
@@ -454,7 +456,12 @@ class VelocityProfile:
         :Returns Array(float), Array(float): absolute time, velocity arrays
         """
         # return ABSOLUTE time and velocity arrays to describe the profile
-        if self.d == 0 and self.v1 == 0 and self.v2 == 0:
+        if self.tv2 <= self.interval:
+            # for profiles that are shorter than the min interval
+            # we only return the start and end with no mid points
+            time_array = [0.0, self.tv2]
+            velocity_array = [self.v1, self.v2]
+        elif self.d == 0 and self.v1 == 0 and self.v2 == 0:
             time_array = [0.0, self.tv2]
             velocity_array = [0, 0]
         else:

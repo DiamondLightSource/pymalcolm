@@ -514,64 +514,50 @@ class TestPMACChildPart(ChildTestCase):
             self.context, 0, steps_to_do, {"part": None},
             generator, axes_to_scan)
 
-        assert self.child.handled_requests.mock_calls[-1].kwargs['a'] == \
-               pytest.approx([
-                   0.0, 0.0, 0.0, 0.2, 2.3, 2.5, 2.5, 2.5, 2.7, 4.8, 5.0, 5.0,
-                   5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.8, 2.7, 2.5, 2.5, 2.5, 2.3,
-                   0.2, 0, 0.0, 0.0, 0.0])
-        assert self.child.handled_requests.mock_calls[-1].kwargs['b'] == \
-               pytest.approx([
-                   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                   0.0, 0.2, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
-                   10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
-        assert self.child.handled_requests.mock_calls[-1].kwargs[
-                   'timeArray'] == pytest.approx([
-                   2000, 500250, 500250, 400000, 2100000, 400000, 500250,
-                   500250, 400000, 2100000, 400000, 500250, 500250, 400000,
-                   9600000, 400000, 500250, 500250, 400000, 2100000, 400000,
-                   500250, 500250, 400000, 2100000, 400000, 500250, 500250,
-                   2000])
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+        assert args['a'] == \
+            pytest.approx([
+               0.0, 0.0, 0.0, 0.2, 2.3, 2.5, 2.5, 2.5, 2.7, 4.8, 5.0, 5.0,
+               5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.8, 2.7, 2.5, 2.5, 2.5, 2.3,
+               0.2, 0, 0.0, 0.0, 0.0])
+        assert args['b'] == \
+            pytest.approx([
+               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+               0.0, 0.2, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+               10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
+        assert args['timeArray'] == pytest.approx([
+               2000, 500250, 500250, 400000, 2100000, 400000, 500250,
+               500250, 400000, 2100000, 400000, 500250, 500250, 400000,
+               9600000, 400000, 500250, 500250, 400000, 2100000, 400000,
+               500250, 500250, 400000, 2100000, 400000, 500250, 500250,
+               2000])
 
     def test_minimum_profile(self):
-        # this sets out to prove that for the tiniest of turnarounds, the
-        # quantization will result in a single central point and take
-        # 2 * min_interval to complete
-        # to do so it makes the interval time very high
-        # todo this test proves nothing. In most scenarios
-        #  a hat will be created because we always use a fixed acceleration
-        #  and thus must have a flat spot to achieve correct distance.
-        #  Discuss with Tom
+        # tests that a turnaround that is >= minturnaround
+        # is reduced to a start and end point only
+        # this supports keeping the turnaround really short where
+        # the motors are fast e.g. j15
         axes_to_scan = ["x", "y"]
-        duration = .004
+        duration = .005
         self.set_motor_attributes(
-            0.0, 0.0, "mm", x_acceleration=1, x_velocity=1)
+            0.0, 0.0, "mm", x_acceleration=100, x_velocity=2)
         steps_to_do = 1 * len(axes_to_scan)
 
-        # pick a begin and end point for x motion
-        b, e = 0, 1
-        # this is the time between a mid point and its bounds
-        t = duration * 1000000 / 2
-        # gap is min time between non-continuous points
-        # interval is min time between velocity profile points
-        gap, interval = 0.005, 1
-        us_interval = 1000000 * interval
-
-        xs = LineGenerator("x", "mm", b, e, 2)
+        xs = LineGenerator("x", "mm", 0, .0001, 2)
         ys = LineGenerator("y", "mm", 0, 0, 2)
         generator = CompoundGenerator(
             [ys, xs], [], [], duration, continuous=False)
         generator.prepare()
 
-        m = [MinTurnaroundInfo(gap, interval)]
+        m = [MinTurnaroundInfo(.002, .002)]
         self.o.configure(
             self.context, 0, steps_to_do, {"part": m},
             generator, axes_to_scan)
 
-        assert self.child.handled_requests.mock_calls[-1].kwargs['a'] == \
-               pytest.approx([b, b, b, e/2, e, e, e, e])
-        assert self.child.handled_requests.mock_calls[-1].kwargs['b'] == \
-               pytest.approx([0, 0, 0, 0, 0, 0, 0, 0])
-        assert self.child.handled_requests.mock_calls[-1].kwargs[
-                   'timeArray'] == pytest.approx([
-            t, t, t, us_interval, us_interval, t, t, t
-        ])
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+        assert args['a'] == \
+            pytest.approx([0, 0, 0, 0, .0001, .0001, .0001])
+        assert args['b'] == \
+            pytest.approx([0, 0, 0, 0, 0, 0, 0])
+        assert args['timeArray'] == pytest.approx(
+            [2000, 2500, 2500, 2000, 2500, 2500, 2000])
