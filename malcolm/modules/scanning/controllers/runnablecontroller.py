@@ -9,9 +9,9 @@ from malcolm.modules import builtin
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, ConfigureParams
 from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
-    RunHook, PostRunArmedHook, PostRunReadyHook, ResumeHook, ReportStatusHook, \
-    AbortHook, PauseHook, SeekHook, ControllerHook, PreConfigureHook, \
-    AAxesToMove
+    PreRunHook, RunHook, PostRunArmedHook, PostRunReadyHook, \
+    ReportStatusHook, AbortHook, PauseHook, SeekHook, ControllerHook, \
+    PreConfigureHook, AAxesToMove
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Iterable, Type, Callable
@@ -426,6 +426,10 @@ class RunnableController(builtin.controllers.ManagerController):
         Disabled state.
         """
 
+        # Run all PreRunHooks
+        hook = PreRunHook
+        self.do_pre_run(hook)
+
         if self.configured_steps.value < self.total_steps.value:
             next_state = ss.ARMED
         else:
@@ -445,7 +449,6 @@ class RunnableController(builtin.controllers.ManagerController):
                     should_resume = self.resume_queue.get()
                     if should_resume:
                         # we need to resume
-                        hook = ResumeHook
                         self.log.debug("Resuming run")
                     else:
                         # we don't need to resume, just drop out
@@ -457,6 +460,10 @@ class RunnableController(builtin.controllers.ManagerController):
         except Exception as e:
             self.go_to_error_state(e)
             raise
+
+    def do_pre_run(self, hook):
+        # type: (Type[ControllerHook]) -> None
+        self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
 
     def do_run(self, hook):
         # type: (Type[ControllerHook]) -> None

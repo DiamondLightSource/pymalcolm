@@ -273,8 +273,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
         registrar.hook(scanning.hooks.ConfigureHook, self.configure)
         registrar.hook((scanning.hooks.PostRunArmedHook,
                         scanning.hooks.SeekHook), self.seek)
-        registrar.hook((scanning.hooks.RunHook,
-                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook(scanning.hooks.RunHook, self.run)
         registrar.hook(scanning.hooks.PostRunReadyHook, self.post_run_ready)
         registrar.hook(scanning.hooks.AbortHook, self.abort)
         registrar.hook(scanning.hooks.PauseHook, self.pause)
