@@ -19,8 +19,12 @@ class DatasetType(Enum):
     MONITOR = "monitor"
     #: The demand positions of an axis as specified by the generator
     POSITION_SET = "position_set"
-    #: The readback positions of an axis that moves during the sacn
+    #: The readback positions of an axis that moves during the scan
     POSITION_VALUE = "position_value"
+    #: The minimum value of the readback position of an axis in each frame
+    POSITION_MIN = "position_min"
+    #: The minimum value of the readback position of an axis in each frame
+    POSITION_MAX = "position_max"
 
 
 class ParameterTweakInfo(Info):

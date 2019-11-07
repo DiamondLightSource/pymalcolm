@@ -1,4 +1,5 @@
-from malcolm.core import Info
+from malcolm.core import Info, PART_NAME_RE
+from malcolm.modules import scanning
 
 from .util import AttributeDatasetType
 
@@ -63,17 +64,45 @@ class NDAttributeDatasetInfo(Info):
     dataset to store to file
 
     Args:
-        name: Dataset name that should be written to
-        type: What NeXuS dataset type it produces
-        attr: NDAttribute name to get data from
-        rank: The rank of the dataset
+        name: Dataset name that should be written to, e.g. "I0.value"
+        type: What NeXuS dataset type it produces, e.g. DatasetType.PRIMARY
+        attr: NDAttribute name to get data from, e.g. "COUNTER1.Diff"
     """
 
-    def __init__(self, name, type, attr, rank):
-        # type: (str, AttributeDatasetType, str, int) -> None
+    def __init__(self, name, type, attr):
+        # type: (str, scanning.infos.DatasetType, str) -> None
         self.name = name
         self.type = type
         self.attr = attr
-        self.rank = rank
+
+    @classmethod
+    def from_attribute_type(cls, name, type, attr):
+        # type: (str, AttributeDatasetType, str) -> NDAttributeDatasetInfo
+        """Make an Info from the AttributeDatasetType
+
+        Args:
+            name: Dataset name without dots, e.g. "I0"
+            type: What type it is, e.g. AttributeDatasetType.DETECTOR
+            attr: NDAttribute name to get data from, e.g. "COUNTER1.Diff
+        """
+        assert PART_NAME_RE.match(name), \
+            "Expected Alphanumeric dataset name (dash and underscore allowed)" \
+            + " got %r" % name
+        if type is AttributeDatasetType.DETECTOR:
+            # Something like I0
+            name = "%s.data" % name
+            dtype = scanning.util.DatasetType.PRIMARY
+        elif type is AttributeDatasetType.MONITOR:
+            # Something like Iref
+            name = "%s.data" % name
+            dtype = scanning.util.DatasetType.MONITOR
+        elif type is AttributeDatasetType.POSITION:
+            # Something like x
+            name = "%s.value" % name
+            dtype = scanning.util.DatasetType.POSITION_VALUE
+        else:
+            raise AttributeError("Bad dataset type %r, should be a %s" % (
+                type, AttributeDatasetType))
+        return cls(name, dtype, attr)
 
 

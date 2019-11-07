@@ -210,8 +210,8 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             ret.append(NDArrayDatasetInfo(rank=2))
         for name, dataset_type in zip(self.extra_attributes.value.name,
                                       self.extra_attributes.value.datasetType):
-            ret.append(NDAttributeDatasetInfo(rank=2, name=name, attr=name,
-                                              type=dataset_type))
+            ret.append(NDAttributeDatasetInfo.from_attribute_type(
+                name=name, attr=name, type=dataset_type))
         return ret
 
     def configure_args_with_exposure(self, keys):

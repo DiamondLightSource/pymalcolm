@@ -58,21 +58,35 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
         ret = []
         bits_table = self.bits.value  # type: DatasetBitsTable
         for i, capture in enumerate(bits_table.capture):
-            if capture:
-                ret.append(ADCore.infos.NDAttributeDatasetInfo(
-                    name=bits_table.datasetName[i],
-                    type=bits_table.datasetType[i],
-                    rank=2,
-                    attr=bits_table.name[i]))
+            ds_name = bits_table.datasetName[i]
+            if ds_name and capture:
+                ret.append(
+                    ADCore.infos.NDAttributeDatasetInfo.from_attribute_type(
+                        name=ds_name,
+                        type=bits_table.datasetType[i],
+                        attr=bits_table.name[i]))
         pos_table = self.positions.value  # type: DatasetPositionsTable
         for i, capture in enumerate(pos_table.capture):
             ds_name = pos_table.datasetName[i]
             if ds_name and capture != pandablocks.util.PositionCapture.NO:
-                # If we have Min Max Mean, just take Mean
-                capture_suffix = capture.value.split(" ")[-1]
-                ret.append(ADCore.infos.NDAttributeDatasetInfo(
-                    name=ds_name,
-                    type=pos_table.datasetType[i],
-                    rank=2,
-                    attr="%s.%s" % (pos_table.name[i], capture_suffix)))
+                suffixes = capture.value.split(" ")  # type: List[str]
+                # If we have multiple values, export Min and Max as such
+                if len(suffixes) > 1:
+                    for suffix in [x for x in ("Min", "Max") if x in suffixes]:
+                        suffixes.remove(suffix)
+                        type_name = "POSITION_%s" % suffix.upper()
+                        ret.append(ADCore.infos.NDAttributeDatasetInfo(
+                            name="%s.%s" % (ds_name, suffix.lower()),
+                            type=scanning.util.DatasetType[type_name],
+                            attr="%s.%s" % (pos_table.name[i], suffix)))
+                # There should now be 1 or 0 suffixes left to report
+                if suffixes:
+                    assert len(suffixes) == 1, \
+                        "Cannot deal with capture value %r" % capture.value
+                    suffix = suffixes[0]
+                    ret.append(
+                        ADCore.infos.NDAttributeDatasetInfo.from_attribute_type(
+                            name=ds_name,
+                            type=pos_table.datasetType[i],
+                            attr="%s.%s" % (pos_table.name[i], suffix)))
         return ret
