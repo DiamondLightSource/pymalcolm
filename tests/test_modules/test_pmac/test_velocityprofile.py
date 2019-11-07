@@ -32,7 +32,7 @@ class TestPmacStatusPart(unittest.TestCase):
             ts = np.arange(.01, 20, .1)
         for t in ts:
             d = 100
-            profile = VelocityProfile(v1, v2, d, t, 2.0, 10000)
+            profile = VelocityProfile(v1, v2, d, t, 2.0, 10000, interval=.002)
             profile.get_profile()
             if quantize:
                 profile.quantize()

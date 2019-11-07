@@ -66,7 +66,7 @@ class VelocityProfile:
             a,  # type: float
             v_max,  # type: float
             settle_time=0,  # type: float
-            interval=0.002  # type: float
+            interval=0  # type: float
     ):  # type: (...) -> None
         """
         Initialize the properties that define the desired profile
@@ -387,7 +387,7 @@ class VelocityProfile:
         """
         times = np.array([self.t1, self.tm, self.t2])
         # don't quantize profiles that are shorter than interval
-        if self.tv2 > self.interval:
+        if self.tv2 > self.interval > 0:
             decimals = (times / self.interval) % 1
             result = not np.isclose(decimals, np.round(decimals)).all()
             return result
