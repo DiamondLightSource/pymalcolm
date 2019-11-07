@@ -106,40 +106,47 @@ class DetectorChildPart(builtin.parts.ChildPart):
             tweak_detectors = True
 
         child = context.block_view(self.mri)
+        takes_exposure = "exposure" in child.validate.meta.takes.elements
 
-        def do_validate(params):
+        def do_validate(**params):
+            if not takes_exposure:
+                params.pop("exposure", None)
             try:
                 return child.validate(**params)
             except Exception as e:
                 raise BadValueError("Validate of %s failed: %s" % (
                     self.mri, stringify_error(e)))
 
-        if enable and frames_per_step < 1:
-            # We are being asked to guess frames per step
-            if kwargs.get("exposure", 0) == 0:
-                # No exposure given, must be 1
-                frames_per_step = 1
-                tweak_detectors = True
-            else:
-                # Exposure given, so run a validate once without the mutiplier
-                # and see what the detector gives us
-                exposure = kwargs.pop("exposure")
-                returns = do_validate(kwargs)
-                dead_time = generator.duration - returns["exposure"]
-                frames_per_step = generator.duration // (exposure + dead_time)
-                kwargs["exposure"] = exposure
-                tweak_detectors = True
-        if frames_per_step > 1:
-            # Check something else is multiplying out triggers
-            infos = [i for i in DetectorMutiframeInfo.filter_values(part_info)
-                     if i.mri == self.mri]
-            assert infos, \
-                "There are no trigger multipliers setup for Detector '%s' " \
-                "so framesPerStep can only be 0 or 1 for this row in the " \
-                "detectors table" % self.name
+        # Check something else is multiplying out triggers
+        multiframe = [i for i in DetectorMutiframeInfo.filter_values(part_info)
+                      if i.mri == self.mri]
         if enable:
+            # Check that if we are told to set exposure that we take it
+            if "exposure" in kwargs and not multiframe and not takes_exposure:
+                raise BadValueError(
+                    "Detector %s doesn't take exposure" % self.name)
+            # If asked to guess frames per step, do so
+            if frames_per_step < 1:
+                if kwargs.get("exposure", 0) == 0:
+                    # Asked to guess both
+                    frames_per_step = 1
+                else:
+                    # Exposure given, so run a validate once without the
+                    # mutiplier and see what the detector gives us
+                    exposure = kwargs.pop("exposure")
+                    returns = do_validate(**kwargs)
+                    dead_time = generator.duration - returns["exposure"]
+                    frames_per_step = generator.duration // (
+                            exposure + dead_time)
+                    kwargs["exposure"] = exposure
+                tweak_detectors = True
+            if frames_per_step > 1 and not multiframe:
+                raise BadValueError(
+                    "There are no trigger multipliers setup for Detector '%s' "
+                    "so framesPerStep can only be 0 or 1 for this row in the "
+                    "detectors table" % self.name)
             # This is a Serializable with the correct entries
-            returns = do_validate(kwargs)
+            returns = do_validate(**kwargs)
             # Add in the exposure in case it is returned
             exposure = kwargs.setdefault("exposure", 0.0)
             # TODO: this will fail if we split across 2 Malcolm processes as
@@ -242,6 +249,8 @@ class DetectorChildPart(builtin.parts.ChildPart):
             assert self.frames_per_step > 0, \
                 "Zero frames per step for %s, this shouldn't happen" % self.name
         child = context.block_view(self.mri)
+        if "exposure" in kwargs and "exposure" not in child.configure.meta.takes.elements:
+            kwargs.pop("exposure")
         child.configure(**kwargs)
         # Report back any datasets the child has to our parent
         assert hasattr(child, "datasets"), \

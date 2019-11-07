@@ -7,7 +7,7 @@ from annotypes import add_call_types, Anno
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Part, Process, Context, APartName, PartRegistrar, \
-    NumberMeta, AMri
+    NumberMeta, AMri, BadValueError
 from malcolm.modules.builtin.hooks import AContext
 from malcolm.modules.builtin.util import set_tags
 from malcolm.modules.scanning.infos import DetectorMutiframeInfo
@@ -59,7 +59,7 @@ class WaitingPart(Part):
 class MaybeMultiPart(Part):
     def __init__(self, mri):
         # type: (AMri) -> None
-        super(MaybeMultiPart, self).__init__("MULTI")
+        super(MaybeMultiPart, self).__init__("MULTI" + mri)
         self.mri = mri
         self.active = False
 
@@ -96,7 +96,6 @@ class TestDetectorChildPart(unittest.TestCase):
         c2 = RunnableController(
             mri="slow", config_dir=DESIGN_PATH, use_git=False)
         c2.add_part(WaitingPart("wait", 0.123))
-        c2.add_part(ExposureDeadtimePart("dt", 0.001))
         c2.add_part(DatasetTablePart("dset"))
         self.p.add_controller(c2)
 
@@ -110,8 +109,10 @@ class TestDetectorChildPart(unittest.TestCase):
             DetectorChildPart(name="FAST", mri="fast", initial_visibility=True))
         c3.add_part(
             DetectorChildPart(name="SLOW", mri="slow", initial_visibility=True))
-        self.multi = MaybeMultiPart("fast")
-        c3.add_part(self.multi)
+        self.fast_multi = MaybeMultiPart("fast")
+        self.slow_multi = MaybeMultiPart("slow")
+        c3.add_part(self.fast_multi)
+        c3.add_part(self.slow_multi)
         self.p.add_controller(c3)
 
         # Some blocks to interface to them
@@ -148,7 +149,7 @@ class TestDetectorChildPart(unittest.TestCase):
             ])
         )
         assert list(ret.detectors.rows()) == [
-            [True, 'SLOW', 'slow', 0.99895, 1],
+            [True, 'SLOW', 'slow', 0.0, 1],
             [True, 'FAST', 'fast', 0.99895, 1],
         ]
 
@@ -156,16 +157,28 @@ class TestDetectorChildPart(unittest.TestCase):
         ret = self.b.validate(
             self.make_generator(), self.tmpdir,
             detectors=DetectorTable.from_rows([
-                (True, "FAST", "fast", 0.0, 1),
-                (True, "SLOW", "slow", 0.5, 0),
+                (True, "FAST", "fast", 0.5, 0),
+                (True, "SLOW", "slow", 0.0, 1),
             ])
         )
         assert list(ret.detectors.rows()) == [
-            [True, 'FAST', 'fast', 0.99895, 1],
-            [True, 'SLOW', 'slow', 0.5, 1]
+            [True, 'FAST', 'fast', 0.5, 1],
+            [True, 'SLOW', 'slow', 0.0, 1]
         ]
 
+    def test_setting_exposure_on_no_exposure_det_fails(self):
+        with self.assertRaises(BadValueError) as cm:
+            self.b.validate(
+                self.make_generator(), self.tmpdir,
+                detectors=DetectorTable.from_rows([
+                    (True, "FAST", "fast", 0.0, 1),
+                    (True, "SLOW", "slow", 0.5, 1),
+                ])
+            )
+        assert str(cm.exception) == "Detector SLOW doesn't take exposure"
+
     def test_guessing_frames_and_exposure(self):
+        self.slow_multi.active = True
         ret = self.b.validate(
             self.make_generator(), self.tmpdir,
             detectors=DetectorTable.from_rows([
@@ -178,7 +191,7 @@ class TestDetectorChildPart(unittest.TestCase):
         ]
 
     def test_guessing_frames_5(self):
-        self.multi.active = True
+        self.fast_multi.active = True
         ret = self.b.validate(
             self.make_generator(), self.tmpdir,
             detectors=DetectorTable.from_rows([
@@ -188,7 +201,7 @@ class TestDetectorChildPart(unittest.TestCase):
         )
         assert list(ret.detectors.rows()) == [
             [True, 'FAST', 'fast', 0.198, 5],
-            [True, 'SLOW', 'slow', 0.99895, 1]
+            [True, 'SLOW', 'slow', 0.0, 1]
         ]
 
     def test_only_one_det(self):
@@ -221,7 +234,7 @@ class TestDetectorChildPart(unittest.TestCase):
         assert self.bf.state.value == "Aborted"
 
     def test_multi_frame_no_infos_fails(self):
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(BadValueError) as cm:
             self.b.configure(
                 self.make_generator(), self.tmpdir,
                 detectors=DetectorTable.from_rows([
@@ -232,7 +245,7 @@ class TestDetectorChildPart(unittest.TestCase):
         assert str(cm.exception) == "There are no trigger multipliers setup for Detector 'FAST' so framesPerStep can only be 0 or 1 for this row in the detectors table"
 
     def test_multi_frame_fast_det(self):
-        self.multi.active = True
+        self.fast_multi.active = True
         self.b.configure(
             self.make_generator(), self.tmpdir,
             detectors=DetectorTable.from_rows([
