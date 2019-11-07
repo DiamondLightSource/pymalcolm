@@ -18,7 +18,7 @@ from .models import BlockModel, AttributeModel, MethodModel, MapMeta, \
     BlockMeta, NTTable
 from .moduleutil import submodule_all
 from .notifier import Notifier
-from .part import Part, PartRegistrar, APartName
+from .part import Part, PartRegistrar, APartName, PART_NAME_RE
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
     ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos
 from .request import Request, PathRequest, Subscribe, Unsubscribe, Get, Put, \

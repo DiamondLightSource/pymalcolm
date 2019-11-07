@@ -1,11 +1,7 @@
-from annotypes import Anno, TYPE_CHECKING, Array, Sequence, Union
+from annotypes import Anno, Array, Sequence, Union
 from enum import Enum
 
-from malcolm.core import Future, Context, PartRegistrar, DEFAULT_TIMEOUT, Table
-from malcolm.modules import scanning
-
-if TYPE_CHECKING:
-    from typing import List, Any, Optional
+from malcolm.core import Table
 
 
 # If things don't get new frames in this time (seconds), consider them

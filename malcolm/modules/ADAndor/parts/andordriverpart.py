@@ -1,6 +1,5 @@
-from annotypes import Anno, add_call_types, Any
+from annotypes import Anno, Any
 
-import malcolm.modules.scanning.infos
 from malcolm.core import PartRegistrar, Context, NumberMeta
 from malcolm.modules import ADCore, scanning, builtin
 

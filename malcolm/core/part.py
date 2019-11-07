@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     FieldDict = Dict[object, List[Tuple[str, Field, Callable, bool]]]
     Callback = Callable[[object, Info], None]
     Hooked = Callable[..., T]
-    ArgsGen = Callable[(List[str]), List[str]]
+    ArgsGen = Callable[[List[str]], List[str]]
 
 with Anno("The name of the Part within the Controller"):
     APartName = str
@@ -97,7 +97,6 @@ class FieldRegistry(object):
 
 class InfoRegistry(object):
     def __init__(self):
-        # type: (Callable[..., Spawned]) -> None
         self._reportable_infos = {}  # type: Dict[Type[Info], Callback]
 
     def add_reportable(self, info, callback):
