@@ -19,8 +19,10 @@ if TYPE_CHECKING:
 # All possible PMAC CS axis assignment
 CS_AXIS_NAMES = list("ABCUVWXYZ")
 
-# Minimum move time for any move
+# Minimum move time for a whole profile
 MIN_TIME = 0.002
+# minimum time between points in a profile
+MIN_INTERVAL = 0.002
 
 
 def cs_port_with_motors_in(context,  # type: Context
@@ -140,8 +142,13 @@ def point_velocities(axis_mapping, point, entry=True):
     return velocities
 
 
-def profile_between_points(axis_mapping, point, next_point, min_time=MIN_TIME):
-    # type: (Dict[str, MotorInfo], Point, Point, float) -> Tuple[Profiles, Profiles]
+def profile_between_points(
+        axis_mapping,  # type: (Dict[str, MotorInfo])
+        point,  # type: Point
+        next_point,  # type: Point
+        min_time=MIN_TIME,  # type: float
+        min_interval=MIN_INTERVAL  # type: float
+):
     """Make consistent time and velocity arrays for each axis
 
     Try to create velocity profiles for all axes that all arrive at
@@ -185,7 +192,7 @@ def profile_between_points(axis_mapping, point, next_point, min_time=MIN_TIME):
             distance = next_point.lower[axis_name] - point.upper[axis_name]
             p = motor_info.make_velocity_profile(
                 start_velocities[axis_name], end_velocities[axis_name],
-                distance, min_time
+                distance, min_time, min_interval
             )
             # Absolute time values that we are at that velocity
             profiles[axis_name] = p

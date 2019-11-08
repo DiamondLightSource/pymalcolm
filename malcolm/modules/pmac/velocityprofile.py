@@ -11,7 +11,7 @@ R_TOL = 1e-10
 
 
 class VelocityProfile:
-    """
+    r"""
     Generate a velocity profile that starts at v1 and finishes at v2 in time t
     and travels distance d for a motor with acceleration a and maximum velocity
     v_max.
@@ -49,6 +49,7 @@ class VelocityProfile:
         t2: the time interval from vm to v2
         vm: the velocity in the middle portion of the hat or ramp
         t_out: the adjust time if t is too short to achieve d
+        interval: minimum interval between any two points in a profile
 
         d_trough: minimum distance possible between v1,v2 in tv2
         d_peak: maximum distance possible between v1,v2 in t
@@ -64,7 +65,8 @@ class VelocityProfile:
             tv2,  # type: float
             a,  # type: float
             v_max,  # type: float
-            settle_time=0  # type: float
+            settle_time=0,  # type: float
+            interval=0  # type: float
     ):  # type: (...) -> None
         """
         Initialize the properties that define the desired profile
@@ -85,6 +87,7 @@ class VelocityProfile:
         self.a = a
         self.v_max = v_max
         self.settle_time = settle_time
+        self.interval = interval
 
         # these attributes set by calling get_profile()
         self.t1 = self.tm = self.t2 = self.vm = 0
@@ -100,7 +103,7 @@ class VelocityProfile:
         assert v_max > 0 and a > 0, "v_max, acceleration must be > 0"
 
     def check_range(self):
-        """
+        r"""
         Calculate the positive and negative velocity maxima attainable between
         v1 and v2 within time tv2. This allows the calculations of the maximum
         and minimum distance attainable. It deliberately ignores v_max so that
@@ -233,7 +236,7 @@ class VelocityProfile:
                 self.tv2 += (dc - self.d) / self.v_max
 
     def calculate_vm(self):
-        """
+        r"""
         to ensure this function will succeed, call stretch_time() first.
 
         Once we have adjusted tv2 to ensure that d is attainable we can now
@@ -374,7 +377,7 @@ class VelocityProfile:
 
     def check_quantize(self):
         """
-        Check if this profile has any times that are not on a millisecond
+        Check if this profile has any times that are not on a 'size' second
         boundary. Such profiles require quantization for them to be safely
         combined with other axis profiles (which will also require
         quantization). Otherwise the combined profile may contain very small
@@ -383,13 +386,15 @@ class VelocityProfile:
         Returns bool: true if this profile requires quantization:
         """
         times = np.array([self.t1, self.tm, self.t2])
-        decimals = (times % 1) * 1000
-        result = not np.isclose(decimals, np.round(decimals)).all()
-        return result
+        # don't quantize profiles that are shorter than interval
+        if self.tv2 > self.interval > 0:
+            decimals = (times / self.interval) % 1
+            result = not np.isclose(decimals, np.round(decimals)).all()
+            return result
 
     def quantize(self):
         """
-        ensure that all time points are exactly on 1 millisecond boundaries
+        ensure that all time points are exactly on 'size' second boundaries
         do this by:
             add 1 milliseconds to t1, tm, t2 and round down
             adjust vm downwards so that d is correct
@@ -406,12 +411,12 @@ class VelocityProfile:
         """
 
         # First round the times to remove any tiny fractions that would waste
-        # an extra millisecond when doing match.ceil()
+        # an extra millisecond when doing math.ceil()
         #
-        # Next increase total time by 2 ms and round up to the nearest
-        # even number - this is then deterministic for all axes, and includes
-        # at least enough stretch to accommodate up to 1 ms of stretch in each
-        # slope time.
+        # Next increase total time by 2 'size' and round up to the nearest
+        # even number of 'size' - this is then deterministic for all axes,
+        # and includes at least enough stretch to accommodate up to 'size' of
+        # stretch in each slope time.
         #
         # For a flat hat, round up the two slope times and the flat time is
         # the remainder.
@@ -424,15 +429,16 @@ class VelocityProfile:
         self.tv2 = np.round(self.tv2, decimals=14)
         self.t1 = np.round(self.t1, decimals=14)
         self.t2 = np.round(self.t2, decimals=14)
-        self.tv2 = np.ceil(self.tv2 * 2000 + 4) / 2000
+        self.tv2 = np.ceil(self.tv2 / (self.interval / 2) + 4) * \
+                   (self.interval / 2)
         if self.tm == 0:
             # pointy hat
-            self.t1 = np.ceil(self.t1 * 1000 + 1) / 1000
+            self.t1 = np.ceil(self.t1 / self.interval + 1) * self.interval
             self.t2 = self.tv2 - self.t1
         else:
             # flat topped hat
-            self.t1 = np.ceil(self.t1 * 1000) / 1000
-            self.t2 = np.ceil(self.t2 * 1000) / 1000
+            self.t1 = np.ceil(self.t1 / self.interval) * self.interval
+            self.t2 = np.ceil(self.t2 / self.interval) * self.interval
             self.tm = self.tv2 - self.t1 - self.t2
 
         # recalculate the middle velocity (peak velocity for a pointy hat)
@@ -450,11 +456,20 @@ class VelocityProfile:
         :Returns Array(float), Array(float): absolute time, velocity arrays
         """
         # return ABSOLUTE time and velocity arrays to describe the profile
-        time_array = [0.0, self.t1, self.tv2]
-        velocity_array = [self.v1, self.vm, self.v2]
-        if self.tm > 0:
-            time_array.insert(2, self.t1 + self.tm)
-            velocity_array.insert(2, self.vm)
+        if self.tv2 <= self.interval:
+            # for profiles that are shorter than the min interval
+            # we only return the start and end with no mid points
+            time_array = [0.0, self.tv2]
+            velocity_array = [self.v1, self.v2]
+        elif self.d == 0 and self.v1 == 0 and self.v2 == 0:
+            time_array = [0.0, self.tv2]
+            velocity_array = [0, 0]
+        else:
+            time_array = [0.0, self.t1, self.tv2]
+            velocity_array = [self.v1, self.vm, self.v2]
+            if self.tm > 0:
+                time_array.insert(2, self.t1 + self.tm)
+                velocity_array.insert(2, self.vm)
         if self.settle_time > 0:
             time_array.append(time_array[-1] + self.settle_time)
             velocity_array.append(self.v2)
