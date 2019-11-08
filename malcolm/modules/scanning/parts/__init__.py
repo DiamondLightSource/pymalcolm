@@ -4,6 +4,7 @@ from .detectorchildpart import DetectorChildPart, AMri, ADetectorTable, \
 from .minturnaroundpart import MinTurnaroundPart
 from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes
 from .unrollingpart import UnrollingPart
+from .shutterpart import ShutterPart
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

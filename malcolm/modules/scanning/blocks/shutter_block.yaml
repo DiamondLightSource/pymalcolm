@@ -1,0 +1,23 @@
+- builtin.parameters.string:
+    name: shutter_pv
+    description: PV to control position of shutter
+
+- builtin.parameters.string:
+    name: mri
+    description: MRI for the stateful controller
+
+- builtin.parameters.string:
+    name: shutter_rbv
+    description: Readback PV for position of shutter
+    default:
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: Controller for the shutter
+
+- ca.parts.CAChoicePart:
+    name: shutter
+    description: Shutter positioner
+    pv: $(shutter_pv)
+    rbv: $(shutter_rbv)
+    widget: combo

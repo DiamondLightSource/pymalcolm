@@ -4,7 +4,7 @@ from malcolm.core import BadValueError, APartName, Future, Put, Request
 from malcolm.modules import builtin
 from ..infos import DatasetProducedInfo
 from ..hooks import ConfigureHook, PostRunArmedHook, \
-    SeekHook, RunHook, ResumeHook, ACompletedSteps, AContext, ValidateHook, \
+    SeekHook, RunHook, ACompletedSteps, AContext, ValidateHook, \
     UParameterTweakInfos, PostRunReadyHook, AbortHook, PreConfigureHook, \
     AGenerator, AAxesToMove, UInfos, AFileDir, AFileTemplate
 from ..infos import ParameterTweakInfo, RunProgressInfo
@@ -48,7 +48,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         registrar.hook(ValidateHook, self.validate)
         registrar.hook(PreConfigureHook, self.reload)
         registrar.hook(ConfigureHook, self.configure)
-        registrar.hook((RunHook, ResumeHook), self.run)
+        registrar.hook(RunHook, self.run)
         registrar.hook((PostRunArmedHook, PostRunReadyHook),
                              self.post_run)
         registrar.hook(SeekHook, self.seek)
