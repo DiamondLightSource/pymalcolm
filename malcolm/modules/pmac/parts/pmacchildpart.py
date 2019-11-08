@@ -390,7 +390,7 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,
                                           current_positions, completed_steps):
-        # at this point we have time/velocity arrays with 5-7 values for each
+        # at this point we have time/velocity arrays with 2-4 values for each
         # axis. Each time represents a (instantaneous) change in acceleration.
         # We want to translate this into a move profile (time/position).
         # Every axis profile must have a point for each of the times from
@@ -641,6 +641,13 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Work out the Position trajectories from these profiles
         self.calculate_profile_from_velocities(
             time_arrays, velocity_arrays, start_positions, completed_steps)
+
+        # make sure the last point is the same as next_point.lower since
+        # calculate_profile_from_velocities fails when the turnaround is 2
+        # points only
+        for axis_name, motor_info in self.axis_mapping.items():
+            self.profile[motor_info.cs_axis.lower()][-1] = \
+                next_point.lower[axis_name]
 
         # Change the last point to be a live frame
         self.profile["velocityMode"][-1] = PREV_TO_CURRENT

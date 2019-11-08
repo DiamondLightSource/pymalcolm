@@ -557,8 +557,29 @@ class TestPMACChildPart(ChildTestCase):
 
         action, func, args = self.child.handled_requests.mock_calls[-1]
         assert args['a'] == \
-            pytest.approx([0, 0, 0, 0, .0001, .0001, .0001])
+            pytest.approx([0, 0, 0, .0001, .0001, .0001, .0001])
         assert args['b'] == \
             pytest.approx([0, 0, 0, 0, 0, 0, 0])
         assert args['timeArray'] == pytest.approx(
             [2000, 2500, 2500, 2000, 2500, 2500, 2000])
+
+        # now make the acceleration slower so that the turnaround takes
+        # longer than the minimum interval
+        self.set_motor_attributes(
+            0.0, 0.0, "mm", x_acceleration=10., x_velocity=2.,
+            y_acceleration=100., y_velocity=2.)
+
+        self.o.configure(
+            self.context, 0, steps_to_do, {"part": m},
+            generator, axes_to_scan)
+
+        # this generates one mid point between the 1st upper and 2nd lower
+        # bounds. Note that the point is not exactly central due to time
+        # quantization
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+        assert args['a'] == \
+            pytest.approx([0, 0, 0, 5.45454545e-05, .0001, .0001, .0001, .0001])
+        assert args['b'] == \
+            pytest.approx([0, 0, 0, 0, 0, 0, 0, 0])
+        assert args['timeArray'] == pytest.approx(
+            [2000, 2500, 2500, 6000, 5000, 2500, 2500, 2000])
