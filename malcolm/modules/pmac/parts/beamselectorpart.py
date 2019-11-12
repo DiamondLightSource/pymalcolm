@@ -6,8 +6,9 @@ from scanpointgenerator import LineGenerator, CompoundGenerator, \
     StaticPointGenerator
 
 from malcolm.modules.scanning.infos import MinTurnaroundInfo
-from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
-    profile_between_points, cs_port_with_motors_in, get_motion_axes
+from ..util import cs_axis_mapping, points_joined, point_velocities,\
+    MIN_TIME, profile_between_points, \
+    cs_port_with_motors_in, get_motion_axes
 
 from annotypes import add_call_types, TYPE_CHECKING
 if TYPE_CHECKING:
@@ -63,21 +64,28 @@ class BeamSelectorPart(PmacChildPart):
 
         static_axis = generator.generators[0]
         assert isinstance(static_axis, StaticPointGenerator), "Bad"
-        selectorAxis = LineGenerator("x", "mm", 0.0, 0.5, 1,
+        selector_axis = LineGenerator("x", "mm", 0.0, 0.5, 1,
                                      alternate=True)
-        newGenerator = CompoundGenerator([static_axis, selectorAxis],
+        axesToMove = ["x"]
+        #steps_to_do *= 2
+
+        exposure_time = float(1.0)
+        new_generator = CompoundGenerator([static_axis, selector_axis],
                                          [],
-                                         [], generator.duration,
-                                         continuous=False)
-        newGenerator.prepare()
+                                         [],
+                                         duration=generator.duration,
+                                         continuous=True,
+                                          delay_after=exposure_time)
+        new_generator.prepare()
 
-        t_min = 0.1
-        part_info[""] = [MinTurnaroundInfo(
-            (generator.duration - t_min) / 2)]
+        #t_min = 0.1
+        #part_info[""] = [MinTurnaroundInfo(
+        #    (generator.duration - t_min) / 2)]
 
+        part_info[""] = [MinTurnaroundInfo(exposure_time)]
         super(BeamSelectorPart, self).configure(context,
                                                 completed_steps,
                                                 steps_to_do,
                                                 part_info,
-                                                newGenerator,
+                                                new_generator,
                                                 axesToMove)

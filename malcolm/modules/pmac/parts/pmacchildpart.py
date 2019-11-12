@@ -584,6 +584,9 @@ class PmacChildPart(builtin.parts.ChildPart):
                 )
             else:
                 points_are_joined = False
+                #if point.delay_after is not None:
+                #    next_point = point
+                #else:
                 next_point = None
 
             if self.output_triggers != scanning.infos.MotionTrigger.ROW_GATE:
@@ -643,7 +646,7 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def is_same_velocity(self, p1, p2):
         result = False
-        if p2.duration == p2.duration:
+        if p2.duration == p2.duration: # todo seems as a bug to me
             result = True
             for axis_name, _ in self.axis_mapping.items():
                 if not np.isclose(
