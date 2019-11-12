@@ -106,6 +106,13 @@ def points_joined(axis_mapping, point, next_point):
     for axis_name in axis_mapping:
         if point.upper[axis_name] != next_point.lower[axis_name]:
             return False
+
+        try:
+            if point.delay_after > 1e-3:
+                return False
+        except AttributeError:
+            pass
+
     return True
 
 
