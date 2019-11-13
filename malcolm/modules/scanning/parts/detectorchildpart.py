@@ -249,7 +249,8 @@ class DetectorChildPart(builtin.parts.ChildPart):
             assert self.frames_per_step > 0, \
                 "Zero frames per step for %s, this shouldn't happen" % self.name
         child = context.block_view(self.mri)
-        if "exposure" in kwargs and "exposure" not in child.configure.meta.takes.elements:
+        if "exposure" in kwargs and "exposure" not in \
+                child.configure.meta.takes.elements:
             kwargs.pop("exposure")
         child.configure(**kwargs)
         # Report back any datasets the child has to our parent
