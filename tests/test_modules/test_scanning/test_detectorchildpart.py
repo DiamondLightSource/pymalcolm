@@ -8,8 +8,8 @@ from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Part, Process, Context, APartName, PartRegistrar, \
     NumberMeta, BadValueError
-from malcolm.modules.builtin.hooks import AContext
-from malcolm.modules.builtin.util import set_tags
+from malcolm.modules.builtin.hooks import AContext, InitHook, ResetHook
+from malcolm.modules.builtin.util import set_tags, LayoutTable
 from malcolm.modules.scanning.parts import DetectorChildPart, DatasetTablePart
 from malcolm.modules.scanning.controllers import RunnableController
 from malcolm.modules.scanning.hooks import AFileDir, AFormatName, \
@@ -57,6 +57,15 @@ class WaitingPart(Part):
 DESIGN_PATH = os.path.join(os.path.dirname(__file__), "designs")
 
 
+class FaultyPart(Part):
+    def setup(self, registrar):
+        # type: (PartRegistrar) -> None
+        registrar.hook((InitHook, ResetHook), self.fail)
+
+    def fail(self):
+        raise ValueError("I'm bad")
+
+
 class TestDetectorChildPart(unittest.TestCase):
 
     def setUp(self):
@@ -79,17 +88,26 @@ class TestDetectorChildPart(unittest.TestCase):
         c2.add_part(DatasetTablePart("dset"))
         self.p.add_controller(c2)
 
+        # And a faulty one, this is hidden at startup by default
+        c3 = RunnableController(
+            mri="faulty", config_dir=DESIGN_PATH, use_git=False)
+        c3.add_part(FaultyPart("bad"))
+        c3.add_part(DatasetTablePart("dset"))
+        self.p.add_controller(c3)
+
         # And a top level one, this loads slow and fast designs for the
         # children on every configure (or load), but not at init
-        c3 = RunnableController(
+        ct = RunnableController(
             mri="top", config_dir=DESIGN_PATH, use_git=False,
             initial_design="default"
         )
-        c3.add_part(
+        ct.add_part(
             DetectorChildPart(name="FAST", mri="fast", initial_visibility=True))
-        c3.add_part(
+        ct.add_part(
             DetectorChildPart(name="SLOW", mri="slow", initial_visibility=True))
-        self.p.add_controller(c3)
+        ct.add_part(
+            DetectorChildPart(name="BAD", mri="faulty", initial_visibility=False))
+        self.p.add_controller(ct)
 
         # Some blocks to interface to them
         self.b = self.context.block_view("top")
@@ -113,8 +131,29 @@ class TestDetectorChildPart(unittest.TestCase):
     def test_init(self):
         assert list(self.b.configure.meta.defaults["detectors"].rows()) == [
             ["FAST", "fast", 0.0, 1],
-            ["SLOW", "slow", 0.0, 1]
+            ["SLOW", "slow", 0.0, 1],
         ]
+
+    def test_adding_faulty_fails(self):
+        t = LayoutTable.from_rows([["BAD", "faulty", 0, 0, True]])
+        self.b.layout.put_value(t)
+        assert list(self.b.configure.meta.defaults["detectors"].rows()) == [
+            ["FAST", "fast", 0.0, 1],
+            ["SLOW", "slow", 0.0, 1],
+            ["BAD", "faulty", 0.0, 1],
+        ]
+        with self.assertRaises(BadValueError) as cm:
+            self.b.configure(self.make_generator(), self.tmpdir)
+        assert str(cm.exception) == "Detector BAD was faulty at init and is unusable. If the detector is now working please restart Malcolm"
+        self.b.configure(self.make_generator(), self.tmpdir,
+                         detectors=DetectorTable.from_rows([
+                ("BAD", "faulty", 0.0, 0)
+            ]))
+        self.b.reset()
+        t = LayoutTable.from_rows([["BAD", "faulty", 0, 0, False]])
+        self.b.layout.put_value(t)
+        self.test_init()
+        self.b.configure(self.make_generator(), self.tmpdir)
 
     def test_only_one_det(self):
         # Disable one detector
