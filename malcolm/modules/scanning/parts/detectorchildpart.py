@@ -41,6 +41,9 @@ class DetectorChildPart(builtin.parts.ChildPart):
         self.frames_per_step = 0
         # Stored between runs
         self.run_future = None  # type: Future
+        # If it was faulty at init, allow it to exist, and ignore reset commands
+        # but don't let it be configured or run
+        self.faulty = False
 
     def setup(self, registrar):
         super(DetectorChildPart, self).setup(registrar)
@@ -49,19 +52,30 @@ class DetectorChildPart(builtin.parts.ChildPart):
         registrar.hook(PreConfigureHook, self.reload)
         registrar.hook(ConfigureHook, self.configure)
         registrar.hook((RunHook, ResumeHook), self.run)
-        registrar.hook((PostRunArmedHook, PostRunReadyHook),
-                             self.post_run)
+        registrar.hook((PostRunArmedHook, PostRunReadyHook), self.post_run)
         registrar.hook(SeekHook, self.seek)
         registrar.hook(AbortHook, self.abort)
+
+    @add_call_types
+    def layout(self,
+               context,  # type: AContext
+               ports,  # type: builtin.hooks.APortMap
+               layout  # type: builtin.hooks.ALayoutTable
+               ):
+        # type: (...) -> builtin.hooks.ULayoutInfos
+        ret = super(DetectorChildPart, self).layout(context, ports, layout)
         # Tell the controller to expose some extra configure parameters
         configure_info = ConfigureHook.create_info(self.configure)
         # Override the detector table defaults and writeable
-        configure_info.defaults["detectors"] = DetectorTable.from_rows(
-            [(self.name, self.mri, 0.0, 1)])
+        rows = []
+        if self.visible:
+            rows.append([self.name, self.mri, 0.0, 1])
+        configure_info.defaults["detectors"] = DetectorTable.from_rows(rows)
         columns = configure_info.metas["detectors"].elements
         columns["name"].set_writeable(False)
         columns["mri"].set_writeable(False)
-        registrar.report(configure_info)
+        self.registrar.report(configure_info)
+        return ret
 
     def notify_dispatch_request(self, request):
         # type: (Request) -> None
@@ -74,12 +88,23 @@ class DetectorChildPart(builtin.parts.ChildPart):
             super(DetectorChildPart, self).notify_dispatch_request(request)
 
     @add_call_types
+    def init(self, context):
+        # type: (AContext) -> None
+        try:
+            super(DetectorChildPart, self).init(context)
+        except BadValueError:
+            self.log.exception(
+                "Detector %s was faulty at init and is not usable", self.name)
+            self.faulty = True
+
+    @add_call_types
     def reset(self, context):
         # type: (AContext) -> None
-        child = context.block_view(self.mri)
-        if child.abort.meta.writeable:
-            child.abort()
-        super(DetectorChildPart, self).reset(context)
+        if not self.faulty:
+            child = context.block_view(self.mri)
+            if child.abort.meta.writeable:
+                child.abort()
+            super(DetectorChildPart, self).reset(context)
 
     # Must match those passed in configure() Method, so need to be camelCase
     # noinspection PyPep8Naming
@@ -99,6 +124,10 @@ class DetectorChildPart(builtin.parts.ChildPart):
         if frames_per_step < 1:
             # We aren't
             return
+        if self.faulty:
+            raise BadValueError(
+                "Detector %s was faulty at init and is unusable. If the "
+                "detector is now working please restart Malcolm" % self.name)
         child = context.block_view(self.mri)
         # This is a Serializable with the correct entries
         try:
