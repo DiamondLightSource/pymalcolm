@@ -17,6 +17,7 @@ def redirector_iocs(name, yamlname, file_path="/dls_sw/prod/etc/redirector/redir
         table = redirector.read()
         bl_iocs = re.findall(bl_prefix + "-[A-Z][A-Z]-IOC-[0-9][0-9] ",
                              table)
-    for ind, ioc in enumerate(bl_iocs):
-        bl_iocs[ind] = ioc.strip()
-    return Define(name, bl_iocs)
+    ioc_list = ""
+    for ioc in bl_iocs:
+        ioc_list += ioc
+    return Define(name, ioc_list)

@@ -119,8 +119,8 @@ class TestParseRedirectTable(unittest.TestCase):
         os.rmdir('/tmp/redirector')
 
     def test_parse(self):
-        list0 = redirector_iocs("", 'TS01I-ML-TEST', self.testArea + '/redirect_table').value
-        list1 = redirector_iocs("", 'ME99P-ML-TEST', self.testArea + '/redirect_table').value
+        list0 = redirector_iocs("", 'TS01I-ML-TEST', self.testArea + '/redirect_table').value.split(" ")[:-1]
+        list1 = redirector_iocs("", 'ME99P-ML-TEST', self.testArea + '/redirect_table').value.split(" ")[:-1]
         assert len(list0) == 2
         assert list0[0] == "TS01I-EA-IOC-01"
         assert list0[1] == "TS01I-TS-IOC-69"

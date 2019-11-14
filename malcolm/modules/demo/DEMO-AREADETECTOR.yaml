@@ -37,10 +37,10 @@
     config_dir: $(config_dir)
     initial_design: template_both_detectors
 
-# Add a webserver comms
-- web.blocks.web_server_block:
-    mri: WEB
+- system.blocks.system_block:
+    mri_prefix: $(yamlname)
+    iocs: $(hostname)-EA-IOC-01
+    pv_prefix: $(yamlname)
+    subnet_validation: 0
+    config_dir: /tmp
 
-# Add a PVA comms
-- pva.blocks.pva_server_block:
-    mri: PVA

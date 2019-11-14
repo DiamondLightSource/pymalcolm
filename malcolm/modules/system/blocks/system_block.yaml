@@ -8,7 +8,7 @@
 
 - builtin.parameters.string:
     name: iocs
-    description: List of IOCs to monitor status of
+    description: Space-separated list of IOCs to monitor
 
 - builtin.parameters.int32:
     name: subnet_validation

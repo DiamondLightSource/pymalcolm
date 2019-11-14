@@ -49,7 +49,7 @@ def start_ioc(stats, prefix):
 
 with Anno("prefix for self.system PVs"):
     APvPrefix = str
-with Anno("list of IOCs to monitor"):
+with Anno("space-separated list of IOCs to monitor"):
     AIocList = str
 
 
@@ -65,10 +65,9 @@ class ProcessController(builtin.controllers.ManagerController):
         self.ioc = None
         self.ioc_blocks = OrderedDict()
         self.prefix = prefix
-        self.bl_iocs = []
-        bl_iocs = ioc_list.strip("[").strip("]").replace("'", "").replace("\"", "").split(",")
-        for ioc in bl_iocs:
-            self.bl_iocs += [ioc.strip()]
+        self.bl_iocs = ioc_list.split(" ")
+        if self.bl_iocs[-1] == "":
+            self.bl_iocs = self.bl_iocs[:-1]
         self.stats = dict()
         cwd = os.getcwd()
         sys_call_bytes = open('/proc/%s/cmdline' % os.getpid(),
