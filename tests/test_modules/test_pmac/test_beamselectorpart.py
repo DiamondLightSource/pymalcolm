@@ -5,7 +5,7 @@ from malcolm.core import Context, Process
 from malcolm.modules.pmac.parts import BeamSelectorPart
 from malcolm.yamlutil import make_block_creator
 
-from scanpointgenerator import LineGenerator, CompoundGenerator, \
+from scanpointgenerator import CompoundGenerator, \
     StaticPointGenerator
 
 import pytest
@@ -23,15 +23,19 @@ class TestBeamSelectorPart(ChildTestCase):
         # These are the child blocks we are interested in
         self.child_x = self.process.get_controller(
             "BL45P-ML-STAGE-01:X")
-        self.child_y = self.process.get_controller(
-            "BL45P-ML-STAGE-01:Y")
+        #self.child_y = self.process.get_controller(
+        #    "BL45P-ML-STAGE-01:Y")
         self.child_cs1 = self.process.get_controller("PMAC:CS1")
         self.child_traj = self.process.get_controller("PMAC:TRAJ")
         self.child_status = self.process.get_controller("PMAC:STATUS")
 
         # CS1 needs to have the right port otherwise we will error
         self.set_attributes(self.child_cs1, port="CS1")
-        self.o = BeamSelectorPart(name="pmac", mri="PMAC")
+        self.o = BeamSelectorPart(name="beamSelector",
+                                  mri="PMAC",
+                                  selectorAxis="x",
+                                  startAngle=0,
+                                  endAngle=0.5)
         self.context.set_notify_dispatch_request(
             self.o.notify_dispatch_request)
         self.process.start()
@@ -44,7 +48,7 @@ class TestBeamSelectorPart(ChildTestCase):
         pass
 
     def set_motor_attributes(
-            self, x_pos=0.5, y_pos=0.0, units="mm",
+            self, x_pos=0.5, y_pos=0.0, units="deg",
             x_acceleration=2.5, y_acceleration=2.5,
             x_velocity=1.0, y_velocity=1.0):
         # create some parts to mock
@@ -55,12 +59,12 @@ class TestBeamSelectorPart(ChildTestCase):
             resolution=0.001,
             offset=0.0, maxVelocity=x_velocity, readback=x_pos,
             velocitySettle=0.0, units=units)
-        self.set_attributes(
-            self.child_y, cs="CS1,B",
-            accelerationTime=y_velocity / y_acceleration,
-            resolution=0.001,
-            offset=0.0, maxVelocity=y_velocity, readback=y_pos,
-            velocitySettle=0.0, units=units)
+        #self.set_attributes(
+        #    self.child_y, cs="CS1,B",
+        #    accelerationTime=y_velocity / y_acceleration,
+        #    resolution=0.001,
+        #    offset=0.0, maxVelocity=y_velocity, readback=y_pos,
+        #    velocitySettle=0.0, units=units)
 
     def test_configure_single_rotation(self):
         self.set_motor_attributes()
@@ -123,3 +127,14 @@ class TestBeamSelectorPart(ChildTestCase):
         ]
         assert self.o.completed_steps_lookup == [
             0, 0, 1, 1, 1, 1, 1, 2, 2]
+
+    def test_validate(self):
+        generator = CompoundGenerator([StaticPointGenerator(2)],
+                                      [], [], 0.0102)
+        axesToMove = ["x"]
+        # servoFrequency() return value
+        self.child.handled_requests.post.return_value = 4919.300698316487
+        ret = self.o.validate(self.context, generator, axesToMove,
+                              {})
+        expected = 0.010166
+        assert ret.value.duration == expected
