@@ -7,8 +7,8 @@
     description: Prefix for system PVs
 
 - builtin.parameters.string:
-    name: bl_prefix
-    description: Beamline prefix (e.g. BLxxI) for IOCs
+    name: iocs
+    description: List of IOCs to monitor status of
 
 - builtin.parameters.int32:
     name: subnet_validation
@@ -23,8 +23,7 @@
     mri: $(mri_prefix):STATS
     config_dir: $(config_dir)
     prefix: $(pv_prefix)
-    ioc_lookup_path: /dls_sw/prod/etc/redirector/redirect_table
-    bl_prefix: $(bl_prefix)
+    ioc_list: $(iocs)
 
 - pva.blocks.pva_server_block:
     mri: $(mri_prefix):PVA

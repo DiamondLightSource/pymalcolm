@@ -1,6 +1,4 @@
-from .ProcessController import ProcessController,\
-    parse_redirect_table
-
+from .ProcessController import ProcessController
 # Expose a nice namespace
 from malcolm.core import submodule_all
 

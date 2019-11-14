@@ -1,8 +1,8 @@
 import unittest
 
 from malcolm.core import Process
-from malcolm.modules.system.controllers import ProcessController, \
-    parse_redirect_table
+from malcolm.modules.system.controllers import ProcessController
+from malcolm.modules.system.defines import redirector_iocs
 
 import cothread
 from cothread import catools
@@ -119,8 +119,8 @@ class TestParseRedirectTable(unittest.TestCase):
         os.rmdir('/tmp/redirector')
 
     def test_parse(self):
-        list0 = parse_redirect_table(self.testArea + '/redirect_table', 'TS01I')
-        list1 = parse_redirect_table(self.testArea + '/redirect_table', 'ME99P')
+        list0 = redirector_iocs("", 'TS01I-ML-TEST', self.testArea + '/redirect_table').value
+        list1 = redirector_iocs("", 'ME99P-ML-TEST', self.testArea + '/redirect_table').value
         assert len(list0) == 2
         assert list0[0] == "TS01I-EA-IOC-01"
         assert list0[1] == "TS01I-TS-IOC-69"

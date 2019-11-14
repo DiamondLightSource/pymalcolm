@@ -1,6 +1,5 @@
 import os
 import subprocess
-import re
 
 import cothread
 from annotypes import Anno
@@ -50,22 +49,8 @@ def start_ioc(stats, prefix):
 
 with Anno("prefix for self.system PVs"):
     APvPrefix = str
-with Anno("parse beamline IOCs from redirect table"):
-    AParseIOCs = bool
-with Anno("prefix to search for when parsing redirect table"):
-    ABLPrefix = str
-with Anno("path to IOC redirect table"):
-    AIocLookupPath = str
-
-
-def parse_redirect_table(file_path, bl_prefix):
-    with open(file_path, 'r') as redirector:
-        table = redirector.read()
-        bl_iocs = re.findall(bl_prefix + "-[A-Z][A-Z]-IOC-[0-9][0-9] ",
-                             table)
-    for ind, ioc in enumerate(bl_iocs):
-        bl_iocs[ind] = ioc.strip()
-    return bl_iocs
+with Anno("list of IOCs to monitor"):
+    AIocList = str
 
 
 class ProcessController(builtin.controllers.ManagerController):
@@ -73,17 +58,17 @@ class ProcessController(builtin.controllers.ManagerController):
                  mri,  # type: builtin.controllers.AMri
                  prefix,  # type: APvPrefix
                  config_dir,  # type: builtin.controllers.AConfigDir
-                 ioc_lookup_path="",  # type: AIocLookupPath
-                 bl_prefix="",  # type: ABLPrefix
+                 ioc_list=""  # type: AIocList
                  ):
         # type: (...) -> None
         super(ProcessController, self).__init__(mri, config_dir)
         self.ioc = None
-        self.bl_iocs = []
         self.ioc_blocks = OrderedDict()
         self.prefix = prefix
-        self.bl_prefix = bl_prefix
-        self.ioc_lookup_path = ioc_lookup_path
+        self.bl_iocs = []
+        bl_iocs = ioc_list.strip("[").strip("]").replace("'", "").replace("\"", "").split(",")
+        for ioc in bl_iocs:
+            self.bl_iocs += [ioc.strip()]
         self.stats = dict()
         cwd = os.getcwd()
         sys_call_bytes = open('/proc/%s/cmdline' % os.getpid(),
@@ -166,8 +151,7 @@ class ProcessController(builtin.controllers.ManagerController):
     def init(self):
         if self.ioc is None:
             self.ioc = start_ioc(self.stats, self.prefix)
-        if self.bl_prefix and self.ioc_lookup_path:
-            self.get_ioc_list(self.ioc_lookup_path, self.bl_prefix)
+        self.get_ioc_list()
         super(ProcessController, self).init()
 
     def set_default_layout(self):
@@ -191,8 +175,7 @@ class ProcessController(builtin.controllers.ManagerController):
             self.ioc.terminate()
             self.ioc = None
 
-    def get_ioc_list(self, file_path, bl_prefix):
-        self.bl_iocs = parse_redirect_table(file_path, bl_prefix)
+    def get_ioc_list(self):
         ioc_controllers = []
         for ioc in self.bl_iocs:
             ioc_controller = make_ioc_status(ioc)
