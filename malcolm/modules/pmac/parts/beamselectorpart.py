@@ -59,20 +59,22 @@ class BeamSelectorPart(PmacChildPart):
                                       alternate=True)
         axesToMove = [self.selectorAxis]
 
-        exposure_time = float(0.1)
-        new_generator = CompoundGenerator([static_axis, selector_axis],
-                                          [],
-                                          [],
-                                          duration=generator.duration,
-                                          continuous=True,
-                                          delay_after=exposure_time)
+        exposure_time = float(0.500)
+        t_min = float(0.500)
+        t_move = generator.duration - exposure_time
+        if t_move < t_min:
+            t_move = t_min
+
+        new_generator = \
+            CompoundGenerator([static_axis, selector_axis],
+                              [],
+                              [],
+                              duration=t_move,
+                              continuous=True,
+                              delay_after=exposure_time)
         new_generator.prepare()
 
-        #t_min = 0.1
-        #part_info[""] = [MinTurnaroundInfo(
-        #    (generator.duration - t_min) / 2)]
 
-        part_info[""] = [MinTurnaroundInfo(exposure_time)]
         super(BeamSelectorPart, self).configure(context,
                                                 completed_steps,
                                                 steps_to_do,

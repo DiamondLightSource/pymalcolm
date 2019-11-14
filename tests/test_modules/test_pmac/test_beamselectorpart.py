@@ -47,24 +47,19 @@ class TestBeamSelectorPart(ChildTestCase):
         self.process.stop(timeout=1)
         pass
 
-    def set_motor_attributes(
-            self, x_pos=0.5, y_pos=0.0, units="deg",
-            x_acceleration=2.5, y_acceleration=2.5,
-            x_velocity=1.0, y_velocity=1.0):
+    def set_motor_attributes(self,
+                             x_pos=0.5,
+                             units="deg",
+                             x_acceleration=4,
+                             x_velocity=10):
         # create some parts to mock
-        # the motion controller and 2 axes in a CS
+        # the motion controller and an axis in a CS
         self.set_attributes(
             self.child_x, cs="CS1,A",
             accelerationTime=x_velocity / x_acceleration,
             resolution=0.001,
             offset=0.0, maxVelocity=x_velocity, readback=x_pos,
             velocitySettle=0.0, units=units)
-        #self.set_attributes(
-        #    self.child_y, cs="CS1,B",
-        #    accelerationTime=y_velocity / y_acceleration,
-        #    resolution=0.001,
-        #    offset=0.0, maxVelocity=y_velocity, readback=y_pos,
-        #    velocitySettle=0.0, units=units)
 
     def test_configure_single_rotation(self):
         self.set_motor_attributes()
@@ -79,13 +74,14 @@ class TestBeamSelectorPart(ChildTestCase):
             call.post('writeProfile',
                       csPort='CS1', timeArray=[0.002], userPrograms=[8]),
             call.post('executeProfile'),
-            call.post('moveCS1', a=-0.05, moveTime=0.95),
+            call.post('moveCS1', a=-0.1,
+                      moveTime=pytest.approx(0.692, abs=1e-3)),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post('writeProfile',
-                      a=pytest.approx([0.0, 0.25, 0.5, 0.55]),
+                      a=pytest.approx([0.0, 0.250, 0.500, 0.600]),
                       csPort='CS1',
                       timeArray=pytest.approx([
-                          200000, 500000, 500000,
+                          200000, 250000, 250000,
                           200000]),
                       userPrograms=pytest.approx([
                           1, 4, 2, 8]),
@@ -109,16 +105,17 @@ class TestBeamSelectorPart(ChildTestCase):
                       csPort='CS1', timeArray=[0.002],
                       userPrograms=[8]),
             call.post('executeProfile'),
-            call.post('moveCS1', a=-0.05, moveTime=0.95),
+            call.post('moveCS1', a=-0.1,
+                      moveTime=pytest.approx(0.692, abs=1e-3)),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post('writeProfile',
-                      a=pytest.approx([0.0, 0.25, 0.5, 0.55, 0.55,
-                                       0.5, 0.25, 0.0, -0.05]),
+                      a=pytest.approx([0.0, 0.25, 0.5, 0.6, 0.6,
+                                       0.5, 0.25, 0.0, -0.1]),
                       csPort='CS1',
                       timeArray=pytest.approx([
-                          200000, 500000, 500000,
-                          200000, 600000, 200000,
-                          500000, 500000,
+                          200000, 250000, 250000,
+                          200000, 100000, 200000,
+                          250000, 250000,
                           200000]),
                       userPrograms=pytest.approx([
                           1, 4, 2, 8, 8, 1, 4, 2, 8]),
