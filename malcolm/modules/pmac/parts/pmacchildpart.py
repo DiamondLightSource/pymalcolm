@@ -628,6 +628,8 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def insert_gap(self, point, next_point, completed_steps):
         # Work out the velocity profiles of how to move to the start
+        min_turnaround = max(self.min_turnaround,
+                             getattr(point, "delay_after", None))
         time_arrays, velocity_arrays = profile_between_points(
             self.axis_mapping, point, next_point, self.min_turnaround,
             self.min_interval)
