@@ -40,7 +40,7 @@ install_requires = [
     # DLS developed
     "annotypes==0.20",
     "cothread==2.16",
-    "scanpointgenerator==2.3",
+    "scanpointgenerator==3.0",
     "vdsgen==0.5.2",
     ]
 
