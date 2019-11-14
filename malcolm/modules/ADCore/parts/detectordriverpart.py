@@ -100,8 +100,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
                         scanning.hooks.PostRunArmedHook,
                         scanning.hooks.SeekHook),
                        self.configure, self.configure_args_with_exposure)
-        registrar.hook(
-            (scanning.hooks.RunHook, scanning.hooks.ResumeHook), self.run)
+        registrar.hook(scanning.hooks.RunHook, self.run)
         registrar.hook(
             (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.abort)
         # Attributes
