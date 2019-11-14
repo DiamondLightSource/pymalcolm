@@ -1,9 +1,10 @@
 import unittest
 
 from malcolm.core import Process
-from malcolm.modules.stats.controllers import ProcessController, \
+from malcolm.modules.system.controllers import ProcessController, \
     parse_redirect_table
 
+import cothread
 from cothread import catools
 import time
 import os
@@ -34,10 +35,12 @@ class TestProcessController(unittest.TestCase):
         assert self.b.hostname.value == hostname
 
     def test_starts_ioc(self):
+        cothread.Sleep(5)
         assert catools.caget(self.prefix + ":PYMALCOLM:VER") in ["Work",
                                                                  __version__]
 
     def test_ioc_ticks(self):
+        cothread.Sleep(5)
         uptime = catools.caget(self.prefix + ":UPTIME:RAW")
         assert uptime >= 0
         time.sleep(5)

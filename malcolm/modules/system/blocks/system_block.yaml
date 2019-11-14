@@ -4,7 +4,7 @@
 
 - builtin.parameters.string:
     name: pv_prefix
-    description: Prefix for stats PVs
+    description: Prefix for system PVs
 
 - builtin.parameters.string:
     name: bl_prefix
@@ -19,7 +19,7 @@
     name: config_dir
     description: Where to store saved configs
 
-- stats.controllers.ProcessController:
+- system.controllers.ProcessController:
     mri: $(mri_prefix):STATS
     config_dir: $(config_dir)
     prefix: $(pv_prefix)

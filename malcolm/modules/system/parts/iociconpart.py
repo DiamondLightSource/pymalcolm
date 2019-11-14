@@ -23,14 +23,14 @@ class IocIconPart(builtin.parts.IconPart):
     def update_icon(self, arch):
         svg = self.initial_svg
         if arch.ok:
-            if arch.startswith("WIND"):
-                # WIND River VXWorks
-                svg = os.path.split(__file__)[0] + "/../icons/vx_epics.svg"
-            elif arch.startswith("Linux"):
+            if arch.upper().startswith("WINDOWS"):
+                svg = os.path.split(__file__)[0] + "/../icons/win_epics.svg"
+            elif arch.upper().startswith("LINUX"):
                 # Linux (typically RHEL)
                 svg = os.path.split(__file__)[0] + "/../icons/linux_epics.svg"
-            elif arch.startswith("Windows"):
-                svg = os.path.split(__file__)[0] + "/../icons/win_epics.svg"
+            elif arch.upper().startswith("WIND"):
+                # WIND River VXWorks
+                svg = os.path.split(__file__)[0] + "/../icons/vx_epics.svg"
             else:
                 svg = os.path.split(__file__)[0] + "/../icons/epics-logo.svg"
         with open(svg) as f:

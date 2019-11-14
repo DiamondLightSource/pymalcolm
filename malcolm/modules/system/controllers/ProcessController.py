@@ -22,7 +22,7 @@ def await_ioc_start(stats, prefix):
     pid_rbv = catools.caget("%s:PID" % prefix, timeout=5)
     if int(pid_rbv) != os.getpid():
         raise Exception("Got back different PID: " +
-                        "is there another stats instance on the machine?")
+                        "is there another system instance on the machine?")
     catools.caput("%s:YAML:PATH" % prefix, stats["yaml_path"],
                   datatype=catools.DBR_CHAR_STR)
     catools.caput("%s:PYMALCOLM:PATH" % prefix, stats["pymalcolm_path"],
@@ -40,7 +40,7 @@ def start_ioc(stats, prefix):
     for key, value in stats.items():
         db_macros += ",%s='%s'" % (key, value)
     root = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
-    db_template = os.path.join(root, 'db', 'stats.template')
+    db_template = os.path.join(root, 'db', 'system.template')
     ioc = subprocess.Popen(
         [softIoc_bin, "-m", db_macros, "-d", db_template],
         stdout=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -48,7 +48,7 @@ def start_ioc(stats, prefix):
     return ioc
 
 
-with Anno("prefix for self.stats PVs"):
+with Anno("prefix for self.system PVs"):
     APvPrefix = str
 with Anno("parse beamline IOCs from redirect table"):
     AParseIOCs = bool

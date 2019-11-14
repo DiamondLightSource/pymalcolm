@@ -1,4 +1,4 @@
-- stats.blocks.system_block:
+- system.blocks.system_block:
     mri_prefix: TS01P-ML-MALC-01
     bl_prefix: BL18B
     pv_prefix: TS01P-ML-MALC-01
