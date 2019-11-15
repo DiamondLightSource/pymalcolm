@@ -44,8 +44,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         registrar.hook((scanning.hooks.ConfigureHook,
                         scanning.hooks.PostRunArmedHook,
                         scanning.hooks.SeekHook), self.configure)
-        registrar.hook((scanning.hooks.RunHook,
-                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook(scanning.hooks.RunHook, self.run)
         registrar.hook((scanning.hooks.AbortHook,
                         scanning.hooks.PauseHook), self.abort)
 

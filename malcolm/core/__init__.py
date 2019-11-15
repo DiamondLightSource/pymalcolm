@@ -5,7 +5,7 @@ from .controller import Controller, AMri, ADescription, DEFAULT_TIMEOUT
 from .concurrency import Queue, Spawned, RLock, sleep
 from .define import Define
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
-    UnexpectedError, YamlError, FieldError, NotWriteableError
+    UnexpectedError, YamlError, FieldError, NotWriteableError, IncompatibleError
 from .future import Future
 from .hook import Hook, Hookable, AHookable
 from .info import Info

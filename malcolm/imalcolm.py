@@ -65,6 +65,9 @@ def make_logging_config(args):
                 "format": "%(asctime)s - %(levelname)6s - %(name)s\n"
                           "    %(message)s"
             },
+            "syslog": {
+                "format": "%(name)s: %(message)s\n##%(extra)s##"
+            },
         },
 
         "handlers": {
@@ -84,6 +87,13 @@ def make_logging_config(args):
             #    "backupCount": 4,
             #    "encoding": "utf8"
             #},
+
+            "syslog_graylog": {
+                "class": "malcolm.syslogger.JsonSysLogHandler",
+                "formatter": "syslog",
+                "address": "/dev/log",
+                "facility": "local0"
+            },
 
             "graylog_gelf": {
                 "class": "pygelf.GelfTcpHandler",
@@ -119,7 +129,7 @@ def make_logging_config(args):
 
         "root": {
             "level": "DEBUG",
-            "handlers": ["graylog_gelf", "console"],
+            "handlers": ["graylog_gelf", "console", "syslog_graylog"],
         }
     }
 

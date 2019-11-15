@@ -52,8 +52,7 @@ class FileWritePart(Part):
         registrar.hook(scanning.hooks.ConfigureHook, self.configure)
         registrar.hook((scanning.hooks.PostRunArmedHook,
                         scanning.hooks.SeekHook), self.seek)
-        registrar.hook((scanning.hooks.RunHook,
-                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook(scanning.hooks.RunHook, self.run)
         registrar.hook((scanning.hooks.AbortHook,
                         builtin.hooks.ResetHook), self.reset)
         # Tell the controller to expose some extra configure parameters
@@ -110,7 +109,7 @@ class FileWritePart(Part):
     @add_call_types
     def run(self, context):
         # type: (scanning.hooks.AContext) -> None
-        """On `RunHook`, `ResumeHook` record where to next take data"""
+        """On `RunHook` record where to next take data"""
         # Start time so everything is relative
         end_of_exposure = time.time() + self._exposure
         last_flush = end_of_exposure

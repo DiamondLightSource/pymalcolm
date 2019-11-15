@@ -237,7 +237,7 @@ run also stores these parameters.
 Hooking into run()
 ------------------
 
-We also hooked our ``run()`` Method into the `RunHook` and `ResumeHook`. Let's
+We also hooked our ``run()`` Method into the `RunHook`. Let's
 look at what it does:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py

@@ -2,7 +2,7 @@ import time
 
 from annotypes import Anno
 
-from malcolm.core import Part, PartRegistrar, Queue, TimeoutError
+from malcolm.core import Part, PartRegistrar, Queue, TimeoutError, tags
 from malcolm.modules import builtin
 from .. import util
 
@@ -19,7 +19,6 @@ with Anno("Wait for caput callback?"):
 with Anno("How long to wait for status_pv == good_status before returning"):
     AStatusTimeout = int
 
-
 class CAActionPart(Part):
     """Group a number of PVs together that represent a method like acquire()
     """
@@ -34,6 +33,7 @@ class CAActionPart(Part):
                  message_pv="",  # type: AMessagePv
                  value=1,  # type: AValue
                  wait=True,  # type: AWait
+                 throw=True,  # type: util.AThrow
                  ):
         # type: (...) -> None
         super(CAActionPart, self).__init__(name)
@@ -45,6 +45,8 @@ class CAActionPart(Part):
         self.message_pv = message_pv
         self.value = value
         self.wait = wait
+        self.throw = throw
+        self.method = None
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
@@ -53,7 +55,9 @@ class CAActionPart(Part):
         registrar.hook((builtin.hooks.InitHook,
                         builtin.hooks.ResetHook), self.connect_pvs)
         # Methods
-        registrar.add_method_model(self.caput, self.name, self.description)
+        self.method = registrar.add_method_model(self.caput,
+                                                 self.name,
+                                                 self.description)
 
     def connect_pvs(self):
         pvs = [self.pv]
@@ -61,10 +65,21 @@ class CAActionPart(Part):
             pvs.append(self.status_pv)
         if self.message_pv:
             pvs.append(self.message_pv)
-        ca_values = util.catools.caget(pvs)
+        ca_values = util.catools.caget(pvs, throw=self.throw)
         # check connection is ok
-        for i, v in enumerate(ca_values):
-            assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
+        try:
+            for v in ca_values:
+                if not isinstance(v, util.catools.ca_nothing):
+                    assert v.ok, "CA connect failed with %s" %\
+                                v.state_strings[v.state]
+                else:
+                    raise AssertionError("CA connect failed")
+        except AssertionError as e:
+            if self.throw:
+                raise e
+            else:
+                self.method.meta.set_tags(list(self.method.meta.tags) +
+                                          [tags.method_hidden()])
 
     def wait_for_good_status(self, deadline):
         q = Queue()

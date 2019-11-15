@@ -155,6 +155,10 @@ class PostConfigureHook(ControllerHook[None]):
             part, context, part_info=part_info)
 
 
+class PreRunHook(ControllerHook[None]):
+    """Called at the start of run()"""
+
+
 class RunHook(ControllerHook[None]):
     """Called at run() to start the configured steps running"""
 
@@ -214,10 +218,6 @@ class SeekHook(ControllerHook[None]):
             part, context, completed_steps=completed_steps,
             steps_to_do=steps_to_do, part_info=part_info, generator=generator,
             axesToMove=axesToMove, **kwargs)
-
-
-class ResumeHook(ControllerHook[None]):
-    """Called at resume() to continue a paused scan"""
 
 
 class AbortHook(ControllerHook[None]):

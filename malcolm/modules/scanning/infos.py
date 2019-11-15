@@ -74,10 +74,12 @@ class MinTurnaroundInfo(Info):
 
     Args:
         gap: The minimum time gap in seconds
+        interval: the minimum interval between two turnaround points
     """
-    def __init__(self, gap):
-        # type: (float) -> None
+    def __init__(self, gap, interval):
+        # type: (float, float) -> None
         self.gap = gap
+        self.interval = interval
 
 
 class DatasetProducedInfo(Info):

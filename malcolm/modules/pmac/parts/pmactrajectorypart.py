@@ -1,10 +1,13 @@
 import numpy as np
 from annotypes import add_call_types, Anno, Array
 
-from malcolm.core import PartRegistrar, BooleanMeta, config_tag, Widget, \
-    NumberMeta
+from malcolm.core import PartRegistrar, Widget, \
+    NumberMeta, IncompatibleError, Display
 from malcolm.modules import builtin
 from ..util import CS_AXIS_NAMES
+
+# expected trajectory program number
+TRAJECTORY_PROGRAM_NUM = 2
 
 # The maximum number of points in a single trajectory scan
 MAX_NUM_POINTS = 4000000
@@ -53,7 +56,7 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         self.total_points = 0
         self.points_scanned = NumberMeta(
             "int32", "The number of points scanned",
-            tags=[Widget.TEXTUPDATE.tag()]
+            tags=[Widget.METER.tag()]
         ).create_attribute_model(0)
 
     def setup(self, registrar):
@@ -90,6 +93,19 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                       ):
         # type: (...) -> None
         child = context.block_view(self.mri)
+
+        # make sure a matching trajectory program is installed on the pmac
+        if child.trajectoryProgVersion.value != TRAJECTORY_PROGRAM_NUM:
+            raise (
+                IncompatibleError(
+                    "pmac trajectory program {} detected. "
+                    "Malcolm requires {}".format(
+                        child.trajectoryProgVersion.value,
+                        TRAJECTORY_PROGRAM_NUM
+                    )
+                )
+            )
+
         # The axes taking part in the scan
         use_axes = []
         for axis in CS_AXIS_NAMES:
@@ -131,12 +147,17 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
         # Record how many points we have now written in total
         self.total_points += num_points
 
+    def set_scan_length(self, value):
+        self.points_scanned.meta.set_display(Display(limitHigh=value))
+
     @add_call_types
     def execute_profile(self, context):
         # type: (builtin.hooks.AContext) -> None
         child = context.block_view(self.mri)
-        fs = context.subscribe([self.mri, "pointsScanned", "value"],
+        fs1 = context.subscribe([self.mri, "pointsScanned", "value"],
                                self.points_scanned.set_value)
+        fs2 = context.subscribe([self.mri, "pointsBuilt", "value"],
+                               self.set_scan_length)
         try:
             child.executeProfile()
             # Now wait for up to 2*min_delta time to make sure any
@@ -144,7 +165,8 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
             child.when_value_matches(
                 "pointsScanned", self.total_points, timeout=0.1)
         finally:
-            context.unsubscribe(fs)
+            context.unsubscribe(fs1)
+            context.unsubscribe(fs2)
 
     @add_call_types
     def abort_profile(self, context):

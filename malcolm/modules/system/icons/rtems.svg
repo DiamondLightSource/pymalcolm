@@ -1,0 +1,6 @@
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="64px" height="64px" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <path transform="matrix(1.0889 0 0 1.2065 -3.8832 -6.5645)" d="m60.04 31.473a27.191 11.699 0 1 1-54.383 0 27.191 11.699 0 1 1 54.383 0z" fill="none" stroke="#008000" stroke-dashoffset="45" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+ <text transform="scale(.98629 1.0139)" x="8.2765179" y="34.725273" fill="#000000" font-family="Bitstream Vera Sans" font-size="13.209px" xml:space="preserve"><tspan x="8.2765179" y="34.725273" fill="#ff0000" font-family="Arial Black" font-size="11.322px" font-style="italic" font-weight="bold">RTEMS</tspan></text>
+ <text x="51.683079" y="27.487577" fill="#000000" font-family="Bitstream Vera Sans" font-size="14px" xml:space="preserve"><tspan x="51.683079" y="27.487577" fill="#ff0000" font-family="Arial Black" font-size="3px">tm</tspan></text>
+</svg>

@@ -47,3 +47,6 @@
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)
     mri_prefix: $(mri_prefix)
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/quantum_detectors.svg

@@ -8,7 +8,6 @@ from malcolm.modules import builtin
 
 if TYPE_CHECKING:
     from typing import Callable, Any, Union, Type, Sequence, Optional, List
-
     Hooks = Union[Type[Hook], Sequence[Type[Hook]]]
     ArgsGen = Callable[(), List[str]]
     Register = Callable[(Hooks, Callable, Optional[ArgsGen]), None]
@@ -48,7 +47,8 @@ with Anno("Max time to wait for puts to complete, <0 is forever"):
     ATimeout = float
 with Anno("Get limits from PV (HOPR & LOPR)"):
     AGetLimits = bool
-
+with Anno("throw error if PV not found"):
+    AThrow = bool
 
 class CABase(Loggable):
     def __init__(self,
@@ -62,11 +62,14 @@ class CABase(Loggable):
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
                  on_connect=None,  # type: Callable[[Any], None]
+                 throw=True,  # type: AThrow
+                 callback=None  # type: ACallback
                  ):
         # type: (...) -> None
         self.writeable = writeable
         builtin.util.set_tags(
             meta, writeable, config, group, widget, sink_port)
+        self.throw = throw
         self.datatype = datatype
         self.min_delta = min_delta
         self.timeout = timeout
@@ -76,6 +79,7 @@ class CABase(Loggable):
         self.monitor = None
         self._update_after = 0
         self._local_value = None
+        self._user_callback = callback
 
     def disconnect(self):
         if self.monitor is not None:
@@ -89,6 +93,8 @@ class CABase(Loggable):
     def _update_value(self, value):
         # Attribute value might not be raw PV, PV which triggered update is
         # passed as status
+        if self._user_callback is not None:
+            self._user_callback(value)
         if not value.ok:
             self.attr.set_value(
                 self.attr.value, alarm=Alarm.disconnected("PV disconnected"))
@@ -129,9 +135,11 @@ class CABase(Loggable):
         if value_index is not None and hasattr(self, "name_list"):
             value_key = self.name_list[value_index]
             self._local_value[value_key] = value
-            self._local_value.raw_stamp = getattr(value, "raw_stamp", (None, None))
+            self._local_value.raw_stamp = getattr(value, "raw_stamp",
+                                                  (None, None))
             self._local_value.ok = (self._local_value.ok or value.ok)
-            self._local_value.severity = max(self._local_value.severity, value.severity)
+            self._local_value.severity = max(self._local_value.severity,
+                                             value.severity)
             self._update_value(self._local_value)
         else:
             self._update_value(value)
@@ -162,12 +170,16 @@ class CAAttribute(CABase):
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
                  on_connect=None,  # type: Callable[[Any], None]
+                 throw=True,  # type: AThrow
+                 callback=None # type: Callable[[Any], None]
                  ):
         # type: (...) -> None
         self.set_logger(pv=pv, rbv=rbv)
         writeable = bool(pv)
-        super(CAAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, sink_port, widget, group,
-                                          config, on_connect)
+        super(CAAttribute, self).__init__(meta, datatype, writeable,
+                                          min_delta, timeout,
+                                          sink_port, widget, group,
+                                          config, on_connect, throw, callback)
         if not rbv and not pv:
             raise ValueError('Must pass pv or rbv')
         if not rbv:
@@ -188,7 +200,8 @@ class CAAttribute(CABase):
         if self.pv and self.pv != self.rbv:
             pvs.append(self.pv)
         ca_values = assert_connected(catools.caget(
-            pvs, format=catools.FORMAT_CTRL, datatype=self.datatype))
+            pvs, format=catools.FORMAT_CTRL,
+            datatype=self.datatype, throw=self.throw), self.throw)
 
         if self.on_connect:
             self.on_connect(ca_values[0])
@@ -209,9 +222,9 @@ class CAAttribute(CABase):
             self.pv, value, wait=True, timeout=timeout, datatype=self.datatype)
         # now do a caget
         value = catools.caget(
-            self.rbv, format=catools.FORMAT_TIME, datatype=self.datatype)
+            self.rbv, format=catools.FORMAT_TIME,
+            datatype=self.datatype, throw=self.throw)
         self._update_value(value)
-
 
 class CATable(dict):
     ok = True
@@ -231,7 +244,9 @@ class WaveformTableAttribute(CABase):
                  group=None,  # type: AGroup
                  config=1,  # type: AConfig
                  limits_from_pv=False,  # type: AGetLimits
-                 on_connect=None  # type: Callable[[Any], None]
+                 on_connect=None,  # type: Callable[[Any], None]
+                 throw=True,  # type: AThrow
+                 callback=None  # type: ACallback
                  ):
         # type: (...) -> None
         logs = {}
@@ -240,8 +255,11 @@ class WaveformTableAttribute(CABase):
 
         self.set_logger(**logs)
         writeable = False
-        super(WaveformTableAttribute, self).__init__(meta, datatype, writeable, min_delta, timeout, None, widget,
-                                                     group, config, on_connect)
+        super(WaveformTableAttribute, self).__init__(meta, datatype, writeable,
+                                                     min_delta, timeout,
+                                                     None, widget,
+                                                     group, config, on_connect,
+                                                     throw, callback)
         if len(pv_list) == 0:
             raise ValueError('Must pass at least one PV')
         self.pv_list = pv_list
@@ -259,22 +277,27 @@ class WaveformTableAttribute(CABase):
         self.disconnect()
         # make the connection in cothread's thread, use caget for initial
         ca_values = assert_connected(catools.caget(
-            self.pv_list, format=catools.FORMAT_CTRL, datatype=self.datatype))
+            self.pv_list, format=catools.FORMAT_CTRL,
+            datatype=self.datatype, throw=self.throw), self.throw)
 
         for ind, value in enumerate(ca_values):
             if self.on_connect:
                 self.on_connect(value)
             self._local_value[self.name_list[ind]] = value
-            self._local_value.severity = max(self._local_value.severity, value.severity)
+            self._local_value.severity = max(self._local_value.severity,
+                                             value.severity)
             self._local_value.ok = self._local_value.ok or value.ok
         self._update_value(self._local_value)
         # now setup monitors for all the things
-        self.monitor = catools.camonitor(self.pv_list, self._monitor_callback, format=catools.FORMAT_TIME,
-                                         datatype=self.datatype, notify_disconnect=True)
+        self.monitor = catools.camonitor(self.pv_list, self._monitor_callback,
+                                         format=catools.FORMAT_TIME,
+                                         datatype=self.datatype,
+                                         notify_disconnect=True)
 
 
-def assert_connected(ca_values):
+def assert_connected(ca_values, throw=True):
     # check connection is ok
-    for i, v in enumerate(ca_values):
-        assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
+    if throw:
+        for v in ca_values:
+            assert v.ok, "CA connect failed with %s" % v.state_strings[v.state]
     return ca_values

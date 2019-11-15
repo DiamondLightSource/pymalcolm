@@ -30,6 +30,22 @@
     description: Design to load at init
     default:
 
+- builtin.parameters.string:
+    name: sum_name
+    description: Name of sum dataset
+    default: sum
+
+- builtin.parameters.string:
+    name: uid_name
+    description: Name of uid dataset
+    default: uid
+
+- builtin.parameters.string:
+    name: secondary_set
+    description: Name of secondary dataset to link in nxs file
+    default: sum
+
+
 - builtin.defines.docstring:
     value: |
       Device block corresponding to ADOdin + Odin file writer plugin .
@@ -67,6 +83,12 @@
 - ADOdin.parts.OdinWriterPart:
     name: WRITER
     mri: $(mri_prefix):$(writer_suffix)
+    sum_name: $(sum_name)
+    uid_name: $(uid_name)
+    secondary_set: $(secondary_set)
 
 - scanning.parts.DatasetTablePart:
     name: DSET
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/odin_logo.svg
