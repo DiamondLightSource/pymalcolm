@@ -1,10 +1,13 @@
 import numpy as np
 from annotypes import add_call_types, Anno, Array
 
-from malcolm.core import PartRegistrar, BooleanMeta, config_tag, Widget, \
-    NumberMeta
+from malcolm.core import PartRegistrar, Widget, \
+    NumberMeta, IncompatibleError
 from malcolm.modules import builtin
 from ..util import CS_AXIS_NAMES
+
+# expected trajectory program number
+TRAJECTORY_PROGRAM_NUM = 2
 
 # The maximum number of points in a single trajectory scan
 MAX_NUM_POINTS = 4000000
@@ -90,6 +93,19 @@ class PmacTrajectoryPart(builtin.parts.ChildPart):
                       ):
         # type: (...) -> None
         child = context.block_view(self.mri)
+
+        # make sure a matching trajectory program is installed on the pmac
+        if child.trajectoryProgVersion.value != TRAJECTORY_PROGRAM_NUM:
+            raise (
+                IncompatibleError(
+                    "pmac trajectory program {} detected. "
+                    "Malcolm requires {}".format(
+                        child.trajectoryProgVersion.value,
+                        TRAJECTORY_PROGRAM_NUM
+                    )
+                )
+            )
+
         # The axes taking part in the scan
         use_axes = []
         for axis in CS_AXIS_NAMES:
