@@ -79,7 +79,7 @@ class CAActionPart(Part):
                 raise e
             else:
                 self.method.meta.set_tags(list(self.method.meta.tags) +
-                                          [tags.hidden_method()])
+                                          [tags.method_hidden()])
 
     def wait_for_good_status(self, deadline):
         q = Queue()
