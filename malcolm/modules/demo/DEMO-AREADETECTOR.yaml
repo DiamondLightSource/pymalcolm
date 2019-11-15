@@ -38,9 +38,10 @@
     initial_design: template_both_detectors
 
 - system.blocks.system_block:
-    mri_prefix: $(yamlname)
+    mri_prefix: $(hostname)-ML-MALC-01
     iocs: $(hostname)-EA-IOC-01
-    pv_prefix: $(yamlname)
+    pv_prefix: $(hostname)-ML-MALC-01
     subnet_validation: 0
     config_dir: /tmp
+
 

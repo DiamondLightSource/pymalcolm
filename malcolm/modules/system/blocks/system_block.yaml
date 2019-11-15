@@ -20,7 +20,7 @@
     description: Where to store saved configs
 
 - system.controllers.ProcessController:
-    mri: $(mri_prefix):STATS
+    mri: $(mri_prefix):SYSTEM
     config_dir: $(config_dir)
     prefix: $(pv_prefix)
     ioc_list: $(iocs)
