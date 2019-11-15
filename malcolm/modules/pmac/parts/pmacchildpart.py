@@ -13,7 +13,8 @@ from malcolm.modules import builtin, scanning
 from malcolm.modules.pmac.util import get_motion_trigger
 from ..infos import MotorInfo
 from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
-    profile_between_points, cs_port_with_motors_in, get_motion_axes
+    MIN_INTERVAL, profile_between_points, cs_port_with_motors_in,\
+    get_motion_axes
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -71,6 +72,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.completed_steps_lookup = []  # type: List[int]
         # The minimum turnaround time for non-joined points
         self.min_turnaround = 0
+        # The minimum turnaround time for non-joined points
+        self.min_interval = 0
         # If we are currently loading then block loading more points
         self.loading = False
         # Where we have generated into profile
@@ -97,8 +100,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         registrar.hook((scanning.hooks.ConfigureHook,
                         scanning.hooks.PostRunArmedHook,
                         scanning.hooks.SeekHook), self.configure)
-        registrar.hook((scanning.hooks.RunHook,
-                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook(scanning.hooks.RunHook, self.run)
         registrar.hook((scanning.hooks.AbortHook,
                         scanning.hooks.PauseHook), self.abort)
 
@@ -223,8 +225,10 @@ class PmacChildPart(builtin.parts.ChildPart):
             assert len(infos) == 1, \
                 "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(infos)
             self.min_turnaround = max(MIN_TIME, infos[0].gap)
+            self.min_interval = infos[0].interval
         else:
             self.min_turnaround = MIN_TIME
+            self.min_interval = MIN_INTERVAL
 
         # Work out the cs_port we should be using
         layout_table = child.layout.value
@@ -385,7 +389,7 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,
                                           current_positions, completed_steps):
-        # at this point we have time/velocity arrays with 5-7 values for each
+        # at this point we have time/velocity arrays with 2-4 values for each
         # axis. Each time represents a (instantaneous) change in acceleration.
         # We want to translate this into a move profile (time/position).
         # Every axis profile must have a point for each of the times from
@@ -584,9 +588,6 @@ class PmacChildPart(builtin.parts.ChildPart):
                 )
             else:
                 points_are_joined = False
-                #if point.delay_after is not None:
-                #    next_point = point
-                #else:
                 next_point = None
 
             if self.output_triggers != scanning.infos.MotionTrigger.ROW_GATE:
@@ -631,7 +632,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         min_turnaround = max(self.min_turnaround,
                              getattr(point, "delay_after", None))
         time_arrays, velocity_arrays = profile_between_points(
-            self.axis_mapping, point, next_point, min_turnaround)
+            self.axis_mapping, point, next_point, min_turnaround,
+            self.min_interval)
 
         start_positions = {}
         for axis_name in self.axis_mapping:
@@ -640,6 +642,13 @@ class PmacChildPart(builtin.parts.ChildPart):
         # Work out the Position trajectories from these profiles
         self.calculate_profile_from_velocities(
             time_arrays, velocity_arrays, start_positions, completed_steps)
+
+        # make sure the last point is the same as next_point.lower since
+        # calculate_profile_from_velocities fails when the turnaround is 2
+        # points only
+        for axis_name, motor_info in self.axis_mapping.items():
+            self.profile[motor_info.cs_axis.lower()][-1] = \
+                next_point.lower[axis_name]
 
         # Change the last point to be a live frame
         self.profile["velocityMode"][-1] = PREV_TO_CURRENT
