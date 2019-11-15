@@ -10,7 +10,8 @@ with Anno("path to redirect table"):
     ARedirectPath = str
 
 @add_call_types
-def redirector_iocs(name, yamlname, file_path="/dls_sw/prod/etc/redirector/redirect_table"):
+def redirector_iocs(name, yamlname,
+                    file_path="/dls_sw/prod/etc/redirector/redirect_table"):
     # type: (AName, AYamlName, ARedirectPath) -> ADefine
     bl_prefix = yamlname.split("-")[0]
     with open(file_path, 'r') as redirector:

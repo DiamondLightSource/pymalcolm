@@ -34,7 +34,7 @@ class DirParsePart(Part):
                 "", ioc + ":APP_DIR2", widget=Widget.NONE,
                 throw=False, callback=self.set_dir2)
 
-        self.status_pv = ca.util.CAAttribute(
+        self.autosave_status_pv = ca.util.CAAttribute(
             StringMeta("IOC Status"), ca.util.catools.DBR_STRING,
             "", ioc + ":STATUS",
             throw=False, callback=self.set_procserv_state)
@@ -63,7 +63,8 @@ class DirParsePart(Part):
         registrar.add_attribute_model("dlsVersion", self.dls_ver_pv.attr)
         registrar.add_attribute_model("dir1", self.dir1_pv.attr)
         registrar.add_attribute_model("dir2", self.dir2_pv.attr)
-        registrar.add_attribute_model("status", self.status_pv.attr)
+        registrar.add_attribute_model("autosaveStatus",
+                                      self.autosave_status_pv.attr)
         registrar.add_attribute_model("dependencies", self.dependencies)
 
         self.register_hooked(hooks.DisableHook, self.disconnect)
@@ -73,13 +74,13 @@ class DirParsePart(Part):
         self.dls_ver_pv.reconnect()
         self.dir1_pv.reconnect()
         self.dir2_pv.reconnect()
-        self.status_pv.reconnect()
+        self.autosave_status_pv.reconnect()
 
     def disconnect(self):
         self.dls_ver_pv.disconnect()
         self.dir1_pv.disconnect()
         self.dir2_pv.disconnect()
-        self.status_pv.disconnect()
+        self.autosave_status_pv.disconnect()
 
     def set_procserv_state(self, value):
         if value.ok:
