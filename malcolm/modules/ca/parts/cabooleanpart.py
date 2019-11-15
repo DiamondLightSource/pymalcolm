@@ -17,12 +17,14 @@ class CABooleanPart(Part):
                  widget=None,  # type: util.AWidget
                  group=None,  # type: util.AGroup
                  config=True,  # type: util.AConfig
+                 throw=True,  # type: util.AThrow
                  ):
         # type: (...) -> None
         super(CABooleanPart, self).__init__(name)
         self.caa = util.CAAttribute(
             BooleanMeta(description), util.catools.DBR_LONG, pv, rbv,
-            rbv_suffix, min_delta, timeout, sink_port, widget, group, config)
+            rbv_suffix, min_delta, timeout,
+            sink_port, widget, group, config, throw=throw)
 
     def caput(self, value):
         self.caa.caput(int(value))

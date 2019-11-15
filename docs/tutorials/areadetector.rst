@@ -353,7 +353,7 @@ Let's start up the example and see it in action::
     Welcome to iMalcolm.
 
     self.mri_list:
-        ['mypc-ML-MOT-01:COUNTERX', 'mypc-ML-MOT-01:COUNTERY', 'mypc-ML-MOT-01', 'mypc-ML-DET-01', 'mypc-ML-DET-02:DRV', 'mypc-ML-DET-02:STAT', 'mypc-ML-DET-02:POS', 'mypc-ML-DET-02:HDF5', 'mypc-ML-DET-02', 'mypc-ML-SCAN-01', 'WEB', 'PVA']
+        ['mypc-ML-MOT-01:COUNTERX', 'mypc-ML-MOT-01:COUNTERY', 'mypc-ML-MOT-01', 'mypc-ML-DET-01', 'mypc-ML-DET-02:DRV', 'mypc-ML-DET-02:STAT', 'mypc-ML-DET-02:POS', 'mypc-ML-DET-02:HDF5', 'mypc-ML-DET-02', 'mypc-ML-SCAN-01', 'mypc:WEB', 'mypc:PVA']
 
     # To create a view of an existing Block
     block = self.block_view("<mri>")

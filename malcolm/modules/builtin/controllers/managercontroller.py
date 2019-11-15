@@ -144,13 +144,17 @@ class ManagerController(StatefulController):
         self.set_writeable_in(
             self.field_registry.add_method_model(self.save), ss.READY)
 
-    def _run_git_cmd(self, *args):
+    def _run_git_cmd(self, *args, **kwargs):
         # Run git command, don't care if it fails, logging the output
-        if self.use_git and os.path.isdir(
-                os.path.join(self.config_dir, ".git")):
+        if (self.use_git and os.path.isdir(
+                os.path.join(self.config_dir, ".git"))) or\
+           "dir" in kwargs.keys():
             try:
+                cwd = self.config_dir
+                if "dir" in kwargs.keys():
+                    cwd = kwargs["dir"]
                 output = subprocess.check_output(
-                    ("git",) + self.git_config + args, cwd=self.config_dir)
+                    ("git",) + self.git_config + args, cwd=cwd)
             except subprocess.CalledProcessError as e:
                 self.log.warning("Git command failed: %s\n%s", e, e.output)
                 return None
@@ -173,7 +177,10 @@ class ManagerController(StatefulController):
             # This will trigger all parts to report their layout, making sure
             # the layout table has a valid value. This will also call
             # self._update_block_endpoints()
-            self.set_layout(LayoutTable([], [], [], [], []))
+            self.set_default_layout()
+
+    def set_default_layout(self):
+        self.set_layout(LayoutTable([], [], [], [], []))
 
     def set_layout(self, value):
         """Set the layout table value. Called on attribute put"""

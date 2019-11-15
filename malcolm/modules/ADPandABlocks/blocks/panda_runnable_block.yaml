@@ -41,3 +41,6 @@
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)
     mri_prefix: $(mri_prefix)
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../../pandablocks/icons/PandA.svg

@@ -58,3 +58,7 @@
 - ADCore.includes.filewriting_collection:
     pv_prefix: $(pv_prefix)
     mri_prefix: $(mri_prefix)
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/GigE_Vision_Logo.svg
+

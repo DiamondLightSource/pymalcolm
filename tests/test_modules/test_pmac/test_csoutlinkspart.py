@@ -28,7 +28,8 @@ class TestCSOutlinksPart(unittest.TestCase):
     def test_init(self):
         self.catools.caget.assert_called_once_with(
             ["PV:PRE:Port"], datatype=self.catools.DBR_STRING,
-            format=self.catools.FORMAT_CTRL)
+            format=self.catools.FORMAT_CTRL,
+            throw=True)
         assert list(self.b) == [
             'meta', 'health', 'state', 'disable', 'reset', 'cs',
             'a', 'b', 'c', 'u', 'v', 'w', 'x', 'y', 'z', 'i']
