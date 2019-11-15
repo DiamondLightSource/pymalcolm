@@ -8,7 +8,8 @@ from scanpointgenerator import LineGenerator, CompoundGenerator, \
 
 from malcolm.core import Context, Process
 from malcolm.modules.pmac.parts import PmacChildPart
-from malcolm.modules.scanning.infos import MotionTrigger, MotionTriggerInfo
+from malcolm.modules.scanning.infos import MotionTrigger, MotionTriggerInfo, \
+    MinTurnaroundInfo
 from malcolm.testutil import ChildTestCase
 from malcolm.yamlutil import make_block_creator
 
@@ -225,7 +226,8 @@ class TestPMACChildPart(ChildTestCase):
         self.do_check_output()
 
     def test_configure_quantize(self):
-        self.do_configure(axes_to_scan=["x", "y"], duration=1.0005)
+        m = [MinTurnaroundInfo(0.002, 0.001)]
+        self.do_configure(axes_to_scan=["x", "y"], duration=1.0005, infos=m)
         self.do_check_output_quantized()
 
     def test_configure_slower_vmax(self):
@@ -496,3 +498,88 @@ class TestPMACChildPart(ChildTestCase):
         self.check_bounds(x2, "x2")
         self.check_bounds(y1, "y1")
         self.check_bounds(y2, "y2")
+
+    def test_step_scan(self):
+        axes_to_scan = ["x", "y"]
+        duration = 1.0005
+        self.set_motor_attributes(0.0, 0.0, "mm")
+        steps_to_do = 3 * len(axes_to_scan)
+        xs = LineGenerator("x", "mm", 0.0, 5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 10, 2)
+        generator = CompoundGenerator(
+            [ys, xs], [], [], duration, continuous=False)
+        generator.prepare()
+
+        self.o.configure(
+            self.context, 0, steps_to_do, {"part": None},
+            generator, axes_to_scan)
+
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+        assert args['a'] == \
+            pytest.approx([
+               0.0, 0.0, 0.0, 0.2, 2.3, 2.5, 2.5, 2.5, 2.7, 4.8, 5.0, 5.0,
+               5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.8, 2.7, 2.5, 2.5, 2.5, 2.3,
+               0.2, 0, 0.0, 0.0, 0.0])
+        assert args['b'] == \
+            pytest.approx([
+               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+               0.0, 0.2, 9.8, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+               10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
+        assert args['timeArray'] == pytest.approx([
+               2000, 500250, 500250, 400000, 2100000, 400000, 500250,
+               500250, 400000, 2100000, 400000, 500250, 500250, 400000,
+               9600000, 400000, 500250, 500250, 400000, 2100000, 400000,
+               500250, 500250, 400000, 2100000, 400000, 500250, 500250,
+               2000])
+
+    def test_minimum_profile(self):
+        # tests that a turnaround that is >= minturnaround
+        # is reduced to a start and end point only
+        # this supports keeping the turnaround really short where
+        # the motors are fast e.g. j15
+        axes_to_scan = ["x", "y"]
+        duration = .005
+        self.set_motor_attributes(
+            0.0, 0.0, "mm", x_acceleration=100., x_velocity=2.,
+            y_acceleration=100., y_velocity=2.)
+        steps_to_do = 1 * len(axes_to_scan)
+
+        xs = LineGenerator("x", "mm", 0, .0001, 2)
+        ys = LineGenerator("y", "mm", 0, 0, 2)
+        generator = CompoundGenerator(
+            [ys, xs], [], [], duration, continuous=False)
+        generator.prepare()
+
+        m = [MinTurnaroundInfo(.002, .002)]
+        self.o.configure(
+            self.context, 0, steps_to_do, {"part": m},
+            generator, axes_to_scan)
+
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+        assert args['a'] == \
+            pytest.approx([0, 0, 0, .0001, .0001, .0001, .0001])
+        assert args['b'] == \
+            pytest.approx([0, 0, 0, 0, 0, 0, 0])
+        assert args['timeArray'] == pytest.approx(
+            [2000, 2500, 2500, 2000, 2500, 2500, 2000])
+
+        # now make the acceleration slower so that the turnaround takes
+        # longer than the minimum interval
+        self.set_motor_attributes(
+            0.0, 0.0, "mm", x_acceleration=10., x_velocity=2.,
+            y_acceleration=100., y_velocity=2.)
+
+        self.o.configure(
+            self.context, 0, steps_to_do, {"part": m},
+            generator, axes_to_scan)
+
+        # this generates one mid point between the 1st upper and 2nd lower
+        # bounds. Note that the point is not exactly central due to time
+        # quantization
+        action, func, args = self.child.handled_requests.mock_calls[-1]
+        assert args['a'] == \
+            pytest.approx([0, 0, 0, 5.45454545e-05, .0001, .0001, .0001, .0001])
+        assert args['b'] == \
+            pytest.approx([0, 0, 0, 0, 0, 0, 0, 0])
+        assert args['timeArray'] == pytest.approx(
+            [2000, 2500, 2500, 6000, 5000, 2500, 2500, 2000])
