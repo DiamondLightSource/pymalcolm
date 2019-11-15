@@ -292,3 +292,22 @@ class TestPcompPart(ChildTestCase):
             table.oute2 == table.outf2 == [0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
+
+    def test_configure_single_point_multi_frames(self):
+        # This test uses PCAP to generate a static point test.
+        # The test moves the motors to a new position and then generates
+        # 5 triggers at that position
+
+        xs = LineGenerator("x", "mm", 0.0, 0.0, 5, alternate=True)
+        ys = LineGenerator("y", "mm", 1.0, 1.0, 1)
+        generator = CompoundGenerator([ys,xs], [], [], 1.0)
+        generator.prepare()
+
+        steps_to_do = 5
+        self.assertEqual(steps_to_do, generator.size)
+
+        completed_steps = 0
+        self.set_motor_attributes()
+        axes_to_move = ["x", "y"]
+
+        self.o.configure(self.context, completed_steps, steps_to_do, {}, generator, axes_to_move)
