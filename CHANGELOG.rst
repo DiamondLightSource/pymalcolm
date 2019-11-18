@@ -8,6 +8,17 @@ Unreleased_
 
 Nothing yet
 
+
+`4-1-1`_ - 2019-11-18
+---------------------
+
+Fixed:
+
+- Faulty detectors marked as such at startup, and only fail the scan they are in
+  if they are used (visible and configured in Detector Table)
+- Fix Odin dataset names passed via the Dataset Table
+
+
 `4-1`_ - 2019-09-26
 -------------------
 
@@ -31,6 +42,8 @@ Added:
   to avoid unperformant VDS snake scans
 - Some new icons for PandA
 - PMAC now generates sparse points for lines when not being asked to trigger
+- Preliminary Detector Table support to allow disabling detectors at configure()
+
 
 `4-0`_ - 2019-07-05
 -------------------
@@ -429,7 +442,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-1...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-1-1...HEAD
+.. _4-1-1: https://github.com/dls-controls/pymalcolm/compare/4-1..4-1-1
 .. _4-1: https://github.com/dls-controls/pymalcolm/compare/4-0..4-1
 .. _4-0: https://github.com/dls-controls/pymalcolm/compare/4-0b2..4-0
 .. _4-0b2: https://github.com/dls-controls/pymalcolm/compare/4-0b1..4-0b2
