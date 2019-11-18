@@ -50,7 +50,7 @@
     soft_trigger_modes:
         - Internal
 
-- ADCore.parts.ExposureDeadtimePart:
+- scanning.parts.ExposureDeadtimePart:
     name: DEADTIME
 
 - ADCore.blocks.stats_plugin_block:

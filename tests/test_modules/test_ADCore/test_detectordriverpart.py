@@ -4,7 +4,7 @@ from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Context, Process
 from malcolm.modules.ADCore.includes import adbase_parts
-from malcolm.modules.ADCore.infos import ExposureDeadtimeInfo
+from malcolm.modules.scanning.infos import ExposureDeadtimeInfo
 from malcolm.modules.ADCore.parts import DetectorDriverPart
 from malcolm.modules.ADCore.util import ExtraAttributesTable, SourceType, DataType, AttributeDatasetType
 from malcolm.modules.builtin.controllers import StatefulController
@@ -56,10 +56,13 @@ class TestDetectorDriverPart(ChildTestCase):
         generator.prepare()
         completed_steps = 0
         steps_to_do = 6
-        part_info = dict(anyname=[ExposureDeadtimeInfo(0.01, 1000, 0.0)])
+        info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
+        part_info = dict(anyname=[info])
         self.set_attributes(self.child, triggerMode="Internal")
         self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info, generator, fileDir="/tmp")
+            self.context, completed_steps, steps_to_do, part_info,
+            generator, fileDir="/tmp", exposure=info.calculate_exposure(
+                generator.duration))
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
@@ -78,7 +81,6 @@ class TestDetectorDriverPart(ChildTestCase):
         completed_steps = 0
         steps_to_do = 6
         expected_xml_filename = '/tmp/mri-attributes.xml'
-        part_info = dict(anyname=[ExposureDeadtimeInfo(0.01, 1000, 0.0)])
         self.set_attributes(self.child, triggerMode="Internal")
         extra_attributes = ExtraAttributesTable(
             name=["test1", "test2", "test3"],
@@ -90,14 +92,13 @@ class TestDetectorDriverPart(ChildTestCase):
         )
         self.o.extra_attributes.set_value(extra_attributes)
         self.o.configure(
-            self.context, completed_steps, steps_to_do, part_info, generator, fileDir="/tmp")
+            self.context, completed_steps, steps_to_do, {}, generator,
+            fileDir="/tmp")
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),
             call.put('arrayCounter', 0),
-            call.put('exposure', 0.1 - 0.01 - 0.0001),
             call.put('imageMode', 'Multiple'),
             call.put('numImages', 6),
-            call.put('acquirePeriod', 0.1 - 0.0001),
             call.put('attributesFile', expected_xml_filename),
         ]
         assert not self.o.is_hardware_triggered

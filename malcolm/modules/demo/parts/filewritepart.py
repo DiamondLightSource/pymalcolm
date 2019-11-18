@@ -38,6 +38,7 @@ class FileWritePart(Part):
         # The hdf file we will write
         self._hdf = None  # type: h5py.File
         # Configure args and progress info
+        self._exposure = None
         self._generator = None  # type: scanning.hooks.AGenerator
         self._completed_steps = 0
         self._steps_to_do = 0
@@ -64,8 +65,10 @@ class FileWritePart(Part):
     def configure(self,
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
+                  part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
                   fileDir,  # type: scanning.hooks.AFileDir
+                  exposure=0.0,  # type: scanning.hooks.AExposure
                   formatName="det",  # type: scanning.hooks.AFormatName
                   fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
                   ):
@@ -76,6 +79,7 @@ class FileWritePart(Part):
         self._steps_to_do = steps_to_do
         self._generator = generator
         self._uid_offset = 0
+        self._exposure = exposure
         # Work out where to write the file
         filename = fileTemplate % formatName
         filepath = os.path.join(fileDir, filename)
@@ -107,23 +111,23 @@ class FileWritePart(Part):
         # type: (scanning.hooks.AContext) -> None
         """On `RunHook` record where to next take data"""
         # Start time so everything is relative
-        point_time = time.time()
-        last_flush = point_time
+        end_of_exposure = time.time() + self._exposure
+        last_flush = end_of_exposure
         for i in range(self._completed_steps,
                        self._completed_steps + self._steps_to_do):
-            self.log.debug("Starting point %s", i)
             # Get the point we are meant to be scanning
             point = self._generator.get_point(i)
+            # Simulate waiting for an exposure and writing the data
+            wait_time = end_of_exposure - time.time()
+            context.sleep(wait_time)
+            self.log.debug("Writing data for point %s", i)
             self._write_data(point, i)
             # Flush the datasets if it is time to
             if time.time() - last_flush > FLUSH_PERIOD:
                 last_flush = time.time()
                 self._flush_datasets()
-            # Wait until the next point is due
-            point_time += point.duration
-            wait_time = point_time - time.time()
-            self.log.debug("%s Sleeping %s", self.name, wait_time)
-            context.sleep(wait_time)
+            # Schedule the end of the next exposure
+            end_of_exposure += point.duration
             # Update the point as being complete
             self.registrar.report(scanning.infos.RunProgressInfo(i + 1))
         # Do one last flush and then we're done

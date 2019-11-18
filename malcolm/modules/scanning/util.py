@@ -122,6 +122,8 @@ class DatasetTable(Table):
         self.uniqueid = AUniqueIDs(uniqueid)
 
 
+with Anno("Whether the detectors are enabled or not"):
+    AEnable = Array[bool]
 with Anno("Detector names"):
     ADetectorNames = Array[str]
 with Anno("Detector block mris"):
@@ -130,6 +132,7 @@ with Anno("Exposure of each detector frame for the current scan"):
     AExposures = Array[float]
 with Anno("Number of detector frames for each generator point"):
     AFramesPerStep = Array[np.int32]
+UEnable = Union[AEnable, Sequence[bool]]
 UDetectorNames = Union[ADetectorNames, Sequence[str]]
 UDetectorMris = Union[ADetectorMris, Sequence[str]]
 UExposures = Union[AExposures, Sequence[float]]
@@ -140,16 +143,22 @@ class DetectorTable(Table):
     # Will be serialized so use camelCase
     # noinspection PyPep8Naming
     def __init__(self,
+                 enable,  # type: UEnable
                  name,  # type: UDetectorNames
                  mri,  # type: UDetectorMris
                  exposure,  # type: UExposures
                  framesPerStep,  # type: UFramesPerStep
                  ):
         # type: (...) -> None
+        self.enable = AEnable(enable)
         self.name = ADetectorNames(name)
         self.mri = ADetectorMris(mri)
         self.exposure = AExposures(exposure)
         self.framesPerStep = AFramesPerStep(framesPerStep)
+
+
+with Anno("The detectors that should be active and their exposures"):
+    ADetectorTable = DetectorTable
 
 
 class RunnableStates(builtin.util.ManagerStates):

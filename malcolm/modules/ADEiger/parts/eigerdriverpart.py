@@ -1,6 +1,6 @@
-from annotypes import add_call_types, Any
+from annotypes import add_call_types
 
-from malcolm.core import PartRegistrar
+from malcolm.core import PartRegistrar, Context
 from malcolm.modules import ADCore, scanning, builtin
 
 
@@ -17,23 +17,12 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
         registrar.hook(
             scanning.hooks.PostRunArmedHook, self.post_run_armed)
 
-    # Allow CamelCase as fileDir parameter will be serialized
-    # noinspection PyPep8Naming
-    @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
-                  generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.hooks.AFileDir
-                  **kwargs  # type: **Any
-                  ):
-        # type: (...) -> None
-        super(EigerDriverPart, self).configure(
-            context, completed_steps, steps_to_do, part_info, generator,
-            fileDir, numImagesPerSeries=1, **kwargs)
+    def arm_detector(self, context):
+        # type: (Context) -> None
         child = context.block_view(self.mri)
+        child.numImagesPerSeries.put_value(1)
+        super(EigerDriverPart, self).arm_detector(context)
+        # Wait for the fan to be ready before returning from configure
         child.when_value_matches("fanStateReady", 1)
 
     @add_call_types

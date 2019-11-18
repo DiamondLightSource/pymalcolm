@@ -287,20 +287,7 @@ class RunnableController(builtin.controllers.ManagerController):
         iterations = 10
         # We will return this, so make sure we fill in defaults
         for k, default in self._block.configure.meta.defaults.items():
-            if k in kwargs:
-                meta = self._block.configure.meta.takes.elements[k]
-                if isinstance(meta, TableMeta):
-                    non_writeable = [
-                        i for i, m in enumerate(meta.elements.values())
-                        if not m.writeable]
-                    # If it is a table with non-writeable columns, fill in the
-                    # columns with the non-writeable values
-                    if non_writeable:
-                        kwargs[k] = merge_non_writeable_table(
-                            default, kwargs[k], non_writeable)
-            else:
-                kwargs[k] = default
-
+            kwargs.setdefault(k, default)
         # The validated parameters we will eventually return
         params = ConfigureParams(generator, axesToMove, **kwargs)
         # Make some tasks just for validate
