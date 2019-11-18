@@ -40,9 +40,13 @@ class DetectorChildPart(builtin.parts.ChildPart):
         # type: (...) -> None
         super(DetectorChildPart, self).__init__(name, mri, initial_visibility)
         # frames per scan step given by the detector table at configure()
+        self.initial_frames_per_step = initial_frames_per_step
         self.frames_per_step = initial_frames_per_step
         # Stored between runs
         self.run_future = None  # type: Future
+        # If it was faulty at init, allow it to exist, and ignore reset commands
+        # but don't let it be configured or run
+        self.faulty = False
 
     def setup(self, registrar):
         super(DetectorChildPart, self).setup(registrar)
@@ -54,15 +58,28 @@ class DetectorChildPart(builtin.parts.ChildPart):
         registrar.hook((PostRunArmedHook, PostRunReadyHook), self.post_run)
         registrar.hook(SeekHook, self.seek)
         registrar.hook(AbortHook, self.abort)
+
+    @add_call_types
+    def layout(self,
+               context,  # type: AContext
+               ports,  # type: builtin.hooks.APortMap
+               layout  # type: builtin.hooks.ALayoutTable
+               ):
+        # type: (...) -> builtin.hooks.ULayoutInfos
+        ret = super(DetectorChildPart, self).layout(context, ports, layout)
         # Tell the controller to expose some extra configure parameters
         configure_info = ConfigureHook.create_info(self.configure)
         # Override the detector table defaults and writeable
-        configure_info.defaults["detectors"] = DetectorTable.from_rows(
-            [(True, self.name, self.mri, 0.0, self.frames_per_step)])
+        rows = []
+        if self.visible:
+            rows.append([
+                True, self.name, self.mri, 0.0, self.initial_frames_per_step])
+        configure_info.defaults["detectors"] = DetectorTable.from_rows(rows)
         columns = configure_info.metas["detectors"].elements
         columns["name"].set_writeable(False)
         columns["mri"].set_writeable(False)
-        registrar.report(configure_info)
+        self.registrar.report(configure_info)
+        return ret
 
     def notify_dispatch_request(self, request):
         # type: (Request) -> None
@@ -75,12 +92,23 @@ class DetectorChildPart(builtin.parts.ChildPart):
             super(DetectorChildPart, self).notify_dispatch_request(request)
 
     @add_call_types
+    def init(self, context):
+        # type: (AContext) -> None
+        try:
+            super(DetectorChildPart, self).init(context)
+        except BadValueError:
+            self.log.exception(
+                "Detector %s was faulty at init and is not usable", self.name)
+            self.faulty = True
+
+    @add_call_types
     def reset(self, context):
         # type: (AContext) -> None
-        child = context.block_view(self.mri)
-        if child.abort.meta.writeable:
-            child.abort()
-        super(DetectorChildPart, self).reset(context)
+        if not self.faulty:
+            child = context.block_view(self.mri)
+            if child.abort.meta.writeable:
+                child.abort()
+            super(DetectorChildPart, self).reset(context)
 
     # Must match those passed in configure() Method, so need to be camelCase
     # noinspection PyPep8Naming
@@ -121,6 +149,11 @@ class DetectorChildPart(builtin.parts.ChildPart):
         multiframe = [i for i in DetectorMutiframeInfo.filter_values(part_info)
                       if i.mri == self.mri]
         if enable:
+            if self.faulty:
+                raise BadValueError(
+                    "Detector %s was faulty at init and is unusable. If the "
+                    "detector is now working please restart Malcolm" % self.name
+                )
             # Check that if we are told to set exposure that we take it
             if "exposure" in kwargs and not multiframe and not takes_exposure:
                 raise BadValueError(
