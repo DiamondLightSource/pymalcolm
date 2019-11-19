@@ -69,7 +69,7 @@ class Controller(Hookable):
         self.parts[part.name] = part
 
     def add_block_field(self, name, child, writeable_func, needs_context):
-        # type: (str, Field, Callable[..., Any]) -> None
+        # type: (str, Field, Callable[..., Any], bool) -> None
         if writeable_func:
             if needs_context:
                 # Wrap func

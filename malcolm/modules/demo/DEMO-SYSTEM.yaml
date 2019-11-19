@@ -1,0 +1,10 @@
+- system.defines.redirector_iocs:
+    name: iocs
+    yamlname: BL18B-ML-MALC-TST
+
+- system.blocks.system_block:
+    mri_prefix: $(yamlname)
+    iocs: $(iocs)
+    pv_prefix: $(yamlname)
+    subnet_validation: 0
+    config_dir: /tmp

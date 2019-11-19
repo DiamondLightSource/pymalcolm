@@ -8,7 +8,11 @@ from malcolm.modules.ca.parts import CAActionPart
 
 class caint(int):
     ok = True
-    
+
+
+class ca_nothing(object):
+    ok = False
+
 
 @patch("malcolm.modules.ca.util.catools")
 class TestCAActionPart(unittest.TestCase):
@@ -35,11 +39,12 @@ class TestCAActionPart(unittest.TestCase):
             p.caput, "mname", "desc")
 
     def test_reset(self, catools):
+        catools.ca_nothing = ca_nothing
         p = self.create_part()
         catools.caget.reset_mock()
         catools.caget.return_value = [caint(4)]
         p.connect_pvs()
-        catools.caget.assert_called_with(["pv"])
+        catools.caget.assert_called_with(["pv"], throw=True)
 
     def test_caput(self, catools):
         p = self.create_part()

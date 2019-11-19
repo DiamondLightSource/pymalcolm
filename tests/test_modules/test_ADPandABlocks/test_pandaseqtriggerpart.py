@@ -77,7 +77,7 @@ class GatePart(Part):
         registrar.add_method_model(self.enable, "forceSet")
 
 
-class TestPcompPart(ChildTestCase):
+class TestPandaSeqTriggerPart(ChildTestCase):
 
     def setUp(self):
         self.process = Process("Process")

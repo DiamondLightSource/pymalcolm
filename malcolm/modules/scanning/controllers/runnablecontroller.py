@@ -4,7 +4,7 @@ from scanpointgenerator import CompoundGenerator
 from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
     NumberMeta, Widget, Part, DEFAULT_TIMEOUT, Table
 from malcolm.compat import OrderedDict
-from malcolm.core.models import MapMeta, MethodMeta, TableMeta
+from malcolm.core.models import MapMeta, MethodMeta, TableMeta, Display
 from malcolm.modules import builtin
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, ConfigureParams
@@ -167,7 +167,7 @@ class RunnableController(builtin.controllers.ManagerController):
         # step
         self.completed_steps = NumberMeta(
             "int32", "Readback of number of scan steps",
-            tags=[Widget.TEXTINPUT.tag()]
+            tags=[Widget.METER.tag()]  # Widget.TEXTINPUT.tag()]
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model(
             "completedSteps", self.completed_steps, self.pause)
@@ -287,20 +287,7 @@ class RunnableController(builtin.controllers.ManagerController):
         iterations = 10
         # We will return this, so make sure we fill in defaults
         for k, default in self._block.configure.meta.defaults.items():
-            if k in kwargs:
-                meta = self._block.configure.meta.takes.elements[k]
-                if isinstance(meta, TableMeta):
-                    non_writeable = [
-                        i for i, m in enumerate(meta.elements.values())
-                        if not m.writeable]
-                    # If it is a table with non-writeable columns, fill in the
-                    # columns with the non-writeable values
-                    if non_writeable:
-                        kwargs[k] = merge_non_writeable_table(
-                            default, kwargs[k], non_writeable)
-            else:
-                kwargs[k] = default
-
+            kwargs.setdefault(k, default)
         # The validated parameters we will eventually return
         params = ConfigureParams(generator, axesToMove, **kwargs)
         # Make some tasks just for validate
@@ -410,6 +397,7 @@ class RunnableController(builtin.controllers.ManagerController):
                        for p, c in self.part_contexts.items())
         # Update the completed and configured steps
         self.configured_steps.set_value(steps_to_do)
+        self.completed_steps.meta.display.set_limitHigh(steps_to_do)
         # Reset the progress of all child parts
         self.progress_updates = {}
         self.resume_queue = Queue()

@@ -31,9 +31,11 @@ class TestDetectorBlock(unittest.TestCase):
             'meta', 'health', 'state', 'disable', 'reset', 'mri', 'layout',
             'design', 'exports', 'modified', 'save', 'completedSteps',
             'configuredSteps', 'totalSteps', 'validate', 'configure', 'run',
-            'abort', 'pause', 'resume', 'label', 'datasets']
+            'abort', 'pause', 'resume', 'label', 'datasets', 'readoutTime',
+            'frequencyAccuracy', 'exposure']
         assert list(self.b.configure.meta.takes.elements) == [
-            'generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate'
+            'generator', 'fileDir', 'axesToMove', 'exposure', 'formatName',
+            'fileTemplate'
         ]
         assert self.b.label.value == "DemoDetector"
 
@@ -58,9 +60,9 @@ class TestDetectorBlock(unittest.TestCase):
             assert hdf["/entry/uid"].shape == (1, 1, 1, 1)
             assert hdf["/entry/uid"][0][0][0][0] == 0
             fs = self.b.run_async()
-            # Wait for 2 frames to be written (but not reported yet)
-            cothread.Sleep(0.8)
-            assert self.b.completedSteps.value == 1
+            # Wait for 2 frames to be written and reported
+            cothread.Sleep(1.3)
+            assert self.b.completedSteps.value == 2
             assert hdf["/entry/data"].shape == (1, 2, 120, 160)
             assert hdf["/entry/sum"].shape == (1, 2, 1, 1)
             assert hdf["/entry/uid"].shape == (1, 2, 1, 1)

@@ -59,19 +59,21 @@ class TestSystemDetectorPVA(unittest.TestCase):
         validated = dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
             axesToMove=["y", "x"], fileTemplate='%s.h5', formatName='det',
+            exposure=0.0489975,
         )
         assert validated == block.validate(generator, self.tmpdir)
         # Sent 2 things, other zeroed
         assert block.validate.took.value == dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
-            axesToMove=[], fileTemplate='', formatName='',
+            axesToMove=[], fileTemplate='', formatName='', exposure=0,
         )
         assert block.validate.took.present == [
             "generator", "fileDir"]
         # Got back defaulted things
         assert block.validate.returned.value == validated
         all_args = [
-            'generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate'
+            'generator', 'fileDir', 'axesToMove', 'exposure', 'formatName',
+            'fileTemplate',
         ]
         assert list(block.validate.meta.takes.elements) == all_args
         assert src_block.validate.returned.present == all_args
@@ -88,7 +90,7 @@ class TestSystemDetectorPVA(unittest.TestCase):
         # block._context.sleep(0.1)
         assert "Armed" == block.state.value
         assert block.configure.took.value == dict(
-            generator=generator.to_dict(), axesToMove=["x", "y"],
+            generator=generator.to_dict(), axesToMove=["x", "y"], exposure=0.0,
             fileDir=self.tmpdir, fileTemplate='', formatName='')
         assert block.configure.took.present == [
             "generator", "fileDir", "axesToMove"]
