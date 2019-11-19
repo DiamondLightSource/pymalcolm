@@ -40,7 +40,7 @@ Please arrange imports with the following style
     from mock import patch
 
     # Local package imports
-    from malcolm.version import __version__
+    from malcolm.core import Block
 
 Please follow `Google's python style`_ guide wherever possible.
 
@@ -196,7 +196,10 @@ Release Checklist
 
 Before a new release, please go through the following checklist:
 
-* Bump version in malcolm/version.py
+* Choose a new PEP440_ compliant dotted release number
 * Add a release note in CHANGELOG.rst
 * Git tag the version with message from CHANGELOG
 * Push to github and travis will make a release on pypi
+* Push to internal gitlab and do a dls-release.py of the tag
+
+.. _PEP440: https://www.python.org/dev/peps/pep-0440

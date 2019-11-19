@@ -11,7 +11,7 @@ import os
 import subprocess
 from math import floor
 
-from malcolm.version import __version__
+from malcolm import __version__
 
 
 class TestProcessController(unittest.TestCase):

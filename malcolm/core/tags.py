@@ -3,7 +3,7 @@ import re
 from enum import Enum
 from annotypes import TYPE_CHECKING
 
-from malcolm.version import __version__
+from .. import __version__
 
 if TYPE_CHECKING:
     from typing import Sequence, Union, Tuple, List

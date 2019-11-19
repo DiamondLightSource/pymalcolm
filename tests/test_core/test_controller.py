@@ -5,7 +5,7 @@ from annotypes import add_call_types, Anno
 from malcolm.core import Controller, Part, PartRegistrar, StringMeta, \
     Process, Queue, Get, Return, Put, Error, Post, Subscribe, Update, \
     Unsubscribe
-from malcolm.version import __version__
+from malcolm import __version__
 
 with Anno("The return value"):
     AWorld = str

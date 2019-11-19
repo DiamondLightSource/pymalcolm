@@ -1,30 +1,12 @@
 # import multiprocessing to avoid this bug
 # (http://bugs.python.org/issue15881#msg170215)
 import multiprocessing
-import re
+import sys
 import os
 from setuptools import setup, find_packages
 
 assert multiprocessing
 module_name = "malcolm"
-
-
-def get_version():
-    """Extracts the version number from the version.py file.
-    """
-    VERSION_FILE = os.path.join(module_name, 'version.py')
-    txt = open(VERSION_FILE).read()
-    mo = re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]', txt, re.M)
-    if mo:
-        version = mo.group(1)
-        bs_version = os.environ.get('MODULEVER', '0.0')
-        assert bs_version == "0.0" or bs_version == version, \
-            "Version {} specified by the build system doesn't match {} in " \
-            "version.py".format(bs_version, version)
-        return version
-    else:
-        raise RuntimeError('Unable to find version string in {0}.'
-                           .format(VERSION_FILE))
 
 install_requires = [
     # External
@@ -48,10 +30,19 @@ tests_require = [
     'mock>=2.0.0', 'nose>=1.3.0', 'coverage>=3.7.1', 'pytest>=3.10.1',
     'pytest-cov>=2.6.1']
 
+# Place the directory containing _version_git on the path
+for path, _, filenames in os.walk(os.path.dirname(os.path.abspath(__file__))):
+    if "_version_git.py" in filenames:
+        sys.path.append(path)
+        break
+
+from _version_git import get_cmdclass, __version__
+
 packages = [x for x in find_packages() if x.startswith("malcolm")]
 setup(
     name=module_name,
-    version=get_version(),
+    cmdclass=get_cmdclass(),
+    version=__version__,
     description='Scanning in the middlelayer',
     long_description=open("README.rst").read(),
     url='https://github.com/dls-controls/pymalcolm',
@@ -60,7 +51,7 @@ setup(
     keywords='',
     packages=packages,
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: POSIX :: Linux',
@@ -68,6 +59,8 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     license='APACHE',
     install_requires=install_requires,
