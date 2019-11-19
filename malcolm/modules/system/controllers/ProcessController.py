@@ -1,16 +1,16 @@
 import os
 import subprocess
+from collections import OrderedDict
 
 import cothread
 from annotypes import Anno
-from collections import OrderedDict
 
-from malcolm.modules import builtin
-from malcolm.modules.ca.parts import CAStringPart, CAActionPart
+from malcolm import __version__
 from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, \
     ProcessStartHook, ProcessStopHook
+from malcolm.modules import builtin
+from malcolm.modules.ca.parts import CAStringPart, CAActionPart
 from malcolm.modules.builtin.util import LayoutTable
-from malcolm import version
 from malcolm.modules.ca.util import catools
 from ..parts.iociconpart import IocIconPart
 from ..parts.dirparsepart import DirParsePart
@@ -90,7 +90,7 @@ class ProcessController(builtin.controllers.ManagerController):
             '/dls_sw/prod')
 
         if self.stats["pymalcolm_path"].startswith('/dls_sw/prod'):
-            self.stats["pymalcolm_ver"] = version.__version__
+            self.stats["pymalcolm_ver"] = __version__
         else:
             self.stats["pymalcolm_ver"] = "Work"
         hostname = os.uname()[1]
