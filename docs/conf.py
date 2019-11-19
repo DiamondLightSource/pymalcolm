@@ -1,21 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 # malcolm documentation build configuration file
-import inspect
 import os
-import re
 import sys
-
-def get_version():
-    """Extracts the version number from the version.py file."""
-    VERSION_FILE = '../malcolm/version.py'
-    mo = re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]',
-                   open(VERSION_FILE, 'rt').read(), re.M)
-    if mo:
-        return mo.group(1)
-    else:
-        raise RuntimeError(
-            'Unable to find version string in {0}.'.format(VERSION_FILE))
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -50,11 +37,10 @@ MOCK_MODULES = [
 
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
-
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..')))
-
 sys.path.append(os.path.dirname(__file__))
 
+import malcolm
 
 # Autodoc event handlers
 def skip_member(app, what, name, obj, skip, options):
@@ -110,9 +96,9 @@ copyright = u'2015, Diamond Light Source'
 author = u'Tom Cobb'
 
 # The short X.Y version.
-version = get_version()
+version = malcolm.__version__.split("+")[0]
 # The full version, including alpha/beta/rc tags.
-release = version
+release = malcolm.__version__
 
 exclude_patterns = ['_build']
 
