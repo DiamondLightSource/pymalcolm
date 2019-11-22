@@ -40,6 +40,7 @@ class MisbehavingPart(MotionChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(self,
+                  context,  # type: AContext
                   completed_steps,  # type: ACompletedSteps
                   steps_to_do,  # type: AStepsToDo
                   # The following were passed from the user calling configure()
@@ -49,7 +50,8 @@ class MisbehavingPart(MotionChildPart):
                   ):
         # type: (...) -> None
         super(MisbehavingPart, self).configure(
-            completed_steps, steps_to_do, generator, axesToMove, exceptionStep)
+            context, completed_steps, steps_to_do, generator, axesToMove,
+            exceptionStep)
         if completed_steps == 3:
             raise MisbehavingPauseException("Called magic number to make pause throw an exception")
 
@@ -163,13 +165,14 @@ class TestRunnableController(unittest.TestCase):
             "x.delta.value = 31.0 not 1.0"
         self.prepare_half_run()
         self.b.run()
-        # x counter now at 2, child should still be modified
+        # x counter now at 3 (lower bound of first run of x in reverse),
+        # child should still be modified
         assert self.b_child.modified.value is True
         assert self.b_child.modified.alarm.severity == AlarmSeverity.MINOR_ALARM
         assert self.b_child.modified.alarm.status == AlarmStatus.CONF_STATUS
         assert self.b_child.modified.alarm.message == \
             "x.delta.value = 31.0 not 1.0"
-        assert x.counter.value == 2.0
+        assert x.counter.value == 3.0
         assert x.delta.value == 31
         x.delta.put_value(1.0)
         # x counter now at 0, child should be unmodified
@@ -223,7 +226,7 @@ class TestRunnableController(unittest.TestCase):
 
     def prepare_half_run(self, duration=0.01, exception=0):
         line1 = LineGenerator('y', 'mm', 0, 2, 3)
-        line2 = LineGenerator('x', 'mm', 0, 2, 2)
+        line2 = LineGenerator('x', 'mm', 0, 2, 2, alternate=True)
         compound = CompoundGenerator([line1, line2], [], [], duration)
         self.b.configure(
             generator=compound, axesToMove=['x'], exceptionStep=exception)

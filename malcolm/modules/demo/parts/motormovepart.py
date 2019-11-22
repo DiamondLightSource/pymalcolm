@@ -14,23 +14,18 @@ with Anno("The demand value to move our counter motor to"):
 with Anno("The amount of time to get to the demand position"):
     ADuration = float
 
-# How long between ticks of the "motor" position while moving
-UPDATE_TICK = 0.1
 
-
-# We will set these attributes on the child block, so don't save them
-@builtin.util.no_save("counter")
-class CounterMovePart(builtin.parts.ChildPart):
+class MotorMovePart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `ManagerController`"""
 
     def __init__(self, name, mri):
         # type: (APartName, AMri) -> None
-        super(CounterMovePart, self).__init__(
+        super(MotorMovePart, self).__init__(
             name, mri, stateful=False, initial_visibility=True)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        super(CounterMovePart, self).setup(registrar)
+        super(MotorMovePart, self).setup(registrar)
         # Method
         registrar.add_method_model(
             self.move, self.name + "Move", needs_context=True)
@@ -38,15 +33,18 @@ class CounterMovePart(builtin.parts.ChildPart):
     @add_call_types
     def move(self, context, demand, duration=0):
         # type: (builtin.hooks.AContext, ADemand, ADuration) -> None
-        """Move the motor instantly to the demand value"""
-        start = time.time()
+        """Move the motor to the demand value, taking duration seconds"""
         child = context.block_view(self.mri)
-        distance = demand - child.counter.value
-        remaining = duration
-        # "Move" the motor, ticking at UPDATE_TICK rate
-        while remaining > 0:
-            child.counter.put_value(demand - distance * remaining / duration)
-            context.sleep(min(remaining, UPDATE_TICK))
-            remaining = start + duration - time.time()
-        # Final move to make sure we end up at the right place
-        child.counter.put_value(demand)
+        if duration > 0:
+            # Given a time, go at that rate
+            velocity = abs(demand - child.readback.value) / duration
+        else:
+            # Go as fast as possible
+            velocity = 1000000
+        # First set acceleration time and velocity
+        child.put_attribute_values(dict(
+            accelerationTime=0,
+            velocity=velocity,
+        ))
+        # Then the demand to do the move
+        child.demand.put_value(demand)
