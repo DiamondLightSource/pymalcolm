@@ -20,17 +20,17 @@ UPDATE_TICK = 0.1
 
 # We will set these attributes on the child block, so don't save them
 @builtin.util.no_save("counter")
-class CounterMovePart(builtin.parts.ChildPart):
+class MotorMovePart(builtin.parts.ChildPart):
     """Provides control of a `counter_block` within a `ManagerController`"""
 
     def __init__(self, name, mri):
         # type: (APartName, AMri) -> None
-        super(CounterMovePart, self).__init__(
+        super(MotorMovePart, self).__init__(
             name, mri, stateful=False, initial_visibility=True)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        super(CounterMovePart, self).setup(registrar)
+        super(MotorMovePart, self).setup(registrar)
         # Method
         registrar.add_method_model(
             self.move, self.name + "Move", needs_context=True)
@@ -39,14 +39,14 @@ class CounterMovePart(builtin.parts.ChildPart):
     def move(self, context, demand, duration=0):
         # type: (builtin.hooks.AContext, ADemand, ADuration) -> None
         """Move the motor instantly to the demand value"""
-        start = time.time()
         child = context.block_view(self.mri)
         distance = demand - child.counter.value
+        deadline = time.time() + duration
         remaining = duration
         # "Move" the motor, ticking at UPDATE_TICK rate
-        while remaining > 0:
-            child.counter.put_value(demand - distance * remaining / duration)
+        while remaining:
+            remaining = deadline - time.time()
             context.sleep(min(remaining, UPDATE_TICK))
-            remaining = start + duration - time.time()
+            child.counter.put_value(demand - distance * remaining / duration)
         # Final move to make sure we end up at the right place
         child.counter.put_value(demand)
