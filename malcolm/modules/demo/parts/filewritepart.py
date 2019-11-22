@@ -4,7 +4,7 @@ import time
 import h5py
 import numpy as np
 from annotypes import add_call_types, Anno
-from scanpointgenerator import Point, CompoundGenerator
+from scanpointgenerator import Point
 
 from malcolm.core import Part, APartName, PartRegistrar
 from malcolm.modules import builtin, scanning
@@ -20,6 +20,7 @@ with Anno("Height of detector image"):
 DATA_PATH = "/entry/data"
 SUM_PATH = "/entry/sum"
 UID_PATH = "/entry/uid"
+SET_PATH = "/entry/%s_set"
 
 # How often we flush in seconds
 FLUSH_PERIOD = 1
@@ -65,7 +66,6 @@ class FileWritePart(Part):
     def configure(self,
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
                   generator,  # type: scanning.hooks.AGenerator
                   fileDir,  # type: scanning.hooks.AFileDir
                   exposure=0.0,  # type: scanning.hooks.AExposure
@@ -84,25 +84,9 @@ class FileWritePart(Part):
         filename = fileTemplate % formatName
         filepath = os.path.join(fileDir, filename)
         # Make the HDF file
-        self._hdf = self._create_hdf(filepath, generator)
+        self._hdf = self._create_hdf(filepath)
         # Tell everyone what we're going to make
-        infos = [
-            # Main dataset
-            scanning.infos.DatasetProducedInfo(
-                name="%s.data" % formatName,
-                filename=filename,
-                type=scanning.util.DatasetType.PRIMARY,
-                rank=len(generator.shape) + 2,
-                path=DATA_PATH,
-                uniqueid=UID_PATH),
-            # Sum
-            scanning.infos.DatasetProducedInfo(
-                name="%s.sum" % formatName,
-                filename=filename,
-                type=scanning.util.DatasetType.SECONDARY,
-                rank=len(generator.shape) + 2,
-                path=SUM_PATH,
-                uniqueid=UID_PATH)]
+        infos = list(self._create_infos(formatName, filename))
         return infos
 
     # For docs: Before run
@@ -154,11 +138,38 @@ class FileWritePart(Part):
             self._hdf.close()
             self._hdf = None
 
-    def _create_hdf(self, filepath, generator):
-        # type: (str, CompoundGenerator) -> h5py.File
+    def _create_infos(self, detector_name, filename):
+        # Main dataset
+        yield scanning.infos.DatasetProducedInfo(
+            name="%s.data" % detector_name,
+            filename=filename,
+            type=scanning.util.DatasetType.PRIMARY,
+            rank=len(self._generator.shape) + 2,
+            path=DATA_PATH,
+            uniqueid=UID_PATH)
+        # Sum
+        yield scanning.infos.DatasetProducedInfo(
+            name="%s.sum" % detector_name,
+            filename=filename,
+            type=scanning.util.DatasetType.SECONDARY,
+            rank=len(self._generator.shape) + 2,
+            path=SUM_PATH,
+            uniqueid=UID_PATH)
+        # Add an axis for each setpoint
+        for dim in self._generator.axes:
+            yield scanning.infos.DatasetProducedInfo(
+                name="%s.value_set" % dim,
+                filename=filename,
+                type=scanning.util.DatasetType.POSITION_SET,
+                rank=1,
+                path=SET_PATH % dim,
+                uniqueid="")
+
+    def _create_hdf(self, filepath):
+        # type: (str) -> h5py.File
         # The generator tells us what dimensions our scan should be. The dataset
         # will grow, so start off with the smallest we need
-        initial_shape = tuple(1 for _ in generator.shape)
+        initial_shape = tuple(1 for _ in self._generator.shape)
         # Open the file with the latest libver so SWMR works
         hdf = h5py.File(filepath, "w", libver="latest")
         # Write the datasets
@@ -166,14 +177,22 @@ class FileWritePart(Part):
         hdf.create_dataset(
             DATA_PATH, dtype=np.uint8,
             shape=initial_shape + (self._height, self._width),
-            maxshape=generator.shape + (self._height, self._width))
+            maxshape=self._generator.shape + (self._height, self._width))
         # Make the scalar datasets
         for path, dtype in {
                 UID_PATH: np.int32, SUM_PATH: np.float64}.items():
             hdf.create_dataset(
                 path, dtype=dtype,
                 shape=initial_shape + (1, 1),
-                maxshape=generator.shape + (1, 1))
+                maxshape=self._generator.shape + (1, 1))
+        # Make the setpoint dataset
+        for d in self._generator.dimensions:
+            for axis in d.axes:
+                # Make a data set for the axes, holding an array holding
+                # floating point data, for each point specified in the generator
+                ds = hdf.create_dataset(
+                    SET_PATH % axis, data=d.get_positions(axis))
+                ds.attrs["units"] = self._generator.units[axis]
         # Datasets made, we can switch to SWMR mode now
         hdf.swmr_mode = True
         return hdf
@@ -186,8 +205,9 @@ class FileWritePart(Part):
             ds = self._hdf[path]
             expand_to = tuple(max(*z) for z in zip(point_needs_shape, ds.shape))
             ds.resize(expand_to)
-        # Write the detector data
-        intensity = interesting_pattern(point)
+        # Write the detector data, multiply by exposure / duration to allow us
+        # to make dimmer images by reducint exposure relative to other detectors
+        intensity = interesting_pattern(point) * self._exposure / point.duration
         detector_data = (self._blob * intensity).astype(np.uint8)
         index = tuple(point.indexes)
         self._hdf[DATA_PATH][index] = detector_data

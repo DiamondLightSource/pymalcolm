@@ -103,12 +103,12 @@ class TestSystemDetectorPVA(unittest.TestCase):
             table = ctxt.get("TESTDET.datasets")
             assert table.getID() == "epics:nt/NTTable:1.0"
             assert dict(table.value.items()) == dict(
-                 filename=['det.h5', 'det.h5'],
-                 name=['det.data', 'det.sum'],
-                 path=['/entry/data', '/entry/sum'],
-                 rank=pytest.approx([4, 4]),
-                 type=['primary', 'secondary'],
-                 uniqueid=['/entry/uid', '/entry/uid']
+                 filename=['det.h5', 'det.h5', 'det.h5', 'det.h5'],
+                 name=['det.data', 'det.sum', 'y.value_set', 'x.value_set'],
+                 path=['/entry/data', '/entry/sum', '/entry/y_set', '/entry/x_set'],
+                 rank=pytest.approx([4, 4, 1, 1]),
+                 type=['primary', 'secondary', 'position_set', 'position_set'],
+                 uniqueid=['/entry/uid', '/entry/uid', '', '']
             )
             labels = ['name', 'filename', 'type', 'rank', 'path', 'uniqueid']
             assert list(table.meta.elements) == labels
