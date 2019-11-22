@@ -2,15 +2,18 @@ import os
 from datetime import datetime
 from ruamel import yaml
 from enum import Enum
+from cothread import cothread
 import itertools
 
 
 from annotypes import add_call_types
 
 from malcolm.core import AttributeModel, PartRegistrar, NumberMeta, \
-    StringMeta, config_tag, Widget, TimeoutError, NotWriteableError
+    StringMeta, config_tag, Widget, TimeoutError, NotWriteableError, \
+    AbortedError
 from malcolm.modules import builtin
 from malcolm.modules.builtin.util import StatefulStates
+from malcolm.modules.scanning.util import RunnableStates
 from ..hooks import AContext
 
 from scanpointgenerator import CompoundGenerator, LineGenerator
@@ -38,7 +41,8 @@ class ScanOutcome(Enum):
     SUCCESS = 0
     TIMEOUT = 1
     NOTWRITEABLE = 2
-    OTHER = 3
+    ABORTED = 3
+    OTHER = 99
 
 
 class ScanDimension:
@@ -320,8 +324,13 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             self.runner_status_message.set_value("Could not create scan dir")
             raise IOError("ERROR: unable to create sub directory: {dir}".format(dir=scan_path))
 
+        # Check if scan can be reset or run
+        print("\nScan block state: {0}\n\n".format(scan_block.state.value))
+        while scan_block.state.value is RunnableStates.ABORTING:
+            cothread.Sleep(0.1)
+
         # Run the scan
-        if scan_block.state.value is not StatefulStates.READY:
+        if scan_block.state.value is not RunnableStates.READY:
             scan_block.reset()
         try:
             scan_block.configure(generator, fileDir=scan_path)
@@ -332,6 +341,9 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         except NotWriteableError:
             self.increment_scan_failures()
             self.add_report_line(report_filepath, set_name, scan_number, ScanOutcome.NOTWRITEABLE)
+        except AbortedError:
+            self.increment_scan_failures()
+            self.add_report_line(report_filepath, set_name, scan_number, ScanOutcome.ABORTED)
         except Exception as e:
             print("Warning: unhandled scan exception: {exception}".format(exception=e))
             self.increment_scan_failures()
