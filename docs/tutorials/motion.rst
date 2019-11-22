@@ -34,7 +34,7 @@ see what one of those does:
     :language: yaml
 
 We instantiate two Counter blocks (``$(mir):COUNTERX`` and ``$(mir):COUNTERY``)
-and instantiate two MotorMoveParts (``x`` and ``y``) that will connect to them.
+and instantiate two CounterMoveParts (``x`` and ``y``) that will connect to them.
 We then use a `ManagerController` to construct our Block.
 
 This tree of Blocks is probably better viewed as a diagram:
@@ -58,8 +58,8 @@ This tree of Blocks is probably better viewed as a diagram:
             ranksep=0.1
 		    color=white
             motion_c [label="ManagerController"]
-            x [label=<MotorMovePart<BR/>name: 'x'>]
-            y [label=<MotorMovePart<BR/>name: 'y'>]
+            x [label=<CounterMovePart<BR/>name: 'x'>]
+            y [label=<CounterMovePart<BR/>name: 'y'>]
             motion_c -> x [style=invis]
             motion_c -> y [style=invis]
         }
@@ -191,8 +191,8 @@ created:
     edge [fontname=Arial fontsize=10 arrowhead=none]
 
     controller [label=<ManagerController<BR/>mri: 'MOTION'>]
-    mpart1 [label=<MotorMovePart<BR/>name: 'x'>]
-    mpart2 [label=<MotorMovePart<BR/>name: 'y'>]
+    mpart1 [label=<CounterMovePart<BR/>name: 'x'>]
+    mpart2 [label=<CounterMovePart<BR/>name: 'y'>]
 
     subgraph cluster_control {
         label="Control"
@@ -225,10 +225,10 @@ created:
     controller -> save [style=dashed]
     controller -> block [arrowhead=vee dir=from style=dashed label=produces]
 
-Lets take a look at ``./malcolm/modules/demo/parts/motormovepart.py`` to see
+Lets take a look at ``./malcolm/modules/demo/parts/countermovepart.py`` to see
 how it does this:
 
-.. literalinclude:: ../../malcolm/modules/demo/parts/motormovepart.py
+.. literalinclude:: ../../malcolm/modules/demo/parts/countermovepart.py
     :language: python
 
 The first thing to note is the imports, we are pulling in a malcolm module
@@ -244,13 +244,13 @@ the set of Attributes of our child Counter Block that we will set with our
 Methods and shouldn't appear in the design when we ``save()``. In this case
 "counter" is the only Attribute we set and therefore don't want to save.
 
-The MotorMovePart subclasses `ChildPart`, but this time we do some extra work in
+The CounterMovePart subclasses `ChildPart`, but this time we do some extra work in
 the ``__init__`` method. Whenever we override ``__init__`` it is important to
 call the ``__init__`` that we have just overridden, and that is what the
 `super` call does. This is a Python construct that lets us reliably call methods
 of our superclass that we have just overridden, even if multiple inheritance is
-used. If someone instantiates MotorMovePart, then
-``super(MotorMovePart, self).__init__`` will return the ``__init__`` function of
+used. If someone instantiates CounterMovePart, then
+``super(CounterMovePart, self).__init__`` will return the ``__init__`` function of
 `ChildPart`, bound so that ``self`` does not need to be passed into it.
 
 .. note::
@@ -291,18 +291,19 @@ means we will inherit the description assigned to them.
 In ``setup()`` we export a single Method, but as we are expecting to have
 many of these Parts in a single Controller, we prefix the Method name with the
 name of the Part, so it is unique in the Block. For our example, we have two
-MotorMoveParts, ``x`` and ``y``, so the resulting Block should have ``xMove()``
+CounterMoveParts, ``x`` and ``y``, so the resulting Block should have ``xMove()``
 and ``yMove()`` Methods. The ``needs_context=True`` argument tells Malcolm that
 when the move Method is called, it should be passed a `context_` object as the
 first argument. This is a utility object that makes us a `Block` view so we can
 interact with our child Block
 
 Finally we define the ``move()`` Method. As well as the `Context` we requested,
-it takes an argument ``demand`` which is described by an annotype. We use the
-``context`` to create a `Block` view of the Counter child Block, then get its
-``counter`` `Attribute` view, and call `Attribute.put_value` on it to request
-that the Counter Block sets its counter value to ``demand``. We wait for
-completion (which is almost instant), then return.
+it takes arguments ``demand`` and ``duration`` which are described by annotypes.
+We use the ``context`` to create a `Block` view of the Counter child Block, then
+repeatedly get its ``counter`` `Attribute` view and call `Attribute.put_value`
+on it so that the Counter Block sets its counter value to a number of values,
+ending up at ``demand``. Each put_value waits for completion (which is almost
+instant).
 
 How it looks in the GUI
 -----------------------
@@ -353,9 +354,9 @@ by parts named x and y:
 Let's try a motor move. If you select the "x" Block by left clicking on it, a
 right hand pane will pop out showing a view of the counter Block just like
 we saw in the previous tutorial. If you expand the section on the left titled
-"X Move", you will see a method that takes a single argument "Demand", and an
-"X MOVE" button to run the method. Fill in a demand value and hit the button
-and you will see the counter value change:
+"X Move", you will see a method that takes a arguments "Demand", "Duration", and
+an "X MOVE" button to run the method. Fill in a demand value and duration and
+hit the button and you will see the counter value change:
 
 .. image:: motion_2.png
 
@@ -366,8 +367,7 @@ Let's pretend that a motor is broken and we don't want to expose "X Move" any
 more. We can do this by hiding it from the layout, so it doesn't contribute
 to the Parent Block any more. If we click on "x" and hit the delete key, or
 start dragging it to the bin that will appear in the bottom right of the screen,
-then it will disappear. Refresh the screen, and you will now see that the
-"X Move" Method has vanished:
+then it will disappear. You will now see that the "X Move" Method has vanished:
 
 .. image:: motion_3.png
 
@@ -425,19 +425,17 @@ the "delta" value of the Blocks.
 .. note::
     The counter value didn't get saved because we specified it in ``no_save``.
     If we had left this out, then each time the motor moved the modified LED
-    would light, and when we restored a design the motor would move!
+    would light, and when we restored a design the 'motor' would move!
 
-Let's try making some changes. Click on the "y" axis and change delta, then
-click on the Palette and drag "x" back onto the screen. Then click on "y" and
-we will see this:
+Let's try making some changes. Click on the Palette and drag "x" back onto the
+screen. Click on "y" and change delta, then we will see this:
 
 .. image:: motion_5.png
 
 Notice that "X Move" has reappeared, and tooltip for the Modified LED gives a
 message about y.delta.value changing as well as the layout change. If we
-re-select the Design to be "only_y" you should see the Modified LED clear, and
-the X Block vanish. Refreshing the screen will show that the "X Move" Method has
-gone again.
+re-select the Design to be "only_y" you should see the Modified LED clear,
+the X Block vanish, and the "X Move" Method disappear too.
 
 Conclusion
 ----------

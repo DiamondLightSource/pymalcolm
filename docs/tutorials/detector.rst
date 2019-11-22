@@ -247,7 +247,13 @@ will do with this:
 .. autoclass:: malcolm.modules.scanning.infos.ConfigureParamsInfo
     :noindex:
 
-After we have created our HDF file in configure, we make some more infos.
+After we have created our HDF file in configure, we make some more infos in
+``_create_infos``:
+
+.. literalinclude:: ../../malcolm/modules/demo/parts/filewritepart.py
+    :language: python
+    :pyobject: FileWritePart._create_infos
+
 This time they describe the datasets that we are going to produce. These will
 be used by the DatasetTablePart to put them in an Attribute that can be read
 by the client expecting a scan. The docstring for this info explains this:
@@ -256,8 +262,9 @@ by the client expecting a scan. The docstring for this info explains this:
     :noindex:
 
 In our case we will produce a main dataset, with a detector of the dimensions
-given when we instantiated the part, and a sum dataset which will provide a
-suitable single point for each detector frame to live visualize the scan.
+given when we instantiated the part, a sum dataset which will provide a
+suitable single point for each detector frame to live visualize the scan, and
+the axis setpoints of everything that moves in the scan.
 
 Hooking into run()
 ------------------

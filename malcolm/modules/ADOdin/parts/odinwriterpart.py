@@ -36,7 +36,7 @@ def greater_than_zero(v):
 
 
 def create_dataset_infos(name, generator, filename, secondary_set):
-    # type: (str, CompoundGenerator, str) -> Iterator[Info]
+    # type: (str, CompoundGenerator, str, str) -> Iterator[Info]
     # Update the dataset table
     generator_rank = len(generator.dimensions)
 
