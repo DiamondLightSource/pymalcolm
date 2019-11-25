@@ -44,7 +44,7 @@ class TestAttributePreRunPartSetupHooks(unittest.TestCase):
         registrar_mock.hook.assert_has_calls(calls)
 
 
-class TestAttributePreRunPartPutMethods(unittest.TestCase):
+class TestAttributePreRunPartWithDefaultNamePutMethods(unittest.TestCase):
 
     def setUp(self):
         # Create our part
@@ -59,10 +59,34 @@ class TestAttributePreRunPartPutMethods(unittest.TestCase):
         self.child = Mock(name='child')
         self.context.block_view.return_value = self.child
 
-    def test_open_shutter_puts_open_value_to_child(self):
+    def test_puts_pre_run_value_to_child_on_pre_run(self):
         self.part.on_pre_run(self.context)
         self.child.shutter.put_value.assert_called_once_with(self.pre_run_value)
 
-    def test_close_shutter_puts_closed_value_to_child(self):
+    def test_puts_reset_value_to_child_on_reset(self):
         self.part.reset(self.context)
         self.child.shutter.put_value.assert_called_once_with(self.reset_value)
+
+
+class TestAttributePreRunPartWithNonDefaultNamePutMethods(unittest.TestCase):
+
+    def setUp(self):
+        # Create our part
+        name = "AttributePart"
+        mri = "ML-ATTR-01"
+        self.pre_run_value = "Set"
+        self.reset_value = "Reset"
+        self.part = AttributePreRunPart(name, mri, self.pre_run_value, self.reset_value, attribute_name="togglePart")
+        # Generate our mocks
+        self.part.setup(Mock())
+        self.context = Mock(name='context')
+        self.child = Mock(name='child')
+        self.context.block_view.return_value = self.child
+
+    def test_puts_pre_run_value_to_child_on_pre_run(self):
+        self.part.on_pre_run(self.context)
+        self.child.togglePart.put_value.assert_called_once_with(self.pre_run_value)
+
+    def test_puts_reset_value_to_child_on_reset(self):
+        self.part.reset(self.context)
+        self.child.togglePart.put_value.assert_called_once_with(self.reset_value)
