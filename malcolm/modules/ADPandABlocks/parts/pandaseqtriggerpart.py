@@ -157,8 +157,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
         registrar.hook((scanning.hooks.ConfigureHook,
                         scanning.hooks.SeekHook), self.configure)
-        registrar.hook((scanning.hooks.RunHook,
-                        scanning.hooks.ResumeHook), self.run)
+        registrar.hook(scanning.hooks.RunHook, self.run)
 
     @add_call_types
     def report_status(self, context):
