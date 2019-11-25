@@ -20,7 +20,7 @@ AMri = builtin.parts.AMri
 
 
 class AttributePreRunPart(builtin.parts.ChildPart):
-    """Part for controlling an attribute during the PreRunHook such as opening a shutter"""
+    """Part for controlling an attribute value during the PreRunHook"""
 
     def __init__(self, name, mri, pre_run_value, reset_value,
                  attribute_name="shutter"):
