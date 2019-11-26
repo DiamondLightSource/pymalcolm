@@ -38,3 +38,5 @@ class TestDatasetReportingPart(unittest.TestCase):
         assert list(v.rank) == [2, 0, 0]
         assert v.path == ["/p/det", "/p/s1", "/p/s2"]
         assert v.uniqueid == ["/p/uid", "/p/uid", "/p/uid"]
+        self.o.reset()
+        assert self.o.datasets.value.name == []
