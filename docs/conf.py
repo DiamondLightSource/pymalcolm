@@ -33,7 +33,7 @@ MOCK_MODULES = [
     "plop", "plop.viewer",
     "h5py", "vdsgen", "vdsgen.subframevdsgenerator",
     "tornado", "tornado.options", "tornado.httpserver", "tornado.web",
-    "tornado.ioloop", "tornado.websocket"]
+    "tornado.ioloop", "tornado.websocket", "tornado.queues"]
 
 sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 

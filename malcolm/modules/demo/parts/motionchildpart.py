@@ -41,6 +41,7 @@ class MotionChildPart(builtin.parts.ChildPart):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(self,
+                  context,  # type: scanning.hooks.AContext
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
                   # The following were passed from the user calling configure()
@@ -55,6 +56,11 @@ class MotionChildPart(builtin.parts.ChildPart):
         self._steps_to_do = steps_to_do
         self._exception_step = exceptionStep
         self._axes_to_move = axesToMove
+        child = context.block_view(self.mri)
+        # Move to start (instantly)
+        first_point = generator.get_point(completed_steps)
+        for axis in self._axes_to_move:
+            child["%sMove" % axis](first_point.lower[axis])
 
     @add_call_types
     def run(self, context):
@@ -62,23 +68,30 @@ class MotionChildPart(builtin.parts.ChildPart):
         # Start time so everything is relative
         point_time = time.time()
         child = context.block_view(self.mri)
+        # This will hold the last move values of the motors
+        move_values = {}
         # Get the asynchronous versions of the move methods
         async_move_methods = {}
         for axis in self._axes_to_move:
             async_move_methods[axis] = child[axis + "Move_async"]
+            move_values[axis] = None
         for i in range(self._completed_steps,
                        self._completed_steps + self._steps_to_do):
             # Get the point we are meant to be scanning
             point = self._generator.get_point(i)
-            # Start all the children moving at the same time, populating a list
-            # of futures we can wait on
+            # Update when the next point is due and how long motor moves take
+            point_time += point.duration
+            move_duration = point_time - time.time()
+            # Move the children (instantly) to the beginning of the point, then
+            # start them moving to the end of the point asynchronously, taking
+            # duration seconds, populating a list of futures we can wait on
             fs = []
             for axis, move_async in async_move_methods.items():
-                fs.append(move_async(point.positions[axis]))
+                if move_values[axis] != point.lower[axis]:
+                    fs.append(move_async(point.lower[axis]))
+                move_values[axis] = point.upper[axis]
+                fs.append(move_async(point.upper[axis], move_duration))
             context.wait_all_futures(fs)
-            # Wait until the next point is due
-            point_time += point.duration
-            context.sleep(point_time - time.time())
             # Update the point as being complete
             self.registrar.report(scanning.infos.RunProgressInfo(i + 1))
             # If this is the exception step then blow up

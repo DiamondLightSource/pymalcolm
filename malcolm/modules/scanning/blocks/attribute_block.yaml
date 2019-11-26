@@ -1,0 +1,27 @@
+- builtin.parameters.string:
+    name: pv
+    description: Control PV
+
+- builtin.parameters.string:
+    name: mri
+    description: MRI of the stateful controller
+
+- builtin.parameters.string:
+    name: rbv
+    description: Readback PV
+    default:
+
+- builtin.parameters.string:
+    name: name
+    description: Attribute name
+
+- builtin.controllers.StatefulController:
+    mri: $(mri)
+    description: Controller for the attribute
+
+- ca.parts.CAChoicePart:
+    name: $(name)
+    description: Attribute choice part
+    pv: $(pv)
+    rbv: $(rbv)
+    widget: combo

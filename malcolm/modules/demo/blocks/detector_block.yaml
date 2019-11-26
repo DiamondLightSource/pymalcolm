@@ -6,6 +6,16 @@
     name: config_dir
     description: Where to store saved configs
 
+- builtin.parameters.int32:
+    name: width
+    description: Width of the produced image
+    default: 160
+
+- builtin.parameters.int32:
+    name: height
+    description: Height of the produced image
+    default: 120
+
 - builtin.parameters.string:
     name: label
     description: Beamline specific label for the detector
@@ -35,5 +45,5 @@
 
 - demo.parts.FileWritePart:
     name: FW
-    width: 160
-    height: 120
+    width: $(width)
+    height: $(height)

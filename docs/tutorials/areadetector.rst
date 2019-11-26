@@ -395,57 +395,55 @@ to write in the ``datasets`` Attribute::
         "name": [
             "INTERFERENCE.data",
             "INTERFERENCE.sum",
-            "RAMP.data",
-            "RAMP.sum",
             "y.value_set",
-            "x.value_set"
+            "x.value_set",
+            "RAMP.data",
+            "RAMP.sum"
         ],
         "filename": [
             "INTERFERENCE.h5",
             "INTERFERENCE.h5",
-            "RAMP.h5",
-            "RAMP.h5",
+            "INTERFERENCE.h5",
+            "INTERFERENCE.h5",
             "RAMP.h5",
             "RAMP.h5"
         ],
         "type": [
             "primary",
             "secondary",
-            "primary",
-            "secondary",
             "position_set",
-            "position_set"
+            "position_set",
+            "primary",
+            "secondary"
         ],
         "rank": [
             4,
             4,
-            4,
-            4,
             1,
-            1
+            1,
+            4,
+            4
         ],
         "path": [
             "/entry/data",
             "/entry/sum",
+            "/entry/y_set",
+            "/entry/x_set",
             "/entry/detector/detector",
-            "/entry/sum/sum",
-            "/entry/detector/y_set",
-            "/entry/detector/x_set"
+            "/entry/sum/sum"
         ],
         "uniqueid": [
             "/entry/uid",
             "/entry/uid",
-            "/entry/NDAttributes/NDArrayUniqueId",
-            "/entry/NDAttributes/NDArrayUniqueId",
             "",
-            ""
+            "",
+            "/entry/NDAttributes/NDArrayUniqueId",
+            "/entry/NDAttributes/NDArrayUniqueId"
         ]
     }
 
 This is very similar to the `scanning_tutorial`, but now datasets are reported
-from both detectors. We also have a couple of datasets with type position_set,
-these are the demand positions for the ``x`` and ``y`` axes that take their
-setpoints from the generator values.
+from both detectors.
 
 Now that you have the files open, you can use the `h5watch`_ command to monitor
 the dataset and see it grow::

@@ -8,7 +8,6 @@ from .request import Request
 from .hook import Hookable, Hook
 from .info import Info
 from .camel import CAMEL_RE
-from .concurrency import Spawned
 from .models import MethodModel, AttributeModel, MethodMeta
 
 
@@ -91,6 +90,11 @@ class FieldRegistry(object):
         # type: (object, str, Field, Callable, bool) -> None
         assert CAMEL_RE.match(name), \
             "Field %r published by %s is not camelCase" % (name, owner)
+        for o, part_fields in self.fields.items():
+            existing = [x for x in part_fields if x[0] == name]
+            assert not existing, \
+                "Field %r published by %s would overwrite one made by %s" % (
+                    name, owner, o)
         part_fields = self.fields.setdefault(owner, [])
         part_fields.append((name, model, writeable_func, needs_context))
 

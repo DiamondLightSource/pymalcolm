@@ -20,15 +20,18 @@
     description: Where to store saved configs
 
 - system.controllers.ProcessController:
-    mri: $(mri_prefix):SYSTEM
+    mri: $(mri_prefix)
     config_dir: $(config_dir)
     prefix: $(pv_prefix)
     ioc_list: $(iocs)
 
+- builtin.parts.LabelPart:
+    value: System status of Process, Comms, and connected IOCs
+
 - pva.blocks.pva_server_block:
     mri: $(mri_prefix):PVA
 
-- web.blocks.web_server_block:
+- profiling.blocks.profiling_web_server_block:
     mri: $(mri_prefix):WEB
     subnet_validation: $(subnet_validation)
 

@@ -247,7 +247,13 @@ will do with this:
 .. autoclass:: malcolm.modules.scanning.infos.ConfigureParamsInfo
     :noindex:
 
-After we have created our HDF file in configure, we make some more infos.
+After we have created our HDF file in configure, we make some more infos in
+``_create_infos``:
+
+.. literalinclude:: ../../malcolm/modules/demo/parts/filewritepart.py
+    :language: python
+    :pyobject: FileWritePart._create_infos
+
 This time they describe the datasets that we are going to produce. These will
 be used by the DatasetTablePart to put them in an Attribute that can be read
 by the client expecting a scan. The docstring for this info explains this:
@@ -256,8 +262,9 @@ by the client expecting a scan. The docstring for this info explains this:
     :noindex:
 
 In our case we will produce a main dataset, with a detector of the dimensions
-given when we instantiated the part, and a sum dataset which will provide a
-suitable single point for each detector frame to live visualize the scan.
+given when we instantiated the part, a sum dataset which will provide a
+suitable single point for each detector frame to live visualize the scan, and
+the axis setpoints of everything that moves in the scan.
 
 Hooking into run()
 ------------------
@@ -406,8 +413,10 @@ If we set fileDir to "/tmp", then click Configure, we will see the State change
 to Armed. We can then click on the "VIEW" button next to "Datasets" to see
 what the detector will write. Here we see that it will make a primary dataset
 in (containing detector data) ``/entry/data``, and a secondary dataset
-(containing summary data calculated from the detector data) ``/entry/sum``.
-Both of these will be written to a file called ``det.h5`` in the fileDir:
+(containing summary data calculated from the detector data) ``/entry/sum``. It
+will also write position_set datasets for ``x`` and ``y`` containing the
+generator positions to ``/entry/x_set`` and ``/entry/y_set``. All of these
+will be written to a file called ``det.h5`` in the fileDir:
 
 .. image:: detector_2.png
 

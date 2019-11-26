@@ -219,10 +219,10 @@ see in its documentation:
 .. autoclass:: malcolm.modules.scanning.hooks.PreConfigureHook
     :noindex:
 
-We hook this to our ``reload()`` function to accomplish this. The purpose of
-this is so that if someone messes with our counter settings between scans, or
-another scan Block reconfigures them, they should be restored before anything
-else is done.
+We hook this to our :meth:`~malcolm.modules.builtin.parts.ChildPart.reload`
+function to accomplish this. The purpose of this is so that if someone messes
+with our counter settings between scans, or another scan Block reconfigures
+them, they should be restored before anything else is done.
 
 We then hook our configure method into the `ConfigureHook`:
 
@@ -230,15 +230,18 @@ We then hook our configure method into the `ConfigureHook`:
     :language: python
     :pyobject: MotionChildPart.configure
 
-This just stores the parameters to configure, ready to start the run. It is also
-hooked into the `PostRunArmedHook` and `SeekHook` so that any pause or repeated
-run also stores these parameters.
+This just stores the parameters to configure, ready to start the run, then moves
+to the start of the scan. As we are writing a demo we assume motors are capable
+of moving instantaneously, so we get the ``xMove`` and ``yMove`` Methods of the
+child Block and call them sequentially. We also hook ``configure()`` into the
+`PostRunArmedHook` and `SeekHook` so that any pause or repeated run also stores
+these parameters.
 
 Hooking into run()
 ------------------
 
-We also hooked our ``run()`` Method into the `RunHook` and `ResumeHook`. Let's
-look at what it does:
+We also hooked our ``run()`` Method into the `RunHook`. Let's look at what it
+does:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py
     :language: python
@@ -254,7 +257,9 @@ the same time, then wait until they are all finished.
 
 We then start iterating through each of the step indexes that we need to
 produce, getting a scanpointgenerator.Point object for each one. We pick out the
-positions of the axes we were told to move, and start them moving using our
+lower and upper bounds of the axes we were told to move during that Point, move
+them instantaneously to the lower bound, then move them to the upper bound
+so they finish together at the end of the Point duration, all using our
 asynchronous method calls. We then wait for them all to complete, before
 calculating how long we should do an interruptible :meth:`~Context.sleep` for.
 

@@ -1,5 +1,6 @@
 from annotypes import Anno, add_call_types, json_decode, json_encode
 from tornado import gen
+from tornado.queues import Queue
 from tornado.web import RequestHandler
 
 from malcolm.core import Part, Get, Post, Return, Error, PartRegistrar
@@ -13,9 +14,11 @@ from ..util import IOLoopHelper
 # noinspection PyAbstractClass
 class RestfulHandler(RequestHandler):
     _registrar = None
+    _queue = None
 
     def initialize(self, registrar=None):
         self._registrar = registrar  # type: PartRegistrar
+        self._queue = Queue()
 
     @gen.coroutine
     def get(self, endpoint_str):
@@ -23,35 +26,42 @@ class RestfulHandler(RequestHandler):
         path = endpoint_str.split("/")
         request = Get(path=path)
         self.report_request(request)
+        response = yield self._queue.get()
+        self.handle_response(response)
 
-    # curl --data 'parameters={"name": "me"}' \
-    #     http://localhost:8008/blocks/hello/say_hello
+    # curl -d '{"name": "me"}' http://localhost:8008/rest/HELLO/greet
     @gen.coroutine
     def post(self, endpoint_str):
         # called from tornado thread
         path = endpoint_str.split("/")
-        parameters = json_decode(self.get_body_argument("parameters"))
+        parameters = json_decode(self.request.body.decode())
         request = Post(path=path, parameters=parameters)
         self.report_request(request)
+        response = yield self._queue.get()
+        self.handle_response(response)
 
     def report_request(self, request):
         # called from tornado thread
-        request.set_callback(self.on_response)
+        request.set_callback(self.queue_response)
         mri = request.path[0]
         self._registrar.report(builtin.infos.RequestInfo(request, mri))
 
-    def on_response(self, response):
+    def queue_response(self, response):
         # called from cothread
+        IOLoopHelper.call(self._queue.put, response)
+
+    def handle_response(self, response):
+        # called from tornado thread
         if isinstance(response, Return):
             message = json_encode(response.value)
-            IOLoopHelper.call(self.finish, message + "\n")
+            self.finish(message + "\n")
         else:
             if isinstance(response, Error):
                 message = response.message
             else:
                 message = "Unknown response %s" % type(response)
             self.set_status(500, message)
-            IOLoopHelper.call(self.write_error, 500)
+            self.write_error(500)
 
 
 with Anno("Part name and subdomain name to respond to queries on"):

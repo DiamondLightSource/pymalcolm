@@ -1,6 +1,7 @@
 from annotypes import add_call_types
 
 from malcolm.core import Part, PartRegistrar, TableMeta, AttributeModel
+from malcolm.modules import builtin
 from ..infos import DatasetProducedInfo
 from ..util import DatasetTable
 from ..hooks import PostConfigureHook, APartInfo
@@ -19,6 +20,7 @@ class DatasetTablePart(Part):
         registrar.add_attribute_model("datasets", self.datasets)
         # Hooks
         registrar.hook(PostConfigureHook, self.post_configure)
+        registrar.hook(builtin.hooks.ResetHook, self.reset)
 
     @add_call_types
     def post_configure(self, part_info):
@@ -35,3 +37,6 @@ class DatasetTablePart(Part):
                 uid.append(i.uniqueid)
         datasets_table = DatasetTable(name, filename, typ, rank, path, uid)
         self.datasets.set_value(datasets_table)
+
+    def reset(self):
+        self.datasets.set_value(None)

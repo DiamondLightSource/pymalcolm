@@ -63,10 +63,14 @@ class TestScanBlock(unittest.TestCase):
     def test_configure(self):
         self.prepare_half_run()
         assert list(self.b.datasets.value.rows()) == [
-            ['DET.data', 'my-DET.h5', DatasetType.PRIMARY, 4, '/entry/data',
-             '/entry/uid'],
-            ['DET.sum', 'my-DET.h5', DatasetType.SECONDARY, 4, '/entry/sum',
-             '/entry/uid']
+            ['DET.data', 'my-DET.h5', DatasetType.PRIMARY, 4,
+             '/entry/data', '/entry/uid'],
+            ['DET.sum', 'my-DET.h5', DatasetType.SECONDARY, 4,
+             '/entry/sum', '/entry/uid'],
+            ['y.value_set', 'my-DET.h5', DatasetType.POSITION_SET, 1,
+             '/entry/y_set', ''],
+            ['x.value_set', 'my-DET.h5', DatasetType.POSITION_SET, 1,
+             '/entry/x_set', ''],
         ]
         for b in (self.b, self.bd):
             assert b.completedSteps.value == 0
