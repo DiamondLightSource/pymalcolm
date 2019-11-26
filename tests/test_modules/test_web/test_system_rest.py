@@ -48,12 +48,12 @@ class TestSystemRest(unittest.TestCase):
     def test_get_hello(self):
         IOLoopHelper.call(self.get, "hello")
         result = self.result.get(timeout=2)
-        assert result.body.strip() == json_encode(self.hello._block)
+        assert result.body.decode().strip() == json_encode(self.hello._block)
 
     def test_post_hello(self):
         IOLoopHelper.call(self.post, "hello", "greet",
                           json_encode(dict(name="me")))
         result = self.result.get(timeout=2)
-        assert result.body.strip() == json_encode("Hello me")
+        assert result.body.decode().strip() == json_encode("Hello me")
 
 
