@@ -413,8 +413,10 @@ If we set fileDir to "/tmp", then click Configure, we will see the State change
 to Armed. We can then click on the "VIEW" button next to "Datasets" to see
 what the detector will write. Here we see that it will make a primary dataset
 in (containing detector data) ``/entry/data``, and a secondary dataset
-(containing summary data calculated from the detector data) ``/entry/sum``.
-Both of these will be written to a file called ``det.h5`` in the fileDir:
+(containing summary data calculated from the detector data) ``/entry/sum``. It
+will also write position_set datasets for ``x`` and ``y`` containing the
+generator positions to ``/entry/x_set`` and ``/entry/y_set``. All of these
+will be written to a file called ``det.h5`` in the fileDir:
 
 .. image:: detector_2.png
 
