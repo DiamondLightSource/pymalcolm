@@ -127,6 +127,8 @@ class TestDetectorChildPart(unittest.TestCase):
             DetectorChildPart(name="SLOW", mri="slow", initial_visibility=True))
         ct.add_part(
             DetectorChildPart(name="BAD", mri="faulty", initial_visibility=False))
+        ct.add_part(
+            DetectorChildPart(name="BAD2", mri="faulty", initial_visibility=False, initial_frames_per_step=0))
         self.fast_multi = MaybeMultiPart("fast")
         self.slow_multi = MaybeMultiPart("slow")
         ct.add_part(self.fast_multi)
@@ -242,6 +244,16 @@ class TestDetectorChildPart(unittest.TestCase):
         t = LayoutTable.from_rows([["BAD", "faulty", 0, 0, False]])
         self.b.layout.put_value(t)
         self.test_init()
+        self.b.configure(self.make_generator(), self.tmpdir)
+
+    def test_adding_faulty_non_default_works(self):
+        t = LayoutTable.from_rows([["BAD2", "faulty", 0, 0, True]])
+        self.b.layout.put_value(t)
+        assert list(self.b.configure.meta.defaults["detectors"].rows()) == [
+            [True, "FAST", "fast", 0.0, 1],
+            [True, "SLOW", "slow", 0.0, 1],
+            [False, "BAD2", "faulty", 0.0, 1],
+        ]
         self.b.configure(self.make_generator(), self.tmpdir)
 
     def test_only_one_det(self):

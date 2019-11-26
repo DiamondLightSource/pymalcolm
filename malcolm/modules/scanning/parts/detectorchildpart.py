@@ -72,8 +72,14 @@ class DetectorChildPart(builtin.parts.ChildPart):
         # Override the detector table defaults and writeable
         rows = []
         if self.visible:
+            if self.initial_frames_per_step:
+                enable = True
+                frames_per_step = self.initial_frames_per_step
+            else:
+                enable = False
+                frames_per_step = 1
             rows.append([
-                True, self.name, self.mri, 0.0, self.initial_frames_per_step])
+                enable, self.name, self.mri, 0.0, frames_per_step])
         configure_info.defaults["detectors"] = DetectorTable.from_rows(rows)
         columns = configure_info.metas["detectors"].elements
         columns["name"].set_writeable(False)
