@@ -71,9 +71,10 @@ Let's run it now::
 
     In [1]:
 
-We are presented with an `IPython`_ interactive console with the running
-Process as ``self``. Let's try to get one of the Blocks we created from the
-Process and call a Method on it::
+We are presented with an `IPython`_ interactive console with a Context_ object
+as ``self``. This is a utility object that makes us a Block view so we can
+interact with it. Let's try to get a view of one of the Blocks we created and
+call a Method on it::
 
     In [1]: hello = self.block_view("HELLO")
 

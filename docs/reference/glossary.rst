@@ -54,7 +54,8 @@ A `Context` is a utility object that can make a `block_` View for any
 for calling Methods and Putting to Attributes in a synchronous and asynchronous
 fashion, and managing the returns from these requests in an ordered fashion.
 
-Introduced in the `motion_tutorial`.
+Introduced breifly in the `hello_tutorial`, then in more depth in the
+`motion_tutorial`.
 
 
 .. _controller_:

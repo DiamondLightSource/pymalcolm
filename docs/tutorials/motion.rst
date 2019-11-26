@@ -294,8 +294,8 @@ name of the Part, so it is unique in the Block. For our example, we have two
 CounterMoveParts, ``x`` and ``y``, so the resulting Block should have ``xMove()``
 and ``yMove()`` Methods. The ``needs_context=True`` argument tells Malcolm that
 when the move Method is called, it should be passed a `context_` object as the
-first argument. This is a utility object that makes us a `Block` view so we can
-interact with our child Block
+first argument. This utility object makes us a `Block` view so we can interact
+with our child Block
 
 Finally we define the ``move()`` Method. As well as the `Context` we requested,
 it takes arguments ``demand`` and ``duration`` which are described by annotypes.
