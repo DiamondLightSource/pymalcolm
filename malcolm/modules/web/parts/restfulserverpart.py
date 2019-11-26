@@ -34,7 +34,7 @@ class RestfulHandler(RequestHandler):
     def post(self, endpoint_str):
         # called from tornado thread
         path = endpoint_str.split("/")
-        parameters = json_decode(self.request.body)
+        parameters = json_decode(self.request.body.decode())
         request = Post(path=path, parameters=parameters)
         self.report_request(request)
         response = yield self._queue.get()
