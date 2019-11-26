@@ -24,11 +24,6 @@
     rbv: $(pv_prefix).ACCL
 
 - ca.parts.CADoublePart:
-    name: velocity
-    description: The velocity for a move conducted via the demand Attribute
-    rbv: $(pv_prefix).VELO
-
-- ca.parts.CADoublePart:
     name: maxVelocity
     description: The maximum velocity the motor can move at
     rbv: $(pv_prefix).VMAX

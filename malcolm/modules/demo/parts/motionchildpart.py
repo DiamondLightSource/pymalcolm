@@ -67,10 +67,13 @@ class MotionChildPart(builtin.parts.ChildPart):
         # Start time so everything is relative
         point_time = time.time()
         child = context.block_view(self.mri)
+        # This will hold the last move values of the motors
+        move_values = {}
         # Get the asynchronous versions of the move methods
         async_move_methods = {}
         for axis in self._axes_to_move:
             async_move_methods[axis] = child[axis + "Move_async"]
+            move_values[axis] = None
         for i in range(self._completed_steps,
                        self._completed_steps + self._steps_to_do):
             # Get the point we are meant to be scanning
@@ -83,7 +86,9 @@ class MotionChildPart(builtin.parts.ChildPart):
             # duration seconds, populating a list of futures we can wait on
             fs = []
             for axis, move_async in async_move_methods.items():
-                fs.append(move_async(point.lower[axis]))
+                if move_values[axis] != point.lower[axis]:
+                    fs.append(move_async(point.lower[axis]))
+                move_values[axis] = point.upper[axis]
                 fs.append(move_async(point.upper[axis], move_duration))
             context.wait_all_futures(fs)
             # Update the point as being complete
