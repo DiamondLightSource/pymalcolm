@@ -50,6 +50,7 @@ with Anno("Get limits from PV (HOPR & LOPR)"):
 with Anno("throw error if PV not found"):
     AThrow = bool
 
+
 class CABase(Loggable):
     def __init__(self,
                  meta,  # type: VMeta
@@ -225,6 +226,7 @@ class CAAttribute(CABase):
             self.rbv, format=catools.FORMAT_TIME,
             datatype=self.datatype, throw=self.throw)
         self._update_value(value)
+
 
 class CATable(dict):
     ok = True

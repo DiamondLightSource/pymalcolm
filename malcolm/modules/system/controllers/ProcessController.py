@@ -7,10 +7,8 @@ from annotypes import Anno
 
 from malcolm import __version__
 from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, \
-    ProcessStartHook, ProcessStopHook
-from malcolm.modules import builtin
-from malcolm.modules.ca.parts import CAStringPart, CAActionPart
-from malcolm.modules.builtin.util import LayoutTable
+    ProcessStartHook, ProcessStopHook, BadValueError
+from malcolm.modules import builtin, ca
 from malcolm.modules.ca.util import catools
 from ..parts.iociconpart import IocIconPart
 from ..parts.dirparsepart import DirParsePart
@@ -20,8 +18,8 @@ def await_ioc_start(stats, prefix):
     cothread.Yield()
     pid_rbv = catools.caget("%s:PID" % prefix, timeout=5)
     if int(pid_rbv) != os.getpid():
-        raise Exception("Got back different PID: " +
-                        "is there another system instance on the machine?")
+        raise BadValueError("Got back different PID: " +
+                            "is there another system instance on the machine?")
     catools.caput("%s:YAML:PATH" % prefix, stats["yaml_path"],
                   datatype=catools.DBR_CHAR_STR)
     catools.caput("%s:PYMALCOLM:PATH" % prefix, stats["pymalcolm_path"],
@@ -30,11 +28,10 @@ def await_ioc_start(stats, prefix):
 
 def start_ioc(stats, prefix):
     db_macros = "prefix='%s'" % prefix
-    epics_base = None
     try:
         epics_base = os.environ["EPICS_BASE"]
     except KeyError:
-        raise Exception("EPICS base not defined in environment")
+        raise BadValueError("EPICS base not defined in environment")
     softIoc_bin = epics_base + "/bin/linux-x86_64/softIoc"
     for key, value in stats.items():
         db_macros += ",%s='%s'" % (key, value)
@@ -167,7 +164,7 @@ class ProcessController(builtin.controllers.ManagerController):
                 name += [part_name]
                 mri += [self.parts[part_name].mri]
 
-        self.set_layout(LayoutTable(name, mri, x, y, visible))
+        self.set_layout(builtin.util.LayoutTable(name, mri, x, y, visible))
 
     def stop_ioc(self):
         if self.ioc is not None:
@@ -200,7 +197,7 @@ class ProcessController(builtin.controllers.ManagerController):
 def make_ioc_status(ioc):
     controller = builtin.controllers.StatefulController(ioc + ":STATUS")
 
-    controller.add_part(CAStringPart(
+    controller.add_part(ca.parts.CAStringPart(
         name="epicsVersion",
         description="EPICS version",
         rbv=(ioc + ":EPICS_VERS"),
@@ -210,9 +207,9 @@ def make_ioc_status(ioc):
                                           "/../icons/epics-logo.svg")))
     controller.add_part(DirParsePart(ioc, ioc))
 
-    controller.add_part(CAActionPart("restartIoc",
-                                     description="restart IOC via procServ",
-                                     pv=(ioc + ":RESTART"), throw=False))
+    controller.add_part(ca.parts.CAActionPart(
+        "restartIoc", description="restart IOC via procServ",
+        pv=(ioc + ":RESTART"), throw=False))
 
     return controller
 
