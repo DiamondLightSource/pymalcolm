@@ -1,6 +1,6 @@
 from annotypes import TYPE_CHECKING
 
-from malcolm.core import Info, Alarm, Port, Request
+from malcolm.core import Info, Alarm, Port, Request, TimeStamp
 
 if TYPE_CHECKING:
     from typing import List, Any, Dict
@@ -23,9 +23,10 @@ class HealthInfo(Info):
     Args:
         alarm: The alarm that should be used for the health of the block
     """
-    def __init__(self, alarm):
-        # type: (Alarm) -> None
+    def __init__(self, alarm, ts=None):
+        # type: (Alarm, TimeStamp) -> None
         self.alarm = alarm
+        self.ts = ts
 
 
 class PortInfo(Info):
