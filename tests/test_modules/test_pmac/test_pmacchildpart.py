@@ -81,7 +81,7 @@ class TestPMACChildPart(ChildTestCase):
         ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
         generator = CompoundGenerator([ys, xs], [], [], duration)
         generator.prepare()
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {"part": infos},
             generator, axes_to_scan)
 
@@ -90,7 +90,7 @@ class TestPMACChildPart(ChildTestCase):
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
-        ret = self.o.validate(self.context, generator, axesToMove, {})
+        ret = self.o.on_validate(self.context, generator, axesToMove, {})
         expected = 0.010166
         assert ret.value.duration == expected
 
@@ -250,7 +250,7 @@ class TestPMACChildPart(ChildTestCase):
         generator = CompoundGenerator(
             [StaticPointGenerator(6)], [], [], duration=0.1)
         generator.prepare()
-        self.o.configure(self.context, 0, 6, {}, generator, [])
+        self.o.on_configure(self.context, 0, 6, {}, generator, [])
         assert self.child.handled_requests.mock_calls == [
             call.post('writeProfile',
                       csPort='CS1', timeArray=[0.002], userPrograms=[8]),
@@ -304,13 +304,13 @@ class TestPMACChildPart(ChildTestCase):
 
     def test_run(self):
         self.o.generator = ANY
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('executeProfile')]
 
     def test_reset(self):
         self.o.generator = ANY
-        self.o.reset(self.context)
+        self.o.on_reset(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('abortProfile')]
 
@@ -418,9 +418,9 @@ class TestPMACChildPart(ChildTestCase):
 
         infos = [MotionTriggerInfo(MotionTrigger.ROW_GATE)]
         # infos = [MotionTriggerInfo(MotionTrigger.EVERY_POINT)]
-        self.o.configure(self.context, 0, gen.size,
-                         {"part": infos},
-                         gen, ["x", "y"])
+        self.o.on_configure(self.context, 0, gen.size,
+                            {"part": infos},
+                            gen, ["x", "y"])
 
         name, args, kwargs = self.child.handled_requests.mock_calls[2]
         assert name == "post"
@@ -510,7 +510,7 @@ class TestPMACChildPart(ChildTestCase):
             [ys, xs], [], [], duration, continuous=False)
         generator.prepare()
 
-        self.o.configure(
+        self.o.on_configure(
             self.context, 0, steps_to_do, {"part": None},
             generator, axes_to_scan)
 
@@ -551,7 +551,7 @@ class TestPMACChildPart(ChildTestCase):
         generator.prepare()
 
         m = [MinTurnaroundInfo(.002, .002)]
-        self.o.configure(
+        self.o.on_configure(
             self.context, 0, steps_to_do, {"part": m},
             generator, axes_to_scan)
 
@@ -569,7 +569,7 @@ class TestPMACChildPart(ChildTestCase):
             0.0, 0.0, "mm", x_acceleration=10., x_velocity=2.,
             y_acceleration=100., y_velocity=2.)
 
-        self.o.configure(
+        self.o.on_configure(
             self.context, 0, steps_to_do, {"part": m},
             generator, axes_to_scan)
 

@@ -13,9 +13,9 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
         # type: (PartRegistrar) -> None
         super(EigerDriverPart, self).setup(registrar)
         registrar.hook(
-            scanning.hooks.PostRunReadyHook, self.post_run_ready)
+            scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
         registrar.hook(
-            scanning.hooks.PostRunArmedHook, self.post_run_armed)
+            scanning.hooks.PostRunArmedHook, self.on_post_run_armed)
 
     def arm_detector(self, context):
         # type: (Context) -> None
@@ -26,14 +26,14 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
         child.when_value_matches("fanStateReady", 1)
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
         # this override removes the subscription to the array counter
         # which is never updated by Eiger
         pass
 
     @add_call_types
-    def post_run_ready(self, context):
+    def on_post_run_ready(self, context):
         # type: (scanning.hooks.AContext) -> None
         # currently the AD support does not know how many frames the detector
         # has taken and never finishes the Acquire. We know that the file
@@ -43,7 +43,7 @@ class EigerDriverPart(ADCore.parts.DetectorDriverPart):
         context.wait_all_futures(self.actions.start_future)
 
     @add_call_types
-    def post_run_armed(self, context):
+    def on_post_run_armed(self, context):
         # type: (scanning.hooks.AContext) -> None
         # Stop the acquisition as per post_run_ready
         # TODO: this should call configure too, will fail for 3D scans at

@@ -26,7 +26,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
 
     The Detector is required to have:
     - exposure: an Attribute that reports after configure() the exposure that
-        is expected by the detector
+      is expected by the detector
     """
 
     def __init__(self, name, mri, initial_visibility=None):
@@ -48,12 +48,12 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(PandAPulseTriggerPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
-        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
-        registrar.hook(scanning.hooks.PostConfigureHook, self.post_configure)
+        registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
+        registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
+        registrar.hook(scanning.hooks.PostConfigureHook, self.on_post_configure)
 
     @add_call_types
-    def report_status(self, context):
+    def on_report_status(self, context):
         # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
         child = context.block_view(self.mri)
         detector_mri = child.detector.value
@@ -64,11 +64,11 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  generator,  # type: scanning.hooks.AGenerator
-                  detectors=None,  # type: scanning.util.ADetectorTable
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     generator,  # type: scanning.hooks.AGenerator
+                     detectors=None,  # type: scanning.util.ADetectorTable
+                     ):
         # type: (...) -> None
         assert generator.duration > 0, \
             "Can only create pulse triggers for a generator with the same " \
@@ -132,7 +132,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
                     "Pulse block %r attribute %r needs units 's', not %r" % (
                         panda_mri, suffix, units)
 
-    def post_configure(self):
+    def on_post_configure(self):
         if self.frames_per_step > 0:
             # Sanity check that the detector is armed
             detector_state = self.detector.state.value

@@ -27,7 +27,7 @@ class MinTurnaroundPart(Part):
         ).create_attribute_model(interval)
 
     @add_call_types
-    def report_status(self):
+    def on_report_status(self):
         # type: () -> UInfos
         return MinTurnaroundInfo(self.gap.value, self.interval.value)
 
@@ -38,4 +38,4 @@ class MinTurnaroundPart(Part):
         registrar.add_attribute_model(
             "minTurnaroundInterval", self.interval, self.interval.set_value)
         # Hooks
-        registrar.hook(ReportStatusHook, self.report_status)
+        registrar.hook(ReportStatusHook, self.on_report_status)

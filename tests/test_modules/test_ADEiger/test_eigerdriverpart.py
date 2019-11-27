@@ -31,7 +31,7 @@ class TestEigerDetectorDriverPart(ChildTestCase):
         steps_to_do = 2000*3000
         # We wait to be armed, so set this here
         self.set_attributes(self.child, acquiring=True, fanStateReady=1)
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {}, generator=generator,
             fileDir="/tmp")
 

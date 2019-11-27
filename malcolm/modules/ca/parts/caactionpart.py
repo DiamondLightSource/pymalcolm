@@ -53,13 +53,13 @@ class CAActionPart(Part):
         super(CAActionPart, self).setup(registrar)
         # Hooks
         registrar.hook((builtin.hooks.InitHook,
-                        builtin.hooks.ResetHook), self.connect_pvs)
+                        builtin.hooks.ResetHook), self.reconnect)
         # Methods
         self.method = registrar.add_method_model(self.caput,
                                                  self.name,
                                                  self.description)
 
-    def connect_pvs(self):
+    def reconnect(self):
         pvs = [self.pv]
         if self.status_pv:
             pvs.append(self.status_pv)

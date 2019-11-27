@@ -41,11 +41,11 @@ class StatsPluginPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(StatsPluginPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
-        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
+        registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
 
     @add_call_types
-    def report_status(self):
+    def on_report_status(self):
         # type: () -> scanning.hooks.UInfos
         return [CalculatedNDAttributeDatasetInfo(
             name=self.statistic.name.lower(), attr=self.statistic_attr())]
@@ -67,11 +67,11 @@ class StatsPluginPart(builtin.parts.ChildPart):
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  part_info,  # type: scanning.hooks.APartInfo
-                  fileDir  # type: scanning.hooks.AFileDir
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     part_info,  # type: scanning.hooks.APartInfo
+                     fileDir  # type: scanning.hooks.AFileDir
+                     ):
         # type: (...) -> None
         child = context.block_view(self.mri)
         fs = child.put_attribute_values_async(dict(
@@ -91,9 +91,9 @@ class StatsPluginPart(builtin.parts.ChildPart):
         context.wait_all_futures(fs)
 
     @add_call_types
-    def reset(self, context):
+    def on_reset(self, context):
         # type: (scanning.hooks.AContext) -> None
-        super(StatsPluginPart, self).reset(context)
+        super(StatsPluginPart, self).on_reset(context)
         # Delete the attribute XML file
         if self.attributes_filename and os.path.isfile(
                 self.attributes_filename):

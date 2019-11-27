@@ -39,7 +39,7 @@ class TestAttributePreRunPartSetupHooks(unittest.TestCase):
         # Check calls
         calls = [
             call(PreRunHook, self.part.on_pre_run),
-            call((PauseHook, AbortHook, PostRunReadyHook), self.part.reset),
+            call((PauseHook, AbortHook, PostRunReadyHook), self.part.on_reset),
             ]
         registrar_mock.hook.assert_has_calls(calls)
 
@@ -64,7 +64,7 @@ class TestAttributePreRunPartWithDefaultNamePutMethods(unittest.TestCase):
         self.child.shutter.put_value.assert_called_once_with(self.pre_run_value)
 
     def test_puts_reset_value_to_child_on_reset(self):
-        self.part.reset(self.context)
+        self.part.on_reset(self.context)
         self.child.shutter.put_value.assert_called_once_with(self.reset_value)
 
 
@@ -88,5 +88,5 @@ class TestAttributePreRunPartWithNonDefaultNamePutMethods(unittest.TestCase):
         self.child.togglePart.put_value.assert_called_once_with(self.pre_run_value)
 
     def test_puts_reset_value_to_child_on_reset(self):
-        self.part.reset(self.context)
+        self.part.on_reset(self.context)
         self.child.togglePart.put_value.assert_called_once_with(self.reset_value)

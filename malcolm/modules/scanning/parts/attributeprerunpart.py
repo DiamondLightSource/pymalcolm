@@ -44,7 +44,7 @@ class AttributePreRunPart(builtin.parts.ChildPart):
         # Hooks
         registrar.hook(hooks.PreRunHook, self.on_pre_run)
         registrar.hook((hooks.PauseHook, hooks.AbortHook,
-                        hooks.PostRunReadyHook), self.reset)
+                        hooks.PostRunReadyHook), self.on_reset)
 
     @add_call_types
     def on_pre_run(self, context):
@@ -53,7 +53,7 @@ class AttributePreRunPart(builtin.parts.ChildPart):
         getattr(child, self.attribute_name).put_value(self.pre_run_value)
 
     @add_call_types
-    def reset(self, context):
+    def on_reset(self, context):
         # type: (AContext) -> None
         child = context.block_view(self.mri)
         getattr(child, self.attribute_name).put_value(self.reset_value)

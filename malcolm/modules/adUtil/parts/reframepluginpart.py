@@ -23,10 +23,10 @@ class ReframePluginPart(ADCore.parts.DetectorDriverPart):
         # type: (PartRegistrar) -> None
         super(ReframePluginPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ValidateHook, self.validate)
+        registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
 
     @add_call_types
-    def validate(self, generator):
+    def on_validate(self, generator):
         # type: (scanning.hooks.AGenerator) -> None
         exposure = generator.duration
         assert exposure > 0, \
