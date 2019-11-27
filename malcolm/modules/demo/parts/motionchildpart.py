@@ -29,25 +29,25 @@ class MotionChildPart(builtin.parts.ChildPart):
         registrar.hook(scanning.hooks.PreConfigureHook, self.reload)
         registrar.hook((scanning.hooks.ConfigureHook,
                         scanning.hooks.PostRunArmedHook,
-                        scanning.hooks.SeekHook), self.configure)
-        registrar.hook(scanning.hooks.RunHook, self.run)
+                        scanning.hooks.SeekHook), self.on_configure)
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
-            self.configure))
+            self.on_configure))
 
     # For docs: Before configure
     # Allow CamelCase for arguments as they will be serialized by parent
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  # The following were passed from the user calling configure()
-                  generator,  # type: scanning.hooks.AGenerator
-                  axesToMove,  # type: scanning.hooks.AAxesToMove
-                  exceptionStep=0,  # type: AExceptionStep
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     completed_steps,  # type: scanning.hooks.ACompletedSteps
+                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     # The following were passed from user calling configure()
+                     generator,  # type: scanning.hooks.AGenerator
+                     axesToMove,  # type: scanning.hooks.AAxesToMove
+                     exceptionStep=0,  # type: AExceptionStep
+                     ):
         # type: (...) -> None
         # Store the generator and place we need to start
         self._generator = generator
@@ -62,7 +62,7 @@ class MotionChildPart(builtin.parts.ChildPart):
             child["%sMove" % axis](first_point.lower[axis])
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
         # Start time so everything is relative
         point_time = time.time()

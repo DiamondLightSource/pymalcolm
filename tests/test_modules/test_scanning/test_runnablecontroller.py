@@ -39,17 +39,17 @@ class MisbehavingPart(MotionChildPart):
     # Allow CamelCase for arguments as they will be serialized by parent
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: AContext
-                  completed_steps,  # type: ACompletedSteps
-                  steps_to_do,  # type: AStepsToDo
-                  # The following were passed from the user calling configure()
-                  generator,  # type: AGenerator
-                  axesToMove,  # type: AAxesToMove
-                  exceptionStep=0,  # type: AExceptionStep
-                  ):
+    def on_configure(self,
+                     context,  # type: AContext
+                     completed_steps,  # type: ACompletedSteps
+                     steps_to_do,  # type: AStepsToDo
+                     # The following were passed from the user calling configure()
+                     generator,  # type: AGenerator
+                     axesToMove,  # type: AAxesToMove
+                     exceptionStep=0,  # type: AExceptionStep
+                     ):
         # type: (...) -> None
-        super(MisbehavingPart, self).configure(
+        super(MisbehavingPart, self).on_configure(
             context, completed_steps, steps_to_do, generator, axesToMove,
             exceptionStep)
         if completed_steps == 3:

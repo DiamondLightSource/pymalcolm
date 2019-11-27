@@ -22,7 +22,7 @@ class SimultaneousAxesPart(Part):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def validate(self, axesToMove):
+    def on_validate(self, axesToMove):
         # type: (AAxesToMove) -> None
         assert not set(axesToMove) - set(self.attr.value), \
             "Can only move %s simultaneously, requested %s" % (
@@ -33,4 +33,4 @@ class SimultaneousAxesPart(Part):
         registrar.add_attribute_model(
             "simultaneousAxes", self.attr, self.attr.set_value)
         # Hooks
-        registrar.hook(ValidateHook, self.validate)
+        registrar.hook(ValidateHook, self.on_validate)

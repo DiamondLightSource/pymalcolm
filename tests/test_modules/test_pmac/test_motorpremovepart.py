@@ -43,7 +43,7 @@ class TestMotorPreMovePart(ChildTestCase):
                                       [], [], 0.1)
         b.configure(generator)
 
-        self.o.configure(self.context)
+        self.o.on_configure(self.context)
 
         assert self.child.handled_requests.mock_calls == [
             call.put('demand', 50)

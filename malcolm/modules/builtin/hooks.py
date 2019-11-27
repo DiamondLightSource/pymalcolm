@@ -79,7 +79,7 @@ class LayoutHook(ControllerHook[ULayoutInfos]):
 
 
 with Anno("The serialized structure to load"):
-    AStructure = Mapping[str, Mapping]
+    AStructure = Mapping[str, Any]
 
 
 class LoadHook(ControllerHook[None]):

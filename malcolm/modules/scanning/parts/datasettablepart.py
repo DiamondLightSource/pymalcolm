@@ -19,11 +19,11 @@ class DatasetTablePart(Part):
         ).create_attribute_model()
         registrar.add_attribute_model("datasets", self.datasets)
         # Hooks
-        registrar.hook(PostConfigureHook, self.post_configure)
-        registrar.hook(builtin.hooks.ResetHook, self.reset)
+        registrar.hook(PostConfigureHook, self.on_post_configure)
+        registrar.hook(builtin.hooks.ResetHook, self.on_reset)
 
     @add_call_types
-    def post_configure(self, part_info):
+    def on_post_configure(self, part_info):
         # type: (APartInfo) -> None
         # Update the dataset table
         name, filename, typ, rank, path, uid = [], [], [], [], [], []
@@ -38,5 +38,5 @@ class DatasetTablePart(Part):
         datasets_table = DatasetTable(name, filename, typ, rank, path, uid)
         self.datasets.set_value(datasets_table)
 
-    def reset(self):
+    def on_reset(self):
         self.datasets.set_value(None)

@@ -168,10 +168,10 @@ class WebsocketServerPart(Part):
         # type: (PartRegistrar) -> None
         super(WebsocketServerPart, self).setup(registrar)
         # Hooks
-        registrar.hook(ReportHandlersHook, self.report_handlers)
+        registrar.hook(ReportHandlersHook, self.on_report_handlers)
 
     @add_call_types
-    def report_handlers(self):
+    def on_report_handlers(self):
         # type: () -> UHandlerInfos
         validators = []
         if self.subnet_validation:

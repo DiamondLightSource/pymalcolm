@@ -176,23 +176,23 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(DetectorDriverPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
+        registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook((scanning.hooks.ConfigureHook,
                         scanning.hooks.PostRunArmedHook,
                         scanning.hooks.SeekHook),
-                       self.configure, self.configure_args_with_exposure)
-        registrar.hook(scanning.hooks.RunHook, self.run)
+                       self.on_configure, self.configure_args_with_exposure)
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook(
-            (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.abort)
+            (scanning.hooks.PauseHook, scanning.hooks.AbortHook), self.on_abort)
         # Attributes
         registrar.add_attribute_model("attributesToCapture",
                                       self.extra_attributes,
                                       self.set_extra_attributes)
 
     @add_call_types
-    def reset(self, context):
+    def on_reset(self, context):
         # type: (scanning.hooks.AContext) -> None
-        super(DetectorDriverPart, self).reset(context)
+        super(DetectorDriverPart, self).on_reset(context)
         self.abort_detector(context)
         # Delete the layout XML file
         if self.attributes_filename and os.path.isfile(
@@ -202,7 +202,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             child.attributesFile.put_value("")
 
     @add_call_types
-    def report_status(self):
+    def on_report_status(self):
         # type: () -> scanning.hooks.UInfos
         ret = []
         if self.main_dataset_useful:
@@ -214,7 +214,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
         return ret
 
     def configure_args_with_exposure(self, keys):
-        need_keys = self.configure.call_types.keys()
+        need_keys = self.on_configure.call_types.keys()
         if "exposure" in keys:
             need_keys.append("exposure")
         return need_keys
@@ -222,15 +222,15 @@ class DetectorDriverPart(builtin.parts.ChildPart):
     # Allow CamelCase as fileDir parameter will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
-                  generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.hooks.AFileDir
-                  **kwargs  # type: Any
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     completed_steps,  # type: scanning.hooks.ACompletedSteps
+                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     part_info,  # type: scanning.hooks.APartInfo
+                     generator,  # type: scanning.hooks.AGenerator
+                     fileDir,  # type: scanning.hooks.AFileDir
+                     **kwargs  # type: Any
+                     ):
         # type: (...) -> None
         context.unsubscribe_all()
         child = context.block_view(self.mri)
@@ -269,7 +269,7 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             child.attributesFile.put_value(attributes_filename)
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
         if not self.is_hardware_triggered:
             # Start now if we are software triggered
@@ -278,6 +278,6 @@ class DetectorDriverPart(builtin.parts.ChildPart):
             context, self.registrar, event_timeout=self.frame_timeout)
 
     @add_call_types
-    def abort(self, context):
+    def on_abort(self, context):
         # type: (scanning.hooks.AContext) -> None
         self.abort_detector(context)

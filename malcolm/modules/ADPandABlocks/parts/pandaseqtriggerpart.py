@@ -154,13 +154,13 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(PandASeqTriggerPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
+        registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
         registrar.hook((scanning.hooks.ConfigureHook,
-                        scanning.hooks.SeekHook), self.configure)
-        registrar.hook(scanning.hooks.RunHook, self.run)
+                        scanning.hooks.SeekHook), self.on_configure)
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
 
     @add_call_types
-    def report_status(self, context):
+    def on_report_status(self, context):
         # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
         child = context.block_view(self.mri)
         # Work out if we need the motor controller to send start of row triggers
@@ -221,14 +221,14 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
-                  generator,  # type: scanning.hooks.AGenerator
-                  axesToMove  # type: scanning.hooks.AAxesToMove
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     completed_steps,  # type: scanning.hooks.ACompletedSteps
+                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     part_info,  # type: scanning.hooks.APartInfo
+                     generator,  # type: scanning.hooks.AGenerator
+                     axesToMove  # type: scanning.hooks.AAxesToMove
+                     ):
         # type: (...) -> None
         self.generator = generator
         self.loaded_up_to = completed_steps
@@ -376,7 +376,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         seq_table.put_value(table)
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
         # Call sequence table enable
         self.panda.seqSetEnable()

@@ -82,16 +82,16 @@ class ChildPart(Part):
         # type: (PartRegistrar) -> None
         super(ChildPart, self).setup(registrar)
         # Hooks
-        registrar.hook(InitHook, self.init)
-        registrar.hook(HaltHook, self.halt)
-        registrar.hook(LayoutHook, self.layout)
-        registrar.hook(LoadHook, self.load)
-        registrar.hook(SaveHook, self.save)
-        registrar.hook(DisableHook, self.disable)
-        registrar.hook(ResetHook, self.reset)
+        registrar.hook(InitHook, self.on_init)
+        registrar.hook(HaltHook, self.on_halt)
+        registrar.hook(LayoutHook, self.on_layout)
+        registrar.hook(LoadHook, self.on_load)
+        registrar.hook(SaveHook, self.on_save)
+        registrar.hook(DisableHook, self.on_disable)
+        registrar.hook(ResetHook, self.on_reset)
 
     @add_call_types
-    def init(self, context):
+    def on_init(self, context):
         # type: (AContext) -> None
         self.child_controller = context.get_controller(self.mri)
         if self.stateful:
@@ -99,14 +99,14 @@ class ChildPart(Part):
             # save state
             wait_for_stateful_block_init(context, self.mri)
         # Save what we have
-        self.save(context)
+        self.on_save(context)
         subscribe = Subscribe(path=[self.mri, "meta", "fields"])
         subscribe.set_callback(self.update_part_exportable)
         # Wait for the first update to come in
         self.child_controller.handle_request(subscribe).wait()
 
     @add_call_types
-    def disable(self, context):
+    def on_disable(self, context):
         # type: (AContext) -> None
         # TODO: do we actually want to disable children on disable?
         child = context.block_view(self.mri)
@@ -114,21 +114,21 @@ class ChildPart(Part):
             child.disable()
 
     @add_call_types
-    def reset(self, context):
+    def on_reset(self, context):
         # type: (AContext) -> None
         child = context.block_view(self.mri)
         if self.stateful and child.reset.meta.writeable:
             child.reset()
 
     @add_call_types
-    def halt(self):
+    def on_halt(self):
         # type: () -> None
         unsubscribe = Unsubscribe()
         unsubscribe.set_callback(self.update_part_exportable)
         self.child_controller.handle_request(unsubscribe)
 
     @add_call_types
-    def layout(self, context, ports, layout):
+    def on_layout(self, context, ports, layout):
         # type: (AContext, APortMap, ALayoutTable) -> ULayoutInfos
         first_call = not self.part_visibility
         for i, name in enumerate(layout.name):
@@ -156,7 +156,7 @@ class ChildPart(Part):
         return [ret]
 
     @add_call_types
-    def load(self, context, structure, init=False):
+    def on_load(self, context, structure, init=False):
         # type: (AContext, AStructure, AInit) -> None
         child = context.block_view(self.mri)
         iterations = {}  # type: Dict[int, Dict[str, Tuple[Attribute, Any]]]
@@ -194,7 +194,7 @@ class ChildPart(Part):
             self.send_modified_info_if_not_equal("design", child.design.value)
 
     @add_call_types
-    def save(self, context):
+    def on_save(self, context):
         # type: (AContext) -> AStructure
         child = context.block_view(self.mri)
         part_structure = OrderedDict()

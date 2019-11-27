@@ -37,9 +37,9 @@ class ProfilingViewerPart(Part):
         # type: (PartRegistrar) -> None
         super(ProfilingViewerPart, self).setup(registrar)
         # Hooks
-        registrar.hook(web.hooks.ReportHandlersHook, self.report_handlers)
+        registrar.hook(web.hooks.ReportHandlersHook, self.on_report_handlers)
 
-    def report_handlers(self):
+    def on_report_handlers(self):
         infos = [
             web.infos.HandlerInfo("/%s" % self.name, MalcolmIndexHandler),
             web.infos.HandlerInfo("/view", MalcolmViewHandler)]
