@@ -9,6 +9,36 @@ Unreleased_
 Nothing yet
 
 
+`4-2b1`_ - 2019-11-27
+---------------------
+
+Changed:
+
+- Scanpointgenerator bumped to 3.0.0. Adds post_delay attribute to
+  CompoundGenerator
+- Add enable column to Detector Table
+- PMAC module now calculates more efficient turnaround points, only placing
+  PVT points where acceleration changes. This requires pmac module version
+  2-4-14 or later, which includes a new version of the trajectory scan program
+- Versioning now taken from git describe
+
+Added:
+
+- System Block to hold comms modules and supporting IOCs that can be
+  extracted from the DLS redirector
+- Profiling web server contains link to its profiles page
+- AttributePreRunPart to allow shutters to be opened and closed around runs
+- Added SysLog JSON logger which will be forwarded to Graylog
+- PandAPulseTriggerPart to multiply out triggers for detectors
+
+Fixed:
+
+- Clear dataset table on reset()
+- Fixed restful server support
+- Bugfixes for malcolmjs (widget:meter, navbar, colours) bumping release to
+  1.7.8
+
+
 `4-1-1`_ - 2019-11-18
 ---------------------
 
@@ -442,12 +472,13 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-1-1...HEAD
-.. _4-1-1: https://github.com/dls-controls/pymalcolm/compare/4-1..4-1-1
-.. _4-1: https://github.com/dls-controls/pymalcolm/compare/4-0..4-1
-.. _4-0: https://github.com/dls-controls/pymalcolm/compare/4-0b2..4-0
-.. _4-0b2: https://github.com/dls-controls/pymalcolm/compare/4-0b1..4-0b2
-.. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-5-1..4-0b1
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b1...HEAD
+.. _4-2b1: https://github.com/dls-controls/pymalcolm/compare/4-1-1...4-2b1
+.. _4-1-1: https://github.com/dls-controls/pymalcolm/compare/4-1...4-1-1
+.. _4-1: https://github.com/dls-controls/pymalcolm/compare/4-0...4-1
+.. _4-0: https://github.com/dls-controls/pymalcolm/compare/4-0b2...4-0
+.. _4-0b2: https://github.com/dls-controls/pymalcolm/compare/4-0b1...4-0b2
+.. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-5-1...4-0b1
 .. _3-5-1: https://github.com/dls-controls/pymalcolm/compare/3-5...3-5-1
 .. _3-5: https://github.com/dls-controls/pymalcolm/compare/3-4-1...3-5
 .. _3-4-1: https://github.com/dls-controls/pymalcolm/compare/3-4...3-4-1
