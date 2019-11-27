@@ -105,7 +105,6 @@ class MalcWebSocketHandler(WebSocketHandler):
             if isinstance(request, (Put, Post)) and not self._writeable:
                 raise ValueError(
                     "Put/Post is forbidden from %s" % self.request.remote_ip)
-            log.info("Request: %s", request)
             self._registrar.report(builtin.infos.RequestInfo(request, mri))
         except Exception as e:
             log.exception("Error handling message:\n%s", message)
