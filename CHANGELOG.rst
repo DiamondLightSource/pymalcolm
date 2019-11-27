@@ -9,6 +9,15 @@ Unreleased_
 Nothing yet
 
 
+`4-2b2`_ - 2019-11-27
+---------------------
+
+Fixed:
+
+- PandASeqTriggerPart now reconfigures on seek to work with 3D scans
+- PandA Blocks with HEALTH don't cause an error
+
+
 `4-2b1`_ - 2019-11-27
 ---------------------
 
@@ -472,7 +481,8 @@ Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b1...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b2...HEAD
+.. _4-2b2: https://github.com/dls-controls/pymalcolm/compare/4-2b1...4-2b2
 .. _4-2b1: https://github.com/dls-controls/pymalcolm/compare/4-1-1...4-2b1
 .. _4-1-1: https://github.com/dls-controls/pymalcolm/compare/4-1...4-1-1
 .. _4-1: https://github.com/dls-controls/pymalcolm/compare/4-0...4-1
