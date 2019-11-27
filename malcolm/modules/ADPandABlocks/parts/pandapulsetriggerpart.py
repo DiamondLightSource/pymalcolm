@@ -26,7 +26,7 @@ class PandAPulseTriggerPart(builtin.parts.ChildPart):
 
     The Detector is required to have:
     - exposure: an Attribute that reports after configure() the exposure that
-        is expected by the detector
+      is expected by the detector
     """
 
     def __init__(self, name, mri, initial_visibility=None):

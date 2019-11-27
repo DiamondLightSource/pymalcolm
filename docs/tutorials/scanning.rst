@@ -224,28 +224,28 @@ function to accomplish this. The purpose of this is so that if someone messes
 with our counter settings between scans, or another scan Block reconfigures
 them, they should be restored before anything else is done.
 
-We then hook our configure method into the `ConfigureHook`:
+We then hook our ``on_configure()`` method into the `ConfigureHook`:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py
     :language: python
-    :pyobject: MotionChildPart.configure
+    :pyobject: MotionChildPart.on_configure
 
 This just stores the parameters to configure, ready to start the run, then moves
 to the start of the scan. As we are writing a demo we assume motors are capable
 of moving instantaneously, so we get the ``xMove`` and ``yMove`` Methods of the
-child Block and call them sequentially. We also hook ``configure()`` into the
+child Block and call them sequentially. We also hook ``on_configure()`` into the
 `PostRunArmedHook` and `SeekHook` so that any pause or repeated run also stores
 these parameters.
 
 Hooking into run()
 ------------------
 
-We also hooked our ``run()`` Method into the `RunHook`. Let's look at what it
+We also hooked our ``on_run()`` Method into the `RunHook`. Let's look at what it
 does:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py
     :language: python
-    :pyobject: MotionChildPart.run
+    :pyobject: MotionChildPart.on_run
 
 Walking through the code we can see that the first thing we do is make a child
 Block, and use it to get asynchronous versions of our ``xMove()`` and
