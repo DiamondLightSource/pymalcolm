@@ -135,3 +135,35 @@ class TestBeamSelectorPart(ChildTestCase):
                               {})
         expected = 0.010166
         assert ret.value.duration == expected
+
+    def test_critical_exposure(self):
+        self.set_motor_attributes()
+        nRotations = 2
+        generator = CompoundGenerator(
+            [StaticPointGenerator(nRotations)], [], [], duration=0.5)
+        generator.prepare()
+        self.o.configure(self.context, 0, nRotations, {}, generator,
+                         [])
+
+        assert self.child.handled_requests.mock_calls == [
+            call.post('writeProfile',
+                      csPort='CS1', timeArray=[0.002],
+                      userPrograms=[8]),
+            call.post('executeProfile'),
+            call.post('moveCS1', a=-0.1,
+                      moveTime=pytest.approx(0.692, abs=1e-3)),
+            # pytest.approx to allow sensible compare with numpy arrays
+            call.post('writeProfile',
+                      a=pytest.approx([0.0, 0.25, 0.5, 0.6,
+                                       0.5, 0.25, 0.0, -0.1]),
+                      csPort='CS1',
+                      timeArray=pytest.approx([
+                          200000, 250000, 250000,
+                          200000, 200000,
+                          250000, 250000,
+                          200000]),
+                      userPrograms=pytest.approx([
+                          1, 4, 2, 8, 1, 4, 2, 8]),
+                      velocityMode=pytest.approx([
+                          1, 0, 1, 1, 1, 0, 1, 3]))
+        ]

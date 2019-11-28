@@ -3,6 +3,7 @@ from malcolm.modules.pmac.parts import PmacChildPart
 from scanpointgenerator import LineGenerator, CompoundGenerator, \
     StaticPointGenerator
 from malcolm.modules.scanning.infos import MinTurnaroundInfo
+from ..util import MIN_INTERVAL, MIN_TIME
 
 from annotypes import add_call_types, TYPE_CHECKING
 if TYPE_CHECKING:
@@ -38,6 +39,8 @@ class BeamSelectorPart(PmacChildPart):
             self.startAngle = 0.0
             self.endAngle = 0.0
 
+        self.t_move = float(0.500)
+
     @add_call_types
     def configure(self,
                   context,  # type: scanning.hooks.AContext
@@ -59,17 +62,32 @@ class BeamSelectorPart(PmacChildPart):
                                       alternate=True)
         axesToMove = [self.selectorAxis]
 
-        exposure_time = float(0.500)
-        t_min = float(0.500)
-        t_move = generator.duration - exposure_time
-        if t_move < t_min:
-            t_move = t_min
+        def get_minturnaround():
+            # See if there is a minimum turnaround
+            infos = scanning.infos.MinTurnaroundInfo.filter_values(
+                part_info)
+            if infos:
+                assert len(infos) == 1, \
+                    "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(
+                        infos)
+                min_turnaround = max(MIN_TIME, infos[0].gap)
+                min_interval = infos[0].interval
+            else:
+                min_turnaround = MIN_TIME
+                min_interval = MIN_INTERVAL
+
+            return min_turnaround, min_interval
+
+        min_turnaround = get_minturnaround()[0]
+        exposure_time = generator.duration - self.t_move
+        if exposure_time < min_turnaround:
+            exposure_time = min_turnaround
 
         new_generator = \
             CompoundGenerator([static_axis, selector_axis],
                               [],
                               [],
-                              duration=t_move,
+                              duration=self.t_move,
                               continuous=True,
                               delay_after=exposure_time)
         new_generator.prepare()
