@@ -414,8 +414,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             prev_time = t
 
         self.profile["timeArray"] += time_intervals
-        self.profile["velocityMode"] += \
-            [PREV_TO_CURRENT] * num_intervals
+        self.profile["velocityMode"] += [PREV_TO_CURRENT] * num_intervals
         user_program = self.get_user_program(PointType.TURNAROUND)
         self.profile["userPrograms"] += [user_program] * num_intervals
         self.completed_steps_lookup += [completed_steps] * num_intervals
@@ -590,7 +589,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 points_are_joined = False
                 next_point = None
 
-            if self.output_triggers != scanning.infos.MotionTrigger.ROW_GATE:
+            if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
                 self.add_generator_point_pair(point, i, points_are_joined)
             else:
                 self.add_sparse_point(point, i, next_point, points_are_joined)

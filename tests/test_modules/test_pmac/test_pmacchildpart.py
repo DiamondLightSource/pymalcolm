@@ -126,11 +126,7 @@ class TestPMACChildPart(ChildTestCase):
             0, 0, 1, 1, 2, 2, 3, 3, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
-    def do_check_output(self, user_programs=None):
-        if user_programs is None:
-            user_programs = [
-                1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4, 2, 8
-            ]
+    def do_check_output(self):
         # use a slice here because I'm getting calls to __str__ in debugger
         assert self.child.handled_requests.mock_calls[:4] == [
             call.post('writeProfile',
@@ -151,7 +147,9 @@ class TestPMACChildPart(ChildTestCase):
                           [100000, 500000, 500000, 500000, 500000, 500000,
                            500000, 100000, 100000, 100000, 100000, 500000,
                            500000, 500000, 500000, 500000, 500000, 100000]),
-                      userPrograms=pytest.approx(user_programs),
+                      userPrograms=pytest.approx(
+                          [1, 4, 1, 4, 1, 4, 2, 8, 8, 8, 1, 4, 1, 4, 1, 4,
+                           2, 8]),
                       velocityMode=pytest.approx(
                           [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
                            0, 0, 1, 3])
@@ -194,7 +192,9 @@ class TestPMACChildPart(ChildTestCase):
             0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 3,
             3, 3, 4, 4, 5, 5, 6, 6]
 
-    def do_check_sparse_output(self):
+    def do_check_sparse_output(self, user_programs=None):
+        if user_programs is None:
+            user_programs = [1, 8, 0, 0, 0, 1, 8, 0]
         assert self.child.handled_requests.mock_calls == [
             call.post('writeProfile',
                       csPort='CS1', timeArray=[0.002], userPrograms=[8]),
@@ -215,7 +215,7 @@ class TestPMACChildPart(ChildTestCase):
                     100000, 3000000, 100000, 100000, 100000,
                     100000, 3000000, 100000
                 ]),
-                userPrograms=pytest.approx([1, 8, 0, 0, 0, 1, 8, 0]),
+                userPrograms=pytest.approx(user_programs),
                 velocityMode=pytest.approx([1, 1, 1, 1, 1, 1, 1, 3])
             )
         ]
@@ -238,7 +238,7 @@ class TestPMACChildPart(ChildTestCase):
     def test_configure_no_pulses(self):
         self.do_configure(axes_to_scan=["x", "y"],
                           infos=[MotionTriggerInfo(MotionTrigger.NONE)])
-        self.do_check_output(user_programs=[0] * 18)
+        self.do_check_sparse_output(user_programs=[0] * 8)
 
     def test_configure_start_of_row_pulses(self):
         self.do_configure(axes_to_scan=["x", "y"],
