@@ -51,24 +51,24 @@ class DetectorChildPart(builtin.parts.ChildPart):
     def setup(self, registrar):
         super(DetectorChildPart, self).setup(registrar)
         # Hooks
-        registrar.hook(ValidateHook, self.validate)
+        registrar.hook(ValidateHook, self.on_validate)
         registrar.hook(PreConfigureHook, self.reload)
-        registrar.hook(ConfigureHook, self.configure)
-        registrar.hook(RunHook, self.run)
-        registrar.hook((PostRunArmedHook, PostRunReadyHook), self.post_run)
-        registrar.hook(SeekHook, self.seek)
-        registrar.hook(AbortHook, self.abort)
+        registrar.hook(ConfigureHook, self.on_configure)
+        registrar.hook(RunHook, self.on_run)
+        registrar.hook((PostRunArmedHook, PostRunReadyHook), self.on_post_run)
+        registrar.hook(SeekHook, self.on_seek)
+        registrar.hook(AbortHook, self.on_abort)
 
     @add_call_types
-    def layout(self,
-               context,  # type: AContext
-               ports,  # type: builtin.hooks.APortMap
-               layout  # type: builtin.hooks.ALayoutTable
-               ):
+    def on_layout(self,
+                  context,  # type: AContext
+                  ports,  # type: builtin.hooks.APortMap
+                  layout  # type: builtin.hooks.ALayoutTable
+                  ):
         # type: (...) -> builtin.hooks.ULayoutInfos
-        ret = super(DetectorChildPart, self).layout(context, ports, layout)
+        ret = super(DetectorChildPart, self).on_layout(context, ports, layout)
         # Tell the controller to expose some extra configure parameters
-        configure_info = ConfigureHook.create_info(self.configure)
+        configure_info = ConfigureHook.create_info(self.on_configure)
         # Override the detector table defaults and writeable
         rows = []
         if self.visible:
@@ -98,36 +98,36 @@ class DetectorChildPart(builtin.parts.ChildPart):
             super(DetectorChildPart, self).notify_dispatch_request(request)
 
     @add_call_types
-    def init(self, context):
+    def on_init(self, context):
         # type: (AContext) -> None
         try:
-            super(DetectorChildPart, self).init(context)
+            super(DetectorChildPart, self).on_init(context)
         except BadValueError:
             self.log.exception(
                 "Detector %s was faulty at init and is not usable", self.name)
             self.faulty = True
 
     @add_call_types
-    def reset(self, context):
+    def on_reset(self, context):
         # type: (AContext) -> None
         if not self.faulty:
             child = context.block_view(self.mri)
             if child.abort.meta.writeable:
                 child.abort()
-            super(DetectorChildPart, self).reset(context)
+            super(DetectorChildPart, self).on_reset(context)
 
     # Must match those passed in configure() Method, so need to be camelCase
     # noinspection PyPep8Naming
     @add_call_types
-    def validate(self,
-                 context,  # type: AContext
-                 part_info,  # type: APartInfo
-                 generator,  # type: AGenerator
-                 fileDir,  # type: AFileDir
-                 detectors=None,  # type: ADetectorTable
-                 axesToMove=None,  # type: AAxesToMove
-                 fileTemplate="%s.h5",  # type: AFileTemplate
-                 ):
+    def on_validate(self,
+                    context,  # type: AContext
+                    part_info,  # type: APartInfo
+                    generator,  # type: AGenerator
+                    fileDir,  # type: AFileDir
+                    detectors=None,  # type: ADetectorTable
+                    axesToMove=None,  # type: AAxesToMove
+                    fileTemplate="%s.h5",  # type: AFileTemplate
+                    ):
         # type: (...) -> UParameterTweakInfos
         # Work out if we are taking part
         enable, frames_per_step, kwargs = self._configure_args(
@@ -268,14 +268,14 @@ class DetectorChildPart(builtin.parts.ChildPart):
     # Must match those passed in configure() Method, so need to be camelCase
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: AContext
-                  generator,  # type: AGenerator
-                  fileDir,  # type: AFileDir
-                  detectors=None,  # type: ADetectorTable
-                  axesToMove=None,  # type: AAxesToMove
-                  fileTemplate="%s.h5",  # type: AFileTemplate
-                  ):
+    def on_configure(self,
+                     context,  # type: AContext
+                     generator,  # type: AGenerator
+                     fileDir,  # type: AFileDir
+                     detectors=None,  # type: ADetectorTable
+                     axesToMove=None,  # type: AAxesToMove
+                     fileTemplate="%s.h5",  # type: AFileTemplate
+                     ):
         # type: (...) -> UInfos
         # Work out if we are taking part
         enable, self.frames_per_step, kwargs = self._configure_args(
@@ -302,7 +302,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         return info_list
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (AContext) -> None
         if self.frames_per_step < 1:
             # We aren't taking part in the scan
@@ -328,7 +328,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
                 raise
 
     @add_call_types
-    def post_run(self, context):
+    def on_post_run(self, context):
         # type: (AContext) -> None
         if self.frames_per_step < 1:
             # We aren't taking part in the scan
@@ -336,7 +336,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         context.wait_all_futures(self.run_future)
 
     @add_call_types
-    def seek(self, context, completed_steps):
+    def on_seek(self, context, completed_steps):
         # type: (AContext, ACompletedSteps) -> None
         if self.frames_per_step < 1:
             # We aren't taking part in the scan
@@ -347,7 +347,7 @@ class DetectorChildPart(builtin.parts.ChildPart):
         child.pause(lastGoodStep=completed_steps)
 
     @add_call_types
-    def abort(self, context):
+    def on_abort(self, context):
         # type: (AContext) -> None
         child = context.block_view(self.mri)
         child.abort()

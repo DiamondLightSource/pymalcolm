@@ -196,7 +196,7 @@ Release Checklist
 
 Before a new release, please go through the following checklist:
 
-* Choose a new PEP440_ compliant dotted release number
+* Choose a new PEP440_ compliant release number (but with dashes until we move to python3)
 * Add a release note in CHANGELOG.rst
 * Git tag the version with message from CHANGELOG
 * Push to github and travis will make a release on pypi

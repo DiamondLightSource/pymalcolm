@@ -3,7 +3,7 @@ import unittest
 from mock import Mock, ANY
 
 from malcolm.core import BooleanMeta, ChoiceMeta, NumberMeta, StringMeta, Queue, \
-    Subscribe, Process, TimeStamp
+    Subscribe, Process, TimeStamp, Alarm
 from malcolm.modules.pandablocks.pandablocksclient import \
     BlockData, FieldData
 from malcolm.modules.pandablocks.controllers.pandablockcontroller import \
@@ -27,6 +27,7 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         fields["DIVIDE"] = FieldData("param", "enum", "Divide output",
                                      ["/1", "/2", "/4"])
         fields["OUT"] = FieldData("pos_out", "", "Output", ["No", "Capture"])
+        fields["HEALTH"] = FieldData("read", "enum", "What's wrong", ["OK", "Very Bad"])
 
         o = PandABlockController(
             self.client, "MRI", "ADDER1", block_data, "/docs")
@@ -82,14 +83,36 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         subscribe = Subscribe(path=["MRI:ADDER1", "out"], delta=True)
         subscribe.set_callback(queue.put)
         o.handle_request(subscribe)
-        delta = queue.get()
+        delta = queue.get(timeout=1)
         assert delta.changes[0][1]["value"] == 0
 
         ts = TimeStamp()
         o.handle_changes({"OUT": "145"}, ts)
-        delta = queue.get()
+        delta = queue.get(timeout=1)
         assert delta.changes == [
             [['value'], 145],
+            [['timeStamp'], ts],
+        ]
+
+        subscribe = Subscribe(path=["MRI:ADDER1", "health"], delta=True)
+        subscribe.set_callback(queue.put)
+        o.handle_request(subscribe)
+        delta = queue.get(timeout=1)
+        assert delta.changes[0][1]["value"] == "OK"
+
+        ts = TimeStamp()
+        o.handle_changes({"HEALTH": "Very Bad"}, ts)
+        delta = queue.get(timeout=1)
+        assert delta.changes == [
+            [['value'], "Very Bad"],
+            [['alarm'], Alarm.major("Very Bad")],
+            [['timeStamp'], ts],
+        ]
+        o.handle_changes({"HEALTH": "OK"}, ts)
+        delta = queue.get(timeout=1)
+        assert delta.changes == [
+            [['value'], "OK"],
+            [['alarm'], Alarm.ok],
             [['timeStamp'], ts],
         ]
 

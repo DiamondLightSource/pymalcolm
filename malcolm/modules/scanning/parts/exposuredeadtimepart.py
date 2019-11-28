@@ -50,9 +50,9 @@ class ExposureDeadtimePart(Part):
         # type: (PartRegistrar) -> None
         super(ExposureDeadtimePart, self).setup(registrar)
         # Hooks
-        registrar.hook(ReportStatusHook, self.report_status)
-        registrar.hook(ValidateHook, self.validate)
-        registrar.hook(ConfigureHook, self.configure)
+        registrar.hook(ReportStatusHook, self.on_report_status)
+        registrar.hook(ValidateHook, self.on_validate)
+        registrar.hook(ConfigureHook, self.on_configure)
         # Attributes
         registrar.add_attribute_model(
             "readoutTime", self.readout_time, self.readout_time.set_value)
@@ -62,10 +62,10 @@ class ExposureDeadtimePart(Part):
         registrar.add_attribute_model("exposure", self.exposure)
         # Tell the controller to expose some extra configure parameters
         registrar.report(ConfigureHook.create_info(
-            self.configure))
+            self.on_configure))
 
     @add_call_types
-    def report_status(self):
+    def on_report_status(self):
         # type: () -> UInfos
         # Make an info so we can pass it to the detector
         info = ExposureDeadtimeInfo(
@@ -74,14 +74,14 @@ class ExposureDeadtimePart(Part):
         return info
 
     @add_call_types
-    def validate(self, generator, exposure=0.0):
+    def on_validate(self, generator, exposure=0.0):
         # type: (AGenerator, AExposure) -> UInfos
-        info = self.report_status()
+        info = self.on_report_status()
         new_exposure = info.calculate_exposure(generator.duration, exposure)
         if new_exposure != exposure:
             return ParameterTweakInfo("exposure", new_exposure)
 
     @add_call_types
-    def configure(self, exposure=0.0):
+    def on_configure(self, exposure=0.0):
         # type: (AExposure) -> None
         self.exposure.set_value(exposure)

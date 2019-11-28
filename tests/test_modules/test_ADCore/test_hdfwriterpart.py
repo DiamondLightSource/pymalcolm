@@ -150,7 +150,7 @@ class TestHDFWriterPart(ChildTestCase):
         }
         if on_windows:
             part_info["WINPATH"] = [FilePathTranslatorInfo("Y", "/tmp")]
-        infos = self.o.configure(
+        infos = self.o.on_configure(
             self.context, completed_steps, steps_to_do, part_info, generator,
             fileDir, formatName, fileTemplate)
         assert len(infos) == 8
@@ -295,7 +295,7 @@ class TestHDFWriterPart(ChildTestCase):
         # run waits for this value, so say we have finished immediately
         self.set_attributes(self.child, uniqueId=self.o.done_when_reaches)
         self.mock_when_value_matches(self.child)
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.when_value_matches('uniqueId', 38, None)]
         assert self.o.registrar.report.called_once
@@ -320,7 +320,7 @@ class TestHDFWriterPart(ChildTestCase):
         # Spawn process to finish it after a few seconds
         self.process.spawn(set_unique_id)
         # Run
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('flushNow'),
             call.post('flushNow')]
@@ -335,7 +335,7 @@ class TestHDFWriterPart(ChildTestCase):
         self.o.done_when_reaches = 10
         completed_steps = 4
         steps_to_do = 3
-        self.o.seek(self.context, completed_steps, steps_to_do)
+        self.o.on_seek(self.context, completed_steps, steps_to_do)
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCounter', 0),
             call.when_value_matches('arrayCounterReadback', greater_than_zero, None)
@@ -353,10 +353,10 @@ class TestHDFWriterPart(ChildTestCase):
             f.write("thing")
         assert os.path.isfile(fname)
         self.o.layout_filename = fname
-        self.o.post_run_ready(self.context)
+        self.o.on_post_run_ready(self.context)
         assert self.child.handled_requests.mock_calls == []
         assert os.path.isfile(fname)
-        self.o.reset(self.context)
+        self.o.on_reset(self.context)
         assert not os.path.isfile(fname)
 
     def test_post_run_ready_not_done_flush(self):
@@ -368,9 +368,9 @@ class TestHDFWriterPart(ChildTestCase):
             f.write("thing")
         assert os.path.isfile(fname)
         self.o.layout_filename = fname
-        self.o.post_run_ready(self.context)
+        self.o.on_post_run_ready(self.context)
         assert self.child.handled_requests.mock_calls == [call.post('flushNow')]
         assert os.path.isfile(fname)
-        self.o.reset(self.context)
+        self.o.on_reset(self.context)
         assert not os.path.isfile(fname)
 

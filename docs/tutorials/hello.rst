@@ -71,7 +71,7 @@ Let's run it now::
 
     In [1]:
 
-We are presented with an `IPython`_ interactive console with a Context_ object
+We are presented with an `IPython`_ interactive console with a `context_` object
 as ``self``. This is a utility object that makes us a Block view so we can
 interact with it. Let's try to get a view of one of the Blocks we created and
 call a Method on it::

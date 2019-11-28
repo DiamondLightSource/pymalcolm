@@ -20,7 +20,7 @@ class MinTurnaroundPart(Part):
         ).create_attribute_model(value)
 
     @add_call_types
-    def report_status(self):
+    def on_report_status(self):
         # type: () -> UInfos
         return MinTurnaroundInfo(self.attr.value)
 
@@ -29,4 +29,4 @@ class MinTurnaroundPart(Part):
         registrar.add_attribute_model(
             "minTurnaround", self.attr, self.attr.set_value)
         # Hooks
-        registrar.hook(ReportStatusHook, self.report_status)
+        registrar.hook(ReportStatusHook, self.on_report_status)

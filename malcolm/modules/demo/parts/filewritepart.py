@@ -50,29 +50,28 @@ class FileWritePart(Part):
         # type: (PartRegistrar) -> None
         super(FileWritePart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
         registrar.hook((scanning.hooks.PostRunArmedHook,
-                        scanning.hooks.SeekHook), self.seek)
-        registrar.hook((scanning.hooks.RunHook,
-                        scanning.hooks.ResumeHook), self.run)
+                        scanning.hooks.SeekHook), self.on_seek)
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook((scanning.hooks.AbortHook,
-                        builtin.hooks.ResetHook), self.reset)
+                        builtin.hooks.ResetHook), self.on_reset)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
-            self.configure))
+            self.on_configure))
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.hooks.AFileDir
-                  exposure=0.0,  # type: scanning.hooks.AExposure
-                  formatName="det",  # type: scanning.hooks.AFormatName
-                  fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
-                  ):
+    def on_configure(self,
+                     completed_steps,  # type: scanning.hooks.ACompletedSteps
+                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     generator,  # type: scanning.hooks.AGenerator
+                     fileDir,  # type: scanning.hooks.AFileDir
+                     exposure=0.0,  # type: scanning.hooks.AExposure
+                     formatName="det",  # type: scanning.hooks.AFormatName
+                     fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
+                     ):
         # type: (...) -> scanning.hooks.UInfos
         """On `ConfigureHook` create HDF file with datasets"""
         # Store args
@@ -92,9 +91,9 @@ class FileWritePart(Part):
 
     # For docs: Before run
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
-        """On `RunHook`, `ResumeHook` record where to next take data"""
+        """On `RunHook` record where to next take data"""
         # Start time so everything is relative
         end_of_exposure = time.time() + self._exposure
         last_flush = end_of_exposure
@@ -119,10 +118,10 @@ class FileWritePart(Part):
         self._flush_datasets()
 
     @add_call_types
-    def seek(self,
-             completed_steps,  # type: scanning.hooks.ACompletedSteps
-             steps_to_do,  # type: scanning.hooks.AStepsToDo
-             ):
+    def on_seek(self,
+                completed_steps,  # type: scanning.hooks.ACompletedSteps
+                steps_to_do,  # type: scanning.hooks.AStepsToDo
+                ):
         # type: (...) -> None
         """On `SeekHook`, `PostRunArmedHook` record where to next take data"""
         # Skip the uid so it is guaranteed to be unique
@@ -132,7 +131,7 @@ class FileWritePart(Part):
         self._steps_to_do = steps_to_do
 
     @add_call_types
-    def reset(self):
+    def on_reset(self):
         # type: () -> None
         """On `AbortHook`, `ResetHook` close HDF file if it exists"""
         if self._hdf:

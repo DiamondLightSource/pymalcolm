@@ -4,7 +4,7 @@ from annotypes import Anno, TYPE_CHECKING
 
 from malcolm.core import AMri, Widget, group_tag, NumberMeta, ChoiceMeta, \
     config_tag, BooleanMeta, StringMeta, Port, TableMeta, TimeStamp, \
-    without_linked_value_tags, linked_value_tag, VMeta, snake_to_camel
+    without_linked_value_tags, linked_value_tag, VMeta, snake_to_camel, Alarm
 from malcolm.modules import builtin
 from ..parts.pandaiconpart import PandAIconPart
 from ..parts.pandalabelpart import PandALabelPart
@@ -86,6 +86,15 @@ class PandABlockController(builtin.controllers.BasicController):
         with self.changes_squashed:
             icon_needs_update = False
             for k, v in changes.items():
+                # Health changes are for us
+                if k.upper() == "HEALTH":
+                    if v.upper() == "OK":
+                        alarm = Alarm.ok
+                    else:
+                        alarm = Alarm.major(v)
+                    self.update_health(
+                        self, builtin.infos.HealthInfo(alarm, ts))
+                    continue
                 # Work out if there is a part we need to notify
                 try:
                     part = self.field_parts[k]
@@ -161,6 +170,10 @@ class PandABlockController(builtin.controllers.BasicController):
             field_name (str): Short field name, e.g. VAL
             field_data (FieldData): Field data object
         """
+        if field_name.upper() == "HEALTH":
+            # Ignore health, as we already have a health field
+            return
+
         typ = field_data.field_type
         subtyp = field_data.field_subtype
 

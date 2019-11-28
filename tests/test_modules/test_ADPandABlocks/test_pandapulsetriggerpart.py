@@ -111,7 +111,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         detectors = DetectorTable.from_rows([
             [True, "det", "DET", 0.0, 5]
         ])
-        self.o.configure(
+        self.o.on_configure(
             self.context, generator, detectors)
         assert self.o.generator_duration == 1.0
         assert self.o.frames_per_step == 5
@@ -121,7 +121,7 @@ class TestPandaPulseTriggerPart(ChildTestCase):
         ex = SquashingExcluder(axes=["det_frames_per_step", "x"])
         generatormultiplied = CompoundGenerator([ys, xs, spg], [ex], [], 0.2)
         detector.configure(generatormultiplied, self.tmpdir)
-        self.o.post_configure()
+        self.o.on_post_configure()
         self.check_pulse_mocks(0.19899, 0.2, 0.000505, 5)
 
     def test_system(self):

@@ -86,10 +86,7 @@ class ProcessController(builtin.controllers.ManagerController):
             '/dls_sw/work',
             '/dls_sw/prod')
 
-        if self.stats["pymalcolm_path"].startswith('/dls_sw/prod'):
-            self.stats["pymalcolm_ver"] = __version__
-        else:
-            self.stats["pymalcolm_ver"] = "Work"
+        self.stats["pymalcolm_ver"] = __version__
         hostname = os.uname()[1]
         self.stats["kernel"] = "%s %s" % (os.uname()[0], os.uname()[2])
         self.stats["hostname"] = \

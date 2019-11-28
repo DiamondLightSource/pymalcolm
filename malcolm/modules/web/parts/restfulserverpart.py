@@ -77,10 +77,10 @@ class RestfulServerPart(Part):
         # type: (PartRegistrar) -> None
         super(RestfulServerPart, self).setup(registrar)
         # Hooks
-        registrar.hook(ReportHandlersHook, self.report_handlers)
+        registrar.hook(ReportHandlersHook, self.on_report_handlers)
 
     @add_call_types
-    def report_handlers(self):
+    def on_report_handlers(self):
         # type: () -> UHandlerInfos
         regexp = r"/%s/(.*)" % self.name
         info = HandlerInfo(regexp, RestfulHandler, registrar=self.registrar)

@@ -65,10 +65,10 @@ class MaybeMultiPart(Part):
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
-        registrar.hook(ReportStatusHook, self.report_status)
+        registrar.hook(ReportStatusHook, self.on_report_status)
 
     @add_call_types
-    def report_status(self):
+    def on_report_status(self):
         if self.active:
             return DetectorMutiframeInfo(self.mri)
 
