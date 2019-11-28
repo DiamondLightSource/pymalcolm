@@ -67,7 +67,7 @@ class TestBeamSelectorPart(ChildTestCase):
         generator = CompoundGenerator(
             [StaticPointGenerator(nRotations)], [], [], duration=1)
         generator.prepare()
-        self.o.configure(self.context, 0, nRotations, {}, generator, [])
+        self.o.on_configure(self.context, 0, nRotations, {}, generator, [])
 
 
         assert self.child.handled_requests.mock_calls == [
@@ -97,7 +97,7 @@ class TestBeamSelectorPart(ChildTestCase):
         generator = CompoundGenerator(
             [StaticPointGenerator(nRotations)], [], [], duration=1)
         generator.prepare()
-        self.o.configure(self.context, 0, nRotations, {}, generator,
+        self.o.on_configure(self.context, 0, nRotations, {}, generator,
                          [])
 
         assert self.child.handled_requests.mock_calls == [
@@ -131,7 +131,7 @@ class TestBeamSelectorPart(ChildTestCase):
         axesToMove = ["x"]
         # servoFrequency() return value
         self.child.handled_requests.post.return_value = 4919.300698316487
-        ret = self.o.validate(self.context, generator, axesToMove,
+        ret = self.o.on_validate(self.context, generator, axesToMove,
                               {})
         expected = 0.010166
         assert ret.value.duration == expected
@@ -142,7 +142,7 @@ class TestBeamSelectorPart(ChildTestCase):
         generator = CompoundGenerator(
             [StaticPointGenerator(nRotations)], [], [], duration=0.5)
         generator.prepare()
-        self.o.configure(self.context, 0, nRotations, {}, generator,
+        self.o.on_configure(self.context, 0, nRotations, {}, generator,
                          [])
 
         assert self.child.handled_requests.mock_calls == [

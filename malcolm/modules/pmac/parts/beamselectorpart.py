@@ -42,7 +42,7 @@ class BeamSelectorPart(PmacChildPart):
         self.t_move = float(0.500)
 
     @add_call_types
-    def configure(self,
+    def on_configure(self,
                   context,  # type: scanning.hooks.AContext
                   completed_steps,  # type: scanning.hooks.ACompletedSteps
                   steps_to_do,  # type: scanning.hooks.AStepsToDo
@@ -92,8 +92,7 @@ class BeamSelectorPart(PmacChildPart):
                               delay_after=exposure_time)
         new_generator.prepare()
 
-
-        super(BeamSelectorPart, self).configure(context,
+        super(BeamSelectorPart, self).on_configure(context,
                                                 completed_steps,
                                                 steps_to_do,
                                                 part_info,
