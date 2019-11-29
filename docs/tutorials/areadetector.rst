@@ -398,13 +398,17 @@ to write in the ``datasets`` Attribute::
             "y.value_set",
             "x.value_set",
             "RAMP.data",
-            "RAMP.sum"
+            "RAMP.sum",
+            "y.value_set",
+            "x.value_set"
         ],
         "filename": [
             "INTERFERENCE.h5",
             "INTERFERENCE.h5",
             "INTERFERENCE.h5",
             "INTERFERENCE.h5",
+            "RAMP.h5",
+            "RAMP.h5",
             "RAMP.h5",
             "RAMP.h5"
         ],
@@ -414,7 +418,9 @@ to write in the ``datasets`` Attribute::
             "position_set",
             "position_set",
             "primary",
-            "secondary"
+            "secondary",
+            "position_set",
+            "position_set"
         ],
         "rank": [
             4,
@@ -422,7 +428,9 @@ to write in the ``datasets`` Attribute::
             1,
             1,
             4,
-            4
+            4,
+            1,
+            1
         ],
         "path": [
             "/entry/data",
@@ -430,7 +438,9 @@ to write in the ``datasets`` Attribute::
             "/entry/y_set",
             "/entry/x_set",
             "/entry/detector/detector",
-            "/entry/sum/sum"
+            "/entry/sum/sum",
+            "/entry/detector/y_set",
+            "/entry/detector/x_set"
         ],
         "uniqueid": [
             "/entry/uid",
@@ -438,12 +448,17 @@ to write in the ``datasets`` Attribute::
             "",
             "",
             "/entry/NDAttributes/NDArrayUniqueId",
-            "/entry/NDAttributes/NDArrayUniqueId"
+            "/entry/NDAttributes/NDArrayUniqueId",
+            "",
+            ""
         ]
     }
 
+
 This is very similar to the `scanning_tutorial`, but now datasets are reported
-from both detectors.
+from both detectors. Their setpoints are also reported for every scannable in
+every file. This is to allow a triggering scheme where a detector produces
+multiple frames for each scan point (explained in a future tutorial).
 
 Now that you have the files open, you can use the `h5watch`_ command to monitor
 the dataset and see it grow::
