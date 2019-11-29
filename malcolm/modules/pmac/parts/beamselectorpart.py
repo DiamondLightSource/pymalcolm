@@ -17,6 +17,7 @@ APartName = builtin.parts.APartName
 AMri = builtin.parts.AMri
 AAxisName = builtin.parts.AValue
 AAngle = builtin.parts.AValue
+ATime = builtin.parts.AValue
 
 class BeamSelectorPart(PmacChildPart):
 
@@ -24,8 +25,9 @@ class BeamSelectorPart(PmacChildPart):
                  name,  # type: APartName
                  mri,  # type: AMri
                  selectorAxis, # type: AAxisName
-                 startAngle, # type: AAngle
-                 endAngle, # type: AAngle
+                 tomoAngle, # type: AAngle
+                 diffAngle, # type: AAngle
+                 moveTime, # type: ATime
                  initial_visibility=None  # type: AIV
                  ):
         # type: (...) -> None
@@ -33,13 +35,13 @@ class BeamSelectorPart(PmacChildPart):
         self.selectorAxis = selectorAxis
 
         try:
-            self.startAngle = float(startAngle)
-            self.endAngle = float(endAngle)
+            self.tomoAngle = float(tomoAngle)
+            self.diffAngle = float(diffAngle)
+            self.move_time = float(moveTime)
         except:
-            self.startAngle = 0.0
-            self.endAngle = 0.0
-
-        self.t_move = float(0.500)
+            self.tomoAngle = 0.0
+            self.diffAngle = 0.0
+            self.move_time = 0.500 # seconds
 
     @add_call_types
     def on_configure(self,
@@ -54,10 +56,13 @@ class BeamSelectorPart(PmacChildPart):
         static_axis = generator.generators[0]
         assert isinstance(static_axis, StaticPointGenerator), \
             "Static Point Generator not configured correctly"
+        static_axis.size *= 2
+        steps_to_do *= 2
+
         selector_axis = LineGenerator(self.selectorAxis,
                                       "deg",
-                                      self.startAngle,
-                                      self.endAngle,
+                                      self.tomoAngle,
+                                      self.diffAngle,
                                       1,
                                       alternate=True)
         axesToMove = [self.selectorAxis]
@@ -79,7 +84,7 @@ class BeamSelectorPart(PmacChildPart):
             return min_turnaround, min_interval
 
         min_turnaround = get_minturnaround()[0]
-        exposure_time = generator.duration - self.t_move
+        exposure_time = generator.duration - self.move_time
         if exposure_time < min_turnaround:
             exposure_time = min_turnaround
 
@@ -87,14 +92,14 @@ class BeamSelectorPart(PmacChildPart):
             CompoundGenerator([static_axis, selector_axis],
                               [],
                               [],
-                              duration=self.t_move,
+                              duration=self.move_time,
                               continuous=True,
                               delay_after=exposure_time)
         new_generator.prepare()
 
         super(BeamSelectorPart, self).on_configure(context,
-                                                completed_steps,
-                                                steps_to_do,
-                                                part_info,
-                                                new_generator,
-                                                axesToMove)
+                                                   completed_steps,
+                                                   steps_to_do,
+                                                   part_info,
+                                                   new_generator,
+                                                   axesToMove)

@@ -34,8 +34,9 @@ class TestBeamSelectorPart(ChildTestCase):
         self.o = BeamSelectorPart(name="beamSelector",
                                   mri="PMAC",
                                   selectorAxis="x",
-                                  startAngle=0,
-                                  endAngle=0.5)
+                                  tomoAngle=0,
+                                  diffAngle=0.5,
+                                  moveTime=0.5)
         self.context.set_notify_dispatch_request(
             self.o.notify_dispatch_request)
         self.process.start()
@@ -61,43 +62,13 @@ class TestBeamSelectorPart(ChildTestCase):
             offset=0.0, maxVelocity=x_velocity, readback=x_pos,
             velocitySettle=0.0, units=units)
 
-    def test_configure_single_rotation(self):
-        self.set_motor_attributes()
-        nRotations = 1
-        generator = CompoundGenerator(
-            [StaticPointGenerator(nRotations)], [], [], duration=1)
-        generator.prepare()
-        self.o.on_configure(self.context, 0, nRotations, {}, generator, [])
-
-
-        assert self.child.handled_requests.mock_calls == [
-            call.post('writeProfile',
-                      csPort='CS1', timeArray=[0.002], userPrograms=[8]),
-            call.post('executeProfile'),
-            call.post('moveCS1', a=-0.1,
-                      moveTime=pytest.approx(0.692, abs=1e-3)),
-            # pytest.approx to allow sensible compare with numpy arrays
-            call.post('writeProfile',
-                      a=pytest.approx([0.0, 0.250, 0.500, 0.600]),
-                      csPort='CS1',
-                      timeArray=pytest.approx([
-                          200000, 250000, 250000,
-                          200000]),
-                      userPrograms=pytest.approx([
-                          1, 4, 2, 8]),
-                      velocityMode=pytest.approx([
-                          1, 0, 1, 3]))
-        ]
-        assert self.o.completed_steps_lookup == [
-            0, 0, 1, 1]
-
     def test_configure_cycle(self):
         self.set_motor_attributes()
-        nRotations = 2
+        nCycles = 1
         generator = CompoundGenerator(
-            [StaticPointGenerator(nRotations)], [], [], duration=1)
+            [StaticPointGenerator(nCycles)], [], [], duration=1)
         generator.prepare()
-        self.o.on_configure(self.context, 0, nRotations, {}, generator,
+        self.o.on_configure(self.context, 0, nCycles, {}, generator,
                          [])
 
         assert self.child.handled_requests.mock_calls == [
@@ -138,11 +109,11 @@ class TestBeamSelectorPart(ChildTestCase):
 
     def test_critical_exposure(self):
         self.set_motor_attributes()
-        nRotations = 2
+        nCycles = 1
         generator = CompoundGenerator(
-            [StaticPointGenerator(nRotations)], [], [], duration=0.5)
+            [StaticPointGenerator(nCycles)], [], [], duration=0.5)
         generator.prepare()
-        self.o.on_configure(self.context, 0, nRotations, {}, generator,
+        self.o.on_configure(self.context, 0, nCycles, {}, generator,
                          [])
 
         assert self.child.handled_requests.mock_calls == [
@@ -154,7 +125,8 @@ class TestBeamSelectorPart(ChildTestCase):
                       moveTime=pytest.approx(0.692, abs=1e-3)),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post('writeProfile',
-                      a=pytest.approx([0.0, 0.25, 0.5, 0.6,
+                      a=pytest.approx([0.0, 0.25, 0.5,
+                                       0.6,
                                        0.5, 0.25, 0.0, -0.1]),
                       csPort='CS1',
                       timeArray=pytest.approx([
