@@ -1,8 +1,6 @@
-from xml.etree import cElementTree as ET
-
 from annotypes import TYPE_CHECKING, add_call_types, Any
 
-from malcolm.core import APartName, PartRegistrar
+from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
 
 # How big an XML file can the EPICS waveform receive?

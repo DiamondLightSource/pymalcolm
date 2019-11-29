@@ -1,8 +1,8 @@
 - pandablocks.blocks.panda_manager_block:
     config_dir: /tmp
     mri: PANDA
-    hostname: localhost
-    #hostname: 172.23.252.201
+    #hostname: localhost
+    hostname: 172.23.252.201
 
 - web.blocks.web_server_block:
     mri: WEB
