@@ -3,7 +3,7 @@ import unittest
 from mock import call, Mock
 
 from malcolm.modules.pandablocks.pandablocksclient import \
-    PandABlocksClient, FieldData, BlockData
+    PandABlocksClient, FieldData, BlockData, encode
 
 
 class PandABoxControlTest(unittest.TestCase):
@@ -12,8 +12,10 @@ class PandABoxControlTest(unittest.TestCase):
 
     def start(self, messages=None):
         self.socket = Mock()
-        if messages:
-            self.socket.recv.side_effect = messages
+        if isinstance(messages, list):
+            self.socket.recv.side_effect = [encode(item) for item in messages]
+        elif messages:
+            self.socket.recv.side_effect = [encode(messages)]
 
         def socket_cls():
             return self.socket
@@ -63,17 +65,17 @@ class PandABoxControlTest(unittest.TestCase):
         block_data = self.c.get_blocks_data()
         self.c.stop()
         assert self.socket.sendall.call_args_list == [
-            call("*BLOCKS?\n"),
-            call("*DESC.TTLIN?\n"),
-            call("*DESC.TTLOUT?\n"),
-            call("TTLIN.*?\n"),
-            call("TTLOUT.*?\n"),
-            call("*DESC.TTLIN.TERM?\n"),
-            call("*DESC.TTLIN.VAL?\n"),
-            call("*ENUMS.TTLIN.TERM?\n"),
-            call("*ENUMS.TTLIN.VAL.CAPTURE?\n"),
-            call("*DESC.TTLOUT.VAL?\n"),
-            call("*ENUMS.TTLOUT.VAL?\n"),
+            call(b"*BLOCKS?\n"),
+            call(b"*DESC.TTLIN?\n"),
+            call(b"*DESC.TTLOUT?\n"),
+            call(b"TTLIN.*?\n"),
+            call(b"TTLOUT.*?\n"),
+            call(b"*DESC.TTLIN.TERM?\n"),
+            call(b"*DESC.TTLIN.VAL?\n"),
+            call(b"*ENUMS.TTLIN.TERM?\n"),
+            call(b"*ENUMS.TTLIN.VAL.CAPTURE?\n"),
+            call(b"*DESC.TTLOUT.VAL?\n"),
+            call(b"*ENUMS.TTLOUT.VAL?\n"),
         ]
         assert list(block_data) == ["TTLIN", "TTLOUT"]
         in_fields = OrderedDict()
@@ -109,7 +111,7 @@ class PandABoxControlTest(unittest.TestCase):
         changes = list(self.c.get_changes(include_errors=True))
         self.c.stop()
         assert self.socket.sendall.call_args_list == [
-            call("*CHANGES?\n"), call("SEQ1.TABLE?\n")]
+            call(b"*CHANGES?\n"), call(b"SEQ1.TABLE?\n")]
         expected = OrderedDict()
         expected["PULSE0.WIDTH"] = "1.43166e+09"
         expected["PULSE1.WIDTH"] = "1.43166e+09"
@@ -138,22 +140,22 @@ class PandABoxControlTest(unittest.TestCase):
         assert self.c.get_pcap_bits_fields() == expected
         self.c.stop()
         assert self.socket.sendall.call_args_list == [
-            call("PCAP.*?\n"), call("PCAP.BITS0.BITS?\n"),
-            call("PCAP.BITS1.BITS?\n")]
+            call(b"PCAP.*?\n"), call(b"PCAP.BITS0.BITS?\n"),
+            call(b"PCAP.BITS1.BITS?\n")]
 
     def test_get_field(self):
         messages = "OK =32\n"
         self.start(messages)
         assert self.c.get_field("PULSE0", "WIDTH") == "32"
         self.c.stop()
-        self.socket.sendall.assert_called_once_with("PULSE0.WIDTH?\n")
+        self.socket.sendall.assert_called_once_with(b"PULSE0.WIDTH?\n")
 
     def test_set_field(self):
         messages = "OK\n"
         self.start(messages)
         self.c.set_field("PULSE0", "WIDTH", 0)
         self.c.stop()
-        self.socket.sendall.assert_called_once_with("PULSE0.WIDTH=0\n")
+        self.socket.sendall.assert_called_once_with(b"PULSE0.WIDTH=0\n")
 
     def test_set_fields(self):
         messages = "OK\nOK\n"
@@ -161,14 +163,14 @@ class PandABoxControlTest(unittest.TestCase):
         self.c.set_fields({"PULSE0.WIDTH": 0, "PULSE0.DELAY": 5})
         self.c.stop()
         assert sorted(self.socket.sendall.call_args_list) == [
-            call("PULSE0.DELAY=5\n"), call("PULSE0.WIDTH=0\n")]
+            call(b"PULSE0.DELAY=5\n"), call(b"PULSE0.WIDTH=0\n")]
 
     def test_set_table(self):
         messages = "OK\n"
         self.start(messages)
         self.c.set_table("SEQ1", "TABLE", [1, 2, 3])
         self.c.stop()
-        self.socket.sendall.assert_called_once_with("""SEQ1.TABLE<
+        self.socket.sendall.assert_called_once_with(b"""SEQ1.TABLE<
 1
 2
 3
@@ -190,12 +192,12 @@ class PandABoxControlTest(unittest.TestCase):
         fields = self.c.get_table_fields("SEQ1", "TABLE")
         self.c.stop()
         assert self.socket.sendall.call_args_list == [
-            call("SEQ1.TABLE.FIELDS?\n"),
-            call("*ENUMS.SEQ1.TABLE[].INPB?\n"),
-            call("*DESC.SEQ1.TABLE[].REPEATS?\n"),
-            call("*DESC.SEQ1.TABLE[].USE_INPA?\n"),
-            call("*DESC.SEQ1.TABLE[].STUFF?\n"),
-            call("*DESC.SEQ1.TABLE[].INPB?\n"),
+            call(b"SEQ1.TABLE.FIELDS?\n"),
+            call(b"*ENUMS.SEQ1.TABLE[].INPB?\n"),
+            call(b"*DESC.SEQ1.TABLE[].REPEATS?\n"),
+            call(b"*DESC.SEQ1.TABLE[].USE_INPA?\n"),
+            call(b"*DESC.SEQ1.TABLE[].STUFF?\n"),
+            call(b"*DESC.SEQ1.TABLE[].INPB?\n"),
         ]
         expected = OrderedDict()
         expected["REPEATS"] = (31, 0, "Repeats", None, False)
