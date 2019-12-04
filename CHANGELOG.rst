@@ -8,6 +8,13 @@ Unreleased_
 
 Nothing yet
 
+`4-2b4`_ - 2019-12-04
+---------------------
+
+Added:
+
+- configure() now returns validated parameters rather than nothing
+
 
 `4-2b3`_ - 2019-11-28
 ---------------------
@@ -505,7 +512,8 @@ Added:
 - Initial release with hello world and websocket comms
 
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b3...HEAD
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b4...HEAD
+.. _4-2b4: https://github.com/dls-controls/pymalcolm/compare/4-2b3...4-2b4
 .. _4-2b3: https://github.com/dls-controls/pymalcolm/compare/4-2b2...4-2b3
 .. _4-2b2: https://github.com/dls-controls/pymalcolm/compare/4-2b1...4-2b2
 .. _4-2b1: https://github.com/dls-controls/pymalcolm/compare/4-1-1...4-2b1
