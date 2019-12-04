@@ -8,7 +8,9 @@ creation of Malcolm servers and clients. There is also a `malcolmjs`_
 JavaScript client and a Java client in `GDA`_.
 
 Malcolm was created as part of the `Mapping project`_ at `Diamond Light Source`_
-in order to improve the performance of continuous scanning.
+in order to improve the performance of continuous scanning, providing a system
+that could scan arbitrary trajectories like spirals and grids within polygonal
+regions.
 
 What can Malcolm do?
 --------------------
