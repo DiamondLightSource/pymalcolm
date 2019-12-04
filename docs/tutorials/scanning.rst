@@ -244,7 +244,7 @@ it move. It then grabs the asynchronous version of the axis move Method. The
 `Block` object supports both item and attribute axis, so ``child.xMove`` and
 ``child["xMove"]`` are equivalent. It also creates asynchronous versions of
 these methods accessible with ``child.xMove_async`` and ``child["xMove_async"]``
-that kick of the Method, and return `future_` objects that can be waited on,
+that kick off the Method, and return `future_` objects that can be waited on,
 and will hold the result of the method when it is finished.
 
 Hooking into run()
@@ -264,7 +264,7 @@ instantaneously to the lower bound, then move them to the upper bound
 so they finish together at the end of the Point duration, all using our mover
 helper object defined in ``on_configure()``. If a move occurs, a `Future` will
 be added to the ``fs`` list, which we can wait on by using
-:meth:`_Context.wait_all_futures`.
+:meth:`~Context.wait_all_futures`.
 
 Finally we :meth:`~PartRegistrar.report` a `RunProgressInfo` with the
 current step number so the client knows how much of the scan is complete, and
