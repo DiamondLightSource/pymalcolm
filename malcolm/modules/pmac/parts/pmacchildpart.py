@@ -595,8 +595,12 @@ class PmacChildPart(builtin.parts.ChildPart):
                 self.add_sparse_point(point, i, next_point, points_are_joined)
 
             # add in the turnaround between non-contiguous points
-            if not points_are_joined and next_point is not None:
-                self.insert_gap(point, next_point, i + 1)
+            # or after the last point if delay_after is defined
+            if not points_are_joined:
+                if next_point is not None:
+                    self.insert_gap(point, next_point, i + 1)
+                elif getattr(point, "delay_after", None) is not None:
+                    pass
 
             # Check if we have exceeded the points number and need to write
             # Strictly less than so we always add one more point to the time
@@ -606,23 +610,27 @@ class PmacChildPart(builtin.parts.ChildPart):
                 self.end_index = i + 1
                 return
 
+        self.add_tail_off()
+
+    def add_tail_off(self):
         # Add the last tail off point
         point = self.generator.get_point(self.steps_up_to - 1)
-
-        # Calculate how long to leave for the tail-off (at least MIN_TIME)
+        # Calculate how long to leave for the tail-off
+        # #(at least MIN_TIME)
         axis_points = {}
         tail_off_time = MIN_TIME
         for axis_name, velocity in point_velocities(
                 self.axis_mapping, point, entry=False).items():
             motor_info = self.axis_mapping[axis_name]
             tail_off_time = max(tail_off_time,
-                                motor_info.acceleration_time(0, velocity))
+                                motor_info.acceleration_time(0,
+                                                             velocity))
             tail_off = motor_info.ramp_distance(velocity, 0)
             axis_points[axis_name] = point.upper[axis_name] + tail_off
-
         # Do the last move
         user_program = self.get_user_program(PointType.TURNAROUND)
-        self.add_profile_point(tail_off_time, ZERO_VELOCITY, user_program,
+        self.add_profile_point(tail_off_time, ZERO_VELOCITY,
+                               user_program,
                                self.steps_up_to, axis_points)
         self.end_index = self.steps_up_to
 
