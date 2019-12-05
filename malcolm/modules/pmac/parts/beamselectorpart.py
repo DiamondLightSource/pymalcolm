@@ -56,7 +56,7 @@ class BeamSelectorPart(PmacChildPart):
         static_axis = generator.generators[0]
         assert isinstance(static_axis, StaticPointGenerator), \
             "Static Point Generator not configured correctly"
-        static_axis.size *= 2
+        static_axis = StaticPointGenerator(size=static_axis.size*2)
         steps_to_do *= 2
 
         selector_axis = LineGenerator(self.selectorAxis,
