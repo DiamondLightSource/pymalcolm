@@ -93,26 +93,26 @@ class DirParsePart(Part):
             if isinstance(value, str):
                 if value.lower() == "work" or value.lower() == "other":
                     message = "IOC running from non-prod area"
-                    status = alarm.Alarm(message=message,
-                                         severity=alarm.AlarmSeverity.MINOR_ALARM)
-                    self.registrar.report(infos.HealthInfo(status))
+                    stat = alarm.Alarm(message=message,
+                                       severity=alarm.AlarmSeverity.MINOR_ALARM)
+                    self.registrar.report(infos.HealthInfo(stat))
                 else:
                     message = "OK"
-                    status = alarm.Alarm(message=message,
-                                         severity=alarm.AlarmSeverity.NO_ALARM)
-                    self.registrar.report(infos.HealthInfo(status))
+                    stat = alarm.Alarm(message=message,
+                                       severity=alarm.AlarmSeverity.NO_ALARM)
+                    self.registrar.report(infos.HealthInfo(stat))
 
         else:
             if self.has_procserv:
                 message = "IOC not running (procServ enabled)"
-                status = alarm.Alarm(message=message,
-                                     severity=alarm.AlarmSeverity.UNDEFINED_ALARM)
-                self.registrar.report(infos.HealthInfo(status))
+                stat = alarm.Alarm(message=message,
+                                   severity=alarm.AlarmSeverity.UNDEFINED_ALARM)
+                self.registrar.report(infos.HealthInfo(stat))
             else:
                 message = "neither IOC nor procServ are running"
-                status = alarm.Alarm(message=message,
-                                     severity=alarm.AlarmSeverity.INVALID_ALARM)
-                self.registrar.report(infos.HealthInfo(status))
+                stat = alarm.Alarm(message=message,
+                                   severity=alarm.AlarmSeverity.INVALID_ALARM)
+                self.registrar.report(infos.HealthInfo(stat))
 
     def set_dir1(self, value):
         if value.ok:
