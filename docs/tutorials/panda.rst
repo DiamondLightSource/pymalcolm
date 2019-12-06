@@ -42,7 +42,7 @@ Motion Gate
 3. Wait for the gating signal to go low, then produce a dead trigger pulse
 
 
-Adding to the a scan Block
+Adding to the scan Block
 --------------------------
 
 In the `pmac_tutorial` you should have created a ``scan_block.yaml`` in the
@@ -75,13 +75,14 @@ is contained in the TRIG Part.
 
 .. note::
 
-    The PandAPcompPart has initial_visibility set to False. This is because we
-    are adding this Part to an existing scan Block definition, which already has
-    instances and possibly saved configs. Loading a saved config will only
-    affect Parts and Blocks contained within it, so any existing saved config
-    will not touch this new TRIG Part. If it was visible, it would contribute
-    to the existing scans too, which would make them error as the PandA wouldn't
-    have been setup for it.
+    The PandAPcompPart has initial_visibility set to False, which means that the
+    block is not part of the layout by default. We do this because we are adding
+    this Part to an existing scan Block definition, which already has instances
+    and possibly saved configs. Loading a saved config will only affect Parts
+    and Blocks contained within it, so any existing saved config will not touch
+    this new TRIG Part. If it was visible, it would contribute to the existing
+    scans too, which would make them error as the PandA wouldn't have been setup
+    for it.
 
 Setup the Devices
 -----------------

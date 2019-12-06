@@ -17,8 +17,7 @@ We assume for this tutorial that you have created one or more IOCS that contain:
 - A GeoBrick Controller template from the `EPICS pmac`_ module with PV prefix
   that looks like ``BLxxI-MO-BRICK-01``.
 - A GeoBrick Trajectory template with the same prefix.
-- One or more CS templates.
-- One or more dls_pmac_asyn_motor or dls_pmac_cs_asyn_motor instances.
+- One or more dls_pmac_asyn_motor instances.
 - An ADPandABlocks template from the `ADPandaBlocks`_ module with a PV prefix
   that looks like ``BLxxI-MO-PANDA-01:DRV:``
 - NDPosPlugin and NDFileHDF5 `areaDetector`_ plugins with the PV prefixes of
@@ -304,7 +303,7 @@ Setup the Devices
 
 We can now run up imalcolm by executing ``etc/malcolm/BLxxI-ML-MALC-01.yaml``,
 and open http://localhost:8008/gui/BLxxI-ML-SCAN-01 to see our scan Block. The
-first thing we should do it setup the motion controller. If we click the Auto
+first thing we should do is setup the motion controller. If we click the Auto
 Layout button, then click through to the ``BRICK-01`` layout and Auto Layout
 that, we will see the layout of motors in co-ordinate systems. We need to
 assign the two raw motors to any axes a-z in the co-ordinate system so that
@@ -313,7 +312,7 @@ they can be trajectory scanned, then save the brick design:
 .. image:: pmac_0.png
 
 The Brick is now in such a state that the `PmacChildPart` can run a scan on
-any motors in CS1.
+any motors in CS1, which correspond to the raw axes on the Pmac.
 
 .. note::
 
