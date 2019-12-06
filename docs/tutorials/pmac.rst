@@ -9,6 +9,28 @@ look at how we can control a real motor controller (a Delta Tau Turbo PMAC
 based system like the `GeoBrick LV IMS-II`_) and capture encoder positions with
 a PandABox_.
 
+
+Strategy
+--------
+
+We will use the simplest triggering method possible here, the PMAC is master
+and generates a series of live pulses (marking a detector trigger, and the end
+of the last frame if there was one) and dead pulses (just marking the end of
+the last frame without starting a new one).
+
+In our snake scan example:
+
+.. image:: detector_0.png
+
+A live pulse would be output 5 times on the first row, at the beginning of each
+coloured frame. Where the colour changes at the turnaround, a dead pulse would
+be output. This pattern is repeated on each row.
+
+These live and dead pulses will be passed to the PandA which sends a trigger to
+the detector on each live pulse, and uses the signals itself to capture the
+average encoder position for each live frame.
+
+
 EPICS Prerequisites
 -------------------
 
@@ -17,6 +39,7 @@ We assume for this tutorial that you have created one or more IOCS that contain:
 - A GeoBrick Controller template from the `EPICS pmac`_ module with PV prefix
   that looks like ``BLxxI-MO-BRICK-01``.
 - A GeoBrick Trajectory template with the same prefix.
+- One or more CS templates.
 - One or more dls_pmac_asyn_motor instances.
 - An ADPandABlocks template from the `ADPandaBlocks`_ module with a PV prefix
   that looks like ``BLxxI-MO-PANDA-01:DRV:``
