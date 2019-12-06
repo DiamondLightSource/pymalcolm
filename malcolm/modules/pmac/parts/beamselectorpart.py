@@ -21,10 +21,7 @@ AAngle = builtin.parts.AValue
 ATime = builtin.parts.AValue
 
 # velocity modes
-PREV_TO_NEXT = 0
-PREV_TO_CURRENT = 1
-CURRENT_TO_NEXT = 2
-ZERO_VELOCITY = 3
+from .pmacchildpart import VelocityModes
 
 class BeamSelectorPart(PmacChildPart):
 
@@ -134,7 +131,7 @@ class BeamSelectorPart(PmacChildPart):
 #                               user_program,
 #                               self.steps_up_to, axis_points)
         # Mangle the last point to end the scan
-        self.profile["velocityMode"][-1] = ZERO_VELOCITY
+        self.profile["velocityMode"][-1] = VelocityModes.ZERO_VELOCITY
         #user_program = self.get_user_program(PointType.TURNAROUND)
         #self.profile["userProgram"][-1] = user_program
 
