@@ -35,8 +35,10 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(PandAAlternatingDivPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
-        registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
+        registrar.hook(scanning.hooks.ReportStatusHook,
+                       self.on_report_status)
+        registrar.hook(scanning.hooks.ValidateHook,
+                       self.on_validate)
 
     @add_call_types
     def on_report_status(self, context):
@@ -45,15 +47,14 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
         panda_mri = child.panda.value
         # Say that we can do multi frame for this detector
         info = scanning.infos.DetectorMutiframeInfo(panda_mri)
-        print "Multi frame info for %s created." % panda_mri
         return info
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
     def on_validate(self,
-                    context,  # type: scanning.hooks.AContext
-                    detectors=None,  # type: scanning.util.ADetectorTable
+                    context, # type: scanning.hooks.AContext
+                    detectors=None, # type: scanning.util.ADetectorTable
                     ):
         # type: (...) -> None
         child = context.block_view(self.mri)
@@ -62,4 +63,5 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
         for i, mri in enumerate(detectors.mri):
             if mri == panda_mri:
                 assert detectors.framesPerStep[i] == 2, \
-                    "PandA can only have framesPerStep=2 as it is alternating triggers between 2 detectors"
+                  "PandA can only have framesPerStep=2 " \
+                  "as it is alternating triggers between 2 detectors"

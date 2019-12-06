@@ -81,20 +81,23 @@ class TestBeamSelectorPart(ChildTestCase):
             # pytest.approx to allow sensible compare with numpy arrays
             call.post('writeProfile',
                       a=pytest.approx([0.0, 0.25, 0.5, 0.6, 0.6,
-                                       0.5, 0.25, 0.0, -0.1]),
+                                       0.5, 0.25, 0.0,
+                                       -0.1, -0.1, 0.0 ]),
                       csPort='CS1',
                       timeArray=pytest.approx([
                           200000, 250000, 250000,
                           200000, 100000, 200000,
                           250000, 250000,
-                          200000]),
+                          200000, 100000, 200000]),
                       userPrograms=pytest.approx([
-                          1, 4, 2, 8, 8, 1, 4, 2, 8]),
+                          1, 4, 2, 8, 8,
+                          1, 4, 2, 8, 8, 1]),
                       velocityMode=pytest.approx([
-                          1, 0, 1, 1, 1, 1, 0, 1, 3]))
+                          1, 0, 1, 1, 1,
+                          1, 0, 1, 1, 1, 3]))
         ]
         assert self.o.completed_steps_lookup == [
-            0, 0, 1, 1, 1, 1, 1, 2, 2]
+            0, 0, 1, 1, 1, 1, 1, 2, 3, 3, 3]
 
     def test_validate(self):
         generator = CompoundGenerator([StaticPointGenerator(2)],
@@ -127,15 +130,16 @@ class TestBeamSelectorPart(ChildTestCase):
             call.post('writeProfile',
                       a=pytest.approx([0.0, 0.25, 0.5,
                                        0.6,
-                                       0.5, 0.25, 0.0, -0.1]),
+                                       0.5, 0.25, 0.0,
+                                       -0.1, 0.0]),
                       csPort='CS1',
                       timeArray=pytest.approx([
                           200000, 250000, 250000,
                           200000, 200000,
                           250000, 250000,
-                          200000]),
+                          200000, 200000]),
                       userPrograms=pytest.approx([
-                          1, 4, 2, 8, 1, 4, 2, 8]),
+                          1, 4, 2, 8, 1, 4, 2, 8, 1]),
                       velocityMode=pytest.approx([
-                          1, 0, 1, 1, 1, 0, 1, 3]))
+                          1, 0, 1, 1, 1, 0, 1, 1, 3]))
         ]

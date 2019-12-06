@@ -3,7 +3,8 @@ from malcolm.modules.pmac.parts import PmacChildPart
 from scanpointgenerator import LineGenerator, CompoundGenerator, \
     StaticPointGenerator
 from malcolm.modules.scanning.infos import MinTurnaroundInfo
-from ..util import MIN_INTERVAL, MIN_TIME
+from ..util import MIN_INTERVAL, MIN_TIME, point_velocities
+from .pmacchildpart import PointType
 
 from annotypes import add_call_types, TYPE_CHECKING
 if TYPE_CHECKING:
@@ -18,6 +19,12 @@ AMri = builtin.parts.AMri
 AAxisName = builtin.parts.AValue
 AAngle = builtin.parts.AValue
 ATime = builtin.parts.AValue
+
+# velocity modes
+PREV_TO_NEXT = 0
+PREV_TO_CURRENT = 1
+CURRENT_TO_NEXT = 2
+ZERO_VELOCITY = 3
 
 class BeamSelectorPart(PmacChildPart):
 
@@ -53,12 +60,14 @@ class BeamSelectorPart(PmacChildPart):
                   axesToMove,  # type: scanning.hooks.AAxesToMove
                   ):  # type: (...) -> None
 
+        # Double the number of cycles to get rotations
         static_axis = generator.generators[0]
         assert isinstance(static_axis, StaticPointGenerator), \
             "Static Point Generator not configured correctly"
         static_axis = StaticPointGenerator(size=static_axis.size*2)
         steps_to_do *= 2
 
+        # Create a linear scan axis (proper rotation)
         selector_axis = LineGenerator(self.selectorAxis,
                                       "deg",
                                       self.tomoAngle,
@@ -83,8 +92,10 @@ class BeamSelectorPart(PmacChildPart):
 
             return min_turnaround, min_interval
 
+        # Calculate the exposure time
         min_turnaround = get_minturnaround()[0]
-        exposure_time = generator.duration - self.move_time
+        cycle_duration = generator.duration
+        exposure_time = cycle_duration / 2 - self.move_time
         if exposure_time < min_turnaround:
             exposure_time = min_turnaround
 
@@ -97,9 +108,34 @@ class BeamSelectorPart(PmacChildPart):
                               delay_after=exposure_time)
         new_generator.prepare()
 
+        # Reduce the exposure of the camera/detector
+        generator.duration = exposure_time
+
         super(BeamSelectorPart, self).on_configure(context,
                                                    completed_steps,
                                                    steps_to_do,
                                                    part_info,
                                                    new_generator,
                                                    axesToMove)
+
+    def add_tail_off(self):
+        # The current point
+        current_point = self.generator.get_point(self.steps_up_to - 1)
+        # the next point is same as the previous
+        next_point = self.generator.get_point(self.steps_up_to - 2)
+
+        # insert the turnaround points
+        self.insert_gap(current_point, next_point, self.steps_up_to + 1)
+
+
+        # Do the last move
+#        user_program = self.get_user_program(PointType.TURNAROUND)
+#        self.add_profile_point(tail_off_time, ZERO_VELOCITY,
+#                               user_program,
+#                               self.steps_up_to, axis_points)
+        # Mangle the last point to end the scan
+        self.profile["velocityMode"][-1] = ZERO_VELOCITY
+        #user_program = self.get_user_program(PointType.TURNAROUND)
+        #self.profile["userProgram"][-1] = user_program
+
+        self.end_index = self.steps_up_to
