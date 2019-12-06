@@ -3,8 +3,6 @@ from datetime import datetime
 from ruamel import yaml
 from enum import Enum
 from cothread import cothread
-import itertools
-
 
 from annotypes import add_call_types
 
@@ -12,9 +10,8 @@ from malcolm.core import AttributeModel, PartRegistrar, NumberMeta, \
     StringMeta, config_tag, Widget, TimeoutError, NotWriteableError, \
     AbortedError
 from malcolm.modules import builtin
-from malcolm.modules.builtin.util import StatefulStates
 from malcolm.modules.scanning.util import RunnableStates
-from ..hooks import AContext
+from ..hooks import AContext, AGenerator
 
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
@@ -24,7 +21,7 @@ AMri = builtin.parts.AMri
 
 
 class EntryType(Enum):
-    SCANNABLE = 0
+    AXES = 0
     SCANSET2D = 1
 
 
@@ -48,13 +45,18 @@ class ScanOutcome(Enum):
 class ScanDimension:
 
     def __init__(self, start, stop, steps):
-        # type: (str, str, str) -> None
+        # type: (float, float, int) -> None
         self.start = start
         self.stop = stop
         self.steps = steps
 
+    def __str__(self):
+        return "ScanDimension({start}, {stop}, {steps})".format(
+            start=self.start, stop=self.stop, steps=self.steps
+        )
 
-class Scannable:
+
+class Axes:
 
     def __init__(self, name, fast_axis, slow_axis, units):
         # type: (str, str, str, str) -> None
@@ -67,11 +69,11 @@ class Scannable:
 class ScanSet:
 
     def __init__(
-            self, name, scannable_name, fast_dimension, slow_dimension,
+            self, name, axes, fast_dimension, slow_dimension,
             duration, alternate=False, continuous=True, repeats=1):
-        # type: (str, str, ScanDimension, ScanDimension, float, bool, bool, int) -> None
+        # type: (str, Axes, ScanDimension, ScanDimension, float, bool, bool, int) -> None
         self.name = name
-        self.scannable_name = scannable_name
+        self.axes = axes
         self.fast_dimension = fast_dimension
         self.slow_dimension = slow_dimension
         self.duration = duration
@@ -79,12 +81,13 @@ class ScanSet:
         self.continuous = continuous
         self.repeats = repeats
 
-    def get_compound_generator(self, scannable):
+    def get_compound_generator(self):
+        # type: () -> AGenerator
         slow_line_generator = LineGenerator(
-            scannable.fast_axis, scannable.units, self.slow_dimension.start, self.slow_dimension.stop,
+            self.axes.fast_axis, self.axes.units, self.slow_dimension.start, self.slow_dimension.stop,
             self.slow_dimension.steps)
         fast_line_generator = LineGenerator(
-            scannable.slow_axis, scannable.units, self.fast_dimension.start, self.fast_dimension.stop,
+            self.axes.slow_axis, self.axes.units, self.fast_dimension.start, self.fast_dimension.stop,
             self.fast_dimension.steps,
             alternate=self.alternate)
         generator = CompoundGenerator(
@@ -110,7 +113,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         # type: (APartName, AMri, AMri) -> None
         super(ScanRunnerPart, self).__init__(name, mri, stateful=False, initial_visibility=True)
         self.runner_config = None
-        self.scannables = {}
+        self.axes_sets = {}
         self.scan_sets = {}
 
     def setup(self, registrar):
@@ -175,40 +178,60 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         registrar.add_method_model(self.loadFile)
         registrar.add_method_model(self.run, needs_context=True)
 
+    def get_file_contents(self):
+        # type: () -> str
+
+        try:
+            with open(self.scan_file.value, "r") as input_file:
+                return input_file.read()
+        except IOError:
+            self.set_runner_state(RunnerStates.FAULT)
+            self.runner_status_message.set_value("Could not read scan file")
+            raise IOError("Could not read scan file")
+
+    def parse_yaml(self, string):
+        # type: (str) -> ...
+        try:
+            parsed_yaml = yaml.safe_load(string)
+            return parsed_yaml
+        except yaml.YAMLError:
+            self.set_runner_state(RunnerStates.FAULT)
+            self.runner_status_message.set_value("Could not parse scan file")
+            raise yaml.YAMLError("Could not parse scan file")
+
     # noinspection PyPep8Naming
     def loadFile(self):
-        # type: (...) -> None
+        # type: () -> None
 
         # Update state
         self.set_runner_state(RunnerStates.LOADING)
         self.runner_status_message.set_value("Loading scan file")
 
-        with open(self.scan_file.value, "r") as input_file:
-            try:
-                self.runner_config = yaml.load(input_file, Loader=yaml.Loader)
-            except yaml.YAMLError:
-                self.set_runner_state(RunnerStates.FAULT)
-                self.runner_status_message.set_value("Could not parse file")
+        # Read contents of file into string
+        file_contents = self.get_file_contents()
+
+        # Parse the string
+        parsed_yaml = self.parse_yaml(file_contents)
 
         # Empty the current dictionaries
-        self.scannables = {}
+        self.axes_sets = {}
         self.scan_sets = {}
 
         # Parse the configuration
-        for item in self.runner_config:
+        for item in parsed_yaml:
             key_name = item.keys()[0].upper()
-            if key_name == EntryType.SCANNABLE.name:
-                entry = item["scannable"]
+            if key_name == EntryType.AXES.name:
+                entry = item["axes"]
                 name = entry["name"]
                 fast_axis = entry["fast_axis"]
                 slow_axis = entry["slow_axis"]
                 units = entry["units"]
-                self.scannables[name] = Scannable(name, fast_axis, slow_axis, units)
+                self.axes_sets[name] = Axes(name, fast_axis, slow_axis, units)
 
             elif key_name == EntryType.SCANSET2D.name:
                 entry = item["ScanSet2d"]
                 name = entry["name"]
-                scannable = entry["scannable"]
+                axes_name = entry["axes"]
                 start_fast = entry["start_fast"]
                 start_slow = entry["start_slow"]
                 stop_fast = entry["stop_fast"]
@@ -220,10 +243,14 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 repeats = entry["repeats"]
                 duration = entry["duration"]
 
-                fast_dimension = ScanDimension(start_fast, stop_fast, steps_fast)
-                slow_dimension = ScanDimension(start_slow, stop_slow, steps_slow)
-                self.scan_sets[name] = ScanSet(name, scannable, fast_dimension, slow_dimension, duration,
-                                               alternate=alternate, continuous=continuous, repeats=repeats)
+                fast_dimension = ScanDimension(
+                    start_fast, stop_fast, int(steps_fast))
+                slow_dimension = ScanDimension(
+                    start_slow, stop_slow, int(steps_slow))
+                self.scan_sets[name] = ScanSet(
+                    name, self.axes_sets[axes_name], fast_dimension,
+                    slow_dimension, duration, alternate=alternate,
+                    continuous=continuous, repeats=repeats)
 
         # Count the number of scans configured
         self.update_scans_configured()
@@ -284,16 +311,8 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         # Update scan set
         self.current_scan_set.set_value(scan_set.name)
 
-        # Find the matching scannable
-        scannable = None
-        try:
-            scannable = self.scannables[scan_set.scannable_name]
-        except KeyError:
-            self.runner_status_message.set_value("scannable name error")
-            raise KeyError("Could not find scannable matching {key}".format(key=scan_set.scannable_name))
-
         # Get the compound generator
-        generator = scan_set.get_compound_generator(scannable)
+        generator = scan_set.get_compound_generator()
         print("\nGenerator:")
         print(generator)
 
