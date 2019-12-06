@@ -453,6 +453,8 @@ class ManagerController(StatefulController):
             for p, c in self.create_part_contexts(only_visible=False).items())
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
+        if filename.startswith("/tmp"):
+            self.log.warning("Saving to tmp directory %s" % filename)
         with open(filename, "w") as f:
             f.write(text)
         # Run a sync command to make sure we flush this file to disk

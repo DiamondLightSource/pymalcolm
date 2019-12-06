@@ -2,6 +2,7 @@ import os
 import subprocess
 import imp
 import importlib
+import tempfile
 
 from annotypes import Anno, add_call_types
 import numpy as np
@@ -72,6 +73,14 @@ def env_string(name, env):
     """Define a string parameter coming from the environment to be used within
     this YAML file"""
     return Define(name, os.environ[env])
+
+
+@add_call_types
+def tmp_dir(name):
+    # type: (AName) -> ADefine
+    """Make a temporary directory, and define a string parameter containing
+    its path on disk"""
+    return Define(name, tempfile.mkdtemp())
 
 
 with Anno("The shell command to run to get the value from"):

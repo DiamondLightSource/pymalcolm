@@ -11,9 +11,9 @@
     name: EPICS_CA_REPEATER_PORT
     value: 6065
 
-- builtin.defines.string:
+# Define a directory to store config in
+- builtin.defines.tmp_dir:
     name: config_dir
-    value: /tmp
 
 # Create some Blocks
 - demo.blocks.motion_block:
@@ -42,6 +42,6 @@
     iocs: $(hostname)-EA-IOC-01
     pv_prefix: $(hostname)-ML-MALC-01
     subnet_validation: 0
-    config_dir: /tmp
+    config_dir: $(config_dir)
 
 
