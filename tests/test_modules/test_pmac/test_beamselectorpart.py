@@ -66,7 +66,7 @@ class TestBeamSelectorPart(ChildTestCase):
         self.set_motor_attributes()
         nCycles = 1
         generator = CompoundGenerator(
-            [StaticPointGenerator(nCycles)], [], [], duration=1)
+            [StaticPointGenerator(nCycles)], [], [], duration=2.0)
         generator.prepare()
         self.o.on_configure(self.context, 0, nCycles, {}, generator,
                          [])
