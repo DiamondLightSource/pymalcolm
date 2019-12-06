@@ -343,7 +343,9 @@ for ``DETECTOR`` to have name ``DET``, hence the name of the written file.
 Apart from this, the file is identical to previous example.
 
 From here you can click Configure again, run another scan, and try pausing,
-resuming and seeking within the scan. You could try setting an ``exceptionStep``
+resuming and seeking within the scan. You can seek by setting ``completedSteps``
+after pausing, or by running the ``pause()`` method again while paused with
+a different ``lastGoodStep`` value. You could try setting an ``exceptionStep``
 to simulate a scan that fails at a particular point.
 
 .. seealso::
