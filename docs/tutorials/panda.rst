@@ -1,7 +1,7 @@
 .. _panda_tutorial:
 
-PandA Tutorial
-==============
+PandA Master Tutorial
+=====================
 
 You should already know how to create a `block_` in the `scan_layer_` that
 can control a Delta Tau PMAC, sending triggers to a PandABox_ which forwards

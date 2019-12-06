@@ -1,7 +1,7 @@
 .. _pmac_tutorial:
 
-PMAC Tutorial
-=============
+PMAC Master Tutorial
+====================
 
 You should already know how to create a `block_` in the `scan_layer_` that
 can control multiple Detectors, and control a dummy motor controller. Let's
