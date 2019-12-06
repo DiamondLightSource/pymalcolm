@@ -6,8 +6,8 @@ from .exposuredeadtimepart import ExposureDeadtimePart, AInitialReadoutTime, \
 from .minturnaroundpart import MinTurnaroundPart
 from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes
 from .unrollingpart import UnrollingPart
-from .shutterpart import ShutterPart
 from .scanrunnerpart import ScanRunnerPart
+from .attributeprerunpart import AttributePreRunPart
 
 # Expose a nice namespace
 from malcolm.core import submodule_all

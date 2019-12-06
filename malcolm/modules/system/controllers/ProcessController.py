@@ -7,10 +7,8 @@ from annotypes import Anno
 
 from malcolm import __version__
 from malcolm.core import StringMeta, Widget, Alarm, AlarmSeverity, \
-    ProcessStartHook, ProcessStopHook
-from malcolm.modules import builtin
-from malcolm.modules.ca.parts import CAStringPart, CAActionPart
-from malcolm.modules.builtin.util import LayoutTable
+    ProcessStartHook, ProcessStopHook, BadValueError
+from malcolm.modules import builtin, ca
 from malcolm.modules.ca.util import catools
 from ..parts.iociconpart import IocIconPart
 from ..parts.dirparsepart import DirParsePart
@@ -20,8 +18,8 @@ def await_ioc_start(stats, prefix):
     cothread.Yield()
     pid_rbv = catools.caget("%s:PID" % prefix, timeout=5)
     if int(pid_rbv) != os.getpid():
-        raise Exception("Got back different PID: " +
-                        "is there another system instance on the machine?")
+        raise BadValueError("Got back different PID: " +
+                            "is there another system instance on the machine?")
     catools.caput("%s:YAML:PATH" % prefix, stats["yaml_path"],
                   datatype=catools.DBR_CHAR_STR)
     catools.caput("%s:PYMALCOLM:PATH" % prefix, stats["pymalcolm_path"],
@@ -30,11 +28,10 @@ def await_ioc_start(stats, prefix):
 
 def start_ioc(stats, prefix):
     db_macros = "prefix='%s'" % prefix
-    epics_base = None
     try:
         epics_base = os.environ["EPICS_BASE"]
     except KeyError:
-        raise Exception("EPICS base not defined in environment")
+        raise BadValueError("EPICS base not defined in environment")
     softIoc_bin = epics_base + "/bin/linux-x86_64/softIoc"
     for key, value in stats.items():
         db_macros += ",%s='%s'" % (key, value)
@@ -69,30 +66,19 @@ class ProcessController(builtin.controllers.ManagerController):
         if self.bl_iocs[-1] == "":
             self.bl_iocs = self.bl_iocs[:-1]
         self.stats = dict()
-        cwd = os.getcwd()
         sys_call_bytes = open('/proc/%s/cmdline' % os.getpid(),
                               'rb').read().split(
             b'\0')
         sys_call = [el.decode("utf-8") for el in sys_call_bytes]
-        if sys_call[1].startswith('/'):
-            self.stats["pymalcolm_path"] = sys_call[1]
-        else:
-            self.stats["pymalcolm_path"] = os.path.join(cwd, sys_call[1])
-
-        if sys_call[2].startswith('/'):
-            self.stats["yaml_path"] = sys_call[2]
-        else:
-            self.stats["yaml_path"] = os.path.join(cwd, sys_call[2])
+        self.stats["pymalcolm_path"] = os.path.abspath(sys_call[1])
+        self.stats["yaml_path"] = os.path.abspath(sys_call[2])
 
         self.stats["yaml_ver"] = self.parse_yaml_version(
             self.stats["yaml_path"],
             '/dls_sw/work',
             '/dls_sw/prod')
 
-        if self.stats["pymalcolm_path"].startswith('/dls_sw/prod'):
-            self.stats["pymalcolm_ver"] = __version__
-        else:
-            self.stats["pymalcolm_ver"] = "Work"
+        self.stats["pymalcolm_ver"] = __version__
         hostname = os.uname()[1]
         self.stats["kernel"] = "%s %s" % (os.uname()[0], os.uname()[2])
         self.stats["hostname"] = \
@@ -152,6 +138,12 @@ class ProcessController(builtin.controllers.ManagerController):
             self.ioc = start_ioc(self.stats, self.prefix)
         self.get_ioc_list()
         super(ProcessController, self).init()
+        msg = """\
+pymalcolm %(pymalcolm_ver)s started
+
+Path: %(pymalcolm_path)s
+Yaml: %(yaml_path)s""" % self.stats
+        self._run_git_cmd("commit", "--allow-empty", "-m", msg)
 
     def set_default_layout(self):
         name = []
@@ -167,7 +159,7 @@ class ProcessController(builtin.controllers.ManagerController):
                 name += [part_name]
                 mri += [self.parts[part_name].mri]
 
-        self.set_layout(LayoutTable(name, mri, x, y, visible))
+        self.set_layout(builtin.util.LayoutTable(name, mri, x, y, visible))
 
     def stop_ioc(self):
         if self.ioc is not None:
@@ -190,7 +182,7 @@ class ProcessController(builtin.controllers.ManagerController):
             ver = "Work"
         elif file_path.startswith(prod_area):
             ver = self._run_git_cmd('describe', '--tags', '--exact-match',
-                                    dir=os.path.split(file_path)[0])
+                                    cwd=os.path.split(file_path)[0])
             if ver is None:
                 return "Prod (unknown version)"
             ver = ver.strip(b'\n').decode("utf-8")
@@ -200,7 +192,7 @@ class ProcessController(builtin.controllers.ManagerController):
 def make_ioc_status(ioc):
     controller = builtin.controllers.StatefulController(ioc + ":STATUS")
 
-    controller.add_part(CAStringPart(
+    controller.add_part(ca.parts.CAStringPart(
         name="epicsVersion",
         description="EPICS version",
         rbv=(ioc + ":EPICS_VERS"),
@@ -210,9 +202,9 @@ def make_ioc_status(ioc):
                                           "/../icons/epics-logo.svg")))
     controller.add_part(DirParsePart(ioc, ioc))
 
-    controller.add_part(CAActionPart("restartIoc",
-                                     description="restart IOC via procServ",
-                                     pv=(ioc + ":RESTART"), throw=False))
+    controller.add_part(ca.parts.CAActionPart(
+        "restartIoc", description="restart IOC via procServ",
+        pv=(ioc + ":RESTART"), throw=False))
 
     return controller
 

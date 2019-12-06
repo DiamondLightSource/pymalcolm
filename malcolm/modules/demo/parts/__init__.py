@@ -1,7 +1,7 @@
 from .counterpart import CounterPart
 from .filewritepart import FileWritePart
 from .hellopart import HelloPart
-from .motormovepart import MotorMovePart
+from .countermovepart import CounterMovePart
 from .motionchildpart import MotionChildPart
 
 # Expose a nice namespace

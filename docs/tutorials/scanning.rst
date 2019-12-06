@@ -219,44 +219,52 @@ see in its documentation:
 .. autoclass:: malcolm.modules.scanning.hooks.PreConfigureHook
     :noindex:
 
-We hook this to our ``reload()`` function to accomplish this. The purpose of
-this is so that if someone messes with our counter settings between scans, or
-another scan Block reconfigures them, they should be restored before anything
-else is done.
+We hook this to our :meth:`~malcolm.modules.builtin.parts.ChildPart.reload`
+function to accomplish this. The purpose of this is so that if someone messes
+with our counter settings between scans, or another scan Block reconfigures
+them, they should be restored before anything else is done.
 
-We then hook our configure method into the `ConfigureHook`:
+We then hook our ``on_configure()`` method into the `ConfigureHook`, \
+`PostRunArmedHook` and `SeekHook`:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py
     :language: python
-    :pyobject: MotionChildPart.configure
+    :pyobject: MotionChildPart.on_configure
 
-This just stores the parameters to configure, ready to start the run. It is also
-hooked into the `PostRunArmedHook` and `SeekHook` so that any pause or repeated
-run also stores these parameters.
+This just stores the parameters to configure, ready to start the run, then moves
+to the start of the scan. It does this by using a ``MaybeMover`` helper object
+written just for this class. Lets look at this now:
+
+.. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py
+    :language: python
+    :pyobject: MaybeMover
+
+When we construct this object, we pass the child Block and the axis we expect
+it move. It then grabs the asynchronous version of the axis move Method. The
+`Block` object supports both item and attribute axis, so ``child.xMove`` and
+``child["xMove"]`` are equivalent. It also creates asynchronous versions of
+these methods accessible with ``child.xMove_async`` and ``child["xMove_async"]``
+that kick off the Method, and return `future_` objects that can be waited on,
+and will hold the result of the method when it is finished.
 
 Hooking into run()
 ------------------
 
-We also hooked our ``run()`` Method into the `RunHook`. Let's
-look at what it does:
+We also hooked our ``on_run()`` Method into the `RunHook`. Let's look at what it
+does:
 
 .. literalinclude:: ../../malcolm/modules/demo/parts/motionchildpart.py
     :language: python
-    :pyobject: MotionChildPart.run
+    :pyobject: MotionChildPart.on_run
 
-Walking through the code we can see that the first thing we do is make a child
-Block, and use it to get asynchronous versions of our ``xMove()`` and
-``yMove()`` Methods. This is another feature of the `Block` View created by the
-`Context`. Asynchronous methods kick off the Method going, then return `future_`
-objects that can be waited on, and will hold the result of the method when it is
-finished. We can use these to start a number of long running processes going at
-the same time, then wait until they are all finished.
-
-We then start iterating through each of the step indexes that we need to
-produce, getting a scanpointgenerator.Point object for each one. We pick out the
-positions of the axes we were told to move, and start them moving using our
-asynchronous method calls. We then wait for them all to complete, before
-calculating how long we should do an interruptible :meth:`~Context.sleep` for.
+We iterate through each of the step indexes that we need to produce, getting a
+scanpointgenerator.Point object for each one. We pick out the lower and upper
+bounds of the axes we were told to move during that Point, move them
+instantaneously to the lower bound, then move them to the upper bound
+so they finish together at the end of the Point duration, all using our mover
+helper object defined in ``on_configure()``. If a move occurs, a `Future` will
+be added to the ``fs`` list, which we can wait on by using
+:meth:`~Context.wait_all_futures`.
 
 Finally we :meth:`~PartRegistrar.report` a `RunProgressInfo` with the
 current step number so the client knows how much of the scan is complete, and
@@ -335,7 +343,9 @@ for ``DETECTOR`` to have name ``DET``, hence the name of the written file.
 Apart from this, the file is identical to previous example.
 
 From here you can click Configure again, run another scan, and try pausing,
-resuming and seeking within the scan. You could try setting an ``exceptionStep``
+resuming and seeking within the scan. You can seek by setting ``completedSteps``
+after pausing, or by running the ``pause()`` method again while paused with
+a different ``lastGoodStep`` value. You could try setting an ``exceptionStep``
 to simulate a scan that fails at a particular point.
 
 .. seealso::

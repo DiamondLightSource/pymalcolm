@@ -7,6 +7,11 @@
     description: Port number to run up under
     default: 8008
 
+- builtin.parameters.int32:
+    name: subnet_validation
+    description: If non-zero, check any client is in the same subnet as the host
+    default: 1
+
 - web.controllers.HTTPServerComms:
     mri: $(mri)
     port: $(port)
@@ -14,7 +19,17 @@
 - web.parts.RestfulServerPart:
 
 - web.parts.WebsocketServerPart:
+    subnet_validation: $(subnet_validation)
 
 - profiling.parts.ProfilingViewerPart:
 
 - web.parts.GuiServerPart:
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../../web/icons/socket_alt.svg
+
+- builtin.parts.HelpPart:
+    name: viewProfiles
+    description: |
+      Any profiles captured with imalcolm profiler.start() will appear here
+    help_url: /profiles

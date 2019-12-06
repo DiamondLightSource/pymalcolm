@@ -5,8 +5,8 @@ from annotypes import Anno
 
 from malcolm.modules.builtin import parts, infos, hooks
 from malcolm.core import TableMeta, StringMeta, \
-    StringArrayMeta, Widget, PartRegistrar, Part
-from malcolm.core.alarm import AlarmSeverity, Alarm
+    StringArrayMeta, Widget, PartRegistrar, Part, alarm
+
 from malcolm.modules import ca
 
 with Anno("name of IOC"):
@@ -30,9 +30,9 @@ class DirParsePart(Part):
             "", ioc + ":APP_DIR1", widget=Widget.NONE,
             throw=False, callback=self.set_dir1)
         self.dir2_pv = ca.util.CAAttribute(
-                StringMeta("IOC directory pt2"), ca.util.catools.DBR_STRING,
-                "", ioc + ":APP_DIR2", widget=Widget.NONE,
-                throw=False, callback=self.set_dir2)
+            StringMeta("IOC directory pt2"), ca.util.catools.DBR_STRING,
+            "", ioc + ":APP_DIR2", widget=Widget.NONE,
+            throw=False, callback=self.set_dir2)
 
         self.autosave_status_pv = ca.util.CAAttribute(
             StringMeta("IOC Status"), ca.util.catools.DBR_STRING,
@@ -54,7 +54,7 @@ class DirParsePart(Part):
         self.dependencies = TableMeta("Modules which this IOC depends on",
                                       tags=[Widget.TABLE.tag()],
                                       writeable=False,
-                                      elements=elements)\
+                                      elements=elements) \
             .create_attribute_model({"module": [], "path": []})
 
     def setup(self, registrar):
@@ -93,26 +93,26 @@ class DirParsePart(Part):
             if isinstance(value, str):
                 if value.lower() == "work" or value.lower() == "other":
                     message = "IOC running from non-prod area"
-                    alarm = Alarm(message=message,
-                              severity=AlarmSeverity.MINOR_ALARM)
-                    self.registrar.report(infos.HealthInfo(alarm))
+                    stat = alarm.Alarm(message=message,
+                                       severity=alarm.AlarmSeverity.MINOR_ALARM)
+                    self.registrar.report(infos.HealthInfo(stat))
                 else:
                     message = "OK"
-                    alarm = Alarm(message=message,
-                                  severity=AlarmSeverity.NO_ALARM)
-                    self.registrar.report(infos.HealthInfo(alarm))
+                    stat = alarm.Alarm(message=message,
+                                       severity=alarm.AlarmSeverity.NO_ALARM)
+                    self.registrar.report(infos.HealthInfo(stat))
 
         else:
             if self.has_procserv:
                 message = "IOC not running (procServ enabled)"
-                alarm = Alarm(message=message,
-                              severity=AlarmSeverity.UNDEFINED_ALARM)
-                self.registrar.report(infos.HealthInfo(alarm))
+                stat = alarm.Alarm(message=message,
+                                   severity=alarm.AlarmSeverity.UNDEFINED_ALARM)
+                self.registrar.report(infos.HealthInfo(stat))
             else:
                 message = "neither IOC nor procServ are running"
-                alarm = Alarm(message=message,
-                              severity=AlarmSeverity.INVALID_ALARM)
-                self.registrar.report(infos.HealthInfo(alarm))
+                stat = alarm.Alarm(message=message,
+                                   severity=alarm.AlarmSeverity.INVALID_ALARM)
+                self.registrar.report(infos.HealthInfo(stat))
 
     def set_dir1(self, value):
         if value.ok:
@@ -155,7 +155,7 @@ class DirParsePart(Part):
                 self.dependencies.set_value(dependency_table)
 
         else:
-            self.dependencies.set_alarm(
-                Alarm(message="reported IOC directory not found",
-                      severity=AlarmSeverity.MINOR_ALARM)
-            )
+            print("calling alarm.Alarm")
+            status = alarm.Alarm(message="reported IOC directory not found",
+                                 severity=alarm.AlarmSeverity.MINOR_ALARM)
+            self.dependencies.set_alarm(status)

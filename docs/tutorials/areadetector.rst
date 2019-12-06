@@ -215,16 +215,16 @@ For instance:
 
 .. literalinclude:: ../../malcolm/modules/ADCore/includes/adbase_parts.yaml
     :language: yaml
-    :lines: 19-24
+    :lines: 18-22
 
-This corresponds to an `attribute_` that caputs to the ``NumImages`` pv with
-callback when set, and uses ``NumImages_RBV`` as the current value.
+This corresponds to an `attribute_` that caputs to the ``ImageMode`` pv with
+callback when set, and uses ``ImageMode_RBV`` as the current value.
 
 Alternatively:
 
 .. literalinclude:: ../../malcolm/modules/ADCore/includes/adbase_parts.yaml
     :language: yaml
-    :lines: 25-31
+    :lines: 30-35
 
 This corresponds to a `method_` that caputs to the ``Acquire`` pv with callback,
 and when it completes checks ``DetectorState_RBV`` to see if the detector
@@ -243,9 +243,9 @@ these Attributes of all its child Hardware Blocks to a `design_` file.
 We learned in the `motion_tutorial` that Designs are JSON formatted files stored
 in the ``config_dir`` on ``save()``, and that they can be loaded by setting
 the ``design`` Attribute at runtime. We now introduce the concept of a
-`template_design_`. This is a read-only Design that is provided by Malcolm to
-demonstrate how a Block might be used to implement a particular use case. It
-always starts with the text ``template_``.
+`template_design_`. This is a read-only Design that demonstrates how a Block
+might be used to implement a particular use case. It always starts with the
+text ``template_``.
 
 In our demo, we want our simDetector wired up in such a way that we can
 implement the Acquisition Strategy set out earlier. The ``ADSimDetector``
@@ -268,13 +268,18 @@ in ``./malcolm/modules/ADSimDetector/`` to see what it will load:
 This Design will setup the plugin chain correctly for areaDetector to work the
 way that Malcolm expects. In particular it makes sure that the plugins are in
 the correct way that the HDF writer gets the tags it expects on each NDArray
-that it receives.
+that it receives. There may be many template designs associated with a
+particular type of Block to support different use cases.
 
 .. note::
 
-    The reason that this rewiring is done in the Design file rather than each
-    plugin Part is that it allows extra plugins to be placed inline that Malcolm
-    doesn't and shouldn't have to know about.
+    areaDetector plugin chain wiring is done in the Design file rather than in
+    each plugin Part. This means that the chain can be rewired for different
+    scan use cases without having to change the code contained plugin Part.
+
+
+Scan Block Design
+-----------------
 
 Scan Blocks can have saved `design_` files just like Device Blocks. The
 difference is that they have far fewer entries as their children typically save
@@ -300,34 +305,46 @@ be created with different values for these Attributes.
 We imagine that each Device Block will have a number of designs for
 hardware or software triggering or different motor setups, and the Scan Block
 will say "I need DET with the hardware_trigger design and MOTORS with
-hkl_geometry". The Scan Block will not load its children's designs at init, but
-will set them before every ``configure()`` call, ensuring the Device Blocks are
-all setup correctly at the beginning of every scan.
+hkl_geometry".
+
+The Scan Block will not load its children's designs at init, but will set them
+before every ``configure()`` call, ensuring the Device Blocks are all setup
+correctly at the beginning of every scan.
 
 Now we know what we need to load, we need to work out when to load it. There is
 an ``initial_design`` parameter that we pass to any `ManagerController` or
 `RunnableController` that will tell it what design to load when Malcolm starts
-up, and we have two places we could load an `initial_design_`:
+up, and we have two layers that are able to load an `initial_design_`:
 
-1.  In the detector. In this case, the design will be loaded as soon as Malcolm
-    starts, but if there is not a clear single design that all scans use then
-    it is not clear what to set it to.
+1.  In the detector (Device Layer). In this case, the design will be loaded as
+    soon as Malcolm starts, but if there is not a clear single design that all
+    scans use then it is not clear what to set it to.
 
-2.  In the scan. In this case, the design will be loaded at the beginning of
-    every scan. This means that scans can use different designs for their
-    children, and Devices are guaranteed to be in the right state even if
-    another application changes PVs between scans.
+2.  In the scan (Scan Layer). As child designs are loaded on ``configure()``,
+    the initial_design loading will be deferred until the first time the scan
+    is run. This means that different scan Blocks can use different initial
+    designs for their children. For instance one scan Block could require a
+    Detector to be in software triggered mode, and another scan Block could
+    require the Detector to be in hardware triggered mode.
+
+In a production system we will generally set the ``initial_design`` of our
+scan Blocks (case 2), but we may additionally set the ``initial_design`` of our
+child Blocks (case 1) if we want to ensure a particular configuration on Malcolm
+startup.
+
+The detector setting at startup is not relevant to us here, so we will set the
+``initial_design`` only on the scan Block.
 
 .. caution::
 
-    If you set ``initial_design`` on a Block in the ``device_layer``, then PVs
-    will change when you restart Malcolm. This may or may not be what you want.
+    If you set ``initial_design`` on a Block in the ``device_layer``, including
+    detector Blocks, then PVs will change when you restart Malcolm. This may or
+    may not be what you want.
 
-We will choose case 2 here and set the scan Block to load
-``template_both_detectors`` before each scan. It is worth pointing out that we
-are only likely to set ``initial_design`` once a scan is working. Once a design
-is set, it will be restored every ``configure()``, so a ``save()`` or unsetting
-the design is required to keep any manual changes to child Blocks.
+It is worth pointing out that we are only likely to set ``initial_design``
+once a scan is working. Once a design is set, it will be restored every
+``configure()``, so a ``save()`` or unsetting the design is required to keep
+any manual changes to child Blocks.
 
 Running a Scan
 --------------
@@ -395,12 +412,16 @@ to write in the ``datasets`` Attribute::
         "name": [
             "INTERFERENCE.data",
             "INTERFERENCE.sum",
+            "y.value_set",
+            "x.value_set",
             "RAMP.data",
             "RAMP.sum",
             "y.value_set",
             "x.value_set"
         ],
         "filename": [
+            "INTERFERENCE.h5",
+            "INTERFERENCE.h5",
             "INTERFERENCE.h5",
             "INTERFERENCE.h5",
             "RAMP.h5",
@@ -411,6 +432,8 @@ to write in the ``datasets`` Attribute::
         "type": [
             "primary",
             "secondary",
+            "position_set",
+            "position_set",
             "primary",
             "secondary",
             "position_set",
@@ -419,6 +442,8 @@ to write in the ``datasets`` Attribute::
         "rank": [
             4,
             4,
+            1,
+            1,
             4,
             4,
             1,
@@ -427,6 +452,8 @@ to write in the ``datasets`` Attribute::
         "path": [
             "/entry/data",
             "/entry/sum",
+            "/entry/y_set",
+            "/entry/x_set",
             "/entry/detector/detector",
             "/entry/sum/sum",
             "/entry/detector/y_set",
@@ -435,6 +462,8 @@ to write in the ``datasets`` Attribute::
         "uniqueid": [
             "/entry/uid",
             "/entry/uid",
+            "",
+            "",
             "/entry/NDAttributes/NDArrayUniqueId",
             "/entry/NDAttributes/NDArrayUniqueId",
             "",
@@ -442,10 +471,11 @@ to write in the ``datasets`` Attribute::
         ]
     }
 
+
 This is very similar to the `scanning_tutorial`, but now datasets are reported
-from both detectors. We also have a couple of datasets with type position_set,
-these are the demand positions for the ``x`` and ``y`` axes that take their
-setpoints from the generator values.
+from both detectors. Their setpoints are also reported for every scannable in
+every file. This is to allow a triggering scheme where a detector produces
+multiple frames for each scan point (explained in a future tutorial).
 
 Now that you have the files open, you can use the `h5watch`_ command to monitor
 the dataset and see it grow::

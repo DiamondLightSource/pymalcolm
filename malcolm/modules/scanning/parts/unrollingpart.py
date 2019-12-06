@@ -14,7 +14,7 @@ class UnrollingPart(Part):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def validate(self, generator, axesToMove):
+    def on_validate(self, generator, axesToMove):
         # type: (AGenerator, AAxesToMove) -> UParameterTweakInfos
         if len(axesToMove) in (0, 1):
             # We can't have multiple dimensions here, so this must be ok
@@ -38,4 +38,4 @@ class UnrollingPart(Part):
         # type: (PartRegistrar) -> None
         super(UnrollingPart, self).setup(registrar)
         # Hooks
-        registrar.hook(ValidateHook, self.validate)
+        registrar.hook(ValidateHook, self.on_validate)

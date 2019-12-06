@@ -50,7 +50,7 @@ class TestXmap3DetectorDriverPart(ChildTestCase):
             datasetType=[AttributeDatasetType.MONITOR, AttributeDatasetType.DETECTOR, AttributeDatasetType.POSITION],
         )
         self.o.extra_attributes.set_value(extra_attributes)
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, part_info, generator=MagicMock(duration=1.0), fileDir="/tmp")
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCallbacks', True),

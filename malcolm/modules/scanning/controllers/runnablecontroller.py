@@ -1,10 +1,11 @@
-from annotypes import Anno, TYPE_CHECKING, add_call_types, Any, json_encode
+from annotypes import Anno, TYPE_CHECKING, add_call_types, Any, json_encode, \
+    deserialize_object
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
     NumberMeta, Widget, Part, DEFAULT_TIMEOUT, Table
 from malcolm.compat import OrderedDict
-from malcolm.core.models import MapMeta, MethodMeta, TableMeta, Display
+from malcolm.core.models import MapMeta, MethodMeta, TableMeta, Display, VMeta
 from malcolm.modules import builtin
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, ConfigureParams
@@ -54,8 +55,9 @@ def get_steps_per_run(generator, axes_to_move):
 
 
 def update_configure_model(configure_model, part_configure_infos):
-    # type: (MethodMeta, List[ConfigureParamsInfo]) -> MethodMeta
+    # type: (MethodMeta, List[ConfigureParamsInfo]) -> None
     # These will not be inserted as they already exist
+
     ignored = list(ConfigureHook.call_types)
 
     # Re-calculate the following
@@ -96,11 +98,20 @@ def update_configure_model(configure_model, part_configure_infos):
                     else:
                         defaults[k] = info.defaults[k]
 
-    # Set the values
-    configure_model.takes.set_elements(metas)
+    # Copy and prepare values for takes and returns
+    takes_metas = OrderedDict()
+    returns_metas = OrderedDict()
+    for k, v in metas.items():
+        takes_metas[k] = deserialize_object(v.to_dict(), VMeta)
+        returns_metas[k] = deserialize_object(v.to_dict(), VMeta)
+        returns_metas[k].set_writeable(False)
+
+    # Set them on the model
+    configure_model.takes.set_elements(takes_metas)
     configure_model.takes.set_required(required)
+    configure_model.returns.set_elements(returns_metas)
+    configure_model.returns.set_required(required)
     configure_model.set_defaults(defaults)
-    return configure_model
 
 
 def merge_non_writeable_table(default, supplied, non_writeable):
@@ -230,34 +241,28 @@ class RunnableController(builtin.controllers.ManagerController):
             if self.process is None:
                 return
 
-            # Get the model of our configure method as the starting point
-            configure_model = MethodMeta.from_callable(self.configure)
-
-            # And a list of all the infos that the parts have contributed
+            # Make a list of all the infos that the parts have contributed
             part_configure_infos = []
             for part in self.parts.values():
                 info = self.part_configure_params.get(part, None)
                 if info:
                     part_configure_infos.append(info)
 
-            # Make an update configure mode
-            update_configure_model(configure_model, part_configure_infos)
-
-            # Update methods from the new metas
-            self._block.configure.meta.set_takes(configure_model.takes)
-            self._block.configure.meta.set_defaults(configure_model.defaults)
-            self._block.configure.set_took()
-
-            # Now make a validate model with returns
-            validate_model = MethodMeta.from_dict(configure_model.to_dict())
-            returns = MapMeta.from_dict(validate_model.takes.to_dict())
-            for v in returns.elements.values():
-                v.set_writeable(False)
-            self._block.validate.meta.set_takes(validate_model.takes)
-            self._block.validate.meta.set_defaults(validate_model.defaults)
-            self._block.validate.meta.set_returns(returns)
-            self._block.validate.set_took()
-            self._block.validate.set_returned()
+            # Update methods from the updated configure model
+            for method_name in ("configure", "validate"):
+                # Get the model of our configure method as the starting point
+                method_meta = MethodMeta.from_callable(self.configure)
+                # Update the configure model from the infos
+                update_configure_model(method_meta, part_configure_infos)
+                # Put the created metas onto our block meta
+                method = self._block[method_name]
+                method.meta.takes.set_elements(method_meta.takes.elements)
+                method.meta.takes.set_required(method_meta.takes.required)
+                method.meta.returns.set_elements(method_meta.returns.elements)
+                method.meta.returns.set_required(method_meta.returns.required)
+                method.meta.set_defaults(method_meta.defaults)
+                method.set_took()
+                method.set_returned()
 
     def update_block_endpoints(self):
         super(RunnableController, self).update_block_endpoints()
@@ -328,7 +333,7 @@ class RunnableController(builtin.controllers.ManagerController):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(self, generator, axesToMove=None, **kwargs):
-        # type: (AGenerator, AAxesToMove, **Any) -> None
+        # type: (AGenerator, AAxesToMove, **Any) -> AConfigureParams
         """Validate the params then configure the device ready for run().
 
         Try to prepare the device as much as possible so that run() is quick to
@@ -351,6 +356,8 @@ class RunnableController(builtin.controllers.ManagerController):
         except Exception as e:
             self.go_to_error_state(e)
             raise
+        else:
+            return params
 
     def do_configure(self, state, params):
         # type: (str, ConfigureParams) -> None

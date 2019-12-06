@@ -45,7 +45,7 @@ class TestDetectorDriverPart(ChildTestCase):
         self.process.stop(timeout=2)
 
     def test_report(self):
-        info = self.o.report_status()
+        info = self.o.on_report_status()
         assert len(info) == 1
         assert info[0].rank == 2
 
@@ -59,7 +59,7 @@ class TestDetectorDriverPart(ChildTestCase):
         info = ExposureDeadtimeInfo(0.01, 1000, 0.0)
         part_info = dict(anyname=[info])
         self.set_attributes(self.child, triggerMode="Internal")
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, part_info,
             generator, fileDir="/tmp", exposure=info.calculate_exposure(
                 generator.duration))
@@ -91,7 +91,7 @@ class TestDetectorDriverPart(ChildTestCase):
             datasetType=[AttributeDatasetType.MONITOR, AttributeDatasetType.DETECTOR, AttributeDatasetType.POSITION],
         )
         self.o.extra_attributes.set_value(extra_attributes)
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {}, generator,
             fileDir="/tmp")
         assert self.child.handled_requests.mock_calls == [
@@ -111,7 +111,7 @@ class TestDetectorDriverPart(ChildTestCase):
         self.o.registrar = MagicMock()
         # This would have been done by configure
         self.o.is_hardware_triggered = False
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('start'),
             call.when_value_matches('acquiring', True, None),
@@ -120,7 +120,7 @@ class TestDetectorDriverPart(ChildTestCase):
         assert self.o.registrar.report.call_args[0][0].steps == 0
 
     def test_abort(self):
-        self.o.abort(self.context)
+        self.o.on_abort(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('stop'),
             call.when_value_matches('acquiring', False, None)]

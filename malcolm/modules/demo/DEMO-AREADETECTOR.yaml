@@ -1,4 +1,4 @@
-# To start the IOC, run Launcher -> Utilities -> GDA SWMR AreaDetector Sim
+# To start the IOC, run Launcher -> Utilities -> GDA AreaDetector Simulation
 - builtin.defines.cmd_string:
     name: hostname
     cmd: hostname -s

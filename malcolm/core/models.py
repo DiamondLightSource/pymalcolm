@@ -1147,7 +1147,7 @@ UPresent = Union[APresent, Sequence[str], str]
 
 
 @Serializable.register_subclass("malcolm:core/MethodLog:1.0")
-class MethodLog(Model):
+class MethodLog(Serializable):
     """Exposes a function with metadata for arguments and return values"""
     __slots__ = ["value", "alarm", "timeStamp"]
 
@@ -1156,39 +1156,19 @@ class MethodLog(Model):
     # types
     def __init__(self, value=None, present=(), alarm=None, timeStamp=None):
         # type: (AMVValue, UPresent, AAlarm, ATimeStamp) -> None
-        self.value = self.set_value(value)
-        self.present = self.set_present(present)
-        self.alarm = self.set_alarm(alarm)
-        self.timeStamp = self.set_timeStamp(timeStamp)
-
-    def set_value(self, value=None):
-        # type: (AMVValue) -> AMVValue
         if value is None:
-            value = {}
-        return self.set_endpoint_data("value", value)
-
-    def set_present(self, present):
-        # type: (UPresent) -> APresent
-        return self.set_endpoint_data("present", APresent(present))
-
-    def set_alarm(self, alarm=None):
-        # type: (Alarm) -> Alarm
+            self.value = {}
+        else:
+            self.value = value
+        self.present = APresent(present)
         if alarm is None:
-            alarm = Alarm.ok
+            self.alarm = Alarm.ok
         else:
-            alarm = deserialize_object(alarm, Alarm)
-        return self.set_endpoint_data("alarm", alarm)
-
-    # noinspection PyPep8Naming
-    # timeStamp is camelCase to maintain compatibility with EPICS normative
-    # types
-    def set_timeStamp(self, ts=None):
-        # type: (TimeStamp) -> TimeStamp
-        if ts is None:
-            ts = TimeStamp()
+            self.alarm = deserialize_object(alarm, Alarm)
+        if timeStamp is None:
+            self.timeStamp = TimeStamp()
         else:
-            ts = deserialize_object(ts, TimeStamp)
-        return self.set_endpoint_data("timeStamp", ts)
+            self.timeStamp = deserialize_object(timeStamp, TimeStamp)
 
 
 # Types used when deserializing to the class

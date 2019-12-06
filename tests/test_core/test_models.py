@@ -319,10 +319,7 @@ class TestMethodLog(unittest.TestCase):
         self.serialized["timeStamp"] = TimeStamp.zero.to_dict()
 
     def test_to_dict(self):
-        m = MethodLog()
-        m.set_value(dict(a=1))
-        m.set_present(["a"])
-        m.set_timeStamp(TimeStamp.zero)
+        m = MethodLog(value=dict(a=1), present=["a"], timeStamp=TimeStamp.zero)
         assert m.to_dict() == self.serialized
 
     def test_from_dict(self):

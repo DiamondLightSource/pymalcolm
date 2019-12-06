@@ -64,23 +64,11 @@ class PointGeneratorMeta(VMeta):
         elif isinstance(value, CompoundGenerator):
             return value
         elif isinstance(value, dict):
-            # Sanitise the dict in place
-            # TODO: remove this when scanpoint generator supports ndarray inputs
-            def sanitize(d):
-                for k, v in d.items():
-                    if isinstance(v, np.ndarray):
-                        d[k] = list(v)
-                    elif isinstance(v, list):
-                        for x in v:
-                            if isinstance(x, dict):
-                                sanitize(x)
-                    elif isinstance(v, dict):
-                        sanitize(v)
-            sanitize(value)
             return CompoundGenerator.from_dict(value)
         else:
             raise TypeError(
                 "Value %s must be a Generator object or dictionary" % value)
+
 
 with Anno("Dataset names"):
     ADatasetNames = Array[str]

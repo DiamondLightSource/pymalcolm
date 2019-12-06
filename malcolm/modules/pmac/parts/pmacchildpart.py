@@ -95,14 +95,14 @@ class PmacChildPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(PmacChildPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ValidateHook, self.validate)
+        registrar.hook(scanning.hooks.ValidateHook, self.on_validate)
         registrar.hook(scanning.hooks.PreConfigureHook, self.reload)
         registrar.hook((scanning.hooks.ConfigureHook,
                         scanning.hooks.PostRunArmedHook,
-                        scanning.hooks.SeekHook), self.configure)
-        registrar.hook(scanning.hooks.RunHook, self.run)
+                        scanning.hooks.SeekHook), self.on_configure)
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook((scanning.hooks.AbortHook,
-                        scanning.hooks.PauseHook), self.abort)
+                        scanning.hooks.PauseHook), self.on_abort)
 
     def notify_dispatch_request(self, request):
         # type: (Request) -> None
@@ -115,20 +115,20 @@ class PmacChildPart(builtin.parts.ChildPart):
             super(PmacChildPart, self).notify_dispatch_request(request)
 
     @add_call_types
-    def reset(self, context):
+    def on_reset(self, context):
         # type: (builtin.hooks.AContext) -> None
-        super(PmacChildPart, self).reset(context)
-        self.abort(context)
+        super(PmacChildPart, self).on_reset(context)
+        self.on_abort(context)
 
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def validate(self,
-                 context,  # type: scanning.hooks.AContext
-                 generator,  # type: scanning.hooks.AGenerator
-                 axesToMove,  # type: scanning.hooks.AAxesToMove
-                 part_info,  # type: scanning.hooks.APartInfo
-                 ):
+    def on_validate(self,
+                    context,  # type: scanning.hooks.AContext
+                    generator,  # type: scanning.hooks.AGenerator
+                    axesToMove,  # type: scanning.hooks.AAxesToMove
+                    part_info,  # type: scanning.hooks.APartInfo
+                    ):
         # type: (...) -> scanning.hooks.UParameterTweakInfos
         child = context.block_view(self.mri)
         # Check that we can move all the requested axes
@@ -193,14 +193,14 @@ class PmacChildPart(builtin.parts.ChildPart):
     # Allow CamelCase as arguments will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
-                  generator,  # type: scanning.hooks.AGenerator
-                  axesToMove,  # type: scanning.hooks.AAxesToMove
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     completed_steps,  # type: scanning.hooks.ACompletedSteps
+                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     part_info,  # type: scanning.hooks.APartInfo
+                     generator,  # type: scanning.hooks.AGenerator
+                     axesToMove,  # type: scanning.hooks.AAxesToMove
+                     ):
         # type: (...) -> None
         context.unsubscribe_all()
         child = context.block_view(self.mri)
@@ -280,7 +280,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         context.wait_all_futures(fs)
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
         if self.generator:
             self.loading = False
@@ -291,7 +291,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             child.executeProfile()
 
     @add_call_types
-    def abort(self, context):
+    def on_abort(self, context):
         # type: (scanning.hooks.AContext) -> None
         if self.generator:
             child = context.block_view(self.mri)
@@ -414,8 +414,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             prev_time = t
 
         self.profile["timeArray"] += time_intervals
-        self.profile["velocityMode"] += \
-            [PREV_TO_CURRENT] * num_intervals
+        self.profile["velocityMode"] += [PREV_TO_CURRENT] * num_intervals
         user_program = self.get_user_program(PointType.TURNAROUND)
         self.profile["userPrograms"] += [user_program] * num_intervals
         self.completed_steps_lookup += [completed_steps] * num_intervals
@@ -590,7 +589,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 points_are_joined = False
                 next_point = None
 
-            if self.output_triggers != scanning.infos.MotionTrigger.ROW_GATE:
+            if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
                 self.add_generator_point_pair(point, i, points_are_joined)
             else:
                 self.add_sparse_point(point, i, next_point, points_are_joined)

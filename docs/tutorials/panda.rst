@@ -4,22 +4,28 @@ PandA Tutorial
 ==============
 
 You should already know how to create a `block_` in the `scan_layer_` that
-can control a Delta Tau PMAC, sending triggers to a PandABox_ and capturing
-encoder positions. We now move onto using the PandA in a more intelligent way,
-listening to the encoder positions, and generating the trigger stream itself.
+can control a Delta Tau PMAC, sending triggers to a PandABox_ which forwards
+them to detectors and captures encoder positions. We now move onto using the
+PandA in a more intelligent way, either listening to the encoder positions or
+a single gating signal for each sequence of points, and generating the trigger
+stream itself.
 
 Strategy
 --------
 
-Imagine a 2D Grid scan. The strategy for this trigger scheme is that at the
-start of each row, PandA should do a position compare on the axis that moves
-most, then generate a series of time based triggers during the row. During the
-turnaround it should then wait until the motor has cleared the start of the
-next row before doing a position compare on that value.
+Imagine a 2D Grid scan, with a number of rows. PandA should wait until the
+start of the row, then make the right number of time based trigger signals,
+then wait for the turnaround to happen before waiting for the next row. This
+waiting can be either based on the encoder position (Position Compare), or for
+a gating signal from the motion controller that goes high for the duration of
+the row.
 
 This strategy can be extended to any sort of scan trajectory. It is implemented
 by Malcolm generating a table of sequencer rows, with 3 sequencer rows per scan
-section without gaps:
+section without gaps. These rows are described below for each case:
+
+Position Compare
+~~~~~~~~~~~~~~~~
 
 1. Compare on the lower bound of the motor that moves by the biggest number of
    counts during the first point of the row, producing one live trigger pulse
@@ -28,14 +34,22 @@ section without gaps:
    amount of time that the motor is going in the wrong direction during the
    turnaround
 
+Motion Gate
+~~~~~~~~~~~
+
+1. Wait for gating signal to go high, then produce one live trigger pulse
+2. Produce the rest of the live triggers for the row
+3. Wait for the gating signal to go low, then produce a dead trigger pulse
+
+
 Adding to the a scan Block
 --------------------------
 
 In the `pmac_tutorial` you should have created a ``scan_block.yaml`` in the
-``etc/malcolm/blocks`` subdirectory. We will now add a new `panda_pcomp_block`
-and its corresponding `PandAPcompPart` to it. It will hold the `mri_` of the
-PandA and Brick that are performing the scan, and will set the PandA sequencer
-tables to the correct values::
+``etc/malcolm/blocks`` subdirectory. We will now add a new
+`panda_seq_trigger_block` and its corresponding `PandASeqTriggerPart` to it. It
+will hold the `mri_` of the PandA and Brick that are performing the scan, and
+will set the PandA sequencer tables to the correct values::
 
     ...
 
@@ -55,9 +69,9 @@ tables to the correct values::
         mri: $(mri_prefix):TRIG
         initial_visibility: False
 
-The `DetectorChildPart` definition for the PandA is unchanged, the PCOMP Block
+The `DetectorChildPart` definition for the PandA is unchanged, the TRIG Block
 purely holds the data of which panda and which pmac to use, so all of the logic
-is contained in the PCOMP Part.
+is contained in the TRIG Part.
 
 .. note::
 
@@ -65,7 +79,7 @@ is contained in the PCOMP Part.
     are adding this Part to an existing scan Block definition, which already has
     instances and possibly saved configs. Loading a saved config will only
     affect Parts and Blocks contained within it, so any existing saved config
-    will not touch this new PCOMP Part. If it was visible, it would contribute
+    will not touch this new TRIG Part. If it was visible, it would contribute
     to the existing scans too, which would make them error as the PandA wouldn't
     have been setup for it.
 
@@ -86,8 +100,10 @@ We can then navigate back up and to the PandA, and load the `template_design_`
 .. image:: panda_1.png
 
 This design sets up a pair of SEQ blocks that Malcolm will write to to produce
-the live and dead signals based on encoder inputs. You should wire any input
-encoders to ``posa``, ``posb``, ``posc`` of **both** SEQ Blocks.
+the live and dead signals based on encoder inputs or motion gating signal. You
+should wire any input encoders to ``posa``, ``posb``, ``posc`` of **both** SEQ
+Blocks, and the motion gating signal to ``bita`` of **both** SEQ Blocks if you
+are using that mode.
 
 The Blocks after the SEQ blocks are very similar to the PMAC live and dead
 frame processing (minus the PULSE block as PandA will drop its pulse outputs
@@ -115,11 +131,11 @@ motors are in position. We do this with the `exports_` table:
 
 .. image:: panda_3.png
 
-The names on the right are listed in the documentation for the `PandAPcompPart`
-as the interface it expects to be exported by the PandA. This allows for mixing
-of functionality in a single design, with multiple parts possibly working
-on different parts of the same PandA. The names on the left are the child
-fields that should be exported.
+The names on the right are listed in the documentation for the
+`PandASeqTriggerPart` as the interface it expects to be exported by the PandA.
+This allows for mixing of functionality in a single design, with multiple parts
+possibly working on different parts of the same PandA. The names on the left are
+the child fields that should be exported.
 
 In this case we are exporting everything that needs to change, namely the two
 SEQ tables, and the SRGATE ``forceSet()`` Method.
@@ -136,6 +152,11 @@ We can now setup the scan Block in the same way as the `pmac_tutorial` by:
 - Setting ``Simultaneous Axes``
 - Saving the design with a name that is similar to the label
 
+We can also switch the row triggering mode between Postion Compare (the default)
+and Motion Controller gating signal:
+
+.. image:: panda_4.png
+
 This will make a saved config that captures the device design names::
 
     {
@@ -147,36 +168,39 @@ This will make a saved config that captures the device design names::
             "visible": true
           },
           "PANDA-01": {
-            "x": 0.0,
-            "y": 0.0,
+            "x": -3.3333333333333712,
+            "y": -1.1111111111110858,
             "visible": true
           },
-          "PCOMP": {
-            "x": 258.5,
-            "y": 116.5,
+          "TRIG": {
+            "x": 378.5,
+            "y": -2.5,
             "visible": true
           }
         },
         "exports": {},
         "simultaneousAxes": [
-           "stagea",
-           "stagex"
+          "stagea",
+          "stagex"
         ],
+        "minTurnaround": 0.0,
+        "minTurnaroundInterval": 0.006,
         "label": "PandA Master Tomography"
       },
       "children": {
-        "BRICK-01": {
+        "BRICK": {
           "design": "a_z_in_cs1"
         },
-        "PANDA-01": {
+        "PANDABOX": {
           "design": "panda_master"
-        }
-        "PCOMP": {
-          "panda": "BLxxI-ML-PANDA-01",
-          "pmac": "BLxxI-ML-BRICK-01"
+        },
+        "TRIG": {
+          "panda": "BL49P-ML-PANDA-01",
+          "pmac": "BL49P-ML-BRICK-01",
+          "rowTrigger": "Motion Controller"
         }
       }
-    }
+
 
 .. note::
 
@@ -206,8 +230,9 @@ can set the ``initial_design`` for this scan instance in
 Conclusion
 ----------
 This tutorial has given us an understanding of how to perform a scan with the
-PandA acting as master, doing position compare on encoders and sending time
-based triggers to a detector.
+PandA acting as master, doing position compare on encoders or listing for a row
+gating signal and sending time based triggers to a detector. The next tutorial
+will show how PandA can trigger multiple detectors at different rates.
 
 .. _PandABox:
     https://www.ohwr.org/project/pandabox/wikis/home

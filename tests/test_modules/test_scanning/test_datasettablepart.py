@@ -29,7 +29,7 @@ class TestDatasetReportingPart(unittest.TestCase):
                                     "/p/s2", "/p/uid"),
             ]
         )
-        self.o.post_configure(part_info)
+        self.o.on_post_configure(part_info)
         v = self.o.datasets.value
         assert v.name == ["det.data", "det.sum", "det.min"]
         assert v.filename == ["fn1", "fn1", "fn1"]
@@ -38,3 +38,5 @@ class TestDatasetReportingPart(unittest.TestCase):
         assert list(v.rank) == [2, 0, 0]
         assert v.path == ["/p/det", "/p/s1", "/p/s2"]
         assert v.uniqueid == ["/p/uid", "/p/uid", "/p/uid"]
+        self.o.on_reset()
+        assert self.o.datasets.value.name == []

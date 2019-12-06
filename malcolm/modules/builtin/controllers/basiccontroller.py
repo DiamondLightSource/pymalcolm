@@ -30,6 +30,7 @@ class BasicController(Controller):
         """Set the health attribute. Called from part"""
         with self.changes_squashed:
             alarm = info.alarm
+            ts = info.ts
             if alarm.is_ok():
                 self._faults.pop(reporter, None)
             else:
@@ -43,4 +44,4 @@ class BasicController(Controller):
             else:
                 alarm = None
                 text = "OK"
-            self.health.set_value(text, alarm=alarm)
+            self.health.set_value(text, alarm=alarm, ts=ts)

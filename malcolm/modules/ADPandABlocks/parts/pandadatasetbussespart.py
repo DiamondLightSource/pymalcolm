@@ -17,7 +17,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
         super(PandADatasetBussesPart, self).setup(registrar)
         # Hooks
         registrar.hook(scanning.hooks.ReportStatusHook,
-                       self.report_status)
+                       self.on_report_status)
 
     @staticmethod
     def _make_initial_bits_table(bit_names):
@@ -53,7 +53,7 @@ class PandADatasetBussesPart(pandablocks.parts.PandABussesPart):
         )
         return pos_table
 
-    def report_status(self):
+    def on_report_status(self):
         # type: () -> scanning.hooks.UInfos
         ret = []
         bits_table = self.bits.value  # type: DatasetBitsTable

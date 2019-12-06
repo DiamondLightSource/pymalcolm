@@ -31,7 +31,7 @@ class TestPositionLabellerPart(ChildTestCase):
         completed_steps = 2
         steps_to_do = 4
         self.o.done_when_reaches = 30
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, generator)
         expected_xml = """<?xml version="1.0" ?>
 <pos_layout>
@@ -61,7 +61,7 @@ class TestPositionLabellerPart(ChildTestCase):
         # Say that we've returned from start
         self.o.start_future = Future(None)
         self.o.start_future.set_result(None)
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == []
 
     def test_load_more_positions(self):
