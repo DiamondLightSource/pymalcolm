@@ -6,6 +6,10 @@ from malcolm.modules.scanning.parts.scanrunnerpart import ScanDimension, \
     Axes, ScanSet, ScanRunnerPart, RunnerStates
 
 
+# TODO: tests for run, run_scan_set and run_scan
+# TODO: tests for get report string
+
+
 class TestScanDimension(unittest.TestCase):
 
     def test_attributes_are_initialised(self):
@@ -41,8 +45,8 @@ class TestScanSet(unittest.TestCase):
     def setUp(self):
         self.name = "fine_scan_1um_step"
         self.axes = Axes("Fine_XY", "x", "y", "mm")
-        self.fast_dimension = ScanDimension("0.0", "5.0", 6)
-        self.slow_dimension = ScanDimension("0.0", "10.0", 11)
+        self.fast_dimension = ScanDimension(0.0, 5.0, 6)
+        self.slow_dimension = ScanDimension(0.0, 10.0, 11)
         self.duration = 0.01
         self.alternate = True
         self.continuous = False
@@ -51,8 +55,7 @@ class TestScanSet(unittest.TestCase):
     def test_attributes_are_initialised(self):
         scan_set = ScanSet(self.name, self.axes, self.fast_dimension,
                            self.slow_dimension, self.duration,
-                           alternate=self.alternate,
-                           continuous=self.continuous, repeats=self.repeats)
+                           self.alternate, self.continuous, self.repeats)
 
         self.assertEqual(self.name, scan_set.name)
         self.assertEqual(self.axes, scan_set.axes)
@@ -66,8 +69,7 @@ class TestScanSet(unittest.TestCase):
     def test_get_compound_generator(self):
         scan_set = ScanSet(self.name, self.axes, self.fast_dimension,
                            self.slow_dimension, self.duration,
-                           alternate=self.alternate,
-                           continuous=self.continuous, repeats=self.repeats)
+                           self.alternate, self.continuous, self.repeats)
 
         generator = scan_set.get_compound_generator()
 
@@ -75,7 +77,7 @@ class TestScanSet(unittest.TestCase):
         self.assertEqual("mm", generator.units['y'])
         self.assertEqual(self.duration, generator.duration)
         self.assertEqual(self.continuous, generator.continuous)
-        self.assertEqual(['x', 'y'], generator.axes)
+        self.assertEqual(['y', 'x'], generator.axes)
 
 
 class TestScanRunnerPart(unittest.TestCase):
@@ -312,3 +314,197 @@ class TestScanRunnerPart(unittest.TestCase):
 
         scan_runner_part.increment_scans_completed()
         self.assertEqual(2, scan_runner_part.scans_completed.value)
+
+    def test_parse_axes_parses_valid_entry(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        entry = {
+            'name': "sample_stages",
+            'fast_axis': "sample_x",
+            'slow_axis': "sample_y",
+            'units': "mm"
+        }
+
+        scan_runner_part.parse_axes(entry)
+
+        self.assertEqual(1, len(scan_runner_part.axes_sets))
+
+        axes = scan_runner_part.axes_sets['sample_stages']
+        self.assertEqual("sample_stages", axes.name)
+        self.assertEqual("sample_x", axes.fast_axis)
+        self.assertEqual("sample_y", axes.slow_axis)
+        self.assertEqual("mm", axes.units)
+
+    def test_parse_axes_throws_KeyError_for_missing_key(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        # List of compulsory arguments
+        axes_args = {
+            'name': "coarse_stages",
+            'fast_axis': "sample_x",
+            'slow': "sample_y",
+            'units': "um"
+        }
+
+        # The number of iterations requires is equal to the number of compulsory arguments
+        for arg_num in range(len(axes_args)):
+            axes_with_missing_arg = {}
+            index = 0
+            # We want to miss out a different argument each time
+            for key in axes_args:
+                if index == arg_num:
+                    pass
+                else:
+                    axes_with_missing_arg[key] = axes_args[key]
+                index += 1
+
+            self.assertRaises(KeyError, scan_runner_part.parse_axes, axes_with_missing_arg)
+
+    def test_parse_scan_set_2d_parses_for_all_arguments(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        # We need to have a set of axes to match
+        axes = {
+            'name': "sample_stages",
+            'fast_axis': "sample_x",
+            'slow_axis': "sample_y",
+            'units': "mm"
+        }
+        scan_runner_part.parse_axes(axes)
+
+        # Now we can parse our scan set
+        scan_set = {
+            'name': "fine_snake_scan",
+            'axes': "sample_stages",
+            'start_fast': 0.0,
+            'stop_fast': 10.0,
+            'steps_fast': 25,
+            'start_slow': -5.0,
+            'stop_slow': 5.0,
+            'steps_slow': 10,
+            'alternate': True,
+            'continuous': False,
+            'repeats': 12,
+            'duration': 0.5
+        }
+        scan_runner_part.parse_scan_set_2d(scan_set)
+
+        self.assertEqual(1, len(scan_runner_part.scan_sets))
+
+        parsed_scan_set = scan_runner_part.scan_sets['fine_snake_scan']
+
+        self.assertEqual("fine_snake_scan", parsed_scan_set.name)
+        self.assertEqual("sample_stages", parsed_scan_set.axes.name)
+        self.assertEqual(0.0, parsed_scan_set.fast_dimension.start)
+        self.assertEqual(10.0, parsed_scan_set.fast_dimension.stop)
+        self.assertEqual(25, parsed_scan_set.fast_dimension.steps)
+        self.assertEqual(-5.0, parsed_scan_set.slow_dimension.start)
+        self.assertEqual(5.0, parsed_scan_set.slow_dimension.stop)
+        self.assertEqual(10, parsed_scan_set.slow_dimension.steps)
+        self.assertEqual(12, parsed_scan_set.repeats)
+        self.assertEqual(0.5, parsed_scan_set.duration)
+        self.assertTrue(parsed_scan_set.alternate)
+        self.assertFalse(parsed_scan_set.continuous)
+
+    def test_parse_scan_set_2d_parses_for_compulsory_arguments(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        # We need to have a set of axes to match
+        axes = {
+            'name': "sample_stages",
+            'fast_axis': "sample_x",
+            'slow_axis': "sample_y",
+            'units': "mm"
+        }
+        scan_runner_part.parse_axes(axes)
+
+        # Now we can parse our scan set
+        scan_set = {
+            'name': "fine_snake_scan",
+            'axes': "sample_stages",
+            'start_fast': 0.0,
+            'stop_fast': 10.0,
+            'steps_fast': 25,
+            'start_slow': -5.0,
+            'stop_slow': 5.0,
+            'steps_slow': 10,
+            'duration': 0.5
+        }
+        scan_runner_part.parse_scan_set_2d(scan_set)
+
+        self.assertEqual(1, len(scan_runner_part.scan_sets))
+
+        parsed_scan_set = scan_runner_part.scan_sets['fine_snake_scan']
+
+        self.assertEqual("fine_snake_scan", parsed_scan_set.name)
+        self.assertEqual("sample_stages", parsed_scan_set.axes.name)
+        self.assertEqual(0.0, parsed_scan_set.fast_dimension.start)
+        self.assertEqual(10.0, parsed_scan_set.fast_dimension.stop)
+        self.assertEqual(25, parsed_scan_set.fast_dimension.steps)
+        self.assertEqual(-5.0, parsed_scan_set.slow_dimension.start)
+        self.assertEqual(5.0, parsed_scan_set.slow_dimension.stop)
+        self.assertEqual(10, parsed_scan_set.slow_dimension.steps)
+        self.assertEqual(1, parsed_scan_set.repeats)
+        self.assertEqual(0.5, parsed_scan_set.duration)
+        self.assertFalse(parsed_scan_set.alternate)
+        self.assertTrue(parsed_scan_set.continuous)
+
+    def test_parse_scan_set_2d_throws_KeyError_for_missing_axes(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        # Add an example axes
+        axes = {
+            'name': "sample_stages",
+            'fast_axis': "sample_x",
+            'slow_axis': "sample_y",
+            'units': "mm"
+        }
+        scan_runner_part.parse_axes(axes)
+
+        # Our scan set uses a different set of axes than the one provided
+        scan_set = {
+            'name': "fine_snake_scan",
+            'axes': "coarse_stages",
+            'start_fast': 0.0,
+            'stop_fast': 10.0,
+            'steps_fast': 25,
+            'start_slow': -5.0,
+            'stop_slow': 5.0,
+            'steps_slow': 10,
+            'duration': 0.5
+        }
+
+        self.assertRaises(KeyError, scan_runner_part.parse_scan_set_2d, scan_set)
+
+    def test_parse_scan_set_2d_throws_KeyError_for_missing_arguments(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        # Add the matching axes
+        axes = {
+            'name': "sample_stages",
+            'fast_axis': "sample_x",
+            'slow_axis': "sample_y",
+            'units': "mm"
+        }
+        scan_runner_part.parse_axes(axes)
+
+        scan_set_args = {
+            'name': "fine_snake_scan",
+            'axes': "sample_stages",
+            'start_fast': 0.0,
+            'stop_fast': 10.0,
+            'steps_fast': 25,
+            'start_slow': -5.0,
+            'stop_slow': 5.0,
+            'steps_slow': 10,
+            'duration': 0.5
+        }
+
+        # The number of iterations requires is equal to the number of compulsory arguments
+        for arg_num in range(len(scan_set_args)):
+            scan_set_with_missing_arg = {}
+            index = 0
+            # We want to miss out a different argument each time
+            for key in scan_set_args:
+                if index == arg_num:
+                    pass
+                else:
+                    scan_set_with_missing_arg[key] = scan_set_args[key]
+                index += 1
+
+            self.assertRaises(KeyError, scan_runner_part.parse_scan_set_2d, scan_set_with_missing_arg)
