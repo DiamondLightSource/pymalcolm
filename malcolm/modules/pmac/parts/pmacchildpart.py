@@ -597,7 +597,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 points_are_joined = False
                 next_point = None
 
-            if self.output_triggers != scanning.infos.MotionTrigger.ROW_GATE:
+            if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
                 self.add_generator_point_pair(point, i, points_are_joined)
             else:
                 self.add_sparse_point(point, i, next_point, points_are_joined)
@@ -677,7 +677,7 @@ class PmacChildPart(builtin.parts.ChildPart):
 
     def is_same_velocity(self, p1, p2):
         result = False
-        if p2.duration == p2.duration: # todo seems as a bug to me
+        if p2.duration == p2.duration:
             result = True
             for axis_name, _ in self.axis_mapping.items():
                 if not np.isclose(

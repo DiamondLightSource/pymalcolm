@@ -84,7 +84,13 @@ class TestSystemDetectorPVA(unittest.TestCase):
         block = self.process2.block_view("TESTDET")
         self.check_blocks_equal()
         generator = self.make_generator()
-        block.configure(generator, self.tmpdir, axesToMove=["x", "y"])
+        validated = dict(
+            generator=generator.to_dict(), fileDir=self.tmpdir,
+            axesToMove=["x", "y"], fileTemplate='%s.h5', formatName='det',
+            exposure=0.0489975,
+        )
+        params = block.configure(generator, self.tmpdir, axesToMove=["x", "y"])
+        assert params == validated
         # TODO: ordering is not maintained in PVA, so may need to wait before
         #       get
         # block._context.sleep(0.1)
@@ -94,8 +100,10 @@ class TestSystemDetectorPVA(unittest.TestCase):
             fileDir=self.tmpdir, fileTemplate='', formatName='')
         assert block.configure.took.present == [
             "generator", "fileDir", "axesToMove"]
-        assert block.configure.returned.value == {}
-        assert block.configure.returned.present == []
+        assert block.configure.returned.value == validated
+        assert block.configure.returned.present == [
+            "generator", "fileDir", "axesToMove", 'exposure', 'formatName',
+            'fileTemplate']
         self.check_blocks_equal()
         # Check the NTTable
         from p4p.client.cothread import Context
@@ -113,7 +121,6 @@ class TestSystemDetectorPVA(unittest.TestCase):
             labels = ['name', 'filename', 'type', 'rank', 'path', 'uniqueid']
             assert list(table.meta.elements) == labels
             assert table.labels == labels
-
 
 
 class TestSystemMotionPVA(unittest.TestCase):

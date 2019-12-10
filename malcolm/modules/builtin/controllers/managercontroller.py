@@ -146,13 +146,9 @@ class ManagerController(StatefulController):
 
     def _run_git_cmd(self, *args, **kwargs):
         # Run git command, don't care if it fails, logging the output
-        if (self.use_git and os.path.isdir(
-                os.path.join(self.config_dir, ".git"))) or\
-           "dir" in kwargs.keys():
+        cwd = kwargs.get("cwd", self.config_dir)
+        if self.use_git:
             try:
-                cwd = self.config_dir
-                if "dir" in kwargs.keys():
-                    cwd = kwargs["dir"]
                 output = subprocess.check_output(
                     ("git",) + self.git_config + args, cwd=cwd)
             except subprocess.CalledProcessError as e:
@@ -166,8 +162,6 @@ class ManagerController(StatefulController):
         super(ManagerController, self).do_init()
         # Try and make it a git repo, don't care if it fails
         self._run_git_cmd("init")
-        self._run_git_cmd("commit", "--allow-empty", "-m",
-                          "Initial commit for %s" % self.mri)
         # List the config_dir and add to choices
         self._set_layout_names()
         # If given a default config, load this
@@ -459,6 +453,8 @@ class ManagerController(StatefulController):
             for p, c in self.create_part_contexts(only_visible=False).items())
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
+        if filename.startswith("/tmp"):
+            self.log.warning("Saving to tmp directory %s" % filename)
         with open(filename, "w") as f:
             f.write(text)
         # Run a sync command to make sure we flush this file to disk

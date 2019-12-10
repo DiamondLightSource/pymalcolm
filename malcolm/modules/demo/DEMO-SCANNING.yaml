@@ -1,7 +1,6 @@
-# Define where to write data
-- builtin.defines.string:
+# Define a directory to store config in
+- builtin.defines.tmp_dir:
     name: config_dir
-    value: /tmp
 
 # Create some Blocks
 - demo.blocks.motion_block:

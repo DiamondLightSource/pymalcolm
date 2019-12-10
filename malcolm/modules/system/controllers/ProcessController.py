@@ -66,20 +66,12 @@ class ProcessController(builtin.controllers.ManagerController):
         if self.bl_iocs[-1] == "":
             self.bl_iocs = self.bl_iocs[:-1]
         self.stats = dict()
-        cwd = os.getcwd()
         sys_call_bytes = open('/proc/%s/cmdline' % os.getpid(),
                               'rb').read().split(
             b'\0')
         sys_call = [el.decode("utf-8") for el in sys_call_bytes]
-        if sys_call[1].startswith('/'):
-            self.stats["pymalcolm_path"] = sys_call[1]
-        else:
-            self.stats["pymalcolm_path"] = os.path.join(cwd, sys_call[1])
-
-        if sys_call[2].startswith('/'):
-            self.stats["yaml_path"] = sys_call[2]
-        else:
-            self.stats["yaml_path"] = os.path.join(cwd, sys_call[2])
+        self.stats["pymalcolm_path"] = os.path.abspath(sys_call[1])
+        self.stats["yaml_path"] = os.path.abspath(sys_call[2])
 
         self.stats["yaml_ver"] = self.parse_yaml_version(
             self.stats["yaml_path"],
@@ -146,6 +138,12 @@ class ProcessController(builtin.controllers.ManagerController):
             self.ioc = start_ioc(self.stats, self.prefix)
         self.get_ioc_list()
         super(ProcessController, self).init()
+        msg = """\
+pymalcolm %(pymalcolm_ver)s started
+
+Path: %(pymalcolm_path)s
+Yaml: %(yaml_path)s""" % self.stats
+        self._run_git_cmd("commit", "--allow-empty", "-m", msg)
 
     def set_default_layout(self):
         name = []
@@ -184,7 +182,7 @@ class ProcessController(builtin.controllers.ManagerController):
             ver = "Work"
         elif file_path.startswith(prod_area):
             ver = self._run_git_cmd('describe', '--tags', '--exact-match',
-                                    dir=os.path.split(file_path)[0])
+                                    cwd=os.path.split(file_path)[0])
             if ver is None:
                 return "Prod (unknown version)"
             ver = ver.strip(b'\n').decode("utf-8")

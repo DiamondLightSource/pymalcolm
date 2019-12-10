@@ -11,9 +11,11 @@ class IocIconPart(builtin.parts.IconPart):
         # type: (AIoc, builtin.parts.ASvg) -> None
         self.initial_svg = initial_svg
         super(IocIconPart, self).__init__(initial_svg)
-        self.host_arch = ca.util.CAAttribute(
-            StringMeta("Host Architecture"), ca.util.catools.DBR_STRING,
-            "", ioc + ":KERNEL_VERS", throw=False, callback=self.update_icon)
+        meta = StringMeta("Host Architecture")
+        self.host_arch = ca.util.CAAttribute(meta, ca.util.catools.DBR_STRING,
+                                             "", ioc + ":KERNEL_VERS",
+                                             throw=False,
+                                             callback=self.update_icon)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None

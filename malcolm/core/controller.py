@@ -8,7 +8,7 @@ from .context import Context
 from .errors import UnexpectedError, NotWriteableError, FieldError
 from .hook import Hookable, start_hooks, wait_hooks, Hook
 from .info import Info
-from .models import BlockModel, AttributeModel, MethodModel, Model
+from .models import BlockModel, AttributeModel, MethodModel, Model, MethodLog
 from .notifier import Notifier, freeze
 from .part import PartRegistrar, Part, FieldRegistry, InfoRegistry
 from .concurrency import Queue, Spawned, RLock
@@ -219,19 +219,20 @@ class Controller(Hookable):
     def update_method_logs(self, method, took_value, took_ts, returned_value,
                            returned_alarm):
         with self.changes_squashed:
-            method.took.set_value(
-                method.meta.takes.validate(took_value, add_missing=True))
-            method.took.set_present(
-                [x for x in method.meta.takes.elements
-                 if x in took_value])
-            method.took.set_timeStamp(took_ts)
-            method.returned.set_value(
-                method.meta.returns.validate(returned_value, add_missing=True))
-            method.returned.set_present(
-                [x for x in method.meta.returns.elements
-                 if x in returned_value])
-            method.returned.set_alarm(returned_alarm)
-            method.returned.set_timeStamp()
+            method.set_took(
+                MethodLog(
+                    value=method.meta.takes.validate(
+                        took_value, add_missing=True),
+                    present=[x for x in method.meta.takes.elements
+                             if x in took_value],
+                    timeStamp=took_ts))
+            method.set_returned(
+                MethodLog(
+                    value=method.meta.returns.validate(
+                        returned_value, add_missing=True),
+                    present=[x for x in method.meta.returns.elements
+                             if x in returned_value],
+                    alarm=returned_alarm))
 
     def _handle_post(self, request):
         # type: (Post) -> CallbackResponses

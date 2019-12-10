@@ -23,7 +23,7 @@ class DatasetType(Enum):
     POSITION_VALUE = "position_value"
     #: The minimum value of the readback position of an axis in each frame
     POSITION_MIN = "position_min"
-    #: The minimum value of the readback position of an axis in each frame
+    #: The maximum value of the readback position of an axis in each frame
     POSITION_MAX = "position_max"
 
 
