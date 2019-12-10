@@ -33,11 +33,12 @@ class VelocityModes:
     ZERO_VELOCITY = 3
 
 # user programs
-NO_PROGRAM = 0  # Do nothing
-LIVE_PROGRAM = 1  # GPIO123 = 1, 0, 0
-DEAD_PROGRAM = 2  # GPIO123 = 0, 1, 0
-MID_PROGRAM = 4  # GPIO123 = 0, 0, 1
-ZERO_PROGRAM = 8  # GPIO123 = 0, 0, 0
+class UserPrograms:
+    NO_PROGRAM = 0  # Do nothing
+    LIVE_PROGRAM = 1  # GPIO123 = 1, 0, 0
+    DEAD_PROGRAM = 2  # GPIO123 = 0, 1, 0
+    MID_PROGRAM = 4  # GPIO123 = 0, 0, 1
+    ZERO_PROGRAM = 8  # GPIO123 = 0, 0, 0
 
 
 class PointType(Enum):
@@ -256,7 +257,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         # TODO: we might need to put this in pause if the PandA logic doesn't
         # copy with a trigger staying high
         child.writeProfile(csPort=cs_port, timeArray=[MIN_TIME],
-                           userPrograms=[ZERO_PROGRAM])
+                           userPrograms=[UserPrograms.ZERO_PROGRAM])
         child.executeProfile()
         if motion_axes:
             # Start off the move to the start
@@ -367,26 +368,26 @@ class PmacChildPart(builtin.parts.ChildPart):
         # type: (PointType) -> int
         if self.output_triggers == scanning.infos.MotionTrigger.NONE:
             # Always produce no program
-            return NO_PROGRAM
+            return UserPrograms.NO_PROGRAM
         elif self.output_triggers == scanning.infos.MotionTrigger.ROW_GATE:
             if point_type == PointType.START_OF_ROW:
                 # Produce a gate for the whole row
-                return LIVE_PROGRAM
+                return UserPrograms.LIVE_PROGRAM
             elif point_type == PointType.END_OF_ROW:
                 # Falling edge of row gate
-                return ZERO_PROGRAM
+                return UserPrograms.ZERO_PROGRAM
             else:
                 # Otherwise don't change anything
-                return NO_PROGRAM
+                return UserPrograms.NO_PROGRAM
         else:
             if point_type in (PointType.START_OF_ROW, PointType.POINT_JOIN):
-                return LIVE_PROGRAM
+                return UserPrograms.LIVE_PROGRAM
             elif point_type == PointType.END_OF_ROW:
-                return DEAD_PROGRAM
+                return UserPrograms.DEAD_PROGRAM
             elif point_type == PointType.MID_POINT:
-                return MID_PROGRAM
+                return UserPrograms.MID_PROGRAM
             else:
-                return ZERO_PROGRAM
+                return UserPrograms.ZERO_PROGRAM
 
     def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,
                                           current_positions, completed_steps):
@@ -471,7 +472,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                 self.profile["timeArray"].append(time_point / nsplit)
             for _ in range(nsplit - 1):
                 self.profile["velocityMode"].append(VelocityModes.PREV_TO_NEXT)
-                self.profile["userPrograms"].append(NO_PROGRAM)
+                self.profile["userPrograms"].append(UserPrograms.NO_PROGRAM)
             for k, v in axis_points.items():
                 cs_axis = self.axis_mapping[k].cs_axis.lower()
                 last_point = self.profile[cs_axis][-1]
