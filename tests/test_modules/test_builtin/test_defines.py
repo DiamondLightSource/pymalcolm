@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from malcolm.modules.builtin.defines import module_path
+from malcolm.modules.builtin.defines import module_path, tmp_dir
 
 
 class TestModulePath(unittest.TestCase):
@@ -26,4 +26,14 @@ class TestModulePath(unittest.TestCase):
         import malcolm.modules.demo
         assert hasattr(malcolm.modules.demo, "parts")
         assert hasattr(malcolm.modules.demo.parts, "HelloPart")
+
+
+class TestDefines(unittest.TestCase):
+    def test_tmp_dir(self):
+        d = tmp_dir("config")
+        assert d.name == "config"
+        assert d.value.startswith("/tmp")
+        assert os.path.isdir(d.value)
+        os.rmdir(d.value)
+
 

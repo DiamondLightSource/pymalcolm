@@ -26,6 +26,10 @@ Let's dive right in and look at the `process_definition_`
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-MOTION.yaml
     :language: yaml
 
+First we create a temporary directory to hold saved configs. In production we
+would point this to a persistent file-system, but here we ask Malcolm to create
+a directory somewhere in ``/tmp`` for us.
+
 Apart from the web server block, all that we do here is load a single Motion
 Block. We have to look at ``./malcolm/modules/demo/blocks/motion_block.yaml`` to
 see what one of those does:
@@ -391,7 +395,12 @@ design name, and hitting "SAVE":
 
 .. image:: motion_4.png
 
-If we take a look at ``/tmp/MOTION/only_y.json`` we can see what got saved::
+When you press save, Malcolm will check if it writing to a temporary directory,
+and if so warn us what it has written with a message like::
+
+    malcolm.modules.builtin.controllers.managercontroller.ManagerController.MOTION: Saving to tmp directory /tmp/tmpHGUXzA/MOTION/only_y.json
+
+If we take a look at ``/tmp/*/MOTION/only_y.json`` we can see what got saved::
 
     {
       "attributes": {

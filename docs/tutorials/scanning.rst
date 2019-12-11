@@ -142,12 +142,14 @@ Let's have a look at the `process_definition_`
 .. literalinclude:: ../../malcolm/modules/demo/DEMO-SCANNING.yaml
     :language: yaml
 
-To start off with, we define a variable ``$(config_dir)`` with value ``/tmp``
-that we can pass down. In general we should try to follow the DRY_ principle:
-Don't repeat yourself. If there is a single value used in multiple places, we
-should define it in one place and pass it down to where it is needed. This may
-require more lines of YAML, but when the variable is changed later it will be
-clear where it need to be changed.
+To start off with, we ask for our temporary directory, which we can reference
+as ``$(config_dir)``. In production we would still use a
+``builtin.defines.string`` to define this variable and pass it down in the same
+way. In general we should try to follow the DRY_ principle: Don't repeat
+yourself. If there is a single value used in multiple places, we should define
+it in one place and pass it down to where it is needed. This may require more
+lines of YAML, but when the variable is changed later it will be clear where it
+need to be changed.
 
 Apart from the web server, we instantiate 3 Blocks:
 

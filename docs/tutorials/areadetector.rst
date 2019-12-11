@@ -9,6 +9,9 @@ a `DetectorChildPart`.  Now let's build a Detector Block to control an
 `EPICS`_ `areaDetector`_ `simDetector`_ and its `plugin chain`_, and integrate
 it into a scan.
 
+While we use `simDetector`_ for this tutorial, support for other detectors can
+be found in the ``./malcolm/modules`` directory.
+
 Acquisition Strategy
 --------------------
 
@@ -492,9 +495,8 @@ the datasets until it knows the size of the first detector frame.
 You can open the web GUI again to inspect the state of the various objects,
 and you will see that both the ``RAMP`` and ``INTERFERENCE`` detector objects
 are in state ``Armed``, as is the ``SCAN``. You can then run a scan, either from
-the web GUI, or the commandline, resetting when it is done to close the file
-(only needed so that the commandline tools will work - the commandline tools
-are not SWMR aware so require the reset)::
+the web GUI or the commandline. Other than h5watch, the commandline tools are
+not SWMR aware, so a reset is required in order to read the updated files::
 
     In [9]: scan.run()
 
@@ -574,12 +576,13 @@ were written::
        ...
 
 This tells us that it was written in a snake fashion, with the first row
-written 1-5 left-to-right, the second row 6-10 right-to-left, etc. The detector
-will always increment the uniqueid number when it writes a new frame, so if
-you try pausing and setting the Completed Steps Attribute, you will see the
-uniqueID number jump where you overwrite existing frames with new frames with a
-greater uniqueID. This will mean that the two detectors will have matching
-unique ID datasets.
+written 1-5 left-to-right, the second row 6-10 right-to-left, etc.
+
+The detector will always increment the uniqueid number when it writes a new
+frame, so if you try pausing and setting the Completed Steps Attribute, you
+will see the uniqueID number jump where you overwrite existing frames with new
+frames with a greater uniqueID. The two detectors will end up with matching
+uniqueID datasets.
 
 Conclusion
 ----------
