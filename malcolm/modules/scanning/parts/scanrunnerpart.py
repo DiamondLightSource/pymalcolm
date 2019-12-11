@@ -11,6 +11,7 @@ from malcolm.core import AttributeModel, PartRegistrar, NumberMeta, \
     AbortedError
 from malcolm.modules import builtin
 from malcolm.modules.scanning.util import RunnableStates
+from malcolm.core.views import Block
 from ..hooks import AContext, AGenerator
 
 from scanpointgenerator import CompoundGenerator, LineGenerator
@@ -69,9 +70,17 @@ class Axes:
 class ScanSet:
 
     def __init__(
-            self, name, axes, fast_dimension, slow_dimension,
-            duration, alternate, continuous, repeats):
-        # type: (str, Axes, ScanDimension, ScanDimension, float, bool, bool, int) -> None
+            self,
+            name,  # type: str
+            axes,  # type: Axes
+            fast_dimension,  # type: ScanDimension
+            slow_dimension,  # type: ScanDimension
+            duration,  # type: float
+            alternate,  # type: bool
+            continuous,  # type: bool
+            repeats  # type: int
+            ):
+        # type: (...) -> None
         self.name = name
         self.axes = axes
         self.fast_dimension = fast_dimension
@@ -82,7 +91,7 @@ class ScanSet:
         self.repeats = repeats
 
     def get_compound_generator(self):
-        # type: () -> AGenerator
+        # type: () -> CompoundGenerator
         slow_line_generator = LineGenerator(
             self.axes.slow_axis,
             self.axes.units,
@@ -240,6 +249,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             raise yaml.YAMLError("Could not parse scan file")
 
     def parse_axes(self, entry):
+        # type: (dict) -> None
         name = entry["name"]
         fast_axis = entry["fast_axis"]
         slow_axis = entry["slow_axis"]
@@ -248,6 +258,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.axes_sets[name] = Axes(name, fast_axis, slow_axis, units)
 
     def parse_scan_set_2d(self, entry):
+        # type: (dict) -> None
         name = entry["name"]
         axes_name = entry["axes"]
         start_fast = entry["start_fast"]
@@ -280,6 +291,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
     @staticmethod
     def get_current_datetime(time_separator=":"):
+        # type: (str) -> str
         return datetime.now().strftime("%Y-%m-%d-%H{sep}%M{sep}%S".format(
             sep=time_separator
         ))
@@ -318,12 +330,14 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.runner_status_message.set_value("Load complete")
 
     def update_scans_configured(self):
+        # type: () -> None
         number_of_scans = 0
         for key in self.scan_sets:
             number_of_scans += self.scan_sets[key].repeats
         self.scans_configured.set_value(number_of_scans)
 
     def create_directory(self, directory):
+        # type: (str) -> None
         try:
             os.mkdir(directory)
         except OSError:
@@ -336,6 +350,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 ))
 
     def create_and_get_sub_directory(self, root_directory):
+        # type: (str) -> str
         today_str = self.get_current_datetime(time_separator="-")
         sub_directory = "{root}/{scan_mri}-{date}".format(
             root=root_directory, scan_mri=self.mri, date=today_str)
@@ -385,6 +400,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.runner_status_message.set_value("Scans complete")
 
     def create_and_get_set_directory(self, sub_directory, set_name):
+        # type: (str, str) -> str
         set_directory = "{sub_directory}/scanset-{set_name}".format(
             sub_directory=sub_directory, set_name=set_name)
         self.create_directory(set_directory)
@@ -392,6 +408,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
     def run_scan_set(self, scan_set, scan_block, sub_directory,
                      report_filepath):
+        # type: (ScanSet, Block, str, str) -> None
         # Update scan set
         self.current_scan_set.set_value(scan_set.name)
 
@@ -413,6 +430,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 generator)
 
     def create_and_get_scan_directory(self, set_directory, scan_number):
+        # type: (str, int) -> str
         scan_directory = "{set_directory}/scan-{scan_number}".format(
             set_directory=set_directory, scan_number=scan_number)
         self.create_directory(scan_directory)
@@ -420,6 +438,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
     def run_scan(self, set_name, scan_block, set_directory,
                  scan_number, report_filepath, generator):
+        # type: (str, Block, str, int, str, CompoundGenerator) -> None
         self.runner_status_message.set_value(
             "Running {set_name}: {scan_no}".format(
                 set_name=set_name, scan_no=scan_number
@@ -450,8 +469,8 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         except Exception as e:
             outcome = ScanOutcome.OTHER
             self.log.warning(
-                "Unhandled exception for scan {no} in {set}: ({type_e}) {e}".format(
-                    type_e=type(e),
+                "Unhandled exception for scan {no} in {set}: ({t}) {e}".format(
+                    t=type(e),
                     no=scan_number,
                     set=set_name,
                     e=e
@@ -480,9 +499,10 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
     def get_report_string(
             self, set_name, scan_number, scan_outcome, start_time, end_time):
-        report_str = "{set:<30}{scan_no:<10}{outcome:<13}{start:<20}{end}".format(
+        # type: (str, int, ScanOutcome, str, str) -> str
+        report_str = "{set:<30}{no:<10}{outcome:<13}{start:<20}{end}".format(
             set=set_name,
-            scan_no=scan_number,
+            no=scan_number,
             outcome=self.get_enum_label(scan_outcome),
             start=start_time,
             end=end_time
@@ -491,6 +511,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
     def add_report_line(self, report_filepath, set_name,
                         scan_number, scan_outcome, start_time):
+        # type: (str, str, int, ScanOutcome, str) -> None
         report_time = self.get_current_datetime()
         try:
             with open(report_filepath, "a+") as report_file:
@@ -513,7 +534,9 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
     @staticmethod
     def get_enum_label(enum_state):
+        # type: (Enum) -> str
         return enum_state.name.capitalize()
 
     def set_runner_state(self, runner_state):
+        # type: (RunnerStates) -> None
         self.runner_state.set_value(self.get_enum_label(runner_state))
