@@ -1,13 +1,13 @@
 import unittest
-from mock import Mock, patch
+from mock import Mock, patch, call
 
 from ruamel.yaml import YAMLError
+
 from malcolm.modules.scanning.parts.scanrunnerpart import ScanDimension, \
-    Axes, ScanSet, ScanRunnerPart, RunnerStates
-
-
-# TODO: tests for run, run_scan_set and run_scan
-# TODO: tests for get report string
+    Axes, ScanSet, ScanRunnerPart, RunnerStates, ScanOutcome
+from malcolm.modules.scanning.util import RunnableStates
+from malcolm.core import TimeoutError, NotWriteableError, \
+    AbortedError
 
 
 class TestScanDimension(unittest.TestCase):
@@ -111,8 +111,9 @@ class TestScanRunnerPart(unittest.TestCase):
                 steps_slow: 8
                 alternate: True
                 continuous: False
-                repeats: 1
+                repeats: 5
                 duration: 0.1
+                
             """
 
         self.invalid_yaml = \
@@ -157,20 +158,38 @@ class TestScanRunnerPart(unittest.TestCase):
         else:
             return False
 
-    def compare_scan_set(self, set_a, set_b):
-        if set_a.name == set_b.name and set_a.duration == set_b.duration \
-                and set_a.alternate == set_b.alternate \
-                and set_a.continuous == set_b.continuous \
-                and set_a.repeats == set_b.repeats:
-            if self.compare_axes(set_a.axes, set_b.axes) is not True:
-                self.fail("Axes do not match")
-            if self.compare_dimensions(set_a.fast_dimension, set_b.fast_dimension) is not True:
-                self.fail("Fast dimensions do not match: {0}, {1}".format(set_a.fast_dimension, set_b.fast_dimension))
-            if self.compare_dimensions(set_a.slow_dimension, set_b.slow_dimension) is not True:
-                self.fail("Slow dimensions do not match: {0}, {1}".format(set_a.slow_dimension, set_b.slow_dimension))
-            return True
-        else:
-            return False
+    def compare_scan_set(self, expected_set, actual_set):
+        if expected_set.name != actual_set.name:
+            self.fail("Scan set name mismatch, expected: {0}, got: {1}".format(expected_set.name, actual_set.name))
+
+        if expected_set.duration != actual_set.duration:
+            self.fail("Scan set duration mismatch, expected: {0}, got: {1}".format(
+                expected_set.duration, actual_set.duration))
+
+        if expected_set.alternate != actual_set.alternate:
+            self.fail("Expected scan set alternate to be {0}, got {1}".format(
+                expected_set.alternate, actual_set.alternate))
+
+        if expected_set.continuous != actual_set.continuous:
+            self.fail("Expected scan set continuous to be {0}, got {1}".format(
+                expected_set.continuous, actual_set.continuous))
+
+        if expected_set.repeats != actual_set.repeats:
+            self.fail("Scan set repeats mismatch, expected: {0}, got: {1}".format(
+                expected_set.repeats, actual_set.repeats))
+
+        if self.compare_axes(expected_set.axes, actual_set.axes) is not True:
+            self.fail("Axes do not match")
+
+        if self.compare_dimensions(expected_set.fast_dimension, actual_set.fast_dimension) is not True:
+            self.fail("Fast dimensions do not match: {0}, {1}".format(
+                expected_set.fast_dimension, actual_set.fast_dimension))
+
+        if self.compare_dimensions(expected_set.slow_dimension, actual_set.slow_dimension) is not True:
+            self.fail("Slow dimensions do not match: {0}, {1}".format(
+                expected_set.slow_dimension, actual_set.slow_dimension))
+
+        return True
 
     def test_loadFile(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -207,14 +226,14 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_set_name = "fine_70um_10um_step"
         expected_scan_set = ScanSet(scan_set_name, expected_axes_xy, fast_dimension,
                                     slow_dimension, 0.1, alternate=True, continuous=False,
-                                    repeats=1)
+                                    repeats=5)
 
         # Actual scan set
         actual_scan_set = scan_runner_part.scan_sets[scan_set_name]
 
         self.assertEqual(1, len(scan_runner_part.scan_sets))
         self.assertTrue(self.compare_scan_set(expected_scan_set, actual_scan_set))
-        self.assertEqual(1, scan_runner_part.scans_configured.value)
+        self.assertEqual(5, scan_runner_part.scans_configured.value)
         self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.CONFIGURED), scan_runner_part.runner_state.value)
         self.assertEqual("Load complete", scan_runner_part.runner_status_message.value)
 
@@ -508,3 +527,326 @@ class TestScanRunnerPart(unittest.TestCase):
                 index += 1
 
             self.assertRaises(KeyError, scan_runner_part.parse_scan_set_2d, scan_set_with_missing_arg)
+
+    def test_run_raises_ValueError_for_no_loaded_scan_set(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        runner_status_message_mock = Mock(name="runner_status_message_mock")
+        scan_runner_part.runner_status_message = runner_status_message_mock
+
+        self.assertRaises(ValueError, scan_runner_part.run, Mock())
+        runner_status_message_mock.set_value.assert_called_once_with("No scan file loaded")
+
+    def test_run_completes_when_scan_set_is_loaded(self):
+        # Create some mock objects
+        context_mock = Mock(name="context_mock")
+        scan_block_mock = Mock(name="mock_scan_block")
+        context_mock.block_view.return_value = scan_block_mock
+
+        # Setup the part with a valid scan set
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        scan_runner_part.setup(context_mock)
+        scan_runner_part.get_file_contents = Mock()
+        scan_runner_part.get_file_contents.return_value = self.good_yaml
+        scan_runner_part.loadFile()
+
+        # Mock the create_and_get_sub_directory and run_scan_set methods
+        sub_directory = "/test/sub/directory"
+
+        create_and_get_sub_directory_mock = Mock(name="create_and_get_sub_directory_mock")
+        scan_runner_part.create_and_get_sub_directory = create_and_get_sub_directory_mock
+        scan_runner_part.create_and_get_sub_directory.return_value = sub_directory
+
+        run_scan_set_mock = Mock(name="run_scan_set_mock")
+        scan_runner_part.run_scan_set = run_scan_set_mock
+
+        # Mock the output directory path
+        root_directory = "/test/scan/directory"
+        scan_runner_part.output_directory = Mock()
+        scan_runner_part.output_directory.value = root_directory
+
+        # Call our run method
+        scan_runner_part.run(context_mock)
+
+        # Check method calls
+        create_and_get_sub_directory_mock.assert_called_once_with(root_directory)
+        for key in scan_runner_part.scan_sets:
+            run_scan_set_mock.assert_called_with(
+                scan_runner_part.scan_sets[key],
+                scan_block_mock,
+                sub_directory,
+                sub_directory+"/report.txt")
+
+    def test_run_scan_set(self):
+        # Setup the part with a valid scan set
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        scan_runner_part.setup(Mock())
+        scan_runner_part.get_file_contents = Mock()
+        scan_runner_part.get_file_contents.return_value = self.good_yaml
+        scan_runner_part.loadFile()
+
+        # Mock scan block
+        scan_block_mock = Mock(name="scan_block_mock")
+
+        # Mock the scan_set and its get_compound_generator method
+        scan_set_mock = Mock(name="scan_set_mock")
+        generator_mock = Mock(name="generator")
+        scan_set_mock.get_compound_generator.return_value = generator_mock
+
+        # Set the mock scan set attributes to match real scan set
+        scan_set_name = "fine_70um_10um_step"
+        real_scan_set = scan_runner_part.scan_sets[scan_set_name]
+        scan_set_mock.repeats = real_scan_set.repeats
+        scan_set_mock.name = scan_set_name
+
+        # Mock the run scan method
+        run_scan_mock = Mock(name="run_scan_mock")
+        scan_runner_part.run_scan = run_scan_mock
+
+        # Mock the create_and_get_set_directory method
+        set_directory = "/test/set/directory"
+        create_and_set_directory_mock = Mock(name="mock_create_and_get_set_directory_method")
+        scan_runner_part.create_and_get_set_directory = create_and_set_directory_mock
+        scan_runner_part.create_and_get_set_directory.return_value = set_directory
+
+        # Call the run_scan_set method
+        sub_directory = "/test/sub/directory"
+        report_filepath = sub_directory + "/report.txt"
+        scan_runner_part.run_scan_set(
+            scan_set_mock, scan_block_mock, sub_directory, report_filepath)
+
+        # Check the create_and_get_set_directory_method was called
+        create_and_set_directory_mock.assert_called_once_with(sub_directory, scan_set_name)
+
+        # Check that our mock run_scan method was called the correct number of times
+        self.assertEqual(scan_set_mock.repeats, run_scan_mock.call_count)
+        calls = []
+        for scan_number in range(1, scan_set_mock.repeats+1):
+            calls.append(
+                call(
+                    scan_set_name,
+                    scan_block_mock,
+                    set_directory,
+                    scan_number,
+                    report_filepath,
+                    generator_mock
+                ))
+        run_scan_mock.assert_has_calls(calls)
+
+
+class TestScanRunnerPartRunMethod(unittest.TestCase):
+
+    def setUp(self):
+        name = "ScanRunner"
+        mri = "ML-SCAN-RUNNER-01"
+
+        example_scan_runner_yaml = \
+            """
+            - axes:
+                name: xy_stages
+                fast_axis: j08_x
+                slow_axis: j08_y
+                units: mm
+
+            - axes:
+                name: xz_stages
+                fast_axis: j08_x
+                slow_axis: j08_z
+                units: mm
+
+            - ScanSet2d:
+                name: fine_70um_10um_step
+                axes: xy_stages
+                start_fast: -0.035
+                stop_fast: 0.8
+                steps_fast: 25
+                start_slow: -0.5
+                stop_slow: 0.5
+                steps_slow: 8
+                alternate: True
+                continuous: False
+                repeats: 5
+                duration: 0.1
+
+            """
+
+        self.scan_runner_part = ScanRunnerPart(name, mri)
+        self.scan_runner_part.setup(Mock())
+        self.scan_runner_part.get_file_contents = Mock()
+        self.scan_runner_part.get_file_contents.return_value = example_scan_runner_yaml
+        self.scan_runner_part.loadFile()
+
+        # Mock the create_and_get_scan_directory method
+        self.scan_directory = "/test/scan/directory"
+        self.create_and_get_scan_directory_mock = Mock(name="create_and_get_scan_directory_mock")
+        self.create_and_get_scan_directory_mock.return_value = self.scan_directory
+        self.scan_runner_part.create_and_get_scan_directory = self.create_and_get_scan_directory_mock
+
+        # Mock generator
+        self.generator_mock = Mock(name="generator_mock")
+
+        # Mock scan block, set state to READY
+        self.scan_block_mock = Mock(name="scan_block_mock")
+        self.scan_block_mock.state.value = RunnableStates.READY
+
+        # Mock get_current_datetime method
+        self.start_time = "2019-02-24-21:19:54"
+        get_current_datetime_mock = Mock(name="get_current_datetime_mock")
+        get_current_datetime_mock.return_value = self.start_time
+        self.scan_runner_part.get_current_datetime = get_current_datetime_mock
+
+        # Mock the add_report_line method
+        self.add_report_line_mock = Mock(name="add_report_line_mock")
+        self.scan_runner_part.add_report_line = self.add_report_line_mock
+
+        # Mock the increment_scan_successes method
+        self.increment_scan_successes_mock = Mock(name="increment_scan_successes_mock")
+        self.scan_runner_part.increment_scan_successes = self.increment_scan_successes_mock
+
+        # Mock the increment_scan_failures method
+        self.increment_scan_failures_mock = Mock(name="increment_scan_failures_mock")
+        self.scan_runner_part.increment_scan_failures = self.increment_scan_failures_mock
+
+        # run_scan args
+        self.set_directory = "/test/set/directory"
+        self.set_name = "10um_fine"
+        self.scan_number = 21
+        self.report_filepath = "/test/sub/directory/report.txt"
+
+    def test_run_scan_succeeds_for_scan_success(self):
+        # Our mocked scan block will return nicely for a success
+        self.scan_block_mock.run.return_value = None
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.scan_block_mock.run.assert_called_once()
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.SUCCESS, self.start_time)
+
+        # Check the outcome calls
+        self.increment_scan_successes_mock.assert_called_once()
+
+    def test_run_scan_fails_for_scan_TimeoutError(self):
+        # Our mocked scan block will raise a TimeoutError when called
+        self.scan_block_mock.run.side_effect = TimeoutError()
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.scan_block_mock.run.assert_called_once()
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.TIMEOUT, self.start_time)
+
+        # Check the outcome calls
+        self.increment_scan_failures_mock.assert_called_once()
+
+    def test_run_scan_fails_for_scan_NotWriteableError(self):
+        # Our mocked scan block will raise a NotWriteableError when called
+        self.scan_block_mock.run.side_effect = NotWriteableError()
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.scan_block_mock.run.assert_called_once()
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.NOTWRITEABLE, self.start_time)
+
+        # Check the outcome calls
+        self.increment_scan_failures_mock.assert_called_once()
+
+    def test_run_scan_fails_for_scan_AbortedError(self):
+        # Our mocked scan block will raise an AbortedError when called
+        self.scan_block_mock.run.side_effect = AbortedError()
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.scan_block_mock.run.assert_called_once()
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.ABORTED, self.start_time)
+
+        # Check the outcome calls
+        self.increment_scan_failures_mock.assert_called_once()
+
+    def test_run_scan_fails_for_scan_OtherError(self):
+        # Our mocked scan block will raise a generic exception
+        exception_text = "Unidentified exception"
+        self.scan_block_mock.run.side_effect = Exception(exception_text)
+
+        # We also need to mock the logger to check it logs the exception
+        logger_mock = Mock(name="logger_mock")
+        self.scan_runner_part.log = logger_mock
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.scan_block_mock.run.assert_called_once()
+
+        # Check that we logged the unidentified exception
+        logger_mock.warning.assert_called_once_with(
+            "Unhandled exception for scan {no} in {set}: ({type_e}) {e}".format(
+                type_e=Exception,
+                no=self.scan_number,
+                set=self.set_name,
+                e=exception_text
+            ))
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.OTHER, self.start_time)
+
+        # Check the outcome calls
+        self.increment_scan_failures_mock.assert_called_once()

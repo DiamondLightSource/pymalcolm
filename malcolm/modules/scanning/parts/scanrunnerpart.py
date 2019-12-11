@@ -278,6 +278,12 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             name, self.axes_sets[axes_name], fast_dimension, slow_dimension,
             duration, alternate, continuous, repeats)
 
+    @staticmethod
+    def get_current_datetime(time_separator=":"):
+        return datetime.now().strftime("%Y-%m-%d-%H{sep}%M{sep}%S".format(
+            sep=time_separator
+        ))
+
     # noinspection PyPep8Naming
     def loadFile(self):
         # type: () -> None
@@ -330,7 +336,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 ))
 
     def create_and_get_sub_directory(self, root_directory):
-        today_str = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        today_str = self.get_current_datetime(time_separator="-")
         sub_directory = "{root}/{scan_mri}-{date}".format(
             root=root_directory, scan_mri=self.mri, date=today_str)
         self.create_directory(sub_directory)
@@ -397,12 +403,12 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             sub_directory, scan_set.name)
 
         # Run each scan
-        for number in range(1, scan_set.repeats+1):
+        for scan_number in range(1, scan_set.repeats+1):
             self.run_scan(
                 scan_set.name,
                 scan_block,
                 set_directory,
-                number,
+                scan_number,
                 report_filepath,
                 generator)
 
@@ -433,28 +439,24 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             scan_block.reset()
         try:
             scan_block.configure(generator, fileDir=scan_directory)
-            start_time = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+            start_time = self.get_current_datetime()
             scan_block.run()
         except TimeoutError:
-            self.increment_scan_failures()
             outcome = ScanOutcome.TIMEOUT
         except NotWriteableError:
-            self.increment_scan_failures()
             outcome = ScanOutcome.NOTWRITEABLE
         except AbortedError:
-            self.increment_scan_failures()
             outcome = ScanOutcome.ABORTED
         except Exception as e:
-            self.increment_scan_failures()
             outcome = ScanOutcome.OTHER
             self.log.warning(
-                "Unhandled exception for scan {no} in {set}: {e}".format(
+                "Unhandled exception for scan {no} in {set}: ({type_e}) {e}".format(
+                    type_e=type(e),
                     no=scan_number,
                     set=set_name,
                     e=e
                 ))
         else:
-            self.increment_scan_successes()
             outcome = ScanOutcome.SUCCESS
 
         # Record the outcome
@@ -489,7 +491,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
     def add_report_line(self, report_filepath, set_name,
                         scan_number, scan_outcome, start_time):
-        report_time = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+        report_time = self.get_current_datetime()
         try:
             with open(report_filepath, "a+") as report_file:
                 report_string = self.get_report_string(
