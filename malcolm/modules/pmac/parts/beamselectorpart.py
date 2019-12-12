@@ -42,7 +42,7 @@ class BeamSelectorPart(PmacChildPart):
             self.tomoAngle = float(tomoAngle)
             self.diffAngle = float(diffAngle)
             self.move_time = float(moveTime)
-        except:
+        except ValueError:
             self.tomoAngle = 0.0
             self.diffAngle = 0.0
             self.move_time = 0.500 # seconds
