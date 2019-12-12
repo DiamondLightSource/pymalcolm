@@ -639,7 +639,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         min_turnaround = max(self.min_turnaround,
                              getattr(point, "delay_after", None))
         time_arrays, velocity_arrays = profile_between_points(
-            self.axis_mapping, point, next_point, self.min_turnaround,
+            self.axis_mapping, point, next_point, min_turnaround,
             self.min_interval)
 
         start_positions = {}
