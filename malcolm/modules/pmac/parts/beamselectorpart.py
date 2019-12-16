@@ -1,3 +1,6 @@
+# Treat all division as float division even in python2
+from __future__ import division
+
 from malcolm.modules import builtin, scanning
 from malcolm.modules.pmac.parts import PmacChildPart
 from scanpointgenerator import LineGenerator, CompoundGenerator, \

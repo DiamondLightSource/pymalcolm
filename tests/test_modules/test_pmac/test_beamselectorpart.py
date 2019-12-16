@@ -1,3 +1,6 @@
+# Treat all division as float division even in python2
+from __future__ import division
+
 from malcolm.testutil import ChildTestCase
 
 from malcolm.core import Context, Process
