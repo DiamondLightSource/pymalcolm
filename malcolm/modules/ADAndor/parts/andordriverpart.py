@@ -35,7 +35,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
                        context,  # type: Context
                        completed_steps,  # type: scanning.hooks.ACompletedSteps
                        steps_to_do,  # type: scanning.hooks.AStepsToDo
-                       duration,  # type: int
+                       duration,  # type: float
                        part_info,  # type: scanning.hooks.APartInfo
                        **kwargs  # type: Any
                        ):
@@ -62,19 +62,27 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
             # Readout time can be approximated from difference in exposure time
             # and acquire period
             readout_time = child.acquirePeriod.value - child.exposure.value
-            # It seems that the difference between acquirePeriod and exposure
-            # doesn't tell the whole story, we seem to need an additional bit
-            # of readout (or something) time on top
-            fudge_factor = duration * 0.004 + 0.001
-            readout_time += fudge_factor
-            # Otherwise we can behave like a "normal" detector
-            info = scanning.infos.ExposureDeadtimeInfo(
-                readout_time, frequency_accuracy=50, min_exposure=0.0)
-            exposure = info.calculate_exposure(
-                duration, kwargs.get("exposure", 0))
-            period = exposure + readout_time
+            # Calculate the adjusted exposure time
+            (exposure, period) = self.get_adjusted_exposure_time_and_acquire_period(
+                duration, readout_time, kwargs.get("exposure", 0))
+
         self.exposure.set_value(exposure)
+        kwargs['exposure'] = exposure
         super(AndorDriverPart, self).setup_detector(
-            context, completed_steps, steps_to_do, duration, part_info,
-            exposure=exposure, **kwargs)
+            context, completed_steps, steps_to_do, duration, part_info, **kwargs)
         child.acquirePeriod.put_value(period)
+
+    @staticmethod
+    def get_adjusted_exposure_time_and_acquire_period(duration, readout_time, exposure_time):
+        # It seems that the difference between acquirePeriod and exposure
+        # doesn't tell the whole story, we seem to need an additional bit
+        # of readout (or something) time on top
+        fudge_factor = duration * 0.004 + 0.001
+        readout_time += fudge_factor
+        # Otherwise we can behave like a "normal" detector
+        info = scanning.infos.ExposureDeadtimeInfo(
+            readout_time, frequency_accuracy=50, min_exposure=0.0)
+        exposure_time = info.calculate_exposure(
+            duration, exposure_time)
+        acquire_period = exposure_time + readout_time
+        return exposure_time, acquire_period
