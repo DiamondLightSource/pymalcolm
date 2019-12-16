@@ -123,7 +123,8 @@ def make_set_points(dimension, axis, data_el, units):
     axis_el = ET.SubElement(
         data_el, "dataset", name="%s_set" % axis, source="constant",
         type="float", value=",".join(axis_vals))
-    ET.SubElement(axis_el, "attribute", name="units", source="constant",
+    if units:
+        ET.SubElement(axis_el, "attribute", name="units", source="constant",
                   value=units, type="string")
 
 

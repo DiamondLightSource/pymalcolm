@@ -6,5 +6,7 @@ panda_seq_trigger_block = make_block_creator(
     __file__, "panda_seq_trigger_block.yaml")
 panda_pulse_trigger_block = make_block_creator(
     __file__, "panda_pulse_trigger_block.yaml")
+panda_alternating_div_block = make_block_creator(
+    __file__, "panda_alternating_div_block.yaml")
 
 __all__ = check_yaml_names(globals())
