@@ -1,4 +1,3 @@
-
 from malcolm.testutil import ChildTestCase
 
 from malcolm.core import Context, Process
@@ -51,8 +50,8 @@ class TestBeamSelectorPart(ChildTestCase):
     def set_motor_attributes(self,
                              x_pos=0.5,
                              units="deg",
-                             x_acceleration=4,
-                             x_velocity=10):
+                             x_acceleration=4.0,
+                             x_velocity=10.0):
         # create some parts to mock
         # the motion controller and an axis in a CS
         self.set_attributes(
@@ -66,7 +65,7 @@ class TestBeamSelectorPart(ChildTestCase):
         self.set_motor_attributes()
         nCycles = 1
         generator = CompoundGenerator(
-            [StaticPointGenerator(nCycles)], [], [], duration=2.0)
+            [StaticPointGenerator(nCycles)], [], [], duration=4.0)
         generator.prepare()
         self.o.on_configure(self.context, 0, nCycles, {}, generator,
                          [])
@@ -76,19 +75,19 @@ class TestBeamSelectorPart(ChildTestCase):
                       csPort='CS1', timeArray=[0.002],
                       userPrograms=[8]),
             call.post('executeProfile'),
-            call.post('moveCS1', a=-0.1,
-                      moveTime=pytest.approx(0.692, abs=1e-3)),
+            call.post('moveCS1', a=-0.125,
+                      moveTime=pytest.approx(0.790, abs=1e-3)),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post('writeProfile',
-                      a=pytest.approx([0.0, 0.25, 0.5, 0.6, 0.6,
+                      a=pytest.approx([0.0, 0.25, 0.5, 0.625, 0.625,
                                        0.5, 0.25, 0.0,
-                                       -0.1, -0.1, 0.0 ]),
+                                       -0.125, -0.125, 0.0 ]),
                       csPort='CS1',
                       timeArray=pytest.approx([
-                          200000, 250000, 250000,
-                          200000, 100000, 200000,
                           250000, 250000,
-                          200000, 100000, 200000]),
+                          250000, 250000, 1000000,
+                          250000, 250000,
+                          250000, 250000, 1000000, 250000]),
                       userPrograms=pytest.approx([
                           1, 4, 2, 8, 8,
                           1, 4, 2, 8, 8, 1]),
@@ -124,20 +123,20 @@ class TestBeamSelectorPart(ChildTestCase):
                       csPort='CS1', timeArray=[0.002],
                       userPrograms=[8]),
             call.post('executeProfile'),
-            call.post('moveCS1', a=-0.1,
-                      moveTime=pytest.approx(0.692, abs=1e-3)),
+            call.post('moveCS1', a=-0.125,
+                      moveTime=pytest.approx(0.790, abs=1e-3)),
             # pytest.approx to allow sensible compare with numpy arrays
             call.post('writeProfile',
                       a=pytest.approx([0.0, 0.25, 0.5,
-                                       0.6,
+                                       0.625,
                                        0.5, 0.25, 0.0,
-                                       -0.1, 0.0]),
+                                       -0.125, 0.0]),
                       csPort='CS1',
                       timeArray=pytest.approx([
-                          200000, 250000, 250000,
-                          200000, 200000,
+                          250000, 250000, 250000,
                           250000, 250000,
-                          200000, 200000]),
+                          250000, 250000,
+                          250000, 250000]),
                       userPrograms=pytest.approx([
                           1, 4, 2, 8, 1, 4, 2, 8, 1]),
                       velocityMode=pytest.approx([
