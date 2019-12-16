@@ -1,5 +1,5 @@
 import pytest
-from mock import call, Mock
+from mock import call, Mock, patch
 
 from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import Context, Process
@@ -83,7 +83,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
             call.post('start'),
             call.when_value_matches('acquiring', True, None)]
 
-    def test_setup_detector_overwrites_exposure_in_kwargs_no_frame_transfer_mode(self):
+    @patch("malcolm.modules.ADCore.parts.DetectorDriverPart.setup_detector")
+    def test_setup_detector_overwrites_exposure_in_kwargs_no_frame_transfer_mode(self, super_setup_detector_mock):
         # Mock our arguments
         completed_steps = Mock(name="completed_steps_mock")
         steps_to_do = Mock(name="steps_to_do_mock")
@@ -91,10 +92,6 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         actual_exposure = 0.09
         actual_period = 0.098
         part_info = Mock(name="part_info")
-
-        # Mock the super setup_detector method
-        super_setup_detector_mock = Mock(name='super_setup_detector_mock')
-        DetectorDriverPart.setup_detector = super_setup_detector_mock
 
         # Mock the adjusted_exposure_time_and_acquire_period_method
         adjusted_acquisition_mock = Mock(name="adjusted_acquisition_mock")
@@ -117,7 +114,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         # Check exposure time
         self.assertEqual(actual_exposure, self.andor_driver_part.exposure.value)
 
-    def test_setup_detector_adds_exposure_in_kwargs_no_frame_transfer_mode(self):
+    @patch("malcolm.modules.ADCore.parts.DetectorDriverPart.setup_detector")
+    def test_setup_detector_adds_exposure_in_kwargs_no_frame_transfer_mode(self, super_setup_detector_mock):
         # Mock our arguments
         completed_steps = Mock(name="completed_steps_mock")
         steps_to_do = Mock(name="steps_to_do_mock")
@@ -125,10 +123,6 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         actual_exposure = 0.99
         actual_period = 0.95
         part_info = Mock(name="part_info")
-
-        # Mock the super setup_detector method
-        super_setup_detector_mock = Mock(name='super_setup_detector_mock')
-        DetectorDriverPart.setup_detector = super_setup_detector_mock
 
         # Mock the adjusted_exposure_time_and_acquire_period_method
         adjusted_acquisition_mock = Mock(name="adjusted_acquisition_mock")
@@ -151,7 +145,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         # Check exposure time
         self.assertEqual(actual_exposure, self.andor_driver_part.exposure.value)
 
-    def test_setup_detector_overwrites_exposure_in_kwargs_frame_transfer_mode(self):
+    @patch("malcolm.modules.ADCore.parts.DetectorDriverPart.setup_detector")
+    def test_setup_detector_overwrites_exposure_in_kwargs_frame_transfer_mode(self, super_setup_detector_mock):
         # Mock our arguments
         completed_steps = Mock(name="completed_steps_mock")
         steps_to_do = Mock(name="steps_to_do_mock")
@@ -159,10 +154,6 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         actual_exposure = 0.0
         accumulate_period = 0.01
         part_info = Mock(name="part_info")
-
-        # Mock the super setup_detector method
-        super_setup_detector_mock = Mock(name='super_setup_detector_mock')
-        DetectorDriverPart.setup_detector = super_setup_detector_mock
 
         # Turn on frame transfer mode and set accumulate period
         self.set_attributes(
@@ -184,7 +175,8 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         # Check exposure time
         self.assertEqual(actual_exposure, self.andor_driver_part.exposure.value)
 
-    def test_setup_detector_adds_exposure_in_kwargs_frame_transfer_mode(self):
+    @patch("malcolm.modules.ADCore.parts.DetectorDriverPart.setup_detector")
+    def test_setup_detector_adds_exposure_in_kwargs_frame_transfer_mode(self, super_setup_detector_mock):
         # Mock our arguments
         completed_steps = Mock(name="completed_steps_mock")
         steps_to_do = Mock(name="steps_to_do_mock")
@@ -192,10 +184,6 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         actual_exposure = 0.0
         accumulate_period = 0.01
         part_info = Mock(name="part_info")
-
-        # Mock the super setup_detector method
-        super_setup_detector_mock = Mock(name='super_setup_detector_mock')
-        DetectorDriverPart.setup_detector = super_setup_detector_mock
 
         # Turn on frame transfer mode and set accumulate period
         self.set_attributes(
