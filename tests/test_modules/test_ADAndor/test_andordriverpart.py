@@ -5,7 +5,6 @@ from scanpointgenerator import LineGenerator, CompoundGenerator
 from malcolm.core import Context, Process
 from malcolm.modules.ADAndor.parts import AndorDriverPart
 from malcolm.modules.ADAndor.blocks import andor_driver_block
-from malcolm.modules.ADCore.parts import DetectorDriverPart
 from malcolm.testutil import ChildTestCase
 
 
