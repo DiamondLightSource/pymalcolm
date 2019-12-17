@@ -6,7 +6,6 @@ from malcolm.modules import ADCore, scanning, builtin
 @builtin.util.no_save(
     "collectMode", "pixelAdvanceMode", "presetMode", "ignoreGate",
     "pixelsPerRun", "autoPixelsPerBuffer", "pixelsPerBuffer", "binsInSpectrum",
-    "dxp1MaxEnergy", "dxp2MaxEnergy", "dxp3MaxEnergy", "dxp4MaxEnergy",
     "inputLogicPolarity")
 class XmapDriverPart(ADCore.parts.DetectorDriverPart):
     """Part for using xmap_driver_block in a scan"""
@@ -34,8 +33,4 @@ class XmapDriverPart(ADCore.parts.DetectorDriverPart):
             autoPixelsPerBuffer="Manual",
             pixelsPerBuffer=1,
             binsInSpectrum=2048,
-            dxp1MaxEnergy=4.096,
-            dxp2MaxEnergy=4.096,
-            dxp3MaxEnergy=4.096,
-            dxp4MaxEnergy=4.096,
             inputLogicPolarity="Normal")
