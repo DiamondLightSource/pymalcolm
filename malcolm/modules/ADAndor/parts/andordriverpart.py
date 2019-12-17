@@ -72,13 +72,11 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
             context, completed_steps, steps_to_do, duration, part_info, **kwargs)
         child.acquirePeriod.put_value(period)
 
-    @staticmethod
-    def get_adjusted_exposure_time_and_acquire_period(duration, readout_time, exposure_time):
+    def get_adjusted_exposure_time_and_acquire_period(self, duration, readout_time, exposure_time):
         # It seems that the difference between acquirePeriod and exposure
         # doesn't tell the whole story, we seem to need an additional bit
         # of readout (or something) time on top
-        fudge_factor = duration * 0.004 + 0.001
-        readout_time += fudge_factor
+        readout_time += self.get_additional_readout_factor(duration)
         # Otherwise we can behave like a "normal" detector
         info = scanning.infos.ExposureDeadtimeInfo(
             readout_time, frequency_accuracy=50, min_exposure=0.0)
@@ -86,3 +84,7 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
             duration, exposure_time)
         acquire_period = exposure_time + readout_time
         return exposure_time, acquire_period
+
+    @staticmethod
+    def get_additional_readout_factor(duration):
+        return duration * 0.004 + 0.001

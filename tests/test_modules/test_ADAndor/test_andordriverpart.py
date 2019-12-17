@@ -204,3 +204,44 @@ class TestAndorDetectorDriverPart(ChildTestCase):
 
         # Check exposure time
         self.assertEqual(actual_exposure, self.andor_driver_part.exposure.value)
+
+    @patch("malcolm.modules.scanning.infos.ExposureDeadtimeInfo")
+    def test_get_adjusted_exposure_time_and_acquire_period(self, exposure_deadtime_info_mock):
+        duration = 1.0
+        readout_time = 0.1
+        exposure_time = 0.9
+
+        # Return a Mock when ExposureDeadtimeInfo constructor is called
+        exposure_deadtime_info_instance_mock = Mock(name="exposure_deadtime_info_mock_instance")
+        exposure_deadtime_info_mock.return_value = exposure_deadtime_info_instance_mock
+
+        # Mock the calculate exposure method of ExposureDeadtimeInfo
+        total_readout_time = readout_time + self.andor_driver_part.get_additional_readout_factor(duration)
+        exposure_deadtime_info_instance_mock.calculate_exposure.return_value = exposure_time - total_readout_time
+
+        expected_exposure_time = exposure_time - total_readout_time
+        expected_acquire_period = expected_exposure_time + total_readout_time
+
+        (actual_exposure_time, actual_acquire_period) = \
+            self.andor_driver_part.get_adjusted_exposure_time_and_acquire_period(
+                duration,
+                readout_time,
+                exposure_time)
+
+        # Check calls
+        exposure_deadtime_info_mock.assert_called_once_with(
+            total_readout_time, frequency_accuracy=50, min_exposure=0.0)
+        exposure_deadtime_info_instance_mock.calculate_exposure.assert_called_once_with(
+            duration, exposure_time)
+
+        # Check values
+        self.assertEqual(expected_exposure_time, actual_exposure_time)
+        self.assertEqual(expected_acquire_period, actual_acquire_period)
+
+    def test_get_additional_readout_factor(self):
+        duration = 0.5
+        expected_readout_factor = duration * 0.004 + 0.001
+
+        actual_readout_factor = self.andor_driver_part.get_additional_readout_factor(duration)
+
+        self.assertEqual(expected_readout_factor, actual_readout_factor)
