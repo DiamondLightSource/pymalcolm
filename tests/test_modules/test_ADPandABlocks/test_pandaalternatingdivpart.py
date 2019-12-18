@@ -7,21 +7,21 @@ from malcolm.modules.scanning.util import DetectorTable
 
 class TestPandAAlternatingDivPart(ChildTestCase):
     def setUp(self):
-
         self.process = Process()
         self.context = Context(self.process)
 
+        # Create a PandA to which this part communicates
         self.panda = ManagerController("ML-PANDA-01", "/tmp")
-        #self.process.add_controller(self.panda)
 
+        # Create a block for this part
         self.child = self.create_child_block(panda_alternating_div_block,
                                              self.process,
-                                             mri="ML-PANDA-01",
+                                             mri="ML-DIV-01",
                                              panda="ML-PANDA-01")
 
         self.part_under_test = \
             PandAAlternatingDivPart(name="alternatingDivPart",
-                                    mri="ML-PANDA-01")
+                                    mri="ML-DIV-01")
 
     def tearDown(self):
         pass
@@ -34,3 +34,10 @@ class TestPandAAlternatingDivPart(ChildTestCase):
                                        [2])
         self.part_under_test.on_validate(context=self.context,
                                          detectors=detector_table)
+
+
+    def test_on_report_status(self):
+        info = self.part_under_test.on_report_status(
+            context=self.context)
+
+        assert info.mri == "ML-PANDA-01"

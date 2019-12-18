@@ -2,10 +2,6 @@
     name: mri
     description: Malcolm resource id of the Block
 
-#- builtin.parameters.string:
-#    name: name
-#    description: MRI of this block (must be unique)
-
 - builtin.parameters.string:
       name: panda
       description: MRI of the PandA detector
