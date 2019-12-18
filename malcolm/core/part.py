@@ -8,7 +8,6 @@ from .request import Request
 from .hook import Hookable, Hook
 from .info import Info
 from .camel import CAMEL_RE
-from .concurrency import Spawned
 from .models import MethodModel, AttributeModel, MethodMeta
 
 
@@ -22,14 +21,14 @@ if TYPE_CHECKING:
     FieldDict = Dict[object, List[Tuple[str, Field, Callable, bool]]]
     Callback = Callable[[object, Info], None]
     Hooked = Callable[..., T]
-    ArgsGen = Callable[(List[str]), List[str]]
+    ArgsGen = Callable[[List[str]], List[str]]
 
 with Anno("The name of the Part within the Controller"):
     APartName = str
 
 # Part names are alphanumeric with underscores and dashes. Dots not allowed as
 # web gui uses dot as "something that can't appear in field or part names"
-PART_NAME_RE = re.compile("[a-zA-Z_\-0-9]*$")
+PART_NAME_RE = re.compile(r"[a-zA-Z_\-0-9]*$")
 
 
 class FieldRegistry(object):
@@ -88,16 +87,20 @@ class FieldRegistry(object):
         return attr
 
     def _add_field(self, owner, name, model, writeable_func, needs_context):
-        # type: (object, str, Field, Callable) -> None
+        # type: (object, str, Field, Callable, bool) -> None
         assert CAMEL_RE.match(name), \
             "Field %r published by %s is not camelCase" % (name, owner)
+        for o, part_fields in self.fields.items():
+            existing = [x for x in part_fields if x[0] == name]
+            assert not existing, \
+                "Field %r published by %s would overwrite one made by %s" % (
+                    name, owner, o)
         part_fields = self.fields.setdefault(owner, [])
         part_fields.append((name, model, writeable_func, needs_context))
 
 
 class InfoRegistry(object):
     def __init__(self):
-        # type: (Callable[..., Spawned]) -> None
         self._reportable_infos = {}  # type: Dict[Type[Info], Callback]
 
     def add_reportable(self, info, callback):

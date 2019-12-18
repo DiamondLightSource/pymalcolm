@@ -5,7 +5,7 @@ from .controller import Controller, AMri, ADescription, DEFAULT_TIMEOUT
 from .concurrency import Queue, Spawned, RLock, sleep
 from .define import Define
 from .errors import AbortedError, BadValueError, TimeoutError, ResponseError, \
-    UnexpectedError, YamlError, FieldError, NotWriteableError
+    UnexpectedError, YamlError, FieldError, NotWriteableError, IncompatibleError
 from .future import Future
 from .hook import Hook, Hookable, AHookable
 from .info import Info
@@ -18,7 +18,7 @@ from .models import BlockModel, AttributeModel, MethodModel, MapMeta, \
     BlockMeta, NTTable
 from .moduleutil import submodule_all
 from .notifier import Notifier
-from .part import Part, PartRegistrar, APartName
+from .part import Part, PartRegistrar, APartName, PART_NAME_RE
 from .process import Process, ProcessPublishHook, ProcessStartHook, \
     ProcessStopHook, APublished, UnpublishedInfo, UUnpublishedInfos
 from .request import Request, PathRequest, Subscribe, Unsubscribe, Get, Put, \

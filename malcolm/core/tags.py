@@ -3,7 +3,7 @@ import re
 from enum import Enum
 from annotypes import TYPE_CHECKING
 
-from malcolm.version import __version__
+from .. import __version__
 
 if TYPE_CHECKING:
     from typing import Sequence, Union, Tuple, List
@@ -30,6 +30,7 @@ class Widget(Enum):
     FLOWGRAPH = "flowgraph"  #: Boxes with lines for child block connections
     TREE = "tree"  #: A nested tree of object models editor
     PLOT = "plot"  #: Waveform plot
+    METER = "meter"  #: progress meter
 
     def tag(self):
         """Return the actual tag for the given Widget
@@ -160,4 +161,9 @@ def method_return_unpacked():
        hello.greet("me") -> "Hello me" not {"return": "Hello me"}
     """
     tag = "method:return:unpacked"
+    return tag
+
+def method_hidden():
+    """Hide this method on the GUI"""
+    tag = "method:hidden"
     return tag

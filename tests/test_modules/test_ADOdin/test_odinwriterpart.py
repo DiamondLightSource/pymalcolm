@@ -55,7 +55,7 @@ class TestOdinWriterPart(ChildTestCase):
         vds_file = 'odin2'
 
         start_time = datetime.now()
-        self.o.configure(
+        self.o.on_configure(
             self.context, self.completed_steps, self.steps_to_do,
             generator=self.generator, fileDir=tmp_dir, formatName=vds_file)
         assert self.child.handled_requests.mock_calls == [
@@ -71,7 +71,7 @@ class TestOdinWriterPart(ChildTestCase):
 
     def test_run(self):
         tmp_dir = mkdtemp() + os.path.sep
-        self.o.configure(
+        self.o.on_configure(
             self.context, self.completed_steps, self.steps_to_do,
             generator=self.generator, fileDir=tmp_dir, formatName='odin2',
             fileTemplate='a_unique_name_%s_from_gda.h5')
@@ -80,7 +80,7 @@ class TestOdinWriterPart(ChildTestCase):
         # run waits for this value
         self.child.field_registry.get_field("numCaptured").set_value(
             self.o.done_when_reaches)
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.when_value_matches('numCaptured', self.steps_to_do, None)]
         assert self.o.registrar.report.called_once
@@ -98,14 +98,14 @@ class TestOdinWriterPart(ChildTestCase):
         self.generator.prepare()
 
         with self.assertRaises(BadValueError):
-            self.o.configure(
+            self.o.on_configure(
                 self.context, self.completed_steps, self.steps_to_do,
                 generator=self.generator, fileDir=tmp_dir, formatName='odin3')
 
         self.generator = CompoundGenerator([ys, xs], [
             SquashingExcluder(axes=["x", "y"])], [], 0.1)
         self.generator.prepare()
-        self.o.configure(
+        self.o.on_configure(
             self.context, self.completed_steps, self.steps_to_do,
             generator=self.generator, fileDir=tmp_dir, formatName='odin2')
 
@@ -149,8 +149,8 @@ class TestOdinWriterPart(ChildTestCase):
 
         # Call configure to create the VDS
         # This should work with relative paths but doesn't due to VDS bug
-        self.o.configure(self.context, 0, 6, compound, formatName='odin123',
-                         fileDir=tmp_dir, fileTemplate="%s.h5")
+        self.o.on_configure(self.context, 0, 6, compound, formatName='odin123',
+                            fileDir=tmp_dir, fileTemplate="%s.h5")
 
         # Open the created VDS file and dataset to check values
         vds_path = os.path.join(tmp_dir, 'odin123.h5')

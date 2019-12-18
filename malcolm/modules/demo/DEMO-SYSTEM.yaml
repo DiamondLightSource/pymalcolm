@@ -1,0 +1,14 @@
+# Define a directory to store config in
+- builtin.defines.tmp_dir:
+    name: config_dir
+
+- system.defines.redirector_iocs:
+    name: iocs
+    yamlname: BL18B-ML-MALC-TST
+
+- system.blocks.system_block:
+    mri_prefix: $(yamlname)
+    iocs: $(iocs)
+    pv_prefix: $(yamlname)
+    subnet_validation: 0
+    config_dir: $(config_dir)

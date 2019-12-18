@@ -10,7 +10,8 @@ from malcolm.modules import builtin
 from .infos import ConfigureParamsInfo
 
 if TYPE_CHECKING:
-    from typing import Dict, Callable
+    from typing import Dict, Callable, TypeVar
+    T = TypeVar("T")
 
 with Anno("The Infos returned from other Parts"):
     APartInfo = Mapping[str, Array[Info]]
@@ -46,6 +47,17 @@ AContext = builtin.hooks.AContext
 ControllerHook = builtin.hooks.ControllerHook
 
 
+def check_array_info(anno, value):
+    # type: (T, Any) -> T
+    assert anno.is_array and issubclass(anno.typ, Info), \
+        "Expected Anno wrapping Array[something], got %s" % anno
+    ret = anno(value)
+    bad = [x for x in ret if not isinstance(x, anno.typ)]
+    assert not bad, \
+        "Passed objects %s that are not of type %s" % (bad, anno.typ)
+    return ret
+
+
 class ValidateHook(ControllerHook[UParameterTweakInfos]):
     """Called at validate() to check parameters are valid"""
 
@@ -71,7 +83,7 @@ class ValidateHook(ControllerHook[UParameterTweakInfos]):
         """Check that all returned infos are ParameterTweakInfo that list
         the parameters that need to be changed to make them compatible with
         this part. ValidateHook will be re-run with the modified parameters."""
-        return AParameterTweakInfos(ret)
+        return check_array_info(AParameterTweakInfos, ret)
 
 
 class ReportStatusHook(ControllerHook[UInfos]):
@@ -81,7 +93,7 @@ class ReportStatusHook(ControllerHook[UInfos]):
     def validate_return(self, ret):
         # type: (UInfos) -> AInfos
         """Check that all parts return Info objects relevant to other parts"""
-        return AInfos(ret)
+        return check_array_info(AInfos, ret)
 
 
 with Anno("Number of steps already completed"):
@@ -142,7 +154,7 @@ class ConfigureHook(ControllerHook[UInfos]):
         # type: (UInfos) -> AInfos
         """Check that all parts return Info objects for storing as attributes
         """
-        return AInfos(ret)
+        return check_array_info(AInfos, ret)
 
 
 class PostConfigureHook(ControllerHook[None]):
@@ -153,6 +165,10 @@ class PostConfigureHook(ControllerHook[None]):
         # type: (APart, AContext, APartInfo) -> None
         super(PostConfigureHook, self).__init__(
             part, context, part_info=part_info)
+
+
+class PreRunHook(ControllerHook[None]):
+    """Called at the start of run()"""
 
 
 class RunHook(ControllerHook[None]):
@@ -214,10 +230,6 @@ class SeekHook(ControllerHook[None]):
             part, context, completed_steps=completed_steps,
             steps_to_do=steps_to_do, part_info=part_info, generator=generator,
             axesToMove=axesToMove, **kwargs)
-
-
-class ResumeHook(ControllerHook[None]):
-    """Called at resume() to continue a paused scan"""
 
 
 class AbortHook(ControllerHook[None]):

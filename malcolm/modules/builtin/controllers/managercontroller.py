@@ -144,13 +144,13 @@ class ManagerController(StatefulController):
         self.set_writeable_in(
             self.field_registry.add_method_model(self.save), ss.READY)
 
-    def _run_git_cmd(self, *args):
+    def _run_git_cmd(self, *args, **kwargs):
         # Run git command, don't care if it fails, logging the output
-        if self.use_git and os.path.isdir(
-                os.path.join(self.config_dir, ".git")):
+        cwd = kwargs.get("cwd", self.config_dir)
+        if self.use_git:
             try:
                 output = subprocess.check_output(
-                    ("git",) + self.git_config + args, cwd=self.config_dir)
+                    ("git",) + self.git_config + args, cwd=cwd)
             except subprocess.CalledProcessError as e:
                 self.log.warning("Git command failed: %s\n%s", e, e.output)
                 return None
@@ -162,8 +162,6 @@ class ManagerController(StatefulController):
         super(ManagerController, self).do_init()
         # Try and make it a git repo, don't care if it fails
         self._run_git_cmd("init")
-        self._run_git_cmd("commit", "--allow-empty", "-m",
-                          "Initial commit for %s" % self.mri)
         # List the config_dir and add to choices
         self._set_layout_names()
         # If given a default config, load this
@@ -173,7 +171,10 @@ class ManagerController(StatefulController):
             # This will trigger all parts to report their layout, making sure
             # the layout table has a valid value. This will also call
             # self._update_block_endpoints()
-            self.set_layout(LayoutTable([], [], [], [], []))
+            self.set_default_layout()
+
+    def set_default_layout(self):
+        self.set_layout(LayoutTable([], [], [], [], []))
 
     def set_layout(self, value):
         """Set the layout table value. Called on attribute put"""
@@ -452,6 +453,8 @@ class ManagerController(StatefulController):
             for p, c in self.create_part_contexts(only_visible=False).items())
         text = json_encode(structure, indent=2)
         filename = self._validated_config_filename(design)
+        if filename.startswith("/tmp"):
+            self.log.warning("Saving to tmp directory %s" % filename)
         with open(filename, "w") as f:
             f.write(text)
         # Run a sync command to make sure we flush this file to disk

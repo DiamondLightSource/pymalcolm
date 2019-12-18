@@ -6,7 +6,6 @@ from scanpointgenerator import Point
 
 from malcolm.core import APartName, Block, Attribute, Context, PartRegistrar
 from malcolm.modules import builtin, scanning, pmac
-
 from ..util import SequencerTable, Trigger
 
 if TYPE_CHECKING:
@@ -99,10 +98,12 @@ def _what_moves_most(point, axis_mapping):
         if diff_cts != 0:
             diffs[s] = abs(diff_cts)
             compare_increasing[s] = (compare_cts, diff_cts > 0)
+
     assert diffs, \
         "Can't work out a compare point for %s, maybe none of the axes " \
         "connected to the PandA are moving during the scan point?" % \
         point.positions
+
     # Sort on abs(diff), take the biggest
     axis_name = sorted(diffs, key=diffs.get)[-1]
     compare_cts, increasing = compare_increasing[axis_name]
@@ -142,6 +143,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         self.axis_mapping = {}
         # The minimum turnaround time for non-joined points
         self.min_turnaround = 0
+        # The minimum time between turnaround points
+        self.min_interval = 0
         # {(scannable, increasing): trigger_enum}
         self.trigger_enums = {}
         # The panda Block we will be prodding
@@ -151,12 +154,14 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(PandASeqTriggerPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ReportStatusHook, self.report_status)
-        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
-        registrar.hook(scanning.hooks.RunHook, self.run)
+        registrar.hook(scanning.hooks.ReportStatusHook, self.on_report_status)
+        registrar.hook((scanning.hooks.ConfigureHook,
+                        scanning.hooks.SeekHook,
+                        scanning.hooks.PostRunArmedHook), self.on_configure)
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
 
     @add_call_types
-    def report_status(self, context):
+    def on_report_status(self, context):
         # type: (scanning.hooks.AContext) -> scanning.hooks.UInfos
         child = context.block_view(self.mri)
         # Work out if we need the motor controller to send start of row triggers
@@ -217,14 +222,14 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
-                  generator,  # type: scanning.hooks.AGenerator
-                  axesToMove  # type: scanning.hooks.AAxesToMove
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     completed_steps,  # type: scanning.hooks.ACompletedSteps
+                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     part_info,  # type: scanning.hooks.APartInfo
+                     generator,  # type: scanning.hooks.AGenerator
+                     axesToMove  # type: scanning.hooks.AAxesToMove
+                     ):
         # type: (...) -> None
         self.generator = generator
         self.loaded_up_to = completed_steps
@@ -244,8 +249,10 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             assert len(infos) == 1, \
                 "Expected 0 or 1 MinTurnaroundInfos, got %d" % len(infos)
             self.min_turnaround = max(pmac.util.MIN_TIME, infos[0].gap)
+            self.min_interval = infos[0].interval
         else:
             self.min_turnaround = pmac.util.MIN_TIME
+            self.min_interval = pmac.util.MIN_INTERVAL
 
         # Get panda Block, and the sequencer Blocks so we can do some checking
         self.panda, seqa, seqb = _get_blocks(context, panda_mri)
@@ -284,7 +291,8 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         how long it is moving in the opposite direction from where we want it to
         be going for point"""
         time_arrays, velocity_arrays = pmac.util.profile_between_points(
-            self.axis_mapping, self.last_point, point, self.min_turnaround)
+            self.axis_mapping, self.last_point, point, self.min_turnaround,
+            self.min_interval)
         info = self.axis_mapping[axis_name]
         time_array = time_arrays[info.scannable]
         velocity_array = velocity_arrays[info.scannable]
@@ -311,10 +319,19 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
             point = self.generator.get_point(i)
             half_frame = int(round(point.duration / TICK / 2))
             start_of_row = False
+
             if self.axis_mapping:
-                if self.last_point is None or not pmac.util.points_joined(
-                        self.axis_mapping, self.last_point, point):
+                if self.last_point is None:
+                    # If no last point, we are the first point in
+                    # an acquisition.
+                    # If the motors are moving during this point then set
+                    # start_of_row so that we wait for triggers
+                    static = (point.positions == point.lower == point.upper)
+                    start_of_row = not static
+                elif not pmac.util.points_joined(self.axis_mapping,
+                                                 self.last_point, point):
                     start_of_row = True
+
             if start_of_row and self.trigger_enums:
                 # Position compare
                 # First row, or rows not joined
@@ -360,7 +377,7 @@ class PandASeqTriggerPart(builtin.parts.ChildPart):
         seq_table.put_value(table)
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
         # Call sequence table enable
         self.panda.seqSetEnable()

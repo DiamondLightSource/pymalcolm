@@ -40,7 +40,7 @@ Please arrange imports with the following style
     from mock import patch
 
     # Local package imports
-    from malcolm.version import __version__
+    from malcolm.core import Block
 
 Please follow `Google's python style`_ guide wherever possible.
 
@@ -141,8 +141,7 @@ in the setup function (not in __init__). e.g.:
             registrar.hook((scanning.hooks.ConfigureHook,
                             scanning.hooks.PostRunArmedHook,
                             scanning.hooks.SeekHook), self.configure)
-            registrar.hook((scanning.hooks.RunHook,
-                            scanning.hooks.ResumeHook), self.run)
+            registrar.hook(scanning.hooks.RunHook, self.run)
             # Tell the controller to expose some extra configure parameters
             registrar.report(scanning.hooks.ConfigureHook.create_info(
                 self.configure))
@@ -196,7 +195,10 @@ Release Checklist
 
 Before a new release, please go through the following checklist:
 
-* Bump version in malcolm/version.py
+* Choose a new PEP440_ compliant release number (but with dashes until we move to python3)
 * Add a release note in CHANGELOG.rst
 * Git tag the version with message from CHANGELOG
 * Push to github and travis will make a release on pypi
+* Push to internal gitlab and do a dls-release.py of the tag
+
+.. _PEP440: https://www.python.org/dev/peps/pep-0440

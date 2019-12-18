@@ -1,0 +1,19 @@
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="100px" height="100px" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <g transform="scale(1.5625)">
+  <rect x="24.55" y="10.55" width="14.9" height="14.9" fill="#2523A8" stroke="#2523A8" stroke-linejoin="round" stroke-width="1.1px"/>
+  <rect x="8.275" y="32.275" width="7.45" height="7.45" fill="#2523A8" stroke="#2523A8" stroke-linejoin="round" stroke-width=".55"/>
+  <rect x="28.275" y="32.275" width="7.45" height="7.45" fill="#2523A8" stroke="#2523A8" stroke-linejoin="round" stroke-width=".55001px"/>
+  <rect x="48.275" y="32.275" width="7.45" height="7.45" fill="#2523A8" stroke="#2523A8" stroke-linejoin="round" stroke-width=".55001px"/>
+  <path d="m31.391 25.715c0 3.2833-9.4408 3.0171-9.4408 3.0171s-9.775-0.35495-9.8585 1.5973l-0.08355 1.9522" fill="none" stroke="#000" stroke-width=".97415px"/>
+  <path d="m32.381 25.627c0 3.2833 9.4408 3.0171 9.4408 3.0171s9.775-0.35495 9.8585 1.5973l0.08355 1.9522" fill="none" stroke="#000" stroke-width=".97415px"/>
+  <path d="m31.908 25.463-0.08839 6.8059" fill="none" stroke="#000" stroke-width="1px"/>
+  <text x="25.544233" y="20.866486" fill="#8F8F8F" font-family="Bitstream Vera Sans" font-size="10px" xml:space="preserve"><tspan x="25.544233" y="20.866486">{}</tspan></text>
+  <rect x="17.105" y="44.328" width="4.6901" height="5.0059" fill="#2523A8" stroke="#2523A8" stroke-linejoin="round" stroke-width=".35772"/>
+  <rect x="29.696" y="44.328" width="4.6901" height="5.0059" fill="#2523A8" stroke="#2523A8" stroke-linejoin="round" stroke-width=".35772px"/>
+  <rect x="42.287" y="44.328" width="4.6901" height="5.0059" fill="#2523A8" stroke="#2523A8" stroke-linejoin="round" stroke-width=".35772px"/>
+  <path d="m31.657 39.92c0 2.2062-5.9434 2.0273-5.9434 2.0273s-6.1538-0.2385-6.2064 1.0733l-0.0526 1.3118" fill="none" stroke="#000" stroke-width=".63358px"/>
+  <path d="m32.281 39.86c0 2.2062 5.9434 2.0273 5.9434 2.0273s6.1538-0.2385 6.2064 1.0733l0.0526 1.3118" fill="none" stroke="#000" stroke-width=".63358px"/>
+  <path d="m31.983 39.75-0.05565 4.5731" fill="none" stroke="#000" stroke-width=".65039px"/>
+ </g>
+</svg>

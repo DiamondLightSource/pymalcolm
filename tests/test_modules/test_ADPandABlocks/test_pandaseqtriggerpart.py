@@ -77,7 +77,7 @@ class GatePart(Part):
         registrar.add_method_model(self.enable, "forceSet")
 
 
-class TestPcompPart(ChildTestCase):
+class TestPandaSeqTriggerPart(ChildTestCase):
 
     def setUp(self):
         self.process = Process("Process")
@@ -171,7 +171,7 @@ class TestPcompPart(ChildTestCase):
         steps_to_do = 8
         self.set_motor_attributes()
         axes_to_move = ["x", "y"]
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {}, generator,
             axes_to_move)
         assert self.o.generator is generator
@@ -200,7 +200,7 @@ class TestPcompPart(ChildTestCase):
                table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         # Check we pressed the gate part
         self.gate_part.enable_set.assert_called_once()
 
@@ -216,7 +216,7 @@ class TestPcompPart(ChildTestCase):
         self.set_attributes(self.child_seq1, bita="TTLIN1.VAL")
         self.set_attributes(self.child_seq2, bita="TTLIN1.VAL")
         axes_to_move = ["x", "y"]
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {}, generator,
             axes_to_move)
         assert self.o.generator is generator
@@ -243,7 +243,7 @@ class TestPcompPart(ChildTestCase):
             table.oute2 == table.outf2 == [0, 0, 0, 0, 0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         # Check we pressed the gate part
         self.gate_part.enable_set.assert_called_once()
 
@@ -257,7 +257,7 @@ class TestPcompPart(ChildTestCase):
         self.set_motor_attributes()
         axes_to_move = ["x", "y"]
         with self.assertRaises(AssertionError):
-            self.o.configure(
+            self.o.on_configure(
                 self.context, completed_steps, steps_to_do, {}, generator,
                 axes_to_move)
 
@@ -267,7 +267,7 @@ class TestPcompPart(ChildTestCase):
         generator.prepare()
         completed_steps = 0
         steps_to_do = 5
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {}, generator,
             [])
         assert self.o.generator is generator
@@ -292,3 +292,22 @@ class TestPcompPart(ChildTestCase):
             table.oute2 == table.outf2 == [0, 0]
         # Check we didn't press the gate part
         self.gate_part.enable_set.assert_not_called()
+
+    def test_configure_single_point_multi_frames(self):
+        # This test uses PCAP to generate a static point test.
+        # The test moves the motors to a new position and then generates
+        # 5 triggers at that position
+
+        xs = LineGenerator("x", "mm", 0.0, 0.0, 5, alternate=True)
+        ys = LineGenerator("y", "mm", 1.0, 1.0, 1)
+        generator = CompoundGenerator([ys,xs], [], [], 1.0)
+        generator.prepare()
+
+        steps_to_do = 5
+        self.assertEqual(steps_to_do, generator.size)
+
+        completed_steps = 0
+        self.set_motor_attributes()
+        axes_to_move = ["x", "y"]
+
+        self.o.on_configure(self.context, completed_steps, steps_to_do, {}, generator, axes_to_move)

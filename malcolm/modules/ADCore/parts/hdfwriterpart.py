@@ -10,8 +10,7 @@ from malcolm.core import APartName, Future, Info, Block, PartRegistrar, \
     BooleanMeta, Widget, config_tag, TimeoutError
 from malcolm.modules import builtin, scanning
 from ..infos import CalculatedNDAttributeDatasetInfo, NDArrayDatasetInfo, \
-    NDAttributeDatasetInfo, \
-    AttributeDatasetType, FilePathTranslatorInfo
+    NDAttributeDatasetInfo, FilePathTranslatorInfo
 from ..util import APartRunsOnWindows, FRAME_TIMEOUT
 
 if TYPE_CHECKING:
@@ -46,14 +45,18 @@ def create_dataset_infos(name, part_info, generator, filename):
     assert len(ndarray_infos) in (0, 1), \
         "More than one NDArrayDatasetInfo defined %s" % ndarray_infos
 
+    # Default detector rank is 2d
+    detector_rank = 2
+
     # Add the primary datasource
     if ndarray_infos:
         ndarray_info = ndarray_infos[0]
+        detector_rank = ndarray_info.rank
         yield scanning.infos.DatasetProducedInfo(
             name="%s.data" % name,
             filename=filename,
             type=scanning.util.DatasetType.PRIMARY,
-            rank=ndarray_info.rank + generator_rank,
+            rank=detector_rank + generator_rank,
             path="/entry/detector/detector",
             uniqueid=uniqueid)
 
@@ -64,33 +67,19 @@ def create_dataset_infos(name, part_info, generator, filename):
                 name="%s.%s" % (name, calculated_info.name),
                 filename=filename,
                 type=scanning.util.DatasetType.SECONDARY,
-                rank=ndarray_info.rank + generator_rank,
+                rank=detector_rank + generator_rank,
                 path="/entry/%s/%s" % (
                     calculated_info.name, calculated_info.name),
                 uniqueid=uniqueid)
 
     # Add all the other datasources
     for dataset_info in NDAttributeDatasetInfo.filter_values(part_info):
-        if dataset_info.type is AttributeDatasetType.DETECTOR:
-            # Something like I0
-            name = "%s.data" % dataset_info.name
-            dtype = scanning.util.DatasetType.PRIMARY
-        elif dataset_info.type is AttributeDatasetType.MONITOR:
-            # Something like Iref
-            name = "%s.data" % dataset_info.name
-            dtype = scanning.util.DatasetType.MONITOR
-        elif dataset_info.type is AttributeDatasetType.POSITION:
-            # Something like x
-            name = "%s.value" % dataset_info.name
-            dtype = scanning.util.DatasetType.POSITION_VALUE
-        else:
-            raise AttributeError("Bad dataset type %r, should be a %s" % (
-                dataset_info.type, AttributeDatasetType))
         yield scanning.infos.DatasetProducedInfo(
-            name=name,
+            name=dataset_info.name,
             filename=filename,
-            type=dtype,
-            rank=dataset_info.rank + generator_rank,
+            type=dataset_info.type,
+            # All attributes share the same rank as the detector image
+            rank=detector_rank + generator_rank,
             path="/entry/%s/%s" % (dataset_info.name, dataset_info.name),
             uniqueid=uniqueid)
 
@@ -134,7 +123,8 @@ def make_set_points(dimension, axis, data_el, units):
     axis_el = ET.SubElement(
         data_el, "dataset", name="%s_set" % axis, source="constant",
         type="float", value=",".join(axis_vals))
-    ET.SubElement(axis_el, "attribute", name="units", source="constant",
+    if units:
+        ET.SubElement(axis_el, "attribute", name="units", source="constant",
                   value=units, type="string")
 
 
@@ -184,7 +174,7 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
     ndarray_infos = NDArrayDatasetInfo.filter_values(part_info)
     if not ndarray_infos:
         # Still need to put the data in the file, so manufacture something
-        primary_rank = 1
+        primary_rank = 2
     else:
         primary_rank = ndarray_infos[0].rank
 
@@ -209,7 +199,7 @@ def make_layout_xml(generator, part_info, write_all_nd_attributes=False):
     # And then any other attribute sources of data
     for dataset_info in NDAttributeDatasetInfo.filter_values(part_info):
         # if we are a secondary source, use the same rank as the det
-        attr_el = make_nxdata(dataset_info.name, dataset_info.rank,
+        attr_el = make_nxdata(dataset_info.name, primary_rank,
                               entry_el, generator, link=True)
         ET.SubElement(attr_el, "dataset", name=dataset_info.name,
                       source="ndattribute", ndattribute=dataset_info.attr)
@@ -269,10 +259,10 @@ class HDFWriterPart(builtin.parts.ChildPart):
             write_all_nd_attributes)
 
     @add_call_types
-    def reset(self, context):
+    def on_reset(self, context):
         # type: (scanning.hooks.AContext) -> None
-        super(HDFWriterPart, self).reset(context)
-        self.abort(context)
+        super(HDFWriterPart, self).on_reset(context)
+        self.on_abort(context)
         # HDFWriter might have still be writing so stop doesn't guarantee
         # flushed all frames start_future is in a different context so
         # can't wait for it, so just wait for the running attribute to be false
@@ -287,34 +277,33 @@ class HDFWriterPart(builtin.parts.ChildPart):
         # type: (PartRegistrar) -> None
         super(HDFWriterPart, self).setup(registrar)
         # Hooks
-        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
         registrar.hook((scanning.hooks.PostRunArmedHook,
-                        scanning.hooks.SeekHook), self.seek)
-        registrar.hook((scanning.hooks.RunHook,
-                        scanning.hooks.ResumeHook), self.run)
-        registrar.hook(scanning.hooks.PostRunReadyHook, self.post_run_ready)
-        registrar.hook(scanning.hooks.AbortHook, self.abort)
+                        scanning.hooks.SeekHook), self.on_seek)
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
+        registrar.hook(scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
+        registrar.hook(scanning.hooks.AbortHook, self.on_abort)
         # Attributes
         registrar.add_attribute_model("writeAllNdAttributes",
                                       self.write_all_nd_attributes,
                                       self.write_all_nd_attributes.set_value)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
-            self.configure))
+            self.on_configure))
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  part_info,  # type: scanning.hooks.APartInfo
-                  generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.hooks.AFileDir
-                  formatName="det",  # type: scanning.hooks.AFormatName
-                  fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     completed_steps,  # type: scanning.hooks.ACompletedSteps
+                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     part_info,  # type: scanning.hooks.APartInfo
+                     generator,  # type: scanning.hooks.AGenerator
+                     fileDir,  # type: scanning.hooks.AFileDir
+                     formatName="det",  # type: scanning.hooks.AFormatName
+                     fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
+                     ):
         # type: (...) -> scanning.hooks.UInfos
         # On initial configure, expect to get the demanded number of frames
         self.done_when_reaches = completed_steps + steps_to_do
@@ -376,11 +365,11 @@ class HDFWriterPart(builtin.parts.ChildPart):
         return dataset_infos
 
     @add_call_types
-    def seek(self,
-             context,  # type: scanning.hooks.AContext
-             completed_steps,  # type: scanning.hooks.ACompletedSteps
-             steps_to_do,  # type: scanning.hooks.AStepsToDo
-             ):
+    def on_seek(self,
+                context,  # type: scanning.hooks.AContext
+                completed_steps,  # type: scanning.hooks.ACompletedSteps
+                steps_to_do,  # type: scanning.hooks.AStepsToDo
+                ):
         # type: (...) -> None
         # This is rewinding or setting up for another batch, so the detector
         # will skip to a uniqueID that has not been produced yet
@@ -394,7 +383,7 @@ class HDFWriterPart(builtin.parts.ChildPart):
             "arrayCounterReadback", greater_than_zero)
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
         context.wait_all_futures(self.array_future)
         context.unsubscribe_all()
@@ -429,14 +418,14 @@ class HDFWriterPart(builtin.parts.ChildPart):
             child.flushNow()
 
     @add_call_types
-    def post_run_ready(self, context):
+    def on_post_run_ready(self, context):
         # type: (scanning.hooks.AContext) -> None
         # Do one last flush and then we're done
         child = context.block_view(self.mri)
         self._flush_if_still_writing(child)
 
     @add_call_types
-    def abort(self, context):
+    def on_abort(self, context):
         # type: (scanning.hooks.AContext) -> None
         child = context.block_view(self.mri)
         child.stop()

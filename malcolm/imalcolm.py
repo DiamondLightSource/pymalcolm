@@ -65,6 +65,9 @@ def make_logging_config(args):
                 "format": "%(asctime)s - %(levelname)6s - %(name)s\n"
                           "    %(message)s"
             },
+            "syslog": {
+                "format": "%(name)s: %(message)s\n##%(extra)s##"
+            },
         },
 
         "handlers": {
@@ -84,6 +87,13 @@ def make_logging_config(args):
             #    "backupCount": 4,
             #    "encoding": "utf8"
             #},
+
+            "syslog_graylog": {
+                "class": "malcolm.syslogger.JsonSysLogHandler",
+                "formatter": "syslog",
+                "address": "/dev/log",
+                "facility": "local0"
+            },
 
             "graylog_gelf": {
                 "class": "pygelf.GelfTcpHandler",
@@ -119,7 +129,7 @@ def make_logging_config(args):
 
         "root": {
             "level": "DEBUG",
-            "handlers": ["graylog_gelf", "console"],
+            "handlers": ["graylog_gelf", "console", "syslog_graylog"],
         }
     }
 
@@ -282,7 +292,7 @@ block = self.block_view("<mri>")
     if profiler.running and not profiler.stopping:
         profiler.stop()
 
-    cothread.CallbackResult(process.stop)
+    cothread.CallbackResult(process.stop, timeout=0.1)
     cothread.CallbackResult(cothread.Quit)
 
 
@@ -310,7 +320,7 @@ if __name__ == "__main__":
         # DLS developed
         "annotypes==0.20",
         "cothread==2.14",
-        "scanpointgenerator==2.3",
+        "scanpointgenerator==3.0",
         "vdsgen==0.5.1"
     )
     #sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "cothread"))

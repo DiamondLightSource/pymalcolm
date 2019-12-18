@@ -8,6 +8,74 @@ Unreleased_
 
 Nothing yet
 
+`4-2b4`_ - 2019-12-04
+---------------------
+
+Added:
+
+- configure() now returns validated parameters rather than nothing
+
+
+`4-2b3`_ - 2019-11-28
+---------------------
+
+Fixed:
+
+- pmac now makes sparse points when doing PCOMP (previously it only did this on
+  start of row triggering)
+- Improve git logging of saved names
+- Expose axis setpoint datasets on a per-file basis
+
+
+`4-2b2`_ - 2019-11-27
+---------------------
+
+Fixed:
+
+- PandASeqTriggerPart now reconfigures on seek to work with 3D scans
+- PandA Blocks with HEALTH don't cause an error
+
+
+`4-2b1`_ - 2019-11-27
+---------------------
+
+Changed:
+
+- Scanpointgenerator bumped to 3.0.0. Adds post_delay attribute to
+  CompoundGenerator
+- Add enable column to Detector Table
+- PMAC module now calculates more efficient turnaround points, only placing
+  PVT points where acceleration changes. This requires pmac module version
+  2-4-14 or later, which includes a new version of the trajectory scan program
+- Versioning now taken from git describe
+
+Added:
+
+- System Block to hold comms modules and supporting IOCs that can be
+  extracted from the DLS redirector
+- Profiling web server contains link to its profiles page
+- AttributePreRunPart to allow shutters to be opened and closed around runs
+- Added SysLog JSON logger which will be forwarded to Graylog
+- PandAPulseTriggerPart to multiply out triggers for detectors
+
+Fixed:
+
+- Clear dataset table on reset()
+- Fixed restful server support
+- Bugfixes for malcolmjs (widget:meter, navbar, colours) bumping release to
+  1.7.8
+
+
+`4-1-1`_ - 2019-11-18
+---------------------
+
+Fixed:
+
+- Faulty detectors marked as such at startup, and only fail the scan they are in
+  if they are used (visible and configured in Detector Table)
+- Fix Odin dataset names passed via the Dataset Table
+
+
 `4-1`_ - 2019-09-26
 -------------------
 
@@ -31,6 +99,8 @@ Added:
   to avoid unperformant VDS snake scans
 - Some new icons for PandA
 - PMAC now generates sparse points for lines when not being asked to trigger
+- Preliminary Detector Table support to allow disabling detectors at configure()
+
 
 `4-0`_ - 2019-07-05
 -------------------
@@ -218,6 +288,7 @@ Fixed:
 - Trajectory scan back to level driven pulses as 24V GPIO has soft falling edges
 - Update malcolmjs to 1.5.1
 
+
 `3-0a9`_ - 2018-12-03
 ---------------------
 
@@ -238,6 +309,7 @@ Fixed:
 
 - PandA now reports correct datasets to the HDF writer to link
 - ADAndor does exposure time in a more standard way
+
 
 `3-0a7`_ - 2018-11-27
 ---------------------
@@ -263,6 +335,7 @@ Fixed:
 
 - p4p imalcolm packaging and >= handling
 - Some documentation updates
+
 
 `3-0a5`_ - 2018-10-17
 ---------------------
@@ -309,6 +382,7 @@ Fixed:
 - Added widget:tree and widget:multilinetextupdate and removed widget:title
 - rbv_suff is now rbv_suffix
 
+
 `3-0a3`_ - 2018-07-25
 ---------------------
 
@@ -317,12 +391,14 @@ Fixed:
 - PMAC move to start uses the right timeout (instead of fixed 5 seconds)
 - SimultaneousAxes now works from axesToMove instead of generator axes
 
+
 `3-0a2`_ - 2018-07-17
 ---------------------
 
 Fixed:
 
 - DLS specific require paths
+
 
 `3-0a1`_ - 2018-07-16
 ---------------------
@@ -384,12 +460,14 @@ Changed:
 
 - Major refactor, many breaking changes
 
+
 `2-0a6`_ - 2016-10-03
 ---------------------
 Changed:
 
 - Attributes no longer serialize to NTAttribute, they now use NTScalar,
   NTScalarArray, NTTable or NTUnion
+
 
 `2-0a5`_ - 2016-10-03
 ---------------------
@@ -401,6 +479,7 @@ Fixed:
 
 - Extra padding point in turnaround in PMACTrajectoryScan
 
+
 `2-0a4`_ - 2016-09-20
 ---------------------
 Added:
@@ -409,11 +488,13 @@ Added:
 - Pause, Abort and Rewind
 - PVA: Get and Post for client
 
+
 `2-0a3`_ - 2016-08-31
 ---------------------
 Added:
 
 - imalcolm client script
+
 
 `2-0a2`_ - 2016-08-30
 ---------------------
@@ -423,17 +504,24 @@ Added:
 - PVAccess comms
 - Dummy PMAC trajectory scan
 
+
 2-0a1 - 2016-08-15
 ------------------
 Added:
 
 - Initial release with hello world and websocket comms
 
-.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-1...HEAD
-.. _4-1: https://github.com/dls-controls/pymalcolm/compare/4-0..4-1
-.. _4-0: https://github.com/dls-controls/pymalcolm/compare/4-0b2..4-0
-.. _4-0b2: https://github.com/dls-controls/pymalcolm/compare/4-0b1..4-0b2
-.. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-5-1..4-0b1
+
+.. _Unreleased: https://github.com/dls-controls/pymalcolm/compare/4-2b4...HEAD
+.. _4-2b4: https://github.com/dls-controls/pymalcolm/compare/4-2b3...4-2b4
+.. _4-2b3: https://github.com/dls-controls/pymalcolm/compare/4-2b2...4-2b3
+.. _4-2b2: https://github.com/dls-controls/pymalcolm/compare/4-2b1...4-2b2
+.. _4-2b1: https://github.com/dls-controls/pymalcolm/compare/4-1-1...4-2b1
+.. _4-1-1: https://github.com/dls-controls/pymalcolm/compare/4-1...4-1-1
+.. _4-1: https://github.com/dls-controls/pymalcolm/compare/4-0...4-1
+.. _4-0: https://github.com/dls-controls/pymalcolm/compare/4-0b2...4-0
+.. _4-0b2: https://github.com/dls-controls/pymalcolm/compare/4-0b1...4-0b2
+.. _4-0b1: https://github.com/dls-controls/pymalcolm/compare/3-5-1...4-0b1
 .. _3-5-1: https://github.com/dls-controls/pymalcolm/compare/3-5...3-5-1
 .. _3-5: https://github.com/dls-controls/pymalcolm/compare/3-4-1...3-5
 .. _3-4-1: https://github.com/dls-controls/pymalcolm/compare/3-4...3-4-1

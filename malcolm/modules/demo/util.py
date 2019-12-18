@@ -16,9 +16,22 @@ def interesting_pattern(point):
     """This function is interesting in x and y in range -10..10. Given a Point,
     use the x and y values contained in it to make a float value in range 0..1
     """
-    # Grab the x and y values out of the point
-    x = [v for k, v in sorted(point.positions.items()) if "x" in k.lower()][0]
-    y = [v for k, v in sorted(point.positions.items()) if "y" in k.lower()][0]
+    names = sorted(point.positions)
+    # See if we are scanning x vs y
+    x_names = [k for k in names if "x" in k.lower()]
+    y_names = [k for k in names if "y" in k.lower()]
+    if x_names and y_names:
+        # If we are then use them
+        x = point.positions[x_names[0]]
+        y = point.positions[y_names[0]]
+    elif names:
+        # Otherwise use what we have
+        x = point.positions[names[0]]
+        y = point.positions[names[-1]]
+    else:
+        # No points, make something up
+        x = 0
+        y = 0
     # Return a value between 0 and 1 based on a function that gives interesting
     # pattern on x and y in range -10:10
     z = 0.5 + (np.sin(x)**10 + np.cos(10 + y*x) * np.cos(x))/2

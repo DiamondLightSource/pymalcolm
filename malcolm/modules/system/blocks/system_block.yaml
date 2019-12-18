@@ -1,0 +1,49 @@
+- builtin.parameters.string:
+    name: mri_prefix
+    description: prefix for Malcolm resource ids of the Blocks
+
+- builtin.parameters.string:
+    name: pv_prefix
+    description: Prefix for system PVs
+
+- builtin.parameters.string:
+    name: iocs
+    description: Space-separated list of IOCs to monitor
+
+- builtin.parameters.int32:
+    name: subnet_validation
+    description: If non-zero, check any client is in the same subnet as the host
+    default: 1
+
+- builtin.parameters.string:
+    name: config_dir
+    description: Where to store saved configs
+
+- system.controllers.ProcessController:
+    mri: $(mri_prefix)
+    config_dir: $(config_dir)
+    prefix: $(pv_prefix)
+    ioc_list: $(iocs)
+
+- builtin.parts.LabelPart:
+    value: System status of Process, Comms, and connected IOCs
+
+- pva.blocks.pva_server_block:
+    mri: $(mri_prefix):PVA
+
+- profiling.blocks.profiling_web_server_block:
+    mri: $(mri_prefix):WEB
+    subnet_validation: $(subnet_validation)
+
+- builtin.parts.ChildPart:
+    name: WEB
+    mri: $(mri_prefix):WEB
+    initial_visibility: True
+
+- builtin.parts.ChildPart:
+    name: PVA
+    mri: $(mri_prefix):PVA
+    initial_visibility: True
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../../../../docs/malcolm-logo.svg

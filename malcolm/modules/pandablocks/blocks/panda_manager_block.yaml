@@ -21,3 +21,6 @@
     config_dir: $(config_dir)
     hostname: $(hostname)
     port: $(port)
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/PandA.svg

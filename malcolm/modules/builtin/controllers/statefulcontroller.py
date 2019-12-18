@@ -95,7 +95,7 @@ class StatefulController(BasicController):
         try:
             super(StatefulController, self).check_field_writeable(field)
         except NotWriteableError as e:
-            msg = "%s in state %s" % (e, self.state.value)
+            msg = "%s, maybe because Block state = %s" % (e, self.state.value)
             raise NotWriteableError(msg)
 
     def transition(self, state, message=""):

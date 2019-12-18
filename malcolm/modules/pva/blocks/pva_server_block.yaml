@@ -4,3 +4,6 @@
 
 - pva.controllers.PvaServerComms:
     mri: $(mri)
+
+- builtin.parts.IconPart:
+    svg: $(yamldir)/../icons/pva.svg

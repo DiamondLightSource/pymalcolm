@@ -114,7 +114,7 @@ class TestStatefulController(unittest.TestCase):
         with self.assertRaises(NotWriteableError) as cm:
             self.b.disable()
         assert str(cm.exception) == \
-            "Field ['MyMRI', 'disable'] is not writeable in state Disabled"
+            "Field ['MyMRI', 'disable'] is not writeable, maybe because Block state = Disabled"
         assert not self.part.reset_done
         self.b.reset()
         assert self.part.reset_done

@@ -6,11 +6,19 @@ python:
   - "3.6"
   - "3.7"
 
+env:
+    - EPICS_BASE=/usr/lib/epics EPICS_HOST_ARCH=linux-x86_64 CATOOLS_LIBCA_PATH=/usr/lib/epics/lib/linux-x86_64
+
 addons:
   apt:
+    sources:
+      - sourceline: 'deb https://epics.nsls2.bnl.gov/debian/ wheezy main contrib'
+        key_url: 'https://epics.nsls2.bnl.gov/debian/repo-key.pub'
     packages:
       - libhdf5-serial-dev
       - gdb
+      - epics-dev
+      - build-essential
 
 cache:
   directories:
@@ -29,6 +37,7 @@ install:
   - ifconfig
   - ls -al ${VIRTUAL_ENV}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages
   - ls -al ${VIRTUAL_ENV}/bin
+  - pip install epicscorelibs
   # attempt to clear issue with numpy requiring cache clearing
   - pip uninstall --yes numpy
   - pip uninstall --yes numpy

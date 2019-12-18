@@ -16,7 +16,7 @@ from malcolm.core import Process, Queue
 from malcolm.modules.demo.blocks import hello_block, counter_block
 from malcolm.modules.pva.blocks import pva_server_block
 from malcolm.modules.pva.controllers.pvaconvert import EMPTY
-from malcolm.version import __version__
+from malcolm import __version__
 
 
 block_meta_tuple = ('S', 'malcolm:core/BlockMeta:1.0', [

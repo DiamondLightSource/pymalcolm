@@ -1,4 +1,4 @@
-# To start the IOC, run Launcher -> Utilities -> GDA SWMR AreaDetector Sim
+# To start the IOC, run Launcher -> Utilities -> GDA AreaDetector Simulation
 - builtin.defines.cmd_string:
     name: hostname
     cmd: hostname -s
@@ -11,9 +11,9 @@
     name: EPICS_CA_REPEATER_PORT
     value: 6065
 
-- builtin.defines.string:
+# Define a directory to store config in
+- builtin.defines.tmp_dir:
     name: config_dir
-    value: /tmp
 
 # Create some Blocks
 - demo.blocks.motion_block:
@@ -37,10 +37,11 @@
     config_dir: $(config_dir)
     initial_design: template_both_detectors
 
-# Add a webserver comms
-- web.blocks.web_server_block:
-    mri: WEB
+- system.blocks.system_block:
+    mri_prefix: $(hostname)-ML-MALC-01
+    iocs: $(hostname)-EA-IOC-01
+    pv_prefix: $(hostname)-ML-MALC-01
+    subnet_validation: 0
+    config_dir: $(config_dir)
 
-# Add a PVA comms
-- pva.blocks.pva_server_block:
-    mri: PVA
+

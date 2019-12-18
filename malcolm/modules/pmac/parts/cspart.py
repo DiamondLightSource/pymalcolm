@@ -30,9 +30,9 @@ class CSPart(builtin.parts.ChildPart):
             self.move, "moveCS%d" % self.cs, needs_context=True)
 
     @add_call_types
-    def init(self, context):
+    def on_init(self, context):
         # type: (builtin.hooks.AContext) -> None
-        super(CSPart, self).init(context)
+        super(CSPart, self).on_init(context)
         # Check the port name matches our CS number
         child = context.block_view(self.mri)
         cs_port = child.port.value

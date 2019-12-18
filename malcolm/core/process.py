@@ -116,7 +116,7 @@ class Process(Loggable):
                 is_child.add(part_mri)
                 if part_mri in tree:
                     children[part_mri] = tree[part_mri]
-                elif part_mri:
+                elif part_mri in self._controllers:
                     children[part_mri] = add_controller(
                         self._controllers[part_mri])
             return tree[controller.mri]
@@ -216,6 +216,26 @@ class Process(Loggable):
         self._spawn_count = 0
         self._spawned = [s for s in self._spawned if not s.ready()]
 
+
+    def add_controllers(self, controllers, timeout=None):
+        # type: (List[Controller], float) -> None
+        """Add many controllers to be hosted by this process
+
+        Args:
+            controllers (List[Controller]): List of its controller
+            timeout (float): Maximum amount of time to wait for each spawned
+                object. None means forever
+        """
+        for controller in controllers:
+            assert controller.mri not in self._controllers, \
+                "Controller already exists for %s" % controller.mri
+            self._controllers[controller.mri] = controller
+            controller.setup(self)
+        if self.state:
+            should_publish = self._start_controllers(controllers, timeout)
+            if self.state == STARTED and should_publish:
+                self._publish_controllers(timeout)
+
     def add_controller(self, controller, timeout=None):
         # type: (Controller, float) -> None
         """Add a controller to be hosted by this process
@@ -225,14 +245,7 @@ class Process(Loggable):
             timeout (float): Maximum amount of time to wait for each spawned
                 object. None means forever
         """
-        assert controller.mri not in self._controllers, \
-            "Controller already exists for %s" % controller.mri
-        self._controllers[controller.mri] = controller
-        controller.setup(self)
-        if self.state:
-            should_publish = self._start_controllers([controller], timeout)
-            if self.state == STARTED and should_publish:
-                self._publish_controllers(timeout)
+        self.add_controllers([controller], timeout=timeout)
 
     @property
     def mri_list(self):

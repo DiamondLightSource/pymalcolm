@@ -1,7 +1,7 @@
 import os
 
 import h5py
-from annotypes import add_call_types, TYPE_CHECKING
+from annotypes import Anno, add_call_types, TYPE_CHECKING
 from vdsgen import InterleaveVDSGenerator, ReshapeVDSGenerator
 from scanpointgenerator import CompoundGenerator
 
@@ -20,6 +20,14 @@ FRAME_TIMEOUT = 60
 # Pull re-used annotypes into our namespace in case we are subclassed
 APartName = APartName
 AMri = builtin.parts.AMri
+AInitialVisibility = builtin.parts.AInitialVisibility
+
+with Anno("name of uid dataset"):
+    AUidName = str
+with Anno("name of sum dataset"):
+    ASumName = str
+with Anno("name of secondary dataset (e.g. sum)"):
+    ASecondaryDataset = str
 
 
 def greater_than_zero(v):
@@ -27,8 +35,8 @@ def greater_than_zero(v):
     return v > 0
 
 
-def create_dataset_infos(name, generator, filename):
-    # type: (str, CompoundGenerator, str) -> Iterator[Info]
+def create_dataset_infos(name, generator, filename, secondary_set):
+    # type: (str, CompoundGenerator, str, str) -> Iterator[Info]
     # Update the dataset table
     generator_rank = len(generator.dimensions)
 
@@ -43,11 +51,11 @@ def create_dataset_infos(name, generator, filename):
 
     # Add other datasources
     yield scanning.infos.DatasetProducedInfo(
-        name="%s.uid" % name,
+        name="%s.%s" % (name, secondary_set),
         filename=filename,
         type=scanning.infos.DatasetType.SECONDARY,
         rank=generator_rank + 2,
-        path="/entry/detector_uid/uid",
+        path="/entry/detector_%s/%s" % (secondary_set, secondary_set),
         uniqueid="/entry/detector_uid/uid")
 
     # Add any setpoint dimensions
@@ -111,7 +119,7 @@ def one_vds(vds_folder, vds_name, files, width, height,
     gen.generate_vds()
 
 
-def create_vds(generator, raw_name, vds_path, child):
+def create_vds(generator, raw_name, vds_path, child, uid_name, sum_name):
     vds_folder, vds_name = os.path.split(vds_path)
 
     image_width = int(child.imageWidth.value)
@@ -149,12 +157,12 @@ def create_vds(generator, raw_name, vds_path, child):
     # prepare a vds for the unique IDs
     one_vds(vds_folder, vds_name, files, 1, 1,
             shape, generator, alternates, block_size,
-            'UID', 'uid', 'uint64')
+            uid_name, 'uid', 'uint64')
     # prepare a vds for the sums
     one_vds(vds_folder, vds_name, files, 1, 1,
             shape, generator, alternates, block_size,
-            'SUM', 'sum', 'uint64')
-    
+            sum_name, 'sum', 'uint64')
+
 
 set_bases = ["/entry/detector/", "/entry/detector_sum/",
              "/entry/detector_uid/"]
@@ -235,45 +243,58 @@ class OdinWriterPart(builtin.parts.ChildPart):
     layout_filename = None  # type: str
     exposure_time = None  # type: float
 
+    def __init__(self,
+                 name,  # type: APartName
+                 mri,  # type: AMri
+                 initial_visibility=True,  # type: AInitialVisibility
+                 uid_name="uid",  # type: AUidName
+                 sum_name="sum",  # type: ASumName
+                 secondary_set="sum"  # type: ASecondaryDataset
+                 ):
+        # type: (...) -> None
+        self.uid_name = uid_name
+        self.sum_name = sum_name
+        self.secondary_set = secondary_set
+        super(OdinWriterPart, self).__init__(name, mri, initial_visibility)
+
     @add_call_types
-    def reset(self, context):
+    def on_reset(self, context):
         # type: (scanning.hooks.AContext) -> None
-        super(OdinWriterPart, self).reset(context)
-        self.abort(context)
+        super(OdinWriterPart, self).on_reset(context)
+        self.on_abort(context)
 
     def setup(self, registrar):
         # type: (PartRegistrar) -> None
         super(OdinWriterPart, self).setup(registrar)
         # Tell the controller to expose some extra configure parameters
         registrar.report(scanning.hooks.ConfigureHook.create_info(
-            self.configure))
+            self.on_configure))
         # Hooks
-        registrar.hook(scanning.hooks.ConfigureHook, self.configure)
+        registrar.hook(scanning.hooks.ConfigureHook, self.on_configure)
         registrar.hook((scanning.hooks.PostRunArmedHook,
-                        scanning.hooks.SeekHook), self.seek)
-        registrar.hook((scanning.hooks.RunHook,
-                        scanning.hooks.ResumeHook), self.run)
-        registrar.hook(scanning.hooks.PostRunReadyHook, self.post_run_ready)
-        registrar.hook(scanning.hooks.AbortHook, self.abort)
-        registrar.hook(scanning.hooks.PauseHook, self.pause)
+                        scanning.hooks.SeekHook), self.on_seek)
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
+        registrar.hook(scanning.hooks.PostRunReadyHook, self.on_post_run_ready)
+        registrar.hook(scanning.hooks.AbortHook, self.on_abort)
+        registrar.hook(scanning.hooks.PauseHook, self.on_pause)
 
     @add_call_types
-    def pause(self, context):
+    def on_pause(self, context):
         # type: (scanning.hooks.AContext) -> None
-        raise NotImplementedError("Seek not implemented")
+        raise NotImplementedError("Pause not implemented")
 
     # Allow CamelCase as these parameters will be serialized
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  generator,  # type: scanning.hooks.AGenerator
-                  fileDir,  # type: scanning.hooks.AFileDir
-                  formatName="odin",  # type: scanning.hooks.AFormatName
-                  fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     completed_steps,  # type: scanning.hooks.ACompletedSteps
+                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     generator,  # type: scanning.hooks.AGenerator
+                     fileDir,  # type: scanning.hooks.AFileDir
+                     formatName="odin",  # type: scanning.hooks.AFormatName
+                     fileTemplate="%s.h5",  # type: scanning.hooks.AFileTemplate
+                     ):
         # type: (...) -> scanning.hooks.UInfos
 
         self.exposure_time = generator.duration
@@ -308,20 +329,22 @@ class OdinWriterPart(builtin.parts.ChildPart):
         self.array_future = child.when_value_matches_async(
             "numCaptured", greater_than_zero)
 
-        create_vds(generator, raw_file_basename, vds_full_filename, child)
+        create_vds(generator, raw_file_basename, vds_full_filename, child,
+                   self.uid_name, self.sum_name)
         add_nexus_nodes(generator, vds_full_filename)
 
         # Return the dataset information
         dataset_infos = list(
-            create_dataset_infos(formatName, generator, fileName))
+            create_dataset_infos(formatName, generator, fileName,
+                                 self.secondary_set))
         return dataset_infos
 
     @add_call_types
-    def seek(self,
-             context,  # type: scanning.hooks.AContext
-             completed_steps,  # type: scanning.hooks.ACompletedSteps
-             steps_to_do,  # type: scanning.hooks.AStepsToDo
-             ):
+    def on_seek(self,
+                context,  # type: scanning.hooks.AContext
+                completed_steps,  # type: scanning.hooks.ACompletedSteps
+                steps_to_do,  # type: scanning.hooks.AStepsToDo
+                ):
         # type: (...) -> None
         # This is rewinding or setting up for another batch, so the detector
         # will skip to a uniqueID that has not been produced yet
@@ -335,7 +358,7 @@ class OdinWriterPart(builtin.parts.ChildPart):
             "numCaptured", greater_than_zero)
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
         context.wait_all_futures(self.array_future)
         context.unsubscribe_all()
@@ -343,16 +366,16 @@ class OdinWriterPart(builtin.parts.ChildPart):
         child.numCaptured.subscribe_value(self.update_completed_steps)
         child.when_value_matches(
             "numCaptured", self.done_when_reaches,
-            event_timeout=self.exposure_time+FRAME_TIMEOUT)
+            event_timeout=self.exposure_time + FRAME_TIMEOUT)
 
     @add_call_types
-    def post_run_ready(self, context):
+    def on_post_run_ready(self, context):
         # type: (scanning.hooks.AContext) -> None
         # If this is the last one, wait until the file is closed
         context.wait_all_futures(self.start_future)
 
     @add_call_types
-    def abort(self, context):
+    def on_abort(self, context):
         # type: (scanning.hooks.AContext) -> None
         child = context.block_view(self.mri)
         child.stop()

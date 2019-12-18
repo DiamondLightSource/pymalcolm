@@ -1,17 +1,18 @@
-from annotypes import Anno, TYPE_CHECKING, add_call_types, Any, json_encode
+from annotypes import Anno, TYPE_CHECKING, add_call_types, Any, json_encode, \
+    deserialize_object
 from scanpointgenerator import CompoundGenerator
 
 from malcolm.core import AbortedError, Queue, Context, TimeoutError, AMri, \
     NumberMeta, Widget, Part, DEFAULT_TIMEOUT, Table
 from malcolm.compat import OrderedDict
-from malcolm.core.models import MapMeta, MethodMeta, TableMeta
+from malcolm.core.models import MapMeta, MethodMeta, TableMeta, Display, VMeta
 from malcolm.modules import builtin
 from ..infos import ParameterTweakInfo, RunProgressInfo, ConfigureParamsInfo
 from ..util import RunnableStates, AGenerator, ConfigureParams
 from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
-    RunHook, PostRunArmedHook, PostRunReadyHook, ResumeHook, ReportStatusHook, \
-    AbortHook, PauseHook, SeekHook, ControllerHook, PreConfigureHook, \
-    AAxesToMove
+    PreRunHook, RunHook, PostRunArmedHook, PostRunReadyHook, \
+    ReportStatusHook, AbortHook, PauseHook, SeekHook, ControllerHook, \
+    PreConfigureHook, AAxesToMove
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Iterable, Type, Callable
@@ -54,8 +55,9 @@ def get_steps_per_run(generator, axes_to_move):
 
 
 def update_configure_model(configure_model, part_configure_infos):
-    # type: (MethodMeta, List[ConfigureParamsInfo]) -> MethodMeta
+    # type: (MethodMeta, List[ConfigureParamsInfo]) -> None
     # These will not be inserted as they already exist
+
     ignored = list(ConfigureHook.call_types)
 
     # Re-calculate the following
@@ -96,11 +98,20 @@ def update_configure_model(configure_model, part_configure_infos):
                     else:
                         defaults[k] = info.defaults[k]
 
-    # Set the values
-    configure_model.takes.set_elements(metas)
+    # Copy and prepare values for takes and returns
+    takes_metas = OrderedDict()
+    returns_metas = OrderedDict()
+    for k, v in metas.items():
+        takes_metas[k] = deserialize_object(v.to_dict(), VMeta)
+        returns_metas[k] = deserialize_object(v.to_dict(), VMeta)
+        returns_metas[k].set_writeable(False)
+
+    # Set them on the model
+    configure_model.takes.set_elements(takes_metas)
     configure_model.takes.set_required(required)
+    configure_model.returns.set_elements(returns_metas)
+    configure_model.returns.set_required(required)
     configure_model.set_defaults(defaults)
-    return configure_model
 
 
 def merge_non_writeable_table(default, supplied, non_writeable):
@@ -167,7 +178,7 @@ class RunnableController(builtin.controllers.ManagerController):
         # step
         self.completed_steps = NumberMeta(
             "int32", "Readback of number of scan steps",
-            tags=[Widget.TEXTINPUT.tag()]
+            tags=[Widget.METER.tag()]  # Widget.TEXTINPUT.tag()]
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model(
             "completedSteps", self.completed_steps, self.pause)
@@ -230,34 +241,28 @@ class RunnableController(builtin.controllers.ManagerController):
             if self.process is None:
                 return
 
-            # Get the model of our configure method as the starting point
-            configure_model = MethodMeta.from_callable(self.configure)
-
-            # And a list of all the infos that the parts have contributed
+            # Make a list of all the infos that the parts have contributed
             part_configure_infos = []
             for part in self.parts.values():
                 info = self.part_configure_params.get(part, None)
                 if info:
                     part_configure_infos.append(info)
 
-            # Make an update configure mode
-            update_configure_model(configure_model, part_configure_infos)
-
-            # Update methods from the new metas
-            self._block.configure.meta.set_takes(configure_model.takes)
-            self._block.configure.meta.set_defaults(configure_model.defaults)
-            self._block.configure.set_took()
-
-            # Now make a validate model with returns
-            validate_model = MethodMeta.from_dict(configure_model.to_dict())
-            returns = MapMeta.from_dict(validate_model.takes.to_dict())
-            for v in returns.elements.values():
-                v.set_writeable(False)
-            self._block.validate.meta.set_takes(validate_model.takes)
-            self._block.validate.meta.set_defaults(validate_model.defaults)
-            self._block.validate.meta.set_returns(returns)
-            self._block.validate.set_took()
-            self._block.validate.set_returned()
+            # Update methods from the updated configure model
+            for method_name in ("configure", "validate"):
+                # Get the model of our configure method as the starting point
+                method_meta = MethodMeta.from_callable(self.configure)
+                # Update the configure model from the infos
+                update_configure_model(method_meta, part_configure_infos)
+                # Put the created metas onto our block meta
+                method = self._block[method_name]
+                method.meta.takes.set_elements(method_meta.takes.elements)
+                method.meta.takes.set_required(method_meta.takes.required)
+                method.meta.returns.set_elements(method_meta.returns.elements)
+                method.meta.returns.set_required(method_meta.returns.required)
+                method.meta.set_defaults(method_meta.defaults)
+                method.set_took()
+                method.set_returned()
 
     def update_block_endpoints(self):
         super(RunnableController, self).update_block_endpoints()
@@ -287,20 +292,7 @@ class RunnableController(builtin.controllers.ManagerController):
         iterations = 10
         # We will return this, so make sure we fill in defaults
         for k, default in self._block.configure.meta.defaults.items():
-            if k in kwargs:
-                meta = self._block.configure.meta.takes.elements[k]
-                if isinstance(meta, TableMeta):
-                    non_writeable = [
-                        i for i, m in enumerate(meta.elements.values())
-                        if not m.writeable]
-                    # If it is a table with non-writeable columns, fill in the
-                    # columns with the non-writeable values
-                    if non_writeable:
-                        kwargs[k] = merge_non_writeable_table(
-                            default, kwargs[k], non_writeable)
-            else:
-                kwargs[k] = default
-
+            kwargs.setdefault(k, default)
         # The validated parameters we will eventually return
         params = ConfigureParams(generator, axesToMove, **kwargs)
         # Make some tasks just for validate
@@ -341,7 +333,7 @@ class RunnableController(builtin.controllers.ManagerController):
     # noinspection PyPep8Naming
     @add_call_types
     def configure(self, generator, axesToMove=None, **kwargs):
-        # type: (AGenerator, AAxesToMove, **Any) -> None
+        # type: (AGenerator, AAxesToMove, **Any) -> AConfigureParams
         """Validate the params then configure the device ready for run().
 
         Try to prepare the device as much as possible so that run() is quick to
@@ -364,6 +356,8 @@ class RunnableController(builtin.controllers.ManagerController):
         except Exception as e:
             self.go_to_error_state(e)
             raise
+        else:
+            return params
 
     def do_configure(self, state, params):
         # type: (str, ConfigureParams) -> None
@@ -410,6 +404,7 @@ class RunnableController(builtin.controllers.ManagerController):
                        for p, c in self.part_contexts.items())
         # Update the completed and configured steps
         self.configured_steps.set_value(steps_to_do)
+        self.completed_steps.meta.display.set_limitHigh(steps_to_do)
         # Reset the progress of all child parts
         self.progress_updates = {}
         self.resume_queue = Queue()
@@ -425,6 +420,10 @@ class RunnableController(builtin.controllers.ManagerController):
         will return in Fault state. If the user disables then it will return in
         Disabled state.
         """
+
+        # Run all PreRunHooks
+        hook = PreRunHook
+        self.do_pre_run(hook)
 
         if self.configured_steps.value < self.total_steps.value:
             next_state = ss.ARMED
@@ -445,7 +444,6 @@ class RunnableController(builtin.controllers.ManagerController):
                     should_resume = self.resume_queue.get()
                     if should_resume:
                         # we need to resume
-                        hook = ResumeHook
                         self.log.debug("Resuming run")
                     else:
                         # we don't need to resume, just drop out
@@ -457,6 +455,10 @@ class RunnableController(builtin.controllers.ManagerController):
         except Exception as e:
             self.go_to_error_state(e)
             raise
+
+    def do_pre_run(self, hook):
+        # type: (Type[ControllerHook]) -> None
+        self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
 
     def do_run(self, hook):
         # type: (Type[ControllerHook]) -> None

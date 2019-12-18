@@ -25,6 +25,7 @@ class TestPMACTrajectoryPart(ChildTestCase):
         self.process.add_controller(c)
         self.process.start()
         self.b = c.block_view()
+        self.set_attributes(self.child, trajectoryProgVersion=2)
 
     def tearDown(self):
         self.process.stop(timeout=1)

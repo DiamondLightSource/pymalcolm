@@ -32,6 +32,8 @@ widget:table                Table of rows with a widget type for each column
 widget:checkbox             A box that can be checked or not
 widget:flowgraph            Boxes with lines for child block connections
 widget:tree                 A nested tree of object models editor
+widget:plot                 A waveform plot
+widget:meter                Progress meter
 =========================== ====================================================
 
 Linked Value Tag
@@ -132,3 +134,8 @@ Version Tag
 A ``version:pymalcolm:<version>`` tag is created and attached to every Block so
 that clients know the version of pymalcolm that is hosting the Block.
 
+Hidden Method Tag
+-----------------
+
+All Methods are displayed in the GUI by default. To hide a method, add a 
+``method:hidden`` tag using the `method_hidden` function.

@@ -12,8 +12,8 @@ class TestLoggable(unittest.TestCase):
         l.set_logger(foo="foo", bar="bat")
         mock_logging.getLogger.assert_called_once_with(
             "malcolm.core.loggable.Loggable.bat.foo")
-        filter = l.log.addFilter.call_args[0][0]
-        assert filter.fields == dict(foo="foo", bar="bat")
+        assert mock_logging.LoggerAdapter.call_args[1] == \
+            {'extra': {'foo': 'foo', 'bar': 'bat'}}
 
     def test_call_method_no_log_name(self):
         l = Loggable()

@@ -31,9 +31,11 @@ class TestDetectorBlock(unittest.TestCase):
             'meta', 'health', 'state', 'disable', 'reset', 'mri', 'layout',
             'design', 'exports', 'modified', 'save', 'completedSteps',
             'configuredSteps', 'totalSteps', 'validate', 'configure', 'run',
-            'abort', 'pause', 'resume', 'label', 'datasets']
+            'abort', 'pause', 'resume', 'label', 'datasets', 'readoutTime',
+            'frequencyAccuracy', 'exposure']
         assert list(self.b.configure.meta.takes.elements) == [
-            'generator', 'fileDir', 'axesToMove', 'formatName', 'fileTemplate'
+            'generator', 'fileDir', 'axesToMove', 'exposure', 'formatName',
+            'fileTemplate'
         ]
         assert self.b.label.value == "DemoDetector"
 
@@ -46,10 +48,14 @@ class TestDetectorBlock(unittest.TestCase):
     def test_scan(self):
         self.b.configure(self.make_generator(), self.tmpdir)
         assert list(self.b.datasets.value.rows()) == [
-            ['det.data', 'det.h5', DatasetType.PRIMARY, 4, '/entry/data',
-             '/entry/uid'],
-            ['det.sum', 'det.h5', DatasetType.SECONDARY, 4, '/entry/sum',
-             '/entry/uid']
+            ['det.data', 'det.h5', DatasetType.PRIMARY,
+             4, '/entry/data', '/entry/uid'],
+            ['det.sum', 'det.h5', DatasetType.SECONDARY,
+             4, '/entry/sum', '/entry/uid'],
+            ['stage_y.value_set', 'det.h5', DatasetType.POSITION_SET, 1,
+             '/entry/stage_y_set', ''],
+            ['stage_x.value_set', 'det.h5', DatasetType.POSITION_SET, 1,
+             '/entry/stage_x_set', ''],
         ]
         filepath = os.path.join(self.tmpdir, "det.h5")
         with h5py.File(filepath, "r") as hdf:
@@ -57,16 +63,18 @@ class TestDetectorBlock(unittest.TestCase):
             assert hdf["/entry/sum"].shape == (1, 1, 1, 1)
             assert hdf["/entry/uid"].shape == (1, 1, 1, 1)
             assert hdf["/entry/uid"][0][0][0][0] == 0
+            assert tuple(hdf["/entry/stage_x_set"]) == (0, 1, 2)
+            assert tuple(hdf["/entry/stage_y_set"]) == (0, 2)
             fs = self.b.run_async()
-            # Wait for 2 frames to be written (but not reported yet)
-            cothread.Sleep(0.8)
-            assert self.b.completedSteps.value == 1
+            # Wait for 2 frames to be written and reported
+            cothread.Sleep(1.3)
+            assert self.b.completedSteps.value == 2
             assert hdf["/entry/data"].shape == (1, 2, 120, 160)
             assert hdf["/entry/sum"].shape == (1, 2, 1, 1)
             assert hdf["/entry/uid"].shape == (1, 2, 1, 1)
-            assert hdf["/entry/sum"][0][0][0][0] == 208560.0
+            assert hdf["/entry/sum"][0][0][0][0] == 208036.0
             assert hdf["/entry/uid"][0][0][0][0] == 1
-            assert hdf["/entry/sum"][0][1][0][0] == 972408.0
+            assert hdf["/entry/sum"][0][1][0][0] == 970444.0
             assert hdf["/entry/uid"][0][1][0][0] == 2
             # pause
             self.b.pause(lastGoodStep=3)
@@ -83,9 +91,9 @@ class TestDetectorBlock(unittest.TestCase):
             assert hdf["/entry/uid"].shape == (2, 3, 1, 1)
             assert hdf["/entry/sum"][0][2][0][0] == 0
             assert hdf["/entry/uid"][0][2][0][0] == 0
-            assert hdf["/entry/sum"][1][2][0][0] == 1792360.0
+            assert hdf["/entry/sum"][1][2][0][0] == 1788628.0
             assert hdf["/entry/uid"][1][2][0][0] == 7
-            assert hdf["/entry/sum"][1][0][0][0] == 208560.0
+            assert hdf["/entry/sum"][1][0][0][0] == 208036.0
             assert hdf["/entry/uid"][1][0][0][0] == 9
             # Reset to close the file
             self.b.reset()

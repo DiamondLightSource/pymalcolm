@@ -54,8 +54,8 @@ expected_xml = """<?xml version="1.0" ?>
 <hardlink name="y_set" target="/entry/detector/y_set" />
 <dataset name="sum" ndattribute="StatsTotal" source="ndattribute" />
 </group>
-<group name="I0">
-<attribute name="signal" source="constant" type="string" value="I0" />
+<group name="I0.data">
+<attribute name="signal" source="constant" type="string" value="I0.data" />
 <attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_set_indices" source="constant" type="string" value="0" />
@@ -64,10 +64,10 @@ expected_xml = """<?xml version="1.0" ?>
 <hardlink name="x_set" target="/entry/detector/x_set" />
 <attribute name="y_set_indices" source="constant" type="string" value="1" />
 <hardlink name="y_set" target="/entry/detector/y_set" />
-<dataset name="I0" ndattribute="COUNTER1.COUNTER" source="ndattribute" />
+<dataset name="I0.data" ndattribute="COUNTER1.COUNTER" source="ndattribute" />
 </group>
-<group name="It">
-<attribute name="signal" source="constant" type="string" value="It" />
+<group name="It.data">
+<attribute name="signal" source="constant" type="string" value="It.data" />
 <attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_set_indices" source="constant" type="string" value="0" />
@@ -76,10 +76,10 @@ expected_xml = """<?xml version="1.0" ?>
 <hardlink name="x_set" target="/entry/detector/x_set" />
 <attribute name="y_set_indices" source="constant" type="string" value="1" />
 <hardlink name="y_set" target="/entry/detector/y_set" />
-<dataset name="It" ndattribute="COUNTER2.COUNTER" source="ndattribute" />
+<dataset name="It.data" ndattribute="COUNTER2.COUNTER" source="ndattribute" />
 </group>
-<group name="t1x">
-<attribute name="signal" source="constant" type="string" value="t1x" />
+<group name="t1x.value">
+<attribute name="signal" source="constant" type="string" value="t1x.value" />
 <attribute name="axes" source="constant" type="string" value="energy_set,.,.,." />
 <attribute name="NX_class" source="constant" type="string" value="NXdata" />
 <attribute name="energy_set_indices" source="constant" type="string" value="0" />
@@ -88,7 +88,7 @@ expected_xml = """<?xml version="1.0" ?>
 <hardlink name="x_set" target="/entry/detector/x_set" />
 <attribute name="y_set_indices" source="constant" type="string" value="1" />
 <hardlink name="y_set" target="/entry/detector/y_set" />
-<dataset name="t1x" ndattribute="INENC1.VAL" source="ndattribute" />
+<dataset name="t1x.value" ndattribute="INENC1.VAL" source="ndattribute" />
 </group>
 <group name="NDAttributes" ndattr_default="true">
 <attribute name="NX_class" source="constant" type="string" value="NXcollection" />
@@ -140,17 +140,17 @@ class TestHDFWriterPart(ChildTestCase):
         part_info = {
             "DET": [NDArrayDatasetInfo(2)],
             "PANDA": [
-                NDAttributeDatasetInfo(
-                    "I0", AttributeDatasetType.DETECTOR, "COUNTER1.COUNTER", 2),
-                NDAttributeDatasetInfo(
-                    "It", AttributeDatasetType.MONITOR, "COUNTER2.COUNTER", 2),
-                NDAttributeDatasetInfo(
-                    "t1x", AttributeDatasetType.POSITION, "INENC1.VAL", 2)],
+                NDAttributeDatasetInfo.from_attribute_type(
+                    "I0", AttributeDatasetType.DETECTOR, "COUNTER1.COUNTER"),
+                NDAttributeDatasetInfo.from_attribute_type(
+                    "It", AttributeDatasetType.MONITOR, "COUNTER2.COUNTER"),
+                NDAttributeDatasetInfo.from_attribute_type(
+                    "t1x", AttributeDatasetType.POSITION, "INENC1.VAL")],
             "STAT": [CalculatedNDAttributeDatasetInfo("sum", "StatsTotal")],
         }
         if on_windows:
             part_info["WINPATH"] = [FilePathTranslatorInfo("Y", "/tmp")]
-        infos = self.o.configure(
+        infos = self.o.on_configure(
             self.context, completed_steps, steps_to_do, part_info, generator,
             fileDir, formatName, fileTemplate)
         assert len(infos) == 8
@@ -172,21 +172,21 @@ class TestHDFWriterPart(ChildTestCase):
         assert infos[2].filename == "thing-xspress3.h5"
         assert infos[2].type == DatasetType.PRIMARY
         assert infos[2].rank == 4
-        assert infos[2].path == "/entry/I0/I0"
+        assert infos[2].path == "/entry/I0.data/I0.data"
         assert infos[2].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[3].name == "It.data"
         assert infos[3].filename == "thing-xspress3.h5"
         assert infos[3].type == DatasetType.MONITOR
         assert infos[3].rank == 4
-        assert infos[3].path == "/entry/It/It"
+        assert infos[3].path == "/entry/It.data/It.data"
         assert infos[3].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[4].name == "t1x.value"
         assert infos[4].filename == "thing-xspress3.h5"
         assert infos[4].type == DatasetType.POSITION_VALUE
         assert infos[4].rank == 4
-        assert infos[4].path == "/entry/t1x/t1x"
+        assert infos[4].path == "/entry/t1x.value/t1x.value"
         assert infos[4].uniqueid == "/entry/NDAttributes/NDArrayUniqueId"
 
         assert infos[5].name == "energy.value_set"
@@ -295,7 +295,7 @@ class TestHDFWriterPart(ChildTestCase):
         # run waits for this value, so say we have finished immediately
         self.set_attributes(self.child, uniqueId=self.o.done_when_reaches)
         self.mock_when_value_matches(self.child)
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.when_value_matches('uniqueId', 38, None)]
         assert self.o.registrar.report.called_once
@@ -320,7 +320,7 @@ class TestHDFWriterPart(ChildTestCase):
         # Spawn process to finish it after a few seconds
         self.process.spawn(set_unique_id)
         # Run
-        self.o.run(self.context)
+        self.o.on_run(self.context)
         assert self.child.handled_requests.mock_calls == [
             call.post('flushNow'),
             call.post('flushNow')]
@@ -335,7 +335,7 @@ class TestHDFWriterPart(ChildTestCase):
         self.o.done_when_reaches = 10
         completed_steps = 4
         steps_to_do = 3
-        self.o.seek(self.context, completed_steps, steps_to_do)
+        self.o.on_seek(self.context, completed_steps, steps_to_do)
         assert self.child.handled_requests.mock_calls == [
             call.put('arrayCounter', 0),
             call.when_value_matches('arrayCounterReadback', greater_than_zero, None)
@@ -353,10 +353,10 @@ class TestHDFWriterPart(ChildTestCase):
             f.write("thing")
         assert os.path.isfile(fname)
         self.o.layout_filename = fname
-        self.o.post_run_ready(self.context)
+        self.o.on_post_run_ready(self.context)
         assert self.child.handled_requests.mock_calls == []
         assert os.path.isfile(fname)
-        self.o.reset(self.context)
+        self.o.on_reset(self.context)
         assert not os.path.isfile(fname)
 
     def test_post_run_ready_not_done_flush(self):
@@ -368,9 +368,9 @@ class TestHDFWriterPart(ChildTestCase):
             f.write("thing")
         assert os.path.isfile(fname)
         self.o.layout_filename = fname
-        self.o.post_run_ready(self.context)
+        self.o.on_post_run_ready(self.context)
         assert self.child.handled_requests.mock_calls == [call.post('flushNow')]
         assert os.path.isfile(fname)
-        self.o.reset(self.context)
+        self.o.on_reset(self.context)
         assert not os.path.isfile(fname)
 

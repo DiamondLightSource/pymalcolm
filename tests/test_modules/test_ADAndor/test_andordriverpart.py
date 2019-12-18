@@ -33,7 +33,7 @@ class TestAndorDetectorDriverPart(ChildTestCase):
         completed_steps = 0
         steps_to_do = 2000*3000
         file_dir = "/tmp"
-        self.o.configure(
+        self.o.on_configure(
             self.context, completed_steps, steps_to_do, {}, generator=generator,
             fileDir=file_dir)
 

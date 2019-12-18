@@ -4,7 +4,7 @@ from mock import MagicMock, call
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import PartRegistrar
-from malcolm.modules.ADCore.parts import ExposureDeadtimePart
+from malcolm.modules.scanning.parts import ExposureDeadtimePart
 
 
 def make_generator(duration):
@@ -30,28 +30,27 @@ class TestExposureDeadtimePart(unittest.TestCase):
         assert self.o.exposure.value == 0.0
 
     def test_validate_exposure_too_fast(self):
-        with self.assertRaises(AssertionError) as cm:
-            self.o.validate(
+        tweak = self.o.on_validate(
                 generator=make_generator(duration=0.1), exposure=0.001)
-        assert str(cm.exception) == \
-            "Exposure 0.01 should be in range 0.001 to 0.099995"
+        assert tweak.parameter == "exposure"
+        assert tweak.value == 0.01
 
     def test_validate_no_duration(self):
         with self.assertRaises(AssertionError) as cm:
-            self.o.validate(
+            self.o.on_validate(
                 generator=make_generator(duration=0.0))
         assert str(cm.exception) == \
             "Duration 0.0 for generator must be >0 to signify constant exposure"
 
     def test_good_validate(self):
-        self.o.validate(generator=make_generator(duration=0.1))
+        self.o.on_validate(generator=make_generator(duration=0.1))
 
     def test_configure(self):
-        self.o.configure(generator=make_generator(duration=0.1))
+        self.o.on_configure(exposure=0.099995)
         assert self.o.exposure.value == 0.099995
 
     def test_report_status(self):
-        info = self.o.report_status()
+        info = self.o.on_report_status()
         assert info.readout_time == 0.0
         assert info.frequency_accuracy == 50
         assert info.min_exposure == 0.01

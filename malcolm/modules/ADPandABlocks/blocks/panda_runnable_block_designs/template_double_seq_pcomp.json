@@ -61,6 +61,11 @@
         "y": -35.3187952879029, 
         "visible": true
       }, 
+      "TTLIN1": {
+        "x": -882.753395155176,
+        "y": 4.219785818567914,
+        "visible": true
+      },
       "TTLOUT1": {
         "x": -38.840821566110094, 
         "y": -320.8084578821383, 
@@ -218,7 +223,7 @@
       "inputs": "expanded", 
       "enable": "LUT2.OUT", 
       "enableDelay": 0, 
-      "bita": "ZERO", 
+      "bita": "TTLIN1.VAL",
       "bitaDelay": 0, 
       "bitb": "ZERO", 
       "bitbDelay": 0, 
@@ -259,7 +264,7 @@
       "inputs": "expanded", 
       "enable": "LUT3.OUT", 
       "enableDelay": 0, 
-      "bita": "ZERO", 
+      "bita": "TTLIN1.VAL",
       "bitaDelay": 0, 
       "bitb": "ZERO", 
       "bitbDelay": 0, 
@@ -324,7 +329,13 @@
       "setEdge": "Rising", 
       "rstEdge": "Falling", 
       "outputs": "expanded"
-    }, 
+    },
+    "TTLIN1": {
+      "label": "Motion Gate",
+      "parameters": "expanded",
+      "term": "High-Z",
+      "outputs": "expanded"
+    },
     "TTLOUT1": {
       "label": "Detector Trigger", 
       "inputs": "expanded", 

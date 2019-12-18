@@ -1,8 +1,6 @@
-from xml.etree import cElementTree as ET
-
 from annotypes import TYPE_CHECKING, add_call_types, Any
 
-from malcolm.core import APartName, PartRegistrar
+from malcolm.core import PartRegistrar
 from malcolm.modules import builtin, scanning
 
 # How big an XML file can the EPICS waveform receive?
@@ -43,25 +41,24 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         # Hooks
         registrar.hook((scanning.hooks.ConfigureHook,
                         scanning.hooks.PostRunArmedHook,
-                        scanning.hooks.SeekHook), self.configure)
-        registrar.hook((scanning.hooks.RunHook,
-                        scanning.hooks.ResumeHook), self.run)
+                        scanning.hooks.SeekHook), self.on_configure)
+        registrar.hook(scanning.hooks.RunHook, self.on_run)
         registrar.hook((scanning.hooks.AbortHook,
-                        scanning.hooks.PauseHook), self.abort)
+                        scanning.hooks.PauseHook), self.on_abort)
 
     @add_call_types
-    def reset(self, context):
+    def on_reset(self, context):
         # type: (scanning.hooks.AContext) -> None
-        super(PositionLabellerPart, self).reset(context)
-        self.abort(context)
+        super(PositionLabellerPart, self).on_reset(context)
+        self.on_abort(context)
 
     @add_call_types
-    def configure(self,
-                  context,  # type: scanning.hooks.AContext
-                  completed_steps,  # type: scanning.hooks.ACompletedSteps
-                  steps_to_do,  # type: scanning.hooks.AStepsToDo
-                  generator,  # type: scanning.hooks.AGenerator
-                  ):
+    def on_configure(self,
+                     context,  # type: scanning.hooks.AContext
+                     completed_steps,  # type: scanning.hooks.ACompletedSteps
+                     steps_to_do,  # type: scanning.hooks.AStepsToDo
+                     generator,  # type: scanning.hooks.AGenerator
+                     ):
         # type: (...) -> None
         # clear out old subscriptions
         context.unsubscribe_all()
@@ -93,7 +90,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         self.start_future = child.start_async()
 
     @add_call_types
-    def run(self, context):
+    def on_run(self, context):
         # type: (scanning.hooks.AContext) -> None
         self.loading = False
         child = context.block_view(self.mri)
@@ -101,7 +98,7 @@ class PositionLabellerPart(builtin.parts.ChildPart):
         context.wait_all_futures(self.start_future)
 
     @add_call_types
-    def abort(self, context):
+    def on_abort(self, context):
         # type: (scanning.hooks.AContext) -> None
         child = context.block_view(self.mri)
         child.stop()

@@ -5,7 +5,7 @@ from annotypes import add_call_types, Anno
 from malcolm.core import Controller, Part, PartRegistrar, StringMeta, \
     Process, Queue, Get, Return, Put, Error, Post, Subscribe, Update, \
     Unsubscribe
-from malcolm.version import __version__
+from malcolm import __version__
 
 with Anno("The return value"):
     AWorld = str
@@ -48,6 +48,13 @@ class TestController(unittest.TestCase):
     def test_init(self):
         assert self.o.mri == "mri"
         assert self.o.process == self.process
+
+    def test_two_parts_same_attribute_fails(self):
+        p2 = MyPart("another_part")
+        with self.assertRaises(AssertionError) as cm:
+            self.o.add_part(p2)
+        assert str(cm.exception) == \
+               "Field 'myAttribute' published by MyPart(name='another_part') would overwrite one made by MyPart(name='test_part')"
 
     def test_make_view(self):
         b = self.process.block_view("mri")

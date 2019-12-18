@@ -105,7 +105,6 @@ class MalcWebSocketHandler(WebSocketHandler):
             if isinstance(request, (Put, Post)) and not self._writeable:
                 raise ValueError(
                     "Put/Post is forbidden from %s" % self.request.remote_ip)
-            log.info("Request: %s", request)
             self._registrar.report(builtin.infos.RequestInfo(request, mri))
         except Exception as e:
             log.exception("Error handling message:\n%s", message)
@@ -168,10 +167,10 @@ class WebsocketServerPart(Part):
         # type: (PartRegistrar) -> None
         super(WebsocketServerPart, self).setup(registrar)
         # Hooks
-        registrar.hook(ReportHandlersHook, self.report_handlers)
+        registrar.hook(ReportHandlersHook, self.on_report_handlers)
 
     @add_call_types
-    def report_handlers(self):
+    def on_report_handlers(self):
         # type: () -> UHandlerInfos
         validators = []
         if self.subnet_validation:

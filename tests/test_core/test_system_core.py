@@ -1,8 +1,10 @@
 import unittest
 
+from mock import ANY
+
 from malcolm.core import Process, Post, Subscribe, Return, \
     Update, Controller, Queue, TimeoutError, Put, Error, Delta, TimeStamp, \
-    AlarmSeverity
+    AlarmSeverity, Alarm
 from malcolm.modules.demo.parts import HelloPart, CounterPart
 
 
@@ -54,30 +56,19 @@ class TestHelloDemoSystem(unittest.TestCase):
         # Then the long running greet delta
         response = q.get(timeout=3.0)
         self.assertIsInstance(response, Delta)
-        assert len(response.changes) == 7
-        assert response.changes[0][0] == ["took", "value"]
-        assert response.changes[0][1] == dict(sleep=1, name="me")
-
-        assert response.changes[1][0] == ["took", "present"]
-        assert response.changes[1][1] == ["name", "sleep"]
-
-        assert response.changes[2][0] == ["took", "timeStamp"]
-
-        assert response.changes[3][0] == ["returned", "value"]
-        assert response.changes[3][1] == {"return": "Hello me"}
-
-        assert response.changes[4][0] == ["returned", "present"]
-        assert response.changes[4][1] == ["return"]
-
-        assert response.changes[5][0] == ["returned", "alarm"]
-        assert response.changes[5][1]["severity"] == AlarmSeverity.NO_ALARM
-
-        assert response.changes[6][0] == ["returned", "timeStamp"]
-
-        took_ts = response.changes[2][1]
-        returned_ts = response.changes[6][1]
+        assert len(response.changes) == 2
+        assert response.changes[0][0] == ["took"]
+        took = response.changes[0][1]
+        assert took.value == dict(sleep=1, name="me")
+        assert took.present == ["name", "sleep"]
+        assert took.alarm == Alarm.ok
+        assert response.changes[1][0] == ["returned"]
+        returned = response.changes[1][1]
+        assert returned.value == {"return": "Hello me"}
+        assert returned.present == ["return"]
+        assert returned.alarm == Alarm.ok
         # Check it took about 1s to run
-        assert abs(1 - (returned_ts.to_time() - took_ts.to_time())) < 0.4
+        assert abs(1 - (returned.timeStamp.to_time() - took.timeStamp.to_time())) < 0.4
         # And it's response
         response = q.get(timeout=1.0)
         self.assertIsInstance(response, Return)

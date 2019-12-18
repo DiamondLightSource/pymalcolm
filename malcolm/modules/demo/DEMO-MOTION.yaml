@@ -1,7 +1,11 @@
+# Define a directory to store config in
+- builtin.defines.tmp_dir:
+    name: config_dir
+
 # Create some Blocks
 - demo.blocks.motion_block:
     mri: MOTION
-    config_dir: /tmp
+    config_dir: $(config_dir)
 
 # Add a webserver
 - web.blocks.web_server_block:
