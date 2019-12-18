@@ -52,7 +52,9 @@ class PointType(Enum):
 
 
 # How many profile points to write each time
-PROFILE_POINTS = 10000
+PROFILE_POINTS = 2000
+# How many points to extract from a scanpointgenerator each time
+BATCH_POINTS = 20000
 
 # 80 char line lengths...
 AIV = builtin.parts.AInitialVisibility
@@ -366,30 +368,34 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         child.writeProfile(**args)
 
+    user_program = {
+        scanning.infos.MotionTrigger.NONE: {
+            PointType.POINT_JOIN:   UserPrograms.NO_PROGRAM,
+            PointType.START_OF_ROW: UserPrograms.NO_PROGRAM,
+            PointType.MID_POINT:    UserPrograms.NO_PROGRAM,
+            PointType.END_OF_ROW:   UserPrograms.NO_PROGRAM,
+            PointType.TURNAROUND:   UserPrograms.NO_PROGRAM,
+        },
+        scanning.infos.MotionTrigger.ROW_GATE: {
+            PointType.POINT_JOIN:   UserPrograms.NO_PROGRAM,
+            PointType.START_OF_ROW: UserPrograms.LIVE_PROGRAM,
+            PointType.MID_POINT:    UserPrograms.NO_PROGRAM,
+            PointType.END_OF_ROW:   UserPrograms.ZERO_PROGRAM,
+            PointType.TURNAROUND:   UserPrograms.NO_PROGRAM,
+
+        },
+        scanning.infos.MotionTrigger.EVERY_POINT: {
+            PointType.POINT_JOIN:   UserPrograms.LIVE_PROGRAM,
+            PointType.START_OF_ROW: UserPrograms.LIVE_PROGRAM,
+            PointType.MID_POINT:    UserPrograms.MID_PROGRAM,
+            PointType.END_OF_ROW:   UserPrograms.DEAD_PROGRAM,
+            PointType.TURNAROUND:   UserPrograms.ZERO_PROGRAM,
+        }
+    }
+
     def get_user_program(self, point_type):
         # type: (PointType) -> int
-        if self.output_triggers == scanning.infos.MotionTrigger.NONE:
-            # Always produce no program
-            return UserPrograms.NO_PROGRAM
-        elif self.output_triggers == scanning.infos.MotionTrigger.ROW_GATE:
-            if point_type == PointType.START_OF_ROW:
-                # Produce a gate for the whole row
-                return UserPrograms.LIVE_PROGRAM
-            elif point_type == PointType.END_OF_ROW:
-                # Falling edge of row gate
-                return UserPrograms.ZERO_PROGRAM
-            else:
-                # Otherwise don't change anything
-                return UserPrograms.NO_PROGRAM
-        else:
-            if point_type in (PointType.START_OF_ROW, PointType.POINT_JOIN):
-                return UserPrograms.LIVE_PROGRAM
-            elif point_type == PointType.END_OF_ROW:
-                return UserPrograms.DEAD_PROGRAM
-            elif point_type == PointType.MID_POINT:
-                return UserPrograms.MID_PROGRAM
-            else:
-                return UserPrograms.ZERO_PROGRAM
+        return self.user_program[self.output_triggers][point_type]
 
     def calculate_profile_from_velocities(self, time_arrays, velocity_arrays,
                                           current_positions, completed_steps):
@@ -566,8 +572,8 @@ class PmacChildPart(builtin.parts.ChildPart):
         # cap at PROFILE_POINTS (+1 so we can always get next_point)
         if start_index == self.steps_up_to:
             return None, None, None
-        if self.steps_up_to - start_index > PROFILE_POINTS:
-            up_to = PROFILE_POINTS + start_index + 1
+        if self.steps_up_to - start_index > BATCH_POINTS:
+            up_to = BATCH_POINTS + start_index + 1
             points = self.generator.get_points(start_index, up_to)
         else:
             points = self.generator.get_points(start_index, self.steps_up_to)
@@ -605,7 +611,7 @@ class PmacChildPart(builtin.parts.ChildPart):
         points_idx = start_index
         next_point = None
         for i in range(start_index, self.steps_up_to):
-            if i - points_idx >= PROFILE_POINTS:
+            if i - points_idx >= BATCH_POINTS:
                 points, joined, velocities = self.get_some_points(i)
                 points_idx = i
 
