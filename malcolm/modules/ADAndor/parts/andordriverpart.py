@@ -63,16 +63,33 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
             # and acquire period
             readout_time = child.acquirePeriod.value - child.exposure.value
             # Calculate the adjusted exposure time
-            (exposure, period) = self.get_adjusted_exposure_time_and_acquire_period(
-                duration, readout_time, kwargs.get("exposure", 0))
+            (exposure, period) = \
+                self.get_adjusted_exposure_time_and_acquire_period(
+                    duration,
+                    readout_time,
+                    kwargs.get("exposure", 0))
 
+        # The real exposure
         self.exposure.set_value(exposure)
         kwargs['exposure'] = exposure
+
         super(AndorDriverPart, self).setup_detector(
-            context, completed_steps, steps_to_do, duration, part_info, **kwargs)
+            context,
+            completed_steps,
+            steps_to_do,
+            duration,
+            part_info,
+            **kwargs)
+
         child.acquirePeriod.put_value(period)
 
-    def get_adjusted_exposure_time_and_acquire_period(self, duration, readout_time, exposure_time):
+    def get_adjusted_exposure_time_and_acquire_period(
+            self,
+            duration,  # type: float
+            readout_time,  # type: float
+            exposure_time  # type: float
+            ):
+        # type: (...) -> (float, float)
         # It seems that the difference between acquirePeriod and exposure
         # doesn't tell the whole story, we seem to need an additional bit
         # of readout (or something) time on top
@@ -87,4 +104,5 @@ class AndorDriverPart(ADCore.parts.DetectorDriverPart):
 
     @staticmethod
     def get_additional_readout_factor(duration):
+        # type: (float) -> float
         return duration * 0.004 + 0.001
