@@ -12,9 +12,11 @@ from malcolm.core import Future, Block, PartRegistrar, Put, Request
 from malcolm.modules import builtin, scanning
 from malcolm.modules.pmac.util import get_motion_trigger
 from ..infos import MotorInfo
-from ..util import cs_axis_mapping, points_joined, point_velocities, MIN_TIME, \
-    MIN_INTERVAL, profile_between_points, cs_port_with_motors_in,\
-    get_motion_axes
+from ..util import (
+    cs_axis_mapping, point_velocities, MIN_TIME,
+    MIN_INTERVAL, profile_between_points, cs_port_with_motors_in,
+    get_motion_axes, all_points_same_velocities, all_points_joined
+)
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -354,7 +356,7 @@ class PmacChildPart(builtin.parts.ChildPart):
                         overflow -= 1
                         ticks += 1
                     time_array_ticks.append(ticks)
-                # TODO: overflow discarded overy 10000 points, is it a problem?
+                # TODO: overflow discarded every 10000 points, is it a problem?
                 v = np.array(time_array_ticks, np.int32)
             elif k in ("velocityMode", "userPrograms"):
                 v = np.array(v, np.int32)
@@ -514,7 +516,10 @@ class PmacChildPart(builtin.parts.ChildPart):
             point.duration / 2.0, velocity_point, user_program, point_num + 1,
             {name: point.upper[name] for name in self.axis_mapping})
 
-    def add_sparse_point(self, point, point_num, next_point, points_are_joined):
+    def add_sparse_point(
+            self, point, point_num, next_point, points_are_joined,
+            same_velocities
+    ):
         # todo when branch velocity-mode-changes is merged we will
         #  need to set velocity mode CURRENT_TO_NEXT on the *previous*
         #  point whenever we skip a point
@@ -524,8 +529,7 @@ class PmacChildPart(builtin.parts.ChildPart):
             do_skip = True
         else:
             # otherwise skip this point if is is linear to previous point
-            do_skip = next_point and points_are_joined and \
-                      self.is_same_velocity(point, next_point)
+            do_skip = next_point and points_are_joined and same_velocities
 
         if do_skip:
             self.time_since_last_pvt += point.duration
@@ -538,7 +542,8 @@ class PmacChildPart(builtin.parts.ChildPart):
                 {name: point.positions[name] for name in self.axis_mapping})
             self.time_since_last_pvt = point.duration / 2.0
 
-        # insert the lower bound of the next frame
+        # insert the lower bound of the next frame (i.e. the upper bound for
+        # this frame)
         if points_are_joined:
             user_program = self.get_user_program(PointType.POINT_JOIN)
             velocity_point = VelocityModes.PREV_TO_NEXT
@@ -554,6 +559,23 @@ class PmacChildPart(builtin.parts.ChildPart):
                 user_program, point_num + 1,
                 {name: point.upper[name] for name in self.axis_mapping})
             self.time_since_last_pvt = 0
+
+    def get_some_points(self, start_index):
+        # calculate the indices of the next batch of points to get for
+        # the calculate_generator_profile loop
+        # cap at PROFILE_POINTS (+1 so we can always get next_point)
+        if start_index == self.steps_up_to:
+            return None, None, None
+        if self.steps_up_to - start_index > PROFILE_POINTS:
+            up_to = PROFILE_POINTS + start_index + 1
+            points = self.generator.get_points(start_index, up_to)
+        else:
+            points = self.generator.get_points(start_index, self.steps_up_to)
+
+        velocities = all_points_same_velocities(points)
+        joined = all_points_joined(points)
+
+        return points, joined, velocities
 
     def calculate_generator_profile(self, start_index, do_run_up=False):
         # If we are doing the first build, do_run_up will be passed to flag
@@ -578,24 +600,36 @@ class PmacChildPart(builtin.parts.ChildPart):
                 start_index, axis_points)
 
         self.time_since_last_pvt = 0
+
+        points, joined, velocities = self.get_some_points(start_index)
+        points_idx = start_index
+        next_point = None
         for i in range(start_index, self.steps_up_to):
-            point = self.generator.get_point(i)
+            if i - points_idx >= PROFILE_POINTS:
+                points, joined, velocities = self.get_some_points(i)
+                points_idx = i
+
+            point = next_point or points[i - points_idx]
 
             if i + 1 < self.steps_up_to:
                 # Check if we need to insert the lower bound of next_point
-                next_point = self.generator.get_point(i + 1)
+                next_point = points[i + 1 - points_idx]
 
-                points_are_joined = points_joined(
-                    self.axis_mapping, point, next_point
-                )
+                # cope with the zero axes case (where joined == None)
+                points_are_joined = joined is None or joined[i - points_idx]
+                same_velocities = velocities is None or velocities[
+                    i - points_idx
+                ]
             else:
-                points_are_joined = False
+                same_velocities = points_are_joined = False
                 next_point = None
 
             if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
                 self.add_generator_point_pair(point, i, points_are_joined)
             else:
-                self.add_sparse_point(point, i, next_point, points_are_joined)
+                self.add_sparse_point(
+                    point, i, next_point, points_are_joined, same_velocities
+                )
 
             # add in the turnaround between non-contiguous points
             # or after the last point if delay_after is defined
@@ -664,19 +698,3 @@ class PmacChildPart(builtin.parts.ChildPart):
         self.profile["velocityMode"][-1] = VelocityModes.PREV_TO_CURRENT
         user_program = self.get_user_program(PointType.START_OF_ROW)
         self.profile["userPrograms"][-1] = user_program
-
-    def is_same_velocity(self, p1, p2):
-        result = False
-        if p2.duration == p2.duration:
-            result = True
-            for axis_name, _ in self.axis_mapping.items():
-                if not np.isclose(
-                    p1.lower[axis_name] - p1.positions[axis_name],
-                    p2.lower[axis_name] - p2.positions[axis_name]
-                ) or not np.isclose(
-                    p1.positions[axis_name] - p1.upper[axis_name],
-                    p2.positions[axis_name] - p2.upper[axis_name]
-                ):
-                    result = False
-                    break
-        return result

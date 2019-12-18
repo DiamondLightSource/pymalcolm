@@ -1,3 +1,4 @@
+from datetime import datetime
 from os import environ
 
 import numpy as np
@@ -75,6 +76,7 @@ class TestPMACChildPart(ChildTestCase):
             velocitySettle=settle, units=units)
 
     def do_configure(self, axes_to_scan, completed_steps=0, x_pos=0.5,
+<<<<<<< HEAD
                      y_pos=0.0, duration=1.0, units="mm", infos=None,
                      settle=0.0, continuous=True):
         self.set_motor_attributes(x_pos, y_pos, units, settle=settle)
@@ -84,6 +86,21 @@ class TestPMACChildPart(ChildTestCase):
         generator = CompoundGenerator(
             [ys, xs], [], [], duration, continuous=continuous
         )
+=======
+                     y_pos=0.0, duration=1.0, units="mm", infos=None):
+        self.set_motor_attributes(x_pos, y_pos, units)
+        xs = LineGenerator("x", "mm", 0.0, 0.5, 3, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 0.1, 2)
+
+        if len(axes_to_scan) == 1:
+            # when only scanning one axis, we only do xs once
+            steps_to_do = xs.size
+        else:
+            # otherwise we do xs for each step in ys
+            steps_to_do = xs.size * ys.size
+
+        generator = CompoundGenerator([ys, xs], [], [], duration)
+>>>>>>> now using get_points and nparray math in calculate_generator_profile
         generator.prepare()
         self.o.on_configure(
             self.context, completed_steps, steps_to_do, {"part": infos},
@@ -637,3 +654,34 @@ class TestPMACChildPart(ChildTestCase):
             userPrograms=pytest.approx(up),
             velocityMode=pytest.approx(vm)
         )
+
+    def long_configure(self, row_gate=False):
+        # test 4000000 points configure - used to check performance
+        if row_gate:
+            infos = [MotionTriggerInfo(MotionTrigger.ROW_GATE), ]
+        else:
+            infos = None
+        self.set_motor_attributes(0, 0, "mm", x_velocity=30)
+        axes_to_scan = ["x", "y"]
+        x_steps, y_steps = 1000, 100
+        steps_to_do = x_steps * y_steps
+        xs = LineGenerator("x", "mm", 0.0, 10, x_steps, alternate=True)
+        ys = LineGenerator("y", "mm", 0.0, 2, y_steps)
+        generator = CompoundGenerator([ys, xs], [], [], .01)
+        generator.prepare()
+
+        start = datetime.now()
+        self.o.on_configure(
+            self.context, 0, steps_to_do, {"part": infos},
+            generator, axes_to_scan)
+        elapsed = datetime.now() - start
+        assert elapsed.total_seconds() < 1.0
+
+    #@patch("malcolm.modules.pmac.parts.pmacchildpart.PROFILE_POINTS", 102)
+    def test_configure_long_trajectory(self):
+        # brick triggered
+        self.long_configure(False)
+        # 'sparse' trajectory linear point removal
+        self.long_configure(True)
+        # todo this test should complete the scan and do some kind of
+        #  verification (but not crashing is quite a good verification)
