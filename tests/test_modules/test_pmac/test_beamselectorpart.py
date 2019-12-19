@@ -9,6 +9,7 @@ from malcolm.yamlutil import make_block_creator
 
 from scanpointgenerator import CompoundGenerator, \
     StaticPointGenerator
+from malcolm.modules.pmac.util import MIN_TIME
 
 import pytest
 from mock import call
@@ -73,6 +74,8 @@ class TestBeamSelectorPart(ChildTestCase):
         self.o.on_configure(self.context, 0, nCycles, {}, generator,
                          [])
 
+        assert generator.duration == 1.5
+
         assert self.child.handled_requests.mock_calls == [
             call.post('writeProfile',
                       csPort='CS1', timeArray=[0.002],
@@ -121,6 +124,8 @@ class TestBeamSelectorPart(ChildTestCase):
         self.o.on_configure(self.context, 0, nCycles, {}, generator,
                          [])
 
+        assert generator.duration == MIN_TIME
+
         assert self.child.handled_requests.mock_calls == [
             call.post('writeProfile',
                       csPort='CS1', timeArray=[0.002],
@@ -145,3 +150,27 @@ class TestBeamSelectorPart(ChildTestCase):
                       velocityMode=pytest.approx([
                           1, 0, 1, 1, 1, 0, 1, 1, 3]))
         ]
+
+    def test_invalid_parameters(self):
+        self.part_under_test = BeamSelectorPart(name="beamSelector2",
+                                mri="PMAC",
+                                selectorAxis="x",
+                                tomoAngle='invalid',
+                                diffAngle=0.5,
+                                moveTime=0.5)
+
+        self.context.set_notify_dispatch_request(
+            self.part_under_test.notify_dispatch_request)
+
+        self.set_motor_attributes()
+        nCycles = 1
+        generator = CompoundGenerator(
+            [StaticPointGenerator(nCycles)], [], [], duration=0.5)
+        generator.prepare()
+
+        self.part_under_test.on_configure(self.context, 0, nCycles, {},
+                                          generator, [])
+
+        assert self.part_under_test.tomoAngle == 0.0
+        assert self.part_under_test.diffAngle == 0.0
+        assert self.part_under_test.move_time == 0.5
