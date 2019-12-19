@@ -13,6 +13,12 @@ stream itself.
 Strategy
 --------
 
+.. note::
+
+    A more in-depth overview of this topic can be found in
+    `trajectory_scan_triggering`, with a description of PandA-based triggering
+    at the bottom.
+
 Imagine a 2D Grid scan, with a number of rows. PandA should wait until the
 start of the row, then make the right number of time based trigger signals,
 then wait for the turnaround to happen before waiting for the next row. This

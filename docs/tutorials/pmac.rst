@@ -13,6 +13,11 @@ a PandABox_.
 Strategy
 --------
 
+.. note::
+
+    A more in-depth overview of this topic can be found in
+    `trajectory_scan_triggering`.
+
 We will use the simplest triggering method possible here, the PMAC is master
 and generates a series of live pulses (marking a detector trigger, and the end
 of the last frame if there was one) and dead pulses (just marking the end of
