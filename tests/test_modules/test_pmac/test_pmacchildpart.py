@@ -1,6 +1,7 @@
 from datetime import datetime
 from os import environ
 
+import socket
 import numpy as np
 import pytest
 from mock import Mock, call, patch, ANY
@@ -42,7 +43,8 @@ class TestPMACChildPart(ChildTestCase):
         self.process.stop(timeout=1)
 
     # TODO: restore this tests when GDA does units right
-    def _______________test_bad_units(self):
+    def test_bad_units(self):
+        pytest.skip("awaiting GDA units fix")
         with self.assertRaises(AssertionError) as cm:
             self.do_configure(["x", "y"], units="m")
         assert str(cm.exception) == "x: Expected scan units of 'm', got 'mm'"
@@ -664,9 +666,7 @@ class TestPMACChildPart(ChildTestCase):
         self.set_motor_attributes(0, 0, "mm", x_velocity=300, y_velocity=300,
                                   x_acceleration=30, y_acceleration=30)
         axes_to_scan = ["x", "y"]
-        # todo - the goal was to get 4M points in 1 sec but we have only
-        #  achieved it in 18 secs so this test currently for 40K points
-        x_steps, y_steps = 4000, 10
+        x_steps, y_steps = 4000, 1000
         steps_to_do = x_steps * y_steps
         xs = LineGenerator("x", "mm", 0.0, 10, x_steps, alternate=True)
         ys = LineGenerator("y", "mm", 0.0, 8, y_steps)
@@ -678,12 +678,14 @@ class TestPMACChildPart(ChildTestCase):
             self.context, 0, steps_to_do, {"part": infos},
             generator, axes_to_scan)
         elapsed = datetime.now() - start
-        assert elapsed.total_seconds() < 1.0
+        # todo goal was sub 1 second but we achieved sub 3 secs
+        assert elapsed.total_seconds() < 3.0
 
     def test_configure_long_trajectory(self):
+        if 'diamond.ac.uk' not in socket.gethostname():
+            pytest.skip("performance test only")
         # brick triggered
         self.long_configure(False)
         # 'sparse' trajectory linear point removal
         self.long_configure(True)
-        # todo this test should complete the scan and do some kind of
-        #  verification (but not crashing is quite a good verification)
+

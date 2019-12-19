@@ -27,12 +27,14 @@ TICK_S = 0.000001
 # Longest move time we can request
 MAX_MOVE_TIME = 4.0
 
+
 # velocity modes
 class VelocityModes:
     PREV_TO_NEXT = 0
     PREV_TO_CURRENT = 1
     CURRENT_TO_NEXT = 2
     ZERO_VELOCITY = 3
+
 
 # user programs
 class UserPrograms:
@@ -523,24 +525,41 @@ class PmacChildPart(builtin.parts.ChildPart):
             {name: point.upper[name] for name in self.axis_mapping})
 
     def add_sparse_point(
-            self, point, point_num, next_point, points_are_joined,
-            same_velocities
+            self, points, point_num, points_are_joined, same_velocities
     ):
-        # todo when branch velocity-mode-changes is merged we will
-        #  need to set velocity mode CURRENT_TO_NEXT on the *previous*
-        #  point whenever we skip a point
+        """
+        Add in points but skip those that are linear to create a sparse
+        trajectory. Add the upper bound when the points are non-linear.
+        Always add the upper bound for the last point in a row (not joined to
+        the next point).
+
+        Joined| Same Vel|| Add Point | Add Upper
+        0     | 0       || Y         | Y
+        0     | 1       || N         | Y
+        1     | 0       || Y         | Y
+        1     | 1       || N         | N
+
+        NOTE:
+        This function may be called millions of times during the configure
+        phase and hence is highly optimized. In particular the use of variable
+        'point' looks like it may be referenced before assignment. The paths
+        controlled by the matrix above show that it will be always be assigned
+        or not used at all. Indexing into points[] is expensive so this is
+        intentional.
+        """
         if self.time_since_last_pvt > 0 and not points_are_joined:
             # assume we can skip if we are at the end of a row and we
             # just skipped the most recent point (i.e. time_since_last_pvt > 0)
             do_skip = True
         else:
-            # otherwise skip this point if is is linear to previous point
-            do_skip = next_point and points_are_joined and same_velocities
+            # otherwise skip this point if it is linear to previous point
+            do_skip = points_are_joined and same_velocities
 
         if do_skip:
-            self.time_since_last_pvt += point.duration
+            self.time_since_last_pvt += points.duration[point_num]
         else:
-            # not skipping - add this mid point
+            # not skipping - add this mid or end point
+            point = points[point_num]
             user_program = self.get_user_program(PointType.MID_POINT)
             self.add_profile_point(
                 self.time_since_last_pvt + point.duration / 2.0,
@@ -548,18 +567,19 @@ class PmacChildPart(builtin.parts.ChildPart):
                 {name: point.positions[name] for name in self.axis_mapping})
             self.time_since_last_pvt = point.duration / 2.0
 
-        # insert the lower bound of the next frame (i.e. the upper bound for
-        # this frame)
-        if points_are_joined:
-            user_program = self.get_user_program(PointType.POINT_JOIN)
-            velocity_point = VelocityModes.PREV_TO_NEXT
-        else:
-            user_program = self.get_user_program(PointType.END_OF_ROW)
-            velocity_point = VelocityModes.PREV_TO_CURRENT
-
         # only add the lower bound if we did not skip this point OR if we are
         # at the end of a row where we always require a final point
         if not do_skip or not points_are_joined:
+            # insert the lower bound of the next frame (i.e. the upper bound for
+            # this frame)
+            if points_are_joined:
+                user_program = self.get_user_program(PointType.POINT_JOIN)
+                velocity_point = VelocityModes.PREV_TO_NEXT
+            else:
+                point = points[point_num]
+                user_program = self.get_user_program(PointType.END_OF_ROW)
+                velocity_point = VelocityModes.PREV_TO_CURRENT
+
             self.add_profile_point(
                 self.time_since_last_pvt, velocity_point,
                 user_program, point_num + 1,
@@ -609,18 +629,13 @@ class PmacChildPart(builtin.parts.ChildPart):
 
         points, joined, velocities = self.get_some_points(start_index)
         points_idx = start_index
-        next_point = None
         for i in range(start_index, self.steps_up_to):
             if i - points_idx >= BATCH_POINTS:
                 points, joined, velocities = self.get_some_points(i)
                 points_idx = i
 
-            point = next_point or points[i - points_idx]
-
-            if i + 1 < self.steps_up_to:
-                # Check if we need to insert the lower bound of next_point
-                next_point = points[i + 1 - points_idx]
-
+            last_point = i + 1 == self.steps_up_to
+            if not last_point:
                 # cope with the zero axes case (where joined == None)
                 points_are_joined = joined is None or joined[i - points_idx]
                 same_velocities = velocities is None or velocities[
@@ -628,22 +643,23 @@ class PmacChildPart(builtin.parts.ChildPart):
                 ]
             else:
                 same_velocities = points_are_joined = False
-                next_point = None
 
             if self.output_triggers == scanning.infos.MotionTrigger.EVERY_POINT:
-                self.add_generator_point_pair(point, i, points_are_joined)
+                self.add_generator_point_pair(
+                    points[i - points_idx], i, points_are_joined
+                )
             else:
                 self.add_sparse_point(
-                    point, i, next_point, points_are_joined, same_velocities
+                    points, i - points_idx, points_are_joined, same_velocities
                 )
 
             # add in the turnaround between non-contiguous points
-            # or after the last point if delay_after is defined
-            if not points_are_joined:
-                if next_point is not None:
-                    self.insert_gap(point, next_point, i + 1)
-                elif getattr(point, "delay_after", None) is not None:
-                    pass
+            if not (points_are_joined or last_point):
+                self.insert_gap(
+                    points[i - points_idx],
+                    points[i - points_idx + 1],
+                    i + 1
+                )
 
             # Check if we have exceeded the points number and need to write
             # Strictly less than so we always add one more point to the time
