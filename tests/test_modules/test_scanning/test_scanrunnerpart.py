@@ -1157,7 +1157,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
         self.scan_block_mock.run.assert_called_once()
 
         # Check that we logged the unidentified exception
-        logger_mock.warning.assert_called_once_with(
+        logger_mock.error.assert_called_once_with(
             "Unhandled exception for scan {no} in {set}: ({type_e}) {e}".format(
                 type_e=Exception,
                 no=self.scan_number,
