@@ -424,8 +424,9 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 outcome = ScanOutcome.FAIL
             except Exception as e:
                 outcome = ScanOutcome.OTHER
-                self.log.error(
-                    "Unhandled exception for scan {no} in {set}: ({t}) {e}".format(
+                self.log.error((
+                    "Unhandled exception for scan {no} in {set}:"
+                    "({t}) {e}").format(
                         t=type(e),
                         no=scan_number,
                         set=set_name,
