@@ -22,8 +22,12 @@ AMri = builtin.parts.AMri
 
 
 class EntryType(Enum):
-    AXES = 0
-    SCANSET2D = 1
+    GENERATOR = 0
+    SCAN = 1
+
+
+class GeneratorType(Enum):
+    LINE = 0
 
 
 class RunnerStates(Enum):
@@ -40,80 +44,18 @@ class ScanOutcome(Enum):
     TIMEOUT = 1
     NOTWRITEABLE = 2
     ABORTED = 3
+    MISCONFIGURED = 4
+    FAIL = 5
     OTHER = 99
 
 
-class ScanDimension:
+class Scan:
 
-    def __init__(self, start, stop, steps):
-        # type: (float, float, int) -> None
-        self.start = start
-        self.stop = stop
-        self.steps = steps
-
-    def __str__(self):
-        return "ScanDimension({start}, {stop}, {steps})".format(
-            start=self.start, stop=self.stop, steps=self.steps
-        )
-
-
-class Axes:
-
-    def __init__(self, name, fast_axis, slow_axis, units):
-        # type: (str, str, str, str) -> None
+    def __init__(self, name, generator, repeats=1):
+        # type: (str, CompoundGenerator, int) -> None
         self.name = name
-        self.fast_axis = fast_axis
-        self.slow_axis = slow_axis
-        self.units = units
-
-
-class ScanSet:
-
-    def __init__(
-            self,
-            name,  # type: str
-            axes,  # type: Axes
-            fast_dimension,  # type: ScanDimension
-            slow_dimension,  # type: ScanDimension
-            duration,  # type: float
-            alternate,  # type: bool
-            continuous,  # type: bool
-            repeats  # type: int
-            ):
-        # type: (...) -> None
-        self.name = name
-        self.axes = axes
-        self.fast_dimension = fast_dimension
-        self.slow_dimension = slow_dimension
-        self.duration = duration
-        self.alternate = alternate
-        self.continuous = continuous
+        self.generator = generator
         self.repeats = repeats
-
-    def get_compound_generator(self):
-        # type: () -> CompoundGenerator
-        slow_line_generator = LineGenerator(
-            self.axes.slow_axis,
-            self.axes.units,
-            self.slow_dimension.start,
-            self.slow_dimension.stop,
-            self.slow_dimension.steps)
-        fast_line_generator = LineGenerator(
-            self.axes.fast_axis,
-            self.axes.units,
-            self.fast_dimension.start,
-            self.fast_dimension.stop,
-            self.fast_dimension.steps,
-            alternate=self.alternate)
-
-        generator = CompoundGenerator(
-            [slow_line_generator, fast_line_generator],
-            [],
-            [],
-            self.duration,
-            continuous=self.continuous)
-
-        return generator
 
 
 class ScanRunnerPart(builtin.parts.ChildPart):
@@ -135,7 +77,6 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         super(ScanRunnerPart, self).__init__(
             name, mri, stateful=False, initial_visibility=True)
         self.runner_config = None
-        self.axes_sets = {}
         self.scan_sets = {}
 
     def setup(self, registrar):
@@ -248,46 +189,47 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             self.runner_status_message.set_value("Could not parse scan file")
             raise yaml.YAMLError("Could not parse scan file")
 
-    def parse_axes(self, entry):
+    @staticmethod
+    def get_kwargs_from_dict(input_dict, kwargs_list):
+        kwargs = {}
+        if not isinstance(kwargs_list, list):
+            kwargs_list = [kwargs_list]
+        for kwarg in kwargs_list:
+            if kwarg in input_dict:
+                kwargs[kwarg] = input_dict[kwarg]
+        return kwargs
+
+    def parse_line_generator(self, entry):
+        # type: (dict) -> LineGenerator
+        axes = entry['axes']
+        units = entry['units']
+        start = entry['start']
+        stop = entry['stop']
+        size = entry['size']
+        kwargs = self.get_kwargs_from_dict(entry, 'alternate')
+
+        return LineGenerator(axes, units, start, stop, size, **kwargs)
+
+    def parse_compound_generator(self, entry):
+        # type: (dict) -> CompoundGenerator
+        duration = entry['duration']
+        generators = []
+        generators_dict = entry['generators']
+        for generator in generators_dict:
+            generators.append(self.parse_line_generator(generator['line']))
+
+        kwargs_list = ['continuous', 'delay_after']
+        kwargs = self.get_kwargs_from_dict(entry, kwargs_list)
+
+        return CompoundGenerator(generators, duration=duration, **kwargs)
+
+    def parse_scan(self, entry):
         # type: (dict) -> None
-        name = entry["name"]
-        fast_axis = entry["fast_axis"]
-        slow_axis = entry["slow_axis"]
-        units = entry["units"]
+        name = entry['name']
+        generator = self.parse_compound_generator(entry['generator'])
+        kwargs = self.get_kwargs_from_dict(entry, 'repeats')
 
-        self.axes_sets[name] = Axes(name, fast_axis, slow_axis, units)
-
-    def parse_scan_set_2d(self, entry):
-        # type: (dict) -> None
-        name = entry["name"]
-        axes_name = entry["axes"]
-        start_fast = entry["start_fast"]
-        start_slow = entry["start_slow"]
-        stop_fast = entry["stop_fast"]
-        stop_slow = entry["stop_slow"]
-        steps_fast = entry["steps_fast"]
-        steps_slow = entry["steps_slow"]
-        duration = entry["duration"]
-        if 'alternate' in entry:
-            alternate = entry["alternate"]
-        else:
-            alternate = False
-        if 'continuous' in entry:
-            continuous = entry["continuous"]
-        else:
-            continuous = True
-        if 'repeats' in entry:
-            repeats = entry["repeats"]
-        else:
-            repeats = 1
-
-        fast_dimension = ScanDimension(
-            start_fast, stop_fast, int(steps_fast))
-        slow_dimension = ScanDimension(
-            start_slow, stop_slow, int(steps_slow))
-        self.scan_sets[name] = ScanSet(
-            name, self.axes_sets[axes_name], fast_dimension, slow_dimension,
-            duration, alternate, continuous, repeats)
+        self.scan_sets[name] = Scan(name, generator, **kwargs)
 
     @staticmethod
     def get_current_datetime(time_separator=":"):
@@ -311,17 +253,16 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         parsed_yaml = self.parse_yaml(file_contents)
 
         # Empty the current dictionaries
-        self.axes_sets = {}
         self.scan_sets = {}
 
         # Parse the configuration
         for item in parsed_yaml:
             key_name = list(item.keys())[0].upper()
-            if key_name == EntryType.AXES.name:
-                self.parse_axes(item['axes'])
-
-            elif key_name == EntryType.SCANSET2D.name:
-                self.parse_scan_set_2d(item['ScanSet2d'])
+            if key_name == EntryType.SCAN.name:
+                self.parse_scan(item['scan'])
+            else:
+                raise ValueError(
+                    "Unidentified object in YAML: {key}".format(key=key_name))
 
         # Count the number of scans configured
         self.update_scans_configured()
@@ -408,12 +349,9 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
     def run_scan_set(self, scan_set, scan_block, sub_directory,
                      report_filepath):
-        # type: (ScanSet, Block, str, str) -> None
+        # type: (Scan, Block, str, str) -> None
         # Update scan set
         self.current_scan_set.set_value(scan_set.name)
-
-        # Get the compound generator
-        generator = scan_set.get_compound_generator()
 
         # Directory where to save scans for this set
         set_directory = self.create_and_get_set_directory(
@@ -427,7 +365,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 set_directory,
                 scan_number,
                 report_filepath,
-                generator)
+                scan_set.generator)
 
     def create_and_get_scan_directory(self, set_directory, scan_number):
         # type: (str, int) -> str
@@ -456,27 +394,44 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         start_time = None
         if scan_block.state.value is not RunnableStates.READY:
             scan_block.reset()
+
+        # Configure first
+        outcome = None
         try:
             scan_block.configure(generator, fileDir=scan_directory)
-            start_time = self.get_current_datetime()
-            scan_block.run()
-        except TimeoutError:
-            outcome = ScanOutcome.TIMEOUT
-        except NotWriteableError:
-            outcome = ScanOutcome.NOTWRITEABLE
-        except AbortedError:
-            outcome = ScanOutcome.ABORTED
+        except AssertionError:
+            outcome = ScanOutcome.MISCONFIGURED
         except Exception as e:
-            outcome = ScanOutcome.OTHER
-            self.log.warning(
+            outcome = ScanOutcome.MISCONFIGURED
+            self.log.error(
                 "Unhandled exception for scan {no} in {set}: ({t}) {e}".format(
                     t=type(e),
                     no=scan_number,
                     set=set_name,
-                    e=e
-                ))
-        else:
-            outcome = ScanOutcome.SUCCESS
+                    e=e))
+
+        if outcome is None:
+            try:
+                start_time = self.get_current_datetime()
+                scan_block.run()
+            except TimeoutError:
+                outcome = ScanOutcome.TIMEOUT
+            except NotWriteableError:
+                outcome = ScanOutcome.NOTWRITEABLE
+            except AbortedError:
+                outcome = ScanOutcome.ABORTED
+            except AssertionError:
+                outcome = ScanOutcome.FAIL
+            except Exception as e:
+                outcome = ScanOutcome.OTHER
+                self.log.error(
+                    "Unhandled exception for scan {no} in {set}: ({t}) {e}".format(
+                        t=type(e),
+                        no=scan_number,
+                        set=set_name,
+                        e=e))
+            else:
+                outcome = ScanOutcome.SUCCESS
 
         # Record the outcome
         self.add_report_line(
@@ -500,7 +455,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
     def get_report_string(
             self, set_name, scan_number, scan_outcome, start_time, end_time):
         # type: (str, int, ScanOutcome, str, str) -> str
-        report_str = "{set:<30}{no:<10}{outcome:<13}{start:<20}{end}".format(
+        report_str = "{set:<30}{no:<10}{outcome:<14}{start:<20}{end}".format(
             set=set_name,
             no=scan_number,
             outcome=self.get_enum_label(scan_outcome),

@@ -3,81 +3,13 @@ from mock import Mock, patch, call
 
 from ruamel.yaml import YAMLError
 
-from malcolm.modules.scanning.parts.scanrunnerpart import ScanDimension, \
-    Axes, ScanSet, ScanRunnerPart, RunnerStates, ScanOutcome
+from malcolm.modules.scanning.parts.scanrunnerpart import \
+    ScanRunnerPart, RunnerStates, ScanOutcome, Scan
 from malcolm.modules.scanning.util import RunnableStates
 from malcolm.core import TimeoutError, NotWriteableError, \
     AbortedError
 
-
-class TestScanDimension(unittest.TestCase):
-
-    def test_attributes_are_initialised(self):
-        start = 0.0
-        stop = 10.0
-        steps = 10
-
-        scan_dimension = ScanDimension(start, stop, steps)
-
-        self.assertEqual(start, scan_dimension.start)
-        self.assertEqual(stop, scan_dimension.stop)
-        self.assertEqual(steps, scan_dimension.steps)
-
-
-class TestAxes(unittest.TestCase):
-
-    def test_attributes_are_initialised(self):
-        name = "Fine_XY"
-        fast_axis = "x"
-        slow_axis = "y"
-        units = "mm"
-
-        axes = Axes(name, fast_axis, slow_axis, units)
-
-        self.assertEqual(name, axes.name)
-        self.assertEqual(fast_axis, axes.fast_axis)
-        self.assertEqual(slow_axis, axes.slow_axis)
-        self.assertEqual(units, axes.units)
-
-
-class TestScanSet(unittest.TestCase):
-
-    def setUp(self):
-        self.name = "fine_scan_1um_step"
-        self.axes = Axes("Fine_XY", "x", "y", "mm")
-        self.fast_dimension = ScanDimension(0.0, 5.0, 6)
-        self.slow_dimension = ScanDimension(0.0, 10.0, 11)
-        self.duration = 0.01
-        self.alternate = True
-        self.continuous = False
-        self.repeats = 17
-
-    def test_attributes_are_initialised(self):
-        scan_set = ScanSet(self.name, self.axes, self.fast_dimension,
-                           self.slow_dimension, self.duration,
-                           self.alternate, self.continuous, self.repeats)
-
-        self.assertEqual(self.name, scan_set.name)
-        self.assertEqual(self.axes, scan_set.axes)
-        self.assertEqual(self.fast_dimension, scan_set.fast_dimension)
-        self.assertEqual(self.slow_dimension, scan_set.slow_dimension)
-        self.assertEqual(self.duration, scan_set.duration)
-        self.assertEqual(self.alternate, scan_set.alternate)
-        self.assertEqual(self.continuous, scan_set.continuous)
-        self.assertEqual(self.repeats, scan_set.repeats)
-
-    def test_get_compound_generator(self):
-        scan_set = ScanSet(self.name, self.axes, self.fast_dimension,
-                           self.slow_dimension, self.duration,
-                           self.alternate, self.continuous, self.repeats)
-
-        generator = scan_set.get_compound_generator()
-
-        self.assertEqual("mm", generator.units['x'])
-        self.assertEqual("mm", generator.units['y'])
-        self.assertEqual(self.duration, generator.duration)
-        self.assertEqual(self.continuous, generator.continuous)
-        self.assertEqual(['y', 'x'], generator.axes)
+from scanpointgenerator import LineGenerator, CompoundGenerator
 
 
 class TestScanRunnerPart(unittest.TestCase):
@@ -85,35 +17,78 @@ class TestScanRunnerPart(unittest.TestCase):
     def setUp(self):
         self.name = "ScanRunner"
         self.mri = "ML-SCAN-RUNNER-01"
-
-        self.good_yaml = \
+        self.single_scan_yaml = \
             """
-            - axes:
-                name: xy_stages
-                fast_axis: j08_x
-                slow_axis: j08_y
-                units: mm
-            
-            - axes:
-                name: xz_stages
-                fast_axis: j08_x
-                slow_axis: j08_z
-                units: mm
-            
-            - ScanSet2d:
-                name: fine_70um_10um_step
-                axes: xy_stages
-                start_fast: -0.035
-                stop_fast: 0.8
-                steps_fast: 25
-                start_slow: -0.5
-                stop_slow: 0.5
-                steps_slow: 8
-                alternate: True
-                continuous: False
-                repeats: 5
-                duration: 0.1
-                
+            - scan:
+                name: coarse_2d
+                repeats: 11
+                generator:
+                    generators:
+                        - line:
+                            axes: sample_y
+                            units: mm
+                            start: -0.3
+                            stop: 0.5
+                            size: 5
+                            alternate: true
+                        - line:
+                            axes: sample_x
+                            units: mm
+                            start: 0.1
+                            stop: 0.9
+                            size: 5
+                            alternate: true
+                    duration: 0.002
+                    continuous: true
+                    delay_after: 0
+            """
+
+        self.two_scan_yaml = \
+            """
+            - scan:
+                name: coarse_2d
+                repeats: 11
+                generator:
+                    generators:
+                        - line:
+                            axes: sample_y
+                            units: mm
+                            start: -0.3
+                            stop: 0.5
+                            size: 5
+                            alternate: true
+                        - line:
+                            axes: sample_x
+                            units: mm
+                            start: 0.1
+                            stop: 0.9
+                            size: 5
+                            alternate: true
+                    duration: 0.002
+                    continuous: true
+                    delay_after: 0
+            - scan:
+                name: fine_2d_slow
+                repeats: 3
+                generator:
+                    generators:
+                        - line:
+                            axes: sample_y
+                            units: mm
+                            start: 0.0
+                            stop: 0.1
+                            size: 5
+                            alternate: true
+                        - line:
+                            axes: sample_x
+                            units: mm
+                            start: -0.3
+                            stop: -0.34
+                            size: 5
+                            alternate: true
+                    duration: 1.0
+                    continuous: true
+                    delay_after: 0
             """
 
         self.invalid_yaml = \
@@ -137,61 +112,554 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
 
         self.assertEqual(None, scan_runner_part.runner_config)
-        self.assertEqual({}, scan_runner_part.axes_sets)
         self.assertEqual({}, scan_runner_part.scan_sets)
 
-    @staticmethod
-    def compare_axes(axes_a, axes_b):
-        if axes_a.name == axes_b.name and axes_a.units == axes_b.units \
-                and axes_a.fast_axis == axes_b.fast_axis \
-                and axes_a.slow_axis == axes_b.slow_axis:
-            return True
-        else:
-            return False
+    def test_get_kwargs_from_dict_returns_single_kwarg(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        input_dict = {
+            'cat': 21,
+            'dog': 15,
+            'bird': 7
+        }
 
-    @staticmethod
-    def compare_dimensions(dimension_a, dimension_b):
-        if dimension_a.start == dimension_b.start \
-                and dimension_a.stop == dimension_b.stop \
-                and dimension_a.steps == dimension_b.steps:
-            return True
-        else:
-            return False
+        expected_dict = {
+            'cat': 21
+        }
 
-    def compare_scan_set(self, expected_set, actual_set):
-        if expected_set.name != actual_set.name:
-            self.fail("Scan set name mismatch, expected: {0}, got: {1}".format(expected_set.name, actual_set.name))
+        kwargs = scan_runner_part.get_kwargs_from_dict(input_dict, 'cat')
+        self.assertEqual(expected_dict, kwargs)
 
-        if expected_set.duration != actual_set.duration:
-            self.fail("Scan set duration mismatch, expected: {0}, got: {1}".format(
-                expected_set.duration, actual_set.duration))
+    def test_get_kwargs_from_dict_returns_two_kwargs(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        input_dict = {
+            'cat': 21,
+            'dog': 15,
+            'bird': 7
+        }
 
-        if expected_set.alternate != actual_set.alternate:
-            self.fail("Expected scan set alternate to be {0}, got {1}".format(
-                expected_set.alternate, actual_set.alternate))
+        expected_dict = {
+            'dog': 15,
+            'bird': 7
+        }
 
-        if expected_set.continuous != actual_set.continuous:
-            self.fail("Expected scan set continuous to be {0}, got {1}".format(
-                expected_set.continuous, actual_set.continuous))
+        kwargs = scan_runner_part.get_kwargs_from_dict(input_dict, ['dog', 'bird'])
+        self.assertEqual(expected_dict, kwargs)
 
-        if expected_set.repeats != actual_set.repeats:
-            self.fail("Scan set repeats mismatch, expected: {0}, got: {1}".format(
-                expected_set.repeats, actual_set.repeats))
+    def test_get_kwargs_from_dict_returns_empty_kwargs(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        input_dict = {
+            'cat': 21,
+            'dog': 15,
+            'bird': 7
+        }
 
-        if self.compare_axes(expected_set.axes, actual_set.axes) is not True:
-            self.fail("Axes do not match")
+        expected_dict = {}
 
-        if self.compare_dimensions(expected_set.fast_dimension, actual_set.fast_dimension) is not True:
-            self.fail("Fast dimensions do not match: {0}, {1}".format(
-                expected_set.fast_dimension, actual_set.fast_dimension))
+        kwargs = scan_runner_part.get_kwargs_from_dict(input_dict, 'moose')
+        self.assertEqual(expected_dict, kwargs)
 
-        if self.compare_dimensions(expected_set.slow_dimension, actual_set.slow_dimension) is not True:
-            self.fail("Slow dimensions do not match: {0}, {1}".format(
-                expected_set.slow_dimension, actual_set.slow_dimension))
+    def test_parse_line_generator_parses_with_alternate(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        axes = "sample_x"
+        units = "mm",
+        start = 0.1
+        stop = -0.7
+        size = 12
+        alternate = True
 
-        return True
+        line_generator_dict = {
+            'axes': axes,
+            'units': units,
+            'start': start,
+            'stop': stop,
+            'size': size,
+            'alternate': alternate
+        }
 
-    def test_loadFile(self):
+        expected_line_generator = LineGenerator(
+            axes, units, start, stop, size, alternate=True)
+        line_generator = scan_runner_part.parse_line_generator(
+            line_generator_dict)
+
+        self.assertEqual(expected_line_generator.axes, line_generator.axes)
+        self.assertEqual(expected_line_generator.units, line_generator.units)
+        self.assertEqual(expected_line_generator.start, line_generator.start)
+        self.assertEqual(expected_line_generator.stop, line_generator.stop)
+        self.assertEqual(expected_line_generator.size, line_generator.size)
+        self.assertEqual(expected_line_generator.alternate, line_generator.alternate)
+
+    def test_parse_line_generator_parses_without_alternate(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        axes = "sample_x"
+        units = "mm",
+        start = 0.1
+        stop = -0.7
+        size = 12
+
+        line_generator_dict = {
+            'axes': axes,
+            'units': units,
+            'start': start,
+            'stop': stop,
+            'size': size,
+        }
+
+        expected_line_generator = LineGenerator(axes, units, start, stop, size)
+        line_generator = scan_runner_part.parse_line_generator(
+            line_generator_dict)
+
+        self.assertEqual(expected_line_generator.axes, line_generator.axes)
+        self.assertEqual(expected_line_generator.units, line_generator.units)
+        self.assertEqual(expected_line_generator.start, line_generator.start)
+        self.assertEqual(expected_line_generator.stop, line_generator.stop)
+        self.assertEqual(expected_line_generator.size, line_generator.size)
+        self.assertEqual(expected_line_generator.alternate, line_generator.alternate)
+
+    def test_parse_line_generator_throws_KeyError_for_missing_positional_args(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        line_generator_dict = {
+            'axes': "sample_x",
+            'units': "mm",
+            'start': 0.1,
+            'stop': 0.6,
+            'size': 15,
+        }
+
+        # The number of iterations requires is equal to the number of compulsory arguments
+        for arg_num in range(len(line_generator_dict)):
+            line_generator_dict_with_missing_arg = {}
+            index = 0
+            # We want to miss out a different argument each time
+            for key in line_generator_dict:
+                if index == arg_num:
+                    pass
+                else:
+                    line_generator_dict_with_missing_arg[key] = line_generator_dict[key]
+                index += 1
+            # Now check it throws the KeyError
+            self.assertRaises(KeyError, scan_runner_part.parse_line_generator, line_generator_dict_with_missing_arg)
+
+    def compare_compound_generator(self, expected_gen, actual_gen):
+        self.assertEqual(expected_gen.duration, actual_gen.duration)
+        self.assertEqual(expected_gen.continuous, actual_gen.continuous)
+        self.assertEqual(expected_gen.delay_after, actual_gen.delay_after)
+
+        for generator in range(len(actual_gen.generators)):
+            self.compare_line_generator(
+                expected_gen.generators[generator],
+                actual_gen.generators[generator])
+
+    def compare_line_generator(self, expected_gen, actual_gen):
+        self.assertEqual(expected_gen.axes, actual_gen.axes)
+        self.assertEqual(expected_gen.units, actual_gen.units)
+        self.assertEqual(expected_gen.start, actual_gen.start)
+        self.assertEqual(expected_gen.stop, actual_gen.stop)
+        self.assertEqual(expected_gen.size, actual_gen.size)
+        self.assertEqual(expected_gen.alternate, actual_gen.alternate)
+
+    def test_parse_compound_generator_parses_with_all_args(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        duration = 0.02
+        continuous = False
+        delay_after = 0.5
+
+        line_x_axes = "sample_x"
+        line_x_start = 0.1
+        line_x_stop = 0.6
+        line_x_size = 5
+        line_x_alternate = False
+
+        line_y_axes = "sample_y"
+        line_y_start = -0.3
+        line_y_stop = 0.4
+        line_y_size = 10
+
+        units = "mm"
+
+        line_x = {
+            'axes': line_x_axes,
+            'units': units,
+            'start': line_x_start,
+            'stop': line_x_stop,
+            'size': line_x_size,
+            'alternate': line_x_alternate
+        }
+        line_y = {
+            'axes': line_y_axes,
+            'units': units,
+            'start': line_y_start,
+            'stop': line_y_stop,
+            'size': line_y_size,
+        }
+
+        compound_generator_dict = {
+            'duration': duration,
+            'continuous': continuous,
+            'delay_after': delay_after,
+            'generators': [
+                {
+                    'line': line_x
+                },
+                {
+                    'line': line_y
+                }
+            ]
+        }
+
+        expected_line_generators = [
+            LineGenerator(
+                line_x_axes, units, line_x_start, line_x_stop, line_x_size,
+                alternate=line_x_alternate),
+            LineGenerator(
+                line_y_axes, units, line_y_start, line_y_stop, line_y_size),
+        ]
+        expected_compound_generator = CompoundGenerator(
+            expected_line_generators,
+            duration=duration,
+            continuous=continuous,
+            delay_after=delay_after)
+
+        compound_generator = scan_runner_part.parse_compound_generator(
+            compound_generator_dict)
+
+        self.compare_compound_generator(expected_compound_generator, compound_generator)
+
+    def test_parse_compound_generator_parses_with_just_duration(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        duration = 1.4
+        line_x_axes = "sample_x"
+        line_x_start = 0.1
+        line_x_stop = 0.6
+        line_x_size = 5
+        line_x_alternate = False
+
+        line_y_axes = "sample_y"
+        line_y_start = -0.3
+        line_y_stop = 0.4
+        line_y_size = 10
+
+        units = "mm"
+
+        line_x = {
+            'axes': line_x_axes,
+            'units': units,
+            'start': line_x_start,
+            'stop': line_x_stop,
+            'size': line_x_size,
+            'alternate': line_x_alternate
+        }
+        line_y = {
+            'axes': line_y_axes,
+            'units': units,
+            'start': line_y_start,
+            'stop': line_y_stop,
+            'size': line_y_size,
+        }
+
+        compound_generator_dict = {
+            'duration': duration,
+            'generators': [
+                {
+                    'line': line_x
+                },
+                {
+                    'line': line_y
+                }
+            ]
+        }
+
+        expected_line_generators = [
+            LineGenerator(
+                line_x_axes, units, line_x_start, line_x_stop, line_x_size,
+                alternate=line_x_alternate),
+            LineGenerator(
+                line_y_axes, units, line_y_start, line_y_stop, line_y_size),
+        ]
+        expected_compound_generator = CompoundGenerator(
+            expected_line_generators,
+            duration=duration)
+
+        compound_generator = scan_runner_part.parse_compound_generator(
+            compound_generator_dict)
+
+        self.compare_compound_generator(expected_compound_generator, compound_generator)
+
+    def test_parse_compound_generator_raises_KeyError_without_duration(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        line_x_axes = "sample_x"
+        line_x_start = 0.1
+        line_x_stop = 0.6
+        line_x_size = 5
+        line_x_alternate = False
+
+        line_y_axes = "sample_y"
+        line_y_start = -0.3
+        line_y_stop = 0.4
+        line_y_size = 10
+
+        units = "mm"
+
+        line_x = {
+            'axes': line_x_axes,
+            'units': units,
+            'start': line_x_start,
+            'stop': line_x_stop,
+            'size': line_x_size,
+            'alternate': line_x_alternate
+        }
+        line_y = {
+            'axes': line_y_axes,
+            'units': units,
+            'start': line_y_start,
+            'stop': line_y_stop,
+            'size': line_y_size,
+        }
+
+        compound_generator_dict = {
+            'generators': [
+                {
+                    'line': line_x
+                },
+                {
+                    'line': line_y
+                }
+            ]
+        }
+
+        self.assertRaises(KeyError, scan_runner_part.parse_compound_generator, compound_generator_dict)
+
+    def test_parse_compound_generator_raises_KeyError_without_generators(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        duration = 1.4
+
+        compound_generator_dict = {
+            'duration': duration,
+        }
+
+        self.assertRaises(KeyError, scan_runner_part.parse_compound_generator, compound_generator_dict)
+
+    def test_parse_scan_parses_with_repeats(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        duration = 0.02
+        continuous = False
+        delay_after = 0.5
+        repeats = 13
+        name = "coarse_2D"
+
+        line_x_axes = "sample_x"
+        line_x_start = 1
+        line_x_stop = 21
+        line_x_size = 100
+        line_x_alternate = False
+
+        line_y_axes = "sample_y"
+        line_y_start = -50
+        line_y_stop = 51.2
+        line_y_size = 99
+
+        units = "mm"
+
+        line_x = {
+            'axes': line_x_axes,
+            'units': units,
+            'start': line_x_start,
+            'stop': line_x_stop,
+            'size': line_x_size,
+            'alternate': line_x_alternate
+        }
+        line_y = {
+            'axes': line_y_axes,
+            'units': units,
+            'start': line_y_start,
+            'stop': line_y_stop,
+            'size': line_y_size,
+        }
+
+        compound_generator = {
+            'duration': duration,
+            'continuous': continuous,
+            'delay_after': delay_after,
+            'generators': [
+                {
+                    'line': line_x
+                },
+                {
+                    'line': line_y
+                }
+            ]
+        }
+
+        scan_dict = {
+            'name': name,
+            'repeats': repeats,
+            'generator': compound_generator
+        }
+
+        expected_line_generators = [
+            LineGenerator(
+                line_x_axes, units, line_x_start, line_x_stop, line_x_size,
+                alternate=line_x_alternate),
+            LineGenerator(
+                line_y_axes, units, line_y_start, line_y_stop, line_y_size),
+        ]
+        expected_compound_generator = CompoundGenerator(
+            expected_line_generators,
+            duration=duration,
+            continuous=continuous,
+            delay_after=delay_after)
+
+        scan_runner_part.parse_scan(scan_dict)
+
+        scan = scan_runner_part.scan_sets[name]
+        self.assertEqual(name, scan.name)
+        self.assertEqual(repeats, scan.repeats)
+        self.compare_compound_generator(expected_compound_generator, scan.generator)
+
+    def test_parse_scan_parses_without_repeats(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        duration = 0.02
+        continuous = False
+        delay_after = 0.5
+        name = "coarse_2D"
+
+        line_x_axes = "sample_x"
+        line_x_start = 1
+        line_x_stop = 21
+        line_x_size = 100
+        line_x_alternate = False
+        line_y_axes = "sample_y"
+        line_y_start = -50
+        line_y_stop = 51.2
+        line_y_size = 99
+
+        units = "mm"
+
+        line_x = {
+            'axes': line_x_axes,
+            'units': units,
+            'start': line_x_start,
+            'stop': line_x_stop,
+            'size': line_x_size,
+            'alternate': line_x_alternate
+        }
+        line_y = {
+            'axes': line_y_axes,
+            'units': units,
+            'start': line_y_start,
+            'stop': line_y_stop,
+            'size': line_y_size,
+        }
+
+        compound_generator = {
+            'duration': duration,
+            'continuous': continuous,
+            'delay_after': delay_after,
+            'generators': [
+                {
+                    'line': line_x
+                },
+                {
+                    'line': line_y
+                }
+            ]
+        }
+
+        scan_dict = {
+            'name': name,
+            'generator': compound_generator
+        }
+
+        expected_line_generators = [
+            LineGenerator(
+                line_x_axes, units, line_x_start, line_x_stop, line_x_size,
+                alternate=line_x_alternate),
+            LineGenerator(
+                line_y_axes, units, line_y_start, line_y_stop, line_y_size),
+        ]
+        expected_compound_generator = CompoundGenerator(
+            expected_line_generators,
+            duration=duration,
+            continuous=continuous,
+            delay_after=delay_after)
+
+        scan_runner_part.parse_scan(scan_dict)
+
+        scan = scan_runner_part.scan_sets[name]
+        self.assertEqual(name, scan.name)
+        self.assertEqual(1, scan.repeats)
+        self.compare_compound_generator(expected_compound_generator, scan.generator)
+
+    def test_parse_scan_raises_KeyError_for_no_name(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        duration = 0.02
+        continuous = False
+        delay_after = 0.5
+
+        line_x_axes = "sample_x"
+        line_x_start = 1
+        line_x_stop = 21
+        line_x_size = 100
+        line_x_alternate = False
+
+        line_y_axes = "sample_y"
+        line_y_start = -50
+        line_y_stop = 51.2
+        line_y_size = 99
+
+        units = "mm"
+
+        line_x = {
+            'axes': line_x_axes,
+            'units': units,
+            'start': line_x_start,
+            'stop': line_x_stop,
+            'size': line_x_size,
+            'alternate': line_x_alternate
+        }
+        line_y = {
+            'axes': line_y_axes,
+            'units': units,
+            'start': line_y_start,
+            'stop': line_y_stop,
+            'size': line_y_size,
+        }
+
+        compound_generator = {
+            'duration': duration,
+            'continuous': continuous,
+            'delay_after': delay_after,
+            'generators': [
+                {
+                    'line': line_x
+                },
+                {
+                    'line': line_y
+                }
+            ]
+        }
+
+        scan_dict = {
+            'generator': compound_generator
+        }
+
+        self.assertRaises(KeyError, scan_runner_part.parse_scan, scan_dict)
+
+    def test_parse_scan_raises_KeyError_for_no_generator(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        name = "Fine_2D"
+
+        scan_dict = {
+            'name': name
+        }
+
+        self.assertRaises(KeyError, scan_runner_part.parse_scan, scan_dict)
+
+    def test_loadFile_parses_for_single_scan(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
 
         # Run setup with a Mock registrar
@@ -199,41 +667,48 @@ class TestScanRunnerPart(unittest.TestCase):
 
         # Mock the file reader method to return a string
         scan_runner_part.get_file_contents = Mock()
-        scan_runner_part.get_file_contents.return_value = self.good_yaml
+        scan_runner_part.get_file_contents.return_value = self.single_scan_yaml
 
         # Call loadFile to parse our mocked string
         scan_runner_part.loadFile()
 
-        # Check the loaded axes
+        # Check that we have loaded the scan
+        scan_name = "coarse_2d"
+        scan = scan_runner_part.scan_sets[scan_name]
+        self.assertEqual(scan_name, scan.name)
+        self.assertEqual(11, scan.repeats)
 
-        # Expected axes in our set
-        expected_axes_xy = Axes("xy_stages", "j08_x", "j08_y", "mm")
-        expected_axes_xz = Axes("xz_stages", "j08_x", "j08_z", "mm")
+        # Check that we are configured
+        self.assertEqual(11, scan_runner_part.scans_configured.value)
+        self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.CONFIGURED), scan_runner_part.runner_state.value)
+        self.assertEqual("Load complete", scan_runner_part.runner_status_message.value)
 
-        # Actual axes
-        actual_axes_xy = scan_runner_part.axes_sets['xy_stages']
-        actual_axes_xz = scan_runner_part.axes_sets['xz_stages']
+    def test_loadFile_parses_for_two_scans(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
 
-        self.assertEqual(2, len(scan_runner_part.axes_sets))
-        self.assertTrue(self.compare_axes(expected_axes_xy, actual_axes_xy))
-        self.assertTrue(self.compare_axes(expected_axes_xz, actual_axes_xz))
+        # Run setup with a Mock registrar
+        scan_runner_part.setup(Mock())
 
-        # Check the loaded scan sets
+        # Mock the file reader method to return a string
+        scan_runner_part.get_file_contents = Mock()
+        scan_runner_part.get_file_contents.return_value = self.two_scan_yaml
 
-        # Expected scan set
-        fast_dimension = ScanDimension(-0.035, 0.8, 25)
-        slow_dimension = ScanDimension(-0.5, 0.5, 8)
-        scan_set_name = "fine_70um_10um_step"
-        expected_scan_set = ScanSet(scan_set_name, expected_axes_xy, fast_dimension,
-                                    slow_dimension, 0.1, alternate=True, continuous=False,
-                                    repeats=5)
+        # Call loadFile to parse our mocked string
+        scan_runner_part.loadFile()
 
-        # Actual scan set
-        actual_scan_set = scan_runner_part.scan_sets[scan_set_name]
+        # Check that we have loaded the scans
+        coarse_scan_name = "coarse_2d"
+        scan = scan_runner_part.scan_sets[coarse_scan_name]
+        self.assertEqual(coarse_scan_name, scan.name)
+        self.assertEqual(11, scan.repeats)
 
-        self.assertEqual(1, len(scan_runner_part.scan_sets))
-        self.assertTrue(self.compare_scan_set(expected_scan_set, actual_scan_set))
-        self.assertEqual(5, scan_runner_part.scans_configured.value)
+        fine_scan_name = "fine_2d_slow"
+        scan = scan_runner_part.scan_sets[fine_scan_name]
+        self.assertEqual(fine_scan_name, scan.name)
+        self.assertEqual(3, scan.repeats)
+
+        # Check that we are configured
+        self.assertEqual(14, scan_runner_part.scans_configured.value)
         self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.CONFIGURED), scan_runner_part.runner_state.value)
         self.assertEqual("Load complete", scan_runner_part.runner_status_message.value)
 
@@ -269,7 +744,7 @@ class TestScanRunnerPart(unittest.TestCase):
 
     def test_parse_yaml_parses_valid_YAML(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        scan_runner_part.parse_yaml(self.good_yaml)
+        scan_runner_part.parse_yaml(self.single_scan_yaml)
 
     def test_parse_yaml_throws_YAMLError_for_invalid_YAML(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -334,200 +809,6 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part.increment_scans_completed()
         self.assertEqual(2, scan_runner_part.scans_completed.value)
 
-    def test_parse_axes_parses_valid_entry(self):
-        scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        entry = {
-            'name': "sample_stages",
-            'fast_axis': "sample_x",
-            'slow_axis': "sample_y",
-            'units': "mm"
-        }
-
-        scan_runner_part.parse_axes(entry)
-
-        self.assertEqual(1, len(scan_runner_part.axes_sets))
-
-        axes = scan_runner_part.axes_sets['sample_stages']
-        self.assertEqual("sample_stages", axes.name)
-        self.assertEqual("sample_x", axes.fast_axis)
-        self.assertEqual("sample_y", axes.slow_axis)
-        self.assertEqual("mm", axes.units)
-
-    def test_parse_axes_throws_KeyError_for_missing_key(self):
-        scan_runner_part = ScanRunnerPart(self.name, self.mri)
-
-        # List of compulsory arguments
-        axes_args = {
-            'name': "coarse_stages",
-            'fast_axis': "sample_x",
-            'slow': "sample_y",
-            'units': "um"
-        }
-
-        # The number of iterations requires is equal to the number of compulsory arguments
-        for arg_num in range(len(axes_args)):
-            axes_with_missing_arg = {}
-            index = 0
-            # We want to miss out a different argument each time
-            for key in axes_args:
-                if index == arg_num:
-                    pass
-                else:
-                    axes_with_missing_arg[key] = axes_args[key]
-                index += 1
-
-            self.assertRaises(KeyError, scan_runner_part.parse_axes, axes_with_missing_arg)
-
-    def test_parse_scan_set_2d_parses_for_all_arguments(self):
-        scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        # We need to have a set of axes to match
-        axes = {
-            'name': "sample_stages",
-            'fast_axis': "sample_x",
-            'slow_axis': "sample_y",
-            'units': "mm"
-        }
-        scan_runner_part.parse_axes(axes)
-
-        # Now we can parse our scan set
-        scan_set = {
-            'name': "fine_snake_scan",
-            'axes': "sample_stages",
-            'start_fast': 0.0,
-            'stop_fast': 10.0,
-            'steps_fast': 25,
-            'start_slow': -5.0,
-            'stop_slow': 5.0,
-            'steps_slow': 10,
-            'alternate': True,
-            'continuous': False,
-            'repeats': 12,
-            'duration': 0.5
-        }
-        scan_runner_part.parse_scan_set_2d(scan_set)
-
-        self.assertEqual(1, len(scan_runner_part.scan_sets))
-
-        parsed_scan_set = scan_runner_part.scan_sets['fine_snake_scan']
-
-        self.assertEqual("fine_snake_scan", parsed_scan_set.name)
-        self.assertEqual("sample_stages", parsed_scan_set.axes.name)
-        self.assertEqual(0.0, parsed_scan_set.fast_dimension.start)
-        self.assertEqual(10.0, parsed_scan_set.fast_dimension.stop)
-        self.assertEqual(25, parsed_scan_set.fast_dimension.steps)
-        self.assertEqual(-5.0, parsed_scan_set.slow_dimension.start)
-        self.assertEqual(5.0, parsed_scan_set.slow_dimension.stop)
-        self.assertEqual(10, parsed_scan_set.slow_dimension.steps)
-        self.assertEqual(12, parsed_scan_set.repeats)
-        self.assertEqual(0.5, parsed_scan_set.duration)
-        self.assertTrue(parsed_scan_set.alternate)
-        self.assertFalse(parsed_scan_set.continuous)
-
-    def test_parse_scan_set_2d_parses_for_compulsory_arguments(self):
-        scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        # We need to have a set of axes to match
-        axes = {
-            'name': "sample_stages",
-            'fast_axis': "sample_x",
-            'slow_axis': "sample_y",
-            'units': "mm"
-        }
-        scan_runner_part.parse_axes(axes)
-
-        # Now we can parse our scan set
-        scan_set = {
-            'name': "fine_snake_scan",
-            'axes': "sample_stages",
-            'start_fast': 0.0,
-            'stop_fast': 10.0,
-            'steps_fast': 25,
-            'start_slow': -5.0,
-            'stop_slow': 5.0,
-            'steps_slow': 10,
-            'duration': 0.5
-        }
-        scan_runner_part.parse_scan_set_2d(scan_set)
-
-        self.assertEqual(1, len(scan_runner_part.scan_sets))
-
-        parsed_scan_set = scan_runner_part.scan_sets['fine_snake_scan']
-
-        self.assertEqual("fine_snake_scan", parsed_scan_set.name)
-        self.assertEqual("sample_stages", parsed_scan_set.axes.name)
-        self.assertEqual(0.0, parsed_scan_set.fast_dimension.start)
-        self.assertEqual(10.0, parsed_scan_set.fast_dimension.stop)
-        self.assertEqual(25, parsed_scan_set.fast_dimension.steps)
-        self.assertEqual(-5.0, parsed_scan_set.slow_dimension.start)
-        self.assertEqual(5.0, parsed_scan_set.slow_dimension.stop)
-        self.assertEqual(10, parsed_scan_set.slow_dimension.steps)
-        self.assertEqual(1, parsed_scan_set.repeats)
-        self.assertEqual(0.5, parsed_scan_set.duration)
-        self.assertFalse(parsed_scan_set.alternate)
-        self.assertTrue(parsed_scan_set.continuous)
-
-    def test_parse_scan_set_2d_throws_KeyError_for_missing_axes(self):
-        scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        # Add an example axes
-        axes = {
-            'name': "sample_stages",
-            'fast_axis': "sample_x",
-            'slow_axis': "sample_y",
-            'units': "mm"
-        }
-        scan_runner_part.parse_axes(axes)
-
-        # Our scan set uses a different set of axes than the one provided
-        scan_set = {
-            'name': "fine_snake_scan",
-            'axes': "coarse_stages",
-            'start_fast': 0.0,
-            'stop_fast': 10.0,
-            'steps_fast': 25,
-            'start_slow': -5.0,
-            'stop_slow': 5.0,
-            'steps_slow': 10,
-            'duration': 0.5
-        }
-
-        self.assertRaises(KeyError, scan_runner_part.parse_scan_set_2d, scan_set)
-
-    def test_parse_scan_set_2d_throws_KeyError_for_missing_arguments(self):
-        scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        # Add the matching axes
-        axes = {
-            'name': "sample_stages",
-            'fast_axis': "sample_x",
-            'slow_axis': "sample_y",
-            'units': "mm"
-        }
-        scan_runner_part.parse_axes(axes)
-
-        scan_set_args = {
-            'name': "fine_snake_scan",
-            'axes': "sample_stages",
-            'start_fast': 0.0,
-            'stop_fast': 10.0,
-            'steps_fast': 25,
-            'start_slow': -5.0,
-            'stop_slow': 5.0,
-            'steps_slow': 10,
-            'duration': 0.5
-        }
-
-        # The number of iterations requires is equal to the number of compulsory arguments
-        for arg_num in range(len(scan_set_args)):
-            scan_set_with_missing_arg = {}
-            index = 0
-            # We want to miss out a different argument each time
-            for key in scan_set_args:
-                if index == arg_num:
-                    pass
-                else:
-                    scan_set_with_missing_arg[key] = scan_set_args[key]
-                index += 1
-
-            self.assertRaises(KeyError, scan_runner_part.parse_scan_set_2d, scan_set_with_missing_arg)
-
     def test_run_raises_ValueError_for_no_loaded_scan_set(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         runner_status_message_mock = Mock(name="runner_status_message_mock")
@@ -536,7 +817,7 @@ class TestScanRunnerPart(unittest.TestCase):
         self.assertRaises(ValueError, scan_runner_part.run, Mock())
         runner_status_message_mock.set_value.assert_called_once_with("No scan file loaded")
 
-    def test_run_completes_when_scan_set_is_loaded(self):
+    def test_run_completes_when_single_scan_set_is_loaded(self):
         # Create some mock objects
         context_mock = Mock(name="context_mock")
         scan_block_mock = Mock(name="mock_scan_block")
@@ -546,7 +827,7 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         scan_runner_part.setup(context_mock)
         scan_runner_part.get_file_contents = Mock()
-        scan_runner_part.get_file_contents.return_value = self.good_yaml
+        scan_runner_part.get_file_contents.return_value = self.single_scan_yaml
         scan_runner_part.loadFile()
 
         # Mock the create_and_get_sub_directory and run_scan_set methods
@@ -568,20 +849,64 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part.run(context_mock)
 
         # Check method calls
-        create_and_get_sub_directory_mock.assert_called_once_with(root_directory)
+        calls = []
         for key in scan_runner_part.scan_sets:
-            run_scan_set_mock.assert_called_with(
-                scan_runner_part.scan_sets[key],
-                scan_block_mock,
-                sub_directory,
-                sub_directory+"/report.txt")
+            calls.append(
+                call(
+                    scan_runner_part.scan_sets[key],
+                    scan_block_mock,
+                    sub_directory,
+                    sub_directory + "/report.txt"))
+        run_scan_set_mock.assert_has_calls(calls)
+
+    def test_run_completes_when_two_scan_sets_are_loaded(self):
+        # Create some mock objects
+        context_mock = Mock(name="context_mock")
+        scan_block_mock = Mock(name="mock_scan_block")
+        context_mock.block_view.return_value = scan_block_mock
+
+        # Setup the part with a valid scan set
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        scan_runner_part.setup(context_mock)
+        scan_runner_part.get_file_contents = Mock()
+        scan_runner_part.get_file_contents.return_value = self.two_scan_yaml
+        scan_runner_part.loadFile()
+
+        # Mock the create_and_get_sub_directory and run_scan_set methods
+        sub_directory = "/test/sub/directory"
+
+        create_and_get_sub_directory_mock = Mock(name="create_and_get_sub_directory_mock")
+        scan_runner_part.create_and_get_sub_directory = create_and_get_sub_directory_mock
+        scan_runner_part.create_and_get_sub_directory.return_value = sub_directory
+
+        run_scan_set_mock = Mock(name="run_scan_set_mock")
+        scan_runner_part.run_scan_set = run_scan_set_mock
+
+        # Mock the output directory path
+        root_directory = "/test/scan/directory"
+        scan_runner_part.output_directory = Mock()
+        scan_runner_part.output_directory.value = root_directory
+
+        # Call our run method
+        scan_runner_part.run(context_mock)
+
+        # Check method calls
+        calls = []
+        for key in scan_runner_part.scan_sets:
+            calls.append(
+                call(
+                    scan_runner_part.scan_sets[key],
+                    scan_block_mock,
+                    sub_directory,
+                    sub_directory + "/report.txt"))
+        run_scan_set_mock.assert_has_calls(calls)
 
     def test_run_scan_set(self):
         # Setup the part with a valid scan set
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         scan_runner_part.setup(Mock())
         scan_runner_part.get_file_contents = Mock()
-        scan_runner_part.get_file_contents.return_value = self.good_yaml
+        scan_runner_part.get_file_contents.return_value = self.single_scan_yaml
         scan_runner_part.loadFile()
 
         # Mock scan block
@@ -590,10 +915,10 @@ class TestScanRunnerPart(unittest.TestCase):
         # Mock the scan_set and its get_compound_generator method
         scan_set_mock = Mock(name="scan_set_mock")
         generator_mock = Mock(name="generator")
-        scan_set_mock.get_compound_generator.return_value = generator_mock
+        scan_set_mock.generator = generator_mock
 
         # Set the mock scan set attributes to match real scan set
-        scan_set_name = "fine_70um_10um_step"
+        scan_set_name = "coarse_2d"
         real_scan_set = scan_runner_part.scan_sets[scan_set_name]
         scan_set_mock.repeats = real_scan_set.repeats
         scan_set_mock.name = scan_set_name
@@ -639,40 +964,36 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
         name = "ScanRunner"
         mri = "ML-SCAN-RUNNER-01"
 
-        example_scan_runner_yaml = \
+        single_scan_yaml = \
             """
-            - axes:
-                name: xy_stages
-                fast_axis: j08_x
-                slow_axis: j08_y
-                units: mm
-
-            - axes:
-                name: xz_stages
-                fast_axis: j08_x
-                slow_axis: j08_z
-                units: mm
-
-            - ScanSet2d:
-                name: fine_70um_10um_step
-                axes: xy_stages
-                start_fast: -0.035
-                stop_fast: 0.8
-                steps_fast: 25
-                start_slow: -0.5
-                stop_slow: 0.5
-                steps_slow: 8
-                alternate: True
-                continuous: False
-                repeats: 5
-                duration: 0.1
-
+            - scan:
+                name: coarse_2d
+                repeats: 11
+                generator:
+                    generators:
+                        - line:
+                            axes: sample_y
+                            units: mm
+                            start: -0.3
+                            stop: 0.5
+                            size: 5
+                            alternate: true
+                        - line:
+                            axes: sample_x
+                            units: mm
+                            start: 0.1
+                            stop: 0.9
+                            size: 5
+                            alternate: true
+                    duration: 0.002
+                    continuous: true
+                    delay_after: 0
             """
 
         self.scan_runner_part = ScanRunnerPart(name, mri)
         self.scan_runner_part.setup(Mock())
         self.scan_runner_part.get_file_contents = Mock()
-        self.scan_runner_part.get_file_contents.return_value = example_scan_runner_yaml
+        self.scan_runner_part.get_file_contents.return_value = single_scan_yaml
         self.scan_runner_part.loadFile()
 
         # Mock the create_and_get_scan_directory method
