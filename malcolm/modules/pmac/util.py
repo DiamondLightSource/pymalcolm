@@ -105,9 +105,12 @@ def cs_axis_mapping(context,  # type: Context
 def points_joined(axis_mapping, point, next_point):
     # type: (Dict[str, MotorInfo], Point, Point) -> bool
     """Check for axes that need to move within the space between points"""
+    if getattr(point, "delay_after", None):
+        return False
     for axis_name in axis_mapping:
         if point.upper[axis_name] != next_point.lower[axis_name]:
             return False
+
     return True
 
 
