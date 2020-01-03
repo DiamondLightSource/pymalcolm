@@ -36,6 +36,7 @@ class RunnerStates(Enum):
     RUNNING = 3
     FINISHED = 4
     FAULT = 5
+    ABORTED = 6
 
 
 class ScanOutcome(Enum):
@@ -76,6 +77,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         super(ScanRunnerPart, self).__init__(
             name, mri, stateful=False, initial_visibility=True)
         self.runner_config = None
+        self.context = None
         self.scan_sets = {}
 
     def setup(self, registrar):
@@ -166,6 +168,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         # Methods
         registrar.add_method_model(self.loadFile)
         registrar.add_method_model(self.run, needs_context=True)
+        registrar.add_method_model(self.abort)
 
     def get_file_contents(self):
         # type: () -> str
@@ -288,6 +291,12 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.create_directory(sub_directory)
         return sub_directory
 
+    def abort(self):
+        if self.context:
+            self.context.stop()
+            self.set_runner_state(RunnerStates.ABORTED)
+            self.runner_status_message.set_value("Aborting remaining scans")
+
     @add_call_types
     def run(self, context):
         # type: (AContext) -> None
@@ -315,8 +324,9 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.scan_failures.set_value(0)
         self.set_runner_state(RunnerStates.RUNNING)
 
-        # Get our scan block
-        scan_block = context.block_view(self.mri)
+        # Get our scan block and store context
+        self.context = context
+        scan_block = self.context.block_view(self.mri)
 
         # Cycle through the scan sets
         for key in self.scan_sets:

@@ -875,6 +875,28 @@ class TestScanRunnerPart(unittest.TestCase):
                 ))
         run_scan_mock.assert_has_calls(calls)
 
+    def test_abort_calls_context_abort(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        scan_runner_part.context = Mock(name="context_mock")
+        scan_runner_part.set_runner_state = Mock(name="set_runner_state_mock")
+        scan_runner_part.runner_status_message = Mock(name="runner_status_message_mock")
+
+        # Call abort
+        scan_runner_part.abort()
+
+        # Check the resulting calls
+        scan_runner_part.context.stop.assert_called_once()
+        scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.ABORTED)
+        scan_runner_part.runner_status_message.set_value.assert_called_once_with("Aborting remaining scans")
+
+    def test_abort_with_no_context_does_not_raise_Error(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        scan_runner_part.set_runner_state = Mock(name="set_runner_state_mock")
+        scan_runner_part.runner_status_message = Mock(name="runner_status_message_mock")
+
+        # Call abort
+        scan_runner_part.abort()
+
 
 class TestScanRunnerPartRunMethod(unittest.TestCase):
 
