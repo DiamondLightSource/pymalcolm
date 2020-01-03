@@ -209,7 +209,8 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         entry['generators'] = generators
         compound_generator = CompoundGenerator.from_dict(entry)
         if compound_generator.duration <= 0.0:
-            raise ValueError("Negative generator duration - is it missing from the YAML?")
+            raise ValueError(
+                "Negative generator duration - is it missing from the YAML?")
         return compound_generator
 
     def parse_scan(self, entry):
