@@ -374,6 +374,10 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.create_directory(scan_directory)
         return scan_directory
 
+    @staticmethod
+    def scan_is_aborting(scan_block):
+        return scan_block.state.value is RunnableStates.ABORTING
+
     def run_scan(self, set_name, scan_block, set_directory,
                  scan_number, report_filepath, generator):
         # type: (str, Block, str, int, str, CompoundGenerator) -> None
@@ -387,7 +391,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             set_directory, scan_number)
 
         # Check if scan can be reset or run
-        while scan_block.state.value is RunnableStates.ABORTING:
+        while self.scan_is_aborting(scan_block):
             scan_block.sleep(0.1)
 
         # Run the scan and capture the outcome

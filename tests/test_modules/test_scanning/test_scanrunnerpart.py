@@ -1,5 +1,6 @@
 import unittest
 from mock import Mock, patch, call
+from datetime import datetime
 
 from ruamel.yaml import YAMLError
 
@@ -897,6 +898,44 @@ class TestScanRunnerPart(unittest.TestCase):
         # Call abort
         scan_runner_part.abort()
 
+    @patch('malcolm.modules.scanning.parts.scanrunnerpart.datetime')
+    def test_get_current_datetime(self, datetime_mock):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        # Mock the datetime.now() method
+        datetime_mock.now.return_value = datetime(2019, 7, 24, 13, 30, 59)
+
+        expected_string = "2019-07-24-13:30:59"
+        actual_string = scan_runner_part.get_current_datetime()
+
+        self.assertEqual(expected_string, actual_string)
+
+    @patch('malcolm.modules.scanning.parts.scanrunnerpart.datetime')
+    def test_get_current_datetime_with_separator(self, datetime_mock):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        # Mock the datetime.now() method
+        datetime_mock.now.return_value = datetime(2019, 7, 24, 13, 30, 59)
+
+        expected_string = "2019-07-24-13.30.59"
+        actual_string = scan_runner_part.get_current_datetime(time_separator=".")
+
+        self.assertEqual(expected_string, actual_string)
+
+    def test_scan_is_aborting_is_True_for_ABORTING_state(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        scan_block_mock = Mock(name="scan_block_mock")
+        scan_block_mock.state.value = RunnableStates.ABORTING
+
+        self.assertEqual(True, scan_runner_part.scan_is_aborting(scan_block_mock))
+
+    def test_scan_is_aborting_is_False_for_other_state(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        scan_block_mock = Mock(name="scan_block_mock")
+        scan_block_mock.state.value = RunnableStates.FAULT
+
+        self.assertEqual(False, scan_runner_part.scan_is_aborting(scan_block_mock))
+
 
 class TestScanRunnerPartRunMethod(unittest.TestCase):
 
@@ -967,6 +1006,10 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
         self.increment_scan_failures_mock = Mock(name="increment_scan_failures_mock")
         self.scan_runner_part.increment_scan_failures = self.increment_scan_failures_mock
 
+        # Mock the logger
+        self.logger_mock = Mock(name="logger_mock")
+        self.scan_runner_part.log = self.logger_mock
+
         # run_scan args
         self.set_directory = "/test/set/directory"
         self.set_name = "10um_fine"
@@ -997,6 +1040,63 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the outcome calls
         self.increment_scan_successes_mock.assert_called_once()
+
+    def test_run_scan_is_misconfigured_when_scan_block_configure_throws_AssertionError(self):
+        # Our mocked scan block will throw an AssertionError
+        self.scan_block_mock.configure.side_effect = AssertionError()
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.MISCONFIGURED, None)
+
+        # Check the outcome calls
+        self.increment_scan_failures_mock.assert_called_once()
+
+    def test_run_scan_is_misconfigured_when_scan_block_configure_throws_other_exception(self):
+        # Our mocked scan block will throw an exception
+        self.scan_block_mock.configure.side_effect = ValueError("Invalid value")
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.MISCONFIGURED, None)
+
+        # Check that we logged the unidentified exception
+        self.logger_mock.error.assert_called_once_with(
+            "Unhandled exception for scan {no} in {set}: ({type_e}) {e}".format(
+                type_e=ValueError,
+                no=21,
+                set=self.set_name,
+                e="Invalid value"
+            ))
+
+        # Check the outcome calls
+        self.increment_scan_failures_mock.assert_called_once()
 
     def test_run_scan_fails_for_scan_TimeoutError(self):
         # Our mocked scan block will raise a TimeoutError when called
@@ -1073,6 +1173,31 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
 
+    def test_run_scan_fails_for_scan_AssertionError(self):
+        # Our mocked scan block will raise a NotWriteableError when called
+        self.scan_block_mock.run.side_effect = AssertionError()
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.scan_block_mock.run.assert_called_once()
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.FAIL, self.start_time)
+
+        # Check the outcome calls
+        self.increment_scan_failures_mock.assert_called_once()
+
     def test_run_scan_fails_for_scan_OtherError(self):
         # Our mocked scan block will raise a generic exception
         exception_text = "Unidentified exception"
@@ -1111,3 +1236,70 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
+
+    def test_run_scan_sleeps_if_scan_block_is_ABORTING(self):
+        # Our mocked scan block will return nicely for a success
+        self.scan_block_mock.run.return_value = None
+
+        # Mock the scan_is_aborting method
+        is_aborting_mock = Mock(name="is_aborting_mock")
+        is_aborting_mock.side_effect = [
+            True,
+            False
+        ]
+        self.scan_runner_part.scan_is_aborting = is_aborting_mock
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check we slept
+        self.scan_block_mock.sleep.assert_called_once_with(0.1)
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.scan_block_mock.run.assert_called_once()
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.SUCCESS, self.start_time)
+
+        # Check the outcome calls
+        self.increment_scan_successes_mock.assert_called_once()
+
+    def test_run_scan_calls_reset_if_scan_block_is_not_READY(self):
+        # Our mocked scan block will return nicely for a success
+        self.scan_block_mock.run.return_value = None
+
+        # Mock reset method and set state
+        self.scan_block_mock.state.value = RunnableStates.ABORTED
+
+        # Call the run_scan method
+        self.scan_runner_part.run_scan(
+            self.set_name,
+            self.scan_block_mock,
+            self.set_directory,
+            self.scan_number,
+            self.report_filepath,
+            self.generator_mock)
+
+        # Check reset was called
+        self.scan_block_mock.reset.assert_called_once()
+
+        # Check the standard method calls
+        self.create_and_get_scan_directory_mock.assert_called_once_with(self.set_directory, self.scan_number)
+        self.scan_block_mock.configure.assert_called_once_with(self.generator_mock, fileDir=self.scan_directory)
+        self.scan_block_mock.run.assert_called_once()
+
+        # Check the reporting was called
+        self.add_report_line_mock.assert_called_once_with(
+            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.SUCCESS, self.start_time)
+
+        # Check the outcome calls
+        self.increment_scan_successes_mock.assert_called_once()
