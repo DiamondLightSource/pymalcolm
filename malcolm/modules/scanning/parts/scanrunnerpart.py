@@ -177,7 +177,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         except IOError:
             self.set_runner_state(RunnerStates.FAULT)
             self.runner_status_message.set_value("Could not read scan file")
-            raise IOError("Could not read scan file")
+            raise
 
     def parse_yaml(self, string):
         # type: (str) -> ...
@@ -187,7 +187,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         except yaml.YAMLError:
             self.set_runner_state(RunnerStates.FAULT)
             self.runner_status_message.set_value("Could not parse scan file")
-            raise yaml.YAMLError("Could not parse scan file")
+            raise
 
     @staticmethod
     def get_kwargs_from_dict(input_dict, kwargs_list):
@@ -199,24 +199,13 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 kwargs[kwarg] = input_dict[kwarg]
         return kwargs
 
-    def parse_line_generator(self, entry):
-        # type: (dict) -> LineGenerator
-        axes = entry['axes']
-        units = entry['units']
-        start = entry['start']
-        stop = entry['stop']
-        size = entry['size']
-        kwargs = self.get_kwargs_from_dict(entry, 'alternate')
-
-        return LineGenerator(axes, units, start, stop, size, **kwargs)
-
     def parse_compound_generator(self, entry):
         # type: (dict) -> CompoundGenerator
         duration = entry['duration']
         generators = []
         generators_dict = entry['generators']
         for generator in generators_dict:
-            generators.append(self.parse_line_generator(generator['line']))
+            generators.append(LineGenerator.from_dict(generator['line']))
 
         kwargs_list = ['continuous', 'delay_after']
         kwargs = self.get_kwargs_from_dict(entry, kwargs_list)
@@ -388,7 +377,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
 
         # Check if scan can be reset or run
         while scan_block.state.value is RunnableStates.ABORTING:
-            cothread.Sleep(0.1)
+            scan_block.sleep(0.1)
 
         # Run the scan and capture the outcome
         start_time = None
