@@ -4,7 +4,7 @@ from mock import Mock, patch, call
 from ruamel.yaml import YAMLError
 
 from malcolm.modules.scanning.parts.scanrunnerpart import \
-    ScanRunnerPart, RunnerStates, ScanOutcome, Scan
+    ScanRunnerPart, RunnerStates, ScanOutcome
 from malcolm.modules.scanning.util import RunnableStates
 from malcolm.core import TimeoutError, NotWriteableError, \
     AbortedError
@@ -304,7 +304,7 @@ class TestScanRunnerPart(unittest.TestCase):
 
         self.compare_compound_generator(expected_compound_generator, compound_generator)
 
-    def test_parse_compound_generator_raises_KeyError_without_duration(self):
+    def test_parse_compound_generator_raises_ValueError_without_duration(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         line_x_axes = "sample_x"
         line_x_start = 0.1
@@ -346,7 +346,7 @@ class TestScanRunnerPart(unittest.TestCase):
             ]
         }
 
-        self.assertRaises(KeyError, scan_runner_part.parse_compound_generator, compound_generator_dict)
+        self.assertRaises(ValueError, scan_runner_part.parse_compound_generator, compound_generator_dict)
 
     def test_parse_compound_generator_raises_KeyError_without_generators(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)

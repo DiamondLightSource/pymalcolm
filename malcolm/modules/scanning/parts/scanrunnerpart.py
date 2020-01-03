@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 from ruamel import yaml
 from enum import Enum
-from cothread import cothread
 
 from annotypes import add_call_types
 
@@ -12,7 +11,7 @@ from malcolm.core import AttributeModel, PartRegistrar, NumberMeta, \
 from malcolm.modules import builtin
 from malcolm.modules.scanning.util import RunnableStates
 from malcolm.core.views import Block
-from ..hooks import AContext, AGenerator
+from ..hooks import AContext
 
 from scanpointgenerator import CompoundGenerator, LineGenerator
 
@@ -199,18 +198,19 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 kwargs[kwarg] = input_dict[kwarg]
         return kwargs
 
-    def parse_compound_generator(self, entry):
+    @staticmethod
+    def parse_compound_generator(entry):
         # type: (dict) -> CompoundGenerator
-        duration = entry['duration']
         generators = []
         generators_dict = entry['generators']
         for generator in generators_dict:
             generators.append(LineGenerator.from_dict(generator['line']))
 
-        kwargs_list = ['continuous', 'delay_after']
-        kwargs = self.get_kwargs_from_dict(entry, kwargs_list)
-
-        return CompoundGenerator(generators, duration=duration, **kwargs)
+        entry['generators'] = generators
+        compound_generator = CompoundGenerator.from_dict(entry)
+        if compound_generator.duration <= 0.0:
+            raise ValueError("Negative generator duration - is it missing from the YAML?")
+        return compound_generator
 
     def parse_scan(self, entry):
         # type: (dict) -> None
