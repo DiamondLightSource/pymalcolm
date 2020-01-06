@@ -1,7 +1,8 @@
 import unittest
-from mock import Mock, patch, call
+from mock import Mock, patch, call, mock_open
+import sys
+import os
 from datetime import datetime
-
 from ruamel.yaml import YAMLError
 
 from malcolm.modules.scanning.parts.scanrunnerpart import \
@@ -107,6 +108,13 @@ class TestScanRunnerPart(unittest.TestCase):
                 ...
               }
             ]
+            """
+
+        self.unidentified_yaml = \
+            """
+            - unidentified:
+                name: coarse_2d
+                repeats: 11
             """
 
     def test_new_instance_has_no_sets(self):
@@ -661,6 +669,42 @@ class TestScanRunnerPart(unittest.TestCase):
         self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.FAULT), scan_runner_part.runner_state.value)
         self.assertEqual("Could not parse scan file", scan_runner_part.runner_status_message.value)
 
+    def test_loadFile_throws_ValueError_for_unknown_key_in_YAML(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        # Run setup with a Mock registrar
+        scan_runner_part.setup(Mock())
+
+        # Mock the file reader method to return a string
+        scan_runner_part.get_file_contents = Mock()
+        scan_runner_part.get_file_contents.return_value = self.unidentified_yaml
+
+        # Call loadFile to parse our mocked string
+        self.assertRaises(ValueError, scan_runner_part.loadFile)
+        self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.FAULT), scan_runner_part.runner_state.value)
+        self.assertEqual("Unidentified key in YAML", scan_runner_part.runner_status_message.value)
+
+    @patch('os.mkdir')
+    def test_create_directory(self, mock_mkdir):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        test_directory = "test/directory"
+
+        scan_runner_part.create_directory(test_directory)
+
+        mock_mkdir.assert_called_once_with(test_directory)
+
+    @patch('os.mkdir')
+    def test_create_directory_throws_IOError_for_mkdir_OSError(self, mock_mkdir):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        scan_runner_part.runner_status_message = Mock(name="runner_status_mock")
+        scan_runner_part.set_runner_state = Mock(name="set_runner_state_mock")
+        test_directory = "test/directory"
+        mock_mkdir.side_effect = OSError
+
+        self.assertRaises(IOError, scan_runner_part.create_directory, test_directory)
+        scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.FAULT)
+        scan_runner_part.runner_status_message.set_value.assert_called_once_with("Could not create directory")
+
     def test_parse_yaml_parses_valid_YAML(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         scan_runner_part.parse_yaml(self.single_scan_yaml)
@@ -940,6 +984,27 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_block_mock.state.value = RunnableStates.FAULT
 
         self.assertEqual(False, scan_runner_part.scan_is_aborting(scan_block_mock))
+
+    def test_get_file_contents_returns_for_success(self,):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        # Mock the scan file
+        scan_file_mock = Mock(name="scan_file_mock")
+        scan_file_mock.value.return_value = "file_string"
+        scan_runner_part.scan_file = scan_file_mock
+
+        # Mock open
+        expected_string = "test_file_string"
+        mocked_open = mock_open(read_data=expected_string)
+
+        if sys.version_info[0] < 3:
+            with patch("__builtin__.open", mocked_open):
+                actual_string = scan_runner_part.get_file_contents()
+                self.assertEqual(expected_string, actual_string)
+        else:
+            with patch("builtins.open", mocked_open):
+                actual_string = scan_runner_part.get_file_contents()
+                self.assertEqual(expected_string, actual_string)
 
 
 class TestScanRunnerPartRunMethod(unittest.TestCase):

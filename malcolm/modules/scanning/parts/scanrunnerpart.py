@@ -254,6 +254,8 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             if key_name == EntryType.SCAN.name:
                 self.parse_scan(item['scan'])
             else:
+                self.set_runner_state(RunnerStates.FAULT)
+                self.runner_status_message.value = "Unidentified key in YAML"
                 raise ValueError(
                     "Unidentified object in YAML: {key}".format(key=key_name))
 
