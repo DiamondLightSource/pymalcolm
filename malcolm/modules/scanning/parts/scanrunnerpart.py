@@ -168,7 +168,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         # Methods
         registrar.add_method_model(self.loadFile)
         registrar.add_method_model(self.run, needs_context=True)
-        registrar.add_method_model(self.abort)
+        registrar.add_method_model(self.abort, needs_context=True)
 
     def get_file_contents(self):
         # type: () -> str
@@ -291,11 +291,17 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.create_directory(sub_directory)
         return sub_directory
 
-    def abort(self):
+    @add_call_types
+    def abort(self, context):
+        # type: (AContext) -> None
         if self.context:
+            # Stop the context
             self.context.stop()
+            # Stop the current scan
+            context.block_view(self.mri).abort()
+            # Update status
             self.set_runner_state(RunnerStates.ABORTED)
-            self.runner_status_message.set_value("Aborting remaining scans")
+            self.runner_status_message.set_value("Aborted scans")
 
     @add_call_types
     def run(self, context):

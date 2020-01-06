@@ -883,12 +883,17 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part.runner_status_message = Mock(name="runner_status_message_mock")
 
         # Call abort
-        scan_runner_part.abort()
+        passed_context_mock = Mock(name="passed_context_mock")
+        scan_block_mock = Mock(name="scan_block_mock")
+        passed_context_mock.block_view.return_value = scan_block_mock
+        scan_runner_part.abort(passed_context_mock)
 
         # Check the resulting calls
         scan_runner_part.context.stop.assert_called_once()
         scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.ABORTED)
-        scan_runner_part.runner_status_message.set_value.assert_called_once_with("Aborting remaining scans")
+        passed_context_mock.block_view.assert_called_once_with(self.mri)
+        scan_block_mock.abort.assert_called_once()
+        scan_runner_part.runner_status_message.set_value.assert_called_once_with("Aborted scans")
 
     def test_abort_with_no_context_does_not_raise_Error(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
@@ -896,7 +901,7 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part.runner_status_message = Mock(name="runner_status_message_mock")
 
         # Call abort
-        scan_runner_part.abort()
+        scan_runner_part.abort(Mock(name="passed_context_mock"))
 
     @patch('malcolm.modules.scanning.parts.scanrunnerpart.datetime')
     def test_get_current_datetime(self, datetime_mock):
