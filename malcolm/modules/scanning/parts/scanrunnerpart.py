@@ -403,7 +403,6 @@ class ScanRunnerPart(builtin.parts.ChildPart):
             scan_block.sleep(0.1)
 
         # Run the scan and capture the outcome
-        start_time = None
         if scan_block.state.value is not RunnableStates.READY:
             scan_block.reset()
 
@@ -422,9 +421,10 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                     set=set_name,
                     e=e))
 
+        # Run if configure was successful
+        start_time = self.get_current_datetime()
         if outcome is None:
             try:
-                start_time = self.get_current_datetime()
                 scan_block.run()
             except TimeoutError:
                 outcome = ScanOutcome.TIMEOUT
@@ -447,8 +447,15 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 outcome = ScanOutcome.SUCCESS
 
         # Record the outcome
-        self.add_report_line(
-            report_filepath, set_name, scan_number, outcome, start_time)
+        end_time = self.get_current_datetime()
+        report_string = self.get_report_string(
+            set_name,
+            scan_number,
+            outcome,
+            start_time,
+            end_time)
+        self.add_report_line(report_filepath, report_string)
+
         if outcome is ScanOutcome.SUCCESS:
             self.increment_scan_successes()
         else:
@@ -468,6 +475,9 @@ class ScanRunnerPart(builtin.parts.ChildPart):
     def get_report_string(
             self, set_name, scan_number, scan_outcome, start_time, end_time):
         # type: (str, int, ScanOutcome, str, str) -> str
+
+        print(scan_outcome, start_time, end_time)
+
         report_str = "{set:<30}{no:<10}{outcome:<14}{start:<20}{end}".format(
             set=set_name,
             no=scan_number,
@@ -477,19 +487,10 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         )
         return report_str
 
-    def add_report_line(self, report_filepath, set_name,
-                        scan_number, scan_outcome, start_time):
-        # type: (str, str, int, ScanOutcome, str) -> None
-        report_time = self.get_current_datetime()
+    def add_report_line(self, report_filepath, report_string):
+        # type: (str, str) -> None
         try:
             with open(report_filepath, "a+") as report_file:
-                report_string = self.get_report_string(
-                    set_name,
-                    scan_number,
-                    scan_outcome,
-                    start_time,
-                    report_time
-                )
                 report_file.write(
                     "{report_string}\n".format(report_string=report_string))
         except IOError:

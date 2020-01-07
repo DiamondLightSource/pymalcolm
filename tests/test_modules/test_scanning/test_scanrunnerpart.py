@@ -684,27 +684,6 @@ class TestScanRunnerPart(unittest.TestCase):
         self.assertEqual(ScanRunnerPart.get_enum_label(RunnerStates.FAULT), scan_runner_part.runner_state.value)
         self.assertEqual("Unidentified key in YAML", scan_runner_part.runner_status_message.value)
 
-    @patch('os.mkdir')
-    def test_create_directory(self, mock_mkdir):
-        scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        test_directory = "test/directory"
-
-        scan_runner_part.create_directory(test_directory)
-
-        mock_mkdir.assert_called_once_with(test_directory)
-
-    @patch('os.mkdir')
-    def test_create_directory_throws_IOError_for_mkdir_OSError(self, mock_mkdir):
-        scan_runner_part = ScanRunnerPart(self.name, self.mri)
-        scan_runner_part.runner_status_message = Mock(name="runner_status_mock")
-        scan_runner_part.set_runner_state = Mock(name="set_runner_state_mock")
-        test_directory = "test/directory"
-        mock_mkdir.side_effect = OSError
-
-        self.assertRaises(IOError, scan_runner_part.create_directory, test_directory)
-        scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.FAULT)
-        scan_runner_part.runner_status_message.set_value.assert_called_once_with("Could not create directory")
-
     def test_parse_yaml_parses_valid_YAML(self):
         scan_runner_part = ScanRunnerPart(self.name, self.mri)
         scan_runner_part.parse_yaml(self.single_scan_yaml)
@@ -1000,14 +979,155 @@ class TestScanRunnerPart(unittest.TestCase):
         if sys.version_info[0] < 3:
             with patch("__builtin__.open", mocked_open):
                 actual_string = scan_runner_part.get_file_contents()
-                self.assertEqual(expected_string, actual_string)
         else:
             with patch("builtins.open", mocked_open):
                 actual_string = scan_runner_part.get_file_contents()
-                self.assertEqual(expected_string, actual_string)
+
+        self.assertEqual(expected_string, actual_string)
+
+    def test_get_report_string(self):
+        set_name = "set-name"
+        scan_number = 12
+        outcome = ScanOutcome.SUCCESS
+        start_time = "2020-01-06-15:54:17"
+        end_time = "2020-01-06-16:04:10"
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        expected_report_string = "{set:<30}{no:<10}{outcome:<14}{start:<20}{end}".format(
+            set=set_name,
+            no=scan_number,
+            outcome=scan_runner_part.get_enum_label(outcome),
+            start=start_time,
+            end=end_time
+        )
+
+        actual_report_string = scan_runner_part.get_report_string(
+            set_name, scan_number, outcome, start_time, end_time)
+
+        self.assertEqual(expected_report_string, actual_report_string)
+
+    def test_add_report_line_writes_line(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        report_string = "example_report_string"
+        report_filepath = "/report/filepath/report.txt"
+
+        # Mock open
+        mocked_open = mock_open()
+
+        if sys.version_info[0] < 3:
+            with patch("__builtin__.open", mocked_open):
+                scan_runner_part.add_report_line(report_filepath, report_string)
+        else:
+            with patch("builtins.open", mocked_open):
+                scan_runner_part.add_report_line(report_filepath, report_string)
+
+        mocked_open.assert_called_once_with(report_filepath, "a+")
+        file_handle = mocked_open()
+        file_handle.write.assert_called_once_with(report_string + "\n")
+
+    def test_add_report_line_throws_IO_Error(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+        report_string = "example_report_string"
+        report_filepath = "/report/filepath/report.txt"
+
+        # Mock runner state and status
+        scan_runner_part.set_runner_state = Mock(name="runner_state_mock")
+        scan_runner_part.runner_status_message = Mock(name="status_message_mock")
+
+        # Mock open
+        mocked_open = mock_open()
+        mocked_open.side_effect = IOError
+
+        if sys.version_info[0] < 3:
+            with patch("__builtin__.open", mocked_open):
+                self.assertRaises(IOError, scan_runner_part.add_report_line, report_filepath, report_string)
+        else:
+            with patch("builtins.open", mocked_open):
+                self.assertRaises(IOError, scan_runner_part.add_report_line, report_filepath, report_string)
+
+        scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.FAULT)
+        scan_runner_part.runner_status_message.set_value.assert_called_once_with("Error writing report file")
 
 
-class TestScanRunnerPartRunMethod(unittest.TestCase):
+class TestScanRunnerPartCreateDirectoryMethods(unittest.TestCase):
+
+    def setUp(self):
+        name = "ScanRunner"
+        self.mri = "ML-SCAN-RUNNER-01"
+        self.scan_runner_part = ScanRunnerPart(name, self.mri)
+
+    def mock_datetime(self, mock_date):
+        mock_datetime = Mock(name="get_current_datetime_mock")
+        mock_datetime.return_value = mock_date
+        self.scan_runner_part.get_current_datetime = mock_datetime
+
+    def mock_create_directory(self):
+        create_directory_mock = Mock(name="create_directory_mock")
+        self.scan_runner_part.create_directory = create_directory_mock
+
+    @patch('os.mkdir')
+    def test_create_directory(self, mock_mkdir):
+        test_directory = "test/directory"
+
+        self.scan_runner_part.create_directory(test_directory)
+
+        mock_mkdir.assert_called_once_with(test_directory)
+
+    @patch('os.mkdir')
+    def test_create_directory_throws_IOError_for_mkdir_OSError(self, mock_mkdir):
+        self.scan_runner_part.runner_status_message = Mock(name="runner_status_mock")
+        self.scan_runner_part.set_runner_state = Mock(name="set_runner_state_mock")
+        test_directory = "test/directory"
+        mock_mkdir.side_effect = OSError
+
+        self.assertRaises(IOError, self.scan_runner_part.create_directory, test_directory)
+        self.scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.FAULT)
+        self.scan_runner_part.runner_status_message.set_value.assert_called_once_with("Could not create directory")
+
+    def test_create_and_get_sub_directory_returns_sub_directory(self):
+        root_directory = "root/directory"
+        mock_date = "2019-08-24-11-32-53"
+        expected_sub_directory = root_directory + "/" + self.mri + "-" + mock_date
+
+        # Set up mocks
+        self.mock_datetime(mock_date)
+        self.mock_create_directory()
+
+        actual_sub_directory = self.scan_runner_part.create_and_get_sub_directory(root_directory)
+
+        self.assertEqual(expected_sub_directory, actual_sub_directory)
+        self.scan_runner_part.create_directory.assert_called_once_with(expected_sub_directory)
+
+    def test_create_and_get_set_directory_returns_set_directory(self):
+        sub_directory = "root/sub/directory"
+        set_name = "example-set-name"
+        expected_set_directory = sub_directory + "/scanset-" + set_name
+
+        # Set up mocks
+        self.mock_create_directory()
+
+        actual_set_directory = self.scan_runner_part.create_and_get_set_directory(
+            sub_directory, set_name)
+
+        self.assertEqual(expected_set_directory, actual_set_directory)
+        self.scan_runner_part.create_directory.assert_called_once_with(expected_set_directory)
+
+    def test_create_and_get_scan_directory_returns_scan_directory(self):
+        set_directory = "root/set/directory"
+        scan_number = 193
+        expected_scan_directory = set_directory + "/scan-" + str(scan_number)
+
+        # Set up mocks
+        self.mock_create_directory()
+
+        actual_scan_directory = self.scan_runner_part.create_and_get_scan_directory(
+            set_directory, scan_number)
+
+        self.assertEqual(expected_scan_directory, actual_scan_directory)
+        self.scan_runner_part.create_directory.assert_called_once_with(expected_scan_directory)
+
+
+class TestScanRunnerPartRunScanMethod(unittest.TestCase):
 
     def setUp(self):
         name = "ScanRunner"
@@ -1086,6 +1206,16 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
         self.scan_number = 21
         self.report_filepath = "/test/sub/directory/report.txt"
 
+    def get_expected_report_string(self, scan_outcome):
+        report_string = self.scan_runner_part.get_report_string(
+            self.set_name,
+            self.scan_number,
+            scan_outcome,
+            self.start_time,
+            self.start_time)
+
+        return report_string
+
     def test_run_scan_succeeds_for_scan_success(self):
         # Our mocked scan block will return nicely for a success
         self.scan_block_mock.run.return_value = None
@@ -1106,7 +1236,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.SUCCESS, self.start_time)
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.SUCCESS))
 
         # Check the outcome calls
         self.increment_scan_successes_mock.assert_called_once()
@@ -1130,7 +1260,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.MISCONFIGURED, None)
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.MISCONFIGURED))
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1154,7 +1284,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.MISCONFIGURED, None)
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.MISCONFIGURED))
 
         # Check that we logged the unidentified exception
         self.logger_mock.error.assert_called_once_with(
@@ -1188,7 +1318,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.TIMEOUT, self.start_time)
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.TIMEOUT))
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1213,7 +1343,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.NOTWRITEABLE, self.start_time)
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.NOTWRITEABLE))
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1238,7 +1368,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.ABORTED, self.start_time)
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.ABORTED))
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1263,7 +1393,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.FAIL, self.start_time)
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.FAIL))
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1302,7 +1432,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.OTHER, self.start_time)
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.OTHER))
 
         # Check the outcome calls
         self.increment_scan_failures_mock.assert_called_once()
@@ -1338,7 +1468,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.SUCCESS, self.start_time)
+            self.report_filepath, self.get_expected_report_string(ScanOutcome.SUCCESS))
 
         # Check the outcome calls
         self.increment_scan_successes_mock.assert_called_once()
@@ -1349,6 +1479,12 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Mock reset method and set state
         self.scan_block_mock.state.value = RunnableStates.ABORTED
+
+        # Mock the report string method
+        mock_report_string = Mock(name="report_string_mock")
+        report_string = "report_string"
+        mock_report_string.return_value = report_string
+        self.scan_runner_part.get_report_string = mock_report_string
 
         # Call the run_scan method
         self.scan_runner_part.run_scan(
@@ -1369,7 +1505,7 @@ class TestScanRunnerPartRunMethod(unittest.TestCase):
 
         # Check the reporting was called
         self.add_report_line_mock.assert_called_once_with(
-            self.report_filepath, self.set_name, self.scan_number, ScanOutcome.SUCCESS, self.start_time)
+            self.report_filepath, report_string)
 
         # Check the outcome calls
         self.increment_scan_successes_mock.assert_called_once()
