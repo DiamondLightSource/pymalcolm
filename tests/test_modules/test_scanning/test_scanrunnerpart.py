@@ -1048,6 +1048,32 @@ class TestScanRunnerPart(unittest.TestCase):
         scan_runner_part.set_runner_state.assert_called_once_with(RunnerStates.FAULT)
         scan_runner_part.runner_status_message.set_value.assert_called_once_with("Error writing report file")
 
+    def test_get_root_directory_gets_directory(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        # Mock the output directory
+        expected_root_directory = "expected/root/directory"
+        mock_output_directory = Mock(name="output_directory_mock")
+        mock_output_directory.value = expected_root_directory
+        scan_runner_part.output_directory = mock_output_directory
+
+        actual_root_directory = scan_runner_part.get_root_directory()
+
+        self.assertEqual(expected_root_directory, actual_root_directory)
+
+    def test_get_root_directory_removes_trailing_slash(self):
+        scan_runner_part = ScanRunnerPart(self.name, self.mri)
+
+        # Mock the output directory
+        expected_root_directory = "expected/root/directory"
+        mock_output_directory = Mock(name="output_directory_mock")
+        mock_output_directory.value = expected_root_directory + "/"
+        scan_runner_part.output_directory = mock_output_directory
+
+        actual_root_directory = scan_runner_part.get_root_directory()
+
+        self.assertEqual(expected_root_directory, actual_root_directory)
+
 
 class TestScanRunnerPartCreateDirectoryMethods(unittest.TestCase):
 

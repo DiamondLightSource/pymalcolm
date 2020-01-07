@@ -293,6 +293,12 @@ class ScanRunnerPart(builtin.parts.ChildPart):
         self.create_directory(sub_directory)
         return sub_directory
 
+    def get_root_directory(self):
+        root_directory = self.output_directory.value
+        if root_directory[-1] == "/":
+            root_directory = root_directory[:-1]
+        return root_directory
+
     @add_call_types
     def abort(self, context):
         # type: (AContext) -> None
@@ -316,9 +322,7 @@ class ScanRunnerPart(builtin.parts.ChildPart):
                 "No scan sets configured. Have you loaded a YAML file?")
 
         # Root file directory
-        root_directory = self.output_directory.value
-        if root_directory[-1] == "/":
-            root_directory = root_directory[:-1]
+        root_directory = self.get_root_directory()
 
         # Sub-directory to create for this run
         sub_directory = self.create_and_get_sub_directory(root_directory)
@@ -475,8 +479,6 @@ class ScanRunnerPart(builtin.parts.ChildPart):
     def get_report_string(
             self, set_name, scan_number, scan_outcome, start_time, end_time):
         # type: (str, int, ScanOutcome, str, str) -> str
-
-        print(scan_outcome, start_time, end_time)
 
         report_str = "{set:<30}{no:<10}{outcome:<14}{start:<20}{end}".format(
             set=set_name,
