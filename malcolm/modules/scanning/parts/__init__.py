@@ -6,6 +6,7 @@ from .exposuredeadtimepart import ExposureDeadtimePart, AInitialReadoutTime, \
 from .minturnaroundpart import MinTurnaroundPart
 from .simultaneousaxespart import SimultaneousAxesPart, USimultaneousAxes
 from .unrollingpart import UnrollingPart
+from .scanrunnerpart import ScanRunnerPart
 from .attributeprerunpart import AttributePreRunPart
 
 # Expose a nice namespace
