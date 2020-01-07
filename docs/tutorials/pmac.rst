@@ -78,6 +78,11 @@ Let's make a Process Definition in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
         name: config_dir
         value: /dls_sw/ixx/epics/malcolm
 
+    # Scan the DLS redirector for IOCs to monitor, optional
+    - system.defines.redirector_iocs:
+        name: iocs
+        yamlname: $(yamlname)
+
     # Define the motion controllers
     - BLxxI.blocks.brick01_block:
         mri_prefix: BLxxI-ML-BRICK-01
@@ -104,11 +109,11 @@ Let's make a Process Definition in ``etc/malcolm/BLxxI-ML-MALC-01.yaml``::
     # More scans here...
 
     # Define the ServerComms
-    - web.blocks.web_server_block:
-        mri: $(yamlname):WEB
-
-    - pva.blocks.pva_server_block:
-        mri: $(yamlname):PVA
+    - system.blocks.system_block:
+        mri_prefix: $(yamlname)
+        iocs: $(iocs)
+        pv_prefix: $(yamlname)
+        config_dir: $(config_dir)
 
 The first thing to note is the ``#!`` line at the top of the file. This means
 that we can make the YAML file executable, and when it is executed
@@ -118,8 +123,8 @@ version of Malcolm.
 
 After this, we've defined a ``BLxxI`` module, and created two beamline specific
 Blocks from it (``brick01_block`` and ``scan_block``), and then
-created three Blocks from definitions already in Malcolm (
-``pandablocks_runnable_block``, ``web_server_block``, ``pva_server_block``).
+created two Blocks from definitions already in Malcolm (
+``pandablocks_runnable_block``, ``system_block``).
 Let's look at how those beamline specific Blocks are defined.
 
 

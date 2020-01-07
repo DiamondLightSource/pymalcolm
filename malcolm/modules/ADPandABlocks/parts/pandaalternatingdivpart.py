@@ -60,8 +60,11 @@ class PandAAlternatingDivPart(builtin.parts.ChildPart):
         child = context.block_view(self.mri)
         panda_mri = child.panda.value
         # Check that PandA has frames_per_step of 2
-        for i, mri in enumerate(detectors.mri):
-            if mri == panda_mri:
-                assert detectors.framesPerStep[i] == 2, \
-                  "PandA can only have framesPerStep=2 " \
-                  "as it is alternating triggers between 2 detectors"
+        try:
+            for i, mri in enumerate(detectors.mri):
+                if mri == panda_mri:
+                    assert detectors.framesPerStep[i] == 2, \
+                      "PandA can only have framesPerStep=2 " \
+                      "as it is alternating triggers between 2 detectors"
+        except AttributeError:
+            raise
