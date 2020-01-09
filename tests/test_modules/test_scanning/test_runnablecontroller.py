@@ -1,7 +1,8 @@
 import unittest
 import time
 
-from scanpointgenerator import LineGenerator, CompoundGenerator
+from scanpointgenerator import LineGenerator, CompoundGenerator, \
+    ConcatGenerator
 from annotypes import add_call_types
 
 from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
@@ -443,3 +444,15 @@ class TestRunnableController(unittest.TestCase):
         with self.assertRaises(AbortedError):
             f.result()
 
+    def test_concat_generator(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        duration = 1.0
+        concat = ConcatGenerator([line1, line2, line3])
+        self.b.configure(generator=CompoundGenerator([concat],
+                         [], [], duration),
+                         axesToMove=['x'],
+                         exceptionStep=0)
+
+        assert self.c.configure_params.generator.size == 17
