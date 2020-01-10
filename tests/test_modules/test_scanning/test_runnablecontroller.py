@@ -450,14 +450,32 @@ class TestRunnableController(unittest.TestCase):
         line3 = LineGenerator('x', 'mm', 190, 190, 2)
         duration = 0.01
         concat = ConcatGenerator([line1, line2, line3])
+        breakpoints = [2, 3, 10]
         self.b.configure(generator=CompoundGenerator([concat],
                          [], [], duration),
                          axesToMove=['x'],
-                         exceptionStep=0)
+                         exceptionStep=0,
+                         breakpoints=breakpoints)
 
         assert self.c.configure_params.generator.size == 17
+        self.checkSteps(2, 0, 17)
+        self.checkStat(self.ss.ARMED)
 
         self.b.run()
+        self.checkSteps(3, 2, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(10, 5, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(2, 15, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(0, 17, 17)
         self.checkState(self.ss.FINISHED)
+
 
         pass
