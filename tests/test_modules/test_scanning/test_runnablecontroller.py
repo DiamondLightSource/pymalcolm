@@ -448,7 +448,7 @@ class TestRunnableController(unittest.TestCase):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
         line2 = LineGenerator('x', 'mm', 0, 180, 10)
         line3 = LineGenerator('x', 'mm', 190, 190, 2)
-        duration = 1.0
+        duration = 0.01
         concat = ConcatGenerator([line1, line2, line3])
         self.b.configure(generator=CompoundGenerator([concat],
                          [], [], duration),
@@ -456,3 +456,8 @@ class TestRunnableController(unittest.TestCase):
                          exceptionStep=0)
 
         assert self.c.configure_params.generator.size == 17
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+        pass
