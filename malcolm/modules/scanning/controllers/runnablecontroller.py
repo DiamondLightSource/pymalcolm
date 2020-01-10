@@ -12,7 +12,7 @@ from ..util import RunnableStates, AGenerator, ConfigureParams
 from ..hooks import ConfigureHook, ValidateHook, PostConfigureHook, \
     PreRunHook, RunHook, PostRunArmedHook, PostRunReadyHook, \
     ReportStatusHook, AbortHook, PauseHook, SeekHook, ControllerHook, \
-    PreConfigureHook, AAxesToMove
+    PreConfigureHook, AAxesToMove, ABreakpoints
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, List, Iterable, Type, Callable
@@ -283,8 +283,8 @@ class RunnableController(builtin.controllers.ManagerController):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def validate(self, generator, axesToMove=None, **kwargs):
-        # type: (AGenerator, AAxesToMove, **Any) -> AConfigureParams
+    def validate(self, generator, axesToMove=None, breakpoints=None, **kwargs):
+        # type: (AGenerator, AAxesToMove, ABreakpoints, **Any) -> AConfigureParams
         """Validate configuration parameters and return validated parameters.
 
         Doesn't take device state into account so can be run in any state
@@ -294,7 +294,7 @@ class RunnableController(builtin.controllers.ManagerController):
         for k, default in self._block.configure.meta.defaults.items():
             kwargs.setdefault(k, default)
         # The validated parameters we will eventually return
-        params = ConfigureParams(generator, axesToMove, **kwargs)
+        params = ConfigureParams(generator, axesToMove, breakpoints, **kwargs)
         # Make some tasks just for validate
         part_contexts = self.create_part_contexts()
         # Get any status from all parts
@@ -332,8 +332,8 @@ class RunnableController(builtin.controllers.ManagerController):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
     @add_call_types
-    def configure(self, generator, axesToMove=None, **kwargs):
-        # type: (AGenerator, AAxesToMove, **Any) -> AConfigureParams
+    def configure(self, generator, axesToMove=None, breakpoints=None, **kwargs):
+        # type: (AGenerator, AAxesToMove, ABreakpoints, **Any) -> AConfigureParams
         """Validate the params then configure the device ready for run().
 
         Try to prepare the device as much as possible so that run() is quick to
@@ -344,7 +344,7 @@ class RunnableController(builtin.controllers.ManagerController):
         return in Aborted state. If something goes wrong it will return in Fault
         state. If the user disables then it will return in Disabled state.
         """
-        params = self.validate(generator, axesToMove, **kwargs)
+        params = self.validate(generator, axesToMove, breakpoints, **kwargs)
         state = self.state.value
         try:
             self.transition(ss.CONFIGURING)

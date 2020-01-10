@@ -143,7 +143,7 @@ class TestRunnableController(unittest.TestCase):
         assert self.c.configured_steps.value == 0
         assert self.c.total_steps.value == 0
         assert list(self.b.configure.meta.takes.elements) == \
-               ["generator", "axesToMove", "exceptionStep"]
+               ["generator", "axesToMove", "breakpoints", "exceptionStep"]
 
     def test_reset(self):
         self.c.disable()
@@ -454,8 +454,8 @@ class TestRunnableController(unittest.TestCase):
         self.b.configure(generator=CompoundGenerator([concat],
                          [], [], duration),
                          axesToMove=['x'],
-                         exceptionStep=0,
-                         breakpoints=breakpoints)
+                         breakpoints=breakpoints,
+                         exceptionStep=0)
 
         assert self.c.configure_params.generator.size == 17
         self.checkSteps(2, 0, 17)

@@ -14,7 +14,8 @@ from malcolm.core import VMeta, NTUnion, Table, NumberMeta, Widget, \
 from malcolm.modules import builtin
 from .infos import DatasetType
 
-from .hooks import AGenerator, AAxesToMove, UAxesToMove
+from .hooks import AGenerator, AAxesToMove, UAxesToMove, ABreakpoints, \
+    UBreakpoints
 
 
 def exposure_attribute(min_exposure):
@@ -30,8 +31,8 @@ def exposure_attribute(min_exposure):
 class ConfigureParams(Serializable):
     # This will be serialized, so maintain camelCase for axesToMove
     # noinspection PyPep8Naming
-    def __init__(self, generator, axesToMove=None, **kwargs):
-        # type: (AGenerator, UAxesToMove, **Any) -> None
+    def __init__(self, generator, axesToMove=None, breakpoints=None, **kwargs):
+        # type: (AGenerator, UAxesToMove, UBreakpoints, **Any) -> None
         if kwargs:
             # Got some additional args to report
             self.call_types = ConfigureParams.call_types.copy()
@@ -44,6 +45,8 @@ class ConfigureParams(Serializable):
         if axesToMove is None:
             axesToMove = generator.axes
         self.axesToMove = AAxesToMove(axesToMove)
+
+        self.breakpoints = ABreakpoints(breakpoints)
 
 
 @Serializable.register_subclass("malcolm:core/PointGeneratorMeta:1.0")

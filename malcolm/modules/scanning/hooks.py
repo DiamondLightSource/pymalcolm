@@ -24,6 +24,9 @@ with Anno("Generator instance providing specification for scan"):
 with Anno("List of axes in inner dimension of generator that should be moved"):
     AAxesToMove = Array[str]
 UAxesToMove = Union[AAxesToMove, Sequence[str]]
+with Anno("List of points at which the run will return in Armed state"):
+    ABreakpoints = Array[int]
+UBreakpoints = Union[ABreakpoints, Sequence[int]]
 with Anno("Parameters that need to be changed to make them compatible"):
     AParameterTweakInfos = Array[ParameterTweakInfo]
 UInfos = Union[AInfos, Sequence[Info], Info, None]
@@ -71,12 +74,13 @@ class ValidateHook(ControllerHook[UParameterTweakInfos]):
                  part_info,  # type: UPartInfo
                  generator,  # type: AGenerator
                  axesToMove,  # type: AAxesToMove
+                 breakpoints, # type: ABreakpoints
                  **kwargs  # type: Any
                  ):
         # type: (...) -> None
         super(ValidateHook, self).__init__(
             part, context, part_info=part_info, generator=generator,
-            axesToMove=axesToMove, **kwargs)
+            axesToMove=axesToMove, breakpoints=breakpoints, **kwargs)
 
     def validate_return(self, ret):
         # type: (UParameterTweakInfos) -> AParameterTweakInfos
@@ -122,13 +126,14 @@ class ConfigureHook(ControllerHook[UInfos]):
                  part_info,  # type: APartInfo
                  generator,  # type: AGenerator
                  axesToMove,  # type: AAxesToMove
+                 breakpoints, # type: ABreakpoints
                  **kwargs  # type: **Any
                  ):
         # type: (...) -> None
         super(ConfigureHook, self).__init__(
             part, context, completed_steps=completed_steps,
             steps_to_do=steps_to_do, part_info=part_info, generator=generator,
-            axesToMove=axesToMove, **kwargs)
+            axesToMove=axesToMove, breakpoints=breakpoints, **kwargs)
 
     @classmethod
     def create_info(cls, configure_func):
