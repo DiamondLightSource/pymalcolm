@@ -35,8 +35,8 @@ AUseGit = builtin.controllers.AUseGit
 ATemplateDesigns = builtin.controllers.ATemplateDesigns
 
 
-def get_steps_per_run(generator, axes_to_move):
-    # type: (CompoundGenerator, List[str]) -> int
+def get_steps_per_run(generator, axes_to_move, breakpoints=None):
+    # type: (CompoundGenerator, List[str], List[int]) -> int
     steps = 1
     axes_set = set(axes_to_move)
     for dim in reversed(generator.dimensions):

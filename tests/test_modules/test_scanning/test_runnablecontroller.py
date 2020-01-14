@@ -14,7 +14,7 @@ from malcolm.modules.demo.parts import MotionChildPart
 from malcolm.modules.demo.blocks import motion_block
 from malcolm.compat import OrderedDict
 from malcolm.modules.scanning.controllers import \
-    RunnableController
+    RunnableController, get_steps_per_run
 from malcolm.modules.scanning.infos import ParameterTweakInfo
 from malcolm.modules.scanning.util import RunnableStates
 
@@ -479,3 +479,29 @@ class TestRunnableController(unittest.TestCase):
 
 
         pass
+
+    def test_steps_per_run_one_axis(self):
+        line = LineGenerator('x', 'mm', 0, 180, 10)
+        duration = 0.01
+        compound = CompoundGenerator([line], [], [], duration)
+        compound.prepare()
+
+        stepsPerRun = get_steps_per_run(compound, ['x'])
+        assert stepsPerRun == 10
+
+    def test_steps_per_run(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+        compound = CompoundGenerator([concat], [], [], duration)
+        compound.prepare()
+        breakpoints = [2, 3, 10]
+
+        stepsPerRun = get_steps_per_run(
+            generator=compound,
+            axes_to_move=['x'],
+            breakpoints=breakpoints)
+
+        assert stepsPerRun == 2
