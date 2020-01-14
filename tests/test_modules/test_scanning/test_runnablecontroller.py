@@ -450,7 +450,7 @@ class TestRunnableController(unittest.TestCase):
         line3 = LineGenerator('x', 'mm', 190, 190, 2)
         duration = 0.01
         concat = ConcatGenerator([line1, line2, line3])
-        breakpoints = [2, 3, 10]
+        breakpoints = [2, 3, 10, 2]
         self.b.configure(generator=CompoundGenerator([concat],
                          [], [], duration),
                          axesToMove=['x'],
@@ -459,24 +459,23 @@ class TestRunnableController(unittest.TestCase):
 
         assert self.c.configure_params.generator.size == 17
         self.checkSteps(2, 0, 17)
-        self.checkStat(self.ss.ARMED)
-
-        self.b.run()
-        self.checkSteps(3, 2, 17)
         self.checkState(self.ss.ARMED)
 
         self.b.run()
-        self.checkSteps(10, 5, 17)
+        self.checkSteps(5, 2, 17)
         self.checkState(self.ss.ARMED)
 
         self.b.run()
-        self.checkSteps(2, 15, 17)
+        self.checkSteps(15, 5, 17)
         self.checkState(self.ss.ARMED)
 
         self.b.run()
-        self.checkSteps(0, 17, 17)
+        self.checkSteps(17, 15, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 17, 17)
         self.checkState(self.ss.FINISHED)
-
 
         pass
 
@@ -486,8 +485,8 @@ class TestRunnableController(unittest.TestCase):
         compound = CompoundGenerator([line], [], [], duration)
         compound.prepare()
 
-        stepsPerRun = get_steps_per_run(compound, ['x'])
-        assert stepsPerRun == 10
+        steps_per_run = get_steps_per_run(compound, ['x'], [])
+        assert steps_per_run[0] == 10
 
     def test_steps_per_run(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
@@ -497,11 +496,12 @@ class TestRunnableController(unittest.TestCase):
         concat = ConcatGenerator([line1, line2, line3])
         compound = CompoundGenerator([concat], [], [], duration)
         compound.prepare()
-        breakpoints = [2, 3, 10]
+        breakpoints = [2, 3, 10, 2]
 
-        stepsPerRun = get_steps_per_run(
+        steps_per_run = get_steps_per_run(
             generator=compound,
             axes_to_move=['x'],
             breakpoints=breakpoints)
+        assert steps_per_run == breakpoints
 
-        assert stepsPerRun == 2
+        pass

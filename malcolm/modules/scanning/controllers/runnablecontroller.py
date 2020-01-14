@@ -35,9 +35,9 @@ AUseGit = builtin.controllers.AUseGit
 ATemplateDesigns = builtin.controllers.ATemplateDesigns
 
 
-def get_steps_per_run(generator, axes_to_move, breakpoints=None):
+def get_steps_per_run(generator, axes_to_move, breakpoints):
     # type: (CompoundGenerator, List[str], List[int]) -> int
-    steps = 1
+    steps = [1]
     axes_set = set(axes_to_move)
     for dim in reversed(generator.dimensions):
         # If the axes_set is empty and the dimension has axes then we have done
@@ -50,9 +50,12 @@ def get_steps_per_run(generator, axes_to_move, breakpoints=None):
                 "Axis %s is not in %s" % (axis, axes_to_move)
             axes_set.remove(axis)
         # Now multiply by the dimensions to get the number of steps
-        steps *= dim.size
-    return steps
+        steps[0] *= dim.size
 
+    if len(breakpoints) > 1:
+        steps = breakpoints
+
+    return steps
 
 def update_configure_model(configure_model, part_configure_infos):
     # type: (MethodMeta, List[ConfigureParamsInfo]) -> None
@@ -388,14 +391,14 @@ class RunnableController(builtin.controllers.ManagerController):
         # TODO: We can be cleverer about this and support a different number
         # of steps per run for each run by examining the generator structure
         self.steps_per_run = get_steps_per_run(
-            params.generator, params.axesToMove)
+            params.generator, params.axesToMove, params.breakpoints)
         # Get any status from all parts
         part_info = self.run_hooks(ReportStatusHook(p, c)
                                    for p, c in self.part_contexts.items())
         # Run the configure command on all parts, passing them info from
         # ReportStatus. Parts should return any reporting info for PostConfigure
         completed_steps = 0
-        steps_to_do = self.steps_per_run
+        steps_to_do = self.steps_per_run[0]
         part_info = self.run_hooks(
             ConfigureHook(p, c, completed_steps, steps_to_do, part_info, **kw)
             for p, c, kw in self._part_params())
@@ -460,13 +463,19 @@ class RunnableController(builtin.controllers.ManagerController):
         # type: (Type[ControllerHook]) -> None
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
 
+    index = 1
+
     def do_run(self, hook):
         # type: (Type[ControllerHook]) -> None
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
         self.abortable_transition(ss.POSTRUN)
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
-            steps_to_do = self.steps_per_run
+            if len(self.steps_per_run) > 1:
+                steps_to_do = self.steps_per_run[RunnableController.index]
+                RunnableController.index += 1
+            else:
+                steps_to_do = self.steps_per_run[0]
             part_info = self.run_hooks(
                 ReportStatusHook(p, c) for p, c in self.part_contexts.items())
             self.completed_steps.set_value(completed_steps)
