@@ -199,6 +199,7 @@ class RunnableController(builtin.controllers.ManagerController):
             tags=[Widget.TEXTUPDATE.tag()]
         ).create_attribute_model(0)
         self.field_registry.add_attribute_model("totalSteps", self.total_steps)
+        self._breakpoint = 1
         # Create the method models
         self.field_registry.add_method_model(self.validate)
         self.set_writeable_in(
@@ -463,7 +464,7 @@ class RunnableController(builtin.controllers.ManagerController):
         # type: (Type[ControllerHook]) -> None
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
 
-    index = 1
+    #_breakpoint = 1
 
     def do_run(self, hook):
         # type: (Type[ControllerHook]) -> None
@@ -472,8 +473,8 @@ class RunnableController(builtin.controllers.ManagerController):
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             if len(self.steps_per_run) > 1:
-                steps_to_do = self.steps_per_run[RunnableController.index]
-                RunnableController.index += 1
+                steps_to_do = self.steps_per_run[self._breakpoint]
+                self._breakpoint += 1
             else:
                 steps_to_do = self.steps_per_run[0]
             part_info = self.run_hooks(
