@@ -46,11 +46,10 @@ corresponding trigger signals.
 The graph at the bottom shows the states of the GPIO lines as the PVT scan
 progresses through its points.
 
-Note that the acquisition time is shorter than the live time. This trigger
-signal for the detector is controlled by the PandA. At present it pulses after
-the transition of the live signal, delayed by half the readout time. The end of
-acquisition is determined by the settings on the detector and this would be set
-to live time - readout time.
+Note that the acquisition time is shorter than the live time.  The trigger
+signal for the detector is controlled by the PandA. In order to centre the
+acquisition with respect to the Live signals, the trigger signal can be delayed
+by half the readout time.
 
 Some of the PVT points are provided by Malcolm for convenience, and are used to:
     1. Provide a centre frame signal, and
