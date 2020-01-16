@@ -464,8 +464,6 @@ class RunnableController(builtin.controllers.ManagerController):
         # type: (Type[ControllerHook]) -> None
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
 
-    #_breakpoint = 1
-
     def do_run(self, hook):
         # type: (Type[ControllerHook]) -> None
         self.run_hooks(hook(p, c) for p, c in self.part_contexts.items())
@@ -473,8 +471,12 @@ class RunnableController(builtin.controllers.ManagerController):
         completed_steps = self.configured_steps.value
         if completed_steps < self.total_steps.value:
             if len(self.steps_per_run) > 1:
-                steps_to_do = self.steps_per_run[self._breakpoint]
-                self._breakpoint += 1
+                if self._breakpoint < len(self.steps_per_run):
+                    steps_to_do = self.steps_per_run[self._breakpoint]
+                    self._breakpoint += 1
+                # handle a case when the endpoint is not provided
+                else:
+                    steps_to_do = self.total_steps.value - completed_steps
             else:
                 steps_to_do = self.steps_per_run[0]
             part_info = self.run_hooks(

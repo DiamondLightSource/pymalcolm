@@ -2,7 +2,7 @@ import unittest
 import time
 
 from scanpointgenerator import LineGenerator, CompoundGenerator, \
-    ConcatGenerator
+    ConcatGenerator, StaticPointGenerator
 from annotypes import add_call_types
 
 from malcolm.modules.demo.parts.motionchildpart import AExceptionStep
@@ -444,7 +444,7 @@ class TestRunnableController(unittest.TestCase):
         with self.assertRaises(AbortedError):
             f.result()
 
-    def test_concat_generator(self):
+    def test_tomography(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
         line2 = LineGenerator('x', 'mm', 0, 180, 10)
         line3 = LineGenerator('x', 'mm', 190, 190, 2)
@@ -504,4 +504,219 @@ class TestRunnableController(unittest.TestCase):
             breakpoints=breakpoints)
         assert steps_per_run == breakpoints
 
-        pass
+    def test_breakpoints_without_last(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+        breakpoints = [2, 3, 10]
+        self.b.configure(generator=CompoundGenerator([concat],
+                         [], [], duration),
+                         axesToMove=['x'],
+                         breakpoints=breakpoints,
+                         exceptionStep=0)
+
+        assert self.c.configure_params.generator.size == 17
+        self.checkSteps(2, 0, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(5, 2, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(15, 5, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 15, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 17, 17)
+        self.checkState(self.ss.FINISHED)
+
+    def test_rocking_tomography(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        line4 = LineGenerator('x', 'mm', 180, 0, 10)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3, line4])
+        breakpoints = [2, 3, 10, 2]
+        self.b.configure(generator=CompoundGenerator([concat],
+                         [], [], duration),
+                         axesToMove=['x'],
+                         breakpoints=breakpoints,
+                         exceptionStep=0)
+
+        assert self.c.configure_params.generator.size == 27
+        self.checkSteps(2, 0, 27)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(5, 2, 27)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(15, 5, 27)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 15, 27)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(27, 17, 27)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(27, 27, 27)
+        self.checkState(self.ss.FINISHED)
+
+    def test_repeat_with_static(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+
+        staticGen = StaticPointGenerator(2)
+        breakpoints = [2, 3, 10, 2, 2, 3, 10, 2]
+
+        self.b.configure(generator=CompoundGenerator([staticGen, concat],
+                         [], [], duration),
+                         axesToMove=['x'],
+                         breakpoints=breakpoints)
+
+        assert self.c.configure_params.generator.size == 34
+
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(2, 0, 34)
+
+        self.b.run()
+        self.checkSteps(5, 2, 34)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(15, 5, 34)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 15, 34)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(19, 17, 34)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(22, 19, 34)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(32, 22, 34)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(34, 32, 34)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+    def test_repeat_rocking_tomography(self):
+        line1 = LineGenerator('x', 'mm', -10, -10, 5)
+        line2 = LineGenerator('x', 'mm', 0, 180, 10)
+        line3 = LineGenerator('x', 'mm', 190, 190, 2)
+        line4 = LineGenerator('x', 'mm', 180, 0, 10)
+        concat = ConcatGenerator([line1, line2, line3, line4])
+
+        staticGen = StaticPointGenerator(2)
+
+        duration = 0.01
+        breakpoints = [2, 3, 10, 2, 10, 2, 3, 10, 2, 10]
+        self.b.configure(generator=CompoundGenerator([staticGen, concat],
+                         [], [], duration),
+                         axesToMove=['x'],
+                         breakpoints=breakpoints)
+
+        assert self.c.configure_params.generator.size == 54
+
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(2, 0, 54)
+
+        self.b.run()
+        self.checkSteps(5, 2, 54)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(15, 5, 54)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 15, 54)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(27, 17, 54)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(29, 27, 54)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(32, 29, 54)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(42, 32, 54)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(44, 42, 54)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(54, 44, 54)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
+
+    def test_helical_scan(self):
+        line1 = LineGenerator(['y','x'], ['mm','mm'],
+                              [-0.555556, -10], [-0.555556, -10], 5)
+        line2 = LineGenerator(['y','x'], ['mm','mm'], [0, 0], [10, 180], 10)
+        line3 = LineGenerator(['y','x'], ['mm','mm'],
+                              [10.555556, 190], [10.555556, 190], 2)
+        duration = 0.01
+        concat = ConcatGenerator([line1, line2, line3])
+
+        breakpoints = [2, 3, 10, 2]
+        self.b.configure(generator=CompoundGenerator([concat],
+                         [], [], duration),
+                         axesToMove=['y','x'],
+                         breakpoints=breakpoints)
+
+        self.c.configure_params.generator.size == 17
+
+        self.checkState(self.ss.ARMED)
+        self.checkSteps(2, 0, 17)
+
+        self.b.run()
+        self.checkSteps(5, 2, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(15, 5, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkSteps(17, 15, 17)
+        self.checkState(self.ss.ARMED)
+
+        self.b.run()
+        self.checkState(self.ss.FINISHED)
