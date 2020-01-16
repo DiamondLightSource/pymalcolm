@@ -32,6 +32,7 @@ Contents
     reference/statesets
     reference/infos
     reference/datasets
+    reference/triggering
     reference/contributing
     reference/release_notes
 
