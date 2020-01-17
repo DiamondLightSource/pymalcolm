@@ -48,6 +48,16 @@ the path to the Attribute that is to be displayed changes.
 
 These are created using the `linked_value_tag`.
 
+Badge Value Tag
+---------------
+
+A Badge Value tag can be attached to a Port Attribute to tell the GUI that there
+is another Attribute that can be monitored that should be displayed as a badge
+for this Port. This is used on PandA to display the additional delay that can
+be added for sink ports.
+
+These are created using the `badge_value_tag`.
+
 Port Tag
 --------
 

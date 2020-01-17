@@ -191,7 +191,8 @@ class PandABoxBlockMakerTest(unittest.TestCase):
         assert inp.meta.writeable is True
         assert inp.meta.typeid == ChoiceMeta.typeid
         assert inp.meta.tags == [
-            "group:inputs", "sinkPort:bool:ZERO", "widget:combo", "config:1"]
+            "group:inputs", "sinkPort:bool:ZERO", "widget:combo",
+            "badgevalue:plus:inpDelay:MRI:PULSE2", "config:1"]
         assert inp.meta.choices == ["ZERO", "X.OUT", "Y.OUT"]
 
         delay = b.inpDelay
@@ -228,7 +229,8 @@ class PandABoxBlockMakerTest(unittest.TestCase):
             [['timeStamp'], ts],
             [['meta', 'tags'], [
                 'group:inputs', 'sinkPort:bool:ZERO', 'widget:combo',
-                'config:1', 'linkedvalue:out:MRI:X']]
+                'badgevalue:plus:inpDelay:MRI:PULSE2', 'config:1',
+                'linkedvalue:out:MRI:X']]
         ]
 
     def test_block_fields_lut(self):

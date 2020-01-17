@@ -28,7 +28,7 @@ from .camel import snake_to_camel, camel_to_title, CAMEL_RE
 from .stateset import StateSet
 from .table import Table
 from .tags import Widget, Port, group_tag, without_group_tags, config_tag, \
-    get_config_tag, method_return_unpacked, linked_value_tag, \
+    get_config_tag, method_return_unpacked, linked_value_tag, badge_value_tag, \
     without_linked_value_tags, version_tag, without_config_tags
 from .timestamp import TimeStamp
 from .views import Attribute, Method, Block
