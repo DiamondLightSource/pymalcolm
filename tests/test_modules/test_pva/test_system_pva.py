@@ -3,7 +3,7 @@ import tempfile
 import unittest
 
 import pytest
-from annotypes import json_encode
+from annotypes import json_encode, Array
 from scanpointgenerator import LineGenerator, CompoundGenerator
 
 from malcolm.core import Process
@@ -58,21 +58,22 @@ class TestSystemDetectorPVA(unittest.TestCase):
         generator = self.make_generator()
         validated = dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
-            axesToMove=["y", "x"], fileTemplate='%s.h5', formatName='det',
-            exposure=0.0489975,
+            axesToMove=["y", "x"], breakpoints=Array[int](), fileTemplate='%s.h5',
+            formatName='det', exposure=0.0489975,
         )
         assert validated == block.validate(generator, self.tmpdir)
         # Sent 2 things, other zeroed
         assert block.validate.took.value == dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
-            axesToMove=[], fileTemplate='', formatName='', exposure=0,
+            axesToMove=[], breakpoints=Array[int](), fileTemplate='',
+            formatName='', exposure=0,
         )
         assert block.validate.took.present == [
             "generator", "fileDir"]
         # Got back defaulted things
         assert block.validate.returned.value == validated
         all_args = [
-            'generator', 'fileDir', 'axesToMove', 'exposure', 'formatName',
+            'generator', 'fileDir', 'axesToMove', 'breakpoints', 'exposure', 'formatName',
             'fileTemplate',
         ]
         assert list(block.validate.meta.takes.elements) == all_args
@@ -86,8 +87,8 @@ class TestSystemDetectorPVA(unittest.TestCase):
         generator = self.make_generator()
         validated = dict(
             generator=generator.to_dict(), fileDir=self.tmpdir,
-            axesToMove=["x", "y"], fileTemplate='%s.h5', formatName='det',
-            exposure=0.0489975,
+            axesToMove=["x", "y"], breakpoints=Array[int](), fileTemplate='%s.h5',
+            formatName='det', exposure=0.0489975,
         )
         params = block.configure(generator, self.tmpdir, axesToMove=["x", "y"])
         assert params == validated
@@ -96,14 +97,15 @@ class TestSystemDetectorPVA(unittest.TestCase):
         # block._context.sleep(0.1)
         assert "Armed" == block.state.value
         assert block.configure.took.value == dict(
-            generator=generator.to_dict(), axesToMove=["x", "y"], exposure=0.0,
-            fileDir=self.tmpdir, fileTemplate='', formatName='')
+            generator=generator.to_dict(), axesToMove=["x", "y"],
+            breakpoints=Array[int](), exposure=0.0, fileDir=self.tmpdir,
+            fileTemplate='', formatName='')
         assert block.configure.took.present == [
             "generator", "fileDir", "axesToMove"]
         assert block.configure.returned.value == validated
         assert block.configure.returned.present == [
-            "generator", "fileDir", "axesToMove", 'exposure', 'formatName',
-            'fileTemplate']
+            "generator", "fileDir", "axesToMove", 'breakpoints', 'exposure',
+            'formatName', 'fileTemplate']
         self.check_blocks_equal()
         # Check the NTTable
         from p4p.client.cothread import Context

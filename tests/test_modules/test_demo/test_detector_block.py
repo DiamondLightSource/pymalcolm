@@ -34,8 +34,8 @@ class TestDetectorBlock(unittest.TestCase):
             'abort', 'pause', 'resume', 'label', 'datasets', 'readoutTime',
             'frequencyAccuracy', 'exposure']
         assert list(self.b.configure.meta.takes.elements) == [
-            'generator', 'fileDir', 'axesToMove', 'exposure', 'formatName',
-            'fileTemplate'
+            'generator', 'fileDir', 'axesToMove', 'breakpoints', 'exposure',
+            'formatName', 'fileTemplate'
         ]
         assert self.b.label.value == "DemoDetector"
 
