@@ -41,6 +41,8 @@ class BitsTable(Table):
 
 class PositionCapture(Enum):
     """What to capture, if anything, with PCAP"""
+    # In Python2 we have to define the order of members in an enum
+    _order_ = "NO VALUE DIFF SUM MEAN MIN MAX MIN_MAX MIN_MAX_MEAN"
 
     NO = "No"
     VALUE = "Value"
