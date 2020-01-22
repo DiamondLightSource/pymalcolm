@@ -444,7 +444,7 @@ class TestRunnableController(unittest.TestCase):
         with self.assertRaises(AbortedError):
             f.result()
 
-    def test_tomography(self):
+    def test_breakpoints_tomo(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
         line2 = LineGenerator('x', 'mm', 0, 180, 10)
         line3 = LineGenerator('x', 'mm', 190, 190, 2)
@@ -537,7 +537,7 @@ class TestRunnableController(unittest.TestCase):
         self.checkSteps(17, 17, 17)
         self.checkState(self.ss.FINISHED)
 
-    def test_rocking_tomography(self):
+    def test_breakpoints_rocking_tomo(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
         line2 = LineGenerator('x', 'mm', 0, 180, 10)
         line3 = LineGenerator('x', 'mm', 190, 190, 2)
@@ -575,7 +575,7 @@ class TestRunnableController(unittest.TestCase):
         self.checkSteps(27, 27, 27)
         self.checkState(self.ss.FINISHED)
 
-    def test_repeat_with_static(self):
+    def test_breakpoints_repeat_with_static(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
         line2 = LineGenerator('x', 'mm', 0, 180, 10)
         line3 = LineGenerator('x', 'mm', 190, 190, 2)
@@ -626,7 +626,7 @@ class TestRunnableController(unittest.TestCase):
         self.b.run()
         self.checkState(self.ss.FINISHED)
 
-    def test_repeat_rocking_tomography(self):
+    def test_breakpoints_repeat_rocking_tomo(self):
         line1 = LineGenerator('x', 'mm', -10, -10, 5)
         line2 = LineGenerator('x', 'mm', 0, 180, 10)
         line3 = LineGenerator('x', 'mm', 190, 190, 2)
@@ -686,7 +686,7 @@ class TestRunnableController(unittest.TestCase):
         self.b.run()
         self.checkState(self.ss.FINISHED)
 
-    def test_helical_scan(self):
+    def test_breakpoints_helical_scan(self):
         line1 = LineGenerator(['y','x'], ['mm','mm'],
                               [-0.555556, -10], [-0.555556, -10], 5)
         line2 = LineGenerator(['y','x'], ['mm','mm'], [0, 0], [10, 180], 10)

@@ -36,7 +36,7 @@ ATemplateDesigns = builtin.controllers.ATemplateDesigns
 
 
 def get_steps_per_run(generator, axes_to_move, breakpoints):
-    # type: (CompoundGenerator, List[str], List[int]) -> int
+    # type: (CompoundGenerator, List[str], List[int]) -> List[int]
     steps = [1]
     axes_set = set(axes_to_move)
     for dim in reversed(generator.dimensions):
