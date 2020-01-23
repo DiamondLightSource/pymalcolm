@@ -593,8 +593,8 @@ class RunnableController(builtin.controllers.ManagerController):
         # type: (int) -> None
         self.run_hooks(
             PauseHook(p, c) for p, c in self.create_part_contexts().items())
-        in_run_steps = completed_steps % self.steps_per_run
-        steps_to_do = self.steps_per_run - in_run_steps
+        in_run_steps = completed_steps % self.steps_per_run[0]
+        steps_to_do = self.steps_per_run[0] - in_run_steps
         part_info = self.run_hooks(
             ReportStatusHook(p, c) for p, c in self.part_contexts.items())
         self.completed_steps.set_value(completed_steps)
