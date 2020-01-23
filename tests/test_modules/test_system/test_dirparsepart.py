@@ -9,10 +9,14 @@ from malcolm.core.alarm import Alarm, AlarmSeverity
 
 from malcolm.modules.system.parts import DirParsePart
 
+import time
+
 deps = [
     "TEST=/a/test\n",
     "DEP1=$(TEST)/some/dependency\n"
 ]
+
+now = "%s" % time.time()
 
 
 class MockPv(str):
@@ -49,7 +53,7 @@ class TestDirParsePart(unittest.TestCase):
         self.c1 = RunnableController(
             mri="SYS", config_dir="/tmp", use_git=False)
         try:
-            os.mkdir('/tmp/configure')
+            os.mkdir('/tmp/configure-%s' % now)
         except OSError:
             pass
 
@@ -58,7 +62,11 @@ class TestDirParsePart(unittest.TestCase):
             self.p.stop(timeout=1)
         except AssertionError:
             pass
-        os.rmdir('/tmp/configure')
+        try:
+            os.rmdir('/tmp/configure-%s' % now)
+        except OSError:
+            # directory doesn't exist
+            pass
 
     # @patch("malcolm.modules.ca.util.CAAttribute")
     # def test_has_pvs(self, CAAttribute):
@@ -83,7 +91,7 @@ class TestDirParsePart(unittest.TestCase):
     def test_parses_dir(self):
         self.add_part_and_start()
         self.part.dir = "/tmp"
-        with open('/tmp/configure/RELEASE', 'w') as f:
+        with open('/tmp/configure-%s/RELEASE' % now, 'w') as f:
             f.writelines(deps)
         self.part.parse_release()
         assert len(self.part.dependencies.value.module) == 2
@@ -93,7 +101,7 @@ class TestDirParsePart(unittest.TestCase):
         assert self.part.dependencies.value.path[0] == "/a/test"
         assert self.part.dependencies.value.path[1] == "/a/test/some/dependency"
 
-        os.remove('/tmp/configure/RELEASE')
+        os.remove('/tmp/configure-%s/RELEASE' % now)
 
     @patch("malcolm.core.alarm.Alarm")
     def test_sets_alarm_if_dir_doesnt_exist(self, alarm):
