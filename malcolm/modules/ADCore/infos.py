@@ -104,23 +104,3 @@ class NDAttributeDatasetInfo(Info):
             raise AttributeError("Bad dataset type %r, should be a %s" % (
                 type, AttributeDatasetType))
         return cls(name, dtype, attr)
-
-    @classmethod
-    def from_attribute_type(cls, name, type, attr, rank):
-        # type: (str, AttributeDatasetType, str, str) -> NDArrayDatasetInfo
-        if type is AttributeDatasetType.DETECTOR:
-            # Something like I0
-            name = "%s.data" % name
-            type = scanning.util.DatasetType.PRIMARY
-        elif type is AttributeDatasetType.MONITOR:
-            # Something like Iref
-            name = "%s.data" % name
-            type = scanning.util.DatasetType.MONITOR
-        elif type is AttributeDatasetType.POSITION:
-            # Something like x
-            name = "%s.value" % name
-            type = scanning.util.DatasetType.POSITION_VALUE
-        else:
-            raise TypeError("Bad AttributeDatasetType %s" % type)
-        return cls(name, type, attr, rank)
-
